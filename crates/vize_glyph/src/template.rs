@@ -108,6 +108,42 @@ mod tests {
     }
 
     #[test]
+    fn test_multiline_interpolation_keeps_expression_indented() {
+        let source = r#"<span>
+  {{
+    preview
+      ? [
+          preview.document.collectionLabel,
+          preview.document.publishedAt
+            ? formatDate(preview.document.publishedAt)
+            : "Frontmatter required",
+          isPreviewPending ? "Previewing" : "Ready",
+        ].join(" / ")
+      : (activePath ?? "No file selected")
+  }}
+</span>"#;
+        let options = FormatOptions::default();
+        let result = format_template_content(source, &options).unwrap();
+
+        assert_eq!(
+            result.as_str(),
+            r#"<span>
+  {{
+    preview
+      ? [
+          preview.document.collectionLabel,
+          preview.document.publishedAt
+            ? formatDate(preview.document.publishedAt)
+            : "Frontmatter required",
+          isPreviewPending ? "Previewing" : "Ready",
+        ].join(" / ")
+      : (activePath ?? "No file selected")
+  }}
+</span>"#
+        );
+    }
+
+    #[test]
     fn directive_expression_double_quote_formatting_keeps_valid_attribute_quotes() {
         let source = r#"<MfCheckbox @blur="form.validateField('agreeToPolicy')" />"#;
         let mut options = FormatOptions::default();

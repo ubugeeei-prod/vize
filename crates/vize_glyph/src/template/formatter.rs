@@ -55,6 +55,20 @@ impl<'a> TemplateFormatter<'a> {
                 continue;
             }
 
+            if pos + 1 < len
+                && source[pos] == b'{'
+                && source[pos + 1] == b'{'
+                && let Some((expr_start, expr_end, end_pos)) =
+                    parse_interpolation_range(source, pos)
+                && source[pos..end_pos].contains(&b'\n')
+            {
+                self.flush_text_buffer(&mut output, &mut line_buffer, depth);
+                let expr = std::str::from_utf8(&source[expr_start..expr_end]).unwrap_or("");
+                self.write_multiline_interpolation(&mut output, expr, depth);
+                pos = end_pos;
+                continue;
+            }
+
             // HTML comment <!-- ... -->
             if pos + 3 < len && &source[pos..pos + 4] == b"<!--" {
                 self.flush_text_buffer(&mut output, &mut line_buffer, depth);
@@ -226,6 +240,19 @@ impl<'a> TemplateFormatter<'a> {
         let formatted = format_interpolations(text, self.options);
         self.write_indented_line(output, formatted.as_bytes(), depth);
         buffer.clear();
+    }
+
+    fn write_multiline_interpolation(&self, output: &mut Vec<u8>, expr: &str, depth: usize) {
+        self.write_indented_line(output, b"{{", depth);
+
+        let formatted_expr = format_interpolation_expression(expr, self.options);
+        for line in formatted_expr.trim().lines() {
+            self.write_indent(output, depth + 1);
+            output.extend_from_slice(line.trim_end_matches('\r').as_bytes());
+            output.extend_from_slice(self.newline);
+        }
+
+        self.write_indented_line(output, b"}}", depth);
     }
 
     #[inline]
@@ -492,8 +519,7 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
 
             if depth == 0 {
                 let expr = &text[expr_start..expr_end];
-                let formatted_expr = script::format_js_expression(expr, options)
-                    .unwrap_or_else(|| expr.trim().to_compact_string());
+                let formatted_expr = format_interpolation_expression(expr, options);
                 result.push_str("{{ ");
                 result.push_str(&formatted_expr);
                 result.push_str(" }}");
@@ -515,4 +541,36 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
     }
 
     result
+}
+
+fn format_interpolation_expression(expr: &str, options: &FormatOptions) -> String {
+    script::format_js_expression(expr, options).unwrap_or_else(|| expr.trim().to_compact_string())
+}
+
+fn parse_interpolation_range(source: &[u8], start: usize) -> Option<(usize, usize, usize)> {
+    let len = source.len();
+    if start + 1 >= len || source[start] != b'{' || source[start + 1] != b'{' {
+        return None;
+    }
+
+    let expr_start = start + 2;
+    let mut depth = 1;
+    let mut pos = expr_start;
+
+    while pos + 1 < len {
+        if source[pos] == b'{' && source[pos + 1] == b'{' {
+            depth += 1;
+            pos += 2;
+        } else if source[pos] == b'}' && source[pos + 1] == b'}' {
+            depth -= 1;
+            if depth == 0 {
+                return Some((expr_start, pos, pos + 2));
+            }
+            pos += 2;
+        } else {
+            pos += 1;
+        }
+    }
+
+    None
 }
