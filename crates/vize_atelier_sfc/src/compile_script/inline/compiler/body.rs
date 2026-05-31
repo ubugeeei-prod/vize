@@ -6,7 +6,8 @@ use crate::script::{ScriptCompileContext, transform_destructured_props};
 use crate::types::SfcError;
 
 use super::super::super::{
-    ScriptCompileResult, TemplateParts, typescript::transform_typescript_to_js,
+    ScriptCompileResult, TemplateParts, import_utils::import_block_has_local_from,
+    typescript::transform_typescript_to_js,
 };
 use super::{
     component_output::emit_component_definition,
@@ -176,9 +177,13 @@ pub(super) fn compile_script_setup_inline_body(
         }
         code.into()
     } else {
+        let mut code = output_str;
+        if should_preserve_nuxt_use_head_import(&code) {
+            code.push_str("\nvoid useHead;\n");
+        }
         profile!(
             "atelier.script_inline.ts_to_js",
-            transform_typescript_to_js(&output_str)
+            transform_typescript_to_js(&code)
         )
     };
 
@@ -186,6 +191,10 @@ pub(super) fn compile_script_setup_inline_body(
         code: final_code,
         bindings: Some(ctx.bindings),
     })
+}
+
+fn should_preserve_nuxt_use_head_import(code: &str) -> bool {
+    code.contains("useSeoMeta(") && import_block_has_local_from(code, "#imports", "useHead")
 }
 
 fn ensure_blank_line(output: &mut vize_carton::Vec<u8>) {
