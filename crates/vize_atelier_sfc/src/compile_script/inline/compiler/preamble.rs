@@ -83,7 +83,7 @@ pub(super) fn emit_preamble(
                 b"import { defineVaporComponent as _defineVaporComponent } from 'vue'\n",
             );
         }
-    } else if is_ts && !is_async && !(has_css_vars && !is_vapor) {
+    } else if is_ts && !is_async && (!has_css_vars || is_vapor) {
         output.extend_from_slice(b"import { defineComponent as _defineComponent } from 'vue'\n");
     }
 

@@ -5,8 +5,6 @@ expression: result.code.as_str()
 import { defineComponent as _defineComponent } from 'vue'
 import { createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 
-const _hoisted_1 = { label: "Teacher" }
-
 import { Form, Input } from 'ant-design-vue'
 
 

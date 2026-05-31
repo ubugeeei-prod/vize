@@ -2,7 +2,7 @@
 source: crates/vize_atelier_dom/tests/dom_snapshot.rs
 expression: "get_compiled(r#\"<MyComponent v-show=\"visible\" />\"#)"
 ---
-const { openBlock: _openBlock, createBlock: _createBlock, resolveComponent: _resolveComponent, withDirectives: _withDirectives, vShow: _vShow } = Vue
+const { resolveComponent: _resolveComponent, withDirectives: _withDirectives, openBlock: _openBlock, createBlock: _createBlock, vShow: _vShow } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_MyComponent = _resolveComponent("MyComponent")

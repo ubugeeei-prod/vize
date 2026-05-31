@@ -3,7 +3,6 @@ source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
 import { createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
-const _hoisted_1 = { class: "wrapper" };
 import { ref } from "vue";
 import CodeHighlight from "./CodeHighlight.vue";
 export default {
@@ -11,7 +10,7 @@ export default {
   setup(__props) {
     const currentCode = ref("dom");
     return (_ctx, _cache) => {
-      return _openBlock(), _createElementBlock("div", _hoisted_1, [_createVNode(CodeHighlight, {
+      return _openBlock(), _createElementBlock("div", { class: "wrapper" }, [_createVNode(CodeHighlight, {
         code: currentCode.value,
         language: "javascript"
       }, null, 8, ["code"])]);

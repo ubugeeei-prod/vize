@@ -3,7 +3,6 @@ source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
 import { openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue";
-const _hoisted_1 = { class: "wrapper" };
 import { ref } from "vue";
 import CodeHighlight from "./CodeHighlight.vue";
 export default {
@@ -12,7 +11,7 @@ export default {
     const show = ref(true);
     const currentCode = ref("dom");
     return (_ctx, _cache) => {
-      return _openBlock(), _createElementBlock("div", _hoisted_1, [show.value ? (_openBlock(), _createBlock(CodeHighlight, {
+      return _openBlock(), _createElementBlock("div", { class: "wrapper" }, [show.value ? (_openBlock(), _createBlock(CodeHighlight, {
         key: 0,
         code: currentCode.value,
         language: "javascript"

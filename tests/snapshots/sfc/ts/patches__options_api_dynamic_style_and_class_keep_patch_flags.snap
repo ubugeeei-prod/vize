@@ -4,10 +4,8 @@ expression: ts_output.as_str()
 ---
 import { createElementVNode as _createElementVNode, normalizeStyle as _normalizeStyle, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-const _hoisted_1 = { class: "map" }
-
 function _sfc_render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", _hoisted_1, [
+  return (_openBlock(), _createElementBlock("div", { class: "map" }, [
     _createElementVNode("div", {
       style: _normalizeStyle(_ctx.knobStyle),
       class: _normalizeClass({ dragging: _ctx.dragging })

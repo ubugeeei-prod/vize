@@ -1,11 +1,15 @@
 //! Children, text, comment, and interpolation generation functions.
 
 use crate::ast::*;
+use crate::transforms::hoist_static::is_static_node;
 
 use super::context::CodegenContext;
+use super::element::helpers::has_renderable_props;
 use super::expression::generate_expression;
 use super::helpers::escape_js_string;
 use super::node::generate_node;
+use super::props::generate_props;
+use vize_carton::ToCompactString;
 
 /// Generate children array
 pub fn generate_children(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
@@ -92,6 +96,18 @@ fn generate_children_inner(
                 _ => {}
             }
         }
+        return;
+    }
+
+    let can_cache_static = ctx.options.hoist_static && !ctx.in_v_for && !ctx.has_slot_params();
+    if !force_array
+        && can_cache_static
+        && !effective.is_empty()
+        && effective
+            .iter()
+            .all(|child| is_static_cacheable_element(child))
+    {
+        generate_cached_static_children_array(ctx, &effective);
         return;
     }
 
@@ -190,7 +206,13 @@ fn generate_children_inner(
             }
             ctx.newline();
             first_output = false;
-            generate_node(ctx, effective[i]);
+            if !force_array && can_cache_static && is_static_cacheable_element(effective[i]) {
+                if let TemplateChildNode::Element(el) = effective[i] {
+                    generate_cached_static_element(ctx, el);
+                }
+            } else {
+                generate_node(ctx, effective[i]);
+            }
             i += 1;
         }
     }
@@ -198,6 +220,74 @@ fn generate_children_inner(
     ctx.deindent();
     ctx.newline();
     ctx.push("]");
+}
+
+fn is_static_cacheable_element(child: &TemplateChildNode<'_>) -> bool {
+    matches!(child, TemplateChildNode::Element(_)) && is_static_node(child)
+}
+
+fn generate_cached_static_children_array(
+    ctx: &mut CodegenContext,
+    children: &[&TemplateChildNode<'_>],
+) {
+    let cache_index = ctx.next_cache_index();
+    ctx.push("[...(_cache[");
+    ctx.push(&cache_index.to_compact_string());
+    ctx.push("] || (_cache[");
+    ctx.push(&cache_index.to_compact_string());
+    ctx.push("] = [");
+    ctx.indent();
+
+    for (i, child) in children.iter().enumerate() {
+        if i > 0 {
+            ctx.push(",");
+        }
+        ctx.newline();
+        if let TemplateChildNode::Element(el) = child {
+            generate_cached_static_vnode(ctx, el);
+        }
+    }
+
+    ctx.deindent();
+    ctx.newline();
+    ctx.push("]))]");
+}
+
+fn generate_cached_static_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    let cache_index = ctx.next_cache_index();
+    ctx.push("_cache[");
+    ctx.push(&cache_index.to_compact_string());
+    ctx.push("] || (_cache[");
+    ctx.push(&cache_index.to_compact_string());
+    ctx.push("] = ");
+    generate_cached_static_vnode(ctx, el);
+    ctx.push(")");
+}
+
+fn generate_cached_static_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    ctx.use_helper(RuntimeHelper::CreateElementVNode);
+    ctx.push(ctx.helper(RuntimeHelper::CreateElementVNode));
+    ctx.push("(\"");
+    ctx.push(&el.tag);
+    ctx.push("\"");
+
+    if has_renderable_props(el) {
+        ctx.push(", ");
+        ctx.props_is_plain_element = true;
+        generate_props(ctx, &el.props);
+        ctx.props_is_plain_element = false;
+    } else {
+        ctx.push(", null");
+    }
+
+    if !el.children.is_empty() {
+        ctx.push(", ");
+        generate_children(ctx, &el.children);
+    } else {
+        ctx.push(", null");
+    }
+
+    ctx.push(", -1 /* CACHED */)");
 }
 
 /// Generate text node

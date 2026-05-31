@@ -2,7 +2,7 @@
 source: crates/vize_atelier_dom/tests/dom_snapshot.rs
 expression: "get_compiled(r#\"<div class=\"wrapper\"><MyComponent class=\"child\" /></div>\"#)"
 ---
-const { openBlock: _openBlock, createElementBlock: _createElementBlock, createVNode: _createVNode, resolveComponent: _resolveComponent } = Vue
+const { resolveComponent: _resolveComponent, createVNode: _createVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_MyComponent = _resolveComponent("MyComponent")

@@ -2,13 +2,12 @@
 source: crates/vize_atelier_dom/tests/dom_snapshot.rs
 expression: "get_compiled(r#\"<div class=\"wrapper\"><span>hello</span></div>\"#)"
 ---
-const { openBlock: _openBlock, createElementBlock: _createElementBlock, createElementVNode: _createElementVNode } = Vue
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
 
 const _hoisted_1 = { class: "wrapper" }
-const _hoisted_2 = /*#__PURE__*/ _createElementVNode("span", null, "hello")
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(), _createElementBlock("div", _hoisted_1, [
-    _hoisted_2
-  ]))
+  return (_openBlock(), _createElementBlock("div", _hoisted_1, [...(_cache[0] || (_cache[0] = [
+    _createElementVNode("span", null, "hello", -1 /* CACHED */)
+  ]))]))
 }

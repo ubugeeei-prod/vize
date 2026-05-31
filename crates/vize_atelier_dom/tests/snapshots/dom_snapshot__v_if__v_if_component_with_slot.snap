@@ -2,7 +2,7 @@
 source: crates/vize_atelier_dom/tests/dom_snapshot.rs
 expression: "get_compiled(r#\"<MyComponent v-if=\"ok\"><span>slot content</span></MyComponent>\"#)"
 ---
-const { openBlock: _openBlock, createBlock: _createBlock, createElementVNode: _createElementVNode, createCommentVNode: _createCommentVNode, resolveComponent: _resolveComponent, withCtx: _withCtx } = Vue
+const { resolveComponent: _resolveComponent, createElementVNode: _createElementVNode, openBlock: _openBlock, createBlock: _createBlock, createCommentVNode: _createCommentVNode, withCtx: _withCtx } = Vue
 
 const _hoisted_1 = /*#__PURE__*/ _createElementVNode("span", null, "slot content")
 

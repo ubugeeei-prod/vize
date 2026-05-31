@@ -184,12 +184,19 @@ const vueResolvableFromRootCache = new Map<string, boolean>();
 function isVueResolvableFromRoot(root: string): boolean {
   let cached = vueResolvableFromRootCache.get(root);
   if (cached === undefined) {
-    cached = false;
-    try {
-      createRequire(path.join(root, "__vize_probe__.js")).resolve("vue");
-      cached = true;
-    } catch {
-      // Not resolvable from root.
+    const rootNodeModules = path.join(root, "node_modules");
+    const directPackageJson = path.join(rootNodeModules, "vue", "package.json");
+    cached = fs.existsSync(directPackageJson);
+    if (!cached) {
+      try {
+        const resolved = createRequire(path.join(root, "__vize_probe__.js")).resolve(
+          "vue/package.json",
+        );
+        const relative = path.relative(rootNodeModules, resolved);
+        cached = relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative);
+      } catch {
+        // Not resolvable from root.
+      }
     }
     vueResolvableFromRootCache.set(root, cached);
   }

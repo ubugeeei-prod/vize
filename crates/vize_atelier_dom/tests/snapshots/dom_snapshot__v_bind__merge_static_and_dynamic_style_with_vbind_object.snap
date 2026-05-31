@@ -2,7 +2,7 @@
 source: crates/vize_atelier_dom/tests/dom_snapshot.rs
 expression: "get_compiled(r#\"<input v-bind=\"attrs\" style=\"color: red\" :style=\"dynamicStyle\" />\"#)"
 ---
-const { openBlock: _openBlock, createElementBlock: _createElementBlock, mergeProps: _mergeProps } = Vue
+const { mergeProps: _mergeProps, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("input", _mergeProps(attrs, {

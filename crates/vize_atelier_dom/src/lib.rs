@@ -134,6 +134,7 @@ fn compile_template_inner<'a>(
         is_ts: options.is_ts,
         inline: options.inline,
         cache_handlers: options.cache_handlers,
+        hoist_static: options.hoist_static,
         binding_metadata: options.binding_metadata,
         ..Default::default()
     };

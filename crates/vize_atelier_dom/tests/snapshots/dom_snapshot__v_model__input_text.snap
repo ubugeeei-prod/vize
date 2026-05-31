@@ -2,7 +2,7 @@
 source: crates/vize_atelier_dom/tests/dom_snapshot.rs
 expression: "get_compiled(r#\"<input v-model=\"msg\" />\"#)"
 ---
-const { openBlock: _openBlock, createElementBlock: _createElementBlock, withDirectives: _withDirectives, vModelText: _vModelText } = Vue
+const { vModelText: _vModelText, withDirectives: _withDirectives, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return _withDirectives((_openBlock(), _createElementBlock("input", {
