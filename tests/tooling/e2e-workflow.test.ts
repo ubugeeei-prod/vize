@@ -21,10 +21,7 @@ test("app e2e workflow runs on schedule + workflow_dispatch and uploads failure 
   assert.match(workflow, /name: app-e2e \(\$\{\{ matrix\.suite \}\}\)/);
   assert.match(workflow, /fail-fast:\s*false/);
   // Scheduled runs exercise every suite, including vrt.
-  assert.match(
-    workflow,
-    /fromJSON\('\["dev","vrt","preview","build","check","lint"\]'\)/,
-  );
+  assert.match(workflow, /fromJSON\('\["dev","vrt","preview","build","check","lint"\]'\)/);
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /type:\s*choice/);
   for (const suite of ["dev", "vrt", "preview", "check", "lint", "build"]) {
