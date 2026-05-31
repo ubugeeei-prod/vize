@@ -638,7 +638,47 @@ const VUEFES_WORK_DIR = getMutableGitFixtureDir("vuefes-2025");
 
 const ELK_E2E_ENV = {
   NUXT_STORAGE_DRIVER: "fs",
+  VIZE_E2E_BUILD_TIME: "1767225600000",
 } as const;
+
+function patchElkBuildEnvTime(buildEnvPath: string): void {
+  const source = fs.readFileSync(buildEnvPath, "utf-8");
+  const nextSource = source.replace(
+    "      time: +Date.now(),",
+    "      time: Number(process.env.VIZE_E2E_BUILD_TIME ?? Date.now()),",
+  );
+  if (nextSource !== source) {
+    fs.writeFileSync(buildEnvPath, nextSource);
+  }
+}
+
+function setupElkWorktree(opts?: { enableVize?: boolean; variant?: string }): string {
+  const enableVize = opts?.enableVize ?? true;
+  const elkDir = syncGitFixtureWorktree("elk", opts?.variant);
+
+  if (enableVize) {
+    ensureLocalVizePackagesBuilt();
+  }
+
+  addPnpmOverrides(path.join(elkDir, "package.json"), {
+    vite: "^8.0.0",
+  });
+  patchElkBuildEnvTime(path.join(elkDir, "modules", "build-env.ts"));
+
+  console.log(`[elk:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
+    cwd: elkDir,
+    stdio: "inherit",
+    timeout: 300_000,
+  });
+
+  if (enableVize) {
+    createVizeSymlinks(path.join(elkDir, "node_modules"));
+  }
+  patchNuxtConfig(path.join(elkDir, "nuxt.config.ts"), { enableVize });
+
+  return elkDir;
+}
 
 export const elkApp: AppConfig = {
   name: "elk",
@@ -655,23 +695,7 @@ export const elkApp: AppConfig = {
   startupTimeout: 120_000,
   env: ELK_E2E_ENV,
   setup() {
-    const elkDir = syncGitFixtureWorktree("elk");
-
-    ensureLocalVizePackagesBuilt();
-
-    addPnpmOverrides(path.join(elkDir, "package.json"), {
-      vite: "^8.0.0",
-    });
-
-    console.log("[elk:setup] pnpm install...");
-    execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
-      cwd: elkDir,
-      stdio: "inherit",
-      timeout: 300_000,
-    });
-
-    createVizeSymlinks(path.join(elkDir, "node_modules"));
-    patchNuxtConfig(path.join(elkDir, "nuxt.config.ts"));
+    setupElkWorktree();
   },
   build: {
     command: "npx",
@@ -694,6 +718,37 @@ export const elkApp: AppConfig = {
     patterns: ["app/**/*.vue"],
   },
 };
+
+function createElkVisualParityApp(kind: "candidate" | "reference", port: number): AppConfig {
+  const variant = `vrt-${kind}`;
+  return {
+    name: `elk:${kind}`,
+    cwd: getMutableGitFixtureDir("elk", variant),
+    command: "npx",
+    args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"],
+    port,
+    url: `http://127.0.0.1:${port}`,
+    mountSelector: "#__nuxt",
+    readyPattern: new RegExp(
+      `Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`,
+    ),
+    allowNon200: true,
+    waitUntil: "load",
+    readyDelay: 15_000,
+    startupTimeout: 120_000,
+    env: ELK_E2E_ENV,
+    setup() {
+      setupElkWorktree({ enableVize: kind === "candidate", variant });
+    },
+  };
+}
+
+export function createElkVisualParityApps(): { candidate: AppConfig; reference: AppConfig } {
+  return {
+    reference: createElkVisualParityApp("reference", 5324),
+    candidate: createElkVisualParityApp("candidate", 5325),
+  };
+}
 
 function setupMisskeyWorktree(opts?: {
   base?: string;
