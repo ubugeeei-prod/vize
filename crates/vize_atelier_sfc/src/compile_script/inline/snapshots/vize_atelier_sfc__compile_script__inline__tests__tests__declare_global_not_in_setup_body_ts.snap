@@ -11,6 +11,7 @@ declare global {
   }
 }
 
+
 export default /*@__PURE__*/_defineComponent({
   __name: 'TestComponent',
   setup(__props) {

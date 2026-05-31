@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
 import { useModel as _useModel, mergeModels as _mergeModels } from "vue";
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, vModelSelect as _vModelSelect } from "vue";
+import { vModelSelect as _vModelSelect, withDirectives as _withDirectives, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue";
 export default {
   __name: "ImportedSelectField",
   props: /* @__PURE__ */ _mergeModels({

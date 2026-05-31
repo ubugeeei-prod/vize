@@ -57,10 +57,6 @@ pub(super) fn emit_render_return(
                     first_line = false;
                 } else {
                     output.push(b'\n');
-                    // Preserve existing indentation by adding 2 spaces (setup indent)
-                    if !line.trim().is_empty() {
-                        output.extend_from_slice(b"  ");
-                    }
                     output.extend_from_slice(line.as_bytes());
                 }
             }

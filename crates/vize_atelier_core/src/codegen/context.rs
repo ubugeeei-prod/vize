@@ -2,6 +2,7 @@
 
 use crate::ast::RuntimeHelper;
 use crate::options::CodegenOptions;
+use crate::runtime_helpers::RuntimeHelpers;
 
 use super::helpers::default_helper_alias;
 use vize_carton::FxHashSet;
@@ -30,7 +31,7 @@ pub struct CodegenContext {
     /// Pure annotation for tree-shaking
     pub(super) pure: bool,
     /// Helpers used during codegen
-    pub(super) used_helpers: FxHashSet<RuntimeHelper>,
+    pub(super) used_helpers: RuntimeHelpers,
     /// Cache index for v-once
     pub(super) cache_index: usize,
     /// Template-scope parameters (slot props and v-for aliases) that should
@@ -75,7 +76,7 @@ impl CodegenContext {
             runtime_module_name: options.runtime_module_name.to_compact_string(),
             options,
             pure: false,
-            used_helpers: FxHashSet::default(),
+            used_helpers: RuntimeHelpers::default(),
             cache_index: 0,
             slot_params: FxHashSet::default(),
             skip_is_prop: false,
@@ -179,7 +180,7 @@ impl CodegenContext {
     /// Track a helper for preamble generation
     #[inline]
     pub fn use_helper(&mut self, helper: RuntimeHelper) {
-        self.used_helpers.insert(helper);
+        self.used_helpers.add(helper);
     }
 
     /// Check if a component is in binding metadata (from script setup)

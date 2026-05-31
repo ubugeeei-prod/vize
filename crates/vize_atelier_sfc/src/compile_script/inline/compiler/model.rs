@@ -206,6 +206,7 @@ pub(super) fn build_model_props_emits(
     is_ts: bool,
     needs_prop_type: bool,
     needs_merge_defaults: bool,
+    is_prod: bool,
 ) -> Vec<u8> {
     let mut buf: Vec<u8> = Vec::new();
 
@@ -230,7 +231,8 @@ pub(super) fn build_model_props_emits(
         }
         model_decl.extend_from_slice(b"\n  }");
 
-        let user_props = build_user_props_decl(ctx, is_ts, needs_prop_type, needs_merge_defaults);
+        let user_props =
+            build_user_props_decl(ctx, is_ts, needs_prop_type, needs_merge_defaults, is_prod);
         buf.extend_from_slice(b"  props: ");
         if let Some(user) = user_props {
             buf.extend_from_slice(b"/*@__PURE__*/_mergeModels(");

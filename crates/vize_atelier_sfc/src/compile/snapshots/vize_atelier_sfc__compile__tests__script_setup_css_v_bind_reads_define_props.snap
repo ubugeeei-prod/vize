@@ -20,7 +20,7 @@ css:
 
 code:
 import { useCssVars as _useCssVars } from "vue";
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, normalizeClass as _normalizeClass } from "vue";
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
 export default {
   __name: "MkFeatureBanner",
   props: {

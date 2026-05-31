@@ -7,12 +7,13 @@ pub mod element;
 pub mod structural;
 pub mod traverse;
 
-use vize_carton::{Box, Bump, FxHashSet, SmallVec, String, Vec, profile};
+use vize_carton::{Box, Bump, SmallVec, String, Vec, profile};
 use vize_croquis::{Croquis, ScopeChain};
 
 use crate::ast::*;
 use crate::errors::CompilerError;
 use crate::options::TransformOptions;
+use crate::runtime_helpers::RuntimeHelpers;
 
 use traverse::traverse_children;
 
@@ -64,7 +65,7 @@ pub struct TransformContext<'a> {
     /// Child index in parent
     pub child_index: usize,
     /// Helpers used
-    pub helpers: FxHashSet<RuntimeHelper>,
+    pub helpers: RuntimeHelpers,
     /// Components used (Vec to maintain template order for code generation)
     pub components: std::vec::Vec<String>,
     /// Directives used (Vec to maintain template order for code generation)
@@ -200,7 +201,7 @@ fn transform_inner<'a>(
     );
 
     // Update root with context results
-    for helper in ctx.helpers.into_iter() {
+    for helper in ctx.helpers.iter() {
         root.helpers.push(helper);
     }
     for component in ctx.components.into_iter() {

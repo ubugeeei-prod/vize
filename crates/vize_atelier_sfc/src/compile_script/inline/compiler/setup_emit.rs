@@ -103,6 +103,8 @@ pub(super) fn emit_setup_body(
     is_async: bool,
     css_vars: &[Cow<'_, str>],
     scope_id: &str,
+    css_vars_id: &str,
+    is_prod: bool,
     has_css_vars: bool,
 ) {
     // Emit binding: const emit = __emit
@@ -123,7 +125,11 @@ pub(super) fn emit_setup_body(
     {
         output.extend_from_slice(b"const ");
         output.extend_from_slice(binding_name.as_bytes());
-        output.extend_from_slice(b" = __props\n");
+        output.extend_from_slice(b" = __props");
+        if has_semicolon_after_macro(ctx.source.as_str(), props_macro.end) {
+            output.push(b';');
+        }
+        output.push(b'\n');
     }
 
     // Model bindings: const model = _useModel<T>(__props, 'modelValue')
@@ -157,6 +163,29 @@ pub(super) fn emit_setup_body(
         output.extend_from_slice(b" = _useSlots()\n");
     }
 
+    // useCssVars injection for v-bind() in <style>
+    if has_css_vars {
+        output.extend_from_slice(b"_useCssVars(_ctx => ({\n");
+        for (i, var_expr) in css_vars.iter().enumerate() {
+            let var_name = if is_prod {
+                crate::css::prod_scoped_v_bind_name(css_vars_id, var_expr)
+            } else {
+                crate::css::scoped_v_bind_name(scope_id, var_expr)
+            };
+            let var_value = transform_css_var_expression(ctx, var_expr, source_is_ts);
+            output.extend_from_slice(b"  \"");
+            output.extend_from_slice(var_name.as_bytes());
+            output.extend_from_slice(b"\": (");
+            output.extend_from_slice(var_value.as_bytes());
+            output.extend_from_slice(b")");
+            if i < css_vars.len() - 1 {
+                output.extend_from_slice(b",");
+            }
+            output.extend_from_slice(b"\n");
+        }
+        output.extend_from_slice(b"}))\n\n");
+    }
+
     // Output setup code lines (non-hoisted), transforming await expressions for async setup
     if is_async {
         let transformed_async = profile!(
@@ -180,25 +209,6 @@ pub(super) fn emit_setup_body(
         output.extend_from_slice(b"__expose(");
         output.extend_from_slice(args.as_bytes());
         output.extend_from_slice(b")\n");
-    }
-
-    // useCssVars injection for v-bind() in <style>
-    if has_css_vars {
-        output.extend_from_slice(b"_useCssVars((_ctx) => ({\n");
-        for (i, var_expr) in css_vars.iter().enumerate() {
-            let var_name = crate::css::scoped_v_bind_name(scope_id, var_expr);
-            let var_value = transform_css_var_expression(ctx, var_expr, source_is_ts);
-            output.extend_from_slice(b"  \"");
-            output.extend_from_slice(var_name.as_bytes());
-            output.extend_from_slice(b"\": (");
-            output.extend_from_slice(var_value.as_bytes());
-            output.extend_from_slice(b")");
-            if i < css_vars.len() - 1 {
-                output.extend_from_slice(b",");
-            }
-            output.extend_from_slice(b"\n");
-        }
-        output.extend_from_slice(b"}))\n");
     }
 }
 
@@ -229,9 +239,17 @@ fn has_blank_line_after_macro(source: &str, macro_end: usize) -> bool {
     false
 }
 
+fn has_semicolon_after_macro(source: &str, macro_end: usize) -> bool {
+    let Some(rest) = source.get(macro_end..) else {
+        return false;
+    };
+
+    rest.trim_start_matches([' ', '\t']).starts_with(';')
+}
+
 #[cfg(test)]
 mod tests {
-    use super::has_blank_line_after_macro;
+    use super::{has_blank_line_after_macro, has_semicolon_after_macro};
 
     #[test]
     fn detects_blank_line_after_macro_call() {
@@ -255,5 +273,13 @@ mod tests {
         let macro_end = source.find(';').unwrap();
 
         assert!(!has_blank_line_after_macro(source, macro_end));
+    }
+
+    #[test]
+    fn detects_semicolon_after_macro_call() {
+        let source = "const props = defineProps<Props>();\n";
+        let macro_end = source.find(';').unwrap();
+
+        assert!(has_semicolon_after_macro(source, macro_end));
     }
 }

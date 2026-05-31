@@ -3,12 +3,13 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, withDirectives as _withDirectives, vModelSelect as _vModelSelect } from "vue"
-
+import { vModelSelect as _vModelSelect, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 const _hoisted_1 = /*#__PURE__*/ _createElementVNode("option", { value: "option1" }, "Option 1")
 const _hoisted_2 = /*#__PURE__*/ _createElementVNode("option", { value: "option2" }, "Option 2")
+
 import { ref } from 'vue'
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -18,8 +19,13 @@ const selected = ref('option1')
 
 return (_ctx: any,_cache: any) => {
   return _withDirectives((_openBlock(), _createElementBlock("select", {
-      "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((selected).value = $event))
-    }, [ _hoisted_1, _hoisted_2 ], 512 /* NEED_PATCH */)), [ [_vModelSelect, selected.value] ])
+    "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((selected).value = $event))
+  }, [
+    _hoisted_1,
+    _hoisted_2
+  ], 512 /* NEED_PATCH */)), [
+    [_vModelSelect, selected.value]
+  ])
 }
 }
 

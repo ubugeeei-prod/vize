@@ -14,8 +14,8 @@ export default /*@__PURE__*/_defineComponent({
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("button", {
-      onClick: _cache[0] || (_cache[0] = ($event: any) => ($emit('update')))
-    }, "Click"))
+    onClick: _cache[0] || (_cache[0] = ($event: any) => ($emit('update')))
+  }, "Click"))
 }
 }
 

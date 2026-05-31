@@ -100,6 +100,21 @@ pub(crate) fn scoped_v_bind_name(scope_id: &str, expr: &str) -> String {
     result
 }
 
+/// Generate Vue's production CSS variable name for a scoped SFC v-bind().
+pub(crate) fn prod_scoped_v_bind_name(id: &str, expr: &str) -> String {
+    let hash = hash_sum_string_pair(id, expr);
+    let mut result = String::with_capacity(8);
+    write_hash_sum_hex(&mut result, hash);
+    if result
+        .as_bytes()
+        .first()
+        .is_some_and(|byte| byte.is_ascii_digit())
+    {
+        result.insert(0, 'v');
+    }
+    result
+}
+
 fn write_escaped_css_var_suffix(out: &mut String, expr: &str) {
     for c in expr.chars() {
         if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
@@ -108,6 +123,76 @@ fn write_escaped_css_var_suffix(out: &mut String, expr: &str) {
             out.push('\\');
             out.push(c);
         }
+    }
+}
+
+fn hash_sum_string_pair(first: &str, second: &str) -> u64 {
+    let hash = hash_sum_fold(0, "[object String]");
+    let hash = hash_sum_fold(hash, "string");
+    hash_sum_fold_pair(hash, first, second)
+}
+
+fn hash_sum_fold(input: u64, text: &str) -> u64 {
+    if text.is_empty() {
+        return input;
+    }
+
+    let mut hash = input as u32;
+    for unit in text.encode_utf16() {
+        hash = hash
+            .wrapping_shl(5)
+            .wrapping_sub(hash)
+            .wrapping_add(u32::from(unit));
+    }
+
+    let signed = hash as i32;
+    if signed < 0 {
+        (-(i64::from(signed)) * 2) as u64
+    } else {
+        signed as u64
+    }
+}
+
+fn hash_sum_fold_pair(input: u64, first: &str, second: &str) -> u64 {
+    if first.is_empty() && second.is_empty() {
+        return input;
+    }
+
+    let mut hash = input as u32;
+    for unit in first.encode_utf16().chain(second.encode_utf16()) {
+        hash = hash
+            .wrapping_shl(5)
+            .wrapping_sub(hash)
+            .wrapping_add(u32::from(unit));
+    }
+
+    normalize_hash_sum_i32(hash)
+}
+
+fn write_hash_sum_hex(out: &mut String, value: u64) {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut started = false;
+    for shift in (0..64).step_by(4).rev() {
+        let digit = ((value >> shift) & 0xF) as usize;
+        if digit != 0 || started {
+            out.push(HEX[digit] as char);
+            started = true;
+        }
+    }
+    if !started {
+        out.push('0');
+    }
+    while out.len() < 8 {
+        out.insert(0, '0');
+    }
+}
+
+fn normalize_hash_sum_i32(hash: u32) -> u64 {
+    let signed = hash as i32;
+    if signed < 0 {
+        (-(i64::from(signed)) * 2) as u64
+    } else {
+        signed as u64
     }
 }
 

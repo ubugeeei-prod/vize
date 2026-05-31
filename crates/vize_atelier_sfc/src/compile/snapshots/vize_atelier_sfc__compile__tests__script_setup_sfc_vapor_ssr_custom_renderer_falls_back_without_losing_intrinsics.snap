@@ -18,6 +18,7 @@ function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options
   _push(`</mesh>`)
 }
 import { Primitive } from '@tresjs/core'
+
 const visible = true
 
 export default /*@__PURE__*/_defineComponent({

@@ -6,6 +6,7 @@ import { openBlock as _openBlock, createBlock as _createBlock } from "vue"
 
 import DefaultComponent from './Default.vue'
 
+
 export default {
   __name: 'test',
   setup(__props) {

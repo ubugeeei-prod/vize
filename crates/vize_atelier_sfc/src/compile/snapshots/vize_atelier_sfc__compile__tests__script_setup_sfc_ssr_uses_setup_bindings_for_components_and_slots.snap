@@ -19,7 +19,8 @@ function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options
     _: 1
   }, _parent))
 }
-import { NuxtLayout, NuxtPage } from '#components'
+import { NuxtLayout, NuxtPage } from "#components"
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',

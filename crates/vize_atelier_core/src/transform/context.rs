@@ -33,7 +33,7 @@ impl<'a> TransformContext<'a> {
             grandparent: None,
             current_node: None,
             child_index: 0,
-            helpers: vize_carton::FxHashSet::default(),
+            helpers: crate::runtime_helpers::RuntimeHelpers::default(),
             components: std::vec::Vec::new(),
             directives: std::vec::Vec::new(),
             hoists: vize_carton::Vec::new_in(allocator),
@@ -223,17 +223,17 @@ impl<'a> TransformContext<'a> {
 
     /// Add a helper
     pub fn helper(&mut self, helper: RuntimeHelper) {
-        self.helpers.insert(helper);
+        self.helpers.add(helper);
     }
 
     /// Remove a helper
     pub fn remove_helper(&mut self, helper: RuntimeHelper) {
-        self.helpers.remove(&helper);
+        self.helpers.remove(helper);
     }
 
     /// Check if helper exists
     pub fn has_helper(&self, helper: RuntimeHelper) -> bool {
-        self.helpers.contains(&helper)
+        self.helpers.contains(helper)
     }
 
     /// Add a component (maintains insertion order for code generation)

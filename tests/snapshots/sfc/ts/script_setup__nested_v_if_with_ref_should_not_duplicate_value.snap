@@ -3,11 +3,12 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, normalizeClass as _normalizeClass } from "vue"
-
+import { createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from "vue"
 
 const _hoisted_1 = /*#__PURE__*/ _createElementVNode("span", null, "Alt")
-import { ref } from 'vue'
+
+import { ref } from 'vue';
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -16,10 +17,24 @@ export default /*@__PURE__*/_defineComponent({
 const mode = ref<'a' | 'b'>('a');
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, [ (true) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [ (true) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [ _createElementVNode("button", {
-                class: _normalizeClass({ active: mode.value === 'a' }),
-                onClick: _cache[0] || (_cache[0] = ($event: any) => (mode.value = 'b'))
-              }, "Test", 2 /* CLASS */) ])) : (false) ? (_openBlock(), _createElementBlock("div", { key: 1 }, [ _hoisted_1 ])) : _createCommentVNode("v-if", true) ], 64 /* STABLE_FRAGMENT */)) : _createCommentVNode("v-if", true) ]))
+  return (_openBlock(), _createElementBlock("div", null, [
+    (true)
+      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+        (true)
+          ? (_openBlock(), _createElementBlock("div", { key: 0 }, [
+            _createElementVNode("button", {
+              class: _normalizeClass({ active: mode.value === 'a' }),
+              onClick: _cache[0] || (_cache[0] = ($event: any) => (mode.value = 'b'))
+            }, "Test", 2 /* CLASS */)
+          ]))
+          : (false)
+            ? (_openBlock(), _createElementBlock("div", { key: 1 }, [
+              _hoisted_1
+            ]))
+          : _createCommentVNode("v-if", true)
+      ], 64 /* STABLE_FRAGMENT */))
+      : _createCommentVNode("v-if", true)
+  ]))
 }
 }
 

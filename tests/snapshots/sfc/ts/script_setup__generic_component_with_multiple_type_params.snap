@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
@@ -17,8 +17,8 @@ export default /*@__PURE__*/_defineComponent({
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.items, (item) => {
-      return (_openBlock(), _createElementBlock("div", { key: String(item[__props.keyField]) }, _toDisplayString(item), 1 /* TEXT */))
-    }), 128 /* KEYED_FRAGMENT */))
+    return (_openBlock(), _createElementBlock("div", { key: String(item[__props.keyField]) }, _toDisplayString(item), 1 /* TEXT */))
+  }), 128 /* KEYED_FRAGMENT */))
 }
 }
 

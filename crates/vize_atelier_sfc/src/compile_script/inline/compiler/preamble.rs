@@ -52,8 +52,19 @@ pub(super) fn emit_preamble(
 
     // useCssVars import if style has v-bind()
     if has_css_vars {
+        let include_define_component = is_ts && !is_async && !is_vapor;
         if import_block_has_local_from(template.imports, "vue", "_unref") {
-            output.extend_from_slice(b"import { useCssVars as _useCssVars } from 'vue'\n");
+            if include_define_component {
+                output.extend_from_slice(
+                    b"import { useCssVars as _useCssVars, defineComponent as _defineComponent } from 'vue'\n",
+                );
+            } else {
+                output.extend_from_slice(b"import { useCssVars as _useCssVars } from 'vue'\n");
+            }
+        } else if include_define_component {
+            output.extend_from_slice(
+                b"import { useCssVars as _useCssVars, unref as _unref, defineComponent as _defineComponent } from 'vue'\n",
+            );
         } else {
             output.extend_from_slice(
                 b"import { useCssVars as _useCssVars, unref as _unref } from 'vue'\n",
@@ -72,20 +83,20 @@ pub(super) fn emit_preamble(
                 b"import { defineVaporComponent as _defineVaporComponent } from 'vue'\n",
             );
         }
-    } else if is_ts && !is_async {
+    } else if is_ts && !is_async && !(has_css_vars && !is_vapor) {
         output.extend_from_slice(b"import { defineComponent as _defineComponent } from 'vue'\n");
     }
 
     // Template imports (Vue helpers)
     if !template.imports.is_empty() {
         output.extend_from_slice(template.imports.as_bytes());
-        output.push(b'\n');
+        ensure_blank_line(output);
     }
 
     // Template hoisted consts (e.g., const _hoisted_1 = { class: "..." })
     // Must come BEFORE user imports to match Vue's output order
     if !template.hoisted.is_empty() {
-        output.push(b'\n');
+        ensure_blank_line(output);
         output.extend_from_slice(template.hoisted.as_bytes());
     }
 
@@ -109,8 +120,17 @@ pub(super) fn emit_preamble(
         .unwrap_or_default();
     let mut setup_return_imports = deduped_imports.clone();
     setup_return_imports.extend(normal_script_imports.iter().cloned());
+    if !deduped_imports.is_empty() && !template.hoisted.is_empty() {
+        ensure_blank_line(output);
+    }
     for import in &deduped_imports {
         output.extend_from_slice(import.as_bytes());
+    }
+    if !deduped_imports.is_empty()
+        && ts_declarations.is_empty()
+        && preserved_normal_script.is_none()
+    {
+        ensure_blank_line(output);
     }
 
     // Output TypeScript declarations (interfaces, types) after user imports, before export default
@@ -120,6 +140,7 @@ pub(super) fn emit_preamble(
             output.extend_from_slice(decl.as_bytes());
             output.push(b'\n');
         }
+        output.push(b'\n');
     }
 
     // Normal script content goes AFTER imports/hoisted, BEFORE component definition
@@ -136,5 +157,13 @@ pub(super) fn emit_preamble(
     PreambleState {
         setup_return_imports,
         has_default_export,
+    }
+}
+
+fn ensure_blank_line(output: &mut vize_carton::Vec<u8>) {
+    match output.as_slice() {
+        bytes if bytes.ends_with(b"\n\n") => {}
+        bytes if bytes.ends_with(b"\n") => output.push(b'\n'),
+        _ => output.extend_from_slice(b"\n\n"),
     }
 }

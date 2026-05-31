@@ -5,7 +5,6 @@ expression: result.code.as_str()
 import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
 
-
 const t0 = _template("<div> </div>", true)
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
@@ -15,7 +14,9 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n0
 }
 const __vaporRender = render
+
 import { ref } from 'vue'
+
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'anonymous',

@@ -5,7 +5,6 @@ expression: result.code.as_str()
 import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 
-
 const t0 = _template("<group></group>", true)
 const t1 = _template("<mesh></mesh>", true)
 
@@ -22,7 +21,9 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n4
 }
 const __vaporRender = render
+
 import { Primitive } from '@tresjs/core'
+
 const visible = true
 
 export default /*@__PURE__*/_defineVaporComponent({

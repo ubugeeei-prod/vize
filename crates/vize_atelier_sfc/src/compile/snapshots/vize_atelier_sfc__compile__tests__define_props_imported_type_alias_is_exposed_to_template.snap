@@ -2,7 +2,7 @@
 source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, renderSlot as _renderSlot, normalizeClass as _normalizeClass } from "vue";
+import { renderSlot as _renderSlot, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
 export default {
   __name: "ImportedSelectBase",
   props: {

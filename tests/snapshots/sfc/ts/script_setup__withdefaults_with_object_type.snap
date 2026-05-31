@@ -14,6 +14,7 @@ interface Props {
   color?: string;
 }
 
+
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {

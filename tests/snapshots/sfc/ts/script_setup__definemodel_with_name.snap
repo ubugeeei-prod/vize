@@ -4,7 +4,7 @@ expression: ts_output.as_str()
 ---
 import { useModel as _useModel } from 'vue'
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, withDirectives as _withDirectives, vModelText as _vModelText } from "vue"
+import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
@@ -20,8 +20,10 @@ const title = _useModel(__props, "title")
 
 return (_ctx: any,_cache: any) => {
   return _withDirectives((_openBlock(), _createElementBlock("input", {
-      "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((title).value = $event))
-    }, null, 512 /* NEED_PATCH */)), [ [_vModelText, title.value] ])
+    "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((title).value = $event))
+  }, null, 512 /* NEED_PATCH */)), [
+    [_vModelText, title.value]
+  ])
 }
 }
 

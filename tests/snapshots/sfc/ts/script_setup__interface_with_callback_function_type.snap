@@ -10,6 +10,7 @@ interface Props {
   refreshMethod: (loaded: Function) => Promise<void> | void;
 }
 
+
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
@@ -17,12 +18,12 @@ export default /*@__PURE__*/_defineComponent({
   },
   setup(__props: any) {
 
-const props = __props
+const props = __props;
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("div", {
-      onClick: _cache[0] || (_cache[0] = ($event: any) => (props.refreshMethod(() => {})))
-    }, "Refresh"))
+    onClick: _cache[0] || (_cache[0] = ($event: any) => (props.refreshMethod(() => {})))
+  }, "Refresh"))
 }
 }
 

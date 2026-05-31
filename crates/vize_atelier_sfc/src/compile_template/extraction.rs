@@ -2,9 +2,7 @@
 
 use vize_carton::{String, ToCompactString};
 
-use super::string_tracking::{
-    StringTrackState, compact_render_body, count_braces_with_state, count_parens_with_state,
-};
+use super::string_tracking::{StringTrackState, count_braces_with_state, count_parens_with_state};
 
 fn is_vapor_template_declaration(line: &str) -> bool {
     line.starts_with("const t") && line.contains("_template(")
@@ -94,7 +92,6 @@ pub(crate) fn extract_template_parts(
     let mut render_fn_name = "";
     let mut in_render = false;
     let mut in_block_render = false;
-    let mut saw_block_render = false;
     let mut in_return = false;
     let mut brace_depth = 0;
     let mut brace_state = StringTrackState::default();
@@ -116,7 +113,6 @@ pub(crate) fn extract_template_parts(
             in_render = true;
             render_fn_name = name;
             in_block_render = trimmed.starts_with("function render(") && trimmed.contains("$props");
-            saw_block_render = saw_block_render || in_block_render;
             brace_depth = 0;
             brace_state = StringTrackState::default();
             paren_state = StringTrackState::default();
@@ -192,12 +188,5 @@ pub(crate) fn extract_template_parts(
         finalize_render_body(&mut render_body);
     }
 
-    // Compact VDOM-style return expressions, but keep Vapor statement blocks intact.
-    let compacted = if saw_block_render {
-        render_body
-    } else {
-        compact_render_body(&render_body)
-    };
-
-    (imports, hoisted, preamble, compacted, render_fn_name)
+    (imports, hoisted, preamble, render_body, render_fn_name)
 }

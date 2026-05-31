@@ -9,6 +9,7 @@ import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
   _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.msg)}</div>`)
 }
+
 const msg = 'hello'
 
 export default /*@__PURE__*/_defineComponent({

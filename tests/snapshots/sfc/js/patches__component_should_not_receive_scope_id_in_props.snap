@@ -2,9 +2,13 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode } from "vue"
+import { createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+const _hoisted_1 = { class: "wrapper" }
+const _hoisted_2 = { class: "child" }
 
 import MyComponent from './MyComponent.vue'
+
 
 export default {
   __name: 'test',
@@ -12,7 +16,9 @@ export default {
 
 
 return (_ctx, _cache) => {
-  return (_openBlock(), _createElementBlock("div", { class: "wrapper" }, [ _createVNode(MyComponent, { class: "child" }) ]))
+  return (_openBlock(), _createElementBlock("div", _hoisted_1, [
+    _createVNode(MyComponent, { class: "child" })
+  ]))
 }
 }
 

@@ -2,7 +2,7 @@
 source: crates/vize_atelier_core/src/codegen.rs
 expression: output.as_str()
 ---
-const { openBlock: _openBlock, createBlock: _createBlock, resolveComponent: _resolveComponent } = Vue
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_MonacoEditor = _resolveComponent("MonacoEditor")

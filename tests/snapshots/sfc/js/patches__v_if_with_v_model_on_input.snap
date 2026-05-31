@@ -2,9 +2,10 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, withDirectives as _withDirectives, vModelText as _vModelText } from "vue"
+import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
 
 import { ref } from 'vue'
+
 
 export default {
   __name: 'test',
@@ -15,11 +16,13 @@ const text = ref('')
 
 return (_ctx, _cache) => {
   return (show.value)
-      ? _withDirectives((_openBlock(), _createElementBlock("input", {
-        key: 0,
-        "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((text).value = $event))
-      }, null, 512 /* NEED_PATCH */)), [ [_vModelText, text.value] ])
-      : _createCommentVNode("v-if", true)
+    ? _withDirectives((_openBlock(), _createElementBlock("input", {
+      key: 0,
+      "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((text).value = $event))
+    }, null, 512 /* NEED_PATCH */)), [
+      [_vModelText, text.value]
+    ])
+    : _createCommentVNode("v-if", true)
 }
 }
 

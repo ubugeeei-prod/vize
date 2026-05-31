@@ -181,8 +181,10 @@ fn hoist_static_inner<'a>(
                 }
             }
             StaticType::HasDynamicText => {
-                // Element has static props but dynamic text - hoist the props only
-                if let TemplateChildNode::Element(el) = &mut children[i]
+                // Root elements with dynamic text still benefit from hoisted
+                // static props while preserving block tracking.
+                if is_root
+                    && let TemplateChildNode::Element(el) = &mut children[i]
                     && has_static_props(el)
                 {
                     hoist_element_props(ctx, el, allocator);
@@ -192,7 +194,7 @@ fn hoist_static_inner<'a>(
                 // Cannot hoist, but check children recursively (not as root)
                 match &mut children[i] {
                     TemplateChildNode::Element(el) => {
-                        if has_static_props(el) && has_only_static_nested_children(el) {
+                        if has_static_props(el) {
                             hoist_element_props(ctx, el, allocator);
                         }
                         hoist_static_inner(ctx, &mut el.children, false);
@@ -374,35 +376,6 @@ fn has_static_props(el: &ElementNode<'_>) -> bool {
     }
 
     true
-}
-
-fn has_only_static_nested_children(el: &ElementNode<'_>) -> bool {
-    if el.children.is_empty() {
-        return false;
-    }
-
-    el.children.iter().all(is_static_nested_child)
-}
-
-fn is_static_nested_child(child: &TemplateChildNode<'_>) -> bool {
-    match child {
-        TemplateChildNode::Text(_) => true,
-        TemplateChildNode::Element(el) => is_plain_static_nested_element(el),
-        _ => false,
-    }
-}
-
-fn is_plain_static_nested_element(el: &ElementNode<'_>) -> bool {
-    el.tag_type == ElementType::Element
-        && props_are_static_attrs(el)
-        && el.children.iter().all(is_static_nested_child)
-}
-
-fn props_are_static_attrs(el: &ElementNode<'_>) -> bool {
-    el.props.iter().all(|prop| match prop {
-        PropNode::Directive(_) => false,
-        PropNode::Attribute(attr) => attr.name != "ref",
-    })
 }
 
 /// Hoist the props of an element with static props

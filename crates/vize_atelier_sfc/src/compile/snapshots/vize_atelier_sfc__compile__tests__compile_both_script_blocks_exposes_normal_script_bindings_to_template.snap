@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass } from "vue"
+import { toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
 
 
 import { ref } from "vue";
@@ -27,13 +27,15 @@ function start() {
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("div", {
-      class: _normalizeClass({ dragging: dragging.value })
-    }, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {
-        return (_openBlock(), _createElementBlock("button", {
-          key: item.id,
-          onClick: start
-        }, _toDisplayString(item.id), 1 /* TEXT */))
-      }), 128 /* KEYED_FRAGMENT */)) ], 2 /* CLASS */))
+    class: _normalizeClass({ dragging: dragging.value })
+  }, [
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {
+      return (_openBlock(), _createElementBlock("button", {
+        key: item.id,
+        onClick: start
+      }, _toDisplayString(item.id), 1 /* TEXT */))
+    }), 128 /* KEYED_FRAGMENT */))
+  ], 2 /* CLASS */))
 }
 }
 

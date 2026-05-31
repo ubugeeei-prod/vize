@@ -15,9 +15,9 @@ const getBrandLogoUrl = (type, theme) => {
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("img", {
-      src: getBrandLogoUrl('alpha', 'light'),
-      alt: "brand logo"
-    }, null, 8 /* PROPS */, ["src"]))
+    src: getBrandLogoUrl('alpha', 'light'),
+    alt: "brand logo"
+  }, null, 8 /* PROPS */, ["src"]))
 }
 }
 

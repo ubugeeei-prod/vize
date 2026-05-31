@@ -1,9 +1,8 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 221
 expression: js_output.as_str()
 ---
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 function _sfc_render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg) + " - " + _toDisplayString(_ctx.count), 1 /* TEXT */))

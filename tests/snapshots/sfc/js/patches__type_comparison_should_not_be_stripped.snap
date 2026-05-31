@@ -16,13 +16,13 @@ const isLink = props.type !== 'link'
 
 return (_ctx, _cache) => {
   return (_unref(isButton))
-      ? (_openBlock(), _createElementBlock("button", { key: 0 }, "Button"))
-      : (!_unref(isLink))
-        ? (_openBlock(), _createElementBlock("a", {
-          key: 1,
-          href: "#"
-        }, "Link"))
-      : _createCommentVNode("v-if", true)
+    ? (_openBlock(), _createElementBlock("button", { key: 0 }, "Button"))
+    : (!_unref(isLink))
+      ? (_openBlock(), _createElementBlock("a", {
+        key: 1,
+        href: "#"
+      }, "Link"))
+    : _createCommentVNode("v-if", true)
 }
 }
 

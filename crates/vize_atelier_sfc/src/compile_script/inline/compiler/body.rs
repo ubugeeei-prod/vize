@@ -28,6 +28,8 @@ pub(super) fn compile_script_setup_inline_body(
     template: TemplateParts<'_>,
     css_vars: &[Cow<'_, str>],
     scope_id: &str,
+    css_vars_id: &str,
+    is_prod: bool,
     user_imports: Vec<String>,
     ts_declarations: Vec<String>,
     setup_code: String,
@@ -63,7 +65,7 @@ pub(super) fn compile_script_setup_inline_body(
 
     let props_emits_buf = profile!(
         "atelier.script_inline.build_props_emits",
-        build_props_emits(&ctx, is_ts, needs_prop_type, needs_merge_defaults)
+        build_props_emits(&ctx, is_ts, needs_prop_type, needs_merge_defaults, is_prod)
     );
 
     let model_infos: Vec<(String, String, Option<String>, Option<String>)> = profile!(
@@ -79,6 +81,7 @@ pub(super) fn compile_script_setup_inline_body(
             is_ts,
             needs_prop_type,
             needs_merge_defaults,
+            is_prod,
         )
     );
 
@@ -96,6 +99,9 @@ pub(super) fn compile_script_setup_inline_body(
         separate_hoisted_consts(&transformed_setup, &ctx)
     );
 
+    if !hoisted_lines.is_empty() {
+        ensure_blank_line(&mut output);
+    }
     for line in &hoisted_lines {
         output.extend_from_slice(line.as_bytes());
         output.push(b'\n');
@@ -127,6 +133,8 @@ pub(super) fn compile_script_setup_inline_body(
         is_async,
         css_vars,
         scope_id,
+        css_vars_id,
+        is_prod,
         has_css_vars,
     );
 
@@ -178,4 +186,12 @@ pub(super) fn compile_script_setup_inline_body(
         code: final_code,
         bindings: Some(ctx.bindings),
     })
+}
+
+fn ensure_blank_line(output: &mut vize_carton::Vec<u8>) {
+    match output.as_slice() {
+        bytes if bytes.ends_with(b"\n\n") => {}
+        bytes if bytes.ends_with(b"\n") => output.push(b'\n'),
+        _ => output.extend_from_slice(b"\n\n"),
+    }
 }

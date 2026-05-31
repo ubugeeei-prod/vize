@@ -687,6 +687,8 @@ fn compile_sfc_inner(
             normal_script_content.as_deref(),
             &descriptor.css_vars,
             &scope_id,
+            options.script.id.as_deref().unwrap_or(filename),
+            options.template.is_prod,
         )
     )?;
 

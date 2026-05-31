@@ -10,6 +10,7 @@ type DistributiveOmit<T, K extends KeyOfUnion<T>> = T extends T
 	? Omit<T, K>
 	: never;
 
+
 export default /*@__PURE__*/_defineComponent({
   __name: 'TestComponent',
   setup(__props) {

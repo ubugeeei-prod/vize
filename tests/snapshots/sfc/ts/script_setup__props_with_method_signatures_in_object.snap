@@ -16,8 +16,8 @@ export default /*@__PURE__*/_defineComponent({
 
 return (_ctx: any,_cache: any) => {
   return (__props.context.isOpened)
-      ? (_openBlock(), _createElementBlock("div", { key: 0 }, "Open"))
-      : _createCommentVNode("v-if", true)
+    ? (_openBlock(), _createElementBlock("div", { key: 0 }, "Open"))
+    : _createCommentVNode("v-if", true)
 }
 }
 

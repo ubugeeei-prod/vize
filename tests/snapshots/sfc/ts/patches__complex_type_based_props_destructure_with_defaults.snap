@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass } from "vue"
+import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
@@ -19,10 +19,16 @@ export default /*@__PURE__*/_defineComponent({
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("div", {
-      class: _normalizeClass({ disabled: __props.disabled })
-    }, [ _createElementVNode("h1", null, _toDisplayString(__props.title), 1 /* TEXT */), _createElementVNode("span", null, _toDisplayString(__props.count), 1 /* TEXT */), _createElementVNode("ul", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.items, (item) => {
-          return (_openBlock(), _createElementBlock("li", { key: item }, _toDisplayString(item), 1 /* TEXT */))
-        }), 128 /* KEYED_FRAGMENT */)) ]) ], 2 /* CLASS */))
+    class: _normalizeClass({ disabled: __props.disabled })
+  }, [
+    _createElementVNode("h1", null, _toDisplayString(__props.title), 1 /* TEXT */),
+    _createElementVNode("span", null, _toDisplayString(__props.count), 1 /* TEXT */),
+    _createElementVNode("ul", null, [
+      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.items, (item) => {
+        return (_openBlock(), _createElementBlock("li", { key: item }, _toDisplayString(item), 1 /* TEXT */))
+      }), 128 /* KEYED_FRAGMENT */))
+    ])
+  ], 2 /* CLASS */))
 }
 }
 

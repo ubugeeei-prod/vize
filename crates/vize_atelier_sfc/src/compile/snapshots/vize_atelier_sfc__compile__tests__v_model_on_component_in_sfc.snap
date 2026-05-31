@@ -7,6 +7,7 @@ import { openBlock as _openBlock, createBlock as _createBlock } from "vue"
 import { ref } from 'vue'
 import MyComponent from './MyComponent.vue'
 
+
 export default {
   __name: 'anonymous',
   setup(__props) {
@@ -15,10 +16,10 @@ const msg = ref('')
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createBlock(MyComponent, {
-      language: 'en',
-      modelValue: msg.value,
-      "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((msg).value = $event))
-    }, null, 8 /* PROPS */, ["language", "modelValue"]))
+    language: 'en',
+    modelValue: msg.value,
+    "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((msg).value = $event))
+  }, null, 8 /* PROPS */, ["language", "modelValue"]))
 }
 }
 

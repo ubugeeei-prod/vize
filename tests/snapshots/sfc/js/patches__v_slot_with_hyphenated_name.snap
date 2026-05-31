@@ -2,9 +2,10 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 
 import DataTable from './DataTable.vue'
+
 
 export default {
   __name: 'test',
@@ -13,11 +14,11 @@ export default {
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createBlock(DataTable, null, {
-      "item-header": _withCtx(({ item }) => [
-        _createElementVNode("span", null, _toDisplayString(item.title), 1 /* TEXT */)
-      ]),
-      _: 1 /* STABLE */
-    }))
+    "item-header": _withCtx(({ item }) => [
+      _createElementVNode("span", null, _toDisplayString(item.title), 1 /* TEXT */)
+    ]),
+    _: 1 /* STABLE */
+  }))
 }
 }
 

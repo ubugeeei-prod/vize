@@ -1,6 +1,5 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
-assertion_line: 833
 expression: result.code.as_str()
 ---
 import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
@@ -14,6 +13,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
 }
 const __vaporRender = render
 import { Primitive } from '@tresjs/core'
+
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'anonymous',

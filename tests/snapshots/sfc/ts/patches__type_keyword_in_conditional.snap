@@ -3,13 +3,14 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, toDisplayString as _toDisplayString } from "vue"
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
 
 
 interface Item {
   type: string;
   value: number;
 }
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -22,8 +23,8 @@ const props = __props
 
 return (_ctx: any,_cache: any) => {
   return (__props.item.type === 'special')
-      ? (_openBlock(), _createElementBlock("div", { key: 0 }, _toDisplayString(__props.item.value), 1 /* TEXT */))
-      : _createCommentVNode("v-if", true)
+    ? (_openBlock(), _createElementBlock("div", { key: 0 }, _toDisplayString(__props.item.value), 1 /* TEXT */))
+    : _createCommentVNode("v-if", true)
 }
 }
 

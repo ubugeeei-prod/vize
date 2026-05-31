@@ -6,6 +6,7 @@ import { defineComponent as _defineComponent } from 'vue'
 import { watch } from 'vue'
 import '@/css/oldReset.scss'
 
+
 export default /*@__PURE__*/_defineComponent({
   __name: 'TestComponent',
   setup(__props) {

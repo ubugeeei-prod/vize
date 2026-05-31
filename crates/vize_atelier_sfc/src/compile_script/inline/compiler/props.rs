@@ -19,6 +19,7 @@ pub(super) fn build_props_emits(
     is_ts: bool,
     needs_prop_type: bool,
     needs_merge_defaults: bool,
+    is_prod: bool,
 ) -> Vec<u8> {
     let mut props_emits_buf: Vec<u8> = Vec::new();
 
@@ -28,7 +29,9 @@ pub(super) fn build_props_emits(
         return props_emits_buf;
     }
 
-    if let Some(decl) = build_user_props_decl(ctx, is_ts, needs_prop_type, needs_merge_defaults) {
+    if let Some(decl) =
+        build_user_props_decl(ctx, is_ts, needs_prop_type, needs_merge_defaults, is_prod)
+    {
         props_emits_buf.extend_from_slice(b"  props: ");
         props_emits_buf.extend_from_slice(decl.as_bytes());
         props_emits_buf.extend_from_slice(b",\n");
@@ -46,6 +49,7 @@ pub(super) fn build_user_props_decl(
     _is_ts: bool,
     needs_prop_type: bool,
     needs_merge_defaults: bool,
+    is_prod: bool,
 ) -> Option<String> {
     let props_macro = ctx.macros.define_props.as_ref()?;
 
@@ -84,28 +88,46 @@ pub(super) fn build_user_props_decl(
             let runtime_js_type = add_null_to_runtime_type(&resolved_js_type, prop_type.nullable);
             decl.extend_from_slice(b"    ");
             decl.extend_from_slice(name.as_bytes());
-            decl.extend_from_slice(b": { type: ");
-            decl.extend_from_slice(runtime_js_type.as_bytes());
-            if needs_prop_type && let Some(ref ts_type) = prop_type.ts_type {
-                if resolved_js_type == "null" {
-                    decl.extend_from_slice(b" as unknown as PropType<");
-                } else {
-                    decl.extend_from_slice(b" as PropType<");
+            let mut has_option = false;
+            if is_prod && runtime_js_type != "Boolean" {
+                decl.extend_from_slice(b": {");
+            } else {
+                decl.extend_from_slice(b": { type: ");
+                decl.extend_from_slice(runtime_js_type.as_bytes());
+                has_option = true;
+                if needs_prop_type && let Some(ref ts_type) = prop_type.ts_type {
+                    if resolved_js_type == "null" {
+                        decl.extend_from_slice(b" as unknown as PropType<");
+                    } else {
+                        decl.extend_from_slice(b" as PropType<");
+                    }
+                    // Normalize multi-line types to single line
+                    let normalized = ts_type.split_whitespace().collect::<Vec<_>>().join(" ");
+                    decl.extend_from_slice(normalized.as_bytes());
+                    decl.push(b'>');
                 }
-                // Normalize multi-line types to single line
-                let normalized = ts_type.split_whitespace().collect::<Vec<_>>().join(" ");
-                decl.extend_from_slice(normalized.as_bytes());
-                decl.push(b'>');
             }
-            if prop_type.optional {
-                decl.extend_from_slice(b", required: false");
+            if prop_type.optional && !is_prod {
+                if has_option {
+                    decl.extend_from_slice(b", ");
+                } else {
+                    decl.push(b' ');
+                }
+                decl.extend_from_slice(b"required: false");
+                has_option = true;
             }
             let mut has_default = false;
             if let Some(ref defaults) = with_defaults_args
                 && let Some(default_val) = defaults.get(name.as_str())
             {
-                decl.extend_from_slice(b", default: ");
+                if has_option {
+                    decl.extend_from_slice(b", ");
+                } else {
+                    decl.push(b' ');
+                }
+                decl.extend_from_slice(b"default: ");
                 decl.extend_from_slice(default_val.as_bytes());
+                has_option = true;
                 has_default = true;
             }
             if !has_default
@@ -113,11 +135,20 @@ pub(super) fn build_user_props_decl(
                 && let Some(binding) = destructure.bindings.get(name.as_str())
                 && let Some(ref default_val) = binding.default
             {
-                decl.extend_from_slice(b", default: ");
+                if has_option {
+                    decl.extend_from_slice(b", ");
+                } else {
+                    decl.push(b' ');
+                }
+                decl.extend_from_slice(b"default: ");
                 let default_val = normalize_destructure_default_value(default_val);
                 decl.extend_from_slice(default_val.as_bytes());
             }
-            decl.extend_from_slice(b" }");
+            if has_option {
+                decl.extend_from_slice(b" }");
+            } else {
+                decl.push(b'}');
+            }
             if item_idx < total_items {
                 decl.push(b',');
             }

@@ -2,9 +2,10 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, normalizeStyle as _normalizeStyle } from "vue"
+import { normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 import { ref } from 'vue'
+
 
 export default {
   __name: 'test',
@@ -15,8 +16,8 @@ const height = ref(50)
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", {
-      style: _normalizeStyle({ width: width.value, height: height.value })
-    }, "Styled", 4 /* STYLE */))
+    style: _normalizeStyle({ width: width.value, height: height.value })
+  }, "Styled", 4 /* STYLE */))
 }
 }
 

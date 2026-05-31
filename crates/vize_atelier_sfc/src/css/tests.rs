@@ -10,7 +10,9 @@ use super::CssTargets;
 use super::scoped::{
     add_scope_to_element, apply_scoped_css, transform_deep, transform_global, transform_slotted,
 };
-use super::transform::{extract_and_transform_v_bind, extract_and_transform_v_bind_with_scope};
+use super::transform::{
+    extract_and_transform_v_bind, extract_and_transform_v_bind_with_scope, prod_scoped_v_bind_name,
+};
 use super::{CssCompileOptions, bundle_css, compile_css, parse_css_ast, print_css_ast};
 
 fn test_utf8(bytes: &[u8]) -> &str {
@@ -166,6 +168,15 @@ fn test_v_bind_extraction_with_scope_id() {
 
     assert!(result.errors.is_empty());
     insta::assert_debug_snapshot!(result);
+}
+
+#[test]
+fn test_prod_scoped_v_bind_name_matches_vue_hash_sum() {
+    let id = "npm/rspack-vize-plugin/src/test/fixtures/scoped-v-bind/App.vue";
+
+    assert_eq!(prod_scoped_v_bind_name(id, "textColor"), "v9531ad58");
+    assert_eq!(prod_scoped_v_bind_name(id, "bgColor"), "v02f640bc");
+    assert_eq!(prod_scoped_v_bind_name(id, "fontSize"), "v27b86bdc");
 }
 
 #[test]

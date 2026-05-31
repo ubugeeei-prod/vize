@@ -3,9 +3,10 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent, withCtx as _withCtx } from "vue"
+import { resolveDynamicComponent as _resolveDynamicComponent, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 
 import { RouterView } from 'vue-router'
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -14,11 +15,11 @@ export default /*@__PURE__*/_defineComponent({
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createBlock(RouterView, null, {
-      default: _withCtx(({ Component }) => [
-        _createVNode(_resolveDynamicComponent(Component))
-      ]),
-      _: 1 /* STABLE */
-    }))
+    default: _withCtx(({ Component }) => [
+      _createVNode(_resolveDynamicComponent(Component))
+    ]),
+    _: 1 /* STABLE */
+  }))
 }
 }
 

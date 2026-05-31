@@ -391,6 +391,7 @@ fn compile_vize_for_compare(
             id: Some(filename.clone()),
             scoped: has_scoped,
             ssr: matches!(args.target, InspectorTarget::Ssr),
+            is_prod: true,
             is_ts,
             custom_renderer: args.custom_renderer,
             ..Default::default()
