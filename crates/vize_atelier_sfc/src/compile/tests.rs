@@ -66,6 +66,54 @@ fn test_extract_component_name() {
 }
 
 #[test]
+fn test_compile_sfc_trims_trailing_newline() {
+    let cases = [
+        (
+            "script setup",
+            r#"<script setup>
+const message = 'hello'
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>"#,
+        ),
+        (
+            "normal script",
+            r#"<script>
+export default {
+  data() {
+    return { message: 'hello' }
+  }
+}
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>"#,
+        ),
+        (
+            "template only",
+            r#"<template>
+  <p>hello</p>
+</template>"#,
+        ),
+    ];
+
+    for (name, source) in cases {
+        let descriptor =
+            parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+        let result =
+            compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+        assert!(
+            !result.code.ends_with('\n'),
+            "{name} output should not end with a newline:\n{}",
+            result.code
+        );
+    }
+}
+
+#[test]
 fn test_v_model_on_component_in_sfc() {
     let source = r#"<script setup>
 import { ref } from 'vue'

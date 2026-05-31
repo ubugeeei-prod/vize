@@ -101,6 +101,12 @@ fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacr
     artifacts
 }
 
+fn trim_trailing_newlines(code: &mut String) {
+    while code.ends_with('\n') {
+        code.pop();
+    }
+}
+
 /// Compile an SFC descriptor into JavaScript and CSS
 pub fn compile_sfc(
     descriptor: &SfcDescriptor,
@@ -255,6 +261,8 @@ fn compile_sfc_inner(
             css = Some(all_css);
         }
 
+        trim_trailing_newlines(&mut code);
+
         return Ok(SfcCompileResult {
             code,
             css,
@@ -399,6 +407,8 @@ fn compile_sfc_inner(
         if !all_css.is_empty() {
             css = Some(all_css);
         }
+
+        trim_trailing_newlines(&mut code);
 
         return Ok(SfcCompileResult {
             code,
@@ -695,6 +705,8 @@ fn compile_sfc_inner(
     if !all_css.is_empty() {
         css = Some(all_css);
     }
+
+    trim_trailing_newlines(&mut code);
 
     Ok(SfcCompileResult {
         code,
