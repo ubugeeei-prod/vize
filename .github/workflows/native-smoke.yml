@@ -29,10 +29,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: blacksmith-8vcpu-ubuntu-2404
+          - runner: blacksmith-32vcpu-ubuntu-2404
             target: linux-x64-gnu
             msvc_arch: amd64
-          - runner: blacksmith-4vcpu-ubuntu-2404-arm
+          - runner: blacksmith-32vcpu-ubuntu-2404-arm
             target: linux-arm64-gnu
             msvc_arch: amd64
           - runner: macos-15-intel
@@ -100,10 +100,10 @@ jobs:
         # known-limitation policy in docs/content/stability.md in sync when
         # containerized musl tarball staging is added.
         platform:
-          - runner: blacksmith-8vcpu-ubuntu-2404
+          - runner: blacksmith-32vcpu-ubuntu-2404
             target: linux-x64-gnu
             msvc_arch: amd64
-          - runner: blacksmith-4vcpu-ubuntu-2404-arm
+          - runner: blacksmith-32vcpu-ubuntu-2404-arm
             target: linux-arm64-gnu
             msvc_arch: amd64
           - runner: macos-15-intel
