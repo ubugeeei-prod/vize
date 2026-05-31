@@ -99,7 +99,7 @@ fn generate_children_inner(
         return;
     }
 
-    let can_cache_static = ctx.options.hoist_static && !ctx.in_v_for && !ctx.has_slot_params();
+    let can_cache_static = ctx.static_cache && !ctx.in_v_for && !ctx.has_slot_params();
     if !force_array
         && can_cache_static
         && !effective.is_empty()

@@ -52,6 +52,8 @@ pub struct CodegenContext {
     /// event-name casing rules (Vue preserves case via `on:` for plain
     /// elements that have uppercase letters in the raw event name).
     pub(super) props_is_plain_element: bool,
+    /// Whether static child VNodes should be cached in the render function.
+    pub(super) static_cache: bool,
 }
 
 /// Code generation result
@@ -85,6 +87,7 @@ impl CodegenContext {
             in_v_for: false,
             skip_v_memo: false,
             props_is_plain_element: false,
+            static_cache: false,
         }
     }
 

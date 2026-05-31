@@ -190,7 +190,12 @@ fn hoist_static_inner<'a>(
                 // Cannot hoist, but check children recursively (not as root)
                 match &mut children[i] {
                     TemplateChildNode::Element(el) => {
-                        if has_static_props(el) && has_only_static_nested_children(el) {
+                        if has_static_props(el)
+                            && ((is_root
+                                && ctx.options.inline
+                                && has_only_native_element_descendants(el))
+                                || has_only_static_nested_children(el))
+                        {
                             hoist_element_props(ctx, el, allocator);
                         }
                         let child_hoist_static_vnodes = hoist_static_vnodes
@@ -397,6 +402,18 @@ fn is_static_nested_child(child: &TemplateChildNode<'_>) -> bool {
         TemplateChildNode::Element(el) => is_plain_static_nested_element(el),
         _ => false,
     }
+}
+
+fn has_only_native_element_descendants(el: &ElementNode<'_>) -> bool {
+    el.children.iter().all(|child| match child {
+        TemplateChildNode::Text(_)
+        | TemplateChildNode::Interpolation(_)
+        | TemplateChildNode::Comment(_) => true,
+        TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Element => {
+            has_only_native_element_descendants(child_el)
+        }
+        _ => false,
+    })
 }
 
 fn is_plain_static_nested_element(el: &ElementNode<'_>) -> bool {

@@ -35,6 +35,7 @@ use root::{
 /// Generate code from root AST.
 pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     let mut ctx = CodegenContext::new(options);
+    ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();
     let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
         .children
         .iter()

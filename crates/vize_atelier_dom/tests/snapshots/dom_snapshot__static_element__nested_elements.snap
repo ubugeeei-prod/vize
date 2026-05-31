@@ -5,7 +5,7 @@ expression: "get_compiled(\"<div><span>hello</span></div>\")"
 const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(), _createElementBlock("div", null, [...(_cache[0] || (_cache[0] = [
-    _createElementVNode("span", null, "hello", -1 /* CACHED */)
-  ]))]))
+  return (_openBlock(), _createElementBlock("div", null, [
+    _createElementVNode("span", null, "hello")
+  ]))
 }

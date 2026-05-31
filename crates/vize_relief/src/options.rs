@@ -263,8 +263,6 @@ pub struct CodegenOptions {
     pub binding_metadata: Option<BindingMetadata>,
     /// Whether to cache inline event handlers
     pub cache_handlers: bool,
-    /// Whether to cache static child VNodes during code generation
-    pub hoist_static: bool,
 }
 
 impl Default for CodegenOptions {
@@ -284,7 +282,6 @@ impl Default for CodegenOptions {
             inline: false,
             binding_metadata: None,
             cache_handlers: false,
-            hoist_static: false,
         }
     }
 }
