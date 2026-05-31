@@ -526,6 +526,23 @@ assert.match(
   "CSS module bindings should be attached for normal-script output without relying on semicolons",
 );
 
+const cssModuleFsStyleLoad = loadHook(
+  cssModuleState,
+  "\0/@fs/src/ModuleButton.vue?vue=&type=style&index=0&lang=css&module=.module.css",
+  {
+    ssr: false,
+  },
+);
+assert.ok(
+  cssModuleFsStyleLoad && typeof cssModuleFsStyleLoad === "object",
+  "/@fs CSS module virtual style loads should resolve against the real cache key",
+);
+assert.equal(
+  cssModuleFsStyleLoad.code,
+  ".root { color: red; }",
+  "/@fs CSS module virtual style loads should not fall back to empty CSS",
+);
+
 const applyCssPath = "/src/ApplyStyles.vue";
 const applyCssState: VizePluginState = {
   ...hmrState,

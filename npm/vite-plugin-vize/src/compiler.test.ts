@@ -20,6 +20,170 @@ assert.equal(
   "Failed single-file compilation must not populate the module cache",
 );
 
+const conditionalForCompiled = compileFile(
+  "/src/ConditionalFor.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  `<script setup lang="ts">
+const editing = false;
+const widgets = [{ id: "a", name: "calendar" }];
+const widgetRefs: Record<string, unknown> = {};
+</script>
+
+<template>
+  <div v-if="editing">editing</div>
+  <component
+    v-for="widget in widgets"
+    v-else
+    :is="'widget-' + widget.name"
+    :key="widget.id"
+    :ref="(el: any) => widgetRefs[widget.id] = el"
+    :widget="widget"
+  />
+</template>`,
+);
+
+assert.doesNotMatch(
+  conditionalForCompiled.code,
+  /_ctx\.widget\.id/,
+  "v-else + v-for keys must not be lifted into the branch fragment outside the v-for scope",
+);
+assert.match(
+  conditionalForCompiled.code,
+  /key:\s*widget\.id/,
+  "v-else + v-for keys should stay on the loop item",
+);
+
+const readonlyInterfacePropsCompiled = compileFile(
+  "/src/ReadonlyInterfaceProps.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  `<template>
+  <span :style="{ maxWidth: \`\${100 / minScale}%\` }"></span>
+</template>
+
+<script lang="ts">
+interface Props {
+  readonly minScale?: number;
+}
+</script>
+
+<script setup lang="ts">
+const props = withDefaults(defineProps<Props>(), {
+  minScale: 0,
+});
+void props;
+</script>`,
+);
+
+assert.doesNotMatch(
+  readonlyInterfacePropsCompiled.code,
+  /_ctx\.minScale/,
+  "readonly type props from normal script interfaces should be available to template binding resolution",
+);
+assert.match(
+  readonlyInterfacePropsCompiled.code,
+  /__props\.minScale/,
+  "readonly type props should compile as props access in inline render",
+);
+
+const hoistedScopedSource = `<script setup>
+const active = true;
+</script>
+
+<template>
+  <section :class="{ active }">
+    <div class="static">Static</div>
+    <span>{{ active }}</span>
+  </section>
+</template>
+
+<style scoped>
+.static { color: red; }
+</style>`;
+const hoistedScopedPattern =
+  /_createElementVNode\("div", \{\s*class: "static",\s*"data-v-[^"]+": ""\s*\}, "Static"\)/s;
+
+const hoistedScopedCompiled = compileFile(
+  "/src/HoistedScoped.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  hoistedScopedSource,
+);
+
+assert.match(
+  hoistedScopedCompiled.code,
+  hoistedScopedPattern,
+  "scoped static VNodes hoisted outside render should carry the component scope id",
+);
+
+const hoistedScopedBatch = compileBatch(
+  [{ path: "/src/HoistedScoped.vue", source: hoistedScopedSource }],
+  new Map(),
+  { ssr: false, vapor: false },
+);
+
+assert.match(
+  hoistedScopedBatch.results[0]?.code ?? "",
+  hoistedScopedPattern,
+  "batch compilation should also scope static VNodes hoisted outside render",
+);
+
+const componentClassCompiled = compileFile(
+  "/src/ComponentClass.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  `<script setup>
+import { ref } from "vue";
+import Child from "./Child.vue";
+const channel = ref({});
+</script>
+
+<template>
+  <Child :channel="channel" :full="true" :class="$style.subscribe" />
+</template>
+
+<style module>
+.subscribe { position: absolute; }
+</style>`,
+);
+
+assert.match(
+  componentClassCompiled.code,
+  /_createBlock\(Child, \{\s*channel: channel\.value,\s*full: true,\s*class: _normalizeClass\(_ctx\.\$style\.subscribe\)\s*\}, null, 8[\s\S]*\["channel", "class"\]/,
+  "dynamic component class bindings should be tracked as component props so fallthrough classes apply",
+);
+assert.doesNotMatch(
+  componentClassCompiled.code,
+  /\["channel", "full", "class"\]/,
+  "static bound component props should not be listed as dynamic props",
+);
+
+const dynamicArgForCompiled = compileFile(
+  "/src/DynamicArgFor.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  `<script setup>
+const attrs = ["href"];
+const maybeRelativeUrl = "https://example.com";
+</script>
+
+<template>
+  <a v-for="attr in attrs" :[attr]="maybeRelativeUrl">link</a>
+</template>`,
+);
+
+assert.doesNotMatch(
+  dynamicArgForCompiled.code,
+  /_ctx\.attr/,
+  "dynamic v-bind arguments from v-for scope should not be resolved from component context",
+);
+assert.match(
+  dynamicArgForCompiled.code,
+  /\[attr \|\| ""\]: maybeRelativeUrl/,
+  "dynamic v-bind arguments from v-for scope should be emitted as local loop bindings",
+);
+
 const tresSource = `<script setup lang="ts">
 import { Primitive } from "@tresjs/core";
 const msg = "hello";

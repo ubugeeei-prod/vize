@@ -168,9 +168,11 @@ fn hoist_static_inner<'a>(
                 {
                     hoist_element_props(ctx, el, allocator);
                 } else if hoist_static_vnodes && let TemplateChildNode::Element(el) = &children[i] {
-                    let scope_id = ctx.options.scope_id.clone();
-                    let vnode_call =
-                        create_vnode_call_from_element(allocator, el, scope_id.as_ref());
+                    let scope_id = ctx
+                        .hoisted_scope_id
+                        .as_ref()
+                        .or(ctx.options.scope_id.as_ref());
+                    let vnode_call = create_vnode_call_from_element(allocator, el, scope_id);
                     let hoist_index = ctx.hoist(vnode_call);
                     children[i] = TemplateChildNode::Hoisted(hoist_index);
                     ctx.helper(RuntimeHelper::CreateElementVNode);

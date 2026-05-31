@@ -1,8 +1,11 @@
 //! Patch flag calculation and naming functions.
 
-use super::helpers::{camelize, is_constant_simple_expression};
+use super::helpers::camelize;
 use crate::ast::*;
 use crate::options::{BindingMetadata, BindingType};
+use oxc_ast::ast as oxc_ast_types;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_carton::is_builtin_directive;
@@ -54,11 +57,88 @@ fn is_const_handler(expr: &ExpressionNode<'_>, bindings: Option<&BindingMetadata
 }
 
 /// Check if a directive's bound expression is a static literal (no runtime identifiers).
-/// Returns true for object literals, array literals, string literals, numbers
-/// that don't reference any runtime variables.
-fn is_static_bound_expression(dir: &DirectiveNode<'_>, bindings: Option<&BindingMetadata>) -> bool {
-    match &dir.exp {
-        Some(ExpressionNode::Simple(simple)) => is_constant_simple_expression(simple, bindings),
+fn is_static_bound_expression(dir: &DirectiveNode<'_>) -> bool {
+    let Some(ExpressionNode::Simple(simple)) = &dir.exp else {
+        return false;
+    };
+    if simple.is_static {
+        return true;
+    }
+
+    let content = simple.content.trim();
+    matches!(content, "true" | "false" | "null")
+        || is_string_literal(content)
+        || content.parse::<f64>().is_ok()
+        || is_static_object_or_array_literal(content)
+        || (content.starts_with('`') && content.ends_with('`') && !content.contains("${"))
+}
+
+fn is_string_literal(content: &str) -> bool {
+    (content.starts_with('\'') && content.ends_with('\''))
+        || (content.starts_with('"') && content.ends_with('"'))
+}
+
+fn is_static_object_or_array_literal(content: &str) -> bool {
+    let mut wrapped = String::with_capacity(content.len() + 2);
+    wrapped.push('(');
+    wrapped.push_str(content);
+    wrapped.push(')');
+
+    let allocator = oxc_allocator::Allocator::default();
+    let parser = Parser::new(
+        &allocator,
+        &wrapped,
+        SourceType::default().with_module(true),
+    );
+    let Ok(expr) = parser.parse_expression() else {
+        return false;
+    };
+
+    is_static_oxc_expression(&expr)
+}
+
+fn is_static_oxc_expression(expr: &oxc_ast_types::Expression<'_>) -> bool {
+    match expr {
+        oxc_ast_types::Expression::StringLiteral(_)
+        | oxc_ast_types::Expression::NumericLiteral(_)
+        | oxc_ast_types::Expression::BooleanLiteral(_)
+        | oxc_ast_types::Expression::NullLiteral(_)
+        | oxc_ast_types::Expression::BigIntLiteral(_)
+        | oxc_ast_types::Expression::RegExpLiteral(_) => true,
+        oxc_ast_types::Expression::TemplateLiteral(template) => template.expressions.is_empty(),
+        oxc_ast_types::Expression::UnaryExpression(unary) => {
+            is_static_oxc_expression(&unary.argument)
+        }
+        oxc_ast_types::Expression::ParenthesizedExpression(paren) => {
+            is_static_oxc_expression(&paren.expression)
+        }
+        oxc_ast_types::Expression::CallExpression(call)
+            if matches!(
+                &call.callee,
+                oxc_ast_types::Expression::Identifier(ident)
+                    if matches!(ident.name.as_str(), "_normalizeClass" | "_normalizeStyle")
+            ) =>
+        {
+            call.arguments.iter().all(|arg| match arg {
+                oxc_ast_types::Argument::SpreadElement(_) => false,
+                _ => arg.as_expression().is_some_and(is_static_oxc_expression),
+            })
+        }
+        oxc_ast_types::Expression::ObjectExpression(obj) => {
+            obj.properties.iter().all(|prop| match prop {
+                oxc_ast_types::ObjectPropertyKind::ObjectProperty(prop) => {
+                    is_static_oxc_expression(&prop.value)
+                }
+                oxc_ast_types::ObjectPropertyKind::SpreadProperty(_) => false,
+            })
+        }
+        oxc_ast_types::Expression::ArrayExpression(arr) => {
+            arr.elements.iter().all(|elem| match elem {
+                oxc_ast_types::ArrayExpressionElement::SpreadElement(_) => false,
+                oxc_ast_types::ArrayExpressionElement::Elision(_) => true,
+                _ => elem.as_expression().is_some_and(is_static_oxc_expression),
+            })
+        }
         _ => false,
     }
 }
@@ -131,17 +211,30 @@ fn calculate_element_patch_info_inner(
                                 }
                             } else {
                                 let key = exp.content.as_str();
+                                let bound_is_static = is_static_bound_expression(dir);
                                 match key {
                                     "class" => {
-                                        // Only set CLASS flag if the bound expression is dynamic
-                                        if !is_static_bound_expression(dir, bindings) {
-                                            flag |= 2; // CLASS
+                                        // Component class is a fallthrough prop, not an element-class
+                                        // patch target. Vue tracks it through dynamicProps.
+                                        if !bound_is_static {
+                                            if el.tag_type == ElementType::Component {
+                                                flag |= 8; // PROPS
+                                                dynamic_props.push("class".to_compact_string());
+                                            } else {
+                                                flag |= 2; // CLASS
+                                            }
                                         }
                                     }
                                     "style" => {
-                                        // Only set STYLE flag if the bound expression is dynamic
-                                        if !is_static_bound_expression(dir, bindings) {
-                                            flag |= 4; // STYLE
+                                        // Component style is a fallthrough prop, not an element-style
+                                        // patch target. Vue tracks it through dynamicProps.
+                                        if !bound_is_static {
+                                            if el.tag_type == ElementType::Component {
+                                                flag |= 8; // PROPS
+                                                dynamic_props.push("style".to_compact_string());
+                                            } else {
+                                                flag |= 4; // STYLE
+                                            }
                                         }
                                     }
                                     "key" => {}
@@ -151,7 +244,7 @@ fn calculate_element_patch_info_inner(
                                     }
                                     _ => {
                                         // Skip modelModifiers and *Modifiers props (they are static)
-                                        if !key.ends_with("Modifiers") {
+                                        if !key.ends_with("Modifiers") && !bound_is_static {
                                             flag |= 8; // PROPS
 
                                             // Transform key based on modifiers

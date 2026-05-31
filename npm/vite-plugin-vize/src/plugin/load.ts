@@ -222,8 +222,12 @@ export function loadHook(
 
   const styleRequest = classifyVitePluginRequest(styleId);
   if (styleRequest.isVueStyleQuery) {
+    const sourceRequest = classifyVitePluginRequest(styleRequest.path);
     const realPath =
-      classifyVitePluginRequest(styleRequest.path).vizeVirtualPath ?? styleRequest.path;
+      sourceRequest.vizeVirtualPath ??
+      sourceRequest.normalizedFsId ??
+      sourceRequest.normalizedVuePath ??
+      styleRequest.path;
     const lang = styleRequest.styleLang ?? null;
     const scoped = styleRequest.styleScoped ?? null;
 

@@ -173,8 +173,12 @@ fn generate_vbind_prop(
                         generate_simple_expression(ctx, exp);
                     }
                 } else {
-                    ctx.push("_ctx.");
-                    ctx.push(content);
+                    if ctx.is_slot_param(content) {
+                        ctx.push(content);
+                    } else {
+                        ctx.push("_ctx.");
+                        ctx.push(content);
+                    }
                 }
             };
 

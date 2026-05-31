@@ -26,6 +26,19 @@ fn is_valid_identifier(s: &str) -> bool {
     chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
 }
 
+fn normalize_type_prop_name(name_part: &str) -> &str {
+    let mut name = name_part.trim();
+
+    while let Some(rest) = name.strip_prefix("readonly") {
+        if !rest.chars().next().is_some_and(|c| c.is_ascii_whitespace()) {
+            break;
+        }
+        name = rest.trim_start();
+    }
+
+    name.trim_end_matches('?').trim()
+}
+
 impl ScriptCompileContext {
     /// Extract prop names from defineProps/withDefaults and add to bindings
     pub(super) fn extract_props_bindings(&mut self, call: &MacroCall) {
@@ -122,7 +135,7 @@ impl ScriptCompileContext {
         // Parse "name?: Type" or "name: Type"
         if let Some(colon_pos) = trimmed.find(':') {
             let name_part = &trimmed[..colon_pos];
-            let name = name_part.trim().trim_end_matches('?').trim();
+            let name = normalize_type_prop_name(name_part);
 
             if !name.is_empty() && is_valid_identifier(name) {
                 self.bindings

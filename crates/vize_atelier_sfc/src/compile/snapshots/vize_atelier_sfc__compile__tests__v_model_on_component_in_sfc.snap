@@ -19,7 +19,7 @@ return (_ctx, _cache) => {
     language: 'en',
     modelValue: msg.value,
     "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((msg).value = $event))
-  }, null, 8 /* PROPS */, ["language", "modelValue"]))
+  }, null, 8 /* PROPS */, ["modelValue"]))
 }
 }
 

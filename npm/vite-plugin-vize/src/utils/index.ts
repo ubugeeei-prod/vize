@@ -35,6 +35,19 @@ function supportsTemplateOnlyHmr(output: string): boolean {
   return /(?:^|\n)(?:_sfc_main|__sfc__)\.render\s*=\s*render\b/m.test(output);
 }
 
+function insertAfterStaticImports(output: string, imports: string): string {
+  let insertAt = 0;
+  for (const match of output.matchAll(/^import\b[^\n]*(?:\r?\n|$)/gm)) {
+    insertAt = (match.index ?? 0) + match[0].length;
+  }
+
+  if (insertAt === 0) {
+    return `${imports}\n${output}`;
+  }
+
+  return `${output.slice(0, insertAt)}${imports}\n${output.slice(insertAt)}`;
+}
+
 export function generateScopeId(filename: string): string {
   const hash = createHash("sha256").update(filename).digest("hex");
   return hash.slice(0, 8);
@@ -155,10 +168,12 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
       }
     }
 
-    // Prepend style imports
+    // Keep component/user imports before the SFC's own styles. This matches
+    // plugin-vue's cascade order, so parent classes passed to child roots can
+    // override child component defaults.
     const allImports = [...styleImports, ...cssModuleImports].join("\n");
     if (allImports) {
-      output = allImports + "\n" + output;
+      output = insertAfterStaticImports(output, allImports);
     }
 
     // Inject CSS module bindings into the component

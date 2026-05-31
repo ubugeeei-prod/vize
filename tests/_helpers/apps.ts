@@ -373,6 +373,65 @@ function ensureMisskeyFluentEmojiAssets(misskeyDir: string): void {
   }
 }
 
+function ensureMisskeyOptionalDependencyStubs(misskeyDir: string): void {
+  for (const vCodeDiffDir of [
+    path.join(misskeyDir, "node_modules", "v-code-diff"),
+    path.join(misskeyDir, "packages", "frontend", "node_modules", "v-code-diff"),
+  ]) {
+    writeVCodeDiffStub(vCodeDiffDir);
+  }
+}
+
+function writeVCodeDiffStub(vCodeDiffDir: string): void {
+  ensureFileContent(
+    path.join(vCodeDiffDir, "package.json"),
+    `${JSON.stringify(
+      {
+        name: "v-code-diff",
+        version: "0.0.0-vize-fixture",
+        type: "module",
+        exports: "./index.js",
+        main: "./index.js",
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  ensureFileContent(
+    path.join(vCodeDiffDir, "index.js"),
+    `import { h } from "vue";
+
+export const CodeDiff = {
+  name: "CodeDiff",
+  props: {
+    context: null,
+    hideHeader: null,
+    language: null,
+    maxHeight: null,
+    newString: null,
+    oldString: null,
+  },
+  setup(props) {
+    return () =>
+      h(
+        "pre",
+        {
+          style: {
+            maxHeight: props.maxHeight ?? undefined,
+            overflow: "auto",
+            whiteSpace: "pre-wrap",
+          },
+        },
+        String(props.oldString ?? "") + "\\n---\\n" + String(props.newString ?? ""),
+      );
+  },
+};
+
+export default CodeDiff;
+`,
+  );
+}
+
 function removeManualChunksObject(viteConfigPath: string): void {
   let viteConfig = fs.readFileSync(viteConfigPath, "utf-8");
   const nextConfig = viteConfig.replace(
@@ -636,6 +695,173 @@ export const elkApp: AppConfig = {
   },
 };
 
+function setupMisskeyWorktree(opts?: {
+  base?: string;
+  enableVize?: boolean;
+  port?: number;
+  variant?: string;
+}): string {
+  const base = opts?.base ?? "/vite/";
+  const enableVize = opts?.enableVize ?? true;
+  const port = opts?.port ?? 5173;
+  const misskeyDir = syncGitFixtureWorktree("misskey", opts?.variant);
+  const frontendDir = path.join(misskeyDir, "packages", "frontend");
+
+  if (enableVize) {
+    ensureLocalVizePackagesBuilt();
+  }
+
+  // Create .config/default.yml
+  const configDir = path.join(misskeyDir, ".config");
+  const configFile = path.join(configDir, "default.yml");
+  if (!fs.existsSync(configFile)) {
+    fs.mkdirSync(configDir, { recursive: true });
+    fs.writeFileSync(configFile, "url: http://localhost:3000\nport: 3000\n");
+  }
+
+  // Generate index.html
+  const indexHtml = path.join(frontendDir, "index.html");
+  fs.writeFileSync(
+    indexHtml,
+    `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta property="instance_url" content="http://localhost:3000">
+<meta property="og:site_name" content="Misskey">
+</head>
+<body>
+<div id="misskey_app"></div>
+<script type="module" src="/src/_boot_.ts"></script>
+</body>
+</html>
+`,
+  );
+
+  addPnpmOverrides(path.join(misskeyDir, "package.json"), {
+    vite: "^8.0.0",
+  });
+
+  console.log(`[misskey:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile --ignore-scripts", {
+    cwd: misskeyDir,
+    env: {
+      ...process.env,
+      CYPRESS_INSTALL_BINARY: "0",
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1",
+      PUPPETEER_SKIP_DOWNLOAD: "1",
+    },
+    stdio: "inherit",
+    timeout: 300_000,
+  });
+
+  ensureMisskeyFluentEmojiAssets(misskeyDir);
+  ensureMisskeyOptionalDependencyStubs(misskeyDir);
+
+  // Build workspace packages needed by frontend
+  for (const pkg of [
+    "i18n",
+    "icons-subsetter",
+    "misskey-js",
+    "misskey-bubble-game",
+    "misskey-reversi",
+    "frontend-shared",
+  ]) {
+    console.log(
+      `[misskey:${enableVize ? "candidate" : "reference"}:setup] building ${pkg} package...`,
+    );
+    execSync(`npx -y pnpm@10 --filter ${pkg} build`, {
+      cwd: misskeyDir,
+      stdio: "inherit",
+      timeout: 120_000,
+    });
+  }
+
+  if (enableVize) {
+    createVizeSymlinks(path.join(misskeyDir, "node_modules"));
+  }
+
+  // Patch vite.config.ts
+  const viteConfigPath = path.join(frontendDir, "vite.config.ts");
+  let viteConfig = fs.readFileSync(viteConfigPath, "utf-8");
+  if (enableVize && !viteConfig.includes("@vizejs/vite-plugin")) {
+    viteConfig = viteConfig.replace(
+      "import pluginVue from '@vitejs/plugin-vue';",
+      "import { vize as pluginVue } from '@vizejs/vite-plugin';",
+    );
+  }
+  viteConfig = viteConfig
+    .replace(/base:\s*['"]\/vite\/['"],/g, `base: ${JSON.stringify(base)},`)
+    .replace(/port:\s*5173,/g, `port: ${port},`)
+    .replace(/clientPort:\s*5173,/g, `clientPort: ${port},`);
+  fs.writeFileSync(viteConfigPath, viteConfig);
+
+  removeManualChunksObject(viteConfigPath);
+  removeManualChunksObject(path.join(misskeyDir, "packages", "frontend-embed", "vite.config.ts"));
+  mirrorLoaderAssetsForViteBase(path.join(frontendDir, "public"), "vite");
+  mirrorLoaderAssetsForViteBase(
+    path.join(misskeyDir, "packages", "frontend-embed", "public"),
+    "embed_vite",
+  );
+
+  const clientServerServicePath = path.join(
+    misskeyDir,
+    "packages",
+    "backend",
+    "src",
+    "server",
+    "web",
+    "ClientServerService.ts",
+  );
+  let clientServerService = fs.readFileSync(clientServerServicePath, "utf-8");
+  let clientServerServiceChanged = false;
+  if (clientServerService.includes("rewritePrefix: '/vite',")) {
+    clientServerService = clientServerService.replace(
+      "rewritePrefix: '/vite',",
+      "rewritePrefix: '',",
+    );
+    clientServerServiceChanged = true;
+  }
+  if (clientServerService.includes("rewritePrefix: '/embed_vite',")) {
+    clientServerService = clientServerService.replace(
+      "rewritePrefix: '/embed_vite',",
+      "rewritePrefix: '',",
+    );
+    clientServerServiceChanged = true;
+  }
+  if (clientServerServiceChanged) {
+    fs.writeFileSync(clientServerServicePath, clientServerService);
+  }
+
+  const misskeyDevScriptPath = path.join(misskeyDir, "scripts", "dev.mjs");
+  let misskeyDevScript = fs.readFileSync(misskeyDevScriptPath, "utf-8");
+  if (!misskeyDevScript.includes("['--filter', 'frontend', 'build']")) {
+    misskeyDevScript = misskeyDevScript.replace(
+      `\texeca('pnpm', ['--filter', 'backend...', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),`,
+      `\texeca('pnpm', ['--filter', 'backend...', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),\n\texeca('pnpm', ['--filter', 'frontend', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),\n\texeca('pnpm', ['--filter', 'frontend-embed', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),`,
+    );
+  }
+  if (!misskeyDevScript.includes("await execa('pnpm', ['--filter', 'icons-subsetter', 'build']")) {
+    misskeyDevScript = misskeyDevScript.replace(
+      "await Promise.all([",
+      `await execa('pnpm', ['--filter', 'icons-subsetter', 'build'], {\n\tcwd: _dirname + '/../',\n\tstdout: process.stdout,\n\tstderr: process.stderr,\n});\n\nawait Promise.all([`,
+    );
+    misskeyDevScript = misskeyDevScript.replace(
+      `\t// icons-subsetterは開発段階では使用されないが、型エラーを抑制するためにはじめの一度だけビルドする\n\texeca('pnpm', ['--filter', 'icons-subsetter', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),\n`,
+      "",
+    );
+  }
+  if (!misskeyDevScript.includes("['--filter', 'misskey-bubble-game', 'build']")) {
+    misskeyDevScript = misskeyDevScript.replace(
+      `\texeca('pnpm', ['--filter', 'misskey-js', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),`,
+      `\texeca('pnpm', ['--filter', 'misskey-js', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),\n\texeca('pnpm', ['--filter', 'misskey-bubble-game', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),`,
+    );
+  }
+  fs.writeFileSync(misskeyDevScriptPath, misskeyDevScript);
+
+  return misskeyDir;
+}
+
 export const misskeyApp: AppConfig = {
   name: "misskey",
   cwd: path.join(MISSKEY_WORK_DIR, "packages", "frontend"),
@@ -649,145 +875,7 @@ export const misskeyApp: AppConfig = {
   waitUntil: "domcontentloaded",
   startupTimeout: 180_000,
   setup() {
-    const misskeyDir = syncGitFixtureWorktree("misskey");
-    const frontendDir = path.join(misskeyDir, "packages", "frontend");
-
-    ensureLocalVizePackagesBuilt();
-
-    // Create .config/default.yml
-    const configDir = path.join(misskeyDir, ".config");
-    const configFile = path.join(configDir, "default.yml");
-    if (!fs.existsSync(configFile)) {
-      fs.mkdirSync(configDir, { recursive: true });
-      fs.writeFileSync(configFile, "url: http://localhost:3000\nport: 3000\n");
-    }
-
-    // Generate index.html
-    const indexHtml = path.join(frontendDir, "index.html");
-    fs.writeFileSync(
-      indexHtml,
-      `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta property="instance_url" content="http://localhost:3000">
-<meta property="og:site_name" content="Misskey">
-</head>
-<body>
-<div id="misskey_app"></div>
-<script type="module" src="/src/_boot_.ts"></script>
-</body>
-</html>
-`,
-    );
-
-    addPnpmOverrides(path.join(misskeyDir, "package.json"), {
-      vite: "^8.0.0",
-    });
-
-    console.log("[misskey:setup] pnpm install...");
-    execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
-      cwd: misskeyDir,
-      stdio: "inherit",
-      timeout: 300_000,
-    });
-
-    ensureMisskeyFluentEmojiAssets(misskeyDir);
-
-    // Build workspace packages needed by frontend
-    for (const pkg of [
-      "i18n",
-      "icons-subsetter",
-      "misskey-js",
-      "misskey-bubble-game",
-      "misskey-reversi",
-      "frontend-shared",
-    ]) {
-      console.log(`[misskey:setup] building ${pkg} package...`);
-      execSync(`npx -y pnpm@10 --filter ${pkg} build`, {
-        cwd: misskeyDir,
-        stdio: "inherit",
-        timeout: 120_000,
-      });
-    }
-
-    createVizeSymlinks(path.join(misskeyDir, "node_modules"));
-
-    // Patch vite.config.ts
-    const viteConfigPath = path.join(frontendDir, "vite.config.ts");
-    let viteConfig = fs.readFileSync(viteConfigPath, "utf-8");
-    if (!viteConfig.includes("@vizejs/vite-plugin")) {
-      viteConfig = viteConfig.replace(
-        "import pluginVue from '@vitejs/plugin-vue';",
-        "import { vize as pluginVue } from '@vizejs/vite-plugin';",
-      );
-      fs.writeFileSync(viteConfigPath, viteConfig);
-    }
-
-    removeManualChunksObject(viteConfigPath);
-    removeManualChunksObject(path.join(misskeyDir, "packages", "frontend-embed", "vite.config.ts"));
-    mirrorLoaderAssetsForViteBase(path.join(frontendDir, "public"), "vite");
-    mirrorLoaderAssetsForViteBase(
-      path.join(misskeyDir, "packages", "frontend-embed", "public"),
-      "embed_vite",
-    );
-
-    const clientServerServicePath = path.join(
-      misskeyDir,
-      "packages",
-      "backend",
-      "src",
-      "server",
-      "web",
-      "ClientServerService.ts",
-    );
-    let clientServerService = fs.readFileSync(clientServerServicePath, "utf-8");
-    let clientServerServiceChanged = false;
-    if (clientServerService.includes("rewritePrefix: '/vite',")) {
-      clientServerService = clientServerService.replace(
-        "rewritePrefix: '/vite',",
-        "rewritePrefix: '',",
-      );
-      clientServerServiceChanged = true;
-    }
-    if (clientServerService.includes("rewritePrefix: '/embed_vite',")) {
-      clientServerService = clientServerService.replace(
-        "rewritePrefix: '/embed_vite',",
-        "rewritePrefix: '',",
-      );
-      clientServerServiceChanged = true;
-    }
-    if (clientServerServiceChanged) {
-      fs.writeFileSync(clientServerServicePath, clientServerService);
-    }
-
-    const misskeyDevScriptPath = path.join(misskeyDir, "scripts", "dev.mjs");
-    let misskeyDevScript = fs.readFileSync(misskeyDevScriptPath, "utf-8");
-    if (!misskeyDevScript.includes("['--filter', 'frontend', 'build']")) {
-      misskeyDevScript = misskeyDevScript.replace(
-        `\texeca('pnpm', ['--filter', 'backend...', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),`,
-        `\texeca('pnpm', ['--filter', 'backend...', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),\n\texeca('pnpm', ['--filter', 'frontend', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),\n\texeca('pnpm', ['--filter', 'frontend-embed', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),`,
-      );
-    }
-    if (
-      !misskeyDevScript.includes("await execa('pnpm', ['--filter', 'icons-subsetter', 'build']")
-    ) {
-      misskeyDevScript = misskeyDevScript.replace(
-        "await Promise.all([",
-        `await execa('pnpm', ['--filter', 'icons-subsetter', 'build'], {\n\tcwd: _dirname + '/../',\n\tstdout: process.stdout,\n\tstderr: process.stderr,\n});\n\nawait Promise.all([`,
-      );
-      misskeyDevScript = misskeyDevScript.replace(
-        `\t// icons-subsetterは開発段階では使用されないが、型エラーを抑制するためにはじめの一度だけビルドする\n\texeca('pnpm', ['--filter', 'icons-subsetter', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),\n`,
-        "",
-      );
-    }
-    if (!misskeyDevScript.includes("['--filter', 'misskey-bubble-game', 'build']")) {
-      misskeyDevScript = misskeyDevScript.replace(
-        `\texeca('pnpm', ['--filter', 'misskey-js', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),`,
-        `\texeca('pnpm', ['--filter', 'misskey-js', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),\n\texeca('pnpm', ['--filter', 'misskey-bubble-game', 'build'], {\n\t\tcwd: _dirname + '/../',\n\t\tstdout: process.stdout,\n\t\tstderr: process.stderr,\n\t}),`,
-      );
-    }
-    fs.writeFileSync(misskeyDevScriptPath, misskeyDevScript);
+    setupMisskeyWorktree({ enableVize: true, port: 5173 });
   },
   async setupPage(page) {
     await page.addInitScript(() => {
@@ -925,6 +1013,41 @@ export const misskeyApp: AppConfig = {
     patterns: ["src/**/*.vue"],
   },
 };
+
+function createMisskeyVisualParityApp(kind: "candidate" | "reference", port: number): AppConfig {
+  const variant = `vrt-${kind}`;
+  return {
+    name: `misskey:${kind}`,
+    cwd: path.join(getMutableGitFixtureDir("misskey", variant), "packages", "frontend"),
+    command: "npx",
+    args: ["-y", "pnpm@10", "exec", "vite"],
+    port,
+    url: `http://127.0.0.1:${port}/`,
+    mountSelector: "#misskey_app",
+    readyPattern: /Local:\s+http:\/\//,
+    allowNon200: true,
+    waitUntil: "domcontentloaded",
+    startupTimeout: 180_000,
+    setup() {
+      setupMisskeyWorktree({
+        base: "/",
+        enableVize: kind === "candidate",
+        port,
+        variant,
+      });
+    },
+  };
+}
+
+export function createMisskeyVisualParityApps(): {
+  candidate: AppConfig;
+  reference: AppConfig;
+} {
+  return {
+    reference: createMisskeyVisualParityApp("reference", 5322),
+    candidate: createMisskeyVisualParityApp("candidate", 5323),
+  };
+}
 
 export const npmxApp: AppConfig = {
   name: "npmx.dev",

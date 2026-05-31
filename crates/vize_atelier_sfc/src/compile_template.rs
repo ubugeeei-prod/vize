@@ -105,6 +105,14 @@ pub(crate) fn compile_template_block(
     dom_opts.mode = vize_atelier_core::options::CodegenMode::Module;
     dom_opts.prefix_identifiers = true;
     dom_opts.scope_id = scope_attr;
+    let hoisted_scope_attr = if options.scoped {
+        let mut attr = String::with_capacity(scope_id.len() + 7);
+        attr.push_str("data-v-");
+        attr.push_str(scope_id);
+        Some(attr)
+    } else {
+        None
+    };
     dom_opts.ssr = options.ssr;
     dom_opts.is_ts = is_ts;
     dom_opts.custom_renderer = options.custom_renderer;
@@ -131,13 +139,19 @@ pub(crate) fn compile_template_block(
     let (_, errors, result) = profile!(
         "atelier.sfc.template.dom",
         if vue_parser_quirks {
-            vize_atelier_dom::compile_template_with_vue_parser_quirks(
+            vize_atelier_dom::compile_template_with_vue_parser_quirks_and_hoisted_scope_id(
                 &allocator,
                 &template.content,
                 dom_opts,
+                hoisted_scope_attr,
             )
         } else {
-            vize_atelier_dom::compile_template_with_options(&allocator, &template.content, dom_opts)
+            vize_atelier_dom::compile_template_with_options_and_hoisted_scope_id(
+                &allocator,
+                &template.content,
+                dom_opts,
+                hoisted_scope_attr,
+            )
         }
     );
 

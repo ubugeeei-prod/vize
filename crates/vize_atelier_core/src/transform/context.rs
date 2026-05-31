@@ -47,6 +47,7 @@ impl<'a> TransformContext<'a> {
             vue_parser_quirks,
             node_removed: false,
             analysis: None,
+            hoisted_scope_id: None,
         }
     }
 

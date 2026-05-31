@@ -36,7 +36,10 @@ use vize_atelier_core::{
     codegen::generate,
     options::{CodegenOptions, ParserOptions, TransformOptions},
     parser::parse_with_options,
-    transform::{transform as do_transform, transform_with_vue_parser_quirks},
+    transform::{
+        transform as do_transform, transform_with_hoisted_scope_id,
+        transform_with_vue_parser_quirks, transform_with_vue_parser_quirks_and_hoisted_scope_id,
+    },
 };
 use vize_carton::{Bump, String, profile};
 use vize_croquis::Croquis;
@@ -55,7 +58,7 @@ pub fn compile_template_with_options<'a>(
     source: &'a str,
     options: DomCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    compile_template_inner(allocator, source, options, false)
+    compile_template_inner(allocator, source, options, false, None)
 }
 
 /// Compile a Vue template for DOM with Vue parser quirk compatibility.
@@ -64,7 +67,29 @@ pub fn compile_template_with_vue_parser_quirks<'a>(
     source: &'a str,
     options: DomCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    compile_template_inner(allocator, source, options, true)
+    compile_template_inner(allocator, source, options, true, None)
+}
+
+/// Compile a Vue template for DOM with an explicit scope ID for hoisted static VNodes.
+#[doc(hidden)]
+pub fn compile_template_with_options_and_hoisted_scope_id<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    hoisted_scope_id: Option<String>,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(allocator, source, options, false, hoisted_scope_id)
+}
+
+/// Compile a Vue template for DOM with Vue parser quirks and an explicit hoisted scope ID.
+#[doc(hidden)]
+pub fn compile_template_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    hoisted_scope_id: Option<String>,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(allocator, source, options, true, hoisted_scope_id)
 }
 
 fn compile_template_inner<'a>(
@@ -72,6 +97,7 @@ fn compile_template_inner<'a>(
     source: &'a str,
     options: DomCompilerOptions,
     vue_parser_quirks: bool,
+    hoisted_scope_id: Option<String>,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
     // Create parser options with DOM-specific settings
     let parser_opts = ParserOptions {
@@ -118,7 +144,25 @@ fn compile_template_inner<'a>(
     profile!(
         "atelier.dom.template.transform",
         if vue_parser_quirks {
-            transform_with_vue_parser_quirks(allocator, &mut root, transform_opts, analysis)
+            if hoisted_scope_id.is_some() {
+                transform_with_vue_parser_quirks_and_hoisted_scope_id(
+                    allocator,
+                    &mut root,
+                    transform_opts,
+                    analysis,
+                    hoisted_scope_id,
+                )
+            } else {
+                transform_with_vue_parser_quirks(allocator, &mut root, transform_opts, analysis)
+            }
+        } else if hoisted_scope_id.is_some() {
+            transform_with_hoisted_scope_id(
+                allocator,
+                &mut root,
+                transform_opts,
+                analysis,
+                hoisted_scope_id,
+            )
         } else {
             do_transform(allocator, &mut root, transform_opts, analysis)
         }
@@ -313,6 +357,7 @@ mod tests {
         let allocator = Bump::new();
         let mut bindings = FxHashMap::default();
         bindings.insert("message".into(), BindingType::SetupRef);
+        bindings.insert("activeClass".into(), BindingType::SetupRef);
 
         let options = DomCompilerOptions {
             mode: CodegenMode::Module,
@@ -329,7 +374,7 @@ mod tests {
 
         let (_, errors, result) = compile_template_with_options(
             &allocator,
-            r#"<div><MyComponent :msg="message" /></div>"#,
+            r#"<div><MyComponent :msg="message" :class="activeClass" :full="true" /></div>"#,
             options,
         );
 

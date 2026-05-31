@@ -2,12 +2,16 @@
 source: crates/vize_atelier_dom/src/lib.rs
 expression: full.as_str()
 ---
-import { resolveComponent as _resolveComponent, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { resolveComponent as _resolveComponent, createVNode as _createVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 export function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_MyComponent = _resolveComponent("MyComponent")
   
   return (_openBlock(), _createElementBlock("div", null, [
-    _createVNode(_component_MyComponent, { msg: message.value }, null, 8 /* PROPS */, ["msg"])
+    _createVNode(_component_MyComponent, {
+      msg: message.value,
+      class: _normalizeClass(activeClass.value),
+      full: true
+    }, null, 8 /* PROPS */, ["msg", "class"])
   ]))
 }

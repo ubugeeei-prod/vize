@@ -320,6 +320,24 @@ const props = defineProps<Props>()
     }
 
     #[test]
+    fn test_define_props_with_readonly_interface_prop() {
+        let content = r#"
+interface Props {
+    readonly minScale?: number
+}
+const props = defineProps<Props>()
+"#;
+        let mut ctx = ScriptCompileContext::new(content);
+        ctx.analyze();
+
+        assert!(ctx.has_define_props_call);
+        assert_eq!(
+            ctx.bindings.bindings.get("minScale"),
+            Some(&BindingType::Props)
+        );
+    }
+
+    #[test]
     fn test_define_props_with_type_alias_reference() {
         let content = r#"
 type Props = {

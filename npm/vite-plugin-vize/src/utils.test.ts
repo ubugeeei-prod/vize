@@ -212,6 +212,52 @@ export default _sfc_main
   );
 }
 
+// Test 3f: delegated SFC styles should load after imported child components
+{
+  const output = generateOutput(
+    {
+      code: `
+import { openBlock as _openBlock } from "vue"
+const _hoisted_1 = {}
+import Child from "./Child.vue"
+const _sfc_main = { name: "Parent" }
+export default _sfc_main
+`,
+      scopeId: "styleorder",
+      hasScoped: false,
+      styles: [
+        {
+          content: ".subscribe { position: absolute; }",
+          lang: "css",
+          scoped: false,
+          module: true,
+          index: 0,
+        },
+      ],
+    },
+    {
+      isProduction: false,
+      isDev: false,
+      filePath: "/src/Parent.vue",
+    },
+  );
+  const childImportIndex = output.indexOf('import Child from "./Child.vue"');
+  const styleImportIndex = output.indexOf(
+    'import $style from "/src/Parent.vue?vue=&type=style&index=0&lang=css&module=";',
+  );
+  const componentIndex = output.indexOf('const _sfc_main = { name: "Parent" }');
+  assert.ok(childImportIndex >= 0, "Fixture should contain the child import");
+  assert.ok(styleImportIndex >= 0, "Delegated CSS module import should be emitted");
+  assert.ok(
+    childImportIndex < styleImportIndex,
+    "Parent delegated styles should be imported after child component imports",
+  );
+  assert.ok(
+    styleImportIndex < componentIndex,
+    "Delegated style imports should still appear before component initialization",
+  );
+}
+
 // =============================================================================
 // Test: Query parameter preservation in relative imports
 // =============================================================================

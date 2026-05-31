@@ -92,6 +92,8 @@ pub struct TransformContext<'a> {
     pub(crate) node_removed: bool,
     /// Semantic analysis summary (optional, for enhanced transforms)
     pub(crate) analysis: Option<&'a Croquis>,
+    /// Scope ID to bake into static VNodes hoisted outside render scope.
+    pub(crate) hoisted_scope_id: Option<String>,
 }
 
 /// Enum for parent node types
@@ -147,7 +149,7 @@ pub fn transform<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
 ) {
-    transform_inner(allocator, root, options, analysis, false);
+    transform_inner(allocator, root, options, analysis, false, None);
 }
 
 /// Transform the root AST node with Vue parser quirk compatibility enabled.
@@ -157,7 +159,31 @@ pub fn transform_with_vue_parser_quirks<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
 ) {
-    transform_inner(allocator, root, options, analysis, true);
+    transform_inner(allocator, root, options, analysis, true, None);
+}
+
+/// Transform the root AST node with an explicit scope ID for hoisted VNodes.
+#[doc(hidden)]
+pub fn transform_with_hoisted_scope_id<'a>(
+    allocator: &'a Bump,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    analysis: Option<&'a Croquis>,
+    hoisted_scope_id: Option<String>,
+) {
+    transform_inner(allocator, root, options, analysis, false, hoisted_scope_id);
+}
+
+/// Transform the root AST node with Vue parser quirks and an explicit hoisted scope ID.
+#[doc(hidden)]
+pub fn transform_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
+    allocator: &'a Bump,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    analysis: Option<&'a Croquis>,
+    hoisted_scope_id: Option<String>,
+) {
+    transform_inner(allocator, root, options, analysis, true, hoisted_scope_id);
 }
 
 fn transform_inner<'a>(
@@ -166,6 +192,7 @@ fn transform_inner<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
     vue_parser_quirks: bool,
+    hoisted_scope_id: Option<String>,
 ) {
     let source = root.source.clone();
     let mut ctx = if let Some(analysis) = analysis {
@@ -179,6 +206,7 @@ fn transform_inner<'a>(
     } else {
         TransformContext::new_with_vue_parser_quirks(allocator, source, options, vue_parser_quirks)
     };
+    ctx.hoisted_scope_id = hoisted_scope_id;
     ctx.root = Some(root as *mut _);
 
     // Transform the root children
