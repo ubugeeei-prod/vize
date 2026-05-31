@@ -156,6 +156,26 @@ watch(
     }
 
     #[test]
+    fn test_use_head_import_survives_use_seo_meta_transform_window() {
+        let content = r#"
+import {
+  useHead,
+  useSeoMeta,
+} from '#imports'
+
+useSeoMeta({ title: 'Docs' })
+"#;
+        let output = compile_setup(content);
+
+        assert!(
+            output.contains("useHead"),
+            "Nuxt transforms useSeoMeta to useHead after TS lowering, so the explicit import must survive:\n{}",
+            output
+        );
+        assert!(output.contains("useSeoMeta"));
+    }
+
+    #[test]
     fn test_multiline_standalone_await_preserves_object_literal() {
         let content = r#"
 const client = useClient()
