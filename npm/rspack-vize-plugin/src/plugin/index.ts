@@ -3,6 +3,10 @@
 import type { Compiler, RuleSetRule } from "@rspack/core";
 import type { VizeRspackPluginOptions } from "../types/index.ts";
 import { matchesPattern } from "../shared/utils.ts";
+import {
+  getLegacyNativeCssState,
+  resolveNativeCss,
+} from "../shared/nativeCss.ts";
 import { applyRuleCloning } from "./ruleCloning.ts";
 
 export class VizePlugin {
@@ -16,17 +20,20 @@ export class VizePlugin {
 
   apply(compiler: Compiler): void {
     const logger = compiler.getInfrastructureLogger(VizePlugin.name);
-    const isProduction = this.options.isProduction ?? compiler.options.mode === "production";
+    const isProduction =
+      this.options.isProduction ?? compiler.options.mode === "production";
 
     if (this.options.vapor && !isProduction) {
       logger.debug("Vapor mode is enabled.");
     }
 
-    const isCssNativeEnabled = Boolean(
-      (compiler.options as { experiments?: { css?: boolean } }).experiments?.css,
+    const legacyNativeCssState = getLegacyNativeCssState(compiler.options);
+    const isCssNativeEnabled = resolveNativeCss(
+      this.options.css?.native,
+      compiler.options,
     );
 
-    if (this.options.css?.native && !isCssNativeEnabled) {
+    if (this.options.css?.native && legacyNativeCssState === "disabled") {
       logger.warn(
         "`css.native: true` is set but `experiments.css` is not enabled in rspack config.",
       );
@@ -37,7 +44,10 @@ export class VizePlugin {
     if (autoRules) {
       const rules = compiler.options.module?.rules;
       if (rules) {
-        const result = applyRuleCloning(rules as (RuleSetRule | "...")[], isCssNativeEnabled);
+        const result = applyRuleCloning(
+          rules as (RuleSetRule | "...")[],
+          isCssNativeEnabled,
+        );
         if (result.applied) {
           logger.debug(
             `Auto-injected ${result.clonedCount} style rule(s) for Vue SFC sub-requests.`,
@@ -78,7 +88,9 @@ export class VizePlugin {
             },
             type: "javascript/auto",
           });
-          logger.debug("Auto-injected TypeScript post-processing rule for .vue files.");
+          logger.debug(
+            "Auto-injected TypeScript post-processing rule for .vue files.",
+          );
         }
       }
     }
@@ -87,7 +99,9 @@ export class VizePlugin {
     const { DefinePlugin } = compiler.webpack;
     const existingDefines = new Set<string>();
     for (const plugin of compiler.options.plugins ?? []) {
-      const defs = (plugin as unknown as { definitions?: Record<string, unknown> })?.definitions;
+      const defs = (
+        plugin as unknown as { definitions?: Record<string, unknown> }
+      )?.definitions;
       if (defs) {
         for (const key of Object.keys(defs)) {
           existingDefines.add(key);
@@ -103,7 +117,8 @@ export class VizePlugin {
       vueDefines["__VUE_PROD_DEVTOOLS__"] = JSON.stringify(!isProduction);
     }
     if (!existingDefines.has("__VUE_PROD_HYDRATION_MISMATCH_DETAILS__")) {
-      vueDefines["__VUE_PROD_HYDRATION_MISMATCH_DETAILS__"] = JSON.stringify(!isProduction);
+      vueDefines["__VUE_PROD_HYDRATION_MISMATCH_DETAILS__"] =
+        JSON.stringify(!isProduction);
     }
 
     if (Object.keys(vueDefines).length > 0) {

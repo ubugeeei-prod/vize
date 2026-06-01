@@ -4,7 +4,7 @@ High-performance Rspack plugin for Vue SFC compilation powered by [Vize](https:/
 
 > [!NOTE]
 > Rspack intentionally uses the dedicated `@vizejs/rspack-plugin` path instead of an `@vizejs/unplugin/rspack` export.
-> Its loader chain, `experiments.css`, and HMR behavior need Rspack-specific handling.
+> Its loader chain, native CSS handling, and HMR behavior need Rspack-specific handling.
 >
 > Non-Vite bundler integrations are still unstable.
 > If you need Rollup, Rolldown, Webpack, esbuild, or Babel, use `@vizejs/unplugin` and test carefully before relying on it in production.
@@ -13,7 +13,7 @@ High-performance Rspack plugin for Vue SFC compilation powered by [Vize](https:/
 
 - ⚡ **Blazing Fast** - Powered by Rust-based `@vizejs/native` compiler
 - 🔄 **HMR Support** - Script/template hot reload via `module.hot` + `__VUE_HMR_RUNTIME__`, CSS Modules HMR with targeted rerender
-- 🎨 **CSS Processing** - Support for both native CSS (`experiments.css`) and CssExtractRspackPlugin
+- 🎨 **CSS Processing** - Support for both Rspack native CSS (`experiments.css` in Rspack 1.x, default capability in Rspack 2.x) and CssExtractRspackPlugin
 - 📦 **CSS Modules** - First-class CSS Modules support with per-module HMR
 - 🔗 **`<style src>` Support** - Resolves external style files with watch dependency tracking
 - 🔧 **TypeScript** - Full TypeScript support with auto-detection and built-in SWC stripping by default
@@ -31,6 +31,10 @@ vp install -D @vizejs/rspack-plugin @rspack/core
 
 ## Usage
 
+> [!IMPORTANT]
+> Rspack 1.x requires `experiments: { css: true }` when using `css: { native: true }`.
+> Rspack 2.x removed `experiments.css`; do not add that option. Native CSS processing is available by default.
+
 ### Simple Mode (Recommended)
 
 Write a single `.vue` rule and your normal CSS rules. `VizePlugin` automatically clones your CSS rules for Vue style sub-requests and injects Rspack's built-in SWC post-processing for `.vue` TypeScript output.
@@ -43,10 +47,9 @@ const isProduction = process.env.NODE_ENV === "production";
 
 export default {
   mode: isProduction ? "production" : "development",
-
-  experiments: {
-    css: true, // Enable Rspack native CSS
-  },
+  // Rspack 1.x only when using css.native:
+  // experiments: { css: true },
+  // Rspack 2.x: do not set experiments.css; it was removed.
 
   module: {
     rules: [
@@ -60,6 +63,8 @@ export default {
   plugins: [
     new VizePlugin({
       isProduction,
+      // Rspack 1.x requires experiments: { css: true }.
+      // Rspack 2.x does not need experiments.css.
       css: { native: true },
     }),
   ],
@@ -68,7 +73,7 @@ export default {
 
 ### Native CSS with SCSS (Simple Mode)
 
-Uses Rspack's built-in `experiments.css` for optimal performance. Just add your SCSS rule — VizePlugin handles the rest.
+Uses Rspack native CSS for optimal performance. In Rspack 1.x, add `experiments: { css: true }`; in Rspack 2.x, do not set `experiments.css` because it was removed. Just add your SCSS rule — VizePlugin handles the rest.
 
 ```javascript
 // rspack.config.mjs
@@ -80,9 +85,9 @@ const isProduction = process.env.NODE_ENV === "production";
 export default {
   mode: isProduction ? "production" : "development",
 
-  experiments: {
-    css: true,
-  },
+  // Rspack 1.x only:
+  // experiments: { css: true },
+  // Rspack 2.x: do not set experiments.css.
 
   module: {
     rules: [
@@ -133,7 +138,10 @@ export default {
       {
         test: /\.css$/,
         type: "javascript/auto",
-        use: [isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader", "css-loader"],
+        use: [
+          isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
+          "css-loader",
+        ],
       },
       {
         test: /\.scss$/,
@@ -225,9 +233,9 @@ const isProduction = process.env.NODE_ENV === "production";
 export default {
   mode: isProduction ? "production" : "development",
 
-  experiments: {
-    css: true,
-  },
+  // Rspack 1.x only:
+  // experiments: { css: true },
+  // Rspack 2.x: do not set experiments.css.
 
   module: {
     rules: [
@@ -320,7 +328,9 @@ export default {
             resourceQuery: /vue&type=style.*lang=scss/,
             type: "javascript/auto",
             use: [
-              isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
+              isProduction
+                ? rspack.CssExtractRspackPlugin.loader
+                : "style-loader",
               "css-loader",
               { loader: "@vizejs/rspack-plugin/scope-loader" },
               "sass-loader",
@@ -333,13 +343,16 @@ export default {
             resourceQuery: /vue&type=style/,
             type: "javascript/auto",
             use: [
-              isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
+              isProduction
+                ? rspack.CssExtractRspackPlugin.loader
+                : "style-loader",
               {
                 loader: "css-loader",
                 options: {
                   modules: {
                     auto: (_resourcePath, resourceQuery) =>
-                      typeof resourceQuery === "string" && resourceQuery.includes("module="),
+                      typeof resourceQuery === "string" &&
+                      resourceQuery.includes("module="),
                   },
                 },
               },
@@ -363,7 +376,10 @@ export default {
       {
         test: /\.css$/,
         type: "javascript/auto",
-        use: [isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader", "css-loader"],
+        use: [
+          isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
+          "css-loader",
+        ],
       },
 
       // Regular SCSS files (non-Vue)
@@ -421,7 +437,7 @@ new VizePlugin({
   vapor: boolean;           // Enable Vapor mode (default: false)
   root: string;             // Root directory (default: Rspack's root)
   css: {
-    native: boolean;        // Use experiments.css (default: false), warns if config mismatch
+    native: boolean;        // Use Rspack native CSS; Rspack 1.x needs experiments: { css: true }, Rspack 2.x does not
   };
   compilerOptions: {};      // Extra @vizejs/native compileSfc options
   debug: boolean;           // Enable debug logging (default: false)
@@ -592,14 +608,14 @@ Only relative (`./`, `../`), alias (`@/`), and tilde (`~/`, `~pkg`) URLs are tra
 {
   loader: "@vizejs/rspack-plugin/style-loader",
   options: {
-    native: boolean;        // Using experiments.css (default: false)
+    native: boolean;        // Rspack native CSS mode; Rspack 1.x needs experiments: { css: true }, Rspack 2.x does not
   };
 }
 ```
 
 ### VizeScopeLoader
 
-Applies native scoped CSS transformation using `@vizejs/native compileCss`. Runs **after** preprocessors (SCSS/Less/Stylus → CSS) and **before** css-loader or `experiments.css`.
+Applies native scoped CSS transformation using `@vizejs/native compileCss`. Runs **after** preprocessors (SCSS/Less/Stylus → CSS) and **before** css-loader or Rspack native CSS handling. For native CSS, Rspack 1.x needs `experiments.css`, while Rspack 2.x does not.
 
 ```typescript
 // In rspack.config.js
