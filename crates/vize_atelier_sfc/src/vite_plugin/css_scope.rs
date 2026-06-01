@@ -722,7 +722,7 @@ mod tests {
                 "data-v-x"
             )
             .as_str(),
-            "/* High contrast */\n@media (forced-colors: active) { .foo[data-v-x] { color: red; } }"
+            "/* High contrast */\n@media (forced-colors: active) { .foo[data-v-x]{color: red;}}"
         );
     }
 
@@ -730,7 +730,7 @@ mod tests {
     fn keeps_leading_comments_before_selectors() {
         assert_eq!(
             scope_css_for_pipeline("/* Button */\n.foo { color: red; }", "data-v-x").as_str(),
-            "/* Button */\n.foo[data-v-x] { color: red; }"
+            "/* Button */\n.foo[data-v-x]{color: red;}"
         );
     }
 }

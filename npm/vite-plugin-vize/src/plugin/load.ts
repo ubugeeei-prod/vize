@@ -199,15 +199,6 @@ function loadDefinePageMetaArtifact(
   return code ? { code, map: null } : null;
 }
 
-function normalizeStyleVirtualId(id: string): string {
-  let styleId = id.startsWith("\0") ? id.slice(1) : id;
-  if (!styleId.includes("?vue")) {
-    return styleId;
-  }
-
-  return styleId.replace(/\.module\.\w+$/, "").replace(/\.\w+$/, "");
-}
-
 export function loadHook(
   state: VizePluginState,
   id: string,

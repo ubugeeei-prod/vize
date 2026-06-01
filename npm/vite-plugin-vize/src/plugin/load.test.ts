@@ -621,7 +621,7 @@ assert.ok(
 );
 assert.equal(
   applyCssVisibleStyleLoad.code,
-  String.raw`.root[data-v-applycss] { @apply text-fg; height: var(--applycss-height\ \+\ \'px\'); }`,
+  String.raw`.root[data-v-applycss]{@apply text-fg; height: var(--applycss-height\ \+\ \'px\');}`,
   "CSS-visible delegated styles should keep Vite pipeline semantics",
 );
 

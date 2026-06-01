@@ -99,7 +99,7 @@ const msg = 'hello'
 
   assert.equal(
     transformed,
-    ".rrevdjwu > .group + .group[data-v-menu] { color: red; }",
+    ".rrevdjwu > .group + .group[data-v-menu]{color: red;}",
     "CSS-visible style IDs should still receive scoped preprocessor post-processing",
   );
 }
