@@ -608,6 +608,21 @@ assert.doesNotMatch(
   "Delegated style CSS should not leak v-bind() to Vite",
 );
 
+const applyCssVisibleStyleLoad = loadHook(
+  applyCssState,
+  "/src/ApplyStyles.vue?vue=&type=style&index=0&scoped=data-v-applycss&lang=css.css",
+  { ssr: false },
+);
+assert.ok(
+  applyCssVisibleStyleLoad && typeof applyCssVisibleStyleLoad === "object",
+  "CSS-visible virtual style IDs should load through Vize",
+);
+assert.equal(
+  applyCssVisibleStyleLoad.code,
+  String.raw`.root[data-v-applycss] { @apply text-fg; height: var(--applycss-height\ \+\ \'px\'); }`,
+  "CSS-visible delegated styles should keep Vite pipeline semantics",
+);
+
 const scssPath = "/src/MkSuperMenu.vue";
 const scssState: VizePluginState = {
   ...hmrState,
@@ -682,9 +697,14 @@ assert.doesNotMatch(
   "Production on-demand loads should not inline CSS when extraction is enabled",
 );
 assert.equal(
-  onDemandProdState.collectedCss.get(onDemandProdPath),
-  ".prod { color: seagreen; }",
-  "Production on-demand compilation should collect extracted CSS for generateBundle",
+  onDemandProdState.collectedCss.has(onDemandProdPath),
+  false,
+  "Production on-demand compilation should let Vite collect SFC style imports",
+);
+assert.match(
+  onDemandProdLoad.code,
+  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css";/,
+  "Production on-demand loads should emit a virtual style import for CSS extraction",
 );
 
 console.log("✅ vite-plugin-vize load boundary tests passed!");

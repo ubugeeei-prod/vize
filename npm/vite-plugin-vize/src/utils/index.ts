@@ -137,9 +137,12 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
   }
 
   // Determine whether to use delegated style imports or inline CSS injection
-  const useDelegatedStyles = hasDelegatedStyles(compiled) && filePath;
+  const useStyleImports =
+    !!filePath &&
+    !!compiled.styles?.length &&
+    (hasDelegatedStyles(compiled) || (!ssr && isProduction && extractCss));
 
-  if (useDelegatedStyles) {
+  if (useStyleImports) {
     // --- Delegated style handling ---
     // Some style blocks require Vite's CSS pipeline (preprocessor or CSS Modules).
     // Emit virtual style imports for ALL blocks so Vite handles them uniformly.

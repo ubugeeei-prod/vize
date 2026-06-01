@@ -92,6 +92,19 @@ const msg = 'hello'
 }
 
 {
+  const transformed = transformScopedPreprocessorCss(
+    ".rrevdjwu > .group + .group { color: red; }",
+    "/src/MkSuperMenu.vue?vue=&type=style&index=0&scoped=data-v-menu&lang=scss.scss",
+  );
+
+  assert.equal(
+    transformed,
+    ".rrevdjwu > .group + .group[data-v-menu] { color: red; }",
+    "CSS-visible style IDs should still receive scoped preprocessor post-processing",
+  );
+}
+
+{
   const state = createState({
     isProduction: true,
     extractCss: true,
@@ -106,9 +119,14 @@ const msg = 'hello'
     "Production virtual SFC transforms should succeed",
   );
   assert.equal(
-    state.collectedCss.get(virtualSfcId)?.trim(),
-    ".card { color: rebeccapurple; }",
-    "Production virtual SFC transforms should register extracted CSS for bundling",
+    state.collectedCss.has(virtualSfcId),
+    false,
+    "Production virtual SFC transforms should let Vite collect emitted style imports",
+  );
+  assert.match(
+    result.code,
+    /import ".*Card\.setup\.ts\?vue=&type=style&index=0&lang=css";/,
+    "Production virtual SFC transforms should emit a virtual style import",
   );
 }
 

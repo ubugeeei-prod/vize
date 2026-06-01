@@ -44,6 +44,46 @@ function resolveAliasRequest(
   return resolveViteAliasRequest(id, nativeCssAliasRules(state));
 }
 
+function getBarePackageName(id: string): string | null {
+  if (!isViteBareSpecifier(id)) {
+    return null;
+  }
+
+  const segments = id.split("/");
+  if (id.startsWith("@")) {
+    return segments.length >= 2 ? `${segments[0]}/${segments[1]}` : null;
+  }
+  return segments[0] || null;
+}
+
+function resolveBareImportFromPnpmHoist(request: string, base: string): string | null {
+  const packageName = getBarePackageName(request);
+  if (!packageName) {
+    return null;
+  }
+
+  let current = path.dirname(base);
+  while (current !== path.dirname(current)) {
+    const directPackage = path.join(current, "node_modules", packageName);
+    if (fs.existsSync(directPackage)) {
+      return null;
+    }
+
+    const hoistRoot = path.join(current, "node_modules", ".pnpm", "node_modules");
+    const hoistedPackage = path.join(hoistRoot, packageName);
+    if (fs.existsSync(hoistedPackage)) {
+      try {
+        return createRequire(path.join(hoistRoot, "__vize_probe__.js")).resolve(request);
+      } catch {
+        // Continue looking from parent directories.
+      }
+    }
+    current = path.dirname(current);
+  }
+
+  return null;
+}
+
 function resolveBareImportWithNode(
   state: Pick<VizePluginState, "root">,
   id: string,
@@ -51,6 +91,11 @@ function resolveBareImportWithNode(
 ): string | null {
   const { request, querySuffix } = splitViteIdQuery(id);
   for (const candidate of createViteBareImportBases(state.root, importer)) {
+    const hoisted = resolveBareImportFromPnpmHoist(request, candidate);
+    if (hoisted) {
+      return `${hoisted}${querySuffix}`;
+    }
+
     try {
       const requireFromBase = createRequire(candidate);
       const resolved = requireFromBase.resolve(request);
@@ -385,10 +430,6 @@ export async function resolveIdHook(
     return RESOLVED_CSS_MODULE;
   }
 
-  if (isBuild && request.normalizedFsId) {
-    return request.normalizedFsId;
-  }
-
   // Handle route macro queries.
   // - ?macro=true is used by Nuxt page macros.
   // - ?definePage is used by Vue Router file-based routing.
@@ -415,7 +456,11 @@ export async function resolveIdHook(
       state.logger.log(`resolveId: skipping node_modules style import ${id}`);
       return null;
     }
-    return `\0${id}${request.styleVirtualSuffix}`;
+    return `${request.normalizedFsId ?? id}${request.styleVirtualSuffix}`;
+  }
+
+  if (isBuild && request.normalizedFsId) {
+    return request.normalizedFsId;
   }
 
   // If importer is a vize virtual module or macro module, resolve imports against the real path

@@ -704,6 +704,26 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("style-query");
+  const source = path.join(projectRoot, "app", "components", "Styled.vue");
+  writeFixtureFile(source, "<template><div /></template><style>.root{}</style>");
+
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    `${source}?vue=&type=style&index=0&lang=css`,
+    undefined,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    `${source}?vue=&type=style&index=0&lang=css.css`,
+    "Vue style queries should stay CSS-visible so Vite extracts them",
+  );
+}
+
+{
   const projectRoot = createTempProject("vue-raw-query");
   const source = path.join(projectRoot, "app", "components", "Raw.vue");
   writeFixtureFile(source, "<template><div /></template>");

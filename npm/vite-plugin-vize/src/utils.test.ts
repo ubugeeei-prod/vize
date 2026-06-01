@@ -258,6 +258,45 @@ export default _sfc_main
   );
 }
 
+// Test 3g: production extracted plain CSS should flow through Vite's CSS pipeline
+{
+  const output = generateOutput(
+    {
+      code: `
+import { openBlock as _openBlock } from "vue"
+const _sfc_main = { name: "ProdStyles" }
+export default _sfc_main
+`,
+      scopeId: "prodstyles",
+      hasScoped: false,
+      styles: [
+        {
+          content: ".root { color: red; }",
+          lang: "css",
+          scoped: false,
+          module: false,
+          index: 0,
+        },
+      ],
+      css: ".root { color: red; }",
+    },
+    {
+      isProduction: true,
+      isDev: false,
+      extractCss: true,
+      filePath: "/src/ProdStyles.vue",
+    },
+  );
+  assert.ok(
+    output.includes('import "/src/ProdStyles.vue?vue=&type=style&index=0&lang=css";'),
+    "Production extracted plain CSS should emit a virtual style import",
+  );
+  assert.ok(
+    !output.includes("__vize_css__"),
+    "Production extracted plain CSS should not use runtime style injection",
+  );
+}
+
 // =============================================================================
 // Test: Query parameter preservation in relative imports
 // =============================================================================

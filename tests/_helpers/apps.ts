@@ -209,6 +209,17 @@ function patchNpmxLunariaModule(modulePath: string): void {
   }
 }
 
+function patchNpmxPackageJson(packageJsonPath: string): void {
+  const pkg = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+  if (pkg.dependencies?.["@lunariajs/core"] === "0.1.1") {
+    return;
+  }
+
+  pkg.dependencies ??= {};
+  pkg.dependencies["@lunariajs/core"] = "0.1.1";
+  fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, "\t") + "\n");
+}
+
 function patchNpmxPrerenderRoutes(configPath: string): void {
   const source = fs.readFileSync(configPath, "utf-8");
   const nextSource = source.replace(/prerender: true/g, "prerender: false");
@@ -1197,12 +1208,14 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
     ensureLocalVizePackagesBuilt();
   }
 
-  addPnpmOverrides(path.join(npmxDir, "package.json"), {
+  const packageJsonPath = path.join(npmxDir, "package.json");
+  patchNpmxPackageJson(packageJsonPath);
+  addPnpmOverrides(packageJsonPath, {
     vite: "^8.0.0",
   });
 
   console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
-  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile --ignore-scripts", {
     cwd: npmxDir,
     stdio: "inherit",
     timeout: 300_000,
@@ -1211,6 +1224,18 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
       ...NPMX_E2E_ENV,
     },
   });
+  for (const script of ["generate:lexicons", "generate:sprite"]) {
+    console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] pnpm ${script}...`);
+    execSync(`npx -y pnpm@10 ${script}`, {
+      cwd: npmxDir,
+      stdio: "inherit",
+      timeout: 120_000,
+      env: {
+        ...process.env,
+        ...NPMX_E2E_ENV,
+      },
+    });
+  }
 
   if (enableVize) {
     createVizeSymlinks(nmDir);
@@ -1246,34 +1271,100 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
   return npmxDir;
 }
 
-function createNpmxVisualParityApp(kind: "candidate" | "reference", port: number): AppConfig {
-  const variant = `vrt-${kind}`;
+type VisualParityMode = "dev" | "preview";
+
+function ensureNpmxPreviewVueRuntime(npmxDir: string): void {
+  const outputNodeModulesDir = path.join(npmxDir, ".output", "server", "node_modules");
+  const vueRuntimeLink = path.join(outputNodeModulesDir, "vue");
+  const vueRuntimeTarget = path.join(npmxDir, "node_modules", "vue");
+  const vuePackageJsonPath = path.join(vueRuntimeTarget, "package.json");
+  const existingRendererEntry = path.join(vueRuntimeLink, "server-renderer", "index.mjs");
+
+  if (fs.existsSync(existingRendererEntry) || !fs.existsSync(vueRuntimeTarget)) {
+    return;
+  }
+
+  let target = vueRuntimeTarget;
+  if (fs.existsSync(vuePackageJsonPath)) {
+    const version = JSON.parse(fs.readFileSync(vuePackageJsonPath, "utf-8")).version;
+    const bundledTarget = path.join(outputNodeModulesDir, ".nitro", `vue@${version}`);
+    if (fs.existsSync(path.join(bundledTarget, "server-renderer", "index.mjs"))) {
+      target = bundledTarget;
+    }
+  }
+
+  fs.mkdirSync(outputNodeModulesDir, { recursive: true });
+  try {
+    const stat = fs.lstatSync(vueRuntimeLink);
+    if (stat.isSymbolicLink()) {
+      fs.unlinkSync(vueRuntimeLink);
+      fs.symlinkSync(target, vueRuntimeLink, "dir");
+      return;
+    }
+  } catch {
+    // does not exist
+  }
+
+  ensureSymlink(path.join(vueRuntimeLink, "server-renderer"), path.join(target, "server-renderer"));
+}
+
+function createNpmxVisualParityApp(
+  kind: "candidate" | "reference",
+  port: number,
+  mode: VisualParityMode,
+): AppConfig {
+  const variant = `vrt-${mode}-${kind}`;
+  const command =
+    mode === "preview"
+      ? ["exec", "nuxt", "preview", "--port", String(port)]
+      : ["exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"];
+
   return {
-    name: `npmx.dev:${kind}`,
+    name: `npmx.dev:${mode}:${kind}`,
     cwd: getMutableGitFixtureDir("npmx.dev", variant),
     command: "npx",
-    args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"],
+    args: ["-y", "pnpm@10", ...command],
     port,
     url: `http://127.0.0.1:${port}`,
     mountSelector: "#__nuxt",
-    readyPattern: new RegExp(
-      `Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`,
-    ),
+    readyPattern:
+      mode === "preview"
+        ? /Listening on/
+        : new RegExp(`Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`),
     allowNon200: true,
     waitUntil: "load",
     readyDelay: 30_000,
     env: NPMX_E2E_ENV,
     startupTimeout: 120_000,
     setup() {
-      setupNpmxWorktree({ enableVize: kind === "candidate", variant });
+      const npmxDir = setupNpmxWorktree({ enableVize: kind === "candidate", variant });
+      if (mode === "preview") {
+        execSync("npx -y pnpm@10 build", {
+          cwd: npmxDir,
+          env: {
+            ...process.env,
+            ...NPMX_E2E_ENV,
+            NODE_ENV: "production",
+          },
+          stdio: "inherit",
+          timeout: 300_000,
+        });
+        ensureNpmxPreviewVueRuntime(npmxDir);
+      }
     },
   };
 }
 
-export function createNpmxVisualParityApps(): { candidate: AppConfig; reference: AppConfig } {
+export function createNpmxVisualParityApps(mode: VisualParityMode = "dev"): {
+  candidate: AppConfig;
+  reference: AppConfig;
+} {
+  const referencePort = mode === "preview" ? 5330 : 5320;
+  const candidatePort = mode === "preview" ? 5331 : 5321;
+
   return {
-    reference: createNpmxVisualParityApp("reference", 5320),
-    candidate: createNpmxVisualParityApp("candidate", 5321),
+    reference: createNpmxVisualParityApp("reference", referencePort, mode),
+    candidate: createNpmxVisualParityApp("candidate", candidatePort, mode),
   };
 }
 

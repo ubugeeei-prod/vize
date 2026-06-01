@@ -29,7 +29,7 @@ fn transform_css_block(css: &str, scope_id: &str) -> String {
 
         let header = &css[cursor..brace];
         let body = &css[brace + 1..end];
-        let leading_length = first_non_ws(header);
+        let leading_length = leading_trivia_end(header);
         let leading = leading_length.map_or(header, |length| &header[..length]);
         let statement = leading_length.map_or("", |length| &header[length..]);
 
@@ -444,6 +444,27 @@ fn first_non_ws(value: &str) -> Option<usize> {
         .map(|(index, _)| index)
 }
 
+fn leading_trivia_end(value: &str) -> Option<usize> {
+    let mut cursor = 0usize;
+
+    loop {
+        let (relative, _) = value[cursor..]
+            .char_indices()
+            .find(|(_, char)| !char.is_whitespace())?;
+        cursor += relative;
+
+        if !value[cursor..].starts_with("/*") {
+            return Some(cursor);
+        }
+
+        let comment_body_start = cursor + 2;
+        let Some(comment_end) = value[comment_body_start..].find("*/") else {
+            return Some(cursor);
+        };
+        cursor = comment_body_start + comment_end + 2;
+    }
+}
+
 fn trailing_trim_end(value: &str) -> usize {
     value
         .char_indices()
@@ -519,6 +540,26 @@ mod tests {
             )
             .as_str(),
             "@media (min-width: 1px) { .foo[data-v-x] { color: red; } }"
+        );
+    }
+
+    #[test]
+    fn keeps_leading_comments_before_media_rules() {
+        assert_eq!(
+            scope_css_for_pipeline(
+                "/* High contrast */\n@media (forced-colors: active) { .foo { color: red; } }",
+                "data-v-x"
+            )
+            .as_str(),
+            "/* High contrast */\n@media (forced-colors: active) { .foo[data-v-x] { color: red; } }"
+        );
+    }
+
+    #[test]
+    fn keeps_leading_comments_before_selectors() {
+        assert_eq!(
+            scope_css_for_pipeline("/* Button */\n.foo { color: red; }", "data-v-x").as_str(),
+            "/* Button */\n.foo[data-v-x] { color: red; }"
         );
     }
 }
