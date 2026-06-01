@@ -334,6 +334,9 @@ fn split_selector_list(selector_list: &str) -> SmallVec<[&str; 4]> {
         }
 
         match char {
+            '\\' => {
+                iter.next();
+            }
             '\'' | '"' => quote = Some(char),
             '(' => paren_depth += 1,
             ')' => paren_depth = paren_depth.saturating_sub(1),
@@ -500,6 +503,9 @@ fn find_scope_insert_position(target: &str) -> usize {
         }
 
         match char {
+            '\\' => {
+                iter.next();
+            }
             '\'' | '"' => quote = Some(char),
             '(' => paren_depth += 1,
             ')' => paren_depth = paren_depth.saturating_sub(1),
@@ -731,6 +737,18 @@ mod tests {
         assert_eq!(
             scope_css_for_pipeline("/* card */\n.foo { color: red; }", "data-v-x").as_str(),
             "/* card */\n.foo[data-v-x]{color: red;}"
+        );
+    }
+
+    #[test]
+    fn scopes_escaped_utility_selectors() {
+        assert_eq!(
+            scope_css_for_pipeline(
+                ".hover\\:text-\\[\\#00DC82\\]:hover { color: red; }.text-\\[80px\\] { font-size: 80px; }",
+                "data-v-x"
+            )
+            .as_str(),
+            ".hover\\:text-\\[\\#00DC82\\][data-v-x]:hover{color: red;}.text-\\[80px\\][data-v-x]{font-size: 80px;}"
         );
     }
 }
