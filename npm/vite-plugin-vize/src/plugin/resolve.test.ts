@@ -409,6 +409,71 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   );
 }
 
+{
+  const projectRoot = createTempProject("build-vue-compiled-importer");
+  const importer = path.join(projectRoot, "app", "pages", "index.vue");
+  const compiledImporter = `${importer}.ts`;
+  const vueRoot = path.join(projectRoot, "node_modules", "vue");
+  const vueBundlerEntry = path.join(vueRoot, "dist", "vue.runtime.esm-bundler.js");
+  writeFixtureFile(
+    path.join(vueRoot, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(vueRoot, "index.js"), "module.exports = {};");
+  writeFixtureFile(vueBundlerEntry, "export const resolveComponent = () => null;");
+
+  const state = createState(projectRoot);
+  state.server = null;
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async (id) => (id === "vue" ? { id: "#entry" } : null),
+    },
+    state,
+    "vue",
+    compiledImporter,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    vueBundlerEntry,
+    "Build imports from compiled .vue.ts modules must not let Nuxt's #entry alias replace Vue runtime imports",
+  );
+}
+
+{
+  const projectRoot = createTempProject("build-vue-plain-sfc-importer");
+  const importer = path.join(projectRoot, "app", "pages", "index.vue");
+  const vueRoot = path.join(projectRoot, "node_modules", "vue");
+  const vueBundlerEntry = path.join(vueRoot, "dist", "vue.runtime.esm-bundler.js");
+  writeFixtureFile(
+    path.join(vueRoot, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(vueRoot, "index.js"), "module.exports = {};");
+  writeFixtureFile(vueBundlerEntry, "export const resolveComponent = () => null;");
+
+  const state = createState(projectRoot);
+  state.server = null;
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async (id) => (id === "vue" ? { id: "#entry" } : null),
+    },
+    state,
+    "vue",
+    importer,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    vueBundlerEntry,
+    "Build imports from Vue SFC modules should bypass Nuxt's #entry alias for Vue runtime helpers",
+  );
+}
+
 // pnpm-isolated dev install: the project root has no `node_modules/vue`, so
 // deferring to Vite's secondary resolveId pass (which uses the \0-prefixed
 // virtual ID as importer and falls back to root) cannot find Vue. The plugin
@@ -789,6 +854,41 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     expectResolvedId(resolved),
     toVirtualId(source, true),
     "SSR resolution should upgrade client virtual IDs to SSR-specific virtual IDs",
+  );
+}
+
+{
+  const parentRoot = createTempRoot("vue-parent-runtime");
+  const projectRoot = path.join(parentRoot, "nested-project");
+  writeFixtureFile(path.join(parentRoot, "node_modules", "vue", "package.json"), "{}");
+  writeFixtureFile(path.join(projectRoot, "package.json"), "{}");
+  const source = path.join(projectRoot, "app", "pages", "index.vue");
+  writeFixtureFile(source, "<template />\n");
+  const resolvedVue = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.6.0",
+    "node_modules",
+    "vue",
+    "dist",
+    "vue.runtime.esm-bundler.js",
+  );
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async () => ({ id: resolvedVue }),
+    },
+    createState(projectRoot),
+    "vue",
+    toVirtualId(source),
+    undefined,
+  );
+
+  assert.equal(
+    resolved,
+    null,
+    "Vue runtime imports from virtual modules should defer when Vue resolves from a parent root",
   );
 }
 

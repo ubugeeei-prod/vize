@@ -669,10 +669,10 @@ assert.doesNotMatch(
   /_resolveComponent\("Suspense"\)/,
   "SSR builds must not resolve built-in Suspense through runtime component lookup",
 );
-assert.match(
+assert.doesNotMatch(
   ssrSuspenseCompiled.code,
   /unref as _unref/,
-  "SSR builds should import unref when transformed setup bindings use _unref()",
+  "SSR function-mode setup bindings should use the setup proxy without importing unused unref",
 );
 
 const ssrComponentPropsSource = `<script setup lang="ts">
@@ -698,8 +698,8 @@ const ssrComponentPropsCompiled = compileFile(
 
 assert.match(
   ssrComponentPropsCompiled.code,
-  /\$setup\.ErrorBoundary, \{ error: _unref\(\$setup\.error\) \}/,
-  "SSR builds should pass dynamic props to setup-bound components",
+  /\$setup\.ErrorBoundary, \{ error: \$setup\.error \}/,
+  "SSR builds should pass dynamic props through the setup proxy",
 );
 assert.match(
   ssrComponentPropsCompiled.code,

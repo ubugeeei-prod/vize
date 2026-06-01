@@ -155,12 +155,15 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
             };
 
             if is_assignment_target {
-                let needs_value = matches!(
-                    binding_type,
-                    Some(
-                        BindingType::SetupLet | BindingType::SetupMaybeRef | BindingType::SetupRef
-                    )
-                );
+                let needs_value = self.ctx.options.inline
+                    && matches!(
+                        binding_type,
+                        Some(
+                            BindingType::SetupLet
+                                | BindingType::SetupMaybeRef
+                                | BindingType::SetupRef
+                        )
+                    );
                 let replacement = if needs_value {
                     let mut out = String::with_capacity(prefix.len() + name.len() + 6);
                     out.push_str(prefix);

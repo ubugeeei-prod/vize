@@ -227,6 +227,7 @@ fn compile_sfc_inner(
                         scope_id: &scope_id,
                         apply_scope_id: options.template.ssr && has_scoped,
                         is_ts: template_is_ts,
+                        inline: false,
                         component_name: Some(&component_name),
                         bindings: None,
                         croquis: None,
@@ -345,6 +346,7 @@ fn compile_sfc_inner(
                             scope_id: &scope_id,
                             apply_scope_id: options.template.ssr && has_scoped,
                             is_ts: template_is_ts,
+                            inline: false,
                             component_name: Some(&component_name),
                             bindings: None,
                             croquis: None,
@@ -564,6 +566,11 @@ fn compile_sfc_inner(
         }
     }
 
+    let source_is_ts = script_setup
+        .lang
+        .as_ref()
+        .is_some_and(|l| l == "ts" || l == "tsx");
+
     // Compile template with bindings (if present) to get the render function
     let template_result = if let Some(template) = &descriptor.template {
         if is_vapor {
@@ -590,6 +597,7 @@ fn compile_sfc_inner(
                         scope_id: &scope_id,
                         apply_scope_id: options.template.ssr && has_scoped,
                         is_ts: template_is_ts,
+                        inline: true,
                         component_name: Some(&component_name),
                         bindings: Some(&script_bindings),
                         croquis: Some(croquis),
@@ -666,12 +674,6 @@ fn compile_sfc_inner(
     // 2. User imports
     // 3. Hoisted literal consts (module-level)
     // 4. export default { __name, props?, emits?, setup(__props) { ... return (_ctx, _cache) => { ... } } }
-    // Detect if the source script setup uses TypeScript
-    let source_is_ts = script_setup
-        .lang
-        .as_ref()
-        .is_some_and(|l| l == "ts" || l == "tsx");
-
     let script_result = profile!(
         "atelier.sfc.script_setup.inline_compile",
         compile_script_setup_inline_with_context(

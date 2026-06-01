@@ -217,14 +217,14 @@ function isOptimizedVueDependency(id: string): boolean {
   return normalized.includes("/node_modules/.vite/deps/vue.");
 }
 
-// Cache per project root: does `<root>/node_modules/vue` resolve via Node?
+// Cache per project root: does `vue` resolve from that root via Node?
 //
 // When vize defers Vue runtime in dev (returns null), Vite re-runs resolveId
 // with the \0-prefixed virtual module ID as importer. With pnpm-isolated
 // installs the project root has no hoisted `node_modules/vue`, so that
 // secondary lookup fails with `Failed to resolve import "vue"`. The deferral
-// only makes sense when the project root can serve as a fallback base for
-// vite:resolve.
+// only makes sense when the project root or one of its parent directories can
+// serve as a fallback base for vite:resolve.
 const vueResolvableFromRootCache = new Map<string, boolean>();
 function isVueResolvableFromRoot(root: string): boolean {
   let cached = vueResolvableFromRootCache.get(root);
@@ -234,11 +234,8 @@ function isVueResolvableFromRoot(root: string): boolean {
     cached = fs.existsSync(directPackageJson);
     if (!cached) {
       try {
-        const resolved = createRequire(path.join(root, "__vize_probe__.js")).resolve(
-          "vue/package.json",
-        );
-        const relative = path.relative(rootNodeModules, resolved);
-        cached = relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative);
+        createRequire(path.join(root, "__vize_probe__.js")).resolve("vue/package.json");
+        cached = true;
       } catch {
         // Not resolvable from root.
       }
@@ -274,7 +271,15 @@ function isPotentialVizeResolveId(id: string): boolean {
 }
 
 function isPotentialVizeImporter(importer: string | undefined): boolean {
-  return importer !== undefined && (importer.startsWith("\0") || importer.startsWith("vize:"));
+  if (importer === undefined) {
+    return false;
+  }
+  if (importer.startsWith("\0") || importer.startsWith("vize:")) {
+    return true;
+  }
+
+  const request = classifyVitePluginRequest(importer);
+  return request.isVueSfcPath;
 }
 
 function shouldCompileVueSfcRequest(
@@ -312,6 +317,21 @@ function hasNuxtComponentQuery(request: ReturnType<typeof classifyVitePluginRequ
   }
 
   return new URLSearchParams(request.querySuffix.slice(1)).has("nuxt_component");
+}
+
+function cleanVueSfcImporter(
+  importer: string,
+  request: ReturnType<typeof classifyVitePluginRequest> | null,
+): string {
+  let cleanImporter = request?.normalizedFsId ?? importer;
+
+  if (cleanImporter.startsWith("/@id/__x00__")) {
+    cleanImporter = cleanImporter.slice("/@id/__x00__".length);
+  } else if (cleanImporter.startsWith("__x00__")) {
+    cleanImporter = cleanImporter.slice("__x00__".length);
+  }
+
+  return cleanImporter.endsWith(".vue.ts") ? cleanImporter.slice(0, -3) : cleanImporter;
 }
 
 async function resolveAliasedVueImport(
@@ -466,10 +486,13 @@ export async function resolveIdHook(
   // If importer is a vize virtual module or macro module, resolve imports against the real path
   const isMacroImporter = importerRequest?.isMacroVirtualId ?? false;
   const isVizeVirtualImporter = importerRequest?.isVizeVirtual ?? false;
-  if (importer && (isVizeVirtualImporter || isMacroImporter)) {
+  const isVueSfcImporter = importerRequest?.isVueSfcPath ?? false;
+  if (importer && (isVizeVirtualImporter || isMacroImporter || isVueSfcImporter)) {
     const cleanImporter = isMacroImporter
       ? (importerRequest?.strippedVirtualPath ?? "")
-      : (importerRequest?.vizeVirtualPath ?? "");
+      : isVizeVirtualImporter
+        ? (importerRequest?.vizeVirtualPath ?? "")
+        : cleanVueSfcImporter(importer, importerRequest);
 
     state.logger.log(`resolveId from virtual: id=${id}, cleanImporter=${cleanImporter}`);
 
@@ -494,6 +517,14 @@ export async function resolveIdHook(
       // packages in the correct node_modules directory.
       if (!id.startsWith("./") && !id.startsWith("../") && !id.startsWith("/")) {
         const isVueRuntime = isVueRuntimeRequest(id);
+        if (isVueRuntime && isBuild) {
+          const vueBundlerEntry = resolveVueBundlerEntryWithNode(state, id, cleanImporter);
+          if (vueBundlerEntry) {
+            state.logger.log(`resolveId: resolved Vue runtime to ${vueBundlerEntry}`);
+            return vueBundlerEntry;
+          }
+        }
+
         const aliasRequest = resolveAliasRequest(state, id);
         if (!isVueRuntime && aliasRequest && isViteBareSpecifier(aliasRequest)) {
           const nodeResolved = resolveBareImportCandidatesWithNode(state, id, cleanImporter);

@@ -38,6 +38,11 @@ impl<'a> SsrCodegenContext<'a> {
             self.resolve_component_binding_name(tag)
         };
         let props = self.build_component_props(el, false, is_dynamic_component);
+        let props = if is_dynamic_component {
+            self.with_scope_id_prop(props)
+        } else {
+            props
+        };
         let props = self.with_fallthrough_attrs(props, inherit_attrs);
 
         if is_dynamic_component {
@@ -273,6 +278,25 @@ impl<'a> SsrCodegenContext<'a> {
         let mut out = String::from("_mergeProps(");
         out.push_str(&props);
         out.push_str(", _attrs)");
+        out
+    }
+
+    fn with_scope_id_prop(&mut self, props: String) -> String {
+        let Some(scope_id) = self.options.scope_id.as_deref() else {
+            return props;
+        };
+
+        let scope_props = component_props_object(&[component_prop_entry(scope_id, "\"\"", false)]);
+        if props == "null" {
+            return scope_props;
+        }
+
+        self.use_core_helper(RuntimeHelper::MergeProps);
+        let mut out = String::from("_mergeProps(");
+        out.push_str(&props);
+        out.push_str(", ");
+        out.push_str(&scope_props);
+        out.push(')');
         out
     }
 

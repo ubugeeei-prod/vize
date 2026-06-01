@@ -715,22 +715,22 @@ mod tests {
     }
 
     #[test]
-    fn keeps_leading_comments_before_media_rules() {
+    fn preserves_comments_before_media_rules() {
         assert_eq!(
             scope_css_for_pipeline(
-                "/* High contrast */\n@media (forced-colors: active) { .foo { color: red; } }",
+                "/* desktop */\n@media (min-width: 1px) { .foo { color: red; } }",
                 "data-v-x"
             )
             .as_str(),
-            "/* High contrast */\n@media (forced-colors: active) { .foo[data-v-x]{color: red;}}"
+            "/* desktop */\n@media (min-width: 1px) { .foo[data-v-x]{color: red;}}"
         );
     }
 
     #[test]
-    fn keeps_leading_comments_before_selectors() {
+    fn preserves_comments_before_selectors() {
         assert_eq!(
-            scope_css_for_pipeline("/* Button */\n.foo { color: red; }", "data-v-x").as_str(),
-            "/* Button */\n.foo[data-v-x]{color: red;}"
+            scope_css_for_pipeline("/* card */\n.foo { color: red; }", "data-v-x").as_str(),
+            "/* card */\n.foo[data-v-x]{color: red;}"
         );
     }
 }

@@ -239,6 +239,17 @@ fn test_scope_deep() {
 }
 
 #[test]
+fn test_scope_deep_after_child_combinator() {
+    let bump = Bump::new();
+    let css = ".sponsors__item > :deep(.sponsor) { width: 100%; }";
+    let result = apply_scoped_css(&bump, css, "data-v-123");
+    assert_eq!(
+        result,
+        ".sponsors__item[data-v-123] > .sponsor{ width: 100%; }"
+    );
+}
+
+#[test]
 fn test_scope_global() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);

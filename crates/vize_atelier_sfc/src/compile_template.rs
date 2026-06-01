@@ -22,6 +22,7 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) scope_id: &'a str,
     pub(crate) apply_scope_id: bool,
     pub(crate) is_ts: bool,
+    pub(crate) inline: bool,
     pub(crate) component_name: Option<&'a str>,
     pub(crate) bindings: Option<&'a BindingMetadata>,
     pub(crate) croquis: Option<vize_croquis::analysis::Croquis>,
@@ -38,6 +39,7 @@ pub(crate) fn compile_template_block(
         scope_id,
         apply_scope_id,
         is_ts,
+        inline,
         component_name,
         bindings,
         croquis,
@@ -121,7 +123,7 @@ pub(crate) fn compile_template_block(
     // For script setup, use inline mode to match Vue's actual compiler behavior
     // Inline mode generates direct closure references (e.g., msg instead of $setup.msg)
     // which are captured in the setup() function scope
-    if bindings.is_some() {
+    if inline && bindings.is_some() {
         dom_opts.inline = true;
         dom_opts.hoist_static = true;
         dom_opts.cache_handlers = true;

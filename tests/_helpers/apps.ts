@@ -99,6 +99,22 @@ const VUEFES_E2E_ENV = {
   AUTH_SECRET: "e2e-test-dummy-auth-secret-32chars!",
   NEXTAUTH_SECRET: "e2e-test-dummy-auth-secret-32chars!",
 } as const;
+const FRONTEND_PHPCON_E2E_ENV = {
+  NUXT_PUBLIC_API_BASE: "/__vize_e2e/api",
+  NUXT_TELEMETRY_DISABLED: "1",
+} as const;
+const VUE_BETA_OVERRIDES = {
+  "@vue/compiler-core": "3.6.0-beta.10",
+  "@vue/compiler-dom": "3.6.0-beta.10",
+  "@vue/compiler-sfc": "3.6.0-beta.10",
+  "@vue/compiler-ssr": "3.6.0-beta.10",
+  "@vue/reactivity": "3.6.0-beta.10",
+  "@vue/runtime-core": "3.6.0-beta.10",
+  "@vue/runtime-dom": "3.6.0-beta.10",
+  "@vue/server-renderer": "3.6.0-beta.10",
+  "@vue/shared": "3.6.0-beta.10",
+  vue: "3.6.0-beta.10",
+} as const;
 const TRANSPARENT_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z/C/HwAFgwJ/lE6nWQAAAABJRU5ErkJggg==",
   "base64",
@@ -690,6 +706,7 @@ function syncGitFixtureWorktree(name: string, variant?: string): string {
 const ELK_WORK_DIR = getMutableGitFixtureDir("elk");
 export const MISSKEY_WORK_DIR = getMutableGitFixtureDir("misskey");
 const NPMX_WORK_DIR = getMutableGitFixtureDir("npmx.dev");
+const FRONTEND_PHPCON_WORK_DIR = getMutableGitFixtureDir("frontend-phpcon-do-website");
 const NUXT_UI_WORK_DIR = getMutableGitFixtureDir("nuxt-ui", "playground");
 const REKA_UI_DOCS_WORK_DIR = getMutableGitFixtureDir("reka-ui", "docs");
 const VUEFES_WORK_DIR = getMutableGitFixtureDir("vuefes-2025");
@@ -1369,6 +1386,261 @@ export function createNpmxVisualParityApps(mode: VisualParityMode = "dev"): {
   return {
     reference: createNpmxVisualParityApp("reference", referencePort, mode),
     candidate: createNpmxVisualParityApp("candidate", candidatePort, mode),
+  };
+}
+
+export const frontendPhpconApp: AppConfig = {
+  name: "frontend-phpcon-do-website",
+  cwd: FRONTEND_PHPCON_WORK_DIR,
+  command: "npx",
+  args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", "3007", "--host", "0.0.0.0"],
+  port: 3007,
+  url: "http://127.0.0.1:3007",
+  mountSelector: "#__nuxt",
+  readyPattern: /Local:\s+http:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0):3007/,
+  allowNon200: true,
+  waitUntil: "load",
+  readyDelay: 15_000,
+  env: FRONTEND_PHPCON_E2E_ENV,
+  startupTimeout: 240_000,
+  setup() {
+    setupFrontendPhpconWorktree();
+  },
+  build: {
+    command: "npx",
+    args: ["-y", "pnpm@10", "build"],
+    timeout: 300_000,
+  },
+  preview: {
+    command: "npx",
+    args: ["-y", "pnpm@10", "exec", "nuxt", "preview", "--port", "3008"],
+    port: 3008,
+    url: "http://127.0.0.1:3008",
+    readyPattern: /Listening on/,
+  },
+  check: {
+    cwd: path.join(GIT_DIR, "frontend-phpcon-do-website"),
+    patterns: ["app/**/*.vue"],
+  },
+  lint: {
+    cwd: path.join(GIT_DIR, "frontend-phpcon-do-website"),
+    patterns: ["app/**/*.vue"],
+  },
+};
+
+function patchFrontendPhpconVisualFixture(frontendDir: string): void {
+  const configPath = path.join(frontendDir, "nuxt.config.ts");
+  const source = fs.readFileSync(configPath, "utf-8");
+  let nextSource = source.replace('    preset: "cloudflare_module",', '    preset: "node-server",');
+  nextSource = nextSource.replace(
+    `  content: {
+    database: {
+      type: "d1",
+      bindingName: "DB",
+    },
+  },`,
+    "  content: {},",
+  );
+  nextSource = nextSource.replace("  devtools: { enabled: true },", "  devtools: { enabled: false },");
+  if (nextSource !== source) {
+    fs.writeFileSync(configPath, nextSource);
+  }
+
+  ensureFileContent(
+    path.join(frontendDir, "server", "routes", "__vize_e2e", "api", "sponsors.get.ts"),
+    `export default defineEventHandler(() => ({
+  sponsor_plans: [
+    {
+      name: "Platinum",
+      name_en: "Platinum",
+      tier: "A",
+      sponsors: [
+        {
+          id: "e3f03260-28a2-4cd8-8f4c-d6cc61774ca5",
+          name: "Frontend PHP Labs",
+          pr: "Building reliable web platforms with Vue and PHP.",
+          url: "https://example.com/frontend-php-labs",
+        },
+        {
+          id: "ea9a7096-2de4-407e-8e60-ef69fc8fa588",
+          name: "Hokkaido Web Studio",
+          pr: "Local engineering team supporting the conference community.",
+          url: "https://example.com/hokkaido-web-studio",
+        },
+      ],
+    },
+    {
+      name: "Gold",
+      name_en: "Gold",
+      tier: "B",
+      sponsors: [
+        {
+          id: "2ad98278-5a9a-4a17-bbe6-924be25534a9",
+          name: "Sapporo Type Systems",
+          pr: "Tooling, design systems, and product engineering.",
+          url: "https://example.com/sapporo-type-systems",
+        },
+      ],
+    },
+    {
+      name: "Booth",
+      name_en: "Booth",
+      tier: "C",
+      sponsors: [
+        {
+          id: "8e55bc66-2146-4115-8d7c-55eb4cfc83bc",
+          name: "Filtered Booth Sponsor",
+          url: "https://example.com/booth",
+        },
+      ],
+    },
+  ],
+}));
+`,
+  );
+
+  for (const imageDir of [
+    path.join(frontendDir, "public", "individual-sponsors"),
+    path.join(frontendDir, "public", "sponsors"),
+  ]) {
+    replacePngFilesWithTransparentFixture(imageDir);
+  }
+}
+
+function replacePngFilesWithTransparentFixture(dir: string): void {
+  if (!fs.existsSync(dir)) {
+    return;
+  }
+
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const entryPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      replacePngFilesWithTransparentFixture(entryPath);
+      continue;
+    }
+    if (entry.isFile() && entry.name.endsWith(".png")) {
+      fs.writeFileSync(entryPath, TRANSPARENT_PNG);
+    }
+  }
+}
+
+function setupFrontendPhpconWorktree(opts?: { enableVize?: boolean; variant?: string }): string {
+  const enableVize = opts?.enableVize ?? true;
+  const frontendDir = syncGitFixtureWorktree("frontend-phpcon-do-website", opts?.variant);
+
+  if (enableVize) {
+    ensureLocalVizePackagesBuilt();
+  }
+
+  addPnpmOverrides(path.join(frontendDir, "package.json"), {
+    ...VUE_BETA_OVERRIDES,
+    vite: "^8.0.0",
+  });
+  patchNuxtConfig(path.join(frontendDir, "nuxt.config.ts"), {
+    enableVize,
+    removeModules: ["@nuxt/fonts", "@nuxt/test-utils"],
+  });
+  patchFrontendPhpconVisualFixture(frontendDir);
+
+  console.log(
+    `[frontend-phpcon-do-website:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`,
+  );
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
+    cwd: frontendDir,
+    stdio: "inherit",
+    timeout: 300_000,
+    env: {
+      ...process.env,
+      ...FRONTEND_PHPCON_E2E_ENV,
+    },
+  });
+
+  if (enableVize) {
+    createVizeSymlinks(path.join(frontendDir, "node_modules"));
+  }
+
+  console.log(
+    `[frontend-phpcon-do-website:${enableVize ? "candidate" : "reference"}:setup] nuxt prepare...`,
+  );
+  execSync("npx -y pnpm@10 exec nuxt prepare", {
+    cwd: frontendDir,
+    stdio: "inherit",
+    timeout: 180_000,
+    env: {
+      ...process.env,
+      ...FRONTEND_PHPCON_E2E_ENV,
+    },
+  });
+
+  return frontendDir;
+}
+
+type FrontendPhpconVisualParityMode = "dev" | "preview";
+
+function createFrontendPhpconVisualParityApp(
+  kind: "candidate" | "reference",
+  port: number,
+  mode: FrontendPhpconVisualParityMode,
+): AppConfig {
+  const variant = `vrt-${mode}-${kind}`;
+  const command =
+    mode === "preview"
+      ? ["exec", "nuxt", "preview", "--port", String(port)]
+      : ["exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"];
+
+  return {
+    name: `frontend-phpcon-do-website:${mode}:${kind}`,
+    cwd: getMutableGitFixtureDir("frontend-phpcon-do-website", variant),
+    command: "npx",
+    args: ["-y", "pnpm@10", ...command],
+    port,
+    url: `http://127.0.0.1:${port}`,
+    mountSelector: "#__nuxt",
+    readyPattern:
+      mode === "preview"
+        ? /Listening on/
+        : new RegExp(`Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`),
+    allowNon200: true,
+    waitUntil: "load",
+    readyDelay: 15_000,
+    env: {
+      ...FRONTEND_PHPCON_E2E_ENV,
+      NODE_ENV: mode === "preview" ? "production" : "development",
+    },
+    startupTimeout: 300_000,
+    setup() {
+      const frontendDir = setupFrontendPhpconWorktree({
+        enableVize: kind === "candidate",
+        variant,
+      });
+      if (mode === "preview") {
+        execSync("npx -y pnpm@10 build", {
+          cwd: frontendDir,
+          env: {
+            ...process.env,
+            ...FRONTEND_PHPCON_E2E_ENV,
+            NODE_ENV: "production",
+          },
+          stdio: "inherit",
+          timeout: 300_000,
+        });
+      }
+    },
+  };
+}
+
+export function createFrontendPhpconVisualParityApps(
+  mode: FrontendPhpconVisualParityMode = "dev",
+): {
+  candidate: AppConfig;
+  reference: AppConfig;
+} {
+  const referencePort = mode === "preview" ? 5338 : 5336;
+  const candidatePort = mode === "preview" ? 5339 : 5337;
+
+  return {
+    reference: createFrontendPhpconVisualParityApp("reference", referencePort, mode),
+    candidate: createFrontendPhpconVisualParityApp("candidate", candidatePort, mode),
   };
 }
 
