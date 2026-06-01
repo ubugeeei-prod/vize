@@ -1,10 +1,16 @@
 import assert from "node:assert";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import {
   buildNuxtCompilerOptions,
   buildNuxtDevAssetBase,
+  isVizeGeneratedVueModuleId,
   isVizeVirtualVueModuleId,
   normalizeNuxtInjectedKeysForVizeVirtualModule,
   normalizeVizeVirtualVueModuleId,
+  preserveExplicitVueImportsFromNuxtAutoImports,
+  preserveExplicitVueImportsFromVizeModuleSource,
 } from "./utils.ts";
 
 assert.strictEqual(
@@ -63,6 +69,11 @@ assert.equal(
   "SSR virtual Vue modules should stay eligible for Nuxt bridge transforms",
 );
 
+assert.equal(isVizeGeneratedVueModuleId("\0/repo/app/components/Foo.vue.ts"), true);
+assert.equal(isVizeGeneratedVueModuleId("/repo/app/components/Foo.vue.ts"), true);
+assert.equal(isVizeGeneratedVueModuleId("/@id/__x00__/repo/app/components/Foo.vue.ts"), true);
+assert.equal(isVizeGeneratedVueModuleId("/repo/app/components/Foo.vue"), false);
+
 assert.equal(
   normalizeVizeVirtualVueModuleId("\0vize-ssr:/repo/app/components/Foo.vue.ts"),
   "/repo/app/components/Foo.vue",
@@ -94,6 +105,72 @@ assert.equal(
       "\0vize-ssr:/repo/app/components/Foo.vue.ts",
     ),
     "Nuxt injected keys should match between client and SSR virtual modules",
+  );
+}
+
+{
+  const originalCode = `import { resolveComponent, computed as _computed } from "vue";
+const resolved = resolveComponent(name);
+const doubled = _computed(() => value * 2);`;
+  const injectedCode = `import { resolveComponent, computed as _computed, useRuntimeConfig } from "#imports";
+const resolved = resolveComponent(name);
+const doubled = _computed(() => value * 2);
+const config = useRuntimeConfig();`;
+
+  assert.equal(
+    preserveExplicitVueImportsFromNuxtAutoImports(originalCode, injectedCode),
+    `import { resolveComponent, computed as _computed } from "vue";
+import { useRuntimeConfig } from "#imports";
+const resolved = resolveComponent(name);
+const doubled = _computed(() => value * 2);
+const config = useRuntimeConfig();`,
+    "Nuxt auto-imports should not move explicit Vue runtime imports from vize virtual modules into #imports",
+  );
+}
+
+{
+  const originalCode = `import { defineAsyncComponent } from "vue";
+const component = defineAsyncComponent(loader);`;
+  const injectedCode = `import { defineAsyncComponent, useRoute } from "#entry";
+const component = defineAsyncComponent(loader);
+const route = useRoute();`;
+
+  assert.equal(
+    preserveExplicitVueImportsFromNuxtAutoImports(originalCode, injectedCode),
+    `import { defineAsyncComponent } from "vue";
+import { useRoute } from "#entry";
+const component = defineAsyncComponent(loader);
+const route = useRoute();`,
+    "Already-normalized #entry imports should also give explicit Vue helpers back to vue",
+  );
+}
+
+{
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-nuxt-utils-"));
+  const sourcePath = path.join(tmpDir, "ContentRenderer.vue");
+  fs.writeFileSync(
+    sourcePath,
+    `<script setup>
+import { resolveComponent, computed as _computed } from "vue";
+import { useRuntimeConfig } from "#imports";
+</script>
+`,
+  );
+
+  assert.equal(
+    preserveExplicitVueImportsFromVizeModuleSource(
+      `\0${sourcePath}.ts`,
+      `import { resolveComponent, computed as _computed, useRuntimeConfig } from "#entry";
+const resolved = resolveComponent(name);
+const doubled = _computed(() => value * 2);
+const config = useRuntimeConfig();`,
+    ),
+    `import { resolveComponent, computed as _computed } from "vue";
+import { useRuntimeConfig } from "#entry";
+const resolved = resolveComponent(name);
+const doubled = _computed(() => value * 2);
+const config = useRuntimeConfig();`,
+    "Nuxt bridge should restore explicit Vue helpers from the original Vize module source",
   );
 }
 

@@ -205,9 +205,19 @@ const plainCssModule: CompiledModule = {
 
 syncCollectedCssForFile(cssState, "/src/Card.vue", plainCssModule);
 assert.equal(
-  cssState.collectedCss.get("/src/Card.vue"),
+  cssState.collectedCss.has("/src/Card.vue"),
+  false,
+  "Production SFC CSS with style block metadata should flow through Vite style imports",
+);
+
+syncCollectedCssForFile(cssState, "/src/Legacy.vue", {
+  ...plainCssModule,
+  styles: undefined,
+});
+assert.equal(
+  cssState.collectedCss.get("/src/Legacy.vue"),
   ".card { color: tomato; }",
-  "Production CSS collection should retain plain CSS modules",
+  "Production CSS collection should retain legacy plain CSS without style block metadata",
 );
 
 const delegatedCssModule: CompiledModule = {
@@ -232,6 +242,22 @@ assert.equal(
   cssState.collectedCss.has("/src/Button.vue"),
   false,
   "Delegated CSS modules should stay out of the extracted plain CSS bundle",
+);
+
+const legacyCssModule: CompiledModule = {
+  code: "export default {}",
+  css: ".legacy { color: red; }",
+  scopeId: "legacycss",
+  hasScoped: false,
+  macroArtifacts: [],
+  styles: [],
+};
+
+syncCollectedCssForFile(cssState, "/src/Legacy.vue", legacyCssModule);
+assert.equal(
+  cssState.collectedCss.get("/src/Legacy.vue"),
+  ".legacy { color: red; }",
+  "Legacy compiled modules without style metadata should still use the extracted CSS bundle",
 );
 
 const ssrCssState = {

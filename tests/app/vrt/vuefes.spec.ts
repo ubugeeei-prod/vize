@@ -22,13 +22,16 @@ interface VisualRoute {
   viewport?: { height: number; width: number };
 }
 
+type VisualMode = "dev" | "preview";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR =
   process.env.VIZE_VUEFES_VRT_OUTPUT_DIR ??
   path.resolve(__dirname, "../../../__agent_only/vuefes-vrt/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
-const apps = createVuefesVisualParityApps();
+const VUEFES_VRT_TIMEOUT = 900_000;
+const modes: VisualMode[] = ["dev", "preview"];
 
 const routes: VisualRoute[] = [
   { name: "home", path: "/" },
@@ -37,8 +40,10 @@ const routes: VisualRoute[] = [
   { name: "photo", path: "/photo" },
   { name: "timetable", path: "/timetable", maxDiffRatio: 0.004 },
   { name: "speaker", path: "/speaker" },
+  { name: "speaker-panel", path: "/speaker?section=panel-discussion" },
   { name: "speaker-detail", path: "/speaker/yyx990803" },
   { name: "event", path: "/event", maxDiffRatio: 0.007 },
+  { name: "event-panel", path: "/event?section=panel-discussion", maxDiffRatio: 0.007 },
   { name: "store", path: "/store" },
   { name: "ticket", path: "/ticket" },
   { name: "sponsors", path: "/sponsors" },
@@ -51,24 +56,30 @@ const routes: VisualRoute[] = [
 ];
 
 test.describe("vuefes-2025 visual parity", () => {
-  test.describe.configure({ mode: "serial" });
+  test.describe.configure({ mode: "serial", timeout: VUEFES_VRT_TIMEOUT });
 
-  const servers: Array<ReturnType<typeof startDevServer>> = [];
+  for (const mode of modes) {
+    test.describe(mode, () => {
+      const apps = createVuefesVisualParityApps(mode);
+      const servers: Array<ReturnType<typeof startDevServer>> = [];
 
-  test.beforeAll(async () => {
-    servers.push(await startApp(apps.reference));
-    servers.push(await startApp(apps.candidate));
-  });
+      test.beforeAll(async () => {
+        test.setTimeout(VUEFES_VRT_TIMEOUT);
+        servers.push(await startApp(apps.reference));
+        servers.push(await startApp(apps.candidate));
+      });
 
-  test.afterAll(async () => {
-    for (const server of servers) {
-      killProcess(server);
-    }
-  });
+      test.afterAll(async () => {
+        for (const server of servers) {
+          killProcess(server);
+        }
+      });
 
-  for (const route of routes) {
-    test(route.name, async ({ browser }) => {
-      await compareRoute(browser, route);
+      for (const route of routes) {
+        test(route.name, async ({ browser }) => {
+          await compareRoute(browser, apps, mode, route);
+        });
+      }
     });
   }
 });
@@ -83,7 +94,12 @@ async function startApp(app: AppConfig): Promise<ReturnType<typeof startDevServe
   return server;
 }
 
-async function compareRoute(browser: Browser, route: VisualRoute): Promise<void> {
+async function compareRoute(
+  browser: Browser,
+  apps: ReturnType<typeof createVuefesVisualParityApps>,
+  mode: VisualMode,
+  route: VisualRoute,
+): Promise<void> {
   const context = await browser.newContext({
     colorScheme: "light",
     deviceScaleFactor: 1,
@@ -105,7 +121,7 @@ async function compareRoute(browser: Browser, route: VisualRoute): Promise<void>
 
     await expectVisualParity(referencePage, candidatePage, {
       maxDiffRatio: route.maxDiffRatio,
-      name: route.name,
+      name: `${mode}-${route.name}`,
       outputDir: OUTPUT_DIR,
     });
   } finally {

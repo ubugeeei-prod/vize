@@ -98,6 +98,15 @@ function hasNuxtComponentQuery(request: ReturnType<typeof classifyVitePluginRequ
   return new URLSearchParams(request.querySuffix.slice(1)).has("nuxt_component");
 }
 
+function normalizeStyleVirtualId(id: string): string {
+  const withoutPrefix = id.startsWith("\0") ? id.slice(1) : id;
+  if (!withoutPrefix.includes("?vue")) {
+    return id;
+  }
+
+  return withoutPrefix.replace(/\.module\.\w+$/, "").replace(/\.\w+$/, "");
+}
+
 function loadCompiledSfcModule(
   state: VizePluginState,
   realPath: string,
@@ -196,11 +205,6 @@ export function loadHook(
   loadOptions?: { ssr?: boolean },
 ): string | { code: string; map: null } | null {
   const request = classifyVitePluginRequest(id);
-  if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0")) {
-    if (!request.isVueSfcPath || !hasNuxtComponentQuery(request)) {
-      return null;
-    }
-  }
 
   // Pick the correct viteBase for URL resolution based on the build environment.
   const currentBase = loadOptions?.ssr ? state.serverViteBase : state.clientViteBase;
@@ -215,13 +219,7 @@ export function loadHook(
   }
 
   // Strip the \0 prefix and the appended extension suffix for style virtual IDs.
-  let styleId = id;
-  if (id.startsWith("\0") && id.includes("?vue")) {
-    styleId = id
-      .slice(1) // strip \0
-      .replace(/\.module\.\w+$/, "") // strip .module.{lang}
-      .replace(/\.\w+$/, ""); // strip .{lang}
-  }
+  const styleId = normalizeStyleVirtualId(id);
 
   const styleRequest = classifyVitePluginRequest(styleId);
   if (styleRequest.isVueStyleQuery) {
@@ -270,6 +268,12 @@ export function loadHook(
       );
     }
     return "";
+  }
+
+  if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0")) {
+    if (!request.isVueSfcPath || !hasNuxtComponentQuery(request)) {
+      return null;
+    }
   }
 
   // Handle Vue Router's ?definePage query through extracted artifacts.

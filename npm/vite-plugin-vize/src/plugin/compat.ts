@@ -45,14 +45,12 @@ export function createVueCompatPlugin(state: VizePluginState): Plugin {
 }
 
 export function normalizeVirtualStyleId(id: string): string {
-  if (!id.startsWith("\0") || !id.includes("?vue")) {
+  const withoutPrefix = id.startsWith("\0") ? id.slice(1) : id;
+  if (!withoutPrefix.includes("?vue")) {
     return id;
   }
 
-  return id
-    .slice(1)
-    .replace(/\.module\.\w+$/, "")
-    .replace(/\.\w+$/, "");
+  return withoutPrefix.replace(/\.module\.\w+$/, "").replace(/\.\w+$/, "");
 }
 
 export function transformScopedPreprocessorCss(code: string, id: string): string | null {

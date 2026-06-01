@@ -94,6 +94,11 @@ export function syncCollectedCssForFile(
     return;
   }
 
+  if (compiled.styles?.length) {
+    state.collectedCss.delete(filePath);
+    return;
+  }
+
   if (compiled.css && !hasDelegatedStyles(compiled)) {
     state.collectedCss.set(
       filePath,

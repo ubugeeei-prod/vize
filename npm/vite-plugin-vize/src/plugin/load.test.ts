@@ -597,16 +597,73 @@ assert.ok(
   applyCssVirtualLoad && typeof applyCssVirtualLoad === "object",
   "Delegated @apply CSS should load as a virtual style module",
 );
-assert.equal(
+assert.match(
   applyCssVirtualLoad.code,
-  String.raw`.root[data-v-applycss] { @apply text-fg; height: var(--applycss-height\ \+\ \'px\'); }`,
+  /\.root\[data-v-applycss\]\s*\{/,
   "Delegated @apply CSS should keep @apply while applying scoped selector and CSS vars",
 );
+assert.match(applyCssVirtualLoad.code, /@apply text-fg/);
+assert.ok(applyCssVirtualLoad.code.includes(String.raw`var(--applycss-height\ \+\ \'px\')`));
 assert.doesNotMatch(
   applyCssVirtualLoad.code,
   /v-bind\(/,
   "Delegated style CSS should not leak v-bind() to Vite",
 );
+
+const applyCssVisibleStyleLoad = loadHook(
+  applyCssState,
+  "/src/ApplyStyles.vue?vue=&type=style&index=0&scoped=data-v-applycss&lang=css.css",
+  { ssr: false },
+);
+assert.ok(
+  applyCssVisibleStyleLoad && typeof applyCssVisibleStyleLoad === "object",
+  "CSS-visible virtual style IDs should load through Vize",
+);
+assert.equal(
+  applyCssVisibleStyleLoad.code,
+  String.raw`.root[data-v-applycss]{@apply text-fg; height: var(--applycss-height\ \+\ \'px\');}`,
+  "CSS-visible delegated styles should keep Vite pipeline semantics",
+);
+
+const nestedCssPath = "/src/NestedStyles.vue";
+const nestedCssState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      nestedCssPath,
+      {
+        code: `const _sfc_main = { name: "NestedStyles" }
+export default _sfc_main`,
+        scopeId: "nestedcss",
+        hasScoped: true,
+        styles: [
+          {
+            content: `#pages-store { row-gap: 1.5rem; @media (--mobile) { row-gap: 1rem; } h1 { margin: 0; } :deep(.divider) { border: 0; } }`,
+            lang: "css",
+            scoped: true,
+            module: false,
+            index: 0,
+          },
+        ],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+};
+
+const nestedCssVirtualLoad = loadHook(
+  nestedCssState,
+  "/src/NestedStyles.vue?vue=&type=style&index=0&scoped=data-v-nestedcss&lang=css.css",
+  { ssr: false },
+);
+assert.ok(
+  nestedCssVirtualLoad && typeof nestedCssVirtualLoad === "object",
+  "Nested plain CSS should load through the virtual style pipeline",
+);
+assert.match(nestedCssVirtualLoad.code, /#pages-store\[data-v-nestedcss\]/);
+assert.match(nestedCssVirtualLoad.code, /#pages-store h1\[data-v-nestedcss\]/);
+assert.match(nestedCssVirtualLoad.code, /#pages-store\[data-v-nestedcss\] \.divider/);
+assert.doesNotMatch(nestedCssVirtualLoad.code, /:deep/);
 
 const scssPath = "/src/MkSuperMenu.vue";
 const scssState: VizePluginState = {
@@ -681,10 +738,20 @@ assert.doesNotMatch(
   /__vize_css__/,
   "Production on-demand loads should not inline CSS when extraction is enabled",
 );
+assert.match(
+  onDemandProdLoad.code,
+  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css";/,
+  "Production on-demand loads should emit a Vite-visible plain CSS import",
+);
 assert.equal(
-  onDemandProdState.collectedCss.get(onDemandProdPath),
-  ".prod { color: seagreen; }",
-  "Production on-demand compilation should collect extracted CSS for generateBundle",
+  onDemandProdState.collectedCss.has(onDemandProdPath),
+  false,
+  "Production on-demand compilation should let Vite collect SFC style imports",
+);
+assert.match(
+  onDemandProdLoad.code,
+  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css";/,
+  "Production on-demand loads should emit a virtual style import for CSS extraction",
 );
 
 console.log("✅ vite-plugin-vize load boundary tests passed!");

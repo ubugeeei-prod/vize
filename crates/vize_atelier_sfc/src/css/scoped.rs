@@ -291,17 +291,44 @@ pub(super) fn transform_deep(
         let inner = &after[..end];
         let rest = &after[end + 1..];
 
-        if before.is_empty() {
-            out.extend_from_slice(attr_selector);
-        } else {
-            out.extend_from_slice(before.trim().as_bytes());
-            out.extend_from_slice(attr_selector);
-        }
+        push_deep_scope_prefix(out, before, attr_selector);
         out.push(b' ');
         out.extend_from_slice(inner.as_bytes());
         out.extend_from_slice(rest.as_bytes());
     } else {
         out.extend_from_slice(selector.as_bytes());
+    }
+}
+
+fn push_deep_scope_prefix(out: &mut BumpVec<u8>, before: &str, attr_selector: &[u8]) {
+    let before = before.trim_end();
+    if before.is_empty() {
+        out.extend_from_slice(attr_selector);
+        return;
+    }
+
+    let Some(combinator_start) = trailing_combinator_start(before) else {
+        scope_single_selector(out, before.trim(), attr_selector);
+        return;
+    };
+
+    let target_end = before[..combinator_start].trim_end().len();
+    if target_end == 0 {
+        out.extend_from_slice(attr_selector);
+        out.extend_from_slice(&before.as_bytes()[combinator_start..]);
+        return;
+    }
+
+    scope_single_selector(out, &before[..target_end], attr_selector);
+    out.extend_from_slice(&before.as_bytes()[target_end..]);
+}
+
+fn trailing_combinator_start(value: &str) -> Option<usize> {
+    let bytes = value.as_bytes();
+    match bytes.last().copied()? {
+        b'>' | b'+' | b'~' => Some(bytes.len() - 1),
+        b'|' if bytes.len() >= 2 && bytes[bytes.len() - 2] == b'|' => Some(bytes.len() - 2),
+        _ => None,
     }
 }
 

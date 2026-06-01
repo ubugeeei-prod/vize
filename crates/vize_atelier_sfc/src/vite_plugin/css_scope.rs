@@ -13,46 +13,71 @@ pub(super) fn unwrap_deep_selectors(css: &str) -> String {
 }
 
 fn transform_css_block(css: &str, scope_id: &str) -> String {
+    transform_css_block_with_parents(css, scope_id, None)
+}
+
+fn transform_css_block_with_parents(
+    css: &str,
+    scope_id: &str,
+    parent_selectors: Option<&[String]>,
+) -> String {
     let mut output = String::with_capacity(css.len() + scope_id.len());
     let mut cursor = 0usize;
+    let mut declarations = String::default();
 
     while cursor < css.len() {
         let Some(brace) = find_next_top_level_brace(css, cursor) else {
-            output.push_str(&css[cursor..]);
+            declarations.push_str(&css[cursor..]);
             break;
         };
 
         let Some(end) = find_matching_brace(css, brace) else {
-            output.push_str(&css[cursor..]);
+            declarations.push_str(&css[cursor..]);
             break;
         };
 
-        let header = &css[cursor..brace];
+        let header_start = find_rule_header_start(css, cursor, brace);
+        declarations.push_str(&css[cursor..header_start]);
+        flush_declarations(
+            &mut output,
+            parent_selectors,
+            scope_id,
+            declarations.as_str(),
+        );
+        declarations.clear();
+
+        let header = &css[header_start..brace];
         let body = &css[brace + 1..end];
-        let leading_length = first_non_ws(header);
-        let leading = leading_length.map_or(header, |length| &header[..length]);
-        let statement = leading_length.map_or("", |length| &header[length..]);
+        let (leading, statement) = split_leading_trivia(header);
 
         output.push_str(leading);
         if statement.trim_start().starts_with('@') {
             output.push_str(statement);
             output.push('{');
             if should_recurse_at_rule(statement) {
-                output.push_str(transform_css_block(body, scope_id).as_str());
+                output.push_str(
+                    transform_css_block_with_parents(body, scope_id, parent_selectors).as_str(),
+                );
             } else {
                 output.push_str(body);
             }
             output.push('}');
         } else {
-            output.push_str(scope_selector_list(statement, scope_id).as_str());
-            output.push('{');
-            output.push_str(body);
-            output.push('}');
+            let selectors = combine_selector_lists(parent_selectors, statement);
+            output.push_str(
+                transform_css_block_with_parents(body, scope_id, Some(&selectors)).as_str(),
+            );
         }
 
         cursor = end + 1;
     }
 
+    flush_declarations(
+        &mut output,
+        parent_selectors,
+        scope_id,
+        declarations.as_str(),
+    );
     output
 }
 
@@ -61,6 +86,128 @@ fn should_recurse_at_rule(statement: &str) -> bool {
         statement.split_whitespace().next(),
         Some("@container" | "@layer" | "@media" | "@supports")
     )
+}
+
+fn find_rule_header_start(css: &str, start: usize, brace: usize) -> usize {
+    let mut paren_depth = 0usize;
+    let mut bracket_depth = 0usize;
+    let mut quote = None;
+    let mut in_comment = false;
+    let mut header_start = start;
+    let mut iter = css[start..brace].char_indices().peekable();
+
+    while let Some((relative, char)) = iter.next() {
+        let index = start + relative;
+        let next = iter.peek().map(|(_, next)| *next);
+
+        if in_comment {
+            if char == '*' && next == Some('/') {
+                iter.next();
+                in_comment = false;
+            }
+            continue;
+        }
+
+        if let Some(active_quote) = quote {
+            if char == '\\' {
+                iter.next();
+            } else if char == active_quote {
+                quote = None;
+            }
+            continue;
+        }
+
+        match char {
+            '/' if next == Some('*') => {
+                iter.next();
+                in_comment = true;
+            }
+            '\'' | '"' => quote = Some(char),
+            '(' => paren_depth += 1,
+            ')' => paren_depth = paren_depth.saturating_sub(1),
+            '[' => bracket_depth += 1,
+            ']' => bracket_depth = bracket_depth.saturating_sub(1),
+            ';' if paren_depth == 0 && bracket_depth == 0 => {
+                header_start = index + 1;
+            }
+            _ => {}
+        }
+    }
+
+    header_start
+}
+
+fn flush_declarations(
+    output: &mut String,
+    parent_selectors: Option<&[String]>,
+    scope_id: &str,
+    declarations: &str,
+) {
+    let declarations = declarations.trim();
+    if declarations.is_empty() {
+        return;
+    }
+
+    let Some(selectors) = parent_selectors else {
+        output.push_str(declarations);
+        return;
+    };
+
+    let mut selector_list = String::default();
+    for (index, selector) in selectors.iter().enumerate() {
+        if index > 0 {
+            selector_list.push(',');
+        }
+        selector_list.push_str(selector.as_str());
+    }
+
+    output.push_str(scope_selector_list(selector_list.as_str(), scope_id).as_str());
+    output.push('{');
+    output.push_str(declarations);
+    output.push('}');
+}
+
+fn combine_selector_lists(
+    parent_selectors: Option<&[String]>,
+    selector_list: &str,
+) -> SmallVec<[String; 4]> {
+    let selectors = split_selector_list(selector_list);
+    let mut output = SmallVec::new();
+
+    let Some(parents) = parent_selectors else {
+        for selector in selectors {
+            output.push(String::from(selector.trim()));
+        }
+        return output;
+    };
+
+    for parent in parents {
+        for selector in &selectors {
+            output.push(combine_selector(parent.as_str(), selector.trim()));
+        }
+    }
+
+    output
+}
+
+fn combine_selector(parent: &str, selector: &str) -> String {
+    if selector.contains('&') {
+        return String::from(selector.replace('&', parent).as_str());
+    }
+
+    let mut output = String::with_capacity(parent.len() + selector.len() + 1);
+    output.push_str(parent);
+    if selector
+        .chars()
+        .find(|char| !char.is_whitespace())
+        .is_some_and(|char| matches!(char, '>' | '+' | '~'))
+    {
+        output.push_str(selector);
+    } else {
+        output.push(' ');
+        output.push_str(selector);
+    }
+    output
 }
 
 fn find_next_top_level_brace(css: &str, start: usize) -> Option<usize> {
@@ -187,6 +334,9 @@ fn split_selector_list(selector_list: &str) -> SmallVec<[&str; 4]> {
         }
 
         match char {
+            '\\' => {
+                iter.next();
+            }
             '\'' | '"' => quote = Some(char),
             '(' => paren_depth += 1,
             ')' => paren_depth = paren_depth.saturating_sub(1),
@@ -242,6 +392,27 @@ fn scope_selector(selector: &str, scope_id: &str) -> String {
     output.push_str(body.as_str());
     output.push_str(trailing);
     output
+}
+
+fn split_leading_trivia(value: &str) -> (&str, &str) {
+    let mut cursor = 0usize;
+
+    loop {
+        let ws_end = value[cursor..]
+            .char_indices()
+            .find(|(_, char)| !char.is_whitespace())
+            .map_or(value.len(), |(index, _)| cursor + index);
+        cursor = ws_end;
+
+        if !value[cursor..].starts_with("/*") {
+            return (&value[..cursor], &value[cursor..]);
+        }
+
+        let Some(end) = value[cursor + 2..].find("*/") else {
+            return (&value[..cursor], &value[cursor..]);
+        };
+        cursor += 2 + end + 2;
+    }
 }
 
 fn add_scope_before_trailing_combinator(selector: &str, scope_id: &str) -> String {
@@ -332,6 +503,9 @@ fn find_scope_insert_position(target: &str) -> usize {
         }
 
         match char {
+            '\\' => {
+                iter.next();
+            }
             '\'' | '"' => quote = Some(char),
             '(' => paren_depth += 1,
             ')' => paren_depth = paren_depth.saturating_sub(1),
@@ -472,7 +646,7 @@ mod tests {
     fn scopes_basic_selectors() {
         assert_eq!(
             scope_css_for_pipeline(".foo, .bar:hover { color: red; }", "data-v-x").as_str(),
-            ".foo[data-v-x], .bar[data-v-x]:hover { color: red; }"
+            ".foo[data-v-x],.bar[data-v-x]:hover{color: red;}"
         );
     }
 
@@ -484,7 +658,7 @@ mod tests {
                 "data-v-x"
             )
             .as_str(),
-            ".parent[data-v-x] .child:nth-child(2) { color: red; }"
+            ".parent[data-v-x] .child:nth-child(2){color: red;}"
         );
     }
 
@@ -496,7 +670,7 @@ mod tests {
                 "data-v-x"
             )
             .as_str(),
-            ".parent[data-v-x] > .child:nth-child(2) { color: red; }"
+            ".parent[data-v-x] > .child:nth-child(2){color: red;}"
         );
     }
 
@@ -518,7 +692,63 @@ mod tests {
                 "data-v-x"
             )
             .as_str(),
-            "@media (min-width: 1px) { .foo[data-v-x] { color: red; } }"
+            "@media (min-width: 1px) { .foo[data-v-x]{color: red;}}"
+        );
+    }
+
+    #[test]
+    fn scopes_nested_css_like_vue_pipeline() {
+        assert_eq!(
+            scope_css_for_pipeline(
+                "#pages-store { row-gap: 1.5rem; @media (--mobile) { row-gap: 1rem; } h1 { margin: 0; } :deep(.divider) { border: 0; } }",
+                "data-v-x"
+            )
+            .as_str(),
+            "#pages-store[data-v-x]{row-gap: 1.5rem;} @media (--mobile) {#pages-store[data-v-x]{row-gap: 1rem;}} #pages-store h1[data-v-x]{margin: 0;} #pages-store[data-v-x] .divider{border: 0;}"
+        );
+    }
+
+    #[test]
+    fn scopes_nested_css_under_media_rules() {
+        assert_eq!(
+            scope_css_for_pipeline(
+                "@media (--mobile) { .foo { color: red; :deep(.bar) { color: blue; } } }",
+                "data-v-x"
+            )
+            .as_str(),
+            "@media (--mobile) { .foo[data-v-x]{color: red;} .foo[data-v-x] .bar{color: blue;}}"
+        );
+    }
+
+    #[test]
+    fn preserves_comments_before_media_rules() {
+        assert_eq!(
+            scope_css_for_pipeline(
+                "/* desktop */\n@media (min-width: 1px) { .foo { color: red; } }",
+                "data-v-x"
+            )
+            .as_str(),
+            "/* desktop */\n@media (min-width: 1px) { .foo[data-v-x]{color: red;}}"
+        );
+    }
+
+    #[test]
+    fn preserves_comments_before_selectors() {
+        assert_eq!(
+            scope_css_for_pipeline("/* card */\n.foo { color: red; }", "data-v-x").as_str(),
+            "/* card */\n.foo[data-v-x]{color: red;}"
+        );
+    }
+
+    #[test]
+    fn scopes_escaped_utility_selectors() {
+        assert_eq!(
+            scope_css_for_pipeline(
+                ".hover\\:text-\\[\\#00DC82\\]:hover { color: red; }.text-\\[80px\\] { font-size: 80px; }",
+                "data-v-x"
+            )
+            .as_str(),
+            ".hover\\:text-\\[\\#00DC82\\][data-v-x]:hover{color: red;}.text-\\[80px\\][data-v-x]{font-size: 80px;}"
         );
     }
 }

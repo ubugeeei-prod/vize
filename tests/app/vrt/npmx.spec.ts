@@ -25,12 +25,15 @@ interface VisualRoute {
   viewport?: { height: number; width: number };
 }
 
+type VisualMode = "dev" | "preview";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR =
   process.env.VIZE_NPMX_VRT_OUTPUT_DIR ??
   path.resolve(__dirname, "../../../__agent_only/npmx-vrt/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
-const apps = createNpmxVisualParityApps();
+const NPMX_VRT_TIMEOUT = 900_000;
+const modes: VisualMode[] = ["dev", "preview"];
 
 const routes: VisualRoute[] = [
   { name: "home", path: "/" },
@@ -52,10 +55,23 @@ const routes: VisualRoute[] = [
   { name: "compare", path: "/compare" },
   { name: "compare-packages", path: "/compare?packages=vue,react", maxDiffRatio: 0.004 },
   { name: "package-vue", path: "/package/vue", maxDiffRatio: 0.004 },
+  { name: "package-vue-version", path: "/package/vue/v/3.5.29", maxDiffRatio: 0.004 },
+  {
+    name: "package-vue-compiler-sfc",
+    path: "/package/@vue/compiler-sfc",
+    maxDiffRatio: 0.004,
+  },
   { name: "org-vue", path: "/org/vue", maxDiffRatio: 0.004 },
   { name: "user-sindresorhus", path: "/~sindresorhus?p=npm", maxDiffRatio: 0.004 },
   { name: "user-orgs-disconnected", path: "/~sindresorhus/orgs", maxDiffRatio: 0.004 },
+  { name: "profile-sindresorhus", path: "/profile/sindresorhus.com", maxDiffRatio: 0.004 },
   { name: "diff-vue", path: "/diff/vue/v/3.5.28...3.5.29", maxDiffRatio: 0.004 },
+  { name: "code-vue-tree", path: "/package-code/vue/v/3.5.29", maxDiffRatio: 0.004 },
+  {
+    name: "code-vue-package-json",
+    path: "/package-code/vue/v/3.5.29/package.json",
+    maxDiffRatio: 0.004,
+  },
   {
     name: "search-query",
     path: "/search",
@@ -79,24 +95,30 @@ const routes: VisualRoute[] = [
 ];
 
 test.describe("npmx.dev visual parity", () => {
-  test.describe.configure({ mode: "serial" });
+  test.describe.configure({ mode: "serial", timeout: NPMX_VRT_TIMEOUT });
 
-  let candidateServer: ChildProcess | undefined;
-  let referenceServer: ChildProcess | undefined;
+  for (const mode of modes) {
+    test.describe(mode, () => {
+      const apps = createNpmxVisualParityApps(mode);
+      let candidateServer: ChildProcess | undefined;
+      let referenceServer: ChildProcess | undefined;
 
-  test.beforeAll(async () => {
-    referenceServer = await startApp(apps.reference);
-    candidateServer = await startApp(apps.candidate);
-  });
+      test.beforeAll(async () => {
+        test.setTimeout(NPMX_VRT_TIMEOUT);
+        referenceServer = await startApp(apps.reference);
+        candidateServer = await startApp(apps.candidate);
+      });
 
-  test.afterAll(async () => {
-    killProcess(candidateServer);
-    killProcess(referenceServer);
-  });
+      test.afterAll(async () => {
+        killProcess(candidateServer);
+        killProcess(referenceServer);
+      });
 
-  for (const route of routes) {
-    test(route.name, async ({ browser }) => {
-      await compareRoute(browser, route);
+      for (const route of routes) {
+        test(route.name, async ({ browser }) => {
+          await compareRoute(browser, apps, mode, route);
+        });
+      }
     });
   }
 });
@@ -111,7 +133,12 @@ async function startApp(app: AppConfig): Promise<ChildProcess> {
   return server;
 }
 
-async function compareRoute(browser: Browser, route: VisualRoute): Promise<void> {
+async function compareRoute(
+  browser: Browser,
+  apps: ReturnType<typeof createNpmxVisualParityApps>,
+  mode: VisualMode,
+  route: VisualRoute,
+): Promise<void> {
   const context = await browser.newContext({
     colorScheme: "light",
     deviceScaleFactor: 1,
@@ -141,7 +168,7 @@ async function compareRoute(browser: Browser, route: VisualRoute): Promise<void>
 
     await expectVisualParity(referencePage, candidatePage, {
       maxDiffRatio: route.maxDiffRatio,
-      name: route.name,
+      name: `${mode}-${route.name}`,
       outputDir: OUTPUT_DIR,
     });
   } finally {

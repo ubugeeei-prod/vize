@@ -277,6 +277,9 @@ impl<'a> SsrCodegenContext<'a> {
 
     fn build_plain_vnode_props(&mut self, el: &ElementNode) -> String {
         if el.props.is_empty() {
+            if let Some(scope_id) = self.options.scope_id.as_deref() {
+                return component_props_object(&[component_prop_entry(scope_id, "\"\"", false)]);
+            }
             return "null".to_compact_string();
         }
 
@@ -321,6 +324,10 @@ impl<'a> SsrCodegenContext<'a> {
                     }
                 }
             }
+        }
+
+        if let Some(scope_id) = self.options.scope_id.as_deref() {
+            entries.push(component_prop_entry(scope_id, "\"\"", false));
         }
 
         let entries = normalize_prop_entries(entries);

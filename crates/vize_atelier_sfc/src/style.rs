@@ -279,15 +279,7 @@ fn transform_deep(selector: &str, attr_selector: &str) -> String {
             let inner = &after[..end];
             let rest = &after[end + 1..];
 
-            let scoped_before = if before.is_empty() {
-                attr_selector.to_compact_string()
-            } else {
-                let trimmed = before.trim();
-                let mut result = String::with_capacity(trimmed.len() + attr_selector.len());
-                result.push_str(trimmed);
-                result.push_str(attr_selector);
-                result
-            };
+            let scoped_before = scope_deep_prefix(before, attr_selector);
 
             let mut result =
                 String::with_capacity(scoped_before.len() + inner.len() + rest.len() + 1);
@@ -300,6 +292,40 @@ fn transform_deep(selector: &str, attr_selector: &str) -> String {
     }
 
     selector.to_compact_string()
+}
+
+fn scope_deep_prefix(before: &str, attr_selector: &str) -> String {
+    let before = before.trim_end();
+    if before.is_empty() {
+        return attr_selector.to_compact_string();
+    }
+
+    let Some(combinator_start) = trailing_combinator_start(before) else {
+        return scope_single_selector(before.trim(), attr_selector);
+    };
+
+    let target_end = before[..combinator_start].trim_end().len();
+    if target_end == 0 {
+        let mut result = String::with_capacity(attr_selector.len() + before.len());
+        result.push_str(attr_selector);
+        result.push_str(&before[combinator_start..]);
+        return result;
+    }
+
+    let scoped_target = scope_single_selector(&before[..target_end], attr_selector);
+    let mut result = String::with_capacity(scoped_target.len() + before.len() - target_end);
+    result.push_str(&scoped_target);
+    result.push_str(&before[target_end..]);
+    result
+}
+
+fn trailing_combinator_start(value: &str) -> Option<usize> {
+    let bytes = value.as_bytes();
+    match bytes.last().copied()? {
+        b'>' | b'+' | b'~' => Some(bytes.len() - 1),
+        b'|' if bytes.len() >= 2 && bytes[bytes.len() - 2] == b'|' => Some(bytes.len() - 2),
+        _ => None,
+    }
 }
 
 /// Transform :slotted() for slot content
@@ -380,6 +406,22 @@ mod tests {
     fn test_transform_deep() {
         let result = transform_deep(":deep(.child)", "[data-v-123]");
         assert_eq!(result, "[data-v-123] .child");
+    }
+
+    #[test]
+    fn test_transform_deep_after_child_combinator() {
+        let result = transform_deep(".sponsors__item > :deep(.sponsor)", "[data-v-123]");
+        assert_eq!(result, ".sponsors__item[data-v-123] > .sponsor");
+    }
+
+    #[test]
+    fn test_apply_scoped_css_deep_after_child_combinator() {
+        let css = ".sponsors__item > :deep(.sponsor) { width: 100%; }";
+        let result = apply_scoped_css(css, "data-v-123");
+        assert_eq!(
+            result,
+            ".sponsors__item[data-v-123] > .sponsor{ width: 100%; }"
+        );
     }
 
     #[test]

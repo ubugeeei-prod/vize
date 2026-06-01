@@ -95,6 +95,26 @@ const NPMX_E2E_ENV = {
   NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
   VIZE_E2E_DISABLE_LUNARIA: "1",
 } as const;
+const VUEFES_E2E_ENV = {
+  AUTH_SECRET: "e2e-test-dummy-auth-secret-32chars!",
+  NEXTAUTH_SECRET: "e2e-test-dummy-auth-secret-32chars!",
+} as const;
+const FRONTEND_PHPCON_E2E_ENV = {
+  NUXT_PUBLIC_API_BASE: "/__vize_e2e/api",
+  NUXT_TELEMETRY_DISABLED: "1",
+} as const;
+const VUE_BETA_OVERRIDES = {
+  "@vue/compiler-core": "3.6.0-beta.10",
+  "@vue/compiler-dom": "3.6.0-beta.10",
+  "@vue/compiler-sfc": "3.6.0-beta.10",
+  "@vue/compiler-ssr": "3.6.0-beta.10",
+  "@vue/reactivity": "3.6.0-beta.10",
+  "@vue/runtime-core": "3.6.0-beta.10",
+  "@vue/runtime-dom": "3.6.0-beta.10",
+  "@vue/server-renderer": "3.6.0-beta.10",
+  "@vue/shared": "3.6.0-beta.10",
+  vue: "3.6.0-beta.10",
+} as const;
 const TRANSPARENT_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z/C/HwAFgwJ/lE6nWQAAAABJRU5ErkJggg==",
   "base64",
@@ -207,6 +227,17 @@ function patchNpmxLunariaModule(modulePath: string): void {
   if (nextSource !== source) {
     fs.writeFileSync(modulePath, nextSource);
   }
+}
+
+function patchNpmxPackageJson(packageJsonPath: string): void {
+  const pkg = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+  if (pkg.dependencies?.["@lunariajs/core"] === "0.1.1") {
+    return;
+  }
+
+  pkg.dependencies ??= {};
+  pkg.dependencies["@lunariajs/core"] = "0.1.1";
+  fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, "\t") + "\n");
 }
 
 function patchNpmxPrerenderRoutes(configPath: string): void {
@@ -675,6 +706,7 @@ function syncGitFixtureWorktree(name: string, variant?: string): string {
 const ELK_WORK_DIR = getMutableGitFixtureDir("elk");
 export const MISSKEY_WORK_DIR = getMutableGitFixtureDir("misskey");
 const NPMX_WORK_DIR = getMutableGitFixtureDir("npmx.dev");
+const FRONTEND_PHPCON_WORK_DIR = getMutableGitFixtureDir("frontend-phpcon-do-website");
 const NUXT_UI_WORK_DIR = getMutableGitFixtureDir("nuxt-ui", "playground");
 const REKA_UI_DOCS_WORK_DIR = getMutableGitFixtureDir("reka-ui", "docs");
 const VUEFES_WORK_DIR = getMutableGitFixtureDir("vuefes-2025");
@@ -1197,12 +1229,14 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
     ensureLocalVizePackagesBuilt();
   }
 
-  addPnpmOverrides(path.join(npmxDir, "package.json"), {
+  const packageJsonPath = path.join(npmxDir, "package.json");
+  patchNpmxPackageJson(packageJsonPath);
+  addPnpmOverrides(packageJsonPath, {
     vite: "^8.0.0",
   });
 
   console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
-  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile --ignore-scripts", {
     cwd: npmxDir,
     stdio: "inherit",
     timeout: 300_000,
@@ -1211,6 +1245,18 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
       ...NPMX_E2E_ENV,
     },
   });
+  for (const script of ["generate:lexicons", "generate:sprite"]) {
+    console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] pnpm ${script}...`);
+    execSync(`npx -y pnpm@10 ${script}`, {
+      cwd: npmxDir,
+      stdio: "inherit",
+      timeout: 120_000,
+      env: {
+        ...process.env,
+        ...NPMX_E2E_ENV,
+      },
+    });
+  }
 
   if (enableVize) {
     createVizeSymlinks(nmDir);
@@ -1246,34 +1292,358 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
   return npmxDir;
 }
 
-function createNpmxVisualParityApp(kind: "candidate" | "reference", port: number): AppConfig {
-  const variant = `vrt-${kind}`;
+type VisualParityMode = "dev" | "preview";
+
+function ensureNpmxPreviewVueRuntime(npmxDir: string): void {
+  const outputNodeModulesDir = path.join(npmxDir, ".output", "server", "node_modules");
+  const vueRuntimeLink = path.join(outputNodeModulesDir, "vue");
+  const vueRuntimeTarget = path.join(npmxDir, "node_modules", "vue");
+  const vuePackageJsonPath = path.join(vueRuntimeTarget, "package.json");
+  const existingRendererEntry = path.join(vueRuntimeLink, "server-renderer", "index.mjs");
+
+  if (fs.existsSync(existingRendererEntry) || !fs.existsSync(vueRuntimeTarget)) {
+    return;
+  }
+
+  let target = vueRuntimeTarget;
+  if (fs.existsSync(vuePackageJsonPath)) {
+    const version = JSON.parse(fs.readFileSync(vuePackageJsonPath, "utf-8")).version;
+    const bundledTarget = path.join(outputNodeModulesDir, ".nitro", `vue@${version}`);
+    if (fs.existsSync(path.join(bundledTarget, "server-renderer", "index.mjs"))) {
+      target = bundledTarget;
+    }
+  }
+
+  fs.mkdirSync(outputNodeModulesDir, { recursive: true });
+  try {
+    const stat = fs.lstatSync(vueRuntimeLink);
+    if (stat.isSymbolicLink()) {
+      fs.unlinkSync(vueRuntimeLink);
+      fs.symlinkSync(target, vueRuntimeLink, "dir");
+      return;
+    }
+  } catch {
+    // does not exist
+  }
+
+  ensureSymlink(path.join(vueRuntimeLink, "server-renderer"), path.join(target, "server-renderer"));
+}
+
+function createNpmxVisualParityApp(
+  kind: "candidate" | "reference",
+  port: number,
+  mode: VisualParityMode,
+): AppConfig {
+  const variant = `vrt-${mode}-${kind}`;
+  const command =
+    mode === "preview"
+      ? ["exec", "nuxt", "preview", "--port", String(port)]
+      : ["exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"];
+
   return {
-    name: `npmx.dev:${kind}`,
+    name: `npmx.dev:${mode}:${kind}`,
     cwd: getMutableGitFixtureDir("npmx.dev", variant),
     command: "npx",
-    args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"],
+    args: ["-y", "pnpm@10", ...command],
     port,
     url: `http://127.0.0.1:${port}`,
     mountSelector: "#__nuxt",
-    readyPattern: new RegExp(
-      `Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`,
-    ),
+    readyPattern:
+      mode === "preview"
+        ? /Listening on/
+        : new RegExp(`Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`),
     allowNon200: true,
     waitUntil: "load",
     readyDelay: 30_000,
     env: NPMX_E2E_ENV,
     startupTimeout: 120_000,
     setup() {
-      setupNpmxWorktree({ enableVize: kind === "candidate", variant });
+      const npmxDir = setupNpmxWorktree({ enableVize: kind === "candidate", variant });
+      if (mode === "preview") {
+        execSync("npx -y pnpm@10 build", {
+          cwd: npmxDir,
+          env: {
+            ...process.env,
+            ...NPMX_E2E_ENV,
+            NODE_ENV: "production",
+          },
+          stdio: "inherit",
+          timeout: 300_000,
+        });
+        ensureNpmxPreviewVueRuntime(npmxDir);
+      }
     },
   };
 }
 
-export function createNpmxVisualParityApps(): { candidate: AppConfig; reference: AppConfig } {
+export function createNpmxVisualParityApps(mode: VisualParityMode = "dev"): {
+  candidate: AppConfig;
+  reference: AppConfig;
+} {
+  const referencePort = mode === "preview" ? 5330 : 5320;
+  const candidatePort = mode === "preview" ? 5331 : 5321;
+
   return {
-    reference: createNpmxVisualParityApp("reference", 5320),
-    candidate: createNpmxVisualParityApp("candidate", 5321),
+    reference: createNpmxVisualParityApp("reference", referencePort, mode),
+    candidate: createNpmxVisualParityApp("candidate", candidatePort, mode),
+  };
+}
+
+export const frontendPhpconApp: AppConfig = {
+  name: "frontend-phpcon-do-website",
+  cwd: FRONTEND_PHPCON_WORK_DIR,
+  command: "npx",
+  args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", "3007", "--host", "0.0.0.0"],
+  port: 3007,
+  url: "http://127.0.0.1:3007",
+  mountSelector: "#__nuxt",
+  readyPattern: /Local:\s+http:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0):3007/,
+  allowNon200: true,
+  waitUntil: "load",
+  readyDelay: 15_000,
+  env: FRONTEND_PHPCON_E2E_ENV,
+  startupTimeout: 240_000,
+  setup() {
+    setupFrontendPhpconWorktree();
+  },
+  build: {
+    command: "npx",
+    args: ["-y", "pnpm@10", "build"],
+    timeout: 300_000,
+  },
+  preview: {
+    command: "npx",
+    args: ["-y", "pnpm@10", "exec", "nuxt", "preview", "--port", "3008"],
+    port: 3008,
+    url: "http://127.0.0.1:3008",
+    readyPattern: /Listening on/,
+  },
+  check: {
+    cwd: path.join(GIT_DIR, "frontend-phpcon-do-website"),
+    patterns: ["app/**/*.vue"],
+  },
+  lint: {
+    cwd: path.join(GIT_DIR, "frontend-phpcon-do-website"),
+    patterns: ["app/**/*.vue"],
+  },
+};
+
+function patchFrontendPhpconVisualFixture(frontendDir: string): void {
+  const configPath = path.join(frontendDir, "nuxt.config.ts");
+  const source = fs.readFileSync(configPath, "utf-8");
+  let nextSource = source.replace('    preset: "cloudflare_module",', '    preset: "node-server",');
+  nextSource = nextSource.replace(
+    `  content: {
+    database: {
+      type: "d1",
+      bindingName: "DB",
+    },
+  },`,
+    "  content: {},",
+  );
+  nextSource = nextSource.replace(
+    "  devtools: { enabled: true },",
+    "  devtools: { enabled: false },",
+  );
+  if (nextSource !== source) {
+    fs.writeFileSync(configPath, nextSource);
+  }
+
+  ensureFileContent(
+    path.join(frontendDir, "server", "routes", "__vize_e2e", "api", "sponsors.get.ts"),
+    `export default defineEventHandler(() => ({
+  sponsor_plans: [
+    {
+      name: "Platinum",
+      name_en: "Platinum",
+      tier: "A",
+      sponsors: [
+        {
+          id: "e3f03260-28a2-4cd8-8f4c-d6cc61774ca5",
+          name: "Frontend PHP Labs",
+          pr: "Building reliable web platforms with Vue and PHP.",
+          url: "https://example.com/frontend-php-labs",
+        },
+        {
+          id: "ea9a7096-2de4-407e-8e60-ef69fc8fa588",
+          name: "Hokkaido Web Studio",
+          pr: "Local engineering team supporting the conference community.",
+          url: "https://example.com/hokkaido-web-studio",
+        },
+      ],
+    },
+    {
+      name: "Gold",
+      name_en: "Gold",
+      tier: "B",
+      sponsors: [
+        {
+          id: "2ad98278-5a9a-4a17-bbe6-924be25534a9",
+          name: "Sapporo Type Systems",
+          pr: "Tooling, design systems, and product engineering.",
+          url: "https://example.com/sapporo-type-systems",
+        },
+      ],
+    },
+    {
+      name: "Booth",
+      name_en: "Booth",
+      tier: "C",
+      sponsors: [
+        {
+          id: "8e55bc66-2146-4115-8d7c-55eb4cfc83bc",
+          name: "Filtered Booth Sponsor",
+          url: "https://example.com/booth",
+        },
+      ],
+    },
+  ],
+}));
+`,
+  );
+
+  for (const imageDir of [
+    path.join(frontendDir, "public", "individual-sponsors"),
+    path.join(frontendDir, "public", "sponsors"),
+  ]) {
+    replacePngFilesWithTransparentFixture(imageDir);
+  }
+}
+
+function replacePngFilesWithTransparentFixture(dir: string): void {
+  if (!fs.existsSync(dir)) {
+    return;
+  }
+
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const entryPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      replacePngFilesWithTransparentFixture(entryPath);
+      continue;
+    }
+    if (entry.isFile() && entry.name.endsWith(".png")) {
+      fs.writeFileSync(entryPath, TRANSPARENT_PNG);
+    }
+  }
+}
+
+function setupFrontendPhpconWorktree(opts?: { enableVize?: boolean; variant?: string }): string {
+  const enableVize = opts?.enableVize ?? true;
+  const frontendDir = syncGitFixtureWorktree("frontend-phpcon-do-website", opts?.variant);
+
+  if (enableVize) {
+    ensureLocalVizePackagesBuilt();
+  }
+
+  addPnpmOverrides(path.join(frontendDir, "package.json"), {
+    ...VUE_BETA_OVERRIDES,
+    vite: "^8.0.0",
+  });
+  patchNuxtConfig(path.join(frontendDir, "nuxt.config.ts"), {
+    enableVize,
+    removeModules: ["@nuxt/fonts", "@nuxt/test-utils"],
+  });
+  patchFrontendPhpconVisualFixture(frontendDir);
+
+  console.log(
+    `[frontend-phpcon-do-website:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`,
+  );
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
+    cwd: frontendDir,
+    stdio: "inherit",
+    timeout: 300_000,
+    env: {
+      ...process.env,
+      ...FRONTEND_PHPCON_E2E_ENV,
+    },
+  });
+
+  if (enableVize) {
+    createVizeSymlinks(path.join(frontendDir, "node_modules"));
+  }
+
+  console.log(
+    `[frontend-phpcon-do-website:${enableVize ? "candidate" : "reference"}:setup] nuxt prepare...`,
+  );
+  execSync("npx -y pnpm@10 exec nuxt prepare", {
+    cwd: frontendDir,
+    stdio: "inherit",
+    timeout: 180_000,
+    env: {
+      ...process.env,
+      ...FRONTEND_PHPCON_E2E_ENV,
+    },
+  });
+
+  return frontendDir;
+}
+
+type FrontendPhpconVisualParityMode = "dev" | "preview";
+
+function createFrontendPhpconVisualParityApp(
+  kind: "candidate" | "reference",
+  port: number,
+  mode: FrontendPhpconVisualParityMode,
+): AppConfig {
+  const variant = `vrt-${mode}-${kind}`;
+  const command =
+    mode === "preview"
+      ? ["exec", "nuxt", "preview", "--port", String(port)]
+      : ["exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"];
+
+  return {
+    name: `frontend-phpcon-do-website:${mode}:${kind}`,
+    cwd: getMutableGitFixtureDir("frontend-phpcon-do-website", variant),
+    command: "npx",
+    args: ["-y", "pnpm@10", ...command],
+    port,
+    url: `http://127.0.0.1:${port}`,
+    mountSelector: "#__nuxt",
+    readyPattern:
+      mode === "preview"
+        ? /Listening on/
+        : new RegExp(`Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`),
+    allowNon200: true,
+    waitUntil: "load",
+    readyDelay: 15_000,
+    env: {
+      ...FRONTEND_PHPCON_E2E_ENV,
+      NODE_ENV: mode === "preview" ? "production" : "development",
+    },
+    startupTimeout: 300_000,
+    setup() {
+      const frontendDir = setupFrontendPhpconWorktree({
+        enableVize: kind === "candidate",
+        variant,
+      });
+      if (mode === "preview") {
+        execSync("npx -y pnpm@10 build", {
+          cwd: frontendDir,
+          env: {
+            ...process.env,
+            ...FRONTEND_PHPCON_E2E_ENV,
+            NODE_ENV: "production",
+          },
+          stdio: "inherit",
+          timeout: 300_000,
+        });
+      }
+    },
+  };
+}
+
+export function createFrontendPhpconVisualParityApps(
+  mode: FrontendPhpconVisualParityMode = "dev",
+): {
+  candidate: AppConfig;
+  reference: AppConfig;
+} {
+  const referencePort = mode === "preview" ? 5338 : 5336;
+  const candidatePort = mode === "preview" ? 5339 : 5337;
+
+  return {
+    reference: createFrontendPhpconVisualParityApp("reference", referencePort, mode),
+    candidate: createFrontendPhpconVisualParityApp("candidate", candidatePort, mode),
   };
 }
 
@@ -1375,33 +1745,69 @@ function setupVuefesWorktree(opts?: { enableVize?: boolean; variant?: string }):
   return vuefesDir;
 }
 
-function createVuefesVisualParityApp(kind: "candidate" | "reference", port: number): AppConfig {
-  const variant = `vrt-${kind}`;
+type VuefesVisualParityMode = "dev" | "preview";
+
+function createVuefesVisualParityApp(
+  kind: "candidate" | "reference",
+  port: number,
+  mode: VuefesVisualParityMode,
+): AppConfig {
+  const variant = `vrt-${mode}-${kind}`;
+  const command =
+    mode === "preview"
+      ? ["exec", "nuxt", "preview", "--port", String(port)]
+      : ["exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"];
+
   return {
-    name: `vuefes-2025:${kind}`,
+    name: `vuefes-2025:${mode}:${kind}`,
     cwd: getMutableGitFixtureDir("vuefes-2025", variant),
     command: "npx",
-    args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"],
+    args: ["-y", "pnpm@10", ...command],
     port,
-    url: `http://127.0.0.1:${port}`,
+    url: mode === "preview" ? `http://127.0.0.1:${port}/2025` : `http://127.0.0.1:${port}`,
     mountSelector: "#__nuxt",
-    readyPattern: new RegExp(
-      `Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`,
-    ),
+    readyPattern:
+      mode === "preview"
+        ? /Listening on/
+        : new RegExp(`Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`),
     allowNon200: true,
     waitUntil: "load",
     readyDelay: 30_000,
-    startupTimeout: 180_000,
+    env: {
+      ...VUEFES_E2E_ENV,
+      CONTEXT: "production",
+      NODE_ENV: mode === "preview" ? "production" : "development",
+    },
+    startupTimeout: 300_000,
     setup() {
-      setupVuefesWorktree({ enableVize: kind === "candidate", variant });
+      const vuefesDir = setupVuefesWorktree({ enableVize: kind === "candidate", variant });
+      if (mode === "preview") {
+        execSync("npx -y pnpm@10 build", {
+          cwd: vuefesDir,
+          env: {
+            ...process.env,
+            ...VUEFES_E2E_ENV,
+            CONTEXT: "production",
+            NODE_ENV: "production",
+          },
+          stdio: "inherit",
+          timeout: 300_000,
+        });
+      }
     },
   };
 }
 
-export function createVuefesVisualParityApps(): { candidate: AppConfig; reference: AppConfig } {
+export function createVuefesVisualParityApps(mode: VuefesVisualParityMode = "dev"): {
+  candidate: AppConfig;
+  reference: AppConfig;
+} {
+  const referencePort = mode === "preview" ? 5332 : 5326;
+  const candidatePort = mode === "preview" ? 5333 : 5327;
+
   return {
-    reference: createVuefesVisualParityApp("reference", 5326),
-    candidate: createVuefesVisualParityApp("candidate", 5327),
+    reference: createVuefesVisualParityApp("reference", referencePort, mode),
+    candidate: createVuefesVisualParityApp("candidate", candidatePort, mode),
   };
 }
 
