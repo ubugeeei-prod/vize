@@ -634,8 +634,8 @@ fn should_cache_stats_compile(source: &str, component_name: &str) -> bool {
         && !source.contains(component_name_to_kebab_case(component_name).as_str())
 }
 
-fn component_name_to_kebab_case(component_name: &str) -> std::string::String {
-    let mut out = std::string::String::with_capacity(component_name.len());
+fn component_name_to_kebab_case(component_name: &str) -> String {
+    let mut out = String::with_capacity(component_name.len());
     for (index, ch) in component_name.chars().enumerate() {
         if ch.is_ascii_uppercase() {
             if index != 0 {
