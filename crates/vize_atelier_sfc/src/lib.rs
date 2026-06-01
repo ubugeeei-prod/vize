@@ -270,6 +270,7 @@ const isRootSelected = ref(false)
             crate::compile_template::TemplateBlockCompileContext {
                 scope_id: "",
                 apply_scope_id: false,
+                has_scoped: false,
                 is_ts: true,
                 component_name: None,
                 bindings: Some(&binding_metadata),

@@ -21,6 +21,10 @@ use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileO
 pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) scope_id: &'a str,
     pub(crate) apply_scope_id: bool,
+    /// Whether the component has any `<style scoped>` block. When true, hoisted
+    /// module-level static vnodes must carry the `data-v-*` attribute so scoped
+    /// CSS selectors continue to match them in client builds.
+    pub(crate) has_scoped: bool,
     pub(crate) is_ts: bool,
     pub(crate) component_name: Option<&'a str>,
     pub(crate) bindings: Option<&'a BindingMetadata>,
@@ -37,6 +41,7 @@ pub(crate) fn compile_template_block(
     let TemplateBlockCompileContext {
         scope_id,
         apply_scope_id,
+        has_scoped,
         is_ts,
         component_name,
         bindings,
@@ -105,7 +110,11 @@ pub(crate) fn compile_template_block(
     dom_opts.mode = vize_atelier_core::options::CodegenMode::Module;
     dom_opts.prefix_identifiers = true;
     dom_opts.scope_id = scope_attr;
-    let hoisted_scope_attr = if options.scoped {
+    // Hoisted module-level static vnodes are created at import time, when the
+    // runtime's `currentScopeId` is null, so the runtime cannot stamp the
+    // scoped-CSS attribute on them. Bake `data-v-*` directly into their props
+    // here whenever the component owns a scoped style block.
+    let hoisted_scope_attr = if has_scoped {
         let mut attr = String::with_capacity(scope_id.len() + 7);
         attr.push_str("data-v-");
         attr.push_str(scope_id);
