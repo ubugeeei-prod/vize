@@ -46,12 +46,11 @@ impl RequireComponentIs {
                 }
                 PropNode::Directive(dir) => {
                     // Check for :is or v-bind:is
-                    if dir.name == "bind" {
-                        if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                            if arg.content == "is" {
-                                return true;
-                            }
-                        }
+                    if dir.name == "bind"
+                        && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.content == "is"
+                    {
+                        return true;
                     }
                 }
             }

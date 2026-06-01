@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
 interface Props {
@@ -12,10 +12,11 @@ interface Props {
   disabled?: boolean
 }
 
+
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    msg: { type: String, required: true },
+    msg: { type: String },
     count: { type: Number, required: false, default: 0 },
     disabled: { type: Boolean, required: false, default: false }
   },

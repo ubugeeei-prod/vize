@@ -131,6 +131,47 @@ export function useLinting(options: UseLintingOptions) {
     return null;
   }
 
+  function getSeverityLabel(severity: LintDiagnostic["severity"]): string {
+    if (severity === "error") return "Error";
+    if (severity === "warning") return "Warning";
+    return "Info";
+  }
+
+  function getDiagnosticRangeLabel(diag: LintDiagnostic): string {
+    const start = diag.location.start;
+    const end = diag.location.end;
+    if (!end || (end.line === start.line && end.column === start.column)) {
+      return `Line ${start.line}, column ${start.column}`;
+    }
+    if (end.line === start.line) {
+      return `Line ${start.line}, columns ${start.column}-${end.column}`;
+    }
+    return `Lines ${start.line}:${start.column}-${end.line}:${end.column}`;
+  }
+
+  function buildDiagnosticHover(diag: LintDiagnostic): monaco.IMarkdownString[] {
+    const severityLabel = getSeverityLabel(diag.severity);
+    const contents: monaco.IMarkdownString[] = [
+      {
+        value: [
+          `**${severityLabel}**`,
+          "",
+          `_Patina rule_ \`${diag.rule}\` - ${getDiagnosticRangeLabel(diag)}`,
+          "",
+          diag.message,
+        ].join("\n"),
+      },
+    ];
+
+    if (diag.help) {
+      contents.push({
+        value: ["---", "**How to fix**", "", diag.help].join("\n"),
+      });
+    }
+
+    return contents;
+  }
+
   /** Register Monaco hover provider to show diagnostic help on hover */
   function registerHoverProvider() {
     if (hoverProviderDisposable) {
@@ -144,18 +185,7 @@ export function useLinting(options: UseLintingOptions) {
         // Check if hovering over a diagnostic
         const diag = findDiagnosticAtPosition(position.lineNumber, position.column);
         if (diag) {
-          // Add diagnostic message with severity indicator
-          const severityLabel = diag.severity === "error" ? "Error" : "Warning";
-          contents.push({
-            value: `**[${severityLabel}]** \`${diag.rule}\`\n\n${diag.message}`,
-          });
-
-          // Add help if available (render as markdown)
-          if (diag.help) {
-            contents.push({
-              value: `---\n**Hint**\n\n${diag.help}`,
-            });
-          }
+          contents.push(...buildDiagnosticHover(diag));
         }
 
         if (contents.length === 0) return null;

@@ -36,14 +36,14 @@ impl Rule for NoAutofocus {
         }
 
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name == "autofocus" {
-                    ctx.warn_with_help(
-                        ctx.t("a11y/no-autofocus.message"),
-                        &attr.loc,
-                        ctx.t("a11y/no-autofocus.help"),
-                    );
-                }
+            if let PropNode::Attribute(attr) = prop
+                && attr.name == "autofocus"
+            {
+                ctx.warn_with_help(
+                    ctx.t("a11y/no-autofocus.message"),
+                    &attr.loc,
+                    ctx.t("a11y/no-autofocus.help"),
+                );
             }
         }
     }

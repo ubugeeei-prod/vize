@@ -1,0 +1,13 @@
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, renderSlot as _renderSlot, toDisplayString as _toDisplayString } from "vue";
+export default {
+  __name: "FixturePanel",
+  props: { title: {
+    type: String,
+    required: false
+  } },
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("article", null, [_renderSlot(_ctx.$slots, "default", {}, () => [_toDisplayString(__props.title ?? "Panel")])]);
+    };
+  }
+};

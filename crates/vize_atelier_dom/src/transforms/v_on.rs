@@ -3,8 +3,8 @@
 //! Handles event modifiers and key modifiers.
 
 use vize_atelier_core::DirectiveNode;
-use vize_carton::cstr;
 use vize_carton::String;
+use vize_carton::cstr;
 
 /// Parsed event modifiers
 #[derive(Debug, Default, Clone)]
@@ -219,7 +219,7 @@ pub fn generate_key_guard(keys: &[String]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{generate_key_guard, generate_modifier_guard, resolve_key_alias, EventModifiers};
+    use super::{EventModifiers, generate_key_guard, generate_modifier_guard, resolve_key_alias};
     use vize_carton::String;
 
     #[test]

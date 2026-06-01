@@ -9,8 +9,8 @@
 //! - Lazy computation (only compute what's needed)
 //! - Reusable across IDE and non-IDE contexts
 
-use vize_carton::cstr;
 use vize_carton::CompactString;
+use vize_carton::cstr;
 use vize_croquis::Croquis;
 use vize_relief::BindingType;
 
@@ -174,10 +174,10 @@ impl<'a> TypeIntelligence<'a> {
     /// Get the cursor context at the given offset.
     #[inline]
     pub fn cursor_context(&self, offset: u32) -> CursorContext {
-        if let Some(map) = self.source_map {
-            if let Some(mapping) = map.find_by_source(offset) {
-                return mapping.kind.into();
-            }
+        if let Some(map) = self.source_map
+            && let Some(mapping) = map.find_by_source(offset)
+        {
+            return mapping.kind.into();
         }
 
         // Fallback: check if in script block
@@ -364,19 +364,31 @@ fn format_binding_hover(name: &str, binding_type: BindingType) -> CompactString 
 /// Get hover for Vue template globals.
 fn get_vue_global_hover(name: &str) -> Option<CompactString> {
     let content = match name {
-        "$attrs" => "```typescript\n$attrs: Record<string, unknown>\n```\n\nFallthrough attributes not declared as props.",
+        "$attrs" => {
+            "```typescript\n$attrs: Record<string, unknown>\n```\n\nFallthrough attributes not declared as props."
+        }
         "$slots" => "```typescript\n$slots: Slots\n```\n\nSlots passed by parent component.",
-        "$emit" => "```typescript\n$emit(event: string, ...args: any[]): void\n```\n\nTrigger a custom event.",
-        "$refs" => "```typescript\n$refs: Record<string, any>\n```\n\nTemplate refs registered via `ref` attribute.",
+        "$emit" => {
+            "```typescript\n$emit(event: string, ...args: any[]): void\n```\n\nTrigger a custom event."
+        }
+        "$refs" => {
+            "```typescript\n$refs: Record<string, any>\n```\n\nTemplate refs registered via `ref` attribute."
+        }
         "$el" => "```typescript\n$el: HTMLElement | undefined\n```\n\nRoot DOM element.",
         "$props" => "```typescript\n$props: Props\n```\n\nResolved props object.",
         "$data" => "```typescript\n$data: Record<string, unknown>\n```\n\nReactive data object.",
         "$options" => "```typescript\n$options: ComponentOptions\n```\n\nComponent options.",
-        "$parent" => "```typescript\n$parent: ComponentPublicInstance | null\n```\n\nParent component instance.",
+        "$parent" => {
+            "```typescript\n$parent: ComponentPublicInstance | null\n```\n\nParent component instance."
+        }
         "$root" => "```typescript\n$root: ComponentPublicInstance\n```\n\nRoot component instance.",
-        "$watch" => "```typescript\n$watch(source, callback, options?): StopHandle\n```\n\nCreate a watcher.",
+        "$watch" => {
+            "```typescript\n$watch(source, callback, options?): StopHandle\n```\n\nCreate a watcher."
+        }
         "$forceUpdate" => "```typescript\n$forceUpdate(): void\n```\n\nForce re-render.",
-        "$nextTick" => "```typescript\n$nextTick(callback?): Promise<void>\n```\n\nRun callback after next DOM update.",
+        "$nextTick" => {
+            "```typescript\n$nextTick(callback?): Promise<void>\n```\n\nRun callback after next DOM update."
+        }
         _ => return None,
     };
     Some(CompactString::new(content))
@@ -466,7 +478,7 @@ fn add_directive_arg_completions(completions: &mut Vec<Completion>) {
 
 #[cfg(test)]
 mod tests {
-    use super::{get_vue_global_hover, is_ident_char, TypeIntelligence};
+    use super::{TypeIntelligence, get_vue_global_hover, is_ident_char};
     use vize_carton::CompactString;
     use vize_croquis::Croquis;
     use vize_relief::BindingType;

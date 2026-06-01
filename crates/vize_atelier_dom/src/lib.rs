@@ -8,23 +8,27 @@
 //! - Style and class binding handling
 
 #![allow(clippy::collapsible_match)]
+#![cfg_attr(
+    test,
+    allow(clippy::disallowed_macros, clippy::field_reassign_with_default)
+)]
 
 pub mod options;
 pub mod transforms;
 
-pub use options::{element_checks, event_modifiers, DomCompilerOptions};
+pub use options::{DomCompilerOptions, element_checks, event_modifiers};
 pub use transforms::{
-    generate_html_prop, generate_html_warning, generate_key_guard, generate_model_props,
-    generate_modifier_guard, generate_show_directive, generate_show_style, generate_text_children,
-    generate_text_content, get_model_event, get_model_helper, get_model_prop, is_v_html, is_v_show,
-    is_v_text, resolve_key_alias, EventModifiers, EventOptions, MouseModifiers,
-    PropagationModifiers, SystemModifiers, VModelModifiers, V_SHOW, V_TEXT,
+    EventModifiers, EventOptions, MouseModifiers, PropagationModifiers, SystemModifiers, V_SHOW,
+    V_TEXT, VModelModifiers, generate_html_prop, generate_html_warning, generate_key_guard,
+    generate_model_props, generate_modifier_guard, generate_show_directive, generate_show_style,
+    generate_text_children, generate_text_content, get_model_event, get_model_helper,
+    get_model_prop, is_v_html, is_v_show, is_v_text, resolve_key_alias,
 };
 
 // Re-export core types
 pub use vize_atelier_core::{
-    ast, codegen, errors, parser, runtime_helpers, tokenizer, transform, Allocator, CompilerError,
-    Namespace, RootNode, TemplateChildNode,
+    Allocator, CompilerError, Namespace, RootNode, TemplateChildNode, ast, codegen, errors, parser,
+    runtime_helpers, tokenizer, transform,
 };
 
 use vize_atelier_core::codegen::CodegenResult;
@@ -32,9 +36,12 @@ use vize_atelier_core::{
     codegen::generate,
     options::{CodegenOptions, ParserOptions, TransformOptions},
     parser::parse_with_options,
-    transform::transform as do_transform,
+    transform::{
+        transform as do_transform, transform_with_hoisted_scope_id,
+        transform_with_vue_parser_quirks, transform_with_vue_parser_quirks_and_hoisted_scope_id,
+    },
 };
-use vize_carton::{profile, Bump, String};
+use vize_carton::{Bump, String, profile};
 use vize_croquis::Croquis;
 
 /// Compile a Vue template for DOM with default options
@@ -51,10 +58,52 @@ pub fn compile_template_with_options<'a>(
     source: &'a str,
     options: DomCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(allocator, source, options, false, None)
+}
+
+/// Compile a Vue template for DOM with Vue parser quirk compatibility.
+pub fn compile_template_with_vue_parser_quirks<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(allocator, source, options, true, None)
+}
+
+/// Compile a Vue template for DOM with an explicit scope ID for hoisted static VNodes.
+#[doc(hidden)]
+pub fn compile_template_with_options_and_hoisted_scope_id<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    hoisted_scope_id: Option<String>,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(allocator, source, options, false, hoisted_scope_id)
+}
+
+/// Compile a Vue template for DOM with Vue parser quirks and an explicit hoisted scope ID.
+#[doc(hidden)]
+pub fn compile_template_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    hoisted_scope_id: Option<String>,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(allocator, source, options, true, hoisted_scope_id)
+}
+
+fn compile_template_inner<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    vue_parser_quirks: bool,
+    hoisted_scope_id: Option<String>,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
     // Create parser options with DOM-specific settings
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
+        custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         comments: options.comments,
@@ -86,6 +135,7 @@ pub fn compile_template_with_options<'a>(
         ssr: options.ssr,
         is_ts: options.is_ts,
         inline: options.inline,
+        custom_renderer: options.custom_renderer,
         binding_metadata: options.binding_metadata.clone(),
         ..Default::default()
     };
@@ -93,13 +143,36 @@ pub fn compile_template_with_options<'a>(
     let analysis: Option<&Croquis> = options.croquis.map(|c| &*allocator.alloc(*c));
     profile!(
         "atelier.dom.template.transform",
-        do_transform(allocator, &mut root, transform_opts, analysis)
+        if vue_parser_quirks {
+            if hoisted_scope_id.is_some() {
+                transform_with_vue_parser_quirks_and_hoisted_scope_id(
+                    allocator,
+                    &mut root,
+                    transform_opts,
+                    analysis,
+                    hoisted_scope_id,
+                )
+            } else {
+                transform_with_vue_parser_quirks(allocator, &mut root, transform_opts, analysis)
+            }
+        } else if hoisted_scope_id.is_some() {
+            transform_with_hoisted_scope_id(
+                allocator,
+                &mut root,
+                transform_opts,
+                analysis,
+                hoisted_scope_id,
+            )
+        } else {
+            do_transform(allocator, &mut root, transform_opts, analysis)
+        }
     );
 
     // Codegen
     let codegen_opts = CodegenOptions {
         mode: options.mode,
         source_map: options.source_map,
+        component_name: options.component_name,
         scope_id: options.scope_id.clone(),
         ssr: options.ssr,
         is_ts: options.is_ts,
@@ -144,8 +217,8 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 #[cfg(test)]
 mod tests {
     use super::{
-        compile_template, compile_template_with_options, DomCompilerOptions, Namespace,
-        TemplateChildNode,
+        DomCompilerOptions, Namespace, TemplateChildNode, compile_template,
+        compile_template_with_options, compile_template_with_vue_parser_quirks,
     };
     use vize_atelier_core::options::CodegenMode;
     use vize_carton::Bump;
@@ -192,6 +265,20 @@ mod tests {
         assert!(errors.is_empty());
         // Empty div generates minimal code
         assert!(!result.code.is_empty());
+    }
+
+    #[test]
+    fn test_compile_v_for_vue_parser_quirks_accepts_unmatched_alias_paren() {
+        let allocator = Bump::new();
+        let opts = DomCompilerOptions::default();
+        let (_, errors, result) = compile_template_with_vue_parser_quirks(
+            &allocator,
+            r#"<div v-for="item) in items">{{ item }}</div>"#,
+            opts,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        assert!(result.code.contains("_renderList(items, (item) =>"));
     }
 
     #[test]
@@ -263,6 +350,32 @@ mod tests {
     }
 
     #[test]
+    fn test_inline_hoisted_bare_static_attrs_are_empty_strings() {
+        let allocator = Bump::new();
+        let options = DomCompilerOptions {
+            mode: CodegenMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            ..Default::default()
+        };
+
+        let (_, errors, result) = compile_template_with_options(
+            &allocator,
+            r#"<section><h2 sr-only font-bold flex="~ gap-1"><span block /></h2></section>"#,
+            options,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        let full = full_output(&result.preamble, &result.code);
+        assert!(full.contains(r#""sr-only": """#), "{full}");
+        assert!(full.contains(r#""font-bold": """#), "{full}");
+        assert!(full.contains(r#"block: """#), "{full}");
+        assert!(!full.contains(r#""sr-only": "true""#), "{full}");
+        assert!(!full.contains(r#""font-bold": "true""#), "{full}");
+        assert!(!full.contains(r#"block: "true""#), "{full}");
+    }
+
+    #[test]
     fn test_inline_component_dynamic_prop_keeps_props_patch_flag() {
         use vize_atelier_core::options::{BindingMetadata, BindingType};
         use vize_carton::FxHashMap;
@@ -270,6 +383,7 @@ mod tests {
         let allocator = Bump::new();
         let mut bindings = FxHashMap::default();
         bindings.insert("message".into(), BindingType::SetupRef);
+        bindings.insert("activeClass".into(), BindingType::SetupRef);
 
         let options = DomCompilerOptions {
             mode: CodegenMode::Module,
@@ -286,7 +400,7 @@ mod tests {
 
         let (_, errors, result) = compile_template_with_options(
             &allocator,
-            r#"<div><MyComponent :msg="message" /></div>"#,
+            r#"<div><MyComponent :msg="message" :class="activeClass" :full="true" /></div>"#,
             options,
         );
 

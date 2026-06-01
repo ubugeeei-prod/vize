@@ -1,6 +1,6 @@
 {
   "name": "vize",
-  "version": "0.46.0",
+  "version": "0.155.0",
   "description": "Vize - High-performance Vue.js toolchain in Rust",
   "keywords": [
     "cli",
@@ -11,10 +11,15 @@
     "vize",
     "vue"
   ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/vize"
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/vize"
   },
   "bin": {
     "vize": "bin/vize"
@@ -45,30 +50,34 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "vp run --workspace-root generate:rule-types && vp pack",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
-    "fmt": "vp fmt --write src vite.config.ts"
+    "fmt": "vp fmt --write src vite.config.ts",
+    "generate:rule-types": "vp run --workspace-root generate:rule-types"
   },
   "dependencies": {
-    "oxc-transform": "^0.56.0"
+    "@vizejs/native": "workspace:*",
+    "oxc-transform": "catalog:oxc"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "~5.6.0",
-    "vite-plus": "catalog:"
+    "@pkl-community/pkl": "catalog:repo-tooling",
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
   },
-  "optionalDependencies": {
-    "@vizejs/native-darwin-arm64": "0.0.1-alpha.114",
-    "@vizejs/native-darwin-x64": "0.0.1-alpha.114",
-    "@vizejs/native-linux-arm64-gnu": "0.0.1-alpha.114",
-    "@vizejs/native-linux-arm64-musl": "0.0.1-alpha.114",
-    "@vizejs/native-linux-x64-gnu": "0.0.1-alpha.114",
-    "@vizejs/native-linux-x64-musl": "0.0.1-alpha.114",
-    "@vizejs/native-win32-arm64-msvc": "0.0.1-alpha.114",
-    "@vizejs/native-win32-x64-msvc": "0.0.1-alpha.114"
+  "peerDependencies": {
+    "@pkl-community/pkl": "catalog:repo-tooling"
+  },
+  "peerDependenciesMeta": {
+    "@pkl-community/pkl": {
+      "optional": true
+    }
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }

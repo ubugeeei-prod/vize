@@ -43,14 +43,12 @@ pub struct MediaHasCaption;
 
 fn has_caption_track(children: &[TemplateChildNode]) -> bool {
     for child in children {
-        if let TemplateChildNode::Element(el) = child {
-            if el.tag == "track" {
-                if let Some(kind) = get_static_attribute_value(el, "kind") {
-                    if kind == "captions" || kind == "descriptions" {
-                        return true;
-                    }
-                }
-            }
+        if let TemplateChildNode::Element(el) = child
+            && el.tag == "track"
+            && let Some(kind) = get_static_attribute_value(el, "kind")
+            && (kind == "captions" || kind == "descriptions")
+        {
+            return true;
         }
     }
     false

@@ -46,10 +46,10 @@ const {
         </div>
         <div class="panel-actions">
           <label class="toggle-label">
-            <input type="checkbox" v-model="showScopeVisualization" />
+            <input v-model="showScopeVisualization" type="checkbox" />
             <span>Visualize Scopes</span>
           </label>
-          <button @click="source = ANALYSIS_PRESET" class="btn-ghost">Reset</button>
+          <button class="btn-ghost" @click="source = ANALYSIS_PRESET">Reset</button>
         </div>
       </div>
       <div class="editor-container">
@@ -117,30 +117,30 @@ const {
               <span class="vir-title">VIR — Vize Intermediate Representation</span>
               <span class="vir-line-count">{{ virLines.length }} lines</span>
             </div>
-            <div class="vir-notice">
-              VIR is a human-readable display format for debugging purposes only. It is not portable
-              and should not be parsed or used as a stable interface.
-            </div>
             <div class="vir-content">
-              <div class="vir-line-numbers">
-                <span v-for="(_, i) in virLines" :key="i" class="vir-ln">{{ i + 1 }}</span>
-              </div>
               <div class="vir-code">
                 <div
                   v-for="line in virLines"
                   :key="line.index"
                   :class="['vir-line', `vir-line-${line.lineType}`]"
                 >
-                  <template v-if="line.tokens.length > 0"
-                    ><span
-                      v-for="(token, ti) in line.tokens"
-                      :key="ti"
-                      :class="['vir-token', `vir-${token.type}`]"
-                      >{{ token.text }}</span
-                    ></template
-                  ><template v-else><span>&#160;</span></template>
+                  <span class="vir-ln">{{ line.index + 1 }}</span>
+                  <span class="vir-line-text"
+                    ><template v-if="line.tokens.length > 0"
+                      ><span
+                        v-for="(token, ti) in line.tokens"
+                        :key="ti"
+                        :class="['vir-token', `vir-${token.type}`]"
+                        >{{ token.text }}</span
+                      ></template
+                    ><template v-else><span>&#160;</span></template></span
+                  >
                 </div>
               </div>
+            </div>
+            <div class="vir-notice">
+              VIR is a human-readable display format for debugging purposes only. It is not portable
+              and should not be parsed or used as a stable interface.
             </div>
           </div>
 
@@ -181,7 +181,7 @@ const {
               </div>
             </div>
 
-            <div class="section" v-if="css">
+            <div v-if="css" class="section">
               <h3 class="section-title">CSS Analysis</h3>
               <div class="css-info">
                 <span class="css-stat">{{ css.selector_count }} selectors</span>
@@ -192,7 +192,7 @@ const {
               </div>
             </div>
 
-            <div class="section" v-if="typeExports.length > 0">
+            <div v-if="typeExports.length > 0" class="section">
               <h3 class="section-title">Type Exports <span class="badge hoisted">hoisted</span></h3>
               <div class="export-list">
                 <div
@@ -207,7 +207,7 @@ const {
               </div>
             </div>
 
-            <div class="section" v-if="invalidExports.length > 0">
+            <div v-if="invalidExports.length > 0" class="section">
               <h3 class="section-title">Invalid Exports <span class="badge error">error</span></h3>
               <div class="export-list">
                 <div

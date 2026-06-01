@@ -61,26 +61,26 @@ impl Rule for NoDuplicateDt {
         let mut seen: FxHashMap<String, u32> = FxHashMap::default();
 
         for child in &element.children {
-            if let TemplateChildNode::Element(el) = child {
-                if el.tag == "dt" {
-                    let text = get_text_content(el);
-                    let normalized = text.trim().to_compact_string();
-                    if normalized.is_empty() {
-                        continue;
-                    }
+            if let TemplateChildNode::Element(el) = child
+                && el.tag == "dt"
+            {
+                let text = get_text_content(el);
+                let normalized = text.trim().to_compact_string();
+                if normalized.is_empty() {
+                    continue;
+                }
 
-                    if let std::collections::hash_map::Entry::Vacant(entry) =
-                        seen.entry(normalized.clone())
-                    {
-                        entry.insert(el.loc.start.offset);
-                    } else {
-                        let message = ctx.t_fmt(
-                            "html/no-duplicate-dt.message",
-                            &[("term", normalized.as_str())],
-                        );
-                        let help = ctx.t("html/no-duplicate-dt.help");
-                        ctx.warn_with_help(message, &el.loc, help);
-                    }
+                if let std::collections::hash_map::Entry::Vacant(entry) =
+                    seen.entry(normalized.clone())
+                {
+                    entry.insert(el.loc.start.offset);
+                } else {
+                    let message = ctx.t_fmt(
+                        "html/no-duplicate-dt.message",
+                        &[("term", normalized.as_str())],
+                    );
+                    let help = ctx.t("html/no-duplicate-dt.help");
+                    ctx.warn_with_help(message, &el.loc, help);
                 }
             }
         }

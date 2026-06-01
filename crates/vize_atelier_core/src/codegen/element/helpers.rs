@@ -61,10 +61,10 @@ pub fn get_custom_directives<'a, 'b>(el: &'b ElementNode<'a>) -> Vec<&'b Directi
     el.props
         .iter()
         .filter_map(|prop| {
-            if let PropNode::Directive(dir) = prop {
-                if !is_builtin_directive(&dir.name) {
-                    return Some(dir.as_ref());
-                }
+            if let PropNode::Directive(dir) = prop
+                && !is_builtin_directive(&dir.name)
+            {
+                return Some(dir.as_ref());
             }
             None
         })
@@ -95,10 +95,10 @@ pub(crate) fn get_vmodel_directive<'a, 'b>(
     el: &'b ElementNode<'a>,
 ) -> Option<&'b DirectiveNode<'a>> {
     el.props.iter().find_map(|prop| {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name.as_str() == "model" {
-                return Some(dir.as_ref());
-            }
+        if let PropNode::Directive(dir) = prop
+            && dir.name.as_str() == "model"
+        {
+            return Some(dir.as_ref());
         }
         None
     })
@@ -109,19 +109,24 @@ pub(crate) fn is_is_prop(p: &PropNode<'_>) -> bool {
     match p {
         PropNode::Attribute(attr) => attr.name == "is",
         PropNode::Directive(dir) => {
-            if dir.name == "bind" {
-                if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                    return arg.content == "is";
-                }
+            if dir.name == "bind"
+                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+            {
+                return arg.content == "is";
             }
             false
         }
     }
 }
 
-/// Check if a tag is Vue's dynamic component special tag.
+/// Check if a tag is Vue's lowercase dynamic component special tag.
 pub(crate) fn is_dynamic_component_tag(tag: &str) -> bool {
-    matches!(tag, "component" | "Component")
+    tag == "component"
+}
+
+/// Check if an element should compile through resolveDynamicComponent().
+pub(crate) fn is_dynamic_component(el: &ElementNode<'_>) -> bool {
+    is_dynamic_component_tag(&el.tag) || (el.tag == "Component" && el.props.iter().any(is_is_prop))
 }
 
 /// Check if a single prop is renderable (not v-show or unsupported directive)

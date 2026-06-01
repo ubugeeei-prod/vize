@@ -1,7 +1,9 @@
 //! Vapor mode template compilation.
 
-use super::string_tracking::{count_braces_with_state, StringTrackState};
-use vize_atelier_vapor::{compile_vapor, VaporCompilerOptions};
+use super::string_tracking::{StringTrackState, count_braces_with_state};
+use vize_atelier_vapor::{
+    VaporCompilerOptions, compile_vapor, compile_vapor_with_vue_parser_quirks,
+};
 use vize_carton::{Bump, String, ToCompactString};
 
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock};
@@ -12,6 +14,8 @@ pub(crate) fn compile_template_block_vapor(
     scope_id: &str,
     has_scoped: bool,
     bindings: Option<&BindingMetadata>,
+    custom_renderer: bool,
+    vue_parser_quirks: bool,
 ) -> Result<String, SfcError> {
     let allocator = Bump::new();
 
@@ -19,11 +23,17 @@ pub(crate) fn compile_template_block_vapor(
     let vapor_opts = VaporCompilerOptions {
         prefix_identifiers: false,
         ssr: false,
+        binding_metadata: bindings.cloned(),
+        custom_renderer,
         ..Default::default()
     };
 
     // Compile template with Vapor
-    let result = compile_vapor(&allocator, &template.content, vapor_opts);
+    let result = if vue_parser_quirks {
+        compile_vapor_with_vue_parser_quirks(&allocator, &template.content, vapor_opts)
+    } else {
+        compile_vapor(&allocator, &template.content, vapor_opts)
+    };
 
     if !result.error_messages.is_empty() {
         let mut message = String::from("Vapor template compilation errors: ");
@@ -57,29 +67,29 @@ pub(crate) fn compile_template_block_vapor(
 /// Add scope ID to template string
 pub(super) fn add_scope_id_to_template(template_line: &str, scope_id: &str) -> String {
     // Find the template string content and add scope_id to the first element
-    if let Some(start) = template_line.find("\"<") {
-        if let Some(end) = template_line.rfind(">\"") {
-            let prefix = &template_line[..start + 2]; // up to and including "<"
-            let content = &template_line[start + 2..end + 1]; // element content
-            let suffix = &template_line[end + 1..]; // closing quote and paren
+    if let Some(start) = template_line.find("\"<")
+        && let Some(end) = template_line.rfind(">\"")
+    {
+        let prefix = &template_line[..start + 2]; // up to and including "<"
+        let content = &template_line[start + 2..end + 1]; // element content
+        let suffix = &template_line[end + 1..]; // closing quote and paren
 
-            // Find end of first tag name
-            if let Some(tag_end) = content.find(|c: char| c.is_whitespace() || c == '>') {
-                let tag_name = &content[..tag_end];
-                let rest = &content[tag_end..];
+        // Find end of first tag name
+        if let Some(tag_end) = content.find(|c: char| c.is_whitespace() || c == '>') {
+            let tag_name = &content[..tag_end];
+            let rest = &content[tag_end..];
 
-                // Insert scope_id attribute after tag name
-                let mut result = String::with_capacity(
-                    prefix.len() + tag_name.len() + scope_id.len() + rest.len() + suffix.len() + 1,
-                );
-                result.push_str(prefix);
-                result.push_str(tag_name);
-                result.push(' ');
-                result.push_str(scope_id);
-                result.push_str(rest);
-                result.push_str(suffix);
-                return result;
-            }
+            // Insert scope_id attribute after tag name
+            let mut result = String::with_capacity(
+                prefix.len() + tag_name.len() + scope_id.len() + rest.len() + suffix.len() + 1,
+            );
+            result.push_str(prefix);
+            result.push_str(tag_name);
+            result.push(' ');
+            result.push_str(scope_id);
+            result.push_str(rest);
+            result.push_str(suffix);
+            return result;
         }
     }
     template_line.to_compact_string()
@@ -218,21 +228,34 @@ fn rewrite_bound_component_resolution(
 }
 
 fn resolve_component_binding_name(bindings: &BindingMetadata, tag: &str) -> Option<String> {
-    if bindings.bindings.contains_key(tag) {
-        return Some(tag.to_compact_string());
+    let resolve_base = |name: &str| {
+        if bindings.bindings.contains_key(name) {
+            return Some(name.to_compact_string());
+        }
+
+        let camel = camelize_component_name(name);
+        if bindings.bindings.contains_key(camel.as_str()) {
+            return Some(camel);
+        }
+
+        let pascal = capitalize_component_name(camel.as_str());
+        if bindings.bindings.contains_key(pascal.as_str()) {
+            return Some(pascal);
+        }
+
+        None
+    };
+
+    if let Some((base, suffix)) = tag.split_once('.') {
+        let resolved_base = resolve_base(base)?;
+        let mut resolved = String::with_capacity(resolved_base.len() + suffix.len() + 1);
+        resolved.push_str(resolved_base.as_str());
+        resolved.push('.');
+        resolved.push_str(suffix);
+        return Some(resolved);
     }
 
-    let camel = camelize_component_name(tag);
-    if bindings.bindings.contains_key(camel.as_str()) {
-        return Some(camel);
-    }
-
-    let pascal = capitalize_component_name(camel.as_str());
-    if bindings.bindings.contains_key(pascal.as_str()) {
-        return Some(pascal);
-    }
-
-    None
+    resolve_base(tag)
 }
 
 fn camelize_component_name(tag: &str) -> String {

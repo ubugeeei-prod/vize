@@ -7,11 +7,31 @@ use crate::ast::{RootNode, RuntimeHelper, TemplateChildNode};
 
 use super::context::CodegenContext;
 use super::element::helpers::is_dynamic_component_tag;
-use vize_carton::String;
+use super::helpers::to_valid_asset_identifier;
+use vize_carton::{String, camelize, capitalize};
 
 /// Check if a root-level text node is ignorable whitespace.
 pub(super) fn is_ignorable_root_text(child: &TemplateChildNode<'_>) -> bool {
     matches!(child, TemplateChildNode::Text(text) if text.content.chars().all(|c| c.is_whitespace()))
+}
+
+fn imported_directive_binding_name(name: &str) -> String {
+    let camel = camelize(name);
+    let pascal = capitalize(&camel);
+    let mut binding = String::with_capacity(1 + pascal.len());
+    binding.push('v');
+    binding.push_str(&pascal);
+    binding
+}
+
+fn is_self_component_reference(component: &str, component_name: &str) -> bool {
+    if component == component_name {
+        return true;
+    }
+
+    let camel = camelize(component);
+    let pascal = capitalize(&camel);
+    pascal == component_name
 }
 
 /// Generate preamble from a list of helpers.
@@ -25,43 +45,42 @@ pub(super) fn generate_preamble_from_helpers(
 
     // Pre-calculate capacity: each helper needs ~20 chars on average
     let estimated_capacity = 32 + helpers.len() * 24;
-    let mut preamble = Vec::with_capacity(estimated_capacity);
+    let mut preamble = String::with_capacity(estimated_capacity);
 
     match ctx.options.mode {
         crate::options::CodegenMode::Module => {
             // ES module imports - build string directly without intermediate Vec
-            preamble.extend_from_slice(b"import { ");
+            preamble.push_str("import { ");
             for (i, h) in helpers.iter().enumerate() {
                 if i > 0 {
-                    preamble.extend_from_slice(b", ");
+                    preamble.push_str(", ");
                 }
-                preamble.extend_from_slice(h.name().as_bytes());
-                preamble.extend_from_slice(b" as ");
-                preamble.extend_from_slice(ctx.helper(*h).as_bytes());
+                preamble.push_str(h.name());
+                preamble.push_str(" as ");
+                preamble.push_str(ctx.helper(*h));
             }
-            preamble.extend_from_slice(b" } from \"");
-            preamble.extend_from_slice(ctx.runtime_module_name.as_bytes());
-            preamble.extend_from_slice(b"\"\n");
+            preamble.push_str(" } from \"");
+            preamble.push_str(ctx.runtime_module_name.as_str());
+            preamble.push_str("\"\n");
         }
         crate::options::CodegenMode::Function => {
             // Destructuring from global - build string directly without intermediate Vec
-            preamble.extend_from_slice(b"const { ");
+            preamble.push_str("const { ");
             for (i, h) in helpers.iter().enumerate() {
                 if i > 0 {
-                    preamble.extend_from_slice(b", ");
+                    preamble.push_str(", ");
                 }
-                preamble.extend_from_slice(h.name().as_bytes());
-                preamble.extend_from_slice(b": ");
-                preamble.extend_from_slice(ctx.helper(*h).as_bytes());
+                preamble.push_str(h.name());
+                preamble.push_str(": ");
+                preamble.push_str(ctx.helper(*h));
             }
-            preamble.extend_from_slice(b" } = ");
-            preamble.extend_from_slice(ctx.runtime_global_name.as_bytes());
-            preamble.push(b'\n');
+            preamble.push_str(" } = ");
+            preamble.push_str(ctx.runtime_global_name.as_str());
+            preamble.push('\n');
         }
     }
 
-    // SAFETY: We only push valid UTF-8 strings
-    unsafe { String::from_utf8_unchecked(preamble) }
+    preamble
 }
 
 /// Generate function signature.
@@ -96,7 +115,7 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
     // Resolve components (only those not in binding metadata)
     for component in root.components.iter() {
         // Skip components that are in binding metadata (from script setup imports)
-        if ctx.is_component_in_bindings(component) {
+        if ctx.resolve_component_binding_name(component).is_some() {
             continue;
         }
 
@@ -112,27 +131,46 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
         }
 
         ctx.use_helper(RuntimeHelper::ResolveComponent);
-        ctx.push("const _component_");
-        ctx.push(&component.replace('-', "_"));
+        ctx.push("const ");
+        ctx.push(&to_valid_asset_identifier("component", component));
         ctx.push(" = ");
         ctx.push(ctx.helper(RuntimeHelper::ResolveComponent));
         ctx.push("(\"");
         ctx.push(component);
-        ctx.push("\")");
+        ctx.push("\"");
+        if ctx
+            .options
+            .component_name
+            .as_deref()
+            .is_some_and(|name| is_self_component_reference(component, name))
+        {
+            ctx.push(", true");
+        }
+        ctx.push(")");
         ctx.newline();
         has_resolved_assets = true;
     }
 
     // Resolve directives
     for directive in root.directives.iter() {
-        ctx.use_helper(RuntimeHelper::ResolveDirective);
-        ctx.push("const _directive_");
-        ctx.push(&directive.replace('-', "_"));
+        ctx.push("const ");
+        ctx.push(&to_valid_asset_identifier("directive", directive));
         ctx.push(" = ");
-        ctx.push(ctx.helper(RuntimeHelper::ResolveDirective));
-        ctx.push("(\"");
-        ctx.push(directive);
-        ctx.push("\")");
+        let binding_name = imported_directive_binding_name(directive);
+        let uses_imported_binding = ctx
+            .options
+            .binding_metadata
+            .as_ref()
+            .is_some_and(|m| m.bindings.contains_key(binding_name.as_str()));
+        if uses_imported_binding {
+            ctx.push(&binding_name);
+        } else {
+            ctx.use_helper(RuntimeHelper::ResolveDirective);
+            ctx.push(ctx.helper(RuntimeHelper::ResolveDirective));
+            ctx.push("(\"");
+            ctx.push(directive);
+            ctx.push("\")");
+        }
         ctx.newline();
         has_resolved_assets = true;
     }

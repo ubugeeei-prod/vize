@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "ecosystem/vue-i18n-no-missing-key",
+        severity: Warning,
+        message: "Missing vue-i18n message key",
+        start: 17,
+        end: 29,
+        help: Some(
+            "Add this key to the local <i18n> block or move the catalog into the project-level i18n index when external resources are enabled.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

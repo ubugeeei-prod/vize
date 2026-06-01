@@ -9,8 +9,8 @@ use crate::{
 };
 
 use super::runner::TypeChecker;
-use vize_carton::cstr;
 use vize_carton::String;
+use vize_carton::cstr;
 
 impl TypeChecker {
     /// Get type information at a specific offset.
@@ -235,7 +235,9 @@ impl TypeChecker {
         }
 
         let mut chars = s.chars();
-        let first = chars.next().expect("non-empty string checked above");
+        let Some(first) = chars.next() else {
+            return false;
+        };
 
         if !Self::is_ident_start(first) {
             return false;

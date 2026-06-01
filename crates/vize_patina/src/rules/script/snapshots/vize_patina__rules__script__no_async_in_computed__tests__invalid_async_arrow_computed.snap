@@ -10,7 +10,7 @@ expression: result.diagnostics
         start: 13,
         end: 27,
         help: Some(
-            "Use ref with watchEffect for async operations: `const data = ref(null); watchEffect(async () => { data.value = await fetchData() })`",
+            "Use ref with watch() and cleanup for async operations; abort or ignore stale work before assigning the result.",
         ),
         labels: [],
         fix: None,

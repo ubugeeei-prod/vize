@@ -46,3 +46,8 @@ a {
 button {
   font-family: inherit;
 }
+
+body.musea-actions-resizing iframe,
+body.musea-sidebar-resizing iframe {
+  pointer-events: none !important;
+}

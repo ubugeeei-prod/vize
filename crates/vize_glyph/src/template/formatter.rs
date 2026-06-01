@@ -8,7 +8,7 @@ use crate::{error::FormatError, options::FormatOptions, script};
 use vize_carton::{String, ToCompactString};
 
 use super::{
-    attributes::{render_attribute, sort_attributes, ParsedAttribute},
+    attributes::{ParsedAttribute, render_attribute, sort_attributes},
     directives::normalize_attribute,
     helpers::{
         find_bytes, is_tag_name_char, is_void_element_str, is_whitespace, parse_closing_tag,
@@ -55,6 +55,20 @@ impl<'a> TemplateFormatter<'a> {
                 continue;
             }
 
+            if pos + 1 < len
+                && source[pos] == b'{'
+                && source[pos + 1] == b'{'
+                && let Some((expr_start, expr_end, end_pos)) =
+                    parse_interpolation_range(source, pos)
+                && source[pos..end_pos].contains(&b'\n')
+            {
+                self.flush_text_buffer(&mut output, &mut line_buffer, depth);
+                let expr = std::str::from_utf8(&source[expr_start..expr_end]).unwrap_or("");
+                self.write_multiline_interpolation(&mut output, expr, depth);
+                pos = end_pos;
+                continue;
+            }
+
             // HTML comment <!-- ... -->
             if pos + 3 < len && &source[pos..pos + 4] == b"<!--" {
                 self.flush_text_buffer(&mut output, &mut line_buffer, depth);
@@ -80,17 +94,18 @@ impl<'a> TemplateFormatter<'a> {
                 self.flush_text_buffer(&mut output, &mut line_buffer, depth);
 
                 // Closing tag
-                if pos + 1 < len && source[pos + 1] == b'/' {
-                    if let Some((tag_name, end_pos)) = parse_closing_tag(source, pos) {
-                        depth = depth.saturating_sub(1);
-                        self.write_indent(&mut output, depth);
-                        output.extend_from_slice(b"</");
-                        output.extend_from_slice(tag_name.as_bytes());
-                        output.push(b'>');
-                        output.extend_from_slice(self.newline);
-                        pos = end_pos;
-                        continue;
-                    }
+                if pos + 1 < len
+                    && source[pos + 1] == b'/'
+                    && let Some((tag_name, end_pos)) = parse_closing_tag(source, pos)
+                {
+                    depth = depth.saturating_sub(1);
+                    self.write_indent(&mut output, depth);
+                    output.extend_from_slice(b"</");
+                    output.extend_from_slice(tag_name.as_bytes());
+                    output.push(b'>');
+                    output.extend_from_slice(self.newline);
+                    pos = end_pos;
+                    continue;
                 }
 
                 // Opening tag
@@ -147,6 +162,17 @@ impl<'a> TemplateFormatter<'a> {
 
                     if is_self_closing {
                         output.extend_from_slice(b" />");
+                    } else if !is_void_element_str(&tag_name)
+                        && let Some(closing_end_pos) =
+                            self.parse_immediate_empty_closing_tag(source, end_pos, &tag_name)
+                    {
+                        output.push(b'>');
+                        output.extend_from_slice(b"</");
+                        output.extend_from_slice(tag_name.as_bytes());
+                        output.push(b'>');
+                        output.extend_from_slice(self.newline);
+                        pos = closing_end_pos;
+                        continue;
                     } else {
                         output.push(b'>');
                         if !is_void_element_str(&tag_name) {
@@ -195,7 +221,12 @@ impl<'a> TemplateFormatter<'a> {
             output.pop();
         }
 
-        // SAFETY: We only wrote valid UTF-8 bytes
+        // SAFETY: `output` contains only copied ranges from the UTF-8 template
+        // source, formatter-produced `&str` fragments, and ASCII indentation or
+        // line breaks. The cursor moves across UTF-8 using the parser's byte
+        // ranges and ASCII delimiter checks, so the buffer cannot contain an
+        // invalid byte sequence. Skipping validation preserves formatter
+        // throughput for large templates.
         Ok(unsafe { String::from_utf8_unchecked(output) })
     }
 
@@ -209,6 +240,19 @@ impl<'a> TemplateFormatter<'a> {
         let formatted = format_interpolations(text, self.options);
         self.write_indented_line(output, formatted.as_bytes(), depth);
         buffer.clear();
+    }
+
+    fn write_multiline_interpolation(&self, output: &mut Vec<u8>, expr: &str, depth: usize) {
+        self.write_indented_line(output, b"{{", depth);
+
+        let formatted_expr = format_interpolation_expression(expr, self.options);
+        for line in formatted_expr.trim().lines() {
+            self.write_indent(output, depth + 1);
+            output.extend_from_slice(line.trim_end_matches('\r').as_bytes());
+            output.extend_from_slice(self.newline);
+        }
+
+        self.write_indented_line(output, b"}}", depth);
     }
 
     #[inline]
@@ -320,6 +364,32 @@ impl<'a> TemplateFormatter<'a> {
         }
 
         Some((tag_name, attrs, is_self_closing, pos))
+    }
+
+    /// Return the end of an immediately following matching closing tag.
+    fn parse_immediate_empty_closing_tag(
+        &self,
+        source: &[u8],
+        start: usize,
+        tag_name: &str,
+    ) -> Option<usize> {
+        let len = source.len();
+        let mut pos = start;
+
+        while pos < len && is_whitespace(source[pos]) {
+            pos += 1;
+        }
+
+        if pos + 1 >= len || source[pos] != b'<' || source[pos + 1] != b'/' {
+            return None;
+        }
+
+        let (closing_tag_name, end_pos) = parse_closing_tag(source, pos)?;
+        if closing_tag_name.as_str() == tag_name {
+            Some(end_pos)
+        } else {
+            None
+        }
     }
 
     /// Parse a single attribute: name, optional `="value"`.
@@ -449,8 +519,7 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
 
             if depth == 0 {
                 let expr = &text[expr_start..expr_end];
-                let formatted_expr = script::format_js_expression(expr, options)
-                    .unwrap_or_else(|| expr.trim().to_compact_string());
+                let formatted_expr = format_interpolation_expression(expr, options);
                 result.push_str("{{ ");
                 result.push_str(&formatted_expr);
                 result.push_str(" }}");
@@ -472,4 +541,36 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
     }
 
     result
+}
+
+fn format_interpolation_expression(expr: &str, options: &FormatOptions) -> String {
+    script::format_js_expression(expr, options).unwrap_or_else(|| expr.trim().to_compact_string())
+}
+
+fn parse_interpolation_range(source: &[u8], start: usize) -> Option<(usize, usize, usize)> {
+    let len = source.len();
+    if start + 1 >= len || source[start] != b'{' || source[start + 1] != b'{' {
+        return None;
+    }
+
+    let expr_start = start + 2;
+    let mut depth = 1;
+    let mut pos = expr_start;
+
+    while pos + 1 < len {
+        if source[pos] == b'{' && source[pos + 1] == b'{' {
+            depth += 1;
+            pos += 2;
+        } else if source[pos] == b'}' && source[pos + 1] == b'}' {
+            depth -= 1;
+            if depth == 0 {
+                return Some((expr_start, pos, pos + 2));
+            }
+            pos += 2;
+        } else {
+            pos += 1;
+        }
+    }
+
+    None
 }

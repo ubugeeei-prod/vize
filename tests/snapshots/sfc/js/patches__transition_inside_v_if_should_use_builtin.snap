@@ -2,11 +2,12 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { Transition as _Transition, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, withCtx as _withCtx } from "vue"
-
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, Transition as _Transition, withCtx as _withCtx } from "vue"
 
 const _hoisted_1 = /*#__PURE__*/ _createElementVNode("div", null, "content")
+
 import { ref } from 'vue'
+
 
 export default {
   __name: 'test',
@@ -16,16 +17,16 @@ const show = ref(true)
 
 return (_ctx, _cache) => {
   return (show.value)
-      ? (_openBlock(), _createBlock(_Transition, {
-        key: 0,
-        name: "fade"
-      }, {
-        default: _withCtx(() => [
-          _hoisted_1
-        ]),
-        _: 1 /* STABLE */
-      }))
-      : _createCommentVNode("v-if", true)
+    ? (_openBlock(), _createBlock(_Transition, {
+      key: 0,
+      name: "fade"
+    }, {
+      default: _withCtx(() => [
+        _hoisted_1
+      ]),
+      _: 1 /* STABLE */
+    }))
+    : _createCommentVNode("v-if", true)
 }
 }
 

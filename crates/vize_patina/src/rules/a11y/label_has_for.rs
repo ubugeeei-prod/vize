@@ -72,10 +72,8 @@ fn has_nested_form_control(children: &[TemplateChildNode]) -> bool {
                     }
                 }
             }
-            TemplateChildNode::For(for_node) => {
-                if has_nested_form_control(&for_node.children) {
-                    return true;
-                }
+            TemplateChildNode::For(for_node) if has_nested_form_control(&for_node.children) => {
+                return true;
             }
             _ => {}
         }

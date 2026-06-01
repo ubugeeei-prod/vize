@@ -13,8 +13,8 @@ pub mod if_node;
 pub mod prop;
 
 pub use block::{
-    escape_template, generate_block, generate_effect_wrapper, generate_template_declaration,
-    generate_template_instantiation, GenerateContext,
+    GenerateContext, escape_template, generate_block, generate_effect_wrapper,
+    generate_template_declaration, generate_template_instantiation,
 };
 pub use component::{
     generate_async_component, generate_create_component, generate_dynamic_component,

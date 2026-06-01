@@ -26,6 +26,10 @@ input = "<MyComponent />"
 name = "kebab-case component"
 input = "<my-component />"
 
+[[cases]]
+name = "component name with colon"
+input = '<global:head title="Page Title" />'
+
 # =============================================================================
 # Component props
 # =============================================================================
@@ -53,6 +57,14 @@ input = '<MyComponent v-bind="props" />'
 [[cases]]
 name = "v-bind object with extra props"
 input = '<MyComponent v-bind="props" :extra="value" />'
+
+[[cases]]
+name = "dynamic prop name"
+input = '<MyComponent :[prop]="value" />'
+
+[[cases]]
+name = "v-bind object with event"
+input = '<MyComponent v-bind="props" @update="onUpdate" />'
 
 # =============================================================================
 # Built-in components
@@ -179,9 +191,25 @@ name = "component event with argument"
 input = '<MyComponent @update="onUpdate($event)" />'
 
 [[cases]]
+name = "component dynamic event name"
+input = '<MyComponent @[event]="handler" />'
+
+[[cases]]
 name = "component multiple events"
 input = '<MyComponent @update="onUpdate" @change="onChange" />'
 
 [[cases]]
 name = "component event modifiers"
 input = '<MyComponent @update.once="onUpdate" />'
+
+[[cases]]
+name = "component static class before v-bind spread"
+input = '<Foo class="a" v-bind="obj" />'
+
+[[cases]]
+name = "component static and dynamic around v-bind spread"
+input = '<Foo id="x" v-bind="a" :title="t" />'
+
+[[cases]]
+name = "component handler before v-bind spread"
+input = '<Foo @click="fn" v-bind="props" />'

@@ -3,9 +3,10 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
 
 import { ref } from 'vue'
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -20,12 +21,12 @@ return (_ctx: any,_cache: any) => {
   const _directive_click_outside = _resolveDirective("click-outside")
 
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items.value, (item) => {
-      return _withDirectives((_openBlock(), _createElementBlock("div", {
-        key: item.id
-      }, _toDisplayString(item.name), 1 /* TEXT */)), [
-        [_directive_click_outside, () => closeItem(item.id)]
-      ])
-    }), 128 /* KEYED_FRAGMENT */))
+    return _withDirectives((_openBlock(), _createElementBlock("div", {
+      key: item.id
+    }, _toDisplayString(item.name), 1 /* TEXT */)), [
+      [_directive_click_outside, () => closeItem(item.id)]
+    ])
+  }), 128 /* KEYED_FRAGMENT */))
 }
 }
 

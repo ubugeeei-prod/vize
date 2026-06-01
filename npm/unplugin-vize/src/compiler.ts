@@ -5,8 +5,8 @@ import type {
   NormalizedVizeUnpluginOptions,
   CachedCompiledModule,
   SfcCompileResultNapi,
-} from "./types.js";
-import { extractStyleBlocks, generateScopeId } from "./style.js";
+} from "./types.ts";
+import { generateScopeId, toStyleBlockInfo } from "./style.ts";
 
 const { compileSfc } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
@@ -17,6 +17,8 @@ function buildSignature(options: NormalizedVizeUnpluginOptions): string {
     options.isProduction ? "1" : "0",
     options.ssr ? "1" : "0",
     options.vapor ? "1" : "0",
+    options.customRenderer ? "1" : "0",
+    options.vueParserQuirks ? "1" : "0",
     options.sourceMap ? "1" : "0",
     options.root,
   ].join(":");
@@ -41,13 +43,14 @@ export function compileVueModule(
   }
 
   const scopeId = generateScopeId(filePath, options.root, options.isProduction, source);
-  const hasScoped = /<style[^>]*\bscoped\b/.test(source);
   const result = compileSfc(source, {
     filename: filePath,
     sourceMap: options.sourceMap,
     ssr: options.ssr,
     vapor: options.vapor,
-    scopeId: hasScoped ? `data-v-${scopeId}` : undefined,
+    customRenderer: options.customRenderer,
+    vueParserQuirks: options.vueParserQuirks,
+    scopeId: `data-v-${scopeId}`,
   });
 
   if (result.errors.length > 0) {
@@ -58,11 +61,12 @@ export function compileVueModule(
     code: result.code,
     css: result.css,
     scopeId,
-    hasScoped,
+    hasScoped: result.hasScoped,
     templateHash: result.templateHash,
     styleHash: result.styleHash,
     scriptHash: result.scriptHash,
-    styles: extractStyleBlocks(source),
+    macroArtifacts: result.macroArtifacts ?? [],
+    styles: result.styles.map(toStyleBlockInfo),
   };
 
   cache.set(filePath, {

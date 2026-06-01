@@ -8,7 +8,7 @@ use super::{
 };
 use crate::scope::types::JsRuntime;
 use insta::assert_snapshot;
-use vize_carton::append;
+use vize_carton::{append, smallvec};
 
 #[test]
 fn test_scope_chain_basic() {
@@ -70,6 +70,7 @@ fn test_v_for_scope() {
     chain.enter_v_for_scope(
         VForScopeData {
             value_alias: CompactString::new("item"),
+            value_bindings: smallvec![CompactString::new("item")],
             key_alias: Some(CompactString::new("key")),
             index_alias: Some(CompactString::new("index")),
             source: CompactString::new("items"),
@@ -97,6 +98,7 @@ fn test_v_slot_scope() {
                 CompactString::new("item"),
                 CompactString::new("index")
             ],
+            component: None,
         },
         0,
         100,
@@ -179,6 +181,7 @@ fn test_nested_v_for() {
     chain.enter_v_for_scope(
         VForScopeData {
             value_alias: CompactString::new("row"),
+            value_bindings: smallvec![CompactString::new("row")],
             key_alias: None,
             index_alias: Some(CompactString::new("rowIndex")),
             source: CompactString::new("rows"),
@@ -192,6 +195,7 @@ fn test_nested_v_for() {
     chain.enter_v_for_scope(
         VForScopeData {
             value_alias: CompactString::new("cell"),
+            value_bindings: smallvec![CompactString::new("cell")],
             key_alias: None,
             index_alias: Some(CompactString::new("cellIndex")),
             source: CompactString::new("row.cells"),
@@ -225,6 +229,7 @@ fn test_nested_callback_in_v_for() {
     chain.enter_v_for_scope(
         VForScopeData {
             value_alias: CompactString::new("item"),
+            value_bindings: smallvec![CompactString::new("item")],
             key_alias: None,
             index_alias: Some(CompactString::new("index")),
             source: CompactString::new("items"),
@@ -635,6 +640,7 @@ fn test_scope_chain_snapshot() {
     chain.enter_v_for_scope(
         VForScopeData {
             value_alias: CompactString::new("item"),
+            value_bindings: smallvec![CompactString::new("item")],
             key_alias: Some(CompactString::new("key")),
             index_alias: None,
             source: CompactString::new("items"),
@@ -721,6 +727,7 @@ fn test_snapshot_complex_nested_scopes() {
     chain.enter_v_for_scope(
         VForScopeData {
             value_alias: CompactString::new("item"),
+            value_bindings: smallvec![CompactString::new("item")],
             key_alias: Some(CompactString::new("key")),
             index_alias: Some(CompactString::new("index")),
             source: CompactString::new("items"),
@@ -739,6 +746,7 @@ fn test_snapshot_complex_nested_scopes() {
                 CompactString::new("row"),
                 CompactString::new("col")
             ],
+            component: None,
         },
         250,
         350,
@@ -834,6 +842,7 @@ fn test_snapshot_scope_transitions() {
     chain.enter_v_for_scope(
         VForScopeData {
             value_alias: CompactString::new("item"),
+            value_bindings: smallvec![CompactString::new("item")],
             key_alias: None,
             index_alias: None,
             source: CompactString::new("list"),
@@ -849,6 +858,7 @@ fn test_snapshot_scope_transitions() {
             name: CompactString::new("default"),
             props_pattern: None,
             prop_names: vize_carton::smallvec![],
+            component: None,
         },
         150,
         250,
@@ -908,4 +918,122 @@ fn test_snapshot_binding_types() {
     }
 
     assert_snapshot!(output);
+}
+
+#[test]
+fn test_bindings_visible_at_walks_nested_closures() {
+    // Models the SFC:
+    //   function increment() {            // span [0, 100]
+    //     const local = 1                 // declared inside the closure
+    //     // cursor lands here (offset 50)
+    //   }
+    //   const outer = ref(0)              // setup-scope binding
+    let mut chain = ScopeChain::new();
+    chain.enter_script_setup_scope(
+        ScriptSetupScopeData {
+            is_ts: true,
+            is_async: false,
+            generic: None,
+        },
+        0,
+        200,
+    );
+    chain.add_binding(
+        CompactString::new("outer"),
+        ScopeBinding::new(BindingType::SetupRef, 110),
+    );
+
+    chain.enter_closure_scope(
+        crate::scope::types::ClosureScopeData {
+            name: Some(CompactString::new("increment")),
+            param_names: vize_carton::smallvec![],
+            is_arrow: false,
+            is_async: false,
+            is_generator: false,
+        },
+        0,
+        100,
+    );
+    chain.add_binding(
+        CompactString::new("local"),
+        ScopeBinding::new(BindingType::SetupConst, 30),
+    );
+
+    // Restore current so subsequent calls don't see a stale scope.
+    chain.exit_scope();
+
+    // Offset 50 lives inside the closure. Both `local` (closure) and `outer`
+    // (script setup) should be visible. The closure binding comes first
+    // because the walk starts from the deepest containing scope.
+    let visible = chain.bindings_visible_at(50);
+    let names: Vec<&str> = visible.iter().map(|(name, _, _)| *name).collect();
+    assert!(
+        names.contains(&"local"),
+        "closure local should be visible at offset 50, got {names:?}",
+    );
+    assert!(
+        names.contains(&"outer"),
+        "script-setup binding should be visible at offset 50, got {names:?}",
+    );
+    let local_idx = names.iter().position(|n| *n == "local").unwrap();
+    let outer_idx = names.iter().position(|n| *n == "outer").unwrap();
+    assert!(
+        local_idx < outer_idx,
+        "inner scope must precede outer scope: {names:?}",
+    );
+
+    // Offset 150 is past the closure, in setup scope only.
+    let visible = chain.bindings_visible_at(150);
+    let names: Vec<&str> = visible.iter().map(|(name, _, _)| *name).collect();
+    assert!(names.contains(&"outer"));
+    assert!(!names.contains(&"local"));
+}
+
+#[test]
+fn test_bindings_visible_at_respects_shadowing() {
+    let mut chain = ScopeChain::new();
+    chain.enter_script_setup_scope(
+        ScriptSetupScopeData {
+            is_ts: true,
+            is_async: false,
+            generic: None,
+        },
+        0,
+        200,
+    );
+    chain.add_binding(
+        CompactString::new("x"),
+        ScopeBinding::new(BindingType::SetupRef, 0),
+    );
+
+    chain.enter_closure_scope(
+        crate::scope::types::ClosureScopeData {
+            name: Some(CompactString::new("inner")),
+            param_names: vize_carton::smallvec![],
+            is_arrow: false,
+            is_async: false,
+            is_generator: false,
+        },
+        10,
+        90,
+    );
+    chain.add_binding(
+        CompactString::new("x"),
+        ScopeBinding::new(BindingType::SetupLet, 20),
+    );
+    chain.exit_scope();
+
+    let visible = chain.bindings_visible_at(50);
+    let xs: Vec<_> = visible.iter().filter(|(name, _, _)| *name == "x").collect();
+    assert_eq!(xs.len(), 1, "shadowed name should appear only once: {xs:?}");
+    assert_eq!(xs[0].1.binding_type, BindingType::SetupLet);
+}
+
+#[test]
+fn test_bindings_visible_at_returns_empty_outside_any_scope() {
+    let chain = ScopeChain::new();
+    // Root scope uses the default span (0..0), so any non-zero offset finds
+    // no containing scope and returns nothing.
+    let visible = chain.bindings_visible_at(42);
+    assert!(visible.is_empty(), "expected empty, got {visible:?}");
 }

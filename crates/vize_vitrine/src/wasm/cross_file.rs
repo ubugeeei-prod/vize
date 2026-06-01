@@ -15,9 +15,12 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen(js_name = "analyzeCrossFile")]
 pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsValue, JsValue> {
     use vize_atelier_core::parser::parse;
-    use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
-    use vize_croquis::cross_file::CrossFileAnalyzer;
-    use vize_croquis::{Analyzer, AnalyzerOptions};
+    use vize_atelier_sfc::{
+        SfcParseOptions,
+        croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+        parse_sfc,
+    };
+    use vize_croquis_cf::CrossFileAnalyzer;
 
     // Parse options
     let cross_file_opts = parse_cross_file_options(&options);
@@ -66,69 +69,21 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                 ..Default::default()
             };
             if let Ok(descriptor) = parse_sfc(source, parse_opts) {
-                // Create single-file analyzer with full options
-                let mut single_analyzer = Analyzer::with_options(AnalyzerOptions::full());
-
-                // Extract and analyze script content
-                let (script_content, script_start): (&str, usize) =
-                    if let Some(ref script_setup) = descriptor.script_setup {
-                        single_analyzer.analyze_script_setup(&script_setup.content);
-                        (&script_setup.content, script_setup.loc.start)
-                    } else if let Some(ref script) = descriptor.script {
-                        single_analyzer.analyze_script_plain(&script.content);
-                        (&script.content, script.loc.start)
-                    } else {
-                        ("", 0)
-                    };
-
-                // Also analyze the regular <script> block for setup context violations
-                // when it exists alongside <script setup>
-                let plain_script_violations = if descriptor.script_setup.is_some() {
-                    if let Some(ref script) = descriptor.script {
-                        // Parse the plain script to detect setup context violations
-                        let plain_result =
-                            vize_croquis::script_parser::parse_script(&script.content);
-                        // Extract violations with adjusted offsets
-                        plain_result
-                            .setup_context
-                            .violations()
-                            .iter()
-                            .map(|v| {
-                                vize_croquis::setup_context::SetupContextViolation {
-                                    kind: v.kind,
-                                    api_name: v.api_name.clone(),
-                                    // Adjust offset to account for script block position
-                                    start: v.start + script.loc.start as u32,
-                                    end: v.end + script.loc.start as u32,
-                                }
-                            })
-                            .collect::<Vec<_>>()
-                    } else {
-                        Vec::new()
-                    }
-                } else {
-                    Vec::new()
-                };
-
-                // Analyze template for component usages (populates used_components)
-                if let Some(ref template) = descriptor.template {
+                let analysis = if let Some(ref template) = descriptor.template {
                     let allocator = Bump::new();
                     let (root, _errors) = parse(&allocator, &template.content);
-                    single_analyzer.analyze_template(&root);
-                }
-
-                // Get complete analysis with used_components populated
-                let mut analysis = single_analyzer.finish();
-
-                // Merge setup context violations from plain script
-                for violation in plain_script_violations {
-                    analysis.setup_context.record_violation(
-                        violation.kind,
-                        violation.api_name,
-                        violation.start,
-                        violation.end,
-                    );
-                }
+                    analyze_sfc_descriptor_with_context(
+                        &descriptor,
+                        Some(&root),
+                        SfcCroquisOptions::full(),
+                    )
+                } else {
+                    analyze_sfc_descriptor_with_context(
+                        &descriptor,
+                        None,
+                        SfcCroquisOptions::full(),
+                    )
+                };
 
                 // Record template opening tag span before adding file
                 // Use tag_start and content start (which is right after '>') to cover just <template...>
@@ -139,7 +94,10 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                     .unwrap_or((0, 0));
 
                 // Add file with pre-computed analysis
-                let file_id = analyzer.add_file_with_analysis(std_path, script_content, analysis);
+                let script_start = analysis.script_offset as usize;
+                let script_content = analysis.script_content.unwrap_or_default();
+                let file_id =
+                    analyzer.add_file_with_analysis(std_path, &script_content, analysis.croquis);
 
                 // Record the script and template offsets for this file
                 script_offsets.insert(file_id.as_u32(), script_start);
@@ -151,8 +109,9 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
         }
     }
 
-    // Rebuild component usage edges after all files are added
-    // This ensures edges are created even when files are processed out of order
+    // Rebuild import and component usage edges after all files are added.
+    // This ensures edges are created even when files are processed out of order.
+    analyzer.rebuild_import_edges();
     analyzer.rebuild_component_edges();
 
     // Run cross-file analysis
@@ -246,7 +205,7 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                 .iter()
                 .map(
                     |(file_id, offset, message): &(
-                        vize_croquis::cross_file::FileId,
+                        vize_croquis_cf::FileId,
                         u32,
                         vize_carton::CompactString,
                     )| {
@@ -328,8 +287,8 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
 }
 
 /// Parse CrossFileOptions from JsValue
-fn parse_cross_file_options(options: &JsValue) -> vize_croquis::cross_file::CrossFileOptions {
-    use vize_croquis::cross_file::CrossFileOptions;
+fn parse_cross_file_options(options: &JsValue) -> vize_croquis_cf::CrossFileOptions {
+    use vize_croquis_cf::CrossFileOptions;
 
     let get_bool = |key: &str| -> bool {
         js_sys::Reflect::get(options, &JsValue::from_str(key))
@@ -352,6 +311,7 @@ fn parse_cross_file_options(options: &JsValue) -> vize_croquis::cross_file::Cros
         server_client_boundary: get_bool("serverClientBoundary"),
         error_suspense_boundary: get_bool("errorSuspenseBoundary"),
         reactivity_tracking: get_bool("reactivityTracking"),
+        race_conditions: get_bool("raceConditions"),
         setup_context: get_bool("setupContext"),
         circular_dependencies: get_bool("circularDependencies"),
         max_import_depth: js_sys::Reflect::get(options, &JsValue::from_str("maxImportDepth"))
@@ -364,10 +324,8 @@ fn parse_cross_file_options(options: &JsValue) -> vize_croquis::cross_file::Cros
 }
 
 /// Convert diagnostic kind to string type
-fn diagnostic_kind_to_string(
-    kind: &vize_croquis::cross_file::CrossFileDiagnosticKind,
-) -> &'static str {
-    use vize_croquis::cross_file::CrossFileDiagnosticKind::*;
+fn diagnostic_kind_to_string(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> &'static str {
+    use vize_croquis_cf::CrossFileDiagnosticKind::*;
     match kind {
         // Fallthrough attributes
         UnusedFallthroughAttrs { .. } => "fallthrough-attrs",
@@ -385,6 +343,7 @@ fn diagnostic_kind_to_string(
         UnusedProvide { .. } => "provide-inject",
         ProvideInjectTypeMismatch { .. } => "provide-inject",
         ProvideInjectWithoutSymbol { .. } => "provide-inject",
+        NonReactiveProvideValue { .. } => "provide-inject",
         // Unique IDs
         DuplicateElementId { .. } => "unique-ids",
         NonUniqueIdInLoop { .. } => "unique-ids",
@@ -436,6 +395,7 @@ fn diagnostic_kind_to_string(
         TemplateRefAccessedBeforeMount { .. } => "template-ref-timing",
         // Ultra-strict: async boundary
         AsyncBoundaryCrossing { .. } => "async-boundary",
+        InjectedAsyncMutationRace { .. } => "race-condition",
         // Ultra-strict: closure capture
         ClosureCapturesReactive { .. } => "closure-capture",
         // Ultra-strict: object identity
@@ -461,10 +421,8 @@ fn diagnostic_kind_to_string(
 
 /// Determine if a diagnostic is template-related (uses template offsets)
 /// vs script-related (uses script offsets)
-fn is_template_related_diagnostic(
-    kind: &vize_croquis::cross_file::CrossFileDiagnosticKind,
-) -> bool {
-    use vize_croquis::cross_file::CrossFileDiagnosticKind::*;
+fn is_template_related_diagnostic(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> bool {
+    use vize_croquis_cf::CrossFileDiagnosticKind::*;
     matches!(
         kind,
         // Template-based diagnostics (positions in template block)
@@ -482,10 +440,8 @@ fn is_template_related_diagnostic(
 
 /// Determine if a diagnostic should span the entire <template> tag
 /// (uses tag_start and tag_end directly, not relative offsets)
-fn is_template_tag_span_diagnostic(
-    kind: &vize_croquis::cross_file::CrossFileDiagnosticKind,
-) -> bool {
-    use vize_croquis::cross_file::CrossFileDiagnosticKind::*;
+fn is_template_tag_span_diagnostic(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> bool {
+    use vize_croquis_cf::CrossFileDiagnosticKind::*;
     matches!(
         kind,
         // These diagnostics apply to the entire template, not a specific location

@@ -1,4 +1,4 @@
-use super::{utils::convert_diagnostics, CorsaProjectClient, LspDiagnostic};
+use super::{CorsaProjectClient, LspDiagnostic, utils::convert_diagnostics};
 use crate::file_uri::path_to_file_uri;
 use corsa::api::{DocumentIdentifier, FileDiagnosticsResponse, ProjectDiagnosticsResponse};
 use lsp_types::Diagnostic;

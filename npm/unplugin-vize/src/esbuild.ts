@@ -1,3 +1,3 @@
-import { vizeUnplugin } from "./unplugin.js";
+import { vizeUnplugin } from "./unplugin.ts";
 
 export default vizeUnplugin.esbuild;

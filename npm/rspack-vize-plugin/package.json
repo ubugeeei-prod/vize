@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/rspack-plugin",
-  "version": "0.46.0",
+  "version": "0.155.0",
   "description": "High-performance Rspack plugin for Vue SFC compilation powered by Vize",
   "keywords": [
     "compiler",
@@ -12,10 +12,14 @@
     "sfc",
     "vue"
   ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/vize",
+    "url": "https://github.com/ubugeeei-prod/vize",
     "directory": "npm/rspack-vize-plugin"
   },
   "files": [
@@ -55,20 +59,25 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "pnpm build && node --import tsx --test src/*.test.ts src/**/*.test.ts",
-    "test:update": "pnpm build && node --import tsx --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
+    "test": "pnpm build && node --test src/*.test.ts src/**/*.test.ts",
+    "test:update": "pnpm build && node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*"
   },
   "devDependencies": {
-    "@rspack/core": "^1.7.7",
-    "@types/node": "^22.0.0",
-    "tsx": "^4.21.0",
-    "typescript": "~5.6.0",
-    "vite-plus": "catalog:"
+    "@rspack/core": "catalog:bundlers",
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
   },
   "peerDependencies": {
     "@rspack/core": ">=1.0.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

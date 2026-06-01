@@ -3,9 +3,10 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode } from "vue"
+import { createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 import MyComponent from './MyComponent.vue'
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -13,7 +14,9 @@ export default /*@__PURE__*/_defineComponent({
 
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", { class: "wrapper" }, [ _createVNode(MyComponent, { class: "child" }) ]))
+  return (_openBlock(), _createElementBlock("div", { class: "wrapper" }, [
+    _createVNode(MyComponent, { class: "child" })
+  ]))
 }
 }
 

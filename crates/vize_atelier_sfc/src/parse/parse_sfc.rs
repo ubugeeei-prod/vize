@@ -2,7 +2,7 @@ use crate::types::{
     BlockLocation, SfcCustomBlock, SfcDescriptor, SfcError, SfcParseOptions, SfcScriptBlock,
     SfcStyleBlock, SfcTemplateBlock,
 };
-use memchr::{memchr, memmem::Finder};
+use memchr::{memchr, memchr_iter, memmem::Finder};
 use std::borrow::Cow;
 
 use super::block::{parse_block_fast, tag_name_eq};
@@ -11,6 +11,21 @@ use super::block::{parse_block_fast, tag_name_eq};
 const TAG_TEMPLATE: &[u8] = b"template";
 const TAG_SCRIPT: &[u8] = b"script";
 const TAG_STYLE: &[u8] = b"style";
+
+#[inline]
+fn advance_line_column(bytes: &[u8], line: &mut usize, column: &mut usize) {
+    let mut last_newline = None;
+    for offset in memchr_iter(b'\n', bytes) {
+        *line += 1;
+        last_newline = Some(offset);
+    }
+
+    if let Some(offset) = last_newline {
+        *column = bytes.len() - offset;
+    } else {
+        *column += bytes.len();
+    }
+}
 
 /// Parse a Vue SFC into a descriptor with zero-copy strings
 pub fn parse_sfc<'a>(
@@ -55,14 +70,7 @@ pub fn parse_sfc<'a>(
         if bytes[pos] != b'<' {
             if let Some(next_lt) = memchr(b'<', &bytes[pos..]) {
                 // Update line/column for skipped content
-                for &b in &bytes[pos..pos + next_lt] {
-                    if b == b'\n' {
-                        line += 1;
-                        column = 1;
-                    } else {
-                        column += 1;
-                    }
-                }
+                advance_line_column(&bytes[pos..pos + next_lt], &mut line, &mut column);
                 pos += next_lt;
             } else {
                 break;
@@ -82,121 +90,155 @@ pub fn parse_sfc<'a>(
                 .unwrap_or(len); // unclosed comment: skip to EOF
 
             // Update line/column for the skipped comment
-            for &b in &bytes[pos..end] {
-                if b == b'\n' {
-                    line += 1;
-                    column = 1;
-                } else {
-                    column += 1;
-                }
-            }
+            advance_line_column(&bytes[pos..end], &mut line, &mut column);
             pos = end;
             continue;
         }
 
         // Parse block starting at '<'
-        if let Some(block_result) = parse_block_fast(bytes, source, pos, line) {
-            let (tag_name, attrs, content, content_start, content_end, end_pos, end_line, end_col) =
-                block_result;
+        match parse_block_fast(bytes, source, pos, line) {
+            Ok(Some(block_result)) => {
+                let (
+                    tag_name,
+                    attrs,
+                    content,
+                    content_start,
+                    content_end,
+                    end_pos,
+                    end_line,
+                    end_col,
+                ) = block_result;
 
-            let loc = BlockLocation {
-                start: content_start,
-                end: content_end,
-                tag_start: pos,
-                tag_end: end_pos,
-                start_line: line,
-                start_column: column,
-                end_line,
-                end_column: end_col,
-            };
+                let loc = BlockLocation {
+                    start: content_start,
+                    end: content_end,
+                    tag_start: pos,
+                    tag_end: end_pos,
+                    start_line: line,
+                    start_column: column,
+                    end_line,
+                    end_column: end_col,
+                };
 
-            // Match tag name using byte comparison
-            if tag_name_eq(tag_name, TAG_TEMPLATE) {
-                if descriptor.template.is_some() {
-                    return Err(SfcError {
-                        message: "SFC can only contain one <template> block".into(),
-                        code: Some("DUPLICATE_TEMPLATE".into()),
-                        loc: Some(loc.clone()),
+                // Match tag name using byte comparison
+                if tag_name_eq(tag_name, TAG_TEMPLATE) {
+                    if descriptor.template.is_some() {
+                        return Err(SfcError {
+                            message: "SFC can only contain one <template> block".into(),
+                            code: Some("DUPLICATE_TEMPLATE".into()),
+                            loc: Some(loc.clone()),
+                        });
+                    }
+                    descriptor.template = Some(SfcTemplateBlock {
+                        content,
+                        loc,
+                        lang: attrs.get("lang").cloned(),
+                        src: attrs.get("src").cloned(),
+                        attrs,
                     });
-                }
-                descriptor.template = Some(SfcTemplateBlock {
-                    content,
-                    loc,
-                    lang: attrs.get("lang").cloned(),
-                    src: attrs.get("src").cloned(),
-                    attrs,
-                });
-            } else if tag_name_eq(tag_name, TAG_SCRIPT) {
-                let is_setup = attrs.contains_key("setup");
-                let script_block = SfcScriptBlock {
-                    content,
-                    loc,
-                    lang: attrs.get("lang").cloned(),
-                    src: attrs.get("src").cloned(),
-                    setup: is_setup,
-                    attrs,
-                    bindings: None,
-                };
+                } else if tag_name_eq(tag_name, TAG_SCRIPT) {
+                    let is_setup = attrs.contains_key("setup");
+                    let script_block = SfcScriptBlock {
+                        content,
+                        loc,
+                        lang: attrs.get("lang").cloned(),
+                        src: attrs.get("src").cloned(),
+                        setup: is_setup,
+                        attrs,
+                        bindings: None,
+                    };
 
-                if is_setup {
-                    if descriptor.script_setup.is_some() {
-                        return Err(SfcError {
-                            message: "SFC can only contain one <script setup> block".into(),
-                            code: Some("DUPLICATE_SCRIPT_SETUP".into()),
-                            loc: Some(script_block.loc),
+                    if is_setup {
+                        if descriptor.script_setup.is_some() {
+                            return Err(SfcError {
+                                message: "SFC can only contain one <script setup> block".into(),
+                                code: Some("DUPLICATE_SCRIPT_SETUP".into()),
+                                loc: Some(script_block.loc),
+                            });
+                        }
+                        descriptor.script_setup = Some(script_block);
+                    } else {
+                        if descriptor.script.is_some() {
+                            return Err(SfcError {
+                                message: "SFC can only contain one <script> block".into(),
+                                code: Some("DUPLICATE_SCRIPT".into()),
+                                loc: Some(script_block.loc),
+                            });
+                        }
+                        descriptor.script = Some(script_block);
+                    }
+                } else if tag_name_eq(tag_name, TAG_STYLE) {
+                    let scoped = attrs.contains_key("scoped");
+                    let module = if attrs.contains_key("module") {
+                        Some(
+                            attrs
+                                .get("module")
+                                .filter(|v| !v.is_empty())
+                                .cloned()
+                                .unwrap_or_else(|| Cow::Borrowed("$style")),
+                        )
+                    } else {
+                        None
+                    };
+
+                    for css_var in crate::style::extract_css_vars(&content) {
+                        if !descriptor
+                            .css_vars
+                            .iter()
+                            .any(|existing| existing.as_ref() == css_var.as_str())
+                        {
+                            descriptor.css_vars.push(Cow::Owned(css_var.into()));
+                        }
+                    }
+
+                    descriptor.styles.push(SfcStyleBlock {
+                        content,
+                        loc,
+                        lang: attrs.get("lang").cloned(),
+                        src: attrs.get("src").cloned(),
+                        scoped,
+                        module,
+                        attrs,
+                    });
+                } else {
+                    // Custom block - use borrowed tag name
+                    if let Ok(tag_str) = std::str::from_utf8(tag_name) {
+                        descriptor.custom_blocks.push(SfcCustomBlock {
+                            block_type: Cow::Borrowed(tag_str),
+                            content,
+                            loc,
+                            attrs,
                         });
                     }
-                    descriptor.script_setup = Some(script_block);
-                } else {
-                    if descriptor.script.is_some() {
-                        return Err(SfcError {
-                            message: "SFC can only contain one <script> block".into(),
-                            code: Some("DUPLICATE_SCRIPT".into()),
-                            loc: Some(script_block.loc),
-                        });
-                    }
-                    descriptor.script = Some(script_block);
                 }
-            } else if tag_name_eq(tag_name, TAG_STYLE) {
-                let scoped = attrs.contains_key("scoped");
-                let module = if attrs.contains_key("module") {
-                    Some(
-                        attrs
-                            .get("module")
-                            .filter(|v| !v.is_empty())
-                            .cloned()
-                            .unwrap_or_else(|| Cow::Borrowed("$style")),
-                    )
-                } else {
-                    None
-                };
 
-                descriptor.styles.push(SfcStyleBlock {
-                    content,
-                    loc,
-                    lang: attrs.get("lang").cloned(),
-                    src: attrs.get("src").cloned(),
-                    scoped,
-                    module,
-                    attrs,
-                });
-            } else {
-                // Custom block - use borrowed tag name
-                let tag_str = unsafe { std::str::from_utf8_unchecked(tag_name) };
-                descriptor.custom_blocks.push(SfcCustomBlock {
-                    block_type: Cow::Borrowed(tag_str),
-                    content,
-                    loc,
-                    attrs,
+                pos = end_pos;
+                line = end_line;
+                column = end_col;
+            }
+            Ok(None) => {
+                pos += 1;
+                column += 1;
+            }
+            Err((code, message)) => {
+                let mut end_line = line;
+                let mut end_column = column;
+                advance_line_column(&bytes[pos..len], &mut end_line, &mut end_column);
+                return Err(SfcError {
+                    message,
+                    code: Some(code.into()),
+                    loc: Some(BlockLocation {
+                        start: pos,
+                        end: len,
+                        tag_start: pos,
+                        tag_end: len,
+                        start_line: line,
+                        start_column: column,
+                        end_line,
+                        end_column,
+                    }),
                 });
             }
-
-            pos = end_pos;
-            line = end_line;
-            column = end_col;
-        } else {
-            pos += 1;
-            column += 1;
         }
     }
 

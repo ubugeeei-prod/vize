@@ -1,6 +1,6 @@
 use super::{
-    types::{is_end_of_tag_section, is_tag_start_char, is_whitespace, Callbacks, QuoteType},
     Tokenizer,
+    types::{Callbacks, QuoteType, is_end_of_tag_section, is_tag_start_char, is_whitespace},
 };
 use vize_relief::ErrorCode;
 
@@ -25,6 +25,7 @@ enum TokenEvent {
     DirArg(usize, usize),
     DirModifier(usize, usize),
     Comment(usize, usize),
+    Cdata(usize, usize),
     End,
 }
 
@@ -81,7 +82,9 @@ impl Callbacks for TestCallbacks {
     fn on_comment(&mut self, start: usize, end: usize) {
         self.events.push(TokenEvent::Comment(start, end));
     }
-    fn on_cdata(&mut self, _start: usize, _end: usize) {}
+    fn on_cdata(&mut self, start: usize, end: usize) {
+        self.events.push(TokenEvent::Cdata(start, end));
+    }
     fn on_processing_instruction(&mut self, _start: usize, _end: usize) {}
     fn on_end(&mut self) {
         self.events.push(TokenEvent::End);
@@ -226,9 +229,10 @@ fn test_attribute_double_quote() {
     let cb = tokenize(r#"<div id="foo">"#);
     assert!(cb.events.contains(&TokenEvent::AttribName(5, 7)));
     assert!(cb.events.contains(&TokenEvent::AttribData(9, 12)));
-    assert!(cb
-        .events
-        .contains(&TokenEvent::AttribEnd(QuoteType::Double, 12)));
+    assert!(
+        cb.events
+            .contains(&TokenEvent::AttribEnd(QuoteType::Double, 12))
+    );
 }
 
 #[test]
@@ -236,9 +240,10 @@ fn test_attribute_single_quote() {
     let cb = tokenize("<div id='foo'>");
     assert!(cb.events.contains(&TokenEvent::AttribName(5, 7)));
     assert!(cb.events.contains(&TokenEvent::AttribData(9, 12)));
-    assert!(cb
-        .events
-        .contains(&TokenEvent::AttribEnd(QuoteType::Single, 12)));
+    assert!(
+        cb.events
+            .contains(&TokenEvent::AttribEnd(QuoteType::Single, 12))
+    );
 }
 
 #[test]
@@ -246,18 +251,20 @@ fn test_attribute_unquoted() {
     let cb = tokenize("<div id=foo>");
     assert!(cb.events.contains(&TokenEvent::AttribName(5, 7)));
     assert!(cb.events.contains(&TokenEvent::AttribData(8, 11)));
-    assert!(cb
-        .events
-        .contains(&TokenEvent::AttribEnd(QuoteType::Unquoted, 11)));
+    assert!(
+        cb.events
+            .contains(&TokenEvent::AttribEnd(QuoteType::Unquoted, 11))
+    );
 }
 
 #[test]
 fn test_attribute_no_value() {
     let cb = tokenize("<input disabled>");
     assert!(cb.events.contains(&TokenEvent::AttribName(7, 15)));
-    assert!(cb
-        .events
-        .contains(&TokenEvent::AttribEnd(QuoteType::NoValue, 15)));
+    assert!(
+        cb.events
+            .contains(&TokenEvent::AttribEnd(QuoteType::NoValue, 15))
+    );
 }
 
 // ========================================================================
@@ -311,25 +318,103 @@ fn test_comment() {
 }
 
 // ========================================================================
+// CDATA tests (SVG / XML-style `<![CDATA[ ... ]]>`)
+// ========================================================================
+
+#[test]
+fn test_cdata_basic() {
+    let cb = tokenize("<![CDATA[hi]]>");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 11)));
+}
+
+#[test]
+fn test_cdata_with_angle_brackets() {
+    let cb = tokenize("<![CDATA[<a>]]>");
+    // content `<a>` is [9, 12)
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 12)));
+}
+
+#[test]
+fn test_cdata_empty() {
+    let cb = tokenize("<![CDATA[]]>");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 9)));
+}
+
+#[test]
+fn test_cdata_then_text() {
+    let cb = tokenize("<![CDATA[x]]>after");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 10)));
+    assert!(cb.events.contains(&TokenEvent::Text(13, 18)));
+}
+
+#[test]
+fn test_cdata_then_comment() {
+    let cb = tokenize("<![CDATA[x]]><!-- comment -->");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 10)));
+}
+
+#[test]
+fn test_cdata_partial_close_resets_then_finds_close() {
+    let cb = tokenize("<![CDATA[x]y]]>");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 12)));
+}
+
+#[test]
+fn test_cdata_extra_bracket_before_close() {
+    let cb = tokenize("<![CDATA[a]]]>");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 11)));
+}
+
+#[test]
+fn test_comment_extra_hyphens_before_close() {
+    let cb = tokenize("<!-- z ---->");
+    assert!(cb.events.contains(&TokenEvent::Comment(4, 9)));
+}
+
+// ========================================================================
 // Error tests
 // ========================================================================
 
 #[test]
 fn test_error_eof_in_tag() {
     let cb = tokenize("<div");
-    assert!(cb
-        .errors
-        .iter()
-        .any(|(code, _)| *code == ErrorCode::EofInTag));
+    assert!(
+        cb.errors
+            .iter()
+            .any(|(code, _)| *code == ErrorCode::EofInTag)
+    );
 }
 
 #[test]
 fn test_error_eof_in_comment() {
     let cb = tokenize("<!-- unterminated");
-    assert!(cb
-        .errors
-        .iter()
-        .any(|(code, _)| *code == ErrorCode::EofInComment));
+    assert!(
+        cb.errors
+            .iter()
+            .any(|(code, _)| *code == ErrorCode::EofInComment)
+    );
+}
+
+#[test]
+fn test_error_eof_in_empty_comment() {
+    let cb = tokenize("<!--");
+    assert!(
+        cb.errors
+            .iter()
+            .any(|(code, _)| *code == ErrorCode::EofInComment)
+    );
+    assert!(cb.events.contains(&TokenEvent::Comment(4, 4)));
+}
+
+#[test]
+fn test_error_eof_in_empty_cdata() {
+    let cb = tokenize("<![CDATA[");
+    assert!(
+        cb.errors
+            .iter()
+            .any(|(code, _)| *code == ErrorCode::EofInCdata)
+    );
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 9)));
 }
 
 // ========================================================================
@@ -341,16 +426,16 @@ fn test_entity_attr_single_quote_and_text() {
     let cb = tokenize("<div data='&amp;'>>&amp;</div>");
     assert!(cb.events.contains(&TokenEvent::AttribEntity('&', 11, 16)));
     assert!(cb.events.contains(&TokenEvent::TextEntity('&', 19, 24)));
-    println!("{:?}", cb.events);
 }
 
 #[test]
 fn test_entity_in_double_quoted_attr_lt() {
     let cb = tokenize(r#"<div a="&lt;">"#);
     assert!(cb.events.contains(&TokenEvent::AttribEntity('<', 8, 12)));
-    assert!(cb
-        .events
-        .contains(&TokenEvent::AttribEnd(QuoteType::Double, 12)));
+    assert!(
+        cb.events
+            .contains(&TokenEvent::AttribEnd(QuoteType::Double, 12))
+    );
 }
 
 #[test]
@@ -358,18 +443,20 @@ fn test_entity_in_double_quoted_attr_with_literal_suffix() {
     let cb = tokenize(r#"<div a="&amp;b">"#);
     assert!(cb.events.contains(&TokenEvent::AttribEntity('&', 8, 13)));
     assert!(cb.events.contains(&TokenEvent::AttribData(13, 14)));
-    assert!(cb
-        .events
-        .contains(&TokenEvent::AttribEnd(QuoteType::Double, 14)));
+    assert!(
+        cb.events
+            .contains(&TokenEvent::AttribEnd(QuoteType::Double, 14))
+    );
 }
 
 #[test]
 fn test_entity_in_single_quoted_attr() {
     let cb = tokenize("<div a='&#38;'>");
     assert!(cb.events.contains(&TokenEvent::AttribEntity('&', 8, 13)));
-    assert!(cb
-        .events
-        .contains(&TokenEvent::AttribEnd(QuoteType::Single, 13)));
+    assert!(
+        cb.events
+            .contains(&TokenEvent::AttribEnd(QuoteType::Single, 13))
+    );
 }
 
 #[test]
@@ -409,7 +496,191 @@ fn test_entity_in_unquoted_attr_value() {
     assert!(cb.events.contains(&TokenEvent::AttribData(7, 8)));
     assert!(cb.events.contains(&TokenEvent::AttribEntity('&', 8, 13)));
     assert!(cb.events.contains(&TokenEvent::AttribData(13, 14)));
-    assert!(cb
-        .events
-        .contains(&TokenEvent::AttribEnd(QuoteType::Unquoted, 14)));
+    assert!(
+        cb.events
+            .contains(&TokenEvent::AttribEnd(QuoteType::Unquoted, 14))
+    );
+}
+
+// ========================================================================
+// Special tags tests
+// ========================================================================
+
+#[test]
+fn test_special_opening_script_text_and_close() {
+    let cb = tokenize("<script>a</script>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 7)));
+    assert!(cb.events.contains(&TokenEvent::OpenTagEnd(7)));
+    assert!(cb.events.contains(&TokenEvent::Text(8, 9)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(11, 17)));
+    assert!(cb.events.contains(&TokenEvent::End));
+}
+
+#[test]
+fn test_special_opening_script_close_tag_uppercase() {
+    let cb = tokenize("<script>a</SCRIPT>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::Text(8, 9)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(11, 17)));
+}
+
+#[test]
+fn test_special_opening_style_and_close() {
+    let cb = tokenize("<style>.a{}</style>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 6)));
+    // `</style` is 7 bytes; `>` at 18, closing name starts at 13
+    assert!(cb.events.contains(&TokenEvent::CloseTag(13, 18)));
+}
+
+#[test]
+fn test_special_opening_textarea_text_and_close() {
+    let cb = tokenize("<textarea>hi</textarea>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::Text(10, 12)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(14, 22)));
+}
+
+#[test]
+fn test_self_closing_textarea_returns_to_text_state() {
+    let cb = tokenize("<textarea /><span>ok</span>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 9)));
+    assert!(cb.events.contains(&TokenEvent::SelfClosingTag(11)));
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(13, 17)));
+    assert!(cb.events.contains(&TokenEvent::Text(18, 20)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(22, 26)));
+}
+
+#[test]
+fn test_special_opening_title_entity_in_plain_text() {
+    let cb = tokenize("<title>a&amp;b</title>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::Text(7, 8)));
+    assert!(cb.events.contains(&TokenEvent::TextEntity('&', 8, 13)));
+    assert!(cb.events.contains(&TokenEvent::Text(13, 14)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(16, 21)));
+}
+
+#[test]
+fn test_before_special_s_falls_back_to_in_tag_name() {
+    let cb = tokenize("<sfoo x></sfoo>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 5)));
+    assert!(
+        cb.events
+            .iter()
+            .any(|e| matches!(e, TokenEvent::CloseTag(_, _)))
+    );
+}
+
+#[test]
+fn test_before_special_t_falls_back_to_in_tag_name() {
+    let cb = tokenize("<tfoo></tfoo>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 5)));
+}
+
+#[test]
+fn test_opening_tag_span_past_before_special_s() {
+    let cb = tokenize("<span>a</span>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 5)));
+    assert!(cb.events.contains(&TokenEvent::Text(6, 7)));
+    // `</span` is 6 bytes; `>` at 13
+    assert!(cb.events.contains(&TokenEvent::CloseTag(9, 13)));
+}
+
+#[test]
+fn test_closing_tag_name_scr_prefix() {
+    let cb = tokenize("</scrfoo>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::CloseTag(2, 8)));
+}
+
+#[test]
+fn test_textarea_with_embedded_element() {
+    let cb = tokenize("<textarea><h1>hi</h1></textarea>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 9)));
+    assert!(cb.events.contains(&TokenEvent::OpenTagEnd(9)));
+    assert!(cb.events.contains(&TokenEvent::Text(10, 21)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(23, 31)));
+}
+
+#[test]
+fn test_script_with_less_than_sign() {
+    let cb = tokenize("<script>if(a<b)</script>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 7)));
+    assert!(cb.events.contains(&TokenEvent::OpenTagEnd(7)));
+    assert!(cb.events.contains(&TokenEvent::Text(8, 15)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(17, 23)));
+}
+
+#[test]
+fn test_textarea_interpolation_returns_to_rcdata() {
+    let cb = tokenize("<textarea>a{{x}}b</textarea>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 9)));
+    assert!(cb.events.contains(&TokenEvent::OpenTagEnd(9)));
+    assert!(cb.events.contains(&TokenEvent::Text(10, 11)));
+    assert!(cb.events.contains(&TokenEvent::Interpolation(13, 14)));
+    assert!(cb.events.contains(&TokenEvent::Text(16, 17)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(19, 27)));
+}
+
+#[test]
+fn test_textarea_partial_interpolation_open_falls_back_to_rcdata() {
+    let cb = tokenize("<textarea>a{b</textarea>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 9)));
+    assert!(cb.events.contains(&TokenEvent::OpenTagEnd(9)));
+    assert!(cb.events.contains(&TokenEvent::Text(10, 13)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(15, 23)));
+    assert!(
+        !cb.events
+            .iter()
+            .any(|e| matches!(e, TokenEvent::Interpolation(_, _)))
+    );
+}
+
+#[test]
+fn test_scriptx_is_not_treated_as_special_script_tag() {
+    let cb = tokenize("<scriptx>1</scriptx>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 8)));
+    assert!(cb.events.contains(&TokenEvent::OpenTagEnd(8)));
+    assert!(cb.events.contains(&TokenEvent::Text(9, 10)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(12, 19)));
+}
+
+#[test]
+fn test_titlex_is_not_treated_as_special_title_tag() {
+    let cb = tokenize("<titlex>1</titlex>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 7)));
+    assert!(cb.events.contains(&TokenEvent::OpenTagEnd(7)));
+    assert!(cb.events.contains(&TokenEvent::Text(8, 9)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(11, 17)));
+}
+
+#[test]
+fn test_script_close_tag_with_whitespace_before_gt() {
+    let cb = tokenize("<script>a</script   >");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 7)));
+    assert!(cb.events.contains(&TokenEvent::Text(8, 9)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(11, 17)));
+}
+
+#[test]
+fn test_script_pseudo_close_kept_as_text_until_real_close() {
+    let cb = tokenize("<script>a</scriptx>b</script>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 7)));
+    assert!(cb.events.contains(&TokenEvent::OpenTagEnd(7)));
+    assert!(cb.events.contains(&TokenEvent::Text(8, 20)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(22, 28)));
 }

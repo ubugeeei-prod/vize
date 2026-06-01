@@ -128,12 +128,13 @@ impl ScriptRule for NoDeepDestructureInProps {
             search_start = abs_pos + 11;
 
             // Extract the destructuring pattern
-            if let Some(pattern) = Self::extract_destructure_pattern(source, abs_pos) {
-                if Self::has_deep_nesting(pattern, self.max_depth) {
-                    // Find pattern position
-                    let pattern_start = source[..abs_pos].rfind(pattern).unwrap_or(abs_pos);
+            if let Some(pattern) = Self::extract_destructure_pattern(source, abs_pos)
+                && Self::has_deep_nesting(pattern, self.max_depth)
+            {
+                // Find pattern position
+                let pattern_start = source[..abs_pos].rfind(pattern).unwrap_or(abs_pos);
 
-                    result.add_diagnostic(
+                result.add_diagnostic(
                         LintDiagnostic::warn(
                             META.name,
                             "Avoid deeply nested destructuring in defineProps",
@@ -144,7 +145,6 @@ impl ScriptRule for NoDeepDestructureInProps {
                             "Use simple destructuring and access nested properties via computed or direct prop access",
                         ),
                     );
-                }
             }
         }
     }

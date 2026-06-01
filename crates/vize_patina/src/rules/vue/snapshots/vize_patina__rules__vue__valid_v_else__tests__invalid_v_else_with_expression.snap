@@ -8,7 +8,7 @@ expression: result.diagnostics
         severity: Error,
         message: "v-else directives require no expression",
         start: 27,
-        end: 38,
+        end: 39,
         help: Some(
             "**Correct usage:**\n```vue\n<div v-if=\"type === 'A'\">A</div>\n<div v-else-if=\"type === 'B'\">B</div>\n<div v-else>Other</div>\n```\n\n**Rules:**\n- `v-else` takes no expression\n- Must immediately follow `v-if` or `v-else-if`\n- No other elements between them",
         ),
@@ -19,7 +19,7 @@ expression: result.diagnostics
                 edits: [
                     TextEdit {
                         start: 27,
-                        end: 38,
+                        end: 39,
                         new_text: "",
                     },
                 ],

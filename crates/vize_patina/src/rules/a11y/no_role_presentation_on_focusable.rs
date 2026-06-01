@@ -37,15 +37,15 @@ impl Rule for NoRolePresentationOnFocusable {
             return;
         }
 
-        if let Some(role) = helpers::get_static_attribute_value(element, "role") {
-            if (role == "presentation" || role == "none") && helpers::is_focusable_element(element)
-            {
-                ctx.error_with_help(
-                    ctx.t("a11y/no-role-presentation-on-focusable.message"),
-                    &element.loc,
-                    ctx.t("a11y/no-role-presentation-on-focusable.help"),
-                );
-            }
+        if let Some(role) = helpers::get_static_attribute_value(element, "role")
+            && (role == "presentation" || role == "none")
+            && helpers::is_focusable_element(element)
+        {
+            ctx.error_with_help(
+                ctx.t("a11y/no-role-presentation-on-focusable.message"),
+                &element.loc,
+                ctx.t("a11y/no-role-presentation-on-focusable.help"),
+            );
         }
     }
 }

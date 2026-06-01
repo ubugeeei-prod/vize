@@ -10,7 +10,9 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 
-use crate::typecheck::{type_check_sfc, TypeCheckOptions, TypeSeverity};
+use crate::typecheck::{
+    TypeCheckOptions, TypeSeverity, type_check_sfc, type_check_sfc_with_legacy_vue2,
+};
 
 /// Type check options for NAPI
 #[napi(object)]
@@ -26,6 +28,7 @@ pub struct TypeCheckOptionsNapi {
     pub check_setup_context: Option<bool>,
     pub check_invalid_exports: Option<bool>,
     pub check_fallthrough_attrs: Option<bool>,
+    pub legacy_vue2: Option<bool>,
 }
 
 /// Related location for diagnostic (NAPI)
@@ -88,7 +91,11 @@ pub fn type_check_napi(
     let mut check_opts = TypeCheckOptions::new(filename);
     apply_napi_options(&opts, &mut check_opts);
 
-    let result = type_check_sfc(&source, &check_opts);
+    let result = if opts.legacy_vue2.unwrap_or(false) {
+        type_check_sfc_with_legacy_vue2(&source, &check_opts)
+    } else {
+        type_check_sfc(&source, &check_opts)
+    };
 
     Ok(TypeCheckResultNapi {
         diagnostics: result
@@ -122,6 +129,88 @@ pub fn type_check_napi(
         error_count: result.error_count as u32,
         warning_count: result.warning_count as u32,
         analysis_time_ms: result.analysis_time_ms,
+    })
+}
+
+/// Declaration generation options for NAPI
+#[napi(object)]
+#[derive(Default)]
+pub struct DeclarationOptionsNapi {
+    pub filename: Option<String>,
+}
+
+/// Declaration generation result for NAPI
+#[napi(object)]
+pub struct DeclarationResultNapi {
+    pub code: String,
+}
+
+/// Generate a Vue SFC `.d.ts` declaration from Croquis analysis.
+#[napi(js_name = "generateDeclaration")]
+pub fn generate_declaration_napi(
+    source: String,
+    options: Option<DeclarationOptionsNapi>,
+) -> Result<DeclarationResultNapi> {
+    use vize_atelier_sfc::{
+        SfcDescriptor, SfcParseOptions,
+        croquis::{SfcCroquisOptions, analyze_sfc_descriptor},
+        parse_sfc,
+    };
+    use vize_croquis::Croquis;
+    use vize_croquis::declaration_ts::{
+        generate_declaration_ts, generate_declaration_ts_with_split_scripts,
+    };
+
+    let opts = options.unwrap_or_default();
+    let filename = opts.filename.unwrap_or_else(|| "anonymous.vue".to_string());
+    let descriptor = parse_sfc(
+        &source,
+        SfcParseOptions {
+            filename: filename.as_str().into(),
+            ..Default::default()
+        },
+    )
+    .map_err(|error| Error::new(Status::GenericFailure, error.message.to_string()))?;
+
+    enum DeclarationScript<'a> {
+        None,
+        Single(&'a str),
+        Split { plain: &'a str, setup: &'a str },
+    }
+
+    fn analyze_descriptor<'a>(
+        descriptor: &'a SfcDescriptor<'a>,
+    ) -> (Croquis, DeclarationScript<'a>) {
+        let summary =
+            analyze_sfc_descriptor(descriptor, None, SfcCroquisOptions::for_declaration());
+        match (descriptor.script.as_ref(), descriptor.script_setup.as_ref()) {
+            (Some(script), Some(script_setup)) => (
+                summary,
+                DeclarationScript::Split {
+                    plain: script.content.as_ref(),
+                    setup: script_setup.content.as_ref(),
+                },
+            ),
+            (Some(script), None) => (summary, DeclarationScript::Single(script.content.as_ref())),
+            (None, Some(script_setup)) => (
+                summary,
+                DeclarationScript::Single(script_setup.content.as_ref()),
+            ),
+            (None, None) => (summary, DeclarationScript::None),
+        }
+    }
+
+    let (summary, script_content) = analyze_descriptor(&descriptor);
+    let output = match script_content {
+        DeclarationScript::None => generate_declaration_ts(&summary, None),
+        DeclarationScript::Single(script) => generate_declaration_ts(&summary, Some(script)),
+        DeclarationScript::Split { plain, setup } => {
+            generate_declaration_ts_with_split_scripts(&summary, plain, setup)
+        }
+    };
+
+    Ok(DeclarationResultNapi {
+        code: output.content.into(),
     })
 }
 
@@ -266,7 +355,11 @@ pub fn type_check_batch_napi(
         apply_napi_options(&opts, &mut check_opts);
         check_opts.include_virtual_ts = false; // Don't generate virtual TS for batch
 
-        let result = type_check_sfc(&source, &check_opts);
+        let result = if opts.legacy_vue2.unwrap_or(false) {
+            type_check_sfc_with_legacy_vue2(&source, &check_opts)
+        } else {
+            type_check_sfc(&source, &check_opts)
+        };
 
         files_checked.fetch_add(1, Ordering::Relaxed);
         if result.error_count > 0 {

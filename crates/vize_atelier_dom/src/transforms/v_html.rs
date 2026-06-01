@@ -73,6 +73,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::disallowed_macros)]
     fn test_generate_html_warning() {
         let warning = generate_html_warning();
         insta::assert_snapshot!(warning);

@@ -2,7 +2,7 @@
 source: crates/vize_atelier_core/src/codegen.rs
 expression: output.as_str()
 ---
-const { openBlock: _openBlock, createBlock: _createBlock, createElementVNode: _createElementVNode, resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, withCtx: _withCtx } = Vue
+const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, openBlock: _openBlock, createBlock: _createBlock, withCtx: _withCtx } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_CommonPaginator = _resolveComponent("CommonPaginator")

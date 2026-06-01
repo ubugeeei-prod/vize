@@ -39,11 +39,11 @@ pub fn transform_text_children(
         }
 
         // If only one node and it's simple text, skip
-        if j == i + 1 {
-            if let TemplateChildNode::Text(_) = &children[i] {
-                i += 1;
-                continue;
-            }
+        if j == i + 1
+            && let TemplateChildNode::Text(_) = &children[i]
+        {
+            i += 1;
+            continue;
         }
 
         // For interpolations, add helper
@@ -173,7 +173,7 @@ fn escape_text(s: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{condense_whitespace, is_whitespace_only, TextPart};
+    use super::{TextPart, condense_whitespace, is_whitespace_only};
 
     #[test]
     fn test_is_whitespace_only() {

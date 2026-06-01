@@ -2,8 +2,13 @@ import { ref, computed, type Ref } from "vue";
 import type { LintPreset, LintRule } from "../../wasm/index";
 
 const STORAGE_KEY = "vize-patina-rules-config";
-const DEFAULT_PRESET: LintPreset = "happy-path";
-const KNOWN_PRESETS = new Set<LintPreset>(["happy-path", "opinionated", "essential", "nuxt"]);
+const DEFAULT_PRESET: LintPreset = "general-recommended";
+const KNOWN_PRESETS = new Set<LintPreset>([
+  "general-recommended",
+  "essential",
+  "opinionated",
+  "nuxt",
+]);
 
 export function useRuleManagement(rules: Ref<LintRule[]>, lint: () => void) {
   const selectedPreset = ref<LintPreset>(DEFAULT_PRESET);
@@ -32,6 +37,9 @@ export function useRuleManagement(rules: Ref<LintRule[]>, lint: () => void) {
   });
 
   function normalizePreset(value: unknown): LintPreset {
+    if (value === "happy-path") {
+      return DEFAULT_PRESET;
+    }
     return typeof value === "string" && KNOWN_PRESETS.has(value as LintPreset)
       ? (value as LintPreset)
       : DEFAULT_PRESET;

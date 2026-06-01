@@ -29,10 +29,10 @@ pub fn has_v_else(el: &ElementNode<'_>) -> bool {
 /// Get the v-if/v-else-if expression from an element
 pub fn get_if_condition<'a>(el: &'a ElementNode<'a>) -> Option<&'a ExpressionNode<'a>> {
     for prop in el.props.iter() {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name == "if" || dir.name == "else-if" {
-                return dir.exp.as_ref();
-            }
+        if let PropNode::Directive(dir) = prop
+            && (dir.name == "if" || dir.name == "else-if")
+        {
+            return dir.exp.as_ref();
         }
     }
     None
@@ -42,11 +42,11 @@ pub fn get_if_condition<'a>(el: &'a ElementNode<'a>) -> Option<&'a ExpressionNod
 pub fn remove_if_directive(el: &mut ElementNode<'_>) {
     let mut i = 0;
     while i < el.props.len() {
-        if let PropNode::Directive(dir) = &el.props[i] {
-            if dir.name == "if" || dir.name == "else-if" || dir.name == "else" {
-                el.props.remove(i);
-                return;
-            }
+        if let PropNode::Directive(dir) = &el.props[i]
+            && (dir.name == "if" || dir.name == "else-if" || dir.name == "else")
+        {
+            el.props.remove(i);
+            return;
         }
         i += 1;
     }
@@ -63,7 +63,7 @@ pub fn process_v_if(ctx: &mut TransformContext<'_>) {
 
 #[cfg(test)]
 mod tests {
-    use super::{has_v_else, has_v_else_if, has_v_if, TemplateChildNode};
+    use super::{TemplateChildNode, has_v_else, has_v_else_if, has_v_if};
     use crate::parser::parse;
     use bumpalo::Bump;
 

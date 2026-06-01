@@ -9,15 +9,15 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock, cre
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    context: { type: Object, required: true }
+    context: { type: Object }
   },
   setup(__props: any) {
 
 
 return (_ctx: any,_cache: any) => {
   return (__props.context.isOpened)
-      ? (_openBlock(), _createElementBlock("div", { key: 0 }, "Open"))
-      : _createCommentVNode("v-if", true)
+    ? (_openBlock(), _createElementBlock("div", { key: 0 }, "Open"))
+    : _createCommentVNode("v-if", true)
 }
 }
 

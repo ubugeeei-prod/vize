@@ -1,6 +1,6 @@
 ===
 name: simple v-show
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="visible"></div>
 --- OUTPUT ---
@@ -11,10 +11,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.visible]
   ])
 }
-
 ===
 name: v-show with content
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="visible">content</div>
 --- OUTPUT ---
@@ -25,10 +24,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.visible]
   ])
 }
-
 ===
 name: v-show false
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="false">hidden</div>
 --- OUTPUT ---
@@ -39,10 +37,9 @@ export function render(_ctx, _cache) {
     [_vShow, false]
   ])
 }
-
 ===
 name: v-show true
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="true">visible</div>
 --- OUTPUT ---
@@ -53,10 +50,9 @@ export function render(_ctx, _cache) {
     [_vShow, true]
   ])
 }
-
 ===
 name: v-show on span
-options: default
+options: vdom
 --- INPUT ---
 <span v-show="visible">text</span>
 --- OUTPUT ---
@@ -67,10 +63,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.visible]
   ])
 }
-
 ===
 name: v-show on input
-options: default
+options: vdom
 --- INPUT ---
 <input v-show="visible">
 --- OUTPUT ---
@@ -81,10 +76,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.visible]
   ])
 }
-
 ===
 name: v-show on component
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-show="visible" />
 --- OUTPUT ---
@@ -97,10 +91,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.visible]
   ])
 }
-
 ===
 name: v-show with comparison
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="count > 0">positive</div>
 --- OUTPUT ---
@@ -111,10 +104,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.count > 0]
   ])
 }
-
 ===
 name: v-show with logical and
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="a && b">both</div>
 --- OUTPUT ---
@@ -125,10 +117,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.a && _ctx.b]
   ])
 }
-
 ===
 name: v-show with logical or
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="a || b">either</div>
 --- OUTPUT ---
@@ -139,10 +130,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.a || _ctx.b]
   ])
 }
-
 ===
 name: v-show with negation
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="!hidden">visible</div>
 --- OUTPUT ---
@@ -153,10 +143,9 @@ export function render(_ctx, _cache) {
     [_vShow, !_ctx.hidden]
   ])
 }
-
 ===
 name: v-show with method call
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="isVisible()">content</div>
 --- OUTPUT ---
@@ -167,10 +156,22 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.isVisible()]
   ])
 }
+===
+name: v-show with optional chaining
+options: vdom
+--- INPUT ---
+<div v-show="user?.active">active</div>
+--- OUTPUT ---
+import { vShow as _vShow, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  return _withDirectives((_openBlock(), _createElementBlock("div", null, "active", 512 /* NEED_PATCH */)), [
+    [_vShow, _ctx.user?.active]
+  ])
+}
 ===
 name: v-show with v-for
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items" :key="item.id" v-show="item.visible">{{ item.name }}</div>
 --- OUTPUT ---
@@ -185,10 +186,9 @@ export function render(_ctx, _cache) {
     ])
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-show with v-bind
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="visible" :class="cls">content</div>
 --- OUTPUT ---
@@ -201,10 +201,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.visible]
   ])
 }
-
 ===
 name: v-show with v-on
-options: default
+options: vdom
 --- INPUT ---
 <button v-show="visible" @click="handler">Click</button>
 --- OUTPUT ---
@@ -215,10 +214,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.visible]
   ])
 }
-
 ===
 name: nested v-show
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="outer"><span v-show="inner">nested</span></div>
 --- OUTPUT ---
@@ -233,10 +231,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.outer]
   ])
 }
-
 ===
 name: v-show with v-if sibling
-options: default
+options: vdom
 --- INPUT ---
 <div v-show="a">A</div><div v-if="b">B</div>
 --- OUTPUT ---
@@ -251,4 +248,21 @@ export function render(_ctx, _cache) {
       ? (_openBlock(), _createElementBlock("div", { key: 0 }, "B"))
       : _createCommentVNode("v-if", true)
   ], 64 /* STABLE_FRAGMENT */))
+}
+===
+name: v-show nested under v-if
+options: vdom
+--- INPUT ---
+<section v-if="ready"><div v-show="visible">content</div></section>
+--- OUTPUT ---
+import { vShow as _vShow, createElementVNode as _createElementVNode, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_ctx.ready)
+    ? (_openBlock(), _createElementBlock("section", { key: 0 }, [
+        _withDirectives(_createElementVNode("div", null, "content", 512 /* NEED_PATCH */), [
+          [_vShow, _ctx.visible]
+        ])
+      ]))
+    : _createCommentVNode("v-if", true)
 }

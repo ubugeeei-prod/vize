@@ -17,14 +17,16 @@ Its loader chain, `experiments.css`, and HMR behavior need Rspack-specific handl
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the packages:
+
 ```bash
-npm install @vizejs/unplugin
+vp install @vizejs/unplugin
 ```
 
 For Rspack:
 
 ```bash
-npm install @vizejs/rspack-plugin @rspack/core
+vp install -D @vizejs/rspack-plugin @rspack/core
 ```
 
 ## rollup

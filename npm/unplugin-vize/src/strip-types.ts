@@ -15,15 +15,20 @@ function formatErrorMessage(error: {
   return parts.join("\n");
 }
 
-export async function stripTypeScript(filePath: string, code: string, sourceMap: boolean) {
+export async function stripTypeScript(
+  filePath: string,
+  code: string,
+  sourceMap: boolean,
+): Promise<{ code: string; map: unknown }> {
   const result = await transform(filePath, code, {
     lang: "ts",
     sourcemap: sourceMap,
     sourceType: "module",
   });
+  const errors = result.errors ?? [];
 
-  if (result.errors.length > 0) {
-    throw new Error(result.errors.map(formatErrorMessage).join("\n\n"));
+  if (errors.length > 0) {
+    throw new Error(errors.map(formatErrorMessage).join("\n\n"));
   }
 
   return {

@@ -42,17 +42,17 @@ impl Rule for AriaUnsupportedElements {
         }
 
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name.starts_with("aria-") || attr.name == "role" {
-                    ctx.error_with_help(
-                        ctx.t_fmt(
-                            "a11y/aria-unsupported-elements.message",
-                            &[("tag", element.tag.as_str()), ("attr", attr.name.as_str())],
-                        ),
-                        &attr.loc,
-                        ctx.t("a11y/aria-unsupported-elements.help"),
-                    );
-                }
+            if let PropNode::Attribute(attr) = prop
+                && (attr.name.starts_with("aria-") || attr.name == "role")
+            {
+                ctx.error_with_help(
+                    ctx.t_fmt(
+                        "a11y/aria-unsupported-elements.message",
+                        &[("tag", element.tag.as_str()), ("attr", attr.name.as_str())],
+                    ),
+                    &attr.loc,
+                    ctx.t("a11y/aria-unsupported-elements.help"),
+                );
             }
         }
     }

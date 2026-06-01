@@ -3,10 +3,14 @@ target/
 
 # Node.js
 node_modules/
+.mooncakes/
+_build/
 
 # npm package build outputs
 npm/*/dist/
 npm/vite-plugin-vize/wasm/
+npm/vscode-vize/.vscode-test/
+npm/zed-vize/target/
 
 # Native (NAPI) build output
 *.node
@@ -30,6 +34,12 @@ examples/*/.vite/
 *.swo
 .DS_Store
 *.tgz
+*.vsix
+emacs-vize-extension.tar.gz
+helix-vize-extension.tar.gz
+nvim-vize-extension.tar.gz
+vim-vize-extension.tar.gz
+zed-vize-extension.tar.gz
 
 # Benchmark input/output files
 bench/__in__/
@@ -45,6 +55,7 @@ npm-debug.log*
 .env.*.local
 
 # Playwright test outputs
+.cache/
 tests/app/results/
 tests/app/screenshots/
 playground/e2e/vrt/test-results/
@@ -53,3 +64,17 @@ tests/_fixtures/_projects/_git-worktrees/
 
 # Vize local data (snapshots, cache, etc.)
 .vize/
+*.pending-snap
+
+# cargo-fuzz runtime state — corpora are seeded by tools/fuzz/seed_corpus.mjs
+# from repository fixtures, and reproducers stay out of git so libFuzzer is
+# free to grow the corpus locally without polluting commits.
+tests/fuzz/Cargo.lock
+tests/fuzz/corpus/
+tests/fuzz/artifacts/
+tests/fuzz/coverage/
+tests/fuzz/target/
+
+# Insta pending snapshots (created on test failure; should not be checked in)
+*.snap.new
+*.pending-snap

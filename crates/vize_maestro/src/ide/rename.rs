@@ -173,7 +173,7 @@ impl RenameService {
     ) -> Option<PrepareRenameResponse> {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
-        let template = virtual_docs.template.as_ref()?;
+        let template = virtual_docs.art_template(info.variant_index)?;
         let relative_offset = info.relative_offset as u32;
         let vts_offset = template
             .source_map
@@ -181,7 +181,7 @@ impl RenameService {
             .map(|offset| offset as usize)
             .unwrap_or(relative_offset as usize);
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-        let request_path = corsa_support::template_request_path(ctx.uri);
+        let request_path = corsa_support::art_template_request_path(ctx.uri, info.variant_index);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &template.content)
             .await
@@ -251,7 +251,7 @@ impl RenameService {
     ) -> Option<WorkspaceEdit> {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
-        let template = virtual_docs.template.as_ref()?;
+        let template = virtual_docs.art_template(info.variant_index)?;
         let relative_offset = info.relative_offset as u32;
         let vts_offset = template
             .source_map
@@ -259,7 +259,7 @@ impl RenameService {
             .map(|offset| offset as usize)
             .unwrap_or(relative_offset as usize);
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-        let request_path = corsa_support::template_request_path(ctx.uri);
+        let request_path = corsa_support::art_template_request_path(ctx.uri, info.variant_index);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &template.content)
             .await
@@ -450,47 +450,16 @@ impl RenameService {
 
     /// Get the word at the given offset.
     fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
-        if offset >= content.len() {
-            return None;
-        }
-
-        let bytes = content.as_bytes();
-
-        // Check if we're on an identifier character
-        if !Self::is_ident_char(bytes[offset] as char) {
-            return None;
-        }
-
-        let (start, end) = Self::get_word_range(content, offset)?;
-        Some(content[start..end].to_string())
+        crate::ide::token_at_offset(content, offset, |c| Self::is_ident_char(c as char))
     }
 
     /// Get the range of the word at offset.
     fn get_word_range(content: &str, offset: usize) -> Option<(usize, usize)> {
-        if offset >= content.len() {
-            return None;
-        }
-
-        let bytes = content.as_bytes();
-
-        if !Self::is_ident_char(bytes[offset] as char) {
-            return None;
-        }
-
-        // Find start
-        let mut start = offset;
-        while start > 0 && Self::is_ident_char(bytes[start - 1] as char) {
-            start -= 1;
-        }
-
-        // Find end
-        let mut end = offset;
-        while end < bytes.len() && Self::is_ident_char(bytes[end] as char) {
-            end += 1;
-        }
+        let (start, end) =
+            crate::ide::token_span_at_offset(content, offset, |c| Self::is_ident_char(c as char))?;
 
         // Verify it's a valid identifier start
-        if !Self::is_ident_start(bytes[start] as char) {
+        if !Self::is_ident_start(content.as_bytes()[start] as char) {
             return None;
         }
 
@@ -509,27 +478,7 @@ impl RenameService {
 
     /// Convert byte offset to LSP Position.
     fn offset_to_position(content: &str, offset: usize) -> Position {
-        let mut line = 0u32;
-        let mut col = 0u32;
-        let mut current = 0;
-
-        for ch in content.chars() {
-            if current >= offset {
-                break;
-            }
-            if ch == '\n' {
-                line += 1;
-                col = 0;
-            } else {
-                col += 1;
-            }
-            current += ch.len_utf8();
-        }
-
-        Position {
-            line,
-            character: col,
-        }
+        crate::utils::offset_to_position_str(content, offset)
     }
 
     /// Check if character can start an identifier.
@@ -549,7 +498,9 @@ impl RenameService {
         }
 
         let mut chars = s.chars();
-        let first = chars.next().unwrap();
+        let Some(first) = chars.next() else {
+            return false;
+        };
 
         if !Self::is_ident_start(first) {
             return false;
@@ -651,6 +602,11 @@ mod tests {
             RenameService::get_word_at_offset(content, 14),
             Some("ref".to_string())
         );
+        assert_eq!(
+            RenameService::get_word_at_offset(content, 11),
+            Some("count".to_string())
+        );
+        assert_eq!(RenameService::get_word_at_offset(content, 12), None);
     }
 
     #[test]
@@ -681,5 +637,17 @@ mod tests {
         let css = ".container { color: v-bind(textColor); width: v-bind('width'); }";
         let occurrences = RenameService::find_vbind_occurrences(css, "textColor");
         assert_eq!(occurrences.len(), 1);
+    }
+
+    #[test]
+    fn test_offset_range_to_lsp_counts_utf16_code_units() {
+        let content = "const emoji = \"😀\"; const message = ref(emoji)";
+        let start = content.find("message").unwrap();
+        let end = start + "message".len();
+        let range = RenameService::offset_range_to_lsp(content, start, end);
+
+        assert_eq!(range.start.line, 0);
+        assert_eq!(range.start.character, 26);
+        assert_eq!(range.end.character, 33);
     }
 }

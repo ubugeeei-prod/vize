@@ -10,8 +10,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
 
-use vize_carton::source_range::SourceMap;
 use vize_carton::String;
+use vize_carton::source_range::SourceMap;
 
 /// Virtual URI scheme for in-memory documents.
 pub const VIRTUAL_URI_SCHEME: &str = "vize-virtual";

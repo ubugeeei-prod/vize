@@ -7,9 +7,19 @@
 use vize_carton::{Bump, BumpVec, String, ToCompactString};
 
 /// Extract v-bind() expressions and transform them to CSS variables
+#[cfg(test)]
 pub(crate) fn extract_and_transform_v_bind<'a>(
     bump: &'a Bump,
     css: &str,
+) -> (&'a str, Vec<String>) {
+    extract_and_transform_v_bind_with_scope(bump, css, None)
+}
+
+/// Extract v-bind() expressions and transform them using a Vue SFC scope id.
+pub(crate) fn extract_and_transform_v_bind_with_scope<'a>(
+    bump: &'a Bump,
+    css: &str,
+    scope_id: Option<&str>,
 ) -> (&'a str, Vec<String>) {
     let css_bytes = css.as_bytes();
     let mut vars = Vec::new();
@@ -17,23 +27,34 @@ pub(crate) fn extract_and_transform_v_bind<'a>(
     let mut pos = 0;
 
     while pos < css_bytes.len() {
-        if let Some(rel_pos) = find_bytes(&css_bytes[pos..], b"v-bind(") {
-            let actual_pos = pos + rel_pos;
+        if let Some(actual_pos) = find_next_v_bind(css, pos) {
             let start = actual_pos + 7;
 
-            if let Some(end) = find_byte(&css_bytes[start..], b')') {
+            let Some(after_open) = css.get(start..) else {
+                result.extend_from_slice(&css_bytes[pos..]);
+                break;
+            };
+
+            if let Some(end) = find_matching_paren(after_open) {
                 // Copy everything before v-bind(
                 result.extend_from_slice(&css_bytes[pos..actual_pos]);
 
                 // Extract expression
-                let expr_bytes = &css_bytes[start..start + end];
-                let expr_str = unsafe { std::str::from_utf8_unchecked(expr_bytes) }.trim();
-                let expr_str = expr_str.trim_matches(|c| c == '"' || c == '\'');
+                let Some(expr_str) = after_open.get(..end).map(str::trim) else {
+                    pos = start + end + 1;
+                    result.extend_from_slice(&css_bytes[actual_pos..pos]);
+                    continue;
+                };
+                let expr_str = trim_outer_quotes(expr_str);
                 vars.push(expr_str.to_compact_string());
 
-                // Generate hash and write var(--hash-expr)
+                // Generate CSS custom property reference.
                 result.extend_from_slice(b"var(--");
-                write_v_bind_hash(&mut result, expr_str);
+                if let Some(scope_id) = scope_id {
+                    result.extend_from_slice(scoped_v_bind_name(scope_id, expr_str).as_bytes());
+                } else {
+                    write_v_bind_hash(&mut result, expr_str);
+                }
                 result.push(b')');
 
                 pos = start + end + 1;
@@ -47,9 +68,132 @@ pub(crate) fn extract_and_transform_v_bind<'a>(
         }
     }
 
-    // SAFETY: input is valid UTF-8, we only add ASCII bytes
+    // SAFETY: `result` is assembled from byte slices borrowed from `css` plus
+    // ASCII-only delimiters, hashes, and sanitized v-bind suffixes. Every copied
+    // slice boundary comes from `str::find`/byte scans over ASCII tokens, so it
+    // never cuts through a UTF-8 code point. The bump copy keeps the returned
+    // `&str` alive for the caller's arena lifetime while avoiding a second UTF-8
+    // validation pass on this hot CSS transform path.
     let result_str = unsafe { std::str::from_utf8_unchecked(bump.alloc_slice_copy(&result)) };
     (result_str, vars)
+}
+
+pub(crate) fn trim_outer_quotes(expr: &str) -> &str {
+    let bytes = expr.as_bytes();
+    if bytes.len() >= 2
+        && matches!(bytes.first(), Some(b'"' | b'\''))
+        && bytes.first() == bytes.last()
+    {
+        &expr[1..expr.len() - 1]
+    } else {
+        expr
+    }
+}
+
+/// Generate the Vue-compatible CSS variable name for a scoped SFC v-bind().
+pub(crate) fn scoped_v_bind_name(scope_id: &str, expr: &str) -> String {
+    let scope_id = scope_id.strip_prefix("data-v-").unwrap_or(scope_id);
+    let mut result = String::with_capacity(scope_id.len() + expr.len() + 1);
+    result.push_str(scope_id);
+    result.push('-');
+    write_escaped_css_var_suffix(&mut result, expr);
+    result
+}
+
+/// Generate Vue's production CSS variable name for a scoped SFC v-bind().
+pub(crate) fn prod_scoped_v_bind_name(id: &str, expr: &str) -> String {
+    let hash = hash_sum_string_pair(id, expr);
+    let mut result = String::with_capacity(8);
+    write_hash_sum_hex(&mut result, hash);
+    if result
+        .as_bytes()
+        .first()
+        .is_some_and(|byte| byte.is_ascii_digit())
+    {
+        result.insert(0, 'v');
+    }
+    result
+}
+
+fn write_escaped_css_var_suffix(out: &mut String, expr: &str) {
+    for c in expr.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
+            out.push(c);
+        } else {
+            out.push('\\');
+            out.push(c);
+        }
+    }
+}
+
+fn hash_sum_string_pair(first: &str, second: &str) -> u64 {
+    let hash = hash_sum_fold(0, "[object String]");
+    let hash = hash_sum_fold(hash, "string");
+    hash_sum_fold_pair(hash, first, second)
+}
+
+fn hash_sum_fold(input: u64, text: &str) -> u64 {
+    if text.is_empty() {
+        return input;
+    }
+
+    let mut hash = input as u32;
+    for unit in text.encode_utf16() {
+        hash = hash
+            .wrapping_shl(5)
+            .wrapping_sub(hash)
+            .wrapping_add(u32::from(unit));
+    }
+
+    let signed = hash as i32;
+    if signed < 0 {
+        (-(i64::from(signed)) * 2) as u64
+    } else {
+        signed as u64
+    }
+}
+
+fn hash_sum_fold_pair(input: u64, first: &str, second: &str) -> u64 {
+    if first.is_empty() && second.is_empty() {
+        return input;
+    }
+
+    let mut hash = input as u32;
+    for unit in first.encode_utf16().chain(second.encode_utf16()) {
+        hash = hash
+            .wrapping_shl(5)
+            .wrapping_sub(hash)
+            .wrapping_add(u32::from(unit));
+    }
+
+    normalize_hash_sum_i32(hash)
+}
+
+fn write_hash_sum_hex(out: &mut String, value: u64) {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut started = false;
+    for shift in (0..64).step_by(4).rev() {
+        let digit = ((value >> shift) & 0xF) as usize;
+        if digit != 0 || started {
+            out.push(HEX[digit] as char);
+            started = true;
+        }
+    }
+    if !started {
+        out.push('0');
+    }
+    while out.len() < 8 {
+        out.insert(0, '0');
+    }
+}
+
+fn normalize_hash_sum_i32(hash: u32) -> u64 {
+    let signed = hash as i32;
+    if signed < 0 {
+        (-(i64::from(signed)) * 2) as u64
+    } else {
+        signed as u64
+    }
 }
 
 /// Write v-bind variable hash to output
@@ -90,12 +234,6 @@ pub(crate) fn find_bytes(haystack: &[u8], needle: &[u8]) -> Option<usize> {
     haystack.windows(needle.len()).position(|w| w == needle)
 }
 
-/// Find single byte in slice
-#[inline]
-pub(crate) fn find_byte(haystack: &[u8], needle: u8) -> Option<usize> {
-    haystack.iter().position(|&b| b == needle)
-}
-
 /// Reverse find single byte in slice
 #[inline]
 pub(crate) fn rfind_byte(haystack: &[u8], needle: u8) -> Option<usize> {
@@ -105,8 +243,58 @@ pub(crate) fn rfind_byte(haystack: &[u8], needle: u8) -> Option<usize> {
 /// Find the matching closing parenthesis
 pub(crate) fn find_matching_paren(s: &str) -> Option<usize> {
     let mut depth = 1u32;
-    for (i, c) in s.char_indices() {
+    let mut quote = None;
+    let mut escaped = false;
+    let mut in_block_comment = false;
+    let mut in_line_comment = false;
+    let mut chars = s.char_indices().peekable();
+
+    while let Some((i, c)) = chars.next() {
+        if in_block_comment {
+            if c == '*' && chars.peek().is_some_and(|(_, next)| *next == '/') {
+                chars.next();
+                in_block_comment = false;
+            }
+            continue;
+        }
+
+        if in_line_comment {
+            if c == '\n' || c == '\r' {
+                in_line_comment = false;
+            }
+            continue;
+        }
+
+        if let Some(quote_char) = quote {
+            if escaped {
+                escaped = false;
+                continue;
+            }
+
+            if c == '\\' {
+                escaped = true;
+                continue;
+            }
+
+            if c == quote_char {
+                quote = None;
+            }
+
+            continue;
+        }
+
         match c {
+            '/' if chars.peek().is_some_and(|(_, next)| *next == '*') => {
+                chars.next();
+                in_block_comment = true;
+            }
+            '/' if chars.peek().is_some_and(|(_, next)| *next == '/') => {
+                chars.next();
+                in_line_comment = true;
+            }
+            '"' | '\'' | '`' => {
+                quote = Some(c);
+            }
             '(' => depth += 1,
             ')' => {
                 depth -= 1;
@@ -117,5 +305,75 @@ pub(crate) fn find_matching_paren(s: &str) -> Option<usize> {
             _ => {}
         }
     }
+    None
+}
+
+fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
+    let bytes = css.as_bytes();
+    let mut pos = start;
+    let mut quote: Option<u8> = None;
+    let mut escaped = false;
+    let mut in_block_comment = false;
+    let mut in_line_comment = false;
+
+    while pos < bytes.len() {
+        let byte = bytes[pos];
+
+        if in_block_comment {
+            if byte == b'*' && bytes.get(pos + 1) == Some(&b'/') {
+                in_block_comment = false;
+                pos += 2;
+            } else {
+                pos += 1;
+            }
+            continue;
+        }
+
+        if in_line_comment {
+            if byte == b'\n' || byte == b'\r' {
+                in_line_comment = false;
+            }
+            pos += 1;
+            continue;
+        }
+
+        if let Some(quote_byte) = quote {
+            if escaped {
+                escaped = false;
+                pos += 1;
+                continue;
+            }
+
+            if byte == b'\\' {
+                escaped = true;
+                pos += 1;
+                continue;
+            }
+
+            if byte == quote_byte {
+                quote = None;
+            }
+            pos += 1;
+            continue;
+        }
+
+        match byte {
+            b'"' | b'\'' | b'`' => {
+                quote = Some(byte);
+                pos += 1;
+            }
+            b'/' if bytes.get(pos + 1) == Some(&b'*') => {
+                in_block_comment = true;
+                pos += 2;
+            }
+            b'/' if bytes.get(pos + 1) == Some(&b'/') => {
+                in_line_comment = true;
+                pos += 2;
+            }
+            b'v' if bytes[pos..].starts_with(b"v-bind(") => return Some(pos),
+            _ => pos += 1,
+        }
+    }
+
     None
 }

@@ -2,7 +2,7 @@
 
 use super::block::GenerateContext;
 use crate::ir::{SetDynamicPropsIRNode, SetPropIRNode};
-use vize_carton::{cstr, String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 /// Generate SetProp code
 pub fn generate_set_prop(ctx: &mut GenerateContext, set_prop: &SetPropIRNode<'_>) {

@@ -3,9 +3,10 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx } from "vue"
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
 
 import { ref } from 'vue'
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -17,16 +18,16 @@ return (_ctx: any,_cache: any) => {
   const _component_router_link = _resolveComponent("router-link")
 
   return (show.value)
-      ? (_openBlock(), _createBlock(_component_router_link, {
-        key: 0,
-        to: "/"
-      }, {
-        default: _withCtx(() => [
-          _createTextVNode("Home")
-        ]),
-        _: 1 /* STABLE */
-      }))
-      : _createCommentVNode("v-if", true)
+    ? (_openBlock(), _createBlock(_component_router_link, {
+      key: 0,
+      to: "/"
+    }, {
+      default: _withCtx(() => [
+        _createTextVNode("Home")
+      ]),
+      _: 1 /* STABLE */
+    }))
+    : _createCommentVNode("v-if", true)
 }
 }
 

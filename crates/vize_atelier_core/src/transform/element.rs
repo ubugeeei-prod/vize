@@ -1,21 +1,23 @@
 //! Element transformation functions.
 
-use vize_carton::{is_builtin_directive, Box, String, Vec};
+use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
 
 use crate::ast::*;
 use crate::transforms::transform_expression::process_inline_handler;
 
-use super::{ExitFn, TransformContext};
+use super::{ExitFns, TransformContext};
 
-fn is_dynamic_component_tag(tag: &str) -> bool {
-    matches!(tag, "component" | "Component")
+fn is_dynamic_component(el: &ElementNode<'_>) -> bool {
+    el.tag == "component" || (el.tag == "Component" && has_is_attribute(el))
 }
 
 /// Transform element node
 pub fn transform_element<'a>(
     ctx: &mut TransformContext<'a>,
     el: &mut Box<'a, ElementNode<'a>>,
-) -> Option<std::vec::Vec<ExitFn<'a>>> {
+) -> Option<ExitFns<'a>> {
+    maybe_promote_element_to_component(ctx, el);
+
     // Process props and directives
     process_element_props(ctx, el);
 
@@ -25,7 +27,7 @@ pub fn transform_element<'a>(
             ctx.helper(RuntimeHelper::CreateElementVNode);
         }
         ElementType::Component => {
-            if is_dynamic_component_tag(&el.tag) {
+            if is_dynamic_component(el) {
                 return None;
             }
 
@@ -41,9 +43,11 @@ pub fn transform_element<'a>(
             }
             // Defer add_component to exit phase so inner components resolve before outer ones
             let tag = el.tag.clone();
-            return Some(vec![std::boxed::Box::new(move |ctx| {
+            let mut exits = ExitFns::new();
+            exits.push(std::boxed::Box::new(move |ctx| {
                 ctx.add_component(tag);
-            })]);
+            }));
+            return Some(exits);
         }
         ElementType::Slot => {
             ctx.helper(RuntimeHelper::RenderSlot);
@@ -54,6 +58,71 @@ pub fn transform_element<'a>(
     }
 
     None
+}
+
+fn maybe_promote_element_to_component(
+    ctx: &TransformContext<'_>,
+    el: &mut Box<'_, ElementNode<'_>>,
+) {
+    if el.tag_type != ElementType::Element {
+        return;
+    }
+
+    let looks_like_component = el.tag == "component"
+        || el.tag.chars().next().is_some_and(|c| c.is_uppercase())
+        || el.tag.contains('-');
+
+    if looks_like_component {
+        el.tag_type = ElementType::Component;
+        return;
+    }
+
+    let has_is = has_is_attribute(el);
+    if has_is {
+        el.tag_type = ElementType::Component;
+        return;
+    }
+
+    if is_native_tag(&el.tag) {
+        return;
+    }
+
+    if is_registered_component(ctx, &el.tag) {
+        el.tag_type = ElementType::Component;
+    }
+}
+
+fn has_is_attribute(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(|prop| match prop {
+        PropNode::Directive(dir) => {
+            dir.name == "is"
+                || (dir.name == "bind"
+                    && matches!(
+                        &dir.arg,
+                        Some(ExpressionNode::Simple(arg)) if arg.content == "is"
+                    ))
+        }
+        PropNode::Attribute(attr) => attr.name == "is",
+    })
+}
+
+fn is_registered_component(ctx: &TransformContext<'_>, tag: &str) -> bool {
+    if ctx.is_component_registered(tag) {
+        return true;
+    }
+
+    if tag.contains('-') || tag.contains('_') {
+        let camel = vize_carton::camelize(tag);
+        if ctx.is_component_registered(camel.as_str()) {
+            return true;
+        }
+
+        let pascal = capitalize(&camel);
+        return ctx.is_component_registered(pascal.as_str());
+    }
+
+    let pascal = capitalize(tag);
+    ctx.is_component_registered(pascal.as_str())
 }
 
 /// Process directive expressions with _ctx prefix
@@ -101,13 +170,12 @@ fn process_directive_expressions<'a>(
                         dir.exp = Some(processed);
                     }
                     // Process dynamic argument
-                    if let Some(arg) = &dir.arg {
-                        if let ExpressionNode::Simple(simple_arg) = arg {
-                            if !simple_arg.is_static {
-                                let processed = process_expression(ctx, arg, false);
-                                dir.arg = Some(processed);
-                            }
-                        }
+                    if let Some(arg) = &dir.arg
+                        && let ExpressionNode::Simple(simple_arg) = arg
+                        && !simple_arg.is_static
+                    {
+                        let processed = process_expression(ctx, arg, false);
+                        dir.arg = Some(processed);
                     }
                 }
             }
@@ -117,6 +185,15 @@ fn process_directive_expressions<'a>(
 
 /// Process element properties and directives
 fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, ElementNode<'a>>) {
+    if el.props.is_empty()
+        || !el
+            .props
+            .iter()
+            .any(|prop| matches!(prop, PropNode::Directive(_)))
+    {
+        return;
+    }
+
     let allocator = ctx.allocator;
     let is_component = el.tag_type == ElementType::Component;
 

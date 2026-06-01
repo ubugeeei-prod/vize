@@ -2,6 +2,7 @@
 name = "vize_test_runner"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 
 [[bin]]
@@ -17,5 +18,5 @@ vize_atelier_core.workspace = true
 vize_atelier_vapor.workspace = true
 vize_atelier_sfc.workspace = true
 vize_carton.workspace = true
-serde = { version = "1.0", features = ["derive"] }
-toml = "0.8"
+serde.workspace = true
+toml.workspace = true

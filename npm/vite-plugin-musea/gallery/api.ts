@@ -52,6 +52,17 @@ export interface A11yApiResponse {
 
 const basePath =
   (window as unknown as { __MUSEA_BASE_PATH__: string }).__MUSEA_BASE_PATH__ ?? "/__musea__";
+const sessionToken =
+  (window as unknown as { __MUSEA_SESSION_TOKEN__?: string }).__MUSEA_SESSION_TOKEN__ ?? "";
+
+function mutationHeaders(): HeadersInit {
+  const headers = new Headers();
+  headers.set("Content-Type", "application/json");
+  if (sessionToken) {
+    headers.set("X-Musea-Session", sessionToken);
+  }
+  return headers;
+}
 
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(basePath + url);
@@ -102,6 +113,9 @@ export interface VrtResult {
   passed: boolean;
   isNew?: boolean;
   diffPercentage?: number;
+  snapshotPath?: string;
+  currentPath?: string;
+  diffPath?: string;
   error?: string;
 }
 
@@ -116,6 +130,14 @@ export interface VrtApiResponse {
   success: boolean;
   summary: VrtSummary;
   results: VrtResult[];
+  artifacts?: {
+    reportDir: string;
+    htmlReportPath: string;
+    jsonReportPath: string;
+    snapshotDir: string;
+    currentDir: string;
+    diffDir: string;
+  };
 }
 
 // Token types
@@ -165,7 +187,7 @@ export async function createToken(
 ): Promise<TokenMutationResponse> {
   const res = await fetch(basePath + "/api/tokens", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: mutationHeaders(),
     body: JSON.stringify({ path: tokenPath, token }),
   });
   if (!res.ok) {
@@ -181,7 +203,7 @@ export async function updateToken(
 ): Promise<TokenMutationResponse> {
   const res = await fetch(basePath + "/api/tokens", {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: mutationHeaders(),
     body: JSON.stringify({ path: tokenPath, token }),
   });
   if (!res.ok) {
@@ -194,7 +216,7 @@ export async function updateToken(
 export async function deleteToken(tokenPath: string): Promise<TokenMutationResponse> {
   const res = await fetch(basePath + "/api/tokens", {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: mutationHeaders(),
     body: JSON.stringify({ path: tokenPath }),
   });
   if (!res.ok) {
@@ -239,7 +261,7 @@ export async function updateArtSource(
 ): Promise<{ success: boolean }> {
   const res = await fetch(basePath + `/api/arts/${encodeURIComponent(artPath)}/source`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: mutationHeaders(),
     body: JSON.stringify({ source }),
   });
   if (!res.ok) {
@@ -252,7 +274,7 @@ export async function updateArtSource(
 export async function runVrt(artPath?: string, updateSnapshots?: boolean): Promise<VrtApiResponse> {
   const res = await fetch(basePath + "/api/run-vrt", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: mutationHeaders(),
     body: JSON.stringify({ artPath, updateSnapshots }),
   });
   if (!res.ok) {

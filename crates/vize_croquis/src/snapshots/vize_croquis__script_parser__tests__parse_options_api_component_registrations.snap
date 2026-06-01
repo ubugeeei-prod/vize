@@ -1,0 +1,9 @@
+---
+source: crates/vize_croquis/src/script_parser.rs
+expression: output
+---
+=== Component Registrations ===
+FourStyle -> Style
+Basic -> Basic
+string-name -> Basic
+=== Invalid Exports ===

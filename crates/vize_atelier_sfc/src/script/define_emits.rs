@@ -9,10 +9,11 @@ use vize_carton::{FxHashSet, String, ToCompactString};
 
 use oxc_ast::ast::{CallExpression, Expression, TSSignature, TSType, TSTypeLiteral};
 use oxc_span::GetSpan;
+use std::sync::LazyLock;
 
 use super::context::ScriptCompileContext;
 
-pub const DEFINE_EMITS: &str = "defineEmits";
+pub use vize_croquis::macros::DEFINE_EMITS;
 
 /// Result of processing defineEmits
 #[derive(Debug, Clone, Default)]
@@ -41,11 +42,6 @@ pub fn process_define_emits(
         return false;
     }
 
-    if ctx.has_define_emits_call {
-        // In Vue, this would call ctx.error() - for now we just log
-        eprintln!("duplicate {}() call", DEFINE_EMITS);
-    }
-
     ctx.has_define_emits_call = true;
 
     // Store runtime declaration (first argument)
@@ -70,14 +66,6 @@ pub fn process_define_emits(
             String::from(type_str)
         }
     });
-
-    // Error if both type and runtime args are provided
-    if runtime_decl.is_some() && type_decl.is_some() {
-        eprintln!(
-            "{}() cannot accept both type and non-type arguments at the same time. Use one or the other.",
-            DEFINE_EMITS
-        );
-    }
 
     // Store emits info in macros
     ctx.emits_runtime_decl = runtime_decl;
@@ -197,24 +185,31 @@ fn extract_event_name_from_function_type(type_str: &str) -> Option<String> {
 
 /// Extract events from a type literal (object type)
 fn extract_events_from_type_literal(type_str: &str, emits: &mut FxHashSet<String>) {
+    static CALL_SIG_RE: LazyLock<Result<regex::Regex, regex::Error>> = LazyLock::new(|| {
+        regex::Regex::new(r#"\(\s*\w+\s*:\s*['"]([^'"]+)['"]\s*(?:,\s*[^)]+)?\)\s*:"#)
+    });
+    static PROP_RE: LazyLock<Result<regex::Regex, regex::Error>> =
+        LazyLock::new(|| regex::Regex::new(r#"(?:^|[{;,])\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:"#));
+
     // Handle call signatures: { (e: 'click'): void; (e: 'update'): void }
-    let call_sig_re =
-        regex::Regex::new(r#"\(\s*\w+\s*:\s*['"]([^'"]+)['"]\s*(?:,\s*[^)]+)?\)\s*:"#).unwrap();
-    for cap in call_sig_re.captures_iter(type_str) {
-        if let Some(event_name) = cap.get(1) {
-            emits.insert(event_name.as_str().to_compact_string());
+    if let Ok(call_sig_re) = &*CALL_SIG_RE {
+        for cap in call_sig_re.captures_iter(type_str) {
+            if let Some(event_name) = cap.get(1) {
+                emits.insert(event_name.as_str().to_compact_string());
+            }
         }
     }
 
     // Handle property syntax: { click: [...], update: [...] }
     // This is for the newer emit type syntax
-    let prop_re = regex::Regex::new(r#"(?:^|[{;,])\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:"#).unwrap();
-    for cap in prop_re.captures_iter(type_str) {
-        if let Some(prop_name) = cap.get(1) {
-            let name = prop_name.as_str();
-            // Skip common type keywords
-            if !matches!(name, "type" | "required" | "default" | "validator") {
-                emits.insert(name.to_compact_string());
+    if let Ok(prop_re) = &*PROP_RE {
+        for cap in prop_re.captures_iter(type_str) {
+            if let Some(prop_name) = cap.get(1) {
+                let name = prop_name.as_str();
+                // Skip common type keywords
+                if !matches!(name, "type" | "required" | "default" | "validator") {
+                    emits.insert(name.to_compact_string());
+                }
             }
         }
     }
@@ -230,10 +225,10 @@ pub fn extract_event_names_from_ts_type(
     match ts_type {
         TSType::TSFunctionType(func_type) => {
             // Extract from first parameter's type annotation
-            if let Some(first_param) = func_type.params.items.first() {
-                if let Some(type_ann) = &first_param.type_annotation {
-                    extract_literal_values_from_ts_type(&type_ann.type_annotation, emits, source);
-                }
+            if let Some(first_param) = func_type.params.items.first()
+                && let Some(type_ann) = &first_param.type_annotation
+            {
+                extract_literal_values_from_ts_type(&type_ann.type_annotation, emits, source);
             }
         }
         TSType::TSTypeLiteral(type_lit) => {
@@ -282,24 +277,14 @@ fn extract_from_ts_type_literal(
         }
     }
 
-    // Error check: can't mix property syntax with call signatures
-    if has_property && has_call_signature {
-        eprintln!("defineEmits() type cannot mixed call signature and property syntax.");
-    }
-
     // Second pass: extract from call signatures if no properties
     if has_call_signature && !has_property {
         for member in type_lit.members.iter() {
-            if let TSSignature::TSCallSignatureDeclaration(call) = member {
-                if let Some(first_param) = call.params.items.first() {
-                    if let Some(type_ann) = &first_param.type_annotation {
-                        extract_literal_values_from_ts_type(
-                            &type_ann.type_annotation,
-                            emits,
-                            source,
-                        );
-                    }
-                }
+            if let TSSignature::TSCallSignatureDeclaration(call) = member
+                && let Some(first_param) = call.params.items.first()
+                && let Some(type_ann) = &first_param.type_annotation
+            {
+                extract_literal_values_from_ts_type(&type_ann.type_annotation, emits, source);
             }
         }
     }
@@ -359,8 +344,8 @@ mod tests {
     use vize_carton::{CompactString, FxHashSet, ToCompactString};
 
     use super::{
-        extract_event_name_from_function_type, extract_events_from_type_literal, gen_runtime_emits,
-        ScriptCompileContext,
+        ScriptCompileContext, extract_event_name_from_function_type,
+        extract_events_from_type_literal, gen_runtime_emits,
     };
 
     fn snapshot_emits(emits: &FxHashSet<CompactString>) -> Vec<&str> {

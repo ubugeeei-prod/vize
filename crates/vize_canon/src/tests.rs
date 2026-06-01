@@ -3,7 +3,7 @@
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
 mod virtual_ts_tests {
-    use crate::sfc_typecheck::{type_check_sfc, SfcTypeCheckOptions};
+    use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 
     /// Generate virtual TypeScript from SFC using canon's type_check_sfc.
     /// This uses croquis scope analysis to generate proper JavaScript scoping

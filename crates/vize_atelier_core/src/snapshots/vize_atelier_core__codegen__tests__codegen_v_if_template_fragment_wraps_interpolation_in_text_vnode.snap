@@ -2,7 +2,7 @@
 source: crates/vize_atelier_core/src/codegen.rs
 expression: output.as_str()
 ---
-const { Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode, createTextVNode: _createTextVNode, toDisplayString: _toDisplayString } = Vue
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, createTextVNode: _createTextVNode } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("p", null, [

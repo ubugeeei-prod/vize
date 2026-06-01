@@ -8,14 +8,14 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
-  emits: ["update"],
+  emits: ['update'],
   setup(__props, { emit: $emit }) {
 
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("button", {
-      onClick: _cache[0] || (_cache[0] = ($event: any) => ($emit('update')))
-    }, "Click"))
+    onClick: _cache[0] || (_cache[0] = ($event: any) => ($emit('update')))
+  }, "Click"))
 }
 }
 

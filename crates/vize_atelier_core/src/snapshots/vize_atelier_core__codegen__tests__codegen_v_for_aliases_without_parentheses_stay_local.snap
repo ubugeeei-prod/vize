@@ -2,7 +2,7 @@
 source: crates/vize_atelier_core/src/codegen.rs
 expression: output.as_str()
 ---
-const { Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, createVNode: _createVNode, resolveComponent: _resolveComponent, renderList: _renderList } = Vue
+const { resolveComponent: _resolveComponent, createVNode: _createVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_UserCard = _resolveComponent("UserCard")

@@ -463,7 +463,7 @@ pub fn position_to_offset(source: &str, pos: Position) -> Option<u32> {
 #[cfg(test)]
 mod tests {
     use super::{
-        offset_to_position, position_to_offset, Mapping, MappingFlags, Position, SourceMap, Span,
+        Mapping, MappingFlags, Position, SourceMap, Span, offset_to_position, position_to_offset,
     };
 
     #[test]
@@ -567,8 +567,8 @@ mod tests {
         map.push_simple(10, 20, 100, 110);
         map.build();
 
-        let gen = map.source_range_to_generated(Span::new(10, 20));
-        assert_eq!(gen, Some(Span::new(100, 110)));
+        let generated_span = map.source_range_to_generated(Span::new(10, 20));
+        assert_eq!(generated_span, Some(Span::new(100, 110)));
     }
 
     #[test]

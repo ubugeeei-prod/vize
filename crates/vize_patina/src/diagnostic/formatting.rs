@@ -143,35 +143,39 @@ fn render_inline_markdown(out: &mut String, line: &str) {
 
     while i < len {
         // Inline code: `code`
-        if bytes[i] == b'`' {
-            if let Some(end) = find_closing_backtick(bytes, i + 1) {
-                out.push_str(ANSI_CYAN);
-                out.push_str(&line[i + 1..end]);
-                out.push_str(ANSI_CYAN_OFF);
-                i = end + 1;
-                continue;
-            }
+        if bytes[i] == b'`'
+            && let Some(end) = find_closing_backtick(bytes, i + 1)
+        {
+            out.push_str(ANSI_CYAN);
+            out.push_str(&line[i + 1..end]);
+            out.push_str(ANSI_CYAN_OFF);
+            i = end + 1;
+            continue;
         }
 
         // Bold: **text** or __text__
-        if i + 1 < len && bytes[i] == b'*' && bytes[i + 1] == b'*' {
-            if let Some(end) = find_closing_double(bytes, i + 2, b'*') {
-                out.push_str(ANSI_BOLD);
-                // Recursively process inline content within bold
-                render_inline_markdown(out, &line[i + 2..end]);
-                out.push_str(ANSI_BOLD_OFF);
-                i = end + 2;
-                continue;
-            }
+        if i + 1 < len
+            && bytes[i] == b'*'
+            && bytes[i + 1] == b'*'
+            && let Some(end) = find_closing_double(bytes, i + 2, b'*')
+        {
+            out.push_str(ANSI_BOLD);
+            // Recursively process inline content within bold
+            render_inline_markdown(out, &line[i + 2..end]);
+            out.push_str(ANSI_BOLD_OFF);
+            i = end + 2;
+            continue;
         }
-        if i + 1 < len && bytes[i] == b'_' && bytes[i + 1] == b'_' {
-            if let Some(end) = find_closing_double(bytes, i + 2, b'_') {
-                out.push_str(ANSI_BOLD);
-                render_inline_markdown(out, &line[i + 2..end]);
-                out.push_str(ANSI_BOLD_OFF);
-                i = end + 2;
-                continue;
-            }
+        if i + 1 < len
+            && bytes[i] == b'_'
+            && bytes[i + 1] == b'_'
+            && let Some(end) = find_closing_double(bytes, i + 2, b'_')
+        {
+            out.push_str(ANSI_BOLD);
+            render_inline_markdown(out, &line[i + 2..end]);
+            out.push_str(ANSI_BOLD_OFF);
+            i = end + 2;
+            continue;
         }
 
         out.push(bytes[i] as char);

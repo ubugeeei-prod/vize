@@ -2,7 +2,7 @@
 //!
 //! Transforms v-show directive for toggling display.
 
-use vize_carton::{cstr, Box, Bump, String};
+use vize_carton::{Box, Bump, String, cstr};
 
 use crate::ir::{DirectiveIRNode, OperationNode};
 use vize_atelier_core::{DirectiveNode, ExpressionNode};

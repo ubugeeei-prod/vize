@@ -28,29 +28,25 @@ impl AnchorHasContent {
     fn has_accessible_content(element: &ElementNode) -> bool {
         // Check for aria-label or aria-labelledby
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name == "aria-label" || attr.name == "aria-labelledby" {
-                    return true;
-                }
+            if let PropNode::Attribute(attr) = prop
+                && (attr.name == "aria-label" || attr.name == "aria-labelledby")
+            {
+                return true;
             }
-            if let PropNode::Directive(dir) = prop {
-                if dir.name == "bind" {
-                    if let Some(vize_relief::ast::ExpressionNode::Simple(s)) = &dir.arg {
-                        if s.content == "aria-label" || s.content == "aria-labelledby" {
-                            return true;
-                        }
-                    }
-                }
+            if let PropNode::Directive(dir) = prop
+                && dir.name == "bind"
+                && let Some(vize_relief::ast::ExpressionNode::Simple(s)) = &dir.arg
+                && (s.content == "aria-label" || s.content == "aria-labelledby")
+            {
+                return true;
             }
         }
 
         // Check for content in children
         for child in &element.children {
             match child {
-                TemplateChildNode::Text(text) => {
-                    if !text.content.trim().is_empty() {
-                        return true;
-                    }
+                TemplateChildNode::Text(text) if !text.content.trim().is_empty() => {
+                    return true;
                 }
                 TemplateChildNode::Interpolation(_) => {
                     return true;
@@ -59,12 +55,11 @@ impl AnchorHasContent {
                     // Check for img with alt
                     if el.tag == "img" {
                         for prop in &el.props {
-                            if let PropNode::Attribute(attr) = prop {
-                                if attr.name == "alt"
-                                    && attr.value.as_ref().is_some_and(|v| !v.content.is_empty())
-                                {
-                                    return true;
-                                }
+                            if let PropNode::Attribute(attr) = prop
+                                && attr.name == "alt"
+                                && attr.value.as_ref().is_some_and(|v| !v.content.is_empty())
+                            {
+                                return true;
                             }
                         }
                     }

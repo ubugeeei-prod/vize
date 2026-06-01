@@ -1,0 +1,14 @@
+---
+source: crates/vize_croquis_cf/src/analyzers/cross_file_reactivity_tests.rs
+expression: output
+---
+=== Reactivity Loss Reasons ===
+
+1. Destructured { props: ["count", "increment"] }
+2. Spread
+3. NonReactiveAssignment
+4. DirectExtraction
+5. NonReactiveIntermediate { intermediate: "processValue" }
+6. ComposableDestructure
+7. StoreDestructure
+8. InjectDestructure

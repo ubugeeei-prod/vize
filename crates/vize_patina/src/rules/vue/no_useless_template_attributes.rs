@@ -48,10 +48,10 @@ impl NoUselessTemplateAttributes {
     /// Check if a template has a structural directive (which justifies its existence)
     fn has_structural_directive(element: &ElementNode) -> bool {
         for prop in &element.props {
-            if let PropNode::Directive(dir) = prop {
-                if STRUCTURAL_DIRECTIVES.contains(&dir.name.as_str()) {
-                    return true;
-                }
+            if let PropNode::Directive(dir) = prop
+                && STRUCTURAL_DIRECTIVES.contains(&dir.name.as_str())
+            {
+                return true;
             }
         }
         false
@@ -67,12 +67,11 @@ impl NoUselessTemplateAttributes {
                     return true;
                 }
                 // :key is allowed on v-for templates
-                if name == "bind" {
-                    if let Some(vize_relief::ast::ExpressionNode::Simple(arg)) = &dir.arg {
-                        if arg.content == "key" {
-                            return true;
-                        }
-                    }
+                if name == "bind"
+                    && let Some(vize_relief::ast::ExpressionNode::Simple(arg)) = &dir.arg
+                    && arg.content == "key"
+                {
+                    return true;
                 }
                 false
             }

@@ -193,13 +193,6 @@ const window = globalThis.window;
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-lg);
   overflow: hidden;
-  transition: all var(--musea-transition);
-}
-
-.variant-card:hover {
-  border-color: var(--musea-text-muted);
-  box-shadow: var(--musea-shadow);
-  transform: translateY(-2px);
 }
 
 .variant-preview {
@@ -208,6 +201,7 @@ const window = globalThis.window;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   position: relative;
   overflow: hidden;
 }
@@ -222,8 +216,12 @@ const window = globalThis.window;
 .variant-preview iframe {
   width: 70%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   border: none;
   background: white;
+  border-radius: var(--musea-radius-md);
+  box-shadow: 0 12px 30px rgba(13, 13, 13, 0.12);
 }
 
 .variant-preview.viewport-mode iframe {

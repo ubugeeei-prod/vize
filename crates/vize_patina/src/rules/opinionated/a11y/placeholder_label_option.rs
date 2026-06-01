@@ -55,10 +55,10 @@ impl Rule for PlaceholderLabelOption {
 
         // Find first <option> child
         let first_option = element.children.iter().find_map(|child| {
-            if let TemplateChildNode::Element(el) = child {
-                if el.tag == "option" {
-                    return Some(el.as_ref());
-                }
+            if let TemplateChildNode::Element(el) = child
+                && el.tag == "option"
+            {
+                return Some(el.as_ref());
             }
             None
         });
@@ -69,10 +69,10 @@ impl Rule for PlaceholderLabelOption {
 
         // Check if it's a placeholder (value="" or no value attribute)
         let is_placeholder = option.props.iter().any(|prop| {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name == "value" {
-                    return attr.value.as_ref().is_none_or(|v| v.content.is_empty());
-                }
+            if let PropNode::Attribute(attr) = prop
+                && attr.name == "value"
+            {
+                return attr.value.as_ref().is_none_or(|v| v.content.is_empty());
             }
             false
         });

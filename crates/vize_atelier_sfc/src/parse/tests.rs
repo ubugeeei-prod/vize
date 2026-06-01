@@ -45,6 +45,20 @@ fn test_parse_multiple_styles() {
 }
 
 #[test]
+fn test_parse_css_vars_from_styles() {
+    let source = r#"
+<style>
+.a { color: v-bind(color); }
+.b { height: v-bind("height + 'px'"); }
+.c { background: v-bind(color); }
+</style>
+"#;
+    let result = parse_sfc(source, Default::default()).unwrap();
+
+    assert_eq!(result.css_vars, vec!["color", "height + 'px'"]);
+}
+
+#[test]
 fn test_parse_custom_block() {
     let source = r#"
 <template><div></div></template>
@@ -54,6 +68,23 @@ fn test_parse_custom_block() {
 
     assert_eq!(result.custom_blocks.len(), 1);
     assert_eq!(result.custom_blocks[0].block_type, "i18n");
+}
+
+#[test]
+fn test_parse_self_closing_custom_block() {
+    let source = r#"
+<template><div></div></template>
+<i18n src="./en.json" />
+"#;
+    let result = parse_sfc(source, Default::default()).unwrap();
+
+    assert_eq!(result.custom_blocks.len(), 1);
+    assert_eq!(result.custom_blocks[0].block_type, "i18n");
+    assert_eq!(result.custom_blocks[0].content, "");
+    assert_eq!(
+        result.custom_blocks[0].attrs.get("src").map(Cow::as_ref),
+        Some("./en.json")
+    );
 }
 
 #[test]
@@ -82,9 +113,10 @@ fn test_zero_copy_content() {
     match &template.content {
         Cow::Borrowed(s) => {
             // The string should be a slice of the original source
-            let ptr = s.as_ptr();
-            let source_ptr = source.as_ptr();
-            assert!(ptr >= source_ptr && ptr < unsafe { source_ptr.add(source.len()) });
+            let source_start = source.as_ptr() as usize;
+            let source_end = source_start + source.len();
+            let content_ptr = s.as_ptr() as usize;
+            assert!((source_start..=source_end).contains(&content_ptr));
         }
         Cow::Owned(_) => panic!("Expected Cow::Borrowed, got Cow::Owned"),
     }
@@ -325,6 +357,20 @@ const e = 5
 }
 
 #[test]
+fn test_script_with_regex_character_class_containing_comment_start() {
+    let source = r#"<script>
+const regexp = /[/*]/g;
+</script>"#;
+    let result = parse_sfc(source, Default::default()).unwrap();
+
+    assert!(result.script.is_some());
+    assert_eq!(
+        result.script.unwrap().content.trim(),
+        "const regexp = /[/*]/g;"
+    );
+}
+
+#[test]
 fn test_script_with_division_operator() {
     // Test that division operator doesn't interfere with string detection
     let source = r#"<script setup>
@@ -415,4 +461,60 @@ const x = 1
     assert!(result.template.is_some());
     assert!(result.script_setup.is_some());
     insta::assert_debug_snapshot!(result.script_setup.unwrap());
+}
+
+#[test]
+fn test_malformed_template_reports_error() {
+    let source = "<template><div></div>";
+    let err = parse_sfc(source, Default::default()).unwrap_err();
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
+    assert!(err.message.contains("<template>"));
+
+    let loc = err.loc.as_ref().unwrap();
+    assert_eq!(loc.tag_start, 0);
+    assert_eq!(loc.start_line, 1);
+    assert_eq!(loc.start_column, 1);
+    insta::assert_debug_snapshot!(err);
+}
+
+#[test]
+fn test_malformed_script_opening_tag_reports_error() {
+    let source = r#"<script lang="ts""#;
+    let err = parse_sfc(source, Default::default()).unwrap_err();
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
+    assert!(err.message.contains("opening tag is incomplete"));
+}
+
+#[test]
+fn test_malformed_script_closing_tag_reports_error() {
+    let source = r#"<script lang="ts"></script"#;
+    let err = parse_sfc(source, Default::default()).unwrap_err();
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
+    assert!(err.message.contains("closing tag is missing"));
+}
+
+#[test]
+fn test_malformed_custom_block_reports_error() {
+    let source = r#"<i18n>{"hello":"world"}"#;
+    let err = parse_sfc(source, Default::default()).unwrap_err();
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
+    assert!(err.message.contains("<i18n>"));
+}
+
+#[test]
+fn test_closing_block_tags_with_whitespace() {
+    let source = r#"<script>console.log(1)</script   >
+<style>.red { color: red; }</style
+>
+<i18n>{"hello":"world"}</i18n   >"#;
+    let result = parse_sfc(source, Default::default()).unwrap();
+
+    let script = result.script.unwrap();
+    assert!(script.content.contains("console.log(1)"));
+
+    assert_eq!(result.styles.len(), 1);
+    assert!(result.styles[0].content.contains(".red"));
+
+    assert_eq!(result.custom_blocks.len(), 1);
+    assert_eq!(result.custom_blocks[0].block_type, "i18n");
 }

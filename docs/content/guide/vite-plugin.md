@@ -14,9 +14,14 @@ title: Vite Plugin
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the packages:
+
 ```bash
-npm install @vizejs/vite-plugin vize
+vp install -D @vizejs/vite-plugin
 ```
+
+Add `vize` as a direct dependency only if your project imports shared config helpers from `"vize"`
+or runs the npm CLI through `vp exec vize`.
 
 ## Basic Usage
 
@@ -32,16 +37,48 @@ export default defineConfig({
 
 That's it. Replace `@vitejs/plugin-vue` with `@vizejs/vite-plugin` and your project compiles through Rust.
 
+## TypeScript Vue Imports
+
+Add the plugin package to `compilerOptions.types` to make direct `.vue` imports resolvable by
+TypeScript without writing a local `env.d.ts` shim:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite/client", "@vizejs/vite-plugin"]
+  }
+}
+```
+
+This does not require adding `vize` as a direct project dependency.
+
+For Vite Plus projects, keep the Vite Plus client type and append the plugin package:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite-plus/client", "@vizejs/vite-plugin"]
+  }
+}
+```
+
+For most projects, keep direct plugin options small and put stable compiler settings in
+`vize.config.ts`.
+
 ## Shared Config
 
 The recommended shared entry point is `vize`. A single `vize.config.*` file is read by both the npm CLI and `@vizejs/vite-plugin`.
 
+```bash
+vp install -D vize
+```
+
 Supported config files:
 
+- `vize.config.pkl`
 - `vize.config.ts`
 - `vize.config.js`
 - `vize.config.mjs`
-- `vize.config.pkl`
 - `vize.config.json`
 
 TypeScript config:
@@ -53,6 +90,9 @@ import { defineConfig } from "vize";
 export default defineConfig({
   compiler: {
     sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+    vueParserQuirks: false,
   },
   vite: {
     scanPatterns: ["src/**/*.vue"],
@@ -89,6 +129,101 @@ JSON config with schema:
 
 Importing `defineConfig` from `@vizejs/vite-plugin` still works for backward compatibility, but `import { defineConfig } from "vize"` is the shared path going forward.
 
+See [Configuration](./configuration.md) for the full shared config shape.
+
+Vite Plus-first projects can also keep startup-only settings inline in `vite.config.ts`:
+
+```ts
+import { defineConfig } from "vite-plus";
+import vize from "@vizejs/vite-plugin";
+
+export default defineConfig({
+  plugins: [
+    vize({
+      config: {
+        compiler: {
+          sourceMap: true,
+          vapor: false,
+        },
+        vite: {
+          scanPatterns: ["src/**/*.vue"],
+        },
+        musea: {
+          include: ["src/**/*.art.vue"],
+        },
+      },
+    }),
+  ],
+});
+```
+
+Inline config is available to the Vite plugin and shared plugin store during Vite Plus execution.
+Use `vize.config.*` for settings that must also be read by CLI and LSP commands.
+
+## Compiler Options
+
+Direct options passed to `vize()` override `vize.config.*`.
+The full precedence is direct plugin options, then inline `config`, then `vize.config.*`, then
+defaults.
+
+```ts
+vize({
+  vueVersion: 3,
+  sourceMap: true,
+  ssr: false,
+  vapor: false,
+  customRenderer: false,
+  vueParserQuirks: false,
+  scanPatterns: ["src/**/*.vue"],
+  ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
+});
+```
+
+| Option                 | Where to set it                                           | Description                                                                                                                              |
+| ---------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `vueVersion`           | `vize({ vueVersion })`                                    | Set `0.11`, `1`, `2`, or `"legacy"` to run in non-invasive legacy Vue compatibility mode and leave SFC compilation to the host compiler. |
+| `sourceMap`            | `compiler.sourceMap` or `vize({ sourceMap })`             | Generate source maps. Defaults to development on, production off.                                                                        |
+| `ssr`                  | `compiler.ssr` or `vize({ ssr })`                         | Force SSR compilation when Vite's SSR build flag is not enough.                                                                          |
+| `vapor`                | `compiler.vapor` or `vize({ vapor })`                     | Compile templates through the Vapor backend.                                                                                             |
+| `customRenderer`       | `compiler.customRenderer` or `vize({ customRenderer })`   | Treat lowercase non-HTML tags as custom renderer elements. Useful for renderer ecosystems such as TresJS.                                |
+| `vueParserQuirks`      | `compiler.vueParserQuirks` or `vize({ vueParserQuirks })` | Match Vue parser quirks for known edge cases.                                                                                            |
+| `include`              | `vite.include` or `vize({ include })`                     | Files that the plugin should compile.                                                                                                    |
+| `exclude`              | `vite.exclude` or `vize({ exclude })`                     | Files that the plugin should ignore.                                                                                                     |
+| `scanPatterns`         | `vite.scanPatterns` or `vize({ scanPatterns })`           | Glob patterns used for startup pre-compilation.                                                                                          |
+| `ignorePatterns`       | `vite.ignorePatterns` or `vize({ ignorePatterns })`       | Glob patterns skipped during startup pre-compilation.                                                                                    |
+| `configMode`           | `vize({ configMode })`                                    | Use `"root"`, `"auto"`, or `false` for shared config loading.                                                                            |
+| `configFile`           | `vize({ configFile })`                                    | Load a specific config file.                                                                                                             |
+| `config`               | `vize({ config })`                                        | Inline shared config for Vite Plus runtime settings.                                                                                     |
+| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                          | Compile `.vue` files imported from `node_modules` on demand.                                                                             |
+| `debug`                | `vize({ debug })`                                         | Print plugin debug logs.                                                                                                                 |
+
+Common recipes:
+
+```ts
+// Vapor-oriented build
+vize({ vapor: true });
+
+// TresJS or another custom renderer
+vize({ customRenderer: true });
+
+// Existing templates that rely on Vue's v-for alias edge-paren behavior
+vize({ vueParserQuirks: true });
+
+// Monorepo package with explicit scan roots
+vize({
+  root: import.meta.dirname,
+  scanPatterns: ["src/**/*.vue", "examples/**/*.vue"],
+});
+
+// Legacy Vue / Nuxt 2 Bridge project with an existing host compiler plugin
+vize({ vueVersion: 2 });
+```
+
+`vueVersion: 0.11`, `1`, `2`, and `"legacy"` are host-compiler compatibility modes. Vize does not
+compile `.vue` files in these modes, does not expose the Vue 3 `vite:vue` API shim, and does not
+inject Vue 3 bundler feature flags. Keep the existing Vue compiler plugin, `vue-loader`, or Nuxt 2's
+own compiler configured normally.
+
 ## How It Works
 
 The plugin intercepts `.vue` file requests and compiles them using Vize's Rust-native pipeline through Node.js NAPI bindings:
@@ -111,6 +246,9 @@ The plugin intercepts `.vue` file requests and compiles them using Vize's Rust-n
   → Vitrine (NAPI Binding)      — Delivers the result to Node.js
   → Vite module graph            — Served as a virtual module
 ```
+
+The same semantic analysis layer is reused by linting and type checking. See
+[Static Analysis](./static-analysis.md) for the diagnostic side of the pipeline.
 
 ## Comparison
 
@@ -160,7 +298,7 @@ For Nuxt compatibility, the plugin isolates `define` values per Vite environment
 
 The plugin exposes a compatibility shim for tools that probe for `@vitejs/plugin-vue`'s API (like Nuxt). This means Vize works with Nuxt's built-in Vue integration without special configuration:
 
-```typescript
+```ts
 // nuxt.config.ts — using the dedicated Nuxt module
 export default defineNuxtConfig({
   modules: ["@vizejs/nuxt"],

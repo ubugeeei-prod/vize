@@ -21,9 +21,9 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
 
-use super::helpers::{has_interactive_role, is_interactive_element};
+use super::helpers::{has_interactive_role, is_component_like_element, is_interactive_element};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/no-static-element-interactions",
@@ -49,14 +49,12 @@ const INTERACTIVE_EVENTS: &[&str] = &[
 
 fn has_interactive_event(element: &ElementNode) -> bool {
     for prop in &element.props {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name == "on" {
-                if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                    if INTERACTIVE_EVENTS.contains(&arg.content.as_ref()) {
-                        return true;
-                    }
-                }
-            }
+        if let PropNode::Directive(dir) = prop
+            && dir.name == "on"
+            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+            && INTERACTIVE_EVENTS.contains(&arg.content.as_ref())
+        {
+            return true;
         }
     }
     false
@@ -68,7 +66,7 @@ impl Rule for NoStaticElementInteractions {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component {
+        if is_component_like_element(element) {
             return;
         }
 
@@ -150,6 +148,16 @@ mod tests {
     fn test_valid_component_skipped() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<MyDiv @click="handle">Click</MyDiv>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_kebab_case_component_skipped() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<a-button type="primary" @click="handle">Click</a-button>"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 }

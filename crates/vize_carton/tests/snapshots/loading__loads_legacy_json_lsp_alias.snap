@@ -1,0 +1,10 @@
+---
+source: crates/vize_carton/tests/loading.rs
+expression: "serde_json::to_string_pretty(&config).unwrap()"
+---
+{
+  "languageServer": {
+    "completion": false,
+    "tsgo": false
+  }
+}

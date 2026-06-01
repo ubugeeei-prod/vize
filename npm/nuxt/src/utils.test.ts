@@ -3,6 +3,7 @@ import {
   buildNuxtCompilerOptions,
   buildNuxtDevAssetBase,
   isVizeVirtualVueModuleId,
+  normalizeNuxtInjectedKeysForVizeVirtualModule,
   normalizeVizeVirtualVueModuleId,
 } from "./utils.ts";
 
@@ -29,8 +30,31 @@ assert.deepStrictEqual(
   {
     devUrlBase: "/2026/_nuxt/",
     root: "/repo/app",
+    scanPatterns: [],
   },
-  "Nuxt compiler options should pin Vize root to the app root so vize.config.ts is discovered",
+  "Nuxt compiler options should use on-demand compilation to avoid retaining every SFC in large Nuxt apps",
+);
+
+assert.deepStrictEqual(
+  buildNuxtCompilerOptions("/repo/app", "/2026/", "/_nuxt/", {
+    configFile: "vize.nuxt.config.ts",
+    debug: true,
+    ignorePatterns: ["node_modules/**", ".nuxt/**", "fixtures/**"],
+    scanPatterns: ["app/**/*.vue", "layers/**/*.vue"],
+    sourceMap: false,
+    vapor: true,
+  }),
+  {
+    configFile: "vize.nuxt.config.ts",
+    debug: true,
+    devUrlBase: "/2026/_nuxt/",
+    ignorePatterns: ["node_modules/**", ".nuxt/**", "fixtures/**"],
+    root: "/repo/app",
+    scanPatterns: ["app/**/*.vue", "layers/**/*.vue"],
+    sourceMap: false,
+    vapor: true,
+  },
+  "Nuxt compiler options should forward Vite plugin overrides while keeping Nuxt defaults",
 );
 
 assert.equal(
@@ -44,5 +68,33 @@ assert.equal(
   "/repo/app/components/Foo.vue",
   "Nuxt bridge normalization should strip only the virtual .ts suffix",
 );
+
+assert.equal(
+  normalizeVizeVirtualVueModuleId("\0/repo/app/components/Foo.vue.ts?macro=true"),
+  "/repo/app/components/Foo.vue?macro=true",
+  "Nuxt bridge normalization should preserve query strings on client virtual ids",
+);
+
+assert.equal(
+  normalizeVizeVirtualVueModuleId("\0vize-ssr:/repo/app/components/Foo.vue.ts?vue&type=template"),
+  "/repo/app/components/Foo.vue?vue&type=template",
+  "Nuxt bridge normalization should preserve query strings on SSR virtual ids",
+);
+
+{
+  const clientCode =
+    "useFetch('/api/a', {}, '$client-a' /* nuxt-injected */); useFetch('/api/b', {}, '$client-b' /* nuxt-injected */)";
+  const ssrCode =
+    "useFetch('/api/a', {}, '$ssr-a' /* nuxt-injected */); useFetch('/api/b', {}, '$ssr-b' /* nuxt-injected */)";
+
+  assert.equal(
+    normalizeNuxtInjectedKeysForVizeVirtualModule(clientCode, "\0/repo/app/components/Foo.vue.ts"),
+    normalizeNuxtInjectedKeysForVizeVirtualModule(
+      ssrCode,
+      "\0vize-ssr:/repo/app/components/Foo.vue.ts",
+    ),
+    "Nuxt injected keys should match between client and SSR virtual modules",
+  );
+}
 
 console.log("✅ nuxt utils tests passed!");

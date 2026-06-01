@@ -1,22 +1,28 @@
 {
   "name": "@vizejs/unplugin",
-  "version": "0.46.0",
-  "description": "Experimental unplugin-based Vue SFC integration for rollup, webpack, and esbuild powered by Vize",
+  "version": "0.155.0",
+  "description": "Experimental Vue SFC integrations for Rollup, Rolldown, Webpack, esbuild, and Babel powered by Vize",
   "keywords": [
+    "babel",
     "compiler",
     "esbuild",
     "fast",
     "native",
     "plugin",
+    "rolldown",
     "rollup",
     "unplugin",
     "vue",
     "webpack"
   ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/vize",
+    "url": "https://github.com/ubugeeei-prod/vize",
     "directory": "npm/unplugin-vize"
   },
   "files": [
@@ -41,10 +47,20 @@
       "import": "./dist/rollup.mjs",
       "default": "./dist/rollup.mjs"
     },
+    "./rolldown": {
+      "types": "./dist/rolldown.d.mts",
+      "import": "./dist/rolldown.mjs",
+      "default": "./dist/rolldown.mjs"
+    },
     "./webpack": {
       "types": "./dist/webpack.d.mts",
       "import": "./dist/webpack.mjs",
       "default": "./dist/webpack.mjs"
+    },
+    "./babel": {
+      "types": "./dist/babel.d.mts",
+      "import": "./dist/babel.mjs",
+      "default": "./dist/babel.mjs"
     }
   },
   "publishConfig": {
@@ -56,22 +72,24 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "node --import tsx --test src/*.test.ts src/**/*.test.ts",
-    "test:update": "node --import tsx --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
+    "test": "node --test src/*.test.ts src/**/*.test.ts",
+    "test:update": "node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
-    "oxc-transform": "^0.116.0",
-    "unplugin": "^3.0.0"
+    "oxc-transform": "catalog:oxc",
+    "unplugin": "catalog:vite-stack"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "esbuild": "^0.25.11",
-    "rollup": "^4.52.4",
-    "tsx": "^4.21.0",
-    "typescript": "~5.6.0",
-    "vite-plus": "catalog:",
-    "vue": "3.6.0-beta.1",
-    "webpack": "^5.101.3"
+    "@types/node": "catalog:typescript",
+    "esbuild": "catalog:bundlers",
+    "rollup": "catalog:bundlers",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-beta",
+    "webpack": "catalog:bundlers"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

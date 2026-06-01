@@ -1,5 +1,5 @@
 use std::path::{Path, PathBuf};
-use vize_carton::{cstr, String};
+use vize_carton::{String, cstr};
 
 const EXECUTABLE_NAMES: [&str; 2] = ["corsa", "tsgo"];
 
@@ -34,10 +34,9 @@ pub(super) fn resolve_temp_dir_base(project_root: Option<&Path>) -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("."));
 
     find_node_modules_with_vue(&fallback_root)
-        .and_then(|path| path.parent().map(Path::to_path_buf))
-        .unwrap_or(fallback_root)
-        .join("__agent_only")
-        .join("vize-corsa")
+        .unwrap_or_else(|| fallback_root.join("node_modules"))
+        .join(".vize")
+        .join("corsa")
 }
 
 /// Resolve the directories we should search when looking for a Corsa executable.
@@ -46,10 +45,16 @@ pub(crate) fn corsa_search_roots(working_dir: Option<&Path>) -> Vec<PathBuf> {
 
     if let Some(working_dir) = working_dir {
         push_unique_root(&mut roots, working_dir.to_path_buf());
+        for ancestor in working_dir.ancestors().skip(1) {
+            push_unique_root(&mut roots, ancestor.to_path_buf());
+        }
     }
 
     if let Ok(current_dir) = std::env::current_dir() {
-        push_unique_root(&mut roots, current_dir);
+        push_unique_root(&mut roots, current_dir.clone());
+        for ancestor in current_dir.ancestors().skip(1) {
+            push_unique_root(&mut roots, ancestor.to_path_buf());
+        }
     }
 
     if let Some(workspace_root) = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -67,8 +72,10 @@ pub(crate) fn find_corsa_in_search_roots(search_roots: &[PathBuf]) -> Option<Str
     let mut fallback = None;
 
     for root in search_roots {
-        let root = root.to_string_lossy();
-        let Some(candidate) = find_corsa_candidate(Some(root.as_ref())) else {
+        let root_string = root.to_string_lossy();
+        let Some(candidate) =
+            find_corsa_candidate(Some(root_string.as_ref()), Some(root.as_path()))
+        else {
             continue;
         };
 
@@ -87,7 +94,7 @@ pub(crate) fn find_corsa_in_search_roots(search_roots: &[PathBuf]) -> Option<Str
 /// Resolve a project-local Corsa executable from the current directory or ancestors.
 #[cfg(test)]
 pub(crate) fn find_corsa_in_local_node_modules(working_dir: Option<&str>) -> Option<String> {
-    find_corsa_candidate(working_dir).map(|candidate| candidate.path)
+    find_corsa_candidate(working_dir, None).map(|candidate| candidate.path)
 }
 
 pub(crate) fn normalize_corsa_path(path: &str) -> Option<String> {
@@ -111,12 +118,17 @@ pub(crate) fn normalize_corsa_path(path: &str) -> Option<String> {
     };
 
     let original = path.to_string_lossy().into_owned();
-    find_corsa_in_search_roots(&corsa_search_roots(Some(project_root)))
+    let project_root = project_root.to_string_lossy();
+    find_corsa_candidate(Some(project_root.as_ref()), None)
+        .map(|candidate| candidate.path)
         .filter(|resolved| resolved.as_str() != original.as_str())
         .or(Some(original.into()))
 }
 
-fn find_corsa_candidate(working_dir: Option<&str>) -> Option<CorsaCandidate> {
+fn find_corsa_candidate(
+    working_dir: Option<&str>,
+    search_boundary: Option<&Path>,
+) -> Option<CorsaCandidate> {
     let base_dir = working_dir
         .map(PathBuf::from)
         .or_else(|| std::env::current_dir().ok())?;
@@ -124,24 +136,39 @@ fn find_corsa_candidate(working_dir: Option<&str>) -> Option<CorsaCandidate> {
     let mut fallback = None;
     let mut current = Some(base_dir.as_path());
     while let Some(dir) = current {
-        if let Some(path) = search_project_cache(dir) {
-            return Some(CorsaCandidate {
-                path,
-                kind: CorsaCandidateKind::Native,
-            });
-        }
-        if let Some(parent) = dir.parent() {
-            if let Some(path) = search_project_cache(&parent.join("corsa-bind")) {
-                return Some(CorsaCandidate {
+        let at_boundary = search_boundary.is_some_and(|boundary| dir == boundary);
+
+        if let Some(path) = search_project_cache(dir)
+            && keep_candidate(
+                &mut fallback,
+                CorsaCandidate {
                     path,
                     kind: CorsaCandidateKind::Native,
-                });
-            }
+                },
+            )
+        {
+            return fallback;
         }
-        if let Some(candidate) = search_local_install(dir) {
-            if should_replace_candidate(fallback.as_ref(), &candidate) {
-                fallback = Some(candidate);
-            }
+        if !at_boundary
+            && let Some(parent) = dir.parent()
+            && let Some(path) = search_project_cache(&parent.join("corsa-bind"))
+            && keep_candidate(
+                &mut fallback,
+                CorsaCandidate {
+                    path,
+                    kind: CorsaCandidateKind::Native,
+                },
+            )
+        {
+            return fallback;
+        }
+        if let Some(candidate) = search_local_install(dir)
+            && keep_candidate(&mut fallback, candidate)
+        {
+            return fallback;
+        }
+        if at_boundary {
+            break;
         }
         current = dir.parent();
     }
@@ -149,16 +176,25 @@ fn find_corsa_candidate(working_dir: Option<&str>) -> Option<CorsaCandidate> {
     fallback
 }
 
+fn keep_candidate(fallback: &mut Option<CorsaCandidate>, candidate: CorsaCandidate) -> bool {
+    if should_replace_candidate(fallback.as_ref(), &candidate) {
+        *fallback = Some(candidate);
+    }
+
+    fallback
+        .as_ref()
+        .is_some_and(|candidate| candidate.kind == CorsaCandidateKind::Native)
+}
+
 /// Resolve a globally installed Corsa executable from common package-manager paths.
 pub(super) fn find_corsa_in_common_locations() -> Option<String> {
     let home = std::env::var("HOME").ok()?;
     for executable in EXECUTABLE_NAMES {
-        let candidates: [String; 10] = [
+        let candidates: [String; 9] = [
             cstr!("{home}/.npm-global/bin/{executable}"),
             cstr!("{home}/.npm/bin/{executable}"),
             cstr!("{home}/.local/share/pnpm/{executable}"),
             cstr!("{home}/.volta/bin/{executable}"),
-            cstr!("{home}/.local/share/mise/shims/{executable}"),
             cstr!("{home}/.asdf/shims/{executable}"),
             cstr!("{home}/.local/share/fnm/node-versions/current/bin/{executable}"),
             cstr!("{home}/.nvm/versions/node/current/bin/{executable}"),
@@ -176,17 +212,16 @@ pub(super) fn find_corsa_in_common_locations() -> Option<String> {
     if let Ok(output) = std::process::Command::new("npm")
         .args(["root", "-g"])
         .output()
+        && output.status.success()
     {
-        if output.status.success() {
-            #[allow(clippy::disallowed_types)]
-            let npm_root = std::string::String::from_utf8_lossy(&output.stdout);
-            let npm_root = npm_root.trim();
-            if let Some(lib_parent) = Path::new(npm_root).parent() {
-                for executable in EXECUTABLE_NAMES {
-                    let corsa_path = lib_parent.join("bin").join(executable);
-                    if corsa_path.exists() {
-                        return Some(corsa_path.to_string_lossy().into());
-                    }
+        #[allow(clippy::disallowed_types)]
+        let npm_root = std::string::String::from_utf8_lossy(&output.stdout);
+        let npm_root = npm_root.trim();
+        if let Some(lib_parent) = Path::new(npm_root).parent() {
+            for executable in EXECUTABLE_NAMES {
+                let corsa_path = lib_parent.join("bin").join(executable);
+                if corsa_path.exists() {
+                    return Some(corsa_path.to_string_lossy().into());
                 }
             }
         }
@@ -225,26 +260,26 @@ fn should_replace_candidate(existing: Option<&CorsaCandidate>, candidate: &Corsa
 fn search_local_install(dir: &Path) -> Option<CorsaCandidate> {
     let platform_suffix = platform_suffix();
     let pnpm_pattern = dir.join("node_modules/.pnpm");
-    if pnpm_pattern.exists() {
-        if let Ok(entries) = std::fs::read_dir(&pnpm_pattern) {
-            for entry in entries.flatten() {
-                let name = entry.file_name();
-                let name_str = name.to_string_lossy();
-                if name_str.starts_with("@typescript+native-preview-")
-                    && name_str.contains(platform_suffix)
-                {
-                    for executable in EXECUTABLE_NAMES {
-                        let native_path = entry.path().join(&*cstr!(
-                            "node_modules/@typescript/native-preview-{}/lib/{}",
-                            platform_suffix,
-                            executable
-                        ));
-                        if native_path.exists() {
-                            return Some(CorsaCandidate {
-                                path: native_path.to_string_lossy().into(),
-                                kind: CorsaCandidateKind::Native,
-                            });
-                        }
+    if pnpm_pattern.exists()
+        && let Ok(entries) = std::fs::read_dir(&pnpm_pattern)
+    {
+        for entry in entries.flatten() {
+            let name = entry.file_name();
+            let name_str = name.to_string_lossy();
+            if name_str.starts_with("@typescript+native-preview-")
+                && name_str.contains(platform_suffix)
+            {
+                for executable in EXECUTABLE_NAMES {
+                    let native_path = entry.path().join(&*cstr!(
+                        "node_modules/@typescript/native-preview-{}/lib/{}",
+                        platform_suffix,
+                        executable
+                    ));
+                    if native_path.exists() {
+                        return Some(CorsaCandidate {
+                            path: native_path.to_string_lossy().into(),
+                            kind: CorsaCandidateKind::Native,
+                        });
                     }
                 }
             }

@@ -244,30 +244,27 @@ impl Rule for AriaRole {
         for prop in &element.props {
             match prop {
                 PropNode::Attribute(attr) => {
-                    if attr.name.as_str() == "role" {
-                        if let Some(value) = &attr.value {
-                            self.check_role(ctx, value.content.as_str(), &attr.loc);
-                        }
+                    if attr.name.as_str() == "role"
+                        && let Some(value) = &attr.value
+                    {
+                        self.check_role(ctx, value.content.as_str(), &attr.loc);
                     }
                 }
                 PropNode::Directive(dir) => {
                     // Check :role or v-bind:role with static value
-                    if dir.name == "bind" {
-                        if let Some(vize_relief::ast::ExpressionNode::Simple(arg)) = &dir.arg {
-                            if arg.content.as_str() == "role" {
-                                // For dynamic roles, we can only check if it's a static string
-                                if let Some(vize_relief::ast::ExpressionNode::Simple(expr)) =
-                                    &dir.exp
-                                {
-                                    let content = expr.content.as_str().trim();
-                                    // Check if it's a string literal like "'button'" or "\"button\""
-                                    if (content.starts_with('\'') && content.ends_with('\''))
-                                        || (content.starts_with('"') && content.ends_with('"'))
-                                    {
-                                        let role = &content[1..content.len() - 1];
-                                        self.check_role(ctx, role, &dir.loc);
-                                    }
-                                }
+                    if dir.name == "bind"
+                        && let Some(vize_relief::ast::ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.content.as_str() == "role"
+                    {
+                        // For dynamic roles, we can only check if it's a static string
+                        if let Some(vize_relief::ast::ExpressionNode::Simple(expr)) = &dir.exp {
+                            let content = expr.content.as_str().trim();
+                            // Check if it's a string literal like "'button'" or "\"button\""
+                            if (content.starts_with('\'') && content.ends_with('\''))
+                                || (content.starts_with('"') && content.ends_with('"'))
+                            {
+                                let role = &content[1..content.len() - 1];
+                                self.check_role(ctx, role, &dir.loc);
                             }
                         }
                     }

@@ -62,6 +62,10 @@ input = '<div v-show="!hidden">visible</div>'
 name = "v-show with method call"
 input = '<div v-show="isVisible()">content</div>'
 
+[[cases]]
+name = "v-show with optional chaining"
+input = '<div v-show="user?.active">active</div>'
+
 # =============================================================================
 # v-show with other directives
 # =============================================================================
@@ -89,3 +93,7 @@ input = '<div v-show="outer"><span v-show="inner">nested</span></div>'
 [[cases]]
 name = "v-show with v-if sibling"
 input = '<div v-show="a">A</div><div v-if="b">B</div>'
+
+[[cases]]
+name = "v-show nested under v-if"
+input = '<section v-if="ready"><div v-show="visible">content</div></section>'

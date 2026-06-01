@@ -2,7 +2,7 @@
 //!
 //! Transforms v-on (@ shorthand) directives into SetEventIRNode.
 
-use vize_carton::{cstr, Box, Bump, String, ToCompactString};
+use vize_carton::{Box, Bump, String, ToCompactString, cstr};
 
 use crate::ir::{EventModifiers, EventOptions, OperationNode, SetEventIRNode};
 use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode};

@@ -12,238 +12,33 @@ use std::{
     time::{Duration, Instant},
 };
 
-use ignore::WalkBuilder;
 use vize_canon::{
-    batch::TypeChecker as BatchTypeCheckerTrait, BatchTypeChecker, BatchTypeCheckerOptions,
-    DeclarationEmitOptions,
+    BatchTypeChecker, BatchTypeCheckerOptions, DeclarationEmitOptions,
+    batch::TypeChecker as BatchTypeCheckerTrait,
 };
-use vize_carton::{cstr, profiler::global_profiler, FxHashSet, String};
+use vize_carton::{
+    FxHashSet, String, cstr, profile,
+    profiler::{allocation_snapshot, global_profiler},
+};
 
-use crate::commands::profile::{
-    print_profile_report, ProfilePhase, ProfilePhaseKind, ProfileReport,
-};
+use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
 
 use super::{
-    reporting::{JsonFileResult, JsonOutput},
-    tsconfig_inputs::collect_default_check_files,
     CheckArgs,
+    reporting::{JsonFileResult, JsonOutput},
+    tsconfig_inputs::{
+        TsconfigDeclarationOptions, collect_ambient_declaration_files, collect_default_check_files,
+        load_tsconfig_declaration_options,
+    },
 };
 
-/// Run type checking via Unix socket connection to check-server.
+mod collect;
 #[cfg(unix)]
-pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
-    use std::{
-        io::{BufRead, BufReader, Write},
-        os::unix::net::UnixStream,
-    };
+mod socket;
 
-    use super::{JsonRpcResponse, ServerCheckResult};
-
-    let start = Instant::now();
-    let collect_start = Instant::now();
-    #[allow(clippy::disallowed_types)]
-    let default_patterns = vec![std::string::String::from(".")];
-    let files = if args.patterns.is_empty() {
-        collect_vue_files(&default_patterns)
-    } else {
-        collect_vue_files(&args.patterns)
-    };
-    let collect_time = collect_start.elapsed();
-
-    if files.is_empty() {
-        eprintln!("No .vue files found matching inputs: {:?}", args.patterns);
-        return;
-    }
-
-    let connect_start = Instant::now();
-    let mut stream = match UnixStream::connect(socket_path) {
-        Ok(stream) => stream,
-        Err(error) => {
-            eprintln!(
-                "\x1b[31mError:\x1b[0m Failed to connect to check-server: {}",
-                error
-            );
-            eprintln!();
-            eprintln!("\x1b[33mHint:\x1b[0m Start the server first:");
-            eprintln!("  vize check-server --socket {}", socket_path);
-            std::process::exit(1);
-        }
-    };
-    let connect_time = connect_start.elapsed();
-
-    if !args.quiet {
-        eprintln!("Connected to check-server at {}", socket_path);
-        eprintln!("Type checking {} Vue files...", files.len());
-    }
-
-    let mut total_errors = 0usize;
-    #[allow(clippy::disallowed_types, clippy::disallowed_methods)]
-    let mut results: Vec<(std::string::String, ServerCheckResult)> = Vec::new();
-
-    let request_start = Instant::now();
-    for path in &files {
-        #[allow(clippy::disallowed_types)]
-        let source = match fs::read_to_string(path) {
-            Ok(source) => source,
-            Err(error) => {
-                eprintln!("Failed to read {}: {}", path.display(), error);
-                continue;
-            }
-        };
-
-        #[allow(clippy::disallowed_methods)]
-        let filename = path.to_string_lossy().to_string();
-
-        let request = serde_json::json!({
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "check",
-            "params": {
-                "uri": filename,
-                "content": source,
-            }
-        });
-
-        if writeln!(stream, "{}", request).is_err() || stream.flush().is_err() {
-            eprintln!("Failed to send request");
-            break;
-        }
-
-        let mut reader = BufReader::new(&stream);
-        #[allow(clippy::disallowed_types)]
-        let mut response_line = std::string::String::new();
-        if reader.read_line(&mut response_line).is_err() {
-            eprintln!("Failed to read response");
-            break;
-        }
-
-        let response: JsonRpcResponse = match serde_json::from_str(&response_line) {
-            Ok(response) => response,
-            Err(error) => {
-                eprintln!("Failed to parse response: {}", error);
-                continue;
-            }
-        };
-
-        if let Some(error) = response.error {
-            eprintln!("Server error: {}", error.message);
-            continue;
-        }
-
-        if let Some(result) = response.result {
-            total_errors += result.error_count;
-            if args.show_virtual_ts {
-                eprintln!("\n=== {} ===", filename);
-                eprintln!("{}", result.virtual_ts);
-            }
-            results.push((filename, result));
-        }
-    }
-    let request_time = request_start.elapsed();
-
-    let render_start = Instant::now();
-    if !args.quiet {
-        for (filename, result) in &results {
-            if result.diagnostics.is_empty() {
-                continue;
-            }
-            println!("\n\x1b[4m{}\x1b[0m", filename);
-            for diagnostic in &result.diagnostics {
-                let color = if diagnostic.severity == "error" {
-                    "\x1b[31m"
-                } else {
-                    "\x1b[33m"
-                };
-                let code = diagnostic
-                    .code
-                    .as_ref()
-                    .map(|code| cstr!(" [{}]", code))
-                    .unwrap_or_default();
-                println!(
-                    "  {}{}:{}:{}\x1b[0m{} {}",
-                    color,
-                    diagnostic.severity,
-                    diagnostic.line,
-                    diagnostic.column,
-                    code,
-                    diagnostic.message
-                );
-            }
-        }
-    }
-    let render_time = render_start.elapsed();
-    let total_time = start.elapsed();
-
-    let status = if total_errors > 0 {
-        "\x1b[31m\u{2717}\x1b[0m"
-    } else {
-        "\x1b[32m\u{2713}\x1b[0m"
-    };
-    println!(
-        "\n{} Type checked {} Vue files in {:.2?} (via socket)",
-        status,
-        files.len(),
-        total_time
-    );
-    if args.profile {
-        let phases = [
-            ProfilePhase {
-                name: "collect files",
-                duration: collect_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "Vue input discovery",
-            },
-            ProfilePhase {
-                name: "connect socket",
-                duration: connect_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "Unix socket handshake",
-            },
-            ProfilePhase {
-                name: "request checks",
-                duration: request_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "read, send, receive",
-            },
-            ProfilePhase {
-                name: "render diagnostics",
-                duration: render_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "terminal output",
-            },
-        ];
-        let mut recommendations: Vec<String> = Vec::new();
-        if request_time > connect_time * 4 {
-            recommendations.push(
-                "Socket request time dominates; profile the running check-server process next."
-                    .into(),
-            );
-        }
-        let summary = cstr!(
-            "{} Vue file(s), {} error(s), socket {}",
-            files.len(),
-            total_errors,
-            socket_path
-        );
-        let report = ProfileReport {
-            title: "check --socket",
-            summary: summary.as_str(),
-            total: total_time,
-            phases: &phases,
-            files: &[],
-            slow_threshold: Duration::from_millis(0),
-            throughput_bytes: None,
-            operations: None,
-            recommendations: &recommendations,
-        };
-        print_profile_report(&report);
-    }
-    if total_errors > 0 {
-        println!("  \x1b[31m{} error(s)\x1b[0m", total_errors);
-        std::process::exit(1);
-    }
-    println!("  \x1b[32mNo type errors found!\x1b[0m");
-}
+use collect::collect_check_files;
+#[cfg(unix)]
+pub(crate) use socket::run_with_socket;
 
 /// Run type checking directly with a materialized Corsa project.
 pub(crate) fn run_direct(args: &CheckArgs) {
@@ -256,19 +51,69 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         profiler.enable();
     }
 
-    let config = crate::config::load_config(None);
     crate::config::write_schema(None);
 
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let project_root = resolve_project_root(args.tsconfig.as_deref(), &cwd, &[]);
-    let tsconfig_path = resolve_tsconfig_path(args.tsconfig.as_deref(), &cwd, &project_root, &[]);
+    let loaded_config = if args.no_config {
+        crate::config::LoadedConfigWithFeatures {
+            config: crate::config::VizeConfig::default(),
+            source_path: None,
+            features: crate::config::ConfigFeatureFlags::default(),
+        }
+    } else {
+        crate::config::load_config_with_features_and_source(args.config.as_deref())
+    };
+    let legacy_vue2 = loaded_config.features.type_checker_legacy_vue2;
+    let config = loaded_config.config;
+    let config_dir = loaded_config
+        .source_path
+        .as_deref()
+        .and_then(Path::parent)
+        .unwrap_or(cwd.as_path());
+    if !config.type_checker.enabled {
+        eprintln!("[vize] Skipping check because typeChecker.enabled is false in vize.config.");
+        return;
+    }
+    let effective_tsconfig = args
+        .tsconfig
+        .clone()
+        .or_else(|| config.type_checker.tsconfig.as_ref().map(PathBuf::from));
+    let effective_corsa_path = args.corsa_path.as_ref().map(PathBuf::from).or_else(|| {
+        config
+            .type_checker
+            .runtime_path()
+            .map(|candidate| resolve_from_config_dir(config_dir, candidate))
+    });
+    if let Err(error) = validate_corsa_server_count(args.servers.or(config.type_checker.servers)) {
+        eprintln!("\x1b[31mError:\x1b[0m {}", error);
+        std::process::exit(2);
+    }
+    let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
+    let tsconfig_path =
+        resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
     let collect_start = Instant::now();
-    let files = if args.patterns.is_empty() {
+    let mut files = if args.patterns.is_empty() {
         collect_default_check_files(&project_root, tsconfig_path.as_deref())
     } else {
         collect_check_files(&args.patterns)
     };
     let collect_time = collect_start.elapsed();
+
+    // For an explicit subset, only the requested files' diagnostics are
+    // reported: ambient `.d.ts` and transitively-registered relative imports are
+    // pulled into the program solely so cross-file types resolve, not to surface
+    // diagnostics for files the user did not ask about. `None` reports every
+    // registered file (the default full-project run).
+    let reported_files: Option<FxHashSet<PathBuf>> = if args.patterns.is_empty() {
+        None
+    } else {
+        Some(
+            files
+                .iter()
+                .map(|path| path.canonicalize().unwrap_or_else(|_| path.clone()))
+                .collect(),
+        )
+    };
 
     if files.is_empty() {
         eprintln!(
@@ -278,12 +123,41 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         return;
     }
 
-    let project_root = resolve_project_root(args.tsconfig.as_deref(), &cwd, &files);
+    let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
     let tsconfig_path =
-        resolve_tsconfig_path(args.tsconfig.as_deref(), &cwd, &project_root, &files);
+        resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);
 
-    let mut virtual_ts_options = build_virtual_ts_options(&config, &cwd);
-    nuxt::detect_nuxt_auto_imports(&mut virtual_ts_options, &cwd);
+    // An explicit file subset (`vize check src/App.vue`) omits ambient
+    // declaration files, since nothing imports them; `declare global` types
+    // would then be missing and surface as false `TS2304` errors. Pull the
+    // tsconfig program's `.d.ts` files back in so global types stay in scope.
+    if !args.patterns.is_empty() && tsconfig_path.is_some() {
+        for path in collect_ambient_declaration_files(&project_root, tsconfig_path.as_deref()) {
+            if !files.contains(&path) {
+                files.push(path);
+            }
+        }
+        files.sort();
+        files.dedup();
+    }
+
+    // An explicit subset only registers the requested files, so a relative
+    // import (`import { Foo } from './types'`) cannot see its sibling's real
+    // types and degrades to `any`. Register the transitive closure of relative
+    // source imports — analogous to the ambient pull-in above — so cross-file
+    // types resolve precisely, the way tsc/vue-tsc load the reachable program.
+    if !args.patterns.is_empty() {
+        for path in super::imports::collect_transitive_local_imports(&files, &cwd) {
+            if !files.contains(&path) {
+                files.push(path);
+            }
+        }
+        files.sort();
+        files.dedup();
+    }
+
+    let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
+    nuxt::detect_nuxt_auto_imports(&mut virtual_ts_options, &project_root);
 
     if !args.quiet {
         eprintln!(
@@ -294,12 +168,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     }
 
     let gen_start = Instant::now();
-    let mut checker = match BatchTypeChecker::with_options(
+    let mut checker = match BatchTypeChecker::with_options_and_corsa_path(
         &project_root,
         BatchTypeCheckerOptions {
-            tsconfig_path,
+            tsconfig_path: tsconfig_path.clone(),
             virtual_ts_options,
         },
+        effective_corsa_path.as_deref(),
     ) {
         Ok(checker) => checker,
         Err(error) => {
@@ -307,6 +182,14 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             std::process::exit(1);
         }
     };
+    if legacy_vue2 {
+        checker.enable_legacy_vue2();
+    }
+    checker.set_virtual_ts_checks(
+        config.type_checker.check_props && !args.no_check_props,
+        config.type_checker.check_template_bindings && !args.no_check_template_bindings,
+        config.type_checker.check_emits && !args.no_check_emits,
+    );
 
     if let Err(error) = checker.scan_paths(&files) {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
@@ -352,9 +235,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
 
     let emit_start = Instant::now();
     let emitted_declarations = if args.declaration {
-        let declaration_dir =
-            resolve_declaration_dir(args.declaration_dir.as_deref(), &project_root);
-        match checker.emit_declarations(&DeclarationEmitOptions::new(declaration_dir.clone())) {
+        let declaration_options = resolve_declaration_emit_options(
+            args.declaration_dir.as_deref(),
+            tsconfig_path.as_deref(),
+            &project_root,
+        );
+        let declaration_dir = declaration_options.out_dir.clone();
+        match checker.emit_declarations(&declaration_options) {
             Ok(result) => Some((declaration_dir, result)),
             Err(error) => {
                 eprintln!("\x1b[31mError:\x1b[0m {}", error);
@@ -366,13 +253,41 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     let emit_time = emit_start.elapsed();
     let diagnostics_render_start = Instant::now();
-    let diagnostics = render_diagnostics(&result.diagnostics);
+    // Restrict diagnostics to the requested files for an explicit subset; the
+    // ambient/transitive files were registered only to resolve cross-file types.
+    let reported_raw: std::borrow::Cow<'_, [vize_canon::BatchDiagnostic]> = match &reported_files {
+        None => std::borrow::Cow::Borrowed(result.diagnostics.as_slice()),
+        Some(set) => std::borrow::Cow::Owned(
+            result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| {
+                    let canonical = diagnostic
+                        .file
+                        .canonicalize()
+                        .unwrap_or_else(|_| diagnostic.file.clone());
+                    set.contains(&canonical)
+                })
+                .cloned()
+                .collect(),
+        ),
+    };
+    let diagnostics = render_diagnostics(&reported_raw);
     let diagnostics_render_time = diagnostics_render_start.elapsed();
     let total_time = start.elapsed();
-    let total_errors = result.error_count();
+    let total_errors = reported_raw
+        .iter()
+        .filter(|diagnostic| diagnostic.severity == 1)
+        .count();
+    let total_warnings = reported_raw
+        .iter()
+        .filter(|diagnostic| diagnostic.severity == 2)
+        .count();
 
     if args.profile {
         let profiler = global_profiler();
+        let allocation_summary = allocation_snapshot();
+        let counter_summary = profiler.counter_summary();
         let operation_summary = profiler.summary();
         profiler.disable();
         let mut phases = vec![
@@ -454,6 +369,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             slow_threshold: Duration::from_millis(0),
             throughput_bytes: Some(virtual_bytes),
             operations: Some(&operation_summary),
+            counters: Some(&counter_summary),
+            allocations: Some(allocation_summary),
             recommendations: &recommendations,
         };
         print_profile_report(&report);
@@ -462,6 +379,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     if args.format == "json" {
         let mut files_json: Vec<JsonFileResult> = virtual_files
             .iter()
+            .filter(|file| is_reported(&reported_files, &file.original_path))
             .map(|file| {
                 let key = file.original_path.to_string_lossy().into_owned();
                 JsonFileResult {
@@ -472,6 +390,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             })
             .collect();
         files_json.sort_by(|left, right| left.file.cmp(&right.file));
+        let reported_file_count = files_json.len();
 
         let declarations = emitted_declarations.as_ref().map(|(_, result)| {
             result
@@ -484,10 +403,17 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         let json_output = JsonOutput {
             files: files_json,
             error_count: total_errors,
-            file_count: virtual_files.len(),
+            warning_count: total_warnings,
+            file_count: reported_file_count,
             declarations,
         };
-        println!("{}", serde_json::to_string_pretty(&json_output).unwrap());
+        match serde_json::to_string_pretty(&json_output) {
+            Ok(output) => println!("{output}"),
+            Err(error) => {
+                eprintln!("Failed to serialize check output: {error}");
+                std::process::exit(1);
+            }
+        }
         if total_errors > 0 {
             std::process::exit(1);
         }
@@ -549,6 +475,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     } else {
         println!("  \x1b[32mNo type errors found!\x1b[0m");
     }
+    if total_warnings > 0 {
+        println!("  \x1b[33m{} warning(s)\x1b[0m", total_warnings);
+    }
 
     if let Some((declaration_dir, emit_result)) = emitted_declarations {
         println!(
@@ -560,6 +489,25 @@ pub(crate) fn run_direct(args: &CheckArgs) {
 
     if total_errors > 0 {
         std::process::exit(1);
+    }
+    if let Some(max_warnings) = args.max_warnings
+        && total_warnings > max_warnings
+    {
+        eprintln!("\nToo many warnings ({total_warnings} > max {max_warnings})");
+        std::process::exit(1);
+    }
+}
+
+/// Whether a registered file's diagnostics should be reported. For an explicit
+/// subset (`reported` is `Some`), only the requested files are reported; ambient
+/// and transitively-registered files exist only to resolve cross-file types.
+fn is_reported(reported: &Option<FxHashSet<PathBuf>>, path: &Path) -> bool {
+    match reported {
+        None => true,
+        Some(set) => {
+            let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+            set.contains(&canonical)
+        }
     }
 }
 
@@ -618,9 +566,34 @@ fn render_diagnostics(
 
 fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
     let profile_dir = PathBuf::from("node_modules/.vize/check-profile");
-    if let Err(error) = fs::create_dir_all(&profile_dir) {
-        eprintln!("Failed to create profile directory: {}", error);
-        return;
+    if profile_dir.exists() {
+        match profile!(
+            "cli.check.profile_artifact.remove_dir_all",
+            fs::remove_dir_all(&profile_dir)
+        ) {
+            Ok(()) => global_profiler().record_fs_remove_dir_all(),
+            Err(error) => {
+                global_profiler().record_fs_remove_dir_all_failure();
+                eprintln!(
+                    "Failed to clean profile directory {}: {}",
+                    profile_dir.display(),
+                    error
+                );
+                return;
+            }
+        }
+    }
+
+    match profile!(
+        "cli.check.profile_artifact.create_dir_all",
+        fs::create_dir_all(&profile_dir)
+    ) {
+        Ok(()) => global_profiler().record_fs_create_dir_all(),
+        Err(error) => {
+            global_profiler().record_fs_create_dir_all_failure();
+            eprintln!("Failed to create profile directory: {}", error);
+            return;
+        }
     }
 
     for file in files {
@@ -631,8 +604,16 @@ fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
             .map(|name| cstr!("{name}.ts"))
             .unwrap_or_else(|| "unknown.ts".into());
         let target = profile_dir.join(file_name.as_str());
-        if let Err(error) = fs::write(&target, &file.content) {
-            eprintln!("Failed to write {}: {}", target.display(), error);
+        let bytes = file.content.len();
+        match profile!(
+            "cli.check.profile_artifact.write",
+            fs::write(&target, &file.content)
+        ) {
+            Ok(()) => global_profiler().record_fs_write(bytes),
+            Err(error) => {
+                global_profiler().record_fs_write_failure(bytes);
+                eprintln!("Failed to write {}: {}", target.display(), error);
+            }
         }
     }
 
@@ -644,29 +625,31 @@ fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
 
 fn build_virtual_ts_options(
     config: &crate::config::VizeConfig,
-    cwd: &Path,
+    config_dir: &Path,
 ) -> vize_canon::virtual_ts::VirtualTsOptions {
-    let globals_path = config
-        .check
-        .globals
-        .as_deref()
-        .map(PathBuf::from)
-        .map(|path| {
-            if path.is_absolute() {
-                path
-            } else {
-                cwd.join(path)
-            }
-        });
+    let mut template_globals = config
+        .global_types
+        .iter()
+        .map(
+            |(name, declaration)| vize_canon::virtual_ts::TemplateGlobal {
+                name: name.clone(),
+                type_annotation: declaration.type_annotation.clone(),
+                default_value: declaration.template_default_value(),
+            },
+        )
+        .collect::<Vec<_>>();
 
-    if let Some(ref globals_path) = globals_path {
+    let globals_path = config
+        .type_checker
+        .globals_file
+        .as_deref()
+        .map(|candidate| resolve_from_config_dir(config_dir, candidate));
+
+    if template_globals.is_empty()
+        && let Some(ref globals_path) = globals_path
+    {
         match parse_dts_globals(globals_path) {
-            Ok(template_globals) => {
-                return vize_canon::virtual_ts::VirtualTsOptions {
-                    template_globals,
-                    ..Default::default()
-                };
-            }
+            Ok(globals) => template_globals = globals,
             Err(error) => {
                 eprintln!(
                     "\x1b[33mWarning:\x1b[0m Failed to parse globals from {}: {}",
@@ -677,10 +660,31 @@ fn build_virtual_ts_options(
         }
     }
 
-    vize_canon::virtual_ts::VirtualTsOptions::default()
+    vize_canon::virtual_ts::VirtualTsOptions {
+        template_globals,
+        ..Default::default()
+    }
 }
 
-fn resolve_declaration_dir(declaration_dir: Option<&Path>, project_root: &Path) -> PathBuf {
+fn resolve_declaration_emit_options(
+    declaration_dir: Option<&Path>,
+    tsconfig_path: Option<&Path>,
+    project_root: &Path,
+) -> DeclarationEmitOptions {
+    let tsconfig_options = tsconfig_path
+        .map(load_tsconfig_declaration_options)
+        .unwrap_or_default();
+    let out_dir = resolve_declaration_dir(declaration_dir, &tsconfig_options, project_root);
+
+    DeclarationEmitOptions::new(out_dir)
+        .with_declaration_map(tsconfig_options.declaration_map.unwrap_or(false))
+}
+
+fn resolve_declaration_dir(
+    declaration_dir: Option<&Path>,
+    tsconfig_options: &TsconfigDeclarationOptions,
+    project_root: &Path,
+) -> PathBuf {
     declaration_dir
         .map(|path| {
             if path.is_absolute() {
@@ -689,6 +693,7 @@ fn resolve_declaration_dir(declaration_dir: Option<&Path>, project_root: &Path) 
                 project_root.join(path)
             }
         })
+        .or_else(|| tsconfig_options.output_dir().map(Path::to_path_buf))
         .unwrap_or_else(|| project_root.join("dist").join("types"))
 }
 
@@ -709,10 +714,8 @@ fn resolve_project_root(
             .unwrap_or_else(|| cwd.to_path_buf());
     }
 
-    for file in files {
-        if let Some(root) = find_nearest_tsconfig_dir(file) {
-            return root;
-        }
+    if let Some(root) = resolve_project_root_from_files(files) {
+        return root;
     }
 
     if let Some(root) = find_nearest_tsconfig_dir(cwd) {
@@ -737,6 +740,11 @@ fn resolve_tsconfig_path(
         return Some(tsconfig_path.canonicalize().unwrap_or(tsconfig_path));
     }
 
+    let candidate = project_root.join("tsconfig.json");
+    if candidate.exists() {
+        return Some(candidate);
+    }
+
     for file in files {
         let Some(root) = find_nearest_tsconfig_dir(file) else {
             continue;
@@ -747,8 +755,7 @@ fn resolve_tsconfig_path(
         }
     }
 
-    let candidate = project_root.join("tsconfig.json");
-    candidate.exists().then_some(candidate)
+    None
 }
 
 fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
@@ -768,140 +775,27 @@ fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
     None
 }
 
-#[allow(clippy::disallowed_types)]
-pub(crate) fn collect_check_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
-    let mut files = Vec::new();
-    let mut seen = FxHashSet::default();
+fn resolve_project_root_from_files(files: &[PathBuf]) -> Option<PathBuf> {
+    let common = common_file_parent(files)?;
+    find_nearest_tsconfig_dir(&common)
+}
 
-    for pattern in patterns {
-        let candidate = PathBuf::from(pattern);
-        if candidate.exists() {
-            if candidate.is_file() {
-                let candidate = normalize_input_path(&candidate);
-                if is_supported_check_file(&candidate) && seen.insert(candidate.clone()) {
-                    files.push(candidate);
-                }
-                continue;
-            }
-            if candidate.is_dir() {
-                collect_from_dir(&candidate, &mut files, &mut seen);
-                continue;
+fn common_file_parent(files: &[PathBuf]) -> Option<PathBuf> {
+    let mut common = files
+        .first()
+        .and_then(|path| path.parent())
+        .map(Path::to_path_buf)?;
+
+    for file in &files[1..] {
+        let parent = file.parent().unwrap_or(file.as_path());
+        while !parent.starts_with(&common) {
+            if !common.pop() {
+                return None;
             }
         }
-
-        let base_dir = base_dir_from_pattern(pattern);
-        collect_from_dir(base_dir.as_path(), &mut files, &mut seen);
     }
 
-    files.sort();
-    files
-}
-
-#[allow(clippy::disallowed_types)]
-pub(crate) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
-    let mut files = Vec::new();
-    let mut seen = FxHashSet::default();
-
-    for pattern in patterns {
-        let candidate = PathBuf::from(pattern);
-        if candidate.exists() {
-            if candidate.is_file() {
-                let candidate = normalize_input_path(&candidate);
-                if candidate
-                    .extension()
-                    .and_then(|extension| extension.to_str())
-                    == Some("vue")
-                    && seen.insert(candidate.clone())
-                {
-                    files.push(candidate);
-                }
-                continue;
-            }
-            if candidate.is_dir() {
-                collect_from_dir_filtered(&candidate, &mut files, &mut seen, true);
-                continue;
-            }
-        }
-
-        let base_dir = base_dir_from_pattern(pattern);
-        collect_from_dir_filtered(&base_dir, &mut files, &mut seen, true);
-    }
-
-    files.sort();
-    files
-}
-
-fn collect_from_dir(dir: &Path, files: &mut Vec<PathBuf>, seen: &mut FxHashSet<PathBuf>) {
-    collect_from_dir_filtered(dir, files, seen, false);
-}
-
-fn collect_from_dir_filtered(
-    dir: &Path,
-    files: &mut Vec<PathBuf>,
-    seen: &mut FxHashSet<PathBuf>,
-    vue_only: bool,
-) {
-    let skip_generated = should_skip_generated_for_root(dir);
-    let walker = WalkBuilder::new(dir)
-        .standard_filters(true)
-        .hidden(true)
-        .build_parallel();
-
-    let collected = std::sync::Mutex::new(Vec::<PathBuf>::new());
-    walker.run(|| {
-        let collected = &collected;
-        Box::new(move |entry| {
-            if let Ok(entry) = entry {
-                let path = entry.path();
-                if path.is_file()
-                    && is_supported_collect_file(path, vue_only)
-                    && (!skip_generated || !is_generated_path(path))
-                {
-                    if let Ok(mut collected) = collected.lock() {
-                        collected.push(path.to_path_buf());
-                    }
-                }
-            }
-            ignore::WalkState::Continue
-        })
-    });
-
-    let Ok(collected) = collected.into_inner() else {
-        return;
-    };
-    for path in collected {
-        let path = normalize_input_path(&path);
-        if seen.insert(path.clone()) {
-            files.push(path);
-        }
-    }
-}
-
-fn base_dir_from_pattern(pattern: &str) -> PathBuf {
-    let glob_start = pattern.find(['*', '?', '[', '{']).unwrap_or(pattern.len());
-    let prefix = &pattern[..glob_start];
-    let base = if prefix.is_empty() {
-        "."
-    } else if let Some(index) = prefix.rfind('/') {
-        &prefix[..index]
-    } else {
-        prefix
-    };
-    if base.is_empty() {
-        PathBuf::from(".")
-    } else {
-        PathBuf::from(base)
-    }
-}
-
-fn normalize_input_path(path: &Path) -> PathBuf {
-    path.canonicalize().unwrap_or_else(|_| path.to_path_buf())
-}
-
-fn should_skip_generated_for_root(root: &Path) -> bool {
-    !root
-        .components()
-        .any(|component| component.as_os_str().to_str() == Some("__agent_only"))
+    Some(common)
 }
 
 fn display_path(base: &Path, path: &Path) -> vize_carton::String {
@@ -910,34 +804,29 @@ fn display_path(base: &Path, path: &Path) -> vize_carton::String {
         .unwrap_or_else(|_| cstr!("{}", path.display()))
 }
 
-fn is_generated_path(path: &Path) -> bool {
-    path.components().any(|component| {
-        component
-            .as_os_str()
-            .to_str()
-            .is_some_and(|name| matches!(name, "__agent_only" | "target"))
-    })
-}
-
-fn is_supported_collect_file(path: &Path, vue_only: bool) -> bool {
-    if vue_only {
-        return path.extension().and_then(|extension| extension.to_str()) == Some("vue");
-    }
-    is_supported_check_file(path)
-}
-
-fn is_supported_check_file(path: &Path) -> bool {
-    if path
-        .file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts"))
-    {
-        return true;
+fn resolve_from_config_dir(config_dir: &Path, candidate: &str) -> PathBuf {
+    let path = Path::new(candidate);
+    if path.is_absolute() {
+        return path.to_path_buf();
     }
 
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts"))
+    config_dir.join(path)
+}
+
+fn validate_corsa_server_count(servers: Option<usize>) -> Result<(), String> {
+    let Some(servers) = servers else {
+        return Ok(());
+    };
+    if servers == 0 {
+        return Err("typeChecker.servers must be at least 1.".into());
+    }
+    if servers > 1 {
+        return Err(format!(
+            "typeChecker.servers={servers} is not supported by the direct Corsa project-session runner yet; use 1 or omit the option."
+        )
+        .into());
+    }
+    Ok(())
 }
 
 /// Parse a `.d.ts` file containing `ComponentCustomProperties` augmentation.
@@ -962,76 +851,177 @@ fn parse_dts_globals(
 #[cfg(test)]
 mod tests {
     use super::{
-        base_dir_from_pattern, collect_check_files, collect_vue_files, resolve_declaration_dir,
+        find_nearest_tsconfig_dir, resolve_declaration_dir, resolve_declaration_emit_options,
+        resolve_project_root, resolve_tsconfig_path, validate_corsa_server_count,
     };
-    use std::fs;
-    use std::path::{Path, PathBuf};
-    use vize_carton::cstr;
+    use crate::commands::check::tsconfig_inputs::TsconfigDeclarationOptions;
+    use std::{
+        path::{Path, PathBuf},
+        sync::atomic::{AtomicUsize, Ordering},
+    };
 
     fn unique_case_dir(name: &str) -> PathBuf {
-        static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
-            std::sync::atomic::AtomicUsize::new(0);
-        let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("__agent_only")
-            .join("tests")
-            .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
+        static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
+
+        let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("target")
+            .join("vize-tests")
+            .join(format!(
+                "check-runner-{name}-{}-{case_id}",
+                std::process::id()
+            ))
     }
 
     #[test]
-    fn base_dir_from_glob_patterns() {
+    fn resolves_monorepo_root_for_files_spanning_package_tsconfigs() {
+        let project_root = unique_case_dir("monorepo-root");
+        let _ = std::fs::remove_dir_all(&project_root);
+        let app_dir = project_root.join("packages/app");
+        let ui_dir = project_root.join("packages/ui");
+        std::fs::create_dir_all(app_dir.join("src")).unwrap();
+        std::fs::create_dir_all(ui_dir.join("src")).unwrap();
+        std::fs::write(project_root.join("tsconfig.json"), "{}").unwrap();
+        std::fs::write(app_dir.join("tsconfig.json"), "{}").unwrap();
+        std::fs::write(ui_dir.join("tsconfig.json"), "{}").unwrap();
+        let files = vec![app_dir.join("src/App.vue"), ui_dir.join("src/UiButton.vue")];
+        for file in &files {
+            std::fs::write(file, "<template />").unwrap();
+        }
+
+        let resolved_root = resolve_project_root(None, &project_root, &files);
+        let resolved_tsconfig = resolve_tsconfig_path(None, &project_root, &resolved_root, &files);
+
+        assert_eq!(resolved_root, project_root);
+        assert_eq!(resolved_tsconfig, Some(resolved_root.join("tsconfig.json")));
+
+        let _ = std::fs::remove_dir_all(&resolved_root);
+    }
+
+    #[test]
+    fn resolves_package_root_for_files_inside_one_package() {
+        let project_root = unique_case_dir("package-root");
+        let _ = std::fs::remove_dir_all(&project_root);
+        let app_dir = project_root.join("packages/app");
+        std::fs::create_dir_all(app_dir.join("src")).unwrap();
+        std::fs::write(project_root.join("tsconfig.json"), "{}").unwrap();
+        std::fs::write(app_dir.join("tsconfig.json"), "{}").unwrap();
+        let files = vec![app_dir.join("src/App.vue"), app_dir.join("src/main.ts")];
+        for file in &files {
+            std::fs::write(file, "").unwrap();
+        }
+
+        let resolved_root = resolve_project_root(None, &project_root, &files);
+        let resolved_tsconfig = resolve_tsconfig_path(None, &project_root, &resolved_root, &files);
+
+        assert_eq!(resolved_root, app_dir);
+        assert_eq!(resolved_tsconfig, Some(resolved_root.join("tsconfig.json")));
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn falls_back_to_cwd_resolution_when_files_have_no_tsconfig() {
+        let project_root = unique_case_dir("no-tsconfig");
+        let _ = std::fs::remove_dir_all(&project_root);
+        let src_dir = project_root.join("src");
+        std::fs::create_dir_all(&src_dir).unwrap();
+        let files = vec![src_dir.join("App.vue")];
+        std::fs::write(&files[0], "<template />").unwrap();
+
+        let resolved_root = resolve_project_root(None, &project_root, &files);
+        let resolved_tsconfig = resolve_tsconfig_path(None, &project_root, &resolved_root, &files);
+        let expected_root =
+            find_nearest_tsconfig_dir(&project_root).unwrap_or_else(|| project_root.clone());
+
+        assert_eq!(resolved_root, expected_root);
         assert_eq!(
-            base_dir_from_pattern("./src/**/*.vue"),
-            PathBuf::from("./src")
+            resolved_tsconfig,
+            resolved_root
+                .join("tsconfig.json")
+                .exists()
+                .then_some(resolved_root.join("tsconfig.json"))
         );
-        assert_eq!(base_dir_from_pattern("."), PathBuf::from("."));
-    }
 
-    #[test]
-    fn collect_check_files_includes_ts_and_vue_and_dts() {
-        let case_dir = unique_case_dir("collect-check");
-        let _ = fs::remove_dir_all(&case_dir);
-        fs::create_dir_all(case_dir.join("src")).unwrap();
-        fs::write(case_dir.join("src/App.vue"), "").unwrap();
-        fs::write(case_dir.join("src/main.ts"), "").unwrap();
-        fs::write(case_dir.join("src/env.d.ts"), "").unwrap();
-        fs::write(case_dir.join("src/skip.js"), "").unwrap();
-
-        let files = collect_check_files(&vec![case_dir.display().to_string()]);
-
-        assert_eq!(files.len(), 3);
-        assert!(files.iter().any(|path| path.ends_with("App.vue")));
-        assert!(files.iter().any(|path| path.ends_with("main.ts")));
-        assert!(files.iter().any(|path| path.ends_with("env.d.ts")));
-
-        let _ = fs::remove_dir_all(&case_dir);
-    }
-
-    #[test]
-    fn collect_vue_files_stays_vue_only() {
-        let case_dir = unique_case_dir("collect-vue");
-        let _ = fs::remove_dir_all(&case_dir);
-        fs::create_dir_all(case_dir.join("src")).unwrap();
-        fs::write(case_dir.join("src/App.vue"), "").unwrap();
-        fs::write(case_dir.join("src/main.ts"), "").unwrap();
-
-        let files = collect_vue_files(&vec![case_dir.display().to_string()]);
-
-        assert_eq!(files, vec![case_dir.join("src/App.vue")]);
-
-        let _ = fs::remove_dir_all(&case_dir);
+        let _ = std::fs::remove_dir_all(&project_root);
     }
 
     #[test]
     fn resolve_declaration_dir_defaults_to_dist_types() {
         let project_root = PathBuf::from("/workspace/project");
+        let tsconfig_options = TsconfigDeclarationOptions::default();
         assert_eq!(
-            resolve_declaration_dir(None, &project_root),
+            resolve_declaration_dir(None, &tsconfig_options, &project_root),
             project_root.join("dist").join("types")
         );
         assert_eq!(
-            resolve_declaration_dir(Some(Path::new("types")), &project_root),
+            resolve_declaration_dir(Some(Path::new("types")), &tsconfig_options, &project_root),
             project_root.join("types")
         );
+    }
+
+    #[test]
+    fn resolve_declaration_dir_uses_tsconfig_when_cli_dir_is_absent() {
+        let project_root = PathBuf::from("/workspace/project");
+        let tsconfig_options = TsconfigDeclarationOptions {
+            declaration_dir: Some(project_root.join("types")),
+            out_dir: Some(project_root.join("dist")),
+            declaration_map: Some(true),
+        };
+
+        assert_eq!(
+            resolve_declaration_dir(None, &tsconfig_options, &project_root),
+            project_root.join("types")
+        );
+        assert_eq!(
+            resolve_declaration_dir(Some(Path::new("custom")), &tsconfig_options, &project_root),
+            project_root.join("custom")
+        );
+
+        let out_dir_only = TsconfigDeclarationOptions {
+            declaration_dir: None,
+            out_dir: Some(project_root.join("dist")),
+            declaration_map: None,
+        };
+        assert_eq!(
+            resolve_declaration_dir(None, &out_dir_only, &project_root),
+            project_root.join("dist")
+        );
+    }
+
+    #[test]
+    fn resolve_declaration_emit_options_uses_tsconfig_declaration_map() {
+        let project_root = unique_case_dir("declaration-options");
+        let _ = std::fs::remove_dir_all(&project_root);
+        std::fs::create_dir_all(&project_root).unwrap();
+        std::fs::write(
+            project_root.join("tsconfig.json"),
+            r#"{
+  "compilerOptions": {
+    "declarationDir": "types",
+    "declarationMap": true
+  }
+}"#,
+        )
+        .unwrap();
+
+        let options = resolve_declaration_emit_options(
+            None,
+            Some(&project_root.join("tsconfig.json")),
+            &project_root,
+        );
+
+        assert_eq!(options.out_dir, project_root.join("types"));
+        assert!(options.declaration_map);
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn validates_unsupported_corsa_server_counts() {
+        assert!(validate_corsa_server_count(None).is_ok());
+        assert!(validate_corsa_server_count(Some(1)).is_ok());
+        assert!(validate_corsa_server_count(Some(0)).is_err());
+        assert!(validate_corsa_server_count(Some(2)).is_err());
     }
 }

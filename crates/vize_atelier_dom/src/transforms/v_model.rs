@@ -3,7 +3,7 @@
 //! Handles v-model on form elements: input, textarea, select.
 
 use vize_atelier_core::{DirectiveNode, ElementNode, RuntimeHelper};
-use vize_carton::{cstr, String};
+use vize_carton::{String, cstr};
 
 /// v-model modifier flags
 #[derive(Debug, Default, Clone)]
@@ -97,32 +97,32 @@ pub fn generate_model_props(
     let mut props = Vec::new();
 
     // Get expression
-    if let Some(ref exp) = dir.exp {
-        if let vize_atelier_core::ExpressionNode::Simple(simple) = exp {
-            let model_value = simple.content.clone();
+    if let Some(ref exp) = dir.exp
+        && let vize_atelier_core::ExpressionNode::Simple(simple) = exp
+    {
+        let model_value = simple.content.clone();
 
-            // Add value binding
-            props.push((String::from("value"), model_value.clone()));
+        // Add value binding
+        props.push((String::from("value"), model_value.clone()));
 
-            // Build event handler expression
-            let mut handler = cstr!("$event => (({model_value}) = $event.target.value)");
+        // Build event handler expression
+        let mut handler = cstr!("$event => (({model_value}) = $event.target.value)");
 
-            // Apply modifiers
-            if modifiers.trim {
-                handler = cstr!("$event => (({model_value}) = $event.target.value.trim())");
-            }
-            if modifiers.number {
-                handler = cstr!("$event => (({model_value}) = Number($event.target.value))");
-            }
-
-            // Add event handler
-            let event_name = if modifiers.lazy {
-                "onChange"
-            } else {
-                "onInput"
-            };
-            props.push((String::from(event_name), handler));
+        // Apply modifiers
+        if modifiers.trim {
+            handler = cstr!("$event => (({model_value}) = $event.target.value.trim())");
         }
+        if modifiers.number {
+            handler = cstr!("$event => (({model_value}) = Number($event.target.value))");
+        }
+
+        // Add event handler
+        let event_name = if modifiers.lazy {
+            "onChange"
+        } else {
+            "onInput"
+        };
+        props.push((String::from(event_name), handler));
     }
 
     props
@@ -130,7 +130,7 @@ pub fn generate_model_props(
 
 #[cfg(test)]
 mod tests {
-    use super::{generate_model_props, get_model_event, get_model_prop, VModelModifiers};
+    use super::{VModelModifiers, generate_model_props, get_model_event, get_model_prop};
 
     #[test]
     fn test_modifiers() {

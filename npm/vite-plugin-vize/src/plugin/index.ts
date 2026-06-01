@@ -1,32 +1,113 @@
-/**
- * Main Vize Vite plugin implementation.
- *
- * Contains the `vize()` factory function that creates the Vite plugin array.
- * Hook implementations are split across sub-modules:
- * - state.ts: VizePluginState type + compileAll batch compilation
- * - resolve.ts: resolveId hook + resolveVuePath
- * - load.ts: load + transform hooks
- * - hmr.ts: handleHotUpdate + generateBundle hooks
- * - compat.ts: vueCompatPlugin + postTransformPlugin
- */
+/** Main Vize Vite plugin implementation. */
 
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
-import fs from "node:fs";
 
-import type { VizeOptions, ConfigEnv } from "../types.js";
-import { createFilter } from "../utils/index.js";
-import { toBrowserImportPrefix } from "../virtual.js";
-import { isBuiltinDefine, createLogger } from "../transform.js";
-import { loadConfig, vizeConfigStore } from "../config.js";
-import { type VizePluginState, compileAll } from "./state.js";
-import { resolveIdHook } from "./resolve.js";
-import { loadHook, transformHook } from "./load.js";
-import { handleHotUpdateHook, handleGenerateBundleHook } from "./hmr.js";
-import { createVueCompatPlugin, createPostTransformPlugin } from "./compat.js";
+import type { VizeOptions, ConfigEnv, ResolvedVizeConfig } from "../types.ts";
+import { createFilter } from "../utils/index.ts";
+import { toBrowserImportPrefix } from "../virtual.ts";
+import { shouldApplyDefineInVirtualModule, createLogger } from "../transform.ts";
+import { loadConfig, resolveConfigExport, vizeConfigStore } from "../config.ts";
+import {
+  DEFAULT_PRECOMPILE_BATCH_SIZE,
+  DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
+  clearBuildCaches,
+  type VizePluginState,
+  compileAll,
+  normalizePrecompileBatchSize,
+} from "./state.ts";
+import { resolveIdHook } from "./resolve.ts";
+import { loadHook, transformHook } from "./load.ts";
+import {
+  handleHotUpdateHook,
+  handleGenerateBundleHook,
+  resolveComponentsCssFileName,
+} from "./hmr.ts";
+import {
+  createPostTransformPlugin,
+  createStylePostTransformPlugin,
+  createVueCompatPlugin,
+} from "./compat.ts";
+import { patchUnoCssBridge } from "./unocss.ts";
+import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
+import { installVirtualAssetMiddleware } from "./dev-middleware.ts";
+import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from "./vue-version.ts";
 
-export type { VizePluginState } from "./state.js";
+export type { VizePluginState } from "./state.ts";
+
+function aliasSortKey(find: string | RegExp): number {
+  return typeof find === "string" ? find.length : find.source.length;
+}
+
+function mergeSharedConfig(
+  baseConfig: ResolvedVizeConfig | null,
+  overrideConfig: ResolvedVizeConfig | null,
+): ResolvedVizeConfig | null {
+  if (!baseConfig) return overrideConfig;
+  if (!overrideConfig) return baseConfig;
+
+  return {
+    ...baseConfig,
+    ...overrideConfig,
+    compiler: {
+      ...baseConfig.compiler,
+      ...overrideConfig.compiler,
+    },
+    vite: {
+      ...baseConfig.vite,
+      ...overrideConfig.vite,
+    },
+    linter: {
+      ...baseConfig.linter,
+      ...overrideConfig.linter,
+    },
+    typeChecker: {
+      ...baseConfig.typeChecker,
+      ...overrideConfig.typeChecker,
+    },
+    formatter: {
+      ...baseConfig.formatter,
+      ...overrideConfig.formatter,
+    },
+    languageServer: {
+      ...baseConfig.languageServer,
+      ...overrideConfig.languageServer,
+    },
+    musea: {
+      ...baseConfig.musea,
+      ...overrideConfig.musea,
+    },
+    globalTypes: {
+      ...baseConfig.globalTypes,
+      ...overrideConfig.globalTypes,
+    },
+    entries: [...baseConfig.entries, ...overrideConfig.entries],
+  };
+}
+
+function shouldExtractCssForBuild(
+  state: Pick<VizePluginState, "extractCss" | "isProduction">,
+  context: { environment?: { name?: string } },
+): boolean {
+  if (!state.isProduction) {
+    return false;
+  }
+
+  const environmentName = context.environment?.name;
+  if (environmentName === "client" || environmentName === "browser") {
+    return true;
+  }
+  if (environmentName === "ssr" || environmentName === "server") {
+    return false;
+  }
+
+  return state.extractCss;
+}
 
 export function vize(options: VizeOptions = {}): Plugin[] {
+  if (isLegacyVueCompatibilityMode(options)) {
+    return [createLegacyVueCompatibilityPlugin(options)];
+  }
+
   const state: VizePluginState = {
     cache: new Map(),
     ssrCache: new Map(),
@@ -40,12 +121,14 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     server: null,
     filter: () => true,
     scanPatterns: null,
+    precompileBatchSize: DEFAULT_PRECOMPILE_BATCH_SIZE,
     ignorePatterns: [],
     mergedOptions: options,
     initialized: false,
     dynamicImportAliasRules: [],
     cssAliasRules: [],
     extractCss: false,
+    componentsCssFileName: "assets/vize-components.css",
     clientViteDefine: {},
     serverViteDefine: {},
     logger: createLogger(options.debug ?? false),
@@ -56,34 +139,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     enforce: "pre",
 
     config(userConfig, env) {
-      // Wrap custom generateScopedName to clean up virtual module filenames.
-      // Must be done here (not configResolved) because the resolved config is frozen.
-      // When Vize delegates CSS module processing to Vite, the virtual module ID
-      // (e.g., \0/abs/path/Comp.vue?vue&type=style&...module.scss) is passed as
-      // the "filename" parameter. Strip the \0 prefix and appended suffixes so
-      // that user-defined generateScopedName receives the real .vue file path.
-      const cssModules = userConfig.css?.modules;
-      if (cssModules && typeof cssModules.generateScopedName === "function") {
-        const origFn = cssModules.generateScopedName;
-        cssModules.generateScopedName = function (name: string, filename: string, css: string) {
-          let clean = filename;
-          // Vite's postcss-modules resolves the virtual module ID against root,
-          // producing paths like: /project/root/\0/abs/path/Comp.vue?...module.scss
-          // The \0 (NUL byte) may be in the middle, not at the start.
-          // Extract the real path after the NUL marker.
-          const nulIdx = clean.indexOf("\0");
-          if (nulIdx >= 0) {
-            clean = clean.slice(nulIdx + 1);
-          }
-          // Remove .module.{lang} and .{lang} suffixes appended by resolveId
-          clean = clean.replace(/\.module\.\w+$/, "").replace(/\.\w+$/, "");
-          // Extract just the file path (before query params)
-          if (clean.includes("?")) {
-            clean = clean.split("?")[0];
-          }
-          return origFn.call(this, name, clean, css);
-        };
-      }
+      patchCssModuleGenerateScopedName(userConfig);
 
       return {
         // Vue 3 ESM bundler build requires these compile-time feature flags.
@@ -113,11 +169,13 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       } else {
         state.clientViteBase = currentBase;
       }
-      state.extractCss = state.isProduction;
+      state.extractCss = state.isProduction && !isSsrBuild;
+      state.componentsCssFileName = resolveComponentsCssFileName(resolvedConfig.build.assetsDir);
 
-      // Capture custom Vite define values for applying to virtual modules.
-      // Vite's built-in define plugin may not process \0-prefixed virtual modules,
-      // so we apply replacements ourselves in the transform hook.
+      // Capture Vite define values for applying to virtual modules. Vite's
+      // built-in define plugin may not process \0-prefixed virtual modules, so
+      // the transform hook mirrors the environment-sensitive replacements that
+      // are safe to inline.
       // IMPORTANT: Nuxt shares the same plugin instance for client and server builds,
       // each calling configResolved with environment-specific defines. We must store
       // them separately to avoid the server's `document: "undefined"` leaking into
@@ -126,7 +184,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       const envDefine: Record<string, string> = {};
       if (resolvedConfig.define) {
         for (const [key, value] of Object.entries(resolvedConfig.define)) {
-          if (isBuiltinDefine(key)) continue;
+          if (!shouldApplyDefineInVirtualModule(key)) continue;
           if (typeof value === "string") {
             envDefine[key] = value;
           } else {
@@ -146,7 +204,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         isSsrBuild: !!resolvedConfig.build?.ssr,
       };
 
-      let fileConfig = null;
+      let fileConfig: ResolvedVizeConfig | null = null;
       if (options.configMode !== false) {
         try {
           fileConfig = await loadConfig(state.root, {
@@ -156,7 +214,6 @@ export function vize(options: VizeOptions = {}): Plugin[] {
           });
           if (fileConfig) {
             state.logger.log("Loaded config from vize.config file");
-            vizeConfigStore.set(state.root, fileConfig);
           }
         } catch (error) {
           state.logger.warn(
@@ -166,17 +223,35 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         }
       }
 
-      const viteConfig = fileConfig?.vite ?? {};
-      const compilerConfig = fileConfig?.compiler ?? {};
+      let inlineConfig: ResolvedVizeConfig | null = null;
+      if (options.config) {
+        try {
+          inlineConfig = await resolveConfigExport(options.config, configEnv);
+          state.logger.log("Loaded inline vize config from plugin options");
+        } catch (error) {
+          state.logger.warn("Failed to resolve inline vize config:", error);
+        }
+      }
+
+      const sharedConfig = mergeSharedConfig(fileConfig, inlineConfig);
+      if (sharedConfig) {
+        vizeConfigStore.set(state.root, sharedConfig);
+      }
+
+      const viteConfig = sharedConfig?.vite ?? {};
+      const compilerConfig = sharedConfig?.compiler ?? {};
 
       state.mergedOptions = {
         ...options,
         ssr: options.ssr ?? compilerConfig.ssr ?? false,
         sourceMap: options.sourceMap ?? compilerConfig.sourceMap,
         vapor: options.vapor ?? compilerConfig.vapor ?? false,
+        customRenderer: options.customRenderer ?? compilerConfig.customRenderer ?? false,
+        vueParserQuirks: options.vueParserQuirks ?? compilerConfig.vueParserQuirks ?? false,
         include: options.include ?? viteConfig.include,
         exclude: options.exclude ?? viteConfig.exclude,
         scanPatterns: options.scanPatterns ?? viteConfig.scanPatterns,
+        precompileBatchSize: options.precompileBatchSize ?? viteConfig.precompileBatchSize,
         ignorePatterns: options.ignorePatterns ?? viteConfig.ignorePatterns,
       };
 
@@ -196,70 +271,50 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       // Build CSS alias rules for @import resolution (use filesystem paths, not browser paths)
       state.cssAliasRules = [];
       for (const alias of resolvedConfig.resolve.alias) {
-        if (typeof alias.find !== "string" || typeof alias.replacement !== "string") {
+        if (
+          !(typeof alias.find === "string" || alias.find instanceof RegExp) ||
+          typeof alias.replacement !== "string"
+        ) {
           continue;
         }
-        state.cssAliasRules.push({ find: alias.find, replacement: alias.replacement });
+        state.cssAliasRules.push({
+          find: alias.find,
+          replacement: alias.replacement,
+        });
       }
       // Prefer longer alias keys first
-      state.cssAliasRules.sort((a, b) => b.find.length - a.find.length);
+      state.cssAliasRules.sort((a, b) => aliasSortKey(b.find) - aliasSortKey(a.find));
 
       state.filter = createFilter(state.mergedOptions.include, state.mergedOptions.exclude);
       state.scanPatterns = state.mergedOptions.scanPatterns ?? ["**/*.vue"];
+      state.precompileBatchSize = normalizePrecompileBatchSize(
+        state.mergedOptions.precompileBatchSize,
+      );
       state.ignorePatterns = state.mergedOptions.ignorePatterns ?? [
-        "node_modules/**",
-        "dist/**",
-        ".git/**",
+        ...DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
       ];
+      patchUnoCssBridge(
+        resolvedConfig.plugins as Array<{
+          name?: string;
+          transform?: Function;
+        }>,
+      );
       state.initialized = true;
     },
 
     configureServer(devServer: ViteDevServer) {
       state.server = devServer;
-
-      // Rewrite __x00__ URLs from virtual module dynamic imports.
-      // When compiled .vue files contain dynamic imports (e.g., template literal imports
-      // for SVGs), the browser resolves them relative to the virtual module URL which
-      // contains \0 (encoded as __x00__). Vite's plugin container short-circuits
-      // resolveId for \0-prefixed IDs, so we intercept at the middleware level and
-      // rewrite to /@fs/ so Vite serves the actual file.
-      devServer.middlewares.use((req, _res, next) => {
-        if (req.url && req.url.includes("__x00__")) {
-          const [urlPath, queryPart] = req.url.split("?");
-          // e.g., /@id/__x00__/Users/.../help.svg?import -> /@fs/Users/.../help.svg?import
-          let cleanedPath = urlPath.replace(/__x00__/g, "");
-          // After removing __x00__, /@id//Users/... has double slash -- normalize to /@fs/
-          cleanedPath = cleanedPath.replace(/^\/@id\/\//, "/@fs/");
-
-          // Do not rewrite vize virtual Vue modules (e.g. /@id/__x00__/.../App.vue.ts),
-          // they must go through plugin load() and are not real files on disk.
-          if (cleanedPath.startsWith("/@fs/")) {
-            const fsPath = cleanedPath.slice(4); // strip '/@fs'
-            if (
-              fsPath.startsWith("/") &&
-              fs.existsSync(fsPath) &&
-              fs.statSync(fsPath).isFile() &&
-              !fsPath.endsWith(".vue.ts")
-            ) {
-              const cleaned = queryPart ? `${cleanedPath}?${queryPart}` : cleanedPath;
-              if (cleaned !== req.url) {
-                state.logger.log(`middleware: rewriting ${req.url} -> ${cleaned}`);
-                req.url = cleaned;
-              }
-            }
-          }
-        }
-        next();
-      });
+      installVirtualAssetMiddleware(devServer, state);
     },
 
     async buildStart() {
-      if (!state.scanPatterns) {
+      if (!state.scanPatterns || state.scanPatterns.length === 0) {
         // Running in standalone rolldown context (e.g., ox-content OG image)
-        // where configResolved is not called. Skip pre-compilation.
+        // where configResolved is not called, or a framework integration has
+        // opted into on-demand compilation. Skip pre-compilation.
         return;
       }
-      await compileAll(state);
+      await compileAll({ ...state, extractCss: shouldExtractCssForBuild(state, this) });
       state.logger.log("Cache keys:", [...state.cache.keys()].slice(0, 3));
     },
 
@@ -279,10 +334,25 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       return handleHotUpdateHook(state, ctx);
     },
 
-    generateBundle() {
-      handleGenerateBundleHook(state, this.emitFile.bind(this));
+    generateBundle(_, bundle) {
+      handleGenerateBundleHook(
+        { ...state, extractCss: shouldExtractCssForBuild(state, this) },
+        this.emitFile.bind(this),
+        bundle,
+      );
+    },
+
+    closeBundle() {
+      if (state.server === null) {
+        clearBuildCaches(state);
+      }
     },
   };
 
-  return [createVueCompatPlugin(state), mainPlugin, createPostTransformPlugin(state)];
+  return [
+    createVueCompatPlugin(state),
+    mainPlugin,
+    createStylePostTransformPlugin(),
+    createPostTransformPlugin(state),
+  ];
 }

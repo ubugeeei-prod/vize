@@ -1,6 +1,6 @@
-use super::{errors::compact_error, CorsaTypeAwareSession, TypeProbe};
+use super::{CorsaTypeAwareSession, TypeProbe, errors::compact_error};
 use corsa::{api::TypeProbeOptions, runtime::block_on};
-use vize_carton::{profile, String, ToCompactString};
+use vize_carton::{String, ToCompactString, profile};
 
 impl CorsaTypeAwareSession {
     pub(in crate::linter) fn probe_type_at_offset(

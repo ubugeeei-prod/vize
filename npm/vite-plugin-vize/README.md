@@ -1,6 +1,6 @@
 # @vizejs/vite-plugin
 
-High-performance native Vite plugin for Vue SFC compilation powered by [Vize](https://github.com/ubugeeei/vize).
+High-performance native Vite plugin for Vue SFC compilation powered by [Vize](https://github.com/ubugeeei-prod/vize).
 
 ## Features
 
@@ -12,16 +12,13 @@ High-performance native Vite plugin for Vue SFC compilation powered by [Vize](ht
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the packages:
+
 ```bash
-# npm
-npm install @vizejs/vite-plugin vize
-
-# pnpm
-pnpm add @vizejs/vite-plugin vize
-
-# yarn
-yarn add @vizejs/vite-plugin vize
+vp install -D @vizejs/vite-plugin
 ```
+
+Add `vize` as a direct dependency only if your project imports shared config helpers from `"vize"` (see [Shared Config](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/guide/vite-plugin.md#shared-config)).
 
 ## Usage
 
@@ -39,6 +36,31 @@ export default defineConfig({
     }),
   ],
 });
+```
+
+### TypeScript
+
+Add `@vizejs/vite-plugin` to `compilerOptions.types` so TypeScript can resolve direct `.vue`
+imports without a project-local `env.d.ts` shim:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite/client", "@vizejs/vite-plugin"]
+  }
+}
+```
+
+This does not require adding `vize` as a direct project dependency.
+
+For Vite Plus projects, keep `vite-plus/client` and append `@vizejs/vite-plugin`:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite-plus/client", "@vizejs/vite-plugin"]
+  }
+}
 ```
 
 ### Shared config
@@ -77,6 +99,7 @@ vite {
 `@vizejs/vite-plugin` loads the same `vize.config.ts`, `vize.config.js`, `vize.config.mjs`,
 `vize.config.pkl`, and `vize.config.json` files as the `vize` npm CLI. Importing
 `defineConfig` from `@vizejs/vite-plugin` still works, but `vize` is the shared entry point.
+Install `@pkl-community/pkl` or provide a `pkl` binary on `PATH` when using `vize.config.pkl`.
 
 ### Nuxt
 
@@ -126,6 +149,13 @@ export default defineNuxtConfig({
 
 ```ts
 interface VizeNativeOptions {
+  /**
+   * Vue major version for the host project.
+   * Set to 0.11, 1, 2, or "legacy" to let the existing compiler plugin/loader handle SFCs.
+   * @default 3
+   */
+  vueVersion?: 0.11 | 1 | 2 | 3 | "legacy";
+
   /**
    * Files to include in compilation
    * @default /\.vue$/
@@ -182,6 +212,19 @@ interface VizeNativeOptions {
 }
 ```
 
+### Legacy Vue / Nuxt 2 compatibility
+
+Vize's native SFC compiler targets Vue 3 runtime output. In Vue 0.11, Vue 1, Vue 2,
+and Nuxt 2 projects, keep the existing host compiler in charge and set:
+
+```ts
+vize({ vueVersion: 2 });
+```
+
+Use `0.11`, `1`, `2`, or `"legacy"` for the same host-compiler compatibility mode. This makes the
+plugin non-invasive: it does not intercept `.vue` requests, does not expose the Vue 3 `vite:vue`
+compatibility API, and does not inject Vue 3 bundler feature flags.
+
 ## How It Works
 
 ### Pre-compilation at Startup
@@ -215,10 +258,10 @@ When a `.vue` file changes:
 
 Vize's native compiler is significantly faster than the official Vue compiler:
 
-| Benchmark (15,000 SFCs) | @vue/compiler-sfc | Vize  | Speedup  |
-| ----------------------- | ----------------- | ----- | -------- |
-| Single-threaded         | 10.43s            | 6.06s | **1.7x** |
-| Multi-threaded          | 3.45s             | 612ms | **5.6x** |
+| Benchmark (15,000 SFCs) | @vue/compiler-sfc | Vize  | Speedup   |
+| ----------------------- | ----------------- | ----- | --------- |
+| Single-threaded         | 9.35s             | 3.47s | **2.7x**  |
+| Multi-threaded          | 4.08s             | 353ms | **11.6x** |
 
 ## Comparison with vite-plugin-vize
 

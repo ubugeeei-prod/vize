@@ -5,13 +5,12 @@
 //! Note: The regex-based extraction functions are kept for tests but replaced by
 //! OXC-based parsing in production.
 
+use super::MacroCall;
 #[allow(dead_code)]
 use super::utils::{extract_type_args, find_call_paren, find_matching_paren};
-use super::MacroCall;
 use vize_carton::String;
 
-pub const DEFINE_PROPS: &str = "defineProps";
-pub const WITH_DEFAULTS: &str = "withDefaults";
+pub use vize_croquis::macros::{DEFINE_PROPS, WITH_DEFAULTS};
 
 /// Extract defineProps call from source
 #[allow(dead_code)]
@@ -30,18 +29,18 @@ pub fn extract_with_defaults(content: &str) -> Option<MacroCall> {
 fn extract_macro_call(content: &str, macro_name: &str) -> Option<MacroCall> {
     if let Some(start) = content.find(macro_name) {
         let after = &content[start..];
-        if let Some(paren_start) = find_call_paren(after) {
-            if let Some(paren_end) = find_matching_paren(&after[paren_start..]) {
-                let args = String::from(&after[paren_start + 1..paren_start + paren_end]);
-                let type_args = extract_type_args(&after[..paren_start]);
-                return Some(MacroCall {
-                    start,
-                    end: start + paren_start + paren_end + 1,
-                    args,
-                    type_args,
-                    binding_name: None,
-                });
-            }
+        if let Some(paren_start) = find_call_paren(after)
+            && let Some(paren_end) = find_matching_paren(&after[paren_start..])
+        {
+            let args = String::from(&after[paren_start + 1..paren_start + paren_end]);
+            let type_args = extract_type_args(&after[..paren_start]);
+            return Some(MacroCall {
+                start,
+                end: start + paren_start + paren_end + 1,
+                args,
+                type_args,
+                binding_name: None,
+            });
         }
     }
     None

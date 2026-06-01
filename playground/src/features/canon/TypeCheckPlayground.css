@@ -352,74 +352,76 @@
 
 .help-content .help-code {
   margin: 0.5rem 0;
-  padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
+  padding: 1rem 1.125rem;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 6px;
   overflow-x: auto;
   font-family: "JetBrains Mono", "Fira Code", monospace;
-  font-size: 0.8rem;
-  line-height: 1.5;
+  font-size: 0.8125rem;
+  line-height: 1.55;
 }
 
 .help-content .help-code code {
-  color: #a5d6ff;
+  color: var(--code-foreground);
   background: none;
   padding: 0;
 }
 
 .help-content .help-inline-code {
-  background: rgba(110, 118, 129, 0.3);
-  padding: 0.15rem 0.4rem;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  padding: 0.18rem 0.42rem;
   border-radius: 3px;
   font-family: "JetBrains Mono", "Fira Code", monospace;
   font-size: 0.85em;
-  color: #ff7b72;
+  color: var(--hl-keyword);
 }
 
 /* Syntax highlighting colors */
 .help-content .hl-keyword {
-  color: #ff7b72;
+  color: var(--hl-keyword);
 }
 
 .help-content .hl-vue-api {
-  color: #7ee787;
+  color: var(--hl-function);
 }
 
 .help-content .hl-string {
-  color: #a5d6ff;
+  color: var(--hl-string);
 }
 
 .help-content .hl-comment {
-  color: #8b949e;
+  color: var(--hl-comment);
   font-style: italic;
 }
 
 .help-content .hl-tag {
-  color: #7ee787;
+  color: var(--hl-tag);
 }
 
 .help-content .hl-directive {
-  color: #d2a8ff;
+  color: var(--hl-directive);
 }
 
 .help-content .hl-delimiter {
-  color: #ffa657;
+  color: var(--hl-delimiter);
 }
 
 .help-content .hl-type {
-  color: #79c0ff;
+  color: var(--hl-type);
 }
 
 .help-content .hl-number {
-  color: #79c0ff;
+  color: var(--hl-number);
 }
 
 .help-content .hl-property {
-  color: #79c0ff;
+  color: var(--hl-property);
 }
 
 .help-content .hl-value {
-  color: #a5d6ff;
+  color: var(--hl-value);
 }
 
 .severity-error .severity-icon {

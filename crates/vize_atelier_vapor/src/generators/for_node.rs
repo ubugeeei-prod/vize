@@ -2,7 +2,7 @@
 
 use super::block::GenerateContext;
 use crate::ir::{BlockIRNode, ForIRNode};
-use vize_carton::{cstr, String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 /// Generate for node code
 pub fn generate_for<F>(ctx: &mut GenerateContext, for_node: &ForIRNode<'_>, generate_block: F)

@@ -11,10 +11,10 @@
     clippy::disallowed_methods
 )]
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
-use vize_carton::append;
+use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
 use vize_carton::Bump;
-use vize_musea::{parse_art, transform_to_csf, transform_to_vue, ArtParseOptions};
+use vize_carton::append;
+use vize_musea::{ArtParseOptions, parse_art, transform_to_csf, transform_to_vue};
 
 // =============================================================================
 // Test Data

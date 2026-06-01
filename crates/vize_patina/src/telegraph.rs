@@ -1,7 +1,8 @@
-//! Telegraph - The message delivery system for lint results.
+//! Patina emitters built on Carton's Telegraph message fan-out.
 //!
-//! Telegraph provides an abstraction layer for transmitting lint results
-//! to various destinations: stdout, LSP, and potentially oxlint in the future.
+//! Patina keeps lint-specific formatting here while Carton owns the generic
+//! `Telegraph` and `Emitter` routing primitives. This lets other Vize crates
+//! reuse the delivery system without depending on Patina diagnostics.
 //!
 //! ## Name Origin
 //!
@@ -17,30 +18,38 @@
 //!                              |
 //!                              +-- TextEmitter  --> stdout (rich terminal)
 //!                              +-- JsonEmitter  --> JSON format
+//!                              +-- FormatEmitter --> ansi/plain/stylish/markdown/html/agent reports
 //!                              +-- LspEmitter   --> LSP diagnostics
 //!                              +-- OxlintBridge --> oxlint (future)
 //! ```
 
 #![allow(clippy::disallowed_macros)]
 
-use crate::diagnostic::{render_help, HelpRenderTarget, Severity};
+use crate::diagnostic::{HelpRenderTarget, Severity, render_help};
 use crate::linter::LintResult;
+use crate::output::{OutputFormat, format_results};
 use vize_carton::String;
 use vize_carton::ToCompactString;
+pub use vize_carton::telegraph::Emitter;
+use vize_carton::telegraph::Telegraph as CartonTelegraph;
 
-/// An emitter that can transmit lint diagnostics to a destination.
-///
-/// Implementations of this trait define how lint results are formatted
-/// and delivered to their target (stdout, LSP, files, etc.).
-pub trait Emitter: Send + Sync {
-    /// Emit diagnostics for a single file result
-    fn emit(&self, result: &LintResult, source: &str) -> String;
+/// A Patina lint result and its source text as a Telegraph message.
+#[derive(Debug, Clone)]
+pub struct LintTransmission {
+    /// Lint diagnostics for one file.
+    pub result: LintResult,
+    /// Source text for location-aware renderers.
+    pub source: String,
+}
 
-    /// Emit a summary of all lint results
-    fn emit_summary(&self, results: &[LintResult]) -> String;
-
-    /// Name of this emitter for identification
-    fn name(&self) -> &'static str;
+impl LintTransmission {
+    /// Create a lint transmission message.
+    pub fn new(result: LintResult, source: impl Into<String>) -> Self {
+        Self {
+            result,
+            source: source.into(),
+        }
+    }
 }
 
 /// Telegraph coordinates the delivery of lint results to emitters.
@@ -48,59 +57,73 @@ pub trait Emitter: Send + Sync {
 /// It acts as a dispatcher, routing diagnostics to the appropriate
 /// output channels based on configuration.
 pub struct Telegraph {
-    emitters: Vec<Box<dyn Emitter>>,
+    inner: CartonTelegraph<LintTransmission, String>,
 }
 
 impl Telegraph {
     /// Create a new Telegraph with no emitters
     pub fn new() -> Self {
         Self {
-            emitters: Vec::new(),
+            inner: CartonTelegraph::new(),
         }
     }
 
     /// Create Telegraph with the default text emitter
     pub fn with_text() -> Self {
         let mut telegraph = Self::new();
-        telegraph.add_emitter(Box::new(TextEmitter::default()));
+        telegraph.add_emitter(TextEmitter::default());
         telegraph
     }
 
     /// Create Telegraph with JSON emitter
     pub fn with_json() -> Self {
         let mut telegraph = Self::new();
-        telegraph.add_emitter(Box::new(JsonEmitter));
+        telegraph.add_emitter(JsonEmitter);
+        telegraph
+    }
+
+    /// Create Telegraph with a single output-format emitter.
+    pub fn with_format(format: OutputFormat) -> Self {
+        let mut telegraph = Self::new();
+        match format {
+            OutputFormat::Text => telegraph.add_emitter(TextEmitter::default()),
+            OutputFormat::Json => telegraph.add_emitter(JsonEmitter),
+            _ => telegraph.add_emitter(FormatEmitter::new(format)),
+        }
         telegraph
     }
 
     /// Add an emitter to the telegraph
-    pub fn add_emitter(&mut self, emitter: Box<dyn Emitter>) {
-        self.emitters.push(emitter);
+    pub fn add_emitter<E>(&mut self, emitter: E)
+    where
+        E: Emitter<LintTransmission, Output = String> + 'static,
+    {
+        self.inner.add_emitter(emitter);
+    }
+
+    /// Number of registered emitters.
+    pub fn len(&self) -> usize {
+        self.inner.len()
+    }
+
+    /// Whether no emitters are registered.
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
     }
 
     /// Transmit a single result through all emitters
     pub fn transmit(&self, result: &LintResult, source: &str) -> Vec<String> {
-        self.emitters
-            .iter()
-            .map(|e| e.emit(result, source))
-            .collect()
+        let transmission = LintTransmission::new(result.clone(), source.to_compact_string());
+        self.inner.transmit(&transmission)
     }
 
     /// Transmit multiple results through all emitters
     pub fn transmit_all(&self, results: &[(LintResult, String)]) -> Vec<String> {
-        self.emitters
+        let transmissions: Vec<_> = results
             .iter()
-            .map(|e| {
-                let mut output = String::default();
-                for (result, source) in results {
-                    output.push_str(&e.emit(result, source));
-                }
-                output.push_str(
-                    &e.emit_summary(&results.iter().map(|(r, _)| r.clone()).collect::<Vec<_>>()),
-                );
-                output
-            })
-            .collect()
+            .map(|(result, source)| LintTransmission::new(result.clone(), source.clone()))
+            .collect();
+        self.inner.transmit_all(&transmissions)
     }
 }
 
@@ -123,23 +146,17 @@ impl TextEmitter {
     }
 }
 
-impl Emitter for TextEmitter {
-    fn name(&self) -> &'static str {
-        "text"
-    }
-
-    fn emit(&self, result: &LintResult, source: &str) -> String {
-        use crate::output::format_results;
-        use crate::OutputFormat;
-
-        let files = vec![(result.filename.clone(), source.to_compact_string())];
-        format_results(std::slice::from_ref(result), &files, OutputFormat::Text)
-    }
-
-    fn emit_summary(&self, results: &[LintResult]) -> String {
-        let total_errors: usize = results.iter().map(|r| r.error_count).sum();
-        let total_warnings: usize = results.iter().map(|r| r.warning_count).sum();
-        let file_count = results.len();
+impl TextEmitter {
+    fn emit_summary(&self, transmissions: &[LintTransmission]) -> String {
+        let total_errors: usize = transmissions
+            .iter()
+            .map(|transmission| transmission.result.error_count)
+            .sum();
+        let total_warnings: usize = transmissions
+            .iter()
+            .map(|transmission| transmission.result.warning_count)
+            .sum();
+        let file_count = transmissions.len();
 
         if total_errors == 0 && total_warnings == 0 {
             return String::default();
@@ -158,26 +175,117 @@ impl Emitter for TextEmitter {
     }
 }
 
+impl Emitter<LintTransmission> for TextEmitter {
+    type Output = String;
+
+    fn name(&self) -> &'static str {
+        "text"
+    }
+
+    fn emit(&self, transmission: &LintTransmission) -> String {
+        let files = vec![(
+            transmission.result.filename.clone(),
+            transmission.source.clone(),
+        )];
+        format_results(
+            std::slice::from_ref(&transmission.result),
+            &files,
+            OutputFormat::Text,
+        )
+    }
+
+    fn emit_all(&self, transmissions: &[LintTransmission]) -> String {
+        let mut output = String::default();
+        for transmission in transmissions {
+            output.push_str(&self.emit(transmission));
+        }
+        output.push_str(&self.emit_summary(transmissions));
+        output
+    }
+}
+
 /// JSON emitter for machine-readable output
 pub struct JsonEmitter;
 
-impl Emitter for JsonEmitter {
+impl Emitter<LintTransmission> for JsonEmitter {
+    type Output = String;
+
     fn name(&self) -> &'static str {
         "json"
     }
 
-    fn emit(&self, result: &LintResult, _source: &str) -> String {
-        use crate::output::format_results;
-        use crate::OutputFormat;
-
-        let files: Vec<(String, String)> = vec![];
-        format_results(std::slice::from_ref(result), &files, OutputFormat::Json)
+    fn emit(&self, transmission: &LintTransmission) -> String {
+        let files = vec![(
+            transmission.result.filename.clone(),
+            transmission.source.clone(),
+        )];
+        format_results(
+            std::slice::from_ref(&transmission.result),
+            &files,
+            OutputFormat::Json,
+        )
     }
 
-    fn emit_summary(&self, _results: &[LintResult]) -> String {
-        // JSON format includes all data in emit(), no separate summary needed
-        String::default()
+    fn emit_all(&self, transmissions: &[LintTransmission]) -> String {
+        emit_format_all(transmissions, OutputFormat::Json)
     }
+}
+
+/// Generic output-format emitter for whole-report transforms.
+pub struct FormatEmitter {
+    format: OutputFormat,
+}
+
+impl FormatEmitter {
+    pub const fn new(format: OutputFormat) -> Self {
+        Self { format }
+    }
+
+    pub const fn format(&self) -> OutputFormat {
+        self.format
+    }
+}
+
+impl Emitter<LintTransmission> for FormatEmitter {
+    type Output = String;
+
+    fn name(&self) -> &'static str {
+        self.format.as_str()
+    }
+
+    fn emit(&self, transmission: &LintTransmission) -> String {
+        let files = vec![(
+            transmission.result.filename.clone(),
+            transmission.source.clone(),
+        )];
+        format_results(
+            std::slice::from_ref(&transmission.result),
+            &files,
+            self.format,
+        )
+    }
+
+    fn emit_all(&self, transmissions: &[LintTransmission]) -> String {
+        emit_format_all(transmissions, self.format)
+    }
+}
+
+fn emit_format_all(transmissions: &[LintTransmission], format: OutputFormat) -> String {
+    let lint_results: Vec<_> = transmissions
+        .iter()
+        .map(|transmission| transmission.result.clone())
+        .collect();
+    let sources: Vec<_> = transmissions
+        .iter()
+        .map(|transmission| {
+            (
+                transmission.result.filename.clone(),
+                transmission.source.clone(),
+            )
+        })
+        .collect();
+
+    format_results(&lint_results, &sources, format)
 }
 
 /// LSP emitter for Language Server Protocol diagnostics.
@@ -215,10 +323,13 @@ pub struct LspPosition {
 }
 
 impl LspEmitter {
-    /// Convert a LintResult to LSP diagnostics
+    /// Convert a LintResult to LSP diagnostics without source context.
     ///
-    /// Note: This performs a simple byte-offset to line/column conversion.
-    /// For accurate results, pass the source code to `to_lsp_diagnostics_with_source`.
+    /// This is a degraded variant that cannot resolve line/column from byte
+    /// offsets and therefore always reports `line: 0` with the raw byte offset
+    /// in `character`. Prefer [`Self::to_lsp_diagnostics_with_source`] whenever
+    /// the source text is available; the `Emitter<LintTransmission>` impl
+    /// already does so.
     pub fn to_lsp_diagnostics(result: &LintResult) -> Vec<LspDiagnostic> {
         result
             .diagnostics
@@ -319,20 +430,27 @@ fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
     (line, col)
 }
 
-impl Emitter for LspEmitter {
+impl Emitter<LintTransmission> for LspEmitter {
+    type Output = String;
+
     fn name(&self) -> &'static str {
         "lsp"
     }
 
-    fn emit(&self, result: &LintResult, _source: &str) -> String {
-        let diagnostics = Self::to_lsp_diagnostics(result);
+    fn emit(&self, transmission: &LintTransmission) -> String {
+        let diagnostics =
+            Self::to_lsp_diagnostics_with_source(&transmission.result, &transmission.source);
         serde_json::to_string_pretty(&diagnostics)
             .unwrap_or_default()
             .into()
     }
 
-    fn emit_summary(&self, _results: &[LintResult]) -> String {
-        String::default()
+    fn emit_all(&self, transmissions: &[LintTransmission]) -> String {
+        let mut output = String::default();
+        for transmission in transmissions {
+            output.push_str(&self.emit(transmission));
+        }
+        output
     }
 }
 
@@ -347,33 +465,59 @@ pub struct OxlintBridge {
 
 #[cfg(test)]
 mod tests {
-    use super::{offset_to_line_col, LintResult, LspEmitter, Telegraph};
+    use super::{FormatEmitter, LintResult, LspEmitter, Telegraph, offset_to_line_col};
     use crate::diagnostic::LintDiagnostic;
+    use crate::output::OutputFormat;
     use vize_carton::ToCompactString;
 
     #[test]
     fn test_telegraph_with_text() {
         let telegraph = Telegraph::with_text();
-        assert_eq!(telegraph.emitters.len(), 1);
+        assert_eq!(telegraph.len(), 1);
     }
 
     #[test]
     fn test_telegraph_with_json() {
         let telegraph = Telegraph::with_json();
-        assert_eq!(telegraph.emitters.len(), 1);
+        assert_eq!(telegraph.len(), 1);
+    }
+
+    #[test]
+    fn test_telegraph_with_format() {
+        let telegraph = Telegraph::with_format(OutputFormat::Markdown);
+        assert_eq!(telegraph.len(), 1);
+    }
+
+    #[test]
+    fn test_format_emitter_transmit_all_renders_single_report() {
+        let mut telegraph = Telegraph::new();
+        telegraph.add_emitter(Box::new(FormatEmitter::new(OutputFormat::Html)));
+        let result = LintResult {
+            filename: "test.vue".to_compact_string(),
+            diagnostics: vec![LintDiagnostic::warn(
+                "vue/no-v-html",
+                "Avoid raw HTML",
+                0,
+                3,
+            )],
+            error_count: 0,
+            warning_count: 1,
+        };
+        let outputs = telegraph.transmit_all(&[(result, "abc".to_compact_string())]);
+
+        assert_eq!(outputs.len(), 1);
+        assert_eq!(outputs[0].matches("<!doctype html>").count(), 1);
+        assert!(outputs[0].contains("docs/content/rules/vue.md"));
     }
 
     #[test]
     fn test_lsp_diagnostic_conversion() {
         let result = LintResult {
             filename: "test.vue".to_compact_string(),
-            diagnostics: vec![LintDiagnostic::error(
-                "vue/require-v-for-key",
-                "Missing key",
-                50,
-                70,
-            )
-            .with_help("Add :key attribute")],
+            diagnostics: vec![
+                LintDiagnostic::error("vue/require-v-for-key", "Missing key", 50, 70)
+                    .with_help("Add :key attribute"),
+            ],
             error_count: 1,
             warning_count: 0,
         };
@@ -402,6 +546,34 @@ mod tests {
         let lsp_diagnostics = LspEmitter::to_lsp_diagnostics_with_source(&result, source);
         assert_eq!(lsp_diagnostics.len(), 1);
         assert_eq!(lsp_diagnostics[0].range.start.line, 2); // 0-indexed, third line
+    }
+
+    #[test]
+    fn test_lsp_emitter_emit_uses_source_for_line_column() {
+        use super::{Emitter, LintTransmission};
+
+        let source = "line1\nline2\nline3 v-for=\"item in items\"";
+        let result = LintResult {
+            filename: "test.vue".to_compact_string(),
+            diagnostics: vec![LintDiagnostic::error(
+                "vue/require-v-for-key",
+                "Missing key",
+                18, // Start of "v-for" on the third line
+                44,
+            )],
+            error_count: 1,
+            warning_count: 0,
+        };
+        let transmission = LintTransmission::new(result, source);
+
+        let json = LspEmitter.emit(&transmission);
+        // The emitter must convert the byte offset to a real (line, column),
+        // not the degraded `line: 0` fallback of `to_lsp_diagnostics`.
+        assert!(
+            json.contains("\"line\": 2"),
+            "expected emit() to report line 2, got: {json}"
+        );
+        assert!(!json.contains("\"character\": 18"));
     }
 
     #[test]

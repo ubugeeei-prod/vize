@@ -2,7 +2,7 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, toDisplayString as _toDisplayString } from "vue"
+import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 const a = 1
 const b = 2
@@ -13,7 +13,10 @@ export default {
 
 
 return (_ctx, _cache) => {
-  return (_openBlock(), _createElementBlock("div", null, [ _createElementVNode("span", null, _toDisplayString(a)), _createElementVNode("span", null, _toDisplayString(b)) ]))
+  return (_openBlock(), _createElementBlock("div", null, [
+    _createElementVNode("span", null, _toDisplayString(a)),
+    _createElementVNode("span", null, _toDisplayString(b))
+  ]))
 }
 }
 

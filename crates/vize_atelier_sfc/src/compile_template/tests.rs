@@ -2,7 +2,7 @@
 
 use super::extraction::{extract_template_parts, extract_template_parts_full};
 use super::string_tracking::{
-    count_braces_outside_strings, count_braces_with_state, StringTrackState,
+    StringTrackState, count_braces_outside_strings, count_braces_with_state,
 };
 use super::vapor::{add_scope_id_to_template, transform_vapor_template_output};
 use crate::types::{BlockLocation, SfcTemplateBlock};

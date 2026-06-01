@@ -54,27 +54,69 @@ use vize_relief::ast::{ElementNode, ExpressionNode, InterpolationNode};
 /// Non-deterministic function/value patterns that cause hydration mismatch
 const HYDRATION_MISMATCH_PATTERNS: &[(&str, &str)] = &[
     // Random values
-    ("Math.random", "Random values differ between server and client. Use `useId()` for unique IDs"),
-    ("crypto.randomUUID", "Random UUIDs differ between server and client. Use `useId()` for unique IDs"),
-    ("crypto.getRandomValues", "Random values differ between server and client"),
-    ("Math.floor(Math.random", "Random values differ between server and client. Use `useId()` for unique IDs"),
-    ("uuid()", "Random UUIDs differ between server and client. Use `useId()` for unique IDs"),
-    ("nanoid()", "Random IDs differ between server and client. Use `useId()` for unique IDs"),
-
+    (
+        "Math.random",
+        "Random values differ between server and client. Use `useId()` for unique IDs",
+    ),
+    (
+        "crypto.randomUUID",
+        "Random UUIDs differ between server and client. Use `useId()` for unique IDs",
+    ),
+    (
+        "crypto.getRandomValues",
+        "Random values differ between server and client",
+    ),
+    (
+        "Math.floor(Math.random",
+        "Random values differ between server and client. Use `useId()` for unique IDs",
+    ),
+    (
+        "uuid()",
+        "Random UUIDs differ between server and client. Use `useId()` for unique IDs",
+    ),
+    (
+        "nanoid()",
+        "Random IDs differ between server and client. Use `useId()` for unique IDs",
+    ),
     // Date/Time
-    ("Date.now", "Current time differs between server and client. Consider using `<ClientOnly>` or a fixed timestamp"),
-    ("new Date()", "Current time differs between server and client. Consider using `<ClientOnly>` or a fixed timestamp"),
-    (".getTime()", "Time values may differ between server and client"),
-    (".toLocaleString()", "Locale formatting may differ between server and client environments"),
-    (".toLocaleDateString()", "Locale formatting may differ between server and client environments"),
-    (".toLocaleTimeString()", "Locale formatting may differ between server and client environments"),
-
+    (
+        "Date.now",
+        "Current time differs between server and client. Consider using `<ClientOnly>` or a fixed timestamp",
+    ),
+    (
+        "new Date()",
+        "Current time differs between server and client. Consider using `<ClientOnly>` or a fixed timestamp",
+    ),
+    (
+        ".getTime()",
+        "Time values may differ between server and client",
+    ),
+    (
+        ".toLocaleString()",
+        "Locale formatting may differ between server and client environments",
+    ),
+    (
+        ".toLocaleDateString()",
+        "Locale formatting may differ between server and client environments",
+    ),
+    (
+        ".toLocaleTimeString()",
+        "Locale formatting may differ between server and client environments",
+    ),
     // Performance timing
-    ("performance.now", "Performance timing differs between server and client"),
-
+    (
+        "performance.now",
+        "Performance timing differs between server and client",
+    ),
     // Environment-specific
-    ("process.env", "Environment variables may differ between server and client. Ensure they are consistent or use runtime config"),
-    ("import.meta.env", "Environment variables may differ between server and client. Ensure they are consistent or use runtime config"),
+    (
+        "process.env",
+        "Environment variables may differ between server and client. Ensure they are consistent or use runtime config",
+    ),
+    (
+        "import.meta.env",
+        "Environment variables may differ between server and client. Ensure they are consistent or use runtime config",
+    ),
 ];
 
 static META: RuleMeta = RuleMeta {

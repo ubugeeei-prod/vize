@@ -117,11 +117,25 @@ impl Rule for ValidVFor {
 
                 // Validate alias part (left side of in/of)
                 let (alias_part, source_part) = if has_in {
-                    let idx = trimmed.find(" in ").unwrap();
+                    if let Some(idx) = trimmed.find(" in ") {
+                        (&trimmed[..idx], &trimmed[idx + 4..])
+                    } else {
+                        ctx.error_with_help(
+                            ctx.t("vue/valid-v-for.invalid_syntax"),
+                            &directive.loc,
+                            ctx.t("vue/valid-v-for.help"),
+                        );
+                        return;
+                    }
+                } else if let Some(idx) = trimmed.find(" of ") {
                     (&trimmed[..idx], &trimmed[idx + 4..])
                 } else {
-                    let idx = trimmed.find(" of ").unwrap();
-                    (&trimmed[..idx], &trimmed[idx + 4..])
+                    ctx.error_with_help(
+                        ctx.t("vue/valid-v-for.invalid_syntax"),
+                        &directive.loc,
+                        ctx.t("vue/valid-v-for.help"),
+                    );
+                    return;
                 };
 
                 let alias = alias_part.trim();

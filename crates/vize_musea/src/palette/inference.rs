@@ -143,10 +143,10 @@ pub fn infer_control_from_values(
     }
 
     // For numbers, check if we should create a range
-    if base_type == ControlKind::Number {
-        if let Some(range) = infer_number_range(values) {
-            return (ControlKind::Range, Vec::new(), Some(range));
-        }
+    if base_type == ControlKind::Number
+        && let Some(range) = infer_number_range(values)
+    {
+        return (ControlKind::Range, Vec::new(), Some(range));
     }
 
     (base_type, Vec::new(), None)
@@ -159,10 +159,10 @@ fn collect_unique_strings(values: &[serde_json::Value]) -> Vec<String> {
     let mut result = Vec::new();
 
     for value in values {
-        if let serde_json::Value::String(s) = value {
-            if seen.insert(s.clone()) {
-                result.push(String::from(s.as_str()));
-            }
+        if let serde_json::Value::String(s) = value
+            && seen.insert(s.clone())
+        {
+            result.push(String::from(s.as_str()));
         }
     }
 
@@ -234,7 +234,7 @@ fn humanize_label(s: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        humanize_label, infer_control_from_values, infer_control_type, ControlKind, PaletteOptions,
+        ControlKind, PaletteOptions, humanize_label, infer_control_from_values, infer_control_type,
     };
 
     #[test]

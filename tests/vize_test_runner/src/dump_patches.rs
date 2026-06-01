@@ -2,7 +2,7 @@
 // Run with: cargo run -p vize_test_runner --bin dump_patches
 
 use std::path::PathBuf;
-use vize_test_runner::{compile, load_fixture, CompilerMode};
+use vize_test_runner::{CompilerMode, compile, load_fixture};
 
 fn main() {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));

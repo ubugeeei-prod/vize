@@ -13,7 +13,7 @@ use vize_carton::CompactString;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
-use super::formatting::{render_help, HelpRenderTarget};
+use super::formatting::{HelpRenderTarget, render_help};
 
 /// Lint diagnostic severity.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -127,7 +127,7 @@ impl Fix {
         let mut result = source.to_compact_string();
         // Apply edits in reverse order to preserve offsets
         let mut edits = self.edits.clone();
-        edits.sort_by(|a, b| b.start.cmp(&a.start));
+        edits.sort_by_key(|edit| std::cmp::Reverse(edit.start));
 
         for edit in edits {
             let start = edit.start as usize;

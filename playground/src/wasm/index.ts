@@ -55,14 +55,58 @@ export type {
   CrossFileStats,
   CrossFileResult,
   CrossFileInput,
+  InspectorSourceFile,
+  InspectorGraphNodeKind,
+  InspectorGraphNode,
+  InspectorGraphEdgeKind,
+  InspectorGraphEdge,
+  InspectorGraph,
+  InspectorDiffLineKind,
+  InspectorDiffLine,
+  InspectorDiffStats,
+  InspectorDiff,
   WasmModule,
 } from "./types";
 
-import type { WasmModule } from "./types";
+import type { LintPreset, LintRule, WasmModule } from "./types";
 import { createTransformAnalyzeSfc } from "./wasm-transform";
 
 let wasmModule: WasmModule | null = null;
 let loadPromise: Promise<WasmModule> | null = null;
+
+function normalizeLintPreset(value: string): LintPreset {
+  switch (value) {
+    case "happy-path":
+    case "happy_path":
+    case "happy":
+    case "default":
+    case "recommended":
+    case "GeneralRecommended":
+    case "generalRecommended":
+      return "general-recommended";
+    case "Essential":
+      return "essential";
+    case "Incremental":
+      return "incremental";
+    case "Opinionated":
+    case "Opnionated":
+    case "opnionated":
+    case "strict":
+    case "all":
+      return "opinionated";
+    case "Nuxt":
+      return "nuxt";
+    default:
+      return value as LintPreset;
+  }
+}
+
+function normalizeLintRules(rules: LintRule[]): LintRule[] {
+  return rules.map((rule) => ({
+    ...rule,
+    presets: rule.presets.map(normalizeLintPreset),
+  }));
+}
 
 export async function loadWasm(): Promise<WasmModule> {
   if (wasmModule) {
@@ -95,13 +139,15 @@ export async function loadWasm(): Promise<WasmModule> {
       artToCsf: wasm.artToCsf,
       lintTemplate: wasm.lintTemplate,
       lintSfc: wasm.lintSfc,
-      getLintRules: wasm.getLintRules,
+      getLintRules: () => normalizeLintRules(wasm.getLintRules()),
       getLocales: wasm.getLocales,
       formatSfc: wasm.formatSfc,
       formatTemplate: wasm.formatTemplate,
       formatScript: wasm.formatScript,
       typeCheck: wasm.typeCheck,
       getTypeCheckCapabilities: wasm.getTypeCheckCapabilities,
+      buildInspectorGraph: wasm.buildInspectorGraph,
+      buildInspectorDiff: wasm.buildInspectorDiff,
       Compiler: wasm.Compiler as unknown as WasmModule["Compiler"],
     };
     wasmModule = module;

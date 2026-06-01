@@ -4,7 +4,7 @@
 //! event handlers, and v-bind shorthand.
 
 use super::{
-    encoding::{is_ident_char, offset_to_line_col},
+    encoding::{is_ident_char, offset_to_line_col, utf16_len},
     expressions::tokenize_expression,
     types::{AbsoluteToken, TokenType},
 };
@@ -53,17 +53,26 @@ fn collect_directive_tokens(template: &str, base_line: u32, tokens: &mut Vec<Abs
         let mut pos = 0;
         while let Some(found) = template[pos..].find(directive) {
             let abs_pos = pos + found;
+            let directive_end = abs_pos + directive.len();
+            let is_directive_attr = is_attribute_start(template, abs_pos)
+                && is_attribute_name_boundary(template, directive_end);
+
+            if !is_directive_attr {
+                pos = directive_end;
+                continue;
+            }
+
             let (line, col) = offset_to_line_col(template, abs_pos);
 
             tokens.push(AbsoluteToken {
-                line: base_line + line - 1,
+                line: base_line + line,
                 start: col,
-                length: directive.len() as u32,
+                length: utf16_len(directive),
                 token_type: TokenType::Keyword as u32,
                 modifiers: 0,
             });
 
-            pos = abs_pos + directive.len();
+            pos = directive_end;
         }
     }
 }
@@ -97,20 +106,23 @@ fn collect_event_tokens(template: &str, base_line: u32, tokens: &mut Vec<Absolut
     let mut pos = 0;
     while let Some(start) = template[pos..].find('@') {
         let abs_start = pos + start;
-        let remaining = &template[abs_start + 1..];
+        if !is_attribute_start(template, abs_start) {
+            pos = abs_start + 1;
+            continue;
+        }
 
-        // Find the event name
-        let event_end = remaining
-            .find(|c: char| !c.is_ascii_alphanumeric() && c != '-' && c != ':' && c != '.')
-            .unwrap_or(remaining.len());
-
-        if event_end > 0 {
+        if let Some(token_end) = shorthand_name_end(
+            template,
+            abs_start,
+            |ch| ch.is_ascii_alphanumeric() || ch == '-' || ch == ':' || ch == '.',
+            true,
+        ) {
             let (line, col) = offset_to_line_col(template, abs_start);
 
             tokens.push(AbsoluteToken {
-                line: base_line + line - 1,
+                line: base_line + line,
                 start: col,
-                length: (event_end + 1) as u32, // +1 for @
+                length: utf16_len(&template[abs_start..token_end]),
                 token_type: TokenType::Event as u32,
                 modifiers: 0,
             });
@@ -133,27 +145,24 @@ fn collect_bind_tokens(template: &str, base_line: u32, tokens: &mut Vec<Absolute
             continue;
         }
 
-        // Check if it's in an attribute context (after a space or tag name)
-        if abs_start > 0 {
-            let before = template.as_bytes()[abs_start - 1];
-            if before == b' ' || before == b'\n' || before == b'\t' {
-                let remaining = &template[abs_start + 1..];
-                let prop_end = remaining
-                    .find(|c: char| !c.is_ascii_alphanumeric() && c != '-')
-                    .unwrap_or(remaining.len());
+        // Check if it's in an attribute context.
+        if is_attribute_start(template, abs_start)
+            && let Some(token_end) = shorthand_name_end(
+                template,
+                abs_start,
+                |ch| ch.is_ascii_alphanumeric() || ch == '-',
+                false,
+            )
+        {
+            let (line, col) = offset_to_line_col(template, abs_start);
 
-                if prop_end > 0 {
-                    let (line, col) = offset_to_line_col(template, abs_start);
-
-                    tokens.push(AbsoluteToken {
-                        line: base_line + line - 1,
-                        start: col,
-                        length: (prop_end + 1) as u32, // +1 for :
-                        token_type: TokenType::Property as u32,
-                        modifiers: 0,
-                    });
-                }
-            }
+            tokens.push(AbsoluteToken {
+                line: base_line + line,
+                start: col,
+                length: utf16_len(&template[abs_start..token_end]),
+                token_type: TokenType::Property as u32,
+                modifiers: 0,
+            });
         }
 
         pos = abs_start + 1;
@@ -173,20 +182,14 @@ pub(crate) fn collect_directive_expression_tokens(
         // Look for attribute patterns
         let attr_start = if bytes[pos] == b':' || bytes[pos] == b'@' {
             // Shorthand :prop or @event
-            if pos > 0
-                && (bytes[pos - 1] == b' ' || bytes[pos - 1] == b'\n' || bytes[pos - 1] == b'\t')
-            {
+            if is_attribute_start(template, pos) {
                 Some(pos)
             } else {
                 None
             }
         } else if pos + 2 < bytes.len() && bytes[pos] == b'v' && bytes[pos + 1] == b'-' {
             // v-* directive
-            if pos == 0
-                || bytes[pos - 1] == b' '
-                || bytes[pos - 1] == b'\n'
-                || bytes[pos - 1] == b'\t'
-            {
+            if is_attribute_start(template, pos) {
                 Some(pos)
             } else {
                 None
@@ -196,40 +199,222 @@ pub(crate) fn collect_directive_expression_tokens(
         };
 
         if let Some(start) = attr_start {
-            // Find the = and the quoted value
-            let remaining = &template[start..];
-            if let Some(eq_pos) = remaining.find('=') {
-                let after_eq = &remaining[eq_pos + 1..];
-                let after_eq_trimmed = after_eq.trim_start();
-                let skip_ws = after_eq.len() - after_eq_trimmed.len();
+            if let Some((arg_start, arg_end)) = dynamic_argument_value(template, start) {
+                let arg = &template[arg_start..arg_end];
+                tokenize_expression(arg, template, arg_start, base_line, tokens);
+            }
 
-                // Check for quote
-                if !after_eq_trimmed.is_empty() {
-                    let quote = after_eq_trimmed.as_bytes()[0];
-                    if quote == b'"' || quote == b'\'' {
-                        // Find closing quote
-                        let expr_start = eq_pos + 1 + skip_ws + 1;
-                        if let Some(end) = remaining[expr_start..].find(quote as char) {
-                            let expr = &remaining[expr_start..expr_start + end];
+            if let Some((expr_start, expr_end)) = attribute_value(template, start) {
+                let expr = &template[expr_start..expr_end];
+                tokenize_expression(expr, template, expr_start, base_line, tokens);
 
-                            // Tokenize the entire expression
-                            tokenize_expression(
-                                expr,
-                                template,
-                                start + expr_start,
-                                base_line,
-                                tokens,
-                            );
-
-                            pos = start + expr_start + end + 1;
-                            continue;
-                        }
-                    }
-                }
+                pos = expr_end + 1;
+                continue;
             }
         }
 
         pos += 1;
+    }
+}
+
+fn shorthand_name_end(
+    template: &str,
+    attr_start: usize,
+    is_plain_name_char: impl Fn(char) -> bool,
+    include_modifiers: bool,
+) -> Option<usize> {
+    let mut pos = attr_start + 1;
+    if pos >= template.len() {
+        return None;
+    }
+
+    if template[pos..].starts_with('[') {
+        pos = find_matching_square_bracket(template, pos)? + 1;
+        if include_modifiers {
+            pos = consume_modifier_suffix(template, pos);
+        }
+        return Some(pos);
+    }
+
+    let name_start = pos;
+    while pos < template.len() {
+        let ch = template[pos..].chars().next()?;
+        if !is_plain_name_char(ch) {
+            break;
+        }
+        pos += ch.len_utf8();
+    }
+
+    if pos == name_start { None } else { Some(pos) }
+}
+
+fn consume_modifier_suffix(template: &str, mut pos: usize) -> usize {
+    while pos < template.len() && template[pos..].starts_with('.') {
+        pos += 1;
+        while pos < template.len() {
+            let Some(ch) = template[pos..].chars().next() else {
+                break;
+            };
+            if !ch.is_ascii_alphanumeric() && ch != '-' && ch != '_' {
+                break;
+            }
+            pos += ch.len_utf8();
+        }
+    }
+    pos
+}
+
+fn dynamic_argument_value(template: &str, attr_start: usize) -> Option<(usize, usize)> {
+    let name_end = attribute_name_end(template, attr_start);
+    let search = &template[attr_start..name_end];
+    let bracket_offset = search.find('[')? + attr_start;
+    let bracket_end = find_matching_square_bracket(template, bracket_offset)?;
+    Some((bracket_offset + 1, bracket_end))
+}
+
+fn find_matching_square_bracket(template: &str, open_offset: usize) -> Option<usize> {
+    if !template[open_offset..].starts_with('[') {
+        return None;
+    }
+
+    let mut depth = 0i32;
+    let mut quote = None;
+    let mut prev = '\0';
+
+    for (relative, ch) in template[open_offset..].char_indices() {
+        if let Some(open_quote) = quote {
+            if ch == open_quote && prev != '\\' {
+                quote = None;
+            }
+            prev = ch;
+            continue;
+        }
+
+        match ch {
+            '"' | '\'' | '`' => quote = Some(ch),
+            '[' => depth += 1,
+            ']' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(open_offset + relative);
+                }
+            }
+            _ => {}
+        }
+        prev = ch;
+    }
+
+    None
+}
+
+fn is_attribute_start(template: &str, offset: usize) -> bool {
+    if offset >= template.len() || !template.is_char_boundary(offset) {
+        return false;
+    }
+
+    let Some(prev) = template[..offset].chars().next_back() else {
+        return false;
+    };
+    if !prev.is_ascii_whitespace() {
+        return false;
+    }
+
+    let Some(tag_start) = template[..offset].rfind('<') else {
+        return false;
+    };
+
+    let mut quote = None;
+    for ch in template[tag_start + 1..offset].chars() {
+        if let Some(open_quote) = quote {
+            if ch == open_quote {
+                quote = None;
+            }
+            continue;
+        }
+
+        match ch {
+            '"' | '\'' => quote = Some(ch),
+            '>' => return false,
+            _ => {}
+        }
+    }
+
+    if quote.is_some() {
+        return false;
+    }
+
+    let tag_body = template[tag_start + 1..offset].trim_start();
+    !tag_body.is_empty()
+        && !tag_body.starts_with('/')
+        && !tag_body.starts_with('!')
+        && !tag_body.starts_with('?')
+}
+
+fn is_attribute_name_boundary(template: &str, offset: usize) -> bool {
+    template[offset..].chars().next().is_none_or(|ch| {
+        matches!(ch, '=' | ':' | '.' | '/' | '>' | '"' | '\'') || ch.is_ascii_whitespace()
+    })
+}
+
+fn attribute_name_end(template: &str, start: usize) -> usize {
+    let mut end = start;
+    for (relative, ch) in template[start..].char_indices() {
+        if ch == '=' || ch == '/' || ch == '>' || ch.is_ascii_whitespace() {
+            break;
+        }
+        end = start + relative + ch.len_utf8();
+    }
+    end
+}
+
+fn attribute_value(template: &str, attr_start: usize) -> Option<(usize, usize)> {
+    let mut pos = attribute_name_end(template, attr_start);
+
+    while pos < template.len() {
+        let ch = template[pos..].chars().next()?;
+        if !ch.is_ascii_whitespace() {
+            break;
+        }
+        pos += ch.len_utf8();
+    }
+
+    if template[pos..].chars().next()? != '=' {
+        return None;
+    }
+    pos += 1;
+
+    while pos < template.len() {
+        let ch = template[pos..].chars().next()?;
+        if !ch.is_ascii_whitespace() {
+            break;
+        }
+        pos += ch.len_utf8();
+    }
+
+    let quote = template.as_bytes().get(pos).copied()?;
+    if quote == b'"' || quote == b'\'' {
+        let value_start = pos + 1;
+        let quote_char = quote as char;
+        let value_end = template[value_start..].find(quote_char)? + value_start;
+        return Some((value_start, value_end));
+    }
+
+    let value_start = pos;
+    while pos < template.len() {
+        let ch = template[pos..].chars().next()?;
+        if ch.is_ascii_whitespace()
+            || ch == '>'
+            || (ch == '/' && template[pos + ch.len_utf8()..].starts_with('>'))
+        {
+            break;
+        }
+        pos += ch.len_utf8();
+    }
+
+    if pos == value_start {
+        None
+    } else {
+        Some((value_start, pos))
     }
 }
 
@@ -239,6 +424,7 @@ pub(crate) fn collect_script_tokens(script: &str, base_line: u32, tokens: &mut V
 
     // Vue compiler macros (special highlighting)
     let compiler_macros = [
+        "defineArt",
         "defineProps",
         "defineEmits",
         "defineExpose",
@@ -280,9 +466,9 @@ pub(crate) fn collect_script_tokens(script: &str, base_line: u32, tokens: &mut V
                 let (line, col) = offset_to_line_col(script, abs_pos);
 
                 tokens.push(AbsoluteToken {
-                    line: base_line + line - 1,
+                    line: base_line + line,
                     start: col,
-                    length: macro_name.len() as u32,
+                    length: utf16_len(macro_name),
                     token_type: TokenType::Macro as u32,
                     modifiers: TokenModifier::encode(&[TokenModifier::DefaultLibrary]),
                 });
@@ -307,9 +493,9 @@ pub(crate) fn collect_script_tokens(script: &str, base_line: u32, tokens: &mut V
                 let (line, col) = offset_to_line_col(script, abs_pos);
 
                 tokens.push(AbsoluteToken {
-                    line: base_line + line - 1,
+                    line: base_line + line,
                     start: col,
-                    length: func.len() as u32,
+                    length: utf16_len(func),
                     token_type: TokenType::Function as u32,
                     modifiers: TokenModifier::encode(&[TokenModifier::DefaultLibrary]),
                 });

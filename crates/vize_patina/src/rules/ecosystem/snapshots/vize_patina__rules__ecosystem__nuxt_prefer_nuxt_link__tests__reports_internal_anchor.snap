@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "ecosystem/nuxt-prefer-nuxt-link",
+        severity: Warning,
+        message: "Use NuxtLink for internal links",
+        start: 3,
+        end: 19,
+        help: Some(
+            "Replace the anchor with `<NuxtLink to=\"...\">` so Nuxt can prefetch, route, and type-check the navigation target.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

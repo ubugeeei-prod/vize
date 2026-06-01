@@ -56,14 +56,12 @@
 //! ## Usage
 //!
 //! ```no_run
-//! #[tokio::main]
-//! async fn main() {
-//!     vize_maestro::serve().await.unwrap();
-//! }
+//! vize_maestro::serve_blocking().unwrap();
 //! ```
 
 pub mod document;
 pub mod ide;
+pub mod runtime;
 pub mod server;
 pub mod utils;
 pub mod virtual_code;
@@ -80,23 +78,17 @@ use tower_lsp::{LspService, Server};
 
 /// Initialize file-based logging to node_modules/.vize/lsp.log
 fn init_file_logging() {
-    use std::fs::{create_dir_all, OpenOptions};
+    use std::fs::{OpenOptions, create_dir_all};
     use std::sync::Once;
     use tracing_subscriber::fmt::writer::MakeWriterExt;
 
     static INIT: Once = Once::new();
 
     INIT.call_once(|| {
-        // Try to find node_modules/.vize directory
         let log_dir = std::env::current_dir()
             .ok()
             .map(|p| p.join("node_modules/.vize"))
-            .or_else(|| {
-                std::env::current_dir()
-                    .ok()
-                    .map(|p| p.join("__agent_only").join("vize"))
-            })
-            .unwrap_or_else(|| std::path::PathBuf::from(".").join("__agent_only/vize"));
+            .unwrap_or_else(|| std::path::PathBuf::from(".").join("node_modules/.vize"));
 
         let _ = create_dir_all(&log_dir);
 
@@ -127,8 +119,8 @@ pub async fn serve() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     tracing::info!("Starting vize_maestro LSP server");
 
-    let stdin = tokio::io::stdin();
-    let stdout = tokio::io::stdout();
+    let stdin = runtime::threaded_reader("vize-lsp-stdin", std::io::stdin())?;
+    let stdout = runtime::threaded_writer("vize-lsp-stdout", std::io::stdout())?;
 
     let (service, socket) = LspService::new(MaestroServer::new);
 
@@ -137,11 +129,16 @@ pub async fn serve() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Ok(())
 }
 
+/// Start the stdio LSP server on the current thread.
+pub fn serve_blocking() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    runtime::block_on(serve())
+}
+
 /// Start the LSP server on a TCP socket.
 ///
 /// This is useful for debugging and testing.
 pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    use tokio::net::TcpListener;
+    use std::net::TcpListener;
 
     tracing_subscriber::fmt()
         .with_writer(std::io::stderr)
@@ -150,19 +147,25 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
 
     tracing::info!("Starting vize_maestro LSP server on port {}", port);
 
-    #[allow(clippy::disallowed_macros)]
-    let addr = format!("127.0.0.1:{}", port);
-    let listener = TcpListener::bind(addr).await?;
+    let addr = vize_carton::cstr!("127.0.0.1:{port}");
+    let listener = TcpListener::bind(addr.as_str())?;
     tracing::info!("Listening on 127.0.0.1:{}", port);
 
-    let (stream, addr) = listener.accept().await?;
+    let (stream, addr) = runtime::accept_tcp("vize-lsp-tcp-accept", listener).await?;
     tracing::info!("Accepted connection from {}", addr);
 
-    let (read, write) = tokio::io::split(stream);
+    let _ = stream.set_nodelay(true);
+    let read = runtime::threaded_reader("vize-lsp-tcp-read", stream.try_clone()?)?;
+    let write = runtime::threaded_writer("vize-lsp-tcp-write", stream)?;
 
     let (service, socket) = LspService::new(MaestroServer::new);
 
     Server::new(read, write, socket).serve(service).await;
 
     Ok(())
+}
+
+/// Start the TCP LSP server on the current thread.
+pub fn serve_tcp_blocking(port: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    runtime::block_on(serve_tcp(port))
 }

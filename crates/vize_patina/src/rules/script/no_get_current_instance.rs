@@ -28,8 +28,8 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier};
 use oxc_ast_visit::{
-    walk::{walk_call_expression, walk_import_declaration},
     Visit,
+    walk::{walk_call_expression, walk_import_declaration},
 };
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType, Span};
@@ -78,29 +78,29 @@ struct NoGetCurrentInstanceVisitor<'result> {
 
 impl<'a> Visit<'a> for NoGetCurrentInstanceVisitor<'_> {
     fn visit_import_declaration(&mut self, it: &ImportDeclaration<'a>) {
-        if is_vue_module(it.source.value.as_str()) {
-            if let Some(specifiers) = &it.specifiers {
-                for specifier in specifiers {
-                    match specifier {
-                        ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
-                            if specifier.imported.name().as_str() != "getCurrentInstance" {
-                                continue;
-                            }
+        if is_vue_module(it.source.value.as_str())
+            && let Some(specifiers) = &it.specifiers
+        {
+            for specifier in specifiers {
+                match specifier {
+                    ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
+                        if specifier.imported.name().as_str() != "getCurrentInstance" {
+                            continue;
+                        }
 
-                            self.imported_aliases
-                                .insert(CompactString::new(specifier.local.name.as_str()));
-                            self.push_diagnostic(
+                        self.imported_aliases
+                            .insert(CompactString::new(specifier.local.name.as_str()));
+                        self.push_diagnostic(
                                 specifier.local.span,
                                 "getCurrentInstance import is not supported in Vapor-oriented components",
                                 "Remove getCurrentInstance() usage and replace instance access with explicit Composition API state such as useAttrs(), useSlots(), provide/inject, or template refs.",
                             );
-                        }
-                        ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
-                            self.namespace_aliases
-                                .insert(CompactString::new(specifier.local.name.as_str()));
-                        }
-                        ImportDeclarationSpecifier::ImportDefaultSpecifier(_) => {}
                     }
+                    ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                        self.namespace_aliases
+                            .insert(CompactString::new(specifier.local.name.as_str()));
+                    }
+                    ImportDeclarationSpecifier::ImportDefaultSpecifier(_) => {}
                 }
             }
         }

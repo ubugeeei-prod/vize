@@ -8,7 +8,7 @@ use crate::ast::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropN
 use super::super::{
     context::CodegenContext,
     helpers::{camelize, capitalize_first, escape_js_string, is_valid_js_identifier},
-    props::{generate_directive_prop_with_static, is_supported_directive},
+    props::{StaticMerge, generate_directive_prop_with_static, is_supported_directive},
 };
 use super::generate_if_branch_key;
 use vize_carton::FxHashSet;
@@ -34,12 +34,11 @@ pub(super) fn should_skip_prop_for_if(
             false
         }
         PropNode::Directive(dir) => {
-            if dir.name == "bind" {
-                if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                    if arg.content == "key" {
-                        return true;
-                    }
-                }
+            if dir.name == "bind"
+                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                && arg.content == "key"
+            {
+                return true;
             }
             // Skip v-if/v-else-if/v-else directives
             if matches!(dir.name.as_str(), "if" | "else-if" | "else") {
@@ -50,37 +49,19 @@ pub(super) fn should_skip_prop_for_if(
     }
 }
 
-/// Extract static class and style values from element props.
-pub(super) fn extract_static_class_style<'a>(
-    el: &'a ElementNode<'_>,
-) -> (Option<&'a str>, Option<&'a str>) {
-    let mut static_class = None;
-    let mut static_style = None;
-    for prop in el.props.iter() {
-        if let PropNode::Attribute(attr) = prop {
-            if attr.name == "class" {
-                if let Some(val) = &attr.value {
-                    static_class = Some(val.content.as_str());
-                }
-            } else if attr.name == "style" {
-                if let Some(val) = &attr.value {
-                    static_style = Some(val.content.as_str());
-                }
-            }
-        }
-    }
-    (static_class, static_style)
+/// Extract static class/style values and their source ordering from props.
+pub(super) fn extract_static_class_style<'a>(el: &'a ElementNode<'_>) -> StaticMerge<'a> {
+    StaticMerge::from_props(&el.props)
 }
 
 /// Check if element has dynamic `:class` binding.
 pub(super) fn has_dynamic_class(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p {
-            if dir.name == "bind" {
-                if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                    return arg.content == "class";
-                }
-            }
+        if let PropNode::Directive(dir) = p
+            && dir.name == "bind"
+            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+        {
+            return arg.content == "class";
         }
         false
     })
@@ -89,12 +70,11 @@ pub(super) fn has_dynamic_class(el: &ElementNode<'_>) -> bool {
 /// Check if element has dynamic `:style` binding.
 pub(super) fn has_dynamic_style(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p {
-            if dir.name == "bind" {
-                if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                    return arg.content == "style";
-                }
-            }
+        if let PropNode::Directive(dir) = p
+            && dir.name == "bind"
+            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+        {
+            return arg.content == "style";
         }
         false
     })
@@ -104,11 +84,39 @@ pub(super) fn has_dynamic_style(el: &ElementNode<'_>) -> bool {
 pub(super) fn generate_single_prop_for_if(
     ctx: &mut CodegenContext,
     prop: &PropNode<'_>,
-    static_class: Option<&str>,
-    static_style: Option<&str>,
+    static_merge: StaticMerge<'_>,
 ) {
     match prop {
         PropNode::Attribute(attr) => {
+            let ref_value = if attr.name == "ref" && ctx.options.inline {
+                attr.value.as_ref()
+            } else {
+                None
+            };
+            let ref_binding_type = ref_value.and_then(|v| {
+                ctx.options
+                    .binding_metadata
+                    .as_ref()
+                    .and_then(|m| m.bindings.get(v.content.as_str()).copied())
+            });
+            let needs_ref_key = matches!(
+                ref_binding_type,
+                Some(
+                    crate::options::BindingType::SetupLet
+                        | crate::options::BindingType::SetupRef
+                        | crate::options::BindingType::SetupMaybeRef
+                )
+            );
+
+            if let (true, Some(ref_value)) = (needs_ref_key, ref_value) {
+                let ref_name = &ref_value.content;
+                ctx.push("ref_key: \"");
+                ctx.push(ref_name);
+                ctx.push("\", ref: ");
+                ctx.push(ref_name);
+                return;
+            }
+
             let needs_quotes = !is_valid_js_identifier(&attr.name);
             if needs_quotes {
                 ctx.push("\"");
@@ -119,15 +127,19 @@ pub(super) fn generate_single_prop_for_if(
             }
             ctx.push(": ");
             if let Some(value) = &attr.value {
-                ctx.push("\"");
-                ctx.push(&escape_js_string(value.content.as_str()));
-                ctx.push("\"");
+                if ref_binding_type.is_some() {
+                    ctx.push(&value.content);
+                } else {
+                    ctx.push("\"");
+                    ctx.push(&escape_js_string(value.content.as_str()));
+                    ctx.push("\"");
+                }
             } else {
                 ctx.push("\"\"");
             }
         }
         PropNode::Directive(dir) => {
-            generate_directive_prop_with_static(ctx, dir, static_class, static_style);
+            generate_directive_prop_with_static(ctx, dir, static_merge);
         }
     }
 }
@@ -139,18 +151,17 @@ pub(super) fn generate_if_branch_props_object(
     el: &ElementNode<'_>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
-    static_class: Option<&str>,
-    static_style: Option<&str>,
+    static_merge: StaticMerge<'_>,
     has_dynamic_class: bool,
     has_dynamic_style: bool,
 ) {
     // Check if there are other props besides key (skip excluded ones)
     let has_other_props = el.props.iter().any(|p| {
         // Skip unsupported directives (v-slot, v-tooltip, custom directives, etc.)
-        if let PropNode::Directive(dir) = p {
-            if !is_supported_directive(dir) {
-                return false;
-            }
+        if let PropNode::Directive(dir) = p
+            && !is_supported_directive(dir)
+        {
+            return false;
         }
         !should_skip_prop_for_if(p, has_dynamic_class, has_dynamic_style)
             && !is_vbind_spread_prop(p)
@@ -183,10 +194,10 @@ pub(super) fn generate_if_branch_props_object(
 
     for prop in el.props.iter() {
         // Skip unsupported directives (v-slot, v-tooltip, custom directives, etc.)
-        if let PropNode::Directive(dir) = prop {
-            if !is_supported_directive(dir) {
-                continue;
-            }
+        if let PropNode::Directive(dir) = prop
+            && !is_supported_directive(dir)
+        {
+            continue;
         }
         if should_skip_prop_for_if(prop, has_dynamic_class, has_dynamic_style) {
             continue;
@@ -197,18 +208,16 @@ pub(super) fn generate_if_branch_props_object(
         if is_von_spread_prop(prop) {
             continue;
         }
-        if let PropNode::Directive(dir) = prop {
-            if dir.name == "on" {
-                if let Some(key) = get_static_event_key(dir) {
-                    if !seen_events.insert(key) {
-                        continue;
-                    }
-                }
-            }
+        if let PropNode::Directive(dir) = prop
+            && dir.name == "on"
+            && let Some(key) = get_static_event_key(dir)
+            && !seen_events.insert(key)
+        {
+            continue;
         }
         ctx.push(",");
         ctx.newline();
-        generate_single_prop_for_if(ctx, prop, static_class, static_style);
+        generate_single_prop_for_if(ctx, prop, static_merge);
     }
 
     // Add scope_id for scoped CSS
@@ -273,10 +282,8 @@ fn get_static_event_key(dir: &DirectiveNode<'_>) -> Option<String> {
             "capture" | "once" | "passive" => {
                 event_option_modifiers.push(mod_name);
             }
-            "left" | "right" => {
-                if !is_keyboard_event {
-                    system_modifiers.push(mod_name);
-                }
+            "left" | "right" if !is_keyboard_event => {
+                system_modifiers.push(mod_name);
             }
             "middle" => {
                 system_modifiers.push(mod_name);

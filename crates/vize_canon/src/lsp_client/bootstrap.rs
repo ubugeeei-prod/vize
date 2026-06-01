@@ -1,10 +1,10 @@
 use super::{
+    CorsaProjectClient,
     paths::{
         corsa_search_roots, find_corsa_in_common_locations, find_corsa_in_path,
         find_corsa_in_search_roots, normalize_corsa_path,
     },
     session::spawn_project_session,
-    CorsaProjectClient,
 };
 use std::path::{Path, PathBuf};
 use vize_carton::String;

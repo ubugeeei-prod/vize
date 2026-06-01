@@ -26,6 +26,14 @@ impl HoverService {
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let template = virtual_docs.template.as_ref()?;
 
+        if crate::utils::is_standalone_html_path(ctx.uri.path()) {
+            return template
+                .source_map
+                .to_generated(sfc_offset as u32)
+                .map(|o| o as usize)
+                .or(Some(sfc_offset));
+        }
+
         // Get template block start offset in SFC
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: ctx.uri.path().to_string().into(),
@@ -59,6 +67,13 @@ impl HoverService {
     ) -> Option<usize> {
         let virtual_docs = ctx.virtual_docs.as_ref()?;
 
+        if ctx.uri.path().ends_with(".art.vue")
+            && let Some(ref script_setup_doc) = virtual_docs.script_setup
+            && let Some(offset) = script_setup_doc.source_map.to_generated(sfc_offset as u32)
+        {
+            return Some(offset as usize);
+        }
+
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: ctx.uri.path().to_string().into(),
             ..Default::default()
@@ -67,33 +82,35 @@ impl HoverService {
         let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
 
         // Try script setup first
-        if let Some(ref script_setup) = descriptor.script_setup {
-            if sfc_offset >= script_setup.loc.start && sfc_offset <= script_setup.loc.end {
-                let relative_offset = sfc_offset - script_setup.loc.start;
-                if let Some(ref script_setup_doc) = virtual_docs.script_setup {
-                    return script_setup_doc
-                        .source_map
-                        .to_generated(relative_offset as u32)
-                        .map(|o| o as usize)
-                        .or(Some(relative_offset));
-                }
-                return Some(relative_offset);
+        if let Some(ref script_setup) = descriptor.script_setup
+            && sfc_offset >= script_setup.loc.start
+            && sfc_offset <= script_setup.loc.end
+        {
+            let relative_offset = sfc_offset - script_setup.loc.start;
+            if let Some(ref script_setup_doc) = virtual_docs.script_setup {
+                return script_setup_doc
+                    .source_map
+                    .to_generated(relative_offset as u32)
+                    .map(|o| o as usize)
+                    .or(Some(relative_offset));
             }
+            return Some(relative_offset);
         }
 
         // Try regular script
-        if let Some(ref script) = descriptor.script {
-            if sfc_offset >= script.loc.start && sfc_offset <= script.loc.end {
-                let relative_offset = sfc_offset - script.loc.start;
-                if let Some(ref script_doc) = virtual_docs.script {
-                    return script_doc
-                        .source_map
-                        .to_generated(relative_offset as u32)
-                        .map(|o| o as usize)
-                        .or(Some(relative_offset));
-                }
-                return Some(relative_offset);
+        if let Some(ref script) = descriptor.script
+            && sfc_offset >= script.loc.start
+            && sfc_offset <= script.loc.end
+        {
+            let relative_offset = sfc_offset - script.loc.start;
+            if let Some(ref script_doc) = virtual_docs.script {
+                return script_doc
+                    .source_map
+                    .to_generated(relative_offset as u32)
+                    .map(|o| o as usize)
+                    .or(Some(relative_offset));
             }
+            return Some(relative_offset);
         }
 
         None
@@ -119,36 +136,36 @@ impl HoverService {
         }
 
         // Try to get type information from Corsa via virtual TypeScript.
-        if let Some(bridge) = corsa_bridge {
-            if let Some(ref virtual_docs) = ctx.virtual_docs {
-                if let Some(ref template) = virtual_docs.template {
-                    // Convert the art variant relative offset through the template source map
-                    let relative_offset = info.relative_offset as u32;
-                    let vts_offset = template
-                        .source_map
-                        .to_generated(relative_offset)
-                        .map(|o| o as usize)
-                        .unwrap_or(relative_offset as usize);
+        if let Some(bridge) = corsa_bridge
+            && let Some(ref virtual_docs) = ctx.virtual_docs
+            && let Some(template) = virtual_docs.art_template(info.variant_index)
+        {
+            // Convert the art variant relative offset through the template source map
+            let relative_offset = info.relative_offset as u32;
+            let vts_offset = template
+                .source_map
+                .to_generated(relative_offset)
+                .map(|o| o as usize)
+                .unwrap_or(relative_offset as usize);
 
-                    let (line, character) =
-                        crate::ide::offset_to_position(&template.content, vts_offset);
+            let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
 
-                    // Open/update virtual document
-                    if bridge.is_initialized() {
-                        #[allow(clippy::disallowed_macros)]
-                        let vdoc_uri = format!("{}.template.ts", ctx.uri.path());
-                        let Ok(uri) = bridge
-                            .open_or_update_virtual_document(&vdoc_uri, &template.content)
-                            .await
-                        else {
-                            return Self::hover_template(ctx);
-                        };
+            // Open/update virtual document
+            if bridge.is_initialized() {
+                let vdoc_uri = crate::ide::corsa_support::art_template_request_path(
+                    ctx.uri,
+                    info.variant_index,
+                );
+                let Ok(uri) = bridge
+                    .open_or_update_virtual_document(&vdoc_uri, &template.content)
+                    .await
+                else {
+                    return Self::hover_template(ctx);
+                };
 
-                        // Request hover from Corsa.
-                        if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
-                            return Some(Self::convert_lsp_hover(hover));
-                        }
-                    }
+                // Request hover from Corsa.
+                if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
+                    return Some(Self::convert_lsp_hover(hover));
                 }
             }
         }
@@ -159,46 +176,38 @@ impl HoverService {
 
     /// Convert a Corsa hover payload to tower-lsp Hover.
     pub(super) fn convert_lsp_hover(lsp_hover: LspHover) -> Hover {
-        let contents = match lsp_hover.contents {
+        let value = match lsp_hover.contents {
             LspHoverContents::Markup(markup) => {
-                let value = if markup.kind == "markdown" {
+                if markup.kind == "markdown" {
                     markup.value
                 } else {
                     // Wrap plaintext TypeScript type info in a code block for better rendering
                     Self::wrap_type_info_in_codeblock(&markup.value)
-                };
-                HoverContents::Markup(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value,
-                })
+                }
             }
             LspHoverContents::String(s) => {
                 // Wrap plaintext in a TypeScript code block
-                HoverContents::Markup(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value: Self::wrap_type_info_in_codeblock(&s),
-                })
+                Self::wrap_type_info_in_codeblock(&s)
             }
-            LspHoverContents::Array(items) => {
-                let value = items
-                    .into_iter()
-                    .map(|item| match item {
-                        LspMarkedString::String(s) => Self::wrap_type_info_in_codeblock(&s),
-                        LspMarkedString::LanguageString { language, value } => {
-                            #[allow(clippy::disallowed_macros)]
-                            {
-                                format!("```{}\n{}\n```", language, value)
-                            }
+            LspHoverContents::Array(items) => items
+                .into_iter()
+                .map(|item| match item {
+                    LspMarkedString::String(s) => Self::wrap_type_info_in_codeblock(&s),
+                    LspMarkedString::LanguageString { language, value } => {
+                        #[allow(clippy::disallowed_macros)]
+                        {
+                            format!("```{}\n{}\n```", language, value)
                         }
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n\n");
-                HoverContents::Markup(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value,
+                    }
                 })
-            }
+                .collect::<Vec<_>>()
+                .join("\n\n"),
         };
+
+        let contents = HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: Self::decorate_corsa_hover_markdown(&value),
+        });
 
         let range = lsp_hover.range.map(|r| Range {
             start: tower_lsp::lsp_types::Position {
@@ -245,6 +254,20 @@ impl HoverService {
             }
         } else {
             text.to_string()
+        }
+    }
+
+    fn decorate_corsa_hover_markdown(value: &str) -> String {
+        let value = value.trim();
+        if value.is_empty() {
+            return String::new();
+        }
+
+        #[allow(clippy::disallowed_macros)]
+        {
+            format!(
+                "**TypeScript quick info**\n\n_Resolved through Vize virtual TypeScript_\n\n{value}"
+            )
         }
     }
 }

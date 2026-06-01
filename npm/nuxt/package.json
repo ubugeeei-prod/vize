@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/nuxt",
-  "version": "0.46.0",
+  "version": "0.155.0",
   "description": "Nuxt module for Vize - compiler, musea gallery, linter, and type checker",
   "keywords": [
     "compiler",
@@ -13,11 +13,15 @@
     "vize",
     "vue"
   ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
   "license": "MIT",
   "author": "ubugeeei",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/vize.git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
     "directory": "npm/nuxt"
   },
   "files": [
@@ -38,25 +42,29 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
+    "test": "node --test src/*.test.ts src/**/*.test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"
   },
   "dependencies": {
-    "@nuxt/kit": "^4.0.0",
+    "@nuxt/kit": "catalog:integrations",
     "@vizejs/musea-nuxt": "workspace:*",
     "@vizejs/vite-plugin": "workspace:*",
     "@vizejs/vite-plugin-musea": "workspace:*",
     "vize": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "vue": "^3.5.0",
-    "vue-router": "^4.5.0"
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable",
+    "vue-router": "catalog:vue-stable"
   },
   "peerDependencies": {
-    "nuxt": "^3.0.0 || ^4.0.0"
+    "nuxt": "^2.16.0 || ^3.0.0 || ^4.0.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

@@ -149,21 +149,33 @@ function getNuxtComponentDtsFiles(rootDir: string, buildDir: string): string[] {
   return Array.from(new Set(candidates.filter((candidate) => fs.existsSync(candidate))));
 }
 
+function forEachLine(content: string, visit: (line: string) => void): void {
+  let lineStart = 0;
+  for (let index = 0; index <= content.length; index++) {
+    if (index !== content.length && content.charCodeAt(index) !== 10) {
+      continue;
+    }
+
+    const lineEnd = index > lineStart && content.charCodeAt(index - 1) === 13 ? index - 1 : index;
+    visit(content.slice(lineStart, lineEnd));
+    lineStart = index + 1;
+  }
+}
+
 function loadDtsComponents(rootDir: string, buildDir: string): Map<string, NuxtComponentImport> {
   const resolved = new Map<string, NuxtComponentImport>();
 
   for (const filePath of getNuxtComponentDtsFiles(rootDir, buildDir)) {
-    const lines = fs.readFileSync(filePath, "utf-8").split("\n");
-    for (const line of lines) {
+    forEachLine(fs.readFileSync(filePath, "utf-8"), (line) => {
       const match = line.match(DTS_COMPONENT_RE);
       if (!match) {
-        continue;
+        return;
       }
 
       const [, name, , importPath, exportNameDot, exportNameBracket] = match;
       const exportName = exportNameDot || exportNameBracket;
       if (!exportName) {
-        continue;
+        return;
       }
 
       const absoluteImportPath = resolveImportPath(
@@ -177,7 +189,7 @@ function loadDtsComponents(rootDir: string, buildDir: string): Map<string, NuxtC
 
       addComponentAlias(resolved, name, componentImport);
       addLazyComponentAlias(resolved, name, componentImport);
-    }
+    });
   }
 
   return resolved;

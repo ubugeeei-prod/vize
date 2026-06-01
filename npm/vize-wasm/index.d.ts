@@ -26,6 +26,10 @@ export interface CompilerOptions {
   outputMode?: "vdom" | "vapor";
   /** Whether the template contains TypeScript */
   isTs?: boolean;
+  /** Whether the template targets a custom renderer instead of the DOM. */
+  customRenderer?: boolean;
+  /** Enable Vue parser quirk compatibility for known edge cases. */
+  vueParserQuirks?: boolean;
 }
 
 /** Result of template compilation */
@@ -70,6 +74,24 @@ export interface SfcStyleBlock extends SfcBlock {
   scoped: boolean;
   /** CSS module name */
   module?: string | true;
+}
+
+/** Compile-time macro artifact extracted from an SFC */
+export interface MacroArtifact {
+  /** Stable artifact kind */
+  kind: string;
+  /** Macro call name */
+  name: string;
+  /** Full macro call source */
+  source: string;
+  /** Extracted macro payload source */
+  content: string;
+  /** Ready-to-load virtual module code */
+  moduleCode?: string;
+  /** Absolute start offset in the SFC source */
+  start: number;
+  /** Absolute end offset in the SFC source */
+  end: number;
 }
 
 /** SFC descriptor (parsed .vue file) */
@@ -125,6 +147,8 @@ export interface SfcCompileResult {
   errors: string[];
   /** Compilation warnings */
   warnings: string[];
+  /** Compile-time macro artifacts */
+  macroArtifacts?: MacroArtifact[];
 }
 
 /** CSS compile options */

@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/musea-mcp-server",
-  "version": "0.46.0",
+  "version": "0.155.0",
   "description": "MCP server for building Vue.js design systems - component analysis, documentation, variant generation, and design tokens",
   "keywords": [
     "ai",
@@ -11,11 +11,15 @@
     "musea",
     "vue"
   ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
   "license": "MIT",
   "author": "ubugeeei",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/vize.git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
     "directory": "npm/musea-mcp-server"
   },
   "bin": {
@@ -40,17 +44,25 @@
     "build": "vp pack",
     "dev": "vp pack --watch",
     "start": "node dist/cli.mjs",
+    "test": "vp exec tsx --test src/**/*.test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
+    "@modelcontextprotocol/sdk": "catalog:integrations",
     "@vizejs/native": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "typescript": "^5.7.0",
-    "vite-plus": "catalog:"
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "tsdown": "catalog:vite-stack",
+    "tsx": "catalog:typescript",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

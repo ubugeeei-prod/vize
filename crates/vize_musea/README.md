@@ -1,52 +1,58 @@
 # vize_musea
 
-**Musea** - Component gallery and documentation for Vize Vue components.
+`vize_musea` is the Rust core for Musea art files, docs, palette generation, autogen, and VRT
+support.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ubugeeei/vize/main/crates/vize_musea/logo.svg" alt="vize_musea logo" width="200" />
-</p>
+## Highlights
 
-## Name Origin
+- Parse `*.art.vue` files into `ArtDescriptor`
+- Read `defineArt(source, options)` compiler-macro metadata from root `<script setup>`
+- Transform art files into Vue and Storybook-compatible outputs
+- Generate Markdown docs, catalogs, and prop palettes
+- Autogenerate art variants and VRT configuration data
 
-**Musea** (plural of museum) represents a gallery space where art is displayed and documented. Similarly, `vize_musea` provides a gallery for Vue components, allowing developers to view and interact with components in isolation - similar to Storybook.
+## Art Authoring
 
-## Features
+The preferred `.art.vue` shape keeps metadata and the target component in `defineArt`:
 
-- **Component Gallery** - Browse Vue components visually
-- **Art Files** - Document components with `*.art.vue`
-- **Variants** - Showcase component states
-- **Design Tokens** - Centralized design system (Palette)
+```vue
+<script setup lang="ts">
+defineArt("./Button.vue", {
+  title: "Button",
+  category: "UI",
+  tags: ["button"],
+});
+</script>
 
-## Usage
-
-### Art File Parser
-
-```rust
-use vize_musea::art::{parse_art, ArtDescriptor};
-
-let art = parse_art(source)?;
-println!("Title: {}", art.title);
-for variant in art.variants {
-    println!("  - {}", variant.name);
-}
+<art>
+  <variant name="Primary" default>
+    <Button variant="primary">Click</Button>
+  </variant>
+</art>
 ```
 
-### Design Tokens (Palette)
+`<art title="..." component="...">` remains supported for compatibility. When both are present,
+explicit `<art>` attributes override `defineArt` values.
 
-```rust
-use vize_musea::palette::{Palette, Token};
+## Key Entry Points
 
-let palette = Palette::from_file("palette.toml")?;
-let color = palette.get("colors.primary")?;
-```
+- `parse_art`
+- `transform_to_csf`
+- `transform_to_vue`
+- `docs::{generate_component_doc, generate_catalog}`
+- `palette::generate_palette`
+- `autogen::generate_art_file`
 
-### Docs Generator
+## Notes
 
-```rust
-use vize_musea::docs::generate_docs;
+The gallery UI and dev-server integration live in the JavaScript package
+`@vizejs/vite-plugin-musea`. This crate focuses on the Rust-side parsing and generation pipeline.
 
-let markdown = generate_docs(&art)?;
-```
+## Related Crates
+
+- `vize_vitrine` exposes Musea functionality to Node.js and WASM
+- `vize_patina` includes Musea-specific lint rules
+- `@vizejs/musea-mcp-server` consumes Musea metadata for AI integrations
 
 ## License
 

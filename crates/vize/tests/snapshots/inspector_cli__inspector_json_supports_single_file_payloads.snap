@@ -1,0 +1,19 @@
+---
+source: crates/vize/tests/inspector_cli.rs
+expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
+---
+{
+  "files": [
+    {
+      "path": "src/App.vue",
+      "source": "<script setup lang=\"ts\">\nconst msg: string = \"hello\";\n</script>\n\n<template>\n  <div>{{ msg }}</div>\n</template>\n"
+    }
+  ],
+  "options": {
+    "customRenderer": false,
+    "vueParserQuirks": true
+  },
+  "selectedFile": "src/App.vue",
+  "target": "ssr",
+  "version": 1
+}

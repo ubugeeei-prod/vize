@@ -43,15 +43,17 @@ pub use vize_relief::{ast, errors, options};
 // Re-export from vize_armature (parser, tokenizer)
 pub use vize_armature as parser;
 pub use vize_armature::tokenizer;
-pub use vize_armature::{parse, parse_with_options, Parser};
+pub use vize_armature::{Parser, parse, parse_with_options};
 
-pub use codegen::{generate, CodegenContext, CodegenResult};
-pub use runtime_helpers::{get_vnode_block_helper, get_vnode_helper, RuntimeHelpers};
+pub use codegen::{CodegenContext, CodegenResult, generate};
+pub use runtime_helpers::{RuntimeHelpers, get_vnode_block_helper, get_vnode_helper};
 pub use transform::{
-    transform, DirectiveTransform, DirectiveTransformResult, ExitFn, NodeTransform, ParentNode,
-    StructuralDirectiveTransform, TransformContext,
+    DirectiveTransform, DirectiveTransformResult, ExitFn, NodeTransform, ParentNode,
+    StructuralDirectiveTransform, TransformContext, transform, transform_with_vue_parser_quirks,
 };
 pub use transforms::{
+    ChildrenType, EventModifiers, MemoInfo, PropItem, SlotInfo, SlotOutletInfo, StaticType,
+    TextCallExpression, TextPart, TransformPropsExpression, TransformVNodeCall, VModelModifiers,
     build_element_codegen, build_props, build_text_call, camelize, collect_slots,
     condense_whitespace, count_dynamic_children, create_on_name, generate_memo_check,
     generate_v_memo_wrapper, generate_v_once_wrapper, get_bind_name, get_bind_value,
@@ -61,14 +63,12 @@ pub use transforms::{
     has_v_else, has_v_else_if, has_v_for, has_v_if, has_v_memo, has_v_once, has_v_slot,
     hoist_static, is_condensible_whitespace, is_dynamic_binding, is_dynamic_event, is_dynamic_slot,
     is_simple_identifier, is_static_node, is_whitespace_only, needs_guard, parse_event_modifiers,
-    parse_for_expression, parse_model_modifiers, prefix_identifiers_in_expression,
-    process_expression, process_inline_handler, process_v_bind, process_v_for, process_v_if,
-    process_v_memo, process_v_on, remove_for_directive, remove_if_directive, remove_v_memo,
-    remove_v_once, resolve_element_type, should_use_block, strip_typescript_from_expression,
-    supports_v_model, transform_slot_outlet, transform_text_children, transform_v_model,
-    transform_v_once, ChildrenType, EventModifiers, MemoInfo, PropItem, SlotInfo, SlotOutletInfo,
-    StaticType, TextCallExpression, TextPart, TransformPropsExpression, TransformVNodeCall,
-    VModelModifiers,
+    parse_for_expression, parse_for_expression_with_options, parse_model_modifiers,
+    prefix_identifiers_in_expression, process_expression, process_inline_handler, process_v_bind,
+    process_v_for, process_v_if, process_v_memo, process_v_on, remove_for_directive,
+    remove_if_directive, remove_v_memo, remove_v_once, resolve_element_type, should_use_block,
+    strip_typescript_from_expression, supports_v_model, transform_slot_outlet,
+    transform_text_children, transform_v_model, transform_v_once,
 };
 
 /// Re-export allocator types for convenience

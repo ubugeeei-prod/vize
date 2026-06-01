@@ -4,23 +4,23 @@
 //! including v-for, v-slot, and event handler scopes. Uses recursive
 //! tree-based generation so nested scopes are properly contained.
 
-use vize_carton::profile;
 use vize_carton::FxHashMap;
 use vize_carton::FxHashSet;
 use vize_carton::String;
+use vize_carton::profile;
 
 use vize_croquis::{
-    analysis::ComponentUsage, naming::to_pascal_case, Croquis, EventHandlerScopeData, Scope,
-    ScopeData, ScopeId, ScopeKind,
+    Croquis, EventHandlerScopeData, Scope, ScopeData, ScopeId, ScopeKind, analysis::ComponentUsage,
+    naming::to_pascal_case,
 };
 
 use super::{
     expressions::{generate_component_prop_checks, generate_expression},
     helpers::{
-        generated_text_range, get_dom_event_type, strip_as_assertion, to_camel_case,
-        to_safe_identifier,
+        generated_text_range, get_dom_event_type, to_camel_case, to_safe_identifier,
+        to_safe_identifier_fragment,
     },
-    types::VizeMapping,
+    types::{VirtualTsCheckOptions, VizeMapping},
 };
 use vize_carton::append;
 use vize_carton::cstr;
@@ -30,7 +30,9 @@ pub(crate) struct ScopeGenContext<'a> {
     pub(crate) summary: &'a Croquis,
     pub(crate) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
+    pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
+    pub(crate) check_options: VirtualTsCheckOptions,
 }
 
 /// Context for recursive component prop checks inside v-for scopes.
@@ -38,7 +40,16 @@ pub(crate) struct VForPropsContext<'a> {
     pub(crate) summary: &'a Croquis,
     pub(crate) components_by_scope: &'a FxHashMap<u32, Vec<(usize, &'a ComponentUsage)>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
+    pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
+}
+
+struct EventHandlerExprContext<'a> {
+    expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
+    data: &'a EventHandlerScopeData,
+    event_type: &'a str,
+    template_offset: u32,
+    indent: &'a str,
 }
 
 /// Generate scope closures from Croquis scope chain.
@@ -48,7 +59,9 @@ pub(crate) fn generate_scope_closures(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
+    template_prop_names: &FxHashSet<String>,
     template_offset: u32,
+    check_options: VirtualTsCheckOptions,
 ) {
     // Group expressions by scope_id
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
@@ -113,11 +126,20 @@ pub(crate) fn generate_scope_closures(
                 | ScopeKind::JsGlobalNode
                 | ScopeKind::VueGlobal
         ) {
-            if let Some(exprs) = expressions_by_scope.get(&scope_id) {
+            if let Some(exprs) = expressions_by_scope.get(&scope_id)
+                && check_options.check_template_bindings
+            {
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
-                        generate_expression(ts, mappings, expr, template_offset, "  ")
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            template_prop_names,
+                            template_offset,
+                            "  "
+                        )
                     );
                 }
             }
@@ -128,7 +150,9 @@ pub(crate) fn generate_scope_closures(
             summary,
             expressions_by_scope: &expressions_by_scope,
             children_map: &children_map,
+            template_prop_names,
             template_offset,
+            check_options,
         };
         profile!(
             "canon.virtual_ts.scope_node",
@@ -137,16 +161,27 @@ pub(crate) fn generate_scope_closures(
     }
 
     // Handle undefined references
-    profile!(
-        "canon.virtual_ts.undefined_refs",
-        generate_undefined_refs(ts, mappings, summary, template_offset)
-    );
+    if check_options.check_template_bindings {
+        profile!(
+            "canon.virtual_ts.undefined_refs",
+            generate_undefined_refs(ts, mappings, summary, template_offset)
+        );
+    }
 
     // Generate component props type checks (scope-aware)
-    profile!(
-        "canon.virtual_ts.component_props",
-        generate_component_props(ts, mappings, summary, &children_map, template_offset)
-    );
+    if check_options.check_props {
+        profile!(
+            "canon.virtual_ts.component_props",
+            generate_component_props(
+                ts,
+                mappings,
+                summary,
+                &children_map,
+                template_prop_names,
+                template_offset,
+            )
+        );
+    }
 }
 
 /// Handle undefined references from template.
@@ -192,12 +227,73 @@ fn generate_undefined_refs(
         mappings.push(VizeMapping {
             gen_range: gen_name_start..gen_name_end,
             src_range: src_start..src_end,
+            sub_spans: Vec::new(),
         });
         append!(
             *ts,
             "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
         );
     }
+}
+
+/// Type annotation for a `v-slot` scope's props. When the slot is on a child
+/// component (`component` is `Some`), the props are inferred from that child's
+/// `$slots[name]` parameter (its `defineSlots`), so misuse raises a real
+/// diagnostic (#764). Otherwise — and whenever the child has no typed slot —
+/// it falls back to `any` so untyped or built-in slot hosts never produce a
+/// false positive.
+fn slot_props_type(component: Option<&str>, slot_name: &str) -> String {
+    match component {
+        Some(component) => {
+            let component_ref = to_safe_identifier(component);
+            cstr!(
+                "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (__S extends {{ \"{slot_name}\"?: (props: infer __P, ...args: any[]) => any }} ? __P : any) : any"
+            )
+        }
+        None => "any".into(),
+    }
+}
+
+fn append_v_for_comment(ts: &mut String, indent: &str, label: &str, alias: &str, source: &str) {
+    append!(*ts, "\n{indent}// {label}: {alias} in ");
+    for c in source.chars() {
+        if c == '\n' || c == '\r' {
+            ts.push(' ');
+        } else {
+            ts.push(c);
+        }
+    }
+    ts.push('\n');
+}
+
+/// Emit the opening of a v-for scope as
+/// `__vForList(source).forEach(([value, key, index]) => {`.
+///
+/// The overloaded `__vForList` helper types the destructured tuple from the
+/// source kind: arrays/iterables/numbers/strings keep a numeric `key`, while an
+/// object source yields `value: T[keyof T]` and `key: keyof T` (matching
+/// vue-tsc) instead of the old array-only `(source).forEach` assumption that
+/// mis-typed objects and raised spurious TS2339/TS2537. The source expression is
+/// passed through verbatim so any `as Type` assertion flows into the helper.
+fn emit_v_for_loop_open(
+    ts: &mut String,
+    indent: &str,
+    value_alias: &str,
+    key_alias: Option<&str>,
+    index_alias: Option<&str>,
+    source: &str,
+) {
+    append!(*ts, "{indent}__vForList({source}).forEach(([{value_alias}");
+    if let Some(key) = key_alias {
+        append!(*ts, ", {key}");
+    } else if index_alias.is_some() {
+        // Keep the index in the third tuple slot even when no key alias is bound.
+        ts.push_str(", _key");
+    }
+    if let Some(index) = index_alias {
+        append!(*ts, ", {index}");
+    }
+    ts.push_str("]) => {\n");
 }
 
 /// Generate component props type checks (scope-aware).
@@ -207,6 +303,7 @@ fn generate_component_props(
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     children_map: &FxHashMap<u32, Vec<ScopeId>>,
+    template_prop_names: &FxHashSet<String>,
     template_offset: u32,
 ) {
     if summary.component_usages.is_empty() {
@@ -226,8 +323,33 @@ fn generate_component_props(
     // Emit type declarations only for components with dynamic props
     // (TypeScript type aliases cannot be inside function bodies)
     ts.push_str("\n  // Component props type declarations\n");
+
+    // Helper types for the generic functional prop-check path (#775). A
+    // `<script setup generic="T">` child exposes `__vizeCheck<T>(props)` on its
+    // default export; `__VizePropChecker<C>` extracts that generic signature so
+    // the parent can call it and let TS infer `T` from the passed props. When
+    // the child is non-generic (plain construct signature), a built-in / library
+    // component, or `any`, it falls back to `(props: any) => void`, a no-op that
+    // never reports, so only generic components take the new path and the
+    // well-tested `typeof Comp extends { $props }` extraction below is preserved.
+    let any_dynamic_props = summary.component_usages.iter().any(|usage| {
+        usage.props.iter().any(|p| {
+            p.name.as_str() != "key"
+                && p.name.as_str() != "ref"
+                && p.value.is_some()
+                && p.is_dynamic
+        })
+    });
+    if any_dynamic_props {
+        ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
+        ts.push_str(
+            "  type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;\n",
+        );
+    }
+
     for (idx, usage) in summary.component_usages.iter().enumerate() {
-        let component_name = &usage.name;
+        let component_ref = to_safe_identifier(usage.name.as_str());
+        let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
         // Only emit type when there are dynamic props to check
         let has_dynamic_props = usage.props.iter().any(|p| {
@@ -246,7 +368,7 @@ fn generate_component_props(
         append!(*ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
         append!(
             *ts,
-            "  type __{component_name}_Props_{idx} = typeof {component_name} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_name} extends (props: infer __P) => any ? __P : {{}});\n",
+            "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}});\n",
         );
 
         for prop in &usage.props {
@@ -255,13 +377,20 @@ fn generate_component_props(
             }
             if prop.value.is_some() && prop.is_dynamic {
                 let camel_prop_name = to_camel_case(prop.name.as_str());
-                let safe_prop_name = prop.name.replace('-', "_");
+                let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
                 append!(
                     *ts,
-                    "  type __{component_name}_{idx}_prop_{safe_prop_name} = __{component_name}_Props_{idx} extends {{ '{camel_prop_name}'?: infer T }} ? T : __{component_name}_Props_{idx} extends {{ '{camel_prop_name}': infer T }} ? T : unknown;\n",
+                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __{component_type_name}_Props_{idx} extends {{ '{camel_prop_name}'?: infer T }} ? T : __{component_type_name}_Props_{idx} extends {{ '{camel_prop_name}': infer T }} ? T : unknown;\n",
                 );
             }
         }
+
+        // Generic functional prop-checker for this component (#775). Resolves to
+        // the child's `__vizeCheck` when generic, else a `(props: any)` no-op.
+        append!(
+            *ts,
+            "  type __{component_type_name}_Check_{idx} = __VizePropChecker<typeof {component_ref}>;\n",
+        );
     }
 
     // Collect all closure scope IDs (v-for and v-slot)
@@ -296,7 +425,15 @@ fn generate_component_props(
         }
         profile!(
             "canon.virtual_ts.component_prop_checks",
-            generate_component_prop_checks(ts, mappings, usage, idx, template_offset, "  ")
+            generate_component_prop_checks(
+                ts,
+                mappings,
+                usage,
+                idx,
+                template_prop_names,
+                template_offset,
+                "  "
+            )
         );
     }
 
@@ -313,6 +450,7 @@ fn generate_component_props(
             summary,
             components_by_scope: &components_by_scope,
             children_map,
+            template_prop_names,
             template_offset,
         };
         profile!(
@@ -335,60 +473,27 @@ fn generate_scope_node(
 
     match scope.data() {
         ScopeData::VFor(data) => {
-            append!(
-                *ts,
-                "\n{indent}// v-for scope: {} in {}\n",
-                data.value_alias,
-                data.source
+            append_v_for_comment(
+                ts,
+                indent,
+                "v-for scope",
+                data.value_alias.as_str(),
+                data.source.as_str(),
             );
 
-            // Strip TypeScript `as Type` assertion from v-for source expression.
-            // e.g., "(expr) as OptionSponsor[]" -> "(expr)" with type annotation
-            let (source_expr, type_annotation) = strip_as_assertion(&data.source);
-
-            // Detect numeric literal (e.g., `v-for="n in 4"`)
-            let is_numeric = source_expr.trim().parse::<u64>().is_ok();
-
-            let is_simple_identifier = source_expr.chars().all(|c| c.is_alphanumeric() || c == '_');
-            let element_type = if is_numeric {
-                "number".into()
-            } else if let Some(ref ta) = type_annotation {
-                // Use the asserted type's element type
-                cstr!("{ta}[number]")
-            } else if is_simple_identifier {
-                cstr!("typeof {source_expr}[number]")
-            } else {
-                "any".into()
-            };
-
-            if is_numeric {
-                append!(
-                    *ts,
-                    "{indent}(Array.from({{length: {source_expr}}}, (_, __i) => __i + 1)).forEach(({}: {element_type}",
-                    data.value_alias,
-                );
-            } else {
-                append!(
-                    *ts,
-                    "{indent}({source_expr}).forEach(({}: {element_type}",
-                    data.value_alias,
-                );
-            }
-
-            if let Some(ref key) = data.key_alias {
-                append!(*ts, ", {key}: number");
-            }
-            if let Some(ref index) = data.index_alias {
-                if data.key_alias.is_none() {
-                    ts.push_str(", _key: number");
-                }
-                append!(*ts, ", {index}: number");
-            }
-
-            ts.push_str(") => {\n");
+            emit_v_for_loop_open(
+                ts,
+                indent,
+                data.value_alias.as_str(),
+                data.key_alias.as_deref(),
+                data.index_alias.as_deref(),
+                data.source.as_str(),
+            );
 
             // Mark v-for variables as used to avoid TS6133
-            append!(*ts, "{inner_indent}void {};\n", data.value_alias);
+            for value in &data.value_bindings {
+                append!(*ts, "{inner_indent}void {value};\n");
+            }
             if let Some(ref key) = data.key_alias {
                 append!(*ts, "{inner_indent}void {key};\n");
             }
@@ -397,11 +502,20 @@ fn generate_scope_node(
             }
 
             // Generate expressions in this scope
-            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
+            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
+                && ctx.check_options.check_template_bindings
+            {
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
-                        generate_expression(ts, mappings, expr, ctx.template_offset, &inner_indent)
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            &inner_indent
+                        )
                     );
                 }
             }
@@ -419,10 +533,11 @@ fn generate_scope_node(
             append!(*ts, "\n{indent}// v-slot scope: #{}\n", data.name);
 
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
+            let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
+            let props_type = slot_props_type(data.component.as_deref(), data.name.as_str());
             append!(
                 *ts,
-                "{indent}void function _slot_{}({props_pattern}: any) {{\n",
-                data.name,
+                "{indent}void function _slot_{safe_slot_name}({props_pattern}: {props_type}) {{\n",
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
@@ -435,11 +550,20 @@ fn generate_scope_node(
                 }
             }
 
-            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
+            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
+                && ctx.check_options.check_template_bindings
+            {
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
-                        generate_expression(ts, mappings, expr, ctx.template_offset, &inner_indent)
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            &inner_indent
+                        )
                     );
                 }
             }
@@ -453,12 +577,14 @@ fn generate_scope_node(
             ts.push_str(indent);
             ts.push_str("};\n");
         }
-        ScopeData::EventHandler(data) => {
+        ScopeData::EventHandler(data) if ctx.check_options.check_emits => {
             append!(*ts, "\n{indent}// @{} handler\n", data.event_name);
 
             let safe_event_name = to_safe_identifier(data.event_name.as_str());
 
             if let Some(ref component_name) = data.target_component {
+                let component_ref = to_safe_identifier(component_name.as_str());
+                let component_type_name = to_safe_identifier_fragment(component_name.as_str());
                 let pascal_event = to_pascal_case(data.event_name.as_str());
                 let on_handler = cstr!("on{pascal_event}");
 
@@ -472,7 +598,7 @@ fn generate_scope_node(
                 // Include scope_id to deduplicate when same component+event appears multiple times
                 append!(
                     *ts,
-                    "{indent}type __{component_name}_{scope_id}_{safe_event_name}_event = typeof {component_name} extends {{ new (): {{ $props: infer __P }} }}\n",
+                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }}\n",
                 );
                 append!(
                     *ts,
@@ -480,7 +606,7 @@ fn generate_scope_node(
                 );
                 append!(
                     *ts,
-                    "{indent}  : typeof {component_name} extends (props: infer __P) => any\n",
+                    "{indent}  : typeof {component_ref} extends (props: infer __P) => any\n",
                 );
                 append!(
                     *ts,
@@ -488,7 +614,8 @@ fn generate_scope_node(
                 );
                 append!(*ts, "{indent}    : unknown;\n");
 
-                let event_type = cstr!("__{component_name}_{scope_id}_{safe_event_name}_event");
+                let event_type =
+                    cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
                 append!(*ts, "{indent}(($event: {event_type}) => {{\n");
 
                 profile!(
@@ -496,11 +623,14 @@ fn generate_scope_node(
                     generate_event_handler_expressions(
                         ts,
                         mappings,
-                        ctx.expressions_by_scope,
                         scope_id,
-                        data,
-                        ctx.template_offset,
-                        &inner_indent,
+                        &EventHandlerExprContext {
+                            expressions_by_scope: ctx.expressions_by_scope,
+                            data,
+                            event_type: event_type.as_str(),
+                            template_offset: ctx.template_offset,
+                            indent: &inner_indent,
+                        },
                     )
                 );
 
@@ -514,11 +644,14 @@ fn generate_scope_node(
                     generate_event_handler_expressions(
                         ts,
                         mappings,
-                        ctx.expressions_by_scope,
                         scope_id,
-                        data,
-                        ctx.template_offset,
-                        &inner_indent,
+                        &EventHandlerExprContext {
+                            expressions_by_scope: ctx.expressions_by_scope,
+                            data,
+                            event_type,
+                            template_offset: ctx.template_offset,
+                            indent: &inner_indent,
+                        },
                     )
                 );
 
@@ -526,11 +659,20 @@ fn generate_scope_node(
             }
         }
         _ => {
-            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
+            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
+                && ctx.check_options.check_template_bindings
+            {
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
-                        generate_expression(ts, mappings, expr, ctx.template_offset, indent)
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            indent
+                        )
                     );
                 }
             }
@@ -542,43 +684,77 @@ fn generate_scope_node(
 fn generate_event_handler_expressions(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    expressions_by_scope: &FxHashMap<u32, Vec<&vize_croquis::TemplateExpression>>,
     scope_id: u32,
-    data: &EventHandlerScopeData,
-    template_offset: u32,
-    indent: &str,
+    ctx: &EventHandlerExprContext<'_>,
 ) {
-    if let Some(exprs) = expressions_by_scope.get(&scope_id) {
+    if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
         for expr in exprs {
             let content = expr.content.as_str();
-            let is_simple_identifier = content
-                .chars()
-                .all(|c| c.is_alphanumeric() || c == '_' || c == '$');
-
-            let src_start = (template_offset + expr.start) as usize;
-            let src_end = (template_offset + expr.end) as usize;
+            let is_implicit_reference =
+                ctx.data.has_implicit_event && is_callable_handler_reference(content);
+            let src_start = (ctx.template_offset + expr.start) as usize;
+            let src_end = (ctx.template_offset + expr.end) as usize;
 
             let gen_stmt_start = ts.len();
-            if data.has_implicit_event && is_simple_identifier && !content.is_empty() {
-                append!(*ts, "{indent}({content} as (...args: any[]) => any)($event);  // handler expression\n",);
+            if is_implicit_reference {
+                let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
+                append!(
+                    *ts,
+                    "{indent}const {handler_name} = ((handler: ($event: {event_type}) => unknown) => handler)(({content}));\n",
+                    indent = ctx.indent,
+                    event_type = ctx.event_type,
+                );
+                append!(
+                    *ts,
+                    "{indent}{handler_name}($event);  // handler expression\n",
+                    indent = ctx.indent,
+                );
             } else {
-                append!(*ts, "{indent}{content};  // handler expression\n");
+                append!(
+                    *ts,
+                    "{indent}{content};  // handler expression\n",
+                    indent = ctx.indent
+                );
             }
             let gen_stmt_end = ts.len();
             mappings.push(VizeMapping {
-                gen_range: generated_text_range(
-                    &ts[gen_stmt_start..gen_stmt_end],
-                    content,
-                    gen_stmt_start,
-                ),
+                gen_range: if is_implicit_reference {
+                    gen_stmt_start..gen_stmt_end
+                } else {
+                    generated_text_range(&ts[gen_stmt_start..gen_stmt_end], content, gen_stmt_start)
+                },
                 src_range: src_start..src_end,
+                sub_spans: Vec::new(),
             });
             append!(
                 *ts,
                 "{indent}// @vize-map: handler -> {src_start}:{src_end}\n",
+                indent = ctx.indent,
             );
         }
     }
+}
+
+fn is_callable_handler_reference(content: &str) -> bool {
+    let trimmed = content.trim();
+    if trimmed.is_empty() {
+        return false;
+    }
+
+    trimmed.split('.').all(is_identifier_segment)
+}
+
+fn is_identifier_segment(segment: &str) -> bool {
+    let mut chars = segment.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+
+    if !(first == '_' || first == '$' || first.is_alphabetic()) {
+        return false;
+    }
+
+    chars.all(|ch| ch == '_' || ch == '$' || ch.is_alphanumeric())
 }
 
 /// Recursively generate child scopes that are VFor/VSlot/EventHandler.
@@ -591,16 +767,16 @@ fn generate_child_scopes(
 ) {
     if let Some(child_ids) = ctx.children_map.get(&parent_scope_id) {
         for &child_id in child_ids {
-            if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id) {
-                if matches!(
+            if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
+                && matches!(
                     child_scope.kind,
                     ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::EventHandler
-                ) {
-                    profile!(
-                        "canon.virtual_ts.scope_node",
-                        generate_scope_node(ts, mappings, ctx, child_scope, indent)
-                    );
-                }
+                )
+            {
+                profile!(
+                    "canon.virtual_ts.scope_node",
+                    generate_scope_node(ts, mappings, ctx, child_scope, indent)
+                );
             }
         }
     }
@@ -619,53 +795,26 @@ fn generate_closure_component_props_recursive(
 
     match scope.data() {
         ScopeData::VFor(data) => {
-            let (source_expr, type_annotation) = strip_as_assertion(&data.source);
-
-            let is_numeric = source_expr.trim().parse::<u64>().is_ok();
-
-            let is_simple_identifier = source_expr.chars().all(|c| c.is_alphanumeric() || c == '_');
-            let element_type = if is_numeric {
-                "number".into()
-            } else if let Some(ref ta) = type_annotation {
-                cstr!("{ta}[number]")
-            } else if is_simple_identifier {
-                cstr!("typeof {source_expr}[number]")
-            } else {
-                "any".into()
-            };
-
-            append!(
-                *ts,
-                "\n{indent}// Component props in v-for scope: {} in {}\n",
-                data.value_alias,
-                data.source
+            append_v_for_comment(
+                ts,
+                indent,
+                "Component props in v-for scope",
+                data.value_alias.as_str(),
+                data.source.as_str(),
             );
-            if is_numeric {
-                append!(
-                    *ts,
-                    "{indent}(Array.from({{length: {source_expr}}}, (_, __i) => __i + 1)).forEach(({}: {element_type}",
-                    data.value_alias,
-                );
-            } else {
-                append!(
-                    *ts,
-                    "{indent}({source_expr}).forEach(({}: {element_type}",
-                    data.value_alias,
-                );
-            }
-            if let Some(ref key) = data.key_alias {
-                append!(*ts, ", {key}: number");
-            }
-            if let Some(ref index) = data.index_alias {
-                if data.key_alias.is_none() {
-                    ts.push_str(", _key: number");
-                }
-                append!(*ts, ", {index}: number");
-            }
-            ts.push_str(") => {\n");
+            emit_v_for_loop_open(
+                ts,
+                indent,
+                data.value_alias.as_str(),
+                data.key_alias.as_deref(),
+                data.index_alias.as_deref(),
+                data.source.as_str(),
+            );
 
             // Mark v-for variables as used to avoid TS6133
-            append!(*ts, "{inner_indent}void {};\n", data.value_alias);
+            for value in &data.value_bindings {
+                append!(*ts, "{inner_indent}void {value};\n");
+            }
             if let Some(ref key) = data.key_alias {
                 append!(*ts, "{inner_indent}void {key};\n");
             }
@@ -683,6 +832,7 @@ fn generate_closure_component_props_recursive(
                             mappings,
                             usage,
                             idx,
+                            ctx.template_prop_names,
                             ctx.template_offset,
                             &inner_indent,
                         )
@@ -693,19 +843,19 @@ fn generate_closure_component_props_recursive(
             // Recursively handle child closure scopes (v-for and v-slot)
             if let Some(child_ids) = ctx.children_map.get(&scope_id) {
                 for &child_id in child_ids {
-                    if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id) {
-                        if matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot) {
-                            profile!(
-                                "canon.virtual_ts.closure_component_props",
-                                generate_closure_component_props_recursive(
-                                    ts,
-                                    mappings,
-                                    ctx,
-                                    child_scope,
-                                    &inner_indent,
-                                )
-                            );
-                        }
+                    if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
+                        && matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot)
+                    {
+                        profile!(
+                            "canon.virtual_ts.closure_component_props",
+                            generate_closure_component_props_recursive(
+                                ts,
+                                mappings,
+                                ctx,
+                                child_scope,
+                                &inner_indent,
+                            )
+                        );
                     }
                 }
             }
@@ -715,6 +865,8 @@ fn generate_closure_component_props_recursive(
         }
         ScopeData::VSlot(data) => {
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
+            let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
+            let props_type = slot_props_type(data.component.as_deref(), data.name.as_str());
             append!(
                 *ts,
                 "\n{indent}// Component props in v-slot scope: #{}\n",
@@ -722,8 +874,7 @@ fn generate_closure_component_props_recursive(
             );
             append!(
                 *ts,
-                "{indent}void function _slot_props_{}({props_pattern}: any) {{\n",
-                data.name,
+                "{indent}void function _slot_props_{safe_slot_name}({props_pattern}: {props_type}) {{\n",
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
@@ -744,6 +895,7 @@ fn generate_closure_component_props_recursive(
                             mappings,
                             usage,
                             idx,
+                            ctx.template_prop_names,
                             ctx.template_offset,
                             &inner_indent,
                         )
@@ -754,19 +906,19 @@ fn generate_closure_component_props_recursive(
             // Recursively handle child closure scopes (v-for and v-slot)
             if let Some(child_ids) = ctx.children_map.get(&scope_id) {
                 for &child_id in child_ids {
-                    if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id) {
-                        if matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot) {
-                            profile!(
-                                "canon.virtual_ts.closure_component_props",
-                                generate_closure_component_props_recursive(
-                                    ts,
-                                    mappings,
-                                    ctx,
-                                    child_scope,
-                                    &inner_indent,
-                                )
-                            );
-                        }
+                    if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
+                        && matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot)
+                    {
+                        profile!(
+                            "canon.virtual_ts.closure_component_props",
+                            generate_closure_component_props_recursive(
+                                ts,
+                                mappings,
+                                ctx,
+                                child_scope,
+                                &inner_indent,
+                            )
+                        );
                     }
                 }
             }

@@ -32,30 +32,30 @@ pub(crate) fn get_identifier_prefix(
     }
 
     // Check binding metadata for setup bindings
-    if let Some(bindings) = &ctx.options.binding_metadata {
-        if let Some(binding_type) = bindings.bindings.get(name) {
-            // Props need prefix based on mode
-            if matches!(
-                binding_type,
-                crate::options::BindingType::Props | crate::options::BindingType::PropsAliased
-            ) {
-                // In inline mode: use __props. (local variable in setup)
-                // In function mode: use $props. (render function parameter)
-                if ctx.options.inline {
-                    return Some("__props.");
-                } else {
-                    return Some("$props.");
-                }
-            }
-
+    if let Some(bindings) = &ctx.options.binding_metadata
+        && let Some(binding_type) = bindings.bindings.get(name)
+    {
+        // Props need prefix based on mode
+        if matches!(
+            binding_type,
+            crate::options::BindingType::Props | crate::options::BindingType::PropsAliased
+        ) {
+            // In inline mode: use __props. (local variable in setup)
+            // In function mode: use $props. (render function parameter)
             if ctx.options.inline {
-                // In inline mode, setup bindings are accessed directly via closure
-                return None;
+                return Some("__props.");
             } else {
-                // In function mode (inline = false), setup bindings use $setup. prefix
-                // This is the pattern Vue's @vitejs/plugin-vue uses for proper reactivity tracking
-                return Some("$setup.");
+                return Some("$props.");
             }
+        }
+
+        if ctx.options.inline {
+            // In inline mode, setup bindings are accessed directly via closure
+            return None;
+        } else {
+            // In function mode (inline = false), setup bindings use $setup. prefix
+            // This is the pattern Vue's @vitejs/plugin-vue uses for proper reactivity tracking
+            return Some("$setup.");
         }
     }
 
@@ -71,10 +71,10 @@ pub(crate) fn is_ref_binding_simple(name: &str, ctx: &TransformContext<'_>) -> b
             return kind.needs_value_access();
         }
         // Fallback: binding_metadata
-        if let Some(bindings) = &ctx.options.binding_metadata {
-            if let Some(binding_type) = bindings.bindings.get(name) {
-                return matches!(binding_type, crate::options::BindingType::SetupRef);
-            }
+        if let Some(bindings) = &ctx.options.binding_metadata
+            && let Some(binding_type) = bindings.bindings.get(name)
+        {
+            return matches!(binding_type, crate::options::BindingType::SetupRef);
         }
     }
     false
@@ -87,7 +87,9 @@ pub fn is_simple_identifier(s: &str) -> bool {
     }
 
     let mut chars = s.chars();
-    let first = chars.next().unwrap();
+    let Some(first) = chars.next() else {
+        return false;
+    };
 
     if !first.is_alphabetic() && first != '_' && first != '$' {
         return false;
@@ -124,7 +126,7 @@ pub fn prefix_identifiers_in_expression(content: &str) -> String {
             }
 
             // Sort by position (descending) to apply replacements from end to start
-            rewrites.sort_by(|a, b| b.0.cmp(&a.0));
+            rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
             let mut result = String::new(content);
             for (start, end, replacement) in rewrites {

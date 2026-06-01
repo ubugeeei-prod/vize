@@ -5,7 +5,7 @@
 use super::inference::infer_control_from_values;
 use super::{Palette, PaletteOptions, PaletteOutput, PropControl};
 use crate::types::ArtDescriptor;
-use vize_carton::{append, cstr, FxHashMap, String, ToCompactString};
+use vize_carton::{FxHashMap, String, ToCompactString, append, cstr};
 
 /// Generate palette configuration from an Art descriptor.
 ///
@@ -278,10 +278,10 @@ pub fn generate_storybook_argtypes(palette: &Palette) -> String {
 mod tests {
     use super::super::PaletteOptions;
     use super::{
-        generate_palette, generate_storybook_argtypes, generate_typescript_interface,
-        to_pascal_case, Palette, PropControl,
+        Palette, PropControl, generate_palette, generate_storybook_argtypes,
+        generate_typescript_interface, to_pascal_case,
     };
-    use crate::{parse_art, ArtParseOptions, Bump};
+    use crate::{ArtParseOptions, Bump, parse_art};
 
     #[test]
     fn test_generate_palette_basic() {

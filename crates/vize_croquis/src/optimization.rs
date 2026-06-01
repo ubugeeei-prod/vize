@@ -230,10 +230,10 @@ impl OptimizationTracker {
 
     /// Add dynamic child to current block
     pub fn add_dynamic_child(&mut self) {
-        if let Some(&block_id) = self.block_stack.last() {
-            if let Some(block) = self.blocks.iter_mut().find(|b| b.id == block_id) {
-                block.dynamic_children_count += 1;
-            }
+        if let Some(&block_id) = self.block_stack.last()
+            && let Some(block) = self.blocks.iter_mut().find(|b| b.id == block_id)
+        {
+            block.dynamic_children_count += 1;
         }
         self.total_dynamic_children += 1;
     }

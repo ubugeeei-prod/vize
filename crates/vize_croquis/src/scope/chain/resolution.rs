@@ -3,7 +3,7 @@
 //! Provides lookup, mark-used, mark-mutated, and depth calculation methods
 //! for the [`ScopeChain`].
 
-use super::{smallvec, CompactString, Scope, ScopeBinding, ScopeChain, ScopeId, SmallVec};
+use super::{CompactString, Scope, ScopeBinding, ScopeChain, ScopeId, SmallVec, smallvec};
 
 impl ScopeChain {
     /// Look up a binding by name, searching through all parent scopes
@@ -19,6 +19,11 @@ impl ScopeChain {
             }
             visited.push(id);
 
+            // SAFETY: the queue is seeded with `self.current` and only extended
+            // with parent ids stored inside scopes owned by this chain. Scope ids
+            // are never synthesized from user input, so every queued id indexes
+            // `self.scopes`. This keeps lexical lookup branch-light in the
+            // compiler's busiest semantic-analysis loop.
             let scope = unsafe { self.scopes.get_unchecked(id.as_u32() as usize) };
             if let Some(binding) = scope.get_binding(name) {
                 return Some((scope, binding));

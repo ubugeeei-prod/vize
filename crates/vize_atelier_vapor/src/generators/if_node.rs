@@ -2,7 +2,7 @@
 
 use super::block::GenerateContext;
 use crate::ir::{BlockIRNode, IfIRNode, NegativeBranch};
-use vize_carton::{cstr, String};
+use vize_carton::{String, cstr};
 
 /// Generate if node code
 pub fn generate_if<F>(ctx: &mut GenerateContext, if_node: &IfIRNode<'_>, generate_block: F)

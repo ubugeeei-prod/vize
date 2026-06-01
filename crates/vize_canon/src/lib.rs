@@ -44,10 +44,13 @@
 
 mod checker;
 mod context;
+#[cfg(feature = "native")]
+pub mod corsa_session_cache;
 mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;
 pub mod intelligence;
+mod script_parse;
 pub mod sfc_typecheck;
 pub mod source_map;
 mod types;
@@ -85,12 +88,12 @@ pub use intelligence::{
     DiagnosticSeverity, HoverInfo, Location, TypeIntelligence,
 };
 pub use sfc_typecheck::{
-    type_check_sfc, SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic,
-    SfcTypeSeverity,
+    SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic,
+    SfcTypeSeverity, type_check_sfc, type_check_sfc_with_legacy_vue2,
 };
 pub use source_map::{
-    offset_to_position, position_to_offset, Mapping, MappingFlags, MappingKind, Position,
-    SourceMap, Span,
+    Mapping, MappingFlags, MappingKind, Position, SourceMap, Span, offset_to_position,
+    position_to_offset,
 };
 pub use types::{CompletionItem, CompletionKind, TypeInfo, TypeKind};
 pub use vize_carton::i18n::Locale;

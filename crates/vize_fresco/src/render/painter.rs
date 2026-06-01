@@ -63,7 +63,7 @@ impl<'a> Painter<'a> {
                 // Box nodes just provide layout, content is drawn by children
             }
             NodeKind::Text(text) => {
-                self.paint_text(&text.text, content_area, style, text.wrap);
+                self.paint_text(&text.text, content_area, style, text.wrap_mode);
             }
             NodeKind::Input(input) => {
                 self.paint_input(
@@ -117,16 +117,11 @@ impl<'a> Painter<'a> {
     }
 
     /// Paint text content.
-    fn paint_text(&mut self, text: &str, area: Rect, style: Style, wrap: bool) {
+    fn paint_text(&mut self, text: &str, area: Rect, style: Style, mode: WrapMode) {
         if area.is_empty() {
             return;
         }
 
-        let mode = if wrap {
-            WrapMode::Word
-        } else {
-            WrapMode::NoWrap
-        };
         let lines = TextWrap::wrap(text, area.width as usize, mode);
 
         for (i, line) in lines.iter().enumerate() {
@@ -206,6 +201,7 @@ mod tests {
     use super::{BorderStyle, Painter, RenderNode, RenderTree};
     use crate::layout::Rect;
     use crate::terminal::{Buffer, Style};
+    use crate::text::WrapMode;
 
     #[test]
     fn test_paint_text() {
@@ -214,7 +210,7 @@ mod tests {
 
         let area = Rect::new(0, 0, 20, 5);
         let style = Style::new();
-        painter.paint_text("Hello World", area, style, false);
+        painter.paint_text("Hello World", area, style, WrapMode::NoWrap);
 
         assert_eq!(buffer.get(0, 0).map(|c| c.symbol.as_str()), Some("H"));
         assert_eq!(buffer.get(5, 0).map(|c| c.symbol.as_str()), Some(" "));

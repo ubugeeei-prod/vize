@@ -72,29 +72,29 @@ impl Rule for PropNameCasing {
                     }
                 }
                 PropNode::Directive(dir) => {
-                    if dir.name == "bind" {
-                        if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                            let name = arg.content.as_ref();
-                            // Skip standard bindings
-                            if name == "class"
-                                || name == "style"
-                                || name == "key"
-                                || name == "ref"
-                                || name == "is"
-                            {
-                                continue;
-                            }
-                            if is_camel_case(name) {
-                                let kebab = hyphenate(name);
-                                ctx.warn_with_help(
-                                    ctx.t_fmt(
-                                        "vue/prop-name-casing.message",
-                                        &[("name", name), ("kebab", &kebab)],
-                                    ),
-                                    &dir.loc,
-                                    ctx.t("vue/prop-name-casing.help"),
-                                );
-                            }
+                    if dir.name == "bind"
+                        && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                    {
+                        let name = arg.content.as_ref();
+                        // Skip standard bindings
+                        if name == "class"
+                            || name == "style"
+                            || name == "key"
+                            || name == "ref"
+                            || name == "is"
+                        {
+                            continue;
+                        }
+                        if is_camel_case(name) {
+                            let kebab = hyphenate(name);
+                            ctx.warn_with_help(
+                                ctx.t_fmt(
+                                    "vue/prop-name-casing.message",
+                                    &[("name", name), ("kebab", &kebab)],
+                                ),
+                                &dir.loc,
+                                ctx.t("vue/prop-name-casing.help"),
+                            );
                         }
                     }
                 }

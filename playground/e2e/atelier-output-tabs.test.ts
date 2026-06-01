@@ -46,12 +46,19 @@ vi.mock("../src/shared/CodeHighlight.vue", () => ({
   }),
 }));
 
+vi.mock("../src/features/atelier/formatters", () => ({
+  formatCode: vi.fn(async (code: string, parser: string) => `[${parser}] ${code}`),
+  formatCss: vi.fn(async (code: string) => code),
+  transpileToJs: vi.fn(async (code: string) => `js:${code}`),
+}));
+
 import AtelierPlayground from "../src/features/atelier/AtelierPlayground.vue";
 
 function createSfcResult(
   scriptCode: string,
   templateCode: string,
   templates: string[] = [],
+  warnings: string[] = [],
 ): SfcCompileResult {
   return {
     descriptor: {
@@ -87,7 +94,7 @@ function createSfcResult(
     },
     css: "",
     errors: [],
-    warnings: [],
+    warnings,
     bindingMetadata: {},
   };
 }
@@ -101,7 +108,12 @@ describe("Atelier output tabs", () => {
         ]);
       }
       if (options.ssr) {
-        return createSfcResult("const mode = 'dom-script'", "const mode = 'ssr'");
+        return createSfcResult(
+          "const mode = 'dom-script'",
+          "const mode = 'ssr'",
+          [],
+          ["SFC Vapor SSR is not supported yet; falling back to standard SSR output."],
+        );
       }
       return createSfcResult("const mode = 'dom'", "const mode = 'dom-template'");
     });
@@ -154,6 +166,10 @@ describe("Atelier output tabs", () => {
       expect(outputHeading().text()).toBe("SSR Output");
       expect(codeOutputs()).toHaveLength(1);
       expect(codeOutputs()[0]!.text()).toContain("const mode = 'ssr'");
+      expect(wrapper.find(".wasm-warning").exists()).toBe(true);
+      expect(wrapper.text()).toContain(
+        "SFC Vapor SSR is not supported yet; falling back to standard SSR output.",
+      );
       expect(wrapper.text()).not.toContain("SFC Output");
       expect(codeViewButtons()).toEqual([
         { text: "TS", disabled: true },
@@ -166,6 +182,7 @@ describe("Atelier output tabs", () => {
       expect(outputHeading().text()).toBe("Vapor Output");
       expect(codeOutputs()).toHaveLength(1);
       expect(codeOutputs()[0]!.text()).toContain("const mode = 'vapor'");
+      expect(wrapper.find(".wasm-warning").exists()).toBe(false);
       expect(wrapper.text()).not.toContain("Template Fragments");
       expect(wrapper.text()).not.toContain("SFC Output");
       expect(codeViewButtons()).toEqual([

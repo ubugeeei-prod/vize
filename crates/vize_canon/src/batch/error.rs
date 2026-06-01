@@ -1,9 +1,9 @@
 //! Error types for batch type checking.
 
 use std::path::{Path, PathBuf};
+use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_carton::String;
 
 /// Error type for Corsa-backed batch operations.
 #[derive(Debug, thiserror::Error)]
@@ -61,13 +61,26 @@ pub enum PackageManager {
 #[derive(Debug)]
 pub struct CorsaNotFoundError {
     detected_pm: Option<PackageManager>,
+    explicit_path: Option<PathBuf>,
 }
 
 impl CorsaNotFoundError {
     /// Create a new CorsaNotFoundError.
     pub fn new(project_root: &Path) -> Self {
         let detected_pm = detect_package_manager(project_root);
-        Self { detected_pm }
+        Self {
+            detected_pm,
+            explicit_path: None,
+        }
+    }
+
+    /// Create a new CorsaNotFoundError for an explicit but missing path.
+    pub fn new_explicit(project_root: &Path, path: &Path) -> Self {
+        let detected_pm = detect_package_manager(project_root);
+        Self {
+            detected_pm,
+            explicit_path: Some(path.to_path_buf()),
+        }
     }
 
     /// Get the detected package manager.
@@ -80,7 +93,15 @@ impl CorsaNotFoundError {
         let mut msg = String::default();
 
         msg.push_str("error: corsa not found\n\n");
-        msg.push_str("vize check requires '@typescript/native-preview' to be installed.\n\n");
+        if let Some(path) = &self.explicit_path {
+            append!(
+                msg,
+                "Configured Corsa executable does not exist: {}\n\n",
+                path.display()
+            );
+        } else {
+            msg.push_str("vize check requires '@typescript/native-preview' to be installed.\n\n");
+        }
 
         if let Some(pm) = self.detected_pm {
             msg.push_str("To install, run:\n\n");
@@ -148,22 +169,21 @@ pub fn detect_package_manager(project_root: &Path) -> Option<PackageManager> {
 
     // 2. Detect from package.json packageManager field
     let pkg_json = project_root.join("package.json");
-    if let Ok(content) = std::fs::read_to_string(&pkg_json) {
-        if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
-            if let Some(pm) = json.get("packageManager").and_then(|v| v.as_str()) {
-                if pm.starts_with("pnpm") {
-                    return Some(PackageManager::Pnpm);
-                }
-                if pm.starts_with("yarn") {
-                    return Some(PackageManager::Yarn);
-                }
-                if pm.starts_with("bun") {
-                    return Some(PackageManager::Bun);
-                }
-                if pm.starts_with("npm") {
-                    return Some(PackageManager::Npm);
-                }
-            }
+    if let Ok(content) = std::fs::read_to_string(&pkg_json)
+        && let Ok(json) = serde_json::from_str::<serde_json::Value>(&content)
+        && let Some(pm) = json.get("packageManager").and_then(|v| v.as_str())
+    {
+        if pm.starts_with("pnpm") {
+            return Some(PackageManager::Pnpm);
+        }
+        if pm.starts_with("yarn") {
+            return Some(PackageManager::Yarn);
+        }
+        if pm.starts_with("bun") {
+            return Some(PackageManager::Bun);
+        }
+        if pm.starts_with("npm") {
+            return Some(PackageManager::Npm);
         }
     }
 
@@ -178,6 +198,7 @@ mod tests {
     fn test_corsa_not_found_error_message() {
         let error = CorsaNotFoundError {
             detected_pm: Some(PackageManager::Pnpm),
+            explicit_path: None,
         };
 
         let msg = error.display_message();
@@ -186,7 +207,10 @@ mod tests {
 
     #[test]
     fn test_corsa_not_found_no_pm() {
-        let error = CorsaNotFoundError { detected_pm: None };
+        let error = CorsaNotFoundError {
+            detected_pm: None,
+            explicit_path: None,
+        };
 
         let msg = error.display_message();
         insta::assert_snapshot!(msg.as_str());

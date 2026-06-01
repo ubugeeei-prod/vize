@@ -7,6 +7,8 @@ import {
   getScopeDecorationClass,
   offsetToPosition,
   getOverviewRulerColor,
+  getScopeDecorationHoverMessage,
+  type ScopeDecorationInfo,
 } from "./scopeDecorations";
 
 export interface Diagnostic {
@@ -18,12 +20,7 @@ export interface Diagnostic {
   severity: "error" | "warning" | "info";
 }
 
-export interface ScopeDecoration {
-  start: number; // Character offset
-  end: number; // Character offset
-  kind: string; // Scope kind for styling
-  kindStr?: string; // Human-readable description
-}
+export interface ScopeDecoration extends ScopeDecorationInfo {}
 
 const props = defineProps<{
   modelValue: string;
@@ -58,7 +55,7 @@ function applyScopeDecorations(scopes: ScopeDecoration[] | undefined) {
   const newDecorations: monaco.editor.IModelDeltaDecoration[] = scopes.map((scope) => {
     const startPos = offsetToPosition(model, scope.start);
     const endPos = offsetToPosition(model, scope.end);
-    const className = getScopeDecorationClass(scope.kindStr || scope.kind);
+    const className = getScopeDecorationClass(scope.kind);
 
     return {
       range: new monaco.Range(
@@ -69,7 +66,7 @@ function applyScopeDecorations(scopes: ScopeDecoration[] | undefined) {
       ),
       options: {
         className,
-        hoverMessage: { value: `**Scope:** ${scope.kindStr || scope.kind}` },
+        hoverMessage: getScopeDecorationHoverMessage(scope),
         isWholeLine: false,
         overviewRuler: {
           color: getOverviewRulerColor(scope.kind),

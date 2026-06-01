@@ -3,21 +3,27 @@
 #![allow(clippy::disallowed_macros)]
 
 use clap::Args;
-use glob::{glob, MatchOptions, Pattern};
+use glob::{MatchOptions, Pattern, glob};
 use ignore::WalkBuilder;
 use rayon::prelude::*;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
-use vize_carton::cstr;
-use vize_glyph::{format_sfc_with_allocator, Allocator, FormatOptions};
-
-use crate::commands::profile::{
-    print_profile_report, ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport,
+use vize_carton::{
+    cstr, profile,
+    profiler::{allocation_snapshot, global_profiler},
 };
+use vize_glyph::{Allocator, FormatOptions, format_sfc_with_allocator};
+
 use crate::config;
+use vize_curator::profile::{
+    ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
+};
+
+const NODE_MODULES_DIR: &str = "node_modules";
+const VIZE_CACHE_DIR: &str = ".vize";
 
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
@@ -38,8 +44,12 @@ pub struct FmtArgs {
     #[arg(short, long)]
     pub config: Option<PathBuf>,
 
-    /// Use single quotes instead of double quotes
+    /// Do not load a config file
     #[arg(long)]
+    pub no_config: bool,
+
+    /// Use single quotes instead of double quotes
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub single_quote: Option<bool>,
 
     /// Print width (line length) for formatting
@@ -51,7 +61,7 @@ pub struct FmtArgs {
     pub tab_width: Option<u8>,
 
     /// Use tabs instead of spaces for indentation
-    #[arg(long)]
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub use_tabs: Option<bool>,
 
     /// Do not print semicolons at the ends of statements
@@ -59,11 +69,11 @@ pub struct FmtArgs {
     pub no_semi: bool,
 
     /// Sort HTML attributes in template
-    #[arg(long)]
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub sort_attributes: Option<bool>,
 
     /// Put each HTML attribute on its own line
-    #[arg(long)]
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub single_attribute_per_line: Option<bool>,
 
     /// Maximum number of attributes per line before wrapping
@@ -71,7 +81,7 @@ pub struct FmtArgs {
     pub max_attributes_per_line: Option<u32>,
 
     /// Normalize directive shorthands (v-bind: → :, v-on: → @, v-slot: → #)
-    #[arg(long)]
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub normalize_directive_shorthands: Option<bool>,
 
     /// Show detailed timing profile
@@ -104,45 +114,52 @@ pub fn run(args: FmtArgs) {
     let files_unchanged = AtomicUsize::new(0);
     let files_errored = AtomicUsize::new(0);
     let profile_rows = args.profile.then(|| Mutex::new(Vec::new()));
+    if args.profile {
+        let profiler = global_profiler();
+        profiler.clear();
+        profiler.enable();
+    }
 
-    // Process files in parallel, each thread gets its own allocator for maximum performance
+    // Process files in parallel, reusing one arena per Rayon worker.
     let process_start = Instant::now();
-    files.par_iter().for_each(|path| {
-        // Create per-thread allocator with estimated capacity
-        let allocator = Allocator::with_capacity(64 * 1024); // 64KB initial capacity
+    files.par_iter().for_each_init(
+        || Allocator::with_capacity(64 * 1024),
+        |allocator, path| {
+            allocator.reset();
 
-        match process_file(
-            path,
-            &options,
-            &allocator,
-            args.check,
-            args.write,
-            args.profile,
-        ) {
-            Ok(result) => {
-                if result.changed {
-                    files_changed.fetch_add(1, Ordering::Relaxed);
-                    if args.check {
-                        has_errors.store(true, Ordering::Relaxed);
+            match process_file(
+                path,
+                &options,
+                allocator,
+                args.check,
+                args.write,
+                args.profile,
+            ) {
+                Ok(result) => {
+                    if result.changed {
+                        files_changed.fetch_add(1, Ordering::Relaxed);
+                        if args.check {
+                            has_errors.store(true, Ordering::Relaxed);
+                        }
+                    } else {
+                        files_unchanged.fetch_add(1, Ordering::Relaxed);
                     }
-                } else {
-                    files_unchanged.fetch_add(1, Ordering::Relaxed);
-                }
 
-                if let (Some(profile), Some(profile_rows)) = (result.profile, profile_rows.as_ref())
-                {
-                    if let Ok(mut rows) = profile_rows.lock() {
+                    if let (Some(profile), Some(profile_rows)) =
+                        (result.profile, profile_rows.as_ref())
+                        && let Ok(mut rows) = profile_rows.lock()
+                    {
                         rows.push(profile);
                     }
                 }
+                Err(err) => {
+                    eprintln!("Error formatting {}: {}", path.display(), err);
+                    files_errored.fetch_add(1, Ordering::Relaxed);
+                    has_errors.store(true, Ordering::Relaxed);
+                }
             }
-            Err(err) => {
-                eprintln!("Error formatting {}: {}", path.display(), err);
-                files_errored.fetch_add(1, Ordering::Relaxed);
-                has_errors.store(true, Ordering::Relaxed);
-            }
-        }
-    });
+        },
+    );
     let process_time = process_start.elapsed();
 
     // Print summary
@@ -188,7 +205,7 @@ pub fn run(args: FmtArgs) {
         let mut profiles = profile_rows
             .and_then(|profile_rows| profile_rows.into_inner().ok())
             .unwrap_or_default();
-        profiles.sort_by(|left, right| right.row.total.cmp(&left.row.total));
+        profiles.sort_by_key(|profile| std::cmp::Reverse(profile.row.total));
 
         let total_read = profiles
             .iter()
@@ -269,6 +286,12 @@ pub fn run(args: FmtArgs) {
             unchanged,
             errored
         );
+        let profiler = global_profiler();
+        let allocation_summary = allocation_snapshot();
+        let counter_summary = profiler.counter_summary();
+        let operation_summary = profiler.summary();
+        profiler.disable();
+
         let report = ProfileReport {
             title: "fmt",
             summary: summary.as_str(),
@@ -277,7 +300,9 @@ pub fn run(args: FmtArgs) {
             files: &file_rows,
             slow_threshold,
             throughput_bytes: Some(total_bytes),
-            operations: None,
+            operations: Some(&operation_summary),
+            counters: Some(&counter_summary),
+            allocations: Some(allocation_summary),
             recommendations: &recommendations,
         };
         print_profile_report(&report);
@@ -292,8 +317,12 @@ pub fn run(args: FmtArgs) {
 #[inline]
 fn build_format_options(args: &FmtArgs) -> FormatOptions {
     // Load config file as base (zero-cost if no file exists)
-    let cfg = config::load_config(args.config.as_deref());
-    let mut opts = cfg.fmt;
+    let cfg = if args.no_config {
+        config::VizeConfig::default()
+    } else {
+        config::load_config(args.config.as_deref())
+    };
+    let mut opts = config::to_glyph_format_options(&cfg.formatter);
 
     // CLI flags override config values
     if let Some(v) = args.print_width {
@@ -341,14 +370,18 @@ fn collect_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
         } else if contains_glob_char(&normalized) {
             if let Ok(paths) = glob(&normalized) {
                 for path in paths.flatten() {
-                    if path.extension().is_some_and(|ext| ext == "vue") {
+                    if path.extension().is_some_and(|ext| ext == "vue") && !is_generated_path(&path)
+                    {
                         files.push(path);
                     }
                 }
             }
         } else {
             let path = PathBuf::from(&normalized);
-            if path.extension().is_some_and(|ext| ext == "vue") && path.is_file() {
+            if path.extension().is_some_and(|ext| ext == "vue")
+                && path.is_file()
+                && !is_generated_path(&path)
+            {
                 files.push(path);
             }
         }
@@ -372,7 +405,10 @@ fn collect_walked_files(pattern: &FmtPattern, files: &mut Vec<PathBuf>) {
 
     for entry in walker.filter_map(Result::ok) {
         let path = entry.path();
-        if path.extension().is_some_and(|ext| ext == "vue") && pattern.matches(path) {
+        if path.extension().is_some_and(|ext| ext == "vue")
+            && pattern.matches(path)
+            && !is_generated_path(path)
+        {
             files.push(path.to_path_buf());
         }
     }
@@ -448,6 +484,21 @@ fn contains_glob_char(pattern: &str) -> bool {
     pattern.contains(['*', '?', '['])
 }
 
+fn is_generated_path(path: &Path) -> bool {
+    let mut previous = None;
+    for component in path.components() {
+        let Some(name) = component.as_os_str().to_str() else {
+            previous = None;
+            continue;
+        };
+        if previous == Some(NODE_MODULES_DIR) && name == VIZE_CACHE_DIR {
+            return true;
+        }
+        previous = Some(name);
+    }
+    false
+}
+
 #[inline]
 fn fmt_glob_match_options() -> MatchOptions {
     MatchOptions {
@@ -471,15 +522,27 @@ fn process_file(
 
     // Read the file
     let read_start = profile.then(Instant::now);
-    let source = fs::read_to_string(path).map_err(|e| format!("Failed to read file: {}", e))?;
+    let source = match profile!("cli.fmt.file.read", fs::read_to_string(path)) {
+        Ok(source) => {
+            global_profiler().record_fs_read_to_string(source.len());
+            source
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(format!("Failed to read file: {}", error));
+        }
+    };
     let read_time = read_start
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
 
     // Format the source using the provided allocator
     let format_start = profile.then(Instant::now);
-    let result = format_sfc_with_allocator(&source, options, allocator)
-        .map_err(|e| format!("Format error: {}", e))?;
+    let result = profile!(
+        "cli.fmt.file.format_sfc",
+        format_sfc_with_allocator(&source, options, allocator)
+    )
+    .map_err(|e| format!("Format error: {}", e))?;
     let format_time = format_start
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
@@ -491,7 +554,12 @@ fn process_file(
             eprintln!("Would reformat: {}", path.display());
         } else if write {
             // Write the formatted output
-            fs::write(path, &result.code).map_err(|e| format!("Failed to write file: {}", e))?;
+            let bytes = result.code.len();
+            if let Err(error) = profile!("cli.fmt.file.write", fs::write(path, &result.code)) {
+                global_profiler().record_fs_write_failure(bytes);
+                return Err(format!("Failed to write file: {}", error));
+            }
+            global_profiler().record_fs_write(bytes);
             eprintln!("Reformatted: {}", path.display());
         } else {
             // Print the diff or formatted output
@@ -545,7 +613,7 @@ struct FormatFileProfile {
 
 #[cfg(test)]
 mod tests {
-    use super::{collect_files, FmtPattern};
+    use super::{FmtPattern, collect_files};
     use std::{
         fs,
         path::{Path, PathBuf},
@@ -572,6 +640,24 @@ mod tests {
     }
 
     #[test]
+    fn collect_files_skips_generated_vize_workspace() {
+        let root = unique_case_dir("generated-vize");
+        let src = root.join("src");
+        let generated = root.join("node_modules/.vize/corsa-overlay/src");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&src).unwrap();
+        fs::create_dir_all(&generated).unwrap();
+        fs::write(src.join("App.vue"), "<template><div/></template>").unwrap();
+        fs::write(generated.join("App.vue"), "<template><div/></template>").unwrap();
+
+        let pattern = root.join("**/*.vue").to_string_lossy().into_owned();
+        let files = collect_files(&[pattern]);
+        let _ = fs::remove_dir_all(&root);
+
+        assert_eq!(files, vec![src.join("App.vue")]);
+    }
+
+    #[test]
     fn relative_glob_does_not_match_every_vue_file() {
         let cwd = std::env::current_dir().unwrap();
         let pattern = FmtPattern::new("bench/__in__/*.vue", &cwd).unwrap();
@@ -594,8 +680,8 @@ mod tests {
         dir_name.push_str(nanos.as_str());
         std::env::current_dir()
             .unwrap()
-            .join("__agent_only")
-            .join("tests")
+            .join("target")
+            .join("vize-tests")
             .join("fmt")
             .join(dir_name.as_str())
     }

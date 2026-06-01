@@ -3,13 +3,14 @@ source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
 interface Item {
   id: number;
   name: string;
 }
+
 const foo: string = "bar";
 const count: number = 42;
 

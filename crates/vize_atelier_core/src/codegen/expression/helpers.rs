@@ -10,14 +10,92 @@ use super::super::context::CodegenContext;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
+fn is_identifier_continue(c: char) -> bool {
+    c.is_alphanumeric() || c == '_' || c == '$'
+}
+
+fn is_simple_identifier_name(name: &str) -> bool {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    (first.is_alphabetic() || first == '_' || first == '$')
+        && chars.all(|c| c.is_alphanumeric() || c == '_' || c == '$')
+}
+
+fn props_access_expression(object: &str, key: &str) -> String {
+    if is_simple_identifier_name(key) {
+        let mut out = String::with_capacity(object.len() + key.len() + 1);
+        out.push_str(object);
+        out.push('.');
+        out.push_str(key);
+        return out;
+    }
+
+    let mut out = String::with_capacity(object.len() + key.len() + 4);
+    out.push_str(object);
+    out.push('[');
+    use std::fmt::Write as _;
+    let _ = write!(&mut out, "{:?}", key);
+    out.push(']');
+    out
+}
+
+fn replace_prefixed_alias_access(code: String, object: &str, local: &str, key: &str) -> String {
+    let needle = {
+        let mut needle = String::with_capacity(object.len() + local.len() + 1);
+        needle.push_str(object);
+        needle.push('.');
+        needle.push_str(local);
+        needle
+    };
+    let replacement = props_access_expression(object, key);
+
+    let mut result = String::with_capacity(code.len());
+    let mut cursor = 0;
+    while let Some(rel_pos) = code[cursor..].find(needle.as_str()) {
+        let start = cursor + rel_pos;
+        let end = start + needle.len();
+        let after_ok = code[end..]
+            .chars()
+            .next()
+            .is_none_or(|c| !is_identifier_continue(c));
+
+        result.push_str(&code[cursor..start]);
+        if after_ok {
+            result.push_str(&replacement);
+        } else {
+            result.push_str(&code[start..end]);
+        }
+        cursor = end;
+    }
+    result.push_str(&code[cursor..]);
+    result
+}
+
+fn rewrite_props_aliases(code: String, ctx: &CodegenContext) -> String {
+    let Some(bindings) = &ctx.options.binding_metadata else {
+        return code;
+    };
+    if bindings.props_aliases.is_empty() {
+        return code;
+    }
+
+    let mut rewritten = code;
+    for (local, key) in &bindings.props_aliases {
+        rewritten = replace_prefixed_alias_access(rewritten, "$props", local, key);
+    }
+    rewritten
+}
+
 /// Prefix identifiers in expression with appropriate prefix based on binding metadata.
 /// This is a context-aware version that uses `$setup.` for setup bindings in function mode.
 pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContext) -> String {
     use oxc_allocator::Allocator as OxcAllocator;
+    use oxc_ast_visit::Visit;
     use oxc_ast_visit::walk::{
         walk_assignment_expression, walk_object_property, walk_update_expression,
     };
-    use oxc_ast_visit::Visit;
     use oxc_parser::Parser;
     use oxc_span::SourceType;
     use vize_carton::FxHashSet;
@@ -126,75 +204,75 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
         }
 
         fn visit_object_property(&mut self, prop: &oxc_ast::ast::ObjectProperty<'_>) {
-            if prop.shorthand {
-                if let oxc_ast::ast::PropertyKey::StaticIdentifier(ident) = &prop.key {
-                    let name = ident.name.as_str();
+            if prop.shorthand
+                && let oxc_ast::ast::PropertyKey::StaticIdentifier(ident) = &prop.key
+            {
+                let name = ident.name.as_str();
 
-                    // Skip if local variable, global, or slot param
-                    if self.local_vars.contains(name)
-                        || is_global_allowed(name)
-                        || self.ctx.is_slot_param(name)
-                    {
-                        return;
-                    }
+                // Skip if local variable, global, or slot param
+                if self.local_vars.contains(name)
+                    || is_global_allowed(name)
+                    || self.ctx.is_slot_param(name)
+                {
+                    return;
+                }
 
-                    let mut is_ref = false;
-                    let mut needs_unref = false;
-                    let prefix = if let Some(ref metadata) = self.ctx.options.binding_metadata {
-                        if let Some(binding_type) = metadata.bindings.get(name) {
-                            is_ref = self.ctx.options.inline
-                                && matches!(binding_type, BindingType::SetupRef);
-                            needs_unref = self.ctx.options.inline
-                                && matches!(
-                                    binding_type,
-                                    BindingType::SetupLet | BindingType::SetupMaybeRef
-                                );
-                            match binding_type {
-                                BindingType::Props | BindingType::PropsAliased => "$props.",
-                                _ => {
-                                    if self.ctx.options.inline {
-                                        ""
-                                    } else {
-                                        "$setup."
-                                    }
+                let mut is_ref = false;
+                let mut needs_unref = false;
+                let prefix = if let Some(ref metadata) = self.ctx.options.binding_metadata {
+                    if let Some(binding_type) = metadata.bindings.get(name) {
+                        is_ref = self.ctx.options.inline
+                            && matches!(binding_type, BindingType::SetupRef);
+                        needs_unref = self.ctx.options.inline
+                            && matches!(
+                                binding_type,
+                                BindingType::SetupLet | BindingType::SetupMaybeRef
+                            );
+                        match binding_type {
+                            BindingType::Props | BindingType::PropsAliased => "$props.",
+                            _ => {
+                                if self.ctx.options.inline {
+                                    ""
+                                } else {
+                                    "$setup."
                                 }
                             }
-                        } else {
-                            "_ctx."
                         }
                     } else {
                         "_ctx."
-                    };
-
-                    if !prefix.is_empty() || is_ref || needs_unref {
-                        let start = (prop.span.start - self.offset) as usize;
-                        let end = (prop.span.end - self.offset) as usize;
-                        let (value_prefix, value_suffix) = if needs_unref {
-                            ("_unref(", ")")
-                        } else if is_ref {
-                            ("", ".value")
-                        } else {
-                            ("", "")
-                        };
-                        let mut replacement = String::with_capacity(
-                            name.len()
-                                + 2
-                                + value_prefix.len()
-                                + prefix.len()
-                                + name.len()
-                                + value_suffix.len(),
-                        );
-                        replacement.push_str(name);
-                        replacement.push_str(": ");
-                        replacement.push_str(value_prefix);
-                        if !needs_unref {
-                            replacement.push_str(prefix);
-                        }
-                        replacement.push_str(name);
-                        replacement.push_str(value_suffix);
-                        self.rewrites.push((start, end, replacement));
-                        return;
                     }
+                } else {
+                    "_ctx."
+                };
+
+                if !prefix.is_empty() || is_ref || needs_unref {
+                    let start = (prop.span.start - self.offset) as usize;
+                    let end = (prop.span.end - self.offset) as usize;
+                    let (value_prefix, value_suffix) = if needs_unref {
+                        ("_unref(", ")")
+                    } else if is_ref {
+                        ("", ".value")
+                    } else {
+                        ("", "")
+                    };
+                    let mut replacement = String::with_capacity(
+                        name.len()
+                            + 2
+                            + value_prefix.len()
+                            + prefix.len()
+                            + name.len()
+                            + value_suffix.len(),
+                    );
+                    replacement.push_str(name);
+                    replacement.push_str(": ");
+                    replacement.push_str(value_prefix);
+                    if !needs_unref {
+                        replacement.push_str(prefix);
+                    }
+                    replacement.push_str(name);
+                    replacement.push_str(value_suffix);
+                    self.rewrites.push((start, end, replacement));
+                    return;
                 }
             }
 
@@ -329,7 +407,7 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
         if rewrites.is_empty() {
             return content.to_compact_string();
         }
-        rewrites.sort_by(|a, b| b.0.cmp(&a.0));
+        rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
         let mut result = content.to_compact_string();
         for (start, end, replacement) in rewrites {
             if start < result.len() && end <= result.len() {
@@ -365,7 +443,7 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
             };
             visitor.visit_expression(&expr);
 
-            apply_rewrites(content, rewrites)
+            rewrite_props_aliases(apply_rewrites(content, rewrites), ctx)
         }
         Err(_) => {
             // Expression parsing failed -- try parsing as a program
@@ -386,7 +464,7 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
                 };
                 visitor.visit_program(&parse_result2.program);
 
-                apply_rewrites(content, rewrites)
+                rewrite_props_aliases(apply_rewrites(content, rewrites), ctx)
             } else {
                 content.to_compact_string()
             }

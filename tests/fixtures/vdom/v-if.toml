@@ -35,6 +35,10 @@ name = "v-if/v-else on components"
 input = '<Foo v-if="show" /><Bar v-else />'
 
 [[cases]]
+name = "v-if/v-else-if on components"
+input = '<Foo v-if="a" /><Bar v-else-if="b" /><Baz v-else />'
+
+[[cases]]
 name = "v-if/v-else same element"
 input = '<div v-if="show">A</div><div v-else>B</div>'
 
@@ -79,6 +83,10 @@ name = "nested v-if"
 input = '<div v-if="a"><span v-if="b">nested</span></div>'
 
 [[cases]]
+name = "nested v-if with else"
+input = '<div v-if="a"><span v-if="b">B</span><span v-else>C</span></div>'
+
+[[cases]]
 name = "v-if inside v-for"
 input = '<div v-for="item in items" :key="item.id"><span v-if="item.show">{{ item.name }}</span></div>'
 
@@ -117,3 +125,7 @@ input = '<div v-if="isValid()">valid</div>'
 [[cases]]
 name = "v-if with negation"
 input = '<div v-if="!hidden">visible</div>'
+
+[[cases]]
+name = "v-if with optional chaining"
+input = '<div v-if="user?.profile">{{ user.profile.name }}</div>'

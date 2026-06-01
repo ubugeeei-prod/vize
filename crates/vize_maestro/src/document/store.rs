@@ -64,6 +64,10 @@ impl Document {
                     self.content.try_byte_to_char(start),
                     self.content.try_byte_to_char(end),
                 ) {
+                    if start_char > end_char {
+                        return;
+                    }
+
                     self.content.remove(start_char..end_char);
                     self.content.insert(start_char, &change.text);
                 }
@@ -107,6 +111,14 @@ impl DocumentStore {
 
     /// Rename an open document while preserving its content and version.
     pub fn rename(&self, old_uri: &Url, new_uri: Url) -> bool {
+        if old_uri == &new_uri {
+            return self.documents.contains_key(old_uri);
+        }
+
+        if self.documents.contains_key(&new_uri) {
+            return false;
+        }
+
         let Some((_, mut document)) = self.documents.remove(old_uri) else {
             return false;
         };
@@ -238,6 +250,56 @@ mod tests {
     }
 
     #[test]
+    fn test_incremental_change_uses_utf16_positions() {
+        let mut doc = Document::new(test_uri(), "a😀b".to_string(), 1, "vue".to_string());
+
+        let change = TextDocumentContentChangeEvent {
+            range: Some(Range {
+                start: Position {
+                    line: 0,
+                    character: 3,
+                },
+                end: Position {
+                    line: 0,
+                    character: 4,
+                },
+            }),
+            range_length: None,
+            text: "c".to_string(),
+        };
+
+        doc.apply_change(&change, 2);
+
+        assert_eq!(doc.text(), "a😀c");
+        assert_eq!(doc.version, 2);
+    }
+
+    #[test]
+    fn test_incremental_change_rejects_utf16_surrogate_pair_interior() {
+        let mut doc = Document::new(test_uri(), "a😀b".to_string(), 1, "vue".to_string());
+
+        let change = TextDocumentContentChangeEvent {
+            range: Some(Range {
+                start: Position {
+                    line: 0,
+                    character: 2,
+                },
+                end: Position {
+                    line: 0,
+                    character: 3,
+                },
+            }),
+            range_length: None,
+            text: "x".to_string(),
+        };
+
+        doc.apply_change(&change, 2);
+
+        assert_eq!(doc.text(), "a😀b");
+        assert_eq!(doc.version, 2);
+    }
+
+    #[test]
     fn test_full_content_change() {
         let mut doc = Document::new(test_uri(), "hello world".to_string(), 1, "vue".to_string());
 
@@ -250,6 +312,56 @@ mod tests {
         doc.apply_change(&change, 2);
 
         assert_eq!(doc.text(), "completely new content");
+    }
+
+    #[test]
+    fn test_reversed_incremental_change_is_ignored() {
+        let mut doc = Document::new(test_uri(), "hello world".to_string(), 1, "vue".to_string());
+
+        let change = TextDocumentContentChangeEvent {
+            range: Some(Range {
+                start: Position {
+                    line: 0,
+                    character: 11,
+                },
+                end: Position {
+                    line: 0,
+                    character: 6,
+                },
+            }),
+            range_length: None,
+            text: "universe".to_string(),
+        };
+
+        doc.apply_change(&change, 2);
+
+        assert_eq!(doc.text(), "hello world");
+        assert_eq!(doc.version, 2);
+    }
+
+    #[test]
+    fn test_out_of_bounds_incremental_change_is_ignored() {
+        let mut doc = Document::new(test_uri(), "hello world".to_string(), 1, "vue".to_string());
+
+        let change = TextDocumentContentChangeEvent {
+            range: Some(Range {
+                start: Position {
+                    line: 42,
+                    character: 0,
+                },
+                end: Position {
+                    line: 42,
+                    character: 5,
+                },
+            }),
+            range_length: None,
+            text: "ignored".to_string(),
+        };
+
+        doc.apply_change(&change, 2);
+
+        assert_eq!(doc.text(), "hello world");
+        assert_eq!(doc.version, 2);
     }
 
     #[test]
@@ -286,5 +398,26 @@ mod tests {
         let doc = store.get(&new_uri).unwrap();
         assert_eq!(doc.text(), "content");
         assert_eq!(doc.version, 3);
+    }
+
+    #[test]
+    fn test_document_store_rename_does_not_overwrite_open_target() {
+        let store = DocumentStore::new();
+        let old_uri = test_uri();
+        let new_uri = Url::parse("file:///renamed.vue").unwrap();
+
+        store.open(old_uri.clone(), "source".to_string(), 3, "vue".to_string());
+        store.open(new_uri.clone(), "target".to_string(), 7, "vue".to_string());
+
+        assert!(!store.rename(&old_uri, new_uri.clone()));
+
+        let source = store.get(&old_uri).unwrap();
+        assert_eq!(source.text(), "source");
+        assert_eq!(source.version, 3);
+        drop(source);
+
+        let target = store.get(&new_uri).unwrap();
+        assert_eq!(target.text(), "target");
+        assert_eq!(target.version, 7);
     }
 }

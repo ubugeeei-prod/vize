@@ -113,15 +113,14 @@ fn collect_static_ids<'a>(children: &[TemplateChildNode<'a>], ids: &mut Vec<IdEn
 
 fn collect_element_id(element: &ElementNode, ids: &mut Vec<IdEntry>) {
     for prop in &element.props {
-        if let PropNode::Attribute(attr) = prop {
-            if attr.name == "id" {
-                if let Some(value) = &attr.value {
-                    ids.push(IdEntry {
-                        value: value.content.to_compact_string(),
-                        loc: loc_info(&attr.loc),
-                    });
-                }
-            }
+        if let PropNode::Attribute(attr) = prop
+            && attr.name == "id"
+            && let Some(value) = &attr.value
+        {
+            ids.push(IdEntry {
+                value: value.content.to_compact_string(),
+                loc: loc_info(&attr.loc),
+            });
         }
     }
 }

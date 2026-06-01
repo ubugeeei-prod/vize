@@ -2,13 +2,31 @@ import type { HmrContext } from "vite";
 import fs from "node:fs";
 import path from "node:path";
 
-import type { VizePluginState } from "./state.js";
-import { getCompileOptionsForRequest } from "./state.js";
-import { compileFile } from "../compiler.js";
-import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.js";
-import { hasDelegatedStyles } from "../utils/index.js";
-import { toVirtualId } from "../virtual.js";
-import { resolveCssImports } from "../utils/css.js";
+import type { VizePluginState } from "./state.ts";
+import { getCompileOptionsForRequest } from "./state.ts";
+import { compileFile } from "../compiler.ts";
+import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.ts";
+import { hasDelegatedStyles } from "../utils/index.ts";
+import { toVirtualId } from "../virtual.ts";
+import { resolveCssImports } from "../utils/css.ts";
+
+export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
+export const VIZE_COMPONENTS_CSS_FILE = `assets/${VIZE_COMPONENTS_CSS_BASENAME}`;
+
+type GenerateBundleItem =
+  | {
+      type: "chunk";
+      isEntry?: boolean;
+      isDynamicEntry?: boolean;
+      viteMetadata?: {
+        importedCss?: Set<string>;
+      };
+    }
+  | {
+      type?: string;
+    };
+
+type GenerateBundle = Record<string, GenerateBundleItem>;
 
 export async function handleHotUpdateHook(
   state: VizePluginState,
@@ -116,20 +134,46 @@ export async function handleHotUpdateHook(
 export function handleGenerateBundleHook(
   state: VizePluginState,
   emitFile: (file: { type: "asset"; fileName: string; source: string }) => void,
+  bundle: GenerateBundle,
 ): void {
   if (!state.extractCss || state.collectedCss.size === 0) {
     return;
   }
 
-  const allCss = Array.from(state.collectedCss.values()).join("\n\n");
+  let allCss = "";
+  for (const css of state.collectedCss.values()) {
+    allCss += allCss ? `\n\n${css}` : css;
+  }
   if (allCss.trim()) {
+    const cssFileName = state.componentsCssFileName || VIZE_COMPONENTS_CSS_FILE;
     emitFile({
       type: "asset",
-      fileName: "assets/vize-components.css",
+      fileName: cssFileName,
       source: allCss,
     });
-    state.logger.log(
-      `Extracted CSS to assets/vize-components.css (${state.collectedCss.size} components)`,
-    );
+    attachComponentsCssToEntryChunks(bundle, cssFileName);
+    state.logger.log(`Extracted CSS to ${cssFileName} (${state.collectedCss.size} components)`);
+  }
+}
+
+export function resolveComponentsCssFileName(assetsDir: string | undefined): string {
+  const normalizedAssetsDir = (assetsDir || "assets").replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+
+  if (!normalizedAssetsDir || normalizedAssetsDir === ".") {
+    return VIZE_COMPONENTS_CSS_BASENAME;
+  }
+
+  return `${normalizedAssetsDir}/${VIZE_COMPONENTS_CSS_BASENAME}`;
+}
+
+function attachComponentsCssToEntryChunks(bundle: GenerateBundle, cssFileName: string): void {
+  for (const item of Object.values(bundle)) {
+    if (item.type !== "chunk" || (!item.isEntry && !item.isDynamicEntry)) {
+      continue;
+    }
+
+    item.viteMetadata ??= {};
+    item.viteMetadata.importedCss ??= new Set<string>();
+    item.viteMetadata.importedCss.add(cssFileName);
   }
 }

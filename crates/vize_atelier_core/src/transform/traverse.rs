@@ -6,11 +6,17 @@ use vize_carton::profile;
 
 use super::element::{transform_element, transform_interpolation};
 use super::structural::{
-    check_structural_directive, remove_structural_directive, transform_v_for, transform_v_if,
+    StructuralDirectiveKind, take_structural_directive, transform_v_for, transform_v_if,
 };
-use super::{ExitFn, ParentNode, TransformContext};
+use super::{ExitFns, ParentNode, TransformContext};
 
 fn enter_v_slot_scope_if_needed<'a>(ctx: &mut TransformContext<'a>, el: &ElementNode<'a>) -> bool {
+    if el.children.is_empty()
+        || (el.tag_type != ElementType::Component && el.tag.as_str() != "template")
+    {
+        return false;
+    }
+
     for prop in el.props.iter() {
         if let PropNode::Directive(dir) = prop {
             if dir.name != "slot" {
@@ -64,7 +70,7 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
     ctx.current_node = Some(node as *mut _);
 
     // Collect exit functions from transforms
-    let mut exit_fns: std::vec::Vec<ExitFn<'a>> = std::vec::Vec::new();
+    let mut exit_fns = ExitFns::new();
 
     // Apply node transforms based on node type
     match node {
@@ -72,44 +78,47 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
             // Check for structural directives first
             let structural_result = profile!(
                 "atelier.transform.check_structural",
-                check_structural_directive(el)
+                take_structural_directive(el)
             );
 
-            if let Some((dir_name, exp, exp_loc)) = structural_result {
-                // Remove the directive from props
-                remove_structural_directive(el, &dir_name);
-
+            if let Some((directive_kind, exp)) = structural_result {
                 // Handle the structural directive
-                match dir_name.as_str() {
-                    "if" => {
+                match directive_kind {
+                    StructuralDirectiveKind::If => {
                         if let Some(exits) = profile!(
                             "atelier.transform.v_if",
-                            transform_v_if(ctx, exp.as_ref(), exp_loc, true)
+                            transform_v_if(ctx, exp.as_ref(), true)
                         ) {
                             exit_fns.extend(exits);
                         }
                     }
-                    "else-if" | "else" => {
+                    StructuralDirectiveKind::ElseIf | StructuralDirectiveKind::Else => {
                         if let Some(exits) = profile!(
                             "atelier.transform.v_if",
-                            transform_v_if(ctx, exp.as_ref(), exp_loc, false)
+                            transform_v_if(ctx, exp.as_ref(), false)
                         ) {
                             exit_fns.extend(exits);
                         }
                     }
-                    "for" => {
+                    StructuralDirectiveKind::For => {
                         if let Some(exits) = profile!(
                             "atelier.transform.v_for",
-                            transform_v_for(ctx, exp.as_ref(), exp_loc)
+                            transform_v_for(ctx, exp.as_ref())
                         ) {
                             exit_fns.extend(exits);
                         }
                     }
-                    _ => {}
                 }
 
                 // If node was replaced (e.g., by v-if transform), we need to traverse the new node
                 if let Some(current_ptr) = ctx.current_node {
+                    // SAFETY: `ctx.current_node` is written immediately before
+                    // transforms run and points at the child slot currently owned
+                    // by the traversal loop. Structural transforms may replace
+                    // that slot, but they do not free the bump-allocated storage
+                    // or retain another mutable reference to it. We reborrow here
+                    // only after the transform call returns so we can inspect the
+                    // replacement without cloning the AST node.
                     let current = unsafe { &mut *current_ptr };
                     match current {
                         TemplateChildNode::If(if_node) => {
@@ -268,7 +277,9 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
     }
 
     // Traverse children for element nodes
-    if let TemplateChildNode::Element(el) = node {
+    if let TemplateChildNode::Element(el) = node
+        && !el.children.is_empty()
+    {
         let entered_slot_scope = enter_v_slot_scope_if_needed(ctx, el);
         let el_ptr = el.as_mut() as *mut ElementNode<'a>;
         profile!(

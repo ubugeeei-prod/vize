@@ -4,272 +4,334 @@ title: Musea
 
 # Musea
 
-> **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. Musea's API and art file format may change without notice.
+> **⚠️ Work in Progress:** Musea is still evolving. File formats, APIs, and UI behavior may change.
 
-Musea (_/mjuːˈziːə/_) is Vize's built-in component gallery — a Storybook alternative for exploring, documenting, and developing Vue components. The name is the plural of "museum": a place to display and appreciate works of art.
+Musea is Vize's art-file and component-gallery toolchain.
 
-Unlike Storybook, which requires a separate build pipeline and its own configuration ecosystem, Musea is integrated directly into the Vize toolchain. It uses `*.art.vue` files to define component stories with a declarative, Vue-native syntax.
+- `vize_musea` is the Rust core for parsing `*.art.vue`, generating docs, building prop palettes,
+  autogenerating variants, and preparing VRT data.
+- `@vizejs/vite-plugin-musea` is the recommended gallery and dev-server workflow today.
+- `musea-vrt` is the CLI for visual regression snapshots, a11y audits, approvals, cleanup, and
+  generated art files.
 
 ## Overview
 
 ![Musea Component Gallery — Home](/musea-home.png)
 
-The gallery provides a dashboard showing all registered components, their variant counts, categories, tags, and status badges. Components are organized into categories (e.g., "Components", "Preview") and can be searched, filtered, and browsed from the sidebar.
+Musea uses `*.art.vue` files to describe component variants with Vue-native syntax.
 
 ## Installation
 
-```bash
-npm install @vizejs/vite-plugin-musea
-```
-
-## Usage
-
-### Via CLI
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the package:
 
 ```bash
-vize musea
+vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
 ```
 
-### Via Vite Plugin
+## Recommended Usage: Vite Plugin
 
-```javascript
-// vite.config.js
+```ts
+// vite.config.ts
 import { defineConfig } from "vite";
-import musea from "@vizejs/vite-plugin-musea";
+import vize from "@vizejs/vite-plugin";
+import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
-  plugins: [musea()],
+  plugins: [
+    vize(),
+    musea({
+      include: ["**/*.art.vue"],
+      basePath: "/__musea__",
+      previewCss: ["src/styles/main.css"],
+      previewSetup: "musea.preview.ts",
+    }),
+  ],
 });
 ```
 
-### Via Nuxt
+Run your normal Vite dev server and open the configured Musea route:
 
-```typescript
-// nuxt.config.ts
-export default defineNuxtConfig({
-  modules: ["@vizejs/nuxt"],
-  vize: {
-    musea: {
-      include: ["**/*.art.vue"],
-      tokensPath: "assets/tokens.json",
-      previewCss: ["assets/styles/main.css"],
-      previewSetup: "musea.preview.ts",
-    },
+```bash
+vp dev
+```
+
+```txt
+http://localhost:5173/__musea__
+```
+
+If you install the `vize` npm package, `vp exec vize musea` is a convenience wrapper around Vite:
+
+```bash
+vp exec vize musea
+vp exec vize musea --build
+```
+
+## Shared Config
+
+`musea()` options override shared config. Put stable project defaults in `vize.config.ts` and keep
+preview-only settings in `vite.config.ts`.
+
+```ts
+// vize.config.ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    storybookCompat: false,
+    inlineArt: false,
   },
 });
 ```
 
+Shared config currently covers `include`, `exclude`, `basePath`, `storybookCompat`, and
+`inlineArt`. Pass `previewCss`, `previewSetup`, `tokensPath`, `theme`, and `storybookOutDir`
+directly to `musea()`.
+
 ## Art Files
-
-Musea uses `*.art.vue` files to define component stories. Each art file describes how a component should be displayed in the gallery, including its variants, metadata, and usage examples.
-
-### Basic Structure
 
 ```art-vue
 <script setup lang="ts">
-import MyButton from './MyButton.vue'
+import { ref } from "vue";
+
+defineArt("./MyButton.vue", {
+  title: "MyButton",
+  category: "Components",
+  status: "ready",
+  tags: ["button", "ui", "input"],
+});
+
+const pressed = ref(false);
 </script>
 
-<art
-  title="MyButton"
-  component="./MyButton.vue"
-  category="Components"
-  status="ready"
-  tags="button, ui, input"
->
+<art>
   <variant name="Default" default>
-    <MyButton type="button">Click me</MyButton>
+    <MyButton type="button" :pressed="pressed">Click me</MyButton>
   </variant>
 
   <variant name="Outlined">
-    <MyButton type="button" outlined>Click me</MyButton>
-  </variant>
-
-  <variant name="Icon">
-    <MyButton type="button" icon>
-      <svg><!-- icon --></svg>
-    </MyButton>
+    <MyButton type="button" outlined :pressed="pressed">Click me</MyButton>
   </variant>
 </art>
 ```
 
-### Art File Anatomy
+`defineArt(source, options)` is a compiler macro. It declares the component that Musea should load,
+plus metadata that used to live on `<art>`. Prefer a relative component path string such as
+`defineArt("./MyButton.vue", { title: "MyButton" })`; Musea imports that component in generated
+runtime code and the language server uses the same source for prop and slot inference.
+The source string participates in path completion, unresolved-file diagnostics, document links, and
+go-to-definition.
 
-| Element             | Description                                             |
-| ------------------- | ------------------------------------------------------- |
-| `<script setup>`    | Import the target component and any dependencies        |
-| `<art>`             | Root element containing metadata and variants           |
-| `title`             | Display name in the gallery                             |
-| `component`         | Relative path to the source component                   |
-| `category`          | Grouping in the sidebar (e.g., "Components", "Preview") |
-| `status`            | Component status badge: `ready`, `wip`, `deprecated`    |
-| `tags`              | Comma-separated tags for search and filtering           |
-| `<variant>`         | A named configuration of the component                  |
-| `default` attribute | Marks the variant shown by default                      |
+`<art title="..." component="...">` still works for compatibility, and explicit `<art>` attributes
+override `defineArt` metadata when both are present.
 
-### Real-World Example
+### Variant-local state
 
-Here is an art file from the [Vue Fes Japan 2026](https://vuefes.jp/2026) conference website:
+Root `<script setup>` state is isolated per variant by default. Each variant receives its own setup
+instance, so refs and computed values in one variant do not leak into another:
 
 ```art-vue
 <script setup lang="ts">
-import VFHeading from './VFHeading.vue'
+import { computed, ref } from "vue";
+
+defineArt("./Counter.vue", { title: "Counter" });
+
+const count = ref(0);
+const doubled = computed(() => count.value * 2);
 </script>
 
-<art
-  title="VFHeading"
-  component="./VFHeading.vue"
-  category="Components"
-  status="ready"
-  tags="heading, typography"
->
-  <variant name="Default" default>
-    <VFHeading :level="2">Section Title</VFHeading>
+<art>
+  <variant name="Base" default>
+    <Counter :count="count" />
   </variant>
-
-  <variant name="H1">
-    <VFHeading :level="1">Page Title</VFHeading>
-  </variant>
-
-  <variant name="H3">
-    <VFHeading :level="3">Subsection Title</VFHeading>
-  </variant>
-
-  <variant name="With Anchor">
-    <VFHeading :level="2" anchor="section-id">
-      Linked Section
-    </VFHeading>
+  <variant name="Doubled">
+    <Counter :count="doubled" />
   </variant>
 </art>
 ```
 
-## Component Detail View
+Use `<script setup isolate="false">` only when the art file intentionally needs one shared setup
+instance across every variant:
+
+```art-vue
+<script setup lang="ts" isolate="false">
+import { ref } from "vue";
+
+defineArt("./Counter.vue", { title: "Counter" });
+
+const sharedCount = ref(0);
+</script>
+```
+
+### Anatomy
+
+| Element / Macro                  | Purpose                                |
+| -------------------------------- | -------------------------------------- |
+| `defineArt(source, options)`     | Target component and art metadata      |
+| `defineArt(...).title`           | Display name                           |
+| `defineArt(...).category`        | Sidebar grouping                       |
+| `defineArt(...).status`          | Optional status badge                  |
+| `defineArt(...).tags`            | Search and filtering tags              |
+| `<script setup>`                 | Variant-local setup state by default   |
+| `<script setup isolate="false">` | Shared setup state across all variants |
+| `<art>`                          | Root variants block                    |
+| `<art title component ...>`      | Compatibility metadata attributes      |
+| `<variant>`                      | Named component variation              |
+| `default`                        | Marks the default variant              |
+| `args`, `viewport`, `skip-vrt`   | Optional variant configuration         |
+
+Keep art files close to the component when variants are part of the component's contract:
+
+```txt
+src/components/Button.vue
+src/components/Button.art.vue
+```
+
+Use a separate `stories` or `art` directory when a design system owns many cross-cutting examples:
+
+```txt
+src/components/Button.vue
+stories/forms/Button.art.vue
+stories/navigation/Menu.art.vue
+```
+
+## Inline Art
+
+When `inlineArt` is enabled, regular `.vue` files that contain an `<art>` block can appear in the
+gallery. This is useful for small components where examples should live in the same file.
+
+```ts
+musea({
+  inlineArt: true,
+});
+```
+
+Inside inline art, use `<Self>` to render the host component.
+
+## Gallery Features
 
 ![Musea Component Detail — Variants](/musea-component.png)
 
-When you select a component from the sidebar, Musea shows a detail view with:
+Musea can surface:
 
-- **Component header** — Name, status badge, variant count, category, and tags
-- **Preview toolbar** — Background color controls (Light, Dark, Transparent, custom), outline mode, and measurement overlay
-- **Tab navigation** — Variants, Props, Docs, A11y, and VRT (Visual Regression Testing)
-- **Variant selector** — Switch between variants defined in the art file
-- **Live preview** — The component rendered in an isolated iframe
-- **Source actions** — Copy template, view source, fullscreen, open in new tab
+- component and variant metadata
+- prop palette generation
+- design token views
+- accessibility checks
+- visual regression testing helpers
+- Storybook-compatible output when requested
 
-### Props Panel
+## Props Palette
 
 ![Musea Props Panel](/musea-props.png)
 
-The **Props** tab provides an interactive props playground:
-
-- **Live Preview** — Component updates in real-time as you change props
-- **Props Controls** — Auto-generated controls based on the component's prop definitions (dropdowns for enums, toggles for booleans, text inputs for strings)
-- **Slot editor** — Edit slot content directly with a code editor
-- **Usage snippet** — Auto-generated template code reflecting the current prop values
-- **Current Values** — JSON representation of all current prop values
+The palette pipeline can infer interactive controls from component metadata and art definitions.
 
 ## Design Tokens
 
 ![Musea Design Tokens](/musea-tokens.png)
 
-Musea includes a **Design Tokens** viewer that reads from a JSON token file (e.g., Style Dictionary output). It displays:
+`@vizejs/vite-plugin-musea` can ingest a Style Dictionary-compatible token file and expose it in
+the gallery UI.
 
-- **Color tokens** — Visual swatches organized by category (Primary, Purple, Orange, Navy, etc.)
-- **Typography tokens** — Font sizes and line heights with previews for each heading level and body text
-- **Spacing and layout tokens** — Border radius, z-index, breakpoints
-- **Semantic tokens** — Tokens that reference other tokens, showing the resolved values
-- **Primitive vs. Semantic** classification — Filter tokens by type
-- **Edit and delete** — Modify tokens directly from the gallery UI
-
-Configure the tokens path in your Musea configuration:
-
-```javascript
+```ts
 musea({
-  tokensPath: "assets/tokens.json",
+  tokensPath: "src/tokens.json",
 });
 ```
-
-The token file should follow the [Style Dictionary](https://amzn.github.io/style-dictionary/) format or a compatible JSON structure.
 
 ## Preview Configuration
 
-Musea renders each variant in an isolated iframe. You can customize the preview environment:
+You can inject project CSS and preview setup code:
 
-### Preview CSS
-
-Inject stylesheets into the preview iframe to ensure components render with your project's styles:
-
-```javascript
+```ts
 musea({
-  previewCss: ["assets/styles/main.css", "assets/styles/musea-preview.css"],
+  previewCss: ["src/styles/main.css", "src/styles/musea-preview.css"],
+  previewSetup: "musea.preview.ts",
 });
 ```
 
-### Preview Setup
+This is useful for installing plugins such as `vue-i18n` or `vue-router` in the preview iframe.
 
-Provide a setup function that runs before each preview. This is useful for installing plugins (vue-i18n, vue-router), registering global components, or configuring mock data:
-
-```typescript
+```ts
 // musea.preview.ts
+import type { App } from "vue";
 import { createI18n } from "vue-i18n";
-import { createRouter, createMemoryHistory } from "vue-router";
-import type { MuseaPreviewSetup } from "@vizejs/vite-plugin-musea";
 
-export default ((app) => {
-  // Install i18n
-  const i18n = createI18n({
-    locale: "en",
-    messages: {
-      en: {
-        /* ... */
+export default function setup(app: App) {
+  app.use(
+    createI18n({
+      legacy: false,
+      locale: "en",
+      messages: {
+        en: {},
       },
-      ja: {
-        /* ... */
-      },
-    },
-  });
-  app.use(i18n);
-
-  // Install router (with stub routes for NuxtLink compatibility)
-  const router = createRouter({
-    history: createMemoryHistory(),
-    routes: [{ path: "/", component: { template: "<div />" } }],
-  });
-  app.use(router);
-}) satisfies MuseaPreviewSetup;
+    }),
+  );
+}
 ```
 
-## Features
+## Visual Regression Testing
 
-### Keyboard Shortcuts
+The package exposes the `musea-vrt` binary:
 
-| Shortcut | Action                     |
-| -------- | -------------------------- |
-| `⌘K`     | Open component search      |
-| `⌘B`     | Toggle sidebar             |
-| `Alt+O`  | Toggle outline mode        |
-| `Alt+M`  | Toggle measurement overlay |
+```bash
+vp exec musea-vrt --base-url http://localhost:5173
+vp exec musea-vrt --update
+vp exec musea-vrt --ci --json
+vp exec musea-vrt --a11y
+vp exec musea-vrt approve
+vp exec musea-vrt approve "Button/*"
+vp exec musea-vrt clean
+```
 
-### Component Search
+Typical CI flow starts the Vite server in one process, then runs the snapshot command against it:
 
-The search bar (`⌘K`) provides fuzzy search across all component names and tags, allowing you to quickly navigate to any component in the gallery.
+```bash
+vp dev --host 0.0.0.0
+vp exec musea-vrt --base-url http://localhost:5173 --ci --json
+```
 
-### Accessibility Audit (A11y)
+Use `--update` locally to refresh baselines, `approve` to accept failed snapshots, and `clean` to
+remove orphaned snapshots after deleting variants.
 
-The **A11y** tab runs accessibility checks on the rendered component, reporting issues based on WAI-ARIA best practices.
+## Generate Art Files
 
-### Visual Regression Testing (VRT)
+Use the generator to create a first `.art.vue` draft from an existing component:
 
-The **VRT** tab provides visual regression testing capabilities, allowing you to capture and compare component snapshots across changes.
+```bash
+vp exec musea-vrt generate src/components/Button.vue
+```
 
-## VS Code Support
+The generated file is a starting point. Review the variants, titles, tags, and prop coverage before
+committing it.
 
-The [Vize Art](https://github.com/ubugeeei/vize/tree/main/npm/vscode-art) VS Code extension provides syntax highlighting for `*.art.vue` files, making it easier to author story files with proper syntax support.
+## Storybook Output
 
-## AI Integration
+Enable Storybook-compatible CSF generation when you want Musea art files to feed a Storybook setup:
 
-Musea integrates with AI assistants through the [MCP server](../integrations/mcp.md). The MCP server exposes component metadata, story information, and gallery navigation to AI tools, enabling:
+```ts
+musea({
+  storybookCompat: true,
+  storybookOutDir: ".storybook/stories",
+});
+```
 
-- AI-assisted component discovery and usage
-- Automated documentation generation
-- Intelligent code generation with correct props and slots
+## CLI Status
+
+`vize musea` exists in the Rust CLI, but the recommended Musea workflow today is still the Vite
+plugin path. Treat the Rust subcommand as experimental while the dedicated gallery workflow settles.
+
+The Rust subcommand can scaffold a starter art project:
+
+```bash
+vize musea new
+```
+
+## Related Packages
+
+- `@vizejs/vite-plugin-musea`
+- `@vizejs/musea-mcp-server`
+- `vize_musea`

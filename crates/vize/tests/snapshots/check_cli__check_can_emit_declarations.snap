@@ -1,6 +1,5 @@
 ---
 source: crates/vize/tests/check_cli.rs
-assertion_line: 180
 expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
 ---
 {
@@ -12,7 +11,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
   "files": [
     [
       "App.vue.d.ts",
-      "declare global {\n    interface ImportMeta {\n        readonly client: boolean;\n        readonly server: boolean;\n        readonly dev: boolean;\n        readonly prod: boolean;\n        readonly ssr: boolean;\n    }\n}\ntype __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);\nexport interface PublicProps {\n    count: number;\n}\nexport type Props = PublicProps;\nexport type Emits = {};\nexport type Slots = {};\ntype __VizeComponentInstance = {\n    $props: Props;\n    $emit: __EmitFn<Emits>;\n    $slots: Slots;\n};\ndeclare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;\nexport default __vize_component__;\n"
+      "declare global {\n    interface ImportMeta {\n        readonly client: boolean;\n        readonly server: boolean;\n        readonly dev: boolean;\n        readonly prod: boolean;\n        readonly ssr: boolean;\n    }\n}\ntype __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? {\n    [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[];\n} : Record<string, any[]>;\ntype __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];\ntype __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);\nexport interface PublicProps {\n    count: number;\n}\nexport type Props = PublicProps;\nexport type Emits = {};\nexport type Slots = {};\ntype __VizeComponentInstance = {\n    $props: Props;\n    $emit: __EmitFn<Emits>;\n    $slots: Slots;\n};\ndeclare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;\nexport default __vize_component__;\n"
     ],
     [
       "index.d.ts",

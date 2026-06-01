@@ -1,12 +1,12 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 221
 expression: js_output.as_str()
 ---
-import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, mergeProps as _mergeProps, withCtx as _withCtx } from "vue"
+import { mergeProps as _mergeProps, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
 
 import { ref, computed } from 'vue'
 import Button from './Button.vue'
+
 
 export default {
   __name: 'test',
@@ -17,16 +17,16 @@ const buttonProps = computed(() => ({ disabled: false, type: 'primary' }))
 
 return (_ctx, _cache) => {
   return (isActive.value)
-      ? (_openBlock(), _createBlock(Button, _mergeProps(buttonProps.value, {
-        key: 0,
-        onClick: _cache[0] || (_cache[0] = (...args) => (_ctx.handleClick && _ctx.handleClick(...args)))
-      }), {
-        default: _withCtx(() => [
-          _createTextVNode("\n    Click me\n  ")
-        ]),
-        _: 1 /* STABLE */
-      }, 16 /* FULL_PROPS */))
-      : _createCommentVNode("v-if", true)
+    ? (_openBlock(), _createBlock(Button, _mergeProps(buttonProps.value, {
+      key: 0,
+      onClick: _cache[0] || (_cache[0] = (...args) => (_ctx.handleClick && _ctx.handleClick(...args)))
+    }), {
+      default: _withCtx(() => [
+        _createTextVNode("\n    Click me\n  ")
+      ]),
+      _: 1 /* STABLE */
+    }, 16 /* FULL_PROPS */))
+    : _createCommentVNode("v-if", true)
 }
 }
 

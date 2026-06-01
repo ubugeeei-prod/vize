@@ -1,12 +1,13 @@
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::{
-    CallExpression, ChainElement, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey,
-    Statement,
+    Argument, CallExpression, ChainElement, Expression, ExpressionStatement, ObjectExpression,
+    ObjectPropertyKind, PropertyKey, Statement,
 };
+use oxc_ast_visit::{Visit, walk::walk_expression_statement};
 use oxc_parser::Parser as OxcParser;
 use oxc_span::{GetSpan, SourceType};
 use oxc_syntax::operator::UnaryOperator;
-use vize_carton::{profile, String, ToCompactString};
+use vize_carton::{String, ToCompactString, profile};
 
 pub(super) fn is_runtime_array_macro(runtime_args: Option<&str>) -> bool {
     let Some(runtime_args) = runtime_args.map(str::trim_start) else {
@@ -89,20 +90,30 @@ pub(super) fn collect_floating_candidates(source: &str) -> Vec<FloatingCandidate
         return Vec::new();
     }
 
-    let mut candidates = Vec::new();
-    for statement in parsed.program.body.iter() {
-        if let Statement::ExpressionStatement(expression_statement) = statement {
-            if is_explicitly_handled(&expression_statement.expression) {
-                continue;
+    let mut collector = FloatingCandidateCollector::default();
+    collector.visit_program(&parsed.program);
+    collector.candidates
+}
+
+#[derive(Default)]
+struct FloatingCandidateCollector {
+    candidates: Vec<FloatingCandidate>,
+}
+
+impl<'a> Visit<'a> for FloatingCandidateCollector {
+    fn visit_expression_statement(&mut self, statement: &ExpressionStatement<'a>) {
+        if !is_explicitly_handled(&statement.expression) {
+            let span = statement.expression.span();
+            if span.end > span.start {
+                self.candidates.push(FloatingCandidate {
+                    start: span.start,
+                    end: span.end,
+                });
             }
-            let span = expression_statement.expression.span();
-            candidates.push(FloatingCandidate {
-                start: span.start,
-                end: span.end,
-            });
         }
+
+        walk_expression_statement(self, statement);
     }
-    candidates
 }
 
 fn unwrap_object_expression<'a>(
@@ -159,10 +170,52 @@ fn is_explicitly_handled(expression: &Expression<'_>) -> bool {
 }
 
 fn is_handled_call(call: &CallExpression<'_>) -> bool {
-    call.callee
-        .as_member_expression()
-        .and_then(|member| member.static_property_name())
-        .is_some_and(|name| matches!(name, "then" | "catch" | "finally"))
+    let Some(member) = call.callee.as_member_expression() else {
+        return false;
+    };
+
+    match member.static_property_name() {
+        Some("then") => has_present_handler_argument(call, 1),
+        Some("catch") => has_present_handler_argument(call, 0),
+        Some("finally") => is_handled_promise_chain(member.object()),
+        _ => false,
+    }
+}
+
+fn has_present_handler_argument(call: &CallExpression<'_>, index: usize) -> bool {
+    call.arguments
+        .get(index)
+        .is_some_and(|argument| !is_missing_handler_argument(argument))
+}
+
+fn is_missing_handler_argument(argument: &Argument<'_>) -> bool {
+    match argument {
+        Argument::Identifier(identifier) => identifier.name == "undefined",
+        Argument::NullLiteral(_) => true,
+        _ => false,
+    }
+}
+
+fn is_handled_promise_chain(expression: &Expression<'_>) -> bool {
+    match expression {
+        Expression::ParenthesizedExpression(paren) => is_handled_promise_chain(&paren.expression),
+        Expression::TSAsExpression(ts_as) => is_handled_promise_chain(&ts_as.expression),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            is_handled_promise_chain(&ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            is_handled_promise_chain(&ts_non_null.expression)
+        }
+        Expression::ChainExpression(chain) => match &chain.expression {
+            ChainElement::CallExpression(call) => is_handled_call(call),
+            ChainElement::TSNonNullExpression(non_null) => {
+                is_handled_promise_chain(&non_null.expression)
+            }
+            _ => false,
+        },
+        Expression::CallExpression(call) => is_handled_call(call),
+        _ => false,
+    }
 }
 
 fn is_macro_call_expression(expression: &Expression<'_>) -> bool {

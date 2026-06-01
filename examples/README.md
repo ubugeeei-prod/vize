@@ -27,11 +27,11 @@ The `examples/cli/` directory contains sample Vue files for trying the CLI tools
 
 ### File Structure
 
-| File                  | Description                       |
-| --------------------- | --------------------------------- |
-| `src/App.vue`         | A correctly formatted Vue file    |
-| `src/Unformatted.vue` | A Vue file that needs formatting  |
-| `src/HasErrors.vue`   | A Vue file containing lint errors |
+| File                  | Description                                         |
+| --------------------- | --------------------------------------------------- |
+| `src/App.vue`         | A correctly formatted Vue file                      |
+| `src/Unformatted.vue` | A Vue file that needs formatting                    |
+| `src/HasErrors.vue`   | A Vue file containing lint and security diagnostics |
 
 ### Formatter (`vize fmt`)
 
@@ -70,21 +70,32 @@ vize lint examples/cli/src/*.vue
 # Output as JSON
 vize lint examples/cli/src/HasErrors.vue --format json
 
+# Output as plain text for hooks and agents
+vize lint examples/cli/src/HasErrors.vue --format plain
+
 # Set a warning limit
 vize lint examples/cli/src/*.vue --max-warnings 5
 
 # Show only the summary
 vize lint examples/cli/src/*.vue --quiet
+
+# Print rule and file timing
+vize lint examples/cli/src/*.vue --profile
 ```
+
+`src/HasErrors.vue` intentionally includes missing `v-for` keys, a `v-if`/`v-for` conflict, a
+static unsafe URL, and an obfuscated invalid anchor so the linter output demonstrates correctness,
+accessibility, and security diagnostics together.
+The SSR rule docs include extra boundary examples for `typeof window`, comments, and regex literals.
 
 **Options:**
 
-| Option           | Description                    | Default |
-| ---------------- | ------------------------------ | ------- |
-| `--format`, `-f` | Output format (`text`/`json`)  | text    |
-| `--max-warnings` | Warning limit                  | -       |
-| `--quiet`, `-q`  | Show only the summary          | false   |
-| `--fix`          | Auto-fix (not implemented yet) | false   |
+| Option           | Description                                                                      | Default |
+| ---------------- | -------------------------------------------------------------------------------- | ------- |
+| `--format`, `-f` | Output format (`text`/`ansi`/`plain`/`json`/`stylish`/`markdown`/`html`/`agent`) | text    |
+| `--max-warnings` | Warning limit                                                                    | -       |
+| `--quiet`, `-q`  | Show only the summary                                                            | false   |
+| `--fix`          | Auto-fix (not implemented yet)                                                   | false   |
 
 ### LSP Server (`vize lsp`)
 
@@ -132,18 +143,27 @@ vp dev
 
 ### File Structure
 
-| File                            | Description                          |
-| ------------------------------- | ------------------------------------ |
-| `src/components/Button.vue`     | Button component                     |
-| `src/components/Button.art.vue` | Musea art file (variant definitions) |
-| `vite.config.ts`                | Vite + Musea configuration           |
+| File                        | Description                                     |
+| --------------------------- | ----------------------------------------------- |
+| `src/components/Button.vue` | Button component with co-located Musea variants |
+| `src/tokens.json`           | Design tokens shown in the Musea gallery        |
+| `vite.config.ts`            | Vite + Musea configuration                      |
 
 ### Writing Art Files
 
-`.art.vue` files define component variants:
+Use `defineArt(source, options)` in root `<script setup>` to declare the target component and gallery metadata. The `<art>` block then focuses on variants:
 
 ```vue
-<art title="Button" component="./Button.vue" category="Components" status="ready">
+<script setup lang="ts">
+defineArt("./Button.vue", {
+  title: "Button",
+  category: "Components",
+  tags: ["button", "form"],
+  status: "ready",
+});
+</script>
+
+<art>
   <variant name="Default" default>
     <Button>Default Button</Button>
   </variant>
@@ -151,20 +171,19 @@ vp dev
     <Button variant="primary">Primary Button</Button>
   </variant>
 </art>
-
-<script setup lang="ts">
-import Button from "./Button.vue";
-</script>
 ```
 
-**`<art>` attributes:**
+**`defineArt()` options:**
 
-| Attribute   | Description                               |
-| ----------- | ----------------------------------------- |
-| `title`     | Component title (required)                |
-| `component` | Path to the target component              |
-| `category`  | Category                                  |
-| `status`    | Status (`draft` / `ready` / `deprecated`) |
+| Option        | Description                               |
+| ------------- | ----------------------------------------- |
+| `title`       | Component title                           |
+| `description` | Component summary                         |
+| `category`    | Category                                  |
+| `tags`        | Search tags                               |
+| `status`      | Status (`draft` / `ready` / `deprecated`) |
+
+Legacy `<art title="..." component="...">` metadata attributes are still supported for compatibility, but new examples should prefer `defineArt()`.
 
 **`<variant>` attributes:**
 
@@ -173,6 +192,65 @@ import Button from "./Button.vue";
 | `name`     | Variant name (required)              |
 | `default`  | Mark as the default variant          |
 | `skip-vrt` | Skip VRT (Visual Regression Testing) |
+
+---
+
+## Oxlint + Vize Example
+
+`examples/oxlint-vize/` contains the smallest runnable setup for executing Patina from Oxlint through `oxlint-plugin-vize`.
+
+### Setup
+
+Run this from the repository root:
+
+```bash
+vp install
+vp run --filter './npm/vize-native' build
+vp run --filter './npm/oxlint-plugin-vize' build
+```
+
+### Run
+
+```bash
+vp run --filter './examples/oxlint-vize' lint
+```
+
+This command intentionally exits non-zero because it includes `src/HasPatinaErrors.vue`. It mixes Oxlint core output with Patina output and uses the `stylish` formatter so the default code frame does not dominate the output. If you only want the success path:
+
+```bash
+vp run --filter './examples/oxlint-vize' lint:clean
+```
+
+If you want JSON output:
+
+```bash
+vp run --filter './examples/oxlint-vize' lint:json
+```
+
+To turn the long Patina `Help:` block back on:
+
+```bash
+vp run --filter './examples/oxlint-vize' lint:with-help
+```
+
+To probe `no-unused-vars` on a Vue SFC:
+
+```bash
+vp run --filter './examples/oxlint-vize' lint:unused-vars-probe
+```
+
+Current observed behavior in this repository: that probe reports `0` findings on `.vue`, even though the sample file contains an unused binding.
+
+### Files
+
+| File                         | Description                                                |
+| ---------------------------- | ---------------------------------------------------------- |
+| `.oxlintrc.json`             | Oxlint config enabling `vue` and `oxlint-plugin-vize`      |
+| `.oxlintrc.unused-vars.json` | Dedicated probe config for `no-unused-vars` on a Vue SFC   |
+| `src/HasPatinaErrors.vue`    | Sample SFC that intentionally triggers Patina diagnostics  |
+| `src/Clean.vue`              | Clean success-case sample                                  |
+| `src/UnusedVarProbe.vue`     | Probe file for current `no-unused-vars` behavior on `.vue` |
+| `README.md`                  | Run instructions and current limitations                   |
 
 ---
 

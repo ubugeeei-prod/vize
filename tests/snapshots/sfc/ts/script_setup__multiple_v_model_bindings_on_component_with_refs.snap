@@ -5,8 +5,9 @@ expression: ts_output.as_str()
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createBlock as _createBlock } from "vue"
 
-import { ref } from 'vue'
-import Dialog from './Dialog.vue'
+import { ref } from 'vue';
+import Dialog from './Dialog.vue';
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -17,11 +18,11 @@ const formValue = ref('');
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createBlock(Dialog, {
-      modelValue: isOpen.value,
-      "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((isOpen).value = $event)),
-      value: formValue.value,
-      "onUpdate:value": _cache[1] || (_cache[1] = ($event: any) => ((formValue).value = $event))
-    }, null, 8 /* PROPS */, ["modelValue", "value"]))
+    modelValue: isOpen.value,
+    "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((isOpen).value = $event)),
+    value: formValue.value,
+    "onUpdate:value": _cache[1] || (_cache[1] = ($event: any) => ((formValue).value = $event))
+  }, null, 8 /* PROPS */, ["modelValue", "value"]))
 }
 }
 

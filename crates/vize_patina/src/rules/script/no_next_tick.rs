@@ -30,8 +30,8 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier};
 use oxc_ast_visit::{
-    walk::{walk_call_expression, walk_import_declaration},
     Visit,
+    walk::{walk_call_expression, walk_import_declaration},
 };
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType, Span};
@@ -78,25 +78,25 @@ struct NoNextTickVisitor<'result> {
 
 impl<'a> Visit<'a> for NoNextTickVisitor<'_> {
     fn visit_import_declaration(&mut self, it: &ImportDeclaration<'a>) {
-        if it.source.value.as_str() == "vue" {
-            if let Some(specifiers) = &it.specifiers {
-                for specifier in specifiers {
-                    let ImportDeclarationSpecifier::ImportSpecifier(specifier) = specifier else {
-                        continue;
-                    };
+        if it.source.value.as_str() == "vue"
+            && let Some(specifiers) = &it.specifiers
+        {
+            for specifier in specifiers {
+                let ImportDeclarationSpecifier::ImportSpecifier(specifier) = specifier else {
+                    continue;
+                };
 
-                    if specifier.imported.name().as_str() != "nextTick" {
-                        continue;
-                    }
+                if specifier.imported.name().as_str() != "nextTick" {
+                    continue;
+                }
 
-                    self.imported_aliases
-                        .insert(CompactString::new(specifier.local.name.as_str()));
-                    self.push_diagnostic(
+                self.imported_aliases
+                    .insert(CompactString::new(specifier.local.name.as_str()));
+                self.push_diagnostic(
                         specifier.local.span,
                         "nextTick import is not supported in Vapor-oriented components",
                         "Remove nextTick() usage and rely on explicit lifecycle boundaries like onMounted() or direct reactive flow instead.",
                     );
-                }
             }
         }
 

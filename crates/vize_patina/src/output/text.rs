@@ -2,16 +2,43 @@
 
 #![allow(clippy::disallowed_macros)]
 
+use crate::diagnostic::{HelpRenderTarget, LintDiagnostic, Severity, render_help};
 use crate::linter::LintResult;
-use oxc_diagnostics::{GraphicalReportHandler, GraphicalTheme, NamedSource};
+use crate::output::rule_docs_path;
+use oxc_diagnostics::{GraphicalReportHandler, GraphicalTheme, NamedSource, OxcDiagnostic};
+use oxc_span::Span;
 #[allow(clippy::disallowed_types)] // Required by oxc_diagnostics API
 use std::sync::Arc;
 use vize_carton::FxHashMap;
 use vize_carton::String;
+use vize_carton::ToCompactString;
 
 /// Format lint results as rich terminal output
 #[allow(clippy::disallowed_types)] // Arc required by oxc_diagnostics API
 pub fn format_text(results: &[LintResult], sources: &[(String, String)]) -> String {
+    format_graphical(results, sources, HelpRenderTarget::PlainText)
+}
+
+/// Format lint results as a full ANSI report.
+#[allow(clippy::disallowed_types)] // Arc required by oxc_diagnostics API
+pub fn format_ansi(results: &[LintResult], sources: &[(String, String)]) -> String {
+    let mut output = format_graphical(results, sources, HelpRenderTarget::Ansi);
+    let (errors, warnings) = result_counts(results);
+
+    if !output.is_empty() {
+        output.push('\n');
+    }
+    output.push_str(&format_summary(errors, warnings, results.len()));
+    output.push('\n');
+    output
+}
+
+#[allow(clippy::disallowed_types)] // Arc required by oxc_diagnostics API
+fn format_graphical(
+    results: &[LintResult],
+    sources: &[(String, String)],
+    help_target: HelpRenderTarget,
+) -> String {
     let mut output = String::default();
     let handler = GraphicalReportHandler::new_themed(GraphicalTheme::unicode());
 
@@ -35,7 +62,7 @@ pub fn format_text(results: &[LintResult], sources: &[(String, String)]) -> Stri
         let named_source = Arc::new(NamedSource::new(&result.filename, source.to_owned()));
 
         for diagnostic in &result.diagnostics {
-            let oxc_diag = diagnostic.clone().into_oxc_diagnostic();
+            let oxc_diag = to_oxc_diagnostic(diagnostic, help_target);
             let report = oxc_diag.with_source_code(Arc::clone(&named_source));
 
             // Render using oxc_diagnostics
@@ -48,6 +75,38 @@ pub fn format_text(results: &[LintResult], sources: &[(String, String)]) -> Stri
     }
 
     output
+}
+
+fn to_oxc_diagnostic(diagnostic: &LintDiagnostic, help_target: HelpRenderTarget) -> OxcDiagnostic {
+    let formatted_msg = format!("[vize:{}] {}", diagnostic.rule_name, diagnostic.message);
+
+    let mut diag = match diagnostic.severity {
+        Severity::Error => OxcDiagnostic::error(formatted_msg),
+        Severity::Warning => OxcDiagnostic::warn(formatted_msg),
+    };
+
+    diag = diag.with_label(Span::new(diagnostic.start, diagnostic.end));
+
+    let docs_path = rule_docs_path(diagnostic.rule_name);
+    let help = diagnostic
+        .help
+        .as_ref()
+        .map(|help| format!("{}\n\nReference: {}", help, docs_path))
+        .unwrap_or_else(|| format!("Reference: {}", docs_path));
+    diag = diag.with_help(render_help(&help, help_target));
+
+    for label in &diagnostic.labels {
+        diag = diag
+            .and_label(Span::new(label.start, label.end).label(label.message.to_compact_string()));
+    }
+
+    diag
+}
+
+fn result_counts(results: &[LintResult]) -> (usize, usize) {
+    let errors = results.iter().map(|result| result.error_count).sum();
+    let warnings = results.iter().map(|result| result.warning_count).sum();
+    (errors, warnings)
 }
 
 /// Format a summary line

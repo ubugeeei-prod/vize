@@ -1,8 +1,8 @@
 use super::LspDiagnostic;
 use lsp_types::Diagnostic;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use serde_json::Value;
-use vize_carton::{cstr, FxHashMap, String};
+use vize_carton::{FxHashMap, String, cstr};
 
 pub(super) fn value_to_json<T>(value: T) -> Result<Value, String>
 where

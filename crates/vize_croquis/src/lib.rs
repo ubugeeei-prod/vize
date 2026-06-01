@@ -31,6 +31,8 @@
 //! vize_atelier_core (Transform)
 //! ```
 
+#![cfg_attr(test, allow(clippy::disallowed_macros, clippy::disallowed_types))]
+
 // Core modules
 mod scope;
 mod symbol;
@@ -41,22 +43,23 @@ pub mod analyzer;
 pub mod builtins;
 pub mod call_graph;
 pub mod css;
+pub mod declaration_ts;
 pub mod display;
+pub mod effect_graph;
 pub mod hoist;
 pub mod import_resolver;
 pub mod macros;
 pub mod naming;
 pub mod optimization;
 pub mod provide;
+pub mod race;
 pub mod reactivity;
 pub mod reactivity_tracking;
+pub mod render_tree;
 pub mod script_parser;
 pub mod setup_context;
 pub mod types;
 pub mod virtual_ts;
-
-// Cross-file analysis (opt-in)
-pub mod cross_file;
 
 // Re-export commonly used utilities from vize_carton for convenience
 pub use vize_carton::{
@@ -68,17 +71,17 @@ pub use vize_carton::{
 pub use scope::{
     BindingFlags, BlockKind, BlockScopeData, CallbackScopeData, ClientOnlyScopeData,
     ClosureScopeData, EventHandlerScopeData, ExternalModuleScopeData, JsGlobalScopeData, JsRuntime,
-    NonScriptSetupScopeData, ParamNames, ParentScopes, Scope, ScopeBinding, ScopeChain, ScopeData,
-    ScopeId, ScopeKind, ScriptSetupScopeData, Span, UniversalScopeData, VForScopeData,
-    VSlotScopeData, VueGlobalScopeData, PARAM_INLINE_CAP,
+    NonScriptSetupScopeData, PARAM_INLINE_CAP, ParamNames, ParentScopes, Scope, ScopeBinding,
+    ScopeChain, ScopeData, ScopeId, ScopeKind, ScriptSetupScopeData, Span, UniversalScopeData,
+    VForScopeData, VSlotScopeData, VueGlobalScopeData,
 };
 pub use symbol::{Symbol, SymbolFlags, SymbolId, SymbolTable};
 
 // Re-export analysis types
 pub use analysis::{
-    AnalysisStats, BindingMetadata, Croquis, ImportStatementInfo, InvalidExport, InvalidExportKind,
-    ReExportInfo, TemplateExpression, TemplateExpressionKind, TypeExport, TypeExportKind,
-    UndefinedRef, UnusedTemplateVar, UnusedVarContext, COMPILER_MACRO_NAMES,
+    AnalysisStats, BindingMetadata, COMPILER_MACRO_NAMES, Croquis, ImportStatementInfo,
+    InvalidExport, InvalidExportKind, ReExportInfo, TemplateExpression, TemplateExpressionKind,
+    TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar, UnusedVarContext,
 };
 pub use analyzer::{Analyzer, AnalyzerOptions};
 

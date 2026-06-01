@@ -4,8 +4,8 @@
 //! runtime identifier collection, and top-level await detection.
 
 use oxc_allocator::Allocator;
-use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_for_of_statement, walk_function};
 use oxc_ast_visit::Visit;
+use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_for_of_statement, walk_function};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;

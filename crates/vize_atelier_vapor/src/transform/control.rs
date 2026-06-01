@@ -30,6 +30,14 @@ pub(crate) fn transform_if_node_into_parent<'a>(
     transform_if_node_with_options(ctx, if_node, block, Some(parent), None, false);
 }
 
+pub(crate) fn transform_if_node_deferred_parent<'a>(
+    ctx: &mut TransformContext<'a>,
+    if_node: &IfNode<'a>,
+    block: &mut BlockIRNode<'a>,
+) {
+    transform_if_node_with_options(ctx, if_node, block, None, None, false);
+}
+
 fn transform_if_node_with_options<'a>(
     ctx: &mut TransformContext<'a>,
     if_node: &IfNode<'a>,
@@ -201,6 +209,14 @@ pub(crate) fn transform_for_node_into_parent<'a>(
     transform_for_node_with_options(ctx, for_node, block, Some(parent), None, false);
 }
 
+pub(crate) fn transform_for_node_deferred_parent<'a>(
+    ctx: &mut TransformContext<'a>,
+    for_node: &ForNode<'a>,
+    block: &mut BlockIRNode<'a>,
+) {
+    transform_for_node_with_options(ctx, for_node, block, None, None, false);
+}
+
 fn transform_for_node_with_options<'a>(
     ctx: &mut TransformContext<'a>,
     for_node: &ForNode<'a>,
@@ -296,25 +312,17 @@ fn extract_key_prop<'a>(
     for child in for_node.children.iter() {
         if let TemplateChildNode::Element(el) = child {
             for prop in el.props.iter() {
-                if let PropNode::Directive(dir) = prop {
-                    if dir.name.as_str() == "bind" {
-                        if let Some(ref arg) = dir.arg {
-                            if let ExpressionNode::Simple(key_arg) = arg {
-                                if key_arg.content.as_str() == "key" {
-                                    if let Some(ref exp) = dir.exp {
-                                        if let ExpressionNode::Simple(s) = exp {
-                                            let node = SimpleExpressionNode::new(
-                                                s.content.clone(),
-                                                s.is_static,
-                                                s.loc.clone(),
-                                            );
-                                            return Some(Box::new_in(node, ctx.allocator));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                if let PropNode::Directive(dir) = prop
+                    && dir.name.as_str() == "bind"
+                    && let Some(ref arg) = dir.arg
+                    && let ExpressionNode::Simple(key_arg) = arg
+                    && key_arg.content.as_str() == "key"
+                    && let Some(ref exp) = dir.exp
+                    && let ExpressionNode::Simple(s) = exp
+                {
+                    let node =
+                        SimpleExpressionNode::new(s.content.clone(), s.is_static, s.loc.clone());
+                    return Some(Box::new_in(node, ctx.allocator));
                 }
             }
         }

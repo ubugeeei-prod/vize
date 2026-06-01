@@ -5,6 +5,13 @@ defineProps<{
   image?: string;
   variant?: "default" | "outlined" | "elevated";
 }>();
+
+defineArt("./Card.vue", {
+  title: "Card",
+  category: "Layout",
+  tags: ["card", "container", "layout"],
+  status: "ready",
+});
 </script>
 
 <template>
@@ -99,7 +106,7 @@ defineProps<{
 }
 </style>
 
-<art title="Card" category="Layout" status="ready" tags="card,container,layout">
+<art>
   <variant name="Default" default>
     <Self title="Getting Started" description="Learn how to build with Musea components.">
       <button class="btn btn--primary">Read More</button>

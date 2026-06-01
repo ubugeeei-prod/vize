@@ -175,12 +175,12 @@ impl Rule for AriaProps {
                 }
                 PropNode::Directive(dir) => {
                     // Check v-bind:aria-* or :aria-*
-                    if dir.name == "bind" {
-                        if let Some(vize_relief::ast::ExpressionNode::Simple(arg)) = &dir.arg {
-                            let name = arg.content.as_str();
-                            if Self::is_aria_attr(name) && !Self::is_valid_aria_attr(name) {
-                                self.report_invalid_aria(ctx, name, &dir.loc);
-                            }
+                    if dir.name == "bind"
+                        && let Some(vize_relief::ast::ExpressionNode::Simple(arg)) = &dir.arg
+                    {
+                        let name = arg.content.as_str();
+                        if Self::is_aria_attr(name) && !Self::is_valid_aria_attr(name) {
+                            self.report_invalid_aria(ctx, name, &dir.loc);
                         }
                     }
                 }

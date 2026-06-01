@@ -44,28 +44,28 @@ pub(super) fn infer_binding_type(
     kind: VariableDeclarationKind,
 ) -> BindingType {
     // Check for macro calls
-    if let Expression::CallExpression(call) = init {
-        if let Some(name) = get_callee_name(call) {
-            match name.as_str() {
-                // defineProps binding is the props OBJECT, not a prop - treat as SetupReactiveConst
-                // Individual prop names are registered separately as Props bindings
-                "defineProps" => return BindingType::SetupReactiveConst,
-                "ref" | "shallowRef" | "customRef" | "toRef" | "useTemplateRef" => {
-                    return BindingType::SetupRef
-                }
-                "computed" | "toRefs" => return BindingType::SetupRef,
-                "reactive" | "shallowReactive" => return BindingType::SetupReactiveConst,
-                "defineModel" => return BindingType::SetupRef,
-                _ => {}
+    if let Expression::CallExpression(call) = init
+        && let Some(name) = get_callee_name(call)
+    {
+        match name.as_str() {
+            // defineProps binding is the props OBJECT, not a prop - treat as SetupReactiveConst
+            // Individual prop names are registered separately as Props bindings
+            "defineProps" => return BindingType::SetupReactiveConst,
+            "ref" | "shallowRef" | "customRef" | "toRef" | "useTemplateRef" => {
+                return BindingType::SetupRef;
             }
+            "computed" | "toRefs" => return BindingType::SetupRef,
+            "reactive" | "shallowReactive" => return BindingType::SetupReactiveConst,
+            "defineModel" => return BindingType::SetupRef,
+            _ => {}
         }
     }
 
     // Check for withDefaults - the binding is the props OBJECT
-    if let Expression::CallExpression(call) = init {
-        if is_call_of(call, "withDefaults") {
-            return BindingType::SetupReactiveConst;
-        }
+    if let Expression::CallExpression(call) = init
+        && is_call_of(call, "withDefaults")
+    {
+        return BindingType::SetupReactiveConst;
     }
 
     // Check for literal values

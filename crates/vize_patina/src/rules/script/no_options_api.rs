@@ -34,12 +34,12 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Argument, BindingPattern, ExportDefaultDeclarationKind, Expression, ObjectExpression,
-    ObjectPropertyKind, PropertyKey, Statement,
+    Argument, BindingPattern, ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier,
+    ObjectExpression, ObjectPropertyKind, PropertyKey, Statement,
 };
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::{CompactString, FxHashMap};
+use vize_carton::{CompactString, FxHashMap, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-options-api",
@@ -95,6 +95,12 @@ struct ComponentOptionsRef<'a> {
     object: &'a ObjectExpression<'a>,
 }
 
+#[derive(Default)]
+struct PetiteVueBindings<'a> {
+    create_app_bindings: FxHashSet<&'a str>,
+    namespace_bindings: FxHashSet<&'a str>,
+}
+
 struct ComponentOptionsMatch {
     start: u32,
     end: u32,
@@ -116,18 +122,27 @@ fn find_component_options(source: &str) -> Option<ComponentOptionsMatch> {
     }
 
     let mut bindings = FxHashMap::default();
+    let mut petite_vue = PetiteVueBindings::default();
+
+    for statement in parsed.program.body.iter() {
+        collect_petite_vue_imports(statement, &mut petite_vue);
+    }
+
     for statement in parsed.program.body.iter() {
         let Statement::VariableDeclaration(declaration) = statement else {
             continue;
         };
         for declarator in &declaration.declarations {
-            let BindingPattern::BindingIdentifier(id) = &declarator.id else {
-                continue;
-            };
             let Some(init) = declarator.init.as_ref() else {
                 continue;
             };
-            if let Some(options) = extract_component_options_from_expression(init, &bindings) {
+
+            collect_petite_vue_variable_binding(&declarator.id, init, &mut petite_vue);
+
+            if let BindingPattern::BindingIdentifier(id) = &declarator.id
+                && let Some(options) =
+                    extract_component_options_from_expression(init, &bindings, &petite_vue)
+            {
                 bindings.insert(id.name.as_str(), options);
             }
         }
@@ -137,7 +152,17 @@ fn find_component_options(source: &str) -> Option<ComponentOptionsMatch> {
         let Statement::ExportDefaultDeclaration(export) = statement else {
             continue;
         };
-        let Some(options) = extract_component_options_from_export(&export.declaration, &bindings)
+        let Some(options) =
+            extract_component_options_from_export(&export.declaration, &bindings, &petite_vue)
+        else {
+            continue;
+        };
+        return Some(build_component_options_match(options.object));
+    }
+
+    for statement in parsed.program.body.iter() {
+        let Some(options) =
+            extract_create_app_options_from_statement(statement, &bindings, &petite_vue)
         else {
             continue;
         };
@@ -150,28 +175,33 @@ fn find_component_options(source: &str) -> Option<ComponentOptionsMatch> {
 fn extract_component_options_from_export<'a>(
     declaration: &'a ExportDefaultDeclarationKind<'a>,
     bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
+    petite_vue: &PetiteVueBindings<'a>,
 ) -> Option<ComponentOptionsRef<'a>> {
     match declaration {
         ExportDefaultDeclarationKind::ObjectExpression(object) => {
             Some(ComponentOptionsRef { object })
         }
         ExportDefaultDeclarationKind::CallExpression(call) => {
-            extract_component_options_from_call(call, bindings)
+            extract_component_options_from_call(call, bindings, petite_vue)
         }
         ExportDefaultDeclarationKind::Identifier(identifier) => {
             bindings.get(identifier.name.as_str()).copied()
         }
         ExportDefaultDeclarationKind::ParenthesizedExpression(paren) => {
-            extract_component_options_from_expression(&paren.expression, bindings)
+            extract_component_options_from_expression(&paren.expression, bindings, petite_vue)
         }
         ExportDefaultDeclarationKind::TSAsExpression(ts_as) => {
-            extract_component_options_from_expression(&ts_as.expression, bindings)
+            extract_component_options_from_expression(&ts_as.expression, bindings, petite_vue)
         }
         ExportDefaultDeclarationKind::TSSatisfiesExpression(ts_satisfies) => {
-            extract_component_options_from_expression(&ts_satisfies.expression, bindings)
+            extract_component_options_from_expression(
+                &ts_satisfies.expression,
+                bindings,
+                petite_vue,
+            )
         }
         ExportDefaultDeclarationKind::TSNonNullExpression(ts_non_null) => {
-            extract_component_options_from_expression(&ts_non_null.expression, bindings)
+            extract_component_options_from_expression(&ts_non_null.expression, bindings, petite_vue)
         }
         _ => None,
     }
@@ -180,22 +210,29 @@ fn extract_component_options_from_export<'a>(
 fn extract_component_options_from_expression<'a>(
     expression: &'a Expression<'a>,
     bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
+    petite_vue: &PetiteVueBindings<'a>,
 ) -> Option<ComponentOptionsRef<'a>> {
     match expression {
         Expression::ObjectExpression(object) => Some(ComponentOptionsRef { object }),
-        Expression::CallExpression(call) => extract_component_options_from_call(call, bindings),
+        Expression::CallExpression(call) => {
+            extract_component_options_from_call(call, bindings, petite_vue)
+        }
         Expression::Identifier(identifier) => bindings.get(identifier.name.as_str()).copied(),
         Expression::ParenthesizedExpression(paren) => {
-            extract_component_options_from_expression(&paren.expression, bindings)
+            extract_component_options_from_expression(&paren.expression, bindings, petite_vue)
         }
         Expression::TSAsExpression(ts_as) => {
-            extract_component_options_from_expression(&ts_as.expression, bindings)
+            extract_component_options_from_expression(&ts_as.expression, bindings, petite_vue)
         }
         Expression::TSSatisfiesExpression(ts_satisfies) => {
-            extract_component_options_from_expression(&ts_satisfies.expression, bindings)
+            extract_component_options_from_expression(
+                &ts_satisfies.expression,
+                bindings,
+                petite_vue,
+            )
         }
         Expression::TSNonNullExpression(ts_non_null) => {
-            extract_component_options_from_expression(&ts_non_null.expression, bindings)
+            extract_component_options_from_expression(&ts_non_null.expression, bindings, petite_vue)
         }
         _ => None,
     }
@@ -204,6 +241,7 @@ fn extract_component_options_from_expression<'a>(
 fn extract_component_options_from_call<'a>(
     call: &'a oxc_ast::ast::CallExpression<'a>,
     bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
+    petite_vue: &PetiteVueBindings<'a>,
 ) -> Option<ComponentOptionsRef<'a>> {
     let Expression::Identifier(callee) = &call.callee else {
         return None;
@@ -213,29 +251,231 @@ fn extract_component_options_from_call<'a>(
     }
 
     let first_arg = call.arguments.first()?;
-    extract_component_options_from_argument(first_arg, bindings)
+    extract_component_options_from_argument(first_arg, bindings, petite_vue)
+}
+
+fn extract_create_app_options_from_statement<'a>(
+    statement: &'a Statement<'a>,
+    bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
+    petite_vue: &PetiteVueBindings<'a>,
+) -> Option<ComponentOptionsRef<'a>> {
+    match statement {
+        Statement::ExpressionStatement(statement) => {
+            extract_create_app_options_from_expression(&statement.expression, bindings, petite_vue)
+        }
+        Statement::VariableDeclaration(declaration) => {
+            for declarator in &declaration.declarations {
+                let Some(init) = declarator.init.as_ref() else {
+                    continue;
+                };
+                if let Some(options) =
+                    extract_create_app_options_from_expression(init, bindings, petite_vue)
+                {
+                    return Some(options);
+                }
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
+fn extract_create_app_options_from_expression<'a>(
+    expression: &'a Expression<'a>,
+    bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
+    petite_vue: &PetiteVueBindings<'a>,
+) -> Option<ComponentOptionsRef<'a>> {
+    match expression {
+        Expression::CallExpression(call) => extract_create_app_options_from_create_app_call(
+            call, bindings, petite_vue,
+        )
+        .or_else(|| extract_create_app_options_from_expression(&call.callee, bindings, petite_vue)),
+        Expression::StaticMemberExpression(member) => {
+            extract_create_app_options_from_expression(&member.object, bindings, petite_vue)
+        }
+        Expression::ParenthesizedExpression(paren) => {
+            extract_create_app_options_from_expression(&paren.expression, bindings, petite_vue)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            extract_create_app_options_from_expression(&ts_as.expression, bindings, petite_vue)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            extract_create_app_options_from_expression(
+                &ts_satisfies.expression,
+                bindings,
+                petite_vue,
+            )
+        }
+        Expression::TSNonNullExpression(ts_non_null) => extract_create_app_options_from_expression(
+            &ts_non_null.expression,
+            bindings,
+            petite_vue,
+        ),
+        _ => None,
+    }
+}
+
+fn extract_create_app_options_from_create_app_call<'a>(
+    call: &'a oxc_ast::ast::CallExpression<'a>,
+    bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
+    petite_vue: &PetiteVueBindings<'a>,
+) -> Option<ComponentOptionsRef<'a>> {
+    if !is_create_app_callee(&call.callee, petite_vue) {
+        return None;
+    }
+
+    let first_arg = call.arguments.first()?;
+    extract_component_options_from_argument(first_arg, bindings, petite_vue)
+}
+
+fn is_create_app_callee(callee: &Expression<'_>, petite_vue: &PetiteVueBindings<'_>) -> bool {
+    match callee {
+        Expression::Identifier(callee) => {
+            callee.name.as_str() == "createApp"
+                && !petite_vue
+                    .create_app_bindings
+                    .contains(callee.name.as_str())
+        }
+        Expression::StaticMemberExpression(member) => {
+            member.property.name.as_str() == "createApp"
+                && matches!(
+                    &member.object,
+                    Expression::Identifier(object)
+                        if object.name.as_str() == "Vue"
+                            && !petite_vue.namespace_bindings.contains(object.name.as_str())
+                )
+        }
+        _ => false,
+    }
 }
 
 fn extract_component_options_from_argument<'a>(
     argument: &'a Argument<'a>,
     bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
+    petite_vue: &PetiteVueBindings<'a>,
 ) -> Option<ComponentOptionsRef<'a>> {
     match argument {
         Argument::ObjectExpression(object) => Some(ComponentOptionsRef { object }),
-        Argument::CallExpression(call) => extract_component_options_from_call(call, bindings),
+        Argument::CallExpression(call) => {
+            extract_component_options_from_call(call, bindings, petite_vue)
+        }
         Argument::Identifier(identifier) => bindings.get(identifier.name.as_str()).copied(),
         Argument::ParenthesizedExpression(paren) => {
-            extract_component_options_from_expression(&paren.expression, bindings)
+            extract_component_options_from_expression(&paren.expression, bindings, petite_vue)
         }
         Argument::TSAsExpression(ts_as) => {
-            extract_component_options_from_expression(&ts_as.expression, bindings)
+            extract_component_options_from_expression(&ts_as.expression, bindings, petite_vue)
         }
-        Argument::TSSatisfiesExpression(ts_satisfies) => {
-            extract_component_options_from_expression(&ts_satisfies.expression, bindings)
-        }
+        Argument::TSSatisfiesExpression(ts_satisfies) => extract_component_options_from_expression(
+            &ts_satisfies.expression,
+            bindings,
+            petite_vue,
+        ),
         Argument::TSNonNullExpression(ts_non_null) => {
-            extract_component_options_from_expression(&ts_non_null.expression, bindings)
+            extract_component_options_from_expression(&ts_non_null.expression, bindings, petite_vue)
         }
+        _ => None,
+    }
+}
+
+fn collect_petite_vue_imports<'a>(
+    statement: &'a Statement<'a>,
+    petite_vue: &mut PetiteVueBindings<'a>,
+) {
+    let Statement::ImportDeclaration(import) = statement else {
+        return;
+    };
+    if !is_petite_vue_module(import.source.value.as_str()) {
+        return;
+    }
+
+    let Some(specifiers) = &import.specifiers else {
+        return;
+    };
+
+    for specifier in specifiers {
+        match specifier {
+            ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                if specifier.imported.name().as_str() == "createApp" =>
+            {
+                petite_vue
+                    .create_app_bindings
+                    .insert(specifier.local.name.as_str());
+            }
+            ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                petite_vue
+                    .namespace_bindings
+                    .insert(specifier.local.name.as_str());
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_petite_vue_variable_binding<'a>(
+    pattern: &'a BindingPattern<'a>,
+    init: &'a Expression<'a>,
+    petite_vue: &mut PetiteVueBindings<'a>,
+) {
+    match pattern {
+        BindingPattern::BindingIdentifier(identifier)
+            if is_petite_vue_namespace_expression(init, petite_vue) =>
+        {
+            petite_vue
+                .namespace_bindings
+                .insert(identifier.name.as_str());
+        }
+        BindingPattern::ObjectPattern(pattern)
+            if is_petite_vue_namespace_expression(init, petite_vue) =>
+        {
+            for property in &pattern.properties {
+                if property_key_name(&property.key) != Some("createApp") {
+                    continue;
+                }
+                if let Some(local_name) = binding_pattern_name(&property.value) {
+                    petite_vue.create_app_bindings.insert(local_name);
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+fn is_petite_vue_namespace_expression(
+    expression: &Expression<'_>,
+    petite_vue: &PetiteVueBindings<'_>,
+) -> bool {
+    match expression {
+        Expression::Identifier(identifier) => {
+            identifier.name.as_str() == "PetiteVue"
+                || petite_vue
+                    .namespace_bindings
+                    .contains(identifier.name.as_str())
+        }
+        Expression::ParenthesizedExpression(paren) => {
+            is_petite_vue_namespace_expression(&paren.expression, petite_vue)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            is_petite_vue_namespace_expression(&ts_as.expression, petite_vue)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            is_petite_vue_namespace_expression(&ts_satisfies.expression, petite_vue)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            is_petite_vue_namespace_expression(&ts_non_null.expression, petite_vue)
+        }
+        _ => false,
+    }
+}
+
+fn is_petite_vue_module(value: &str) -> bool {
+    value == "petite-vue" || value.starts_with("petite-vue/") || value.contains("/petite-vue")
+}
+
+fn binding_pattern_name<'a>(pattern: &'a BindingPattern<'a>) -> Option<&'a str> {
+    match pattern {
+        BindingPattern::BindingIdentifier(identifier) => Some(identifier.name.as_str()),
+        BindingPattern::AssignmentPattern(assignment) => binding_pattern_name(&assignment.left),
         _ => None,
     }
 }
@@ -379,6 +619,129 @@ export default {
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_cdn_create_app_options() {
+        let source = r##"
+Vue.createApp({
+  data() {
+    return { count: 0 }
+  }
+}).mount("#app")
+"##;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 1);
+        insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_destructured_create_app_options() {
+        let source = r##"
+const { createApp } = Vue
+const options = {
+  methods: {
+    increment() {}
+  }
+}
+
+createApp(options).mount("#app")
+"##;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 1);
+        insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn test_petite_vue_global_create_app_is_not_options_api() {
+        let source = r##"
+PetiteVue.createApp({
+  count: 0,
+  increment() {
+    this.count++
+  }
+}).mount()
+"##;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_petite_vue_imported_create_app_is_not_options_api() {
+        let source = r##"
+import { createApp } from 'petite-vue'
+
+createApp({
+  count: 0,
+  increment() {
+    this.count++
+  }
+}).mount()
+"##;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_petite_vue_cdn_imported_create_app_is_not_options_api() {
+        let source = r##"
+import { createApp as createPetiteApp } from 'https://unpkg.com/petite-vue?module'
+
+createPetiteApp({
+  count: 0,
+  increment() {
+    this.count++
+  }
+}).mount()
+"##;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_petite_vue_destructured_create_app_is_not_options_api() {
+        let source = r##"
+const { createApp } = PetiteVue
+
+createApp({
+  count: 0,
+  increment() {
+    this.count++
+  }
+}).mount()
+"##;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_petite_vue_namespace_named_vue_is_not_options_api() {
+        let source = r##"
+import * as Vue from 'petite-vue'
+
+Vue.createApp({
+  count: 0,
+  increment() {
+    this.count++
+  }
+}).mount()
+"##;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]

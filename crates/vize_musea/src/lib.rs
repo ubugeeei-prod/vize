@@ -33,7 +33,11 @@
 //!
 //! let allocator = Bump::new();
 //! let source = r#"
-//! <art title="Button" component="./Button.vue">
+//! <script setup lang="ts">
+//! defineArt("./Button.vue", { title: "Button" });
+//! </script>
+//!
+//! <art>
 //!   <variant name="Primary" default>
 //!     <Button variant="primary">Click me</Button>
 //!   </variant>
@@ -41,10 +45,6 @@
 //!     <Button variant="secondary">Click me</Button>
 //!   </variant>
 //! </art>
-//!
-//! <script setup lang="ts">
-//! import Button from './Button.vue'
-//! </script>
 //! "#;
 //!
 //! // Parse Art file with arena allocator
@@ -67,12 +67,18 @@ pub mod autogen;
 pub mod docs;
 pub mod palette;
 pub mod parse;
+pub mod tokens;
 pub mod transform;
 pub mod types;
 pub mod vrt;
 
 // Re-exports for convenience
 pub use parse::parse_art;
+pub use tokens::{
+    build_token_map, find_dependent_tokens, flatten_token_categories, generate_tokens_markdown,
+    parse_tokens_from_json, parse_tokens_from_path, parse_tokens_from_value,
+    resolve_token_categories, validate_reference,
+};
 pub use transform::{transform_to_csf, transform_to_vue};
 pub use types::{
     ArtDescriptor, ArtDescriptorOwned, ArtMetadata, ArtMetadataOwned, ArtParseError,
@@ -93,14 +99,23 @@ pub fn serve() {
 #[cfg(test)]
 mod tests {
     use super::{
-        parse_art, transform_to_csf, transform_to_vue, ArtDescriptorOwned, ArtParseOptions, Bump,
+        ArtDescriptorOwned, ArtParseOptions, Bump, parse_art, transform_to_csf, transform_to_vue,
     };
 
     #[test]
     fn test_full_workflow() {
         let allocator = Bump::new();
         let source = r#"
-<art title="Button" description="A versatile button component" component="./Button.vue" category="atoms" tags="ui,input">
+<script setup lang="ts">
+defineArt("./Button.vue", {
+  title: "Button",
+  description: "A versatile button component",
+  category: "atoms",
+  tags: ["ui", "input"],
+});
+</script>
+
+<art>
   <variant name="Primary" default>
     <Button variant="primary">Primary Button</Button>
   </variant>
@@ -111,10 +126,6 @@ mod tests {
     <Button variant="primary" icon="plus">Add Item</Button>
   </variant>
 </art>
-
-<script setup lang="ts">
-import Button from './Button.vue'
-</script>
 
 <style scoped>
 .art-container {

@@ -135,11 +135,11 @@ impl CodeLensService {
                 }
             }
             // async function name(...) { ... }
-            else if let Some(rest) = trimmed.strip_prefix("async function ") {
-                if let Some(name) = Self::extract_first_identifier(rest) {
-                    let col = line.find(&name).unwrap_or(0) as u32;
-                    declarations.push((name, line_num, col));
-                }
+            else if let Some(rest) = trimmed.strip_prefix("async function ")
+                && let Some(name) = Self::extract_first_identifier(rest)
+            {
+                let col = line.find(&name).unwrap_or(0) as u32;
+                declarations.push((name, line_num, col));
             }
         }
 

@@ -3,8 +3,11 @@
 //! Orchestrates parsing, analysis, and virtual TypeScript generation
 //! for a Vue Single File Component.
 
-use vize_carton::cstr;
 use vize_carton::Bump;
+use vize_carton::cstr;
+
+use crate::script_parse::collect_script_parse_diagnostics;
+use crate::virtual_ts::generate_virtual_ts_with_offsets_legacy_vue2;
 
 use super::{
     analysis::{SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity},
@@ -25,9 +28,31 @@ use super::{
 ///
 /// For full TypeScript type checking with Corsa, use `TypeCheckService`.
 pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeCheckResult {
+    type_check_sfc_impl(source, options, false)
+}
+
+/// Perform type checking on a Vue SFC with Vue 2.7 / Nuxt 2 compatibility enabled.
+pub fn type_check_sfc_with_legacy_vue2(
+    source: &str,
+    options: &SfcTypeCheckOptions,
+) -> SfcTypeCheckResult {
+    type_check_sfc_impl(source, options, true)
+}
+
+fn type_check_sfc_impl(
+    source: &str,
+    options: &SfcTypeCheckOptions,
+    legacy_vue2: bool,
+) -> SfcTypeCheckResult {
     use vize_atelier_core::parser::parse;
-    use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
-    use vize_croquis::{Analyzer, AnalyzerOptions};
+    use vize_atelier_sfc::{
+        SfcParseOptions,
+        croquis::{
+            SfcCroquisOptions, analyze_sfc_descriptor_with_context,
+            analyze_sfc_descriptor_with_context_legacy_vue2,
+        },
+        parse_sfc,
+    };
 
     // Use Instant for timing on native, skip on WASM
     #[cfg(not(target_arch = "wasm32"))]
@@ -57,69 +82,105 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
         }
     };
 
-    // Get script content for virtual TS generation
-    let script_content = descriptor
-        .script_setup
-        .as_ref()
-        .map(|s| s.content.as_ref())
-        .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
-
     // Create allocator for template parsing
     let allocator = Bump::new();
 
-    // Create analyzer with full options
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-
-    // Analyze script and get offset
-    let script_offset: u32 = if let Some(ref script_setup) = descriptor.script_setup {
-        analyzer.analyze_script_setup(&script_setup.content);
-        script_setup.loc.start as u32
-    } else if let Some(ref script) = descriptor.script {
-        analyzer.analyze_script_plain(&script.content);
-        script.loc.start as u32
-    } else {
-        0
-    };
+    let mut has_script_parse_errors = false;
+    if let Some(ref script) = descriptor.script {
+        let script_diagnostics =
+            collect_script_parse_diagnostics(&script.content, script.loc.start as u32);
+        if !script_diagnostics.is_empty() {
+            has_script_parse_errors = true;
+            add_script_parse_diagnostics(script_diagnostics, &mut result);
+        }
+    }
+    if let Some(ref script_setup) = descriptor.script_setup {
+        let script_diagnostics =
+            collect_script_parse_diagnostics(&script_setup.content, script_setup.loc.start as u32);
+        if !script_diagnostics.is_empty() {
+            has_script_parse_errors = true;
+            add_script_parse_diagnostics(script_diagnostics, &mut result);
+        }
+    }
 
     // Analyze template and get AST
+    let mut has_template_parse_errors = false;
     let (template_offset, template_ast) = if let Some(ref template) = descriptor.template {
-        let (root, _errors) = parse(&allocator, &template.content);
-        analyzer.analyze_template(&root);
-        (template.loc.start as u32, Some(root))
+        let template_offset = template.loc.start as u32;
+        let (root, errors) = parse(&allocator, &template.content);
+        if errors.is_empty() {
+            (template_offset, Some(root))
+        } else {
+            has_template_parse_errors = true;
+            for error in errors {
+                let (start, end) = error
+                    .loc
+                    .as_ref()
+                    .map(|loc| {
+                        (
+                            template_offset + loc.start.offset,
+                            template_offset + loc.end.offset,
+                        )
+                    })
+                    .unwrap_or((template_offset, template_offset));
+                result.add_diagnostic(SfcTypeDiagnostic {
+                    severity: SfcTypeSeverity::Error,
+                    message: cstr!("Template parse error: {}", error.message),
+                    start,
+                    end: end.max(start + 1),
+                    code: Some("template-parse-error".into()),
+                    help: None,
+                    related: Vec::new(),
+                });
+            }
+            (template_offset, None)
+        }
     } else {
         (0, None)
     };
 
-    // Get analysis summary with scopes
-    let summary = analyzer.finish();
+    let croquis_options = SfcCroquisOptions::full();
+
+    let analysis = if legacy_vue2 {
+        analyze_sfc_descriptor_with_context_legacy_vue2(
+            &descriptor,
+            template_ast.as_ref(),
+            croquis_options,
+        )
+    } else {
+        analyze_sfc_descriptor_with_context(&descriptor, template_ast.as_ref(), croquis_options)
+    };
+    let script_content = analysis.script_content;
+    let script_offset = analysis.script_offset;
+    let summary = analysis.croquis;
 
     // Check props typing
-    if options.check_props {
+    if options.check_props && !has_script_parse_errors {
         check_props_typing(&summary, script_offset, &mut result, options.strict);
     }
 
     // Check emits typing
-    if options.check_emits {
+    if options.check_emits && !has_script_parse_errors {
         check_emits_typing(&summary, script_offset, &mut result, options.strict);
     }
 
     // Check template bindings
-    if options.check_template_bindings {
+    if options.check_template_bindings && !has_template_parse_errors && !has_script_parse_errors {
         check_template_bindings(&summary, template_offset, &mut result, options.strict);
     }
 
     // Check reactivity loss
-    if options.check_reactivity {
+    if options.check_reactivity && !has_script_parse_errors {
         check_reactivity(&summary, script_offset, &mut result, options.strict);
     }
 
     // Check setup context violations
-    if options.check_setup_context {
+    if options.check_setup_context && !has_script_parse_errors {
         check_setup_context(&summary, script_offset, &mut result);
     }
 
     // Check invalid exports in <script setup>
-    if options.check_invalid_exports {
+    if options.check_invalid_exports && !has_script_parse_errors {
         check_invalid_exports(&summary, script_offset, &mut result);
     }
 
@@ -129,14 +190,26 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
     }
 
     // Generate virtual TypeScript with scope information if requested
-    if options.include_virtual_ts {
-        result.virtual_ts = Some(generate_virtual_ts_with_scopes(
-            &summary,
-            script_content,
-            script_offset,
-            template_ast.as_ref(),
-            template_offset,
-        ));
+    if options.include_virtual_ts && !has_template_parse_errors && !has_script_parse_errors {
+        result.virtual_ts = Some(if legacy_vue2 {
+            generate_virtual_ts_with_offsets_legacy_vue2(
+                &summary,
+                script_content.as_deref(),
+                template_ast.as_ref(),
+                script_offset,
+                template_offset,
+                &crate::virtual_ts::VirtualTsOptions::default(),
+            )
+            .code
+        } else {
+            generate_virtual_ts_with_scopes(
+                &summary,
+                script_content.as_deref(),
+                script_offset,
+                template_ast.as_ref(),
+                template_offset,
+            )
+        });
     }
 
     // Record analysis time on native only
@@ -146,4 +219,21 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
     }
 
     result
+}
+
+fn add_script_parse_diagnostics(
+    diagnostics: Vec<crate::script_parse::ScriptParseDiagnostic>,
+    result: &mut SfcTypeCheckResult,
+) {
+    for diagnostic in diagnostics {
+        result.add_diagnostic(SfcTypeDiagnostic {
+            severity: SfcTypeSeverity::Error,
+            message: cstr!("Script parse error: {}", diagnostic.message),
+            start: diagnostic.start,
+            end: diagnostic.end,
+            code: Some("script-parse-error".into()),
+            help: None,
+            related: Vec::new(),
+        });
+    }
 }

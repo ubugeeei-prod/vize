@@ -2,11 +2,11 @@
 
 use std::path::{Path, PathBuf};
 
+use super::Diagnostic;
 use super::error::{CorsaError, CorsaResult};
 use super::executor::CorsaExecutor;
 use super::virtual_project::VirtualProject;
-use super::Diagnostic;
-use crate::virtual_ts::VirtualTsOptions;
+use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use vize_carton::String;
 
 /// Result of type checking.
@@ -120,11 +120,20 @@ impl BatchTypeChecker {
         project_root: &Path,
         options: BatchTypeCheckerOptions,
     ) -> CorsaResult<Self> {
+        Self::with_options_and_corsa_path(project_root, options, None)
+    }
+
+    /// Create a new batch type checker with options and an optional Corsa path.
+    pub fn with_options_and_corsa_path(
+        project_root: &Path,
+        options: BatchTypeCheckerOptions,
+        corsa_path: Option<&Path>,
+    ) -> CorsaResult<Self> {
         let project = VirtualProject::new(project_root)?;
         let mut project = project;
         project.set_tsconfig_path(options.tsconfig_path);
         project.set_virtual_ts_options(options.virtual_ts_options);
-        let executor = CorsaExecutor::new(project_root)?;
+        let executor = CorsaExecutor::with_corsa_path(project_root, corsa_path)?;
 
         Ok(Self {
             project,
@@ -133,14 +142,29 @@ impl BatchTypeChecker {
         })
     }
 
+    /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for generated virtual files.
+    pub fn enable_legacy_vue2(&mut self) {
+        self.project.set_legacy_vue2(true);
+    }
+
+    /// Configure which virtual TypeScript checks are generated for Vue files.
+    pub fn set_virtual_ts_checks(
+        &mut self,
+        check_props: bool,
+        check_template_bindings: bool,
+        check_emits: bool,
+    ) {
+        self.project
+            .set_virtual_ts_check_options(VirtualTsCheckOptions {
+                check_props,
+                check_template_bindings,
+                check_emits,
+            });
+    }
+
     /// Scan an explicit set of project files.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
-        for path in paths {
-            if !path.is_file() {
-                continue;
-            }
-            self.project.register_path(path)?;
-        }
+        self.project.register_paths(paths)?;
         self.scanned = true;
         Ok(())
     }
@@ -149,6 +173,7 @@ impl BatchTypeChecker {
     pub fn scan_project(&mut self) -> CorsaResult<()> {
         let project_root = self.project.project_root().to_path_buf();
 
+        let mut paths: Vec<PathBuf> = Vec::new();
         for entry in walkdir::WalkDir::new(&project_root)
             .into_iter()
             .filter_entry(|e| {
@@ -172,9 +197,10 @@ impl BatchTypeChecker {
                 continue;
             }
 
-            self.project.register_path(path)?;
+            paths.push(path.to_path_buf());
         }
 
+        self.project.register_paths(&paths)?;
         self.scanned = true;
         Ok(())
     }
@@ -208,7 +234,15 @@ impl TypeChecker for BatchTypeChecker {
             return Err(CorsaError::NotInitialized);
         }
 
-        self.executor.check(&self.project)
+        let mut result = self.executor.check(&self.project)?;
+        result
+            .diagnostics
+            .extend(self.project.diagnostics().iter().cloned());
+        if result.has_errors() {
+            result.success = false;
+            result.exit_code = result.exit_code.max(1);
+        }
+        Ok(result)
     }
 
     fn check_file(&self, path: &Path, content: &str) -> CorsaResult<Vec<Diagnostic>> {
@@ -217,7 +251,10 @@ impl TypeChecker for BatchTypeChecker {
         let mut temp_project = VirtualProject::new(project_root)?;
         temp_project.register_path_with_content(path, content)?;
 
-        let result = self.executor.check(&temp_project)?;
+        let mut result = self.executor.check(&temp_project)?;
+        result
+            .diagnostics
+            .extend(temp_project.diagnostics().iter().cloned());
         Ok(result.diagnostics)
     }
 

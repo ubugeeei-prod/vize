@@ -4,10 +4,10 @@
  * Usage:
  *   1. Generate test files: node generate.mjs [count]
  *   2. Build CLI: vp run --workspace-root build:cli
- *   3. Run benchmark: node --experimental-strip-types bench/check.ts
+ *   3. Run benchmark: node bench/check.ts
  */
 
-import { existsSync, mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, relative } from "node:path";
 import { execSync } from "node:child_process";
@@ -52,12 +52,12 @@ function prepareBenchInputDir(selectedVueFiles: string[], totalVueFileCount: num
     return INPUT_DIR;
   }
 
-  const subsetDir = join(__dirname, "__agent_only", `check-${selectedVueFiles.length}`);
+  const subsetDir = join(__dirname, "target", "vize-tests", `check-${selectedVueFiles.length}`);
   rmSync(subsetDir, { recursive: true, force: true });
   mkdirSync(subsetDir, { recursive: true });
 
   for (const vueFile of selectedVueFiles) {
-    symlinkSync(join(INPUT_DIR, vueFile), join(subsetDir, vueFile));
+    copyFileSync(join(INPUT_DIR, vueFile), join(subsetDir, vueFile));
   }
 
   const tsconfigPath = join(subsetDir, "tsconfig.json");

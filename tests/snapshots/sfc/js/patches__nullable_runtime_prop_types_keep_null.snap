@@ -1,0 +1,18 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: js_output.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
+export default {
+  __name: "test",
+  props: {
+    activeKey: { type: [String, null] },
+    items: { type: [Array, null] },
+    groupName: { type: [String, null] }
+  },
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("div");
+    };
+  }
+};

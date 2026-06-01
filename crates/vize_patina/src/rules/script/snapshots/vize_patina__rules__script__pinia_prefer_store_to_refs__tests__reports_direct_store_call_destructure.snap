@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "ecosystem/pinia-prefer-store-to-refs",
+        severity: Warning,
+        message: "Pinia stores should not be destructured directly",
+        start: 6,
+        end: 14,
+        help: Some(
+            "Use `storeToRefs(store)` for state/getters and keep actions on the store object.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

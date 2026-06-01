@@ -2,9 +2,10 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { Fragment as _Fragment, KeepAlive as _KeepAlive, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent, renderList as _renderList } from "vue"
+import { resolveDynamicComponent as _resolveDynamicComponent, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList, KeepAlive as _KeepAlive } from "vue"
 
 import { ref } from 'vue'
+
 
 export default {
   __name: 'test',
@@ -14,10 +15,10 @@ const tabs = ref([{ id: 1, component: 'TabA' }])
 
 return (_ctx, _cache) => {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(tabs.value, (tab) => {
-      return (_openBlock(), _createBlock(_KeepAlive, { key: tab.id }, [
-        _createVNode(_resolveDynamicComponent(tab.component))
-      ]))
-    }), 128 /* KEYED_FRAGMENT */))
+    return (_openBlock(), _createBlock(_KeepAlive, { key: tab.id }, [
+      _createVNode(_resolveDynamicComponent(tab.component))
+    ]))
+  }), 128 /* KEYED_FRAGMENT */))
 }
 }
 

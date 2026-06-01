@@ -5,7 +5,6 @@ expression: result.code.as_str()
 import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { template as _template } from 'vue';
 
-
 const t0 = _template("<div>Hello</div>", true)
 
 function render(_ctx, $props, $emit, $attrs, $slots) {

@@ -8,7 +8,23 @@
 
 use std::path::PathBuf;
 use vize_carton::String;
-use vize_test_runner::{run_fixture_tests, CompilerMode};
+use vize_test_runner::{CompilerMode, run_fixture_tests};
+
+const MIN_VDOM_PASSED: usize = 439;
+const MIN_VAPOR_PASSED: usize = 104;
+const MIN_SFC_PASSED: usize = 166;
+const MIN_TOTAL_PASSED: usize = 709;
+
+// Known v1 alpha fixture debt. CI allows these exact failures so existing gaps
+// do not block unrelated work, but any new failure or pass-count regression
+// fails the coverage job.
+const KNOWN_FAILURES: &[(&str, &str)] = &[];
+
+fn is_known_failure(path: &str, name: &str) -> bool {
+    KNOWN_FAILURES
+        .iter()
+        .any(|(known_path, known_name)| *known_path == path && *known_name == name)
+}
 
 fn main() {
     let args: Vec<String> = std::env::args().map(String::from).collect();
@@ -33,6 +49,8 @@ fn main() {
         ("vdom/v-slot", CompilerMode::Vdom),
         ("vdom/v-show", CompilerMode::Vdom),
         ("vdom/v-once", CompilerMode::Vdom),
+        ("vdom/dynamic-component", CompilerMode::Vdom),
+        ("vdom/html-entities", CompilerMode::Vdom),
         ("vapor/element", CompilerMode::Vapor),
         ("vapor/component", CompilerMode::Vapor),
         ("vapor/v-if", CompilerMode::Vapor),
@@ -45,7 +63,10 @@ fn main() {
         ("vapor/edge-cases", CompilerMode::Vapor),
         ("sfc/basic", CompilerMode::Sfc),
         ("sfc/script-setup", CompilerMode::Sfc),
+        ("sfc/script-setup-advanced", CompilerMode::Sfc),
         ("sfc/patches", CompilerMode::Sfc),
+        ("sfc/define-model", CompilerMode::Sfc),
+        ("sfc/props-destructure", CompilerMode::Sfc),
     ];
 
     println!("Vue Compiler Coverage Report");
@@ -61,6 +82,7 @@ fn main() {
     let mut vapor_total = 0;
     let mut sfc_passed = 0;
     let mut sfc_total = 0;
+    let mut unexpected_failures: Vec<String> = Vec::new();
 
     for (path, mode) in &test_files {
         let fixture = fixtures_dir.join(format!("{}.toml", path));
@@ -82,6 +104,14 @@ fn main() {
         total_passed += passed;
         total_failed += failed;
         total_skipped += skipped;
+        for result in results
+            .iter()
+            .filter(|result| !result.passed && result.error.is_some())
+        {
+            if !is_known_failure(path, result.name.as_str()) {
+                unexpected_failures.push(format!("{}: {}", path, result.name).into());
+            }
+        }
 
         match mode {
             CompilerMode::Vdom => {
@@ -120,16 +150,16 @@ fn main() {
         // Show details if verbose
         if (verbose || show_diff) && failed > 0 {
             for result in &results {
-                if !result.passed {
-                    if let Some(ref err) = result.error {
-                        if show_diff {
-                            println!("    \x1b[31m✗\x1b[0m {}", result.name);
-                            for line in err.lines().take(5) {
-                                println!("      {}", line);
-                            }
-                        } else if verbose {
-                            println!("    \x1b[31m✗\x1b[0m {}", result.name);
+                if !result.passed
+                    && let Some(ref err) = result.error
+                {
+                    if show_diff {
+                        println!("    \x1b[31m✗\x1b[0m {}", result.name);
+                        for line in err.lines().take(5) {
+                            println!("      {}", line);
                         }
+                    } else if verbose {
+                        println!("    \x1b[31m✗\x1b[0m {}", result.name);
                     }
                 }
             }
@@ -183,5 +213,65 @@ fn main() {
 
     if total_failed > 0 {
         println!("\n{} tests failed", total_failed);
+        println!(
+            "{} known failure(s) tracked for v1 alpha",
+            KNOWN_FAILURES.len()
+        );
+    }
+
+    let mut budget_failures = Vec::new();
+    if vdom_passed < MIN_VDOM_PASSED {
+        budget_failures.push(format!("VDOM passed {} < {}", vdom_passed, MIN_VDOM_PASSED));
+    }
+    if vapor_passed < MIN_VAPOR_PASSED {
+        budget_failures.push(format!(
+            "Vapor passed {} < {}",
+            vapor_passed, MIN_VAPOR_PASSED
+        ));
+    }
+    if sfc_passed < MIN_SFC_PASSED {
+        budget_failures.push(format!("SFC passed {} < {}", sfc_passed, MIN_SFC_PASSED));
+    }
+    if total_passed < MIN_TOTAL_PASSED {
+        budget_failures.push(format!(
+            "Total passed {} < {}",
+            total_passed, MIN_TOTAL_PASSED
+        ));
+    }
+
+    if !unexpected_failures.is_empty() {
+        println!("\nUnexpected coverage failures:");
+        for failure in &unexpected_failures {
+            println!("  - {}", failure);
+        }
+    }
+    if !budget_failures.is_empty() {
+        println!("\nCoverage budget regressions:");
+        for failure in &budget_failures {
+            println!("  - {}", failure);
+        }
+    }
+
+    if !unexpected_failures.is_empty() || !budget_failures.is_empty() {
+        std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{KNOWN_FAILURES, is_known_failure};
+    use vize_carton::FxHashSet;
+
+    #[test]
+    fn tracks_the_current_known_failure_budget() {
+        assert_eq!(KNOWN_FAILURES.len(), 0);
+        let unique_failures: FxHashSet<_> = KNOWN_FAILURES.iter().collect();
+        assert_eq!(unique_failures.len(), KNOWN_FAILURES.len());
+        assert!(!is_known_failure(
+            "sfc/script-setup",
+            "generic component with extends"
+        ));
+        assert!(!is_known_failure("vapor/v-if", "v-if/v-else-if/v-else"));
+        assert!(!is_known_failure("vdom/element", "plain element"));
     }
 }

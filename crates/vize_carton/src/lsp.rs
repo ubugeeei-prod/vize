@@ -33,12 +33,7 @@ impl JsonRpcRequest {
     /// Serialize to LSP message format (with Content-Length header).
     pub fn to_lsp_message(&self) -> Result<String, serde_json::Error> {
         let content = serde_json::to_string(self)?;
-        #[allow(clippy::disallowed_macros)]
-        Ok(format!(
-            "Content-Length: {}\r\n\r\n{}",
-            content.len(),
-            content
-        ))
+        Ok(lsp_message_from_json(content))
     }
 }
 
@@ -64,13 +59,19 @@ impl JsonRpcNotification {
     /// Serialize to LSP message format (with Content-Length header).
     pub fn to_lsp_message(&self) -> Result<String, serde_json::Error> {
         let content = serde_json::to_string(self)?;
-        #[allow(clippy::disallowed_macros)]
-        Ok(format!(
-            "Content-Length: {}\r\n\r\n{}",
-            content.len(),
-            content
-        ))
+        Ok(lsp_message_from_json(content))
     }
+}
+
+fn lsp_message_from_json(content: String) -> String {
+    use std::fmt::Write as _;
+
+    let mut message = String::with_capacity("Content-Length: ".len() + 20 + 4 + content.len());
+    message.push_str("Content-Length: ");
+    let _ = write!(&mut message, "{}", content.len());
+    message.push_str("\r\n\r\n");
+    message.push_str(&content);
+    message
 }
 
 /// JSON-RPC response.
@@ -425,8 +426,8 @@ impl VueReactiveType {
 #[cfg(test)]
 mod tests {
     use super::{
-        parse_content_length, Diagnostic, JsonRpcNotification, JsonRpcRequest, Range,
-        RequestIdGenerator, VueReactiveType,
+        Diagnostic, JsonRpcNotification, JsonRpcRequest, Range, RequestIdGenerator,
+        VueReactiveType, parse_content_length,
     };
 
     #[test]
@@ -445,6 +446,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::disallowed_macros)]
     fn test_lsp_message_format() {
         let req = JsonRpcRequest::new(1, "test", None);
         let msg = req.to_lsp_message().unwrap();
@@ -479,10 +481,10 @@ mod tests {
 
     #[test]
     fn test_request_id_generator() {
-        let gen = RequestIdGenerator::new();
-        assert_eq!(gen.next(), 0);
-        assert_eq!(gen.next(), 1);
-        assert_eq!(gen.next(), 2);
+        let generator = RequestIdGenerator::new();
+        assert_eq!(generator.next(), 0);
+        assert_eq!(generator.next(), 1);
+        assert_eq!(generator.next(), 2);
     }
 
     #[test]

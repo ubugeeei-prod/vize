@@ -23,7 +23,7 @@
 //!
 //! ### Safe Patterns
 //! ```vue
-//! <!-- Static URLs are safe -->
+//! <!-- Trusted static URLs are safe -->
 //! <a href="/about">About</a>
 //!
 //! <!-- Computed URLs with validation -->
@@ -42,7 +42,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{DirectiveNode, ElementNode, ExpressionNode};
+use crate::rules::url::is_unsafe_url;
+use vize_relief::ast::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unsafe-url",
@@ -57,11 +58,72 @@ static META: RuleMeta = RuleMeta {
 pub struct NoUnsafeUrl;
 
 /// Attributes that can be exploited with unsafe URLs
-const UNSAFE_URL_ATTRS: &[&str] = &["href", "src", "srcset", "action", "formaction"];
+const UNSAFE_URL_ATTRS: &[&str] = &[
+    "href",
+    "xlink:href",
+    "src",
+    "srcset",
+    "action",
+    "formaction",
+    "data",
+];
+
+fn is_url_attr(name: &str) -> bool {
+    UNSAFE_URL_ATTRS
+        .iter()
+        .any(|attr| name.eq_ignore_ascii_case(attr))
+}
+
+fn is_router_link_tag(tag: &str) -> bool {
+    tag == "router-link" || tag == "RouterLink" || tag == "nuxt-link" || tag == "NuxtLink"
+}
+
+fn is_unsafe_static_attr_value(attr_name: &str, value: &str) -> bool {
+    if attr_name.eq_ignore_ascii_case("srcset") {
+        return value
+            .split(',')
+            .map(str::trim_start)
+            .filter_map(|candidate| candidate.split_ascii_whitespace().next())
+            .any(is_unsafe_url);
+    }
+
+    is_unsafe_url(value)
+}
 
 impl Rule for NoUnsafeUrl {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        if is_router_link_tag(element.tag.as_str()) {
+            return;
+        }
+
+        for prop in &element.props {
+            let PropNode::Attribute(attr) = prop else {
+                continue;
+            };
+
+            let attr_name = attr.name.as_str();
+            if !is_url_attr(attr_name) {
+                continue;
+            }
+
+            let Some(value) = &attr.value else {
+                continue;
+            };
+
+            if !is_unsafe_static_attr_value(attr_name, value.content.as_str()) {
+                continue;
+            }
+
+            ctx.warn_with_help(
+                ctx.t("vue/no-unsafe-url.static_message"),
+                &attr.loc,
+                ctx.t("vue/no-unsafe-url.static_help"),
+            );
+        }
     }
 
     fn check_directive<'a>(
@@ -82,13 +144,12 @@ impl Rule for NoUnsafeUrl {
         };
 
         // Check if this is a potentially unsafe attribute
-        if !UNSAFE_URL_ATTRS.contains(&attr_name) {
+        if !is_url_attr(attr_name) {
             return;
         }
 
         // Skip if the element is router-link (it handles routing safely)
-        let tag = element.tag.as_str();
-        if tag == "router-link" || tag == "RouterLink" || tag == "nuxt-link" || tag == "NuxtLink" {
+        if is_router_link_tag(element.tag.as_str()) {
             return;
         }
 
@@ -123,6 +184,64 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<a href="/about">About</a>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_warns_static_javascript_src() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r#"<iframe src="javascript:alert(1)"></iframe>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_warns_static_obfuscated_javascript_href() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<a href="java&#x0A;script:alert(1)">Link</a>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_warns_static_vbscript_formaction() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<button formaction="vbscript:msgbox(1)">Submit</button>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_warns_static_executable_data_url() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<iframe src="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="></iframe>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_allows_static_image_data_url() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<img src="data:image/png;base64,iVBORw0KGgo=">"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_warns_static_unsafe_srcset_candidate() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<img srcset="/safe.png 1x, javascript:alert(1) 2x">"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]

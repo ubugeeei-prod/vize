@@ -93,7 +93,7 @@ pub(crate) fn transform_props_text_based(
 
     // Sort by length (longest first) to avoid partial replacements
     let mut props: Vec<(&str, &str)> = local_to_key.iter().map(|(k, v)| (*k, *v)).collect();
-    props.sort_by(|a, b| b.0.len().cmp(&a.0.len()));
+    props.sort_by_key(|prop| std::cmp::Reverse(prop.0.len()));
 
     for (local, key) in props {
         result = replace_identifier(&result, local, &gen_props_access_exp(key));

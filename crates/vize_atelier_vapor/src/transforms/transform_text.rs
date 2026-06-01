@@ -2,7 +2,7 @@
 //!
 //! Transforms text and interpolation nodes into SetTextIRNode.
 
-use vize_carton::{cstr, Box, Bump, String, Vec};
+use vize_carton::{Box, Bump, String, Vec, cstr};
 
 use crate::ir::{OperationNode, SetTextIRNode};
 use vize_atelier_core::{ExpressionNode, InterpolationNode, SimpleExpressionNode, TextNode};

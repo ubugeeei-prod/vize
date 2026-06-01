@@ -5,8 +5,15 @@
  * counterparts, as well as rewriting dynamic template imports for alias resolution.
  */
 
-import path from "node:path";
-import fs from "node:fs";
+import {
+  classifyVitePluginRequest,
+  createViteVirtualId,
+  fromViteVirtualId,
+  normalizeViteFsIdForBuild,
+  normalizeViteVirtualVueModuleId as normalizeNativeViteVirtualVueModuleId,
+  rewriteViteDynamicTemplateImports,
+  toViteBrowserImportPrefix,
+} from "@vizejs/native";
 
 // Virtual module prefixes and constants
 export const LEGACY_VIZE_PREFIX = "\0vize:";
@@ -21,65 +28,42 @@ export interface DynamicImportAliasRule {
 
 /** Check if a module ID is a vize-compiled virtual module */
 export function isVizeVirtual(id: string): boolean {
-  const pathPart = id.startsWith(VIZE_SSR_PREFIX) ? id.slice(VIZE_SSR_PREFIX.length) : id.slice(1);
-  return id.startsWith("\0") && pathPart.endsWith(".vue.ts");
+  return classifyVitePluginRequest(id).isVizeVirtual;
+}
+
+export function isVizeVirtualVueModuleId(id: string): boolean {
+  return classifyVitePluginRequest(id).isVizeVirtual;
 }
 
 export function isVizeSsrVirtual(id: string): boolean {
-  return id.startsWith(VIZE_SSR_PREFIX);
+  return classifyVitePluginRequest(id).isVizeSsrVirtual;
 }
 
 /** Create a virtual module ID from a real .vue file path */
 export function toVirtualId(realPath: string, ssr = false): string {
-  return ssr ? `${VIZE_SSR_PREFIX}${realPath}.ts` : "\0" + realPath + ".ts";
+  return createViteVirtualId(realPath, ssr);
 }
 
 /** Extract the real .vue file path from a virtual module ID */
 export function fromVirtualId(virtualId: string): string {
-  const prefix = isVizeSsrVirtual(virtualId) ? VIZE_SSR_PREFIX.length : 1;
-  return virtualId.slice(prefix, -3);
+  return fromViteVirtualId(virtualId);
 }
 
-export function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+export function normalizeVizeVirtualVueModuleId(id: string): string {
+  return normalizeNativeViteVirtualVueModuleId(id);
 }
 
 export function toBrowserImportPrefix(replacement: string): string {
-  const normalized = replacement.replace(/\\/g, "/");
-  if (normalized.startsWith("/@fs/")) {
-    return normalized;
-  }
-  // Absolute filesystem alias targets should be served via /@fs in browser imports.
-  if (path.isAbsolute(replacement) && fs.existsSync(replacement)) {
-    return `/@fs${normalized}`;
-  }
-  return normalized;
+  return toViteBrowserImportPrefix(replacement);
 }
 
 export function normalizeFsIdForBuild(id: string): string {
-  const [pathPart, queryPart] = id.split("?");
-  if (!pathPart.startsWith("/@fs/")) {
-    return id;
-  }
-  const normalizedPath = pathPart.slice(4); // strip '/@fs'
-  return queryPart ? `${normalizedPath}?${queryPart}` : normalizedPath;
+  return normalizeViteFsIdForBuild(id);
 }
 
 export function rewriteDynamicTemplateImports(
   code: string,
   aliasRules: DynamicImportAliasRule[],
 ): string {
-  let rewritten = code;
-
-  // Normalize alias-based template literal imports (e.g. `@/foo/${x}.svg`) to browser paths.
-  for (const rule of aliasRules) {
-    const pattern = new RegExp(`\\bimport\\s*\\(\\s*\`${escapeRegExp(rule.fromPrefix)}`, "g");
-    rewritten = rewritten.replace(pattern, `import(/* @vite-ignore */ \`${rule.toPrefix}`);
-  }
-
-  // Dynamic template imports are intentionally runtime-resolved: mark them to silence
-  // Vite's static analysis warning while keeping runtime behavior.
-  rewritten = rewritten.replace(/\bimport\s*\(\s*`/g, "import(/* @vite-ignore */ `");
-
-  return rewritten;
+  return rewriteViteDynamicTemplateImports(code, aliasRules);
 }

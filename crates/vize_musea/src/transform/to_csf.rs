@@ -6,7 +6,7 @@
 #![allow(clippy::disallowed_macros)]
 
 use crate::types::{ArtDescriptor, ArtVariant, CsfOutput};
-use vize_carton::{append, cstr, String, ToCompactString};
+use vize_carton::{String, ToCompactString, append, cstr};
 
 /// Transform an Art descriptor to Storybook CSF 3.0 format.
 ///

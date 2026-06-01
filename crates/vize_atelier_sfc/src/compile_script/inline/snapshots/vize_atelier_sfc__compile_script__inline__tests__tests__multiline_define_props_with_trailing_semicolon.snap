@@ -6,10 +6,7 @@ import { ref } from "vue";
 export default {
   __name: "TestComponent",
   props: {
-    label: {
-      type: String,
-      required: true
-    },
+    label: { type: String },
     disabled: {
       type: Boolean,
       required: false

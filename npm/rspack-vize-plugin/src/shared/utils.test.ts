@@ -3,10 +3,12 @@ import assert from "node:assert/strict";
 import {
   extractCustomBlocks,
   extractStyleBlocks,
+  addScopeToCssFallback,
   collectTemplateAssetUrls,
   isImportableUrl,
+  matchesPattern,
   stripCssCommentsForScoped,
-} from "./utils.js";
+} from "./utils.ts";
 
 void describe("extractCustomBlocks", () => {
   void test("extracts a simple <i18n> custom block", () => {
@@ -226,6 +228,32 @@ void describe("stripCssCommentsForScoped", () => {
     const output = stripCssCommentsForScoped(input);
 
     assert.equal(output.includes('content: "/* :deep(.x) */"'), true);
+  });
+});
+
+void describe("addScopeToCssFallback", () => {
+  void test("delegates scoped CSS transformation to native pipeline", () => {
+    const output = addScopeToCssFallback(".root { color: red; }", "abc123");
+
+    assert.equal(output, ".root[data-v-abc123] { color: red; }");
+  });
+});
+
+void describe("matchesPattern", () => {
+  void test("keeps global regexp patterns stable across calls", () => {
+    const pattern = /\.vue$/g;
+
+    assert.equal(matchesPattern("src/App.vue", pattern, false), true);
+    assert.equal(matchesPattern("src/App.vue", pattern, false), true);
+    assert.equal(pattern.lastIndex, 0);
+  });
+
+  void test("keeps sticky regexp patterns stable across calls", () => {
+    const pattern = /^src\/.*\.vue$/y;
+
+    assert.equal(matchesPattern("src/App.vue", pattern, false), true);
+    assert.equal(matchesPattern("src/App.vue", pattern, false), true);
+    assert.equal(pattern.lastIndex, 0);
   });
 });
 

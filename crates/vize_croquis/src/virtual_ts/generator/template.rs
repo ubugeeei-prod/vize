@@ -9,7 +9,8 @@ use super::{
     InterpolationNode, MappingData, PropNode, RootNode, SourceMapping, SourceRange,
     TemplateChildNode, VirtualTsGenerator, VirtualTsOutput,
 };
-use vize_carton::{append, profile, String, ToCompactString};
+use crate::analyzer::{VForScopeAliases, parse_v_for_scope_expression};
+use vize_carton::{String, ToCompactString, append, profile};
 
 impl VirtualTsGenerator {
     /// Generate virtual TypeScript from template AST (legacy API).
@@ -69,7 +70,8 @@ impl VirtualTsGenerator {
     pub(crate) fn emit_template_scope(&mut self, ast: &RootNode, bindings: &BindingMetadata) {
         self.emit_line("");
         self.emit_line("// Template scope (inherits from setup)");
-        self.emit_line("(function __template() {");
+        // Keep the template IIFE from being parsed as a call on the last setup expression.
+        self.emit_line(";(function __template() {");
         self.indent_level += 1;
 
         // Declare refs for template ref access
@@ -110,10 +112,7 @@ impl VirtualTsGenerator {
     /// Visit template children.
     pub(crate) fn visit_children(&mut self, children: &[TemplateChildNode]) {
         for child in children {
-            profile!(
-                "croquis.virtual_ts.template.visit_child",
-                self.visit_child(child)
-            );
+            self.visit_child(child);
         }
     }
 
@@ -148,12 +147,26 @@ impl VirtualTsGenerator {
 
     /// Visit an element node.
     fn visit_element(&mut self, element: &ElementNode) {
+        if let Some(condition) = element_control_flow_condition(element)
+            && self.emit_mapped_expression_line(condition, "if (", ") {")
+        {
+            self.indent_level += 1;
+            self.visit_element_inner(element);
+            self.indent_level = self.indent_level.saturating_sub(1);
+            self.emit_line("}");
+            return;
+        }
+
+        self.visit_element_inner(element);
+    }
+
+    fn visit_element_inner(&mut self, element: &ElementNode) {
         // Check if this element has a v-for directive
         let v_for_exp = element.props.iter().find_map(|prop| {
-            if let PropNode::Directive(dir) = prop {
-                if dir.name == "for" {
-                    return dir.exp.as_ref();
-                }
+            if let PropNode::Directive(dir) = prop
+                && dir.name == "for"
+            {
+                return dir.exp.as_ref();
             }
             None
         });
@@ -162,13 +175,14 @@ impl VirtualTsGenerator {
         if let Some(exp) = v_for_exp {
             self.emit_v_for_scope(exp, |this| {
                 for prop in &element.props {
-                    if let PropNode::Directive(dir) = prop {
-                        if dir.name != "for" {
-                            profile!(
-                                "croquis.virtual_ts.template.directive",
-                                this.visit_directive(dir)
-                            );
-                        }
+                    if let PropNode::Directive(dir) = prop
+                        && dir.name != "for"
+                        && !is_control_flow_directive(&dir.name)
+                    {
+                        profile!(
+                            "croquis.virtual_ts.template.directive",
+                            this.visit_directive(dir)
+                        );
                     }
                 }
                 profile!(
@@ -178,7 +192,9 @@ impl VirtualTsGenerator {
             });
         } else {
             for prop in &element.props {
-                if let PropNode::Directive(dir) = prop {
+                if let PropNode::Directive(dir) = prop
+                    && !is_control_flow_directive(&dir.name)
+                {
                     profile!(
                         "croquis.virtual_ts.template.directive",
                         self.visit_directive(dir)
@@ -197,41 +213,25 @@ impl VirtualTsGenerator {
     where
         F: FnOnce(&mut Self),
     {
-        let content = match exp {
-            ExpressionNode::Simple(s) => s.content.as_str(),
-            ExpressionNode::Compound(c) => c.loc.source.as_str(),
-        };
+        let content = expression_source(exp);
 
         // Parse v-for expression: "item in items" or "(item, index) in items"
-        if let Some(in_pos) = content.find(" in ").or_else(|| content.find(" of ")) {
-            let left = &content[..in_pos];
-            let right = &content[in_pos + 4..];
-
+        if let Some(aliases) = parse_v_for_scope_expression(content) {
             self.emit_line("// v-for scope");
             self.emit_line("{");
             self.indent_level += 1;
 
-            // Extract and declare loop variables
-            let vars_part = left.trim();
-            let vars_part = vars_part.trim_start_matches('(').trim_end_matches(')');
-            for var in vars_part.split(',') {
-                let var = var.trim();
-                if !var.is_empty()
-                    && var
-                        .chars()
-                        .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
-                {
-                    self.emit_line(&format!("let {}: any;", var));
-                }
-            }
-
             // Emit the source expression (right side)
-            let source = right.trim();
             let var_name = format!("__expr_{}", self.expr_counter);
             self.expr_counter += 1;
-            self.emit_line(&format!("const {} = {};", var_name, source));
+            self.emit_line(&format!("const {} = {};", var_name, aliases.source));
 
+            let loop_emitted = self.emit_v_for_scope_loop_open(&aliases, &var_name);
             profile!("croquis.virtual_ts.template.v_for_body", body(self));
+            if loop_emitted {
+                self.indent_level = self.indent_level.saturating_sub(1);
+                self.emit_line("}");
+            }
 
             self.indent_level = self.indent_level.saturating_sub(1);
             self.emit_line("}");
@@ -255,11 +255,38 @@ impl VirtualTsGenerator {
 
     /// Visit an if node.
     fn visit_if(&mut self, if_node: &IfNode) {
+        let mut control_flow_open = false;
         for branch in &if_node.branches {
             if let Some(ref cond) = branch.condition {
-                self.emit_expression(cond, "v-if");
+                if control_flow_open {
+                    self.indent_level = self.indent_level.saturating_sub(1);
+                }
+
+                let prefix = if control_flow_open {
+                    "} else if ("
+                } else {
+                    "if ("
+                };
+                if self.emit_mapped_expression_line(cond, prefix, ") {") {
+                    control_flow_open = true;
+                    self.indent_level += 1;
+                } else {
+                    if control_flow_open {
+                        self.emit_line("}");
+                        control_flow_open = false;
+                    }
+                    self.emit_expression(cond, "v-if");
+                }
+            } else if control_flow_open {
+                self.indent_level = self.indent_level.saturating_sub(1);
+                self.emit_line("} else {");
+                self.indent_level += 1;
             }
             self.visit_children(&branch.children);
+        }
+        if control_flow_open {
+            self.indent_level = self.indent_level.saturating_sub(1);
+            self.emit_line("}");
         }
     }
 
@@ -271,75 +298,25 @@ impl VirtualTsGenerator {
         self.emit_line("{");
         self.indent_level += 1;
 
-        fn extract_var_name(expr: &ExpressionNode) -> Option<String> {
-            match expr {
-                ExpressionNode::Simple(simple) => {
-                    let name = simple.content.trim();
-                    if !name.is_empty()
-                        && name
-                            .chars()
-                            .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
-                    {
-                        Some(name.to_compact_string())
-                    } else {
-                        None
-                    }
-                }
-                ExpressionNode::Compound(compound) => {
-                    use vize_relief::ast::CompoundExpressionChild;
-                    if let Some(CompoundExpressionChild::Simple(simple)) = compound.children.first()
-                    {
-                        let name = simple.content.trim();
-                        if !name.is_empty()
-                            && name
-                                .chars()
-                                .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
-                        {
-                            return Some(name.to_compact_string());
-                        }
-                    }
-                    None
-                }
-            }
-        }
-
-        // Declare loop variables from parse_result
-        if let Some(ref value) = parse_result.value {
-            if let Some(var_name) = extract_var_name(value) {
-                self.emit_line(&format!("let {}: any;", var_name));
-            }
-        }
-        if let Some(ref key) = parse_result.key {
-            if let Some(var_name) = extract_var_name(key) {
-                self.emit_line(&format!("let {}: any;", var_name));
-            }
-        }
-        if let Some(ref index) = parse_result.index {
-            if let Some(var_name) = extract_var_name(index) {
-                self.emit_line(&format!("let {}: any;", var_name));
-            }
-        }
-
-        // Also check the direct aliases on ForNode
-        if let Some(ref value_alias) = for_node.value_alias {
-            if let Some(var_name) = extract_var_name(value_alias) {
-                self.emit_line(&format!("let {}: any;", var_name));
-            }
-        }
-        if let Some(ref key_alias) = for_node.key_alias {
-            if let Some(var_name) = extract_var_name(key_alias) {
-                self.emit_line(&format!("let {}: any;", var_name));
-            }
-        }
-        if let Some(ref index_alias) = for_node.object_index_alias {
-            if let Some(var_name) = extract_var_name(index_alias) {
-                self.emit_line(&format!("let {}: any;", var_name));
-            }
-        }
+        let value_pattern = parse_result
+            .value
+            .as_ref()
+            .or(for_node.value_alias.as_ref())
+            .map(expression_source);
+        let key_alias = parse_result
+            .key
+            .as_ref()
+            .or(for_node.key_alias.as_ref())
+            .and_then(extract_var_name);
+        let index_alias = parse_result
+            .index
+            .as_ref()
+            .or(for_node.object_index_alias.as_ref())
+            .and_then(extract_var_name);
 
         // Emit the source expression
         let source_expr = &parse_result.source;
-        match source_expr {
+        let source_var_name = match source_expr {
             ExpressionNode::Simple(simple) => {
                 if !simple.content.is_empty() {
                     let expr_index = self.expr_counter;
@@ -347,20 +324,105 @@ impl VirtualTsGenerator {
                     self.emit_generated_line(|output| {
                         append!(*output, "const __expr_{expr_index} = {};", simple.content);
                     });
+                    Some(format!("__expr_{expr_index}"))
+                } else {
+                    None
                 }
             }
             ExpressionNode::Compound(_) => {
                 self.emit_expression(source_expr, "v-for source");
+                Some(format!("__expr_{}", self.expr_counter.saturating_sub(1)))
             }
-        }
+        };
 
+        let loop_emitted = source_var_name.as_deref().is_some_and(|source_var_name| {
+            value_pattern.is_some_and(|value_pattern| {
+                self.emit_v_for_loop_open(
+                    value_pattern.trim(),
+                    key_alias.as_deref(),
+                    index_alias.as_deref(),
+                    source_var_name,
+                )
+            })
+        });
         profile!(
             "croquis.virtual_ts.template.for_children",
             self.visit_children(&for_node.children)
         );
+        if loop_emitted {
+            self.indent_level = self.indent_level.saturating_sub(1);
+            self.emit_line("}");
+        }
 
         self.indent_level = self.indent_level.saturating_sub(1);
         self.emit_line("}");
+    }
+
+    fn emit_v_for_scope_loop_open(
+        &mut self,
+        aliases: &VForScopeAliases,
+        source_var_name: &str,
+    ) -> bool {
+        self.emit_v_for_loop_open(
+            aliases.value_pattern.as_str(),
+            aliases
+                .key_alias
+                .as_ref()
+                .map(|alias: &vize_carton::CompactString| alias.as_str()),
+            aliases
+                .index_alias
+                .as_ref()
+                .map(|alias: &vize_carton::CompactString| alias.as_str()),
+            source_var_name,
+        )
+    }
+
+    fn emit_v_for_loop_open(
+        &mut self,
+        value_pattern: &str,
+        key_alias: Option<&str>,
+        index_alias: Option<&str>,
+        source_var_name: &str,
+    ) -> bool {
+        if value_pattern.is_empty() {
+            return false;
+        }
+
+        match (key_alias, index_alias) {
+            (None, None) => {
+                self.emit_line(&format!(
+                    "for (const {} of {}) {{",
+                    value_pattern, source_var_name
+                ));
+                self.indent_level += 1;
+                true
+            }
+            (Some(index), None) => {
+                self.emit_line(&format!(
+                    "for (const [{}, {}] of Array.from({}).entries()) {{",
+                    index, value_pattern, source_var_name
+                ));
+                self.indent_level += 1;
+                true
+            }
+            (Some(key), Some(index)) => {
+                self.emit_line(&format!(
+                    "for (const [{}, {}] of Array.from({}).entries()) {{",
+                    index, value_pattern, source_var_name
+                ));
+                self.indent_level += 1;
+                self.emit_line(&format!("const {} = {};", key, index));
+                true
+            }
+            (None, Some(index)) => {
+                self.emit_line(&format!(
+                    "for (const [{}, {}] of Array.from({}).entries()) {{",
+                    index, value_pattern, source_var_name
+                ));
+                self.indent_level += 1;
+                true
+            }
+        }
     }
 
     /// Emit a TypeScript expression with source mapping.
@@ -413,6 +475,40 @@ impl VirtualTsGenerator {
             }
         });
     }
+
+    fn emit_mapped_expression_line(
+        &mut self,
+        expr: &ExpressionNode,
+        prefix: &str,
+        suffix: &str,
+    ) -> bool {
+        let ExpressionNode::Simple(simple) = expr else {
+            return false;
+        };
+        if simple.content.is_empty() {
+            return false;
+        }
+
+        let expr_start = self.gen_offset + (self.indent_level * 2 + prefix.len()) as u32;
+        let expr_end = expr_start + simple.content.len() as u32;
+        let source_start = simple.loc.start.offset + self.block_offset;
+        let source_end = simple.loc.end.offset + self.block_offset;
+
+        self.mappings.push(SourceMapping::with_data(
+            SourceRange::new(source_start, source_end),
+            SourceRange::new(expr_start, expr_end),
+            MappingData::Expression {
+                text: simple.content.to_compact_string(),
+            },
+        ));
+
+        self.emit_generated_line(|output| {
+            output.push_str(prefix);
+            output.push_str(simple.content.as_str());
+            output.push_str(suffix);
+        });
+        true
+    }
 }
 
 fn decimal_len(mut value: u32) -> usize {
@@ -422,4 +518,52 @@ fn decimal_len(mut value: u32) -> usize {
         len += 1;
     }
     len
+}
+
+fn element_control_flow_condition<'a>(
+    element: &'a ElementNode<'a>,
+) -> Option<&'a ExpressionNode<'a>> {
+    element.props.iter().find_map(|prop| {
+        let PropNode::Directive(dir) = prop else {
+            return None;
+        };
+        matches!(dir.name.as_str(), "if" | "else-if")
+            .then_some(dir.exp.as_ref())
+            .flatten()
+    })
+}
+
+fn is_control_flow_directive(name: &str) -> bool {
+    matches!(name, "if" | "else-if" | "else")
+}
+
+fn extract_var_name(expr: &ExpressionNode) -> Option<String> {
+    match expr {
+        ExpressionNode::Simple(simple) => {
+            let name = simple.content.trim();
+            is_simple_identifier(name).then_some(name.to_compact_string())
+        }
+        ExpressionNode::Compound(compound) => {
+            use vize_relief::ast::CompoundExpressionChild;
+            if let Some(CompoundExpressionChild::Simple(simple)) = compound.children.first() {
+                let name = simple.content.trim();
+                return is_simple_identifier(name).then_some(name.to_compact_string());
+            }
+            None
+        }
+    }
+}
+
+fn is_simple_identifier(name: &str) -> bool {
+    !name.is_empty()
+        && name
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
+}
+
+fn expression_source<'a>(expr: &'a ExpressionNode<'a>) -> &'a str {
+    match expr {
+        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
+    }
 }

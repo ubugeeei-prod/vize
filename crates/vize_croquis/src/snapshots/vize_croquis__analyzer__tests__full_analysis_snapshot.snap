@@ -1,0 +1,38 @@
+---
+source: crates/vize_croquis/src/analyzer.rs
+assertion_line: 487
+expression: output
+---
+=== Bindings ===
+  model: SetupRef
+  emit: SetupConst
+  count: Props
+  theme: SetupConst
+  props: SetupReactiveConst
+  provide: SetupMaybeRef
+  inject: SetupMaybeRef
+  msg: Props
+  computed: SetupMaybeRef
+  ref: SetupMaybeRef
+  MyComponent: SetupConst
+  doubled: SetupRef
+  increment: SetupConst
+  counter: SetupRef
+
+=== Macros ===
+  props: 2
+  emits: 2
+  models: 1
+
+=== Reactivity ===
+  props: kind=Readonly, needs_value=false
+  model: kind=Ref, needs_value=true
+  counter: kind=Ref, needs_value=true
+  doubled: kind=Computed, needs_value=true
+
+=== Provide/Inject ===
+  provides: 1
+  injects: 1
+
+=== Type Exports ===
+  UserProps: Type

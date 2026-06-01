@@ -1,8 +1,8 @@
 //! Benchmarks for vize_glyph formatter
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
+use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
 use vize_glyph::{
-    format_script, format_sfc, format_sfc_with_allocator, format_template, Allocator, FormatOptions,
+    Allocator, FormatOptions, format_script, format_sfc, format_sfc_with_allocator, format_template,
 };
 
 const SIMPLE_SFC: &str = r#"<script setup lang="ts">

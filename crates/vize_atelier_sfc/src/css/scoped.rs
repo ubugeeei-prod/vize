@@ -34,11 +34,11 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) ->
 
     while let Some((i, c)) = chars.next() {
         if in_comment {
-            if c == '*' {
-                if let Some(&(_, '/')) = chars.peek() {
-                    chars.next();
-                    in_comment = false;
-                }
+            if c == '*'
+                && let Some(&(_, '/')) = chars.peek()
+            {
+                chars.next();
+                in_comment = false;
             }
             continue;
         }
@@ -92,9 +92,9 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) ->
             ';' if in_at_rule => {
                 // Statement at-rule (e.g., @import, @charset, @namespace)
                 // Flush the entire at-rule including the semicolon
-                let stmt = &css_bytes[last_selector_end..=i];
-                let stmt_str = unsafe { std::str::from_utf8_unchecked(stmt) }.trim();
-                output.extend_from_slice(stmt_str.as_bytes());
+                if let Some(stmt_str) = css.get(last_selector_end..=i).map(str::trim) {
+                    output.extend_from_slice(stmt_str.as_bytes());
+                }
                 output.push(b'\n');
                 in_at_rule = false;
                 in_selector = true;
@@ -106,10 +106,9 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) ->
                 if in_at_rule {
                     in_at_rule = false;
                     // Flush the buffered at-rule header (e.g., "@media (--mobile)")
-                    let at_rule_header = &css_bytes[last_selector_end..i];
-                    let at_rule_str =
-                        unsafe { std::str::from_utf8_unchecked(at_rule_header) }.trim();
-                    output.extend_from_slice(at_rule_str.as_bytes());
+                    if let Some(at_rule_str) = css.get(last_selector_end..i).map(str::trim) {
+                        output.extend_from_slice(at_rule_str.as_bytes());
+                    }
                     output.push(b'{');
                     if pending_keyframes {
                         saved_at_rule_depth = Some(at_rule_depth);
@@ -121,9 +120,9 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) ->
                     last_selector_end = i + 1;
                 } else if keyframes_brace_depth.is_some_and(|d| brace_depth > d) {
                     // Inside @keyframes: output the stop name (from/to/0%/100%)
-                    let kf_part = &css_bytes[last_selector_end..i];
-                    let kf_str = unsafe { std::str::from_utf8_unchecked(kf_part) }.trim();
-                    output.extend_from_slice(kf_str.as_bytes());
+                    if let Some(kf_str) = css.get(last_selector_end..i).map(str::trim) {
+                        output.extend_from_slice(kf_str.as_bytes());
+                    }
                     output.push(b'{');
                     in_selector = false;
                     last_selector_end = i + 1;
@@ -131,10 +130,9 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) ->
                     && (brace_depth == 1 || (at_rule_depth > 0 && brace_depth > at_rule_depth))
                 {
                     // End of selector, apply scope
-                    let selector_bytes = &css_bytes[last_selector_end..i];
-                    let selector_str =
-                        unsafe { std::str::from_utf8_unchecked(selector_bytes) }.trim();
-                    scope_selector(&mut output, selector_str, attr_selector);
+                    if let Some(selector_str) = css.get(last_selector_end..i).map(str::trim) {
+                        scope_selector(&mut output, selector_str, attr_selector);
+                    }
                     output.push(b'{');
                     in_selector = false;
                     last_selector_end = i + 1;
@@ -176,7 +174,12 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) ->
         output.extend_from_slice(&css_bytes[last_selector_end..]);
     }
 
-    // SAFETY: input is valid UTF-8, we only add ASCII bytes
+    // SAFETY: `output` is built by copying selector/content ranges from the
+    // original UTF-8 `css` string and injecting ASCII-only scope attributes and
+    // punctuation. Ranges are advanced at `char_indices` boundaries or ASCII
+    // delimiter positions, so copied slices cannot split a code point. The arena
+    // copy owns the bytes for the returned lifetime, and skipping revalidation
+    // keeps scoped-style rewriting linear with minimal overhead.
     unsafe { std::str::from_utf8_unchecked(bump.alloc_slice_copy(&output)) }
 }
 
@@ -260,13 +263,14 @@ pub(super) fn add_scope_to_element(out: &mut BumpVec<u8>, selector: &str, attr_s
     }
 
     // Handle pseudo-classes (:hover, :focus, etc.)
-    if let Some(pseudo_pos) = rfind_byte(bytes, b':') {
-        if pseudo_pos > 0 && bytes[pseudo_pos - 1] != b'\\' {
-            out.extend_from_slice(&bytes[..pseudo_pos]);
-            out.extend_from_slice(attr_selector);
-            out.extend_from_slice(&bytes[pseudo_pos..]);
-            return;
-        }
+    if let Some(pseudo_pos) = rfind_byte(bytes, b':')
+        && pseudo_pos > 0
+        && bytes[pseudo_pos - 1] != b'\\'
+    {
+        out.extend_from_slice(&bytes[..pseudo_pos]);
+        out.extend_from_slice(attr_selector);
+        out.extend_from_slice(&bytes[pseudo_pos..]);
+        return;
     }
 
     out.extend_from_slice(bytes);

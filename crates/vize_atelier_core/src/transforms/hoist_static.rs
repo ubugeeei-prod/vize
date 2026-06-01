@@ -137,7 +137,7 @@ pub fn hoist_static<'a>(
     ctx: &mut TransformContext<'a>,
     children: &mut Vec<'a, TemplateChildNode<'a>>,
 ) {
-    hoist_static_inner(ctx, children, true)
+    hoist_static_inner(ctx, children, true, false)
 }
 
 /// Inner implementation with is_root flag
@@ -145,6 +145,7 @@ fn hoist_static_inner<'a>(
     ctx: &mut TransformContext<'a>,
     children: &mut Vec<'a, TemplateChildNode<'a>>,
     is_root: bool,
+    hoist_static_vnodes: bool,
 ) {
     if !ctx.options.hoist_static {
         return;
@@ -161,38 +162,48 @@ fn hoist_static_inner<'a>(
                 // Root elements should NOT be fully hoisted as VNodes
                 // They must use createElementBlock for proper block tracking
                 // Only hoist their props instead
-                if is_root {
-                    if let TemplateChildNode::Element(el) = &mut children[i] {
-                        if has_static_props(el) {
-                            hoist_element_props(ctx, el, allocator);
-                        }
-                    }
-                } else {
-                    // Non-root static elements can be fully hoisted
-                    if let TemplateChildNode::Element(el) = &children[i] {
-                        let scope_id = ctx.options.scope_id.clone();
-                        let vnode_call =
-                            create_vnode_call_from_element(allocator, el, scope_id.as_ref());
-                        let hoist_index = ctx.hoist(vnode_call);
-                        // Replace with hoisted reference
-                        children[i] = TemplateChildNode::Hoisted(hoist_index);
-                        ctx.helper(RuntimeHelper::CreateElementVNode);
-                    }
+                if is_root
+                    && let TemplateChildNode::Element(el) = &mut children[i]
+                    && has_static_props(el)
+                {
+                    hoist_element_props(ctx, el, allocator);
+                } else if hoist_static_vnodes && let TemplateChildNode::Element(el) = &children[i] {
+                    let scope_id = ctx
+                        .hoisted_scope_id
+                        .as_ref()
+                        .or(ctx.options.scope_id.as_ref());
+                    let vnode_call = create_vnode_call_from_element(allocator, el, scope_id);
+                    let hoist_index = ctx.hoist(vnode_call);
+                    children[i] = TemplateChildNode::Hoisted(hoist_index);
+                    ctx.helper(RuntimeHelper::CreateElementVNode);
                 }
             }
             StaticType::HasDynamicText => {
-                // Element has static props but dynamic text - hoist the props only
-                if let TemplateChildNode::Element(el) = &mut children[i] {
-                    if has_static_props(el) {
-                        hoist_element_props(ctx, el, allocator);
-                    }
+                // Root elements with dynamic text still benefit from hoisted
+                // static props while preserving block tracking.
+                if is_root
+                    && let TemplateChildNode::Element(el) = &mut children[i]
+                    && has_static_props(el)
+                {
+                    hoist_element_props(ctx, el, allocator);
                 }
             }
             StaticType::NotStatic => {
                 // Cannot hoist, but check children recursively (not as root)
                 match &mut children[i] {
                     TemplateChildNode::Element(el) => {
-                        hoist_static_inner(ctx, &mut el.children, false);
+                        if has_static_props(el)
+                            && ((is_root
+                                && ctx.options.inline
+                                && has_only_native_element_descendants(el))
+                                || has_only_static_nested_children(el))
+                        {
+                            hoist_element_props(ctx, el, allocator);
+                        }
+                        let child_hoist_static_vnodes = hoist_static_vnodes
+                            || has_directives(el)
+                            || el.tag_type != ElementType::Element;
+                        hoist_static_inner(ctx, &mut el.children, false, child_hoist_static_vnodes);
                     }
                     TemplateChildNode::If(if_node) => {
                         // For v-if branches, only hoist nested children, not the branch root
@@ -201,13 +212,13 @@ fn hoist_static_inner<'a>(
                             for child in branch.children.iter_mut() {
                                 if let TemplateChildNode::Element(el) = child {
                                     // Only hoist inside the branch root's children
-                                    hoist_static_inner(ctx, &mut el.children, false);
+                                    hoist_static_inner(ctx, &mut el.children, false, true);
                                 }
                             }
                         }
                     }
                     TemplateChildNode::For(for_node) => {
-                        hoist_static_inner(ctx, &mut for_node.children, false);
+                        hoist_static_inner(ctx, &mut for_node.children, false, true);
                     }
                     _ => {}
                 }
@@ -261,7 +272,7 @@ fn create_props_expression<'a>(
             let value_exp = if let Some(v) = &attr.value {
                 SimpleExpressionNode::new(v.content.clone(), true, v.loc.clone())
             } else {
-                SimpleExpressionNode::new("true", true, attr.loc.clone())
+                SimpleExpressionNode::new("", true, attr.loc.clone())
             };
             let value = JsChildNode::SimpleExpression(Box::new_in(value_exp, allocator));
 
@@ -313,13 +324,13 @@ fn create_children_expression<'a>(
     }
 
     // For a single text child, use Single variant with Text
-    if children.len() == 1 {
-        if let TemplateChildNode::Text(text) = &children[0] {
-            let text_node = TextNode::new(text.content.clone(), text.loc.clone());
-            return Some(VNodeChildren::Single(TemplateTextChildNode::Text(
-                Box::new_in(text_node, allocator),
-            )));
-        }
+    if children.len() == 1
+        && let TemplateChildNode::Text(text) = &children[0]
+    {
+        let text_node = TextNode::new(text.content.clone(), text.loc.clone());
+        return Some(VNodeChildren::Single(TemplateTextChildNode::Text(
+            Box::new_in(text_node, allocator),
+        )));
     }
 
     // For multiple text children, combine them
@@ -373,6 +384,57 @@ fn has_static_props(el: &ElementNode<'_>) -> bool {
     true
 }
 
+fn has_directives(el: &ElementNode<'_>) -> bool {
+    el.props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(_)))
+}
+
+fn has_only_static_nested_children(el: &ElementNode<'_>) -> bool {
+    if el.children.is_empty() {
+        return false;
+    }
+
+    el.children.iter().all(is_static_nested_child)
+}
+
+fn is_static_nested_child(child: &TemplateChildNode<'_>) -> bool {
+    match child {
+        TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => true,
+        TemplateChildNode::Element(el) => is_plain_static_nested_element(el),
+        _ => false,
+    }
+}
+
+fn has_only_native_element_descendants(el: &ElementNode<'_>) -> bool {
+    el.children.iter().all(|child| match child {
+        TemplateChildNode::Text(_)
+        | TemplateChildNode::Interpolation(_)
+        | TemplateChildNode::Comment(_) => true,
+        TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Element => {
+            has_only_native_element_descendants(child_el)
+        }
+        _ => false,
+    })
+}
+
+fn is_plain_static_nested_element(el: &ElementNode<'_>) -> bool {
+    match el.tag_type {
+        ElementType::Element => {
+            props_are_static_attrs(el) && el.children.iter().all(is_static_nested_child)
+        }
+        ElementType::Slot => props_are_static_attrs(el),
+        _ => false,
+    }
+}
+
+fn props_are_static_attrs(el: &ElementNode<'_>) -> bool {
+    el.props.iter().all(|prop| match prop {
+        PropNode::Directive(_) => false,
+        PropNode::Attribute(attr) => attr.name != "ref",
+    })
+}
+
 /// Hoist the props of an element with static props
 fn hoist_element_props<'a>(
     ctx: &mut TransformContext<'a>,
@@ -391,7 +453,7 @@ fn hoist_element_props<'a>(
             let value_exp = if let Some(v) = &attr.value {
                 SimpleExpressionNode::new(v.content.clone(), true, v.loc.clone())
             } else {
-                SimpleExpressionNode::new("true", true, attr.loc.clone())
+                SimpleExpressionNode::new("", true, attr.loc.clone())
             };
             let value = JsChildNode::SimpleExpression(Box::new_in(value_exp, allocator));
 
@@ -441,10 +503,10 @@ fn hoist_element_props<'a>(
 pub fn should_use_block(el: &ElementNode<'_>) -> bool {
     // Use block for elements with v-for, v-if, or components
     for prop in el.props.iter() {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name == "for" || dir.name == "if" {
-                return true;
-            }
+        if let PropNode::Directive(dir) = prop
+            && (dir.name == "for" || dir.name == "if")
+        {
+            return true;
         }
     }
 

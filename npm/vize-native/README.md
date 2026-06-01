@@ -10,8 +10,10 @@ Native Node.js bindings for the Vize Vue compiler via NAPI.
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the package:
+
 ```bash
-npm install @vizejs/native
+vp install @vizejs/native
 ```
 
 ## Usage

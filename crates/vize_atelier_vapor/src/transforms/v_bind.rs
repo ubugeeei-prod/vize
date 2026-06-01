@@ -2,7 +2,7 @@
 //!
 //! Transforms v-bind (: shorthand) directives into SetPropIRNode.
 
-use vize_carton::{camelize, Box, Bump, Vec};
+use vize_carton::{Box, Bump, Vec, camelize};
 
 use crate::ir::{IRProp, OperationNode, SetPropIRNode};
 use vize_atelier_core::{
@@ -43,15 +43,12 @@ pub fn transform_v_bind_dynamic<'a>(
     // v-bind without argument requires merging props
     let mut props = Vec::new_in(allocator);
 
-    if let Some(ref exp) = dir.exp {
-        if let ExpressionNode::Simple(simple) = exp {
-            let node = SimpleExpressionNode::new(
-                simple.content.clone(),
-                simple.is_static,
-                simple.loc.clone(),
-            );
-            props.push(Box::new_in(node, allocator));
-        }
+    if let Some(ref exp) = dir.exp
+        && let ExpressionNode::Simple(simple) = exp
+    {
+        let node =
+            SimpleExpressionNode::new(simple.content.clone(), simple.is_static, simple.loc.clone());
+        props.push(Box::new_in(node, allocator));
     }
 
     Some(OperationNode::SetDynamicProps(

@@ -2,13 +2,14 @@
 name = "vize_atelier_sfc"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Atelier SFC - The Single File Component workshop for Vize"
 
 [features]
 default = ["native"]
-native = ["dep:lightningcss"]
+native = ["dep:lightningcss", "lightningcss/serde"]
 
 [dependencies]
 vize_carton = { workspace = true }
@@ -35,6 +36,7 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 lightningcss = { workspace = true, optional = true }
 regex = { workspace = true }
+sha2 = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
@@ -43,4 +45,8 @@ toml = { workspace = true }
 
 [[bench]]
 name = "sfc_parse"
+harness = false
+
+[[bench]]
+name = "sfc_compile"
 harness = false

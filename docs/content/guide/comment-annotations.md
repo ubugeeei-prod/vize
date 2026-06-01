@@ -206,7 +206,7 @@ const { count } = inject("state");
 
 ### Invalid Examples
 
-```typescript
+```ts
 // @vize forget
 const { count } = inject("state");
 // ^ Error: requires a reason

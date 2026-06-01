@@ -5,7 +5,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "mousedown", event: MouseEvent): void;
+  (e: "pointerdown", event: PointerEvent): void;
 }>();
 </script>
 
@@ -16,7 +16,7 @@ const emit = defineEmits<{
       `resize-handle--${direction}`,
       { 'resize-handle--active': isResizing },
     ]"
-    @mousedown="emit('mousedown', $event)"
+    @pointerdown.stop.prevent="emit('pointerdown', $event)"
   >
     <div class="resize-handle__indicator" />
   </div>
@@ -29,15 +29,16 @@ const emit = defineEmits<{
   background: transparent;
   transition: background-color 0.15s;
   z-index: 10;
+  touch-action: none;
 }
 
 .resize-handle--horizontal {
-  width: 5px;
+  width: 10px;
   cursor: col-resize;
 }
 
 .resize-handle--vertical {
-  height: 5px;
+  height: 10px;
   cursor: row-resize;
 }
 

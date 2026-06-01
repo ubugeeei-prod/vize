@@ -79,61 +79,55 @@ impl Rule for VOnStyle {
 
         match self.style {
             VOnStyleOption::Shorthand => {
-                if !is_shorthand {
-                    if let Some(new_text) =
+                if !is_shorthand
+                    && let Some(new_text) =
                         replacement_text(ctx, directive, VOnStyleOption::Shorthand)
-                    {
-                        let fix = Fix::new(
-                            "Use shorthand syntax",
-                            TextEdit::replace(
-                                directive.loc.start.offset,
-                                directive.loc.end.offset,
-                                new_text,
-                            ),
-                        );
+                {
+                    let fix = Fix::new(
+                        "Use shorthand syntax",
+                        TextEdit::replace(
+                            directive.loc.start.offset,
+                            directive.loc.end.offset,
+                            new_text,
+                        ),
+                    );
 
-                        ctx.report(
-                            LintDiagnostic::warn(
-                                META.name,
-                                "Prefer shorthand `@` over `v-on:`",
-                                directive.loc.start.offset,
-                                directive.loc.end.offset,
-                            )
-                            .with_help(
-                                "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
-                            )
-                            .with_fix(fix),
-                        );
-                    }
+                    ctx.report(
+                        LintDiagnostic::warn(
+                            META.name,
+                            "Prefer shorthand `@` over `v-on:`",
+                            directive.loc.start.offset,
+                            directive.loc.end.offset,
+                        )
+                        .with_help("Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`")
+                        .with_fix(fix),
+                    );
                 }
             }
             VOnStyleOption::Longform => {
-                if is_shorthand {
-                    if let Some(new_text) =
+                if is_shorthand
+                    && let Some(new_text) =
                         replacement_text(ctx, directive, VOnStyleOption::Longform)
-                    {
-                        let fix = Fix::new(
-                            "Use longform syntax",
-                            TextEdit::replace(
-                                directive.loc.start.offset,
-                                directive.loc.end.offset,
-                                new_text,
-                            ),
-                        );
+                {
+                    let fix = Fix::new(
+                        "Use longform syntax",
+                        TextEdit::replace(
+                            directive.loc.start.offset,
+                            directive.loc.end.offset,
+                            new_text,
+                        ),
+                    );
 
-                        ctx.report(
-                            LintDiagnostic::warn(
-                                META.name,
-                                "Prefer `v-on:` over shorthand `@`",
-                                directive.loc.start.offset,
-                                directive.loc.end.offset,
-                            )
-                            .with_help(
-                                "Use `v-on:event=\"handler\"` instead of `@event=\"handler\"`",
-                            )
-                            .with_fix(fix),
-                        );
-                    }
+                    ctx.report(
+                        LintDiagnostic::warn(
+                            META.name,
+                            "Prefer `v-on:` over shorthand `@`",
+                            directive.loc.start.offset,
+                            directive.loc.end.offset,
+                        )
+                        .with_help("Use `v-on:event=\"handler\"` instead of `@event=\"handler\"`")
+                        .with_fix(fix),
+                    );
                 }
             }
         }

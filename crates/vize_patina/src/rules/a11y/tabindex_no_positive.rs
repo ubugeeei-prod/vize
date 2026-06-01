@@ -31,20 +31,17 @@ impl Rule for TabindexNoPositive {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name == "tabindex" {
-                    if let Some(value) = &attr.value {
-                        if let Ok(num) = value.content.parse::<i32>() {
-                            if num > 0 {
-                                ctx.warn_with_help(
-                                    ctx.t("a11y/tabindex-no-positive.message"),
-                                    &attr.loc,
-                                    ctx.t("a11y/tabindex-no-positive.help"),
-                                );
-                            }
-                        }
-                    }
-                }
+            if let PropNode::Attribute(attr) = prop
+                && attr.name == "tabindex"
+                && let Some(value) = &attr.value
+                && let Ok(num) = value.content.parse::<i32>()
+                && num > 0
+            {
+                ctx.warn_with_help(
+                    ctx.t("a11y/tabindex-no-positive.message"),
+                    &attr.loc,
+                    ctx.t("a11y/tabindex-no-positive.help"),
+                );
             }
         }
     }

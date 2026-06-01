@@ -14,24 +14,23 @@ use vize_carton::ToCompactString;
 
 /// Generate hoisted variable declarations.
 pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> String {
-    let mut hoists_code: Vec<u8> = Vec::new();
+    let mut hoists_code = String::default();
 
     for (i, hoist) in root.hoists.iter().enumerate() {
         if let Some(node) = hoist {
-            hoists_code.extend_from_slice(b"const _hoisted_");
-            hoists_code.extend_from_slice((i + 1).to_compact_string().as_bytes());
-            hoists_code.extend_from_slice(b" = ");
+            hoists_code.push_str("const _hoisted_");
+            hoists_code.push_str((i + 1).to_compact_string().as_str());
+            hoists_code.push_str(" = ");
             // Only add /*#__PURE__*/ for VNodeCall (createElementVNode calls)
             if matches!(node, JsChildNode::VNodeCall(_)) {
-                hoists_code.extend_from_slice(b"/*#__PURE__*/ ");
+                hoists_code.push_str("/*#__PURE__*/ ");
             }
             generate_js_child_node_to_bytes(ctx, node, &mut hoists_code);
-            hoists_code.push(b'\n');
+            hoists_code.push('\n');
         }
     }
 
-    // SAFETY: We only push valid UTF-8 strings
-    unsafe { String::from_utf8_unchecked(hoists_code) }
+    hoists_code
 }
 
 /// Collect runtime helpers needed by hoisted nodes.
@@ -91,30 +90,26 @@ fn collect_helpers_from_props(props: &PropsExpression<'_>, helpers: &mut Vec<Run
 }
 
 /// Generate `JsChildNode` to bytes.
-fn generate_js_child_node_to_bytes(
-    ctx: &CodegenContext,
-    node: &JsChildNode<'_>,
-    out: &mut Vec<u8>,
-) {
+fn generate_js_child_node_to_bytes(ctx: &CodegenContext, node: &JsChildNode<'_>, out: &mut String) {
     match node {
         JsChildNode::VNodeCall(vnode) => generate_vnode_call_to_bytes(ctx, vnode, out),
         JsChildNode::SimpleExpression(exp) => {
             if exp.is_static {
-                out.push(b'"');
+                out.push('"');
                 // Escape special characters in static string values (newlines, quotes, etc.)
                 let escaped = escape_js_string(&exp.content);
-                out.extend_from_slice(escaped.as_bytes());
-                out.push(b'"');
+                out.push_str(escaped.as_str());
+                out.push('"');
             } else {
                 // Expression should already be processed by transform
-                out.extend_from_slice(exp.content.as_bytes());
+                out.push_str(exp.content.as_str());
             }
         }
         JsChildNode::Object(obj) => {
-            out.extend_from_slice(b"{ ");
+            out.push_str("{ ");
             for (i, prop) in obj.properties.iter().enumerate() {
                 if i > 0 {
-                    out.extend_from_slice(b", ");
+                    out.push_str(", ");
                 }
                 // Key - quote if contains special characters like hyphens
                 match &prop.key {
@@ -122,101 +117,101 @@ fn generate_js_child_node_to_bytes(
                         let key = &exp.content;
                         let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
                         if needs_quote {
-                            out.push(b'"');
-                            out.extend_from_slice(key.as_bytes());
-                            out.push(b'"');
+                            out.push('"');
+                            out.push_str(key.as_str());
+                            out.push('"');
                         } else {
-                            out.extend_from_slice(key.as_bytes());
+                            out.push_str(key.as_str());
                         }
-                        out.extend_from_slice(b": ");
+                        out.push_str(": ");
                     }
-                    ExpressionNode::Compound(_) => out.extend_from_slice(b"null: "),
+                    ExpressionNode::Compound(_) => out.push_str("null: "),
                 }
                 // Value
                 generate_js_child_node_to_bytes(ctx, &prop.value, out);
             }
-            out.extend_from_slice(b" }");
+            out.push_str(" }");
         }
-        _ => out.extend_from_slice(b"null /* unsupported */"),
+        _ => out.push_str("null /* unsupported */"),
     }
 }
 
 /// Generate `VNodeCall` to bytes.
-fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out: &mut Vec<u8>) {
+fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out: &mut String) {
     // Block nodes use openBlock + createBlock/createElementBlock
     if vnode.is_block {
-        out.push(b'(');
-        out.extend_from_slice(ctx.helper(RuntimeHelper::OpenBlock).as_bytes());
-        out.extend_from_slice(b"(), ");
+        out.push('(');
+        out.push_str(ctx.helper(RuntimeHelper::OpenBlock));
+        out.push_str("(), ");
         if vnode.is_component {
-            out.extend_from_slice(ctx.helper(RuntimeHelper::CreateBlock).as_bytes());
+            out.push_str(ctx.helper(RuntimeHelper::CreateBlock));
         } else {
-            out.extend_from_slice(ctx.helper(RuntimeHelper::CreateElementBlock).as_bytes());
+            out.push_str(ctx.helper(RuntimeHelper::CreateElementBlock));
         }
     } else if vnode.is_component {
-        out.extend_from_slice(ctx.helper(RuntimeHelper::CreateVNode).as_bytes());
+        out.push_str(ctx.helper(RuntimeHelper::CreateVNode));
     } else {
-        out.extend_from_slice(ctx.helper(RuntimeHelper::CreateElementVNode).as_bytes());
+        out.push_str(ctx.helper(RuntimeHelper::CreateElementVNode));
     }
-    out.push(b'(');
+    out.push('(');
 
     // Tag
     match &vnode.tag {
         VNodeTag::String(s) => {
-            out.push(b'"');
-            out.extend_from_slice(s.as_bytes());
-            out.push(b'"');
+            out.push('"');
+            out.push_str(s.as_str());
+            out.push('"');
         }
-        VNodeTag::Symbol(helper) => out.extend_from_slice(ctx.helper(*helper).as_bytes()),
-        VNodeTag::Call(_) => out.extend_from_slice(b"null"),
+        VNodeTag::Symbol(helper) => out.push_str(ctx.helper(*helper)),
+        VNodeTag::Call(_) => out.push_str("null"),
     }
 
     // Props
     if let Some(props) = &vnode.props {
-        out.extend_from_slice(b", ");
+        out.push_str(", ");
         generate_props_expression_to_bytes(ctx, props, out);
     } else if vnode.children.is_some() || vnode.patch_flag.is_some() {
-        out.extend_from_slice(b", null");
+        out.push_str(", null");
     }
 
     // Children
     if let Some(children) = &vnode.children {
-        out.extend_from_slice(b", ");
+        out.push_str(", ");
         generate_vnode_children_to_bytes(ctx, children, out);
     } else if vnode.patch_flag.is_some() {
-        out.extend_from_slice(b", null");
+        out.push_str(", null");
     }
 
     // Patch flag
     if let Some(patch_flag) = &vnode.patch_flag {
-        out.extend_from_slice(b", ");
-        out.extend_from_slice(patch_flag.bits().to_compact_string().as_bytes());
-        out.extend_from_slice(b" /* ");
+        out.push_str(", ");
+        out.push_str(patch_flag.bits().to_compact_string().as_str());
+        out.push_str(" /* ");
         let mut debug = String::default();
         use std::fmt::Write as _;
         let _ = write!(&mut debug, "{:?}", patch_flag);
-        out.extend_from_slice(debug.as_bytes());
-        out.extend_from_slice(b" */");
+        out.push_str(debug.as_str());
+        out.push_str(" */");
     }
 
     // Dynamic props
     if let Some(dynamic_props) = &vnode.dynamic_props {
-        out.extend_from_slice(b", ");
+        out.push_str(", ");
         match dynamic_props {
             DynamicProps::String(s) => {
-                out.extend_from_slice(s.as_bytes());
+                out.push_str(s.as_str());
             }
             DynamicProps::Simple(exp) => {
-                out.extend_from_slice(exp.content.as_bytes());
+                out.push_str(exp.content.as_str());
             }
         }
     }
 
-    out.push(b')');
+    out.push(')');
 
     // Close block wrapper
     if vnode.is_block {
-        out.push(b')');
+        out.push(')');
     }
 }
 
@@ -224,14 +219,14 @@ fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out
 fn generate_props_expression_to_bytes(
     ctx: &CodegenContext,
     props: &PropsExpression<'_>,
-    out: &mut Vec<u8>,
+    out: &mut String,
 ) {
     match props {
         PropsExpression::Object(obj) => {
-            out.extend_from_slice(b"{ ");
+            out.push_str("{ ");
             for (i, prop) in obj.properties.iter().enumerate() {
                 if i > 0 {
-                    out.extend_from_slice(b", ");
+                    out.push_str(", ");
                 }
                 // Key - quote if contains special characters like hyphens
                 match &prop.key {
@@ -239,32 +234,32 @@ fn generate_props_expression_to_bytes(
                         let key = &exp.content;
                         let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
                         if needs_quote {
-                            out.push(b'"');
-                            out.extend_from_slice(key.as_bytes());
-                            out.push(b'"');
+                            out.push('"');
+                            out.push_str(key.as_str());
+                            out.push('"');
                         } else {
-                            out.extend_from_slice(key.as_bytes());
+                            out.push_str(key.as_str());
                         }
-                        out.extend_from_slice(b": ");
+                        out.push_str(": ");
                     }
-                    ExpressionNode::Compound(_) => out.extend_from_slice(b"null: "),
+                    ExpressionNode::Compound(_) => out.push_str("null: "),
                 }
                 // Value
                 generate_js_child_node_to_bytes(ctx, &prop.value, out);
             }
-            out.extend_from_slice(b" }");
+            out.push_str(" }");
         }
         PropsExpression::Simple(exp) => {
             if exp.is_static {
-                out.push(b'"');
-                out.extend_from_slice(exp.content.as_bytes());
-                out.push(b'"');
+                out.push('"');
+                out.push_str(exp.content.as_str());
+                out.push('"');
             } else {
                 // Expression should already be processed by transform
-                out.extend_from_slice(exp.content.as_bytes());
+                out.push_str(exp.content.as_str());
             }
         }
-        PropsExpression::Call(_) => out.extend_from_slice(b"null"),
+        PropsExpression::Call(_) => out.push_str("null"),
     }
 }
 
@@ -272,28 +267,28 @@ fn generate_props_expression_to_bytes(
 fn generate_vnode_children_to_bytes(
     _ctx: &CodegenContext,
     children: &VNodeChildren<'_>,
-    out: &mut Vec<u8>,
+    out: &mut String,
 ) {
     match children {
         VNodeChildren::Single(text_child) => match text_child {
             TemplateTextChildNode::Text(text) => {
-                out.push(b'"');
-                out.extend_from_slice(escape_js_string(&text.content).as_bytes());
-                out.push(b'"');
+                out.push('"');
+                out.push_str(escape_js_string(&text.content).as_str());
+                out.push('"');
             }
-            TemplateTextChildNode::Interpolation(_) => out.extend_from_slice(b"null"),
-            TemplateTextChildNode::Compound(_) => out.extend_from_slice(b"null"),
+            TemplateTextChildNode::Interpolation(_) => out.push_str("null"),
+            TemplateTextChildNode::Compound(_) => out.push_str("null"),
         },
         VNodeChildren::Simple(exp) => {
             if exp.is_static {
-                out.push(b'"');
-                out.extend_from_slice(escape_js_string(&exp.content).as_bytes());
-                out.push(b'"');
+                out.push('"');
+                out.push_str(escape_js_string(&exp.content).as_str());
+                out.push('"');
             } else {
                 // Expression should already be processed by transform
-                out.extend_from_slice(exp.content.as_bytes());
+                out.push_str(exp.content.as_str());
             }
         }
-        _ => out.extend_from_slice(b"null"),
+        _ => out.push_str("null"),
     }
 }

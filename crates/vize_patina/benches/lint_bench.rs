@@ -1,10 +1,10 @@
 //! Benchmark for vize_patina linter.
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
+use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
 use vize_carton::append;
+use vize_patina::Linter;
 use vize_patina::rules::musea::MuseaLinter;
 use vize_patina::rules::script::{NoInternalImports, PreferImportFromVue, ScriptLinter};
-use vize_patina::Linter;
 
 fn bench_lint_template(c: &mut Criterion) {
     let template = r#"

@@ -64,37 +64,37 @@ impl Rule for HtmlQuotes {
         }
 
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if let Some(value) = &attr.value {
-                    // Use the source span from the attribute location to check quote style.
-                    // The attribute loc.source contains the full attribute including quotes.
-                    // We need to look at the source around the value to find the quote character.
-                    let start = value.loc.start.offset as usize;
-                    if start == 0 || start > ctx.source.len() {
-                        continue;
-                    }
+            if let PropNode::Attribute(attr) = prop
+                && let Some(value) = &attr.value
+            {
+                // Use the source span from the attribute location to check quote style.
+                // The attribute loc.source contains the full attribute including quotes.
+                // We need to look at the source around the value to find the quote character.
+                let start = value.loc.start.offset as usize;
+                if start == 0 || start > ctx.source.len() {
+                    continue;
+                }
 
-                    // Check the character just before the value content (the opening quote)
-                    let quote_char = ctx.source.as_bytes().get(start.wrapping_sub(1)).copied();
+                // Check the character just before the value content (the opening quote)
+                let quote_char = ctx.source.as_bytes().get(start.wrapping_sub(1)).copied();
 
-                    match self.style {
-                        HtmlQuotesOption::Double => {
-                            if quote_char == Some(b'\'') {
-                                ctx.warn_with_help(
-                                    ctx.t("vue/html-quotes.message_double"),
-                                    &value.loc,
-                                    ctx.t("vue/html-quotes.help"),
-                                );
-                            }
+                match self.style {
+                    HtmlQuotesOption::Double => {
+                        if quote_char == Some(b'\'') {
+                            ctx.warn_with_help(
+                                ctx.t("vue/html-quotes.message_double"),
+                                &value.loc,
+                                ctx.t("vue/html-quotes.help"),
+                            );
                         }
-                        HtmlQuotesOption::Single => {
-                            if quote_char == Some(b'"') {
-                                ctx.warn_with_help(
-                                    ctx.t("vue/html-quotes.message_single"),
-                                    &value.loc,
-                                    ctx.t("vue/html-quotes.help"),
-                                );
-                            }
+                    }
+                    HtmlQuotesOption::Single => {
+                        if quote_char == Some(b'"') {
+                            ctx.warn_with_help(
+                                ctx.t("vue/html-quotes.message_single"),
+                                &value.loc,
+                                ctx.t("vue/html-quotes.help"),
+                            );
                         }
                     }
                 }

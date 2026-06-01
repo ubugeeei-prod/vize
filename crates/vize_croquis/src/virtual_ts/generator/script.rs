@@ -8,17 +8,17 @@ use super::{
     BindingMetadata, BindingType, CompactString, MacroTracker, Path, RootNode, ScopeChain,
     ScopeData, ScopeKind, ScriptParseResult, VirtualTsConfig, VirtualTsGenerator, VirtualTsOutput,
 };
-use vize_carton::{profile, String, ToCompactString};
+use vize_carton::{String, ToCompactString, profile};
 
 impl VirtualTsGenerator {
     /// Extract setup scope info from ScopeChain.
     fn extract_setup_info(scopes: &ScopeChain) -> (Option<CompactString>, bool) {
         // Find ScriptSetup scope and extract generic/async info
         for scope in scopes.iter() {
-            if scope.kind == ScopeKind::ScriptSetup {
-                if let ScopeData::ScriptSetup(data) = scope.data() {
-                    return (data.generic.clone(), data.is_async);
-                }
+            if scope.kind == ScopeKind::ScriptSetup
+                && let ScopeData::ScriptSetup(data) = scope.data()
+            {
+                return (data.generic.clone(), data.is_async);
             }
         }
         (None, false)
@@ -184,23 +184,28 @@ impl VirtualTsGenerator {
             return line.to_compact_string();
         };
 
-        // Match relative path in import
-        let import_re = regex::Regex::new(r#"from\s+['"](\.[^'"]+)['"]"#);
-        match import_re {
-            Ok(re) => re
-                .replace(line, |caps: &regex::Captures| {
-                    let rel_path = caps.get(1).map(|m| m.as_str()).unwrap_or("");
-                    let resolved = parent.join(rel_path);
-                    let abs_path = resolved
-                        .canonicalize()
-                        .ok()
-                        .and_then(|p| p.to_str().map(String::from))
-                        .unwrap_or_else(|| resolved.to_string_lossy().to_compact_string());
-                    format!("from \"{}\"", abs_path)
-                })
-                .to_compact_string(),
-            Err(_) => line.to_compact_string(),
-        }
+        let Some((from_start, path_start, path_end, quote_end)) =
+            find_relative_import_from_range(line)
+        else {
+            return line.to_compact_string();
+        };
+
+        let rel_path = &line[path_start..path_end];
+        let resolved = parent.join(rel_path);
+        let abs_path = resolved
+            .canonicalize()
+            .ok()
+            .and_then(|path| path.to_str().map(String::from))
+            .unwrap_or_else(|| resolved.to_string_lossy().to_compact_string());
+
+        let mut resolved_line =
+            String::with_capacity(line.len() + abs_path.len().saturating_sub(rel_path.len()));
+        resolved_line.push_str(&line[..from_start]);
+        resolved_line.push_str("from \"");
+        resolved_line.push_str(abs_path.as_str());
+        resolved_line.push('"');
+        resolved_line.push_str(&line[quote_end + 1..]);
+        resolved_line
     }
 
     /// Emit the setup function opening.
@@ -240,23 +245,34 @@ impl VirtualTsGenerator {
 
         // Define as actual functions - they throw to indicate they're compile-time only
         // The important thing is they're scoped to __setup, not global
-        self.emit_line("type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);");
+        self.emit_line("type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;");
+        self.emit_line(
+            "type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];",
+        );
+        self.emit_line("type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);");
         self.emit_line("type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;");
-        self.emit_line("type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: T[K] extends { required: true } ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };");
+        self.emit_line("type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;");
+        self.emit_line("type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };");
         self.emit_line("type __RuntimeEmitShape<T extends Record<string, any>> = { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; };");
+        self.emit_line("type __DefaultFactory<T> = (props: any) => T;");
+        self.emit_line("type __WithDefaultValue<T> = T | __DefaultFactory<T>;");
+        self.emit_line(
+            "type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };",
+        );
+        self.emit_line("type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };");
         self.emit_line("function defineProps<T>(): T { return undefined as unknown as T; }");
-        self.emit_line("function defineProps<T extends readonly string[]>(props: T): { [K in T[number]]?: any } { return undefined as unknown as { [K in T[number]]?: any }; }");
-        self.emit_line("function defineProps<T extends Record<string, any>>(props: T): __RuntimePropShape<T> { return undefined as unknown as __RuntimePropShape<T>; }");
+        self.emit_line("function defineProps<const T extends readonly string[]>(props: T): { [K in T[number]]?: any } { return undefined as unknown as { [K in T[number]]?: any }; }");
+        self.emit_line("function defineProps<const T extends Record<string, any>>(props: T): __RuntimePropShape<T> { return undefined as unknown as __RuntimePropShape<T>; }");
         self.emit_line("function defineEmits<T>(): __EmitFn<T> { return undefined as unknown as __EmitFn<T>; }");
-        self.emit_line("function defineEmits<T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void { return (() => {}) as any; }");
-        self.emit_line("function defineEmits<T extends Record<string, any>>(events: T): __EmitFn<__RuntimeEmitShape<T>> { return undefined as unknown as __EmitFn<__RuntimeEmitShape<T>>; }");
+        self.emit_line("function defineEmits<const T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void { return (() => {}) as any; }");
+        self.emit_line("function defineEmits<const T extends Record<string, any>>(events: T): __EmitFn<__RuntimeEmitShape<T>> { return undefined as unknown as __EmitFn<__RuntimeEmitShape<T>>; }");
         self.emit_line("function defineExpose<T>(exposed?: T): void { }");
         self.emit_line("function defineOptions<T>(options: T): void { }");
         self.emit_line("function defineSlots<T>(): T { return undefined as unknown as T; }");
         self.emit_line("function defineModel<T>(): $Vue['ModelRef']<T | undefined> { return undefined as unknown as $Vue['ModelRef']<T | undefined>; }");
         self.emit_line("function defineModel<T>(options: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }");
         self.emit_line("function defineModel<T>(name: string, options?: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }");
-        self.emit_line("function withDefaults<T, D extends Partial<T>>(props: T, defaults: D): T & D { return undefined as unknown as T & D; }");
+        self.emit_line("function withDefaults<T, D extends __WithDefaultsArgs<T>>(props: T, defaults: D): __WithDefaultsResult<T, D> { return undefined as unknown as __WithDefaultsResult<T, D>; }");
 
         // $event for event handlers
         self.emit_line("const $event: Event = undefined as unknown as Event;");
@@ -265,15 +281,15 @@ impl VirtualTsGenerator {
         self.emit_line("function useTemplateRef<T = any>(key: string): $Vue['ShallowRef']<T | null> { return undefined as unknown as $Vue['ShallowRef']<T | null>; }");
 
         // If macros were actually used, emit type aliases based on their type arguments
-        if let Some(props) = macros.define_props() {
-            if let Some(ref type_args) = props.type_args {
-                self.emit_line(&format!("type __Props = {};", type_args));
-            }
+        if let Some(props) = macros.define_props()
+            && let Some(ref type_args) = props.type_args
+        {
+            self.emit_line(&format!("type __Props = {};", type_args));
         }
-        if let Some(emits) = macros.define_emits() {
-            if let Some(ref type_args) = emits.type_args {
-                self.emit_line(&format!("type __Emits = {};", type_args));
-            }
+        if let Some(emits) = macros.define_emits()
+            && let Some(ref type_args) = emits.type_args
+        {
+            self.emit_line(&format!("type __Emits = {};", type_args));
         }
         if let Some(expose) = macros.define_expose() {
             // Generate exposed interface type for InstanceType and useTemplateRef
@@ -288,10 +304,10 @@ impl VirtualTsGenerator {
                 "type __ComponentInstance = $Vue['ComponentPublicInstance'] & __Exposed;",
             );
         }
-        if let Some(slots) = macros.define_slots() {
-            if let Some(ref type_args) = slots.type_args {
-                self.emit_line(&format!("type __Slots = {};", type_args));
-            }
+        if let Some(slots) = macros.define_slots()
+            && let Some(ref type_args) = slots.type_args
+        {
+            self.emit_line(&format!("type __Slots = {};", type_args));
         }
 
         self.emit_line("");
@@ -300,23 +316,34 @@ impl VirtualTsGenerator {
     /// Emit default compiler macro definitions (legacy mode).
     pub(crate) fn emit_default_compiler_macro_definitions(&mut self) {
         self.emit_line("// Compiler macros (setup-scope only, actual functions not declare)");
-        self.emit_line("type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);");
+        self.emit_line("type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;");
+        self.emit_line(
+            "type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];",
+        );
+        self.emit_line("type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);");
         self.emit_line("type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;");
-        self.emit_line("type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: T[K] extends { required: true } ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };");
+        self.emit_line("type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;");
+        self.emit_line("type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };");
         self.emit_line("type __RuntimeEmitShape<T extends Record<string, any>> = { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; };");
+        self.emit_line("type __DefaultFactory<T> = (props: any) => T;");
+        self.emit_line("type __WithDefaultValue<T> = T | __DefaultFactory<T>;");
+        self.emit_line(
+            "type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };",
+        );
+        self.emit_line("type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };");
         self.emit_line("function defineProps<T>(): T { return undefined as unknown as T; }");
-        self.emit_line("function defineProps<T extends readonly string[]>(props: T): { [K in T[number]]?: any } { return undefined as unknown as { [K in T[number]]?: any }; }");
-        self.emit_line("function defineProps<T extends Record<string, any>>(props: T): __RuntimePropShape<T> { return undefined as unknown as __RuntimePropShape<T>; }");
+        self.emit_line("function defineProps<const T extends readonly string[]>(props: T): { [K in T[number]]?: any } { return undefined as unknown as { [K in T[number]]?: any }; }");
+        self.emit_line("function defineProps<const T extends Record<string, any>>(props: T): __RuntimePropShape<T> { return undefined as unknown as __RuntimePropShape<T>; }");
         self.emit_line("function defineEmits<T>(): __EmitFn<T> { return undefined as unknown as __EmitFn<T>; }");
-        self.emit_line("function defineEmits<T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void { return (() => {}) as any; }");
-        self.emit_line("function defineEmits<T extends Record<string, any>>(events: T): __EmitFn<__RuntimeEmitShape<T>> { return undefined as unknown as __EmitFn<__RuntimeEmitShape<T>>; }");
+        self.emit_line("function defineEmits<const T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void { return (() => {}) as any; }");
+        self.emit_line("function defineEmits<const T extends Record<string, any>>(events: T): __EmitFn<__RuntimeEmitShape<T>> { return undefined as unknown as __EmitFn<__RuntimeEmitShape<T>>; }");
         self.emit_line("function defineExpose<T>(exposed?: T): void { }");
         self.emit_line("function defineOptions<T>(options: T): void { }");
         self.emit_line("function defineSlots<T>(): T { return undefined as unknown as T; }");
         self.emit_line("function defineModel<T>(): $Vue['ModelRef']<T | undefined> { return undefined as unknown as $Vue['ModelRef']<T | undefined>; }");
         self.emit_line("function defineModel<T>(options: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }");
         self.emit_line("function defineModel<T>(name: string, options?: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }");
-        self.emit_line("function withDefaults<T, D extends Partial<T>>(props: T, defaults: D): T & D { return undefined as unknown as T & D; }");
+        self.emit_line("function withDefaults<T, D extends __WithDefaultsArgs<T>>(props: T, defaults: D): __WithDefaultsResult<T, D> { return undefined as unknown as __WithDefaultsResult<T, D>; }");
         self.emit_line("const $event: Event = undefined as unknown as Event;");
         self.emit_line("function useTemplateRef<T = any>(key: string): $Vue['ShallowRef']<T | null> { return undefined as unknown as $Vue['ShallowRef']<T | null>; }");
         self.emit_line("");
@@ -396,5 +423,86 @@ impl VirtualTsGenerator {
     pub(crate) fn generate_emits_type(&mut self, _bindings: &BindingMetadata) {
         self.emit_line("// Emits type");
         self.emit_line("type __Emits = {};");
+    }
+}
+
+fn find_relative_import_from_range(line: &str) -> Option<(usize, usize, usize, usize)> {
+    let bytes = line.as_bytes();
+    let mut search_start = 0;
+
+    while let Some(offset) = line[search_start..].find("from") {
+        let from_start = search_start + offset;
+        let mut cursor = from_start + 4;
+
+        if !bytes
+            .get(cursor)
+            .is_some_and(|byte| byte.is_ascii_whitespace())
+        {
+            search_start = cursor;
+            continue;
+        }
+
+        while bytes
+            .get(cursor)
+            .is_some_and(|byte| byte.is_ascii_whitespace())
+        {
+            cursor += 1;
+        }
+
+        let Some(quote @ (b'\'' | b'"')) = bytes.get(cursor).copied() else {
+            search_start = cursor.saturating_add(1);
+            continue;
+        };
+        let path_start = cursor + 1;
+        if bytes.get(path_start) != Some(&b'.') {
+            search_start = path_start;
+            continue;
+        }
+
+        let mut path_end = path_start + 1;
+        while bytes.get(path_end).is_some_and(|byte| *byte != quote) {
+            path_end += 1;
+        }
+        if bytes.get(path_end) != Some(&quote) {
+            return None;
+        }
+
+        return Some((from_start, path_start, path_end, path_end));
+    }
+
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::find_relative_import_from_range;
+
+    fn relative_path(line: &str) -> Option<&str> {
+        find_relative_import_from_range(line).map(|(_, start, end, _)| &line[start..end])
+    }
+
+    #[test]
+    fn finds_relative_import_paths() {
+        assert_eq!(
+            relative_path("import Foo from './Foo.vue';"),
+            Some("./Foo.vue")
+        );
+        assert_eq!(
+            relative_path("import type { Foo } from \"../types\";"),
+            Some("../types")
+        );
+    }
+
+    #[test]
+    fn ignores_non_relative_import_paths() {
+        assert_eq!(relative_path("import { ref } from 'vue';"), None);
+    }
+
+    #[test]
+    fn skips_from_inside_imported_names() {
+        assert_eq!(
+            relative_path("import { fromNow } from './time';"),
+            Some("./time")
+        );
     }
 }

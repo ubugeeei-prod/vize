@@ -6,14 +6,36 @@
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range};
 
 use super::{
+    IdeContext,
     bindings::{BindingKind, BindingLocation},
-    helpers, IdeContext,
+    helpers,
 };
 use crate::virtual_code::BlockType;
 use vize_carton::cstr;
 
 /// Find definition for a symbol in script context.
 pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
+    if ctx.uri.path().ends_with(".art.vue")
+        && let Some(source) =
+            crate::ide::musea::define_art_source_at_offset(&ctx.content, ctx.uri, ctx.offset)
+        && let Some(target) = crate::ide::musea::resolve_define_art_source(ctx.uri, &source.source)
+        && let Ok(uri) = tower_lsp::lsp_types::Url::from_file_path(target)
+    {
+        return Some(GotoDefinitionResponse::Scalar(Location {
+            uri,
+            range: Range {
+                start: Position {
+                    line: 0,
+                    character: 0,
+                },
+                end: Position {
+                    line: 0,
+                    character: 0,
+                },
+            },
+        }));
+    }
+
     let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
     if word.is_empty() {
@@ -54,7 +76,71 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
         }
     }
 
+    if ctx.state.lsp_features().legacy_vue2
+        && let Some(location) = find_analyzed_binding_location(ctx, &word, true)
+    {
+        return Some(GotoDefinitionResponse::Scalar(location));
+    }
+
     None
+}
+
+/// Find a binding location from Croquis analysis, including opt-in Options API spans.
+pub(crate) fn find_analyzed_binding_location(
+    ctx: &IdeContext,
+    word: &str,
+    legacy_vue2: bool,
+) -> Option<Location> {
+    use vize_atelier_sfc::{
+        SfcParseOptions,
+        croquis::{
+            SfcCroquisOptions, analyze_sfc_descriptor_with_context,
+            analyze_sfc_descriptor_with_context_legacy_vue2,
+        },
+        parse_sfc,
+    };
+
+    let descriptor = parse_sfc(
+        &ctx.content,
+        SfcParseOptions {
+            filename: ctx.uri.path().to_string().into(),
+            ..Default::default()
+        },
+    )
+    .ok()?;
+
+    let croquis_options = SfcCroquisOptions::full();
+    let analysis = if legacy_vue2 {
+        analyze_sfc_descriptor_with_context_legacy_vue2(&descriptor, None, croquis_options)
+    } else {
+        analyze_sfc_descriptor_with_context(&descriptor, None, croquis_options)
+    };
+    let &(start, end) = analysis.croquis.binding_spans.get(word)?;
+    if end <= start {
+        return None;
+    }
+
+    let offset = analysis.script_offset as usize + start as usize;
+    Some(location_from_sfc_offset(
+        ctx,
+        offset,
+        (end - start) as usize,
+    ))
+}
+
+pub(crate) fn location_from_sfc_offset(ctx: &IdeContext, offset: usize, len: usize) -> Location {
+    let (line, character) = helpers::offset_to_position(&ctx.content, offset);
+
+    Location {
+        uri: ctx.uri.clone(),
+        range: Range {
+            start: Position { line, character },
+            end: Position {
+                line,
+                character: character + len as u32,
+            },
+        },
+    }
 }
 
 /// Find definition for a symbol in style context.
@@ -65,37 +151,50 @@ pub(crate) fn definition_in_style(ctx: &IdeContext) -> Option<GotoDefinitionResp
         return None;
     }
 
-    // Check for v-bind() references to script variables
-    let before_cursor = &ctx.content[..ctx.offset];
-    if before_cursor.contains("v-bind(") {
+    // Check for v-bind() references to script variables.
+    if is_inside_style_v_bind_argument(&ctx.content, ctx.offset) {
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: ctx.uri.path().to_string().into(),
             ..Default::default()
         };
 
-        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) {
-            if let Some(ref script_setup) = descriptor.script_setup {
-                let content = script_setup.content.as_ref();
-                if let Some(binding_loc) = find_binding_location_raw(content, &word) {
-                    let sfc_offset = script_setup.loc.start + binding_loc.offset;
-                    let (line, character) = helpers::offset_to_position(&ctx.content, sfc_offset);
+        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options)
+            && let Some(ref script_setup) = descriptor.script_setup
+        {
+            let content = script_setup.content.as_ref();
+            if let Some(binding_loc) = find_binding_location_raw(content, &word) {
+                let sfc_offset = script_setup.loc.start + binding_loc.offset;
+                let (line, character) = helpers::offset_to_position(&ctx.content, sfc_offset);
 
-                    return Some(GotoDefinitionResponse::Scalar(Location {
-                        uri: ctx.uri.clone(),
-                        range: Range {
-                            start: Position { line, character },
-                            end: Position {
-                                line,
-                                character: character + word.len() as u32,
-                            },
+                return Some(GotoDefinitionResponse::Scalar(Location {
+                    uri: ctx.uri.clone(),
+                    range: Range {
+                        start: Position { line, character },
+                        end: Position {
+                            line,
+                            character: character + word.len() as u32,
                         },
-                    }));
-                }
+                    },
+                }));
             }
         }
     }
 
     None
+}
+
+fn is_inside_style_v_bind_argument(content: &str, offset: usize) -> bool {
+    let mut offset = offset.min(content.len());
+    while offset > 0 && !content.is_char_boundary(offset) {
+        offset -= 1;
+    }
+
+    let Some(v_bind_start) = content[..offset].rfind("v-bind(") else {
+        return false;
+    };
+    let arg_start = v_bind_start + "v-bind(".len();
+
+    !content[arg_start..offset].contains(')')
 }
 
 /// Find the location of a binding definition in raw script content (not virtual code).

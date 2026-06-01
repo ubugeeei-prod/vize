@@ -3,13 +3,26 @@
 //! Handles text, interpolation, open/close tags, element type determination,
 //! comments, and error reporting.
 
-use vize_carton::{directive::parse_vize_directive, Box};
+use vize_carton::{Box, String, appends, directive::parse_vize_directive};
 use vize_relief::{
     ast::*,
     errors::{CompilerError, ErrorCode},
 };
 
 use super::{CurrentElement, Parser, ParserStackEntry};
+
+/// Maximum element nesting depth retained by the parser.
+///
+/// Elements nested deeper than this are flattened with a recoverable error
+/// instead of being pushed onto the open-element stack. This keeps the depth
+/// of the produced AST bounded so the recursive passes that walk it later
+/// (transform, codegen, semantic analysis) stay within a predictable amount of
+/// stack space regardless of the input. The limit is far beyond any realistic
+/// template while still cheap to enforce.
+const MAX_ELEMENT_NESTING_DEPTH: usize = 256;
+
+/// Message attached to the recoverable error raised when the nesting limit is hit.
+const NESTING_TOO_DEEP_MESSAGE: &str = "Element nesting is too deep.";
 
 impl<'a> Parser<'a> {
     /// Process text content
@@ -18,8 +31,8 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let source = self.source;
-        self.append_or_merge_text(&source[start..end], start, end);
+        let source = self.get_source(start, end).to_owned();
+        self.append_or_merge_text(&source, start, end);
     }
 
     /// Process text entity content
@@ -38,13 +51,12 @@ impl<'a> Parser<'a> {
         if let Some(merge_start) = merge_start_off {
             let end_pos = self.get_pos(end);
             let source_span = self.get_source(merge_start, end).into();
-            if let Some(entry) = self.stack.last_mut() {
-                if let Some(TemplateChildNode::Text(text_node)) = entry.element.children.last_mut()
-                {
-                    text_node.content.push_str(content);
-                    text_node.loc.end = end_pos;
-                    text_node.loc.source = source_span;
-                }
+            if let Some(entry) = self.stack.last_mut()
+                && let Some(TemplateChildNode::Text(text_node)) = entry.element.children.last_mut()
+            {
+                text_node.content.push_str(content);
+                text_node.loc.end = end_pos;
+                text_node.loc.source = source_span;
             }
         } else {
             let loc = self.create_loc(start, end);
@@ -85,8 +97,11 @@ impl<'a> Parser<'a> {
     /// Process open tag name
     pub(super) fn on_open_tag_name_impl(&mut self, start: usize, end: usize) {
         let tag = self.get_source(start, end);
-        let ns =
-            (self.options.get_namespace)(tag, self.stack.last().map(|e| e.element.tag.as_str()));
+        let ns = if self.should_force_html_namespace(tag) {
+            Namespace::Html
+        } else {
+            (self.options.get_namespace)(tag, self.stack.last().map(|e| e.element.tag.as_str()))
+        };
 
         self.current_element = Some(CurrentElement {
             tag: tag.into(),
@@ -102,7 +117,7 @@ impl<'a> Parser<'a> {
     pub(super) fn on_open_tag_end_impl(&mut self, end: usize) {
         if let Some(current) = self.current_element.take() {
             let tag_start = current.tag_start;
-            let loc = self.create_loc(tag_start - 1, end + 1); // Include < and >
+            let loc = self.create_loc(tag_start.saturating_sub(1), end + 1); // Include < and >
 
             let mut element = ElementNode::new(self.allocator, current.tag.clone(), loc);
             element.ns = current.ns;
@@ -178,6 +193,18 @@ impl<'a> Parser<'a> {
                 // Self-closing or void tag, add directly
                 let boxed = Box::new_in(element, self.allocator);
                 self.add_child(TemplateChildNode::Element(boxed));
+            } else if self.stack.len() >= MAX_ELEMENT_NESTING_DEPTH {
+                // Nesting limit reached: keep the element but do not descend any
+                // further, so the resulting tree depth stays bounded. The
+                // element is attached at the current level as a leaf and a
+                // recoverable error is recorded.
+                self.errors.push(CompilerError::with_message(
+                    ErrorCode::ExtendPoint,
+                    NESTING_TOO_DEEP_MESSAGE,
+                    Some(element.loc.clone()),
+                ));
+                let boxed = Box::new_in(element, self.allocator);
+                self.add_child(TemplateChildNode::Element(boxed));
             } else {
                 // Push to stack
                 self.stack.push(ParserStackEntry {
@@ -212,7 +239,11 @@ impl<'a> Parser<'a> {
                 let mut elements: vize_carton::Vec<'a, ParserStackEntry<'a>> =
                     vize_carton::Vec::new_in(self.allocator);
                 while self.stack.len() > i {
-                    elements.push(self.stack.pop().unwrap());
+                    if let Some(entry) = self.stack.pop() {
+                        elements.push(entry);
+                    } else {
+                        break;
+                    }
                 }
 
                 // Report errors for unclosed elements (except the matching one)
@@ -239,7 +270,7 @@ impl<'a> Parser<'a> {
         }
 
         if !found {
-            let loc = self.create_loc(start - 2, end + 1); // Include </ and >
+            let loc = self.create_loc(start.saturating_sub(2), end + 1); // Include </ and >
             self.errors
                 .push(CompilerError::new(ErrorCode::InvalidEndTag, Some(loc)));
         }
@@ -289,10 +320,14 @@ impl<'a> Parser<'a> {
         }
 
         // Custom element check
-        if let Some(is_custom) = self.options.is_custom_element {
-            if is_custom(tag) {
-                return false;
-            }
+        if let Some(is_custom) = self.options.is_custom_element
+            && is_custom(tag)
+        {
+            return false;
+        }
+
+        if self.options.custom_renderer {
+            return tag.chars().next().is_some_and(|c| c.is_uppercase()) || tag.contains('-');
         }
 
         // Native tag check
@@ -310,10 +345,34 @@ impl<'a> Parser<'a> {
         false
     }
 
+    fn should_force_html_namespace(&self, tag: &str) -> bool {
+        if !self.options.custom_renderer {
+            return false;
+        }
+
+        if matches!(tag, "svg" | "math") {
+            return false;
+        }
+
+        if self
+            .stack
+            .last()
+            .is_some_and(|entry| matches!(entry.element.ns, Namespace::Svg | Namespace::MathMl))
+        {
+            return false;
+        }
+
+        tag.chars().next().is_some_and(|c| c.is_lowercase())
+            && !tag.contains('-')
+            && !vize_carton::is_html_tag(tag)
+    }
+
     /// Process comment
     pub(super) fn on_comment_impl(&mut self, start: usize, end: usize) {
         let content = self.get_source(start, end);
-        let loc = self.create_loc(start - 4, end + 3); // Include <!-- and -->
+        let loc_start = start.saturating_sub(4);
+        let loc_end = end.saturating_add(3).min(self.source.len());
+        let loc = self.create_loc(loc_start, loc_end); // Include <!-- and --> when present.
 
         // Check for @vize: directive
         let directive = parse_vize_directive(content, loc.start.line, loc.start.offset);
@@ -330,12 +389,106 @@ impl<'a> Parser<'a> {
         self.add_child(TemplateChildNode::Comment(boxed));
     }
 
+    /// Process CDATA
+    pub(super) fn on_cdata_impl(&mut self, start: usize, end: usize) {
+        let is_html_ns = self
+            .stack
+            .last()
+            .map(|e| e.element.ns)
+            .unwrap_or(Namespace::Html)
+            == Namespace::Html;
+        if is_html_ns {
+            self.on_error_impl(ErrorCode::CdataInHtmlContent, start.saturating_sub(9));
+        } else {
+            self.on_text_impl(start, end);
+        }
+    }
+
     /// Handle error
     pub(super) fn on_error_impl(&mut self, code: ErrorCode, index: usize) {
         let len = self.source.len();
         let start = index.min(len);
         let end = (index + 1).min(len);
         let loc = self.create_loc(start, end);
-        self.errors.push(CompilerError::new(code, Some(loc)));
+        let error = if let Some(message) = self.recovery_error_message(code) {
+            CompilerError::with_message(code, message, Some(loc))
+        } else {
+            CompilerError::new(code, Some(loc))
+        };
+        self.errors.push(error);
+    }
+
+    fn recovery_error_message(&self, code: ErrorCode) -> Option<String> {
+        match code {
+            ErrorCode::EofBeforeTagName => Some(
+                "Unexpected end of input after `<`; treating it as text so parsing can continue."
+                    .into(),
+            ),
+            ErrorCode::EofInTag => Some(
+                "Unexpected end of input inside a tag; inferred the missing tag close so parsing can continue."
+                    .into(),
+            ),
+            ErrorCode::EofInComment => Some(
+                "Comment is missing its closing `-->`; preserving the unfinished comment so parsing can finish."
+                    .into(),
+            ),
+            ErrorCode::InvalidFirstCharacterOfTagName => Some(
+                "Tag name starts with an invalid character; treating the malformed tag as text.".into(),
+            ),
+            ErrorCode::MissingAttributeValue => {
+                let name = self
+                    .current_attr
+                    .as_ref()
+                    .map(|attr| attr.name.as_str())
+                    .or_else(|| self.current_dir.as_ref().map(|dir| dir.raw_name.as_str()))
+                    .unwrap_or("attribute");
+                let mut message = String::with_capacity(name.len() + 70);
+                appends!(
+                    message,
+                    "Attribute `",
+                    name,
+                    "` is missing a value after `=`; continuing without the value."
+                );
+                Some(message)
+            }
+            ErrorCode::MissingDynamicDirectiveArgumentEnd => Some(
+                "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary."
+                    .into(),
+            ),
+            ErrorCode::MissingInterpolationEnd => {
+                let delimiter = self.options.delimiters.1.as_str();
+                let mut message = String::with_capacity(delimiter.len() + 97);
+                appends!(
+                    message,
+                    "Interpolation is missing its closing delimiter `",
+                    delimiter,
+                    "`; treating the unfinished interpolation as text."
+                );
+                Some(message)
+            }
+            ErrorCode::UnexpectedCharacterInAttributeName => Some(
+                "Attribute name contains an invalid character; inferred the nearest attribute boundary and continued."
+                    .into(),
+            ),
+            ErrorCode::UnexpectedCharacterInUnquotedAttributeValue => Some(
+                "Unquoted attribute value contains a character that should be quoted; keeping it in the value and continuing."
+                    .into(),
+            ),
+            ErrorCode::UnexpectedEqualsSignBeforeAttributeName => Some(
+                "Unexpected `=` before an attribute name; skipping it and continuing with the next attribute."
+                    .into(),
+            ),
+            ErrorCode::MissingWhitespaceBetweenAttributes => Some(
+                "Missing whitespace between attributes; inferred a new attribute boundary.".into(),
+            ),
+            ErrorCode::IncorrectlyClosedComment => Some(
+                "Comment was closed as `--!>`; treating it as `-->` so parsing can continue."
+                    .into(),
+            ),
+            ErrorCode::IncorrectlyOpenedComment => Some(
+                "Declaration or comment syntax is malformed; skipping it until the next `>`.".into(),
+            ),
+            _ => None,
+        }
     }
 }

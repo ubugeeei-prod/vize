@@ -8,7 +8,7 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use oxc_transformer::{TransformOptions, Transformer, TypeScriptOptions};
-use vize_carton::{profile, String, ToCompactString};
+use vize_carton::{String, ToCompactString, profile};
 
 /// Transform TypeScript code to JavaScript using OXC
 pub fn transform_typescript_to_js(code: &str) -> String {

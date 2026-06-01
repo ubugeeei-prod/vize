@@ -31,6 +31,9 @@ export function generatePreviewHtml(
   <script type="module" src="${base}/@vite/client"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --musea-preview-padding: clamp(1rem, 2vw, 1.5rem);
+    }
     html, body {
       width: 100%;
       height: 100%;
@@ -38,9 +41,12 @@ export function generatePreviewHtml(
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #ffffff;
+      padding: var(--musea-preview-padding);
+      overflow: auto;
     }
     .musea-variant {
-      min-height: 100vh;
+      width: 100%;
+      min-height: calc(100vh - (var(--musea-preview-padding) * 2));
     }
     .musea-error {
       color: #dc2626;

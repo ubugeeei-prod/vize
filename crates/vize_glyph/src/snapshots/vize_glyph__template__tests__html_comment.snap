@@ -1,0 +1,8 @@
+---
+source: crates/vize_glyph/src/template.rs
+expression: result.as_str()
+---
+<!-- This is a comment -->
+<div>
+  Content
+</div>

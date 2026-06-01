@@ -9,8 +9,17 @@ use super::context::CodegenContext;
 use super::expression::generate_expression;
 use super::helpers::{escape_js_string, is_valid_js_identifier};
 use super::node::generate_node;
+use super::props::{
+    generate_directive_prop_with_static, generate_vbind_object_exp, generate_von_object_exp,
+    is_supported_directive,
+};
 use vize_carton::String;
 use vize_carton::ToCompactString;
+
+pub(crate) enum SlotOutletName<'a> {
+    Static(String),
+    Dynamic(&'a ExpressionNode<'a>),
+}
 
 /// Get slot props expression as raw source (not transformed)
 fn get_slot_props(dir: &DirectiveNode<'_>) -> Option<vize_carton::String> {
@@ -82,6 +91,293 @@ fn extract_slot_params(props_str: &str) -> Vec<String> {
     params
 }
 
+fn is_slot_name_bind(dir: &DirectiveNode<'_>) -> bool {
+    if dir.name.as_str() != "bind" {
+        return false;
+    }
+
+    match dir.arg.as_ref() {
+        Some(ExpressionNode::Simple(exp)) => exp.is_static && exp.content.as_str() == "name",
+        _ => false,
+    }
+}
+
+fn is_slot_name_prop(prop: &PropNode<'_>) -> bool {
+    match prop {
+        PropNode::Attribute(attr) => attr.name.as_str() == "name",
+        PropNode::Directive(dir) => is_slot_name_bind(dir),
+    }
+}
+
+fn is_slot_outlet_object_spread(prop: &PropNode<'_>) -> bool {
+    matches!(
+        prop,
+        PropNode::Directive(dir)
+            if (dir.name.as_str() == "bind" || dir.name.as_str() == "on")
+                && dir.arg.is_none()
+                && dir.exp.is_some()
+    )
+}
+
+fn slot_outlet_prop_generates_output(prop: &PropNode<'_>) -> bool {
+    if is_slot_name_prop(prop) {
+        return false;
+    }
+
+    match prop {
+        PropNode::Attribute(_) => true,
+        PropNode::Directive(dir) => {
+            if (dir.name.as_str() == "bind" || dir.name.as_str() == "on") && dir.arg.is_none() {
+                return dir.exp.is_some();
+            }
+            is_supported_directive(dir)
+        }
+    }
+}
+
+fn has_slot_outlet_vbind_object(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Directive(dir)
+                if dir.name.as_str() == "bind" && dir.arg.is_none() && dir.exp.is_some()
+        )
+    })
+}
+
+fn has_slot_outlet_von_object(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Directive(dir)
+                if dir.name.as_str() == "on" && dir.arg.is_none() && dir.exp.is_some()
+        )
+    })
+}
+
+fn has_slot_outlet_entry_props(el: &ElementNode<'_>) -> bool {
+    el.props
+        .iter()
+        .any(|prop| !is_slot_outlet_object_spread(prop) && slot_outlet_prop_generates_output(prop))
+}
+
+pub(crate) fn get_slot_outlet_name<'a>(el: &'a ElementNode<'a>) -> SlotOutletName<'a> {
+    for prop in &el.props {
+        match prop {
+            PropNode::Attribute(attr) if attr.name.as_str() == "name" => {
+                let name = attr
+                    .value
+                    .as_ref()
+                    .map(|v| v.content.clone())
+                    .unwrap_or_else(|| String::new("default"));
+                return SlotOutletName::Static(name);
+            }
+            PropNode::Directive(dir) if is_slot_name_bind(dir) => {
+                if let Some(exp) = dir.exp.as_ref() {
+                    return SlotOutletName::Dynamic(exp);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    SlotOutletName::Static(String::new("default"))
+}
+
+pub(crate) fn generate_slot_outlet_name(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    match get_slot_outlet_name(el) {
+        SlotOutletName::Static(name) => {
+            ctx.push("\"");
+            ctx.push(&escape_js_string(name.as_str()));
+            ctx.push("\"");
+        }
+        SlotOutletName::Dynamic(exp) => generate_expression(ctx, exp),
+    }
+}
+
+pub(crate) fn has_slot_outlet_props(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(slot_outlet_prop_generates_output)
+}
+
+pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    let static_merge = crate::codegen::props::StaticMerge::from_props(&el.props);
+
+    let has_dynamic_class = el.props.iter().any(|prop| match prop {
+        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
+            matches!(
+                dir.arg.as_ref(),
+                Some(ExpressionNode::Simple(exp))
+                    if exp.is_static && exp.content.as_str() == "class"
+            )
+        }
+        _ => false,
+    });
+
+    let has_dynamic_style = el.props.iter().any(|prop| match prop {
+        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
+            matches!(
+                dir.arg.as_ref(),
+                Some(ExpressionNode::Simple(exp))
+                    if exp.is_static && exp.content.as_str() == "style"
+            )
+        }
+        _ => false,
+    });
+
+    let mut first = true;
+    for prop in &el.props {
+        if is_slot_name_prop(prop) {
+            continue;
+        }
+
+        match prop {
+            PropNode::Attribute(attr) => {
+                if (attr.name.as_str() == "class" && has_dynamic_class)
+                    || (attr.name.as_str() == "style" && has_dynamic_style)
+                {
+                    continue;
+                }
+
+                if !first {
+                    ctx.push(", ");
+                }
+
+                if is_valid_js_identifier(&attr.name) {
+                    ctx.push(&attr.name);
+                } else {
+                    ctx.push("\"");
+                    ctx.push(&escape_js_string(&attr.name));
+                    ctx.push("\"");
+                }
+                ctx.push(": ");
+                if let Some(value) = &attr.value {
+                    ctx.push("\"");
+                    ctx.push(&escape_js_string(value.content.as_str()));
+                    ctx.push("\"");
+                } else {
+                    ctx.push("\"\"");
+                }
+                first = false;
+            }
+            PropNode::Directive(dir) => {
+                if !is_supported_directive(dir)
+                    || (dir.arg.is_none()
+                        && (dir.name.as_str() == "bind" || dir.name.as_str() == "on"))
+                {
+                    continue;
+                }
+
+                if !first {
+                    ctx.push(", ");
+                }
+                generate_directive_prop_with_static(ctx, dir, static_merge);
+                first = false;
+            }
+        }
+    }
+}
+
+pub(crate) fn generate_slot_outlet_props(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    generate_slot_outlet_props_inner(ctx, el, None);
+}
+
+pub(crate) fn generate_slot_outlet_props_with_key(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+    generate_key: &dyn Fn(&mut CodegenContext),
+) {
+    generate_slot_outlet_props_inner(ctx, el, Some(generate_key));
+}
+
+fn generate_slot_outlet_props_inner(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+    generate_key: Option<&dyn Fn(&mut CodegenContext)>,
+) {
+    let has_vbind_object = has_slot_outlet_vbind_object(el);
+    let has_von_object = has_slot_outlet_von_object(el);
+    let has_entries = has_slot_outlet_entry_props(el);
+    let has_key = generate_key.is_some();
+
+    if has_vbind_object || has_von_object {
+        let needs_merge = has_key || has_entries || (has_vbind_object && has_von_object);
+
+        if needs_merge {
+            ctx.use_helper(RuntimeHelper::MergeProps);
+            ctx.push(ctx.helper(RuntimeHelper::MergeProps));
+            ctx.push("(");
+            let mut first = true;
+
+            if has_vbind_object {
+                generate_vbind_object_exp(ctx, &el.props);
+                first = false;
+            }
+
+            if has_von_object {
+                if !first {
+                    ctx.push(", ");
+                }
+                generate_von_object_exp(ctx, &el.props);
+                first = false;
+            }
+
+            if has_key || has_entries {
+                if !first {
+                    ctx.push(", ");
+                }
+                generate_slot_outlet_props_object(ctx, el, generate_key, has_entries);
+            }
+
+            ctx.push(")");
+        } else if has_vbind_object {
+            ctx.use_helper(RuntimeHelper::NormalizeProps);
+            ctx.use_helper(RuntimeHelper::GuardReactiveProps);
+            ctx.push(ctx.helper(RuntimeHelper::NormalizeProps));
+            ctx.push("(");
+            ctx.push(ctx.helper(RuntimeHelper::GuardReactiveProps));
+            ctx.push("(");
+            generate_vbind_object_exp(ctx, &el.props);
+            ctx.push("))");
+        } else {
+            generate_von_object_exp(ctx, &el.props);
+        }
+        return;
+    }
+
+    generate_slot_outlet_props_object(ctx, el, generate_key, has_entries);
+}
+
+fn generate_slot_outlet_props_object(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+    generate_key: Option<&dyn Fn(&mut CodegenContext)>,
+    has_entries: bool,
+) {
+    ctx.push("{");
+    let mut needs_separator = false;
+
+    if let Some(generate_key) = generate_key {
+        ctx.push(" key: ");
+        generate_key(ctx);
+        needs_separator = true;
+    }
+
+    if has_entries {
+        if needs_separator {
+            ctx.push(", ");
+        } else {
+            ctx.push(" ");
+        }
+        generate_slot_outlet_props_entries(ctx, el);
+        needs_separator = true;
+    }
+
+    if needs_separator {
+        ctx.push(" ");
+    }
+    ctx.push("}");
+}
+
 /// Check if component has slot children that need to be generated as slots object
 pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
     if el.children.is_empty() {
@@ -98,10 +394,10 @@ pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
 
     // Check for v-slot on component root
     for prop in &el.props {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name.as_str() == "slot" {
-                return true;
-            }
+        if let PropNode::Directive(dir) = prop
+            && dir.name.as_str() == "slot"
+        {
+            return true;
         }
     }
 
@@ -130,19 +426,8 @@ pub fn has_dynamic_slots_flag(el: &ElementNode<'_>) -> bool {
     if has_forwarded_slot_outlet(el) {
         return true;
     }
-    if has_dynamic_default_slot_children(el) {
-        return true;
-    }
     // Also check for v-if/v-for on slot templates (they become IfNode/ForNode children)
     has_conditional_or_loop_slots(el)
-}
-
-/// Check if the implicit default slot contains structural nodes that depend on
-/// parent state and therefore must force slot updates.
-fn has_dynamic_default_slot_children(el: &ElementNode<'_>) -> bool {
-    el.children
-        .iter()
-        .any(|child| matches!(child, TemplateChildNode::If(_) | TemplateChildNode::For(_)))
 }
 
 /// Check whether this component forwards an incoming slot to another component,
@@ -195,6 +480,37 @@ fn has_conditional_or_loop_slots(el: &ElementNode<'_>) -> bool {
     })
 }
 
+fn child_is_slot_template(child: &TemplateChildNode<'_>) -> bool {
+    match child {
+        TemplateChildNode::Element(el) => el.tag.as_str() == "template" && has_v_slot(el),
+        TemplateChildNode::If(if_node) => if_node.branches.iter().any(|branch| {
+            branch.children.iter().any(|child| {
+                matches!(
+                    child,
+                    TemplateChildNode::Element(el)
+                        if el.tag.as_str() == "template" && has_v_slot(el)
+                )
+            })
+        }),
+        TemplateChildNode::For(for_node) => for_node.children.iter().any(|child| {
+            matches!(
+                child,
+                TemplateChildNode::Element(el)
+                    if el.tag.as_str() == "template" && has_v_slot(el)
+            )
+        }),
+        _ => false,
+    }
+}
+
+fn slot_children_have_meaningful_content(children: &[&TemplateChildNode<'_>]) -> bool {
+    children.iter().any(|child| match child {
+        TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
+        TemplateChildNode::Comment(_) => false,
+        _ => true,
+    })
+}
+
 /// Generate slots object for component
 pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Note: WithCtx helper is registered at each _withCtx() output site,
@@ -202,20 +518,18 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
     // Check for v-slot on component root (shorthand for default slot)
     let root_slot = el.props.iter().find_map(|p| {
-        if let PropNode::Directive(dir) = p {
-            if dir.name.as_str() == "slot" {
-                return Some(dir.as_ref());
-            }
+        if let PropNode::Directive(dir) = p
+            && dir.name.as_str() == "slot"
+        {
+            return Some(dir.as_ref());
         }
         None
     });
 
     let collected_slots = collect_slots(el);
     let has_forwarded_slots = has_forwarded_slot_outlet(el);
-    let has_dynamic_slots = ctx.in_v_for
-        || collected_slots.iter().any(|s| s.is_dynamic)
-        || has_forwarded_slots
-        || has_dynamic_default_slot_children(el);
+    let has_dynamic_slots =
+        ctx.in_v_for || collected_slots.iter().any(|s| s.is_dynamic) || has_forwarded_slots;
     let has_conditional_slots = has_conditional_or_loop_slots(el);
 
     // If there are conditional (v-if) or looped (v-for) slots, use createSlots
@@ -264,90 +578,91 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         let mut first_slot = true;
 
         for child in &el.children {
-            if let TemplateChildNode::Element(template_el) = child {
-                if template_el.tag.as_str() == "template" && has_v_slot(template_el) {
-                    // This is a named slot template
-                    if let Some(slot_dir) = template_el.props.iter().find_map(|p| {
-                        if let PropNode::Directive(dir) = p {
-                            if dir.name.as_str() == "slot" {
-                                return Some(dir.as_ref());
-                            }
-                        }
-                        None
-                    }) {
-                        if !first_slot {
-                            ctx.push(",");
-                        }
-                        first_slot = false;
-                        ctx.newline();
-
-                        let slot_name = get_slot_name(slot_dir);
-                        let is_dynamic = slot_dir
-                            .arg
-                            .as_ref()
-                            .map(|arg| match arg {
-                                ExpressionNode::Simple(exp) => !exp.is_static,
-                                ExpressionNode::Compound(_) => true,
-                            })
-                            .unwrap_or(false);
-
-                        if is_dynamic {
-                            let trimmed_name = slot_name.trim();
-                            if trimmed_name.starts_with('`') && trimmed_name.ends_with('`') {
-                                // Template literal slot name: `item.name` → ["item.name"]
-                                let inner = &trimmed_name[1..trimmed_name.len() - 1];
-                                ctx.push("[\"");
-                                ctx.push(&escape_js_string(inner));
-                                ctx.push("\"]");
-                            } else {
-                                // Dynamic slot name: [_ctx.slotName]
-                                ctx.push("[");
-                                ctx.push("_ctx.");
-                                ctx.push(&slot_name);
-                                ctx.push("]");
-                            }
-                        } else if is_valid_js_identifier(&slot_name) {
-                            ctx.push(&slot_name);
-                        } else {
-                            ctx.push("\"");
-                            ctx.push(&escape_js_string(&slot_name));
-                            ctx.push("\"");
-                        }
-
-                        if slot_name.as_str() == "default" {
-                            has_generated_default = true;
-                        }
-
-                        ctx.push(": ");
-                        ctx.use_helper(RuntimeHelper::WithCtx);
-                        ctx.push(ctx.helper(RuntimeHelper::WithCtx));
-                        ctx.push("(");
-
-                        // Slot props - use raw source with default value prefix
-                        let params = if let Some(props_str) = get_slot_props(slot_dir) {
-                            let processed = prefix_slot_defaults(&props_str);
-                            ctx.push("(");
-                            ctx.push(&processed);
-                            ctx.push(")");
-                            extract_slot_params(&props_str)
-                        } else {
-                            ctx.push("()");
-                            vec![]
-                        };
-
-                        // Track slot params for stripping _ctx. prefix
-                        ctx.add_slot_params(&params);
-
-                        ctx.push(" => [");
-                        ctx.indent();
-                        generate_slot_children(ctx, &template_el.children);
-                        ctx.deindent();
-                        ctx.newline();
-                        ctx.push("])");
-
-                        // Remove slot params
-                        ctx.remove_slot_params(&params);
+            if let TemplateChildNode::Element(template_el) = child
+                && template_el.tag.as_str() == "template"
+                && has_v_slot(template_el)
+            {
+                // This is a named slot template
+                if let Some(slot_dir) = template_el.props.iter().find_map(|p| {
+                    if let PropNode::Directive(dir) = p
+                        && dir.name.as_str() == "slot"
+                    {
+                        return Some(dir.as_ref());
                     }
+                    None
+                }) {
+                    if !first_slot {
+                        ctx.push(",");
+                    }
+                    first_slot = false;
+                    ctx.newline();
+
+                    let slot_name = get_slot_name(slot_dir);
+                    let is_dynamic = slot_dir
+                        .arg
+                        .as_ref()
+                        .map(|arg| match arg {
+                            ExpressionNode::Simple(exp) => !exp.is_static,
+                            ExpressionNode::Compound(_) => true,
+                        })
+                        .unwrap_or(false);
+
+                    if is_dynamic {
+                        let trimmed_name = slot_name.trim();
+                        if trimmed_name.starts_with('`') && trimmed_name.ends_with('`') {
+                            // Template literal slot name: `item.name` → ["item.name"]
+                            let inner = &trimmed_name[1..trimmed_name.len() - 1];
+                            ctx.push("[\"");
+                            ctx.push(&escape_js_string(inner));
+                            ctx.push("\"]");
+                        } else {
+                            // Dynamic slot name: [_ctx.slotName]
+                            ctx.push("[");
+                            ctx.push("_ctx.");
+                            ctx.push(&slot_name);
+                            ctx.push("]");
+                        }
+                    } else if is_valid_js_identifier(&slot_name) {
+                        ctx.push(&slot_name);
+                    } else {
+                        ctx.push("\"");
+                        ctx.push(&escape_js_string(&slot_name));
+                        ctx.push("\"");
+                    }
+
+                    if slot_name.as_str() == "default" {
+                        has_generated_default = true;
+                    }
+
+                    ctx.push(": ");
+                    ctx.use_helper(RuntimeHelper::WithCtx);
+                    ctx.push(ctx.helper(RuntimeHelper::WithCtx));
+                    ctx.push("(");
+
+                    // Slot props - use raw source with default value prefix
+                    let params = if let Some(props_str) = get_slot_props(slot_dir) {
+                        let processed = prefix_slot_defaults(&props_str);
+                        ctx.push("(");
+                        ctx.push(&processed);
+                        ctx.push(")");
+                        extract_slot_params(&props_str)
+                    } else {
+                        ctx.push("()");
+                        vec![]
+                    };
+
+                    // Track slot params for stripping _ctx. prefix
+                    ctx.add_slot_params(&params);
+
+                    ctx.push(" => [");
+                    ctx.indent();
+                    generate_slot_children(ctx, &template_el.children);
+                    ctx.deindent();
+                    ctx.newline();
+                    ctx.push("])");
+
+                    // Remove slot params
+                    ctx.remove_slot_params(&params);
                 }
             }
         }
@@ -408,7 +723,9 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.use_helper(RuntimeHelper::CreateSlots);
     ctx.push(ctx.helper(RuntimeHelper::CreateSlots));
-    ctx.push("({ _: 2 /* DYNAMIC */ }, [");
+    ctx.push("(");
+    generate_create_slots_base(ctx, el);
+    ctx.push(", [");
     ctx.indent();
 
     let mut first = true;
@@ -432,17 +749,17 @@ fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.newline();
                 generate_looped_slot(ctx, for_node);
             }
-            TemplateChildNode::Element(template_el) => {
-                if template_el.tag.as_str() == "template" && has_v_slot(template_el) {
-                    // Regular named slot (no v-if/v-for)
-                    if !first {
-                        ctx.push(",");
-                    }
-                    first = false;
-                    ctx.newline();
-                    // Generate as static slot entry
-                    generate_static_slot_entry(ctx, template_el);
+            TemplateChildNode::Element(template_el)
+                if template_el.tag.as_str() == "template" && has_v_slot(template_el) =>
+            {
+                // Regular named slot (no v-if/v-for)
+                if !first {
+                    ctx.push(",");
                 }
+                first = false;
+                ctx.newline();
+                // Generate as static slot entry
+                generate_static_slot_entry(ctx, template_el);
             }
             _ => {}
         }
@@ -451,6 +768,47 @@ fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.deindent();
     ctx.newline();
     ctx.push("])");
+}
+
+fn generate_create_slots_base(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    let default_children: Vec<_> = el
+        .children
+        .iter()
+        .filter(|child| !child_is_slot_template(child))
+        .collect();
+    let has_default_children = slot_children_have_meaningful_content(&default_children);
+
+    if !has_default_children {
+        ctx.push("{ _: 2 /* DYNAMIC */ }");
+        return;
+    }
+
+    ctx.push("{");
+    ctx.indent();
+
+    ctx.newline();
+    ctx.push("default: ");
+    ctx.use_helper(RuntimeHelper::WithCtx);
+    ctx.push(ctx.helper(RuntimeHelper::WithCtx));
+    ctx.push("(() => [");
+    ctx.indent();
+    for (i, child) in default_children.iter().enumerate() {
+        if i > 0 {
+            ctx.push(",");
+        }
+        ctx.newline();
+        generate_slot_child_node(ctx, child);
+    }
+    ctx.deindent();
+    ctx.newline();
+    ctx.push("]),");
+
+    ctx.newline();
+    ctx.push("_: 2 /* DYNAMIC */");
+
+    ctx.deindent();
+    ctx.newline();
+    ctx.push("}");
 }
 
 /// Generate a conditional slot entry (v-if on slot template)
@@ -474,10 +832,11 @@ fn generate_conditional_slot(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
 
         // Find the slot template in this branch
         let slot_template = branch.children.iter().find_map(|child| {
-            if let TemplateChildNode::Element(el) = child {
-                if el.tag.as_str() == "template" && has_v_slot(el) {
-                    return Some(el.as_ref());
-                }
+            if let TemplateChildNode::Element(el) = child
+                && el.tag.as_str() == "template"
+                && has_v_slot(el)
+            {
+                return Some(el.as_ref());
             }
             None
         });
@@ -535,10 +894,11 @@ fn generate_looped_slot(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
 
     // Find the slot template in the for body
     let slot_template = for_node.children.iter().find_map(|child| {
-        if let TemplateChildNode::Element(el) = child {
-            if el.tag.as_str() == "template" && has_v_slot(el) {
-                return Some(el.as_ref());
-            }
+        if let TemplateChildNode::Element(el) = child
+            && el.tag.as_str() == "template"
+            && has_v_slot(el)
+        {
+            return Some(el.as_ref());
         }
         None
     });
@@ -561,10 +921,10 @@ fn generate_slot_object_entry(
     key_index: Option<usize>,
 ) {
     let slot_dir = template_el.props.iter().find_map(|p| {
-        if let PropNode::Directive(dir) = p {
-            if dir.name.as_str() == "slot" {
-                return Some(dir.as_ref());
-            }
+        if let PropNode::Directive(dir) = p
+            && dir.name.as_str() == "slot"
+        {
+            return Some(dir.as_ref());
         }
         None
     });

@@ -14,7 +14,7 @@ use wasm_bindgen::prelude::*;
 /// Parse Art file (*.art.vue)
 #[wasm_bindgen(js_name = "parseArt")]
 pub fn parse_art_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    use vize_musea::{parse_art, ArtParseOptions, ArtStatus, Bump};
+    use vize_musea::{ArtParseOptions, ArtStatus, Bump, parse_art};
 
     let allocator = Bump::new();
     let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
@@ -64,7 +64,7 @@ pub fn parse_art_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue
 /// Transform Art to Storybook CSF 3.0
 #[wasm_bindgen(js_name = "artToCsf")]
 pub fn art_to_csf_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    use vize_musea::{parse_art, transform_to_csf, ArtParseOptions, Bump};
+    use vize_musea::{ArtParseOptions, Bump, parse_art, transform_to_csf};
 
     let allocator = Bump::new();
     let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
@@ -95,8 +95,8 @@ pub fn art_to_csf_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValu
 /// Generate component documentation from Art source
 #[wasm_bindgen(js_name = "generateArtDoc")]
 pub fn generate_art_doc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    use vize_musea::docs::{generate_component_doc, DocOptions};
-    use vize_musea::{parse_art, ArtParseOptions, Bump};
+    use vize_musea::docs::{DocOptions, generate_component_doc};
+    use vize_musea::{ArtParseOptions, Bump, parse_art};
 
     let allocator = Bump::new();
     let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
@@ -163,8 +163,8 @@ pub fn generate_art_catalog_wasm(
     sources: js_sys::Array,
     options: JsValue,
 ) -> Result<JsValue, JsValue> {
-    use vize_musea::docs::{generate_catalog, CatalogEntry, DocOptions};
-    use vize_musea::{parse_art, ArtParseOptions, Bump};
+    use vize_musea::docs::{CatalogEntry, DocOptions, generate_catalog};
+    use vize_musea::{ArtParseOptions, Bump, parse_art};
 
     // Single allocator for all parses - efficient memory usage
     let allocator = Bump::new();
@@ -221,8 +221,8 @@ pub fn generate_art_catalog_wasm(
 /// Generate props palette from Art source
 #[wasm_bindgen(js_name = "generateArtPalette")]
 pub fn generate_art_palette_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    use vize_musea::palette::{generate_palette, ControlKind, PaletteOptions};
-    use vize_musea::{parse_art, ArtParseOptions, Bump};
+    use vize_musea::palette::{ControlKind, PaletteOptions, generate_palette};
+    use vize_musea::{ArtParseOptions, Bump, parse_art};
 
     let allocator = Bump::new();
     let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))

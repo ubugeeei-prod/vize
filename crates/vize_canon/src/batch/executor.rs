@@ -12,14 +12,14 @@ use super::import_rewriter::ImportRewriter;
 use super::type_checker::{
     DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput, TypeCheckResult,
 };
-use super::virtual_project::VirtualProject;
+use super::virtual_project::{AUTO_IMPORT_STUBS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
 use crate::{
     corsa_client::CorsaProjectClient,
     file_uri::path_to_file_uri,
     lsp_client::paths::{corsa_search_roots, find_corsa_in_search_roots},
 };
 use oxc_span::SourceType;
-use vize_carton::{cstr, profile, String};
+use vize_carton::{String, cstr, profile};
 
 mod cli;
 mod diagnostics;
@@ -36,18 +36,55 @@ pub struct CorsaExecutor {
 impl CorsaExecutor {
     /// Create a new executor by finding a local or global Corsa executable.
     pub fn new(project_root: &Path) -> Result<Self, CorsaNotFoundError> {
-        let search_roots = corsa_search_roots(Some(project_root));
-        if let Some(local_corsa) = find_corsa_in_search_roots(&search_roots) {
-            if let Some(corsa_path) = normalize_corsa_path(PathBuf::from(local_corsa.as_str())) {
+        Self::with_corsa_path(project_root, None)
+    }
+
+    /// Create a new executor with an optional explicit Corsa executable path.
+    pub fn with_corsa_path(
+        project_root: &Path,
+        corsa_path: Option<&Path>,
+    ) -> Result<Self, CorsaNotFoundError> {
+        if let Some(path) = corsa_path {
+            let resolved_path = resolve_explicit_corsa_path(project_root, path);
+            if !resolved_path.exists() {
+                return Err(CorsaNotFoundError::new_explicit(
+                    project_root,
+                    &resolved_path,
+                ));
+            }
+            let corsa_path = normalize_corsa_path(resolved_path.clone()).unwrap_or(resolved_path);
+            let corsa_path = corsa_path.canonicalize().unwrap_or(corsa_path);
+            return Ok(Self { corsa_path });
+        }
+
+        for env_name in ["CORSA_PATH", "TSGO_PATH"] {
+            if let Some(path) = std::env::var_os(env_name).map(PathBuf::from) {
+                let resolved_path = resolve_explicit_corsa_path(project_root, &path);
+                if !resolved_path.exists() {
+                    return Err(CorsaNotFoundError::new_explicit(
+                        project_root,
+                        &resolved_path,
+                    ));
+                }
+                let corsa_path =
+                    normalize_corsa_path(resolved_path.clone()).unwrap_or(resolved_path);
+                let corsa_path = corsa_path.canonicalize().unwrap_or(corsa_path);
                 return Ok(Self { corsa_path });
             }
         }
 
+        let search_roots = corsa_search_roots(Some(project_root));
+        if let Some(local_corsa) = find_corsa_in_search_roots(&search_roots)
+            && let Some(corsa_path) = normalize_corsa_path(PathBuf::from(local_corsa.as_str()))
+        {
+            return Ok(Self { corsa_path });
+        }
+
         for executable in ["corsa", "tsgo"] {
-            if let Ok(global_corsa) = which::which(executable) {
-                if let Some(corsa_path) = normalize_corsa_path(global_corsa) {
-                    return Ok(Self { corsa_path });
-                }
+            if let Ok(global_corsa) = which::which(executable)
+                && let Some(corsa_path) = normalize_corsa_path(global_corsa)
+            {
+                return Ok(Self { corsa_path });
             }
         }
 
@@ -63,6 +100,19 @@ impl CorsaExecutor {
     pub fn check(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {
         profile!("canon.executor.materialize", project.materialize())?;
 
+        match profile!("canon.corsa.cli", check_with_cli(&self.corsa_path, project)) {
+            Ok(result) => return Ok(result),
+            Err(_cli_error) => {
+                // Fall through to the project-session API. This keeps the batch
+                // runner usable with runtimes whose CLI diagnostics are not
+                // available or not parseable.
+            }
+        }
+
+        self.check_with_project_session(project)
+    }
+
+    fn check_with_project_session(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {
         let corsa_path = self.corsa_path.to_string_lossy();
         let mut client = match profile!(
             "canon.corsa.session",
@@ -157,6 +207,26 @@ impl CorsaExecutor {
     }
 }
 
+fn resolve_explicit_corsa_path(project_root: &Path, path: &Path) -> PathBuf {
+    if path.is_absolute() {
+        return path.to_path_buf();
+    }
+
+    let project_candidate = project_root.join(path);
+    if project_candidate.exists() {
+        return project_candidate;
+    }
+
+    if let Ok(cwd) = std::env::current_dir() {
+        let cwd_candidate = cwd.join(path);
+        if cwd_candidate.exists() {
+            return cwd_candidate;
+        }
+    }
+
+    project_candidate
+}
+
 fn normalize_corsa_path(path: PathBuf) -> Option<PathBuf> {
     let Some(bin_dir) = path.parent() else {
         return Some(path);
@@ -178,6 +248,7 @@ fn normalize_corsa_path(path: PathBuf) -> Option<PathBuf> {
     find_corsa_in_search_roots(&corsa_search_roots(Some(project_root)))
         .map(|resolved| PathBuf::from(resolved.as_str()))
         .filter(|resolved| resolved != &path)
+        .or(Some(path))
 }
 
 fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
@@ -189,6 +260,9 @@ fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
         if !path.is_file() {
             continue;
         }
+        if is_internal_virtual_project_file(virtual_root, path) {
+            continue;
+        }
         if let Some("ts" | "tsx") = path.extension().and_then(|extension| extension.to_str()) {
             uris.push(path_to_file_uri(path));
         }
@@ -196,6 +270,24 @@ fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
 
     uris.sort();
     Ok(uris)
+}
+
+fn is_internal_virtual_project_file(virtual_root: &Path, path: &Path) -> bool {
+    is_internal_virtual_project_stub(path) || is_under_virtual_node_modules(virtual_root, path)
+}
+
+fn is_internal_virtual_project_stub(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| matches!(name, AUTO_IMPORT_STUBS_FILE | VUE_MODULE_STUBS_FILE))
+}
+
+fn is_under_virtual_node_modules(virtual_root: &Path, path: &Path) -> bool {
+    path.strip_prefix(virtual_root)
+        .ok()
+        .and_then(|path| path.components().next())
+        .and_then(|component| component.as_os_str().to_str())
+        .is_some_and(|name| name == "node_modules")
 }
 
 fn collect_declaration_outputs(out_dir: &Path) -> CorsaResult<Vec<DeclarationOutput>> {
@@ -282,7 +374,9 @@ fn should_fallback_to_cli(error: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{collect_declaration_outputs, collect_virtual_file_uris, normalize_corsa_path};
+    use super::{
+        CorsaExecutor, collect_declaration_outputs, collect_virtual_file_uris, normalize_corsa_path,
+    };
     use crate::file_uri::path_to_file_uri;
     use std::{
         fs,
@@ -298,7 +392,8 @@ mod tests {
 
         let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("__agent_only")
+            .join("target")
+            .join("vize-tests")
             .join("tests")
             .join(&*cstr!(
                 "corsa-executor-{name}-{}-{case_id}",
@@ -313,6 +408,12 @@ mod tests {
 
         fs::write(root.join("index.ts"), "").unwrap();
         fs::write(root.join("component.vue.ts"), "").unwrap();
+        fs::write(root.join("__vize_vue_modules.d.ts"), "").unwrap();
+        fs::write(root.join("__vize_auto_imports.d.ts"), "").unwrap();
+        fs::create_dir_all(root.join("node_modules/vue")).unwrap();
+        fs::write(root.join("node_modules/vue/index.d.ts"), "").unwrap();
+        fs::create_dir_all(root.join("node_modules/vite")).unwrap();
+        fs::write(root.join("node_modules/vite/client.d.ts"), "").unwrap();
         fs::write(root.join("tsconfig.json"), "{}").unwrap();
         fs::write(root.join("ignored.js"), "").unwrap();
 
@@ -385,6 +486,39 @@ mod tests {
     }
 
     #[test]
+    fn uses_explicit_corsa_path() {
+        let temp_dir = TempDir::new().unwrap();
+        let project_root = temp_dir.path().join("project");
+        let explicit = temp_dir.path().join("bin").join("tsgo");
+
+        fs::create_dir_all(&project_root).unwrap();
+        fs::create_dir_all(explicit.parent().unwrap()).unwrap();
+        fs::write(&explicit, "").unwrap();
+
+        let executor = CorsaExecutor::with_corsa_path(&project_root, Some(&explicit)).unwrap();
+
+        assert_eq!(executor.corsa_path(), explicit.canonicalize().unwrap());
+    }
+
+    #[test]
+    fn resolves_relative_explicit_corsa_path_against_project_root() {
+        let temp_dir = TempDir::new().unwrap();
+        let project_root = temp_dir.path().join("project");
+        let explicit = project_root.join("bin").join("tsgo");
+
+        fs::create_dir_all(explicit.parent().unwrap()).unwrap();
+        fs::write(&explicit, "").unwrap();
+
+        let executor = CorsaExecutor::with_corsa_path(
+            &project_root,
+            Some(PathBuf::from("bin/tsgo").as_path()),
+        )
+        .unwrap();
+
+        assert_eq!(executor.corsa_path(), explicit.canonicalize().unwrap());
+    }
+
+    #[test]
     fn collects_emitted_declaration_outputs() {
         let temp_dir = TempDir::new().unwrap();
         let out_dir = temp_dir.path().join("dist/types");
@@ -402,7 +536,6 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn checks_with_cli_when_project_session_api_is_unavailable() {
-        use super::CorsaExecutor;
         use crate::batch::VirtualProject;
         use std::os::unix::fs::PermissionsExt;
 

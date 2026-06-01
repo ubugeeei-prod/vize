@@ -14,6 +14,7 @@
 //! VNode trees.
 
 #![allow(clippy::collapsible_match)]
+#![cfg_attr(test, allow(clippy::disallowed_macros))]
 
 pub mod codegen;
 pub mod errors;
@@ -30,16 +31,16 @@ pub use transforms::{
 
 // Re-export core types
 pub use vize_atelier_core::{
-    ast, codegen as core_codegen, errors as core_errors, parser, runtime_helpers, tokenizer,
-    transform, Allocator, CompilerError, Namespace, RootNode, RuntimeHelper, TemplateChildNode,
+    Allocator, CompilerError, Namespace, RootNode, RuntimeHelper, TemplateChildNode, ast,
+    codegen as core_codegen, errors as core_errors, parser, runtime_helpers, tokenizer, transform,
 };
 
 use vize_atelier_core::{
     options::{ParserOptions, TransformOptions},
     parser::parse_with_options,
-    transform::transform as do_transform,
+    transform::{transform as do_transform, transform_with_vue_parser_quirks},
 };
-use vize_carton::{profile, Bump, String};
+use vize_carton::{Bump, String, profile};
 
 /// Compile a Vue template for SSR with default options
 pub fn compile_ssr<'a>(
@@ -55,12 +56,31 @@ pub fn compile_ssr_with_options<'a>(
     source: &'a str,
     options: SsrCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner(allocator, source, options, false)
+}
+
+/// Compile a Vue template for SSR with Vue parser quirk compatibility.
+pub fn compile_ssr_with_vue_parser_quirks<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: SsrCompilerOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner(allocator, source, options, true)
+}
+
+fn compile_ssr_inner<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    vue_parser_quirks: bool,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     let codegen_options = options.clone();
 
     // Create parser options
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
+        custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         comments: options.comments,
@@ -91,13 +111,18 @@ pub fn compile_ssr_with_options<'a>(
         ssr: true,
         is_ts: codegen_options.is_ts,
         inline: codegen_options.inline,
+        custom_renderer: codegen_options.custom_renderer,
         binding_metadata: codegen_options.binding_metadata.clone(),
         ..Default::default()
     };
     let analysis = options.croquis.map(|c| &*allocator.alloc(*c));
     profile!(
         "atelier.ssr.template.transform",
-        do_transform(allocator, &mut root, transform_opts, analysis)
+        if vue_parser_quirks {
+            transform_with_vue_parser_quirks(allocator, &mut root, transform_opts, analysis)
+        } else {
+            do_transform(allocator, &mut root, transform_opts, analysis)
+        }
     );
 
     // SSR codegen
@@ -134,7 +159,7 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 
 #[cfg(test)]
 mod tests {
-    use super::{compile_ssr, Bump};
+    use super::{Bump, compile_ssr};
 
     #[test]
     fn test_compile_simple_element() {

@@ -10,6 +10,33 @@ pub struct VizeMapping {
     pub gen_range: Range<usize>,
     /// Byte range in the original SFC source.
     pub src_range: Range<usize>,
+    /// Sub-token spans inside `gen_range`, paired with the matching SFC
+    /// sub-range. Used to map TypeScript diagnostics that point at a
+    /// specific identifier inside a template expression back to its exact
+    /// position in the Vue source.
+    ///
+    /// Empty by default. Populated by template-expression generators that
+    /// know the inner positions (e.g. property access inside an
+    /// interpolation). Consumers fall back to `gen_range` / `src_range`
+    /// when no sub-span covers the diagnostic.
+    pub sub_spans: Vec<VizeSubSpan>,
+}
+
+/// A sub-token span inside a `VizeMapping`'s generated/source ranges.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VizeSubSpan {
+    pub gen_range: Range<usize>,
+    pub src_range: Range<usize>,
+}
+
+impl VizeMapping {
+    /// Look up the SFC sub-range that contains `gen_offset`. Returns `None`
+    /// when no sub-span covers it — callers should fall back to `src_range`.
+    pub fn sub_span_for_gen(&self, gen_offset: usize) -> Option<&VizeSubSpan> {
+        self.sub_spans
+            .iter()
+            .find(|span| span.gen_range.contains(&gen_offset))
+    }
 }
 
 /// A user-defined template global variable (e.g., `$t` from vue-i18n).
@@ -34,6 +61,13 @@ pub struct VirtualTsOptions {
     /// Auto-import stub declarations (e.g., Nuxt composables).
     /// Each entry is a full TypeScript `declare function ...;` statement.
     pub auto_import_stubs: Vec<String>,
+    /// Template identifiers declared outside the SFC virtual module.
+    ///
+    /// Nuxt auto-imported components are declared in a generated ambient file.
+    /// Keeping their names here prevents the virtual TS generator from
+    /// shadowing them with local `any` fallbacks, so their real props remain
+    /// type-checkable.
+    pub external_template_bindings: Vec<String>,
 }
 
 impl Default for VirtualTsOptions {
@@ -42,12 +76,43 @@ impl Default for VirtualTsOptions {
             template_globals: default_plugin_globals(),
             css_modules: Vec::new(),
             auto_import_stubs: Vec::new(),
+            external_template_bindings: Vec::new(),
         }
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct VirtualTsCheckOptions {
+    pub(crate) check_props: bool,
+    pub(crate) check_template_bindings: bool,
+    pub(crate) check_emits: bool,
+}
+
+impl VirtualTsCheckOptions {
+    pub(crate) fn any_enabled(self) -> bool {
+        self.check_props || self.check_template_bindings || self.check_emits
+    }
+}
+
+impl Default for VirtualTsCheckOptions {
+    fn default() -> Self {
+        Self {
+            check_props: true,
+            check_template_bindings: true,
+            check_emits: true,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub(crate) struct VirtualTsGenerationOptions {
+    pub(crate) check_options: VirtualTsCheckOptions,
+    pub(crate) legacy_vue2: bool,
+}
+
 /// Default plugin globals.
-/// Returns empty by default -- configure via `vize.config.json` `check.globals`.
+/// Returns empty by default. Configure via `vize.config.pkl` `globalTypes`
+/// or `typeChecker.globalsFile`.
 fn default_plugin_globals() -> Vec<TemplateGlobal> {
     vec![]
 }

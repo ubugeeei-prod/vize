@@ -1,4 +1,5 @@
-import type { VizeOptions } from "@vizejs/vite-plugin";
+import type { VizeNuxtCompilerOptions } from "./compiler-options.ts";
+import { createHash } from "node:crypto";
 
 function normalizeUrlPrefix(value: string): string {
   const withLeadingSlash = value.startsWith("/") ? value : `/${value}`;
@@ -17,11 +18,23 @@ export function buildNuxtCompilerOptions(
   rootDir: string,
   baseURL = "/",
   buildAssetsDir = "/_nuxt/",
-): Pick<VizeOptions, "devUrlBase" | "root"> {
-  return {
+  overrides: VizeNuxtCompilerOptions = {},
+): VizeNuxtCompilerOptions {
+  const defaults: VizeNuxtCompilerOptions = {
     devUrlBase: buildNuxtDevAssetBase(baseURL, buildAssetsDir),
     root: rootDir,
+    scanPatterns: [],
   };
+
+  for (const [key, value] of Object.entries(overrides) as Array<
+    [keyof VizeNuxtCompilerOptions, VizeNuxtCompilerOptions[keyof VizeNuxtCompilerOptions]]
+  >) {
+    if (value !== undefined) {
+      defaults[key] = value as never;
+    }
+  }
+
+  return defaults;
 }
 
 export function isVizeVirtualVueModuleId(id: string): boolean {
@@ -30,5 +43,26 @@ export function isVizeVirtualVueModuleId(id: string): boolean {
 
 export function normalizeVizeVirtualVueModuleId(id: string): string {
   const withoutPrefix = id.startsWith("\0vize-ssr:") ? id.slice("\0vize-ssr:".length) : id.slice(1);
-  return withoutPrefix.replace(/\.ts$/, "");
+  return withoutPrefix.replace(/\.ts(?=\?|$)/, "");
+}
+
+const NUXT_INJECTED_MARKER = "/* nuxt-injected */";
+const NUXT_INJECTED_KEY_RE = /'\$[^']+'\s+\/\* nuxt-injected \*\//g;
+
+function buildStableNuxtKey(id: string, index: number): string {
+  return createHash("sha256")
+    .update(id)
+    .update(":")
+    .update(String(index))
+    .digest("base64url")
+    .slice(0, 10);
+}
+
+export function normalizeNuxtInjectedKeysForVizeVirtualModule(code: string, id: string): string {
+  const normalizedId = normalizeVizeVirtualVueModuleId(id);
+  let index = 0;
+  return code.replace(NUXT_INJECTED_KEY_RE, () => {
+    index += 1;
+    return `'$${buildStableNuxtKey(normalizedId, index)}' ${NUXT_INJECTED_MARKER}`;
+  });
 }

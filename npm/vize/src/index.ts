@@ -14,6 +14,7 @@ export type {
   LinterConfig,
   TypeCheckerConfig,
   FormatterConfig,
+  LanguageServerConfig,
   LspConfig,
   MuseaConfig,
   MuseaVrtConfig,
@@ -28,6 +29,11 @@ export type {
   LintPreset,
   RuleSeverity,
   RuleCategory,
+  VizeConfigEntry,
+  LintRuleName,
+  LintRulesConfig,
+  UserConfigInput,
+  ResolvedVizeConfig,
 } from "./types/index.js";
 
 // Config utilities
@@ -37,5 +43,6 @@ export {
   VIZE_CONFIG_PKL_SCHEMA_PATH,
   defineConfig,
   loadConfig,
+  resolveConfigExport,
   normalizeGlobalTypes,
 } from "./config.js";

@@ -1,0 +1,872 @@
+import assert from "node:assert/strict";
+
+import { compileBatch, compileFile } from "./compiler.ts";
+
+const invalidCache = new Map();
+assert.throws(
+  () =>
+    compileFile(
+      "/src/Broken.vue",
+      invalidCache,
+      { sourceMap: false, ssr: false, vapor: false },
+      `<template><div></template>`,
+    ),
+  /Compilation failed in \/src\/Broken\.vue/,
+  "Single-file compilation errors should fail the Vite plugin instead of caching empty output",
+);
+assert.equal(
+  invalidCache.has("/src/Broken.vue"),
+  false,
+  "Failed single-file compilation must not populate the module cache",
+);
+
+const conditionalForCompiled = compileFile(
+  "/src/ConditionalFor.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  `<script setup lang="ts">
+const editing = false;
+const widgets = [{ id: "a", name: "calendar" }];
+const widgetRefs: Record<string, unknown> = {};
+</script>
+
+<template>
+  <div v-if="editing">editing</div>
+  <component
+    v-for="widget in widgets"
+    v-else
+    :is="'widget-' + widget.name"
+    :key="widget.id"
+    :ref="(el: any) => widgetRefs[widget.id] = el"
+    :widget="widget"
+  />
+</template>`,
+);
+
+assert.doesNotMatch(
+  conditionalForCompiled.code,
+  /_ctx\.widget\.id/,
+  "v-else + v-for keys must not be lifted into the branch fragment outside the v-for scope",
+);
+assert.match(
+  conditionalForCompiled.code,
+  /key:\s*widget\.id/,
+  "v-else + v-for keys should stay on the loop item",
+);
+
+const readonlyInterfacePropsCompiled = compileFile(
+  "/src/ReadonlyInterfaceProps.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  `<template>
+  <span :style="{ maxWidth: \`\${100 / minScale}%\` }"></span>
+</template>
+
+<script lang="ts">
+interface Props {
+  readonly minScale?: number;
+}
+</script>
+
+<script setup lang="ts">
+const props = withDefaults(defineProps<Props>(), {
+  minScale: 0,
+});
+void props;
+</script>`,
+);
+
+assert.doesNotMatch(
+  readonlyInterfacePropsCompiled.code,
+  /_ctx\.minScale/,
+  "readonly type props from normal script interfaces should be available to template binding resolution",
+);
+assert.match(
+  readonlyInterfacePropsCompiled.code,
+  /__props\.minScale/,
+  "readonly type props should compile as props access in inline render",
+);
+
+const hoistedScopedSource = `<script setup>
+const active = true;
+</script>
+
+<template>
+  <section :class="{ active }">
+    <div class="static">Static</div>
+    <span>{{ active }}</span>
+  </section>
+</template>
+
+<style scoped>
+.static { color: red; }
+</style>`;
+const hoistedScopedPattern =
+  /_createElementVNode\("div", \{\s*class: "static",\s*"data-v-[^"]+": ""\s*\}, "Static"\)/s;
+
+const hoistedScopedCompiled = compileFile(
+  "/src/HoistedScoped.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  hoistedScopedSource,
+);
+
+assert.match(
+  hoistedScopedCompiled.code,
+  hoistedScopedPattern,
+  "scoped static VNodes hoisted outside render should carry the component scope id",
+);
+
+const hoistedScopedBatch = compileBatch(
+  [{ path: "/src/HoistedScoped.vue", source: hoistedScopedSource }],
+  new Map(),
+  { ssr: false, vapor: false },
+);
+
+assert.match(
+  hoistedScopedBatch.results[0]?.code ?? "",
+  hoistedScopedPattern,
+  "batch compilation should also scope static VNodes hoisted outside render",
+);
+
+const componentClassCompiled = compileFile(
+  "/src/ComponentClass.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  `<script setup>
+import { ref } from "vue";
+import Child from "./Child.vue";
+const channel = ref({});
+</script>
+
+<template>
+  <Child :channel="channel" :full="true" :class="$style.subscribe" />
+</template>
+
+<style module>
+.subscribe { position: absolute; }
+</style>`,
+);
+
+assert.match(
+  componentClassCompiled.code,
+  /_createBlock\(Child, \{\s*channel: channel\.value,\s*full: true,\s*class: _normalizeClass\(_ctx\.\$style\.subscribe\)\s*\}, null, 8[\s\S]*\["channel", "class"\]/,
+  "dynamic component class bindings should be tracked as component props so fallthrough classes apply",
+);
+assert.doesNotMatch(
+  componentClassCompiled.code,
+  /\["channel", "full", "class"\]/,
+  "static bound component props should not be listed as dynamic props",
+);
+
+const dynamicArgForCompiled = compileFile(
+  "/src/DynamicArgFor.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  `<script setup>
+const attrs = ["href"];
+const maybeRelativeUrl = "https://example.com";
+</script>
+
+<template>
+  <a v-for="attr in attrs" :[attr]="maybeRelativeUrl">link</a>
+</template>`,
+);
+
+assert.doesNotMatch(
+  dynamicArgForCompiled.code,
+  /_ctx\.attr/,
+  "dynamic v-bind arguments from v-for scope should not be resolved from component context",
+);
+assert.match(
+  dynamicArgForCompiled.code,
+  /\[attr \|\| ""\]: maybeRelativeUrl/,
+  "dynamic v-bind arguments from v-for scope should be emitted as local loop bindings",
+);
+
+const tresSource = `<script setup lang="ts">
+import { Primitive } from "@tresjs/core";
+const msg = "hello";
+</script>
+
+<template>
+  <primitive />
+  <div>{{ msg }}</div>
+</template>`;
+
+const clientCompiled = compileFile(
+  "/src/TresPrimitive.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: true },
+  tresSource,
+);
+
+assert.match(
+  clientCompiled.code,
+  /const _component_primitive = _ctx\.Primitive/,
+  "Client Vapor builds should resolve lowercase imported components through setup bindings",
+);
+assert.match(
+  clientCompiled.code,
+  /const __vaporRender = render/,
+  "Client Vapor builds should preserve the render alias used by script setup output",
+);
+
+const ssrCompiled = compileFile(
+  "/src/TresPrimitive.vue",
+  new Map(),
+  { sourceMap: false, ssr: true, vapor: true },
+  tresSource,
+);
+
+assert.match(
+  ssrCompiled.code,
+  /\$setup\.Primitive/,
+  "SSR builds should resolve lowercase imported components from setup bindings",
+);
+assert.doesNotMatch(
+  ssrCompiled.code,
+  /_resolveComponent\("primitive"\)/,
+  "SSR builds must not fall back to runtime component resolution for imported lowercase components",
+);
+assert.match(
+  ssrCompiled.code,
+  /ssrRender/,
+  "SSR builds should still emit server-renderer code paths when Vapor is enabled for the client",
+);
+assert.doesNotMatch(
+  ssrCompiled.code,
+  /__vapor/,
+  "SSR builds should not keep the Vapor component marker when the compiler falls back to VDOM",
+);
+
+const batchResult = compileBatch(
+  [
+    {
+      path: "/src/TresPrimitive.vue",
+      source: tresSource,
+    },
+  ],
+  new Map(),
+  { ssr: true, vapor: true },
+);
+
+assert.equal(
+  batchResult.successCount,
+  1,
+  "Batch compilation should succeed for the SSR regression",
+);
+assert.equal(
+  batchResult.failedCount,
+  0,
+  "Batch compilation should stay clean for the SSR regression",
+);
+assert.equal(batchResult.results.length, 1, "Batch compilation should return a single file result");
+assert.match(
+  batchResult.results[0]?.code ?? "",
+  /\$setup\.Primitive/,
+  "Batch SSR compilation should match single-file binding resolution for lowercase imported components",
+);
+assert.doesNotMatch(
+  batchResult.results[0]?.code ?? "",
+  /__vapor/,
+  "Batch SSR compilation should also drop the Vapor marker when falling back to VDOM",
+);
+
+const styleMetadataSource = `<template><div class="root">Styled</div></template>
+<style scoped module lang="scss">
+.root { color: red; }
+</style>
+<style module="tokens">
+.token { color: blue; }
+</style>`;
+
+const styleMetadataCompiled = compileFile(
+  "/src/Styled.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  styleMetadataSource,
+);
+
+assert.equal(
+  styleMetadataCompiled.hasScoped,
+  true,
+  "Single-file compilation should use native scoped style metadata",
+);
+assert.deepEqual(
+  styleMetadataCompiled.styles?.map(({ lang, scoped, module, index }) => ({
+    lang,
+    scoped,
+    module,
+    index,
+  })),
+  [
+    { lang: "scss", scoped: true, module: true, index: 0 },
+    { lang: null, scoped: false, module: "tokens", index: 1 },
+  ],
+  "Single-file compilation should normalize native style metadata for delegated CSS imports",
+);
+
+const styleBatchCache = new Map();
+const styleBatchResult = compileBatch(
+  [{ path: "/src/Styled.vue", source: styleMetadataSource }],
+  styleBatchCache,
+  { ssr: false, vapor: false },
+);
+
+assert.equal(styleBatchResult.failedCount, 0, "Batch style metadata compilation should succeed");
+assert.deepEqual(
+  styleBatchCache.get("/src/Styled.vue")?.styles?.map(({ lang, scoped, module, index }) => ({
+    lang,
+    scoped,
+    module,
+    index,
+  })),
+  [
+    { lang: "scss", scoped: true, module: true, index: 0 },
+    { lang: null, scoped: false, module: "tokens", index: 1 },
+  ],
+  "Batch compilation should cache style metadata emitted by native SFC parsing",
+);
+
+const definePageSource = `<script setup lang="ts">
+definePage({
+  name: "home",
+  meta: {
+    requiresAuth: true,
+  },
+});
+
+const msg = "hello";
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>`;
+
+const definePageCompiled = compileFile(
+  "/src/pages/Home.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  definePageSource,
+);
+
+assert.doesNotMatch(
+  definePageCompiled.code,
+  /definePage/,
+  "definePage should not stay in component runtime output",
+);
+assert.equal(
+  definePageCompiled.macroArtifacts?.[0]?.kind,
+  "vue-router.definePage",
+  "definePage should be exposed as a Vue Router macro artifact",
+);
+assert.match(
+  definePageCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
+  /export default \{/,
+  "definePage artifacts should include loadable module code",
+);
+
+const definePageMetaSource = `<script setup lang="ts">
+definePageMeta({
+  name: "docs",
+  meta: {
+    scrollMargin: 180,
+  },
+});
+
+const msg = "hello";
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>`;
+
+const definePageMetaCompiled = compileFile(
+  "/src/pages/docs.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  definePageMetaSource,
+);
+
+assert.doesNotMatch(
+  definePageMetaCompiled.code,
+  /definePageMeta/,
+  "definePageMeta should not stay in component runtime output",
+);
+assert.equal(
+  definePageMetaCompiled.macroArtifacts?.[0]?.kind,
+  "nuxt.definePageMeta",
+  "definePageMeta should be exposed as a Nuxt page macro artifact",
+);
+assert.match(
+  definePageMetaCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
+  /const __nuxt_page_meta = \{/,
+  "definePageMeta artifacts should include Nuxt-compatible module code",
+);
+assert.match(
+  definePageMetaCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
+  /export default __nuxt_page_meta/,
+  "definePageMeta artifacts should not be treated as empty by Nuxt's page meta transform",
+);
+
+const defineRouteRulesSource = `<script setup lang="ts">
+defineRouteRules({
+  prerender: true,
+  cache: {
+    maxAge: 60,
+  },
+});
+
+const msg = "hello";
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>`;
+
+const defineRouteRulesCompiled = compileFile(
+  "/src/pages/docs.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  defineRouteRulesSource,
+);
+
+assert.doesNotMatch(
+  defineRouteRulesCompiled.code,
+  /defineRouteRules/,
+  "defineRouteRules should not stay in component runtime output",
+);
+assert.equal(
+  defineRouteRulesCompiled.macroArtifacts?.[0]?.kind,
+  "nuxt.defineRouteRules",
+  "defineRouteRules should be exposed as a Nuxt route rules macro artifact",
+);
+assert.match(
+  defineRouteRulesCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
+  /prerender/,
+  "defineRouteRules artifacts should include loadable route rules module code",
+);
+
+const defineLazyHydrationSource = `<script setup lang="ts">
+const LazyHydrationMyComponent = defineLazyHydrationComponent(
+  "visible",
+  () => import("./components/MyComponent.vue"),
+);
+</script>
+
+<template>
+  <LazyHydrationMyComponent :hydrate-on-visible="{ rootMargin: '100px' }" />
+</template>`;
+
+const defineLazyHydrationCompiled = compileFile(
+  "/src/pages/lazy.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  defineLazyHydrationSource,
+);
+
+assert.doesNotMatch(
+  defineLazyHydrationCompiled.code,
+  /defineLazyHydrationComponent/,
+  "defineLazyHydrationComponent should not stay in component runtime output",
+);
+assert.match(
+  defineLazyHydrationCompiled.code,
+  /__vizeCreateLazyVisibleComponent/,
+  "defineLazyHydrationComponent should expand to a lazy hydration factory",
+);
+assert.match(
+  defineLazyHydrationCompiled.code,
+  /useNuxtApp as __vizeUseNuxtApp/,
+  "defineLazyHydrationComponent should include Nuxt lazy hydration runtime support",
+);
+
+const antDesignSource = `<script setup lang="ts">
+import { Form, Input } from "ant-design-vue";
+</script>
+
+<template>
+  <Form.Item label="Teacher">
+    <Input />
+  </Form.Item>
+</template>`;
+
+const antDesignDomCompiled = compileFile(
+  "/src/AntDesignTeacher.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  antDesignSource,
+);
+
+assert.match(
+  antDesignDomCompiled.code,
+  /_create(?:Block|VNode)\(Form\.Item/,
+  "DOM builds should compile dotted component tags to direct setup member expressions",
+);
+assert.doesNotMatch(
+  antDesignDomCompiled.code,
+  /_resolveComponent\("Form\.Item"\)/,
+  "DOM builds must not fall back to runtime resolution for dotted imported components",
+);
+
+const antDesignSsrCompiled = compileFile(
+  "/src/AntDesignTeacher.vue",
+  new Map(),
+  { sourceMap: false, ssr: true, vapor: false },
+  antDesignSource,
+);
+
+assert.match(
+  antDesignSsrCompiled.code,
+  /\$setup\.Form\.Item/,
+  "SSR builds should preserve setup member expressions for dotted imported components",
+);
+assert.doesNotMatch(
+  antDesignSsrCompiled.code,
+  /_resolveComponent\("Form\.Item"\)/,
+  "SSR builds must not fall back to runtime resolution for dotted imported components",
+);
+
+const antDesignVaporCompiled = compileFile(
+  "/src/AntDesignTeacher.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: true },
+  antDesignSource,
+);
+
+assert.match(
+  antDesignVaporCompiled.code,
+  /const _component_Form_Item = _ctx\.Form\.Item/,
+  "Vapor builds should resolve dotted imported components through ctx member expressions",
+);
+assert.doesNotMatch(
+  antDesignVaporCompiled.code,
+  /_resolveComponent\("Form\.Item"\)/,
+  "Vapor builds must not leave dotted imported components to runtime resolution",
+);
+
+const antDesignScopedSlotSource = `<script setup lang="ts">
+import { Table } from "ant-design-vue";
+const columns = [{ key: "name" }, { key: "phone" }];
+const dataSource = [{ name: "Lin", phone: "123" }];
+</script>
+
+<template>
+  <Table :columns="columns" :data-source="dataSource">
+    <template #bodyCell="{ column, record }">
+      <template v-if="column.key === 'name'">
+        {{ record.name }}
+      </template>
+      <template v-else-if="column.key === 'phone'">
+        {{ record.phone }}
+      </template>
+    </template>
+  </Table>
+</template>`;
+
+const antDesignScopedSlotCompiled = compileFile(
+  "/src/AntDesignScopedSlot.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  antDesignScopedSlotSource,
+);
+
+assert.match(
+  antDesignScopedSlotCompiled.code,
+  /bodyCell: _withCtx\(\(\{ column, record \}\) => \[/,
+  "Ant Design table bodyCell slot should compile with scoped slot params",
+);
+assert.doesNotMatch(
+  antDesignScopedSlotCompiled.code,
+  /_ctx\.(?:column|record)\b/,
+  "Scoped slot params must stay local inside nested v-if templates",
+);
+
+const customRendererSource = `<script setup lang="ts">
+import { Primitive } from "@tresjs/core";
+const visible = true;
+</script>
+
+<template>
+  <mesh>
+    <group v-if="visible">
+      <primitive />
+    </group>
+  </mesh>
+</template>`;
+
+const customRendererClientCompiled = compileFile(
+  "/src/TresCustomRenderer.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: true, customRenderer: true },
+  customRendererSource,
+);
+
+assert.match(
+  customRendererClientCompiled.code,
+  /const _component_primitive = _ctx\.Primitive/,
+  "Custom renderer Vapor builds should still resolve imported lowercase components through setup bindings",
+);
+assert.doesNotMatch(
+  customRendererClientCompiled.code,
+  /_resolveComponent\("(mesh|group|primitive)"\)/,
+  "Custom renderer Vapor builds must not fall back to runtime component resolution for intrinsic tags",
+);
+
+const customRendererSsrCompiled = compileFile(
+  "/src/TresCustomRenderer.vue",
+  new Map(),
+  { sourceMap: false, ssr: true, vapor: true, customRenderer: true },
+  customRendererSource,
+);
+
+assert.match(
+  customRendererSsrCompiled.code,
+  /\$setup\.Primitive/,
+  "Custom renderer SSR builds should keep imported lowercase components bound to setup",
+);
+assert.doesNotMatch(
+  customRendererSsrCompiled.code,
+  /_resolveComponent\("(mesh|group|primitive)"\)/,
+  "Custom renderer SSR builds must not resolve intrinsic tags as Vue components",
+);
+assert.doesNotMatch(
+  customRendererSsrCompiled.code,
+  /<primitive><\/primitive>/,
+  "Custom renderer SSR builds must not stringify imported lowercase components as plain elements",
+);
+assert.doesNotMatch(
+  customRendererSsrCompiled.code,
+  /__vapor/,
+  "Custom renderer SSR builds should not keep the Vapor marker after the SSR fallback",
+);
+
+const ssrSuspenseSource = `<script setup lang="ts">
+let visible = true;
+</script>
+
+<template>
+  <Suspense>
+    <div v-if="visible">ready</div>
+  </Suspense>
+</template>`;
+
+const ssrSuspenseCompiled = compileFile(
+  "/src/SsrSuspense.vue",
+  new Map(),
+  { sourceMap: false, ssr: true, vapor: false },
+  ssrSuspenseSource,
+);
+
+assert.match(
+  ssrSuspenseCompiled.code,
+  /ssrRenderSuspense as _ssrRenderSuspense/,
+  "SSR builds should render built-in Suspense with the dedicated server-renderer helper",
+);
+assert.doesNotMatch(
+  ssrSuspenseCompiled.code,
+  /_resolveComponent\("Suspense"\)/,
+  "SSR builds must not resolve built-in Suspense through runtime component lookup",
+);
+assert.match(
+  ssrSuspenseCompiled.code,
+  /unref as _unref/,
+  "SSR builds should import unref when transformed setup bindings use _unref()",
+);
+
+const ssrComponentPropsSource = `<script setup lang="ts">
+const ErrorBoundary = {};
+let error = { message: "boom" };
+</script>
+
+<template>
+  <Suspense>
+    <ErrorBoundary :error="error" />
+    <Transition>
+      <I18nT keypath="build.environment" tag="span">node</I18nT>
+    </Transition>
+  </Suspense>
+</template>`;
+
+const ssrComponentPropsCompiled = compileFile(
+  "/src/SsrComponentProps.vue",
+  new Map(),
+  { sourceMap: false, ssr: true, vapor: false },
+  ssrComponentPropsSource,
+);
+
+assert.match(
+  ssrComponentPropsCompiled.code,
+  /\$setup\.ErrorBoundary, \{ error: _unref\(\$setup\.error\) \}/,
+  "SSR builds should pass dynamic props to setup-bound components",
+);
+assert.match(
+  ssrComponentPropsCompiled.code,
+  /_resolveComponent\("I18nT"\), \{\s*keypath: "build\.environment",\s*tag: "span"\s*\}/,
+  "SSR builds should pass static props to runtime-resolved components",
+);
+assert.doesNotMatch(
+  ssrComponentPropsCompiled.code,
+  /_resolveComponent\("Transition"\)/,
+  "SSR builds must not resolve built-in Transition through runtime component lookup",
+);
+assert.match(
+  ssrComponentPropsCompiled.code,
+  /return \[_createTextVNode\("node"\)\]/,
+  "SSR component slots should return VNodes when invoked without the server _push callback",
+);
+
+const ssrTeleportSource = `<template>
+  <Teleport to="body">
+    <Transition>
+      <div v-if="visible">tip</div>
+    </Transition>
+  </Teleport>
+</template>`;
+
+const ssrTeleportCompiled = compileFile(
+  "/src/SsrTeleport.vue",
+  new Map(),
+  { sourceMap: false, ssr: true, vapor: false },
+  ssrTeleportSource,
+);
+
+assert.match(
+  ssrTeleportCompiled.code,
+  /ssrRenderTeleport as _ssrRenderTeleport/,
+  "SSR builds should render built-in Teleport with the dedicated server-renderer helper",
+);
+assert.doesNotMatch(
+  ssrTeleportCompiled.code,
+  /_resolveComponent\("(Teleport|Transition)"\)/,
+  "SSR builds must not resolve built-in Teleport or nested Transition through runtime lookup",
+);
+
+const ssrSlotForSource = `<template>
+  <Foo>
+    <NuxtLink v-for="[dep, version] in deps" :key="dep" :to="packageRoute(dep, version)">
+      {{ dep }}
+    </NuxtLink>
+  </Foo>
+</template>`;
+
+const ssrSlotForCompiled = compileFile(
+  "/src/SsrSlotFor.vue",
+  new Map(),
+  { sourceMap: false, ssr: true, vapor: false },
+  ssrSlotForSource,
+);
+
+assert.match(
+  ssrSlotForCompiled.code,
+  /_ssrRenderList\(_ctx\.deps, \(\[dep, version\]\) =>/,
+  "SSR component slots should preserve destructured v-for aliases as local callback params",
+);
+assert.match(
+  ssrSlotForCompiled.code,
+  /to: _ctx\.packageRoute\(dep, version\)/,
+  "SSR component slots should not prefix v-for aliases with _ctx inside child component props",
+);
+assert.doesNotMatch(
+  ssrSlotForCompiled.code,
+  /_ctx\.(dep|version)\b/,
+  "SSR component slots should not leak destructured v-for aliases to instance context",
+);
+
+const ssrScopedSlotSource = `<script setup lang="ts">
+import { valibotResolver } from "@primevue/forms/resolvers/valibot";
+const schema = {};
+</script>
+
+<template>
+  <PForm :resolver="schema ? valibotResolver(schema) : undefined">
+    <template #item="{ data: speaker }">
+      <div :style="{ backgroundImage: \`url(\${speaker.avatarUrl})\` }">{{ speaker.name }}</div>
+    </template>
+  </PForm>
+</template>`;
+
+const ssrScopedSlotCompiled = compileFile(
+  "/src/SsrScopedSlot.vue",
+  new Map(),
+  { sourceMap: false, ssr: true, vapor: false },
+  ssrScopedSlotSource,
+);
+
+assert.match(
+  ssrScopedSlotCompiled.code,
+  /const __returned__ = \{\s*valibotResolver,\s*schema\s*\}/,
+  "SSR script setup should return imports that are only used inside template expressions",
+);
+assert.match(
+  ssrScopedSlotCompiled.code,
+  /Object\.defineProperty\(__returned__, "__isScriptSetup"/,
+  "SSR script setup should mark returned bindings as script setup bindings",
+);
+assert.match(
+  ssrScopedSlotCompiled.code,
+  /resolver: \$setup\.schema \? (?:_unref\(\$setup\.valibotResolver\)|\$setup\.valibotResolver)\(\$setup\.schema\) : undefined/,
+  "SSR component props should call template-only imports through setup bindings",
+);
+assert.match(
+  ssrScopedSlotCompiled.code,
+  /item: _withCtx\(\(\{ data: speaker \}, _push, _parent, _scopeId\) =>/,
+  "SSR component slots should preserve destructured slot prop parameters",
+);
+assert.doesNotMatch(
+  ssrScopedSlotCompiled.code,
+  /_ctx\.speaker\b/,
+  "SSR scoped slot bodies should not read slot props from instance context",
+);
+
+const ssrNormalScriptImportSource = `<script lang="ts">
+import {
+  type FormFieldState,
+  Form as PForm,
+} from "@primevue/forms";
+import { valibotResolver } from "@primevue/forms/resolvers/valibot";
+
+export interface FormProps {
+  schema?: unknown;
+}
+</script>
+
+<script setup lang="ts">
+const { schema } = defineProps<FormProps>();
+const emit = defineEmits<{ submit: [] }>();
+</script>
+
+<template>
+  <PForm :resolver="schema ? valibotResolver(schema) : undefined" @submit="emit('submit')" />
+</template>`;
+
+const ssrNormalScriptImportCompiled = compileFile(
+  "/src/SsrNormalScriptImport.vue",
+  new Map(),
+  { sourceMap: false, ssr: true, vapor: false },
+  ssrNormalScriptImportSource,
+);
+
+assert.match(
+  ssrNormalScriptImportCompiled.code,
+  /const __returned__ = \{\s*emit,\s*PForm,\s*valibotResolver\s*\}/,
+  "SSR script setup should return normal-script imports that are used by template expressions",
+);
+assert.match(
+  ssrNormalScriptImportCompiled.code,
+  /Object\.defineProperty\(__returned__, "__isScriptSetup"/,
+  "SSR normal-script template bindings should be returned as script setup bindings",
+);
+assert.match(
+  ssrNormalScriptImportCompiled.code,
+  /import \{ Form as PForm \} from ["']@primevue\/forms["']/,
+  "SSR output should preserve value imports used only through setup bindings",
+);
+assert.match(
+  ssrNormalScriptImportCompiled.code,
+  /resolver: \$props\.schema \? (?:_unref\(\$setup\.valibotResolver\)|\$setup\.valibotResolver)\(\$props\.schema\) : undefined/,
+  "SSR component props should call normal-script template imports through setup bindings",
+);
+
+console.log("✅ vite-plugin-vize compiler tests passed!");

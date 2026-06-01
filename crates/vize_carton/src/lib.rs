@@ -11,6 +11,7 @@
 //!
 //! - **Allocator**: Arena-based memory allocation for efficient AST construction
 //! - **Shared utilities**: DOM configuration, optimization flags, and helper functions
+//! - **Telegraph**: Generic message fan-out for report emitters
 //!
 //! # Example
 //!
@@ -38,6 +39,7 @@ mod clone_in;
 mod vec;
 
 // Shared modules
+pub mod config;
 pub mod directive;
 pub mod dom_tag_config;
 pub mod flags;
@@ -48,6 +50,7 @@ pub mod lsp;
 pub mod profiler;
 pub mod source_range;
 pub mod string_builder;
+pub mod telegraph;
 
 // Re-export allocator types
 pub use allocator::Allocator;
@@ -56,9 +59,9 @@ pub use clone_in::CloneIn;
 pub use vec::Vec;
 
 // Re-export bumpalo types for convenience
+pub use bumpalo::Bump;
 pub use bumpalo::collections::String as BumpString;
 pub use bumpalo::collections::Vec as BumpVec;
-pub use bumpalo::Bump;
 
 // Re-export compact_str::CompactString for convenience
 pub use compact_str::CompactString;
@@ -66,7 +69,7 @@ pub use compact_str::CompactString as String;
 pub use compact_str::ToCompactString;
 
 // Re-export smallvec for stack-optimized collections
-pub use smallvec::{smallvec, SmallVec};
+pub use smallvec::{SmallVec, smallvec};
 
 // Re-export bitflags for flag types
 pub use bitflags::bitflags;
@@ -75,7 +78,7 @@ pub use bitflags::bitflags;
 pub use rustc_hash::{FxHashMap, FxHashSet};
 
 // Re-export phf for compile-time perfect hash functions
-pub use phf::{phf_map, phf_set, Map as PhfMap, Set as PhfSet};
+pub use phf::{Map as PhfMap, Set as PhfSet, phf_map, phf_set};
 
 // Re-export shared utilities
 pub use dom_tag_config::*;

@@ -1,11 +1,11 @@
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
+    Visit,
     walk::{
         walk_arrow_function_expression, walk_function, walk_object_property,
         walk_variable_declarator,
     },
-    Visit,
 };
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -274,22 +274,21 @@ impl<'a, 'ctx> Visit<'_> for ExpressionRewriteCollector<'a, 'ctx> {
     }
 
     fn visit_object_property(&mut self, property: &oxc_ast_types::ObjectProperty<'_>) {
-        if property.shorthand {
-            if let oxc_ast_types::PropertyKey::StaticIdentifier(ident) = &property.key {
-                if let Some(replacement) = self.replacement_for_identifier(ident.name.as_str()) {
-                    let key = ident.name.as_str();
-                    let mut expanded = String::with_capacity(key.len() + replacement.len() + 2);
-                    expanded.push_str(key);
-                    expanded.push_str(": ");
-                    expanded.push_str(replacement.as_str());
-                    self.rewrites.push(Rewrite {
-                        start: property.span.start as usize,
-                        end: property.span.end as usize,
-                        replacement: expanded,
-                    });
-                    return;
-                }
-            }
+        if property.shorthand
+            && let oxc_ast_types::PropertyKey::StaticIdentifier(ident) = &property.key
+            && let Some(replacement) = self.replacement_for_identifier(ident.name.as_str())
+        {
+            let key = ident.name.as_str();
+            let mut expanded = String::with_capacity(key.len() + replacement.len() + 2);
+            expanded.push_str(key);
+            expanded.push_str(": ");
+            expanded.push_str(replacement.as_str());
+            self.rewrites.push(Rewrite {
+                start: property.span.start as usize,
+                end: property.span.end as usize,
+                replacement: expanded,
+            });
+            return;
         }
 
         walk_object_property(self, property);

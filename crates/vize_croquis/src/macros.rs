@@ -5,21 +5,168 @@
 
 use vize_carton::{CompactString, FxHashMap};
 
+pub const DEFINE_PROPS: &str = "defineProps";
+pub const DEFINE_EMITS: &str = "defineEmits";
+pub const DEFINE_EXPOSE: &str = "defineExpose";
+pub const DEFINE_OPTIONS: &str = "defineOptions";
+pub const DEFINE_SLOTS: &str = "defineSlots";
+pub const DEFINE_MODEL: &str = "defineModel";
+pub const WITH_DEFAULTS: &str = "withDefaults";
+pub const DEFINE_ART: &str = "defineArt";
+
+/// How a macro participates in the script setup compilation lifecycle.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MacroLifecycle {
+    /// The SFC compiler analyzes the call and emits the matching runtime code.
+    AnalyzeAndErase,
+    /// The SFC compiler rewrites the macro call into runtime code.
+    Expand,
+    /// The SFC compiler extracts the call as a separate artifact, then removes
+    /// the top-level call from runtime output.
+    ExtractAndErase,
+}
+
+impl MacroLifecycle {
+    /// Whether calls with this lifecycle should be removed from setup runtime code.
+    #[inline]
+    pub const fn erases_from_runtime(self) -> bool {
+        matches!(self, Self::AnalyzeAndErase | Self::ExtractAndErase)
+    }
+
+    /// Whether calls with this lifecycle produce a compiler artifact.
+    #[inline]
+    pub const fn produces_artifact(self) -> bool {
+        matches!(self, Self::ExtractAndErase)
+    }
+}
+
+/// Static metadata for a known compiler macro.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MacroDefinition {
+    /// Macro call name.
+    pub name: &'static str,
+    /// How the macro participates in compilation.
+    pub lifecycle: MacroLifecycle,
+    /// Optional artifact kind emitted by the SFC compiler.
+    pub artifact_kind: Option<&'static str>,
+}
+
 /// Built-in Vue compiler macros
 pub static BUILTIN_MACROS: &[&str] = &[
-    "defineProps",
-    "defineEmits",
-    "defineExpose",
-    "defineOptions",
-    "defineSlots",
-    "defineModel",
-    "withDefaults",
+    DEFINE_PROPS,
+    DEFINE_EMITS,
+    DEFINE_EXPOSE,
+    DEFINE_OPTIONS,
+    DEFINE_SLOTS,
+    DEFINE_MODEL,
+    WITH_DEFAULTS,
+];
+
+/// Known ecosystem macros that are compile-time only.
+///
+/// These are intentionally separate from Vue's built-in compiler macros:
+/// Vize does not expand them into component runtime itself, but it may extract
+/// artifacts for surrounding tooling before removing top-level calls.
+pub static ECOSYSTEM_COMPILE_TIME_MACROS: &[MacroDefinition] = &[
+    MacroDefinition {
+        name: DEFINE_ART,
+        lifecycle: MacroLifecycle::AnalyzeAndErase,
+        artifact_kind: None,
+    },
+    MacroDefinition {
+        name: "definePage",
+        lifecycle: MacroLifecycle::ExtractAndErase,
+        artifact_kind: Some("vue-router.definePage"),
+    },
+    MacroDefinition {
+        name: "definePageMeta",
+        lifecycle: MacroLifecycle::ExtractAndErase,
+        artifact_kind: Some("nuxt.definePageMeta"),
+    },
+    MacroDefinition {
+        name: "defineRouteRules",
+        lifecycle: MacroLifecycle::ExtractAndErase,
+        artifact_kind: Some("nuxt.defineRouteRules"),
+    },
+    MacroDefinition {
+        name: "defineLazyHydrationComponent",
+        lifecycle: MacroLifecycle::Expand,
+        artifact_kind: None,
+    },
 ];
 
 /// Check if a name is a built-in compiler macro
 #[inline]
 pub fn is_builtin_macro(name: &str) -> bool {
     BUILTIN_MACROS.contains(&name)
+}
+
+/// Return the ecosystem macro definition for a name.
+#[inline]
+pub fn ecosystem_macro_definition(name: &str) -> Option<&'static MacroDefinition> {
+    ECOSYSTEM_COMPILE_TIME_MACROS
+        .iter()
+        .find(|definition| definition.name == name)
+}
+
+/// Check if a name is a known ecosystem compile-time macro.
+#[inline]
+pub fn is_ecosystem_compile_time_macro(name: &str) -> bool {
+    ecosystem_macro_definition(name).is_some()
+}
+
+/// Return the compile-time macro lifecycle for a name.
+#[inline]
+pub fn macro_lifecycle(name: &str) -> Option<MacroLifecycle> {
+    if is_builtin_macro(name) {
+        Some(MacroLifecycle::AnalyzeAndErase)
+    } else {
+        ecosystem_macro_definition(name).map(|definition| definition.lifecycle)
+    }
+}
+
+/// Check if a name is compile-time only in script setup.
+#[inline]
+pub fn is_compile_time_macro(name: &str) -> bool {
+    macro_lifecycle(name).is_some()
+}
+
+/// Check if a macro call should be removed from setup runtime output.
+#[inline]
+pub fn is_runtime_erased_macro(name: &str) -> bool {
+    macro_lifecycle(name).is_some_and(MacroLifecycle::erases_from_runtime)
+}
+
+/// Return the artifact kind emitted for a macro name, when any.
+#[inline]
+pub fn macro_artifact_kind(name: &str) -> Option<&'static str> {
+    ecosystem_macro_definition(name).and_then(|definition| definition.artifact_kind)
+}
+
+/// Check if a macro call should produce a compiler artifact.
+#[inline]
+pub fn is_artifact_macro(name: &str) -> bool {
+    macro_lifecycle(name).is_some_and(MacroLifecycle::produces_artifact)
+}
+
+/// Names of macros that should not remain in setup runtime code.
+#[inline]
+pub fn runtime_erased_macro_names() -> impl Iterator<Item = &'static str> {
+    BUILTIN_MACROS.iter().copied().chain(
+        ECOSYSTEM_COMPILE_TIME_MACROS
+            .iter()
+            .filter(|definition| definition.lifecycle.erases_from_runtime())
+            .map(|definition| definition.name),
+    )
+}
+
+/// Names of macros that should produce compiler artifacts.
+#[inline]
+pub fn artifact_macro_names() -> impl Iterator<Item = &'static str> {
+    ECOSYSTEM_COMPILE_TIME_MACROS
+        .iter()
+        .filter(|definition| definition.lifecycle.produces_artifact())
+        .map(|definition| definition.name)
 }
 
 /// Unique identifier for a macro call
@@ -57,13 +204,14 @@ impl MacroKind {
     #[inline]
     pub fn from_name(name: &str) -> Option<Self> {
         match name {
-            "defineProps" => Some(Self::DefineProps),
-            "defineEmits" => Some(Self::DefineEmits),
-            "defineExpose" => Some(Self::DefineExpose),
-            "defineOptions" => Some(Self::DefineOptions),
-            "defineSlots" => Some(Self::DefineSlots),
-            "defineModel" => Some(Self::DefineModel),
-            "withDefaults" => Some(Self::WithDefaults),
+            DEFINE_PROPS => Some(Self::DefineProps),
+            DEFINE_EMITS => Some(Self::DefineEmits),
+            DEFINE_EXPOSE => Some(Self::DefineExpose),
+            DEFINE_OPTIONS => Some(Self::DefineOptions),
+            DEFINE_SLOTS => Some(Self::DefineSlots),
+            DEFINE_MODEL => Some(Self::DefineModel),
+            WITH_DEFAULTS => Some(Self::WithDefaults),
+            DEFINE_ART => Some(Self::Custom),
             _ => None,
         }
     }
@@ -183,6 +331,23 @@ pub struct SlotsDefinition {
     pub props_type: Option<CompactString>,
 }
 
+/// Musea art metadata from defineArt(component, options).
+#[derive(Debug, Clone)]
+pub struct ArtDefinition {
+    pub component_name: CompactString,
+    pub component_source: Option<CompactString>,
+    /// Source string literal range including quotes, relative to the parsed script.
+    pub component_source_span: Option<(u32, u32)>,
+    /// Source string literal value range excluding quotes, relative to the parsed script.
+    pub component_source_value_span: Option<(u32, u32)>,
+    pub title: Option<CompactString>,
+    pub description: Option<CompactString>,
+    pub category: Option<CompactString>,
+    pub tags: Vec<CompactString>,
+    pub status: Option<CompactString>,
+    pub order: Option<u32>,
+}
+
 /// Macro binding kind for props destructure
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MacroBindingKind {
@@ -207,6 +372,8 @@ pub struct MacroTracker {
     exposes: Vec<ExposeDefinition>,
     /// Slots from defineSlots
     slots: Vec<SlotsDefinition>,
+    /// Art metadata from defineArt
+    art: Option<ArtDefinition>,
     props_destructure: Option<PropsDestructuredBindings>,
     top_level_awaits: Vec<TopLevelAwait>,
     next_id: u32,
@@ -215,6 +382,7 @@ pub struct MacroTracker {
     define_emits_idx: Option<usize>,
     define_expose_idx: Option<usize>,
     define_slots_idx: Option<usize>,
+    define_art_idx: Option<usize>,
 }
 
 impl MacroTracker {
@@ -233,6 +401,7 @@ impl MacroTracker {
         runtime_args: Option<CompactString>,
         type_args: Option<CompactString>,
     ) -> MacroCallId {
+        let name = name.into();
         let id = MacroCallId::new(self.next_id);
         self.next_id += 1;
 
@@ -246,10 +415,13 @@ impl MacroTracker {
             MacroKind::DefineSlots => self.define_slots_idx = Some(idx),
             _ => {}
         }
+        if name.as_str() == DEFINE_ART {
+            self.define_art_idx = Some(idx);
+        }
 
         self.calls.push(MacroCall {
             id,
-            name: name.into(),
+            name,
             kind,
             start,
             end,
@@ -288,6 +460,24 @@ impl MacroTracker {
     #[inline]
     pub fn define_slots(&self) -> Option<&MacroCall> {
         self.define_slots_idx.map(|idx| &self.calls[idx])
+    }
+
+    /// Get defineArt call (cached lookup)
+    #[inline]
+    pub fn define_art_call(&self) -> Option<&MacroCall> {
+        self.define_art_idx.map(|idx| &self.calls[idx])
+    }
+
+    /// Set defineArt metadata.
+    #[inline]
+    pub fn set_define_art(&mut self, art: ArtDefinition) {
+        self.art = Some(art);
+    }
+
+    /// Get defineArt metadata.
+    #[inline]
+    pub fn define_art(&self) -> Option<&ArtDefinition> {
+        self.art.as_ref()
     }
 
     /// Add a prop definition
@@ -430,12 +620,108 @@ impl MacroTracker {
     pub fn is_async(&self) -> bool {
         self.has_top_level_await()
     }
+
+    /// Shift all stored source offsets by `delta`.
+    pub fn shift_offsets(&mut self, delta: u32) {
+        for call in &mut self.calls {
+            call.start = call.start.saturating_add(delta);
+            call.end = call.end.saturating_add(delta);
+        }
+        for call in &mut self.emit_calls {
+            call.start = call.start.saturating_add(delta);
+            call.end = call.end.saturating_add(delta);
+        }
+        for await_expr in &mut self.top_level_awaits {
+            await_expr.start = await_expr.start.saturating_add(delta);
+            await_expr.end = await_expr.end.saturating_add(delta);
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{MacroKind, MacroTracker};
+    use super::{
+        MacroKind, MacroLifecycle, MacroTracker, artifact_macro_names, is_artifact_macro,
+        is_compile_time_macro, is_ecosystem_compile_time_macro, is_runtime_erased_macro,
+        macro_artifact_kind, macro_lifecycle, runtime_erased_macro_names,
+    };
     use vize_carton::CompactString;
+
+    #[test]
+    fn test_macro_lifecycle_classifies_builtin_and_ecosystem_macros() {
+        assert_eq!(
+            macro_lifecycle("defineProps"),
+            Some(MacroLifecycle::AnalyzeAndErase)
+        );
+        assert_eq!(
+            macro_lifecycle("definePage"),
+            Some(MacroLifecycle::ExtractAndErase)
+        );
+        assert_eq!(
+            macro_lifecycle("definePageMeta"),
+            Some(MacroLifecycle::ExtractAndErase)
+        );
+        assert_eq!(
+            macro_lifecycle("defineRouteRules"),
+            Some(MacroLifecycle::ExtractAndErase)
+        );
+        assert_eq!(
+            macro_lifecycle("defineLazyHydrationComponent"),
+            Some(MacroLifecycle::Expand)
+        );
+        assert_eq!(
+            macro_lifecycle("defineArt"),
+            Some(MacroLifecycle::AnalyzeAndErase)
+        );
+        assert_eq!(macro_lifecycle("notAMacro"), None);
+        assert_eq!(macro_lifecycle("useTemplateRef"), None);
+
+        assert!(is_compile_time_macro("defineArt"));
+        assert!(is_ecosystem_compile_time_macro("defineArt"));
+        assert!(is_runtime_erased_macro("defineArt"));
+        assert!(!is_artifact_macro("defineArt"));
+        assert_eq!(macro_artifact_kind("defineArt"), None);
+        assert!(is_compile_time_macro("definePage"));
+        assert!(is_ecosystem_compile_time_macro("definePage"));
+        assert!(is_runtime_erased_macro("definePage"));
+        assert!(is_artifact_macro("definePage"));
+        assert_eq!(
+            macro_artifact_kind("definePage"),
+            Some("vue-router.definePage")
+        );
+        assert!(is_compile_time_macro("definePageMeta"));
+        assert!(is_ecosystem_compile_time_macro("definePageMeta"));
+        assert!(is_runtime_erased_macro("definePageMeta"));
+        assert!(is_artifact_macro("definePageMeta"));
+        assert_eq!(
+            macro_artifact_kind("definePageMeta"),
+            Some("nuxt.definePageMeta")
+        );
+        assert!(is_compile_time_macro("defineRouteRules"));
+        assert!(is_ecosystem_compile_time_macro("defineRouteRules"));
+        assert!(is_runtime_erased_macro("defineRouteRules"));
+        assert!(is_artifact_macro("defineRouteRules"));
+        assert_eq!(
+            macro_artifact_kind("defineRouteRules"),
+            Some("nuxt.defineRouteRules")
+        );
+        assert!(is_compile_time_macro("defineLazyHydrationComponent"));
+        assert!(is_ecosystem_compile_time_macro(
+            "defineLazyHydrationComponent"
+        ));
+        assert!(!is_runtime_erased_macro("defineLazyHydrationComponent"));
+        assert!(!is_artifact_macro("defineLazyHydrationComponent"));
+        assert_eq!(macro_artifact_kind("defineLazyHydrationComponent"), None);
+        assert!(runtime_erased_macro_names().any(|name| name == "definePage"));
+        assert!(runtime_erased_macro_names().any(|name| name == "definePageMeta"));
+        assert!(runtime_erased_macro_names().any(|name| name == "defineRouteRules"));
+        assert!(!runtime_erased_macro_names().any(|name| name == "defineLazyHydrationComponent"));
+        assert!(runtime_erased_macro_names().any(|name| name == "defineArt"));
+        assert!(artifact_macro_names().any(|name| name == "definePage"));
+        assert!(artifact_macro_names().any(|name| name == "definePageMeta"));
+        assert!(artifact_macro_names().any(|name| name == "defineRouteRules"));
+        assert!(!artifact_macro_names().any(|name| name == "defineLazyHydrationComponent"));
+    }
 
     #[test]
     fn test_macro_tracker() {

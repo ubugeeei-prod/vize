@@ -126,7 +126,7 @@ macro_rules! cstr {
 macro_rules! append {
     ($dst:expr, $($arg:tt)*) => {{
         use ::std::fmt::Write as _;
-        ::std::fmt::Write::write_fmt(&mut $dst, format_args!($($arg)*)).unwrap()
+        let _ = ::std::fmt::Write::write_fmt(&mut $dst, format_args!($($arg)*));
     }};
 }
 

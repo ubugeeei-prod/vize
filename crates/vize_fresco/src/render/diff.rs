@@ -167,7 +167,12 @@ impl DiffEngine {
                 (Some(old_id), None) => {
                     Self::collect_removes(old, old_id, result);
                 }
-                (None, None) => unreachable!(),
+                (None, None) => {
+                    // Panic path by loop bound invariant: `i` is always below
+                    // `max(old_children.len(), new_children.len())`, so at least
+                    // one side must contain a node at this index.
+                    unreachable!()
+                }
             }
         }
     }
@@ -179,7 +184,9 @@ impl DiffEngine {
         match (&old.kind, &new.kind) {
             (NodeKind::Box, NodeKind::Box) => false,
             (NodeKind::Text(old_text), NodeKind::Text(new_text)) => {
-                old_text.text != new_text.text || old_text.wrap != new_text.wrap
+                old_text.text != new_text.text
+                    || old_text.wrap != new_text.wrap
+                    || old_text.wrap_mode != new_text.wrap_mode
             }
             (NodeKind::Input(old_input), NodeKind::Input(new_input)) => {
                 old_input.value != new_input.value

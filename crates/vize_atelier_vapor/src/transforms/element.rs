@@ -2,9 +2,9 @@
 //!
 //! Transforms element nodes into template strings and operations.
 
+use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_carton::String;
 
 use vize_atelier_core::{ElementNode, ElementType, PropNode, TemplateChildNode};
 

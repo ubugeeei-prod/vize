@@ -13,7 +13,11 @@ pub fn offset_to_position(rope: &Rope, offset: usize) -> Option<Position> {
     let char_idx = rope.try_byte_to_char(offset).ok()?;
     let line = rope.char_to_line(char_idx);
     let line_start_char = rope.line_to_char(line);
-    let character = char_idx - line_start_char;
+    let character = rope
+        .slice(line_start_char..char_idx)
+        .chars()
+        .map(|ch| ch.len_utf16())
+        .sum::<usize>();
 
     Some(Position {
         line: line as u32,
@@ -31,13 +35,59 @@ pub fn position_to_offset(rope: &Rope, position: Position) -> Option<usize> {
     }
 
     let line_start_char = rope.line_to_char(line);
-    let line_len = rope.line(line).len_chars();
+    let mut utf16_units = 0usize;
+    let mut char_in_line = 0usize;
 
-    // Clamp character to line length
-    let char_in_line = character.min(line_len);
+    for ch in rope.line(line).chars() {
+        if utf16_units == character || ch == '\n' {
+            break;
+        }
+
+        let next_utf16_units = utf16_units + ch.len_utf16();
+        if character < next_utf16_units {
+            return None;
+        }
+
+        utf16_units = next_utf16_units;
+        char_in_line += 1;
+    }
+
+    if utf16_units != character {
+        return None;
+    }
+
     let char_idx = line_start_char + char_in_line;
 
     rope.try_char_to_byte(char_idx).ok()
+}
+
+/// Convert a byte offset in a string to an LSP position.
+///
+/// LSP `character` values are UTF-16 code units, not Rust scalar-value counts.
+/// This helper mirrors [`offset_to_position`] for call sites that already have
+/// string content instead of a reusable rope.
+pub fn offset_to_position_str(content: &str, offset: usize) -> Position {
+    let mut line = 0u32;
+    let mut character = 0u32;
+    let mut current_offset = 0usize;
+    let target = offset.min(content.len());
+
+    for ch in content.chars() {
+        if current_offset >= target {
+            break;
+        }
+
+        if ch == '\n' {
+            line += 1;
+            character = 0;
+        } else {
+            character += ch.len_utf16() as u32;
+        }
+
+        current_offset += ch.len_utf8();
+    }
+
+    Position { line, character }
 }
 
 /// Convert internal 1-based Position to LSP 0-based Position.
@@ -81,13 +131,15 @@ pub fn position_to_offset_str(content: &str, line: u32, character: u32) -> usize
 
     for (i, ch) in content.char_indices() {
         if current_line == line {
-            // We're on the target line, count characters
+            // We're on the target line, count UTF-16 code units
             let line_start = current_offset;
+            let mut utf16_units = 0u32;
 
-            for (char_count, (j, c)) in content[line_start..].char_indices().enumerate() {
-                if c == '\n' || char_count as u32 == character {
+            for (j, c) in content[line_start..].char_indices() {
+                if c == '\n' || utf16_units >= character {
                     return line_start + j;
                 }
+                utf16_units += c.len_utf16() as u32;
             }
             // End of file reached
             return content.len();
@@ -126,7 +178,10 @@ pub fn line_range(rope: &Rope, line: usize) -> Option<Range> {
 
 #[cfg(test)]
 mod tests {
-    use super::{internal_to_lsp_position, offset_to_position, position_to_offset};
+    use super::{
+        internal_to_lsp_position, offset_to_position, offset_to_position_str, position_to_offset,
+        position_to_offset_str,
+    };
     use ropey::Rope;
     use tower_lsp::lsp_types::Position;
 
@@ -210,6 +265,99 @@ mod tests {
             ),
             Some(6)
         );
+    }
+
+    #[test]
+    fn test_offset_to_position_counts_utf16_code_units() {
+        let rope = Rope::from_str("a😀b\nc");
+
+        assert_eq!(
+            offset_to_position(&rope, "a😀".len()),
+            Some(Position {
+                line: 0,
+                character: 3,
+            })
+        );
+        assert_eq!(
+            offset_to_position(&rope, "a😀b\nc".len()),
+            Some(Position {
+                line: 1,
+                character: 1,
+            })
+        );
+    }
+
+    #[test]
+    fn test_position_to_offset_counts_utf16_code_units() {
+        let rope = Rope::from_str("a😀b\nc");
+
+        assert_eq!(
+            position_to_offset(
+                &rope,
+                Position {
+                    line: 0,
+                    character: 3,
+                }
+            ),
+            Some("a😀".len())
+        );
+        assert_eq!(
+            position_to_offset(
+                &rope,
+                Position {
+                    line: 0,
+                    character: 4,
+                }
+            ),
+            Some("a😀b".len())
+        );
+    }
+
+    #[test]
+    fn test_position_to_offset_rejects_utf16_surrogate_pair_interior() {
+        let rope = Rope::from_str("a😀b");
+
+        assert_eq!(
+            position_to_offset(
+                &rope,
+                Position {
+                    line: 0,
+                    character: 2,
+                }
+            ),
+            None
+        );
+    }
+
+    #[test]
+    fn test_offset_to_position_str_counts_utf16_code_units() {
+        let content = "const icon = \"😀\";\nconst message = icon";
+        let message_offset = content.find("message").unwrap();
+
+        assert_eq!(
+            offset_to_position_str(content, message_offset),
+            Position {
+                line: 1,
+                character: 6,
+            }
+        );
+
+        assert_eq!(
+            offset_to_position_str(content, "const icon = \"😀".len()),
+            Position {
+                line: 0,
+                character: 16,
+            }
+        );
+    }
+
+    #[test]
+    fn test_position_to_offset_str_counts_utf16_code_units() {
+        let content = "a😀b\nc";
+
+        assert_eq!(position_to_offset_str(content, 0, 3), "a😀".len());
+        assert_eq!(position_to_offset_str(content, 0, 4), "a😀b".len());
+        assert_eq!(position_to_offset_str(content, 1, 1), content.len());
     }
 
     #[test]

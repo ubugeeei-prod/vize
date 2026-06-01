@@ -10,6 +10,7 @@ use crate::{
 
 use super::super::{context::CodegenContext, expression::generate_expression};
 use super::helpers::{get_custom_directives, get_vmodel_directive, has_vshow_directive};
+use crate::codegen::helpers::to_valid_asset_identifier;
 
 /// Generate v-model directive closing
 pub fn generate_vmodel_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
@@ -91,21 +92,21 @@ pub fn generate_vmodel_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 /// Generate v-show directive closing if present
 pub fn generate_vshow_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     for prop in &el.props {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name.as_str() == "show" {
-                if let Some(exp) = &dir.exp {
-                    ctx.push(", [");
-                    ctx.newline();
-                    ctx.push("  [");
-                    ctx.push(ctx.helper(RuntimeHelper::VShow));
-                    ctx.push(", ");
-                    generate_expression(ctx, exp);
-                    ctx.push("]");
-                    ctx.newline();
-                    ctx.push("])");
-                }
-                return;
+        if let PropNode::Directive(dir) = prop
+            && dir.name.as_str() == "show"
+        {
+            if let Some(exp) = &dir.exp {
+                ctx.push(", [");
+                ctx.newline();
+                ctx.push("  [");
+                ctx.push(ctx.helper(RuntimeHelper::VShow));
+                ctx.push(", ");
+                generate_expression(ctx, exp);
+                ctx.push("]");
+                ctx.newline();
+                ctx.push("])");
             }
+            return;
         }
     }
 }
@@ -125,8 +126,8 @@ pub fn generate_custom_directives_closing(ctx: &mut CodegenContext, el: &Element
             ctx.push(",");
             ctx.newline();
         }
-        ctx.push("  [_directive_");
-        ctx.push(&dir.name.replace('-', "_"));
+        ctx.push("  [");
+        ctx.push(&to_valid_asset_identifier("directive", &dir.name));
 
         // Add value if present
         if let Some(exp) = &dir.exp {
@@ -182,20 +183,20 @@ pub fn generate_custom_directives_closing(ctx: &mut CodegenContext, el: &Element
     // Also include v-show in the same withDirectives array if present
     if has_vshow_directive(el) {
         for prop in &el.props {
-            if let PropNode::Directive(dir) = prop {
-                if dir.name.as_str() == "show" {
-                    if let Some(exp) = &dir.exp {
-                        ctx.push(",");
-                        ctx.newline();
-                        ctx.push("  [");
-                        ctx.use_helper(RuntimeHelper::VShow);
-                        ctx.push(ctx.helper(RuntimeHelper::VShow));
-                        ctx.push(", ");
-                        generate_expression(ctx, exp);
-                        ctx.push("]");
-                    }
-                    break;
+            if let PropNode::Directive(dir) = prop
+                && dir.name.as_str() == "show"
+            {
+                if let Some(exp) = &dir.exp {
+                    ctx.push(",");
+                    ctx.newline();
+                    ctx.push("  [");
+                    ctx.use_helper(RuntimeHelper::VShow);
+                    ctx.push(ctx.helper(RuntimeHelper::VShow));
+                    ctx.push(", ");
+                    generate_expression(ctx, exp);
+                    ctx.push("]");
                 }
+                break;
             }
         }
     }

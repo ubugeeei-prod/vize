@@ -80,6 +80,8 @@ const name: string = 'test'
       // The compiled output should have 'const count = 0' not 'const count: number = 0'
       expect(code).toContain("count");
       expect(code).toContain("name");
+      expect(code).not.toContain(": number");
+      expect(code).not.toContain(": string");
     });
 
     it("should strip generic type parameters from ref/reactive", () => {
@@ -102,8 +104,9 @@ const state = reactive<{ name: string }>({ name: 'test' })
       expect(code).toContain("count");
       expect(code).toContain("items");
       expect(code).toContain("state");
-      // TODO: After WASM rebuild, TypeScript generics should be stripped
-      // For now, just verify the code compiles
+      expect(code).not.toContain("ref<number>");
+      expect(code).not.toContain("ref<string[]>");
+      expect(code).not.toContain("reactive<{ name: string }>");
     });
 
     it("should handle complex generic types", () => {
@@ -124,8 +127,8 @@ const instance = shallowRef<Map<string, number> | null>(null)
       // The compiled code should contain the variables
       expect(code).toContain("editorRef");
       expect(code).toContain("instance");
-      // TODO: After WASM rebuild, TypeScript generics should be stripped
-      // For now, just verify the code compiles
+      expect(code).not.toContain("ref<HTMLDivElement | null>");
+      expect(code).not.toContain("shallowRef<Map<string, number> | null>");
     });
 
     it("should handle interface declarations", () => {
@@ -142,9 +145,9 @@ const user: User = { name: 'test', age: 25 }
   <div>{{ user.name }}</div>
 </template>
 `;
-      const result = wasm!.compileSfc(sfc, {});
+      const result = wasm!.compileSfc(sfc, { scriptExt: "preserve" });
       expect(result.script?.code).toBeDefined();
-      // TypeScript is preserved in output (auto-detected from lang="ts")
+      // TypeScript should remain available when preserve mode is requested.
       expect(result.script?.code).toContain("interface User");
     });
 
@@ -159,9 +162,9 @@ const status: Status = 'active'
   <div>{{ status }}</div>
 </template>
 `;
-      const result = wasm!.compileSfc(sfc, {});
+      const result = wasm!.compileSfc(sfc, { scriptExt: "preserve" });
       expect(result.script?.code).toBeDefined();
-      // TypeScript is preserved in output (auto-detected from lang="ts")
+      // TypeScript should remain available when preserve mode is requested.
       expect(result.script?.code).toContain("type Status");
     });
   });
@@ -314,6 +317,91 @@ const msg = 'Hello SSR'
       const result = wasm!.compileSfc(sfc, { ssr: true });
       expect(result).toBeDefined();
       expect(result.script?.code).toBeDefined();
+    });
+
+    it("should resolve kebab-case imported components through setup bindings in both DOM and SSR output", () => {
+      const sfc = `
+<script setup lang="ts">
+import DashTest from './dash-test.vue'
+</script>
+
+<template>
+  <dash-test />
+  <DashTest />
+</template>
+`;
+      const domResult = wasm!.compileSfc(sfc, {});
+      expect(domResult.script?.code).toContain("_createVNode(DashTest)");
+      expect(domResult.script?.code).not.toContain('_resolveComponent("dash-test")');
+
+      const ssrResult = wasm!.compileSfc(sfc, { ssr: true });
+      expect(ssrResult.script?.code).toContain("$setup.DashTest");
+      expect(ssrResult.script?.code).not.toContain('_resolveComponent("dash-test")');
+    });
+
+    it("should resolve dotted component tags through setup member bindings in both DOM and SSR output", () => {
+      const sfc = `
+<script setup lang="ts">
+import { Form, Input } from 'ant-design-vue'
+</script>
+
+<template>
+  <Form.Item label="Teacher">
+    <Input />
+      </Form.Item>
+</template>
+`;
+      const domResult = wasm!.compileSfc(sfc, {});
+      expect(domResult.script?.code).toMatch(/_create(?:Block|VNode)\(Form\.Item/);
+      expect(domResult.script?.code).not.toContain('_resolveComponent("Form.Item")');
+
+      const ssrResult = wasm!.compileSfc(sfc, { ssr: true });
+      expect(ssrResult.script?.code).toContain("$setup.Form.Item");
+      expect(ssrResult.script?.code).not.toContain('_resolveComponent("Form.Item")');
+    });
+
+    it("should resolve lowercase imported components from setup bindings in SSR mode", () => {
+      const sfc = `
+<script setup lang="ts">
+import { Primitive } from '@tresjs/core'
+</script>
+
+<template>
+  <primitive />
+</template>
+`;
+      const result = wasm!.compileSfc(sfc, { ssr: true });
+      expect(result.script?.code).toContain("_ssrRenderComponent($setup.Primitive");
+      expect(result.script?.code).not.toContain('_resolveComponent("primitive")');
+    });
+
+    it("should keep custom renderer intrinsics as elements while preserving imported lowercase bindings", () => {
+      const sfc = `
+<script setup lang="ts">
+import { Primitive } from '@tresjs/core'
+const visible = true
+</script>
+
+<template>
+  <mesh>
+    <group v-if="visible">
+      <primitive />
+    </group>
+  </mesh>
+</template>
+`;
+      const domResult = wasm!.compileSfc(sfc, { customRenderer: true });
+      expect(domResult.script?.code).toContain("Primitive");
+      expect(domResult.script?.code).not.toContain('_createElementBlock("primitive")');
+      expect(domResult.script?.code).not.toContain('_resolveComponent("group")');
+
+      const ssrResult = wasm!.compileSfc(sfc, {
+        ssr: true,
+        customRenderer: true,
+      });
+      expect(ssrResult.script?.code).toContain("$setup.Primitive");
+      expect(ssrResult.script?.code).not.toContain('_resolveComponent("group")');
+      expect(ssrResult.script?.code).not.toContain("<primitive></primitive>");
     });
   });
 });

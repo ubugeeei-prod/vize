@@ -67,64 +67,64 @@ pub fn extract_bindings_with_locations(content: &str, is_setup: bool) -> Vec<Bin
 
         // const/let/var declarations
         for keyword in &["const ", "let ", "var "] {
-            if trimmed.starts_with(keyword) {
-                if let Some(rest) = trimmed.strip_prefix(keyword) {
-                    // Handle destructuring: { a, b }
-                    if rest.starts_with('{') {
-                        if let Some(end) = rest.find('}') {
-                            let inner = &rest[1..end];
-                            for part in inner.split(',') {
-                                let name = part.split(':').next().unwrap_or("").trim();
-                                if !name.is_empty() && is_valid_identifier(name) {
-                                    if let Some(name_pos) = line.find(name) {
-                                        bindings.push(BindingLocation {
-                                            name: name.to_string(),
-                                            offset: content_start + line_start + name_pos,
-                                            kind: BindingKind::Destructure,
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // Simple: const x = ...
-                    else if let Some(name) = rest.split(['=', ':', ' ']).next() {
-                        let name = name.trim();
-                        if is_valid_identifier(name) {
-                            if let Some(name_pos) = line.find(name) {
-                                let kind = match *keyword {
-                                    "const " => BindingKind::Const,
-                                    "let " => BindingKind::Let,
-                                    "var " => BindingKind::Var,
-                                    _ => BindingKind::Unknown,
-                                };
+            if trimmed.starts_with(keyword)
+                && let Some(rest) = trimmed.strip_prefix(keyword)
+            {
+                // Handle destructuring: { a, b }
+                if rest.starts_with('{') {
+                    if let Some(end) = rest.find('}') {
+                        let inner = &rest[1..end];
+                        for part in inner.split(',') {
+                            let name = part.split(':').next().unwrap_or("").trim();
+                            if !name.is_empty()
+                                && is_valid_identifier(name)
+                                && let Some(name_pos) = line.find(name)
+                            {
                                 bindings.push(BindingLocation {
                                     name: name.to_string(),
                                     offset: content_start + line_start + name_pos,
-                                    kind,
+                                    kind: BindingKind::Destructure,
                                 });
                             }
                         }
+                    }
+                }
+                // Simple: const x = ...
+                else if let Some(name) = rest.split(['=', ':', ' ']).next() {
+                    let name = name.trim();
+                    if is_valid_identifier(name)
+                        && let Some(name_pos) = line.find(name)
+                    {
+                        let kind = match *keyword {
+                            "const " => BindingKind::Const,
+                            "let " => BindingKind::Let,
+                            "var " => BindingKind::Var,
+                            _ => BindingKind::Unknown,
+                        };
+                        bindings.push(BindingLocation {
+                            name: name.to_string(),
+                            offset: content_start + line_start + name_pos,
+                            kind,
+                        });
                     }
                 }
             }
         }
 
         // Function declarations
-        if trimmed.starts_with("function ") {
-            if let Some(rest) = trimmed.strip_prefix("function ") {
-                if let Some(name) = rest.split('(').next() {
-                    let name = name.trim();
-                    if is_valid_identifier(name) {
-                        if let Some(name_pos) = line.find(name) {
-                            bindings.push(BindingLocation {
-                                name: name.to_string(),
-                                offset: content_start + line_start + name_pos,
-                                kind: BindingKind::Function,
-                            });
-                        }
-                    }
-                }
+        if trimmed.starts_with("function ")
+            && let Some(rest) = trimmed.strip_prefix("function ")
+            && let Some(name) = rest.split('(').next()
+        {
+            let name = name.trim();
+            if is_valid_identifier(name)
+                && let Some(name_pos) = line.find(name)
+            {
+                bindings.push(BindingLocation {
+                    name: name.to_string(),
+                    offset: content_start + line_start + name_pos,
+                    kind: BindingKind::Function,
+                });
             }
         }
     }
@@ -138,7 +138,9 @@ pub(crate) fn is_valid_identifier(s: &str) -> bool {
         return false;
     }
     let mut chars = s.chars();
-    let first = chars.next().unwrap();
+    let Some(first) = chars.next() else {
+        return false;
+    };
     if !first.is_alphabetic() && first != '_' && first != '$' {
         return false;
     }

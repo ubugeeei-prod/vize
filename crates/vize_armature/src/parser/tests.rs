@@ -1,12 +1,26 @@
 //! Tests for the Vue template parser.
+#![allow(clippy::disallowed_macros)]
 
 use super::{parse, parse_with_options};
 use vize_carton::Bump;
 use vize_relief::{
-    ast::{ElementType, ExpressionNode, PropNode, TemplateChildNode},
-    errors::ErrorCode,
+    ast::{ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode},
+    errors::{CompilerError, ErrorCode},
     options::ParserOptions,
 };
+
+fn error_recovery_snapshot(errors: &[CompilerError]) -> std::vec::Vec<(ErrorCode, &str, &str)> {
+    errors
+        .iter()
+        .map(|error| {
+            (
+                error.code,
+                error.message.as_str(),
+                error.loc.as_ref().map_or("", |loc| loc.source.as_str()),
+            )
+        })
+        .collect()
+}
 
 #[test]
 fn test_parse_simple_element() {
@@ -169,6 +183,44 @@ fn test_parse_self_closing() {
     }
 }
 
+#[test]
+fn test_parse_self_closing_textarea_keeps_following_elements() {
+    let allocator = Bump::new();
+    let source = r#"<Primitive :class="ui.root({ class: [uiProp?.root, props.class] })"><textarea :class="ui.base({ class: uiProp?.base })" /><slot :ui="ui" /><span v-if="isLeading || !!avatar || !!slots.leading"><slot><UIcon v-if="isLeading && leadingIconName" /><UAvatar v-else-if="!!avatar" /></slot></span></Primitive>"#;
+    let (root, errors) = parse(&allocator, source);
+
+    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+    assert_eq!(root.children.len(), 1);
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.tag.as_str(), "Primitive");
+        assert_eq!(el.children.len(), 3);
+
+        if let TemplateChildNode::Element(textarea) = &el.children[0] {
+            assert_eq!(textarea.tag.as_str(), "textarea");
+            assert!(textarea.is_self_closing);
+        } else {
+            panic!("Expected textarea element");
+        }
+
+        if let TemplateChildNode::Element(slot) = &el.children[1] {
+            assert_eq!(slot.tag.as_str(), "slot");
+            assert!(slot.is_self_closing);
+        } else {
+            panic!("Expected slot element");
+        }
+
+        if let TemplateChildNode::Element(span) = &el.children[2] {
+            assert_eq!(span.tag.as_str(), "span");
+            assert_eq!(span.children.len(), 1);
+        } else {
+            panic!("Expected span element");
+        }
+    } else {
+        panic!("Expected Primitive element");
+    }
+}
+
 // ====================================================================
 // Additional tests
 // ====================================================================
@@ -183,6 +235,70 @@ fn test_parse_comment() {
         assert_eq!(c.content.as_str(), " hello ");
     } else {
         panic!("Expected comment node");
+    }
+}
+
+fn parser_options_svg_subtree() -> ParserOptions {
+    ParserOptions {
+        get_namespace: |tag, parent| {
+            if tag.eq_ignore_ascii_case("svg")
+                || parent.is_some_and(|p| p.eq_ignore_ascii_case("svg"))
+            {
+                Namespace::Svg
+            } else {
+                Namespace::Html
+            }
+        },
+        ..ParserOptions::default()
+    }
+}
+
+#[test]
+fn test_parse_cdata_in_html_root_emits_error() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<![CDATA[hi]]>");
+    assert!(root.children.is_empty());
+    assert_eq!(errors.len(), 1);
+    assert_eq!(errors[0].code, ErrorCode::CdataInHtmlContent);
+    assert_eq!(errors[0].loc.as_ref().unwrap().start.offset, 0);
+}
+
+#[test]
+fn test_parse_cdata_in_html_element_emits_error() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div><![CDATA[hi]]></div>");
+    assert_eq!(errors.len(), 1);
+    assert_eq!(errors[0].code, ErrorCode::CdataInHtmlContent);
+    assert!(matches!(&root.children[0], TemplateChildNode::Element(_)));
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert!(
+            el.children.is_empty(),
+            "CDATA must not become text in HTML ns"
+        );
+    }
+}
+
+#[test]
+fn test_parse_cdata_in_svg_as_text() {
+    let allocator = Bump::new();
+    let (root, errors) = parse_with_options(
+        &allocator,
+        "<svg><![CDATA[hi]]></svg>",
+        parser_options_svg_subtree(),
+    );
+    assert!(errors.is_empty());
+    assert_eq!(root.children.len(), 1);
+    if let TemplateChildNode::Element(svg) = &root.children[0] {
+        assert_eq!(svg.tag.as_str(), "svg");
+        assert_eq!(svg.ns, Namespace::Svg);
+        assert_eq!(svg.children.len(), 1);
+        if let TemplateChildNode::Text(t) = &svg.children[0] {
+            assert_eq!(t.content.as_str(), "hi");
+        } else {
+            panic!("expected text node for CDATA body");
+        }
+    } else {
+        panic!("expected svg element");
     }
 }
 
@@ -302,15 +418,15 @@ fn test_parse_dynamic_directive_arg() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, r#"<div v-bind:[attr]="val"></div>"#);
     assert!(errors.is_empty());
-    if let TemplateChildNode::Element(el) = &root.children[0] {
-        if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.name.as_str(), "bind");
-            if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                assert_eq!(arg.content.as_str(), "attr");
-                assert!(!arg.is_static); // dynamic args are not static
-            } else {
-                panic!("Expected arg");
-            }
+    if let TemplateChildNode::Element(el) = &root.children[0]
+        && let PropNode::Directive(dir) = &el.props[0]
+    {
+        assert_eq!(dir.name.as_str(), "bind");
+        if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
+            assert_eq!(arg.content.as_str(), "attr");
+            assert!(!arg.is_static); // dynamic args are not static
+        } else {
+            panic!("Expected arg");
         }
     }
 }
@@ -342,6 +458,59 @@ fn test_parse_v_for() {
             assert_eq!(dir.name.as_str(), "for");
             if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
                 assert_eq!(exp.content.as_str(), "item in items");
+            }
+        } else {
+            panic!("Expected directive");
+        }
+    }
+}
+
+#[test]
+fn test_no_value_directive_loc_excludes_trailing_whitespace() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div v-if />");
+    assert!(errors.is_empty());
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Directive(dir) = &el.props[0] {
+            assert_eq!(dir.loc.source.as_str(), "v-if");
+        } else {
+            panic!("Expected directive");
+        }
+    }
+}
+
+#[test]
+fn test_quoted_attribute_loc_includes_closing_quote_with_spaced_equals() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div class ="w-100" />"#);
+    assert!(errors.is_empty());
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.loc.source.as_str(), r#"class ="w-100""#);
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "w-100");
+            assert_eq!(attr.value.as_ref().unwrap().loc.source.as_str(), "w-100");
+        } else {
+            panic!("Expected attribute");
+        }
+    }
+}
+
+#[test]
+fn test_quoted_directive_loc_includes_closing_quote_with_spaced_equals() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div v-if ="ok" />"#);
+    assert!(errors.is_empty());
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Directive(dir) = &el.props[0] {
+            assert_eq!(dir.loc.source.as_str(), r#"v-if ="ok""#);
+            if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
+                assert_eq!(exp.content.as_str(), "ok");
+                assert_eq!(exp.loc.source.as_str(), "ok");
+            } else {
+                panic!("Expected expression");
             }
         } else {
             panic!("Expected directive");
@@ -434,12 +603,14 @@ fn test_parse_error_missing_end_tag() {
 fn test_parse_error_duplicate_attribute() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, r#"<div id="a" id="b"></div>"#);
-    // Parser doesn't error on duplicate attrs, it just adds both
-    // Verify both are present
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::DuplicateAttribute)
+    );
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 2);
     }
-    let _ = errors;
 }
 
 #[test]
@@ -466,6 +637,44 @@ fn test_parse_deep_nesting() {
             }
         }
     }
+}
+
+#[test]
+fn test_parse_extreme_nesting_is_bounded() {
+    // Pathologically deep input should parse without unbounded growth and
+    // surface a recoverable error rather than producing an AST that later
+    // passes would have to recurse into without limit.
+    let allocator = Bump::new();
+    let depth = 5000;
+    let mut source = String::new();
+    for _ in 0..depth {
+        source.push_str("<div>");
+    }
+    for _ in 0..depth {
+        source.push_str("</div>");
+    }
+
+    let (root, errors) = parse(&allocator, &source);
+
+    // The nesting limit was reported.
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.message.contains("nesting is too deep")),
+        "expected a nesting-depth error for deeply nested input"
+    );
+
+    // The retained tree depth is bounded by the cap, not by the input depth.
+    let mut node = root.children.first();
+    let mut measured = 0usize;
+    while let Some(TemplateChildNode::Element(el)) = node {
+        measured += 1;
+        node = el.children.first();
+    }
+    assert!(
+        measured <= 257,
+        "tree depth should stay bounded near the cap, got {measured}"
+    );
 }
 
 #[test]
@@ -550,6 +759,273 @@ fn test_parse_open_tag_at_eof_does_not_panic() {
     let (_root, errors) = parse(&allocator, "<template>\n  <div>\n  <div\n");
     // Should return errors (EofInTag / MissingEndTag), not panic.
     assert!(!errors.is_empty());
+}
+
+#[test]
+fn test_parse_malformed_close_tag_at_eof_does_not_panic() {
+    let allocator = Bump::new();
+    let (_root, errors) = parse(&allocator, "\n  <div class=\"root\">{{ title }}</di=\"{");
+
+    assert!(
+        errors
+            .iter()
+            .any(|error| error.code == ErrorCode::InvalidEndTag)
+    );
+}
+
+#[test]
+fn test_parse_recovers_open_tag_at_eof() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div class="a""#);
+
+    assert!(errors.iter().any(|e| e.code == ErrorCode::EofInTag));
+    assert!(errors.iter().any(|e| e.code == ErrorCode::MissingEndTag));
+    assert_eq!(root.children.len(), 1);
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.tag.as_str(), "div");
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.name.as_str(), "class");
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "a");
+        } else {
+            panic!("Expected recovered attribute");
+        }
+    } else {
+        panic!("Expected recovered element");
+    }
+}
+
+#[test]
+fn test_parse_recovers_missing_attribute_value() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div id=></div>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingAttributeValue)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.name.as_str(), "id");
+            assert!(attr.value.is_none());
+        } else {
+            panic!("Expected recovered attribute");
+        }
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_recovers_missing_equals_before_quoted_attribute_value() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div id"foo"></div>"#);
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::UnexpectedCharacterInAttributeName)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.name.as_str(), "id");
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "foo");
+        } else {
+            panic!("Expected recovered attribute");
+        }
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_reports_missing_whitespace_between_attributes_and_continues() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div id="a"class="b"></div>"#);
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingWhitespaceBetweenAttributes)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.props.len(), 2);
+        if let PropNode::Attribute(attr) = &el.props[1] {
+            assert_eq!(attr.name.as_str(), "class");
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "b");
+        } else {
+            panic!("Expected recovered second attribute");
+        }
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_recovers_missing_dynamic_directive_argument_end() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div :[foo="bar"></div>"#);
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingDynamicDirectiveArgumentEnd)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Directive(dir) = &el.props[0] {
+            assert_eq!(dir.name.as_str(), "bind");
+            if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
+                assert_eq!(arg.content.as_str(), "foo");
+                assert!(!arg.is_static);
+            } else {
+                panic!("Expected recovered directive argument");
+            }
+        } else {
+            panic!("Expected recovered directive");
+        }
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_reports_missing_directive_name_and_continues() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div v->ok</div>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingDirectiveName)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert!(el.props.is_empty());
+        assert_eq!(el.children.len(), 1);
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_unfinished_interpolation_reports_error_but_keeps_text() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "{{ unfinished");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingInterpolationEnd)
+    );
+    assert_eq!(root.children.len(), 1);
+    if let TemplateChildNode::Text(text) = &root.children[0] {
+        assert_eq!(text.content.as_str(), "{{ unfinished");
+    } else {
+        panic!("Expected recovered text");
+    }
+}
+
+#[test]
+fn test_parse_invalid_tag_name_reports_error_and_continues() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<1div></1div><span></span>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::InvalidFirstCharacterOfTagName)
+    );
+    assert!(
+        root.children.iter().any(
+            |child| matches!(child, TemplateChildNode::Element(el) if el.tag.as_str() == "span")
+        )
+    );
+}
+
+#[test]
+fn test_parse_mixed_broken_input_keeps_later_nodes() {
+    let allocator = Bump::new();
+    let source = "<div v-><1bad></1bad><span id=a>ok</span></div>{{ broken";
+    let (root, errors) = parse(&allocator, source);
+
+    insta::assert_debug_snapshot!(error_recovery_snapshot(&errors), @r###"
+    [
+        (
+            MissingDirectiveName,
+            "Directive `v-` is missing a name. Ignoring it so the rest of the tag can be parsed.",
+            "v-",
+        ),
+        (
+            InvalidFirstCharacterOfTagName,
+            "Tag name starts with an invalid character; treating the malformed tag as text.",
+            "1",
+        ),
+        (
+            InvalidFirstCharacterOfTagName,
+            "Tag name starts with an invalid character; treating the malformed tag as text.",
+            "1",
+        ),
+        (
+            InvalidEndTag,
+            "Invalid end tag.",
+            "</1bad>",
+        ),
+        (
+            MissingInterpolationEnd,
+            "Interpolation is missing its closing delimiter `}}`; treating the unfinished interpolation as text.",
+            "",
+        ),
+    ]
+    "###);
+
+    let TemplateChildNode::Element(div) = &root.children[0] else {
+        panic!("Expected recovered div element");
+    };
+    assert_eq!(div.tag.as_str(), "div");
+    assert!(
+        div.children.iter().any(
+            |child| matches!(child, TemplateChildNode::Element(el) if el.tag.as_str() == "span")
+        )
+    );
+}
+
+#[test]
+fn test_parse_incorrectly_closed_comment_reports_error_and_continues() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<!-- note --!><div></div>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::IncorrectlyClosedComment)
+    );
+    assert_eq!(root.children.len(), 2);
+    assert!(matches!(&root.children[0], TemplateChildNode::Comment(_)));
+    assert!(matches!(&root.children[1], TemplateChildNode::Element(_)));
+}
+
+#[test]
+fn test_parse_unclosed_comment_reports_error_without_losing_comment() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "before<!-- open");
+
+    insta::assert_debug_snapshot!(error_recovery_snapshot(&errors), @r###"
+    [
+        (
+            EofInComment,
+            "Comment is missing its closing `-->`; preserving the unfinished comment so parsing can finish.",
+            "<",
+        ),
+    ]
+    "###);
+    assert_eq!(root.children.len(), 2);
+    assert!(matches!(&root.children[0], TemplateChildNode::Text(_)));
+    if let TemplateChildNode::Comment(comment) = &root.children[1] {
+        assert_eq!(comment.content.as_str(), " open");
+        assert_eq!(comment.loc.source.as_str(), "<!-- open");
+    } else {
+        panic!("Expected recovered comment");
+    }
 }
 
 #[test]

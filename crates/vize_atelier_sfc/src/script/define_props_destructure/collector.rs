@@ -358,14 +358,14 @@ pub(crate) fn collect_from_expression<'a>(
         Expression::Identifier(id) => {
             let name = id.name.as_str();
             // Check if this is a destructured prop and not shadowed
-            if let Some(key) = local_to_key.get(name) {
-                if !local_bindings.contains_key(name) {
-                    rewrites.push((
-                        id.span.start as usize,
-                        id.span.end as usize,
-                        gen_props_access_exp(key),
-                    ));
-                }
+            if let Some(key) = local_to_key.get(name)
+                && !local_bindings.contains_key(name)
+            {
+                rewrites.push((
+                    id.span.start as usize,
+                    id.span.end as usize,
+                    gen_props_access_exp(key),
+                ));
             }
         }
         Expression::CallExpression(call) => {
@@ -434,17 +434,17 @@ pub(crate) fn collect_from_expression<'a>(
                         if p.shorthand {
                             if let oxc_ast::ast::PropertyKey::StaticIdentifier(id) = &p.key {
                                 let name = id.name.as_str();
-                                if let Some(key) = local_to_key.get(name) {
-                                    if !local_bindings.contains_key(name) {
-                                        // For shorthand, we need to expand it
-                                        // { foo } -> { foo: __props.foo }
-                                        let end = p.span.end as usize;
-                                        let access = gen_props_access_exp(key);
-                                        let mut suffix = String::with_capacity(access.len() + 2);
-                                        suffix.push_str(": ");
-                                        suffix.push_str(&access);
-                                        rewrites.push((end, end, suffix));
-                                    }
+                                if let Some(key) = local_to_key.get(name)
+                                    && !local_bindings.contains_key(name)
+                                {
+                                    // For shorthand, we need to expand it
+                                    // { foo } -> { foo: __props.foo }
+                                    let end = p.span.end as usize;
+                                    let access = gen_props_access_exp(key);
+                                    let mut suffix = String::with_capacity(access.len() + 2);
+                                    suffix.push_str(": ");
+                                    suffix.push_str(&access);
+                                    rewrites.push((end, end, suffix));
                                 }
                             }
                         } else {

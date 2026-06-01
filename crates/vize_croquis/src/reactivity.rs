@@ -114,6 +114,40 @@ pub enum ReactivityLossKind {
         source_name: CompactString,
         target_name: CompactString,
     },
+    /// Extracting a property from a reactive object to a plain variable:
+    /// `const y = state.count` or `const y = props.count`
+    ReactivePropertyExtract {
+        source_name: CompactString,
+        prop_name: CompactString,
+        target_name: CompactString,
+    },
+    /// Destructuring props directly: `const { x } = defineProps()`
+    PropsDestructure {
+        destructured_props: Vec<CompactString>,
+    },
+    /// Passing a plain reactive snapshot through a function boundary:
+    /// `useComposable(count)` where `count` came from props destructure.
+    FunctionArgumentExtract {
+        source_name: CompactString,
+        argument_name: CompactString,
+        callee_name: CompactString,
+    },
+    /// Extracting the return value of a getter-backed context method:
+    /// `const x = ctx.count()` after `ctx` was created with `() => count`.
+    GetterCallExtract {
+        context_name: CompactString,
+        getter_name: CompactString,
+        target_name: CompactString,
+        callee_name: CompactString,
+        source_name: CompactString,
+    },
+    /// Aliasing an already plain reactive snapshot:
+    /// `const alias = count` where `count` came from props destructure.
+    PlainValueAlias {
+        source_name: CompactString,
+        alias_name: CompactString,
+        target_name: CompactString,
+    },
     /// Spreading reactive object: `{ ...state }`
     ReactiveSpread { source_name: CompactString },
     /// Reassigning reactive variable: `let state = reactive({}); state = {}`
@@ -258,18 +292,96 @@ impl ReactivityTracker {
         start: u32,
         end: u32,
     ) {
-        if let Some(source) = self.lookup(source_name.as_str()) {
-            if source.kind.needs_value_access() {
-                self.losses.push(ReactivityLoss {
-                    kind: ReactivityLossKind::RefValueExtract {
-                        source_name,
-                        target_name,
-                    },
-                    start,
-                    end,
-                });
-            }
+        if let Some(source) = self.lookup(source_name.as_str())
+            && source.kind.needs_value_access()
+        {
+            self.losses.push(ReactivityLoss {
+                kind: ReactivityLossKind::RefValueExtract {
+                    source_name,
+                    target_name,
+                },
+                start,
+                end,
+            });
         }
+    }
+
+    /// Record extracting a reactive object's property to a plain variable.
+    pub fn record_property_extract(
+        &mut self,
+        source_name: CompactString,
+        prop_name: CompactString,
+        target_name: CompactString,
+        start: u32,
+        end: u32,
+    ) {
+        if let Some(source) = self.lookup(source_name.as_str())
+            && !source.kind.needs_value_access()
+        {
+            self.losses.push(ReactivityLoss {
+                kind: ReactivityLossKind::ReactivePropertyExtract {
+                    source_name,
+                    prop_name,
+                    target_name,
+                },
+                start,
+                end,
+            });
+        }
+    }
+
+    /// Record direct destructuring of defineProps().
+    pub fn record_props_destructure(
+        &mut self,
+        destructured_props: Vec<CompactString>,
+        start: u32,
+        end: u32,
+    ) {
+        self.losses.push(ReactivityLoss {
+            kind: ReactivityLossKind::PropsDestructure { destructured_props },
+            start,
+            end,
+        });
+    }
+
+    /// Record passing a reactive snapshot to a call argument.
+    pub fn record_function_argument_extract(
+        &mut self,
+        source_name: CompactString,
+        argument_name: CompactString,
+        callee_name: CompactString,
+        start: u32,
+        end: u32,
+    ) {
+        self.losses.push(ReactivityLoss {
+            kind: ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            },
+            start,
+            end,
+        });
+    }
+
+    /// Record aliasing an already plain reactive snapshot.
+    pub fn record_plain_value_alias(
+        &mut self,
+        source_name: CompactString,
+        alias_name: CompactString,
+        target_name: CompactString,
+        start: u32,
+        end: u32,
+    ) {
+        self.losses.push(ReactivityLoss {
+            kind: ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            },
+            start,
+            end,
+        });
     }
 
     /// Record reassignment of a reactive variable
@@ -293,6 +405,25 @@ impl ReactivityTracker {
     #[inline]
     pub fn has_losses(&self) -> bool {
         !self.losses.is_empty()
+    }
+
+    /// Shift all stored source offsets by `delta`.
+    pub fn shift_offsets(&mut self, delta: u32) {
+        for source in &mut self.sources {
+            source.declaration_offset = source.declaration_offset.saturating_add(delta);
+        }
+        for loss in &mut self.losses {
+            loss.start = loss.start.saturating_add(delta);
+            loss.end = loss.end.saturating_add(delta);
+        }
+    }
+
+    /// Merge another tracker into this one, preserving this tracker's IDs.
+    pub fn extend(&mut self, other: Self) {
+        for source in other.sources {
+            self.register(source.name, source.kind, source.declaration_offset);
+        }
+        self.losses.extend(other.losses);
     }
 }
 

@@ -13,11 +13,11 @@ pub(super) fn condense_whitespace<'a>(
 ) {
     // First pass: remove leading whitespace-only text nodes
     while !children.is_empty() {
-        if let TemplateChildNode::Text(ref text) = children[0] {
-            if text.content.chars().all(char::is_whitespace) {
-                children.remove(0);
-                continue;
-            }
+        if let TemplateChildNode::Text(ref text) = children[0]
+            && text.content.chars().all(char::is_whitespace)
+        {
+            children.remove(0);
+            continue;
         }
         break;
     }
@@ -25,11 +25,11 @@ pub(super) fn condense_whitespace<'a>(
     // Remove trailing whitespace-only text nodes
     while !children.is_empty() {
         let last = children.len() - 1;
-        if let TemplateChildNode::Text(ref text) = children[last] {
-            if text.content.chars().all(char::is_whitespace) {
-                children.remove(last);
-                continue;
-            }
+        if let TemplateChildNode::Text(ref text) = children[last]
+            && text.content.chars().all(char::is_whitespace)
+        {
+            children.remove(last);
+            continue;
         }
         break;
     }
@@ -81,10 +81,10 @@ pub(super) fn condense_whitespace<'a>(
         }
 
         // Recurse into elements
-        if let TemplateChildNode::Element(ref mut el) = children[i] {
-            if !is_pre_tag(el.tag.as_str()) {
-                condense_whitespace(&mut el.children, is_pre_tag);
-            }
+        if let TemplateChildNode::Element(ref mut el) = children[i]
+            && !is_pre_tag(el.tag.as_str())
+        {
+            condense_whitespace(&mut el.children, is_pre_tag);
         }
 
         i += 1;

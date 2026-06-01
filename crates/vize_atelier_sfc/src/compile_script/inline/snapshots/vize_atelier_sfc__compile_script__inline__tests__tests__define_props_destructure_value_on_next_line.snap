@@ -6,18 +6,9 @@ import { computed } from "vue";
 export default {
   __name: "TestComponent",
   props: {
-    type: {
-      type: String,
-      required: true
-    },
-    title: {
-      type: String,
-      required: true
-    },
-    startTime: {
-      type: String,
-      required: true
-    }
+    type: { type: String },
+    title: { type: String },
+    startTime: { type: String }
   },
   setup(__props) {
     const accentColor = computed(() => __props.type === "event" ? "primary" : "secondary");

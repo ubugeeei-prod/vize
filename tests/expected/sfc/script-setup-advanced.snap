@@ -1,0 +1,187 @@
+===
+name: defineOptions inheritAttrs
+options: sfc
+--- INPUT ---
+<script setup lang="ts">
+defineOptions({ inheritAttrs: false })
+const x = 1
+</script>
+
+<template>
+  <div>{{ x }}</div>
+</template>
+--- OUTPUT ---
+import { defineComponent as _defineComponent } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+const x = 1
+
+export default /*@__PURE__*/_defineComponent({
+  ...{ inheritAttrs: false },
+  __name: 'test',
+  setup(__props) {
+
+
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(x)))
+}
+}
+
+})
+===
+name: defineOptions name and custom option
+options: sfc
+--- INPUT ---
+<script setup>
+defineOptions({ name: 'MyWidget', customOption: true })
+</script>
+
+<template>
+  <div>widget</div>
+</template>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default /*@__PURE__*/Object.assign({ name: 'MyWidget', customOption: true }, {
+  __name: 'test',
+  setup(__props) {
+
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, "widget"))
+}
+}
+
+})
+===
+name: script setup generic
+options: sfc
+--- INPUT ---
+<script setup lang="ts" generic="T extends string | number">
+defineProps<{ value: T; list: T[] }>()
+</script>
+
+<template>
+  <div>{{ value }}</div>
+</template>
+--- OUTPUT ---
+import { defineComponent as _defineComponent } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  props: {
+    value: { type: null, required: true },
+    list: { type: Array, required: true }
+  },
+  setup(__props: any) {
+
+
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(__props.value), 1 /* TEXT */))
+}
+}
+
+})
+===
+name: script setup generic multiple params
+options: sfc
+--- INPUT ---
+<script setup lang="ts" generic="T, U extends keyof T">
+defineProps<{ obj: T; key: U }>()
+</script>
+
+<template>
+  <div>{{ key }}</div>
+</template>
+--- OUTPUT ---
+import { defineComponent as _defineComponent } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  props: {
+    obj: { type: null, required: true },
+    key: { type: null, required: true }
+  },
+  setup(__props: any) {
+
+
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(__props.key), 1 /* TEXT */))
+}
+}
+
+})
+===
+name: top level await
+options: sfc
+--- INPUT ---
+<script setup lang="ts">
+const data = await fetch('/api').then((r) => r.json())
+</script>
+
+<template>
+  <div>{{ data }}</div>
+</template>
+--- OUTPUT ---
+import { withAsyncContext as _withAsyncContext, defineComponent as _defineComponent } from 'vue'
+import { unref as _unref, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  async setup(__props) {
+
+let __temp: any, __restore: any
+
+const data = (
+  ([__temp,__restore] = _withAsyncContext(() => fetch('/api').then((r) => r.json()))),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data)), 1 /* TEXT */))
+}
+}
+
+})
+===
+name: defineExpose
+options: sfc
+--- INPUT ---
+<script setup lang="ts">
+const count = 0
+defineExpose({ count })
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+--- OUTPUT ---
+import { defineComponent as _defineComponent } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+const count = 0
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props, { expose: __expose }) {
+
+__expose({ count })
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(count)))
+}
+}
+
+})

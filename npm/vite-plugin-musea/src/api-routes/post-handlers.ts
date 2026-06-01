@@ -5,10 +5,12 @@
  */
 
 import type { ServerResponse } from "node:http";
+import fs from "node:fs";
 import path from "node:path";
 
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { generatePreviewModuleWithProps } from "../preview/index.js";
+import { HttpError, parseJsonBody, resolveInside } from "../security.js";
 import { toPascalCase } from "../utils.js";
 
 /** POST /api/preview-with-props */
@@ -20,7 +22,15 @@ export function handlePreviewWithProps(
   sendError: SendError,
 ): void {
   try {
-    const { artPath: reqArtPath, variantName, props: propsOverride } = JSON.parse(body);
+    const {
+      artPath: reqArtPath,
+      variantName,
+      props: propsOverride,
+    } = parseJsonBody<{
+      artPath: string;
+      variantName: string;
+      props?: unknown;
+    }>(body);
     const art = ctx.artFiles.get(reqArtPath);
     if (!art) {
       sendError("Art not found", 404);
@@ -45,20 +55,33 @@ export function handlePreviewWithProps(
     res.setHeader("Content-Type", "application/javascript");
     res.end(moduleCode);
   } catch (e) {
+    if (e instanceof HttpError) {
+      sendError(e.message, e.status);
+      return;
+    }
     sendError(e instanceof Error ? e.message : String(e));
   }
 }
 
 /** POST /api/generate */
 export async function handleGenerate(
+  ctx: ApiRoutesContext,
   body: string,
   sendJson: SendJson,
   sendError: SendError,
 ): Promise<void> {
   try {
-    const { componentPath: reqComponentPath, options: autogenOptions } = JSON.parse(body);
+    const { componentPath: reqComponentPath, options: autogenOptions } = parseJsonBody<{
+      componentPath?: unknown;
+      options?: unknown;
+    }>(body);
+    if (typeof reqComponentPath !== "string") {
+      sendError("Missing required field: componentPath", 400);
+      return;
+    }
     const { generateArtFile: genArt } = await import("../autogen/index.js");
-    const result = await genArt(reqComponentPath, autogenOptions);
+    const componentPath = resolveInside(ctx.config.root, reqComponentPath, "componentPath");
+    const result = await genArt(componentPath, autogenOptions);
     sendJson({
       generated: true,
       componentName: result.componentName,
@@ -66,6 +89,10 @@ export async function handleGenerate(
       artFileContent: result.artFileContent,
     });
   } catch (e) {
+    if (e instanceof HttpError) {
+      sendError(e.message, e.status);
+      return;
+    }
     sendError(e instanceof Error ? e.message : String(e));
   }
 }
@@ -78,12 +105,16 @@ export async function handleRunVrt(
   sendError: SendError,
 ): Promise<void> {
   try {
-    const { artPath, updateSnapshots } = JSON.parse(body);
-    const { MuseaVrtRunner } = await import("../vrt.js");
+    const { artPath, updateSnapshots } = parseJsonBody<{
+      artPath?: string;
+      updateSnapshots?: boolean;
+    }>(body);
+    const { MuseaVrtRunner, generateVrtJsonReport, generateVrtReport } = await import("../vrt.js");
 
-    const runner = new MuseaVrtRunner({
-      snapshotDir: path.resolve(ctx.config.root, ".vize/snapshots"),
-    });
+    const snapshotDir = path.resolve(ctx.config.root, ".vize/snapshots");
+    const reportDir = path.resolve(ctx.config.root, ".vize/reports");
+
+    const runner = new MuseaVrtRunner({ snapshotDir });
 
     const port = ctx.getDevServerPort();
     const baseUrl = `http://localhost:${port}`;
@@ -93,12 +124,28 @@ export async function handleRunVrt(
       artsToTest = artsToTest.filter((a) => a.path === artPath);
     }
 
-    await runner.start();
-    const results = await runner.runTests(artsToTest, baseUrl, {
-      updateSnapshots,
-    });
-    const summary = runner.getSummary(results);
-    await runner.stop();
+    const { results, summary } = await (async () => {
+      await runner.start();
+
+      try {
+        const results = await runner.runTests(artsToTest, baseUrl, {
+          updateSnapshots,
+        });
+        const summary = runner.getSummary(results);
+        return { results, summary };
+      } finally {
+        await runner.stop();
+      }
+    })();
+
+    const reportBaseName =
+      typeof artPath === "string" ? `vrt-${path.basename(artPath, ".art.vue")}` : "vrt";
+    const jsonReportPath = path.join(reportDir, `${reportBaseName}-report.json`);
+    const htmlReportPath = path.join(reportDir, `${reportBaseName}-report.html`);
+
+    await fs.promises.mkdir(reportDir, { recursive: true });
+    await fs.promises.writeFile(jsonReportPath, generateVrtJsonReport(results, summary), "utf-8");
+    await fs.promises.writeFile(htmlReportPath, generateVrtReport(results, summary), "utf-8");
 
     sendJson({
       success: true,
@@ -110,10 +157,25 @@ export async function handleRunVrt(
         passed: r.passed,
         isNew: r.isNew,
         diffPercentage: r.diffPercentage,
+        snapshotPath: r.snapshotPath,
+        currentPath: r.currentPath,
+        diffPath: r.diffPath,
         error: r.error,
       })),
+      artifacts: {
+        reportDir,
+        htmlReportPath,
+        jsonReportPath,
+        snapshotDir,
+        currentDir: path.join(snapshotDir, "current"),
+        diffDir: path.join(snapshotDir, "diff"),
+      },
     });
   } catch (e) {
+    if (e instanceof HttpError) {
+      sendError(e.message, e.status);
+      return;
+    }
     sendError(e instanceof Error ? e.message : String(e));
   }
 }

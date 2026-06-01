@@ -2,11 +2,46 @@
 
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
+use std::cell::RefCell;
 
 use super::terminal::with_backend;
-use super::types::{RenderNodeNapi, StyleNapi};
+use super::types::{LayoutResultNapi, RenderNodeNapi, StyleNapi};
 use crate::layout::Rect;
 use crate::terminal::{Color, Style};
+use crate::text::WrapMode;
+
+thread_local! {
+    static LAST_RENDER_LAYOUTS: RefCell<Vec<LayoutResultNapi>> = const { RefCell::new(Vec::new()) };
+}
+
+fn parse_wrap_mode(mode: Option<&str>, wrap: Option<bool>) -> WrapMode {
+    match mode {
+        Some("wrap") => WrapMode::Word,
+        Some("hard") => WrapMode::Char,
+        Some("truncate") | Some("truncate-end") => WrapMode::TruncateEnd,
+        Some("truncate-start") => WrapMode::TruncateStart,
+        Some("truncate-middle") => WrapMode::TruncateMiddle,
+        Some("false") | Some("none") => WrapMode::NoWrap,
+        _ if wrap.unwrap_or(false) => WrapMode::Word,
+        _ => WrapMode::NoWrap,
+    }
+}
+
+/// Get layout results from the most recent renderTree call.
+#[napi(js_name = "getLastRenderLayouts")]
+pub fn get_last_render_layouts() -> Result<Vec<LayoutResultNapi>> {
+    LAST_RENDER_LAYOUTS.with(|layouts| {
+        layouts
+            .try_borrow()
+            .map(|items| items.clone())
+            .map_err(|e| {
+                Error::new(
+                    Status::GenericFailure,
+                    format!("Layout borrow error: {}", e),
+                )
+            })
+    })
+}
 
 /// Render text at position.
 #[napi(js_name = "renderText")]
@@ -108,7 +143,9 @@ pub fn hide_cursor() -> Result<()> {
 
 /// Set cursor shape.
 #[napi(js_name = "setCursorShape")]
-pub fn set_cursor_shape(shape: String) -> Result<()> {
+pub fn set_cursor_shape(
+    #[napi(ts_arg_type = "\"block\" | \"underline\" | \"bar\" | (string & {})")] shape: String,
+) -> Result<()> {
     with_backend(|backend| {
         use crate::terminal::CursorShape;
         let cursor_shape = match shape.as_str() {
@@ -126,7 +163,7 @@ pub fn set_cursor_shape(shape: String) -> Result<()> {
 pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
     use crate::layout::{
         AlignItems, AlignSelf, Dimension, Display, FlexDirection, FlexWrap, JustifyContent,
-        LengthPercentageAuto,
+        LengthPercentageAuto, Overflow, Position,
     };
     use crate::render::{
         Appearance, BorderStyle, InputContent, NodeKind, Painter, RenderNode, RenderTree,
@@ -143,6 +180,7 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 "text" => NodeKind::Text(TextContent {
                     text: text_content.clone().into(),
                     wrap: node.wrap.unwrap_or(false),
+                    wrap_mode: parse_wrap_mode(node.wrap_mode.as_deref(), node.wrap),
                 }),
                 "input" => NodeKind::Input(InputContent {
                     value: node.value.clone().unwrap_or_default().into(),
@@ -150,7 +188,11 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                     cursor: node.cursor.unwrap_or(0) as usize,
                     focused: node.focused.unwrap_or(false),
                     mask: node.mask.unwrap_or(false),
-                    mask_char: '*',
+                    mask_char: node
+                        .mask_char
+                        .as_deref()
+                        .and_then(|s| s.chars().next())
+                        .unwrap_or('*'),
                 }),
                 _ => NodeKind::Box,
             };
@@ -197,6 +239,40 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                     flex_style.display = match display.as_str() {
                         "none" => Display::None,
                         _ => Display::Flex,
+                    };
+                }
+
+                // Position and inset
+                if let Some(ref position) = style.position {
+                    flex_style.position = match position.as_str() {
+                        "absolute" => Position::Absolute,
+                        _ => Position::Relative,
+                    };
+                }
+                if let Some(ref top) = style.top {
+                    flex_style.inset.top = parse_length_percentage_auto(top);
+                }
+                if let Some(ref right) = style.right {
+                    flex_style.inset.right = parse_length_percentage_auto(right);
+                }
+                if let Some(ref bottom) = style.bottom {
+                    flex_style.inset.bottom = parse_length_percentage_auto(bottom);
+                }
+                if let Some(ref left) = style.left {
+                    flex_style.inset.left = parse_length_percentage_auto(left);
+                }
+
+                // Overflow
+                let overflow = style
+                    .overflow
+                    .as_ref()
+                    .or(style.overflow_x.as_ref())
+                    .or(style.overflow_y.as_ref());
+                if let Some(overflow) = overflow {
+                    flex_style.overflow = match overflow.as_str() {
+                        "hidden" => Overflow::Hidden,
+                        "scroll" => Overflow::Scroll,
+                        _ => Overflow::Visible,
                     };
                 }
 
@@ -265,6 +341,9 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 if let Some(shrink) = style.flex_shrink {
                     flex_style.flex_shrink = shrink as f32;
                 }
+                if let Some(ref basis) = style.flex_basis {
+                    flex_style.flex_basis = parse_dimension(basis);
+                }
 
                 // Dimensions
                 if let Some(ref w) = style.width {
@@ -284,6 +363,9 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 }
                 if let Some(ref h) = style.max_height {
                     flex_style.max_height = parse_dimension(h);
+                }
+                if let Some(aspect_ratio) = style.aspect_ratio {
+                    flex_style.aspect_ratio = Some(aspect_ratio as f32);
                 }
 
                 // Padding
@@ -333,6 +415,12 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                     flex_style.gap.row = g as f32;
                     flex_style.gap.column = g as f32;
                 }
+                if let Some(g) = style.row_gap {
+                    flex_style.gap.row = g as f32;
+                }
+                if let Some(g) = style.column_gap {
+                    flex_style.gap.column = g as f32;
+                }
 
                 render_node.style = flex_style;
             }
@@ -350,6 +438,9 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 appearance.dim = app.dim.unwrap_or(false);
                 appearance.italic = app.italic.unwrap_or(false);
                 appearance.underline = app.underline.unwrap_or(false);
+                appearance.inverse = app.inverse.unwrap_or(false);
+                appearance.blink = app.blink.unwrap_or(false);
+                appearance.hidden = app.hidden.unwrap_or(false);
                 appearance.strikethrough = app.strikethrough.unwrap_or(false);
                 render_node.appearance = appearance;
             }
@@ -384,17 +475,17 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
         }
 
         // Force root's direct child to have width: 100% to prevent centering
-        if let Some(first) = nodes.first() {
-            if let Some(ref children) = first.children {
-                for &child_id in children {
-                    let child_id_u64 = child_id as u64;
-                    if let Some(node) = tree.get(child_id_u64) {
-                        if matches!(node.style.width, Dimension::Auto) {
-                            let mut style = node.style.clone();
-                            style.width = Dimension::Percent(100.0);
-                            tree.set_style(child_id_u64, style);
-                        }
-                    }
+        if let Some(first) = nodes.first()
+            && let Some(ref children) = first.children
+        {
+            for &child_id in children {
+                let child_id_u64 = child_id as u64;
+                if let Some(node) = tree.get(child_id_u64)
+                    && matches!(node.style.width, Dimension::Auto)
+                {
+                    let mut style = node.style.clone();
+                    style.width = Dimension::Percent(100.0);
+                    tree.set_style(child_id_u64, style);
                 }
             }
         }
@@ -403,6 +494,22 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
         let (width, height) = (backend.width(), backend.height());
         tree.compute_layout(width, height);
 
+        let layouts: Vec<_> = tree
+            .iter()
+            .filter_map(|(&id, node)| {
+                node.layout.map(|rect| LayoutResultNapi {
+                    id: id as i64,
+                    x: rect.x as i32,
+                    y: rect.y as i32,
+                    width: rect.width as i32,
+                    height: rect.height as i32,
+                })
+            })
+            .collect();
+        LAST_RENDER_LAYOUTS.with(|last| {
+            *last.borrow_mut() = layouts;
+        });
+
         // Paint to buffer
         let mut painter = Painter::new(backend.buffer_mut());
         painter.paint_tree(&tree);
@@ -410,36 +517,35 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
         // Find focused input and position cursor for IME
         let mut found_focused = false;
         for node in &nodes {
-            if node.node_type == "input" && node.focused.unwrap_or(false) {
-                if let Some(render_node) = tree.get(node.id as u64) {
-                    if let Some(layout) = render_node.layout {
-                        // Calculate cursor position considering character widths and wrapping
-                        let value = node.value.as_deref().unwrap_or("");
-                        let cursor_idx = node.cursor.unwrap_or(0) as usize;
+            if node.node_type == "input"
+                && node.focused.unwrap_or(false)
+                && let Some(render_node) = tree.get(node.id as u64)
+                && let Some(layout) = render_node.layout
+            {
+                // Calculate cursor position considering character widths and wrapping
+                let value = node.value.as_deref().unwrap_or("");
+                let cursor_idx = node.cursor.unwrap_or(0) as usize;
 
-                        // Get display width up to cursor position
-                        use crate::text::SegmentedText;
-                        let st = SegmentedText::new(value);
-                        let cursor_col = st.column_at_index(cursor_idx.min(st.grapheme_count));
-                        let area_width = layout.width as usize;
+                // Get display width up to cursor position
+                use crate::text::SegmentedText;
+                let st = SegmentedText::new(value);
+                let cursor_col = st.column_at_index(cursor_idx.min(st.grapheme_count));
+                let area_width = layout.width as usize;
 
-                        // Calculate cursor line and column with text wrapping
-                        let cursor_line = cursor_col / area_width;
-                        let cursor_col_in_line = cursor_col % area_width;
+                // Calculate cursor line and column with text wrapping
+                let cursor_line = cursor_col / area_width;
+                let cursor_col_in_line = cursor_col % area_width;
 
-                        let cursor_x = layout.x + cursor_col_in_line as u16;
-                        let cursor_y =
-                            layout.y + (cursor_line as u16).min(layout.height.saturating_sub(1));
-                        backend.cursor_mut().move_to(cursor_x, cursor_y);
-                        backend
-                            .cursor_mut()
-                            .set_shape(crate::terminal::CursorShape::Bar);
-                        backend.cursor_mut().set_blinking(true);
-                        backend.cursor_mut().show();
-                        found_focused = true;
-                        break;
-                    }
-                }
+                let cursor_x = layout.x + cursor_col_in_line as u16;
+                let cursor_y = layout.y + (cursor_line as u16).min(layout.height.saturating_sub(1));
+                backend.cursor_mut().move_to(cursor_x, cursor_y);
+                backend
+                    .cursor_mut()
+                    .set_shape(crate::terminal::CursorShape::Bar);
+                backend.cursor_mut().set_blinking(true);
+                backend.cursor_mut().show();
+                found_focused = true;
+                break;
             }
         }
         if !found_focused {
@@ -456,10 +562,10 @@ fn parse_dimension(s: &str) -> crate::layout::Dimension {
         return Dimension::Auto;
     }
 
-    if let Some(percent) = s.strip_suffix('%') {
-        if let Ok(v) = percent.parse::<f32>() {
-            return Dimension::Percent(v);
-        }
+    if let Some(percent) = s.strip_suffix('%')
+        && let Ok(v) = percent.parse::<f32>()
+    {
+        return Dimension::Percent(v);
     }
 
     if let Ok(v) = s.parse::<f32>() {
@@ -467,6 +573,27 @@ fn parse_dimension(s: &str) -> crate::layout::Dimension {
     }
 
     Dimension::Auto
+}
+
+/// Parse length/percentage/auto string to LengthPercentageAuto.
+fn parse_length_percentage_auto(s: &str) -> crate::layout::LengthPercentageAuto {
+    use crate::layout::LengthPercentageAuto;
+
+    if s == "auto" {
+        return LengthPercentageAuto::Auto;
+    }
+
+    if let Some(percent) = s.strip_suffix('%')
+        && let Ok(v) = percent.parse::<f32>()
+    {
+        return LengthPercentageAuto::Percent(v);
+    }
+
+    if let Ok(v) = s.parse::<f32>() {
+        return LengthPercentageAuto::Points(v);
+    }
+
+    LengthPercentageAuto::Auto
 }
 
 /// Convert StyleNapi to Style.
@@ -483,6 +610,9 @@ fn convert_style(style: StyleNapi) -> Style {
     result.dim = style.dim.unwrap_or(false);
     result.italic = style.italic.unwrap_or(false);
     result.underline = style.underline.unwrap_or(false);
+    result.reverse = style.inverse.unwrap_or(false);
+    result.blink = style.blink.unwrap_or(false);
+    result.hidden = style.hidden.unwrap_or(false);
     result.strikethrough = style.strikethrough.unwrap_or(false);
 
     result

@@ -3,21 +3,24 @@
 //! Contains the public `generate_virtual_ts` and `generate_virtual_ts_with_offsets`
 //! functions that orchestrate the full virtual TypeScript generation pipeline.
 
-use vize_croquis::{BindingType, Croquis, ScopeData, ScopeKind, COMPILER_MACRO_NAMES};
+use vize_croquis::{BindingType, Croquis, ScopeData, ScopeKind};
 
 use super::{
     helpers::{
-        generate_template_context, to_safe_identifier, IMPORT_META_AUGMENTATION,
-        VUE_SETUP_COMPILER_MACROS,
+        IMPORT_META_AUGMENTATION, SETUP_SCOPE_HELPER_NAMES, VUE_SETUP_HELPERS, VUE_TYPE_HELPERS,
+        generate_template_context, to_safe_identifier,
     },
-    props::{generate_props_type, generate_props_variables},
+    props::{
+        add_generic_defaults, collect_template_prop_names, extract_generic_names,
+        generate_props_type, generate_props_variables,
+    },
     scope::generate_scope_closures,
-    types::{VirtualTsOptions, VirtualTsOutput, VizeMapping},
+    types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
 };
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_carton::String;
+use vize_carton::{FxHashMap, FxHashSet, String};
 
 /// Generate virtual TypeScript from Vue SFC analysis.
 ///
@@ -57,6 +60,51 @@ pub fn generate_virtual_ts_with_offsets(
     template_offset: u32,
     options: &VirtualTsOptions,
 ) -> VirtualTsOutput {
+    generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsGenerationOptions::default(),
+    )
+}
+
+/// Generate virtual TypeScript with Vue 2.7 / Nuxt 2 compatibility enabled.
+pub fn generate_virtual_ts_with_offsets_legacy_vue2(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::ast::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+) -> VirtualTsOutput {
+    generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsGenerationOptions {
+            legacy_vue2: true,
+            ..Default::default()
+        },
+    )
+}
+
+pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::ast::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+    generation_options: VirtualTsGenerationOptions,
+) -> VirtualTsOutput {
+    let check_options = generation_options.check_options;
+    let legacy_vue2 = generation_options.legacy_vue2;
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
 
@@ -85,10 +133,11 @@ pub fn generate_virtual_ts_with_offsets(
         .unwrap_or((None, false));
 
     // Also detect top-level await in script content (Vue 3 script setup supports this)
-    if let Some(script) = script_content {
-        if script.contains("await ") && !is_async {
-            is_async = true;
-        }
+    if let Some(script) = script_content
+        && script.contains("await ")
+        && !is_async
+    {
+        is_async = true;
     }
 
     // ImportMeta augmentation (must be at top level, before any code)
@@ -99,7 +148,8 @@ pub fn generate_virtual_ts_with_offsets(
     // Type declarations (interface, type, enum) must be at module level so they
     // are accessible from `export type Props = ...` outside __setup().
     ts.push_str("// ========== Module Scope (imports) ==========\n");
-    ts.push_str("type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);\n");
+    ts.push_str(VUE_TYPE_HELPERS);
+    ts.push('\n');
 
     // Collect all module-level statement spans from croquis analysis
     let module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
@@ -111,17 +161,88 @@ pub fn generate_virtual_ts_with_offsets(
             module_spans.push((re.start, re.end));
         }
         for te in &summary.type_exports {
-            module_spans.push((te.start, te.end));
+            // Non-hoisted types reference setup-scope values via `typeof`
+            // and must stay inside `__setup` so TS can resolve them.
+            if te.hoisted {
+                module_spans.push((te.start, te.end));
+            }
         }
         module_spans.sort_by_key(|&(start, _)| start);
         module_spans
     });
+
+    // For a `<script setup generic="...">` SFC, hoisted type declarations are
+    // lifted verbatim to module scope, but the generic parameters only live on
+    // `__setup<...>()`. A lifted declaration that mentions a generic parameter
+    // (e.g. `type Option = { key: T }`) would reference an unbound name there.
+    // Re-declare the SFC generics as defaulted parameters on each such
+    // declaration (`type Option<T extends string = any> = ...`) so the
+    // reference resolves at module scope while bare uses (`Option[]`) still
+    // work via the `= any` defaults.
+    let generic_injection: Option<(String, Vec<String>)> = generic_param.map(|g| {
+        let defaults = add_generic_defaults(g);
+        let names = extract_generic_names(g)
+            .split(',')
+            .map(|n| String::from(n.trim()))
+            .filter(|n| !n.is_empty())
+            .collect();
+        (defaults, names)
+    });
+    let hoisted_type_spans: FxHashMap<(u32, u32), &str> = if generic_injection.is_some() {
+        summary
+            .type_exports
+            .iter()
+            .filter(|te| te.hoisted)
+            .map(|te| ((te.start, te.end), te.name.as_str()))
+            .collect()
+    } else {
+        FxHashMap::default()
+    };
 
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_module_statements", {
             // Emit each module-level statement with source mapping
             for &(start, end) in &module_spans {
                 let text = &script[start as usize..end as usize];
+
+                // Splice the SFC generic parameters into a hoisted
+                // type/interface declaration that references them, so the
+                // reference resolves at module scope.
+                if let Some((defaults, names)) = &generic_injection
+                    && let Some(type_name) = hoisted_type_spans.get(&(start, end))
+                    && references_any_identifier(text, names)
+                    && let Some(inject_at) = generic_injection_point(text, type_name)
+                {
+                    let (prefix, suffix) = text.split_at(inject_at);
+                    let src_base = script_offset as usize + start as usize;
+
+                    let gen_start = ts.len();
+                    ts.push_str(prefix);
+                    mappings.push(VizeMapping {
+                        gen_range: gen_start..ts.len(),
+                        src_range: src_base..(src_base + prefix.len()),
+                        sub_spans: Vec::new(),
+                    });
+
+                    // Synthetic parameter list; no corresponding source span.
+                    append!(ts, "<{defaults}>");
+                    // Avoid forming `>=` when the alias has no space before `=`.
+                    if suffix.starts_with('=') {
+                        ts.push(' ');
+                    }
+
+                    let gen_start = ts.len();
+                    ts.push_str(suffix);
+                    ts.push('\n');
+                    mappings.push(VizeMapping {
+                        gen_range: gen_start..ts.len(),
+                        src_range: (src_base + prefix.len())
+                            ..(src_base + prefix.len() + suffix.len()),
+                        sub_spans: Vec::new(),
+                    });
+                    continue;
+                }
+
                 let gen_start = ts.len();
                 ts.push_str(text);
                 ts.push('\n');
@@ -130,12 +251,13 @@ pub fn generate_virtual_ts_with_offsets(
                     gen_range: gen_start..gen_end,
                     src_range: (script_offset as usize + start as usize)
                         ..(script_offset as usize + end as usize),
+                    sub_spans: Vec::new(),
                 });
             }
 
-            // Void-reference imported names that match compiler macro names.
+            // Void-reference imported names that match setup-scope helper names.
             // These get shadowed by __setup() declarations, causing TS6133 at module level.
-            let shadowed_imports: Vec<&&str> = COMPILER_MACRO_NAMES
+            let shadowed_imports: Vec<&&str> = SETUP_SCOPE_HELPER_NAMES
                 .iter()
                 .filter(|&&name| summary.bindings.bindings.contains_key(name))
                 .collect();
@@ -155,23 +277,24 @@ pub fn generate_virtual_ts_with_offsets(
     // Collect imported names from all module-level import statements to handle
     // cases where plain <script> imports are not in summary.bindings (which
     // only holds <script setup> bindings when both blocks exist).
-    let imported_names: Vec<&str> = profile!("canon.virtual_ts.extract_imported_names", {
-        if let Some(script) = script_content {
-            summary
-                .import_statements
-                .iter()
-                .flat_map(|imp| {
-                    let text = script
-                        .get(imp.start as usize..imp.end as usize)
-                        .unwrap_or("");
-                    extract_import_names(text)
-                })
-                .collect()
-        } else {
-            Vec::new()
-        }
-    });
     if !options.auto_import_stubs.is_empty() {
+        let imported_names: FxHashSet<&str> = profile!(
+            "canon.virtual_ts.extract_imported_names",
+            if let Some(script) = script_content {
+                summary
+                    .import_statements
+                    .iter()
+                    .flat_map(|imp| {
+                        let text = script
+                            .get(imp.start as usize..imp.end as usize)
+                            .unwrap_or("");
+                        extract_import_names(text)
+                    })
+                    .collect()
+            } else {
+                FxHashSet::default()
+            }
+        );
         profile!("canon.virtual_ts.emit_auto_import_stubs", {
             let mut has_header = false;
             for stub in &options.auto_import_stubs {
@@ -201,14 +324,14 @@ pub fn generate_virtual_ts_with_offsets(
         generate_props_type(&mut ts, summary, generic_param)
     );
 
-    // Setup scope: function that contains compiler macros and script content
+    // Setup scope: function that contains setup helpers and script content
     ts.push_str("// ========== Setup Scope ==========\n");
     let async_prefix = if is_async { "async " } else { "" };
     let generic_params = generic_param.map(|g| cstr!("<{g}>")).unwrap_or_default();
     append!(ts, "{async_prefix}function __setup{generic_params}() {{\n",);
 
-    // Compiler macros (only valid inside setup scope)
-    ts.push_str(VUE_SETUP_COMPILER_MACROS);
+    // Setup helpers (only valid inside setup scope)
+    ts.push_str(VUE_SETUP_HELPERS);
     ts.push_str("\n\n");
 
     // User's script content (minus imports)
@@ -219,8 +342,8 @@ pub fn generate_virtual_ts_with_offsets(
             // Use split('\n') to correctly track byte offsets for CRLF files.
             // Rust's lines() strips \r from CRLF but +1 for \n undercounts,
             // causing src_byte_offset drift that incorrectly skips user code.
-            let raw_lines: Vec<&str> = script.split('\n').collect();
             let mut src_byte_offset: usize = 0; // offset within script content
+            let mut module_span_index = 0usize;
 
             // Check if script uses import.meta and add a polyfill variable.
             // This avoids TS1343 when module is not set to es2020+.
@@ -229,7 +352,7 @@ pub fn generate_virtual_ts_with_offsets(
                 ts.push_str("  const __import_meta: any = {};\n");
             }
 
-            for raw_line in raw_lines.iter() {
+            for raw_line in script.split('\n') {
                 // Strip trailing \r for output (normalize CRLF to LF)
                 let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
                 // raw_line.len() includes \r if present; +1 for the \n from split
@@ -238,9 +361,15 @@ pub fn generate_virtual_ts_with_offsets(
                 // Skip lines that overlap with module-level spans (imports, re-exports, type decls)
                 let line_start = src_byte_offset;
                 let line_end = line_start + raw_line.len(); // use raw length for span check
-                let is_module_level = module_spans
+                while module_span_index < module_spans.len()
+                    && module_spans[module_span_index].1 as usize <= line_start
+                {
+                    module_span_index += 1;
+                }
+                let is_module_level = module_spans[module_span_index..]
                     .iter()
-                    .any(|&(s, e)| line_start < e as usize && line_end > s as usize);
+                    .take_while(|&&(start, _)| (start as usize) < line_end)
+                    .any(|&(start, end)| line_start < end as usize && line_end > start as usize);
                 if is_module_level {
                     src_byte_offset += raw_byte_len;
                     continue;
@@ -255,15 +384,28 @@ pub fn generate_virtual_ts_with_offsets(
 
                 // Strip `export` from non-import lines inside setup scope
                 let trimmed_line = output_line.trim_start();
-                if trimmed_line.starts_with("export ")
+                if let Some(default_expr) = trimmed_line
+                    .strip_prefix("export default")
+                    .filter(|rest| rest.chars().next().is_none_or(char::is_whitespace))
+                {
+                    let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
+                    #[allow(clippy::disallowed_types)]
+                    {
+                        output_line = std::borrow::Cow::Owned(
+                            cstr!("{leading_ws}const __default__ ={}", default_expr).into(),
+                        );
+                    }
+                } else if trimmed_line.starts_with("export ")
                     && !trimmed_line.starts_with("export type ")
                     && !trimmed_line.starts_with("export interface ")
                 {
                     let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
-                    let rest = trimmed_line.strip_prefix("export ").unwrap();
-                    #[allow(clippy::disallowed_types)]
-                    {
-                        output_line = std::borrow::Cow::Owned(cstr!("{leading_ws}{rest}").into());
+                    if let Some(rest) = trimmed_line.strip_prefix("export ") {
+                        #[allow(clippy::disallowed_types)]
+                        {
+                            output_line =
+                                std::borrow::Cow::Owned(cstr!("{leading_ws}{rest}").into());
+                        }
                     }
                 }
 
@@ -287,6 +429,7 @@ pub fn generate_virtual_ts_with_offsets(
                     mappings.push(VizeMapping {
                         gen_range: gen_content_start..gen_content_end,
                         src_range: src_line_start..src_line_end,
+                        sub_spans: Vec::new(),
                     });
                 }
                 let _ = gen_line_start; // suppress unused warning
@@ -307,17 +450,18 @@ pub fn generate_virtual_ts_with_offsets(
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
 
             // Collect ref bindings for auto-unwrapping in template
-            let ref_bindings: Vec<&str> = summary
+            let mut ref_bindings: Vec<&str> = summary
                 .bindings
                 .bindings
                 .iter()
                 .filter(|(name, binding_type)| {
                     summary.reactivity.needs_value_access(name.as_str())
                         || matches!(binding_type, BindingType::SetupMaybeRef)
-                            && is_use_template_ref_binding(summary, script_content, name.as_str())
+                            && is_local_setup_binding(summary, name.as_str())
                 })
                 .map(|(name, _)| name.as_str())
                 .collect();
+            ref_bindings.sort_unstable();
 
             // Capture ref types BEFORE template scope to avoid circular references.
             // `typeof count` here refers to the setup-scope Ref<number>.
@@ -337,7 +481,7 @@ pub fn generate_virtual_ts_with_offsets(
             if !ref_bindings.is_empty() {
                 ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
                 ts.push_str(
-                    "    type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;\n",
+                    "    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;\n",
                 );
                 for name in &ref_bindings {
                     append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
@@ -357,20 +501,48 @@ pub fn generate_virtual_ts_with_offsets(
                 "canon.virtual_ts.generate_props_variables",
                 generate_props_variables(&mut ts, summary, script_content, generic_param)
             );
-
-            // Generate scope closures
-            profile!(
-                "canon.virtual_ts.generate_scope_closures",
-                generate_scope_closures(&mut ts, &mut mappings, summary, template_offset)
+            if legacy_vue2 {
+                profile!(
+                    "canon.virtual_ts.generate_legacy_vue2_variables",
+                    generate_legacy_vue2_variables(&mut ts, summary, options)
+                );
+            }
+            let template_prop_names = profile!(
+                "canon.virtual_ts.collect_template_prop_names",
+                collect_template_prop_names(summary, script_content)
             );
 
-            // Declare unresolved components (auto-imported or built-in) as `any`
+            // Generate scope closures
+            if check_options.any_enabled() {
+                profile!(
+                    "canon.virtual_ts.generate_scope_closures",
+                    generate_scope_closures(
+                        &mut ts,
+                        &mut mappings,
+                        summary,
+                        &template_prop_names,
+                        template_offset,
+                        check_options,
+                    )
+                );
+            }
+
+            // Declare unresolved components (auto-imported or built-in) as `any`.
+            // Names known to be provided by ambient project declarations stay
+            // unshadowed so their actual component prop types are preserved.
             if !summary.used_components.is_empty() {
+                let external_template_bindings: FxHashSet<&str> = options
+                    .external_template_bindings
+                    .iter()
+                    .map(|name| name.as_str())
+                    .collect();
                 let mut has_unresolved = false;
                 for component in &summary.used_components {
                     let name = component.as_str();
                     // Skip if already declared via script bindings (import/const)
-                    if summary.bindings.bindings.contains_key(name) {
+                    if summary.bindings.bindings.contains_key(name)
+                        || external_template_bindings.contains(name)
+                    {
                         continue;
                     }
                     if !has_unresolved {
@@ -395,10 +567,17 @@ pub fn generate_virtual_ts_with_offsets(
             if !summary.bindings.bindings.is_empty() {
                 ts.push_str("\n  // Reference setup bindings (used in template/CSS v-bind)\n  ");
                 let mut first = true;
-                for name in summary.bindings.bindings.keys() {
+                let mut binding_names: Vec<&str> = summary
+                    .bindings
+                    .bindings
+                    .keys()
+                    .map(|name| name.as_str())
+                    .collect();
+                binding_names.sort_unstable();
+                for name in binding_names {
                     // Skip bindings that are JS keywords or would cause syntax errors
                     if matches!(
-                        name.as_str(),
+                        name,
                         "default"
                             | "class"
                             | "new"
@@ -460,50 +639,42 @@ pub fn generate_virtual_ts_with_offsets(
     // Reference props destructure bindings at setup scope level.
     // These variables are declared in user script (e.g., `const { foo } = defineProps<...>()`)
     // but shadowed inside __template() by generate_props_variables, so void them here.
-    if let Some(destructure) = summary.macros.props_destructure() {
-        if !destructure.bindings.is_empty() {
-            ts.push_str("\n  // Reference destructured props (prevent TS6133)\n  ");
-            let mut first = true;
-            for binding in destructure.bindings.values() {
-                if !first {
-                    ts.push(' ');
-                }
-                append!(ts, "void {};", binding.local);
-                first = false;
+    if let Some(destructure) = summary.macros.props_destructure()
+        && !destructure.bindings.is_empty()
+    {
+        ts.push_str("\n  // Reference destructured props (prevent TS6133)\n  ");
+        let mut first = true;
+        for binding in destructure.bindings.values() {
+            if !first {
+                ts.push(' ');
             }
-            if let Some(ref rest) = destructure.rest_id {
-                if !first {
-                    ts.push(' ');
-                }
-                append!(ts, "void {};", rest);
-            }
-            ts.push('\n');
+            append!(ts, "void {};", binding.local);
+            first = false;
         }
+        if let Some(ref rest) = destructure.rest_id {
+            if !first {
+                ts.push(' ');
+            }
+            append!(ts, "void {};", rest);
+        }
+        ts.push('\n');
     }
 
     // Return exposed object from __setup() so its type can be extracted at module level.
     // This keeps the runtime args expression in scope (where the bindings are defined).
-    let has_runtime_expose = summary
-        .macros
-        .define_expose()
-        .is_some_and(|e| e.type_args.is_none() && e.runtime_args.is_some());
-    if has_runtime_expose {
-        let runtime_args = summary
-            .macros
-            .define_expose()
-            .unwrap()
-            .runtime_args
-            .as_ref()
-            .unwrap();
+    if let Some(expose) = summary.macros.define_expose()
+        && expose.type_args.is_none()
+        && let Some(runtime_args) = expose.runtime_args.as_ref()
+    {
         append!(ts, "\n  return ({runtime_args});\n");
     }
 
     // Close setup function
     ts.push_str("}\n\n");
 
-    // Invoke setup (void suppresses TS2349 for async/generic functions)
+    // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
-    ts.push_str("void __setup();\n\n");
+    ts.push_str("__setup();\n\n");
 
     // Emits type
     let emits_already_defined = summary
@@ -552,9 +723,25 @@ pub fn generate_virtual_ts_with_offsets(
     ts.push_str("  $emit: __EmitFn<Emits>;\n");
     ts.push_str("  $slots: Slots;\n");
     ts.push_str("};\n");
-    ts.push_str(
-        "declare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;\n",
-    );
+    // For a `<script setup generic="...">` component the construct signature's
+    // `$props` collapses `Props<T>` to its constraint, so a parent that extracts
+    // props via `typeof Comp extends { new (): { $props } }` cannot infer `T`
+    // from the passed prop values. Expose a generic functional prop-checker on
+    // the default export so the parent can invoke it with the assembled props
+    // object and let TypeScript infer `T` from the call (see #775). Non-generic
+    // components keep the plain construct signature unchanged.
+    if let Some(generic) = generic_param {
+        let generic_decl = add_generic_defaults(generic);
+        let generic_names = extract_generic_names(generic);
+        append!(
+            ts,
+            "declare const __vize_component__: (new (...args: any[]) => __VizeComponentInstance) & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; }};\n",
+        );
+    } else {
+        ts.push_str(
+            "declare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;\n",
+        );
+    }
     ts.push_str("export default __vize_component__;\n");
 
     VirtualTsOutput { code: ts, mappings }
@@ -615,16 +802,16 @@ fn extract_import_names(import_text: &str) -> Vec<&str> {
     } else {
         // Handle `import Name from "..."`
         let text = import_text.trim();
-        if let Some(rest) = text.strip_prefix("import ") {
-            if let Some(from_pos) = rest.find(" from ") {
-                let name = rest[..from_pos].trim();
-                if !name.is_empty()
-                    && !name.contains('{')
-                    && !name.contains('*')
-                    && name.chars().all(|c| c.is_alphanumeric() || c == '_')
-                {
-                    names.push(name);
-                }
+        if let Some(rest) = text.strip_prefix("import ")
+            && let Some(from_pos) = rest.find(" from ")
+        {
+            let name = rest[..from_pos].trim();
+            if !name.is_empty()
+                && !name.contains('{')
+                && !name.contains('*')
+                && name.chars().all(|c| c.is_alphanumeric() || c == '_')
+            {
+                names.push(name);
             }
         }
     }
@@ -632,31 +819,154 @@ fn extract_import_names(import_text: &str) -> Vec<&str> {
     names
 }
 
-fn is_use_template_ref_binding(
-    summary: &Croquis,
-    script_content: Option<&str>,
-    name: &str,
-) -> bool {
-    let Some(script) = script_content else {
-        return false;
-    };
+fn is_local_setup_binding(summary: &Croquis, name: &str) -> bool {
     let Some(&(start, end)) = summary.binding_spans.get(name) else {
-        return false;
+        return true;
     };
 
-    if summary
+    !summary
         .import_statements
         .iter()
         .any(|import| start >= import.start && end <= import.end)
-    {
-        return false;
+}
+
+fn generate_legacy_vue2_variables(
+    mut ts: &mut String,
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+) {
+    let macro_prop_names: FxHashSet<&str> = summary
+        .macros
+        .props()
+        .iter()
+        .map(|prop| prop.name.as_str())
+        .collect();
+    let configured_globals: FxHashSet<&str> = options
+        .template_globals
+        .iter()
+        .map(|global| global.name.as_str())
+        .collect();
+    let mut names: Vec<&str> = summary
+        .bindings
+        .bindings
+        .iter()
+        .filter_map(|(name, binding_type)| {
+            let name = name.as_str();
+            match binding_type {
+                BindingType::Data | BindingType::Options | BindingType::VueGlobal => Some(name),
+                BindingType::Props if !macro_prop_names.contains(name) => Some(name),
+                _ => None,
+            }
+        })
+        .filter(|name| !configured_globals.contains(name))
+        .filter(|name| is_safe_value_identifier(name))
+        .collect();
+    names.sort_unstable();
+    names.dedup();
+
+    if names.is_empty() {
+        return;
     }
 
-    let tail_end = (end as usize + 256).min(script.len());
-    let tail = &script[end as usize..tail_end];
-    let Some(eq_pos) = tail.find('=') else {
+    ts.push_str("  // Vue 2.7 / Nuxt 2 Options API template bindings\n");
+    for name in &names {
+        append!(ts, "  const {name}: any = undefined as any;\n");
+    }
+    ts.push_str("  ");
+    for name in &names {
+        append!(ts, "void {name};");
+    }
+    ts.push('\n');
+}
+
+fn is_safe_value_identifier(name: &str) -> bool {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
         return false;
     };
-    let rhs = tail[eq_pos + 1..].trim_start();
-    rhs.starts_with("useTemplateRef") || rhs.starts_with("(useTemplateRef")
+    if !(first.is_ascii_alphabetic() || first == '_' || first == '$') {
+        return false;
+    }
+    chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
+}
+
+fn is_ident_byte(b: u8) -> bool {
+    b == b'_' || b == b'$' || b.is_ascii_alphanumeric()
+}
+
+fn skip_ascii_ws(bytes: &[u8], mut i: usize) -> usize {
+    while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+        i += 1;
+    }
+    i
+}
+
+/// Whether `haystack` mentions any of `idents` as a whole-word identifier.
+/// Used to decide whether a lifted type declaration depends on an SFC generic
+/// parameter and therefore needs that parameter re-declared on it.
+fn references_any_identifier(haystack: &str, idents: &[String]) -> bool {
+    let bytes = haystack.as_bytes();
+    idents.iter().any(|ident| {
+        let ident = ident.as_str();
+        if ident.is_empty() {
+            return false;
+        }
+        let mut from = 0;
+        while let Some(rel) = haystack[from..].find(ident) {
+            let at = from + rel;
+            let before_ok = at == 0 || !is_ident_byte(bytes[at - 1]);
+            let after = at + ident.len();
+            let after_ok = after >= bytes.len() || !is_ident_byte(bytes[after]);
+            if before_ok && after_ok {
+                return true;
+            }
+            from = at + ident.len();
+        }
+        false
+    })
+}
+
+/// Byte offset within a hoisted `type` / `interface` declaration immediately
+/// after the declared name, where synthetic generic parameters can be spliced
+/// in. Returns `None` if the declaration already has its own `<...>` parameter
+/// list or the name can't be located (the declaration is then emitted as-is).
+fn generic_injection_point(decl: &str, type_name: &str) -> Option<usize> {
+    let bytes = decl.as_bytes();
+    let mut i = skip_ascii_ws(bytes, 0);
+
+    // Optional `export` modifier.
+    if decl[i..].starts_with("export")
+        && matches!(bytes.get(i + 6), Some(b) if b.is_ascii_whitespace())
+    {
+        i = skip_ascii_ws(bytes, i + 6);
+    }
+
+    // Declaration keyword.
+    if decl[i..].starts_with("type")
+        && matches!(bytes.get(i + 4), Some(b) if b.is_ascii_whitespace())
+    {
+        i += 4;
+    } else if decl[i..].starts_with("interface")
+        && matches!(bytes.get(i + 9), Some(b) if b.is_ascii_whitespace())
+    {
+        i += 9;
+    } else {
+        return None;
+    }
+    i = skip_ascii_ws(bytes, i);
+
+    // Declared name.
+    if !decl[i..].starts_with(type_name) {
+        return None;
+    }
+    let name_end = i + type_name.len();
+    // Reject partial-name matches (`Foo` inside `Foobar`).
+    if matches!(bytes.get(name_end), Some(&b) if is_ident_byte(b)) {
+        return None;
+    }
+    // Skip declarations that already declare their own type parameters.
+    if bytes.get(skip_ascii_ws(bytes, name_end)) == Some(&b'<') {
+        return None;
+    }
+    Some(name_end)
 }

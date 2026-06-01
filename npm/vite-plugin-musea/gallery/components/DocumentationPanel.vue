@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { Marked } from "marked";
+import { Marked, type Tokens } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js/lib/core";
 import xml from "highlight.js/lib/languages/xml";
@@ -21,13 +21,71 @@ hljs.registerLanguage("css", css);
 hljs.registerLanguage("bash", bash);
 hljs.registerLanguage("sh", bash);
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
+const URL_SCHEME_RE = /^[a-z][a-z\d+.-]*:/i;
+const ALLOWED_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+
+function cleanUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  if (
+    trimmed.startsWith("#") ||
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("./") ||
+    trimmed.startsWith("../")
+  ) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith("//")) return null;
+  if (!URL_SCHEME_RE.test(trimmed)) return trimmed;
+
+  try {
+    const url = new URL(trimmed, window.location.href);
+    return ALLOWED_URL_PROTOCOLS.has(url.protocol) ? trimmed : null;
+  } catch {
+    return null;
+  }
+}
+
 const markedInstance = new Marked(
+  {
+    renderer: {
+      html({ text }: Tokens.HTML | Tokens.Tag) {
+        return escapeHtml(text);
+      },
+      link({ href, title, tokens }: Tokens.Link) {
+        const cleanHref = cleanUrl(href);
+        const label = this.parser.parseInline(tokens);
+        if (!cleanHref) return label;
+
+        const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
+        return `<a href="${escapeHtml(cleanHref)}"${titleAttr} rel="noreferrer">${label}</a>`;
+      },
+      image({ href, title, text }: Tokens.Image) {
+        const cleanHref = cleanUrl(href);
+        if (!cleanHref) return escapeHtml(text);
+
+        const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
+        return `<img src="${escapeHtml(cleanHref)}" alt="${escapeHtml(text)}"${titleAttr}>`;
+      },
+    },
+  },
   markedHighlight({
     highlight(code: string, lang: string) {
       if (lang && hljs.getLanguage(lang)) {
         return hljs.highlight(code, { language: lang }).value;
       }
-      return code;
+      return escapeHtml(code);
     },
   }),
 );

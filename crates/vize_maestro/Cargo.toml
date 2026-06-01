@@ -2,6 +2,7 @@
 name = "vize_maestro"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Maestro - Language Server Protocol implementation for Vize Vue templates"
@@ -14,33 +15,34 @@ native = ["vize_canon/native"]
 
 [dependencies]
 # LSP Framework
-tower-lsp = "0.20"
+tower-lsp.workspace = true
 # lsp-types is re-exported by tower-lsp, use that version
 
 # Async Runtime
-tokio = { version = "1", features = ["full"] }
-async-trait = "0.1"
+futures.workspace = true
+async-trait.workspace = true
 
 # Text Processing
-ropey = "1.6"
+ropey.workspace = true
 
 # Serialization
 serde.workspace = true
 serde_json.workspace = true
 
 # Logging
-tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing.workspace = true
+tracing-subscriber.workspace = true
 
 # Utilities
-dashmap = "6"
-parking_lot = "0.12"
-ignore = "0.4"
+dashmap.workspace = true
+parking_lot.workspace = true
+ignore.workspace = true
 oxc_allocator.workspace = true
 oxc_ast.workspace = true
 oxc_ast_visit.workspace = true
 oxc_parser.workspace = true
 oxc_span.workspace = true
+oxc_diagnostics.workspace = true
 
 # Internal crates
 vize_carton.workspace = true
@@ -52,8 +54,7 @@ vize_patina.workspace = true
 vize_canon = { workspace = true }
 vize_croquis.workspace = true
 vize_musea.workspace = true
-vize_vitrine = { workspace = true, default-features = false }
 
 [dev-dependencies]
 insta.workspace = true
-tempfile = "3"
+tempfile.workspace = true

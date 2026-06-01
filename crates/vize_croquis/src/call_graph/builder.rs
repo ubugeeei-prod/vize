@@ -103,10 +103,10 @@ impl CallGraph {
         });
 
         // Mark containing function as using Vue APIs
-        if let Some(func_id) = containing_function {
-            if let Some(func) = self.functions.get_mut(func_id.as_u32() as usize) {
-                func.uses_vue_apis = true;
-            }
+        if let Some(func_id) = containing_function
+            && let Some(func) = self.functions.get_mut(func_id.as_u32() as usize)
+        {
+            func.uses_vue_apis = true;
         }
     }
 

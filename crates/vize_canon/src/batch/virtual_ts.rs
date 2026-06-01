@@ -4,15 +4,18 @@
 //! is kept here for the focused unit tests that exercise import rewriting and
 //! baseline batch behavior in isolation.
 
+use super::SfcBlockType;
 use super::import_rewriter::ImportRewriter;
 use super::source_map::{SfcBlockRange, SfcSourceMap};
-use super::SfcBlockType;
 use crate::virtual_ts::VizeMapping;
-use vize_atelier_sfc::SfcDescriptor;
+use vize_atelier_sfc::{
+    SfcDescriptor,
+    croquis::{SfcCroquisOptions, analyze_sfc_descriptor},
+};
+use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_carton::String;
-use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
+use vize_croquis::Croquis;
 
 /// Result of virtual TypeScript generation.
 #[derive(Debug)]
@@ -23,19 +26,31 @@ pub struct VirtualTsResult {
     pub source_map: SfcSourceMap,
 }
 
-/// Vue compiler macros - defined with parameters marked as used.
-const VUE_SETUP_COMPILER_MACROS: &str = r#"// Compiler macros (transformed at compile time by Vue)
-function defineProps<T>(): T { return undefined as unknown as T; }
-type __BatchEmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);
+/// Vue setup-scope helpers - defined with parameters marked as used.
+const VUE_SETUP_HELPERS: &str = r#"// Compiler macros (transformed at compile time by Vue)
+type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
+type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
+type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
+type __BatchEmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
+type __BatchEmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
+type __BatchEmitFn<T> = __BatchEmitShape<T> extends (...args: any[]) => any ? __BatchEmitShape<T> : (<K extends keyof __BatchEmitShape<T>>(event: K, ...args: __BatchEmitArgs<__BatchEmitShape<T>, K>) => void);
+type __DefaultFactory<T> = (props: any) => T;
+type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
+function defineProps<T>(): T;
+function defineProps<const T extends readonly string[]>(_props: T): { [K in T[number]]?: any };
+function defineProps<const T extends Record<string, any>>(_props: T): __RuntimePropShape<T>;
+function defineProps(_props?: any) { void _props; return undefined as any; }
 function defineEmits<T>(): __BatchEmitFn<T> { return (() => {}) as any; }
-function defineEmits<T extends readonly string[]>(_events: T): (event: T[number], ...args: any[]) => void { void _events; return (() => {}) as any; }
-function defineEmits<T extends Record<string, any>>(_events: T): (event: keyof T, ...args: any[]) => void { void _events; return (() => {}) as any; }
+function defineEmits<const T extends readonly string[]>(_events: T): (event: T[number], ...args: any[]) => void { void _events; return (() => {}) as any; }
+function defineEmits<const T extends Record<string, any>>(_events: T): __BatchEmitFn<T> { void _events; return (() => {}) as any; }
 function defineExpose<T>(_exposed?: T): void { void _exposed; }
 function defineModel<T>(): $Vue['Ref']<T | undefined> { return undefined as unknown as $Vue['Ref']<T | undefined>; }
 function defineModel<T>(_options: any): $Vue['Ref']<T> { void _options; return undefined as unknown as $Vue['Ref']<T>; }
 function defineModel<T>(_name: string, _options?: any): $Vue['Ref']<T> { void _name; void _options; return undefined as unknown as $Vue['Ref']<T>; }
 function defineSlots<T>(): T { return undefined as unknown as T; }
-function withDefaults<T, D>(_props: T, _defaults: D): T & D { void _props; void _defaults; return undefined as unknown as T & D; }
+function withDefaults<T, D extends __WithDefaultsArgs<T>>(_props: T, _defaults: D): __WithDefaultsResult<T, D> { void _props; void _defaults; return undefined as unknown as __WithDefaultsResult<T, D>; }
 function useTemplateRef<T = any>(_key: string): $Vue['ShallowRef']<T | null> { void _key; return undefined as unknown as $Vue['ShallowRef']<T | null>; }
 void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 "#;
@@ -69,7 +84,7 @@ impl VirtualTsGenerator {
         code.push_str("// Generated by vize\n");
         code.push_str("// ============================================\n\n");
         code.push_str("type $Vue = import('vue');\n\n");
-        code.push_str(VUE_SETUP_COMPILER_MACROS);
+        code.push_str(VUE_SETUP_HELPERS);
         code.push('\n');
         code.push_str(VUE_TEMPLATE_CONTEXT);
         code.push('\n');
@@ -91,6 +106,7 @@ impl VirtualTsGenerator {
                 gen_range: start..end,
                 src_range: script_setup.loc.start
                     ..script_setup.loc.start + script_setup.content.len(),
+                sub_spans: Vec::new(),
             });
             blocks.push(SfcBlockRange {
                 start: script_setup.loc.start as u32,
@@ -104,6 +120,7 @@ impl VirtualTsGenerator {
             mappings.push(VizeMapping {
                 gen_range: start..end,
                 src_range: script.loc.start..script.loc.start + script.content.len(),
+                sub_spans: Vec::new(),
             });
             blocks.push(SfcBlockRange {
                 start: script.loc.start as u32,
@@ -122,6 +139,7 @@ impl VirtualTsGenerator {
             mappings.push(VizeMapping {
                 gen_range: start..end,
                 src_range: template.loc.start..template.loc.start + template.content.len(),
+                sub_spans: Vec::new(),
             });
             blocks.push(SfcBlockRange {
                 start: template.loc.start as u32,
@@ -211,20 +229,15 @@ impl VirtualTsGenerator {
             vize_atelier_sfc::parse_sfc(content, vize_atelier_sfc::SfcParseOptions::default())
                 .map_err(|error| cstr!("{error:?}"))?;
 
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-        if let Some(ref script_setup) = descriptor.script_setup {
-            analyzer.analyze_script_setup(&script_setup.content);
-        } else if let Some(ref script) = descriptor.script {
-            analyzer.analyze_script_plain(&script.content);
-        }
-
-        if let Some(ref template) = descriptor.template {
+        let analysis = if let Some(ref template) = descriptor.template {
             let allocator = vize_carton::Bump::new();
             let (root, _) = vize_armature::parse(&allocator, &template.content);
-            analyzer.analyze_template(&root);
-        }
+            analyze_sfc_descriptor(&descriptor, Some(&root), SfcCroquisOptions::full())
+        } else {
+            analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full())
+        };
 
-        Ok(self.generate(&descriptor, &analyzer.finish()))
+        Ok(self.generate(&descriptor, &analysis))
     }
 }
 

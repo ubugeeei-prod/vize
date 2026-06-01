@@ -2,8 +2,8 @@
 //!
 //! Require font-display property in @font-face rules.
 
-use lightningcss::rules::font_face::FontFaceProperty;
 use lightningcss::rules::CssRule as LCssRule;
+use lightningcss::rules::font_face::FontFaceProperty;
 use lightningcss::stylesheet::StyleSheet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};

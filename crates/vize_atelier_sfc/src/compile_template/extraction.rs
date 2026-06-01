@@ -2,9 +2,7 @@
 
 use vize_carton::{String, ToCompactString};
 
-use super::string_tracking::{
-    compact_render_body, count_braces_with_state, count_parens_with_state, StringTrackState,
-};
+use super::string_tracking::{StringTrackState, count_braces_with_state, count_parens_with_state};
 
 fn is_vapor_template_declaration(line: &str) -> bool {
     line.starts_with("const t") && line.contains("_template(")
@@ -19,6 +17,16 @@ fn detect_render_export_name(trimmed: &str) -> Option<&'static str> {
         Some("ssrRender")
     } else {
         None
+    }
+}
+
+fn finalize_render_body(render_body: &mut String) {
+    while render_body.ends_with([' ', '\t', '\n', '\r']) {
+        render_body.pop();
+    }
+
+    if render_body.ends_with(';') {
+        render_body.pop();
     }
 }
 
@@ -84,17 +92,14 @@ pub(crate) fn extract_template_parts(
     let mut render_fn_name = "";
     let mut in_render = false;
     let mut in_block_render = false;
-    let mut saw_block_render = false;
     let mut in_return = false;
     let mut brace_depth = 0;
     let mut brace_state = StringTrackState::default();
     let mut paren_state = StringTrackState::default();
     let mut return_paren_depth = 0;
+    let mut pending_ternary_continuation = false;
 
-    // Collect all lines for look-ahead
-    let lines: Vec<&str> = template_code.lines().collect();
-
-    for (i, line) in lines.iter().enumerate() {
+    for line in template_code.lines() {
         let trimmed = line.trim();
 
         if trimmed.starts_with("import ") {
@@ -108,7 +113,6 @@ pub(crate) fn extract_template_parts(
             in_render = true;
             render_fn_name = name;
             in_block_render = trimmed.starts_with("function render(") && trimmed.contains("$props");
-            saw_block_render = saw_block_render || in_block_render;
             brace_depth = 0;
             brace_state = StringTrackState::default();
             paren_state = StringTrackState::default();
@@ -135,6 +139,16 @@ pub(crate) fn extract_template_parts(
 
             brace_depth = next_brace_depth;
 
+            if pending_ternary_continuation && !trimmed.is_empty() {
+                if trimmed.starts_with('?') || trimmed.starts_with(':') {
+                    pending_ternary_continuation = false;
+                } else {
+                    pending_ternary_continuation = false;
+                    in_return = false;
+                    finalize_render_body(&mut render_body);
+                }
+            }
+
             // Extract the return statement inside the render function (may span multiple lines)
             if in_return {
                 // Continue collecting return body
@@ -142,27 +156,8 @@ pub(crate) fn extract_template_parts(
                 render_body.push_str(line);
                 return_paren_depth += count_parens_with_state(line, &mut paren_state);
 
-                // Check if return statement is complete:
-                // - Parentheses must be balanced (return_paren_depth <= 0)
-                // - Next non-empty line must NOT be a ternary continuation (? or :)
                 if return_paren_depth <= 0 {
-                    // Look ahead to check for ternary continuation
-                    let next_continues_ternary = lines
-                        .iter()
-                        .skip(i + 1)
-                        .map(|l| l.trim())
-                        .find(|l| !l.is_empty())
-                        .map(|l| l.starts_with('?') || l.starts_with(':'))
-                        .unwrap_or(false);
-
-                    if !next_continues_ternary {
-                        in_return = false;
-                        // Remove trailing semicolon if present
-                        let trimmed_body = render_body.trim_end();
-                        if let Some(stripped) = trimmed_body.strip_suffix(';') {
-                            render_body = stripped.to_compact_string();
-                        }
-                    }
+                    pending_ternary_continuation = true;
                 }
             } else if let Some(stripped) = trimmed.strip_prefix("return ") {
                 render_body = stripped.to_compact_string();
@@ -172,23 +167,8 @@ pub(crate) fn extract_template_parts(
                 if return_paren_depth > 0 {
                     in_return = true;
                 } else {
-                    // Check if next non-empty line is a ternary continuation
-                    let next_continues_ternary = lines
-                        .iter()
-                        .skip(i + 1)
-                        .map(|l| l.trim())
-                        .find(|l| !l.is_empty())
-                        .map(|l| l.starts_with('?') || l.starts_with(':'))
-                        .unwrap_or(false);
-
-                    if next_continues_ternary {
-                        in_return = true;
-                    } else {
-                        // Single line return - remove trailing semicolon if present
-                        if render_body.ends_with(';') {
-                            render_body.pop();
-                        }
-                    }
+                    in_return = true;
+                    pending_ternary_continuation = true;
                 }
             } else if trimmed.starts_with("const _component_")
                 || trimmed.starts_with("const _directive_")
@@ -204,12 +184,9 @@ pub(crate) fn extract_template_parts(
         }
     }
 
-    // Compact VDOM-style return expressions, but keep Vapor statement blocks intact.
-    let compacted = if saw_block_render {
-        render_body
-    } else {
-        compact_render_body(&render_body)
-    };
+    if in_return {
+        finalize_render_body(&mut render_body);
+    }
 
-    (imports, hoisted, preamble, compacted, render_fn_name)
+    (imports, hoisted, preamble, render_body, render_fn_name)
 }

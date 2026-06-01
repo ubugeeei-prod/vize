@@ -10,8 +10,8 @@
 //! for `display: none` (e.g., print styles, initial hidden state).
 
 use lightningcss::declaration::DeclarationBlock;
-use lightningcss::properties::display::{Display, DisplayKeyword};
 use lightningcss::properties::Property;
+use lightningcss::properties::display::{Display, DisplayKeyword};
 use lightningcss::rules::CssRule as LCssRule;
 use lightningcss::stylesheet::StyleSheet;
 

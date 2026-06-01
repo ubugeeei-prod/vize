@@ -6,6 +6,7 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 
 import { ref } from 'vue'
 
+
 export default {
   __name: 'test',
   setup(__props) {
@@ -15,8 +16,8 @@ const bar = ref(123)
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", {
-      onClick: _cache[0] || (_cache[0] = $event => (_ctx.handleEvent({ foo: foo.value, bar: bar.value })))
-    }, "Test"))
+    onClick: _cache[0] || (_cache[0] = $event => (_ctx.handleEvent({ foo: foo.value, bar: bar.value })))
+  }, "Test"))
 }
 }
 

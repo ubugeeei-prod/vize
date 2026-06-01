@@ -1,9 +1,9 @@
 //! musea/require-title
 //!
-//! Require title attribute in `<art>` block.
+//! Require a title for an `<art>` block.
 //!
-//! The title attribute is required for the component gallery to display
-//! the component properly.
+//! A title may be provided by `<art title="...">` or by `defineArt("./Button.vue", { title: "..." })`.
+//! If `defineArt` omits `title`, the inferred component name is used as the display fallback.
 //!
 //! ## Examples
 //!
@@ -16,7 +16,11 @@
 //!
 //! ### Valid
 //! ```vue
-//! <art title="Button" component="./Button.vue">
+//! <script setup>
+//! defineArt("./Button.vue", { title: "Button" });
+//! </script>
+//!
+//! <art>
 //! </art>
 //! ```
 
@@ -53,8 +57,8 @@ impl MuseaRule for RequireTitle {
 
         let art_tag = &tag_content[..tag_end];
 
-        // Check for title attribute
-        if !has_attribute(art_tag, "title") {
+        // Check for title attribute or defineArt metadata.
+        if !has_attribute(art_tag, "title") && !define_art_has_title(source) {
             result.add_diagnostic(
                 LintDiagnostic::error(
                     META.name,
@@ -66,6 +70,20 @@ impl MuseaRule for RequireTitle {
             );
         }
     }
+}
+
+fn define_art_has_title(source: &str) -> bool {
+    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, Default::default()) else {
+        return false;
+    };
+    let Some(script_setup) = descriptor.script_setup.as_ref() else {
+        return false;
+    };
+
+    vize_croquis::script_parser::parse_script_setup(script_setup.content.as_ref())
+        .macros
+        .define_art()
+        .is_some_and(|art| art.title.is_some() || !art.component_name.is_empty())
 }
 
 /// Check if a tag has an attribute (simple check)
@@ -107,6 +125,18 @@ mod tests {
     #[test]
     fn test_valid_title_with_spaces() {
         let source = r#"<art title = "Button" component="./Button.vue"></art>"#;
+        let rule = RequireTitle;
+        let mut result = MuseaLintResult::default();
+        rule.check(source, &mut result);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_with_define_art() {
+        let source = r#"<script setup>
+defineArt("./Button.vue", { title: "Button" });
+</script>
+<art></art>"#;
         let rule = RequireTitle;
         let mut result = MuseaLintResult::default();
         rule.check(source, &mut result);

@@ -1,6 +1,6 @@
 ===
 name: text patch flag
-options: default
+options: vdom
 --- INPUT ---
 <div>{{ msg }}</div>
 --- OUTPUT ---
@@ -9,10 +9,9 @@ import { toDisplayString as _toDisplayString, openBlock as _openBlock, createEle
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg), 1 /* TEXT */))
 }
-
 ===
 name: text in span
-options: default
+options: vdom
 --- INPUT ---
 <span>{{ text }}</span>
 --- OUTPUT ---
@@ -21,10 +20,9 @@ import { toDisplayString as _toDisplayString, openBlock as _openBlock, createEle
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("span", null, _toDisplayString(_ctx.text), 1 /* TEXT */))
 }
-
 ===
 name: multiple interpolations
-options: default
+options: vdom
 --- INPUT ---
 <div>{{ a }} {{ b }}</div>
 --- OUTPUT ---
@@ -33,10 +31,9 @@ import { toDisplayString as _toDisplayString, openBlock as _openBlock, createEle
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.a) + " " + _toDisplayString(_ctx.b), 1 /* TEXT */))
 }
-
 ===
 name: class patch flag
-options: default
+options: vdom
 --- INPUT ---
 <div :class="cls"></div>
 --- OUTPUT ---
@@ -47,10 +44,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass(_ctx.cls)
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: class object
-options: default
+options: vdom
 --- INPUT ---
 <div :class="{ active: isActive }"></div>
 --- OUTPUT ---
@@ -61,10 +57,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass({ active: _ctx.isActive })
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: class array
-options: default
+options: vdom
 --- INPUT ---
 <div :class="[a, b]"></div>
 --- OUTPUT ---
@@ -75,10 +70,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass([_ctx.a, _ctx.b])
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: style patch flag
-options: default
+options: vdom
 --- INPUT ---
 <div :style="styles"></div>
 --- OUTPUT ---
@@ -89,10 +83,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle(_ctx.styles)
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: style object
-options: default
+options: vdom
 --- INPUT ---
 <div :style="{ color: textColor }"></div>
 --- OUTPUT ---
@@ -103,10 +96,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle({ color: _ctx.textColor })
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: style array
-options: default
+options: vdom
 --- INPUT ---
 <div :style="[a, b]"></div>
 --- OUTPUT ---
@@ -117,10 +109,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle([_ctx.a, _ctx.b])
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: props patch flag
-options: default
+options: vdom
 --- INPUT ---
 <div :id="id"></div>
 --- OUTPUT ---
@@ -129,10 +120,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { id: _ctx.id }, null, 8 /* PROPS */, ["id"]))
 }
-
 ===
 name: multiple dynamic props
-options: default
+options: vdom
 --- INPUT ---
 <div :id="id" :title="title"></div>
 --- OUTPUT ---
@@ -144,10 +134,9 @@ export function render(_ctx, _cache) {
     title: _ctx.title
   }, null, 8 /* PROPS */, ["id", "title"]))
 }
-
 ===
 name: dynamic data attribute
-options: default
+options: vdom
 --- INPUT ---
 <div :data-id="id"></div>
 --- OUTPUT ---
@@ -156,10 +145,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { "data-id": _ctx.id }, null, 8 /* PROPS */, ["data-id"]))
 }
-
 ===
 name: v-bind object
-options: default
+options: vdom
 --- INPUT ---
 <div v-bind="props"></div>
 --- OUTPUT ---
@@ -168,10 +156,9 @@ import { normalizeProps as _normalizeProps, guardReactiveProps as _guardReactive
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(_ctx.props)), null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: dynamic key
-options: default
+options: vdom
 --- INPUT ---
 <div :[key]="value"></div>
 --- OUTPUT ---
@@ -180,10 +167,9 @@ import { normalizeProps as _normalizeProps, openBlock as _openBlock, createEleme
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _normalizeProps({ [_ctx.key || ""]: _ctx.value }), null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: event handler
-options: default
+options: vdom
 --- INPUT ---
 <button @click="handler">click</button>
 --- OUTPUT ---
@@ -192,10 +178,34 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("button", { onClick: _ctx.handler }, "click", 8 /* PROPS */, ["onClick"]))
 }
+===
+name: event handler with dynamic text
+options: vdom
+--- INPUT ---
+<button @click="handler">{{ label }}</button>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", { onClick: _ctx.handler }, _toDisplayString(_ctx.label), 9 /* TEXT, PROPS */, ["onClick"]))
+}
+===
+name: event handler with dynamic class
+options: vdom
+--- INPUT ---
+<button :class="cls" @click="handler">click</button>
+--- OUTPUT ---
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", {
+    class: _normalizeClass(_ctx.cls),
+    onClick: _ctx.handler
+  }, "click", 10 /* CLASS, PROPS */, ["onClick"]))
+}
 ===
 name: ref
-options: default
+options: vdom
 --- INPUT ---
 <div ref="el"></div>
 --- OUTPUT ---
@@ -204,10 +214,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { ref: "el" }, null, 512 /* NEED_PATCH */))
 }
-
 ===
 name: text and class
-options: default
+options: vdom
 --- INPUT ---
 <div :class="cls">{{ msg }}</div>
 --- OUTPUT ---
@@ -218,10 +227,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass(_ctx.cls)
   }, _toDisplayString(_ctx.msg), 3 /* TEXT, CLASS */))
 }
-
 ===
 name: class and style
-options: default
+options: vdom
 --- INPUT ---
 <div :class="cls" :style="style"></div>
 --- OUTPUT ---
@@ -233,10 +241,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle(_ctx.style)
   }, null, 6 /* CLASS, STYLE */))
 }
-
 ===
 name: text and props
-options: default
+options: vdom
 --- INPUT ---
 <div :id="id">{{ msg }}</div>
 --- OUTPUT ---
@@ -245,10 +252,9 @@ import { toDisplayString as _toDisplayString, openBlock as _openBlock, createEle
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { id: _ctx.id }, _toDisplayString(_ctx.msg), 9 /* TEXT, PROPS */, ["id"]))
 }
-
 ===
 name: all dynamic
-options: default
+options: vdom
 --- INPUT ---
 <div :id="id" :class="cls" :style="style">{{ msg }}</div>
 --- OUTPUT ---
@@ -261,10 +267,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle(_ctx.style)
   }, _toDisplayString(_ctx.msg), 15 /* TEXT, CLASS, STYLE, PROPS */, ["id"]))
 }
-
 ===
 name: v-for with key
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items" :key="item.id">{{ item }}</div>
 --- OUTPUT ---
@@ -277,10 +282,9 @@ export function render(_ctx, _cache) {
     }, _toDisplayString(item), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for without key
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items">{{ item }}</div>
 --- OUTPUT ---
@@ -291,10 +295,9 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", null, _toDisplayString(item), 1 /* TEXT */))
   }), 256 /* UNKEYED_FRAGMENT */))
 }
-
 ===
 name: ref on element
-options: default
+options: vdom
 --- INPUT ---
 <div ref="el">content</div>
 --- OUTPUT ---
@@ -303,10 +306,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { ref: "el" }, "content", 512 /* NEED_PATCH */))
 }
-
 ===
 name: directive on static
-options: default
+options: vdom
 --- INPUT ---
 <div v-focus>content</div>
 --- OUTPUT ---
@@ -321,10 +323,9 @@ export function render(_ctx, _cache) {
     [_directive_focus]
   ])
 }
-
 ===
 name: dynamic slot name
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent><template #[name]>content</template></MyComponent>
 --- OUTPUT ---
@@ -340,10 +341,9 @@ export function render(_ctx, _cache) {
     _: 2 /* DYNAMIC */
   }, 1024 /* DYNAMIC_SLOTS */))
 }
-
 ===
 name: slot with v-if
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent><template #header v-if="show">Header</template></MyComponent>
 --- OUTPUT ---
@@ -364,10 +364,9 @@ export function render(_ctx, _cache) {
       : undefined
   ]), 1024 /* DYNAMIC_SLOTS */))
 }
-
 ===
 name: slot with v-for
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent><template #item v-for="item in items" :key="item">{{ item }}</template></MyComponent>
 --- OUTPUT ---
@@ -387,10 +386,9 @@ export function render(_ctx, _cache) {
     })
   ]), 1024 /* DYNAMIC_SLOTS */))
 }
-
 ===
 name: component static props
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent msg="hello" />
 --- OUTPUT ---
@@ -401,10 +399,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, { msg: "hello" }))
 }
-
 ===
 name: component dynamic props
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent :msg="message" />
 --- OUTPUT ---
@@ -415,10 +412,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, { msg: _ctx.message }, null, 8 /* PROPS */, ["msg"]))
 }
-
 ===
 name: component mixed props
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent static="value" :dynamic="value" />
 --- OUTPUT ---

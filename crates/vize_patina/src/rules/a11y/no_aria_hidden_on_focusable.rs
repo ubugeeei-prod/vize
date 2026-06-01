@@ -37,14 +37,15 @@ impl Rule for NoAriaHiddenOnFocusable {
             return;
         }
 
-        if let Some(value) = helpers::get_static_attribute_value(element, "aria-hidden") {
-            if value == "true" && helpers::is_focusable_element(element) {
-                ctx.error_with_help(
-                    ctx.t("a11y/no-aria-hidden-on-focusable.message"),
-                    &element.loc,
-                    ctx.t("a11y/no-aria-hidden-on-focusable.help"),
-                );
-            }
+        if let Some(value) = helpers::get_static_attribute_value(element, "aria-hidden")
+            && value == "true"
+            && helpers::is_focusable_element(element)
+        {
+            ctx.error_with_help(
+                ctx.t("a11y/no-aria-hidden-on-focusable.message"),
+                &element.loc,
+                ctx.t("a11y/no-aria-hidden-on-focusable.help"),
+            );
         }
     }
 }

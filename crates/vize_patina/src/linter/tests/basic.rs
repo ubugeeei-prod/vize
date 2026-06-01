@@ -25,6 +25,71 @@ fn test_lint_with_allocator_reuse() {
 }
 
 #[test]
+fn test_lint_template_uses_semantic_analysis_for_unused_v_for_vars() {
+    let linter =
+        Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-vars".to_compact_string()]));
+    let result = linter.lint_template(
+        r#"<ul><li v-for="(_item, index) in items" :key="_item.id">{{ _item }}</li></ul>"#,
+        "test.vue",
+    );
+
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "vue/no-unused-vars");
+    assert!(result.diagnostics[0].message.contains("index"));
+}
+
+#[test]
+fn test_ecosystem_template_rules_are_enabled_by_default() {
+    let source = r#"<template><RouterLink>Home</RouterLink></template>"#;
+
+    let happy_path = Linter::with_preset(LintPreset::HappyPath);
+    let happy_path_result = happy_path.lint_sfc(source, "test.vue");
+    assert_eq!(happy_path_result.error_count, 0);
+    assert_eq!(happy_path_result.warning_count, 0);
+
+    let result = Linter::new().lint_sfc(source, "test.vue");
+    assert_eq!(result.error_count, 1);
+    assert_eq!(
+        result.diagnostics[0].rule_name,
+        "ecosystem/router-link-require-to"
+    );
+}
+
+#[test]
+fn test_ecosystem_template_source_hints_use_full_sfc() {
+    let source = r#"<script setup>
+import { Link } from "@void/vue";
+</script>
+<template><Link>Home</Link></template>"#;
+
+    let result = Linter::new().lint_sfc(source, "test.vue");
+    assert_eq!(result.error_count, 1);
+    assert_eq!(
+        result.diagnostics[0].rule_name,
+        "ecosystem/void-link-require-href"
+    );
+}
+
+#[test]
+fn test_ecosystem_script_rules_are_enabled_by_default() {
+    let source = r#"<script setup lang="ts">
+router.push('/settings')
+</script>"#;
+
+    let happy_path = Linter::with_preset(LintPreset::HappyPath);
+    let happy_path_result = happy_path.lint_sfc(source, "test.vue");
+    assert_eq!(happy_path_result.error_count, 0);
+    assert_eq!(happy_path_result.warning_count, 0);
+
+    let result = Linter::new().lint_sfc(source, "test.vue");
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(
+        result.diagnostics[0].rule_name,
+        "ecosystem/vue-router-prefer-named-push"
+    );
+}
+
+#[test]
 fn test_lint_files_batch() {
     let linter = Linter::new();
     let files = vec![
@@ -68,7 +133,7 @@ fn test_vize_forget_without_reason_warns() {
     let linter = Linter::new();
     let result = linter.lint_template(
         r#"<ul><!-- @vize:forget -->
-<li v-for="item in items">{{ item }}</li></ul>"#,
+<li v-for="_item in items">{{ _item }}</li></ul>"#,
         "test.vue",
     );
     assert_eq!(result.error_count, 0, "v-for error should be suppressed");
@@ -200,4 +265,66 @@ export default {
     let result = linter.lint_sfc(sfc, "test.vue");
     assert_eq!(result.error_count, 1);
     assert_eq!(result.diagnostics[0].rule_name, "script/no-options-api");
+}
+
+#[test]
+fn test_lint_standalone_html_reports_cdn_options_api() {
+    let linter = Linter::with_preset(LintPreset::Opinionated)
+        .with_enabled_rules(Some(vec!["script/no-options-api".into()]));
+    let source = r##"<!doctype html>
+<html>
+<head>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="app">{{ count }}</div>
+  <script>
+Vue.createApp({
+  data() {
+    return { count: 0 }
+  }
+}).mount("#app")
+  </script>
+</body>
+</html>
+"##;
+
+    let result = linter.lint_standalone_html(source, "index.html");
+    assert_eq!(result.error_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "script/no-options-api");
+    assert!(
+        result.diagnostics[0].start > source.find("Vue.createApp").unwrap() as u32,
+        "diagnostic should use standalone HTML source offsets"
+    );
+}
+
+#[test]
+fn test_lint_standalone_html_allows_petite_vue_create_app_scope() {
+    let linter = Linter::with_preset(LintPreset::Opinionated)
+        .with_enabled_rules(Some(vec!["script/no-options-api".into()]));
+    let source = r##"<!doctype html>
+<html>
+<body>
+  <div v-scope>{{ count }}</div>
+  <script src="https://unpkg.com/petite-vue" defer init></script>
+  <script>
+PetiteVue.createApp({
+  count: 0,
+  increment() {
+    this.count++
+  }
+}).mount()
+  </script>
+</body>
+</html>
+"##;
+
+    let result = linter.lint_standalone_html(source, "index.html");
+    assert_eq!(result.error_count, 0);
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "script/no-options-api")
+    );
 }

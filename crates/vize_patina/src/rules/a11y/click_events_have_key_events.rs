@@ -10,7 +10,9 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
+
+use super::helpers::is_component_like_element;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/click-events-have-key-events",
@@ -43,28 +45,27 @@ impl ClickEventsHaveKeyEvents {
     /// Check if element has a role that makes it interactive
     fn has_interactive_role(element: &ElementNode) -> bool {
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name == "role" {
-                    if let Some(value) = &attr.value {
-                        return matches!(
-                            value.content.as_ref(),
-                            "button"
-                                | "link"
-                                | "checkbox"
-                                | "menuitem"
-                                | "menuitemcheckbox"
-                                | "menuitemradio"
-                                | "option"
-                                | "radio"
-                                | "searchbox"
-                                | "switch"
-                                | "textbox"
-                                | "tab"
-                                | "treeitem"
-                                | "gridcell"
-                        );
-                    }
-                }
+            if let PropNode::Attribute(attr) = prop
+                && attr.name == "role"
+                && let Some(value) = &attr.value
+            {
+                return matches!(
+                    value.content.as_ref(),
+                    "button"
+                        | "link"
+                        | "checkbox"
+                        | "menuitem"
+                        | "menuitemcheckbox"
+                        | "menuitemradio"
+                        | "option"
+                        | "radio"
+                        | "searchbox"
+                        | "switch"
+                        | "textbox"
+                        | "tab"
+                        | "treeitem"
+                        | "gridcell"
+                );
             }
         }
         false
@@ -73,14 +74,12 @@ impl ClickEventsHaveKeyEvents {
     /// Check if element has a click handler
     fn has_click_handler(element: &ElementNode) -> bool {
         for prop in &element.props {
-            if let PropNode::Directive(dir) = prop {
-                if dir.name == "on" {
-                    if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                        if arg.content == "click" {
-                            return true;
-                        }
-                    }
-                }
+            if let PropNode::Directive(dir) = prop
+                && dir.name == "on"
+                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                && arg.content == "click"
+            {
+                return true;
             }
         }
         false
@@ -89,14 +88,12 @@ impl ClickEventsHaveKeyEvents {
     /// Check if element has a keyboard event handler
     fn has_keyboard_handler(element: &ElementNode) -> bool {
         for prop in &element.props {
-            if let PropNode::Directive(dir) = prop {
-                if dir.name == "on" {
-                    if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                        if matches!(arg.content.as_ref(), "keydown" | "keyup" | "keypress") {
-                            return true;
-                        }
-                    }
-                }
+            if let PropNode::Directive(dir) = prop
+                && dir.name == "on"
+                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                && matches!(arg.content.as_ref(), "keydown" | "keyup" | "keypress")
+            {
+                return true;
             }
         }
         false
@@ -111,7 +108,7 @@ impl Rule for ClickEventsHaveKeyEvents {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Skip Vue custom components - they handle their own a11y internally
         // Components like <MkButton>, <NuxtLink> may render as interactive elements
-        if element.tag_type == ElementType::Component {
+        if is_component_like_element(element) {
             return;
         }
 
@@ -211,6 +208,19 @@ mod tests {
         assert_eq!(
             result.warning_count, 0,
             "Should not flag NuxtLink component"
+        );
+    }
+
+    #[test]
+    fn test_valid_kebab_case_component_with_click() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<a-button type="primary" @click="handleClick">Click</a-button>"#,
+            "test.vue",
+        );
+        assert_eq!(
+            result.warning_count, 0,
+            "Should not flag kebab-case Vue components with @click"
         );
     }
 }

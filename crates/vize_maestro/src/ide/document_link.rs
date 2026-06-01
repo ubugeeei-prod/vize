@@ -34,14 +34,12 @@ impl DocumentLinkService {
         // Collect links from script setup
         if let Some(ref script_setup) = descriptor.script_setup {
             // src attribute
-            if let Some(ref src) = script_setup.src {
-                if let Some((start, end)) =
+            if let Some(ref src) = script_setup.src
+                && let Some((start, end)) =
                     Self::find_src_attr_range(content, script_setup.loc.start)
-                {
-                    if let Some(target) = Self::resolve_path(src, base_path.as_deref()) {
-                        links.push(Self::create_link(content, start, end, target));
-                    }
-                }
+                && let Some(target) = Self::resolve_path(src, base_path.as_deref())
+            {
+                links.push(Self::create_link(content, start, end, target));
             }
 
             // Import statements
@@ -52,17 +50,17 @@ impl DocumentLinkService {
                 base_path.as_deref(),
                 &mut links,
             );
+            Self::collect_define_art_source_links(content, uri, &mut links);
         }
 
         // Collect links from script
         if let Some(ref script) = descriptor.script {
             // src attribute
-            if let Some(ref src) = script.src {
-                if let Some((start, end)) = Self::find_src_attr_range(content, script.loc.start) {
-                    if let Some(target) = Self::resolve_path(src, base_path.as_deref()) {
-                        links.push(Self::create_link(content, start, end, target));
-                    }
-                }
+            if let Some(ref src) = script.src
+                && let Some((start, end)) = Self::find_src_attr_range(content, script.loc.start)
+                && let Some(target) = Self::resolve_path(src, base_path.as_deref())
+            {
+                links.push(Self::create_link(content, start, end, target));
             }
 
             // Import statements
@@ -76,25 +74,22 @@ impl DocumentLinkService {
         }
 
         // Collect links from template src
-        if let Some(ref template) = descriptor.template {
-            if let Some(ref src) = template.src {
-                if let Some((start, end)) = Self::find_src_attr_range(content, template.loc.start) {
-                    if let Some(target) = Self::resolve_path(src, base_path.as_deref()) {
-                        links.push(Self::create_link(content, start, end, target));
-                    }
-                }
-            }
+        if let Some(ref template) = descriptor.template
+            && let Some(ref src) = template.src
+            && let Some((start, end)) = Self::find_src_attr_range(content, template.loc.start)
+            && let Some(target) = Self::resolve_path(src, base_path.as_deref())
+        {
+            links.push(Self::create_link(content, start, end, target));
         }
 
         // Collect links from styles
         for style in &descriptor.styles {
             // src attribute
-            if let Some(ref src) = style.src {
-                if let Some((start, end)) = Self::find_src_attr_range(content, style.loc.start) {
-                    if let Some(target) = Self::resolve_path(src, base_path.as_deref()) {
-                        links.push(Self::create_link(content, start, end, target));
-                    }
-                }
+            if let Some(ref src) = style.src
+                && let Some((start, end)) = Self::find_src_attr_range(content, style.loc.start)
+                && let Some(target) = Self::resolve_path(src, base_path.as_deref())
+            {
+                links.push(Self::create_link(content, start, end, target));
             }
 
             // @import statements
@@ -108,6 +103,24 @@ impl DocumentLinkService {
         }
 
         links
+    }
+
+    fn collect_define_art_source_links(content: &str, uri: &Url, links: &mut Vec<DocumentLink>) {
+        for source in crate::ide::musea::define_art_sources(content, uri) {
+            let Some(target) = crate::ide::musea::resolve_define_art_source(uri, &source.source)
+            else {
+                continue;
+            };
+            let Ok(target) = Url::from_file_path(target) else {
+                continue;
+            };
+            links.push(Self::create_link(
+                content,
+                source.value_start,
+                source.value_end,
+                target,
+            ));
+        }
     }
 
     /// Collect import statement links from script content.
@@ -157,12 +170,12 @@ impl DocumentLinkService {
             // Find string literal (the path)
             if let Some((path, rel_start, rel_end)) = Self::extract_import_path(stmt) {
                 // Only link relative imports (start with . or /)
-                if path.starts_with('.') || path.starts_with('/') {
-                    if let Some(target) = Self::resolve_path(&path, base_path) {
-                        let abs_start = base_offset + start + rel_start;
-                        let abs_end = base_offset + start + rel_end;
-                        links.push(Self::create_link(full_content, abs_start, abs_end, target));
-                    }
+                if (path.starts_with('.') || path.starts_with('/'))
+                    && let Some(target) = Self::resolve_path(&path, base_path)
+                {
+                    let abs_start = base_offset + start + rel_start;
+                    let abs_end = base_offset + start + rel_end;
+                    links.push(Self::create_link(full_content, abs_start, abs_end, target));
                 }
             }
 
@@ -242,24 +255,23 @@ impl DocumentLinkService {
             if let Some(url_content) = trimmed.strip_prefix("url(") {
                 if let Some((path, s, e)) = Self::extract_string_literal(url_content.trim_start()) {
                     let inner_ws = url_content.len() - url_content.trim_start().len();
-                    if path.starts_with('.') || path.starts_with('/') {
-                        if let Some(target) = Self::resolve_path(&path, base_path) {
-                            let abs_start = base_offset + start + 7 + ws_len + 4 + inner_ws + s;
-                            let abs_end = base_offset + start + 7 + ws_len + 4 + inner_ws + e;
-                            links.push(Self::create_link(full_content, abs_start, abs_end, target));
-                        }
+                    if (path.starts_with('.') || path.starts_with('/'))
+                        && let Some(target) = Self::resolve_path(&path, base_path)
+                    {
+                        let abs_start = base_offset + start + 7 + ws_len + 4 + inner_ws + s;
+                        let abs_end = base_offset + start + 7 + ws_len + 4 + inner_ws + e;
+                        links.push(Self::create_link(full_content, abs_start, abs_end, target));
                     }
                 }
             }
             // @import "path" or @import 'path'
-            else if let Some((path, s, e)) = Self::extract_string_literal(trimmed) {
-                if path.starts_with('.') || path.starts_with('/') {
-                    if let Some(target) = Self::resolve_path(&path, base_path) {
-                        let abs_start = base_offset + start + 7 + ws_len + s;
-                        let abs_end = base_offset + start + 7 + ws_len + e;
-                        links.push(Self::create_link(full_content, abs_start, abs_end, target));
-                    }
-                }
+            else if let Some((path, s, e)) = Self::extract_string_literal(trimmed)
+                && (path.starts_with('.') || path.starts_with('/'))
+                && let Some(target) = Self::resolve_path(&path, base_path)
+            {
+                let abs_start = base_offset + start + 7 + ws_len + s;
+                let abs_end = base_offset + start + 7 + ws_len + e;
+                links.push(Self::create_link(full_content, abs_start, abs_end, target));
             }
 
             pos = start + 8;
@@ -356,7 +368,10 @@ impl DocumentLinkService {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use super::DocumentLinkService;
+    use tower_lsp::lsp_types::Url;
 
     #[test]
     fn test_extract_import_path() {
@@ -386,5 +401,35 @@ mod tests {
 
         let (content, _, _) = DocumentLinkService::extract_string_literal("'world'").unwrap();
         assert_eq!(content, "world");
+    }
+
+    #[test]
+    fn test_define_art_source_link() {
+        let dir = tempfile::tempdir().unwrap();
+        let component_path = dir.path().join("Button.vue");
+        let art_path = dir.path().join("Button.art.vue");
+        fs::write(&component_path, "<template />").unwrap();
+
+        let source = r#"<script setup lang="ts">
+defineArt("./Button.vue", {
+  title: "Button",
+});
+</script>
+
+<art>
+  <variant name="Default"><Button /></variant>
+</art>
+"#;
+        fs::write(&art_path, source).unwrap();
+        let uri = Url::from_file_path(&art_path).unwrap();
+
+        let links = DocumentLinkService::get_links(source, &uri);
+
+        assert!(links.iter().any(|link| {
+            link.target
+                .as_ref()
+                .and_then(|target| target.to_file_path().ok())
+                .is_some_and(|target| target == component_path.canonicalize().unwrap())
+        }));
     }
 }

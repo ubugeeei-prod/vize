@@ -5,13 +5,31 @@ use std::{fs, path::PathBuf};
 use vize_carton::ToCompactString;
 use vize_carton::{Bump, BumpVec};
 
+#[cfg(feature = "native")]
+use super::CssTargets;
 use super::scoped::{
     add_scope_to_element, apply_scoped_css, transform_deep, transform_global, transform_slotted,
 };
-use super::transform::extract_and_transform_v_bind;
-#[cfg(feature = "native")]
-use super::CssTargets;
-use super::{bundle_css, compile_css, CssCompileOptions};
+use super::transform::{
+    extract_and_transform_v_bind, extract_and_transform_v_bind_with_scope, prod_scoped_v_bind_name,
+};
+use super::{CssCompileOptions, bundle_css, compile_css, parse_css_ast, print_css_ast};
+
+fn test_utf8(bytes: &[u8]) -> &str {
+    match std::str::from_utf8(bytes) {
+        Ok(value) => value,
+        Err(error) => panic!("CSS helper emitted invalid UTF-8: {error}"),
+    }
+}
+
+fn v_bind_snapshot<T: AsRef<str>>(transformed: &str, vars: &[T]) -> String {
+    let vars = vars
+        .iter()
+        .map(|var| format!("- {}", var.as_ref()))
+        .collect::<Vec<_>>()
+        .join("\n");
+    format!("vars:\n{vars}\n\ncss:\n{transformed}")
+}
 
 #[test]
 fn test_compile_simple_css() {
@@ -36,6 +54,85 @@ fn test_compile_scoped_css() {
     insta::assert_debug_snapshot!(result);
 }
 
+#[cfg(feature = "native")]
+fn rewrite_url_nodes(value: &mut serde_json::Value, from: &str, to: &str) {
+    match value {
+        serde_json::Value::Object(map) => {
+            if map.get("url") == Some(&serde_json::Value::String(from.to_string())) {
+                map.insert("url".to_string(), serde_json::Value::String(to.to_string()));
+            }
+
+            for child in map.values_mut() {
+                rewrite_url_nodes(child, from, to);
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for child in items {
+                rewrite_url_nodes(child, from, to);
+            }
+        }
+        _ => {}
+    }
+}
+
+#[test]
+#[cfg(feature = "native")]
+fn test_parse_and_print_css_ast() {
+    let css = ".foo { background: url('./logo.svg'); color: red; }";
+    let ast_result = parse_css_ast(css, &CssCompileOptions::default());
+
+    assert!(
+        ast_result.errors.is_empty(),
+        "Unexpected errors: {:?}",
+        ast_result.errors
+    );
+
+    let mut ast = ast_result.ast.expect("expected serialized CSS AST");
+    assert!(
+        ast.get("rules").is_some(),
+        "expected stylesheet rules in {ast:?}"
+    );
+
+    rewrite_url_nodes(&mut ast, "./logo.svg", "/assets/logo-hash.svg");
+
+    let result = print_css_ast(ast, &CssCompileOptions::default());
+    assert!(
+        result.errors.is_empty(),
+        "Unexpected errors: {:?}",
+        result.errors
+    );
+    assert!(result.code.contains("background"));
+    assert!(result.code.contains("/assets/logo-hash.svg"));
+}
+
+#[test]
+#[cfg(feature = "native")]
+fn test_parse_and_print_css_ast_with_image_set() {
+    let css = ".hero { background-image: image-set(url('./one.png') 1x, url('./two.png') 2x); }";
+    let ast_result = parse_css_ast(css, &CssCompileOptions::default());
+
+    assert!(
+        ast_result.errors.is_empty(),
+        "Unexpected errors: {:?}",
+        ast_result.errors
+    );
+
+    let result = print_css_ast(
+        ast_result.ast.expect("expected serialized CSS AST"),
+        &CssCompileOptions::default(),
+    );
+
+    assert!(
+        result.errors.is_empty(),
+        "Unexpected errors: {:?}",
+        result.errors
+    );
+    assert!(result.code.contains("image-set"));
+    assert!(result.code.contains("./one.png"));
+    assert!(result.code.contains("./two.png"));
+    assert!(!result.code.contains("type(\""));
+}
+
 #[test]
 #[cfg(feature = "native")]
 fn test_compile_minified_css() {
@@ -56,10 +153,80 @@ fn test_v_bind_extraction() {
     let bump = Bump::new();
     let css = ".foo { color: v-bind(color); background: v-bind('bgColor'); }";
     let (transformed, vars) = extract_and_transform_v_bind(&bump, css);
-    assert_eq!(vars.len(), 2);
-    assert!(vars.contains(&"color".to_compact_string()));
-    assert!(vars.contains(&"bgColor".to_compact_string()));
-    insta::assert_snapshot!(transformed);
+    insta::assert_snapshot!("v_bind_extraction", v_bind_snapshot(&transformed, &vars));
+}
+
+#[test]
+fn test_v_bind_extraction_with_scope_id() {
+    let result = compile_css(
+        ".foo { height: v-bind(\"height + 'px'\"); color: v-bind(color); }",
+        &CssCompileOptions {
+            scope_id: Some("data-v-test".to_compact_string()),
+            ..Default::default()
+        },
+    );
+
+    assert!(result.errors.is_empty());
+    insta::assert_debug_snapshot!(result);
+}
+
+#[test]
+fn test_prod_scoped_v_bind_name_matches_vue_hash_sum() {
+    let id = "npm/rspack-vize-plugin/src/test/fixtures/scoped-v-bind/App.vue";
+
+    assert_eq!(prod_scoped_v_bind_name(id, "textColor"), "v9531ad58");
+    assert_eq!(prod_scoped_v_bind_name(id, "bgColor"), "v02f640bc");
+    assert_eq!(prod_scoped_v_bind_name(id, "fontSize"), "v27b86bdc");
+}
+
+#[test]
+fn test_v_bind_extraction_handles_quoted_expressions_with_parentheses() {
+    let bump = Bump::new();
+    let css = r#"
+.header {
+  background-color: color(from v-bind("parentBg ?? 'var(--bg)'") srgb r g b / 0.85);
+}
+
+.textCountGraph {
+  background-image: conic-gradient(
+    var(--countColor) 0% v-bind("Math.min(100, textCountPercentage) + '%'"),
+    rgba(0, 0, 0, .2) v-bind("Math.min(100, textCountPercentage) + '%'") 100%
+  );
+}
+"#;
+
+    let (transformed, vars) =
+        extract_and_transform_v_bind_with_scope(&bump, css, Some("data-v-test"));
+
+    insta::assert_snapshot!(
+        "v_bind_extraction_handles_quoted_expressions_with_parentheses",
+        v_bind_snapshot(&transformed, &vars)
+    );
+}
+
+#[test]
+fn test_v_bind_extraction_ignores_strings_and_comments() {
+    let bump = Bump::new();
+    let css = r#"
+.icon::before {
+  content: "v-bind(icon)";
+  color: v-bind(color /* keep ) inside comments */);
+}
+
+/* background: v-bind(bg); */
+// width: v-bind(width);
+.label {
+  background: 'v-bind(bg)';
+}
+"#;
+
+    let (transformed, vars) =
+        extract_and_transform_v_bind_with_scope(&bump, css, Some("data-v-test"));
+
+    insta::assert_snapshot!(
+        "v_bind_extraction_ignores_strings_and_comments",
+        v_bind_snapshot(&transformed, &vars)
+    );
 }
 
 #[test]
@@ -67,7 +234,7 @@ fn test_scope_deep() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     transform_deep(&mut out, ":deep(.child)", 0, b"[data-v-123]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, "[data-v-123] .child");
 }
 
@@ -76,7 +243,7 @@ fn test_scope_global() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     transform_global(&mut out, ":global(.foo)", 0);
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, ".foo");
 }
 
@@ -85,7 +252,7 @@ fn test_scope_slotted() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     transform_slotted(&mut out, ":slotted(.child)", 0, b"[data-v-123]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, ".child[data-v-123-s]");
 }
 
@@ -94,7 +261,7 @@ fn test_scope_slotted_with_pseudo() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     transform_slotted(&mut out, ":slotted(.child):hover", 0, b"[data-v-abc]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, ".child[data-v-abc-s]:hover");
 }
 
@@ -103,7 +270,7 @@ fn test_scope_slotted_complex() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     transform_slotted(&mut out, ":slotted(div.foo)", 0, b"[data-v-12345678]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, "div.foo[data-v-12345678-s]");
 }
 
@@ -112,7 +279,7 @@ fn test_scope_with_pseudo_element() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     add_scope_to_element(&mut out, ".foo::before", b"[data-v-123]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, ".foo[data-v-123]::before");
 }
 
@@ -121,7 +288,7 @@ fn test_scope_with_pseudo_class() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     add_scope_to_element(&mut out, ".foo:hover", b"[data-v-123]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, ".foo[data-v-123]:hover");
 }
 
@@ -147,7 +314,8 @@ fn test_compile_with_targets() {
 #[cfg(feature = "native")]
 fn test_bundle_css_inlines_imports_recursively() {
     let case_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("__agent_only")
+        .join("target")
+        .join("vize-tests")
         .join("tests")
         .join("css-bundle-native");
     let nested_dir = case_dir.join("nested");

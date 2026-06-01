@@ -62,11 +62,17 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
                     key.push_str(source);
                     key.push_str("::side-effect");
                     if seen_specifiers.insert(key) {
-                        let mut line = String::with_capacity(source.len() + 12);
-                        line.push_str("import '");
-                        line.push_str(source);
-                        line.push_str("'\n");
-                        result.push(line);
+                        if is_ts {
+                            let mut line = trimmed.to_compact_string();
+                            line.push('\n');
+                            result.push(line);
+                        } else {
+                            let mut line = String::with_capacity(source.len() + 12);
+                            line.push_str("import '");
+                            line.push_str(source);
+                            line.push_str("'\n");
+                            result.push(line);
+                        }
                     }
                     handled = true;
                     break;
@@ -75,6 +81,7 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
                 let mut default_spec: Option<String> = None;
                 let mut namespace_spec: Option<String> = None;
                 let mut named_specs: Vec<String> = Vec::new();
+                let mut dropped_specifier = false;
 
                 if let Some(specifiers) = &decl.specifiers {
                     for spec in specifiers {
@@ -86,6 +93,7 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
                                 key.push_str("::");
                                 key.push_str(local);
                                 if !seen_specifiers.insert(key) {
+                                    dropped_specifier = true;
                                     continue;
                                 }
 
@@ -120,6 +128,8 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
                                 key.push_str(local);
                                 if seen_specifiers.insert(key) {
                                     default_spec = Some(local.to_compact_string());
+                                } else {
+                                    dropped_specifier = true;
                                 }
                             }
                             ImportDeclarationSpecifier::ImportNamespaceSpecifier(s) => {
@@ -130,10 +140,20 @@ pub fn dedupe_imports(imports: &[String], is_ts: bool) -> Vec<String> {
                                 key.push_str(local);
                                 if seen_specifiers.insert(key) {
                                     namespace_spec = Some(local.to_compact_string());
+                                } else {
+                                    dropped_specifier = true;
                                 }
                             }
                         }
                     }
+                }
+
+                if is_ts && !dropped_specifier {
+                    let mut line = trimmed.to_compact_string();
+                    line.push('\n');
+                    result.push(line);
+                    handled = true;
+                    break;
                 }
 
                 if default_spec.is_none() && namespace_spec.is_none() && named_specs.is_empty() {

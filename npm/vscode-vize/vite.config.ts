@@ -16,6 +16,19 @@ export default defineConfig({
     format: "cjs",
     platform: "node",
     minify: true,
-    external: ["vscode"],
+    deps: {
+      neverBundle: ["vscode"],
+      alwaysBundle: [/^vscode-languageclient(?:\/|$)/],
+      onlyBundle: [
+        "balanced-match",
+        "brace-expansion",
+        "minimatch",
+        "semver",
+        "vscode-jsonrpc",
+        "vscode-languageclient",
+        "vscode-languageserver-protocol",
+        "vscode-languageserver-types",
+      ],
+    },
   },
 });

@@ -6,6 +6,7 @@ import { openBlock as _openBlock, createBlock as _createBlock, createTextVNode a
 
 import Card from './Card.vue'
 
+
 export default {
   __name: 'test',
   setup(__props) {
@@ -13,17 +14,17 @@ export default {
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createBlock(Card, null, {
-      "card-header": _withCtx(() => [
-        _createTextVNode("Header")
-      ]),
-      "card-body": _withCtx(() => [
-        _createTextVNode("Body")
-      ]),
-      "card-footer": _withCtx(() => [
-        _createTextVNode("Footer")
-      ]),
-      _: 1 /* STABLE */
-    }))
+    "card-header": _withCtx(() => [
+      _createTextVNode("Header")
+    ]),
+    "card-body": _withCtx(() => [
+      _createTextVNode("Body")
+    ]),
+    "card-footer": _withCtx(() => [
+      _createTextVNode("Footer")
+    ]),
+    _: 1 /* STABLE */
+  }))
 }
 }
 

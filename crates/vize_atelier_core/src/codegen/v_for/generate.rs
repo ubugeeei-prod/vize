@@ -9,20 +9,23 @@ use crate::{
 };
 
 use super::super::{
-    children::{generate_children, generate_children_force_array},
+    children::{generate_children, generate_children_force_array, is_directive_comment},
     context::CodegenContext,
-    element::helpers::{is_dynamic_component_tag, is_is_prop},
+    element::helpers::{is_dynamic_component, is_is_prop},
     element::{
         generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
         has_custom_directives, has_vmodel_directive, has_vshow_directive,
     },
     expression::generate_expression,
-    helpers::{escape_js_string, is_builtin_component},
+    helpers::{escape_js_string, is_builtin_component, to_valid_asset_identifier},
     node::generate_node,
     patch_flag::{
         calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
     },
-    slots::{generate_slots, has_slot_children},
+    slots::{
+        generate_slot_outlet_name, generate_slot_outlet_props, generate_slots, has_slot_children,
+        has_slot_outlet_props,
+    },
 };
 use super::helpers::{get_element_key, has_other_props, should_skip_prop};
 use vize_carton::ToCompactString;
@@ -34,8 +37,10 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
             let key_exp = get_element_key(el);
             let is_template = el.tag_type == ElementType::Template;
             let is_component = el.tag_type == ElementType::Component;
-            let is_dynamic_component = is_component && is_dynamic_component_tag(&el.tag);
+            let is_dynamic = is_component && is_dynamic_component(el);
             let prev_skip_scope_id = ctx.skip_scope_id;
+            let unwrapped_child = unwrap_template_single_element(el);
+            let gen_is_template = is_template && unwrapped_child.is_none();
 
             // Check for v-memo directive on for item (skip if already handled by v-for)
             let memo_exp = if !ctx.skip_v_memo && has_v_memo(el) {
@@ -55,7 +60,6 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
             let has_custom_dirs = has_custom_directives(el);
             if has_custom_dirs {
                 ctx.use_helper(RuntimeHelper::WithDirectives);
-                ctx.use_helper(RuntimeHelper::ResolveDirective);
                 ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
                 ctx.push("(");
             }
@@ -80,33 +84,71 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 ctx.skip_scope_id = true;
             }
 
-            if is_stable {
-                // Stable fragment: use createElementVNode without block wrapper
-                ctx.use_helper(RuntimeHelper::CreateElementVNode);
-                ctx.push(ctx.helper(RuntimeHelper::CreateElementVNode));
-                ctx.push("(\"");
-                ctx.push(&el.tag);
-                ctx.push("\"");
+            if el.tag_type == ElementType::Slot {
+                generate_for_slot_outlet(ctx, el);
+            } else if is_stable {
+                if gen_is_template {
+                    ctx.use_helper(RuntimeHelper::OpenBlock);
+                    ctx.use_helper(RuntimeHelper::CreateElementBlock);
+                    ctx.use_helper(RuntimeHelper::Fragment);
+                    ctx.push("(");
+                    ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+                    ctx.push("(), ");
+                    ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+                    ctx.push("(");
+                    ctx.push(ctx.helper(RuntimeHelper::Fragment));
+                } else {
+                    // Stable fragment: use createElementVNode without block wrapper
+                    ctx.use_helper(RuntimeHelper::CreateElementVNode);
+                    ctx.push(ctx.helper(RuntimeHelper::CreateElementVNode));
+                    ctx.push("(\"");
+                    let node_el = unwrapped_child.unwrap_or(el);
+                    ctx.push(&node_el.tag);
+                    ctx.push("\"");
+                }
 
                 // Props with key and all other props
-                generate_for_item_props(ctx, el, key_exp, is_dynamic_component);
+                let props_el = unwrapped_child.unwrap_or(el);
+                generate_for_item_props(ctx, props_el, key_exp, is_dynamic);
 
                 // Children
-                if !el.children.is_empty() {
+                let children_el = unwrapped_child.unwrap_or(el);
+                if !children_el.children.is_empty() {
                     ctx.push(", ");
-                    generate_children(ctx, &el.children);
+                    if gen_is_template {
+                        ctx.push("[");
+                        ctx.indent();
+                        for (i, child) in children_el.children.iter().enumerate() {
+                            if i > 0 {
+                                ctx.push(",");
+                            }
+                            ctx.newline();
+                            generate_node(ctx, child);
+                        }
+                        ctx.deindent();
+                        ctx.newline();
+                        ctx.push("]");
+                    } else {
+                        generate_children(ctx, &children_el.children);
+                    }
                 }
 
                 // Add TEXT patch flag if has interpolation
-                let has_interpolation = el
+                let has_interpolation = children_el
                     .children
                     .iter()
                     .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
-                if has_interpolation {
+                if gen_is_template {
+                    ctx.push(", 64 /* STABLE_FRAGMENT */");
+                } else if has_interpolation {
                     ctx.push(", 1 /* TEXT */");
                 }
 
-                ctx.push(")");
+                if gen_is_template {
+                    ctx.push("))");
+                } else {
+                    ctx.push(")");
+                }
             } else {
                 // Dynamic list: wrap in block
                 ctx.use_helper(RuntimeHelper::OpenBlock);
@@ -114,48 +156,28 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
                 ctx.push("(), ");
 
-                // Template with single child element optimization:
-                // unwrap the template and generate the child directly as a block
-                let unwrapped_child: Option<&ElementNode<'_>> =
-                    if is_template && el.children.len() == 1 {
-                        if let TemplateChildNode::Element(ref child_el) = el.children[0] {
-                            if child_el.tag_type == ElementType::Element {
-                                Some(child_el)
-                            } else {
-                                None
-                            }
-                        } else {
-                            None
-                        }
-                    } else {
-                        None
-                    };
-                let gen_is_template = is_template && unwrapped_child.is_none();
-
                 if is_component {
                     // Component: use createBlock
                     ctx.use_helper(RuntimeHelper::CreateBlock);
                     ctx.push(ctx.helper(RuntimeHelper::CreateBlock));
                     ctx.push("(");
                     // Handle dynamic component
-                    if is_dynamic_component {
+                    if is_dynamic {
                         let dynamic_is = el.props.iter().find_map(|p| {
-                            if let PropNode::Directive(dir) = p {
-                                if dir.name == "bind" {
-                                    if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                                        if arg.content == "is" {
-                                            return dir.exp.as_ref();
-                                        }
-                                    }
-                                }
+                            if let PropNode::Directive(dir) = p
+                                && dir.name == "bind"
+                                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                                && arg.content == "is"
+                            {
+                                return dir.exp.as_ref();
                             }
                             None
                         });
                         let static_is = el.props.iter().find_map(|p| {
-                            if let PropNode::Attribute(attr) = p {
-                                if attr.name == "is" {
-                                    return attr.value.as_ref().map(|v| v.content.as_str());
-                                }
+                            if let PropNode::Attribute(attr) = p
+                                && attr.name == "is"
+                            {
+                                return attr.value.as_ref().map(|v| v.content.as_str());
                             }
                             None
                         });
@@ -177,14 +199,13 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     } else if let Some(builtin) = is_builtin_component(&el.tag) {
                         ctx.use_helper(builtin);
                         ctx.push(ctx.helper(builtin));
-                    } else if ctx.is_component_in_bindings(&el.tag) {
+                    } else if let Some(binding_name) = ctx.resolve_component_binding_name(&el.tag) {
                         if !ctx.options.inline {
                             ctx.push("$setup.");
                         }
-                        ctx.push(&el.tag);
+                        ctx.push(&binding_name);
                     } else {
-                        ctx.push("_component_");
-                        ctx.push(&el.tag.replace('-', "_"));
+                        ctx.push(&to_valid_asset_identifier("component", &el.tag));
                     }
                 } else if gen_is_template {
                     // Template with multiple children: use Fragment
@@ -212,7 +233,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 // Props with key and all other props
                 // For unwrapped template child, use child's props with template's key
                 let props_el = unwrapped_child.unwrap_or(el);
-                generate_for_item_props(ctx, props_el, key_exp, is_dynamic_component);
+                generate_for_item_props(ctx, props_el, key_exp, is_dynamic);
 
                 // Children
                 let children_el = unwrapped_child.unwrap_or(el);
@@ -247,7 +268,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
 
                 // Add patch flag
                 if is_component {
-                    let (mut patch_flag, dynamic_props) = if is_dynamic_component {
+                    let (mut patch_flag, dynamic_props) = if is_dynamic {
                         calculate_element_patch_info_skip_is(
                             el,
                             ctx.options.binding_metadata.as_ref(),
@@ -261,11 +282,11 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         )
                     };
                     // Remove TEXT flag for components with slot children (text is inside slot)
-                    if has_slot_children(el) {
-                        if let Some(flag) = patch_flag {
-                            let new_flag = flag & !1;
-                            patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
-                        }
+                    if has_slot_children(el)
+                        && let Some(flag) = patch_flag
+                    {
+                        let new_flag = flag & !1;
+                        patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
                     }
                     // Inside v-for, component slots are always dynamic
                     if ctx.in_v_for && has_slot_children(el) {
@@ -355,6 +376,63 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
     }
 }
 
+fn unwrap_template_single_element<'a>(el: &'a ElementNode<'a>) -> Option<&'a ElementNode<'a>> {
+    if el.tag_type != ElementType::Template || el.children.len() != 1 {
+        return None;
+    }
+
+    let TemplateChildNode::Element(child_el) = &el.children[0] else {
+        return None;
+    };
+
+    if child_el.tag_type == ElementType::Element {
+        Some(child_el)
+    } else {
+        None
+    }
+}
+
+fn generate_for_slot_outlet(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    ctx.use_helper(RuntimeHelper::RenderSlot);
+    ctx.push(ctx.helper(RuntimeHelper::RenderSlot));
+    ctx.push("(_ctx.$slots, ");
+    generate_slot_outlet_name(ctx, el);
+
+    let has_slot_props = has_slot_outlet_props(el);
+    let filtered: Vec<_> = el
+        .children
+        .iter()
+        .filter(|c| !is_directive_comment(c))
+        .collect();
+
+    if !filtered.is_empty() {
+        if has_slot_props {
+            ctx.push(", ");
+            generate_slot_outlet_props(ctx, el);
+        } else {
+            ctx.push(", {}");
+        }
+        ctx.push(", () => [");
+        ctx.indent();
+        for (i, child) in filtered.iter().enumerate() {
+            if i > 0 {
+                ctx.push(",");
+            }
+            ctx.newline();
+            generate_node(ctx, child);
+        }
+        ctx.deindent();
+        ctx.newline();
+        ctx.push("])");
+    } else if has_slot_props {
+        ctx.push(", ");
+        generate_slot_outlet_props(ctx, el);
+        ctx.push(")");
+    } else {
+        ctx.push(")");
+    }
+}
+
 /// Generate props for v-for item, including key and all other props
 pub(crate) fn generate_for_item_props(
     ctx: &mut CodegenContext,
@@ -388,16 +466,16 @@ pub(crate) fn generate_for_item_props(
         if let Some(key) = key_exp {
             ctx.push("{ key: ");
             generate_expression(ctx, key);
-            if let Some(ref sid) = scope_id {
+            if let Some(sid) = scope_id {
                 ctx.push(", \"");
-                ctx.push(sid);
+                ctx.push(sid.as_str());
                 ctx.push("\": \"\"");
             }
             ctx.push(" }");
-        } else if let Some(ref sid) = scope_id {
+        } else if let Some(sid) = scope_id {
             // No key, no other props, but has scope_id
             ctx.push("{ \"");
-            ctx.push(sid);
+            ctx.push(sid.as_str());
             ctx.push("\": \"\" }");
         }
         return;
@@ -422,41 +500,39 @@ pub(crate) fn generate_for_item_props(
 
     // Detect static class/style that need to be merged with dynamic :class/:style
     let static_class = el.props.iter().find_map(|p| {
-        if let PropNode::Attribute(attr) = p {
-            if attr.name == "class" {
-                return attr.value.as_ref().map(|v| v.content.as_str());
-            }
+        if let PropNode::Attribute(attr) = p
+            && attr.name == "class"
+        {
+            return attr.value.as_ref().map(|v| v.content.as_str());
         }
         None
     });
 
     let static_style = el.props.iter().find_map(|p| {
-        if let PropNode::Attribute(attr) = p {
-            if attr.name == "style" {
-                return attr.value.as_ref().map(|v| v.content.as_str());
-            }
+        if let PropNode::Attribute(attr) = p
+            && attr.name == "style"
+        {
+            return attr.value.as_ref().map(|v| v.content.as_str());
         }
         None
     });
 
     let has_dynamic_class = el.props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p {
-            if dir.name == "bind" {
-                if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
-                    return exp.content == "class";
-                }
-            }
+        if let PropNode::Directive(dir) = p
+            && dir.name == "bind"
+            && let Some(ExpressionNode::Simple(exp)) = &dir.arg
+        {
+            return exp.content == "class";
         }
         false
     });
 
     let has_dynamic_style = el.props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p {
-            if dir.name == "bind" {
-                if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
-                    return exp.content == "style";
-                }
-            }
+        if let PropNode::Directive(dir) = p
+            && dir.name == "bind"
+            && let Some(ExpressionNode::Simple(exp)) = &dir.arg
+        {
+            return exp.content == "style";
         }
         false
     });
@@ -464,15 +540,22 @@ pub(crate) fn generate_for_item_props(
     let skip_static_class = static_class.is_some() && has_dynamic_class;
     let skip_static_style = static_style.is_some() && has_dynamic_style;
 
-    let merge_static_class = if skip_static_class {
-        static_class
-    } else {
-        None
-    };
-    let merge_static_style = if skip_static_style {
-        static_style
-    } else {
-        None
+    // Static class/style are only merged into the dynamic binding's array when a
+    // dynamic counterpart exists; source ordering is preserved via StaticMerge.
+    let full_merge = super::super::props::StaticMerge::from_props(&el.props);
+    let merge_static = super::super::props::StaticMerge {
+        class: if skip_static_class {
+            full_merge.class
+        } else {
+            None
+        },
+        class_before: full_merge.class_before,
+        style: if skip_static_style {
+            full_merge.style
+        } else {
+            None
+        },
+        style_before: full_merge.style_before,
     };
 
     if let Some(key) = key_exp {
@@ -487,30 +570,28 @@ pub(crate) fn generate_for_item_props(
             if should_skip_prop(prop) || (skip_is_prop && is_is_prop(prop)) {
                 continue;
             }
-            if skip_static_class {
-                if let PropNode::Attribute(attr) = prop {
-                    if attr.name == "class" {
-                        continue;
-                    }
-                }
+            if skip_static_class
+                && let PropNode::Attribute(attr) = prop
+                && attr.name == "class"
+            {
+                continue;
             }
-            if skip_static_style {
-                if let PropNode::Attribute(attr) = prop {
-                    if attr.name == "style" {
-                        continue;
-                    }
-                }
+            if skip_static_style
+                && let PropNode::Attribute(attr) = prop
+                && attr.name == "style"
+            {
+                continue;
             }
             ctx.push(",");
             ctx.newline();
-            generate_single_prop(ctx, prop, merge_static_class, merge_static_style);
+            generate_single_prop(ctx, prop, merge_static);
         }
 
-        if let Some(ref sid) = scope_id {
+        if let Some(sid) = scope_id {
             ctx.push(",");
             ctx.newline();
             ctx.push("\"");
-            ctx.push(sid);
+            ctx.push(sid.as_str());
             ctx.push("\": \"\"");
         }
 
@@ -525,34 +606,32 @@ pub(crate) fn generate_for_item_props(
             if should_skip_prop(prop) || (skip_is_prop && is_is_prop(prop)) {
                 continue;
             }
-            if skip_static_class {
-                if let PropNode::Attribute(attr) = prop {
-                    if attr.name == "class" {
-                        continue;
-                    }
-                }
+            if skip_static_class
+                && let PropNode::Attribute(attr) = prop
+                && attr.name == "class"
+            {
+                continue;
             }
-            if skip_static_style {
-                if let PropNode::Attribute(attr) = prop {
-                    if attr.name == "style" {
-                        continue;
-                    }
-                }
+            if skip_static_style
+                && let PropNode::Attribute(attr) = prop
+                && attr.name == "style"
+            {
+                continue;
             }
             if !first {
                 ctx.push(",");
             }
             ctx.push(" ");
-            generate_single_prop(ctx, prop, merge_static_class, merge_static_style);
+            generate_single_prop(ctx, prop, merge_static);
             first = false;
         }
 
-        if let Some(ref sid) = scope_id {
+        if let Some(sid) = scope_id {
             if !first {
                 ctx.push(",");
             }
             ctx.push(" \"");
-            ctx.push(sid);
+            ctx.push(sid.as_str());
             ctx.push("\": \"\"");
         }
 
@@ -595,10 +674,11 @@ fn generate_for_item_props_merged(
             if should_skip_prop(p) || (skip_is_prop && is_is_prop(p)) {
                 return false;
             }
-            if let PropNode::Directive(dir) = p {
-                if dir.arg.is_none() && (dir.name == "bind" || dir.name == "on") {
-                    return false;
-                }
+            if let PropNode::Directive(dir) = p
+                && dir.arg.is_none()
+                && (dir.name == "bind" || dir.name == "on")
+            {
+                return false;
             }
             true
         });
@@ -622,26 +702,27 @@ fn generate_for_item_props_merged(
             if should_skip_prop(prop) || (skip_is_prop && is_is_prop(prop)) {
                 continue;
             }
-            if let PropNode::Directive(dir) = prop {
-                if dir.arg.is_none() && (dir.name == "bind" || dir.name == "on") {
-                    continue;
-                }
+            if let PropNode::Directive(dir) = prop
+                && dir.arg.is_none()
+                && (dir.name == "bind" || dir.name == "on")
+            {
+                continue;
             }
             if !first_prop {
                 ctx.push(",");
             }
             ctx.newline();
-            generate_single_prop(ctx, prop, None, None);
+            generate_single_prop(ctx, prop, super::super::props::StaticMerge::default());
             first_prop = false;
         }
 
-        if let Some(ref sid) = scope_id {
+        if let Some(sid) = scope_id {
             if !first_prop {
                 ctx.push(",");
             }
             ctx.newline();
             ctx.push("\"");
-            ctx.push(sid);
+            ctx.push(sid.as_str());
             ctx.push("\": \"\"");
         }
 
@@ -657,8 +738,7 @@ fn generate_for_item_props_merged(
 fn generate_single_prop(
     ctx: &mut CodegenContext,
     prop: &PropNode<'_>,
-    static_class: Option<&str>,
-    static_style: Option<&str>,
+    static_merge: super::super::props::StaticMerge<'_>,
 ) {
     match prop {
         PropNode::Attribute(attr) => {
@@ -680,12 +760,7 @@ fn generate_single_prop(
             }
         }
         PropNode::Directive(dir) => {
-            super::super::props::generate_directive_prop_with_static(
-                ctx,
-                dir,
-                static_class,
-                static_style,
-            );
+            super::super::props::generate_directive_prop_with_static(ctx, dir, static_merge);
         }
     }
 }

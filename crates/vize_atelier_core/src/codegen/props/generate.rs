@@ -4,14 +4,15 @@ use crate::ast::{ExpressionNode, PropNode, RuntimeHelper};
 use vize_relief::options::BindingType;
 
 use super::{
+    super::expression::generate_expression,
     super::{
         context::CodegenContext,
         helpers::{escape_js_string, is_valid_js_identifier},
     },
     directives::{generate_directive_prop_with_static, is_supported_directive},
-    events::{count_event_names, generate_merged_event_handlers, get_von_event_key},
-    generate_vbind_object_exp, generate_von_object_exp, has_dynamic_key, has_dynamic_vmodel,
-    has_other_props, has_vbind_object, has_von_object,
+    events::{generate_merged_event_handlers, get_von_event_key},
+    generate_vbind_object_exp, generate_von_object_exp,
+    scan::PropsScan,
 };
 use vize_carton::{FxHashSet, String};
 
@@ -37,45 +38,94 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
         return;
     }
 
-    // Check for v-bind object (v-bind="attrs") and v-on object (v-on="handlers")
-    let has_vbind_obj = has_vbind_object(props);
-    let has_von_obj = has_von_object(props);
-    let has_other = has_other_props(props);
+    if try_generate_static_attrs(ctx, props, scope_id.as_deref()) {
+        return;
+    }
+
+    let scan = PropsScan::new(ctx, props, ctx.skip_is_prop);
 
     // Handle cases with object spreads (v-bind="obj" or v-on="obj")
-    if has_vbind_obj || has_von_obj {
-        if has_other || (has_vbind_obj && has_von_obj) {
-            // Multiple spreads or spread with other props: _mergeProps(...)
+    if scan.has_vbind_obj || scan.has_von_obj {
+        if scan.has_other || (scan.has_vbind_obj && scan.has_von_obj) {
+            // Multiple spreads or spread with other props: _mergeProps(...).
+            // Vue walks props in source order, accumulating non-spread props into
+            // object literals and flushing them around each spread, preserving
+            // the original ordering (transforms/transformElement.ts buildProps).
             ctx.use_helper(RuntimeHelper::MergeProps);
             ctx.push(ctx.helper(RuntimeHelper::MergeProps));
             ctx.push("(");
 
             let mut first_merge_arg = true;
+            let mut seg_start = 0usize;
 
-            // Add v-bind object spread
-            if has_vbind_obj {
-                generate_vbind_object_exp(ctx, props);
-                first_merge_arg = false;
-            }
+            // scope_id is emitted once as a trailing object, never per segment.
+            let prev_skip_scope_id = ctx.skip_scope_id;
+            ctx.skip_scope_id = true;
 
-            // Add v-on object spread (wrapped with toHandlers)
-            if has_von_obj {
+            let flush_object =
+                |ctx: &mut CodegenContext, start: usize, end: usize, first: &mut bool| {
+                    // Does this range hold any renderable non-spread prop?
+                    let segment = &props[start..end];
+                    let has_renderable = segment.iter().any(|p| match p {
+                        PropNode::Attribute(attr) => !(ctx.skip_is_prop && attr.name == "is"),
+                        PropNode::Directive(dir) => {
+                            !(dir.arg.is_none() && (dir.name == "bind" || dir.name == "on"))
+                                && is_supported_directive(dir)
+                                && dir.name != "slot"
+                        }
+                    });
+                    if !has_renderable {
+                        return;
+                    }
+                    if !*first {
+                        ctx.push(", ");
+                    }
+                    *first = false;
+                    let seg_scan = PropsScan::new(ctx, segment, ctx.skip_is_prop);
+                    generate_props_object_inner(ctx, segment, true, true, &seg_scan);
+                };
+
+            for (index, prop) in props.iter().enumerate() {
+                let PropNode::Directive(dir) = prop else {
+                    continue;
+                };
+                let is_vbind_spread = dir.name == "bind" && dir.arg.is_none();
+                let is_von_spread = dir.name == "on" && dir.arg.is_none();
+                if !is_vbind_spread && !is_von_spread {
+                    continue;
+                }
+
+                // Flush accumulated non-spread props before this spread.
+                flush_object(ctx, seg_start, index, &mut first_merge_arg);
+                seg_start = index + 1;
+
                 if !first_merge_arg {
                     ctx.push(", ");
                 }
-                generate_von_object_exp(ctx, props);
                 first_merge_arg = false;
+                if is_vbind_spread {
+                    if let Some(exp) = &dir.exp {
+                        generate_expression(ctx, exp);
+                    }
+                } else {
+                    // v-on spread wrapped with _toHandlers(..., true)
+                    ctx.use_helper(RuntimeHelper::ToHandlers);
+                    ctx.push(ctx.helper(RuntimeHelper::ToHandlers));
+                    ctx.push("(");
+                    if let Some(exp) = &dir.exp {
+                        generate_expression(ctx, exp);
+                    }
+                    ctx.push(", true)");
+                }
             }
 
-            // Add other props as object (includes scope_id)
-            // Inside mergeProps, skip normalizeClass/normalizeStyle - mergeProps handles it
-            if has_other {
-                if !first_merge_arg {
-                    ctx.push(", ");
-                }
-                generate_props_object_inner(ctx, props, true, true);
-            } else if let Some(ref sid) = scope_id {
-                // No other props but we have scope_id, add it as separate object
+            // Flush any trailing non-spread props.
+            flush_object(ctx, seg_start, props.len(), &mut first_merge_arg);
+
+            ctx.skip_scope_id = prev_skip_scope_id;
+
+            // scope_id (if present) is appended as a trailing object.
+            if let Some(ref sid) = scope_id {
                 if !first_merge_arg {
                     ctx.push(", ");
                 }
@@ -85,7 +135,7 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
             }
 
             ctx.push(")");
-        } else if has_vbind_obj {
+        } else if scan.has_vbind_obj {
             // v-bind="attrs" alone
             // If we have scope_id, we need to merge it with the bound object
             if let Some(ref sid) = scope_id {
@@ -138,16 +188,14 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
     // - dynamic v-model argument
     // - dynamic v-bind key (:[attr])
     // - dynamic v-on key (@[event])
-    let has_dyn_vmodel = has_dynamic_vmodel(props);
-    let has_dyn_key = has_dynamic_key(props);
-    let needs_normalize = has_dyn_vmodel || has_dyn_key;
+    let needs_normalize = scan.needs_normalize();
     if needs_normalize {
         ctx.use_helper(RuntimeHelper::NormalizeProps);
         ctx.push(ctx.helper(RuntimeHelper::NormalizeProps));
         ctx.push("(");
     }
 
-    generate_props_object(ctx, props, false);
+    generate_props_object(ctx, props, false, &scan);
 
     // Close normalizeProps wrapper if needed
     if needs_normalize {
@@ -155,13 +203,100 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
     }
 }
 
+fn try_generate_static_attrs(
+    ctx: &mut CodegenContext,
+    props: &[PropNode<'_>],
+    scope_id: Option<&str>,
+) -> bool {
+    if ctx.skip_is_prop || ctx.options.inline {
+        return false;
+    }
+    if !props
+        .iter()
+        .all(|prop| matches!(prop, PropNode::Attribute(_)))
+    {
+        return false;
+    }
+
+    let multiline = props.len() + usize::from(scope_id.is_some()) > 1;
+    if multiline {
+        ctx.push("{");
+        ctx.indent();
+    } else {
+        ctx.push("{ ");
+    }
+
+    let mut first = true;
+    for prop in props {
+        let PropNode::Attribute(attr) = prop else {
+            // Panic path by invariant: the preflight `all(Attribute)` check above
+            // has already rejected directive props. Reaching this arm would mean
+            // `props` was mutated while iterating, which is impossible through the
+            // shared slice used by codegen.
+            unreachable!("checked above");
+        };
+
+        if !first {
+            ctx.push(",");
+        }
+        if multiline {
+            ctx.newline();
+        } else if !first {
+            ctx.push(" ");
+        }
+        first = false;
+
+        let needs_quotes = !is_valid_js_identifier(&attr.name);
+        if needs_quotes {
+            ctx.push("\"");
+        }
+        ctx.push(&attr.name);
+        if needs_quotes {
+            ctx.push("\"");
+        }
+        ctx.push(": ");
+        if let Some(value) = &attr.value {
+            ctx.push("\"");
+            ctx.push(&escape_js_string(&value.content));
+            ctx.push("\"");
+        } else {
+            ctx.push("\"\"");
+        }
+    }
+
+    if let Some(sid) = scope_id {
+        if !first {
+            ctx.push(",");
+        }
+        if multiline {
+            ctx.newline();
+        } else if !first {
+            ctx.push(" ");
+        }
+        ctx.push("\"");
+        ctx.push(sid);
+        ctx.push("\": \"\"");
+    }
+
+    if multiline {
+        ctx.deindent();
+        ctx.newline();
+        ctx.push("}");
+    } else {
+        ctx.push(" }");
+    }
+
+    true
+}
+
 /// Generate props as a regular object { key: value, ... }
 fn generate_props_object(
     ctx: &mut CodegenContext,
     props: &[PropNode<'_>],
     skip_object_spreads: bool,
+    scan: &PropsScan<'_>,
 ) {
-    generate_props_object_inner(ctx, props, skip_object_spreads, false);
+    generate_props_object_inner(ctx, props, skip_object_spreads, false, scan);
 }
 
 /// Generate the props object with optional class/style normalization skipping.
@@ -172,6 +307,7 @@ fn generate_props_object_inner(
     props: &[PropNode<'_>],
     skip_object_spreads: bool,
     inside_merge_props: bool,
+    scan: &PropsScan<'_>,
 ) {
     // When inside mergeProps, skip normalizeClass/normalizeStyle wrappers
     let prev_skip = ctx.skip_normalize;
@@ -187,155 +323,10 @@ fn generate_props_object_inner(
         ctx.options.scope_id.clone()
     };
 
-    // Check for static class/style that need to be merged with dynamic
-    let static_class = props.iter().find_map(|p| {
-        if let PropNode::Attribute(attr) = p {
-            if attr.name == "class" {
-                return attr.value.as_ref().map(|v| v.content.as_str());
-            }
-        }
-        None
-    });
-
-    let static_style = props.iter().find_map(|p| {
-        if let PropNode::Attribute(attr) = p {
-            if attr.name == "style" {
-                return attr.value.as_ref().map(|v| v.content.as_str());
-            }
-        }
-        None
-    });
-
-    let has_dynamic_class = props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p {
-            if dir.name == "bind" {
-                if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
-                    return exp.content == "class";
-                }
-            }
-        }
-        false
-    });
-
-    let has_dynamic_style = props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p {
-            if dir.name == "bind" {
-                if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
-                    return exp.content == "style";
-                }
-            }
-        }
-        false
-    });
-
     // Skip static class/style if we have dynamic version (will merge them)
-    let skip_static_class = static_class.is_some() && has_dynamic_class;
-    let skip_static_style = static_style.is_some() && has_dynamic_style;
-
-    // Count visible props (attributes + supported directives + scope_id if present)
-    let has_scope_id = scope_id.is_some();
-    let skip_is = ctx.skip_is_prop;
-    let visible_count = props
-        .iter()
-        .filter(|p| {
-            // Skip `is` prop for dynamic components
-            if skip_is {
-                match p {
-                    PropNode::Attribute(attr) if attr.name == "is" => return false,
-                    PropNode::Directive(dir)
-                        if dir.name == "bind"
-                            && matches!(&dir.arg, Some(ExpressionNode::Simple(exp)) if exp.content == "is") =>
-                    {
-                        return false
-                    }
-                    _ => {}
-                }
-            }
-            match p {
-                PropNode::Attribute(attr) => {
-                    if skip_static_class && attr.name == "class" {
-                        return false;
-                    }
-                    if skip_static_style && attr.name == "style" {
-                        return false;
-                    }
-                    true
-                }
-                PropNode::Directive(dir) => is_supported_directive(dir),
-            }
-        })
-        .count()
-        + if has_scope_id { 1 } else { 0 };
-
-    // Check if any prop requires a normalizer (class/style bindings) or uses helper functions (v-text)
-    let has_normalizer = props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p {
-            // v-text uses _toDisplayString, which makes the output multiline
-            if dir.name == "text" {
-                return true;
-            }
-            if dir.name == "bind" {
-                if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
-                    return exp.content == "class" || exp.content == "style";
-                }
-            }
-        }
-        false
-    });
-
-    // Check if any v-on has inline handler (not just identifier) or has runtime modifiers
-    // Also check for cached handlers which produce long expressions
-    let has_inline_handler = props.iter().any(|p| {
-        if let PropNode::Directive(dir) = p {
-            if dir.name == "on" {
-                // When cache_handlers is enabled, handlers produce long expressions
-                // that need multiline formatting (except setup-const which aren't cached)
-                if ctx.cache_handlers_in_current_scope() && dir.exp.is_some() {
-                    let is_const = dir.exp.as_ref().is_some_and(|exp| {
-                        if let ExpressionNode::Simple(simple) = exp {
-                            if !simple.is_static {
-                                let content = simple.content.trim();
-                                if crate::transforms::is_simple_identifier(content) {
-                                    if let Some(ref metadata) = ctx.options.binding_metadata {
-                                        return matches!(
-                                            metadata.bindings.get(content),
-                                            Some(crate::options::BindingType::SetupConst)
-                                        );
-                                    }
-                                }
-                            }
-                        }
-                        false
-                    });
-                    if !is_const {
-                        return true;
-                    }
-                }
-                // Check for modifiers that will use withModifiers or withKeys (not event option modifiers)
-                let has_runtime_modifier = dir.modifiers.iter().any(|m| {
-                    let n = m.content.as_str();
-                    // Event option modifiers (capture, once, passive) don't require multiline
-                    // because they just modify the event name, not wrap the handler
-                    !matches!(n, "capture" | "once" | "passive")
-                });
-                if has_runtime_modifier {
-                    return true;
-                }
-                if let Some(ExpressionNode::Simple(simple)) = &dir.exp {
-                    // Inline if contains operators, parens, or is not simple identifier
-                    let content = simple.content.as_str();
-                    return content.contains('(')
-                        || content.contains('+')
-                        || content.contains('-')
-                        || content.contains('=')
-                        || content.contains(' ');
-                }
-            }
-        }
-        false
-    });
-
-    let multiline = visible_count > 1 || has_normalizer || has_inline_handler;
+    let skip_static_class = scan.skip_static_class();
+    let skip_static_style = scan.skip_static_style();
+    let multiline = scan.multiline(scope_id.is_some());
 
     if multiline {
         ctx.push("{");
@@ -344,19 +335,16 @@ fn generate_props_object_inner(
         ctx.push("{ ");
     }
 
-    // Pre-scan: find duplicate v-on event names that need array merging
-    let event_counts = count_event_names(props);
-
     let mut first = true;
     // Track which event names have already been output (for array merging)
-    let mut emitted_events: FxHashSet<String> = FxHashSet::default();
+    let mut emitted_events: Option<FxHashSet<String>> = None;
 
     for prop in props {
         // Skip v-slot directive (handled separately in slots codegen)
-        if let PropNode::Directive(dir) = prop {
-            if dir.name == "slot" {
-                continue;
-            }
+        if let PropNode::Directive(dir) = prop
+            && dir.name == "slot"
+        {
+            continue;
         }
 
         // Skip `is` prop when generating for dynamic components
@@ -367,7 +355,7 @@ fn generate_props_object_inner(
                     if dir.name == "bind"
                         && matches!(&dir.arg, Some(ExpressionNode::Simple(exp)) if exp.content == "is") =>
                 {
-                    continue
+                    continue;
                 }
                 _ => {}
             }
@@ -393,13 +381,16 @@ fn generate_props_object_inner(
                 first = false;
 
                 // Check if this is a ref attribute that needs ref_key generation
-                let ref_binding_type = if attr.name == "ref" && ctx.options.inline {
-                    attr.value.as_ref().and_then(|v| {
-                        ctx.options
-                            .binding_metadata
-                            .as_ref()
-                            .and_then(|m| m.bindings.get(v.content.as_str()).copied())
-                    })
+                let ref_value = if attr.name == "ref" && ctx.options.inline {
+                    attr.value.as_ref()
+                } else {
+                    None
+                };
+                let ref_binding_type = if let Some(value) = ref_value {
+                    ctx.options
+                        .binding_metadata
+                        .as_ref()
+                        .and_then(|m| m.bindings.get(value.content.as_str()).copied())
                 } else {
                     None
                 };
@@ -410,11 +401,11 @@ fn generate_props_object_inner(
                     )
                 );
 
-                if needs_ref_key {
+                if let (true, Some(ref_value)) = (needs_ref_key, ref_value) {
                     // Emit ref_key + ref pair for setup-let/ref/maybe-ref bindings.
                     // Vue's runtime setRef() needs ref_key to write to instance.refs,
                     // which is essential for useTemplateRef to receive the element.
-                    let ref_name = &attr.value.as_ref().unwrap().content;
+                    let ref_name = &ref_value.content;
                     ctx.push("ref_key: \"");
                     ctx.push(ref_name);
                     ctx.push("\", ref: ");
@@ -456,34 +447,36 @@ fn generate_props_object_inner(
                 // Only add comma if directive produces valid output
                 if is_supported_directive(dir) {
                     // Check for duplicate v-on events that should be merged into arrays
-                    if dir.name == "on" {
-                        if let Some(event_key) = get_von_event_key(dir) {
-                            let count = event_counts.get(&event_key).copied().unwrap_or(0);
-                            if count > 1 {
-                                if emitted_events.contains(&event_key) {
-                                    // Skip: already emitted as part of array
-                                    continue;
-                                }
-                                // First occurrence: emit as array with all handlers for this event
-                                emitted_events.insert(event_key.clone());
-                                if !first {
-                                    ctx.push(",");
-                                }
-                                if multiline {
-                                    ctx.newline();
-                                } else if !first {
-                                    ctx.push(" ");
-                                }
-                                first = false;
-                                generate_merged_event_handlers(
-                                    ctx,
-                                    props,
-                                    &event_key,
-                                    static_class,
-                                    static_style,
-                                );
+                    if dir.name == "on"
+                        && let Some(event_key) = get_von_event_key(dir)
+                    {
+                        let count = scan.event_counts.count(&event_key);
+                        if count > 1 {
+                            let emitted_events =
+                                emitted_events.get_or_insert_with(FxHashSet::default);
+                            if emitted_events.contains(&event_key) {
+                                // Skip: already emitted as part of array
                                 continue;
                             }
+                            // First occurrence: emit as array with all handlers for this event
+                            emitted_events.insert(event_key.clone());
+                            if !first {
+                                ctx.push(",");
+                            }
+                            if multiline {
+                                ctx.newline();
+                            } else if !first {
+                                ctx.push(" ");
+                            }
+                            first = false;
+                            generate_merged_event_handlers(
+                                ctx,
+                                props,
+                                &event_key,
+                                scan.static_class,
+                                scan.static_style,
+                            );
+                            continue;
                         }
                     }
 
@@ -496,7 +489,16 @@ fn generate_props_object_inner(
                         ctx.push(" ");
                     }
                     first = false;
-                    generate_directive_prop_with_static(ctx, dir, static_class, static_style);
+                    generate_directive_prop_with_static(
+                        ctx,
+                        dir,
+                        super::directives::StaticMerge {
+                            class: scan.static_class,
+                            class_before: scan.static_class_before_dynamic,
+                            style: scan.static_style,
+                            style_before: scan.static_style_before_dynamic,
+                        },
+                    );
                 }
             }
         }

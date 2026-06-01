@@ -2,6 +2,7 @@
 name = "vize"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Vize - High-performance Vue.js toolchain in Rust"
@@ -16,8 +17,9 @@ name = "vize"
 path = "src/lib.rs"
 
 [features]
-default = ["glyph"]
-glyph = ["dep:vize_glyph", "vize_maestro/glyph"]
+default = ["glyph", "maestro"]
+glyph = ["dep:vize_glyph", "vize_maestro?/glyph"]
+maestro = ["dep:vize_maestro"]
 
 [dependencies]
 # Vize crates (re-exported for unified documentation)
@@ -32,24 +34,25 @@ vize_glyph = { workspace = true, optional = true }
 vize_patina = { workspace = true }
 vize_canon = { workspace = true, features = ["native"] }
 vize_croquis = { workspace = true }
+vize_croquis_cf = { workspace = true }
 vize_musea = { workspace = true }
-vize_maestro = { workspace = true }
+vize_curator = { workspace = true }
+vize_maestro = { workspace = true, optional = true }
 
 # CLI
-clap = { version = "4.5", features = ["derive"] }
+clap.workspace = true
 
 # Directory walking with .gitignore support
-ignore = "0.4"
+ignore.workspace = true
 
 # Glob pattern matching
-glob = "0.3"
+glob.workspace = true
 
 # Multithreading
-rayon = "1.10"
+rayon.workspace = true
 
-# Async runtime (for LSP)
-tokio = { version = "1", features = ["rt-multi-thread"] }
-futures = "0.3"
+# Async helpers (for LSP)
+futures.workspace = true
 
 # Serialization (for JSON output)
 serde = { workspace = true }
@@ -64,15 +67,9 @@ oxc_semantic = { workspace = true }
 oxc_span = { workspace = true }
 oxc_transformer = { workspace = true }
 
-# Regex for script language detection
-regex-lite = "0.1"
-
-# PKL configuration language
-rpkl = "0.7"
-
 # Home/config directory detection
-dirs = "5.0"
+dirs.workspace = true
 
 [dev-dependencies]
-tempfile = "3"
+tempfile.workspace = true
 insta.workspace = true

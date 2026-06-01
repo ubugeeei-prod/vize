@@ -1,0 +1,195 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Art Vue",
+  "scopeName": "source.art-vue",
+  "patterns": [
+    { "include": "#art-comments" },
+    { "include": "#art-block" },
+    { "include": "source.vue" }
+  ],
+  "repository": {
+    "art-comments": {
+      "begin": "<!--",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.comment.begin.html" }
+      },
+      "end": "-->",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.comment.end.html" }
+      },
+      "name": "comment.block.html"
+    },
+    "art-block": {
+      "begin": "(<)(art)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.art.vue" }
+      },
+      "end": "(</)(art)(>)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.art.vue" },
+        "3": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "patterns": [
+        { "include": "#art-open-tag" },
+        { "include": "#variant-block" },
+        { "include": "#art-template-content" }
+      ]
+    },
+    "art-open-tag": {
+      "begin": "\\G",
+      "end": ">",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "patterns": [
+        { "include": "#art-attribute-values" },
+        { "include": "#art-boolean-attributes" },
+        { "include": "#art-attributes" },
+        { "include": "source.vue#vue-tag-attributes" }
+      ]
+    },
+    "variant-block": {
+      "begin": "(<)(variant)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.variant.vue" }
+      },
+      "end": "(</)(variant)(>)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.variant.vue" },
+        "3": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "patterns": [{ "include": "#variant-open-tag" }, { "include": "#art-template-content" }]
+    },
+    "variant-open-tag": {
+      "begin": "\\G",
+      "end": ">",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "patterns": [
+        { "include": "#variant-json-attribute-values" },
+        { "include": "#variant-attribute-values" },
+        { "include": "#art-boolean-attributes" },
+        { "include": "#variant-attributes" },
+        { "include": "source.vue#vue-tag-attributes" }
+      ]
+    },
+    "art-template-content": {
+      "patterns": [
+        { "include": "#art-comments" },
+        { "include": "source.vue#vue-interpolation" },
+        { "include": "source.vue#vue-directives" },
+        { "include": "source.vue#html-tags" },
+        { "include": "source.vue#html-entities" }
+      ]
+    },
+    "art-attributes": {
+      "match": "\\b(title|description|component|category|tags|status|order)\\b",
+      "name": "entity.other.attribute-name.art.vue"
+    },
+    "variant-attributes": {
+      "match": "\\b(name|args|viewport|skip-vrt|skipVrt)\\b",
+      "name": "entity.other.attribute-name.variant.vue"
+    },
+    "art-boolean-attributes": {
+      "match": "\\b(default|skip-vrt|skipVrt)\\b",
+      "name": "storage.modifier.boolean-attribute.vue"
+    },
+    "art-attribute-values": {
+      "patterns": [
+        {
+          "begin": "\\b(title|description|component|category|tags|status|order)\\b\\s*(=)\\s*(\")",
+          "beginCaptures": {
+            "1": { "name": "entity.other.attribute-name.art.vue" },
+            "2": { "name": "punctuation.separator.key-value.html" },
+            "3": { "name": "punctuation.definition.string.begin.html" }
+          },
+          "contentName": "string.quoted.double.html",
+          "end": "(\")",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.html" }
+          }
+        },
+        {
+          "begin": "\\b(title|description|component|category|tags|status|order)\\b\\s*(=)\\s*(')",
+          "beginCaptures": {
+            "1": { "name": "entity.other.attribute-name.art.vue" },
+            "2": { "name": "punctuation.separator.key-value.html" },
+            "3": { "name": "punctuation.definition.string.begin.html" }
+          },
+          "contentName": "string.quoted.single.html",
+          "end": "(')",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.html" }
+          }
+        }
+      ]
+    },
+    "variant-attribute-values": {
+      "patterns": [
+        {
+          "begin": "\\b(name|viewport)\\b\\s*(=)\\s*(\")",
+          "beginCaptures": {
+            "1": { "name": "entity.other.attribute-name.variant.vue" },
+            "2": { "name": "punctuation.separator.key-value.html" },
+            "3": { "name": "punctuation.definition.string.begin.html" }
+          },
+          "contentName": "string.quoted.double.html",
+          "end": "(\")",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.html" }
+          }
+        },
+        {
+          "begin": "\\b(name|viewport)\\b\\s*(=)\\s*(')",
+          "beginCaptures": {
+            "1": { "name": "entity.other.attribute-name.variant.vue" },
+            "2": { "name": "punctuation.separator.key-value.html" },
+            "3": { "name": "punctuation.definition.string.begin.html" }
+          },
+          "contentName": "string.quoted.single.html",
+          "end": "(')",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.html" }
+          }
+        }
+      ]
+    },
+    "variant-json-attribute-values": {
+      "patterns": [
+        {
+          "begin": "\\b(args)\\b\\s*(=)\\s*(')",
+          "beginCaptures": {
+            "1": { "name": "entity.other.attribute-name.variant.vue" },
+            "2": { "name": "punctuation.separator.key-value.html" },
+            "3": { "name": "punctuation.definition.string.begin.html" }
+          },
+          "contentName": "meta.embedded.block.json",
+          "end": "(')",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.html" }
+          },
+          "patterns": [{ "include": "source.json" }]
+        },
+        {
+          "begin": "\\b(args)\\b\\s*(=)\\s*(\")",
+          "beginCaptures": {
+            "1": { "name": "entity.other.attribute-name.variant.vue" },
+            "2": { "name": "punctuation.separator.key-value.html" },
+            "3": { "name": "punctuation.definition.string.begin.html" }
+          },
+          "contentName": "meta.embedded.block.json",
+          "end": "(\")",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.html" }
+          },
+          "patterns": [{ "include": "source.json" }]
+        }
+      ]
+    }
+  }
+}

@@ -49,33 +49,43 @@ graph TD
     C --> F[Patina<br/>Linter]
     C --> G[Glyph<br/>Formatter]
     D --> H[Canon<br/>Type Checker]
-    C --> I[Musea<br/>Gallery]
+    C --> I[Musea<br/>Art & Docs Core]
     D --> J[Maestro<br/>LSP]
 ```
 
 Because all tools share the same parser and AST, they have a consistent understanding of your code. A lint rule in Patina operates on the same AST nodes as the compiler in Atelier — there's no risk of parser disagreement.
 
+For type checking, `vize_canon` adds one more step: it generates virtual TypeScript from Vue SFCs and asks Corsa project sessions from [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) for native diagnostics, then maps those results back onto the original files.
+
+The implementation workflow is documented in
+[Language Engineering Practices](./language-engineering-practices.md), which maps parser,
+compiler, analyzer, type-checker, formatter, LSP, and release changes to the fixture, snapshot,
+parity, benchmark, and readiness evidence expected for review.
+
 ## Crate Responsibilities
 
-| Layer         | Crate                | Role                                                 |
-| ------------- | -------------------- | ---------------------------------------------------- |
-| Foundation    | `vize_carton`        | Shared utilities, arena allocator, string interning  |
-| AST           | `vize_relief`        | AST node definitions, error types, compiler options  |
-| Parsing       | `vize_armature`      | Tokenizer + recursive descent parser                 |
-| Analysis      | `vize_croquis`       | Semantic analysis, scope tracking, binding detection |
-| Compilation   | `vize_atelier_core`  | Shared transforms, codegen utilities, source maps    |
-| Compilation   | `vize_atelier_dom`   | DOM (VDom) code generation                           |
-| Compilation   | `vize_atelier_vapor` | Vapor mode code generation                           |
-| Compilation   | `vize_atelier_sfc`   | SFC orchestration (script + template + style + HMR)  |
-| Compilation   | `vize_atelier_ssr`   | Server-side rendering compilation                    |
-| Bindings      | `vize_vitrine`       | Node.js (NAPI) + WASM bindings                       |
-| CLI           | `vize`               | Command-line interface (clap + rayon)                |
-| Type Checking | `vize_canon`         | TypeScript type checker for templates                |
-| Linting       | `vize_patina`        | Vue.js linter with i18n (en/ja/zh)                   |
-| Formatting    | `vize_glyph`         | Vue.js formatter (template + script + style)         |
-| LSP           | `vize_maestro`       | Language Server Protocol (tower-lsp)                 |
-| Gallery       | `vize_musea`         | Component gallery (Storybook alternative)            |
-| TUI           | `vize_fresco`        | Terminal UI framework (crossterm + taffy)            |
+| Layer         | Crate                | Role                                                   |
+| ------------- | -------------------- | ------------------------------------------------------ |
+| Foundation    | `vize_carton`        | Shared utilities, arena allocator, string interning    |
+| AST           | `vize_relief`        | AST node definitions, error types, compiler options    |
+| Parsing       | `vize_armature`      | Tokenizer + recursive descent parser                   |
+| Analysis      | `vize_croquis`       | Semantic analysis, scope tracking, binding detection   |
+| Compilation   | `vize_atelier_core`  | Shared transforms, codegen utilities, source maps      |
+| Compilation   | `vize_atelier_dom`   | DOM (VDom) code generation                             |
+| Compilation   | `vize_atelier_vapor` | Vapor mode code generation                             |
+| Compilation   | `vize_atelier_sfc`   | SFC orchestration (script + template + style + HMR)    |
+| Compilation   | `vize_atelier_ssr`   | Server-side rendering compilation                      |
+| Bindings      | `vize_vitrine`       | Node.js (NAPI) + WASM bindings                         |
+| CLI           | `vize`               | Command-line interface (clap + rayon)                  |
+| Type Checking | `vize_canon`         | Native TypeScript and Vue diagnostics via `corsa-bind` |
+| Linting       | `vize_patina`        | Vue.js linter with i18n (en/ja/zh)                     |
+| Formatting    | `vize_glyph`         | Vue.js formatter (template + script + style)           |
+| LSP           | `vize_maestro`       | Language Server Protocol (tower-lsp)                   |
+| Musea         | `vize_musea`         | Art parsing, docs, palette, autogen, and VRT core      |
+| TUI           | `vize_fresco`        | Terminal UI framework (crossterm + taffy)              |
+
+The gallery UI and dev-server integration for Musea live in the JavaScript package
+`@vizejs/vite-plugin-musea`; the Rust crate focuses on the parsing and generation core.
 
 ## Naming Convention
 
@@ -114,13 +124,14 @@ This naming convention makes the crate hierarchy intuitive: when you see `vize_a
 
 Vize integrates with the broader Rust ecosystem for specialized tasks:
 
-| Dependency                                               | Purpose                           | Used By                             |
-| -------------------------------------------------------- | --------------------------------- | ----------------------------------- |
-| [OXC](https://oxc.rs/)                                   | JavaScript/TypeScript AST parsing | `vize_croquis`, `vize_atelier_core` |
-| [Rayon](https://docs.rs/rayon)                           | Data-parallel multi-threading     | `vize`, `vize_vitrine`              |
-| [bumpalo](https://docs.rs/bumpalo)                       | Arena allocation for AST nodes    | `vize_carton`                       |
-| [LightningCSS](https://lightningcss.dev/)                | CSS parsing and transformation    | `vize_atelier_sfc`                  |
-| [tower-lsp](https://docs.rs/tower-lsp)                   | LSP server framework              | `vize_maestro`                      |
-| [clap](https://docs.rs/clap)                             | CLI argument parsing              | `vize`                              |
-| [wasm-bindgen](https://rustwasm.github.io/wasm-bindgen/) | WASM-JavaScript interop           | `vize_vitrine`                      |
-| [napi-rs](https://napi.rs/)                              | Node.js native addon bindings     | `vize_vitrine`                      |
+| Dependency                                               | Purpose                                            | Used By                                     |
+| -------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
+| [OXC](https://oxc.rs/)                                   | JavaScript/TypeScript AST parsing                  | `vize_croquis`, `vize_atelier_core`         |
+| [Rayon](https://docs.rs/rayon)                           | Data-parallel multi-threading                      | `vize`, `vize_vitrine`                      |
+| [bumpalo](https://docs.rs/bumpalo)                       | Arena allocation for AST nodes                     | `vize_carton`                               |
+| [LightningCSS](https://lightningcss.dev/)                | CSS parsing and transformation                     | `vize_atelier_sfc`                          |
+| [`corsa-bind`](https://github.com/ubugeeei/corsa-bind)   | Native TypeScript project sessions and diagnostics | `vize_canon`, `vize_maestro`, `vize_patina` |
+| [tower-lsp](https://docs.rs/tower-lsp)                   | LSP server framework                               | `vize_maestro`                              |
+| [clap](https://docs.rs/clap)                             | CLI argument parsing                               | `vize`                                      |
+| [wasm-bindgen](https://rustwasm.github.io/wasm-bindgen/) | WASM-JavaScript interop                            | `vize_vitrine`                              |
+| [napi-rs](https://napi.rs/)                              | Node.js native addon bindings                      | `vize_vitrine`                              |

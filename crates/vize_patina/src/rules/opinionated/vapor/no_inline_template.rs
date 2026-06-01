@@ -46,14 +46,14 @@ impl Rule for NoInlineTemplate {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         for prop in element.props.iter() {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name.as_str().eq_ignore_ascii_case("inline-template") {
-                    ctx.error_with_help(
-                        ctx.t("vapor/no-inline-template.message"),
-                        &attr.loc,
-                        ctx.t("vapor/no-inline-template.help"),
-                    );
-                }
+            if let PropNode::Attribute(attr) = prop
+                && attr.name.as_str().eq_ignore_ascii_case("inline-template")
+            {
+                ctx.error_with_help(
+                    ctx.t("vapor/no-inline-template.message"),
+                    &attr.loc,
+                    ctx.t("vapor/no-inline-template.help"),
+                );
             }
         }
     }

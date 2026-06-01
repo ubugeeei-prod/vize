@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/musea-nuxt",
-  "version": "0.46.0",
+  "version": "0.155.0",
   "description": "Nuxt mock layer for Musea - enables Nuxt component isolation in galleries",
   "keywords": [
     "component-gallery",
@@ -9,11 +9,15 @@
     "nuxt",
     "vite-plugin"
   ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
   "license": "MIT",
   "author": "ubugeeei",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/vize.git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
     "directory": "npm/musea-nuxt"
   },
   "files": [
@@ -40,15 +44,18 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "vue": "^3.5.0",
-    "vue-router": "^4.5.0"
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable",
+    "vue-router": "catalog:vue-stable"
   },
   "peerDependencies": {
     "vite": "^8.0.0",
     "vue": "^3.5.0",
     "vue-router": "^4.5.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

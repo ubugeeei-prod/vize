@@ -3,45 +3,13 @@
 //! Processes v-if/v-else-if/v-else and v-for nodes at the template AST level
 //! (as opposed to directive-level processing in `visit_element`).
 
-use crate::analyzer::Analyzer;
-use crate::scope::VForScopeData;
 use crate::ScopeBinding;
-use vize_carton::{profile, CompactString, SmallVec, String};
-use vize_relief::ast::{ExpressionNode, ForNode, IfNode, PropNode};
+use crate::analyzer::Analyzer;
+use crate::analyzer::helpers::build_branch_guard;
+use crate::scope::VForScopeData;
+use vize_carton::{CompactString, SmallVec, profile, smallvec};
 use vize_relief::BindingType;
-
-fn build_if_branch_guard(
-    previous_conditions: &[CompactString],
-    current_condition: Option<&str>,
-) -> Option<CompactString> {
-    if previous_conditions.is_empty() && current_condition.is_none() {
-        return None;
-    }
-
-    let mut guard = String::default();
-    let mut has_part = false;
-
-    for previous in previous_conditions {
-        if has_part {
-            guard.push_str(" && ");
-        }
-        guard.push_str("!(");
-        guard.push_str(previous.as_str());
-        guard.push(')');
-        has_part = true;
-    }
-
-    if let Some(condition) = current_condition {
-        if has_part {
-            guard.push_str(" && ");
-        }
-        guard.push('(');
-        guard.push_str(condition);
-        guard.push(')');
-    }
-
-    Some(CompactString::new(guard.as_str()))
-}
+use vize_relief::ast::{ExpressionNode, ForNode, IfNode, PropNode};
 
 impl Analyzer {
     /// Visit if node.
@@ -53,24 +21,25 @@ impl Analyzer {
         let mut previous_conditions = SmallVec::<[CompactString; 4]>::new();
 
         for branch in if_node.branches.iter() {
-            if self.options.detect_undefined && self.script_analyzed {
-                if let Some(ref cond) = branch.condition {
-                    profile!(
-                        "croquis.template.v_if.condition_refs",
-                        self.check_expression_refs(cond, scope_vars, branch.loc.start.offset)
-                    );
-                }
+            if self.options.detect_undefined
+                && self.script_analyzed
+                && let Some(ref cond) = branch.condition
+            {
+                profile!(
+                    "croquis.template.v_if.condition_refs",
+                    self.check_expression_refs(cond, scope_vars)
+                );
             }
 
-            if self.options.detect_undefined && self.script_analyzed {
-                if let Some(PropNode::Directive(dir)) = &branch.user_key {
-                    if let Some(ref exp) = dir.exp {
-                        profile!(
-                            "croquis.template.v_if.key_refs",
-                            self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
-                        );
-                    }
-                }
+            if self.options.detect_undefined
+                && self.script_analyzed
+                && let Some(PropNode::Directive(dir)) = &branch.user_key
+                && let Some(ref exp) = dir.exp
+            {
+                profile!(
+                    "croquis.template.v_if.key_refs",
+                    self.check_expression_refs(exp, scope_vars)
+                );
             }
 
             let current_condition = branch.condition.as_ref().map(|cond| match cond {
@@ -79,7 +48,7 @@ impl Analyzer {
             });
 
             let branch_guard =
-                build_if_branch_guard(previous_conditions.as_slice(), current_condition);
+                build_branch_guard(previous_conditions.as_slice(), current_condition);
             let guard_pushed = if let Some(ref guard) = branch_guard {
                 self.vif_guard_stack.push(guard.clone());
                 true
@@ -87,11 +56,12 @@ impl Analyzer {
                 false
             };
 
-            profile!("croquis.template.v_if.children", {
-                for child in branch.children.iter() {
-                    self.visit_template_child(child, scope_vars);
-                }
-            });
+            // Branch children are a fresh sibling group for flat v-if chains.
+            let saved_branch_conditions = std::mem::take(&mut self.vif_branch_conditions);
+            for child in branch.children.iter() {
+                self.visit_template_child(child, scope_vars);
+            }
+            self.vif_branch_conditions = saved_branch_conditions;
 
             // Pop v-if guard
             if guard_pushed {
@@ -129,7 +99,8 @@ impl Analyzer {
 
             self.summary.scopes.enter_v_for_scope(
                 VForScopeData {
-                    value_alias,
+                    value_alias: value_alias.clone(),
+                    value_bindings: smallvec![value_alias],
                     key_alias: vars_added.get(1).cloned(),
                     index_alias: vars_added.get(2).cloned(),
                     source: source_content,
@@ -152,15 +123,16 @@ impl Analyzer {
         if self.options.detect_undefined && self.script_analyzed {
             profile!(
                 "croquis.template.v_for.source_refs",
-                self.check_expression_refs(&for_node.source, scope_vars, for_node.loc.start.offset)
+                self.check_expression_refs(&for_node.source, scope_vars)
             );
         }
 
-        profile!("croquis.template.v_for.children", {
-            for child in for_node.children.iter() {
-                self.visit_template_child(child, scope_vars);
-            }
-        });
+        // v-for children are a fresh sibling group for flat v-if chains.
+        let saved_branch_conditions = std::mem::take(&mut self.vif_branch_conditions);
+        for child in for_node.children.iter() {
+            self.visit_template_child(child, scope_vars);
+        }
+        self.vif_branch_conditions = saved_branch_conditions;
 
         for _ in 0..vars_count {
             scope_vars.pop();

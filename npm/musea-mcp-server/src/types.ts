@@ -79,6 +79,9 @@ export interface NativeBinding {
     categories: string[];
     tags: string[];
   };
+  parseDesignTokensFromPath: (path: string) => unknown;
+  flattenDesignTokenCategories: (categories: unknown) => unknown[];
+  generateDesignTokensMarkdown: (categories: unknown, generatedAt?: string) => string;
   analyzeSfc?: (
     source: string,
     options?: { filename?: string },
@@ -126,7 +129,11 @@ export interface ArtInfo {
   component?: string;
   category?: string;
   tags: string[];
+  status: string;
+  order?: number;
   variantCount: number;
+  variantNames: string[];
+  defaultVariant?: string;
 }
 
 export interface ServerContext {

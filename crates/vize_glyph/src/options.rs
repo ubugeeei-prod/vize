@@ -310,20 +310,12 @@ impl FormatOptions {
     /// Get the quote character based on options
     #[inline]
     pub fn quote_char(&self) -> char {
-        if self.single_quote {
-            '\''
-        } else {
-            '"'
-        }
+        if self.single_quote { '\'' } else { '"' }
     }
 
     /// Get the quote as a byte
     #[inline]
     pub fn quote_byte(&self) -> u8 {
-        if self.single_quote {
-            b'\''
-        } else {
-            b'"'
-        }
+        if self.single_quote { b'\'' } else { b'"' }
     }
 }

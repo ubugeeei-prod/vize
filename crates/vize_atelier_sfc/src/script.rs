@@ -23,22 +23,22 @@ mod utils;
 pub use analyze_script_bindings::{analyze_script_bindings, get_object_or_array_expression_keys};
 pub use context::ScriptCompileContext;
 pub use define_emits::{
-    extract_runtime_emits, gen_runtime_emits, process_define_emits, DefineEmitsResult,
+    DefineEmitsResult, extract_runtime_emits, gen_runtime_emits, process_define_emits,
 };
 pub use define_props_destructure::{
-    gen_props_access_exp, process_props_destructure, transform_destructured_props,
-    PropsDestructureBinding, PropsDestructuredBindings,
+    PropsDestructureBinding, PropsDestructuredBindings, gen_props_access_exp,
+    process_props_destructure, transform_destructured_props,
 };
 pub use import_usage_check::{
-    is_used_in_template, resolve_template_used_identifiers, resolve_template_v_model_identifiers,
-    TemplateUsedIdentifiers,
+    TemplateUsedIdentifiers, is_used_in_template, resolve_template_used_identifiers,
+    resolve_template_v_model_identifiers,
 };
 pub(crate) use type_resolution::{
     build_interface_type_source, resolve_type_args, resolve_type_to_object_body,
 };
 pub use utils::{
-    get_escaped_prop_name, is_compiler_macro_line, is_valid_identifier, MacroCall,
-    ScriptSetupMacros,
+    MacroCall, ScriptSetupMacros, get_escaped_prop_name, is_compiler_macro_line,
+    is_valid_identifier,
 };
 
 // Re-export constants
@@ -92,24 +92,7 @@ pub fn analyze_script_setup_fast(content: &str) -> ScriptParseResult {
 /// This uses vize_croquis for the core analysis and converts
 /// the result to the shared Croquis format.
 pub fn analyze_script_setup_to_summary(content: &str) -> CroquisSummary {
-    let result = vize_croquis::script_parser::parse_script_setup(content);
-
-    let mut summary = CroquisSummary::new();
-
-    // Copy bindings
-    summary.bindings = result.bindings;
-
-    // Copy macros
-    summary.macros = result.macros;
-
-    // Copy reactivity
-    summary.reactivity = result.reactivity;
-
-    // Copy exports
-    summary.type_exports = result.type_exports;
-    summary.invalid_exports = result.invalid_exports;
-
-    summary
+    vize_croquis::script_parser::parse_script_setup(content).into_croquis()
 }
 
 /// Convert a full ScriptCompileContext analysis to Croquis.

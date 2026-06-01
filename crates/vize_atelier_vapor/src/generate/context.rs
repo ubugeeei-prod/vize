@@ -1,7 +1,11 @@
 //! Code generation context that tracks state during Vapor code emission.
 
-use super::expression;
-use vize_carton::{cstr, FxHashMap, FxHashSet, String, ToCompactString};
+use super::{
+    destructure::{parse_destructure_bindings, parse_destructure_names},
+    expression,
+};
+use vize_atelier_core::options::BindingMetadata;
+use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, camelize, capitalize, cstr};
 use vize_croquis::builtins::is_global_allowed;
 
 /// For-loop scope entry
@@ -57,12 +61,15 @@ pub(crate) struct GenerateContext<'a> {
     resolved_component_scopes: std::vec::Vec<std::vec::Vec<String>>,
     /// Element IDs that are standalone text nodes (no _txt needed)
     pub(crate) standalone_text_elements: &'a FxHashSet<usize>,
+    /// Binding metadata from script setup imports.
+    pub(crate) binding_metadata: Option<&'a BindingMetadata>,
 }
 
 impl<'a> GenerateContext<'a> {
     pub(crate) fn new(
         element_template_map: &'a FxHashMap<usize, usize>,
         standalone_text_elements: &'a FxHashSet<usize>,
+        binding_metadata: Option<&'a BindingMetadata>,
     ) -> Self {
         Self {
             code: String::with_capacity(4096),
@@ -79,6 +86,7 @@ impl<'a> GenerateContext<'a> {
             resolved_components: FxHashSet::default(),
             resolved_component_scopes: std::vec::Vec::new(),
             standalone_text_elements,
+            binding_metadata,
         }
     }
 
@@ -200,11 +208,10 @@ impl<'a> GenerateContext<'a> {
             if let Some(ref value_alias) = scope.value_alias {
                 let for_var = cstr!("_for_item{}", scope.depth);
 
-                if value_alias.starts_with('{') || value_alias.starts_with('(') {
-                    let names = parse_destructure_names(value_alias.as_str());
-                    for binding_name in &names {
-                        if name == *binding_name {
-                            return Some(cstr!("{}.value.{}", for_var, binding_name));
+                if value_alias.starts_with(['{', '[', '(']) {
+                    for binding in parse_destructure_bindings(value_alias.as_str()) {
+                        if name == binding.local.as_str() {
+                            return Some(cstr!("{}.value{}", for_var, binding.path));
                         }
                     }
                 } else if name == value_alias.as_str() {
@@ -212,10 +219,10 @@ impl<'a> GenerateContext<'a> {
                 }
             }
 
-            if let Some(ref key_alias) = scope.key_alias {
-                if name == key_alias.as_str() {
-                    return Some(cstr!("_for_key{}.value", scope.depth));
-                }
+            if let Some(ref key_alias) = scope.key_alias
+                && name == key_alias.as_str()
+            {
+                return Some(cstr!("_for_key{}.value", scope.depth));
             }
         }
 
@@ -299,12 +306,41 @@ impl<'a> GenerateContext<'a> {
         self.resolved_components.contains(component)
     }
 
+    pub(crate) fn resolve_component_binding_expr(&self, component: &str) -> Option<String> {
+        let bindings = self.binding_metadata?;
+
+        let resolve_base = |name: &str| {
+            if bindings.bindings.contains_key(name) {
+                return Some(name.to_compact_string());
+            }
+
+            let camel = camelize(name);
+            if bindings.bindings.contains_key(camel.as_str()) {
+                return Some(camel);
+            }
+
+            let pascal = capitalize(&camel);
+            if bindings.bindings.contains_key(pascal.as_str()) {
+                return Some(pascal);
+            }
+
+            None
+        };
+
+        if let Some((base, suffix)) = component.split_once('.') {
+            let resolved_base = resolve_base(base)?;
+            return Some(cstr!("_ctx.{}.{}", resolved_base, suffix));
+        }
+
+        resolve_base(component).map(|binding| cstr!("_ctx.{}", binding))
+    }
+
     pub(crate) fn mark_component_resolved(&mut self, component: &str) {
         let component = component.to_compact_string();
-        if self.resolved_components.insert(component.clone()) {
-            if let Some(scope) = self.resolved_component_scopes.last_mut() {
-                scope.push(component);
-            }
+        if self.resolved_components.insert(component.clone())
+            && let Some(scope) = self.resolved_component_scopes.last_mut()
+        {
+            scope.push(component);
         }
     }
 
@@ -344,7 +380,7 @@ impl<'a> GenerateContext<'a> {
     pub(crate) fn push_line_fmt(&mut self, args: std::fmt::Arguments<'_>) {
         self.push_indent();
         use std::fmt::Write as _;
-        self.write_fmt(args).unwrap();
+        let _ = self.write_fmt(args);
         self.code.push('\n');
     }
 
@@ -354,10 +390,7 @@ impl<'a> GenerateContext<'a> {
         let slot_props_var = cstr!("_slotProps{}", self.slot_scope_count);
         self.slot_scope_count += 1;
 
-        let names = parse_destructure_names(destructure_pattern)
-            .into_iter()
-            .map(|s| s.to_compact_string())
-            .collect();
+        let names = parse_destructure_names(destructure_pattern);
 
         self.slot_scopes.push(SlotScope {
             names,
@@ -377,27 +410,6 @@ impl<'a> GenerateContext<'a> {
         self.temp_count += 1;
         name
     }
-}
-
-/// Parse destructured variable names from patterns like "{ id, name }" or "{ a: b }"
-fn parse_destructure_names(pattern: &str) -> std::vec::Vec<&str> {
-    let inner = pattern
-        .trim_start_matches(['{', '(', ' '])
-        .trim_end_matches(['}', ')', ' ']);
-    inner
-        .split(',')
-        .filter_map(|part| {
-            let part = part.trim();
-            // Handle "a: b" -> use "b" (the bound name)
-            if let Some(pos) = part.find(':') {
-                Some(part[pos + 1..].trim())
-            } else if part.is_empty() {
-                None
-            } else {
-                Some(part)
-            }
-        })
-        .collect()
 }
 
 impl std::fmt::Write for GenerateContext<'_> {

@@ -156,7 +156,7 @@ impl SegmentedText {
 
 #[cfg(test)]
 mod tests {
-    use super::{segment, SegmentedText};
+    use super::{SegmentedText, segment};
 
     #[test]
     fn test_segment_ascii() {

@@ -5,10 +5,10 @@
 //! - Implicit `$event` parameter detection
 //! - Simple handler reference tracking
 
-use crate::analyzer::helpers::extract_inline_callback_params;
 use crate::analyzer::Analyzer;
+use crate::analyzer::helpers::extract_inline_callback_params;
 use crate::scope::EventHandlerScopeData;
-use vize_carton::{profile, smallvec, CompactString};
+use vize_carton::{CompactString, profile, smallvec};
 use vize_relief::ast::ExpressionNode;
 
 impl Analyzer {
@@ -81,7 +81,7 @@ impl Analyzer {
                 if self.options.detect_undefined && self.script_analyzed {
                     profile!(
                         "croquis.template.v_on.refs",
-                        self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                        self.check_expression_refs(exp, scope_vars)
                     );
                 }
 
@@ -137,7 +137,7 @@ impl Analyzer {
                     if self.options.detect_undefined && self.script_analyzed {
                         profile!(
                             "croquis.template.v_on.refs",
-                            self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                            self.check_expression_refs(exp, scope_vars)
                         );
                     }
 
@@ -161,7 +161,7 @@ impl Analyzer {
                     if self.options.detect_undefined && self.script_analyzed {
                         profile!(
                             "croquis.template.v_on.refs",
-                            self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                            self.check_expression_refs(exp, scope_vars)
                         );
                     }
                 }

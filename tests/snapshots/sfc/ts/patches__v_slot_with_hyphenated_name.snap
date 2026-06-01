@@ -3,9 +3,10 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 
 import DataTable from './DataTable.vue'
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -14,11 +15,11 @@ export default /*@__PURE__*/_defineComponent({
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createBlock(DataTable, null, {
-      "item-header": _withCtx(({ item }) => [
-        _createElementVNode("span", null, _toDisplayString(item.title), 1 /* TEXT */)
-      ]),
-      _: 1 /* STABLE */
-    }))
+    "item-header": _withCtx(({ item }) => [
+      _createElementVNode("span", null, _toDisplayString(item.title), 1 /* TEXT */)
+    ]),
+    _: 1 /* STABLE */
+  }))
 }
 }
 

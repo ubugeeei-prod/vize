@@ -6,11 +6,11 @@
 //! - Expression undefined-reference checking
 
 use crate::analysis::{ElementIdInfo, ElementIdKind, UndefinedRef};
-use vize_carton::{profile, CompactString};
+use vize_carton::{CompactString, profile};
 use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
 
-use super::super::helpers::{extract_identifiers_oxc, is_keyword};
 use super::super::Analyzer;
+use super::super::helpers::{extract_identifiers_oxc, is_keyword};
 
 /// Attributes that take ID references (not the ID itself).
 const ID_REFERENCE_ATTRIBUTES: &[&str] = &[
@@ -60,55 +60,55 @@ impl Analyzer {
             match prop {
                 PropNode::Attribute(attr) => {
                     let attr_name = attr.name.as_str();
-                    if let Some(kind) = get_id_kind(attr_name) {
-                        if let Some(value) = &attr.value {
+                    if let Some(kind) = get_id_kind(attr_name)
+                        && let Some(value) = &attr.value
+                    {
+                        self.summary.element_ids.push(ElementIdInfo {
+                            value: value.content.clone(),
+                            start: attr.loc.start.offset,
+                            end: attr.loc.end.offset,
+                            is_static: true,
+                            in_loop,
+                            scope_id,
+                            kind,
+                        });
+                    }
+                }
+                PropNode::Directive(dir) => {
+                    if dir.name == "bind"
+                        && let Some(ref arg) = dir.arg
+                    {
+                        let arg_name = match arg {
+                            ExpressionNode::Simple(s) => s.content.as_str(),
+                            ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                        };
+
+                        if let Some(kind) = get_id_kind(arg_name)
+                            && let Some(ref exp) = dir.exp
+                        {
+                            let content = match exp {
+                                ExpressionNode::Simple(s) => s.content.clone(),
+                                ExpressionNode::Compound(c) => {
+                                    CompactString::new(c.loc.source.as_str())
+                                }
+                            };
+
+                            // Check if it's a static string literal
+                            let is_static = Self::is_static_string(&content);
+
                             self.summary.element_ids.push(ElementIdInfo {
-                                value: value.content.clone(),
-                                start: attr.loc.start.offset,
-                                end: attr.loc.end.offset,
-                                is_static: true,
+                                value: if is_static {
+                                    Self::extract_string_value(&content)
+                                } else {
+                                    content
+                                },
+                                start: dir.loc.start.offset,
+                                end: dir.loc.end.offset,
+                                is_static,
                                 in_loop,
                                 scope_id,
                                 kind,
                             });
-                        }
-                    }
-                }
-                PropNode::Directive(dir) => {
-                    if dir.name == "bind" {
-                        if let Some(ref arg) = dir.arg {
-                            let arg_name = match arg {
-                                ExpressionNode::Simple(s) => s.content.as_str(),
-                                ExpressionNode::Compound(c) => c.loc.source.as_str(),
-                            };
-
-                            if let Some(kind) = get_id_kind(arg_name) {
-                                if let Some(ref exp) = dir.exp {
-                                    let content = match exp {
-                                        ExpressionNode::Simple(s) => s.content.clone(),
-                                        ExpressionNode::Compound(c) => {
-                                            CompactString::new(c.loc.source.as_str())
-                                        }
-                                    };
-
-                                    // Check if it's a static string literal
-                                    let is_static = Self::is_static_string(&content);
-
-                                    self.summary.element_ids.push(ElementIdInfo {
-                                        value: if is_static {
-                                            Self::extract_string_value(&content)
-                                        } else {
-                                            content
-                                        },
-                                        start: dir.loc.start.offset,
-                                        end: dir.loc.end.offset,
-                                        is_static,
-                                        in_loop,
-                                        scope_id,
-                                        kind,
-                                    });
-                                }
-                            }
                         }
                     }
                 }
@@ -171,12 +171,12 @@ impl Analyzer {
         &mut self,
         expr: &ExpressionNode<'_>,
         scope_vars: &[CompactString],
-        base_offset: u32,
     ) {
         let content = match expr {
             ExpressionNode::Simple(s) => s.content.as_str(),
             ExpressionNode::Compound(c) => c.loc.source.as_str(),
         };
+        let base_offset = expr.loc().start.offset;
 
         for ident in profile!(
             "croquis.template.expression.extract_identifiers",

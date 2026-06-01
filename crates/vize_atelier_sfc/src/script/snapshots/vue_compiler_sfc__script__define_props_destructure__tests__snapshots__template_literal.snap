@@ -1,5 +1,0 @@
----
-source: crates/vue_compiler_sfc/src/script/define_props_destructure.rs
-expression: result
----
-const greeting = `Hello ${__props.name}, you are ${__props.age} years old`

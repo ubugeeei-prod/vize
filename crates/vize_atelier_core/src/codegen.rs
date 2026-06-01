@@ -35,6 +35,7 @@ use root::{
 /// Generate code from root AST.
 pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     let mut ctx = CodegenContext::new(options);
+    ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();
     let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
         .children
         .iter()
@@ -91,7 +92,17 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         }
         ctx.deindent();
         ctx.newline();
-        ctx.push("], 64 /* STABLE_FRAGMENT */))");
+        // Vue tags a root fragment as DEV_ROOT_FRAGMENT when it wraps a single
+        // real node plus comment siblings, so dev tooling treats it as a root.
+        let non_comment_children = root_children
+            .iter()
+            .filter(|child| !matches!(child, TemplateChildNode::Comment(_)))
+            .count();
+        if non_comment_children == 1 {
+            ctx.push("], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))");
+        } else {
+            ctx.push("], 64 /* STABLE_FRAGMENT */))");
+        }
     }
 
     ctx.deindent();
@@ -103,10 +114,10 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     // added during transform but not tracked during codegen (like Unref)
     // We don't merge ALL root.helpers because transform may add helpers that
     // get optimized away during codegen (e.g., createElementVNode -> createElementBlock)
-    let mut all_helpers: Vec<RuntimeHelper> = ctx.used_helpers.iter().copied().collect();
-    if root.helpers.contains(&RuntimeHelper::Unref) && !all_helpers.contains(&RuntimeHelper::Unref)
-    {
-        all_helpers.push(RuntimeHelper::Unref);
+    let mut all_helpers: Vec<RuntimeHelper> = ctx.used_helpers.iter().collect();
+    let mut all_helper_bits = retain_unique_helpers(&mut all_helpers);
+    if root.helpers.contains(&RuntimeHelper::Unref) {
+        push_unique_helper(RuntimeHelper::Unref, &mut all_helpers, &mut all_helper_bits);
     }
     // Collect helpers from hoisted nodes - generate_hoists() takes &CodegenContext (immutable)
     // so helpers used in hoisted VNodes aren't tracked via use_helper(). Pre-scan them here.
@@ -114,13 +125,23 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         "atelier.codegen.collect_hoist_helpers",
         collect_hoist_helpers(root, &mut all_helpers)
     );
-    // Sort helpers for consistent output order
-    all_helpers.sort();
-    all_helpers.dedup();
+    all_helper_bits = retain_unique_helpers(&mut all_helpers);
+
+    let mut ordered_helpers = Vec::with_capacity(all_helpers.len());
+    let mut ordered_helper_bits = 0;
+    for helper in root.helpers.iter().copied() {
+        if has_helper(all_helper_bits, helper) {
+            push_unique_helper(helper, &mut ordered_helpers, &mut ordered_helper_bits);
+        }
+    }
+    for helper in all_helpers {
+        push_unique_helper(helper, &mut ordered_helpers, &mut ordered_helper_bits);
+    }
+    ordered_helpers.sort_by_key(|helper| vue_helper_import_rank(*helper));
 
     let mut preamble = profile!(
         "atelier.codegen.preamble",
-        generate_preamble_from_helpers(&ctx, &all_helpers)
+        generate_preamble_from_helpers(&ctx, &ordered_helpers)
     );
 
     // Generate hoisted variable declarations (appended to preamble)
@@ -137,7 +158,111 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     }
 }
 
+fn retain_unique_helpers(helpers: &mut Vec<RuntimeHelper>) -> u128 {
+    let mut helper_bits = 0;
+    helpers.retain(|helper| push_helper_bit(*helper, &mut helper_bits));
+    helper_bits
+}
+
+fn push_unique_helper(
+    helper: RuntimeHelper,
+    helpers: &mut Vec<RuntimeHelper>,
+    helper_bits: &mut u128,
+) {
+    if push_helper_bit(helper, helper_bits) {
+        helpers.push(helper);
+    }
+}
+
+fn push_helper_bit(helper: RuntimeHelper, helper_bits: &mut u128) -> bool {
+    let bit = helper_bit(helper);
+    if *helper_bits & bit != 0 {
+        return false;
+    }
+    *helper_bits |= bit;
+    true
+}
+
+fn has_helper(helper_bits: u128, helper: RuntimeHelper) -> bool {
+    helper_bits & helper_bit(helper) != 0
+}
+
+fn helper_bit(helper: RuntimeHelper) -> u128 {
+    let index = helper as u8;
+    debug_assert!(index < 128);
+    1u128 << index
+}
+
+fn vue_helper_import_rank(helper: RuntimeHelper) -> u8 {
+    match helper {
+        RuntimeHelper::ResolveComponent
+        | RuntimeHelper::ResolveDynamicComponent
+        | RuntimeHelper::ResolveDirective
+        | RuntimeHelper::ResolveFilter => 0,
+        RuntimeHelper::VModelRadio
+        | RuntimeHelper::VModelCheckbox
+        | RuntimeHelper::VModelText
+        | RuntimeHelper::VModelSelect
+        | RuntimeHelper::VModelDynamic => 1,
+        RuntimeHelper::WithDirectives | RuntimeHelper::WithModifiers | RuntimeHelper::WithKeys => 2,
+        RuntimeHelper::ToDisplayString => 3,
+        RuntimeHelper::CreateElementVNode
+        | RuntimeHelper::CreateVNode
+        | RuntimeHelper::RenderSlot => 4,
+        RuntimeHelper::NormalizeClass
+        | RuntimeHelper::NormalizeStyle
+        | RuntimeHelper::NormalizeProps
+        | RuntimeHelper::GuardReactiveProps
+        | RuntimeHelper::MergeProps
+        | RuntimeHelper::ToHandlers
+        | RuntimeHelper::Camelize
+        | RuntimeHelper::Capitalize
+        | RuntimeHelper::ToHandlerKey => 5,
+        RuntimeHelper::OpenBlock => 6,
+        RuntimeHelper::CreateElementBlock | RuntimeHelper::CreateBlock => 7,
+        RuntimeHelper::Fragment => 8,
+        RuntimeHelper::CreateComment | RuntimeHelper::CreateText | RuntimeHelper::CreateStatic => 9,
+        RuntimeHelper::RenderList
+        | RuntimeHelper::CreateSlots
+        | RuntimeHelper::SetBlockTracking
+        | RuntimeHelper::PushScopeId
+        | RuntimeHelper::PopScopeId
+        | RuntimeHelper::WithCtx
+        | RuntimeHelper::Unref
+        | RuntimeHelper::IsRef
+        | RuntimeHelper::WithMemo
+        | RuntimeHelper::IsMemoSame
+        | RuntimeHelper::VShow
+        | RuntimeHelper::Teleport
+        | RuntimeHelper::Suspense
+        | RuntimeHelper::KeepAlive
+        | RuntimeHelper::BaseTransition
+        | RuntimeHelper::Transition
+        | RuntimeHelper::TransitionGroup => 10,
+        RuntimeHelper::SsrInterpolate
+        | RuntimeHelper::SsrRenderVNode
+        | RuntimeHelper::SsrRenderComponent
+        | RuntimeHelper::SsrRenderSlot
+        | RuntimeHelper::SsrRenderSlotInner
+        | RuntimeHelper::SsrRenderAttrs
+        | RuntimeHelper::SsrRenderAttr
+        | RuntimeHelper::SsrRenderDynamicAttr
+        | RuntimeHelper::SsrIncludeBooleanAttr
+        | RuntimeHelper::SsrRenderClass
+        | RuntimeHelper::SsrRenderStyle
+        | RuntimeHelper::SsrRenderDynamicModel
+        | RuntimeHelper::SsrGetDynamicModelProps
+        | RuntimeHelper::SsrRenderList
+        | RuntimeHelper::SsrLooseEqual
+        | RuntimeHelper::SsrLooseContain
+        | RuntimeHelper::SsrGetDirectiveProps
+        | RuntimeHelper::SsrRenderTeleport
+        | RuntimeHelper::SsrRenderSuspense => 11,
+    }
+}
+
 #[cfg(test)]
+#[allow(clippy::disallowed_macros)]
 mod tests {
     use crate::compile;
 
@@ -180,6 +305,55 @@ mod tests {
     fn test_codegen_component() {
         let result = compile!("<MyComponent />");
         assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_component_name_with_colon_uses_valid_identifier() {
+        let allocator = bumpalo::Bump::new();
+        let parser_opts = crate::ParserOptions {
+            is_native_tag: Some(vize_carton::is_native_tag),
+            ..Default::default()
+        };
+        let (mut root, errors) = crate::parse_with_options(
+            &allocator,
+            r#"<global:head title="Page Title" />"#,
+            parser_opts,
+        );
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        crate::transform::transform(
+            &allocator,
+            &mut root,
+            crate::TransformOptions::default(),
+            None,
+        );
+        let output = result_output(&super::generate(&root, crate::CodegenOptions::default()));
+
+        // Vue encodes non-word characters by char code (`:` -> 58), matching
+        // `toValidAssetId` (issue #4422).
+        assert!(
+            output.contains(r#"const _component_global58head = _resolveComponent("global:head")"#)
+        );
+        assert!(output.contains("_createBlock(_component_global58head"));
+        assert!(!output.contains("_component_global:head"));
+    }
+
+    #[test]
+    fn test_codegen_self_component_resolve_marks_maybe_self_reference() {
+        let result = compile!(
+            "<FileTree />",
+            super::CodegenOptions {
+                component_name: Some("FileTree".into()),
+                ..Default::default()
+            }
+        );
+        let output = result_output(&result);
+
+        assert!(
+            output.contains(r#"const _component_FileTree = _resolveComponent("FileTree", true)"#),
+            "self component resolution should pass maybeSelfReference. Got:\n{}",
+            output
+        );
     }
 
     #[test]
@@ -280,6 +454,54 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_conditional_slot_outlet_with_bound_props_uses_render_slot() {
+        let result = compile!(r#"<slot v-if="show" name="updater" v-bind="{ number, update }" />"#);
+        let output = result_output(&result);
+
+        assert!(
+            output.contains(r#"_renderSlot(_ctx.$slots, "updater""#),
+            "conditional slot outlet should use renderSlot. Got:\n{}",
+            output
+        );
+        assert!(
+            output.contains(r#"_mergeProps({ number, update }, { key: 0 })"#),
+            "v-bind object props should be merged with the branch key. Got:\n{}",
+            output
+        );
+        assert!(
+            !output.contains(r#"_createElementBlock("slot""#)
+                && !output.contains(r#"_createElementVNode("slot""#),
+            "slot outlets should not be emitted as literal slot elements. Got:\n{}",
+            output
+        );
+    }
+
+    #[test]
+    fn test_codegen_v_for_slot_outlet_with_bound_props_uses_render_slot() {
+        let result = compile!(
+            r#"<slot v-for="(item, index) of items" v-bind="{ key: item.id }" :item="item" :index="index" />"#
+        );
+        let output = result_output(&result);
+
+        assert!(
+            output.contains(r#"_renderSlot(_ctx.$slots, "default""#),
+            "v-for slot outlet should use renderSlot. Got:\n{}",
+            output
+        );
+        assert!(
+            output.contains(r#"_mergeProps({ key: item.id }, { item: item, index: index })"#),
+            "slot v-bind object props should be preserved with explicit props. Got:\n{}",
+            output
+        );
+        assert!(
+            !output.contains(r#"_createElementBlock("slot""#)
+                && !output.contains(r#"_createElementVNode("slot""#),
+            "slot outlets should not be emitted as literal slot elements. Got:\n{}",
+            output
+        );
+    }
+
+    #[test]
     fn test_codegen_conditional_slot_with_else_does_not_append_undefined() {
         let result = compile!(
             r#"<MyDialog>
@@ -291,7 +513,36 @@ mod tests {
     }
 
     #[test]
-    fn test_codegen_default_slot_with_v_if_is_marked_dynamic() {
+    fn test_codegen_conditional_named_slot_preserves_implicit_default_slot() {
+        let result = compile!(
+            r#"<Parent>
+  Not rendering!
+  <template v-if="showNamed" #named>
+    Named content
+  </template>
+</Parent>"#
+        );
+        let output = result_output(&result);
+
+        assert!(
+            output.contains("default: _withCtx(() => ["),
+            "implicit default slot should be generated when createSlots is used:\n{}",
+            output
+        );
+        assert!(
+            output.contains("Not rendering!"),
+            "default slot text should be preserved:\n{}",
+            output
+        );
+        assert!(
+            output.contains("name: \"named\""),
+            "conditional named slot should still be dynamic:\n{}",
+            output
+        );
+    }
+
+    #[test]
+    fn test_codegen_default_slot_with_v_if_is_stable() {
         let result = compile!(
             r#"<PageWithHeader>
   <div v-if="tab === 'overview'">Overview</div>
@@ -317,6 +568,26 @@ mod tests {
         );
 
         assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_if_branch_mixed_children_wraps_interpolation_in_text_vnode() {
+        let result = compile!(
+            r#"<div><label v-if="show">{{ msg }}<span v-if="required">*</span></label></div>"#
+        );
+
+        assert!(
+            result
+                .code
+                .contains("_createTextVNode(_toDisplayString(msg), 1 /* TEXT */)"),
+            "mixed children inside v-if branch should wrap interpolation in createTextVNode. Got:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("[_toDisplayString(msg),"),
+            "v-if branch should not emit raw string children inside arrays. Got:\n{}",
+            result.code
+        );
     }
 
     #[test]
@@ -350,6 +621,20 @@ mod tests {
             },
         );
 
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_numeric_template_v_for_uses_fragment() {
+        let result = compile!(
+            r#"<div><template v-for="n in 4" :key="`set-${n}`"><button /><span v-for="(icon, i) in icons" :key="`${n}-${i}`" :class="icon" /></template></div>"#
+        );
+
+        assert!(
+            !result.code.contains("\"template\""),
+            "template v-for must not create a DOM template element. Got:\n{}",
+            result.code
+        );
         assert_codegen_snapshot!(result);
     }
 

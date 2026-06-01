@@ -4,8 +4,8 @@
 
 use crate::context::{ElementContext, LintContext};
 use crate::rule::Rule;
-use vize_carton::directive::{parse_level_severity, parse_vize_directive, DirectiveKind};
-use vize_carton::{cstr, profile, CompactString};
+use vize_carton::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
+use vize_carton::{CompactString, cstr, profile};
 use vize_relief::ast::{
     CommentNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
@@ -14,6 +14,8 @@ use vize_relief::ast::{
 pub struct LintVisitor<'a, 'ctx, 'rules> {
     ctx: &'ctx mut LintContext<'a>,
     rules: &'rules [Box<dyn Rule>],
+    rule_names: &'rules [&'static str],
+    run_exit_element_rules: bool,
     /// When true, suppress all diagnostics for the next element
     forget_next_element: bool,
 }
@@ -21,10 +23,17 @@ pub struct LintVisitor<'a, 'ctx, 'rules> {
 impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     /// Create a new visitor
     #[inline]
-    pub fn new(ctx: &'ctx mut LintContext<'a>, rules: &'rules [Box<dyn Rule>]) -> Self {
+    pub fn new(
+        ctx: &'ctx mut LintContext<'a>,
+        rules: &'rules [Box<dyn Rule>],
+        rule_names: &'rules [&'static str],
+        run_exit_element_rules: bool,
+    ) -> Self {
         Self {
             ctx,
             rules,
+            rule_names,
+            run_exit_element_rules,
             forget_next_element: false,
         }
     }
@@ -33,13 +42,12 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
     pub fn visit_root(&mut self, root: &RootNode<'a>) {
         // Run template-level checks
-        for rule in self.rules.iter() {
-            self.ctx.current_rule = rule.meta().name;
-            profile!(
-                "patina.rule.run_on_template",
-                rule.run_on_template(self.ctx, root)
-            );
-        }
+        profile!("patina.rules.run_on_template", {
+            for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied()) {
+                self.ctx.current_rule = rule_name;
+                rule.run_on_template(self.ctx, root);
+            }
+        });
 
         // Visit children
         for child in root.children.iter() {
@@ -60,13 +68,13 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 self.visit_element(el);
             }
             TemplateChildNode::Interpolation(interp) => {
-                for rule in self.rules.iter() {
-                    self.ctx.current_rule = rule.meta().name;
-                    profile!(
-                        "patina.rule.check_interpolation",
-                        rule.check_interpolation(self.ctx, interp)
-                    );
-                }
+                profile!("patina.rules.check_interpolation", {
+                    for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied())
+                    {
+                        self.ctx.current_rule = rule_name;
+                        rule.check_interpolation(self.ctx, interp);
+                    }
+                });
             }
             TemplateChildNode::If(if_node) => {
                 if self.forget_next_element {
@@ -135,10 +143,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 self.ctx.pop_ignore_region(line);
             }
             DirectiveKind::Level => {
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset) {
-                    if let Some(severity) = parse_level_severity(&d.payload) {
-                        self.ctx.set_severity_override_next_line(line, severity);
-                    }
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset)
+                    && let Some(severity) = parse_level_severity(&d.payload)
+                {
+                    self.ctx.set_severity_override_next_line(line, severity);
                 }
             }
             DirectiveKind::Deprecated => {
@@ -196,24 +204,23 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         self.ctx.push_element(elem_ctx);
 
         // Enter element - run rules
-        for rule in self.rules.iter() {
-            self.ctx.current_rule = rule.meta().name;
-            profile!(
-                "patina.rule.enter_element",
-                rule.enter_element(self.ctx, el)
-            );
-        }
+        profile!("patina.rules.enter_element", {
+            for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied()) {
+                self.ctx.current_rule = rule_name;
+                rule.enter_element(self.ctx, el);
+            }
+        });
 
         // Check directives
         for prop in el.props.iter() {
             if let PropNode::Directive(dir) = prop {
-                for rule in self.rules.iter() {
-                    self.ctx.current_rule = rule.meta().name;
-                    profile!(
-                        "patina.rule.check_directive",
-                        rule.check_directive(self.ctx, el, dir)
-                    );
-                }
+                profile!("patina.rules.check_directive", {
+                    for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied())
+                    {
+                        self.ctx.current_rule = rule_name;
+                        rule.check_directive(self.ctx, el, dir);
+                    }
+                });
             }
         }
 
@@ -222,10 +229,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             self.visit_child(child);
         }
 
-        // Exit element - run rules
-        for rule in self.rules.iter() {
-            self.ctx.current_rule = rule.meta().name;
-            profile!("patina.rule.exit_element", rule.exit_element(self.ctx, el));
+        if self.run_exit_element_rules {
+            // Exit element - run rules
+            profile!("patina.rules.exit_element", {
+                for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied()) {
+                    self.ctx.current_rule = rule_name;
+                    rule.exit_element(self.ctx, el);
+                }
+            });
         }
 
         self.ctx.pop_element();
@@ -234,10 +245,12 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
     fn visit_if(&mut self, if_node: &vize_relief::ast::IfNode<'a>) {
         // Run if checks
-        for rule in self.rules.iter() {
-            self.ctx.current_rule = rule.meta().name;
-            profile!("patina.rule.check_if", rule.check_if(self.ctx, if_node));
-        }
+        profile!("patina.rules.check_if", {
+            for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied()) {
+                self.ctx.current_rule = rule_name;
+                rule.check_if(self.ctx, if_node);
+            }
+        });
 
         // Visit branches
         for branch in if_node.branches.iter() {
@@ -250,10 +263,12 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
     fn visit_for(&mut self, for_node: &vize_relief::ast::ForNode<'a>) {
         // Run for checks
-        for rule in self.rules.iter() {
-            self.ctx.current_rule = rule.meta().name;
-            profile!("patina.rule.check_for", rule.check_for(self.ctx, for_node));
-        }
+        profile!("patina.rules.check_for", {
+            for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied()) {
+                self.ctx.current_rule = rule_name;
+                rule.check_for(self.ctx, for_node);
+            }
+        });
 
         // Visit children
         for child in for_node.children.iter() {
@@ -265,12 +280,11 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
     fn extract_v_for_vars(&self, el: &ElementNode<'a>) -> Vec<CompactString> {
         for prop in el.props.iter() {
-            if let PropNode::Directive(dir) = prop {
-                if dir.name.as_str() == "for" {
-                    if let Some(exp) = &dir.exp {
-                        return parse_v_for_variables(exp);
-                    }
-                }
+            if let PropNode::Directive(dir) = prop
+                && dir.name.as_str() == "for"
+                && let Some(exp) = &dir.exp
+            {
+                return parse_v_for_variables(exp);
             }
         }
         Vec::new()
@@ -355,7 +369,7 @@ fn find_pattern(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_v_for_variables, CompactString, ExpressionNode};
+    use super::{CompactString, ExpressionNode, parse_v_for_variables};
     use vize_carton::Bump;
     use vize_relief::ast::SimpleExpressionNode;
 

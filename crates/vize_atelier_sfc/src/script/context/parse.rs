@@ -8,17 +8,17 @@ use oxc_ast::ast::{Argument, BindingPattern, Expression, Statement, VariableDecl
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 
-use vize_carton::{profile, String, ToCompactString};
+use vize_carton::{String, ToCompactString, profile};
 
 use crate::types::BindingType;
 
-use super::super::define_props_destructure::process_props_destructure;
 use super::super::MacroCall;
+use super::super::define_props_destructure::process_props_destructure;
+use super::ScriptCompileContext;
 use super::helpers::{
     extract_args_from_call, extract_macro_from_expr, extract_type_args_from_call,
     infer_binding_type, is_call_of, is_import_type_only,
 };
-use super::ScriptCompileContext;
 use crate::script::build_interface_type_source;
 
 impl ScriptCompileContext {
@@ -225,36 +225,34 @@ impl ScriptCompileContext {
                         }
 
                         // Check for withDefaults wrapping
-                        if let Expression::CallExpression(call) = init {
-                            if is_call_of(call, "withDefaults") {
-                                self.macros.with_defaults = Some(MacroCall {
-                                    start: call.span.start as usize,
-                                    end: call.span.end as usize,
-                                    args: source[call.span.start as usize..call.span.end as usize]
-                                        .into(),
-                                    type_args: None,
-                                    binding_name: binding_name.as_deref().map(Into::into),
-                                });
+                        if let Expression::CallExpression(call) = init
+                            && is_call_of(call, "withDefaults")
+                        {
+                            self.macros.with_defaults = Some(MacroCall {
+                                start: call.span.start as usize,
+                                end: call.span.end as usize,
+                                args: source[call.span.start as usize..call.span.end as usize]
+                                    .into(),
+                                type_args: None,
+                                binding_name: binding_name.as_deref().map(Into::into),
+                            });
 
-                                // Also extract the inner defineProps
-                                if let Some(Argument::CallExpression(inner_call)) =
-                                    call.arguments.first()
-                                {
-                                    if is_call_of(inner_call, "defineProps") {
-                                        let type_args =
-                                            extract_type_args_from_call(inner_call, source);
-                                        let props_call = MacroCall {
-                                            start: inner_call.span.start as usize,
-                                            end: inner_call.span.end as usize,
-                                            args: extract_args_from_call(inner_call, source),
-                                            type_args,
-                                            binding_name: binding_name.as_deref().map(String::from),
-                                        };
-                                        self.extract_props_bindings(&props_call);
-                                        self.macros.define_props = Some(props_call);
-                                        self.has_define_props_call = true;
-                                    }
-                                }
+                            // Also extract the inner defineProps
+                            if let Some(Argument::CallExpression(inner_call)) =
+                                call.arguments.first()
+                                && is_call_of(inner_call, "defineProps")
+                            {
+                                let type_args = extract_type_args_from_call(inner_call, source);
+                                let props_call = MacroCall {
+                                    start: inner_call.span.start as usize,
+                                    end: inner_call.span.end as usize,
+                                    args: extract_args_from_call(inner_call, source),
+                                    type_args,
+                                    binding_name: binding_name.as_deref().map(String::from),
+                                };
+                                self.extract_props_bindings(&props_call);
+                                self.macros.define_props = Some(props_call);
+                                self.has_define_props_call = true;
                             }
                         }
                     }
@@ -284,35 +282,33 @@ impl ScriptCompileContext {
                         BindingPattern::ObjectPattern(obj_pat) => {
                             // Handle destructuring like: const { prop1, prop2 } = defineProps()
                             let mut is_props_destructure = false;
-                            if let Some(init) = &decl.init {
-                                if let Some((macro_name, macro_call)) =
+                            if let Some(init) = &decl.init
+                                && let Some((macro_name, macro_call)) =
                                     extract_macro_from_expr(init, source)
-                                {
-                                    if macro_name == "defineProps" {
-                                        is_props_destructure = true;
+                                && macro_name == "defineProps"
+                            {
+                                is_props_destructure = true;
 
-                                        // Register defineProps macro (for type args / runtime props)
-                                        self.extract_props_bindings(&macro_call);
-                                        self.macros.define_props = Some(macro_call.clone());
-                                        self.has_define_props_call = true;
+                                // Register defineProps macro (for type args / runtime props)
+                                self.extract_props_bindings(&macro_call);
+                                self.macros.define_props = Some(macro_call.clone());
+                                self.has_define_props_call = true;
 
-                                        // Use the proper process_props_destructure function
-                                        let (destructure, binding_metadata, props_aliases) =
-                                            process_props_destructure(obj_pat, source);
+                                // Use the proper process_props_destructure function
+                                let (destructure, binding_metadata, props_aliases) =
+                                    process_props_destructure(obj_pat, source);
 
-                                        // Merge binding metadata
-                                        for (name, binding_type) in binding_metadata {
-                                            self.bindings.bindings.insert(name, binding_type);
-                                        }
-
-                                        // Store props aliases
-                                        for (local, key) in props_aliases {
-                                            self.bindings.props_aliases.insert(local, key);
-                                        }
-
-                                        self.macros.props_destructure = Some(destructure);
-                                    }
+                                // Merge binding metadata
+                                for (name, binding_type) in binding_metadata {
+                                    self.bindings.bindings.insert(name, binding_type);
                                 }
+
+                                // Store props aliases
+                                for (local, key) in props_aliases {
+                                    self.bindings.props_aliases.insert(local, key);
+                                }
+
+                                self.macros.props_destructure = Some(destructure);
                             }
 
                             // Register each destructured binding (skip for props destructure)
@@ -387,32 +383,32 @@ impl ScriptCompileContext {
                 }
 
                 // Handle standalone withDefaults(defineProps<...>(), {...})
-                if let Expression::CallExpression(call) = &expr_stmt.expression {
-                    if is_call_of(call, "withDefaults") {
-                        self.macros.with_defaults = Some(MacroCall {
-                            start: call.span.start as usize,
-                            end: call.span.end as usize,
-                            args: source[call.span.start as usize..call.span.end as usize].into(),
-                            type_args: None,
-                            binding_name: None,
-                        });
+                if let Expression::CallExpression(call) = &expr_stmt.expression
+                    && is_call_of(call, "withDefaults")
+                {
+                    self.macros.with_defaults = Some(MacroCall {
+                        start: call.span.start as usize,
+                        end: call.span.end as usize,
+                        args: source[call.span.start as usize..call.span.end as usize].into(),
+                        type_args: None,
+                        binding_name: None,
+                    });
 
-                        // Also extract the inner defineProps
-                        if let Some(Argument::CallExpression(inner_call)) = call.arguments.first() {
-                            if is_call_of(inner_call, "defineProps") {
-                                let type_args = extract_type_args_from_call(inner_call, source);
-                                let props_call = MacroCall {
-                                    start: inner_call.span.start as usize,
-                                    end: inner_call.span.end as usize,
-                                    args: extract_args_from_call(inner_call, source),
-                                    type_args,
-                                    binding_name: None,
-                                };
-                                self.extract_props_bindings(&props_call);
-                                self.macros.define_props = Some(props_call);
-                                self.has_define_props_call = true;
-                            }
-                        }
+                    // Also extract the inner defineProps
+                    if let Some(Argument::CallExpression(inner_call)) = call.arguments.first()
+                        && is_call_of(inner_call, "defineProps")
+                    {
+                        let type_args = extract_type_args_from_call(inner_call, source);
+                        let props_call = MacroCall {
+                            start: inner_call.span.start as usize,
+                            end: inner_call.span.end as usize,
+                            args: extract_args_from_call(inner_call, source),
+                            type_args,
+                            binding_name: None,
+                        };
+                        self.extract_props_bindings(&props_call);
+                        self.macros.define_props = Some(props_call);
+                        self.has_define_props_call = true;
                     }
                 }
             }

@@ -3,48 +3,55 @@
 //! Contains the main compilation pipeline, file collection, pattern matching,
 //! and per-file compilation with profiling.
 
-#![allow(clippy::disallowed_macros)]
-
 use std::{
     fs,
     path::PathBuf,
-    sync::{atomic::Ordering, Mutex},
+    sync::{Mutex, atomic::Ordering},
     time::{Duration, Instant},
 };
 
 use ignore::Walk;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use vize_atelier_sfc::{
-    compile_sfc, parse_sfc, ScriptCompileOptions, SfcCompileOptions, SfcParseOptions,
-    StyleCompileOptions, TemplateCompileOptions,
+    ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
+    TemplateCompileOptions, compile_sfc, compile_sfc_with_vue_parser_quirks, parse_sfc,
 };
-use vize_carton::cstr;
-use vize_carton::profile;
-use vize_carton::profiler::global_profiler;
 use vize_carton::String;
 use vize_carton::ToCompactString;
+use vize_carton::cstr;
+use vize_carton::profile;
+use vize_carton::profiler::{allocation_snapshot, global_profiler};
 
-use crate::commands::profile::{
-    print_profile_report, ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport,
+use vize_curator::profile::{
+    ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
 
 use super::{
-    config::{
-        get_output_extension, CompileError, CompileOutput, CompileStats, ErrorPhase, FileProfile,
-    },
     BuildArgs, OutputFormat, ScriptExtension,
+    config::{
+        CompileError, CompileOutput, CompileStats, ErrorPhase, FileProfile, get_output_extension,
+    },
 };
 
 /// Main entry point for the build command.
 pub(crate) fn run(args: BuildArgs) {
     let start = Instant::now();
     let slow_threshold = Duration::from_millis(args.slow_threshold);
+    if let Some(config) = args.config.as_ref()
+        && !args.no_config
+        && !config.exists()
+    {
+        eprintln!("Could not find config file: {}", config.display());
+        std::process::exit(1);
+    }
 
-    if let Some(threads) = args.threads {
-        rayon::ThreadPoolBuilder::new()
+    if let Some(threads) = args.threads
+        && let Err(error) = rayon::ThreadPoolBuilder::new()
             .num_threads(threads)
             .build_global()
-            .expect("Failed to configure thread pool");
+    {
+        eprintln!("Failed to configure thread pool: {error}");
+        std::process::exit(1);
     }
 
     let files = collect_files(&args.patterns);
@@ -76,13 +83,18 @@ pub(crate) fn run(args: BuildArgs) {
     let profiles: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
 
     let compile_start = Instant::now();
+    let compile_settings = CompileFileSettings {
+        ssr: args.ssr,
+        vapor: args.vapor,
+        custom_renderer: args.custom_renderer,
+        vue_parser_quirks: args.vue_parser_quirks,
+        script_ext: args.script_ext,
+        record_profile_totals: args.profile,
+    };
     let results: Vec<_> = files
         .par_iter()
         .map(|path| {
-            let source_size = fs::metadata(path).map(|m| m.len() as usize).unwrap_or(0);
-            stats.total_bytes.fetch_add(source_size, Ordering::Relaxed);
-
-            match compile_file_with_profile(path, args.ssr, args.script_ext, &stats) {
+            match compile_file_with_profile(path, compile_settings, &stats) {
                 Ok((output, profile)) => {
                     stats.success.fetch_add(1, Ordering::Relaxed);
                     stats
@@ -90,16 +102,16 @@ pub(crate) fn run(args: BuildArgs) {
                         .fetch_add(output.code.len(), Ordering::Relaxed);
 
                     // Check for slow files
-                    if profile.is_slow(slow_threshold) {
-                        if let Ok(mut slow) = slow_files.lock() {
-                            slow.push(profile.clone());
-                        }
+                    if profile.is_slow(slow_threshold)
+                        && let Ok(mut slow) = slow_files.lock()
+                    {
+                        slow.push(profile.clone());
                     }
 
-                    if args.profile {
-                        if let Ok(mut p) = profiles.lock() {
-                            p.push(profile);
-                        }
+                    if args.profile
+                        && let Ok(mut p) = profiles.lock()
+                    {
+                        p.push(profile);
                     }
 
                     Some((path.clone(), output))
@@ -122,12 +134,29 @@ pub(crate) fn run(args: BuildArgs) {
     match args.format {
         OutputFormat::Stats => {}
         OutputFormat::Js | OutputFormat::Json => {
-            fs::create_dir_all(&args.output).expect("Failed to create output directory");
+            match profile!(
+                "cli.build.output.create_dir_all",
+                fs::create_dir_all(&args.output)
+            ) {
+                Ok(()) => global_profiler().record_fs_create_dir_all(),
+                Err(error) => {
+                    global_profiler().record_fs_create_dir_all_failure();
+                    eprintln!(
+                        "Failed to create output directory {}: {error}",
+                        args.output.display()
+                    );
+                    std::process::exit(1);
+                }
+            }
 
             for (path, output) in results.into_iter().flatten() {
                 let ext = match args.format {
                     OutputFormat::Js => get_output_extension(&output.script_lang, args.script_ext),
                     OutputFormat::Json => "json",
+                    // Panic path by control-flow invariant: this match is inside
+                    // the `OutputFormat::Js | OutputFormat::Json` arm above.
+                    // Keeping the enum match explicit lets the compiler keep
+                    // checking newly added output formats here.
                     OutputFormat::Stats => unreachable!(),
                 };
 
@@ -136,10 +165,6 @@ pub(crate) fn run(args: BuildArgs) {
                     .map(|f| PathBuf::from(f).with_extension(ext))
                     .unwrap_or_else(|| PathBuf::from("output").with_extension(ext));
                 let out_path = args.output.join(filename);
-
-                if let Some(parent) = out_path.parent() {
-                    fs::create_dir_all(parent).expect("Failed to create output subdirectory");
-                }
 
                 let content: String = match args.format {
                     OutputFormat::Js => output.code,
@@ -150,12 +175,21 @@ pub(crate) fn run(args: BuildArgs) {
                             .unwrap_or_default()
                             .into()
                     }
+                    // Panic path by the same outer-match invariant as `ext`.
                     OutputFormat::Stats => unreachable!(),
                 };
 
-                fs::write(&out_path, content).unwrap_or_else(|e| {
-                    eprintln!("Failed to write {}: {}", out_path.display(), e);
-                });
+                let bytes = content.len();
+                match profile!(
+                    "cli.build.output.write",
+                    fs::write(&out_path, content.as_str())
+                ) {
+                    Ok(()) => global_profiler().record_fs_write(bytes),
+                    Err(error) => {
+                        global_profiler().record_fs_write_failure(bytes);
+                        eprintln!("Failed to write {}: {}", out_path.display(), error);
+                    }
+                }
             }
         }
     }
@@ -177,7 +211,7 @@ pub(crate) fn run(args: BuildArgs) {
         eprintln!();
 
         let mut sorted_slow = slow_files;
-        sorted_slow.sort_by(|a, b| b.total_time.cmp(&a.total_time));
+        sorted_slow.sort_by_key(|file| std::cmp::Reverse(file.total_time));
 
         for file in sorted_slow.iter().take(10) {
             eprintln!(
@@ -261,21 +295,15 @@ pub(crate) fn run(args: BuildArgs) {
     // Profile breakdown
     if args.profile {
         let profiler = global_profiler();
+        let allocation_summary = allocation_snapshot();
+        let counter_summary = profiler.counter_summary();
         let operation_summary = profiler.summary();
         profiler.disable();
-        let total_parse = stats
-            .total_parse_time
-            .lock()
-            .map(|d| *d)
-            .unwrap_or(Duration::ZERO);
-        let total_compile = stats
-            .total_compile_time
-            .lock()
-            .map(|d| *d)
-            .unwrap_or(Duration::ZERO);
+        let total_parse = stats.total_parse_time();
+        let total_compile = stats.total_compile_time();
 
         let mut all_profiles = profiles.into_inner().unwrap_or_default();
-        all_profiles.sort_by(|a, b| b.total_time.cmp(&a.total_time));
+        all_profiles.sort_by_key(|profile| std::cmp::Reverse(profile.total_time));
 
         let phases = [
             ProfilePhase {
@@ -383,6 +411,8 @@ pub(crate) fn run(args: BuildArgs) {
             slow_threshold,
             throughput_bytes: Some(total_bytes),
             operations: Some(&operation_summary),
+            counters: Some(&counter_summary),
+            allocations: Some(allocation_summary),
             recommendations: &recommendations,
         };
         print_profile_report(&report);
@@ -448,16 +478,17 @@ fn parse_pattern(pattern: &str) -> (String, String) {
         return (pattern.to_compact_string(), cstr!("{}/**/*.vue", pattern));
     }
 
-    if path.is_file() && pattern.ends_with(".vue") {
-        if let Some(parent) = path.parent() {
-            let parent_str = parent.to_string_lossy();
-            let parent_str = if parent_str.is_empty() {
-                "."
-            } else {
-                &parent_str
-            };
-            return (parent_str.to_compact_string(), pattern.to_compact_string());
-        }
+    if path.is_file()
+        && pattern.ends_with(".vue")
+        && let Some(parent) = path.parent()
+    {
+        let parent_str = parent.to_string_lossy();
+        let parent_str = if parent_str.is_empty() {
+            "."
+        } else {
+            &parent_str
+        };
+        return (parent_str.to_compact_string(), pattern.to_compact_string());
     }
 
     (".".into(), pattern.to_compact_string())
@@ -472,63 +503,80 @@ fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
         return path_str.ends_with(".vue");
     }
 
-    if pattern.contains("**/*.vue") {
-        if let Some(prefix_end) = pattern.find("**") {
-            let prefix = &pattern[..prefix_end];
-            let prefix_normalized = prefix.trim_end_matches('/');
-            return path_str.contains(&format!("{}/", prefix_normalized))
-                && path_str.ends_with(".vue");
-        }
+    if pattern.contains("**/*.vue")
+        && let Some(prefix_end) = pattern.find("**")
+    {
+        let prefix = &pattern[..prefix_end];
+        let prefix_normalized = prefix.trim_end_matches('/');
+        let has_prefix_dir = prefix_normalized.is_empty()
+            || path_str.match_indices(prefix_normalized).any(|(idx, _)| {
+                path_str.as_bytes().get(idx + prefix_normalized.len()) == Some(&b'/')
+            });
+        return has_prefix_dir && path_str.ends_with(".vue");
     }
 
     if pattern.ends_with(".vue") {
         let pattern_normalized = pattern.replace("\\", "/");
-        return path_str == pattern_normalized
-            || path_str.ends_with(&format!("/{}", pattern_normalized));
+        if path_str == pattern_normalized {
+            return true;
+        }
+
+        if !path_str.ends_with(pattern_normalized.as_str()) {
+            return false;
+        }
+
+        let prefix_len = path_str.len() - pattern_normalized.len();
+        let Some(separator_idx) = prefix_len.checked_sub(1) else {
+            return false;
+        };
+        return path_str.as_bytes().get(separator_idx) == Some(&b'/');
     }
 
     path_str.ends_with(".vue")
 }
 
-/// Detect the script language from `<script lang="...">` in the SFC source.
-fn detect_script_lang(source: &str) -> String {
-    let script_pattern = regex_lite::Regex::new(r#"<script[^>]*\blang\s*=\s*["']([^"']+)["']"#)
-        .expect("Invalid regex");
-
-    if let Some(captures) = script_pattern.captures(source) {
-        if let Some(lang) = captures.get(1) {
-            return lang.as_str().to_compact_string();
-        }
-    }
-
-    "js".into()
+/// Compile a single `.vue` file with profiling information.
+#[derive(Clone, Copy)]
+struct CompileFileSettings {
+    ssr: bool,
+    vapor: bool,
+    custom_renderer: bool,
+    vue_parser_quirks: bool,
+    script_ext: ScriptExtension,
+    record_profile_totals: bool,
 }
 
-/// Compile a single `.vue` file with profiling information.
 fn compile_file_with_profile(
     path: &PathBuf,
-    ssr: bool,
-    script_ext: ScriptExtension,
+    settings: CompileFileSettings,
     stats: &CompileStats,
 ) -> Result<(CompileOutput, FileProfile), CompileError> {
     let file_start = Instant::now();
 
     // Read file
-    let source = fs::read_to_string(path).map_err(|e| CompileError {
-        path: path.clone(),
-        error: cstr!("Failed to read file: {}", e),
-        phase: ErrorPhase::Read,
-    })?;
+    let source = match profile!("cli.build.file.read", fs::read_to_string(path)) {
+        Ok(source) => {
+            global_profiler().record_fs_read_to_string(source.len());
+            source
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(CompileError {
+                path: path.clone(),
+                error: cstr!("Failed to read file: {}", error),
+                phase: ErrorPhase::Read,
+            });
+        }
+    };
 
     let file_size = source.len();
+    stats.total_bytes.fetch_add(file_size, Ordering::Relaxed);
 
     let filename: String = path
         .file_name()
         .and_then(|n| n.to_str())
         .unwrap_or("anonymous.vue")
         .into();
-
-    let script_lang = detect_script_lang(&source);
 
     // Parse
     let parse_start = Instant::now();
@@ -546,7 +594,17 @@ fn compile_file_with_profile(
             }
         })?;
     let parse_time = parse_start.elapsed();
-    stats.add_parse_time(parse_time);
+    if settings.record_profile_totals {
+        stats.add_parse_time(parse_time);
+    }
+
+    let script_lang = descriptor
+        .script_setup
+        .as_ref()
+        .and_then(|s| s.lang.as_deref())
+        .or_else(|| descriptor.script.as_ref().and_then(|s| s.lang.as_deref()))
+        .unwrap_or("js")
+        .to_compact_string();
 
     // Calculate sizes
     let template_size = descriptor
@@ -569,7 +627,7 @@ fn compile_file_with_profile(
     // Compile
     let compile_start = Instant::now();
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
-    let is_ts = matches!(script_ext, ScriptExtension::Preserve);
+    let is_ts = matches!(settings.script_ext, ScriptExtension::Preserve);
     let compile_opts = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),
@@ -583,8 +641,9 @@ fn compile_file_with_profile(
         template: TemplateCompileOptions {
             id: Some(filename.clone()),
             scoped: has_scoped,
-            ssr,
+            ssr: settings.ssr,
             is_ts,
+            custom_renderer: settings.custom_renderer,
             ..Default::default()
         },
         style: StyleCompileOptions {
@@ -592,13 +651,17 @@ fn compile_file_with_profile(
             scoped: has_scoped,
             ..Default::default()
         },
-        vapor: false,
+        vapor: settings.vapor,
         scope_id: None,
     };
 
     let result = profile!(
         "atelier.sfc.compile",
-        compile_sfc(&descriptor, compile_opts)
+        if settings.vue_parser_quirks {
+            compile_sfc_with_vue_parser_quirks(&descriptor, compile_opts)
+        } else {
+            compile_sfc(&descriptor, compile_opts)
+        }
     )
     .map_err(|e| CompileError {
         path: path.clone(),
@@ -606,7 +669,9 @@ fn compile_file_with_profile(
         phase: ErrorPhase::Compile,
     })?;
     let compile_time = compile_start.elapsed();
-    stats.add_compile_time(compile_time);
+    if settings.record_profile_totals {
+        stats.add_compile_time(compile_time);
+    }
 
     let total_time = file_start.elapsed();
 
@@ -628,6 +693,7 @@ fn compile_file_with_profile(
         errors: result.errors.into_iter().map(|e| e.message).collect(),
         warnings: result.warnings.into_iter().map(|e| e.message).collect(),
         script_lang,
+        macro_artifacts: result.macro_artifacts,
     };
 
     Ok((output, profile))

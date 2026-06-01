@@ -6,11 +6,11 @@
 //! - Inline callback parameter scope creation
 
 use crate::scope::CallbackScopeData;
-use vize_carton::{cstr, profile, CompactString};
+use vize_carton::{CompactString, cstr, profile};
 use vize_relief::ast::{ElementNode, ExpressionNode};
 
-use crate::analyzer::helpers::extract_inline_callback_params;
 use crate::analyzer::Analyzer;
+use crate::analyzer::helpers::extract_inline_callback_params;
 
 impl Analyzer {
     /// Handle v-bind directive.
@@ -95,7 +95,7 @@ impl Analyzer {
                     if self.options.detect_undefined && self.script_analyzed {
                         profile!(
                             "croquis.template.v_bind.refs",
-                            self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                            self.check_expression_refs(exp, scope_vars)
                         );
                     }
 
@@ -107,7 +107,7 @@ impl Analyzer {
                 } else if self.options.detect_undefined && self.script_analyzed {
                     profile!(
                         "croquis.template.v_bind.refs",
-                        self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                        self.check_expression_refs(exp, scope_vars)
                     );
                 }
             }

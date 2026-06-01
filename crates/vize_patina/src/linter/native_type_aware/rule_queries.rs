@@ -1,10 +1,11 @@
 use super::{
-    markers::{push_emit_validator_markers, push_prop_type_markers, MacroQuery, QueryKind},
+    LintResult, Linter, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
+    markers::{MacroQuery, QueryKind, push_emit_validator_markers, push_prop_type_markers},
     parsing::is_runtime_array_macro,
-    push_warning, LintResult, Linter, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
+    push_warning,
 };
 use crate::diagnostic::LintDiagnostic;
-use vize_croquis::{virtual_ts::VirtualTsOutput, Croquis};
+use vize_croquis::{Croquis, virtual_ts::VirtualTsOutput};
 
 pub(super) struct MacroWarning<'a> {
     pub kind: QueryKind,
@@ -29,10 +30,11 @@ pub(super) fn collect_prop_queries(
         return;
     }
 
-    if let Some(call) = analysis.macros.define_props() {
-        if call.type_args.is_none() {
-            if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
-                push_warning(
+    if let Some(call) = analysis.macros.define_props()
+        && call.type_args.is_none()
+    {
+        if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
+            push_warning(
                     result,
                     LintDiagnostic::warn(
                         RULE_REQUIRE_TYPED_PROPS,
@@ -44,20 +46,19 @@ pub(super) fn collect_prop_queries(
                         "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
                     ),
                 );
-            } else if analysis
-                .macros
-                .props()
-                .iter()
-                .any(|prop| prop.prop_type.is_none())
-            {
-                push_prop_type_markers(
-                    virtual_ts,
-                    call.runtime_args.as_ref().map(|args| args.as_str()),
-                    call.start,
-                    call.end,
-                    macro_queries,
-                );
-            }
+        } else if analysis
+            .macros
+            .props()
+            .iter()
+            .any(|prop| prop.prop_type.is_none())
+        {
+            push_prop_type_markers(
+                virtual_ts,
+                call.runtime_args.as_ref().map(|args| args.as_str()),
+                call.start,
+                call.end,
+                macro_queries,
+            );
         }
     }
 }
@@ -76,35 +77,35 @@ pub(super) fn collect_emit_queries(
         return;
     }
 
-    if let Some(call) = analysis.macros.define_emits() {
-        if call.type_args.is_none() {
-            if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
-                push_warning(
-                    result,
-                    LintDiagnostic::warn(
-                        RULE_REQUIRE_TYPED_EMITS,
-                        "Emit should have a type definition",
-                        script_block.loc.start as u32 + call.start,
-                        script_block.loc.start as u32 + call.end,
-                    )
-                    .with_help(
-                        "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
-                    ),
-                );
-            } else if analysis
-                .macros
-                .emits()
-                .iter()
-                .any(|emit| emit.payload_type.is_none())
-            {
-                push_emit_validator_markers(
-                    virtual_ts,
-                    call.runtime_args.as_ref().map(|args| args.as_str()),
-                    call.start,
-                    call.end,
-                    macro_queries,
-                );
-            }
+    if let Some(call) = analysis.macros.define_emits()
+        && call.type_args.is_none()
+    {
+        if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
+            push_warning(
+                result,
+                LintDiagnostic::warn(
+                    RULE_REQUIRE_TYPED_EMITS,
+                    "Emit should have a type definition",
+                    script_block.loc.start as u32 + call.start,
+                    script_block.loc.start as u32 + call.end,
+                )
+                .with_help(
+                    "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
+                ),
+            );
+        } else if analysis
+            .macros
+            .emits()
+            .iter()
+            .any(|emit| emit.payload_type.is_none())
+        {
+            push_emit_validator_markers(
+                virtual_ts,
+                call.runtime_args.as_ref().map(|args| args.as_str()),
+                call.start,
+                call.end,
+                macro_queries,
+            );
         }
     }
 }

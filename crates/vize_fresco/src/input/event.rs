@@ -99,11 +99,12 @@ mod tests {
 
     #[test]
     fn test_event_is_key() {
-        use super::super::keyboard::{Key, KeyModifiers};
+        use super::super::keyboard::{Key, KeyEventKind, KeyModifiers};
 
         let event = Event::Key(KeyEvent {
             key: Key::Char('a'),
             modifiers: KeyModifiers::NONE,
+            kind: KeyEventKind::Press,
         });
         assert!(event.is_key());
         assert!(!event.is_mouse());

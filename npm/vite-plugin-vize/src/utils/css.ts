@@ -1,17 +1,32 @@
-import fs from "node:fs";
-import path from "node:path";
+import {
+  resolveViteCssImports,
+  scopeViteCssForPipeline,
+  transformViteCssVarsForPipeline,
+} from "@vizejs/native";
 
 export interface CssAliasRule {
+  find: string | RegExp;
+  replacement: string;
+}
+
+export interface NativeCssAliasRule {
   find: string;
   replacement: string;
+  isRegex: boolean;
+  flags?: string;
+}
+
+export function scopeCssForPipeline(css: string, scopeId: string): string {
+  return scopeViteCssForPipeline(css, scopeId);
+}
+
+export function transformCssVarsForPipeline(css: string, scopeId: string): string {
+  return transformViteCssVarsForPipeline(css, scopeId);
 }
 
 /**
  * Resolve CSS @import statements by inlining the imported files,
  * then resolve @custom-media definitions within the combined CSS.
- *
- * This is necessary because Vize embeds CSS as a JS string via
- * document.createElement('style'), bypassing Vite's CSS pipeline.
  */
 export function resolveCssImports(
   css: string,
@@ -20,114 +35,26 @@ export function resolveCssImports(
   isDev?: boolean,
   devUrlBase?: string,
 ): string {
-  // Collect @custom-media definitions and imported content
-  const customMedia = new Map<string, string>();
-  const importRegex = /^@import\s+(?:"([^"]+)"|'([^']+)');?\s*$/gm;
-  let result = css;
-
-  // Phase 1: Resolve @import — inline imported file contents
-  result = result.replace(importRegex, (_match, dqPath?: string, sqPath?: string) => {
-    const importPath = dqPath || sqPath;
-    if (!importPath) return _match;
-
-    const resolved = resolveCssPath(importPath, importer, aliasRules);
-    if (!resolved || !fs.existsSync(resolved)) {
-      return _match; // Keep unresolved imports as-is
-    }
-
-    try {
-      const content = fs.readFileSync(resolved, "utf-8");
-      // Parse @custom-media from imported file
-      parseCustomMedia(content, customMedia);
-      return content;
-    } catch {
-      return _match;
-    }
-  });
-
-  // Also parse @custom-media from the main CSS itself
-  parseCustomMedia(result, customMedia);
-
-  // Phase 2: Remove @custom-media definitions from output
-  result = result.replace(/^@custom-media\s+[^;]+;\s*$/gm, "");
-
-  // Phase 3: Replace @media (--name) with resolved values
-  if (customMedia.size > 0) {
-    for (const [name, query] of customMedia) {
-      // Replace (--name) in @media rules
-      const escaped = name.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-      result = result.replace(new RegExp(`\\(${escaped}\\)`, "g"), query);
-    }
-  }
-
-  // Phase 4: Resolve url() references with alias prefixes
-  if (isDev) {
-    result = result.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/g, (_match, quote, urlPath) => {
-      const trimmed = urlPath.trim();
-      // Skip data: URLs, absolute http(s) URLs, and already-resolved paths
-      if (
-        trimmed.startsWith("data:") ||
-        trimmed.startsWith("http://") ||
-        trimmed.startsWith("https://") ||
-        trimmed.startsWith("/@fs/")
-      ) {
-        return _match;
-      }
-      const resolved = resolveCssPath(trimmed, importer, aliasRules);
-      if (resolved && fs.existsSync(resolved)) {
-        const normalized = resolved.replace(/\\/g, "/");
-        // In Nuxt, Vite is mounted under a base path (e.g., /_nuxt/),
-        // so /@fs/ URLs must be prefixed with the base to reach Vite's middleware.
-        const base = devUrlBase ?? "/";
-        const prefix = base.endsWith("/") ? base : base + "/";
-        return `url("${prefix}@fs${normalized}")`;
-      }
-      return _match;
-    });
-  }
-
-  // Phase 5: Unwrap Vue scoped CSS pseudo-selectors (:deep, :slotted, :global)
-  // Vize uses native CSS nesting with scope attribute only on the root element,
-  // so :deep(X) is simply X (no scope attribute to remove from child selectors).
-  result = result.replace(/:deep\(([^()]*(?:\([^()]*\))*[^()]*)\)/g, "$1");
-
-  // Clean up excessive blank lines
-  result = result.replace(/\n{3,}/g, "\n\n");
-
-  return result;
+  return resolveViteCssImports(
+    css,
+    importer,
+    aliasRules.map(toNativeCssAliasRule),
+    isDev,
+    devUrlBase,
+  );
 }
 
-function parseCustomMedia(css: string, map: Map<string, string>): void {
-  const re = /@custom-media\s+(--[\w-]+)\s+(.+?)\s*;/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(css)) !== null) {
-    map.set(m[1], m[2]);
-  }
-}
-
-function resolveCssPath(
-  importPath: string,
-  importer: string,
-  aliasRules: CssAliasRule[],
-): string | null {
-  // Try alias resolution
-  for (const rule of aliasRules) {
-    if (importPath.startsWith(rule.find)) {
-      const resolved = importPath.replace(rule.find, rule.replacement);
-      return path.resolve(resolved);
-    }
-  }
-
-  // Relative path
-  if (importPath.startsWith(".")) {
-    const dir = path.dirname(importer);
-    return path.resolve(dir, importPath);
-  }
-
-  // Absolute path
-  if (path.isAbsolute(importPath)) {
-    return importPath;
-  }
-
-  return null;
+export function toNativeCssAliasRule(rule: CssAliasRule): NativeCssAliasRule {
+  return typeof rule.find === "string"
+    ? {
+        find: rule.find,
+        replacement: rule.replacement,
+        isRegex: false,
+      }
+    : {
+        find: rule.find.source,
+        replacement: rule.replacement,
+        isRegex: true,
+        flags: rule.find.flags.replace(/[gy]/g, ""),
+      };
 }

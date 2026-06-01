@@ -112,7 +112,7 @@ impl Rule for NoIForIcon {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_icon_class, NoIForIcon};
+    use super::{NoIForIcon, is_icon_class};
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

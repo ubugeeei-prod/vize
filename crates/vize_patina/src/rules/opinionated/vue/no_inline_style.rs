@@ -50,32 +50,31 @@ impl Rule for NoInlineStyle {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Check for static style attribute
         for attr in &element.props {
-            if let vize_relief::ast::PropNode::Attribute(attr) = attr {
-                if attr.name == "style" {
-                    ctx.warn_with_help(
-                        ctx.t("vue/no-inline-style.message"),
-                        &attr.loc,
-                        ctx.t("vue/no-inline-style.help"),
-                    );
-                }
+            if let vize_relief::ast::PropNode::Attribute(attr) = attr
+                && attr.name == "style"
+            {
+                ctx.warn_with_help(
+                    ctx.t("vue/no-inline-style.message"),
+                    &attr.loc,
+                    ctx.t("vue/no-inline-style.help"),
+                );
             }
 
             // Check for dynamic :style binding
-            if let vize_relief::ast::PropNode::Directive(dir) = attr {
-                if dir.name == "bind" {
-                    if let Some(arg) = &dir.arg {
-                        let arg_content = match arg {
-                            ExpressionNode::Simple(s) => s.content.as_str(),
-                            _ => "",
-                        };
-                        if arg_content == "style" {
-                            ctx.warn_with_help(
-                                ctx.t("vue/no-inline-style.message"),
-                                &dir.loc,
-                                ctx.t("vue/no-inline-style.help"),
-                            );
-                        }
-                    }
+            if let vize_relief::ast::PropNode::Directive(dir) = attr
+                && dir.name == "bind"
+                && let Some(arg) = &dir.arg
+            {
+                let arg_content = match arg {
+                    ExpressionNode::Simple(s) => s.content.as_str(),
+                    _ => "",
+                };
+                if arg_content == "style" {
+                    ctx.warn_with_help(
+                        ctx.t("vue/no-inline-style.message"),
+                        &dir.loc,
+                        ctx.t("vue/no-inline-style.help"),
+                    );
                 }
             }
         }

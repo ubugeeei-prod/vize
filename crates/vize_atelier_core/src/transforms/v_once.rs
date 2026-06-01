@@ -18,11 +18,11 @@ pub fn has_v_once(el: &ElementNode<'_>) -> bool {
 pub fn remove_v_once(el: &mut ElementNode<'_>) {
     let mut i = 0;
     while i < el.props.len() {
-        if let PropNode::Directive(dir) = &el.props[i] {
-            if dir.name == "once" {
-                el.props.remove(i);
-                return;
-            }
+        if let PropNode::Directive(dir) = &el.props[i]
+            && dir.name == "once"
+        {
+            el.props.remove(i);
+            return;
         }
         i += 1;
     }
@@ -53,7 +53,7 @@ pub fn generate_v_once_wrapper(index: usize) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{has_v_once, TemplateChildNode};
+    use super::{TemplateChildNode, has_v_once};
     use crate::parser::parse;
     use bumpalo::Bump;
 

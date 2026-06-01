@@ -5,9 +5,9 @@
 //! checking, and v-bind expression checking.
 
 use crate::{
+    CheckResult,
     context::TypeContext,
     diagnostic::{TypeDiagnostic, TypeErrorCode},
-    CheckResult,
 };
 use vize_carton::cstr;
 

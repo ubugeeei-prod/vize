@@ -63,10 +63,10 @@ impl Rule for RequireVForKey {
             PropNode::Attribute(attr) => attr.name.as_str() == "key",
             PropNode::Directive(dir) => {
                 // Check for v-bind:key or :key
-                if dir.name.as_str() == "bind" {
-                    if let Some(ExpressionNode::Simple(s)) = &dir.arg {
-                        return s.content.as_str() == "key";
-                    }
+                if dir.name.as_str() == "bind"
+                    && let Some(ExpressionNode::Simple(s)) = &dir.arg
+                {
+                    return s.content.as_str() == "key";
                 }
                 false
             }

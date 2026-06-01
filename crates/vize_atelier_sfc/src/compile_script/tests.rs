@@ -6,6 +6,7 @@ mod compile_script_tests {
     use crate::compile_script::function_mode::compile_script_setup;
     use crate::compile_script::props::{
         extract_prop_types_from_type, extract_with_defaults_defaults, is_valid_identifier,
+        normalize_destructure_default_value,
     };
     use crate::compile_script::typescript::transform_typescript_to_js;
     use crate::types::SfcDescriptor;
@@ -77,6 +78,23 @@ mod compile_script_tests {
             defaults4.get("description"),
             Some(&"'a fast, modern browser for the **npm registry**'".to_compact_string())
         );
+    }
+
+    #[test]
+    fn test_normalize_destructure_default_value() {
+        assert_eq!(
+            normalize_destructure_default_value("[]").as_str(),
+            "() => []"
+        );
+        assert_eq!(
+            normalize_destructure_default_value("{ count: 0 }").as_str(),
+            "() => ({ count: 0 })"
+        );
+        assert_eq!(
+            normalize_destructure_default_value("() => []").as_str(),
+            "() => []"
+        );
+        assert_eq!(normalize_destructure_default_value("42").as_str(), "42");
     }
 
     #[test]
@@ -292,6 +310,104 @@ const msg = ref('hello')
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
         insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_compile_script_setup_strips_ecosystem_compile_time_macro() {
+        let content = r#"
+definePage({
+  name: 'home',
+  meta: {
+    requiresAuth: true,
+  },
+})
+
+const msg = 'ready'
+"#;
+        let result =
+            compile_script_setup(content, "Test", false, false, Some("<div>{{ msg }}</div>"))
+                .unwrap();
+
+        assert!(
+            !result.code.contains("definePage"),
+            "definePage should be removed from runtime output:\n{}",
+            result.code
+        );
+        assert!(result.code.contains("ready"));
+    }
+
+    #[test]
+    fn test_compile_script_setup_strips_define_page_meta() {
+        let content = r#"
+definePageMeta({
+  name: 'docs',
+  meta: {
+    scrollMargin: 180,
+  },
+})
+
+const msg = 'ready'
+"#;
+        let result =
+            compile_script_setup(content, "Test", false, false, Some("<div>{{ msg }}</div>"))
+                .unwrap();
+
+        assert!(
+            !result.code.contains("definePageMeta"),
+            "definePageMeta should be removed from runtime output:\n{}",
+            result.code
+        );
+        assert!(result.code.contains("ready"));
+    }
+
+    #[test]
+    fn test_compile_script_setup_strips_define_route_rules() {
+        let content = r#"
+defineRouteRules({
+  prerender: true,
+  cache: {
+    maxAge: 60,
+  },
+})
+
+const msg = 'ready'
+"#;
+        let result =
+            compile_script_setup(content, "Test", false, false, Some("<div>{{ msg }}</div>"))
+                .unwrap();
+
+        assert!(
+            !result.code.contains("defineRouteRules"),
+            "defineRouteRules should be removed from runtime output:\n{}",
+            result.code
+        );
+        assert!(result.code.contains("ready"));
+    }
+
+    #[test]
+    fn test_compile_script_setup_expands_define_lazy_hydration_component() {
+        let content = r#"
+const LazyHydrationMyComponent = defineLazyHydrationComponent(
+  'idle',
+  () => import('./components/MyComponent.vue'),
+)
+"#;
+        let result = compile_script_setup(
+            content,
+            "Test",
+            false,
+            false,
+            Some("<LazyHydrationMyComponent />"),
+        )
+        .unwrap();
+
+        assert!(
+            !result.code.contains("defineLazyHydrationComponent"),
+            "defineLazyHydrationComponent should be expanded from runtime output:\n{}",
+            result.code
+        );
+        assert!(result.code.contains("__vizeCreateLazyIdleComponent"));
+        assert!(result.code.contains("./components/MyComponent.vue"));
     }
 
     #[test]

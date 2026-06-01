@@ -6,14 +6,8 @@ import { computed } from "vue";
 export default {
   __name: "TestComponent",
   props: {
-    msg: {
-      type: String,
-      required: true
-    },
-    count: {
-      type: Number,
-      required: true
-    }
+    msg: { type: String },
+    count: { type: Number }
   },
   setup(__props) {
     const props = __props;

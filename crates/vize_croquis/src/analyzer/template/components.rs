@@ -4,7 +4,7 @@
 //! during template traversal.
 
 use crate::analysis::{ComponentUsage, EventListener, PassedProp};
-use vize_carton::{cstr, CompactString, SmallVec};
+use vize_carton::{CompactString, SmallVec, cstr};
 use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
 
 use super::super::Analyzer;

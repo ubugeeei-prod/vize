@@ -46,13 +46,13 @@ impl ValidVSlot {
         let mut named_count = 0;
 
         for prop in &element.props {
-            if let PropNode::Directive(dir) = prop {
-                if dir.name.as_str() == "slot" {
-                    if dir.arg.is_some() {
-                        named_count += 1;
-                    } else {
-                        default_count += 1;
-                    }
+            if let PropNode::Directive(dir) = prop
+                && dir.name.as_str() == "slot"
+            {
+                if dir.arg.is_some() {
+                    named_count += 1;
+                } else {
+                    default_count += 1;
                 }
             }
         }

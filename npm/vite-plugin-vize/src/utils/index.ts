@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
-import type { CompiledModule, StyleBlockInfo } from "../types.js";
-import { type HmrUpdateType, generateHmrCode } from "../hmr.js";
+import type { CompiledModule, StyleBlockInfo } from "../types.ts";
+import { type HmrUpdateType, generateHmrCode } from "../hmr.ts";
 
 // Re-export CSS utilities for backward compatibility
-export { resolveCssImports, type CssAliasRule } from "./css.js";
+export { resolveCssImports, type CssAliasRule } from "./css.ts";
 
 /** Known CSS preprocessor languages that must be delegated to Vite */
 const PREPROCESSOR_LANGS = new Set(["scss", "sass", "less", "stylus", "styl"]);
@@ -18,17 +18,34 @@ function isCssModule(block: StyleBlockInfo): boolean {
   return block.module !== false;
 }
 
+function needsCssPipeline(block: StyleBlockInfo): boolean {
+  return block.content.includes("@apply");
+}
+
 /**
  * Check if any style blocks in the compiled module require delegation to
- * Vite's CSS pipeline (preprocessor or CSS Modules).
+ * Vite's CSS pipeline (preprocessor, CSS Modules, or PostCSS transforms).
  */
 export function hasDelegatedStyles(compiled: CompiledModule): boolean {
   if (!compiled.styles) return false;
-  return compiled.styles.some((s) => needsPreprocessor(s) || isCssModule(s));
+  return compiled.styles.some((s) => needsPreprocessor(s) || isCssModule(s) || needsCssPipeline(s));
 }
 
 function supportsTemplateOnlyHmr(output: string): boolean {
   return /(?:^|\n)(?:_sfc_main|__sfc__)\.render\s*=\s*render\b/m.test(output);
+}
+
+function insertAfterStaticImports(output: string, imports: string): string {
+  let insertAt = 0;
+  for (const match of output.matchAll(/^import\b[^\n]*(?:\r?\n|$)/gm)) {
+    insertAt = (match.index ?? 0) + match[0].length;
+  }
+
+  if (insertAt === 0) {
+    return `${imports}\n${output}`;
+  }
+
+  return `${output.slice(0, insertAt)}${imports}\n${output.slice(insertAt)}`;
 }
 
 export function generateScopeId(filename: string): string {
@@ -61,6 +78,7 @@ export function createFilter(
 export interface GenerateOutputOptions {
   isProduction: boolean;
   isDev: boolean;
+  ssr?: boolean;
   hmrUpdateType?: HmrUpdateType;
   extractCss?: boolean;
   /**
@@ -71,7 +89,7 @@ export interface GenerateOutputOptions {
 }
 
 export function generateOutput(compiled: CompiledModule, options: GenerateOutputOptions): string {
-  const { isProduction, isDev, hmrUpdateType, extractCss, filePath } = options;
+  const { isProduction, isDev, ssr, hmrUpdateType, extractCss, filePath } = options;
 
   let output = compiled.code;
 
@@ -150,10 +168,12 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
       }
     }
 
-    // Prepend style imports
+    // Keep component/user imports before the SFC's own styles. This matches
+    // plugin-vue's cascade order, so parent classes passed to child roots can
+    // override child component defaults.
     const allImports = [...styleImports, ...cssModuleImports].join("\n");
     if (allImports) {
-      output = allImports + "\n" + output;
+      output = insertAfterStaticImports(output, allImports);
     }
 
     // Inject CSS module bindings into the component
@@ -175,13 +195,14 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
             `_sfc_main.__cssModules = _sfc_main.__cssModules || {};\n_sfc_main.__cssModules[${JSON.stringify(m.name)}] = ${m.bindingName};`,
         )
         .join("\n");
-      // Insert before the final "export default _sfc_main;"
+      // Insert before the final export, regardless of whether the compiler
+      // emitted a trailing semicolon.
       output = output.replace(
-        /^export default _sfc_main;/m,
+        /^export default _sfc_main;?$/m,
         `${cssModuleSetup}\nexport default _sfc_main;`,
       );
     }
-  } else if (compiled.css && !(isProduction && extractCss)) {
+  } else if (!ssr && compiled.css && !(isProduction && extractCss)) {
     // --- Inline CSS injection (original behavior for plain CSS) ---
     const cssCode = JSON.stringify(compiled.css);
     const cssId = JSON.stringify(`vize-style-${compiled.scopeId}`);

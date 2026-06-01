@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
 import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
-import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+import { createComponentWithFallback as _createComponentWithFallback } from 'vue';
 
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
@@ -13,6 +13,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
 }
 const __vaporRender = render
 import FooPanel from './FooPanel.vue'
+
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'anonymous',

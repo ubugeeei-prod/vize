@@ -3,5 +3,5 @@ source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
 expression: "get_compiled_string(r#\"<div id=\"foo\" :class=\"bar\"></div>\"#)"
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<div><div id="foo"${_ssrRenderClass(_ctx.bar)}></div></div>`)
+  _push(`<div${_ssrRenderAttrs(_attrs)}><div id="foo" class="${_ssrRenderClass(_ctx.bar)}"></div></div>`)
 }

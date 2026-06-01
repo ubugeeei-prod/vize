@@ -157,10 +157,10 @@ impl RenderTree {
 
         // Update layout in all nodes
         for (&id, &layout_id) in &self.layout_ids {
-            if let Some(rect) = self.layout.layout(layout_id) {
-                if let Some(node) = self.nodes.get_mut(&id) {
-                    node.layout = Some(rect);
-                }
+            if let Some(rect) = self.layout.layout(layout_id)
+                && let Some(node) = self.nodes.get_mut(&id)
+            {
+                node.layout = Some(rect);
             }
         }
     }

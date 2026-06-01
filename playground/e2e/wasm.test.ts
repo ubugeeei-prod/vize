@@ -56,21 +56,21 @@ const msg = 'Hello'
     const rules = wasm.getLintRules();
     expect(rules.length).toBeGreaterThan(0);
 
-    const happyPathRule = rules.find((rule) => rule.name === "vue/require-v-for-key");
-    expect(happyPathRule).toBeDefined();
-    expect(happyPathRule?.presets).toContain("happy-path");
-    expect(happyPathRule?.presets).toContain("opinionated");
+    const generalRecommendedRule = rules.find((rule) => rule.name === "vue/require-v-for-key");
+    expect(generalRecommendedRule).toBeDefined();
+    expect(generalRecommendedRule?.presets).toContain("general-recommended");
+    expect(generalRecommendedRule?.presets).toContain("opinionated");
 
     const opinionatedRule = rules.find((rule) => rule.name === "vue/no-inline-style");
     expect(opinionatedRule).toBeDefined();
     expect(opinionatedRule?.presets).toContain("opinionated");
-    expect(opinionatedRule?.presets).not.toContain("happy-path");
+    expect(opinionatedRule?.presets).not.toContain("general-recommended");
 
     const scriptRule = rules.find((rule) => rule.name === "script/no-options-api");
     expect(scriptRule).toBeDefined();
     expect(scriptRule?.presets).toContain("opinionated");
     expect(scriptRule?.presets).toContain("nuxt");
-    expect(scriptRule?.presets).not.toContain("happy-path");
+    expect(scriptRule?.presets).not.toContain("general-recommended");
 
     const noGetCurrentInstanceRule = rules.find(
       (rule) => rule.name === "script/no-get-current-instance",
@@ -78,13 +78,13 @@ const msg = 'Hello'
     expect(noGetCurrentInstanceRule).toBeDefined();
     expect(noGetCurrentInstanceRule?.presets).toContain("opinionated");
     expect(noGetCurrentInstanceRule?.presets).toContain("nuxt");
-    expect(noGetCurrentInstanceRule?.presets).not.toContain("happy-path");
+    expect(noGetCurrentInstanceRule?.presets).not.toContain("general-recommended");
 
     const noNextTickRule = rules.find((rule) => rule.name === "script/no-next-tick");
     expect(noNextTickRule).toBeDefined();
     expect(noNextTickRule?.presets).toContain("opinionated");
     expect(noNextTickRule?.presets).toContain("nuxt");
-    expect(noNextTickRule?.presets).not.toContain("happy-path");
+    expect(noNextTickRule?.presets).not.toContain("general-recommended");
   });
 
   it("should lint with different built-in presets", () => {
@@ -100,20 +100,20 @@ const msg = 'Hello'
 </template>
 `;
 
-    const happyPath = wasm.lintSfc(sfc, {
+    const generalRecommended = wasm.lintSfc(sfc, {
       filename: "PresetExample.vue",
-      preset: "happy-path",
+      preset: "general-recommended",
     });
     const opinionated = wasm.lintSfc(sfc, {
       filename: "PresetExample.vue",
       preset: "opinionated",
     });
 
-    expect(happyPath.diagnostics).toHaveLength(0);
+    expect(generalRecommended.diagnostics).toHaveLength(0);
     expect(
       opinionated.diagnostics.some((diagnostic) => diagnostic.rule === "vue/no-inline-style"),
     ).toBe(true);
-    expect(opinionated.diagnostics.length).toBeGreaterThan(happyPath.diagnostics.length);
+    expect(opinionated.diagnostics.length).toBeGreaterThan(generalRecommended.diagnostics.length);
   });
 
   it("should report no-options-api for opinionated preset", () => {
@@ -133,9 +133,9 @@ export default {
 </script>
 `;
 
-    const happyPath = wasm.lintSfc(sfc, {
+    const generalRecommended = wasm.lintSfc(sfc, {
       filename: "OptionsApi.vue",
-      preset: "happy-path",
+      preset: "general-recommended",
     });
     const opinionated = wasm.lintSfc(sfc, {
       filename: "OptionsApi.vue",
@@ -143,7 +143,9 @@ export default {
     });
 
     expect(
-      happyPath.diagnostics.some((diagnostic) => diagnostic.rule === "script/no-options-api"),
+      generalRecommended.diagnostics.some(
+        (diagnostic) => diagnostic.rule === "script/no-options-api",
+      ),
     ).toBe(false);
     expect(
       opinionated.diagnostics.some((diagnostic) => diagnostic.rule === "script/no-options-api"),
@@ -165,9 +167,9 @@ await nextTick()
 </script>
 `;
 
-    const happyPath = wasm.lintSfc(sfc, {
+    const generalRecommended = wasm.lintSfc(sfc, {
       filename: "NextTick.vue",
-      preset: "happy-path",
+      preset: "general-recommended",
     });
     const opinionated = wasm.lintSfc(sfc, {
       filename: "NextTick.vue",
@@ -175,7 +177,9 @@ await nextTick()
     });
 
     expect(
-      happyPath.diagnostics.some((diagnostic) => diagnostic.rule === "script/no-next-tick"),
+      generalRecommended.diagnostics.some(
+        (diagnostic) => diagnostic.rule === "script/no-next-tick",
+      ),
     ).toBe(false);
     expect(
       opinionated.diagnostics.some((diagnostic) => diagnostic.rule === "script/no-next-tick"),
@@ -197,9 +201,9 @@ const instance = getCurrentInstance()
 </script>
 `;
 
-    const happyPath = wasm.lintSfc(sfc, {
+    const generalRecommended = wasm.lintSfc(sfc, {
       filename: "GetCurrentInstance.vue",
-      preset: "happy-path",
+      preset: "general-recommended",
     });
     const opinionated = wasm.lintSfc(sfc, {
       filename: "GetCurrentInstance.vue",
@@ -207,13 +211,189 @@ const instance = getCurrentInstance()
     });
 
     expect(
-      happyPath.diagnostics.some(
+      generalRecommended.diagnostics.some(
         (diagnostic) => diagnostic.rule === "script/no-get-current-instance",
       ),
     ).toBe(false);
     expect(
       opinionated.diagnostics.some(
         (diagnostic) => diagnostic.rule === "script/no-get-current-instance",
+      ),
+    ).toBe(true);
+  });
+
+  it("should honor cross-file analyzer toggles and imported component aliases", () => {
+    const wasm = getWasm();
+    expect(wasm).not.toBeNull();
+    if (!wasm) {
+      return;
+    }
+
+    const files = [
+      {
+        path: "Parent.vue",
+        source: `
+<script setup lang="ts">
+import Panel from './Child.vue'
+</script>
+
+<template>
+  <Panel />
+</template>
+`,
+      },
+      {
+        path: "Child.vue",
+        source: `
+<script setup lang="ts">
+defineProps<{
+  title: string
+}>()
+</script>
+
+<template>
+  <section>{{ title }}</section>
+</template>
+`,
+      },
+    ];
+
+    const relationshipOnly = wasm.analyzeCrossFile(files, {
+      componentResolution: true,
+      propsValidation: false,
+    });
+    expect(
+      relationshipOnly.diagnostics.some((diagnostic) => diagnostic.type === "props-validation"),
+    ).toBe(false);
+
+    const validation = wasm.analyzeCrossFile(files, {
+      componentResolution: true,
+      propsValidation: true,
+    });
+    expect(
+      validation.diagnostics.some(
+        (diagnostic) =>
+          diagnostic.type === "props-validation" &&
+          diagnostic.code === "vize:croquis/cf/missing-required-prop",
+      ),
+    ).toBe(true);
+    expect(
+      validation.diagnostics.some((diagnostic) => diagnostic.type === "component-resolution"),
+    ).toBe(false);
+  });
+
+  it("should report strict provide/inject and reactivity loss severities", () => {
+    const wasm = getWasm();
+    expect(wasm).not.toBeNull();
+    if (!wasm) {
+      return;
+    }
+
+    const files = [
+      {
+        path: "Parent.vue",
+        source: `
+<script setup lang="ts">
+import { provide, reactive } from 'vue'
+import Child from './Child.vue'
+
+provide('config', { debug: true })
+provide('state', reactive({ count: 0 }))
+</script>
+
+<template>
+  <Child />
+</template>
+`,
+      },
+      {
+        path: "Child.vue",
+        source: `
+<script setup lang="ts">
+import { inject } from 'vue'
+
+const useInject = inject
+const config = inject('config')
+const { count } = inject('state') as { count: number }
+const [first] = useInject('items', [1])
+const theme = inject('theme', 'light')
+</script>
+
+<template>
+  <p>{{ config }} {{ count }} {{ first }} {{ theme }}</p>
+</template>
+`,
+      },
+    ];
+
+    const result = wasm.analyzeCrossFile(files, {
+      provideInject: true,
+      reactivityTracking: true,
+    });
+
+    const destructuring = result.diagnostics.filter(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/destructuring-breaks-reactivity",
+    );
+    expect(destructuring.length).toBe(2);
+    expect(destructuring.every((diagnostic) => diagnostic.severity === "error")).toBe(true);
+    expect(destructuring.every((diagnostic) => diagnostic.type === "reactivity-loss")).toBe(true);
+    const stateDestructure = destructuring.find((diagnostic) =>
+      diagnostic.message.includes("state"),
+    );
+    expect(stateDestructure?.relatedLocations?.[0]).toMatchObject({
+      file: "Parent.vue",
+      message: "provide('state') source",
+    });
+
+    const uniqueDiagnosticKeys = new Set(
+      result.diagnostics.map(
+        (diagnostic) => `${diagnostic.code}:${diagnostic.file}:${diagnostic.offset}`,
+      ),
+    );
+    expect(uniqueDiagnosticKeys.size).toBe(result.diagnostics.length);
+
+    const fileOrder = new Map(files.map((file, index) => [file.path, index]));
+    const severityOrder: Record<string, number> = { error: 0, warning: 1, info: 2, hint: 3 };
+    const diagnosticOrder = result.diagnostics.map((diagnostic) => ({
+      code: diagnostic.code,
+      fileIndex: fileOrder.get(diagnostic.file) ?? Number.MAX_SAFE_INTEGER,
+      offset: diagnostic.offset,
+      severity: severityOrder[diagnostic.severity] ?? Number.MAX_SAFE_INTEGER,
+    }));
+    const sortedDiagnosticOrder = [...diagnosticOrder].sort(
+      (left, right) =>
+        left.fileIndex - right.fileIndex ||
+        left.offset - right.offset ||
+        left.severity - right.severity ||
+        left.code.localeCompare(right.code),
+    );
+    expect(diagnosticOrder).toEqual(sortedDiagnosticOrder);
+
+    const defaultedInject = result.diagnostics.find(
+      (diagnostic) =>
+        diagnostic.code === "vize:croquis/cf/unmatched-inject" &&
+        diagnostic.message.includes("theme"),
+    );
+    expect(defaultedInject?.severity).toBe("warning");
+    expect(defaultedInject?.type).toBe("provide-inject");
+
+    const nonReactiveProvide = result.diagnostics.find(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/non-reactive-provide",
+    );
+    expect(nonReactiveProvide?.severity).toBe("warning");
+    expect(nonReactiveProvide?.type).toBe("provide-inject");
+
+    const stringProvideKeys = result.diagnostics.filter(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/provide-without-symbol",
+    );
+    const stringInjectKeys = result.diagnostics.filter(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/inject-without-symbol",
+    );
+    expect(stringProvideKeys.length).toBeGreaterThanOrEqual(2);
+    expect(stringInjectKeys.length).toBeGreaterThanOrEqual(4);
+    expect(
+      [...stringProvideKeys, ...stringInjectKeys].every(
+        (diagnostic) => diagnostic.severity === "warning" && diagnostic.type === "provide-inject",
       ),
     ).toBe(true);
   });

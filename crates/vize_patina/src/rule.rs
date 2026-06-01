@@ -24,6 +24,8 @@ pub enum RuleCategory {
     HtmlConformance,
     /// Type-aware rules (require semantic analysis)
     TypeAware,
+    /// Vue ecosystem integration rules (Nuxt, Vue Router, Pinia, vue-i18n, Void, and test utilities).
+    Ecosystem,
 }
 
 /// Rule metadata
@@ -95,6 +97,8 @@ pub trait Rule: Send + Sync {
 /// Registry holding all enabled lint rules
 pub struct RuleRegistry {
     rules: Vec<Box<dyn Rule>>,
+    rule_names: Vec<&'static str>,
+    has_exit_element_rules: bool,
 }
 
 impl RuleRegistry {
@@ -102,18 +106,25 @@ impl RuleRegistry {
     const HAPPY_PATH_CAPACITY: usize = 90;
     /// Create a new empty registry
     pub fn new() -> Self {
-        Self { rules: Vec::new() }
+        Self {
+            rules: Vec::new(),
+            rule_names: Vec::new(),
+            has_exit_element_rules: true,
+        }
     }
 
     #[inline]
     fn with_capacity(capacity: usize) -> Self {
         Self {
             rules: Vec::with_capacity(capacity),
+            rule_names: Vec::with_capacity(capacity),
+            has_exit_element_rules: false,
         }
     }
 
     /// Register a rule
     pub fn register(&mut self, rule: Box<dyn Rule>) {
+        self.rule_names.push(rule.meta().name);
         self.rules.push(rule);
     }
 
@@ -127,9 +138,24 @@ impl RuleRegistry {
         &self.rules
     }
 
+    /// Get all registered rule names in the same order as [`Self::rules`].
+    pub fn rule_names(&self) -> &[&'static str] {
+        &self.rule_names
+    }
+
+    /// Whether this registry may contain rules that need exit-element hooks.
+    pub fn has_exit_element_rules(&self) -> bool {
+        self.has_exit_element_rules
+    }
+
+    /// Mark the registry as potentially containing exit-element hooks.
+    pub(crate) fn mark_has_exit_element_rules(&mut self) {
+        self.has_exit_element_rules = true;
+    }
+
     /// Check whether a rule with the given name is registered.
     pub fn has_rule(&self, name: &str) -> bool {
-        self.rules.iter().any(|rule| rule.meta().name == name)
+        self.rule_names.contains(&name)
     }
 
     /// Create a registry for a named preset.
@@ -138,8 +164,28 @@ impl RuleRegistry {
             LintPreset::HappyPath => Self::with_happy_path(),
             LintPreset::Opinionated => Self::with_opinionated(),
             LintPreset::Essential => Self::with_essential(),
+            LintPreset::Incremental => Self::with_incremental(),
+            LintPreset::Ecosystem => Self::with_ecosystem(),
             LintPreset::Nuxt => Self::with_nuxt(),
         }
+    }
+
+    /// Create an empty registry for host-driven, rule-by-rule adoption.
+    pub fn with_incremental() -> Self {
+        Self::with_capacity(0)
+    }
+
+    /// Create a registry containing rules that are exposed only for explicit
+    /// opt-in. These rules do not belong to any preset.
+    pub fn with_opt_in_rules() -> Self {
+        let mut registry = Self::with_capacity(8);
+        crate::rules::ecosystem::register_opt_in(&mut registry);
+        registry
+    }
+
+    /// Register explicit opt-in rules into an existing registry.
+    pub fn register_opt_in_rules(&mut self) {
+        crate::rules::ecosystem::register_opt_in(self);
     }
 
     /// Create the default happy-path registry.
@@ -312,9 +358,20 @@ impl RuleRegistry {
         registry
     }
 
+    /// Create registry with broad defaults plus ecosystem integration rules.
+    pub fn with_ecosystem() -> Self {
+        let mut registry = Self::with_happy_path();
+        crate::rules::ecosystem::register(&mut registry);
+
+        registry
+    }
+
     /// Create registry with all available rules (including opt-in).
     pub fn with_all() -> Self {
-        Self::with_opinionated()
+        let mut registry = Self::with_opinionated();
+        crate::rules::ecosystem::register(&mut registry);
+
+        registry
     }
 
     /// Create registry with Nuxt-friendly rules (auto-imports enabled).

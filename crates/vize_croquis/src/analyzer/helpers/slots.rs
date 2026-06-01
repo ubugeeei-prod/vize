@@ -9,7 +9,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{profile, smallvec, CompactString, SmallVec};
+use vize_carton::{CompactString, SmallVec, profile, smallvec};
 
 use super::is_valid_identifier_fast;
 
@@ -79,12 +79,13 @@ fn extract_slot_props_with_oxc(pattern: &str) -> SmallVec<[CompactString; 4]> {
     buffer[prefix.len()..prefix.len() + pattern.len()].copy_from_slice(pattern.as_bytes());
     buffer[prefix.len() + pattern.len()..total_len].copy_from_slice(suffix);
 
-    // SAFETY: we only copy ASCII bytes
-    let pattern_str = unsafe { std::str::from_utf8_unchecked(&buffer[..total_len]) };
-    profile!(
-        "croquis.helpers.slot_props.parse_pattern",
-        parse_slot_pattern(pattern_str)
-    )
+    match std::str::from_utf8(&buffer[..total_len]) {
+        Ok(pattern_str) => profile!(
+            "croquis.helpers.slot_props.parse_pattern",
+            parse_slot_pattern(pattern_str)
+        ),
+        Err(_) => SmallVec::new(),
+    }
 }
 
 /// Parse slot pattern using OXC
@@ -98,10 +99,10 @@ fn parse_slot_pattern(pattern_str: &str) -> SmallVec<[CompactString; 4]> {
 
     let mut props = SmallVec::new();
 
-    if let Some(oxc_ast::ast::Statement::VariableDeclaration(var_decl)) = ret.program.body.first() {
-        if let Some(declarator) = var_decl.declarations.first() {
-            extract_slot_binding_names(&declarator.id, &mut props);
-        }
+    if let Some(oxc_ast::ast::Statement::VariableDeclaration(var_decl)) = ret.program.body.first()
+        && let Some(declarator) = var_decl.declarations.first()
+    {
+        extract_slot_binding_names(&declarator.id, &mut props);
     }
 
     props

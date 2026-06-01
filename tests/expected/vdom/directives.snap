@@ -1,6 +1,6 @@
 ===
 name: custom directive
-options: default
+options: vdom
 --- INPUT ---
 <div v-focus></div>
 --- OUTPUT ---
@@ -13,10 +13,9 @@ export function render(_ctx, _cache) {
     [_directive_focus]
   ])
 }
-
 ===
 name: custom directive with value
-options: default
+options: vdom
 --- INPUT ---
 <div v-highlight="color"></div>
 --- OUTPUT ---
@@ -29,10 +28,9 @@ export function render(_ctx, _cache) {
     [_directive_highlight, _ctx.color]
   ])
 }
-
 ===
 name: custom directive with literal
-options: default
+options: vdom
 --- INPUT ---
 <div v-highlight="'yellow'"></div>
 --- OUTPUT ---
@@ -45,10 +43,9 @@ export function render(_ctx, _cache) {
     [_directive_highlight, 'yellow']
   ])
 }
-
 ===
 name: custom directive with object
-options: default
+options: vdom
 --- INPUT ---
 <div v-pin="{ top: 10, left: 20 }"></div>
 --- OUTPUT ---
@@ -61,10 +58,39 @@ export function render(_ctx, _cache) {
     [_directive_pin, { top: 10, left: 20 }]
   ])
 }
+===
+name: custom directive with array
+options: vdom
+--- INPUT ---
+<div v-list="[one, two]"></div>
+--- OUTPUT ---
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  const _directive_list = _resolveDirective("list")
+
+  return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512 /* NEED_PATCH */)), [
+    [_directive_list, [_ctx.one, _ctx.two]]
+  ])
+}
+===
+name: custom directive with function call
+options: vdom
+--- INPUT ---
+<div v-observe="createObserver(item)"></div>
+--- OUTPUT ---
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _directive_observe = _resolveDirective("observe")
+
+  return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512 /* NEED_PATCH */)), [
+    [_directive_observe, _ctx.createObserver(_ctx.item)]
+  ])
+}
 ===
 name: directive with argument
-options: default
+options: vdom
 --- INPUT ---
 <div v-scroll:top="value"></div>
 --- OUTPUT ---
@@ -77,10 +103,9 @@ export function render(_ctx, _cache) {
     [_directive_scroll, _ctx.value, "top"]
   ])
 }
-
 ===
 name: directive with dynamic argument
-options: default
+options: vdom
 --- INPUT ---
 <div v-scroll:[direction]="value"></div>
 --- OUTPUT ---
@@ -93,10 +118,9 @@ export function render(_ctx, _cache) {
     [_directive_scroll, _ctx.value, _ctx.direction]
   ])
 }
-
 ===
 name: directive with modifier
-options: default
+options: vdom
 --- INPUT ---
 <div v-focus.lazy></div>
 --- OUTPUT ---
@@ -114,10 +138,9 @@ export function render(_ctx, _cache) {
     ]
   ])
 }
-
 ===
 name: directive with multiple modifiers
-options: default
+options: vdom
 --- INPUT ---
 <div v-custom.a.b.c></div>
 --- OUTPUT ---
@@ -139,10 +162,9 @@ export function render(_ctx, _cache) {
     ]
   ])
 }
-
 ===
 name: directive with arg and modifiers
-options: default
+options: vdom
 --- INPUT ---
 <div v-dir:arg.mod1.mod2="value"></div>
 --- OUTPUT ---
@@ -163,10 +185,9 @@ export function render(_ctx, _cache) {
     ]
   ])
 }
-
 ===
 name: multiple custom directives
-options: default
+options: vdom
 --- INPUT ---
 <div v-focus v-highlight></div>
 --- OUTPUT ---
@@ -181,10 +202,9 @@ export function render(_ctx, _cache) {
     [_directive_highlight]
   ])
 }
-
 ===
 name: custom with built-in
-options: default
+options: vdom
 --- INPUT ---
 <div v-focus v-show="visible"></div>
 --- OUTPUT ---
@@ -198,10 +218,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.visible]
   ])
 }
-
 ===
 name: directive on component
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-focus />
 --- OUTPUT ---
@@ -215,10 +234,9 @@ export function render(_ctx, _cache) {
     [_directive_focus]
   ])
 }
-
 ===
 name: directive on component with props
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-focus :prop="value" />
 --- OUTPUT ---
@@ -232,10 +250,9 @@ export function render(_ctx, _cache) {
     [_directive_focus]
   ])
 }
-
 ===
 name: v-html
-options: default
+options: vdom
 --- INPUT ---
 <div v-html="rawHtml"></div>
 --- OUTPUT ---
@@ -244,10 +261,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { innerHTML: _ctx.rawHtml }, null, 8 /* PROPS */, ["innerHTML"]))
 }
-
 ===
 name: v-text
-options: default
+options: vdom
 --- INPUT ---
 <div v-text="msg"></div>
 --- OUTPUT ---
@@ -258,10 +274,9 @@ export function render(_ctx, _cache) {
     textContent: _toDisplayString(_ctx.msg)
   }, null, 8 /* PROPS */, ["textContent"]))
 }
-
 ===
 name: v-html with static
-options: default
+options: vdom
 --- INPUT ---
 <div class="content" v-html="html"></div>
 --- OUTPUT ---
@@ -273,10 +288,9 @@ export function render(_ctx, _cache) {
     innerHTML: _ctx.html
   }, null, 8 /* PROPS */, ["innerHTML"]))
 }
-
 ===
 name: v-cloak
-options: default
+options: vdom
 --- INPUT ---
 <div v-cloak>{{ msg }}</div>
 --- OUTPUT ---
@@ -285,10 +299,9 @@ import { toDisplayString as _toDisplayString, openBlock as _openBlock, createEle
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg), 1 /* TEXT */))
 }
-
 ===
 name: v-pre
-options: default
+options: vdom
 --- INPUT ---
 <div v-pre>{{ this will not compile }}</div>
 --- OUTPUT ---
@@ -297,10 +310,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, "{{ this will not compile }}"))
 }
-
 ===
 name: v-pre with children
-options: default
+options: vdom
 --- INPUT ---
 <div v-pre><span>{{ raw }}</span></div>
 --- OUTPUT ---
@@ -311,10 +323,9 @@ export function render(_ctx, _cache) {
     _createElementVNode("span", null, "{{ raw }}")
   ]))
 }
-
 ===
 name: v-pre with on-prefixed attribute
-options: default
+options: vdom
 --- INPUT ---
 <div v-pre test on-test is-on-test>content</div>
 --- OUTPUT ---
@@ -327,10 +338,9 @@ export function render(_ctx, _cache) {
     "is-on-test": ""
   }, "content"))
 }
-
 ===
 name: v-pre should not process shorthand directives
-options: default
+options: vdom
 --- INPUT ---
 <div v-pre :id="dynamic" @click="handler">{{ raw }}</div>
 --- OUTPUT ---
@@ -342,10 +352,9 @@ export function render(_ctx, _cache) {
     "@click": "handler"
   }, "{{ raw }}"))
 }
-
 ===
 name: v-pre nested elements preserve attributes
-options: default
+options: vdom
 --- INPUT ---
 <div v-pre><span :class="cls" @click="fn">{{ raw }}</span></div>
 --- OUTPUT ---

@@ -4,14 +4,37 @@
  * Extracted from gallery.ts to keep file sizes manageable.
  */
 
+import { serializeScriptValue } from "../security.js";
+
+function escapeHtmlAttribute(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&#39;";
+      default:
+        return char;
+    }
+  });
+}
+
 /**
  * Generate the gallery HTML body (header, sidebar, content, and inline script).
  */
 export function generateGalleryBody(basePath: string): string {
+  const escapedBasePath = escapeHtmlAttribute(basePath);
+
   return `
   <header class="header">
     <div class="header-left">
-      <a href="${basePath}" class="logo">
+      <a href="${escapedBasePath}" class="logo">
         <svg class="logo-svg" width="32" height="32" viewBox="0 0 200 200" fill="none">
           <g transform="translate(30, 25) scale(1.2)">
             <g transform="translate(15, 10) skewX(-15)">
@@ -68,7 +91,7 @@ export function generateGalleryBody(basePath: string): string {
  */
 export function generateGalleryScript(basePath: string): string {
   return `
-    const basePath = '${basePath}';
+    const basePath = ${serializeScriptValue(basePath)};
     let arts = [];
     let selectedArt = null;
     let searchQuery = '';
@@ -105,17 +128,18 @@ export function generateGalleryScript(basePath: string): string {
 
       let html = '';
       for (const [category, items] of Object.entries(categories)) {
+        const escapedCategory = escapeHtml(category);
         html += '<div class="sidebar-section">';
-        html += '<div class="category-header" data-category="' + category + '">';
+        html += '<div class="category-header" data-category="' + escapedCategory + '">';
         html += '<svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
-        html += '<span>' + category + '</span>';
+        html += '<span>' + escapedCategory + '</span>';
         html += '<span class="category-count">' + items.length + '</span>';
         html += '</div>';
-        html += '<ul class="art-list" data-category="' + category + '">';
+        html += '<ul class="art-list" data-category="' + escapedCategory + '">';
         for (const art of items) {
           const active = selectedArt?.path === art.path ? 'active' : '';
           const variantCount = art.variants?.length || 0;
-          html += '<li class="art-item ' + active + '" data-path="' + art.path + '">';
+          html += '<li class="art-item ' + active + '" data-path="' + escapeHtml(art.path) + '">';
           html += '<span>' + escapeHtml(art.metadata.title) + '</span>';
           html += '<span class="art-variant-count">' + variantCount + ' variant' + (variantCount !== 1 ? 's' : '') + '</span>';
           html += '</li>';
@@ -138,7 +162,7 @@ export function generateGalleryScript(basePath: string): string {
       sidebar.querySelectorAll('.category-header').forEach(header => {
         header.addEventListener('click', () => {
           header.classList.toggle('collapsed');
-          const list = sidebar.querySelector('.art-list[data-category="' + header.dataset.category + '"]');
+          const list = header.parentElement?.querySelector('.art-list');
           if (list) list.style.display = header.classList.contains('collapsed') ? 'none' : 'block';
         });
       });
@@ -187,10 +211,11 @@ export function generateGalleryScript(basePath: string): string {
       html += '<div class="gallery">';
       for (const variant of selectedArt.variants) {
         const previewUrl = basePath + '/preview?art=' + encodeURIComponent(selectedArt.path) + '&variant=' + encodeURIComponent(variant.name);
+        const escapedPreviewUrl = escapeHtml(previewUrl);
 
         html += '<div class="variant-card">';
         html += '<div class="variant-preview">';
-        html += '<iframe src="' + previewUrl + '" loading="lazy" title="' + escapeHtml(variant.name) + '"></iframe>';
+        html += '<iframe src="' + escapedPreviewUrl + '" loading="lazy" title="' + escapeHtml(variant.name) + '"></iframe>';
         html += '</div>';
         html += '<div class="variant-info">';
         html += '<div>';
@@ -198,7 +223,7 @@ export function generateGalleryScript(basePath: string): string {
         if (variant.isDefault) html += ' <span class="variant-badge">Default</span>';
         html += '</div>';
         html += '<div class="variant-actions">';
-        html += '<button class="variant-action-btn" title="Open in new tab" onclick="window.open(\\'' + previewUrl + '\\', \\'_blank\\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>';
+        html += '<button class="variant-action-btn" title="Open in new tab" data-preview-url="' + escapedPreviewUrl + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>';
         html += '</div>';
         html += '</div>';
         html += '</div>';
@@ -207,11 +232,18 @@ export function generateGalleryScript(basePath: string): string {
       html += '</div>';
 
       content.innerHTML = html;
+
+      content.querySelectorAll('.variant-action-btn[data-preview-url]').forEach(button => {
+        button.addEventListener('click', () => {
+          const previewUrl = button.dataset.previewUrl;
+          if (previewUrl) window.open(previewUrl, '_blank', 'noopener');
+        });
+      });
     }
 
     function escapeHtml(str) {
       if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     // Search

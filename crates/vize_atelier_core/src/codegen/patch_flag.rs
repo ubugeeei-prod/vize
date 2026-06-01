@@ -1,11 +1,14 @@
 //! Patch flag calculation and naming functions.
 
-use super::helpers::{camelize, is_constant_simple_expression};
+use super::helpers::camelize;
 use crate::ast::*;
 use crate::options::{BindingMetadata, BindingType};
-use vize_carton::is_builtin_directive;
+use oxc_ast::ast as oxc_ast_types;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::String;
 use vize_carton::ToCompactString;
+use vize_carton::is_builtin_directive;
 
 /// Check if an interpolation references only constant bindings (LiteralConst or SetupConst)
 /// These bindings never change at runtime, so no TEXT patch flag is needed.
@@ -54,11 +57,88 @@ fn is_const_handler(expr: &ExpressionNode<'_>, bindings: Option<&BindingMetadata
 }
 
 /// Check if a directive's bound expression is a static literal (no runtime identifiers).
-/// Returns true for object literals, array literals, string literals, numbers
-/// that don't reference any runtime variables.
-fn is_static_bound_expression(dir: &DirectiveNode<'_>, bindings: Option<&BindingMetadata>) -> bool {
-    match &dir.exp {
-        Some(ExpressionNode::Simple(simple)) => is_constant_simple_expression(simple, bindings),
+fn is_static_bound_expression(dir: &DirectiveNode<'_>) -> bool {
+    let Some(ExpressionNode::Simple(simple)) = &dir.exp else {
+        return false;
+    };
+    if simple.is_static {
+        return true;
+    }
+
+    let content = simple.content.trim();
+    matches!(content, "true" | "false" | "null")
+        || is_string_literal(content)
+        || content.parse::<f64>().is_ok()
+        || is_static_object_or_array_literal(content)
+        || (content.starts_with('`') && content.ends_with('`') && !content.contains("${"))
+}
+
+fn is_string_literal(content: &str) -> bool {
+    (content.starts_with('\'') && content.ends_with('\''))
+        || (content.starts_with('"') && content.ends_with('"'))
+}
+
+fn is_static_object_or_array_literal(content: &str) -> bool {
+    let mut wrapped = String::with_capacity(content.len() + 2);
+    wrapped.push('(');
+    wrapped.push_str(content);
+    wrapped.push(')');
+
+    let allocator = oxc_allocator::Allocator::default();
+    let parser = Parser::new(
+        &allocator,
+        &wrapped,
+        SourceType::default().with_module(true),
+    );
+    let Ok(expr) = parser.parse_expression() else {
+        return false;
+    };
+
+    is_static_oxc_expression(&expr)
+}
+
+fn is_static_oxc_expression(expr: &oxc_ast_types::Expression<'_>) -> bool {
+    match expr {
+        oxc_ast_types::Expression::StringLiteral(_)
+        | oxc_ast_types::Expression::NumericLiteral(_)
+        | oxc_ast_types::Expression::BooleanLiteral(_)
+        | oxc_ast_types::Expression::NullLiteral(_)
+        | oxc_ast_types::Expression::BigIntLiteral(_)
+        | oxc_ast_types::Expression::RegExpLiteral(_) => true,
+        oxc_ast_types::Expression::TemplateLiteral(template) => template.expressions.is_empty(),
+        oxc_ast_types::Expression::UnaryExpression(unary) => {
+            is_static_oxc_expression(&unary.argument)
+        }
+        oxc_ast_types::Expression::ParenthesizedExpression(paren) => {
+            is_static_oxc_expression(&paren.expression)
+        }
+        oxc_ast_types::Expression::CallExpression(call)
+            if matches!(
+                &call.callee,
+                oxc_ast_types::Expression::Identifier(ident)
+                    if matches!(ident.name.as_str(), "_normalizeClass" | "_normalizeStyle")
+            ) =>
+        {
+            call.arguments.iter().all(|arg| match arg {
+                oxc_ast_types::Argument::SpreadElement(_) => false,
+                _ => arg.as_expression().is_some_and(is_static_oxc_expression),
+            })
+        }
+        oxc_ast_types::Expression::ObjectExpression(obj) => {
+            obj.properties.iter().all(|prop| match prop {
+                oxc_ast_types::ObjectPropertyKind::ObjectProperty(prop) => {
+                    is_static_oxc_expression(&prop.value)
+                }
+                oxc_ast_types::ObjectPropertyKind::SpreadProperty(_) => false,
+            })
+        }
+        oxc_ast_types::Expression::ArrayExpression(arr) => {
+            arr.elements.iter().all(|elem| match elem {
+                oxc_ast_types::ArrayExpressionElement::SpreadElement(_) => false,
+                oxc_ast_types::ArrayExpressionElement::Elision(_) => true,
+                _ => elem.as_expression().is_some_and(is_static_oxc_expression),
+            })
+        }
         _ => false,
     }
 }
@@ -98,21 +178,20 @@ fn calculate_element_patch_info_inner(
 
     for prop in el.props.iter() {
         // Check for ref attribute (static)
-        if let PropNode::Attribute(attr) = prop {
-            if attr.name == "ref" {
-                has_ref = true;
-            }
+        if let PropNode::Attribute(attr) = prop
+            && attr.name == "ref"
+        {
+            has_ref = true;
         }
         if let PropNode::Directive(dir) = prop {
             match dir.name.as_str() {
                 "bind" => {
                     // Skip `:is` binding for dynamic components
-                    if skip_is {
-                        if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                            if arg.content == "is" {
-                                continue;
-                            }
-                        }
+                    if skip_is
+                        && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.content == "is"
+                    {
+                        continue;
                     }
 
                     // Check for modifiers
@@ -125,19 +204,37 @@ fn calculate_element_patch_info_inner(
                             if !exp.is_static {
                                 // Dynamic key - FULL_PROPS
                                 flag |= 16;
+                                // .prop modifier requires NEED_HYDRATION even with a
+                                // dynamic argument (e.g. :[key].prop).
+                                if has_prop {
+                                    flag |= 32; // NEED_HYDRATION
+                                }
                             } else {
                                 let key = exp.content.as_str();
+                                let bound_is_static = is_static_bound_expression(dir);
                                 match key {
                                     "class" => {
-                                        // Only set CLASS flag if the bound expression is dynamic
-                                        if !is_static_bound_expression(dir, bindings) {
-                                            flag |= 2; // CLASS
+                                        // Component class is a fallthrough prop, not an element-class
+                                        // patch target. Vue tracks it through dynamicProps.
+                                        if !bound_is_static {
+                                            if el.tag_type == ElementType::Component {
+                                                flag |= 8; // PROPS
+                                                dynamic_props.push("class".to_compact_string());
+                                            } else {
+                                                flag |= 2; // CLASS
+                                            }
                                         }
                                     }
                                     "style" => {
-                                        // Only set STYLE flag if the bound expression is dynamic
-                                        if !is_static_bound_expression(dir, bindings) {
-                                            flag |= 4; // STYLE
+                                        // Component style is a fallthrough prop, not an element-style
+                                        // patch target. Vue tracks it through dynamicProps.
+                                        if !bound_is_static {
+                                            if el.tag_type == ElementType::Component {
+                                                flag |= 8; // PROPS
+                                                dynamic_props.push("style".to_compact_string());
+                                            } else {
+                                                flag |= 4; // STYLE
+                                            }
                                         }
                                     }
                                     "key" => {}
@@ -147,7 +244,7 @@ fn calculate_element_patch_info_inner(
                                     }
                                     _ => {
                                         // Skip modelModifiers and *Modifiers props (they are static)
-                                        if !key.ends_with("Modifiers") {
+                                        if !key.ends_with("Modifiers") && !bound_is_static {
                                             flag |= 8; // PROPS
 
                                             // Transform key based on modifiers
@@ -212,36 +309,16 @@ fn calculate_element_patch_info_inner(
                                     base_event
                                 };
 
-                                // Build event name
-                                let mut event_name = String::with_capacity(2 + actual_event.len());
-                                event_name.push_str("on");
-                                // Capitalize first letter inline
-                                let mut chars = actual_event.chars();
-                                if let Some(c) = chars.next() {
-                                    for uc in c.to_uppercase() {
-                                        event_name.push(uc);
-                                    }
-                                    event_name.push_str(chars.as_str());
-                                }
-
-                                // Check for event option modifiers that affect the event name
-                                for modifier in dir.modifiers.iter() {
-                                    let mod_name = modifier.content.as_str();
-                                    if mod_name == "capture"
-                                        || mod_name == "once"
-                                        || mod_name == "passive"
-                                    {
-                                        let mut cap_mod = String::default();
-                                        let mut chars = mod_name.chars();
-                                        if let Some(c) = chars.next() {
-                                            for uc in c.to_uppercase() {
-                                                cap_mod.push(uc);
-                                            }
-                                            cap_mod.push_str(chars.as_str());
-                                        }
-                                        event_name.push_str(&cap_mod);
-                                    }
-                                }
+                                // Build the dynamic-prop event name using the same
+                                // casing rules as v-on prop codegen so the
+                                // dynamicProps array matches the generated keys.
+                                let on_plain_element =
+                                    el.tag_type == ElementType::Element && dir.raw_name.is_some();
+                                let event_name = super::props::von_event_key_for(
+                                    base_event,
+                                    on_plain_element,
+                                    dir.modifiers.iter().map(|m| m.content.as_str()),
+                                );
 
                                 // Check if the handler references a constant binding
                                 // If so, we don't need PROPS flag since the handler won't change
@@ -279,22 +356,30 @@ fn calculate_element_patch_info_inner(
 
                                 // Events that don't need NEED_HYDRATION:
                                 // - Basic click/dblclick without special modifiers
-                                // - update:* events (v-model internal events)
+                                // - the v-model `onUpdate:modelValue` handler (Vue
+                                //   excludes this exact reserved key only)
                                 // - Component events (non-DOM element events)
-                                // Note: event name can be "update:modelValue" or "Update:modelValue"
-                                let lower_event = base_event.to_lowercase();
-                                let is_vmodel_update = lower_event.starts_with("update:");
-                                let is_simple_click = matches!(actual_event, "click" | "dblclick")
+                                let is_vmodel_update = event_name == "onUpdate:modelValue";
+                                // Vue's hydration fast-path covers `onclick` only
+                                // (not dblclick or other mouse events).
+                                let is_simple_click = actual_event == "click"
                                     && !has_option_modifier
                                     && !has_key_modifier
                                     && !has_right_modifier
                                     && !has_middle_modifier;
                                 let is_component_event = el.tag_type == ElementType::Component;
+                                // onVnodeXXX lifecycle hooks are reserved props and
+                                // never trigger hydration event binding.
+                                let is_vnode_hook = event_name.starts_with("onVnode");
 
                                 // NEED_HYDRATION is needed for non-click/dblclick events
                                 // This tells Vue to properly hydrate event listeners during SSR
                                 // Note: NEED_HYDRATION is added regardless of caching status
-                                if !is_simple_click && !is_vmodel_update && !is_component_event {
+                                if !is_simple_click
+                                    && !is_vmodel_update
+                                    && !is_component_event
+                                    && !is_vnode_hook
+                                {
                                     flag |= 32; // NEED_HYDRATION
                                 }
                             }
@@ -448,6 +533,9 @@ pub fn patch_flag_name(flag: i32) -> String {
     }
     if flag & 1024 != 0 {
         names.push("DYNAMIC_SLOTS");
+    }
+    if flag & 2048 != 0 {
+        names.push("DEV_ROOT_FRAGMENT");
     }
 
     if names.is_empty() {

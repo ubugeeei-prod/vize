@@ -238,10 +238,10 @@ impl Palette {
     /// Add a control.
     #[inline]
     pub fn add_control(&mut self, control: PropControl) {
-        if let Some(ref group) = control.group {
-            if !self.groups.contains(group) {
-                self.groups.push(group.clone());
-            }
+        if let Some(ref group) = control.group
+            && !self.groups.contains(group)
+        {
+            self.groups.push(group.clone());
         }
         self.controls.push(control);
     }

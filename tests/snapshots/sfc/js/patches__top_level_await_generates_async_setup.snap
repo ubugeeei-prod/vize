@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
 import { withAsyncContext as _withAsyncContext } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from "vue"
 
 
 export default {

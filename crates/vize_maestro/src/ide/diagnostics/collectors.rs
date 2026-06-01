@@ -9,20 +9,25 @@ use tower_lsp::lsp_types::{
     CodeDescription, Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url,
 };
 
-use vize_patina::{render_help, HelpRenderTarget};
+use oxc_allocator::Allocator as OxcAllocator;
+use oxc_parser::Parser as OxcParser;
+use oxc_span::SourceType;
+use vize_atelier_sfc::SfcDescriptor;
+use vize_carton::config::LinterConfig;
+use vize_patina::{HelpRenderTarget, LintPreset, render_help};
 
-use super::{offset_to_line_col, sources, DiagnosticService};
+use super::{DiagnosticService, offset_to_line_col, sources};
 use vize_carton::append;
 
 impl DiagnosticService {
     /// Collect diagnostics for Art files (*.art.vue) using vize_patina's MuseaLinter.
-    pub(super) fn collect_musea_diagnostics(_uri: &Url, content: &str) -> Vec<Diagnostic> {
+    pub(super) fn collect_musea_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
         use vize_patina::rules::musea::MuseaLinter;
 
         let linter = MuseaLinter::new();
         let result = linter.lint(content);
 
-        result
+        let mut diagnostics: Vec<_> = result
             .diagnostics
             .into_iter()
             .map(|lint_diag| {
@@ -59,9 +64,9 @@ impl DiagnosticService {
                     }),
                     code: Some(NumberOrString::String(lint_diag.rule_name.to_string())),
                     code_description: Some(CodeDescription {
-                        href: Url::parse("https://github.com/ubugeeei/vize/wiki/musea-rules")
+                        href: Url::parse("https://github.com/ubugeeei-prod/vize/wiki/musea-rules")
                             .unwrap_or_else(|_| {
-                                Url::parse("https://github.com/ubugeeei/vize").unwrap()
+                                Url::parse("https://github.com/ubugeeei-prod/vize").unwrap()
                             }),
                     }),
                     source: Some(sources::MUSEA.to_string()),
@@ -69,21 +74,19 @@ impl DiagnosticService {
                     ..Default::default()
                 }
             })
-            .collect()
+            .collect();
+
+        diagnostics.extend(collect_define_art_source_diagnostics(uri, content));
+        diagnostics
     }
 
     /// Collect diagnostics for inline <art> custom blocks in regular .vue files.
-    pub(super) fn collect_inline_art_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
+    pub(super) fn collect_inline_art_diagnostics(
+        _uri: &Url,
+        content: &str,
+        descriptor: &SfcDescriptor<'_>,
+    ) -> Vec<Diagnostic> {
         use vize_patina::rules::musea::MuseaLinter;
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return vec![];
-        };
 
         let mut diagnostics = Vec::new();
 
@@ -207,15 +210,20 @@ impl DiagnosticService {
         diagnostics
     }
 
-    /// Collect SFC parser diagnostics.
-    pub(super) fn collect_sfc_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
+    /// Parse the SFC once for the diagnostic pipeline, returning either the
+    /// parsed descriptor or a single SFC parser error diagnostic to surface.
+    #[allow(clippy::result_large_err)]
+    pub(super) fn parse_sfc_for_collect<'a>(
+        uri: &Url,
+        content: &'a str,
+    ) -> Result<SfcDescriptor<'a>, Diagnostic> {
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: uri.path().to_string().into(),
             ..Default::default()
         };
 
         match vize_atelier_sfc::parse_sfc(content, options) {
-            Ok(_) => vec![],
+            Ok(descriptor) => Ok(descriptor),
             Err(err) => {
                 let range = if let Some(ref loc) = err.loc {
                     Range {
@@ -232,29 +240,24 @@ impl DiagnosticService {
                     Range::default()
                 };
 
-                vec![Diagnostic {
+                Err(Diagnostic {
                     range,
                     severity: Some(DiagnosticSeverity::ERROR),
                     source: Some(sources::SFC_PARSER.to_string()),
                     #[allow(clippy::disallowed_methods)]
                     message: err.message.to_string(),
                     ..Default::default()
-                }]
+                })
             }
         }
     }
 
     /// Collect template parser diagnostics.
-    pub(super) fn collect_template_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return vec![];
-        };
-
+    pub(super) fn collect_template_diagnostics(
+        _uri: &Url,
+        _content: &str,
+        descriptor: &SfcDescriptor<'_>,
+    ) -> Vec<Diagnostic> {
         let Some(ref template) = descriptor.template else {
             return vec![];
         };
@@ -294,39 +297,163 @@ impl DiagnosticService {
             .collect()
     }
 
-    /// Collect linter diagnostics from vize_patina.
-    pub(super) fn collect_lint_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
+    /// Collect Vue-specific compile diagnostics that TypeScript's checker
+    /// cannot derive on its own (e.g. DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE).
+    /// Uses the lightweight validator entry point so the editor stays
+    /// responsive — `compile_sfc` would do template/style codegen we throw
+    /// away anyway.
+    pub(super) fn collect_sfc_compile_diagnostics(
+        _uri: &Url,
+        content: &str,
+        descriptor: &SfcDescriptor<'_>,
+    ) -> Vec<Diagnostic> {
+        let Some(script_setup) = descriptor.script_setup.as_ref() else {
+            return Vec::new();
+        };
+        if !script_setup_has_validator_candidates(&script_setup.content) {
+            return Vec::new();
+        }
+
+        let Err(err) = vize_atelier_sfc::validate_script_setup_semantics_located(
+            &script_setup.content,
+            script_setup.loc.start,
+            content,
+        ) else {
+            return Vec::new();
+        };
+
+        let range = if let Some(ref loc) = err.loc {
+            Range {
+                start: Position {
+                    line: (loc.start_line as u32).saturating_sub(1),
+                    character: (loc.start_column as u32).saturating_sub(1),
+                },
+                end: Position {
+                    line: (loc.end_line as u32).saturating_sub(1),
+                    character: (loc.end_column as u32).saturating_sub(1),
+                },
+            }
+        } else {
+            // Fall back to the start of the most relevant block so the
+            // diagnostic lands somewhere clickable in the editor.
+            let (offset, _block) = sfc_block_fallback_offset(descriptor);
+            let (line, column) = offset_to_line_col(content, offset);
+            Range {
+                start: Position {
+                    line,
+                    character: column,
+                },
+                end: Position {
+                    line,
+                    character: column,
+                },
+            }
+        };
+
+        let message = if let Some(code) = err.code.as_deref() {
+            format!("[{}] {}", code, err.message)
+        } else {
+            err.message.to_string()
+        };
+        let code = err
+            .code
+            .as_deref()
+            .map(|code| NumberOrString::String(code.to_string()));
+
+        vec![Diagnostic {
+            range,
+            severity: Some(DiagnosticSeverity::ERROR),
+            code,
+            source: Some(sources::SFC_COMPILER.to_string()),
+            message,
             ..Default::default()
-        };
+        }]
+    }
 
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+    /// Collect script parser diagnostics.
+    pub(super) fn collect_script_diagnostics(
+        _uri: &Url,
+        content: &str,
+        descriptor: &SfcDescriptor<'_>,
+    ) -> Vec<Diagnostic> {
+        let mut diagnostics = Vec::new();
+
+        if let Some(ref script) = descriptor.script {
+            diagnostics.extend(collect_script_block_diagnostics(
+                content,
+                &script.content,
+                script.loc.start,
+                script.lang.as_deref(),
+            ));
+        }
+
+        if let Some(ref script_setup) = descriptor.script_setup {
+            diagnostics.extend(collect_script_block_diagnostics(
+                content,
+                &script_setup.content,
+                script_setup.loc.start,
+                script_setup.lang.as_deref(),
+            ));
+        }
+
+        diagnostics
+    }
+
+    /// Collect linter diagnostics from vize_patina.
+    pub(super) fn collect_lint_diagnostics(
+        uri: &Url,
+        content: &str,
+        ecosystem_enabled: bool,
+        linter_config: &LinterConfig,
+    ) -> Vec<Diagnostic> {
+        if !linter_config.enabled {
             return vec![];
-        };
+        }
 
-        let Some(ref template) = descriptor.template else {
-            return vec![];
-        };
+        let is_standalone_html = crate::utils::is_standalone_html_path(uri.path());
 
-        // Create linter and lint the template content
-        let linter = vize_patina::Linter::new();
-        let result = linter.lint_template(&template.content, uri.path());
+        // Create linter and lint the full SFC so editor diagnostics match the CLI.
+        let preset = linter_config
+            .preset
+            .as_deref()
+            .and_then(LintPreset::parse)
+            .unwrap_or_default();
+        let linter = if ecosystem_enabled && linter_config.preset.is_none() {
+            vize_patina::Linter::with_ecosystem()
+        } else {
+            vize_patina::Linter::with_preset(preset)
+        }
+        .with_additional_rules(linter_config.enabled_rules())
+        .with_disabled_rules(linter_config.disabled_rules());
+
+        // Opt-in strict-reactivity rule, mirroring `vize lint --strict-reactivity`.
+        // The CLI registers this via a flag; in the LSP it follows the
+        // `languageServer.crossFile` knob (#685) for now, on the principle
+        // that the rule needs broader analysis. A dedicated `strictReactivity`
+        // knob can split off later if usage warrants it.
+        #[cfg(not(target_arch = "wasm32"))]
+        let linter = if linter_config.strict_reactivity_enabled() {
+            linter.with_rule(Box::new(
+                vize_patina::rules::type_aware::NoReactivityLoss::new(),
+            ))
+        } else {
+            linter
+        };
+        let result = if is_standalone_html {
+            linter.lint_standalone_html(content, uri.path())
+        } else {
+            linter.lint_sfc(content, uri.path())
+        };
 
         // Convert lint diagnostics to LSP diagnostics
         result
             .diagnostics
             .into_iter()
             .map(|lint_diag| {
-                // Convert byte offset to line/column within template
-                let (start_line, start_col) =
-                    offset_to_line_col(&template.content, lint_diag.start as usize);
-                let (end_line, end_col) =
-                    offset_to_line_col(&template.content, lint_diag.end as usize);
-
-                // Adjust line numbers based on template block position in SFC
-                let sfc_start_line = template.loc.start_line as u32 + start_line;
-                let sfc_end_line = template.loc.start_line as u32 + end_line;
+                // Convert byte offsets directly in the SFC. vize_patina::lint_sfc
+                // already maps template diagnostics back to source coordinates.
+                let (start_line, start_col) = offset_to_line_col(content, lint_diag.start as usize);
+                let (end_line, end_col) = offset_to_line_col(content, lint_diag.end as usize);
 
                 // Build the diagnostic message with help text (render as plain text for LSP)
                 #[allow(clippy::disallowed_macros)]
@@ -344,11 +471,11 @@ impl DiagnosticService {
                 Diagnostic {
                     range: Range {
                         start: Position {
-                            line: sfc_start_line.saturating_sub(1),
+                            line: start_line,
                             character: start_col,
                         },
                         end: Position {
-                            line: sfc_end_line.saturating_sub(1),
+                            line: end_line,
                             character: end_col,
                         },
                     },
@@ -374,4 +501,147 @@ impl DiagnosticService {
             })
             .collect()
     }
+}
+
+fn collect_define_art_source_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
+
+    for source in crate::ide::musea::define_art_sources(content, uri) {
+        if source.source.is_empty() {
+            diagnostics.push(Diagnostic {
+                range: crate::ide::musea::range_for_offsets(
+                    content,
+                    source.value_start,
+                    source.value_end,
+                ),
+                severity: Some(DiagnosticSeverity::ERROR),
+                code: Some(NumberOrString::String(
+                    "musea/define-art-empty-source".to_string(),
+                )),
+                source: Some(sources::MUSEA.to_string()),
+                message: "defineArt component source must not be empty".to_string(),
+                ..Default::default()
+            });
+            continue;
+        }
+
+        if crate::ide::musea::should_check_define_art_source(&source.source)
+            && crate::ide::musea::resolve_define_art_source(uri, &source.source).is_none()
+        {
+            diagnostics.push(Diagnostic {
+                range: crate::ide::musea::range_for_offsets(
+                    content,
+                    source.value_start,
+                    source.value_end,
+                ),
+                severity: Some(DiagnosticSeverity::ERROR),
+                code: Some(NumberOrString::String(
+                    "musea/define-art-source-not-found".to_string(),
+                )),
+                source: Some(sources::MUSEA.to_string()),
+                message: format!(
+                    "Cannot resolve defineArt component source \"{}\" for <{}>",
+                    source.source, source.component_name
+                ),
+                ..Default::default()
+            });
+        }
+    }
+
+    diagnostics
+}
+
+fn collect_script_block_diagnostics(
+    sfc_content: &str,
+    script_content: &str,
+    script_offset: usize,
+    lang: Option<&str>,
+) -> Vec<Diagnostic> {
+    let Some(source_type) = script_source_type(lang) else {
+        return vec![];
+    };
+
+    let allocator = OxcAllocator::default();
+    let parsed = OxcParser::new(&allocator, script_content, source_type).parse();
+
+    parsed
+        .errors
+        .iter()
+        .map(|error| {
+            let (local_start, local_end) = diagnostic_span(error, script_content.len());
+            let start = script_offset + local_start;
+            let end = script_offset + local_end;
+            let (start_line, start_col) = offset_to_line_col(sfc_content, start);
+            let (end_line, end_col) = offset_to_line_col(sfc_content, end);
+
+            Diagnostic {
+                range: Range {
+                    start: Position {
+                        line: start_line,
+                        character: start_col,
+                    },
+                    end: Position {
+                        line: end_line,
+                        character: end_col,
+                    },
+                },
+                severity: Some(DiagnosticSeverity::ERROR),
+                code: Some(NumberOrString::String("script-parse-error".to_string())),
+                source: Some(sources::SCRIPT_PARSER.to_string()),
+                message: format!("Script parse error: {}", error),
+                ..Default::default()
+            }
+        })
+        .collect()
+}
+
+fn script_source_type(lang: Option<&str>) -> Option<SourceType> {
+    let extension = match lang.map(|value| value.trim().to_ascii_lowercase()) {
+        None => "js".to_string(),
+        Some(value) if value.is_empty() => "js".to_string(),
+        Some(value) if matches!(value.as_str(), "js" | "javascript") => "js".to_string(),
+        Some(value) if matches!(value.as_str(), "jsx") => "jsx".to_string(),
+        Some(value) if matches!(value.as_str(), "ts" | "typescript") => "ts".to_string(),
+        Some(value) if matches!(value.as_str(), "tsx") => "tsx".to_string(),
+        Some(_) => return None,
+    };
+
+    SourceType::from_path(format!("script.{extension}")).ok()
+}
+
+/// See the canon batch path for rationale — keep this in sync with
+/// `crates/vize_canon/src/batch/virtual_project.rs`.
+fn script_setup_has_validator_candidates(content: &str) -> bool {
+    content.contains("defineProps<") && content.contains("= defineProps")
+}
+
+/// Best-effort fallback offset (byte) for SFC compile errors that ship
+/// without a `loc`. Returns the start of the most relevant block.
+fn sfc_block_fallback_offset(descriptor: &SfcDescriptor<'_>) -> (usize, &'static str) {
+    if let Some(setup) = descriptor.script_setup.as_ref() {
+        return (setup.loc.start, "scriptSetup");
+    }
+    if let Some(script) = descriptor.script.as_ref() {
+        return (script.loc.start, "script");
+    }
+    if let Some(template) = descriptor.template.as_ref() {
+        return (template.loc.start, "template");
+    }
+    (0, "")
+}
+
+fn diagnostic_span(error: &oxc_diagnostics::OxcDiagnostic, source_len: usize) -> (usize, usize) {
+    let fallback_end = source_len.max(1);
+    let Some(label) = error.labels.as_ref().and_then(|labels| {
+        labels
+            .iter()
+            .find(|label| label.primary())
+            .or_else(|| labels.first())
+    }) else {
+        return (0, fallback_end);
+    };
+
+    let start = label.offset().min(source_len);
+    let end = start.saturating_add(label.len().max(1)).min(fallback_end);
+    (start, end.max(start + 1))
 }

@@ -7,7 +7,7 @@
 //! The test cases are loaded from TOML fixtures in tests/fixtures/sfc/.
 #![allow(clippy::disallowed_macros)]
 
-use crate::{compile_sfc, parse_sfc, SfcCompileOptions};
+use crate::{SfcCompileOptions, compile_sfc, parse_sfc};
 use serde::Deserialize;
 use std::fmt::Write;
 use std::path::PathBuf;

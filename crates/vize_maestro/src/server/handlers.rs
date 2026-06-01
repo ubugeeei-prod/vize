@@ -5,28 +5,31 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use tower_lsp::{
+    LanguageServer,
     jsonrpc::Result,
     lsp_types::{
         CodeActionParams, CodeActionResponse, CodeLens, CodeLensParams, CompletionItem,
-        CompletionParams, CompletionResponse, DidChangeTextDocumentParams,
-        DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-        DocumentFormattingParams, DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams,
+        CompletionParams, CompletionResponse, DidChangeConfigurationParams,
+        DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams,
+        DidSaveTextDocumentParams, DocumentFormattingParams, DocumentHighlight,
+        DocumentHighlightParams, DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams,
         DocumentSymbol, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
         FoldingRangeKind, FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover,
         HoverParams, InitializeParams, InitializeResult, InitializedParams, InlayHint,
         InlayHintParams, Location, MessageType, Position, PrepareRenameResponse, Range,
         ReferenceParams, RenameFilesParams, RenameParams, SemanticTokensParams,
-        SemanticTokensResult, ServerInfo, SymbolInformation, SymbolKind,
-        TextDocumentPositionParams, TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
+        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
+        SymbolInformation, SymbolKind, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
+        WorkspaceSymbolParams,
     },
-    LanguageServer,
 };
 
-use super::{server_capabilities, MaestroServer};
+use super::{MaestroServer, server_capabilities};
 use crate::ide::{
-    CodeActionService, CodeLensService, CompletionService, DefinitionService, DocumentLinkService,
-    FileRenameService, HoverService, IdeContext, InlayHintService, ReferencesService,
-    RenameService, SemanticTokensService, WorkspaceSymbolsService,
+    CodeActionService, CodeLensService, CompletionService, DefinitionService,
+    DocumentHighlightService, DocumentLinkService, FileRenameService, HoverService, IdeContext,
+    InlayHintService, ReferencesService, RenameService, SemanticTokensService,
+    WorkspaceSymbolsService, position_to_offset,
 };
 
 #[tower_lsp::async_trait]
@@ -47,8 +50,11 @@ impl LanguageServer for MaestroServer {
 
         // Load format config from workspace root (always, regardless of feature)
         if let Some(ref path) = workspace_path {
-            self.state.load_format_config(path);
+            self.state.load_workspace_config(path);
         }
+
+        self.state
+            .apply_lsp_initialization_options(params.initialization_options.as_ref());
 
         // Set workspace root for native features (Corsa, batch checker)
         #[cfg(feature = "native")]
@@ -58,7 +64,7 @@ impl LanguageServer for MaestroServer {
         }
 
         Ok(InitializeResult {
-            capabilities: server_capabilities(),
+            capabilities: server_capabilities(self.state.lsp_features()),
             server_info: Some(ServerInfo {
                 name: "vize-maestro".to_string(),
                 version: Some(env!("CARGO_PKG_VERSION").to_string()),
@@ -70,6 +76,12 @@ impl LanguageServer for MaestroServer {
         self.client
             .log_message(MessageType::INFO, "vize_maestro LSP server initialized")
             .await;
+    }
+
+    async fn did_change_configuration(&self, _params: DidChangeConfigurationParams) {
+        tracing::debug!(
+            "Received workspace/didChangeConfiguration; VS Code restarts the server for Vize configuration changes"
+        );
     }
 
     async fn shutdown(&self) -> Result<()> {
@@ -126,6 +138,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
+        if !self.state.lsp_features().hover {
+            return Ok(None);
+        }
+
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
@@ -134,9 +150,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         let mut hover_result: Option<Hover> = None;
 
@@ -162,6 +178,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
+        if !self.state.lsp_features().completion {
+            return Ok(None);
+        }
+
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
 
@@ -170,8 +190,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
@@ -208,6 +229,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: GotoDefinitionParams,
     ) -> Result<Option<GotoDefinitionResponse>> {
+        if !self.state.lsp_features().definition {
+            return Ok(None);
+        }
+
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
@@ -216,8 +241,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
@@ -240,6 +266,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
+        if !self.state.lsp_features().references {
+            return Ok(None);
+        }
+
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
         let include_declaration = params.context.include_declaration;
@@ -249,8 +279,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
@@ -278,11 +309,42 @@ impl LanguageServer for MaestroServer {
         Ok(None)
     }
 
+    async fn document_highlight(
+        &self,
+        params: DocumentHighlightParams,
+    ) -> Result<Option<Vec<DocumentHighlight>>> {
+        if !self.state.lsp_features().references {
+            return Ok(None);
+        }
+
+        let uri = &params.text_document_position_params.text_document.uri;
+        let position = params.text_document_position_params.position;
+
+        let Some(doc) = self.state.documents.get(uri) else {
+            return Ok(None);
+        };
+
+        let content = doc.text();
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
+
+        let Some(ctx) = IdeContext::new(&self.state, uri, offset) else {
+            return Ok(None);
+        };
+
+        Ok(DocumentHighlightService::highlights(&ctx))
+    }
+
     #[allow(deprecated)]
     async fn document_symbol(
         &self,
         params: DocumentSymbolParams,
     ) -> Result<Option<DocumentSymbolResponse>> {
+        if !self.state.lsp_features().document_symbols {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -438,6 +500,11 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
+        let features = self.state.lsp_features();
+        if !features.lint || !features.code_actions {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
         let range = params.range;
 
@@ -446,8 +513,10 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, range.start.line, range.start.character);
+        let Some(offset) = position_to_offset(&content, range.start.line, range.start.character)
+        else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             let actions = CodeActionService::code_actions(&ctx, range);
@@ -463,6 +532,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
+        if !self.state.lsp_features().rename {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
         let position = params.position;
 
@@ -471,8 +544,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
@@ -491,6 +565,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
+        if !self.state.lsp_features().rename {
+            return Ok(None);
+        }
+
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
         let new_name = &params.new_name;
@@ -500,8 +578,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
@@ -523,6 +602,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: SemanticTokensParams,
     ) -> Result<Option<SemanticTokensResult>> {
+        if !self.state.lsp_features().semantic_tokens {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -533,7 +616,33 @@ impl LanguageServer for MaestroServer {
         Ok(SemanticTokensService::get_tokens(&content, uri))
     }
 
+    async fn semantic_tokens_range(
+        &self,
+        params: SemanticTokensRangeParams,
+    ) -> Result<Option<SemanticTokensRangeResult>> {
+        if !self.state.lsp_features().semantic_tokens {
+            return Ok(None);
+        }
+
+        let uri = &params.text_document.uri;
+
+        let Some(doc) = self.state.documents.get(uri) else {
+            return Ok(None);
+        };
+
+        let content = doc.text();
+        Ok(SemanticTokensService::get_tokens_range(
+            &content,
+            uri,
+            params.range,
+        ))
+    }
+
     async fn code_lens(&self, params: CodeLensParams) -> Result<Option<Vec<CodeLens>>> {
+        if !self.state.lsp_features().code_lens {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -554,6 +663,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: WorkspaceSymbolParams,
     ) -> Result<Option<Vec<SymbolInformation>>> {
+        if !self.state.lsp_features().workspace_symbols {
+            return Ok(None);
+        }
+
         let query = &params.query;
         let symbols = WorkspaceSymbolsService::search(&self.state, query);
 
@@ -565,10 +678,18 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn will_rename_files(&self, params: RenameFilesParams) -> Result<Option<WorkspaceEdit>> {
+        if !self.state.lsp_features().file_rename {
+            return Ok(None);
+        }
+
         Ok(FileRenameService::will_rename_files(&self.state, &params).await)
     }
 
     async fn did_rename_files(&self, params: RenameFilesParams) {
+        if !self.state.lsp_features().file_rename {
+            return;
+        }
+
         let renamed = FileRenameService::did_rename_files(&self.state, &params).await;
 
         for (old_uri, new_uri) in renamed {
@@ -578,6 +699,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn document_link(&self, params: DocumentLinkParams) -> Result<Option<Vec<DocumentLink>>> {
+        if !self.state.lsp_features().document_links {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -595,6 +720,11 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
+        let features = self.state.lsp_features();
+        if !features.inlay_hints {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
         let range = params.range;
 
@@ -603,7 +733,8 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let hints = InlayHintService::get_hints(&content, uri, range);
+        let hints =
+            InlayHintService::get_hints_with_ecosystem(&content, uri, range, features.ecosystem);
 
         if hints.is_empty() {
             Ok(None)
@@ -613,6 +744,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn folding_range(&self, params: FoldingRangeParams) -> Result<Option<Vec<FoldingRange>>> {
+        if !self.state.lsp_features().folding_ranges {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -628,43 +763,43 @@ impl LanguageServer for MaestroServer {
         };
 
         if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) {
-            if let Some(ref template) = descriptor.template {
-                if template.loc.start_line < template.loc.end_line {
-                    ranges.push(FoldingRange {
-                        start_line: template.loc.start_line.saturating_sub(1) as u32,
-                        start_character: None,
-                        end_line: template.loc.end_line.saturating_sub(1) as u32,
-                        end_character: None,
-                        kind: Some(FoldingRangeKind::Region),
-                        collapsed_text: Some("template".to_string()),
-                    });
-                }
+            if let Some(ref template) = descriptor.template
+                && template.loc.start_line < template.loc.end_line
+            {
+                ranges.push(FoldingRange {
+                    start_line: template.loc.start_line.saturating_sub(1) as u32,
+                    start_character: None,
+                    end_line: template.loc.end_line.saturating_sub(1) as u32,
+                    end_character: None,
+                    kind: Some(FoldingRangeKind::Region),
+                    collapsed_text: Some("template".to_string()),
+                });
             }
 
-            if let Some(ref script) = descriptor.script_setup {
-                if script.loc.start_line < script.loc.end_line {
-                    ranges.push(FoldingRange {
-                        start_line: script.loc.start_line.saturating_sub(1) as u32,
-                        start_character: None,
-                        end_line: script.loc.end_line.saturating_sub(1) as u32,
-                        end_character: None,
-                        kind: Some(FoldingRangeKind::Region),
-                        collapsed_text: Some("script setup".to_string()),
-                    });
-                }
+            if let Some(ref script) = descriptor.script_setup
+                && script.loc.start_line < script.loc.end_line
+            {
+                ranges.push(FoldingRange {
+                    start_line: script.loc.start_line.saturating_sub(1) as u32,
+                    start_character: None,
+                    end_line: script.loc.end_line.saturating_sub(1) as u32,
+                    end_character: None,
+                    kind: Some(FoldingRangeKind::Region),
+                    collapsed_text: Some("script setup".to_string()),
+                });
             }
 
-            if let Some(ref script) = descriptor.script {
-                if script.loc.start_line < script.loc.end_line {
-                    ranges.push(FoldingRange {
-                        start_line: script.loc.start_line.saturating_sub(1) as u32,
-                        start_character: None,
-                        end_line: script.loc.end_line.saturating_sub(1) as u32,
-                        end_character: None,
-                        kind: Some(FoldingRangeKind::Region),
-                        collapsed_text: Some("script".to_string()),
-                    });
-                }
+            if let Some(ref script) = descriptor.script
+                && script.loc.start_line < script.loc.end_line
+            {
+                ranges.push(FoldingRange {
+                    start_line: script.loc.start_line.saturating_sub(1) as u32,
+                    start_character: None,
+                    end_line: script.loc.end_line.saturating_sub(1) as u32,
+                    end_character: None,
+                    kind: Some(FoldingRangeKind::Region),
+                    collapsed_text: Some("script".to_string()),
+                });
             }
 
             for style in &descriptor.styles {
@@ -689,6 +824,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
+        if !self.state.lsp_features().formatting {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -709,6 +848,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentRangeFormattingParams,
     ) -> Result<Option<Vec<TextEdit>>> {
+        if !self.state.lsp_features().formatting {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {

@@ -1,7 +1,7 @@
 //! Source map for mapping materialized project files back to original sources.
 
-use super::import_rewriter::ImportSourceMap;
 use super::SfcBlockType;
+use super::import_rewriter::ImportSourceMap;
 use crate::virtual_ts::VizeMapping;
 
 /// Original SFC block span in source coordinates.
@@ -130,10 +130,10 @@ impl CompositeSourceMap {
         virtual_offset: u32,
     ) -> Option<(u32, u32, Option<SfcBlockType>)> {
         let after_import = self.import_map.get_original_offset(virtual_offset);
-        if let Some(ref sfc_map) = self.sfc_map {
-            if let Some((offset, column, block)) = sfc_map.get_original_position(after_import) {
-                return Some((offset, column, Some(block)));
-            }
+        if let Some(ref sfc_map) = self.sfc_map
+            && let Some((offset, column, block)) = sfc_map.get_original_position(after_import)
+        {
+            return Some((offset, column, Some(block)));
         }
         Some((after_import, 0, None))
     }
@@ -200,8 +200,8 @@ pub fn line_col_to_offset(content: &str, line: u32, col: u32) -> Option<u32> {
 #[cfg(test)]
 mod tests {
     use super::{
-        line_col_to_offset, offset_to_line_col, CompositeSourceMap, ImportSourceMap, SfcBlockRange,
-        SfcBlockType, SfcSourceMap,
+        CompositeSourceMap, ImportSourceMap, SfcBlockRange, SfcBlockType, SfcSourceMap,
+        line_col_to_offset, offset_to_line_col,
     };
     use crate::virtual_ts::VizeMapping;
     use std::ops::Range;
@@ -236,6 +236,7 @@ mod tests {
                     start: 50,
                     end: 150,
                 },
+                sub_spans: Vec::new(),
             }],
             vec![SfcBlockRange {
                 start: 50,

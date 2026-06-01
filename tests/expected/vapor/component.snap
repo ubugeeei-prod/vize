@@ -55,6 +55,40 @@ export function render(_ctx) {
 }
 
 ===
+name: component merges static and dynamic class
+options: vapor
+--- INPUT ---
+<MyComponent class="a" :class="cls" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+
+export function render(_ctx) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+  const n0 = _createComponentWithFallback(_component_MyComponent, { class: () => (["a", _ctx.cls]) }, null, true)
+  return n0
+}
+
+===
+name: component spread props keep override order
+options: vapor
+--- INPUT ---
+<MyComponent v-bind="props" class="a" :class="cls" :to="to" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+
+export function render(_ctx) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+  const n0 = _createComponentWithFallback(_component_MyComponent, { $: [
+    () => (_ctx.props),
+    {
+      class: () => (["a", _ctx.cls]),
+      to: () => (_ctx.to)
+    }
+  ] }, null, true)
+  return n0
+}
+
+===
 name: component with content
 options: vapor
 --- INPUT ---

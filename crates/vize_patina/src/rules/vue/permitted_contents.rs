@@ -147,16 +147,15 @@ impl Rule for PermittedContents {
         let tag = element.tag.as_str();
 
         // 1. Block in inline: check if this block element has a phrasing-only ancestor
-        if is_block_element(tag) {
-            if let Some(parent) = ctx.parent_element() {
-                if is_phrasing_only_parent(parent.tag.as_str()) {
-                    let message = ctx.t_fmt(
-                        "vue/permitted-contents.block_in_inline",
-                        &[("child", tag), ("parent", parent.tag.as_str())],
-                    );
-                    ctx.error(message, &element.loc);
-                }
-            }
+        if is_block_element(tag)
+            && let Some(parent) = ctx.parent_element()
+            && is_phrasing_only_parent(parent.tag.as_str())
+        {
+            let message = ctx.t_fmt(
+                "vue/permitted-contents.block_in_inline",
+                &[("child", tag), ("parent", parent.tag.as_str())],
+            );
+            ctx.error(message, &element.loc);
         }
 
         // 2. Interactive nesting: check if this interactive element is inside another
@@ -173,14 +172,14 @@ impl Rule for PermittedContents {
         // 3 & 4. Required children: check if parent constrains direct children
         if let Some(parent) = ctx.parent_element() {
             let parent_tag = parent.tag.as_str();
-            if let Some(allowed) = required_children(parent_tag) {
-                if !allowed.contains(&tag) {
-                    let message = ctx.t_fmt(
-                        "vue/permitted-contents.invalid_child",
-                        &[("child", tag), ("parent", parent_tag)],
-                    );
-                    ctx.error(message, &element.loc);
-                }
+            if let Some(allowed) = required_children(parent_tag)
+                && !allowed.contains(&tag)
+            {
+                let message = ctx.t_fmt(
+                    "vue/permitted-contents.invalid_child",
+                    &[("child", tag), ("parent", parent_tag)],
+                );
+                ctx.error(message, &element.loc);
             }
         }
     }
@@ -188,7 +187,7 @@ impl Rule for PermittedContents {
 
 #[cfg(test)]
 mod tests {
-    use super::{required_children, PermittedContents};
+    use super::{PermittedContents, required_children};
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -387,7 +386,12 @@ mod tests {
         assert_eq!(required_children("ol"), Some(["li"].as_slice()));
         assert_eq!(
             required_children("table"),
-            Some(["thead", "tbody", "tfoot", "tr", "caption", "colgroup", "col"].as_slice())
+            Some(
+                [
+                    "thead", "tbody", "tfoot", "tr", "caption", "colgroup", "col"
+                ]
+                .as_slice()
+            )
         );
         assert_eq!(required_children("tr"), Some(["td", "th"].as_slice()));
         assert!(required_children("div").is_none());

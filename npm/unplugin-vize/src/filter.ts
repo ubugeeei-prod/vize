@@ -10,12 +10,19 @@ export function createFilter(
     : [/node_modules/];
 
   return (id: string) => {
-    const matchInclude = includePatterns.some((pattern) =>
-      typeof pattern === "string" ? id.includes(pattern) : pattern.test(id),
-    );
-    const matchExclude = excludePatterns.some((pattern) =>
-      typeof pattern === "string" ? id.includes(pattern) : pattern.test(id),
-    );
+    const matchInclude = includePatterns.some((pattern) => matchesPattern(pattern, id));
+    const matchExclude = excludePatterns.some((pattern) => matchesPattern(pattern, id));
     return matchInclude && !matchExclude;
   };
+}
+
+function matchesPattern(pattern: string | RegExp, id: string): boolean {
+  if (typeof pattern === "string") {
+    return id.includes(pattern);
+  }
+
+  pattern.lastIndex = 0;
+  const matches = pattern.test(id);
+  pattern.lastIndex = 0;
+  return matches;
 }

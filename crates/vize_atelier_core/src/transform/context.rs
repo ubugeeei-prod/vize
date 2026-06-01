@@ -13,6 +13,16 @@ use super::TransformContext;
 impl<'a> TransformContext<'a> {
     /// Create a new transform context
     pub fn new(allocator: &'a Bump, source: String, options: TransformOptions) -> Self {
+        Self::new_with_vue_parser_quirks(allocator, source, options, false)
+    }
+
+    /// Create a new transform context with Vue parser quirk compatibility.
+    pub fn new_with_vue_parser_quirks(
+        allocator: &'a Bump,
+        source: String,
+        options: TransformOptions,
+        vue_parser_quirks: bool,
+    ) -> Self {
         let ssr = options.ssr;
         Self {
             allocator,
@@ -23,7 +33,7 @@ impl<'a> TransformContext<'a> {
             grandparent: None,
             current_node: None,
             child_index: 0,
-            helpers: vize_carton::FxHashSet::default(),
+            helpers: crate::runtime_helpers::RuntimeHelpers::default(),
             components: std::vec::Vec::new(),
             directives: std::vec::Vec::new(),
             hoists: vize_carton::Vec::new_in(allocator),
@@ -34,8 +44,10 @@ impl<'a> TransformContext<'a> {
             in_v_once: false,
             in_ssr: ssr,
             errors: std::vec::Vec::new(),
+            vue_parser_quirks,
             node_removed: false,
             analysis: None,
+            hoisted_scope_id: None,
         }
     }
 
@@ -46,7 +58,19 @@ impl<'a> TransformContext<'a> {
         options: TransformOptions,
         analysis: &'a Croquis,
     ) -> Self {
-        let mut ctx = Self::new(allocator, source, options);
+        Self::with_analysis_and_vue_parser_quirks(allocator, source, options, analysis, false)
+    }
+
+    /// Create a new transform context with semantic analysis data and Vue parser quirks.
+    pub fn with_analysis_and_vue_parser_quirks(
+        allocator: &'a Bump,
+        source: String,
+        options: TransformOptions,
+        analysis: &'a Croquis,
+        vue_parser_quirks: bool,
+    ) -> Self {
+        let mut ctx =
+            Self::new_with_vue_parser_quirks(allocator, source, options, vue_parser_quirks);
         ctx.analysis = Some(analysis);
         ctx
     }
@@ -66,6 +90,12 @@ impl<'a> TransformContext<'a> {
     #[inline]
     pub fn has_analysis(&self) -> bool {
         self.analysis.is_some()
+    }
+
+    /// Whether Vue parser quirk compatibility is enabled.
+    #[inline]
+    pub fn vue_parser_quirks(&self) -> bool {
+        self.vue_parser_quirks
     }
 
     /// Check if a variable is defined (from analysis or binding metadata)
@@ -177,13 +207,16 @@ impl<'a> TransformContext<'a> {
 
     /// Check if a component is registered (from analysis or binding metadata)
     pub fn is_component_registered(&self, name: &str) -> bool {
-        if let Some(analysis) = &self.analysis {
-            return analysis.is_component_registered(name);
+        if let Some(analysis) = &self.analysis
+            && analysis.is_component_registered(name)
+        {
+            return true;
         }
 
-        // Fall back to checking binding metadata
-        if let Some(metadata) = &self.options.binding_metadata {
-            return metadata.bindings.contains_key(name);
+        if let Some(metadata) = &self.options.binding_metadata
+            && metadata.bindings.contains_key(name)
+        {
+            return true;
         }
 
         false
@@ -191,17 +224,17 @@ impl<'a> TransformContext<'a> {
 
     /// Add a helper
     pub fn helper(&mut self, helper: RuntimeHelper) {
-        self.helpers.insert(helper);
+        self.helpers.add(helper);
     }
 
     /// Remove a helper
     pub fn remove_helper(&mut self, helper: RuntimeHelper) {
-        self.helpers.remove(&helper);
+        self.helpers.remove(helper);
     }
 
     /// Check if helper exists
     pub fn has_helper(&self, helper: RuntimeHelper) -> bool {
-        self.helpers.contains(&helper)
+        self.helpers.contains(helper)
     }
 
     /// Add a component (maintains insertion order for code generation)
@@ -247,6 +280,9 @@ impl<'a> TransformContext<'a> {
         self.scope_chain.enter_v_for_scope(
             VForScopeData {
                 value_alias: CompactString::new(value_alias.unwrap_or("")),
+                value_bindings: value_alias
+                    .map(|alias| vize_carton::smallvec![CompactString::new(alias)])
+                    .unwrap_or_default(),
                 key_alias: key_alias.map(CompactString::new),
                 index_alias: index_alias.map(CompactString::new),
                 source: CompactString::new(source),
@@ -274,6 +310,9 @@ impl<'a> TransformContext<'a> {
                     .iter()
                     .map(|name| CompactString::new(name.as_str()))
                     .collect(),
+                // The runtime transform does not type slot props; only the
+                // editor's virtual-TS generation consumes the owning component.
+                component: None,
             },
             start,
             end,

@@ -167,23 +167,23 @@ pub fn collect_slots<'a>(el: &ElementNode<'a>) -> Vec<SlotInfo> {
     let mut slots = Vec::new();
 
     for child in el.children.iter() {
-        if let TemplateChildNode::Element(child_el) = child {
-            if child_el.tag == "template" {
-                // Check for v-slot on template
-                for prop in child_el.props.iter() {
-                    if let PropNode::Directive(dir) = prop {
-                        if dir.name == "slot" {
-                            let name = get_slot_name(dir);
-                            let params_expr = get_slot_props_string(dir);
-                            let is_dynamic = is_dynamic_slot(dir);
+        if let TemplateChildNode::Element(child_el) = child
+            && child_el.tag == "template"
+        {
+            // Check for v-slot on template
+            for prop in child_el.props.iter() {
+                if let PropNode::Directive(dir) = prop
+                    && dir.name == "slot"
+                {
+                    let name = get_slot_name(dir);
+                    let params_expr = get_slot_props_string(dir);
+                    let is_dynamic = is_dynamic_slot(dir);
 
-                            slots.push(SlotInfo {
-                                name,
-                                params_expr,
-                                is_dynamic,
-                            });
-                        }
-                    }
+                    slots.push(SlotInfo {
+                        name,
+                        params_expr,
+                        is_dynamic,
+                    });
                 }
             }
         }
@@ -212,14 +212,15 @@ pub fn collect_slots<'a>(el: &ElementNode<'a>) -> Vec<SlotInfo> {
 /// Check if component has dynamic slots
 pub fn has_dynamic_slots<'a>(el: &ElementNode<'a>) -> bool {
     for child in el.children.iter() {
-        if let TemplateChildNode::Element(child_el) = child {
-            if child_el.tag == "template" {
-                for prop in child_el.props.iter() {
-                    if let PropNode::Directive(dir) = prop {
-                        if dir.name == "slot" && is_dynamic_slot(dir) {
-                            return true;
-                        }
-                    }
+        if let TemplateChildNode::Element(child_el) = child
+            && child_el.tag == "template"
+        {
+            for prop in child_el.props.iter() {
+                if let PropNode::Directive(dir) = prop
+                    && dir.name == "slot"
+                    && is_dynamic_slot(dir)
+                {
+                    return true;
                 }
             }
         }
@@ -230,8 +231,8 @@ pub fn has_dynamic_slots<'a>(el: &ElementNode<'a>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        collect_slots, extract_slot_prop_names, get_slot_name, get_slot_prop_names, has_v_slot,
-        DirectiveNode, SourceLocation, TemplateChildNode,
+        DirectiveNode, SourceLocation, TemplateChildNode, collect_slots, extract_slot_prop_names,
+        get_slot_name, get_slot_prop_names, has_v_slot,
     };
     use crate::parser::parse;
     use bumpalo::Bump;

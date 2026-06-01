@@ -1,0 +1,194 @@
+name: App E2E
+
+on:
+  # App E2E (dev/preview/build/check/lint) and VRT are slow
+  # workflows that historically gated every PR. They are now run nightly and
+  # on demand so PR review latency is bounded by faster gates (Check,
+  # Benchmark, Native Smoke). Regressions caught by the nightly run still
+  # block release through the readiness gates.
+  schedule:
+    # 02:23 UTC daily (~11:23 JST). Covers every suite including vrt.
+    - cron: "23 2 * * *"
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: App e2e suite to run
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - vrt
+          - preview
+          - check
+          - lint
+          - build
+      testbox_id:
+        description: Blacksmith Testbox session ID
+        required: false
+        type: string
+
+concurrency:
+  group: app-e2e-${{ github.ref }}-${{ github.event.inputs.testbox_id || github.event.inputs.suite || github.event_name }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  testbox:
+    name: Testbox
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.testbox_id != '' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - name: Begin Testbox
+        uses: useblacksmith/begin-testbox@233448af4bfdc6fca509a7f0974411ac6d8a8043 # v2
+        with:
+          testbox_id: ${{ inputs.testbox_id }}
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          submodules: recursive
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: "testbox"
+          cache-workspace-crates: "true"
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+
+      - name: Install wasm-bindgen-cli
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: wasm-bindgen-cli@0.2.121
+
+      - name: Run Testbox
+        uses: useblacksmith/run-testbox@5ca05834db1d3813554d1dd109e5f2087a8d7cbc # v2
+        if: always()
+
+  app-e2e:
+    name: app-e2e (${{ matrix.suite }})
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.testbox_id == '' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        # workflow_dispatch: pick one suite. schedule: run every suite,
+        # including vrt, because nothing else exercises the visual regression
+        # baselines today.
+        suite: ${{ github.event_name == 'workflow_dispatch' && fromJSON(format('["{0}"]', inputs.suite)) || fromJSON('["dev","vrt","preview","build","check","lint"]') }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          submodules: recursive
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.9.1
+        with:
+          shared-key: "native"
+          cache-workspace-crates: "true"
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Install JS dependencies
+        run: |
+          vp install --frozen-lockfile --prefer-offline \
+            --filter './tests...' \
+            --filter './npm/vize-native...' \
+            --filter './npm/vize...' \
+            --filter './npm/vite-plugin-vize...' \
+            --filter './npm/nuxt...' \
+            --filter './npm/vite-plugin-musea...' \
+            --filter './npm/musea-nuxt...'
+
+      - name: Build native package
+        run: vp run --filter './npm/vize-native' build:ci
+
+      - name: Build vize CLI
+        run: cargo build --profile ci -p vize
+
+      - name: Cache Playwright browsers
+        id: cache-playwright
+        if: ${{ contains(fromJSON('["dev","vrt"]'), matrix.suite) }}
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        if: ${{ contains(fromJSON('["dev","vrt"]'), matrix.suite) && steps.cache-playwright.outputs.cache-hit != 'true' }}
+        run: vp exec --filter './tests' -- playwright install --with-deps chromium
+
+      - name: Run selected app e2e suite
+        run: |
+          case "${{ matrix.suite }}" in
+            dev)
+              vp run --filter './tests' test:dev:ci
+              ;;
+            vrt)
+              vp run --filter './tests' test:vrt
+              ;;
+            preview)
+              RUN_BUILD_TESTS=1 vp run --filter './tests' test:preview
+              ;;
+            check)
+              vp run --filter './tests' test:check
+              ;;
+            lint)
+              vp run --filter './tests' test:lint
+              ;;
+            build)
+              vp run --filter './tests' test:build
+              ;;
+          esac
+
+      - name: Upload app e2e artifacts
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: app-e2e-artifacts-${{ matrix.suite }}
+          path: |
+            tests/app/results/
+            tests/app/screenshots/
+            tests/app/playwright-report/
+            tests/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7

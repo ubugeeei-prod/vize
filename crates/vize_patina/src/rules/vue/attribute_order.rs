@@ -108,19 +108,19 @@ impl Rule for AttributeOrder {
         for prop in element.props.iter() {
             let category = AttrCategory::from_prop(prop);
 
-            if let Some(previous_category_value) = previous_category {
-                if category < previous_category_value {
-                    let loc = match prop {
-                        PropNode::Attribute(attr) => &attr.loc,
-                        PropNode::Directive(dir) => &dir.loc,
-                    };
+            if let Some(previous_category_value) = previous_category
+                && category < previous_category_value
+            {
+                let loc = match prop {
+                    PropNode::Attribute(attr) => &attr.loc,
+                    PropNode::Directive(dir) => &dir.loc,
+                };
 
-                    ctx.warn_with_help(
-                        ctx.t("vue/attribute-order.message"),
-                        loc,
-                        ctx.t("vue/attribute-order.help"),
-                    );
-                }
+                ctx.warn_with_help(
+                    ctx.t("vue/attribute-order.message"),
+                    loc,
+                    ctx.t("vue/attribute-order.help"),
+                );
             }
 
             previous_category = Some(category);

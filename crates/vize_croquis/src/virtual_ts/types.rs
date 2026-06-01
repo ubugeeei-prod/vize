@@ -1,8 +1,8 @@
 //! Types for virtual TypeScript generation.
 
 use vize_carton::{
-    source_range::{SourceMap, SourceRange},
     CompactString,
+    source_range::{SourceMap, SourceRange},
 };
 
 use crate::import_resolver::ResolvedModule;

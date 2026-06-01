@@ -39,28 +39,25 @@ fn get_slot_outlet_name<'a>(
     for prop in el.props.iter() {
         match prop {
             PropNode::Attribute(attr) => {
-                if attr.name == "name" {
-                    if let Some(ref value) = attr.value {
-                        let node = SimpleExpressionNode::new(
-                            value.content.clone(),
-                            true,
-                            SourceLocation::STUB,
-                        );
-                        return Box::new_in(node, allocator);
-                    }
+                if attr.name == "name"
+                    && let Some(ref value) = attr.value
+                {
+                    let node = SimpleExpressionNode::new(
+                        value.content.clone(),
+                        true,
+                        SourceLocation::STUB,
+                    );
+                    return Box::new_in(node, allocator);
                 }
             }
             PropNode::Directive(dir) => {
-                if dir.name == "bind" {
-                    if let Some(ref arg) = dir.arg {
-                        if let ExpressionNode::Simple(arg_exp) = arg {
-                            if arg_exp.content == "name" {
-                                if let Some(ref exp) = dir.exp {
-                                    return extract_expression(allocator, exp);
-                                }
-                            }
-                        }
-                    }
+                if dir.name == "bind"
+                    && let Some(ref arg) = dir.arg
+                    && let ExpressionNode::Simple(arg_exp) = arg
+                    && arg_exp.content == "name"
+                    && let Some(ref exp) = dir.exp
+                {
+                    return extract_expression(allocator, exp);
                 }
             }
         }
@@ -79,37 +76,36 @@ fn get_slot_outlet_props<'a>(
     let mut props = Vec::new_in(allocator);
 
     for prop in el.props.iter() {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name == "bind" && dir.arg.is_some() {
-                if let Some(ref arg) = dir.arg {
-                    if let ExpressionNode::Simple(arg_exp) = arg {
-                        // Skip name binding
-                        if arg_exp.content == "name" {
-                            continue;
-                        }
-
-                        let key = Box::new_in(
-                            SimpleExpressionNode::new(
-                                arg_exp.content.clone(),
-                                arg_exp.is_static,
-                                arg_exp.loc.clone(),
-                            ),
-                            allocator,
-                        );
-
-                        let mut values = Vec::new_in(allocator);
-                        if let Some(ref exp) = dir.exp {
-                            values.push(extract_expression(allocator, exp));
-                        }
-
-                        props.push(crate::ir::IRProp {
-                            key,
-                            values,
-                            is_component: false,
-                        });
-                    }
-                }
+        if let PropNode::Directive(dir) = prop
+            && dir.name == "bind"
+            && dir.arg.is_some()
+            && let Some(ref arg) = dir.arg
+            && let ExpressionNode::Simple(arg_exp) = arg
+        {
+            // Skip name binding
+            if arg_exp.content == "name" {
+                continue;
             }
+
+            let key = Box::new_in(
+                SimpleExpressionNode::new(
+                    arg_exp.content.clone(),
+                    arg_exp.is_static,
+                    arg_exp.loc.clone(),
+                ),
+                allocator,
+            );
+
+            let mut values = Vec::new_in(allocator);
+            if let Some(ref exp) = dir.exp {
+                values.push(extract_expression(allocator, exp));
+            }
+
+            props.push(crate::ir::IRProp {
+                key,
+                values,
+                is_component: false,
+            });
         }
     }
 
@@ -125,23 +121,23 @@ pub fn collect_component_slots<'a>(
     let mut slots = Vec::new_in(allocator);
 
     for child in el.children.iter() {
-        if let TemplateChildNode::Element(child_el) = child {
-            if child_el.tag == "template" {
-                // Look for v-slot directive
-                for prop in child_el.props.iter() {
-                    if let PropNode::Directive(dir) = prop {
-                        if dir.name == "slot" {
-                            let name = get_slot_name(allocator, dir);
-                            let fn_exp = get_slot_params(allocator, dir);
-                            let block = transform_children(allocator, &child_el.children);
+        if let TemplateChildNode::Element(child_el) = child
+            && child_el.tag == "template"
+        {
+            // Look for v-slot directive
+            for prop in child_el.props.iter() {
+                if let PropNode::Directive(dir) = prop
+                    && dir.name == "slot"
+                {
+                    let name = get_slot_name(allocator, dir);
+                    let fn_exp = get_slot_params(allocator, dir);
+                    let block = transform_children(allocator, &child_el.children);
 
-                            slots.push(IRSlot {
-                                name,
-                                fn_exp,
-                                block,
-                            });
-                        }
-                    }
+                    slots.push(IRSlot {
+                        name,
+                        fn_exp,
+                        block,
+                    });
                 }
             }
         }
@@ -225,7 +221,7 @@ fn extract_expression<'a>(
 #[cfg(test)]
 mod tests {
     use super::has_v_slot;
-    use vize_atelier_core::{parser::parse, TemplateChildNode};
+    use vize_atelier_core::{TemplateChildNode, parser::parse};
     use vize_carton::Bump;
 
     #[test]

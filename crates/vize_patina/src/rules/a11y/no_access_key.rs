@@ -36,14 +36,14 @@ impl Rule for NoAccessKey {
         }
 
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name == "accesskey" {
-                    ctx.warn_with_help(
-                        ctx.t("a11y/no-access-key.message"),
-                        &attr.loc,
-                        ctx.t("a11y/no-access-key.help"),
-                    );
-                }
+            if let PropNode::Attribute(attr) = prop
+                && attr.name == "accesskey"
+            {
+                ctx.warn_with_help(
+                    ctx.t("a11y/no-access-key.message"),
+                    &attr.loc,
+                    ctx.t("a11y/no-access-key.help"),
+                );
             }
         }
     }

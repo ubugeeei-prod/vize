@@ -6,7 +6,7 @@
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use oxc_allocator::Allocator as OxcAllocator;
-use oxc_formatter::{get_parse_options, Formatter as OxcFormatter};
+use oxc_formatter::{Formatter as OxcFormatter, get_parse_options};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{Allocator, String, ToCompactString};
@@ -101,7 +101,7 @@ pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<Strin
 
 #[cfg(test)]
 mod tests {
-    use super::{format_js_expression, format_script_content, Allocator, FormatOptions};
+    use super::{Allocator, FormatOptions, format_js_expression, format_script_content};
     use vize_carton::String;
 
     #[test]

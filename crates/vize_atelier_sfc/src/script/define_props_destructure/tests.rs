@@ -16,6 +16,7 @@ mod tests {
                 PropsDestructureBinding {
                     local: name.to_compact_string(),
                     default: None,
+                    ..Default::default()
                 },
             );
         }
@@ -291,6 +292,7 @@ return { msg, count }"#;
             PropsDestructureBinding {
                 local: "msg".to_compact_string(),
                 default: None,
+                ..Default::default()
             },
         );
 
@@ -304,8 +306,8 @@ return { msg, count }"#;
     #[allow(clippy::disallowed_macros)]
     mod snapshots {
         use super::{
-            make_bindings, transform_destructured_props, PropsDestructureBinding,
-            PropsDestructuredBindings,
+            PropsDestructureBinding, PropsDestructuredBindings, make_bindings,
+            transform_destructured_props,
         };
         use vize_carton::ToCompactString;
 
@@ -358,6 +360,7 @@ console.log(value)"#;
                 PropsDestructureBinding {
                     local: "x".to_compact_string(),
                     default: None,
+                    ..Default::default()
                 },
             );
             bindings.bindings.insert(
@@ -365,6 +368,7 @@ console.log(value)"#;
                 PropsDestructureBinding {
                     local: "y".to_compact_string(),
                     default: None,
+                    ..Default::default()
                 },
             );
             let source = r#"let a = x
@@ -530,6 +534,7 @@ do {
                 PropsDestructureBinding {
                     local: "actions".to_compact_string(),
                     default: None,
+                    ..Default::default()
                 },
             );
             bindings.rest_id = Some("props".to_compact_string());
@@ -554,6 +559,7 @@ console.log(actions)"#;
                 PropsDestructureBinding {
                     local: "a".to_compact_string(),
                     default: None,
+                    ..Default::default()
                 },
             );
             bindings.rest_id = Some("rest".to_compact_string());

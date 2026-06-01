@@ -5,7 +5,7 @@
 use super::{CatalogOutput, DocOptions};
 use crate::types::{ArtDescriptor, ArtStatus};
 use serde::{Deserialize, Serialize};
-use vize_carton::{append, cstr, FxHashMap, String, ToCompactString};
+use vize_carton::{FxHashMap, String, ToCompactString, append, cstr};
 
 /// Entry in a component catalog.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -354,8 +354,8 @@ fn slugify(s: &str) -> String {
 )]
 mod tests {
     use super::{
-        collect_categories, generate_catalog, generate_tags_index, slugify, CatalogEntry,
-        DocOptions,
+        CatalogEntry, DocOptions, collect_categories, generate_catalog, generate_tags_index,
+        slugify,
     };
     use crate::types::ArtStatus;
 

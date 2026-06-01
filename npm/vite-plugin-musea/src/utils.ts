@@ -8,24 +8,32 @@ import path from "node:path";
 import type { ArtFileInfo } from "./types/index.js";
 import { loadNative } from "./native-loader.js";
 
+function normalizeGlobPath(filepath: string): string {
+  return filepath.split(path.sep).join("/");
+}
+
+function matchesPattern(file: string, pattern: string, root: string): boolean {
+  const normalizedPattern = normalizeGlobPath(pattern);
+  const candidate = path.isAbsolute(pattern) ? path.resolve(file) : path.relative(root, file);
+  return matchGlob(candidate, normalizedPattern);
+}
+
 export function shouldProcess(
   file: string,
   include: string[],
   exclude: string[],
   root: string,
 ): boolean {
-  const relative = path.relative(root, file);
-
   // Check exclude patterns
   for (const pattern of exclude) {
-    if (matchGlob(relative, pattern)) {
+    if (matchesPattern(file, pattern, root)) {
       return false;
     }
   }
 
   // Check include patterns
   for (const pattern of include) {
-    if (matchGlob(relative, pattern)) {
+    if (matchesPattern(file, pattern, root)) {
       return true;
     }
   }
@@ -34,16 +42,57 @@ export function shouldProcess(
 }
 
 export function matchGlob(filepath: string, pattern: string): boolean {
+  const normalizedFilepath = normalizeGlobPath(filepath);
+  const normalizedPattern = normalizeGlobPath(pattern);
+
   // Simple glob matching (supports * and **)
   // Use placeholder for ** to avoid * replacement interfering
   const PLACEHOLDER = "<<GLOBSTAR>>";
-  const regex = pattern
+  const SEGMENT_PLACEHOLDER = "<<GLOBSTAR_SEGMENT>>";
+  const regex = normalizedPattern
+    .replaceAll("**/", SEGMENT_PLACEHOLDER)
     .replaceAll("**", PLACEHOLDER)
-    .replace(/\./g, "\\.")
+    .replace(/[|\\{}()[\]^$+?.]/g, "\\$&")
     .replace(/\*/g, "[^/]*")
+    .replaceAll(SEGMENT_PLACEHOLDER, "(?:.*/)?")
     .replaceAll(PLACEHOLDER, ".*");
 
-  return new RegExp(`^${regex}$`).test(filepath);
+  return new RegExp(`^${regex}$`).test(normalizedFilepath);
+}
+
+function resolveScanRoot(root: string, pattern: string): string {
+  const absolutePattern = path.isAbsolute(pattern) ? pattern : path.resolve(root, pattern);
+  const normalizedPattern = normalizeGlobPath(absolutePattern);
+  const globIndex = normalizedPattern.search(/[*[{]/);
+
+  if (globIndex === -1) {
+    return path.dirname(absolutePattern);
+  }
+
+  const staticPrefix = normalizedPattern.slice(0, globIndex);
+  if (!staticPrefix) {
+    return root;
+  }
+
+  if (staticPrefix.endsWith("/")) {
+    return path.resolve(staticPrefix.slice(0, -1));
+  }
+
+  return path.resolve(path.dirname(staticPrefix));
+}
+
+export function resolveScanRoots(root: string, include: string[]): string[] {
+  const roots = new Set<string>();
+
+  for (const pattern of include) {
+    roots.add(resolveScanRoot(root, pattern));
+  }
+
+  if (roots.size === 0) {
+    roots.add(root);
+  }
+
+  return [...roots];
 }
 
 export async function scanArtFiles(
@@ -52,19 +101,31 @@ export async function scanArtFiles(
   exclude: string[],
   scanInlineArt = false,
 ): Promise<string[]> {
-  const files: string[] = [];
+  const files = new Set<string>();
+  const scanRoots = resolveScanRoots(root, include);
+  const visitedDirs = new Set<string>();
 
   async function scan(dir: string): Promise<void> {
-    const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+    const resolvedDir = path.resolve(dir);
+    if (visitedDirs.has(resolvedDir)) {
+      return;
+    }
+    visitedDirs.add(resolvedDir);
+
+    let entries: fs.Dirent[];
+    try {
+      entries = await fs.promises.readdir(resolvedDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
 
     for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      const relative = path.relative(root, fullPath);
+      const fullPath = path.join(resolvedDir, entry.name);
 
       // Check exclude
       let excluded = false;
       for (const pattern of exclude) {
-        if (matchGlob(relative, pattern) || matchGlob(entry.name, pattern)) {
+        if (matchesPattern(fullPath, pattern, root) || matchGlob(entry.name, pattern)) {
           excluded = true;
           break;
         }
@@ -75,12 +136,8 @@ export async function scanArtFiles(
       if (entry.isDirectory()) {
         await scan(fullPath);
       } else if (entry.isFile() && entry.name.endsWith(".art.vue")) {
-        // Check include
-        for (const pattern of include) {
-          if (matchGlob(relative, pattern)) {
-            files.push(fullPath);
-            break;
-          }
+        if (shouldProcess(fullPath, include, exclude, root)) {
+          files.add(fullPath);
         }
       } else if (
         scanInlineArt &&
@@ -91,14 +148,17 @@ export async function scanArtFiles(
         // Inline art: check if .vue file contains <art block
         const content = await fs.promises.readFile(fullPath, "utf-8");
         if (content.includes("<art")) {
-          files.push(fullPath);
+          files.add(fullPath);
         }
       }
     }
   }
 
-  await scan(root);
-  return files;
+  for (const scanRoot of scanRoots) {
+    await scan(scanRoot);
+  }
+
+  return [...files];
 }
 
 export async function generateStorybookFiles(
@@ -128,11 +188,21 @@ export async function generateStorybookFiles(
 }
 
 export function toPascalCase(str: string): string {
-  return str
-    .split(/[\s\-_]+/)
+  const normalized = str
+    .normalize("NFKD")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+  const pascal = normalized
+    .split(/\s+/)
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join("");
+
+  if (!pascal) {
+    return "Variant";
+  }
+
+  return /^[\p{L}_$]/u.test(pascal) ? pascal : `Variant${pascal}`;
 }
 
 export function escapeTemplate(str: string): string {

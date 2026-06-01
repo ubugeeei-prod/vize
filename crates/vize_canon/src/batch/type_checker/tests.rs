@@ -1,13 +1,13 @@
 use super::{BatchTypeChecker, DeclarationEmitOptions, Diagnostic, TypeCheckResult};
 use crate::batch::TypeChecker;
-use crate::sfc_typecheck::{type_check_sfc, SfcTypeCheckOptions};
+use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 use corsa::{
     api::{ApiMode, ApiSpawnConfig, ProjectSession},
     runtime::block_on,
 };
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use vize_carton::{cstr, String};
+use vize_carton::{String, cstr};
 
 #[test]
 fn test_type_check_result() {
@@ -111,6 +111,78 @@ const count: string = 0;
 }
 
 #[test]
+fn corsa_bridge_completion_returns_inner_members_for_chained_ref_value() {
+    // Guards the wired Corsa completion path (see #751): when the bridge is
+    // initialized, `count.value.` must surface `number`'s inner members
+    // (`toFixed`, `toString`), proving that completion is not silently
+    // collapsing to the heuristic fallback.
+    use crate::corsa_bridge::{CorsaBridge, CorsaBridgeConfig};
+
+    let Some(corsa_path) = resolve_test_tsgo_binary() else {
+        return;
+    };
+
+    let project_root = unique_case_dir("corsa-bridge-completion");
+    let _ = std::fs::remove_dir_all(&project_root);
+    let src_dir = project_root.join("src");
+    std::fs::create_dir_all(&src_dir).unwrap();
+    if link_workspace_node_modules(&project_root).is_err() {
+        return;
+    }
+    write_project_tsconfig(&project_root);
+
+    // Virtual TS shape that the maestro completion path would feed to Corsa.
+    let virtual_ts = "import { ref } from 'vue';\nconst count = ref(0);\ncount.value.\n";
+    let virtual_path = src_dir.join("App.vue.ts");
+    std::fs::write(&virtual_path, virtual_ts).unwrap();
+
+    let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+        corsa_path: Some(corsa_path),
+        working_dir: Some(project_root.clone()),
+        timeout_ms: 30_000,
+        ..Default::default()
+    });
+
+    let labels: Option<Vec<std::string::String>> = block_on(async {
+        if bridge.spawn().await.is_err() {
+            return None;
+        }
+        let uri = virtual_path.display().to_string();
+        if bridge
+            .open_or_update_virtual_document(uri.as_str(), virtual_ts)
+            .await
+            .is_err()
+        {
+            let _ = bridge.shutdown().await;
+            return None;
+        }
+        // Position of the caret right after the second `.` on line 2 (0-indexed):
+        //   line 2: "count.value."
+        //                       ^ character 12
+        let items = bridge.completion(uri.as_str(), 2, 12).await.ok()?;
+        let _ = bridge.shutdown().await;
+        Some(items.into_iter().map(|item| item.label).collect())
+    });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    let Some(labels) = labels else {
+        // Bridge or session failed to start in this environment.
+        // The test already exits before this point when the runtime is missing.
+        return;
+    };
+
+    assert!(
+        labels.iter().any(|label| label == "toFixed"),
+        "expected `toFixed` in Corsa completion labels for `count.value.`, got: {labels:?}"
+    );
+    assert!(
+        labels.iter().any(|label| label == "toString"),
+        "expected `toString` in Corsa completion labels for `count.value.`, got: {labels:?}"
+    );
+}
+
+#[test]
 fn batch_type_checker_accepts_template_ref_unwrap_and_array_access() {
     let project_root = unique_case_dir("template-ref");
     let _ = std::fs::remove_dir_all(&project_root);
@@ -185,6 +257,192 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
 }
 
 #[test]
+fn batch_type_checker_accepts_nested_ref_value_component_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "nested-ref-value-props",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineProps<{
+  count: number
+}>()
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+
+const state = ref({
+  nested: ref(1),
+})
+</script>
+
+<template>
+  <Child :count="state.nested.value" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    let relevant: Vec<_> = snapshot
+        .iter()
+        .filter(|(file, code, _)| {
+            file == "src/App.vue" && matches!(*code, Some(18048) | Some(2322) | Some(2339))
+        })
+        .cloned()
+        .collect();
+
+    assert!(
+        relevant.is_empty(),
+        "unexpected nested ref prop diagnostics: {relevant:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_reports_template_handler_mismatches_without_node_modules() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "template-handler-mismatches",
+        &[
+            (
+                "src/InlineHandlerError.vue",
+                r#"<script setup lang="ts">
+import { ref } from 'vue'
+
+const count = ref(0)
+
+function processString(value: string): void {
+  console.log(value)
+}
+</script>
+
+<template>
+  <button @click="processString(count)">Click</button>
+</template>
+"#,
+            ),
+            (
+                "src/WrongEventHandler.vue",
+                r#"<script setup lang="ts">
+function handleName(name: string): void {
+  console.log(name)
+}
+</script>
+
+<template>
+  <button @click="handleName">Click me</button>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot
+            .iter()
+            .any(|(file, code, _)| { file == "src/InlineHandlerError.vue" && *code == Some(2345) }),
+        "expected InlineHandlerError.vue to report TS2345, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/WrongEventHandler.vue"
+                && *code == Some(2345)
+                && message.contains("MouseEvent")
+        }),
+        "expected WrongEventHandler.vue to report MouseEvent mismatch, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_stubs_common_vue_runtime_symbols_without_node_modules() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "vue-runtime-stub",
+        &[(
+            "src/UseTemplateRefError.vue",
+            r#"<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+
+const inputRef = useTemplateRef<HTMLInputElement>('input')
+const count = ref(0)
+
+onMounted(() => {
+  if (inputRef.value) {
+    const num: number = inputRef.value.value
+    inputRef.value.nonExistentMethod()
+  }
+})
+</script>
+
+<template>
+  <input ref="input" />
+  <span>{{ count }}</span>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(
+            |(_, code, message)| *code != Some(2305) && !message.contains("no exported member")
+        ),
+        "unexpected vue runtime stub export diagnostic: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, _)| {
+            file == "src/UseTemplateRefError.vue" && *code == Some(2322)
+        }),
+        "expected template ref value mismatch to remain reported, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, _)| {
+            file == "src/UseTemplateRefError.vue" && *code == Some(2339)
+        }),
+        "expected template ref method mismatch to remain reported, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_snapshots_cross_file_vue_prop_error() {
     if resolve_test_tsgo_binary().is_none() {
         return;
@@ -229,6 +487,112 @@ import Child from './Child.vue'
     }, {
         insta::assert_debug_snapshot!("batch_type_checker_cross_file_vue_prop_error", snapshot);
     });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_snapshots_generic_component_prop_error() {
+    // #775: a wrongly-typed prop passed to a `<script setup generic="T">` child
+    // must raise TS2322. The child's construct-signature `$props` collapses
+    // `T` to its constraint, so the parent infers `T` across the boundary by
+    // calling the child's `__vizeCheck<T>(props)` from its default export.
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "generic-component-props",
+        &[
+            (
+                "src/GenericList.vue",
+                r#"<script setup lang="ts" generic="T">
+defineProps<{
+  items: T[]
+  selected: T
+}>()
+</script>
+
+<template>
+  <div>{{ selected }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import GenericList from './GenericList.vue'
+</script>
+
+<template>
+  <GenericList :items="['a', 'b']" :selected="42" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    insta::with_settings!({
+        snapshot_path => "../../snapshots"
+    }, {
+        insta::assert_debug_snapshot!("batch_type_checker_generic_component_prop_error", snapshot);
+    });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_accepts_well_typed_generic_component_props() {
+    // The dual of the test above: a correctly-typed generic prop must NOT
+    // report, and the new functional check must not introduce spurious
+    // diagnostics for the non-error case.
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "generic-component-props-ok",
+        &[
+            (
+                "src/GenericList.vue",
+                r#"<script setup lang="ts" generic="T">
+defineProps<{
+  items: T[]
+  selected: T
+}>()
+</script>
+
+<template>
+  <div>{{ selected }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import GenericList from './GenericList.vue'
+</script>
+
+<template>
+  <GenericList :items="['a', 'b']" :selected="'a'" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "well-typed generic component props should not report diagnostics, got: {snapshot:?}"
+    );
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
@@ -387,7 +751,8 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .expect("workspace root should exist");
     let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
     workspace_root
-        .join("__agent_only")
+        .join("target")
+        .join("vize-tests")
         .join("tests")
         .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
 }
@@ -397,6 +762,37 @@ fn create_project_case(name: &str, files: &[(&str, &str)]) -> PathBuf {
     let _ = std::fs::remove_dir_all(&project_root);
     std::fs::create_dir_all(&project_root).unwrap();
     link_workspace_node_modules(&project_root).unwrap();
+    write_project_tsconfig(&project_root);
+
+    for (path, source) in files {
+        let file_path = project_root.join(path);
+        if let Some(parent) = file_path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(file_path, source).unwrap();
+    }
+
+    project_root
+}
+
+fn create_project_case_without_node_modules(name: &str, files: &[(&str, &str)]) -> PathBuf {
+    let project_root = unique_case_dir(name);
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(&project_root).unwrap();
+    write_project_tsconfig(&project_root);
+
+    for (path, source) in files {
+        let file_path = project_root.join(path);
+        if let Some(parent) = file_path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(file_path, source).unwrap();
+    }
+
+    project_root
+}
+
+fn write_project_tsconfig(project_root: &Path) {
     std::fs::write(
         project_root.join("tsconfig.json"),
         r#"{
@@ -411,16 +807,6 @@ fn create_project_case(name: &str, files: &[(&str, &str)]) -> PathBuf {
 }"#,
     )
     .unwrap();
-
-    for (path, source) in files {
-        let file_path = project_root.join(path);
-        if let Some(parent) = file_path.parent() {
-            std::fs::create_dir_all(parent).unwrap();
-        }
-        std::fs::write(file_path, source).unwrap();
-    }
-
-    project_root
 }
 
 fn snapshot_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, String)>> {
@@ -467,7 +853,8 @@ fn corsa_type_mismatch_snapshot(
         .expect("workspace root should exist");
     let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
     let project_root = workspace_root
-        .join("__agent_only")
+        .join("target")
+        .join("vize-tests")
         .join("tests")
         .join(format!("corsa-type-probe-{}-{case_id}", std::process::id()));
     let _ = std::fs::remove_dir_all(&project_root);
@@ -588,11 +975,17 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
     std::fs::create_dir_all(&target)?;
 
     if let Some(ref workspace_node_modules) = workspace_node_modules {
-        for package in ["vue", "vite", "@vue"] {
-            let source = workspace_node_modules.join(package);
-            if source.exists() {
-                symlink_path(&source, &target.join(package))?;
-            }
+        link_or_stub_package(workspace_node_modules, &target, "vue", write_test_vue_stub)?;
+        link_or_stub_package(
+            workspace_node_modules,
+            &target,
+            "vite",
+            write_test_vite_stub,
+        )?;
+
+        let vue_namespace = workspace_node_modules.join("@vue");
+        if vue_namespace.exists() {
+            symlink_path(&vue_namespace, &target.join("@vue"))?;
         }
     } else {
         write_test_vue_stub(&target)?;
@@ -623,6 +1016,20 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
     }
 
     Ok(())
+}
+
+fn link_or_stub_package(
+    workspace_node_modules: &Path,
+    target: &Path,
+    package: &str,
+    stub_writer: fn(&Path) -> std::io::Result<()>,
+) -> std::io::Result<()> {
+    let source = workspace_node_modules.join(package);
+    if source.exists() {
+        symlink_path(&source, &target.join(package))
+    } else {
+        stub_writer(target)
+    }
 }
 
 fn resolve_workspace_node_modules(workspace_root: &Path) -> Option<PathBuf> {

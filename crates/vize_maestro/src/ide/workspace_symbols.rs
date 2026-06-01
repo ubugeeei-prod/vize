@@ -84,29 +84,29 @@ impl WorkspaceSymbolsService {
         };
 
         // Extract component name from file path
-        if let Some(component_name) = Self::extract_component_name(uri) {
-            if component_name.to_lowercase().contains(query) {
-                symbols.push(SymbolInformation {
-                    name: component_name,
-                    kind: SymbolKind::CLASS,
-                    tags: None,
-                    deprecated: None,
-                    location: Location {
-                        uri: uri.clone(),
-                        range: Range {
-                            start: Position {
-                                line: 0,
-                                character: 0,
-                            },
-                            end: Position {
-                                line: 0,
-                                character: 0,
-                            },
+        if let Some(component_name) = Self::extract_component_name(uri)
+            && component_name.to_lowercase().contains(query)
+        {
+            symbols.push(SymbolInformation {
+                name: component_name,
+                kind: SymbolKind::CLASS,
+                tags: None,
+                deprecated: None,
+                location: Location {
+                    uri: uri.clone(),
+                    range: Range {
+                        start: Position {
+                            line: 0,
+                            character: 0,
+                        },
+                        end: Position {
+                            line: 0,
+                            character: 0,
                         },
                     },
-                    container_name: None,
-                });
-            }
+                },
+                container_name: None,
+            });
         }
 
         // Collect from script setup
@@ -144,6 +144,99 @@ impl WorkspaceSymbolsService {
                 symbols,
             );
         }
+
+        // Vue-specific symbols (emits, slots, provide/inject keys, …) so
+        // workspace symbol search surfaces component contracts, not just
+        // script bindings. Foundation for #697 — currently covers emits and
+        // slot names; provide/inject and template refs follow the same shape.
+        Self::collect_vue_specific_symbols(uri, &descriptor, query, symbols);
+    }
+
+    /// Surface Vue-specific entities (emits, slots) discovered by Croquis.
+    #[allow(deprecated)] // SymbolInformation.deprecated is deprecated in favor of tags
+    fn collect_vue_specific_symbols(
+        uri: &Url,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        query: &str,
+        symbols: &mut Vec<SymbolInformation>,
+    ) {
+        let Some(ref script_setup) = descriptor.script_setup else {
+            return;
+        };
+
+        let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions {
+            analyze_script: true,
+            ..Default::default()
+        });
+        analyzer.analyze_script_setup(&script_setup.content);
+        let croquis = analyzer.finish();
+
+        let container = Self::extract_component_name(uri);
+
+        // Range pointing at the start of the script setup block. Symbols
+        // discovered through Croquis don't yet carry their declaration span,
+        // so we anchor them at the block start as a follow-up improvement
+        // on top of the line-0-character-0 placeholder from #715.
+        let script_setup_position =
+            Self::offset_to_position(descriptor.source.as_ref(), script_setup.loc.start);
+        let placeholder_range = Range {
+            start: script_setup_position,
+            end: script_setup_position,
+        };
+
+        // Emits declared via defineEmits<{...}>(). The macro tracker keeps the
+        // raw names; expose each as an EVENT symbol so `@symbol` searches
+        // discover "update:modelValue", "submit", etc.
+        for emit in croquis.macros.emits() {
+            let name = emit.name.as_str();
+            if !query.is_empty() && !name.to_lowercase().contains(query) {
+                continue;
+            }
+            symbols.push(SymbolInformation {
+                name: name.to_string(),
+                kind: SymbolKind::EVENT,
+                tags: None,
+                deprecated: None,
+                location: Location {
+                    uri: uri.clone(),
+                    range: placeholder_range,
+                },
+                container_name: container.clone(),
+            });
+        }
+
+        // Slots declared via defineSlots<{...}>(). Expose each as an
+        // INTERFACE symbol — slots define the parent-child contract, much
+        // like a TypeScript interface.
+        for slot in croquis.macros.slots() {
+            let name = slot.name.as_str();
+            if !query.is_empty() && !name.to_lowercase().contains(query) {
+                continue;
+            }
+            symbols.push(SymbolInformation {
+                name: name.to_string(),
+                kind: SymbolKind::INTERFACE,
+                tags: None,
+                deprecated: None,
+                location: Location {
+                    uri: uri.clone(),
+                    range: placeholder_range,
+                },
+                container_name: container.clone(),
+            });
+        }
+    }
+
+    /// Convert a byte offset in `source` to an LSP `Position`. Simple line/
+    /// column calculator — workspace symbols don't go through the heavier
+    /// position mapping used by diagnostics.
+    fn offset_to_position(source: &str, offset: usize) -> Position {
+        let bounded = offset.min(source.len());
+        let prefix = &source[..bounded];
+        let line = prefix.matches('\n').count() as u32;
+        let last_nl = prefix.rfind('\n').map(|p| p + 1).unwrap_or(0);
+        let character = (bounded - last_nl) as u32;
+        Position { line, character }
     }
 
     /// Extract component name from URI.
@@ -194,115 +287,114 @@ impl WorkspaceSymbolsService {
 
             // const name = ...
             if let Some(rest) = trimmed.strip_prefix("const ") {
-                if let Some((name, kind)) = Self::parse_declaration(rest) {
-                    if name.to_lowercase().contains(query) {
-                        symbols.push(Self::create_symbol(
-                            name,
-                            kind,
-                            uri.clone(),
-                            line_num - 1,
-                            container,
-                        ));
-                    }
+                if let Some((name, kind)) = Self::parse_declaration(rest)
+                    && name.to_lowercase().contains(query)
+                {
+                    symbols.push(Self::create_symbol(
+                        name,
+                        kind,
+                        uri.clone(),
+                        line_num - 1,
+                        container,
+                    ));
                 }
             }
             // let name = ...
             else if let Some(rest) = trimmed.strip_prefix("let ") {
-                if let Some((name, kind)) = Self::parse_declaration(rest) {
-                    if name.to_lowercase().contains(query) {
-                        symbols.push(Self::create_symbol(
-                            name,
-                            kind,
-                            uri.clone(),
-                            line_num - 1,
-                            container,
-                        ));
-                    }
+                if let Some((name, kind)) = Self::parse_declaration(rest)
+                    && name.to_lowercase().contains(query)
+                {
+                    symbols.push(Self::create_symbol(
+                        name,
+                        kind,
+                        uri.clone(),
+                        line_num - 1,
+                        container,
+                    ));
                 }
             }
             // function name(...) { ... }
             else if let Some(rest) = trimmed.strip_prefix("function ") {
-                if let Some(name) = Self::extract_identifier(rest) {
-                    if name.to_lowercase().contains(query) {
-                        symbols.push(Self::create_symbol(
-                            name,
-                            SymbolKind::FUNCTION,
-                            uri.clone(),
-                            line_num - 1,
-                            container,
-                        ));
-                    }
+                if let Some(name) = Self::extract_identifier(rest)
+                    && name.to_lowercase().contains(query)
+                {
+                    symbols.push(Self::create_symbol(
+                        name,
+                        SymbolKind::FUNCTION,
+                        uri.clone(),
+                        line_num - 1,
+                        container,
+                    ));
                 }
             }
             // async function name(...) { ... }
             else if let Some(rest) = trimmed.strip_prefix("async function ") {
-                if let Some(name) = Self::extract_identifier(rest) {
-                    if name.to_lowercase().contains(query) {
-                        symbols.push(Self::create_symbol(
-                            name,
-                            SymbolKind::FUNCTION,
-                            uri.clone(),
-                            line_num - 1,
-                            container,
-                        ));
-                    }
+                if let Some(name) = Self::extract_identifier(rest)
+                    && name.to_lowercase().contains(query)
+                {
+                    symbols.push(Self::create_symbol(
+                        name,
+                        SymbolKind::FUNCTION,
+                        uri.clone(),
+                        line_num - 1,
+                        container,
+                    ));
                 }
             }
             // class Name { ... }
             else if let Some(rest) = trimmed.strip_prefix("class ") {
-                if let Some(name) = Self::extract_identifier(rest) {
-                    if name.to_lowercase().contains(query) {
-                        symbols.push(Self::create_symbol(
-                            name,
-                            SymbolKind::CLASS,
-                            uri.clone(),
-                            line_num - 1,
-                            container,
-                        ));
-                    }
+                if let Some(name) = Self::extract_identifier(rest)
+                    && name.to_lowercase().contains(query)
+                {
+                    symbols.push(Self::create_symbol(
+                        name,
+                        SymbolKind::CLASS,
+                        uri.clone(),
+                        line_num - 1,
+                        container,
+                    ));
                 }
             }
             // interface Name { ... }
             else if let Some(rest) = trimmed.strip_prefix("interface ") {
-                if let Some(name) = Self::extract_identifier(rest) {
-                    if name.to_lowercase().contains(query) {
-                        symbols.push(Self::create_symbol(
-                            name,
-                            SymbolKind::INTERFACE,
-                            uri.clone(),
-                            line_num - 1,
-                            container,
-                        ));
-                    }
+                if let Some(name) = Self::extract_identifier(rest)
+                    && name.to_lowercase().contains(query)
+                {
+                    symbols.push(Self::create_symbol(
+                        name,
+                        SymbolKind::INTERFACE,
+                        uri.clone(),
+                        line_num - 1,
+                        container,
+                    ));
                 }
             }
             // type Name = ...
             else if let Some(rest) = trimmed.strip_prefix("type ") {
-                if let Some(name) = Self::extract_identifier(rest) {
-                    if name.to_lowercase().contains(query) {
-                        symbols.push(Self::create_symbol(
-                            name,
-                            SymbolKind::TYPE_PARAMETER,
-                            uri.clone(),
-                            line_num - 1,
-                            container,
-                        ));
-                    }
+                if let Some(name) = Self::extract_identifier(rest)
+                    && name.to_lowercase().contains(query)
+                {
+                    symbols.push(Self::create_symbol(
+                        name,
+                        SymbolKind::TYPE_PARAMETER,
+                        uri.clone(),
+                        line_num - 1,
+                        container,
+                    ));
                 }
             }
             // enum Name { ... }
-            else if let Some(rest) = trimmed.strip_prefix("enum ") {
-                if let Some(name) = Self::extract_identifier(rest) {
-                    if name.to_lowercase().contains(query) {
-                        symbols.push(Self::create_symbol(
-                            name,
-                            SymbolKind::ENUM,
-                            uri.clone(),
-                            line_num - 1,
-                            container,
-                        ));
-                    }
-                }
+            else if let Some(rest) = trimmed.strip_prefix("enum ")
+                && let Some(name) = Self::extract_identifier(rest)
+                && name.to_lowercase().contains(query)
+            {
+                symbols.push(Self::create_symbol(
+                    name,
+                    SymbolKind::ENUM,
+                    uri.clone(),
+                    line_num - 1,
+                    container,
+                ));
             }
         }
     }

@@ -152,8 +152,9 @@ impl InlayHintService {
                                 let quote = remaining.as_bytes()[quote_pos] as char;
                                 if quote == '"' || quote == '\'' {
                                     let new_match = (found, quote_pos + 1, quote);
-                                    if next_match.is_none()
-                                        || new_match.0 < next_match.as_ref().unwrap().0
+                                    if next_match
+                                        .as_ref()
+                                        .is_none_or(|current| new_match.0 < current.0)
                                     {
                                         next_match = Some(new_match);
                                     }
@@ -162,9 +163,12 @@ impl InlayHintService {
                         }
                     } else {
                         // v-if=", etc. - pattern already includes the quote
-                        let quote = pattern.chars().last().unwrap();
+                        let quote = pattern.as_bytes()[pattern.len() - 1] as char;
                         let new_match = (found, pattern_end, quote);
-                        if next_match.is_none() || new_match.0 < next_match.as_ref().unwrap().0 {
+                        if next_match
+                            .as_ref()
+                            .is_none_or(|current| new_match.0 < current.0)
+                        {
                             next_match = Some(new_match);
                         }
                     }

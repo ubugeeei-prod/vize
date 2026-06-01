@@ -2,7 +2,7 @@
  * Musea Playground Preset
  *
  * This preset demonstrates the Musea story format:
- * - <art> block for component documentation
+ * - defineArt() for component documentation and target resolution
  * - Multiple <variant> blocks for different component states
  * - CSS custom properties for design tokens
  *
@@ -13,22 +13,26 @@
  */
 
 export const ART_PRESET = `<script setup lang="ts">
-import Button from './Button.vue'
+defineArt('./Button.vue', {
+  title: 'Button',
+  description: 'A versatile action control for forms, dialogs, and toolbar workflows.',
+  category: 'Components',
+  tags: ['button', 'action', 'form'],
+  status: 'ready',
+})
 </script>
 
-<art
-  title="Button"
-  description="A versatile button component"
-  component="./Button.vue"
-  category="atoms"
-  tags="ui,input"
->
-  <variant name="Primary" default>
-    <Button variant="primary">Click me</Button>
+<art>
+  <variant name="Default" default>
+    <Button>Default Button</Button>
+  </variant>
+
+  <variant name="Primary">
+    <Button variant="primary">Primary Button</Button>
   </variant>
 
   <variant name="Secondary">
-    <Button variant="secondary">Click me</Button>
+    <Button variant="secondary">Secondary Button</Button>
   </variant>
 
   <variant name="With Icon">
@@ -42,17 +46,18 @@ import Button from './Button.vue'
 
 <style>
 :root {
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-secondary: #6b7280;
-  --color-secondary-hover: #4b5563;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-text: #1f2937;
-  --color-text-muted: #6b7280;
-  --color-background: #ffffff;
-  --color-border: #e5e7eb;
+  --color-primary: #121212;
+  --color-primary-hover: #2a2a2a;
+  --color-secondary: #6b5090;
+  --color-secondary-hover: #5a4080;
+  --color-success: #2d6a35;
+  --color-warning: #8b7040;
+  --color-error: #a04040;
+  --color-text: #121212;
+  --color-text-muted: #6b6b6b;
+  --color-background: #e6e2d6;
+  --color-surface: #ddd9cd;
+  --color-border: #c8c4b8;
 
   --spacing-xs: 4px;
   --spacing-sm: 8px;

@@ -8,7 +8,7 @@
     clippy::disallowed_macros
 )]
 
-use tower_lsp::lsp_types::{Hover, HoverContents, MarkupContent, MarkupKind};
+use tower_lsp::lsp_types::{Hover, HoverContents};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 use vize_relief::BindingType;
 
@@ -18,7 +18,7 @@ use std::sync::Arc;
 #[cfg(feature = "native")]
 use vize_canon::CorsaBridge;
 
-use super::HoverService;
+use super::{HoverBuilder, HoverService};
 use crate::ide::IdeContext;
 impl HoverService {
     /// Get hover for script context.
@@ -35,10 +35,8 @@ impl HoverService {
         }
 
         // Check for Vue macros (script setup only)
-        if is_setup {
-            if let Some(hover) = Self::hover_vue_macro(&word) {
-                return Some(hover);
-            }
+        if is_setup && let Some(hover) = Self::hover_vue_macro(&word) {
+            return Some(hover);
         }
 
         // Try to get TypeScript type information from croquis analysis
@@ -67,44 +65,47 @@ impl HoverService {
             return Some(hover);
         }
 
-        if is_setup {
-            if let Some(hover) = Self::hover_vue_macro(&word) {
-                return Some(hover);
-            }
+        if is_setup && let Some(hover) = Self::hover_vue_macro(&word) {
+            return Some(hover);
         }
 
         // Try to get type information from Corsa via virtual TypeScript.
-        if let Some(bridge) = corsa_bridge {
-            if let Some(ref virtual_docs) = ctx.virtual_docs {
-                let script_doc = if is_setup {
-                    virtual_docs.script_setup.as_ref()
-                } else {
-                    virtual_docs.script.as_ref()
-                };
+        if let Some(bridge) = corsa_bridge
+            && let Some(ref virtual_docs) = ctx.virtual_docs
+        {
+            let script_doc = if is_setup {
+                virtual_docs.script_setup.as_ref()
+            } else {
+                virtual_docs.script.as_ref()
+            };
 
-                if let Some(script) = script_doc {
-                    // Calculate position in virtual TS
-                    if let Some(vts_offset) = Self::sfc_to_virtual_ts_script_offset(ctx, ctx.offset)
-                    {
-                        let (line, character) =
-                            crate::ide::offset_to_position(&script.content, vts_offset);
-                        let suffix = if is_setup { "setup.ts" } else { "script.ts" };
+            if let Some(script) = script_doc {
+                // Calculate position in virtual TS
+                if let Some(vts_offset) = Self::sfc_to_virtual_ts_script_offset(ctx, ctx.offset) {
+                    let (line, character) =
+                        crate::ide::offset_to_position(&script.content, vts_offset);
+                    let suffix = if is_setup { "setup.ts" } else { "script.ts" };
 
-                        // Open/update virtual document
-                        if bridge.is_initialized() {
-                            #[allow(clippy::disallowed_macros)]
-                            let doc_path = format!("{}.{suffix}", ctx.uri.path());
-                            let Ok(uri) = bridge
-                                .open_or_update_virtual_document(&doc_path, &script.content)
-                                .await
-                            else {
-                                return Self::hover_script(ctx, is_setup);
-                            };
+                    // Open/update virtual document
+                    if bridge.is_initialized() {
+                        #[allow(clippy::disallowed_macros)]
+                        let doc_path = format!("{}.{suffix}", ctx.uri.path());
+                        let Ok(uri) = bridge
+                            .open_or_update_virtual_document(&doc_path, &script.content)
+                            .await
+                        else {
+                            return Self::hover_script(ctx, is_setup);
+                        };
 
-                            // Request hover from Corsa.
-                            if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
-                                return Some(Self::convert_lsp_hover(hover));
+                        // Request hover from Corsa.
+                        if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
+                            let converted = Self::convert_lsp_hover(hover);
+                            if hover_has_unknown_reactive_type(&converted)
+                                && let Some(fallback) = Self::hover_script(ctx, is_setup)
+                            {
+                                return Some(fallback);
                             }
+                            return Some(converted);
                         }
                     }
                 }
@@ -133,12 +134,17 @@ impl HoverService {
             .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
 
         // Create analyzer and analyze script
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        let analyzer_options = AnalyzerOptions::full();
+        let mut analyzer = Analyzer::with_options(analyzer_options);
+        if ctx.state.lsp_features().legacy_vue2 {
+            analyzer = analyzer.with_legacy_vue2();
+        }
 
+        if let Some(ref script) = descriptor.script {
+            analyzer.analyze_script_plain(&script.content);
+        }
         if let Some(ref script_setup) = descriptor.script_setup {
             analyzer.analyze_script_setup(&script_setup.content);
-        } else if let Some(ref script) = descriptor.script {
-            analyzer.analyze_script_plain(&script.content);
         }
 
         let summary = analyzer.finish();
@@ -151,33 +157,23 @@ impl HoverService {
             .and_then(|content| Self::infer_type_from_script(content, word, binding_type))
             .unwrap_or_else(|| Self::binding_type_to_ts_display(binding_type).to_string());
 
-        // Format the hover content with reactivity hints for script context
         let kind_desc = Self::binding_type_to_description(binding_type);
-
-        // Add .value hint for refs in script
         #[allow(clippy::disallowed_macros)]
-        let value_hint = if summary.needs_value_in_script(word) {
-            format!(
-                "\n\n**Tip:** Use `{}.value` to access the value in script.",
-                word
-            )
-        } else {
-            String::new()
-        };
+        let signature = format!("{word}: {inferred_type}");
 
-        #[allow(clippy::disallowed_macros)]
-        let value = format!(
-            "```typescript\n{}: {}\n```\n\n{}{}",
-            word, inferred_type, kind_desc, value_hint
-        );
+        let mut builder = HoverBuilder::new()
+            .title(word)
+            .meta("Script binding")
+            .code("typescript", &signature)
+            .description(kind_desc);
 
-        Some(Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value,
-            }),
-            range: None,
-        })
+        if summary.needs_value_in_script(word) {
+            #[allow(clippy::disallowed_macros)]
+            let tip = format!("Use `{}.value` to read or write this ref in script.", word);
+            builder = builder.section("Tip", &tip);
+        }
+
+        Some(builder.build())
     }
 
     /// Get hover for Vue Composition API.
@@ -262,22 +258,31 @@ impl HoverService {
             _ => return None,
         };
 
-        #[allow(clippy::disallowed_macros)]
-        Some(Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: format!(
-                    "```typescript\n{}\n```\n\n{}\n\n[Vue Documentation](https://vuejs.org/api/)",
-                    signature, description
-                ),
-            }),
-            range: None,
-        })
+        Some(
+            HoverBuilder::new()
+                .title(word)
+                .meta("Vue Composition API")
+                .code("typescript", signature)
+                .description(description)
+                .bullets(
+                    "Usage",
+                    &[
+                        "Import from `vue` in normal scripts.",
+                        "Works naturally in `<script setup>` and Composition API setup functions.",
+                    ],
+                )
+                .link("Vue API Reference", "https://vuejs.org/api/")
+                .build(),
+        )
     }
 
     /// Get hover for Vue macros.
     pub(super) fn hover_vue_macro(word: &str) -> Option<Hover> {
         let (signature, description) = match word {
+            "defineArt" => (
+                "function defineArt<T>(component: T | string, options?: ArtOptions): void",
+                "Musea compiler macro to declare the art target component and metadata.",
+            ),
             "defineProps" => (
                 "function defineProps<T>(): T",
                 "Compiler macro to declare component props. Only usable inside `<script setup>`.",
@@ -309,17 +314,21 @@ impl HoverService {
             _ => return None,
         };
 
-        #[allow(clippy::disallowed_macros)]
-        Some(Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: format!(
-                    "```typescript\n{}\n```\n\n{}\n\n*Compiler macro - only usable inside `<script setup>`*",
-                    signature, description
-                ),
-            }),
-            range: None,
-        })
+        Some(
+            HoverBuilder::new()
+                .title(word)
+                .meta("Vue compiler macro")
+                .code("typescript", signature)
+                .description(description)
+                .bullets(
+                    "Macro behavior",
+                    &[
+                        "Only usable inside `<script setup>`.",
+                        "No runtime import is required because the SFC compiler handles it.",
+                    ],
+                )
+                .build(),
+        )
     }
 
     /// Convert BindingType to TypeScript type display string.
@@ -348,11 +357,21 @@ impl HoverService {
     /// Convert BindingType to human-readable description.
     pub(super) fn binding_type_to_description(binding_type: BindingType) -> &'static str {
         match binding_type {
-            BindingType::SetupRef => "Reactive reference created with `ref()`. Access `.value` in script, auto-unwrapped in template.",
-            BindingType::SetupMaybeRef => "Value that may be a ref. Use `unref()` or `toValue()` to access in script.",
-            BindingType::SetupReactiveConst => "Reactive object created with `reactive()`. Properties are reactive.",
-            BindingType::SetupConst => "Constant binding from script setup. Non-reactive unless wrapped.",
-            BindingType::SetupLet => "Mutable binding from script setup. Changes won't trigger reactivity.",
+            BindingType::SetupRef => {
+                "Reactive reference created with `ref()`. Access `.value` in script, auto-unwrapped in template."
+            }
+            BindingType::SetupMaybeRef => {
+                "Value that may be a ref. Use `unref()` or `toValue()` to access in script."
+            }
+            BindingType::SetupReactiveConst => {
+                "Reactive object created with `reactive()`. Properties are reactive."
+            }
+            BindingType::SetupConst => {
+                "Constant binding from script setup. Non-reactive unless wrapped."
+            }
+            BindingType::SetupLet => {
+                "Mutable binding from script setup. Changes won't trigger reactivity."
+            }
             BindingType::Props => "Component prop. Read-only in the component.",
             BindingType::PropsAliased => "Destructured prop with alias. Read-only.",
             BindingType::Data => "Reactive data from Options API `data()` function.",
@@ -367,4 +386,23 @@ impl HoverService {
             BindingType::ExternalModule => "Imported from external module.",
         }
     }
+}
+
+fn hover_has_unknown_reactive_type(hover: &Hover) -> bool {
+    let value = match &hover.contents {
+        HoverContents::Markup(markup) => markup.value.as_str(),
+        HoverContents::Scalar(value) => return marked_string_has_unknown_reactive_type(value),
+        HoverContents::Array(values) => {
+            return values.iter().any(marked_string_has_unknown_reactive_type);
+        }
+    };
+    value.contains("Ref<unknown>") || value.contains("ComputedRef<unknown>")
+}
+
+fn marked_string_has_unknown_reactive_type(value: &tower_lsp::lsp_types::MarkedString) -> bool {
+    let value = match value {
+        tower_lsp::lsp_types::MarkedString::String(value) => value.as_str(),
+        tower_lsp::lsp_types::MarkedString::LanguageString(value) => value.value.as_str(),
+    };
+    value.contains("Ref<unknown>") || value.contains("ComputedRef<unknown>")
 }

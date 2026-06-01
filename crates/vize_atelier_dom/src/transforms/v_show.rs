@@ -3,7 +3,7 @@
 //! v-show toggles the element's display CSS property.
 
 use vize_atelier_core::{DirectiveNode, RuntimeHelper};
-use vize_carton::{cstr, String};
+use vize_carton::{String, cstr};
 
 /// Runtime helper for v-show
 pub const V_SHOW: RuntimeHelper = RuntimeHelper::WithDirectives;
@@ -31,7 +31,7 @@ pub fn generate_show_directive(dir: &DirectiveNode<'_>) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{generate_show_directive, generate_show_style, is_v_show, RuntimeHelper, V_SHOW};
+    use super::{RuntimeHelper, V_SHOW, generate_show_directive, generate_show_style, is_v_show};
     use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
     use vize_carton::{Box, Bump};
 

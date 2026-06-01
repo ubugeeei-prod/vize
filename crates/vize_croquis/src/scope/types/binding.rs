@@ -20,6 +20,34 @@ impl Span {
     pub const fn new(start: u32, end: u32) -> Self {
         Self { start, end }
     }
+
+    #[inline]
+    pub fn shift(&mut self, delta: u32) {
+        self.start = self.start.saturating_add(delta);
+        self.end = self.end.saturating_add(delta);
+    }
+
+    /// Returns true when `offset` falls within `[start, end]`, inclusive.
+    ///
+    /// Cursor positions live between bytes, so a cursor sitting at exactly
+    /// `end` is still considered "inside" the span. Default spans (start=end=0)
+    /// only contain offset 0.
+    #[inline]
+    pub const fn contains(&self, offset: u32) -> bool {
+        self.start <= offset && offset <= self.end
+    }
+
+    /// Span length in bytes.
+    #[inline]
+    pub const fn len(&self) -> u32 {
+        self.end.saturating_sub(self.start)
+    }
+
+    /// True when the span has zero length (default or unset spans).
+    #[inline]
+    pub const fn is_empty(&self) -> bool {
+        self.start == self.end
+    }
 }
 
 bitflags! {
@@ -81,5 +109,10 @@ impl ScopeBinding {
     #[inline]
     pub fn mark_mutated(&mut self) {
         self.flags.insert(BindingFlags::MUTATED);
+    }
+
+    #[inline]
+    pub fn shift_declaration_offset(&mut self, delta: u32) {
+        self.declaration_offset = self.declaration_offset.saturating_add(delta);
     }
 }

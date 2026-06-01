@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/native",
-  "version": "0.46.0",
+  "version": "0.155.0",
   "description": "High-performance Vue.js compiler - Native bindings",
   "keywords": [
     "compiler",
@@ -10,14 +10,22 @@
     "vize",
     "vue"
   ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/vize"
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/vize-native"
   },
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "native-binding.js",
+    "native-targets.js",
+    "types"
   ],
   "main": "index.js",
   "types": "index.d.ts",
@@ -25,12 +33,23 @@
     "access": "public"
   },
   "scripts": {
-    "build": "napi build --platform --release --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi --output-dir .",
-    "build:debug": "napi build --platform --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi --output-dir .",
+    "build": "node ./scripts/build-local.mjs --release",
+    "build:ci": "napi build --platform --profile ci --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi --output-dir .",
+    "build:debug": "node ./scripts/build-local.mjs",
     "prepublishOnly": "napi pre-publish -t npm --no-gh-release --skip-optional-publish"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.0.0"
+    "@napi-rs/cli": "catalog:integrations"
+  },
+  "optionalDependencies": {
+    "@vizejs/native-darwin-arm64": "catalog:native-binaries",
+    "@vizejs/native-darwin-x64": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-musl": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-musl": "catalog:native-binaries",
+    "@vizejs/native-win32-arm64-msvc": "catalog:native-binaries",
+    "@vizejs/native-win32-x64-msvc": "catalog:native-binaries"
   },
   "napi": {
     "binaryName": "vize-vitrine",
@@ -44,5 +63,8 @@
       "aarch64-unknown-linux-gnu",
       "aarch64-unknown-linux-musl"
     ]
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

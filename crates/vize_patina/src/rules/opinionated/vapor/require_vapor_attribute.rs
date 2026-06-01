@@ -2,7 +2,7 @@
 //!
 //! Suggest adding the vapor attribute to script setup blocks.
 //!
-//! This is a informational rule that helps identify components that
+//! This is an informational rule that helps identify components that
 //! could be migrated to Vapor mode. Components with `<script setup>`
 //! are candidates for Vapor mode optimization.
 //!

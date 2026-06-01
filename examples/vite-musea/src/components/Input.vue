@@ -7,9 +7,20 @@ defineProps<{
   error?: string;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   "update:modelValue": [value: string];
 }>();
+
+defineArt("./Input.vue", {
+  title: "Input",
+  category: "Forms",
+  tags: ["input", "form", "text"],
+  status: "ready",
+});
+
+function onInput(event: Event) {
+  emit("update:modelValue", (event.target as HTMLInputElement).value);
+}
 </script>
 
 <template>
@@ -21,7 +32,7 @@ defineEmits<{
       :value="modelValue"
       :placeholder="placeholder"
       :disabled="disabled"
-      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      @input="onInput"
     />
     <span v-if="error" class="input-error">{{ error }}</span>
   </div>
@@ -78,7 +89,7 @@ defineEmits<{
 }
 </style>
 
-<art title="Input" category="Forms" status="ready" tags="input,form,text">
+<art>
   <variant name="Default" default>
     <Self placeholder="Enter text..." />
   </variant>

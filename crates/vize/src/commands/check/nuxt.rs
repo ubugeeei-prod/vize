@@ -1,5 +1,7 @@
 //! Nuxt-specific auto-import and plugin injection helpers.
 
+#![allow(clippy::disallowed_macros)]
+
 use std::{fs, path::Path};
 
 use ignore::WalkBuilder;
@@ -10,9 +12,12 @@ use oxc_ast::ast::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_carton::{cstr, FxHashSet, String, ToCompactString};
+use vize_carton::{FxHashSet, String, ToCompactString, cstr, profile, profiler::global_profiler};
 
-use super::dts::{parse_declared_global_values, rewrite_relative_specifier};
+use super::dts::{
+    parse_declared_global_values, parse_interface_members_with_rewritten_imports,
+    rewrite_relative_specifier,
+};
 
 pub(super) fn detect_nuxt_auto_imports(options: &mut VirtualTsOptions, cwd: &Path) {
     if !is_nuxt_project(cwd) {
@@ -20,18 +25,42 @@ pub(super) fn detect_nuxt_auto_imports(options: &mut VirtualTsOptions, cwd: &Pat
     }
 
     let mut seen_names = FxHashSet::default();
+    let mut external_template_bindings = options
+        .external_template_bindings
+        .iter()
+        .cloned()
+        .collect::<FxHashSet<_>>();
     for stub in &options.auto_import_stubs {
         if let Some(name) = declared_name(stub) {
             seen_names.insert(name.to_compact_string());
+            if is_template_component_binding(name) {
+                external_template_bindings.insert(name.to_compact_string());
+            }
         }
     }
 
     let mut collected = Vec::new();
-    collect_generated_stubs(cwd, &mut collected, &mut seen_names);
+    collect_generated_stubs(
+        cwd,
+        &mut collected,
+        &mut seen_names,
+        &mut external_template_bindings,
+    );
     collect_plugin_injection_stubs(cwd, &mut collected, &mut seen_names);
     collect_fallback_stubs(&mut collected, &mut seen_names);
 
+    for stub in &collected {
+        if let Some(name) = declared_name(stub)
+            && is_template_component_binding(name)
+        {
+            external_template_bindings.insert(name.to_compact_string());
+        }
+    }
+
     options.auto_import_stubs.extend(collected);
+    let mut external_template_bindings = external_template_bindings.into_iter().collect::<Vec<_>>();
+    external_template_bindings.sort();
+    options.external_template_bindings = external_template_bindings;
 }
 
 fn is_nuxt_project(cwd: &Path) -> bool {
@@ -44,6 +73,7 @@ fn collect_generated_stubs(
     cwd: &Path,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
+    external_template_bindings: &mut FxHashSet<String>,
 ) {
     let nuxt_types_dir = cwd.join(".nuxt/types");
     let mut found_typed_imports = false;
@@ -80,8 +110,18 @@ fn collect_generated_stubs(
                     push_declared_const(stubs, seen_names, &name, &type_annotation);
                 }
             }
+
+            collect_global_component_stubs(
+                cwd,
+                path,
+                stubs,
+                seen_names,
+                external_template_bindings,
+            );
         }
     }
+
+    collect_root_generated_component_stubs(cwd, stubs, seen_names, external_template_bindings);
 
     if found_typed_imports {
         return;
@@ -92,7 +132,7 @@ fn collect_generated_stubs(
         return;
     }
 
-    if let Ok(content) = fs::read_to_string(&imports_path) {
+    if let Ok(content) = tracked_read_to_string(&imports_path) {
         let base_dir = imports_path.parent().unwrap_or_else(|| Path::new("."));
         for line in content.lines() {
             let trimmed = line.trim();
@@ -131,6 +171,60 @@ fn collect_generated_stubs(
     }
 }
 
+fn collect_root_generated_component_stubs(
+    cwd: &Path,
+    stubs: &mut Vec<String>,
+    seen_names: &mut FxHashSet<String>,
+    external_template_bindings: &mut FxHashSet<String>,
+) {
+    let nuxt_dir = cwd.join(".nuxt");
+    let Ok(entries) = fs::read_dir(&nuxt_dir) else {
+        return;
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let is_dts = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.ends_with(".d.ts"));
+        if !path.is_file() || !is_dts {
+            continue;
+        }
+        collect_global_component_stubs(
+            cwd,
+            path.as_path(),
+            stubs,
+            seen_names,
+            external_template_bindings,
+        );
+    }
+}
+
+fn collect_global_component_stubs(
+    cwd: &Path,
+    path: &Path,
+    stubs: &mut Vec<String>,
+    seen_names: &mut FxHashSet<String>,
+    external_template_bindings: &mut FxHashSet<String>,
+) {
+    let Ok(components) =
+        parse_interface_members_with_rewritten_imports(path, "interface GlobalComponents")
+    else {
+        return;
+    };
+
+    for (name, type_annotation) in components {
+        let Some(name) = normalize_component_binding_name(name.as_str()) else {
+            continue;
+        };
+        let type_annotation =
+            rewrite_component_imports_for_virtual_project(type_annotation.as_str(), cwd);
+        external_template_bindings.insert(name.clone());
+        push_declared_const(stubs, seen_names, name.as_str(), type_annotation.as_str());
+    }
+}
+
 fn collect_plugin_injection_stubs(
     cwd: &Path,
     stubs: &mut Vec<String>,
@@ -161,7 +255,7 @@ fn collect_plugin_injection_stubs(
                 continue;
             }
 
-            if let Ok(source) = fs::read_to_string(path) {
+            if let Ok(source) = tracked_read_to_string(path) {
                 plugin_keys.extend(extract_plugin_provide_keys_from_source(&source));
             }
         }
@@ -198,22 +292,38 @@ fn push_declared_const(
     seen_names: &mut FxHashSet<String>,
     name: &str,
     type_annotation: &str,
-) {
+) -> bool {
     push_stub(
         stubs,
         seen_names,
         cstr!("declare const {name}: {type_annotation};"),
-    );
+    )
 }
 
-fn push_stub(stubs: &mut Vec<String>, seen_names: &mut FxHashSet<String>, stub: String) {
+#[allow(clippy::disallowed_types)]
+fn tracked_read_to_string(path: &Path) -> Result<std::string::String, std::io::Error> {
+    match profile!("cli.check.nuxt.read", fs::read_to_string(path)) {
+        Ok(content) => {
+            global_profiler().record_fs_read_to_string(content.len());
+            Ok(content)
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            Err(error)
+        }
+    }
+}
+
+fn push_stub(stubs: &mut Vec<String>, seen_names: &mut FxHashSet<String>, stub: String) -> bool {
     let Some(name) = declared_name(&stub) else {
         stubs.push(stub);
-        return;
+        return true;
     };
     if seen_names.insert(name.to_compact_string()) {
         stubs.push(stub);
+        return true;
     }
+    false
 }
 
 fn parse_module_specifier(from_part: &str) -> Option<&str> {
@@ -256,6 +366,92 @@ fn declared_name(stub: &str) -> Option<&str> {
     None
 }
 
+fn is_template_component_binding(name: &str) -> bool {
+    name.chars()
+        .next()
+        .is_some_and(|first| first == '_' || first.is_ascii_uppercase())
+}
+
+fn normalize_component_binding_name(name: &str) -> Option<String> {
+    let name = name.trim().trim_matches('"').trim_matches('\'');
+    if name.is_empty() {
+        return None;
+    }
+    if name.chars().enumerate().all(|(index, ch)| {
+        ch == '_'
+            || ch == '$'
+            || (ch.is_ascii_alphanumeric() && (index > 0 || !ch.is_ascii_digit()))
+    }) {
+        return Some(name.to_compact_string());
+    }
+    None
+}
+
+fn rewrite_component_imports_for_virtual_project(
+    type_annotation: &str,
+    project_root: &Path,
+) -> String {
+    let bytes = type_annotation.as_bytes();
+    let mut out = String::with_capacity(type_annotation.len());
+    let mut i = 0usize;
+
+    while i < bytes.len() {
+        let quote = if type_annotation[i..].starts_with("import('") {
+            Some('\'')
+        } else if type_annotation[i..].starts_with("import(\"") {
+            Some('"')
+        } else {
+            None
+        };
+
+        let Some(quote) = quote else {
+            out.push(bytes[i] as char);
+            i += 1;
+            continue;
+        };
+
+        out.push_str("import(");
+        out.push(quote);
+        i += 8;
+
+        let start = i;
+        while i < bytes.len() && bytes[i] != quote as u8 {
+            i += 1;
+        }
+
+        let specifier = &type_annotation[start..i];
+        out.push_str(&virtual_project_specifier(specifier, project_root));
+
+        if i < bytes.len() {
+            out.push(quote);
+            i += 1;
+        }
+    }
+
+    out
+}
+
+fn virtual_project_specifier(specifier: &str, project_root: &Path) -> String {
+    if !specifier.ends_with(".vue") {
+        return specifier.to_compact_string();
+    }
+
+    let specifier_path = Path::new(specifier);
+    let relative = if specifier_path.is_absolute() {
+        specifier_path.strip_prefix(project_root).ok()
+    } else {
+        None
+    };
+
+    if let Some(relative) = relative {
+        let mut rendered = cstr!("./{}", relative.display());
+        rendered.push_str(".ts");
+        return rendered;
+    }
+
+    cstr!("{specifier}.ts")
+}
+
 fn collect_fallback_stubs(stubs: &mut Vec<String>, seen_names: &mut FxHashSet<String>) {
     for stub in fallback_stub_strings() {
         push_stub(stubs, seen_names, stub);
@@ -264,11 +460,21 @@ fn collect_fallback_stubs(stubs: &mut Vec<String>, seen_names: &mut FxHashSet<St
 
 fn fallback_stub_strings() -> Vec<String> {
     vec![
-        "declare function ref<T>(value: T): $Vue['Ref']<$Vue['UnwrapRef']<T>>;".into(),
-        "declare function ref<T = any>(): $Vue['Ref']<T | undefined>;".into(),
-        "declare function computed<T>(getter: () => T): $Vue['ComputedRef']<T>;".into(),
-        "declare function computed<T>(options: { get: () => T; set: (value: T) => void }): $Vue['WritableComputedRef']<T>;".into(),
-        "declare function reactive<T extends object>(target: T): $Vue['UnwrapNestedRefs']<T>;".into(),
+        "type Composer = any;".into(),
+        "type Ref<T = any> = import('vue').Ref<T>;".into(),
+        "type ComputedRef<T = any> = import('vue').ComputedRef<T>;".into(),
+        "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;".into(),
+        "type ShallowRef<T = any> = import('vue').ShallowRef<T>;".into(),
+        "type UnwrapRef<T> = import('vue').UnwrapRef<T>;".into(),
+        "type UnwrapNestedRefs<T> = import('vue').UnwrapNestedRefs<T>;".into(),
+        "type MaybeRef<T = any> = import('vue').MaybeRef<T>;".into(),
+        "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;".into(),
+        "type Component = import('vue').Component;".into(),
+        "declare function ref<T>(value: T): Ref<UnwrapRef<T>>;".into(),
+        "declare function ref<T = any>(): Ref<T | undefined>;".into(),
+        "declare function computed<T>(getter: () => T): ComputedRef<T>;".into(),
+        "declare function computed<T>(options: { get: () => T; set: (value: T) => void }): WritableComputedRef<T>;".into(),
+        "declare function reactive<T extends object>(target: T): UnwrapNestedRefs<T>;".into(),
         "declare function readonly<T extends object>(target: T): Readonly<T>;".into(),
         "declare function watch(source: any, cb: (...args: any[]) => any, options?: any): any;".into(),
         "declare function watchEffect(effect: () => void, options?: any): any;".into(),
@@ -284,14 +490,15 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function onDeactivated(hook: () => any): void;".into(),
         "declare function onErrorCaptured(hook: (...args: any[]) => any): void;".into(),
         "declare function nextTick(fn?: () => void): Promise<void>;".into(),
-        "declare function toRef<T extends object, K extends keyof T>(object: T, key: K): $Vue['Ref']<T[K]>;".into(),
-        "declare function toRefs<T extends object>(object: T): { [K in keyof T]: $Vue['Ref']<T[K]> };".into(),
-        "declare function unref<T>(ref: T | $Vue['Ref']<T>): T;".into(),
-        "declare function isRef(value: any): value is $Vue['Ref'];".into(),
-        "declare function shallowRef<T>(value: T): $Vue['ShallowRef']<T>;".into(),
-        "declare function triggerRef(ref: $Vue['ShallowRef']): void;".into(),
+        "declare function toRef<T extends object, K extends keyof T>(object: T, key: K): Ref<T[K]>;".into(),
+        "declare function toRefs<T extends object>(object: T): { [K in keyof T]: Ref<T[K]> };".into(),
+        "declare function unref<T>(ref: T | Ref<T>): T;".into(),
+        "declare function isRef(value: any): value is Ref;".into(),
+        "declare function shallowRef<T>(value: T): ShallowRef<T>;".into(),
+        "declare function triggerRef(ref: ShallowRef): void;".into(),
         "declare function provide<T>(key: string | symbol, value: T): void;".into(),
-        "declare function inject<T>(key: string | symbol, defaultValue?: T): T;".into(),
+        "declare function inject<T>(key: string | symbol): T | undefined;".into(),
+        "declare function inject<T>(key: string | symbol, defaultValue: T): T;".into(),
         "declare function defineAsyncComponent(source: any): any;".into(),
         "declare function h(type: any, ...args: any[]): any;".into(),
         "declare function useAttrs(): Record<string, unknown>;".into(),
@@ -303,10 +510,11 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function onScopeDispose(fn: () => void): void;".into(),
         "declare function shallowReactive<T extends object>(target: T): T;".into(),
         "declare function shallowReadonly<T extends object>(target: T): Readonly<T>;".into(),
-        "declare function customRef<T>(factory: any): $Vue['Ref']<T>;".into(),
+        "declare function customRef<T>(factory: any): Ref<T>;".into(),
         "declare function useRouter(): any;".into(),
         "declare function useRoute(name?: string): any;".into(),
         "declare function definePageMeta(meta: any): void;".into(),
+        "declare function defineRouteRules(rules: any): void;".into(),
         "declare function useSeoMeta(meta: any): void;".into(),
         "declare function useFetch<T = any>(url: string | (() => string), options?: any): any;".into(),
         "declare function useAsyncData<T = any>(handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),
@@ -321,8 +529,8 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function useNuxtApp(): any;".into(),
         "declare function useRuntimeConfig(): any;".into(),
         "declare function useAppConfig(): any;".into(),
-        "declare function useState<T = any>(key: string, init?: () => T): $Vue['Ref']<T>;".into(),
-        "declare function useCookie<T = any>(name: string, options?: any): $Vue['Ref']<T>;".into(),
+        "declare function useState<T = any>(key: string, init?: () => T): Ref<T>;".into(),
+        "declare function useCookie<T = any>(name: string, options?: any): Ref<T>;".into(),
         "declare function useHead(input: any): void;".into(),
         "declare function useRequestHeaders(headers?: string[]): Record<string, string>;".into(),
         "declare function useRequestURL(): URL;".into(),
@@ -346,6 +554,16 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function useRequestEvent(): any;".into(),
         "declare function useRequestFetch(): typeof globalThis.fetch;".into(),
         "declare function useResponseHeaders(headers?: Record<string, string>): any;".into(),
+        "declare const NuxtLink: any;".into(),
+        "declare const NuxtPage: any;".into(),
+        "declare const NuxtLayout: any;".into(),
+        "declare const NuxtLoadingIndicator: any;".into(),
+        "declare const NuxtErrorBoundary: any;".into(),
+        "declare const NuxtWelcome: any;".into(),
+        "declare const NuxtIsland: any;".into(),
+        "declare const NuxtRouteAnnouncer: any;".into(),
+        "declare const ClientOnly: any;".into(),
+        "declare const DevOnly: any;".into(),
     ]
 }
 
@@ -538,11 +756,17 @@ fn static_property_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
 #[cfg(test)]
 mod tests {
     use std::path::Path;
+    use std::sync::atomic::{AtomicUsize, Ordering};
 
     use super::{
-        declared_name, extract_plugin_provide_keys_from_source, parse_export_names,
-        parse_module_specifier,
+        declared_name, detect_nuxt_auto_imports, extract_plugin_provide_keys_from_source,
+        fallback_stub_strings, parse_export_names, parse_module_specifier,
     };
+    use oxc_allocator::Allocator;
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
+    use vize_canon::virtual_ts::VirtualTsOptions;
+    use vize_carton::cstr;
 
     #[test]
     fn parses_module_export_lines() {
@@ -598,11 +822,88 @@ export default defineNuxtPlugin({
     }
 
     #[test]
+    fn fallback_stub_bundle_is_valid_typescript() {
+        let allocator = Allocator::default();
+        let source = fallback_stub_strings().join("\n");
+        let source_type = SourceType::default()
+            .with_module(true)
+            .with_typescript(true);
+        let ret = Parser::new(&allocator, &source, source_type).parse();
+
+        assert!(
+            ret.errors.is_empty(),
+            "fallback stubs should parse as TypeScript declarations: {:#?}\n{}",
+            ret.errors,
+            source
+        );
+    }
+
+    #[test]
     fn relative_specifier_rewrite_matches_project_root_layout() {
         let rewritten = super::rewrite_relative_specifier(
             "../../app/composables/users",
             Path::new("/workspace/.nuxt/types"),
         );
         assert_eq!(rewritten.as_str(), "/workspace/app/composables/users");
+    }
+
+    #[test]
+    fn detects_nuxt_global_components_as_external_template_bindings() {
+        let project_root = unique_case_dir("nuxt-components");
+        let _ = std::fs::remove_dir_all(&project_root);
+        std::fs::create_dir_all(project_root.join(".nuxt")).unwrap();
+        std::fs::create_dir_all(project_root.join("components")).unwrap();
+        std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+        std::fs::write(
+            project_root.join(".nuxt/components.d.ts"),
+            r#"declare module 'vue' {
+  export interface GlobalComponents {
+    AutoCard: typeof import('../components/AutoCard.vue')['default']
+    "QuotedWidget": typeof import('../components/QuotedWidget.vue')['default']
+  }
+}
+export {}
+"#,
+        )
+        .unwrap();
+
+        let mut options = VirtualTsOptions::default();
+        detect_nuxt_auto_imports(&mut options, &project_root);
+
+        assert!(
+            options.auto_import_stubs.iter().any(|stub| stub.contains(
+                "declare const AutoCard: typeof import('./components/AutoCard.vue.ts')['default'];"
+            )),
+            "expected AutoCard component stub, got: {:#?}",
+            options.auto_import_stubs
+        );
+        assert!(
+            options
+                .external_template_bindings
+                .iter()
+                .any(|name| name == "AutoCard")
+        );
+        assert!(
+            options
+                .external_template_bindings
+                .iter()
+                .any(|name| name == "ClientOnly")
+        );
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    fn unique_case_dir(name: &str) -> std::path::PathBuf {
+        static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
+
+        let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .and_then(Path::parent)
+            .expect("workspace root should exist");
+        let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
+        workspace_root
+            .join("target")
+            .join("vize-tests")
+            .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
     }
 }

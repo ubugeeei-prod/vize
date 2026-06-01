@@ -18,7 +18,7 @@ use vize_canon::{CorsaBridge, LspCompletionItem, LspDocumentation};
 use super::{is_inside_html_comment, script, style, template};
 #[cfg(feature = "native")]
 use crate::ide::corsa_support;
-use crate::ide::IdeContext;
+use crate::ide::{IdeContext, ecosystem};
 use crate::virtual_code::{ArtCursorPosition, BlockType};
 
 impl super::CompletionService {
@@ -61,6 +61,13 @@ impl super::CompletionService {
             return template::complete_inline_art(ctx);
         }
 
+        if ctx.state.lsp_features().ecosystem {
+            let ecosystem_items = ecosystem::completions(ctx);
+            if !ecosystem_items.is_empty() {
+                return Some(CompletionResponse::Array(ecosystem_items));
+            }
+        }
+
         let items = match ctx.block_type? {
             BlockType::Template => template::complete_template(ctx),
             BlockType::Script => script::complete_script(ctx, false),
@@ -91,7 +98,7 @@ impl super::CompletionService {
                         let items = Self::complete_art_variant_with_corsa(ctx, info, bridge).await;
                         if !items.is_empty() {
                             let mut all = items;
-                            all.extend(template::directive_completions());
+                            all.extend(template::complete_template(ctx));
                             return Some(CompletionResponse::Array(all));
                         }
                     }
@@ -99,6 +106,9 @@ impl super::CompletionService {
                     Self::complete(ctx)
                 }
                 Some(BlockType::ScriptSetup) => {
+                    if let Some(items) = crate::ide::musea::define_art_source_completions(ctx) {
+                        return Some(CompletionResponse::Array(items));
+                    }
                     // Script setup in art file: use normal script completion with Corsa.
                     if let Some(ref bridge) = corsa_bridge {
                         let items = Self::complete_script_with_corsa(ctx, true, bridge).await;
@@ -132,6 +142,13 @@ impl super::CompletionService {
             return template::complete_inline_art(ctx);
         }
 
+        if ctx.state.lsp_features().ecosystem {
+            let ecosystem_items = ecosystem::completions(ctx);
+            if !ecosystem_items.is_empty() {
+                return Some(CompletionResponse::Array(ecosystem_items));
+            }
+        }
+
         let block_type = ctx.block_type?;
 
         // If in template and cursor is inside an HTML comment, return directive completions only
@@ -161,7 +178,11 @@ impl super::CompletionService {
             if !corsa_items.is_empty() {
                 let mut items = corsa_items;
                 items.extend(match block_type {
-                    BlockType::Template => template::directive_completions(),
+                    BlockType::Template => {
+                        let mut extras = template::contextual_directive_completions(ctx);
+                        extras.extend(template::legacy_vue2_template_completions(ctx));
+                        extras
+                    }
                     BlockType::Script => script::composition_api_completions(),
                     BlockType::ScriptSetup => {
                         let mut v = script::composition_api_completions();
@@ -187,33 +208,34 @@ impl super::CompletionService {
         info: &crate::virtual_code::ArtVariantInfo,
         bridge: &CorsaBridge,
     ) -> Vec<CompletionItem> {
-        if let Some(ref virtual_docs) = ctx.virtual_docs {
-            if let Some(ref tmpl) = virtual_docs.template {
-                // Convert the art variant relative offset through the template source map
-                let relative_offset = info.relative_offset as u32;
-                let vts_offset = tmpl
-                    .source_map
-                    .to_generated(relative_offset)
-                    .map(|o| o as usize)
-                    .unwrap_or(relative_offset as usize);
+        if let Some(ref virtual_docs) = ctx.virtual_docs
+            && let Some(tmpl) = virtual_docs.art_template(info.variant_index)
+        {
+            // Convert the art variant relative offset through the template source map
+            let relative_offset = info.relative_offset as u32;
+            let vts_offset = tmpl
+                .source_map
+                .to_generated(relative_offset)
+                .map(|o| o as usize)
+                .unwrap_or(relative_offset as usize);
 
-                let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
+            let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
 
-                if bridge.is_initialized() {
-                    let request_path = corsa_support::template_request_path(ctx.uri);
-                    let Ok(uri) = bridge
-                        .open_or_update_virtual_document(&request_path, &tmpl.content)
-                        .await
-                    else {
-                        return vec![];
-                    };
+            if bridge.is_initialized() {
+                let request_path =
+                    corsa_support::art_template_request_path(ctx.uri, info.variant_index);
+                let Ok(uri) = bridge
+                    .open_or_update_virtual_document(&request_path, &tmpl.content)
+                    .await
+                else {
+                    return vec![];
+                };
 
-                    if let Ok(items) = bridge.completion(&uri, line, character).await {
-                        return items
-                            .into_iter()
-                            .map(Self::convert_lsp_completion)
-                            .collect();
-                    }
+                if let Ok(items) = bridge.completion(&uri, line, character).await {
+                    return items
+                        .into_iter()
+                        .map(Self::convert_lsp_completion)
+                        .collect();
                 }
             }
         }
@@ -227,30 +249,27 @@ impl super::CompletionService {
         ctx: &IdeContext<'_>,
         bridge: &CorsaBridge,
     ) -> Vec<CompletionItem> {
-        if let Some(ref virtual_docs) = ctx.virtual_docs {
-            if let Some(ref tmpl) = virtual_docs.template {
-                if let Some(vts_offset) =
-                    crate::ide::hover::HoverService::sfc_to_virtual_ts_offset(ctx, ctx.offset)
-                {
-                    let (line, character) =
-                        crate::ide::offset_to_position(&tmpl.content, vts_offset);
+        if let Some(ref virtual_docs) = ctx.virtual_docs
+            && let Some(ref tmpl) = virtual_docs.template
+            && let Some(vts_offset) =
+                crate::ide::hover::HoverService::sfc_to_virtual_ts_offset(ctx, ctx.offset)
+        {
+            let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
 
-                    if bridge.is_initialized() {
-                        let request_path = corsa_support::template_request_path(ctx.uri);
-                        let Ok(uri) = bridge
-                            .open_or_update_virtual_document(&request_path, &tmpl.content)
-                            .await
-                        else {
-                            return vec![];
-                        };
+            if bridge.is_initialized() {
+                let request_path = corsa_support::template_request_path(ctx.uri);
+                let Ok(uri) = bridge
+                    .open_or_update_virtual_document(&request_path, &tmpl.content)
+                    .await
+                else {
+                    return vec![];
+                };
 
-                        if let Ok(items) = bridge.completion(&uri, line, character).await {
-                            return items
-                                .into_iter()
-                                .map(Self::convert_lsp_completion)
-                                .collect();
-                        }
-                    }
+                if let Ok(items) = bridge.completion(&uri, line, character).await {
+                    return items
+                        .into_iter()
+                        .map(Self::convert_lsp_completion)
+                        .collect();
                 }
             }
         }
@@ -272,29 +291,30 @@ impl super::CompletionService {
                 virtual_docs.script.as_ref()
             };
 
-            if let Some(s) = script_doc {
-                if let Some(vts_offset) =
+            if let Some(s) = script_doc
+                && let Some(vts_offset) =
                     crate::ide::hover::HoverService::sfc_to_virtual_ts_script_offset(
                         ctx, ctx.offset,
                     )
-                {
-                    let (line, character) = crate::ide::offset_to_position(&s.content, vts_offset);
+            {
+                let (line, character) = crate::ide::offset_to_position(&s.content, vts_offset);
 
-                    if bridge.is_initialized() {
-                        let request_path = corsa_support::script_request_path(ctx.uri, is_setup);
-                        let Ok(uri) = bridge
-                            .open_or_update_virtual_document(&request_path, &s.content)
-                            .await
-                        else {
-                            return vec![];
-                        };
+                if bridge.is_initialized() {
+                    let request_path = corsa_support::script_request_path(ctx.uri, is_setup);
+                    let Ok(uri) = bridge
+                        .open_or_update_virtual_document(&request_path, &s.content)
+                        .await
+                    else {
+                        return vec![];
+                    };
 
-                        if let Ok(items) = bridge.completion(&uri, line, character).await {
-                            return items
-                                .into_iter()
-                                .map(Self::convert_lsp_completion)
-                                .collect();
-                        }
+                    if let Ok(items) = bridge.completion(&uri, line, character).await {
+                        let mut items: Vec<_> = items
+                            .into_iter()
+                            .map(Self::convert_lsp_completion)
+                            .collect();
+                        improve_unknown_reactive_completions(ctx, is_setup, &mut items);
+                        return items;
                     }
                 }
             }
@@ -367,4 +387,46 @@ impl super::CompletionService {
             _ => CompletionItemKind::TEXT,
         }
     }
+}
+
+#[cfg(feature = "native")]
+fn improve_unknown_reactive_completions(
+    ctx: &IdeContext<'_>,
+    is_setup: bool,
+    items: &mut [CompletionItem],
+) {
+    if !items.iter().any(completion_has_unknown_reactive_type) {
+        return;
+    }
+
+    let local_items = script::complete_script(ctx, is_setup);
+    for item in items
+        .iter_mut()
+        .filter(|item| completion_has_unknown_reactive_type(item))
+    {
+        let Some(local) = local_items
+            .iter()
+            .find(|local| local.label == item.label && local_has_specific_reactive_type(local))
+        else {
+            continue;
+        };
+        item.detail = local.detail.clone();
+        item.label_details = local.label_details.clone();
+        item.documentation = local.documentation.clone();
+    }
+}
+
+#[cfg(feature = "native")]
+fn completion_has_unknown_reactive_type(item: &CompletionItem) -> bool {
+    item.detail.as_deref().is_some_and(|detail| {
+        detail.contains("Ref<unknown>") || detail.contains("ComputedRef<unknown>")
+    })
+}
+
+#[cfg(feature = "native")]
+fn local_has_specific_reactive_type(item: &CompletionItem) -> bool {
+    item.detail.as_deref().is_some_and(|detail| {
+        (detail.contains("Ref<") || detail.contains("ComputedRef<"))
+            && !detail.contains("<unknown>")
+    })
 }

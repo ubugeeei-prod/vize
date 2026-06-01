@@ -6,7 +6,7 @@
 #![allow(clippy::disallowed_macros)]
 
 use crate::types::ArtDescriptor;
-use vize_carton::{append, cstr, String};
+use vize_carton::{String, append, cstr};
 
 /// Output of Vue transformation.
 #[derive(Debug, Clone)]

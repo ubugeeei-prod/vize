@@ -60,34 +60,34 @@ impl Rule for PreferPropsShorthand {
         }
 
         for attr in &element.props {
-            if let vize_relief::ast::PropNode::Directive(dir) = attr {
-                if dir.name == "bind" && !dir.shorthand {
-                    if let Some(arg) = &dir.arg {
-                        // Get the prop name
-                        let prop_name = match arg {
-                            ExpressionNode::Simple(s) => s.content.as_str(),
-                            _ => continue,
-                        };
+            if let vize_relief::ast::PropNode::Directive(dir) = attr
+                && dir.name == "bind"
+                && !dir.shorthand
+                && let Some(arg) = &dir.arg
+            {
+                // Get the prop name
+                let prop_name = match arg {
+                    ExpressionNode::Simple(s) => s.content.as_str(),
+                    _ => continue,
+                };
 
-                        // Get the expression value
-                        if let Some(exp) = &dir.exp {
-                            let value = match exp {
-                                ExpressionNode::Simple(s) => s.content.trim(),
-                                _ => continue,
-                            };
+                // Get the expression value
+                if let Some(exp) = &dir.exp {
+                    let value = match exp {
+                        ExpressionNode::Simple(s) => s.content.trim(),
+                        _ => continue,
+                    };
 
-                            // Check if it's a simple identifier matching the prop name
-                            let is_simple_identifier =
-                                value.chars().all(|c: char| c.is_alphanumeric() || c == '_');
+                    // Check if it's a simple identifier matching the prop name
+                    let is_simple_identifier =
+                        value.chars().all(|c: char| c.is_alphanumeric() || c == '_');
 
-                            if is_simple_identifier && names_match(prop_name, value) {
-                                ctx.warn_with_help(
-                                    ctx.t("vue/prefer-props-shorthand.message"),
-                                    &dir.loc,
-                                    ctx.t("vue/prefer-props-shorthand.help"),
-                                );
-                            }
-                        }
+                    if is_simple_identifier && names_match(prop_name, value) {
+                        ctx.warn_with_help(
+                            ctx.t("vue/prefer-props-shorthand.message"),
+                            &dir.loc,
+                            ctx.t("vue/prefer-props-shorthand.help"),
+                        );
                     }
                 }
             }

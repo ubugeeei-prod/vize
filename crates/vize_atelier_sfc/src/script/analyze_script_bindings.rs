@@ -33,10 +33,10 @@ pub fn analyze_script_bindings(source: &str) -> BindingMetadata {
     }
 
     for stmt in ret.program.body.iter() {
-        if let Statement::ExportDefaultDeclaration(export) = stmt {
-            if let ExportDefaultDeclarationKind::ObjectExpression(obj) = &export.declaration {
-                return analyze_bindings_from_options(obj, source);
-            }
+        if let Statement::ExportDefaultDeclaration(export) = stmt
+            && let ExportDefaultDeclarationKind::ObjectExpression(obj) = &export.declaration
+        {
+            return analyze_bindings_from_options(obj, source);
         }
     }
 
@@ -94,33 +94,33 @@ fn analyze_bindings_from_options(node: &ObjectExpression<'_>, source: &str) -> B
 
     // Handle setup() and data() methods
     for property in node.properties.iter() {
-        if let ObjectPropertyKind::ObjectProperty(prop) = property {
-            if let Expression::FunctionExpression(func) = &prop.value {
-                let key_name = match &prop.key {
-                    PropertyKey::StaticIdentifier(id) => id.name.to_compact_string(),
-                    _ => continue,
-                };
+        if let ObjectPropertyKind::ObjectProperty(prop) = property
+            && let Expression::FunctionExpression(func) = &prop.value
+        {
+            let key_name = match &prop.key {
+                PropertyKey::StaticIdentifier(id) => id.name.to_compact_string(),
+                _ => continue,
+            };
 
-                if key_name == "setup" || key_name == "data" {
-                    // Look for return statements in the function body
-                    for stmt in func
-                        .body
-                        .as_ref()
-                        .map(|b| b.statements.iter())
-                        .into_iter()
-                        .flatten()
+            if key_name == "setup" || key_name == "data" {
+                // Look for return statements in the function body
+                for stmt in func
+                    .body
+                    .as_ref()
+                    .map(|b| b.statements.iter())
+                    .into_iter()
+                    .flatten()
+                {
+                    if let Statement::ReturnStatement(ret) = stmt
+                        && let Some(Expression::ObjectExpression(obj)) = &ret.argument
                     {
-                        if let Statement::ReturnStatement(ret) = stmt {
-                            if let Some(Expression::ObjectExpression(obj)) = &ret.argument {
-                                for key in get_object_expression_keys(obj, source) {
-                                    let binding_type = if key_name == "setup" {
-                                        BindingType::SetupMaybeRef
-                                    } else {
-                                        BindingType::Data
-                                    };
-                                    bindings.bindings.insert(key, binding_type);
-                                }
-                            }
+                        for key in get_object_expression_keys(obj, source) {
+                            let binding_type = if key_name == "setup" {
+                                BindingType::SetupMaybeRef
+                            } else {
+                                BindingType::Data
+                            };
+                            bindings.bindings.insert(key, binding_type);
                         }
                     }
                 }
@@ -203,7 +203,7 @@ fn resolve_object_key(
 
 #[cfg(test)]
 mod tests {
-    use super::{analyze_script_bindings, BindingType};
+    use super::{BindingType, analyze_script_bindings};
 
     #[test]
     fn test_analyze_props_array() {

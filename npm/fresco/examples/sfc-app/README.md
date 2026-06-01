@@ -6,13 +6,13 @@ Vue Single File Component (SFC) を使った Fresco の例です。
 ## セットアップ
 
 ```bash
-pnpm install
+vp install
 ```
 
 ## ビルド
 
 ```bash
-pnpm build
+vp build
 ```
 
 ## 実行

@@ -2,7 +2,7 @@
 //!
 //! Transforms element nodes and their props.
 
-use vize_carton::{capitalize, String};
+use vize_carton::{String, capitalize, is_native_tag};
 
 use crate::ast::*;
 use crate::transform::TransformContext;
@@ -15,7 +15,7 @@ pub fn resolve_element_type<'a>(
     let tag = &el.tag;
 
     // Check if it's a component
-    if is_component(tag, el) {
+    if is_component(ctx, tag, el) {
         ctx.helper(RuntimeHelper::ResolveComponent);
         ctx.add_component(tag.clone());
         ElementType::Component
@@ -29,7 +29,15 @@ pub fn resolve_element_type<'a>(
 }
 
 /// Check if tag is a component
-fn is_component(tag: &str, el: &ElementNode<'_>) -> bool {
+fn is_component(ctx: &TransformContext<'_>, tag: &str, el: &ElementNode<'_>) -> bool {
+    if is_registered_component(ctx, tag) {
+        return true;
+    }
+
+    if is_native_tag(tag) {
+        return false;
+    }
+
     // Components start with uppercase or contain -
     let first_char = tag.chars().next().unwrap_or('a');
     if first_char.is_uppercase() {
@@ -40,18 +48,51 @@ fn is_component(tag: &str, el: &ElementNode<'_>) -> bool {
     }
     // Check for is attribute
     for prop in el.props.iter() {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name == "is" {
-                return true;
-            }
+        if let PropNode::Directive(dir) = prop
+            && dir.name == "is"
+        {
+            return true;
         }
-        if let PropNode::Attribute(attr) = prop {
-            if attr.name == "is" {
-                return true;
-            }
+        if let PropNode::Attribute(attr) = prop
+            && attr.name == "is"
+        {
+            return true;
         }
     }
     false
+}
+
+fn is_registered_component(ctx: &TransformContext<'_>, tag: &str) -> bool {
+    if ctx.is_component_registered(tag) {
+        return true;
+    }
+
+    let camel = camelize_component_name(tag);
+    if ctx.is_component_registered(camel.as_str()) {
+        return true;
+    }
+
+    let pascal = capitalize(&camel);
+    ctx.is_component_registered(pascal.as_str())
+}
+
+fn camelize_component_name(tag: &str) -> String {
+    let mut result = String::with_capacity(tag.len());
+    let mut uppercase_next = false;
+    for ch in tag.chars() {
+        if ch == '-' || ch == '_' {
+            uppercase_next = true;
+            continue;
+        }
+
+        if uppercase_next {
+            result.push(ch.to_ascii_uppercase());
+            uppercase_next = false;
+        } else {
+            result.push(ch);
+        }
+    }
+    result
 }
 
 /// Build element props for codegen
@@ -79,22 +120,22 @@ pub fn build_props<'a>(
                 match dir.name.as_str() {
                     "bind" => {
                         has_runtime_props = true;
-                        if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
-                            if !exp.is_static {
-                                dynamic_prop_names.push(exp.content.clone());
-                            }
+                        if let Some(ExpressionNode::Simple(exp)) = &dir.arg
+                            && !exp.is_static
+                        {
+                            dynamic_prop_names.push(exp.content.clone());
                         }
                     }
                     "on" => {
                         has_runtime_props = true;
-                        if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
-                            if !exp.is_static {
-                                let cap = capitalize(&exp.content);
-                                let mut name = String::with_capacity(2 + cap.len());
-                                name.push_str("on");
-                                name.push_str(&cap);
-                                dynamic_prop_names.push(name);
-                            }
+                        if let Some(ExpressionNode::Simple(exp)) = &dir.arg
+                            && !exp.is_static
+                        {
+                            let cap = capitalize(&exp.content);
+                            let mut name = String::with_capacity(2 + cap.len());
+                            name.push_str("on");
+                            name.push_str(&cap);
+                            dynamic_prop_names.push(name);
                         }
                     }
                     _ => {
@@ -216,11 +257,7 @@ fn calculate_patch_flag(el: &ElementNode<'_>) -> Option<i32> {
         }
     }
 
-    if flag > 0 {
-        Some(flag)
-    } else {
-        None
-    }
+    if flag > 0 { Some(flag) } else { None }
 }
 
 /// VNode call for codegen (transform-specific)
@@ -248,7 +285,7 @@ pub enum ChildrenType {
 
 #[cfg(test)]
 mod tests {
-    use super::{resolve_element_type, ElementType};
+    use super::{ElementType, resolve_element_type};
     use crate::ast::TemplateChildNode;
     use crate::parser::parse;
     use crate::transform::TransformContext;

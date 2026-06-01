@@ -1,0 +1,21 @@
+[language-server.vize]
+command = "vize"
+args = ["lsp"]
+
+[language-server.vize.config]
+lint = true
+
+[[language]]
+name = "vue"
+scope = "source.vue"
+file-types = ["vue"]
+roots = ["vize.config.pkl", "vize.config.json", "package.json", ".git"]
+language-servers = ["vize"]
+
+[[language]]
+name = "art-vue"
+language-id = "art-vue"
+scope = "source.art-vue"
+file-types = [{ glob = "*.art.vue" }]
+roots = ["vize.config.pkl", "vize.config.json", "package.json", ".git"]
+language-servers = ["vize"]

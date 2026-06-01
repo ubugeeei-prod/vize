@@ -11,13 +11,13 @@
     "fmt": "vp fmt --write src rspack.config.ts vite.config.ts"
   },
   "dependencies": {
-    "vue": "^3.5.13"
+    "vue": "catalog:vue-stable"
   },
   "devDependencies": {
-    "@rspack/cli": "^1.7.7",
-    "@rspack/core": "^1.7.7",
+    "@rspack/cli": "catalog:bundlers",
+    "@rspack/core": "catalog:bundlers",
     "@vizejs/rspack-plugin": "workspace:*",
-    "typescript": "^5.8.3",
+    "typescript": "catalog:typescript",
     "vize": "workspace:*"
   }
 }

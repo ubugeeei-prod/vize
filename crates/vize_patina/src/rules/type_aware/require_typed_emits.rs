@@ -90,7 +90,9 @@ impl Rule for RequireTypedEmits {
             return;
         }
 
-        let analysis = ctx.analysis().unwrap();
+        let Some(analysis) = ctx.analysis() else {
+            return;
+        };
         let emits = analysis.macros.emits();
 
         // Check if there are any emits
@@ -106,10 +108,10 @@ impl Rule for RequireTypedEmits {
             .find(|c| matches!(c.kind, vize_croquis::macros::MacroKind::DefineEmits));
 
         // If defineEmits has type arguments, all emits are typed
-        if let Some(call) = define_emits_call {
-            if call.type_args.is_some() {
-                return;
-            }
+        if let Some(call) = define_emits_call
+            && call.type_args.is_some()
+        {
+            return;
         }
 
         // Check each emit for payload type information

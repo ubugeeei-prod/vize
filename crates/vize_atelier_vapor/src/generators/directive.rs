@@ -3,7 +3,7 @@
 use super::block::GenerateContext;
 use crate::ir::DirectiveIRNode;
 use vize_atelier_core::ExpressionNode;
-use vize_carton::{cstr, String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 /// Generate Directive code
 pub fn generate_directive(ctx: &mut GenerateContext, directive: &DirectiveIRNode<'_>) {

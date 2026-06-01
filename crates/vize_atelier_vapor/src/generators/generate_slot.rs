@@ -2,7 +2,7 @@
 
 use super::block::GenerateContext;
 use crate::ir::SlotOutletIRNode;
-use vize_carton::{cstr, String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 /// Generate SlotOutlet code
 pub fn generate_slot_outlet(ctx: &mut GenerateContext, slot: &SlotOutletIRNode<'_>) {

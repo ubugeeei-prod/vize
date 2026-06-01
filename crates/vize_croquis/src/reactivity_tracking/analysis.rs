@@ -5,8 +5,8 @@
 
 use super::tracker::ReactivityTracker;
 use super::{BindingState, ViolationKind, ViolationSeverity};
-use vize_carton::append;
 use vize_carton::String;
+use vize_carton::append;
 
 impl ReactivityTracker {
     /// Generate markdown report.

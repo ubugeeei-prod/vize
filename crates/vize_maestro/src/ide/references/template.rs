@@ -105,12 +105,11 @@ impl ReferencesService {
                 TemplateChildNode::Element(el) => {
                     // Check directives
                     for prop in &el.props {
-                        if let PropNode::Directive(dir) = prop {
-                            if let Some(ref exp) = dir.exp {
-                                if let Some((text, offset)) = Self::get_expression_info(exp) {
-                                    expressions.push((text, offset));
-                                }
-                            }
+                        if let PropNode::Directive(dir) = prop
+                            && let Some(ref exp) = dir.exp
+                            && let Some((text, offset)) = Self::get_expression_info(exp)
+                        {
+                            expressions.push((text, offset));
                         }
                     }
                     // Visit children
@@ -123,10 +122,10 @@ impl ReferencesService {
                 }
                 TemplateChildNode::If(if_node) => {
                     for branch in &if_node.branches {
-                        if let Some(ref cond) = branch.condition {
-                            if let Some((text, offset)) = Self::get_expression_info(cond) {
-                                expressions.push((text, offset));
-                            }
+                        if let Some(ref cond) = branch.condition
+                            && let Some((text, offset)) = Self::get_expression_info(cond)
+                        {
+                            expressions.push((text, offset));
                         }
                         Self::visit_children_for_expressions(&branch.children, expressions);
                     }
@@ -138,10 +137,10 @@ impl ReferencesService {
                     Self::visit_children_for_expressions(&for_node.children, expressions);
                 }
                 TemplateChildNode::IfBranch(branch) => {
-                    if let Some(ref cond) = branch.condition {
-                        if let Some((text, offset)) = Self::get_expression_info(cond) {
-                            expressions.push((text, offset));
-                        }
+                    if let Some(ref cond) = branch.condition
+                        && let Some((text, offset)) = Self::get_expression_info(cond)
+                    {
+                        expressions.push((text, offset));
                     }
                     Self::visit_children_for_expressions(&branch.children, expressions);
                 }
@@ -209,16 +208,17 @@ impl ReferencesService {
                 // Check if this is in a binding context
                 // (inside {{ }}, after v-*, after :, after @, etc.)
                 if Self::is_in_binding_context(line, pos) {
+                    let character = crate::ide::offset_to_position(line, pos).1;
                     locations.push(Location {
                         uri: tower_lsp::lsp_types::Url::parse("file:///dummy").unwrap(),
                         range: Range {
                             start: Position {
                                 line: base_line + line_idx as u32,
-                                character: pos as u32,
+                                character,
                             },
                             end: Position {
                                 line: base_line + line_idx as u32,
-                                character: pos as u32 + word.len() as u32,
+                                character: character + word.encode_utf16().count() as u32,
                             },
                         },
                     });

@@ -24,7 +24,13 @@ pub fn hash_str(data: &str) -> u64 {
 /// Convert a hash to a hex string (16 characters).
 #[inline]
 pub fn hash_to_hex(hash: u64) -> String {
-    crate::cstr!("{hash:016x}")
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut out = String::with_capacity(16);
+    for index in 0..16 {
+        let shift = (15 - index) * 4;
+        out.push(HEX[((hash >> shift) & 0xF) as usize] as char);
+    }
+    out
 }
 
 /// Compute hash of a string and return as hex.

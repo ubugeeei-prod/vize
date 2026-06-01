@@ -2,6 +2,7 @@
 name = "vize_musea"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Musea - Component gallery and documentation for Vize Vue components"
@@ -10,6 +11,7 @@ description = "Musea - Component gallery and documentation for Vize Vue componen
 vize_carton.workspace = true
 vize_relief.workspace = true
 vize_atelier_sfc.workspace = true
+vize_croquis.workspace = true
 
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true

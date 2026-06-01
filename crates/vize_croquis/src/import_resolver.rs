@@ -15,7 +15,7 @@ use std::path::{Path, PathBuf};
 
 use dashmap::DashMap;
 use serde::Deserialize;
-use vize_carton::{cstr, profiler::CacheStats, CompactString, FxHashMap, String, ToCompactString};
+use vize_carton::{CompactString, FxHashMap, String, ToCompactString, cstr, profiler::CacheStats};
 
 /// Resolved module information
 #[derive(Debug, Clone)]
@@ -235,10 +235,10 @@ impl ImportResolver {
         }
 
         // Try base URL resolution
-        if let Some(ref base_url) = self.base_url {
-            if let Ok(resolved) = self.resolve_from_base(specifier, base_url) {
-                return Ok(resolved);
-            }
+        if let Some(ref base_url) = self.base_url
+            && let Ok(resolved) = self.resolve_from_base(specifier, base_url)
+        {
+            return Ok(resolved);
         }
 
         Err(ImportResolveError::NotFound(specifier.to_compact_string()))

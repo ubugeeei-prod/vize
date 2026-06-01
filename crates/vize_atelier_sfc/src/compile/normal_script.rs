@@ -1,7 +1,7 @@
 //! Functions for processing normal `<script>` blocks when both
 //! `<script>` and `<script setup>` exist.
 
-use vize_carton::{profile, String, ToCompactString};
+use vize_carton::{String, ToCompactString, profile};
 
 /// Extract content from normal script block that should be preserved when both
 /// `<script>` and `<script setup>` exist.

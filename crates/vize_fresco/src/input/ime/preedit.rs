@@ -114,11 +114,7 @@ impl Preedit {
                 .filter_map(|(i, _)| {
                     let prefix = &self.text[..i];
                     let count = SegmentedText::new(prefix).grapheme_count;
-                    if count == self.cursor {
-                        Some(i)
-                    } else {
-                        None
-                    }
+                    if count == self.cursor { Some(i) } else { None }
                 })
                 .next()
                 .unwrap_or(0)

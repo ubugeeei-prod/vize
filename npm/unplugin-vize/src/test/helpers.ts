@@ -6,7 +6,7 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const packageRoot = path.resolve(currentDir, "..", "..");
 export const workspaceRoot = path.resolve(packageRoot, "..", "..");
-const outputRoot = path.join(workspaceRoot, "__agent_only", "test-output", "unplugin-vize");
+const outputRoot = path.join(workspaceRoot, "target", "vize-tests", "test-output", "unplugin-vize");
 const snapshotRoots = Array.from(new Set([workspaceRoot, fs.realpathSync(workspaceRoot)])).map(
   (root) => root.replaceAll("\\", "/"),
 );

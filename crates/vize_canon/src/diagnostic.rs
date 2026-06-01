@@ -1,8 +1,8 @@
 //! Type error diagnostics.
 
 use std::borrow::Cow;
-use vize_carton::i18n::{t, t_fmt, Locale};
 use vize_carton::String;
+use vize_carton::i18n::{Locale, t, t_fmt};
 
 /// A type diagnostic from the type checker.
 #[derive(Debug, Clone)]

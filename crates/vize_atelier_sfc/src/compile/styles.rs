@@ -5,7 +5,7 @@
 
 use crate::types::{SfcError, SfcStyleBlock, StyleCompileOptions};
 
-use vize_carton::{profile, String};
+use vize_carton::{String, profile};
 /// Helper to compile all style blocks
 pub(super) fn compile_styles(
     styles: &[SfcStyleBlock],

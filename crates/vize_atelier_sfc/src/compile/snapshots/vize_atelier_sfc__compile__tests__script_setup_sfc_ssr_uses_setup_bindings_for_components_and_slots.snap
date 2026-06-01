@@ -4,20 +4,23 @@ expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
-import { withCtx as _withCtx } from "vue"
+import { createVNode as _createVNode, withCtx as _withCtx } from "vue"
 
 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(_ssrRenderComponent($setup.NuxtLayout, null, {
+  _push(_ssrRenderComponent($setup.NuxtLayout, _attrs, {
     default: _withCtx((_, _push, _parent, _scopeId) => {
       if (_push) {
         _push(_ssrRenderComponent($setup.NuxtPage, null, null, _parent))
+      } else {
+        return [_createVNode($setup.NuxtPage, null, null)]
       }
     }),
-  _: 1
+    _: 1
   }, _parent))
 }
-import { NuxtLayout, NuxtPage } from '#components'
+import { NuxtLayout, NuxtPage } from "#components"
+
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
@@ -25,7 +28,9 @@ export default /*@__PURE__*/_defineComponent({
   setup(__props) {
 
 
-return { NuxtPage, NuxtLayout }
+const __returned__ = { NuxtPage, NuxtLayout }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
 }
 
 })

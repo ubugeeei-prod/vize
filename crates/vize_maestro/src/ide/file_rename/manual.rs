@@ -11,7 +11,7 @@ use std::{
 use ignore::{WalkBuilder, WalkState};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{CallExpression, Expression, ImportExpression, Statement, TSImportType};
-use oxc_ast_visit::{walk, Visit};
+use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::{FileRename, Range, TextEdit, Url, WorkspaceEdit};
@@ -124,18 +124,16 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
     }
 
     fn visit_call_expression(&mut self, expression: &CallExpression<'a>) {
-        if let Expression::Identifier(identifier) = &expression.callee {
-            if identifier.name.as_str() == "require" {
-                if let Some(oxc_ast::ast::Argument::StringLiteral(literal)) =
-                    expression.arguments.first()
-                {
-                    self.push(
-                        literal.span.start + 1,
-                        literal.span.end - 1,
-                        literal.value.as_str(),
-                    );
-                }
-            }
+        if let Expression::Identifier(identifier) = &expression.callee
+            && identifier.name.as_str() == "require"
+            && let Some(oxc_ast::ast::Argument::StringLiteral(literal)) =
+                expression.arguments.first()
+        {
+            self.push(
+                literal.span.start + 1,
+                literal.span.end - 1,
+                literal.value.as_str(),
+            );
         }
 
         walk::walk_call_expression(self, expression);
@@ -190,10 +188,9 @@ pub(super) fn collect_import_rename_edits(
                 }
 
                 if let Some((uri, edits)) = process_importer_path(state, path, kind, rename_targets)
+                    && let Ok(mut changes) = changes.lock()
                 {
-                    if let Ok(mut changes) = changes.lock() {
-                        changes.insert(uri, edits);
-                    }
+                    changes.insert(uri, edits);
                 }
 
                 WalkState::Continue
@@ -220,10 +217,9 @@ pub(super) fn collect_import_rename_edits(
             &document.value().text(),
             kind,
             &rename_targets,
-        ) {
-            if let Ok(mut changes) = changes.lock() {
-                changes.insert(uri, edits);
-            }
+        ) && let Ok(mut changes) = changes.lock()
+        {
+            changes.insert(uri, edits);
         }
     }
 
@@ -612,11 +608,7 @@ fn apply_all_path_renames(path: &Path, renames: &[RenameTarget]) -> Option<PathB
         }
     }
 
-    if changed {
-        Some(updated)
-    } else {
-        None
-    }
+    if changed { Some(updated) } else { None }
 }
 
 fn apply_path_rename(path: &Path, rename: &RenameTarget) -> Option<PathBuf> {
@@ -663,10 +655,10 @@ fn importer_kind(path: &Path, only_vue_importers: bool) -> Option<ImporterKind> 
 }
 
 fn read_workspace_source(state: &ServerState, path: &Path) -> Option<std::string::String> {
-    if let Ok(uri) = Url::from_file_path(path) {
-        if let Some(document) = state.documents.get(&uri) {
-            return Some(document.text());
-        }
+    if let Ok(uri) = Url::from_file_path(path)
+        && let Some(document) = state.documents.get(&uri)
+    {
+        return Some(document.text());
     }
 
     fs::read_to_string(path).ok()
@@ -762,7 +754,9 @@ mod tests {
     use crate::server::ServerState;
 
     fn test_dir() -> tempfile::TempDir {
-        let base = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("__agent_only");
+        let base = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("target")
+            .join("vize-tests");
         fs::create_dir_all(&base).unwrap();
         tempfile::tempdir_in(base).unwrap()
     }

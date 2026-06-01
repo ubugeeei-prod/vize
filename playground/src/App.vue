@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, shallowRef, provide } from "vue";
+import { loadWasm } from "./wasm/index";
 import AtelierPlayground from "./features/atelier/AtelierPlayground.vue";
 import MuseaPlayground from "./features/musea/MuseaPlayground.vue";
 import PatinaPlayground from "./features/patina/PatinaPlayground.vue";
@@ -7,7 +8,7 @@ import GlyphPlayground from "./features/glyph/GlyphPlayground.vue";
 import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
 import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
 import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
-import { loadWasm } from "./wasm/index";
+import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
 
 // Theme toggle
 const isDark = ref(false);
@@ -19,9 +20,18 @@ function toggleTheme() {
 }
 
 // Main tab
-type MainTab = "atelier" | "patina" | "canon" | "croquis" | "cross-file" | "musea" | "glyph";
+type MainTab =
+  | "atelier"
+  | "inspector"
+  | "patina"
+  | "canon"
+  | "croquis"
+  | "cross-file"
+  | "musea"
+  | "glyph";
 const validTabs: MainTab[] = [
   "atelier",
+  "inspector",
   "patina",
   "canon",
   "croquis",
@@ -99,6 +109,13 @@ onMounted(async () => {
           <span class="tab-name">Atelier</span>
           <span class="tab-desc">compiler</span>
         </button>
+        <button
+          :class="['main-tab', { active: mainTab === 'inspector' }]"
+          @click="mainTab = 'inspector'"
+        >
+          <span class="tab-name">Inspector</span>
+          <span class="tab-desc">diff</span>
+        </button>
         <button :class="['main-tab', { active: mainTab === 'patina' }]" @click="mainTab = 'patina'">
           <span class="tab-name">Patina</span>
           <span class="tab-desc">linter</span>
@@ -174,7 +191,7 @@ onMounted(async () => {
         </button>
 
         <a
-          href="https://github.com/ubugeeei/vize"
+          href="https://github.com/ubugeeei-prod/vize"
           target="_blank"
           rel="noopener noreferrer"
           class="github-link"
@@ -192,6 +209,9 @@ onMounted(async () => {
     <main class="main">
       <template v-if="mainTab === 'patina'">
         <PatinaPlayground :compiler />
+      </template>
+      <template v-else-if="mainTab === 'inspector'">
+        <InspectorPlayground :compiler />
       </template>
       <template v-else-if="mainTab === 'canon'">
         <TypeCheckPlayground :compiler />

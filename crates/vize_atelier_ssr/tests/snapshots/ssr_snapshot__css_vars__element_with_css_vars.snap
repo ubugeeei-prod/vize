@@ -4,5 +4,5 @@ expression: "compile_with_css_vars(\"<div>hello</div>\")"
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
   const _cssVars = { style: { "color": _ctx.color } }
-  _push(`<div>hello</div>`)
+  _push(`<div${_ssrRenderAttrs(_attrs)}>hello</div>`)
 }

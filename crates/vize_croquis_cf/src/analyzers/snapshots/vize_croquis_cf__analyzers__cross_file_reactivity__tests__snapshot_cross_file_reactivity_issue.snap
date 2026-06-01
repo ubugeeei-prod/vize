@@ -1,0 +1,28 @@
+---
+source: crates/vize_croquis_cf/src/analyzers/cross_file_reactivity_tests.rs
+expression: output
+---
+=== Cross-File Reactivity Issues ===
+
+Issue 1 - ComposableReturnDestructured { composable_name: "useCounter", destructured_props: ["count", "increment"] }
+  File: FileId(1), offset=100
+  Related file: FileId(2)
+  Severity: Warning
+
+Issue 2 - StoreDestructured { store_name: "useUserStore", destructured_props: ["user", "isLoggedIn"] }
+  File: FileId(3), offset=150
+  Related file: FileId(4)
+  Severity: Warning
+
+Issue 3 - PropsDestructured { destructured_props: ["count", "name"] }
+  File: FileId(5), offset=30
+  Severity: Warning
+
+Issue 4 - InjectValueDestructured { key: "theme", destructured_props: ["isDark"] }
+  File: FileId(6), offset=80
+  Related file: FileId(1)
+  Severity: Warning
+
+Issue 5 - NonReactiveProvide { key: "config" }
+  File: FileId(7), offset=50
+  Severity: Error

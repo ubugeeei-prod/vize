@@ -11,6 +11,7 @@ export interface MuseaThemeColors {
   bgElevated?: string;
   accent?: string;
   accentHover?: string;
+  accentContrast?: string;
   accentSubtle?: string;
   text?: string;
   textSecondary?: string;

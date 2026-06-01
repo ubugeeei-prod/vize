@@ -1,8 +1,8 @@
 use super::{
+    CorsaProjectClient, DiagnosticFetch, LspDiagnostic,
     diagnostics_api::{document_identifier_uri, flatten_file_diagnostics, map_project_diagnostics},
     session::uri_document_identifier,
     utils::convert_diagnostics,
-    CorsaProjectClient, DiagnosticFetch, LspDiagnostic,
 };
 use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 use corsa::{
@@ -14,14 +14,16 @@ use lsp_types::{Diagnostic, DocumentDiagnosticReport, DocumentDiagnosticReportRe
 use std::{
     str::FromStr,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Arc,
+        atomic::{AtomicBool, Ordering},
     },
     time::Duration,
 };
-use vize_carton::{cstr, FxHashMap, String};
+use vize_carton::{FxHashMap, String, cstr};
 
 type DiagnosticBatch = Vec<(String, Vec<LspDiagnostic>)>;
+const LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE: usize = 128;
+const LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES: usize = 1;
 
 impl CorsaProjectClient {
     /// Get cached diagnostics for a URI.
@@ -43,16 +45,16 @@ impl CorsaProjectClient {
         &mut self,
         uris: &[String],
     ) -> Result<Vec<(String, Vec<LspDiagnostic>)>, String> {
-        if self.has_materialized_documents(uris) {
-            if let Some(results) = self.request_diagnostics_batch_via_materialized_files(uris)? {
-                return Ok(results);
-            }
+        if self.has_materialized_documents(uris)
+            && let Some(results) = self.request_diagnostics_batch_via_materialized_files(uris)?
+        {
+            return Ok(results);
         }
 
-        if self.can_batch_with_project_diagnostics(uris) {
-            if let Some(results) = self.request_diagnostics_batch_via_project_api(uris)? {
-                return Ok(results);
-            }
+        if self.can_batch_with_project_diagnostics(uris)
+            && let Some(results) = self.request_diagnostics_batch_via_project_api(uris)?
+        {
+            return Ok(results);
         }
 
         if let Some(results) = self.request_diagnostics_batch_via_lsp(uris)? {
@@ -71,16 +73,18 @@ impl CorsaProjectClient {
         &mut self,
         uri: &str,
     ) -> Result<DiagnosticFetch, String> {
-        if self.supports_file_diagnostics_api() && self.can_use_api_for_uri(uri) {
-            if let Some(fetch) = self.request_diagnostics_full_via_file_api(uri)? {
-                return fetch;
-            }
+        if self.supports_file_diagnostics_api()
+            && self.can_use_api_for_uri(uri)
+            && let Some(fetch) = self.request_diagnostics_full_via_file_api(uri)?
+        {
+            return fetch;
         }
 
-        if self.supports_project_diagnostics_api() && self.can_use_api_for_uri(uri) {
-            if let Some(fetch) = self.request_diagnostics_full_via_project_api(uri)? {
-                return fetch;
-            }
+        if self.supports_project_diagnostics_api()
+            && self.can_use_api_for_uri(uri)
+            && let Some(fetch) = self.request_diagnostics_full_via_project_api(uri)?
+        {
+            return fetch;
         }
 
         if let Some(fetch) = self.request_diagnostics_full_via_lsp(uri)? {
@@ -216,12 +220,11 @@ impl CorsaProjectClient {
             pairs.push((uri.clone(), self.session_document_uri(uri.as_str())));
         }
 
-        if self.supports_project_diagnostics_api() {
-            if let Some(results) =
+        if self.supports_project_diagnostics_api()
+            && let Some(results) =
                 self.request_materialized_diagnostics_batch_via_project_api(&pairs)?
-            {
-                return Ok(Some(results));
-            }
+        {
+            return Ok(Some(results));
         }
 
         let mut results = Vec::with_capacity(pairs.len());
@@ -372,6 +375,49 @@ impl CorsaProjectClient {
             return Ok(Some(Vec::new()));
         }
 
+        if uris.len() > LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE {
+            let mut results = Vec::with_capacity(uris.len());
+            for chunk in uris.chunks(LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE) {
+                let Some(mut chunk_results) =
+                    self.request_diagnostics_batch_via_lsp_chunk(chunk)?
+                else {
+                    return Ok(None);
+                };
+                results.append(&mut chunk_results);
+            }
+            return Ok(Some(results));
+        }
+
+        self.request_diagnostics_batch_via_lsp_chunk(uris)
+    }
+
+    fn request_diagnostics_batch_via_lsp_chunk(
+        &mut self,
+        uris: &[String],
+    ) -> Result<Option<DiagnosticBatch>, String> {
+        let mut attempts = 0;
+        loop {
+            match self.request_diagnostics_batch_via_lsp_chunk_once(uris) {
+                Err(error)
+                    if attempts < LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES
+                        && lsp_diagnostics_error_is_transient(&error) =>
+                {
+                    attempts += 1;
+                    std::thread::sleep(Duration::from_millis(25));
+                }
+                result => return result,
+            }
+        }
+    }
+
+    fn request_diagnostics_batch_via_lsp_chunk_once(
+        &mut self,
+        uris: &[String],
+    ) -> Result<Option<DiagnosticBatch>, String> {
+        if uris.is_empty() {
+            return Ok(Some(Vec::new()));
+        }
+
         let client = block_on(LspClient::spawn(
             LspSpawnConfig::new(self.executable.as_str()).with_cwd(self.cwd.clone()),
         ))
@@ -403,7 +449,7 @@ impl CorsaProjectClient {
             let document = VirtualDocument::new(
                 lsp_uri.clone(),
                 language_id_for_uri(document_uri.as_str()),
-                text,
+                text.as_str(),
             );
             overlay
                 .open(document)
@@ -442,6 +488,14 @@ fn diagnostics_api_is_unsupported(error: &str) -> bool {
     error.contains("unknown API method")
         || error.contains("method not found")
         || error.contains("Unsupported")
+}
+
+fn lsp_diagnostics_error_is_transient(error: &str) -> bool {
+    error.contains("protocol error: EOF")
+        || error.contains("EOF while parsing")
+        || error.contains("process is closed: jsonrpc reader")
+        || error.contains("Broken pipe")
+        || error.contains("broken pipe")
 }
 
 fn diagnostics_api_error_is_unsupported(error: &impl std::fmt::Display) -> bool {
@@ -609,5 +663,24 @@ fn language_id_for_uri(uri: &str) -> &'static str {
         "typescriptreact"
     } else {
         "typescript"
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::lsp_diagnostics_error_is_transient;
+
+    #[test]
+    fn recognizes_transient_lsp_transport_errors() {
+        assert!(lsp_diagnostics_error_is_transient(
+            "protocol error: EOF while parsing a string at line 1 column 150"
+        ));
+        assert!(lsp_diagnostics_error_is_transient(
+            "Failed to request LSP diagnostics for file:///src/App.vue.ts: process is closed: jsonrpc reader"
+        ));
+        assert!(lsp_diagnostics_error_is_transient("Broken pipe"));
+        assert!(!lsp_diagnostics_error_is_transient(
+            "TypeScript semantic diagnostics are unavailable"
+        ));
     }
 }

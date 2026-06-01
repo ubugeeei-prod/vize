@@ -145,8 +145,8 @@ mod tests {
         let content = ".container { color: red; }";
         let style = make_style_block(content, false);
 
-        let mut gen = StyleCodeGenerator::new();
-        let doc = gen.generate(&style, 0);
+        let mut generator = StyleCodeGenerator::new();
+        let doc = generator.generate(&style, 0);
 
         assert_eq!(doc.content, content);
         assert_eq!(doc.source_map.len(), 1);

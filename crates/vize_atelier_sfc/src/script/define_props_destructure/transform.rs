@@ -9,10 +9,10 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::FxHashMap;
 
-use super::collector::collect_identifier_rewrites;
-use super::helpers::{transform_props_text_based, PROPS_REST_SENTINEL};
 use super::PropsDestructuredBindings;
-use vize_carton::{profile, String, ToCompactString};
+use super::collector::collect_identifier_rewrites;
+use super::helpers::{PROPS_REST_SENTINEL, transform_props_text_based};
+use vize_carton::{String, ToCompactString, profile};
 
 /// Transform destructured props references in source code.
 /// Rewrites `foo` to `__props.foo` for destructured props.
@@ -58,7 +58,7 @@ pub fn transform_destructured_props(
         // Apply rewrites if any found (empty rewrites means all props are shadowed or unused)
         if !rewrites.is_empty() {
             // Apply rewrites in reverse order to preserve positions
-            rewrites.sort_by(|a, b| b.0.cmp(&a.0));
+            rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
             let mut result = source.to_compact_string();
             for (start, end, replacement) in rewrites {

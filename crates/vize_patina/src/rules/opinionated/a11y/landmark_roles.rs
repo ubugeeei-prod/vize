@@ -57,28 +57,25 @@ struct LandmarkInfo {
 fn get_landmark_role<'a>(element: &ElementNode<'a>) -> Option<&'static str> {
     // Check explicit role attribute first
     for prop in &element.props {
-        if let PropNode::Attribute(attr) = prop {
-            if attr.name == "role" {
-                if let Some(value) = &attr.value {
-                    return match value.content.as_str() {
-                        "banner" | "complementary" | "contentinfo" | "form" | "main"
-                        | "navigation" | "region" | "search" => {
-                            Some(match value.content.as_str() {
-                                "banner" => "banner",
-                                "complementary" => "complementary",
-                                "contentinfo" => "contentinfo",
-                                "form" => "form",
-                                "main" => "main",
-                                "navigation" => "navigation",
-                                "region" => "region",
-                                "search" => "search",
-                                _ => unreachable!(),
-                            })
-                        }
-                        _ => None,
-                    };
-                }
-            }
+        if let PropNode::Attribute(attr) = prop
+            && attr.name == "role"
+            && let Some(value) = &attr.value
+        {
+            return match value.content.as_str() {
+                "banner" | "complementary" | "contentinfo" | "form" | "main" | "navigation"
+                | "region" | "search" => Some(match value.content.as_str() {
+                    "banner" => "banner",
+                    "complementary" => "complementary",
+                    "contentinfo" => "contentinfo",
+                    "form" => "form",
+                    "main" => "main",
+                    "navigation" => "navigation",
+                    "region" => "region",
+                    "search" => "search",
+                    _ => unreachable!(),
+                }),
+                _ => None,
+            };
         }
     }
 
@@ -114,15 +111,15 @@ fn collect_landmarks<'a>(children: &[TemplateChildNode<'a>], landmarks: &mut Vec
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {
-                if el.tag_type != ElementType::Component {
-                    if let Some(role) = get_landmark_role(el) {
-                        landmarks.push(LandmarkInfo {
-                            role: role.to_compact_string(),
-                            label: get_label(el),
-                            start: el.loc.start.offset,
-                            end: el.loc.end.offset,
-                        });
-                    }
+                if el.tag_type != ElementType::Component
+                    && let Some(role) = get_landmark_role(el)
+                {
+                    landmarks.push(LandmarkInfo {
+                        role: role.to_compact_string(),
+                        label: get_label(el),
+                        start: el.loc.start.offset,
+                        end: el.loc.end.offset,
+                    });
                 }
                 collect_landmarks(&el.children, landmarks);
             }

@@ -1,6 +1,11 @@
 //! DOM compiler snapshot tests.
 //!
 //! These tests compare the DOM compiler output against expected snapshots.
+#![allow(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods
+)]
 
 use vize_atelier_dom::compile_template;
 use vize_carton::Bump;
@@ -37,6 +42,27 @@ mod static_element {
     #[test]
     fn nested_elements() {
         insta::assert_snapshot!(get_compiled("<div><span>hello</span></div>"));
+    }
+
+    #[test]
+    fn nested_elements_with_static_attrs() {
+        insta::assert_snapshot!(get_compiled(
+            r#"<div class="wrapper"><span>hello</span></div>"#
+        ));
+    }
+
+    #[test]
+    fn nested_dynamic_element_does_not_hoist_parent_attrs() {
+        insta::assert_snapshot!(get_compiled(
+            r#"<div class="wrapper"><span :class="active">hello</span></div>"#
+        ));
+    }
+
+    #[test]
+    fn nested_component_does_not_hoist_parent_attrs() {
+        insta::assert_snapshot!(get_compiled(
+            r#"<div class="wrapper"><MyComponent class="child" /></div>"#
+        ));
     }
 }
 

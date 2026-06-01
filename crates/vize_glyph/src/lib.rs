@@ -97,7 +97,7 @@ pub fn format_style(source: &str, options: &FormatOptions) -> Result<String, For
 
 #[cfg(test)]
 mod tests {
-    use super::{format_script, format_sfc, format_sfc_with_allocator, Allocator, FormatOptions};
+    use super::{Allocator, FormatOptions, format_script, format_sfc, format_sfc_with_allocator};
 
     #[test]
     fn test_format_simple_sfc() {
@@ -138,6 +138,30 @@ const msg = 'hello'
 <style scoped>
 .container { color: red; }
 </style>
+"#;
+        let options = FormatOptions::default();
+        let result = format_sfc(source, &options).unwrap();
+
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_format_sfc_preserves_block_attrs() {
+        let source = r#"<template functional>
+  <div>{{ msg }}</div>
+</template>
+
+<script setup lang="ts" generic="T extends string">
+const msg = 'hello'
+</script>
+
+<style scoped module lang="scss">
+.container { color: red; }
+</style>
+
+<i18n global locale="en">
+{"hello":"Hello"}
+</i18n>
 "#;
         let options = FormatOptions::default();
         let result = format_sfc(source, &options).unwrap();

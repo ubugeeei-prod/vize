@@ -2,7 +2,7 @@
 //!
 //! Transforms v-model directives for two-way binding.
 
-use vize_carton::{cstr, Box, Bump, String, ToCompactString};
+use vize_carton::{Box, Bump, String, ToCompactString, cstr};
 
 use crate::ir::{DirectiveIRNode, OperationNode};
 use vize_atelier_core::{DirectiveNode, ElementNode, ExpressionNode};

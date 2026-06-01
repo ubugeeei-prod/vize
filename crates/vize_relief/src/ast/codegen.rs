@@ -6,10 +6,10 @@
 use vize_carton::{Box, Bump, PatchFlags, String, Vec};
 
 use super::{
+    RuntimeHelper,
     core::{NodeType, SourceLocation},
     expressions::{CompoundExpressionNode, ExpressionNode, SimpleExpressionNode},
     nodes::TemplateChildNode,
-    RuntimeHelper,
 };
 
 /// VNode call expression

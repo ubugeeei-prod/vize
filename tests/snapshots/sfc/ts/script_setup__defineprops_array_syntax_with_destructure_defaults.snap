@@ -4,7 +4,7 @@ expression: ts_output.as_str()
 ---
 import { mergeDefaults as _mergeDefaults } from 'vue'
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({

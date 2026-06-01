@@ -2,7 +2,7 @@
 //!
 //! Identifies static content that can be hoisted out of the render function.
 
-use vize_carton::{bitflags, CompactString, SmallVec};
+use vize_carton::{CompactString, SmallVec, bitflags};
 
 bitflags! {
     /// Patch flags indicating what parts of a node can change

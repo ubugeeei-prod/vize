@@ -1,0 +1,19 @@
+---
+source: crates/vize_atelier_sfc/src/css/tests.rs
+expression: "v_bind_snapshot(&transformed, &vars)"
+---
+vars:
+- color /* keep ) inside comments */
+
+css:
+
+.icon::before {
+  content: "v-bind(icon)";
+  color: var(--test-color\ \/\*\ keep\ \)\ inside\ comments\ \*\/);
+}
+
+/* background: v-bind(bg); */
+// width: v-bind(width);
+.label {
+  background: 'v-bind(bg)';
+}

@@ -2,7 +2,7 @@
 
 use super::block::GenerateContext;
 use crate::ir::SetTextIRNode;
-use vize_carton::{cstr, String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 /// Generate SetText code
 pub fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRNode<'_>) {

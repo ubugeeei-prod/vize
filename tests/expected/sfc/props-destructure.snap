@@ -1,0 +1,132 @@
+===
+name: destructure defaults in source order
+options: sfc
+--- INPUT ---
+<script setup>
+const { count = 1, label = 'x' } = defineProps(['count', 'label'])
+</script>
+
+<template>
+  <div>{{ count }} {{ label }}</div>
+</template>
+--- OUTPUT ---
+import { mergeDefaults as _mergeDefaults } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default {
+  __name: 'test',
+  props: /*@__PURE__*/_mergeDefaults(['count', 'label'], {
+  count: 1,
+  label: 'x'
+}),
+  setup(__props) {
+
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(__props.count) + " " + _toDisplayString(__props.label), 1 /* TEXT */))
+}
+}
+
+}
+===
+name: destructure default kinds factory and skip
+options: sfc
+--- INPUT ---
+<script setup>
+const { a = 1, b = [1, 2], c = () => {}, d = obj } = defineProps(['a', 'b', 'c', 'd'])
+</script>
+
+<template>
+  <div>{{ a }} {{ b }} {{ c }} {{ d }}</div>
+</template>
+--- OUTPUT ---
+import { mergeDefaults as _mergeDefaults } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default {
+  __name: 'test',
+  props: /*@__PURE__*/_mergeDefaults(['a', 'b', 'c', 'd'], {
+  a: 1,
+  b: () => ([1, 2]),
+  c: () => {}, __skip_c: true,
+  d: obj, __skip_d: true
+}),
+  setup(__props) {
+
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(__props.a) + " " + _toDisplayString(__props.b) + " " + _toDisplayString(__props.c) + " " + _toDisplayString(__props.d), 1 /* TEXT */))
+}
+}
+
+}
+===
+name: destructure object default is factory wrapped
+options: sfc
+--- INPUT ---
+<script setup>
+const { config = { open: true } } = defineProps(['config'])
+</script>
+
+<template>
+  <div>{{ config }}</div>
+</template>
+--- OUTPUT ---
+import { mergeDefaults as _mergeDefaults } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default {
+  __name: 'test',
+  props: /*@__PURE__*/_mergeDefaults(['config'], {
+  config: () => ({ open: true })
+}),
+  setup(__props) {
+
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(__props.config), 1 /* TEXT */))
+}
+}
+
+}
+===
+name: useTemplateRef binding is a setup ref
+options: sfc
+--- INPUT ---
+<script setup>
+import { useTemplateRef, onMounted } from 'vue'
+const el = useTemplateRef('myEl')
+onMounted(() => {
+  console.log(el.value)
+})
+</script>
+
+<template>
+  <div>{{ el }}</div>
+</template>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+import { useTemplateRef, onMounted } from 'vue'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const el = useTemplateRef('myEl')
+onMounted(() => {
+  console.log(el.value)
+})
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(el.value), 1 /* TEXT */))
+}
+}
+
+}

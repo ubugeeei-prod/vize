@@ -1,22 +1,30 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { classifyVitePluginRequest } from "@vizejs/native";
 import type { TransformResult } from "vite";
 import { transformWithOxc } from "vite";
 
-import { getCompileOptionsForRequest, getEnvironmentCache, type VizePluginState } from "./state.js";
-import { compileFile } from "../compiler.js";
-import { generateOutput, hasDelegatedStyles } from "../utils/index.js";
-import { resolveCssImports } from "../utils/css.js";
 import {
-  isVizeVirtual,
-  isVizeSsrVirtual,
-  fromVirtualId,
+  getCompileOptionsForRequest,
+  getEnvironmentCache,
+  shouldExtractCssForRequest,
+  syncCollectedCssForFile,
+  type VizePluginState,
+} from "./state.ts";
+import { compileFile } from "../compiler.ts";
+import { generateOutput, hasDelegatedStyles } from "../utils/index.ts";
+import {
+  resolveCssImports,
+  scopeCssForPipeline,
+  transformCssVarsForPipeline,
+} from "../utils/css.ts";
+import {
   LEGACY_VIZE_PREFIX,
   RESOLVED_CSS_MODULE,
   rewriteDynamicTemplateImports,
-} from "../virtual.js";
-import { rewriteStaticAssetUrls, applyDefineReplacements } from "../transform.js";
+} from "../virtual.ts";
+import { rewriteStaticAssetUrls, applyDefineReplacements } from "../transform.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -28,19 +36,158 @@ export default defineComponent({
 `;
 
 export function getBoundaryPlaceholderCode(realPath: string, ssr: boolean): string | null {
-  if (ssr && realPath.endsWith(".client.vue")) {
+  const boundaryKind = classifyVitePluginRequest(realPath).boundaryKind;
+  if (ssr && boundaryKind === "client") {
     return SERVER_PLACEHOLDER_CODE;
   }
-  if (!ssr && realPath.endsWith(".server.vue")) {
+  if (!ssr && boundaryKind === "server") {
     return SERVER_PLACEHOLDER_CODE;
   }
   return null;
 }
 
 function getOxcDumpPath(root: string, realPath: string): string {
-  const dumpDir = path.resolve(root || process.cwd(), "__agent_only", "oxc-dumps");
+  const dumpDir = path.resolve(root || process.cwd(), "node_modules", ".vize", "oxc-dumps");
   fs.mkdirSync(dumpDir, { recursive: true });
   return path.join(dumpDir, `vize-oxc-error-${path.basename(realPath)}.ts`);
+}
+
+function getVirtualModuleDefines(
+  state: Pick<VizePluginState, "clientViteDefine" | "isProduction" | "serverViteDefine">,
+  ssr: boolean,
+): Record<string, string> {
+  return {
+    "import.meta.client": ssr ? "false" : "true",
+    "import.meta.server": ssr ? "true" : "false",
+    "import.meta.dev": state.isProduction ? "false" : "true",
+    "import.meta.test": "false",
+    "import.meta.prerender": "false",
+    ...(ssr ? state.serverViteDefine : state.clientViteDefine),
+  };
+}
+
+export function normalizeVueServerRendererImport(code: string): string {
+  return code.replace(/\bfrom\s+(['"])@vue\/server-renderer\1/g, 'from "vue/server-renderer"');
+}
+
+function findMacroArtifactModule(
+  state: VizePluginState,
+  realPath: string,
+  ssr: boolean,
+  kind: string,
+): string | null {
+  const cache = getEnvironmentCache(state, ssr);
+  const extractCss = shouldExtractCssForRequest(state, ssr);
+  realPath = classifyVitePluginRequest(realPath).normalizedVuePath;
+  let compiled = cache.get(realPath) ?? state.cache.get(realPath) ?? state.ssrCache.get(realPath);
+
+  if (!compiled && fs.existsSync(realPath)) {
+    const source = fs.readFileSync(realPath, "utf-8");
+    compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, ssr), source);
+  }
+  syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
+
+  return compiled?.macroArtifacts?.find((artifact) => artifact.kind === kind)?.moduleCode ?? null;
+}
+
+function hasNuxtComponentQuery(request: ReturnType<typeof classifyVitePluginRequest>): boolean {
+  if (!request.querySuffix) {
+    return false;
+  }
+
+  return new URLSearchParams(request.querySuffix.slice(1)).has("nuxt_component");
+}
+
+function loadCompiledSfcModule(
+  state: VizePluginState,
+  realPath: string,
+  isSsr: boolean,
+  currentBase: string,
+  loadOptions?: { ssr?: boolean },
+): { code: string; map: null } | string | null {
+  const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
+  if (placeholderCode) {
+    state.logger.log(`load: using boundary placeholder for ${realPath}`);
+    return {
+      code: placeholderCode,
+      map: null,
+    };
+  }
+
+  const cache = getEnvironmentCache(state, isSsr);
+  const extractCss = shouldExtractCssForRequest(state, isSsr);
+  let compiled = cache.get(realPath);
+
+  // On-demand compile if not cached
+  if (!compiled && fs.existsSync(realPath)) {
+    state.logger.log(`load: on-demand compiling ${realPath}`);
+    compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, isSsr));
+  }
+  syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
+
+  if (!compiled) {
+    return null;
+  }
+
+  const hasDelegated = hasDelegatedStyles(compiled);
+  const pendingHmrUpdateType = loadOptions?.ssr
+    ? undefined
+    : state.pendingHmrUpdateTypes.get(realPath);
+  if (compiled.css && !hasDelegated) {
+    compiled = {
+      ...compiled,
+      css: resolveCssImports(
+        compiled.css,
+        realPath,
+        state.cssAliasRules,
+        state.server !== null,
+        currentBase,
+      ),
+    };
+  }
+  const generatedOutput = generateOutput(compiled, {
+    isProduction: state.isProduction,
+    isDev: state.server !== null && !isSsr,
+    ssr: isSsr,
+    hmrUpdateType: pendingHmrUpdateType,
+    extractCss,
+    filePath: realPath,
+  });
+  const output = rewriteStaticAssetUrls(
+    rewriteDynamicTemplateImports(
+      isSsr ? normalizeVueServerRendererImport(generatedOutput) : generatedOutput,
+      state.dynamicImportAliasRules,
+    ),
+    state.dynamicImportAliasRules,
+  );
+  if (!loadOptions?.ssr) {
+    state.pendingHmrUpdateTypes.delete(realPath);
+  }
+  return {
+    code: output,
+    map: null,
+  };
+}
+
+function loadDefinePageArtifact(
+  state: VizePluginState,
+  realPath: string,
+  ssr: boolean,
+): { code: string; map: null } {
+  return {
+    code:
+      findMacroArtifactModule(state, realPath, ssr, "vue-router.definePage") ?? "export default {}",
+    map: null,
+  };
+}
+
+function loadDefinePageMetaArtifact(
+  state: VizePluginState,
+  realPath: string,
+  ssr: boolean,
+): { code: string; map: null } | null {
+  const code = findMacroArtifactModule(state, realPath, ssr, "nuxt.definePageMeta");
+  return code ? { code, map: null } : null;
 }
 
 export function loadHook(
@@ -48,12 +195,22 @@ export function loadHook(
   id: string,
   loadOptions?: { ssr?: boolean },
 ): string | { code: string; map: null } | null {
+  const request = classifyVitePluginRequest(id);
+  if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0")) {
+    if (!request.isVueSfcPath || !hasNuxtComponentQuery(request)) {
+      return null;
+    }
+  }
+
   // Pick the correct viteBase for URL resolution based on the build environment.
   const currentBase = loadOptions?.ssr ? state.serverViteBase : state.clientViteBase;
 
   // Handle virtual CSS module for production extraction
   if (id === RESOLVED_CSS_MODULE) {
-    const allCss = Array.from(state.collectedCss.values()).join("\n\n");
+    let allCss = "";
+    for (const css of state.collectedCss.values()) {
+      allCss += allCss ? `\n\n${css}` : css;
+    }
     return allCss;
   }
 
@@ -66,18 +223,20 @@ export function loadHook(
       .replace(/\.\w+$/, ""); // strip .{lang}
   }
 
-  if (styleId.includes("?vue&type=style") || styleId.includes("?vue=&type=style")) {
-    const [filename, queryString] = styleId.split("?");
-    const realPath = isVizeVirtual(filename) ? fromVirtualId(filename) : filename;
-    const params = new URLSearchParams(queryString);
-    const indexStr = params.get("index");
-    const lang = params.get("lang");
-    const _hasModule = params.has("module");
-    const scoped = params.get("scoped");
+  const styleRequest = classifyVitePluginRequest(styleId);
+  if (styleRequest.isVueStyleQuery) {
+    const sourceRequest = classifyVitePluginRequest(styleRequest.path);
+    const realPath =
+      sourceRequest.vizeVirtualPath ??
+      sourceRequest.normalizedFsId ??
+      sourceRequest.normalizedVuePath ??
+      styleRequest.path;
+    const lang = styleRequest.styleLang ?? null;
+    const scoped = styleRequest.styleScoped ?? null;
 
     const compiled = state.cache.get(realPath);
     const fallbackCompiled = compiled ?? state.ssrCache.get(realPath);
-    const blockIndex = indexStr !== null ? parseInt(indexStr, 10) : -1;
+    const blockIndex = styleRequest.styleIndex ?? -1;
 
     if (
       fallbackCompiled?.styles &&
@@ -87,27 +246,13 @@ export function loadHook(
       const block = fallbackCompiled.styles[blockIndex];
       let styleContent = block.content;
 
-      // For scoped preprocessor styles, wrap content in a scope selector
-      if (scoped && block.scoped && lang && lang !== "css") {
-        const lines = styleContent.split("\n");
-        const hoisted: string[] = [];
-        const body: string[] = [];
-        for (const line of lines) {
-          const trimmed = line.trimStart();
-          if (
-            trimmed.startsWith("@use ") ||
-            trimmed.startsWith("@forward ") ||
-            trimmed.startsWith("@import ")
-          ) {
-            hoisted.push(line);
-          } else {
-            body.push(line);
-          }
-        }
-        const bodyContent = body.join("\n");
-        const hoistedContent = hoisted.length > 0 ? hoisted.join("\n") + "\n\n" : "";
-        styleContent = `${hoistedContent}[${scoped}] {\n${bodyContent}\n}`;
+      // Keep delegated plain CSS scoped while preserving PostCSS-only syntax
+      // such as `@apply` for the downstream CSS pipeline.
+      if (scoped && block.scoped && (!lang || lang === "css")) {
+        styleContent = scopeCssForPipeline(styleContent, scoped);
       }
+
+      styleContent = transformCssVarsForPipeline(styleContent, fallbackCompiled.scopeId);
 
       return {
         code: styleContent,
@@ -127,89 +272,44 @@ export function loadHook(
     return "";
   }
 
-  // Handle ?macro=true queries
-  if (id.startsWith("\0") && id.endsWith("?macro=true")) {
-    const realPath = id.slice(1).replace("?macro=true", "");
-    if (fs.existsSync(realPath)) {
-      const source = fs.readFileSync(realPath, "utf-8");
-      const setupMatch = source.match(/<script\s+setup[^>]*>([\s\S]*?)<\/script>/);
-      if (setupMatch) {
-        const scriptContent = setupMatch[1];
-        return {
-          code: `${scriptContent}\nexport default {}`,
-          map: null,
-        };
-      }
+  // Handle Vue Router's ?definePage query through extracted artifacts.
+  if (id.startsWith("\0") && request.hasDefinePageQuery) {
+    const realPath = request.strippedVirtualPath ?? "";
+    if (request.isVueSfcPath) {
+      return loadDefinePageArtifact(state, realPath, !!loadOptions?.ssr);
     }
-    return { code: "export default {}", map: null };
+  }
+
+  // Handle ?macro=true queries
+  if (id.startsWith("\0") && request.hasMacroQuery) {
+    const realPath = request.strippedVirtualPath ?? "";
+    if (request.isVueSfcPath) {
+      const artifactLoad = loadDefinePageMetaArtifact(state, realPath, !!loadOptions?.ssr);
+      if (artifactLoad) {
+        return artifactLoad;
+      }
+      return { code: "export default {}", map: null };
+    }
   }
 
   // Handle vize virtual modules
-  if (isVizeVirtual(id)) {
-    const realPath = fromVirtualId(id);
-    const isSsr = isVizeSsrVirtual(id) || !!loadOptions?.ssr;
+  if (request.isVizeVirtual) {
+    const realPath = request.vizeVirtualPath ?? "";
+    const isSsr = request.isVizeSsrVirtual || !!loadOptions?.ssr;
 
     if (!realPath.endsWith(".vue")) {
       state.logger.log(`load: skipping non-vue virtual module ${realPath}`);
       return null;
     }
+    return loadCompiledSfcModule(state, realPath, isSsr, currentBase, loadOptions);
+  }
 
-    const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
-    if (placeholderCode) {
-      state.logger.log(`load: using boundary placeholder for ${realPath}`);
-      return {
-        code: placeholderCode,
-        map: null,
-      };
-    }
-
-    const cache = getEnvironmentCache(state, isSsr);
-    let compiled = cache.get(realPath);
-
-    // On-demand compile if not cached
-    if (!compiled && fs.existsSync(realPath)) {
-      state.logger.log(`load: on-demand compiling ${realPath}`);
-      compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, isSsr));
-    }
-
-    if (compiled) {
-      const hasDelegated = hasDelegatedStyles(compiled);
-      const pendingHmrUpdateType = loadOptions?.ssr
-        ? undefined
-        : state.pendingHmrUpdateTypes.get(realPath);
-      if (compiled.css && !hasDelegated) {
-        compiled = {
-          ...compiled,
-          css: resolveCssImports(
-            compiled.css,
-            realPath,
-            state.cssAliasRules,
-            state.server !== null,
-            currentBase,
-          ),
-        };
-      }
-      const output = rewriteStaticAssetUrls(
-        rewriteDynamicTemplateImports(
-          generateOutput(compiled, {
-            isProduction: state.isProduction,
-            isDev: state.server !== null && !isSsr,
-            hmrUpdateType: pendingHmrUpdateType,
-            extractCss: state.extractCss,
-            filePath: realPath,
-          }),
-          state.dynamicImportAliasRules,
-        ),
-        state.dynamicImportAliasRules,
-      );
-      if (!loadOptions?.ssr) {
-        state.pendingHmrUpdateTypes.delete(realPath);
-      }
-      return {
-        code: output,
-        map: null,
-      };
-    }
+  if (request.isVueSfcPath && hasNuxtComponentQuery(request)) {
+    const realPath = classifyVitePluginRequest(
+      request.normalizedFsId ?? request.path,
+    ).normalizedVuePath;
+    const isSsr = !!loadOptions?.ssr;
+    return loadCompiledSfcModule(state, realPath, isSsr, currentBase, loadOptions);
   }
 
   // Handle \0-prefixed non-vue files leaked from virtual module dynamic imports.
@@ -220,9 +320,11 @@ export function loadHook(
     if (afterPrefix.includes("?commonjs-")) {
       return null;
     }
-    const [pathPart, queryPart] = afterPrefix.split("?");
-    const querySuffix = queryPart ? `?${queryPart}` : "";
-    const fsPath = pathPart.startsWith("/@fs/") ? pathPart.slice(4) : pathPart;
+    const leakedRequest = classifyVitePluginRequest(afterPrefix);
+    const fsPath = leakedRequest.normalizedFsId
+      ? classifyVitePluginRequest(leakedRequest.normalizedFsId).path
+      : leakedRequest.path;
+    const querySuffix = leakedRequest.querySuffix;
     if (fsPath.startsWith("/") && fs.existsSync(fsPath) && fs.statSync(fsPath).isFile()) {
       const importPath =
         state.server === null
@@ -243,28 +345,49 @@ export async function transformHook(
   id: string,
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
-  const isMacro = id.startsWith("\0") && id.endsWith("?macro=true");
-  if (isVizeVirtual(id) || isMacro) {
-    const realPath = isMacro ? id.slice(1).replace("?macro=true", "") : fromVirtualId(id);
+  if (!id.startsWith("\0")) {
+    return null;
+  }
+
+  const request = classifyVitePluginRequest(id);
+  if (request.isVizeVirtual || request.isMacroVirtualId) {
+    const realPath = request.isMacroVirtualId
+      ? (request.strippedVirtualPath ?? "")
+      : (request.vizeVirtualPath ?? "");
     try {
       const result = await transformWithOxc(code, realPath, {
         lang: "ts",
+        sourcemap: false,
       });
-      const defines = options?.ssr ? state.serverViteDefine : state.clientViteDefine;
+      const defines = getVirtualModuleDefines(state, options?.ssr ?? false);
       let transformed = result.code;
-      if (Object.keys(defines).length > 0) {
-        transformed = applyDefineReplacements(transformed, defines);
-      }
+      transformed = applyDefineReplacements(transformed, defines);
 
-      return { code: transformed, map: result.map as TransformResult["map"] };
+      return { code: transformed, map: null };
     } catch (e: unknown) {
       state.logger.error(`transformWithOxc failed for ${realPath}:`, e);
-      const dumpPath = getOxcDumpPath(state.root, realPath);
-      fs.writeFileSync(dumpPath, code, "utf-8");
-      state.logger.error(`Dumped failing code to ${dumpPath}`);
-      return { code: "export default {}", map: null };
+      let dumpPath: string | null = null;
+      try {
+        dumpPath = getOxcDumpPath(state.root, realPath);
+        fs.writeFileSync(dumpPath, code, "utf-8");
+        state.logger.error(`Dumped failing code to ${dumpPath}`);
+      } catch (dumpError: unknown) {
+        state.logger.error(`Failed to dump failing virtual module for ${realPath}:`, dumpError);
+      }
+
+      const message = [
+        `[vize] Virtual module transform failed for ${realPath}: ${formatUnknownError(e)}`,
+        dumpPath ? `Dumped failing code to ${dumpPath}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
+      throw new Error(message);
     }
   }
 
   return null;
+}
+
+function formatUnknownError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

@@ -68,14 +68,14 @@ impl Rule for ValidAttributeName {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if !Self::is_valid_attribute_name(&attr.name) {
-                    ctx.error_with_help(
-                        ctx.t_fmt("vue/valid-attribute-name.message", &[("name", &attr.name)]),
-                        &attr.name_loc,
-                        ctx.t("vue/valid-attribute-name.help"),
-                    );
-                }
+            if let PropNode::Attribute(attr) = prop
+                && !Self::is_valid_attribute_name(&attr.name)
+            {
+                ctx.error_with_help(
+                    ctx.t_fmt("vue/valid-attribute-name.message", &[("name", &attr.name)]),
+                    &attr.name_loc,
+                    ctx.t("vue/valid-attribute-name.help"),
+                );
             }
         }
     }

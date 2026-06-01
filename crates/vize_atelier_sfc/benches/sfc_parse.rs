@@ -2,8 +2,8 @@
 //!
 //! Run with: cargo bench -p vize_atelier_sfc
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
-use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
+use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
+use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
 const SIMPLE_SFC: &str = r#"<template>
   <div class="container">

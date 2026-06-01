@@ -1,15 +1,52 @@
 //! Helpers for lightweight `.d.ts` parsing used by `vize check`.
 
+#![allow(clippy::disallowed_macros)]
+
 use std::{fs, path::Path};
 
-use vize_carton::{String, ToCompactString};
+use vize_carton::{String, ToCompactString, profile, profiler::global_profiler};
 
 pub(super) fn parse_interface_members(
     path: &Path,
     interface_name: &str,
 ) -> Result<Vec<(String, String)>, std::io::Error> {
-    let content = fs::read_to_string(path)?;
+    let content = match profile!("cli.check.dts.read", fs::read_to_string(path)) {
+        Ok(content) => {
+            global_profiler().record_fs_read_to_string(content.len());
+            content
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(error);
+        }
+    };
     Ok(parse_interface_members_content(&content, interface_name))
+}
+
+pub(super) fn parse_interface_members_with_rewritten_imports(
+    path: &Path,
+    interface_name: &str,
+) -> Result<Vec<(String, String)>, std::io::Error> {
+    let content = match profile!("cli.check.dts.read", fs::read_to_string(path)) {
+        Ok(content) => {
+            global_profiler().record_fs_read_to_string(content.len());
+            content
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(error);
+        }
+    };
+    let source_dir = path.parent().unwrap_or_else(|| Path::new("."));
+    Ok(parse_interface_members_content(&content, interface_name)
+        .into_iter()
+        .map(|(name, type_annotation)| {
+            (
+                name,
+                normalize_rewritten_type(type_annotation.as_str(), source_dir),
+            )
+        })
+        .collect())
 }
 
 pub(super) fn parse_interface_members_content(
@@ -68,7 +105,16 @@ pub(super) fn parse_interface_members_content(
 pub(super) fn parse_declared_global_values(
     path: &Path,
 ) -> Result<Vec<(String, String)>, std::io::Error> {
-    let content = fs::read_to_string(path)?;
+    let content = match profile!("cli.check.dts.read", fs::read_to_string(path)) {
+        Ok(content) => {
+            global_profiler().record_fs_read_to_string(content.len());
+            content
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(error);
+        }
+    };
     let base_dir = path.parent().unwrap_or_else(|| Path::new("."));
     Ok(parse_declared_global_values_content(&content, base_dir))
 }
@@ -124,20 +170,19 @@ pub(super) fn parse_declared_global_values_content(
             .strip_prefix("const ")
             .or_else(|| trimmed.strip_prefix("let "))
             .or_else(|| trimmed.strip_prefix("var "))
+            && let Some((name, type_ann)) = parse_named_type(rest)
         {
-            if let Some((name, type_ann)) = parse_named_type(rest) {
-                if type_ann.trim().is_empty() {
-                    current_name = Some(name);
-                    current_type.clear();
-                } else if is_type_complete(type_ann.as_str()) {
-                    values.push((
-                        name,
-                        normalize_rewritten_type(type_ann.as_str(), source_dir),
-                    ));
-                } else {
-                    current_name = Some(name);
-                    current_type = type_ann;
-                }
+            if type_ann.trim().is_empty() {
+                current_name = Some(name);
+                current_type.clear();
+            } else if is_type_complete(type_ann.as_str()) {
+                values.push((
+                    name,
+                    normalize_rewritten_type(type_ann.as_str(), source_dir),
+                ));
+            } else {
+                current_name = Some(name);
+                current_type = type_ann;
             }
         }
     }
@@ -164,8 +209,9 @@ fn append_pending_member(
     current_type.push(' ');
     current_type.push_str(trimmed.trim_end_matches(';'));
 
-    if is_type_complete(current_type.as_str()) {
-        let name = current_name.take().unwrap();
+    if is_type_complete(current_type.as_str())
+        && let Some(name) = current_name.take()
+    {
         members.push((name, normalize_type(current_type.as_str())));
         current_type.clear();
     }
@@ -187,8 +233,9 @@ fn append_pending_global(
     current_type.push(' ');
     current_type.push_str(trimmed.trim_end_matches(';'));
 
-    if is_type_complete(current_type.as_str()) {
-        let name = current_name.take().unwrap();
+    if is_type_complete(current_type.as_str())
+        && let Some(name) = current_name.take()
+    {
         values.push((
             name,
             normalize_rewritten_type(current_type.as_str(), source_dir),
@@ -227,8 +274,15 @@ fn flush_pending_global(
 
 fn parse_named_type(line: &str) -> Option<(String, String)> {
     let (name_part, type_part) = line.split_once(':')?;
-    let name = name_part.trim().trim_end_matches('?').trim();
+    let mut name = name_part.trim().trim_end_matches('?').trim();
+    if let Some(rest) = name.strip_prefix("readonly ") {
+        name = rest.trim().trim_end_matches('?').trim();
+    }
+    let name = name.trim_matches('"').trim_matches('\'').trim();
     if name.is_empty() {
+        return None;
+    }
+    if name.starts_with('[') {
         return None;
     }
 
@@ -368,6 +422,28 @@ declare module 'vue' {
         assert_eq!(members[0].1.as_str(), "string");
         assert_eq!(members[1].0.as_str(), "bar");
         assert_eq!(members[1].1.as_str(), "typeof import('./bar').bar");
+    }
+
+    #[test]
+    fn parses_readonly_and_quoted_members_without_index_signatures() {
+        let content = r#"
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    readonly $config?: typeof import('./config').config
+    "quoted-key": string
+    [key: string]: unknown
+  }
+}
+"#;
+
+        let members =
+            parse_interface_members_content(content, "interface ComponentCustomProperties");
+
+        assert_eq!(members.len(), 2);
+        assert_eq!(members[0].0.as_str(), "$config");
+        assert_eq!(members[0].1.as_str(), "typeof import('./config').config");
+        assert_eq!(members[1].0.as_str(), "quoted-key");
+        assert_eq!(members[1].1.as_str(), "string");
     }
 
     #[test]

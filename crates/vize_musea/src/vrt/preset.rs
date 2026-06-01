@@ -189,7 +189,7 @@ pub const PRESET_VIEWPORTS: &[ViewportPreset] = &[
 
 #[cfg(test)]
 mod tests {
-    use super::{ViewportPreset, PRESET_VIEWPORTS};
+    use super::{PRESET_VIEWPORTS, ViewportPreset};
     use crate::types::ViewportConfig;
     use std::str::FromStr;
 

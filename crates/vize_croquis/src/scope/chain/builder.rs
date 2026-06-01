@@ -4,11 +4,11 @@
 //! onto the chain (v-for, v-slot, event handler, callback, module, etc.).
 
 use super::{
-    smallvec, BindingType, BlockScopeData, CallbackScopeData, ClientOnlyScopeData,
-    ClosureScopeData, CompactString, EventHandlerScopeData, ExternalModuleScopeData,
-    JsGlobalScopeData, NonScriptSetupScopeData, ParentScopes, Scope, ScopeBinding, ScopeChain,
-    ScopeData, ScopeId, ScopeKind, ScriptSetupScopeData, UniversalScopeData, VForScopeData,
-    VSlotScopeData, VueGlobalScopeData,
+    BindingType, BlockScopeData, CallbackScopeData, ClientOnlyScopeData, ClosureScopeData,
+    CompactString, EventHandlerScopeData, ExternalModuleScopeData, JsGlobalScopeData,
+    NonScriptSetupScopeData, ParentScopes, Scope, ScopeBinding, ScopeChain, ScopeData, ScopeId,
+    ScopeKind, ScriptSetupScopeData, UniversalScopeData, VForScopeData, VSlotScopeData,
+    VueGlobalScopeData, smallvec,
 };
 
 impl ScopeChain {
@@ -29,10 +29,10 @@ impl ScopeChain {
         let mut parents: ParentScopes = smallvec![self.current];
 
         // Add Vue global scope as additional parent if it exists
-        if let Some(vue_id) = self.find_scope_by_kind(ScopeKind::VueGlobal) {
-            if !parents.contains(&vue_id) {
-                parents.push(vue_id);
-            }
+        if let Some(vue_id) = self.find_scope_by_kind(ScopeKind::VueGlobal)
+            && !parents.contains(&vue_id)
+        {
+            parents.push(vue_id);
         }
 
         let scope = Scope::with_parents(id, parents, kind);
@@ -55,11 +55,14 @@ impl ScopeChain {
         let parents = self.build_template_parents();
         let mut scope = Scope::with_span_parents(id, parents, ScopeKind::VFor, start, end);
 
-        // Add value alias as binding
-        scope.add_binding(
-            data.value_alias.clone(),
-            ScopeBinding::new(BindingType::SetupConst, start),
-        );
+        // Add value aliases as bindings. Destructured v-for values introduce
+        // multiple names even though the generated parameter is a single pattern.
+        for value in &data.value_bindings {
+            scope.add_binding(
+                value.clone(),
+                ScopeBinding::new(BindingType::SetupConst, start),
+            );
+        }
 
         // Add key alias if present
         if let Some(ref key) = data.key_alias {
@@ -259,10 +262,10 @@ impl ScopeChain {
 
         // Build parents: current scope + !js (browser globals)
         let mut parents: ParentScopes = smallvec![self.current];
-        if let Some(browser_id) = self.find_scope_by_kind(ScopeKind::JsGlobalBrowser) {
-            if !parents.contains(&browser_id) {
-                parents.push(browser_id);
-            }
+        if let Some(browser_id) = self.find_scope_by_kind(ScopeKind::JsGlobalBrowser)
+            && !parents.contains(&browser_id)
+        {
+            parents.push(browser_id);
         }
 
         let mut scope = Scope::with_span_parents(id, parents, ScopeKind::ClientOnly, start, end);

@@ -1,6 +1,6 @@
 //! Type diagnostic collection.
 //!
-//! Converts vize_vitrine type check results into LSP diagnostics,
+//! Converts vize_canon type check results into LSP diagnostics,
 //! including support for the legacy vize_canon type checker and
 //! batch type checking via Corsa.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
@@ -9,7 +9,10 @@ use tower_lsp::lsp_types::{
     CodeDescription, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, Location,
     NumberOrString, Position, Range, Url,
 };
-use vize_vitrine::{type_check_sfc, TypeCheckOptions, TypeSeverity};
+use vize_canon::{
+    SfcTypeCheckOptions as TypeCheckOptions, SfcTypeSeverity as TypeSeverity, type_check_sfc,
+    type_check_sfc_with_legacy_vue2,
+};
 
 use super::{LspTypeCheckOptions, TypeService};
 use crate::server::ServerState;
@@ -17,7 +20,22 @@ use crate::server::ServerState;
 impl TypeService {
     /// Collect type diagnostics for a document using the strict type checker.
     pub fn collect_diagnostics(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        Self::collect_diagnostics_with_options(state, uri, &LspTypeCheckOptions::default())
+        let cfg = state.get_type_checker_config();
+        Self::collect_diagnostics_with_options(
+            state,
+            uri,
+            &LspTypeCheckOptions {
+                strict: cfg.strict,
+                check_props: cfg.check_props,
+                check_emits: cfg.check_emits,
+                check_template_bindings: cfg.check_template_bindings,
+                check_reactivity: cfg.check_reactivity,
+                check_setup_context: cfg.check_setup_context,
+                check_invalid_exports: cfg.check_invalid_exports,
+                check_fallthrough_attrs: cfg.check_fallthrough_attrs,
+                legacy_vue2: state.legacy_vue2_enabled(),
+            },
+        )
     }
 
     /// Collect type diagnostics with custom options.
@@ -32,7 +50,7 @@ impl TypeService {
 
         let content = doc.text();
 
-        // Use vize_vitrine's strict type checker
+        // Use vize_canon's strict type checker
         let options = TypeCheckOptions {
             filename: uri.path().to_string().into(),
             strict: lsp_options.strict,
@@ -46,7 +64,11 @@ impl TypeService {
             include_virtual_ts: false,
         };
 
-        let result = type_check_sfc(&content, &options);
+        let result = if lsp_options.legacy_vue2 {
+            type_check_sfc_with_legacy_vue2(&content, &options)
+        } else {
+            type_check_sfc(&content, &options)
+        };
 
         // Convert to LSP diagnostics
         result
@@ -112,10 +134,12 @@ impl TypeService {
                 #[allow(clippy::disallowed_macros)]
                 let code_description = diag.code.as_ref().map(|code| CodeDescription {
                     href: Url::parse(&format!(
-                        "https://github.com/ubugeeei/vize/wiki/type-errors#{}",
+                        "https://github.com/ubugeeei-prod/vize/wiki/type-errors#{}",
                         code
                     ))
-                    .unwrap_or_else(|_| Url::parse("https://github.com/ubugeeei/vize").unwrap()),
+                    .unwrap_or_else(|_| {
+                        Url::parse("https://github.com/ubugeeei-prod/vize").unwrap()
+                    }),
                 });
 
                 Diagnostic {
@@ -149,9 +173,7 @@ impl TypeService {
 
     /// Collect diagnostics using the legacy vize_canon type checker.
     /// This is kept for backwards compatibility and can be removed later.
-    #[deprecated(
-        note = "Use collect_diagnostics which uses the stricter vize_vitrine type checker"
-    )]
+    #[deprecated(note = "Use collect_diagnostics which uses the stricter vize_canon type checker")]
     pub fn collect_diagnostics_legacy(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
         let Some(doc) = state.documents.get(uri) else {
             return vec![];
@@ -194,11 +216,11 @@ impl TypeService {
                 Diagnostic {
                     range: Range {
                         start: Position {
-                            line: template_start_line + start_line - 1,
+                            line: template_start_line.saturating_sub(1) + start_line,
                             character: start_col,
                         },
                         end: Position {
-                            line: template_start_line + end_line - 1,
+                            line: template_start_line.saturating_sub(1) + end_line,
                             character: end_col,
                         },
                     },
@@ -264,9 +286,9 @@ impl TypeService {
     }
 }
 
-/// Convert byte offset to (line, column) - line is 1-indexed, column is 0-indexed.
+/// Convert byte offset to (line, column), both 0-indexed for LSP.
 pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
-    let mut line = 1u32;
+    let mut line = 0u32;
     let mut col = 0u32;
     let mut current_offset = 0;
 
@@ -278,10 +300,91 @@ pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
             line += 1;
             col = 0;
         } else {
-            col += 1;
+            col += ch.len_utf16() as u32;
         }
         current_offset += ch.len_utf8();
     }
 
     (line, col)
+}
+
+#[cfg(test)]
+mod diagnostics_tests {
+    use super::{TypeService, offset_to_line_col};
+    use crate::server::ServerState;
+    use tower_lsp::lsp_types::{DiagnosticSeverity, NumberOrString, Url};
+
+    #[test]
+    fn offset_to_line_col_is_zero_indexed_for_lsp() {
+        assert_eq!(offset_to_line_col("one\ntwo", 0), (0, 0));
+        assert_eq!(offset_to_line_col("one\ntwo", 4), (1, 0));
+        assert_eq!(offset_to_line_col("one\ntwo", 6), (1, 2));
+    }
+
+    #[test]
+    fn offset_to_line_col_counts_utf16_code_units() {
+        let source = "const icon = \"😀\"; missing";
+        let offset = source.find("missing").unwrap();
+
+        assert_eq!(offset_to_line_col(source, offset), (0, 19));
+    }
+
+    #[test]
+    fn collect_diagnostics_uses_zero_indexed_lsp_lines() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///Component.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<script setup>\nconst props = defineProps(['count'])\n</script>\n<template>{{ props.count }}</template>"
+                .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = TypeService::collect_diagnostics(&state, &uri);
+        let diagnostic = diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.code.as_ref().is_some_and(|code| {
+                matches!(code, tower_lsp::lsp_types::NumberOrString::String(value) if value == "untyped-prop")
+            }))
+            .expect("untyped prop diagnostic should be present");
+
+        assert_eq!(diagnostic.range.start.line, 1);
+        assert_eq!(diagnostic.severity, Some(DiagnosticSeverity::WARNING));
+    }
+
+    #[test]
+    fn collect_diagnostics_does_not_report_regex_literals_as_undefined_bindings() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///RegexLiteral.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            r#"<script setup lang="ts">
+const message = 'hello'
+const bar = 'baz'
+</script>
+<template>
+  {{ message.match(/foo/) }}
+  {{ /foo/.test(message) }}
+  {{ message.replace(/foo/g, bar) }}
+</template>"#
+                .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = TypeService::collect_diagnostics(&state, &uri);
+
+        assert!(
+            diagnostics
+                .iter()
+                .filter(|diagnostic| matches!(
+                    diagnostic.code,
+                    Some(NumberOrString::String(ref code)) if code == "undefined-binding"
+                ))
+                .collect::<Vec<_>>()
+                .is_empty(),
+            "regex literals should not produce undefined-binding diagnostics: {diagnostics:#?}"
+        );
+    }
 }

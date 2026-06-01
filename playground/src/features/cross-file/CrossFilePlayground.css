@@ -87,6 +87,37 @@
   cursor: help;
 }
 
+.profile-switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 8px 12px 0;
+}
+
+.profile-btn {
+  min-width: 0;
+  height: 24px;
+  padding: 0 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.profile-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.profile-btn.active {
+  border-color: var(--accent-rust);
+  color: var(--accent-rust);
+  background: rgba(224, 112, 72, 0.12);
+}
+
 /* Preset Selector */
 .preset-section {
   flex-shrink: 0;
@@ -424,8 +455,22 @@
 }
 
 .editor-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 10px;
   font-family: "JetBrains Mono", monospace;
+}
+
+.status-chip {
+  height: 18px;
+  padding: 0 6px;
+  border: 1px solid var(--border-primary);
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  background: var(--bg-primary);
 }
 
 .status-analyzing {
@@ -472,6 +517,7 @@
 .diagnostics-stats {
   display: flex;
   gap: 6px;
+  align-items: center;
 }
 
 .stat-chip {
@@ -498,6 +544,67 @@
 .stat-chip.info {
   background: var(--color-info-bg);
   color: var(--color-info);
+}
+
+.filter-chip {
+  height: 16px;
+  padding: 0 6px;
+  border: 1px solid var(--border-primary);
+  border-radius: 3px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.filter-chip.active {
+  border-color: var(--accent-rust);
+  color: var(--accent-rust);
+}
+
+.severity-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.filter-btn {
+  min-width: 0;
+  height: 22px;
+  padding: 0 4px;
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.filter-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.filter-btn.active.error {
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+.filter-btn.active.warning {
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+
+.filter-btn.active.info {
+  border-color: var(--color-info);
+  color: var(--color-info);
+  background: var(--color-info-bg);
 }
 
 .diagnostics-empty {

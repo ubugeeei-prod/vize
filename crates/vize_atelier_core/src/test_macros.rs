@@ -266,6 +266,7 @@ macro_rules! get_directive {
 
 /// Assert codegen output against a full snapshot.
 #[macro_export]
+#[allow(clippy::disallowed_macros)]
 macro_rules! assert_codegen {
     ($input:expr => snapshot) => {{
         let allocator = bumpalo::Bump::new();
@@ -314,6 +315,7 @@ macro_rules! compile {
 }
 
 #[cfg(test)]
+#[allow(clippy::disallowed_macros)]
 mod tests {
     #[test]
     fn test_assert_parse_element() {

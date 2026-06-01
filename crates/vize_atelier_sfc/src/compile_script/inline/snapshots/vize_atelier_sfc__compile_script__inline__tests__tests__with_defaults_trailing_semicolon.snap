@@ -6,10 +6,7 @@ import { ref } from "vue";
 export default {
   __name: "TestComponent",
   props: {
-    msg: {
-      type: String,
-      required: true
-    },
+    msg: { type: String },
     count: {
       type: Number,
       required: false,

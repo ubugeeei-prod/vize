@@ -88,11 +88,13 @@ impl ScriptRule for PreferImportFromVue {
                 continue;
             };
 
-            let module_specifier = &after_from[specifier_start..specifier_start + quote_end];
-
             // Check if it matches any internal package
-            // SAFETY: module_specifier comes from source which is valid UTF-8
-            let specifier_str = unsafe { std::str::from_utf8_unchecked(module_specifier) };
+            let specifier_abs_start = abs_from_pos + 4 + specifier_start;
+            let specifier_abs_end = specifier_abs_start + quote_end;
+            let Some(specifier_str) = source.get(specifier_abs_start..specifier_abs_end) else {
+                search_start = abs_from_pos + 4 + specifier_start + quote_end;
+                continue;
+            };
 
             for pkg in INTERNAL_PACKAGES {
                 if specifier_str == *pkg {

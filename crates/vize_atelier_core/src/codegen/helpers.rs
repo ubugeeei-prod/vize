@@ -6,13 +6,13 @@ use crate::{
 };
 use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
-    walk::{walk_arrow_function_expression, walk_function},
     Visit,
+    walk::{walk_arrow_function_expression, walk_function},
 };
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
-use vize_carton::FxHashSet;
+use vize_carton::{FxHashSet, ToCompactString};
 use vize_croquis::builtins::is_global_allowed;
 
 /// Decode HTML entities (numeric character references) in a string
@@ -52,11 +52,11 @@ pub fn decode_html_entities(s: &str) -> String {
                     num_str.parse::<u32>().ok()
                 };
 
-                if let Some(cp) = codepoint {
-                    if let Some(decoded_char) = char::from_u32(cp) {
-                        result.push(decoded_char);
-                        continue;
-                    }
+                if let Some(cp) = codepoint
+                    && let Some(decoded_char) = char::from_u32(cp)
+                {
+                    result.push(decoded_char);
+                    continue;
                 }
             }
 
@@ -120,6 +120,29 @@ pub fn is_valid_js_identifier(s: &str) -> bool {
     }
     // Remaining characters can also include digits
     chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
+}
+
+/// Convert a component/directive asset name into a valid JavaScript identifier.
+pub fn to_valid_asset_identifier(kind: &str, name: &str) -> String {
+    let mut ident = String::with_capacity(kind.len() + name.len() + 2);
+    ident.push('_');
+    ident.push_str(kind);
+    ident.push('_');
+
+    // Mirror Vue's `toValidAssetId` (compiler-core utils, issue #4422): word
+    // characters pass through, `-` becomes `_`, and every other character is
+    // replaced by its char code rendered as a decimal string.
+    for c in name.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' {
+            ident.push(c);
+        } else if c == '-' {
+            ident.push('_');
+        } else {
+            ident.push_str(&(c as u32).to_compact_string());
+        }
+    }
+
+    ident
 }
 
 /// Default helper alias function
@@ -355,9 +378,20 @@ pub fn is_constant_simple_expression(
         return true;
     }
 
+    // Expressions that already reference runtime context/setup/props are dynamic.
+    // This keeps patch flags for transformed bindings such as `_ctx.foo`.
+    let content = exp.content.as_str();
+    if content.contains("_ctx.")
+        || content.contains("$setup.")
+        || content.contains("__props.")
+        || content.contains("$props.")
+    {
+        return false;
+    }
+
     let mut wrapped = String::with_capacity(exp.content.len() + 2);
     wrapped.push('(');
-    wrapped.push_str(exp.content.as_str());
+    wrapped.push_str(content);
     wrapped.push(')');
 
     let allocator = oxc_allocator::Allocator::default();
@@ -376,7 +410,7 @@ pub fn is_constant_simple_expression(
 }
 
 // Re-export from vize_carton for convenience
-pub use vize_carton::{camelize, capitalize, String};
+pub use vize_carton::{String, camelize, capitalize};
 
 /// Capitalize first letter of a string (alias for capitalize)
 #[inline]

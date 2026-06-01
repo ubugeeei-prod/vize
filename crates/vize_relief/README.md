@@ -1,57 +1,27 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ubugeeei/vize/main/crates/vize_relief/logo.svg" alt="vize_relief logo" width="120" height="120">
-</p>
+# vize_relief
 
-<h1 align="center">vize_relief</h1>
+`vize_relief` defines the shared AST, compiler errors, and compiler options used throughout the
+Vize workspace.
 
-<p align="center">
-  <strong>The Relief - Sculptured AST surface for Vue templates</strong>
-</p>
+## Highlights
 
----
+- Vue template AST node definitions
+- Parser, transform, and codegen options
+- Shared compiler error types
+- Arena-friendly data structures and serde support
 
-## Name Origin
+## Main Modules
 
-**Relief** (/rɪˈliːf/) is a sculptural technique where figures project from a flat background, creating depth and dimension. Like bas-relief, mezzo-relief, and high-relief in sculpture, the AST "relief" reveals the structure hidden within Vue template source code.
+- `ast`
+- `errors`
+- `options`
 
-In the art world, relief:
+## Related Crates
 
-- **Projects** - Raises forms from a flat surface
-- **Reveals** - Exposes depth and structure
-- **Defines** - Creates clear, distinct forms
-
-Similarly, `vize_relief` provides:
-
-- **AST definitions** - Complete Vue template node types
-- **Type safety** - Strongly typed node structures
-- **Arena allocation** - Zero-copy JavaScript interop
-
-## Features
-
-- Complete Vue template AST node definitions
-- Element, Text, Comment, Interpolation nodes
-- Directive and Attribute representations
-- Control flow nodes (If, For, etc.)
-- Code generation node types
-- Serialization support with serde
-
-## Part of the Vize Art Collection
-
-`vize_relief` is the AST foundation of the Vize compiler's art-themed crate collection:
-
-| Crate              | Art Term                        | Role                             |
-| ------------------ | ------------------------------- | -------------------------------- |
-| vize_carton        | Carton (Portfolio Case)         | Shared utilities & allocator     |
-| **vize_relief**    | **Relief (Sculptured Surface)** | **AST definitions (this crate)** |
-| vize_atelier_core  | Atelier (Workshop)              | Parser, transforms, codegen      |
-| vize_atelier_dom   | Atelier (Workshop)              | DOM compiler                     |
-| vize_atelier_vapor | Atelier (Workshop)              | Vapor compiler                   |
-| vize_atelier_sfc   | Atelier (Workshop)              | SFC compiler                     |
-| vize_vitrine       | Vitrine (Display Case)          | Bindings (Node.js/WASM)          |
-| vize_canon         | Canon (Standard)                | Type checker                     |
-| vize_glyph         | Glyph (Letterform)              | Formatter                        |
-| vize_patina        | Patina (Aged Surface)           | Linter                           |
+- `vize_armature` builds this AST
+- `vize_atelier_*`, `vize_patina`, and `vize_glyph` operate on the shared syntax model
+- `vize_vitrine` serializes data derived from these types for JS consumers
 
 ## License
 
-MIT License
+MIT

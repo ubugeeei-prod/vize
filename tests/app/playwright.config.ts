@@ -4,16 +4,19 @@ export default defineConfig({
   testDir: "./dev",
   testMatch: "**/*.spec.ts",
   testIgnore: ["**/node_modules/**", "**/_git/**"],
+  snapshotPathTemplate: "{snapshotDir}/{testFileDir}/{testFileName}-snapshots/{arg}{ext}",
   timeout: 300_000,
   expect: { timeout: 30_000 },
   fullyParallel: false,
-  retries: 0,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
   workers: 1,
-  reporter: "list",
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     headless: true,
     screenshot: "only-on-failure",
-    trace: "retain-on-failure",
+    trace: process.env.CI ? "off" : "retain-on-failure",
+    video: process.env.CI ? "off" : "retain-on-failure",
   },
   projects: [
     {

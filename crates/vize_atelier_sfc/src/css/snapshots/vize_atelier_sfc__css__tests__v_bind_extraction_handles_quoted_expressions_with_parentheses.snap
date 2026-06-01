@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_sfc/src/css/tests.rs
+expression: "v_bind_snapshot(&transformed, &vars)"
+---
+vars:
+- parentBg ?? 'var(--bg)'
+- Math.min(100, textCountPercentage) + '%'
+- Math.min(100, textCountPercentage) + '%'
+
+css:
+
+.header {
+  background-color: color(from var(--test-parentBg\ \?\?\ \'var\(--bg\)\') srgb r g b / 0.85);
+}
+
+.textCountGraph {
+  background-image: conic-gradient(
+    var(--countColor) 0% var(--test-Math\.min\(100\,\ textCountPercentage\)\ \+\ \'\%\'),
+    rgba(0, 0, 0, .2) var(--test-Math\.min\(100\,\ textCountPercentage\)\ \+\ \'\%\') 100%
+  );
+}

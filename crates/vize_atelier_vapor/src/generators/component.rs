@@ -2,7 +2,7 @@
 
 use super::block::GenerateContext;
 use crate::ir::CreateComponentIRNode;
-use vize_carton::{cstr, String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 /// Generate CreateComponent code
 pub fn generate_create_component(ctx: &mut GenerateContext, component: &CreateComponentIRNode<'_>) {

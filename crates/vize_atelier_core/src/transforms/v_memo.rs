@@ -18,15 +18,14 @@ pub fn has_v_memo(el: &ElementNode<'_>) -> bool {
 /// Get v-memo expression content as string
 pub fn get_memo_deps(el: &ElementNode<'_>) -> Option<String> {
     for prop in el.props.iter() {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name == "memo" {
-                if let Some(exp) = &dir.exp {
-                    return Some(match exp {
-                        ExpressionNode::Simple(s) => s.content.clone(),
-                        ExpressionNode::Compound(c) => c.loc.source.clone(),
-                    });
-                }
-            }
+        if let PropNode::Directive(dir) = prop
+            && dir.name == "memo"
+            && let Some(exp) = &dir.exp
+        {
+            return Some(match exp {
+                ExpressionNode::Simple(s) => s.content.clone(),
+                ExpressionNode::Compound(c) => c.loc.source.clone(),
+            });
         }
     }
     None
@@ -38,10 +37,10 @@ where
     'a: 'b,
 {
     for prop in el.props.iter() {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name == "memo" {
-                return dir.exp.as_ref();
-            }
+        if let PropNode::Directive(dir) = prop
+            && dir.name == "memo"
+        {
+            return dir.exp.as_ref();
         }
     }
     None
@@ -51,11 +50,11 @@ where
 pub fn remove_v_memo(el: &mut ElementNode<'_>) {
     let mut i = 0;
     while i < el.props.len() {
-        if let PropNode::Directive(dir) = &el.props[i] {
-            if dir.name == "memo" {
-                el.props.remove(i);
-                return;
-            }
+        if let PropNode::Directive(dir) = &el.props[i]
+            && dir.name == "memo"
+        {
+            el.props.remove(i);
+            return;
         }
         i += 1;
     }
@@ -96,7 +95,7 @@ pub fn generate_memo_check(deps: &str, cache_index: usize) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{get_memo_deps, has_v_memo, TemplateChildNode};
+    use super::{TemplateChildNode, get_memo_deps, has_v_memo};
     use crate::parser::parse;
     use bumpalo::Bump;
 

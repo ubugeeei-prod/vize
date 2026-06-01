@@ -1,9 +1,10 @@
 [package]
 name = "vize_vitrine"
 version.workspace = true
-edition = "2021"
+edition = "2024"
+rust-version.workspace = true
 license = "MIT"
-repository = "https://github.com/ubugeeei/vize"
+repository = "https://github.com/ubugeeei-prod/vize"
 description = "Vitrine - The display case for Vize (Node.js/WASM bindings)"
 publish = false
 
@@ -20,6 +21,7 @@ glyph = ["dep:vize_glyph"]
 napi = [
   "dep:napi",
   "dep:napi-derive",
+  "dep:vize",
   "dep:glob",
   "dep:rayon",
   "dep:ignore",
@@ -40,7 +42,10 @@ vize_musea = { workspace = true }
 vize_patina = { workspace = true }
 vize_glyph = { workspace = true, optional = true }
 vize_croquis = { workspace = true }
+vize_croquis_cf = { workspace = true }
 vize_canon = { workspace = true }
+vize_curator = { workspace = true }
+vize = { path = "../vize", default-features = false, features = ["glyph"], optional = true }
 
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -51,26 +56,26 @@ napi = { workspace = true, optional = true }
 napi-derive = { workspace = true, optional = true }
 
 # Glob pattern (for batch compile)
-glob = { version = "0.3", optional = true }
+glob = { workspace = true, optional = true }
 
 # Multithreading (for batch compile)
-rayon = { version = "1.10", optional = true }
+rayon = { workspace = true, optional = true }
 
 # Directory walking with .gitignore support (for lint)
-ignore = { version = "0.4", optional = true }
+ignore = { workspace = true, optional = true }
 
 # WASM (optional)
 wasm-bindgen = { workspace = true, optional = true }
 serde-wasm-bindgen = { workspace = true, optional = true }
 js-sys = { workspace = true, optional = true }
-web-sys = { version = "0.3", features = ["console"], optional = true }
+web-sys = { workspace = true, optional = true }
 
 # For WASM compatibility with getrandom
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-getrandom = { version = "0.3", features = ["wasm_js"] }
+getrandom = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.build-dependencies]
-napi-build = "2.0"
+napi-build.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

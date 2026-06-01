@@ -31,28 +31,24 @@ impl HeadingHasContent {
     fn has_accessible_content(element: &ElementNode) -> bool {
         // Check for aria-label
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name == "aria-label" {
-                    return true;
-                }
+            if let PropNode::Attribute(attr) = prop
+                && attr.name == "aria-label"
+            {
+                return true;
             }
         }
 
         // Check for content in children
         for child in &element.children {
             match child {
-                TemplateChildNode::Text(text) => {
-                    if !text.content.trim().is_empty() {
-                        return true;
-                    }
+                TemplateChildNode::Text(text) if !text.content.trim().is_empty() => {
+                    return true;
                 }
                 TemplateChildNode::Interpolation(_) => {
                     return true;
                 }
-                TemplateChildNode::Element(el) => {
-                    if Self::has_accessible_content(el) {
-                        return true;
-                    }
+                TemplateChildNode::Element(el) if Self::has_accessible_content(el) => {
+                    return true;
                 }
                 _ => {}
             }
@@ -74,14 +70,12 @@ impl Rule for HeadingHasContent {
 
         // Check for aria-hidden="true" (skip check if hidden)
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name == "aria-hidden" {
-                    if let Some(val) = &attr.value {
-                        if val.content == "true" {
-                            return;
-                        }
-                    }
-                }
+            if let PropNode::Attribute(attr) = prop
+                && attr.name == "aria-hidden"
+                && let Some(val) = &attr.value
+                && val.content == "true"
+            {
+                return;
             }
         }
 

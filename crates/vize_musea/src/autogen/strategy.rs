@@ -6,8 +6,8 @@
 #![allow(clippy::disallowed_macros)]
 
 use super::types::{AutogenConfig, GeneratedVariant, PropDefinition};
-use serde_json::{json, Map, Value};
-use vize_carton::{cstr, FxHashSet, String, ToCompactString};
+use serde_json::{Map, Value, json};
+use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 /// Generate variants from prop definitions using the configured strategy.
 pub fn generate_variants(

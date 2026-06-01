@@ -10,8 +10,10 @@ Vize provides a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the server to your project:
+
 ```bash
-npm install @vizejs/musea-mcp-server
+vp install -D @vizejs/musea-mcp-server
 ```
 
 ## What is MCP?
@@ -60,8 +62,8 @@ Add the MCP server to your Claude Code configuration:
 {
   "mcpServers": {
     "vize-musea": {
-      "command": "npx",
-      "args": ["@vizejs/musea-mcp-server"]
+      "command": "vp",
+      "args": ["dlx", "@vizejs/musea-mcp-server"]
     }
   }
 }
@@ -75,8 +77,8 @@ Add to your Claude Desktop MCP configuration:
 {
   "mcpServers": {
     "vize-musea": {
-      "command": "npx",
-      "args": ["@vizejs/musea-mcp-server"]
+      "command": "vp",
+      "args": ["dlx", "@vizejs/musea-mcp-server"]
     }
   }
 }
@@ -84,7 +86,7 @@ Add to your Claude Desktop MCP configuration:
 
 ### With Other AI Assistants
 
-Any MCP-compatible AI assistant can use the server. The configuration pattern is the same — point the assistant to `npx @vizejs/musea-mcp-server`.
+Any MCP-compatible AI assistant can use the server. The configuration pattern is the same — point the assistant to `vp dlx @vizejs/musea-mcp-server`.
 
 ## Use Cases
 
