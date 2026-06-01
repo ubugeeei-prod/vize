@@ -315,12 +315,12 @@ fn push_deep_scope_prefix(out: &mut BumpVec<u8>, before: &str, attr_selector: &[
     let target_end = before[..combinator_start].trim_end().len();
     if target_end == 0 {
         out.extend_from_slice(attr_selector);
-        out.extend_from_slice(before[combinator_start..].as_bytes());
+        out.extend_from_slice(&before.as_bytes()[combinator_start..]);
         return;
     }
 
     scope_single_selector(out, &before[..target_end], attr_selector);
-    out.extend_from_slice(before[target_end..].as_bytes());
+    out.extend_from_slice(&before.as_bytes()[target_end..]);
 }
 
 fn trailing_combinator_start(value: &str) -> Option<usize> {

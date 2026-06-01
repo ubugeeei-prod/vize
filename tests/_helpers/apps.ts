@@ -1441,7 +1441,10 @@ function patchFrontendPhpconVisualFixture(frontendDir: string): void {
   },`,
     "  content: {},",
   );
-  nextSource = nextSource.replace("  devtools: { enabled: true },", "  devtools: { enabled: false },");
+  nextSource = nextSource.replace(
+    "  devtools: { enabled: true },",
+    "  devtools: { enabled: false },",
+  );
   if (nextSource !== source) {
     fs.writeFileSync(configPath, nextSource);
   }
