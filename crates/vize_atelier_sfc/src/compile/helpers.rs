@@ -34,6 +34,13 @@ pub(super) fn extract_component_name(filename: &str) -> String {
         .to_compact_string()
 }
 
+/// Rewrite selected `const reactive(...)` bindings to `let` only when `v-model`
+/// can actually assign to them from the template.
+///
+/// The expensive path parses both template and script. The two preflight checks
+/// keep ordinary SFCs out of it: first require a literal `v-model`, then require
+/// at least one `SetupReactiveConst` binding. After resolving concrete v-model
+/// identifiers, the script parse runs only when such a binding is affected.
 pub(super) fn demote_v_model_reactive_const_bindings(
     template_content: &str,
     script_lang: Option<&str>,

@@ -44,6 +44,10 @@ impl Default for StringTrackState {
 /// Count net brace depth change ({ minus }) in a line, properly tracking
 /// string literals, block comments, and template literal `${...}` expressions.
 /// State is carried across lines to handle multiline template literals and comments.
+///
+/// The template extraction path feeds this one line at a time so it can avoid
+/// reparsing generated JS just to find render-function boundaries. The scanner
+/// is byte-oriented and mutates the shared state instead of allocating per line.
 pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) -> i32 {
     let mut count: i32 = 0;
     let bytes = line.as_bytes();

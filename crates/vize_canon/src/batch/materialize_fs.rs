@@ -32,6 +32,10 @@ pub(super) fn ensure_materialize_root(path: &Path) -> io::Result<()> {
 }
 
 pub(super) fn write_if_changed(path: &Path, content: &[u8]) -> io::Result<()> {
+    // For stable control files, skipping same-content writes matters more than
+    // saving the write syscall itself: TypeScript/Corsa watch file mtimes and may
+    // invalidate internal state when `tsconfig.json` or stubs are touched. The
+    // length check avoids reading most stale files before the byte comparison.
     match fs::symlink_metadata(path) {
         Ok(metadata) if !metadata.file_type().is_file() || metadata.file_type().is_symlink() => {
             remove_path(path)?;
@@ -141,6 +145,10 @@ pub(super) fn prune_unexpected_entries(
     expected_files: &FxHashSet<PathBuf>,
     preserved_roots: &[PathBuf],
 ) -> io::Result<()> {
+    // Build the complete expected directory set once, then walk the cache tree
+    // recursively. This removes stale generated files without the old "delete the
+    // entire materialize root and recreate it" pattern, preserving hot dependency
+    // mirrors and avoiding large remove/create storms between check runs.
     let mut expected_dirs = FxHashSet::default();
     expected_dirs.insert(root.to_path_buf());
     for file in expected_files {

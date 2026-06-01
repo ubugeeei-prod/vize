@@ -119,7 +119,9 @@ pub fn extract_prop_types_from_type(type_args: &str) -> Vec<(String, PropTypeInf
         content
     };
 
-    // Split by commas/semicolons/newlines (but not inside nested braces)
+    // Split by commas/semicolons/newlines in a single character pass. Keeping
+    // `prev` avoids building a `Vec<char>` just to look behind for `=>`, which
+    // used to allocate on every type-literal prop extraction.
     let mut depth: i32 = 0;
     let mut current = String::default();
     let mut prev = '\0';
@@ -252,6 +254,10 @@ pub fn add_null_to_runtime_type(js_type: &str, nullable: bool) -> String {
 
 /// Split a type string at a delimiter only at the top level (depth 0),
 /// respecting nested `<>`, `()`, `[]`, `{}` and `=>` arrows.
+///
+/// This intentionally streams over `chars()` with a one-character lookbehind.
+/// Prop codegen calls it recursively for union members, so avoiding an
+/// intermediate `Vec<char>` prevents repeated heap churn in large prop types.
 fn split_type_at_top_level(s: &str, delimiter: char) -> Vec<String> {
     let mut parts = Vec::new();
     let mut current = String::default();
@@ -295,6 +301,9 @@ fn split_type_at_top_level(s: &str, delimiter: char) -> Vec<String> {
 }
 
 /// Check if a type string contains a top-level `=>` (arrow function signature).
+///
+/// Like `split_type_at_top_level`, this is a zero-intermediate scanner because
+/// it sits on the recursive type-to-runtime-constructor path.
 fn contains_top_level_arrow(s: &str) -> bool {
     let mut depth: i32 = 0;
     let mut prev = '\0';

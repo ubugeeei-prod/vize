@@ -104,6 +104,10 @@ fn skip_regex_literal(
     line: &mut usize,
     last_newline: &mut usize,
 ) -> Option<usize> {
+    // Closing-tag search must ignore `</script>` inside JS regex literals without
+    // allocating a lexer token stream. This byte scanner only activates in
+    // syntactic positions where `/` can start a regex and tracks character
+    // classes/escapes well enough to continue the zero-copy SFC block scan.
     debug_assert_eq!(bytes[pos], b'/');
     pos += 1;
     let mut in_character_class = false;
@@ -191,6 +195,10 @@ pub(super) fn parse_block_fast<'a>(
     start: usize,
     start_line: usize,
 ) -> BlockParseResult<'a> {
+    // This parser intentionally works on byte slices and returns borrowed `Cow`
+    // values. SFC parsing sits on every compile/lint/check path, so avoiding
+    // temporary strings for tag names, attrs, and block content has an outsized
+    // effect on allocation profiles.
     let len = bytes.len();
 
     // Skip '<'

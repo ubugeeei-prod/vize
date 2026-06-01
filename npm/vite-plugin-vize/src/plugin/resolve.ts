@@ -258,6 +258,9 @@ function nativeCssAliasRules(
 }
 
 function isPotentialVizeResolveId(id: string): boolean {
+  // `resolveId` is called for every dependency in a Vite graph. Most bare
+  // package imports cannot be Vize-owned, so this cheap string gate keeps regular
+  // dependencies off the heavier classifier/alias/Node-resolution path.
   return (
     id.startsWith("\0") ||
     id.startsWith("vize:") ||
@@ -271,6 +274,8 @@ function isPotentialVizeResolveId(id: string): boolean {
 }
 
 function isPotentialVizeImporter(importer: string | undefined): boolean {
+  // Imports from Vize virtual modules still need custom resolution even when the
+  // requested id itself is a regular-looking relative or bare specifier.
   if (importer === undefined) {
     return false;
   }
@@ -383,6 +388,10 @@ export async function resolveIdHook(
   importer?: string,
   options?: { ssr?: boolean },
 ): Promise<string | { id: string; external?: boolean } | null | undefined> {
+  // Fast-return before request classification for the common case where neither
+  // the id nor importer can involve a Vue SFC or Vize virtual module. This was
+  // added after profiles showed ordinary dependency graph edges dominating the
+  // plugin hook cost in dev servers.
   if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer)) {
     return null;
   }

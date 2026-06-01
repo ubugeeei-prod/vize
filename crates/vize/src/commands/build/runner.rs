@@ -170,6 +170,10 @@ pub(crate) fn run(args: BuildArgs) {
     match args.format {
         OutputFormat::Stats => {}
         OutputFormat::Js | OutputFormat::Json => {
+            // Create the output directory once per build, then write every
+            // generated file. Calling `create_dir_all` from each worker looked
+            // harmless but showed up in profiles as repeated metadata syscalls,
+            // especially when benchmarking many generated SFCs.
             match profile!(
                 "cli.build.output.create_dir_all",
                 fs::create_dir_all(&args.output)

@@ -21,6 +21,13 @@ pub fn write_schema(dir: Option<&Path>) {
     }
 }
 
+/// Returns whether the bundled config schema should be written to disk.
+///
+/// The CLI asks for schema materialization from several hot command paths, but
+/// the schema almost never changes during one checkout. Checking metadata first
+/// avoids reading the file on obvious misses/stale-size cases, and reading only
+/// same-sized files keeps the common "already current" path from paying an
+/// unconditional write syscall and invalidating editor file watchers.
 fn schema_needs_write(path: &Path) -> bool {
     match fs::metadata(path) {
         Ok(metadata) if metadata.len() == VIZE_CONFIG_SCHEMA.len() as u64 => {

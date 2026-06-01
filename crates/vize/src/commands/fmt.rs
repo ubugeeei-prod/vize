@@ -120,7 +120,9 @@ pub fn run(args: FmtArgs) {
         profiler.enable();
     }
 
-    // Process files in parallel, reusing one arena per Rayon worker.
+    // Process files in parallel, reusing one arena per Rayon worker. Resetting a
+    // worker-local allocator keeps formatter allocations off the global heap on
+    // the common "many small SFCs" path while avoiding cross-thread sharing.
     let process_start = Instant::now();
     files.par_iter().for_each_init(
         || Allocator::with_capacity(64 * 1024),

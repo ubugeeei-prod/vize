@@ -151,7 +151,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str(VUE_TYPE_HELPERS);
     ts.push('\n');
 
-    // Collect all module-level statement spans from croquis analysis
+    // Collect all module-level statement spans from croquis analysis once and
+    // keep them sorted. Later script-body emission advances an index through
+    // this list, so each source line checks only the overlapping tail instead
+    // of rescanning imports/re-exports/type declarations from the start.
     let module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
         let mut module_spans = Vec::new();
         for imp in &summary.import_statements {

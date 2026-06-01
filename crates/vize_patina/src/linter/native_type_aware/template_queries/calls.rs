@@ -46,6 +46,10 @@ pub(super) fn collect_template_call_ranges(
     include_callees: bool,
     include_floating_promises: bool,
 ) -> TemplateCallRanges {
+    // Parse the template expression once and derive every range family from the
+    // same AST. Event handlers can contain statement bodies, so only those callers
+    // enable the statement fallback; ordinary bindings stay on the cheaper
+    // expression parse path.
     let mut ranges = TemplateCallRanges::default();
     if !include_callees && !include_floating_promises {
         return ranges;

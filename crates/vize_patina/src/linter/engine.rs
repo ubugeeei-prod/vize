@@ -72,6 +72,10 @@ impl Linter {
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_help_level(self.help_level);
 
+        // SFC-level rules are uncommon but expensive when each one reparses the
+        // file. Reuse the descriptor produced by the main lint pipeline whenever
+        // available, and only parse lazily when a caller enters this path without
+        // a shared descriptor.
         let owned_descriptor;
         let shared_descriptor = if !self.has_active_shared_sfc_descriptor_rules() {
             None
@@ -173,6 +177,10 @@ impl Linter {
     }
 
     fn needs_sfc_descriptor_for_lint(&self) -> bool {
+        // This gate decides whether the outer SFC lint path should pay the parse
+        // cost up front. Keep every consumer that can reuse descriptor metadata
+        // listed here; otherwise a rule may quietly fall back to its own parse and
+        // reintroduce per-rule work on large files.
         self.has_active_shared_sfc_descriptor_rules()
             || super::script_rules::has_active_builtin_script_rules(self)
             || self.has_active_semantic_template_rules()
