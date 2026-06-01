@@ -86,7 +86,7 @@ const msg = 'hello'
 
   assert.equal(
     transformed,
-    ".rrevdjwu > .group + .group[data-v-menu] { color: red; }",
+    ".rrevdjwu > .group + .group[data-v-menu]{color: red;}",
     "Scoped preprocessor CSS should be scoped after preprocessing, matching Vue selector placement",
   );
 }
@@ -117,6 +117,16 @@ const msg = 'hello'
   assert.ok(
     result && typeof result === "object",
     "Production virtual SFC transforms should succeed",
+  );
+  assert.match(
+    result.code,
+    /import "\/virtual\/Card\.setup\.ts\?vue=&type=style&index=0&lang=css";/,
+    "Production virtual SFC transforms should emit Vite-visible plain CSS imports",
+  );
+  assert.doesNotMatch(
+    result.code,
+    /__vize_css__/,
+    "Production virtual SFC transforms should not inline CSS when extraction is enabled",
   );
   assert.equal(
     state.collectedCss.has(virtualSfcId),

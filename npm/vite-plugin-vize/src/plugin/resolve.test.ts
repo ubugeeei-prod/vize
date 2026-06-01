@@ -101,6 +101,23 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const tempRoot = createTempRoot("style-query");
+  const source = path.join(tempRoot, "Styled.vue");
+  fs.writeFileSync(source, "<template /><style scoped>.root { color: red; }</style>");
+  const id = `${source}?vue=&type=style&index=0&scoped=data-v-resolve&lang=css`;
+
+  const state = createState(tempRoot);
+  state.server = null;
+  const resolved = await resolveIdHook(nullResolveContext, state, id, undefined, undefined);
+
+  assert.equal(
+    expectResolvedId(resolved),
+    `${id}.css`,
+    "Vue style queries should resolve to CSS-visible virtual style IDs in build mode",
+  );
+}
+
+{
   const tempRoot = createTempRoot("define-page");
   const source = path.join(tempRoot, "Home.vue");
   fs.writeFileSync(source, "<script setup>definePage({})</script>");

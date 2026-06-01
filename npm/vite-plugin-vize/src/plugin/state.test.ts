@@ -244,6 +244,22 @@ assert.equal(
   "Delegated CSS modules should stay out of the extracted plain CSS bundle",
 );
 
+const legacyCssModule: CompiledModule = {
+  code: "export default {}",
+  css: ".legacy { color: red; }",
+  scopeId: "legacycss",
+  hasScoped: false,
+  macroArtifacts: [],
+  styles: [],
+};
+
+syncCollectedCssForFile(cssState, "/src/Legacy.vue", legacyCssModule);
+assert.equal(
+  cssState.collectedCss.get("/src/Legacy.vue"),
+  ".legacy { color: red; }",
+  "Legacy compiled modules without style metadata should still use the extracted CSS bundle",
+);
+
 const ssrCssState = {
   extractCss: false,
   collectedCss: new Map<string, string>([["/src/App.vue", ".app { color: red; }"]]),

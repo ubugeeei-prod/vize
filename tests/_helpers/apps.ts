@@ -95,6 +95,10 @@ const NPMX_E2E_ENV = {
   NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
   VIZE_E2E_DISABLE_LUNARIA: "1",
 } as const;
+const VUEFES_E2E_ENV = {
+  AUTH_SECRET: "e2e-test-dummy-auth-secret-32chars!",
+  NEXTAUTH_SECRET: "e2e-test-dummy-auth-secret-32chars!",
+} as const;
 const TRANSPARENT_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z/C/HwAFgwJ/lE6nWQAAAABJRU5ErkJggg==",
   "base64",
@@ -1466,33 +1470,69 @@ function setupVuefesWorktree(opts?: { enableVize?: boolean; variant?: string }):
   return vuefesDir;
 }
 
-function createVuefesVisualParityApp(kind: "candidate" | "reference", port: number): AppConfig {
-  const variant = `vrt-${kind}`;
+type VuefesVisualParityMode = "dev" | "preview";
+
+function createVuefesVisualParityApp(
+  kind: "candidate" | "reference",
+  port: number,
+  mode: VuefesVisualParityMode,
+): AppConfig {
+  const variant = `vrt-${mode}-${kind}`;
+  const command =
+    mode === "preview"
+      ? ["exec", "nuxt", "preview", "--port", String(port)]
+      : ["exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"];
+
   return {
-    name: `vuefes-2025:${kind}`,
+    name: `vuefes-2025:${mode}:${kind}`,
     cwd: getMutableGitFixtureDir("vuefes-2025", variant),
     command: "npx",
-    args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"],
+    args: ["-y", "pnpm@10", ...command],
     port,
-    url: `http://127.0.0.1:${port}`,
+    url: mode === "preview" ? `http://127.0.0.1:${port}/2025` : `http://127.0.0.1:${port}`,
     mountSelector: "#__nuxt",
-    readyPattern: new RegExp(
-      `Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`,
-    ),
+    readyPattern:
+      mode === "preview"
+        ? /Listening on/
+        : new RegExp(`Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`),
     allowNon200: true,
     waitUntil: "load",
     readyDelay: 30_000,
-    startupTimeout: 180_000,
+    env: {
+      ...VUEFES_E2E_ENV,
+      CONTEXT: "production",
+      NODE_ENV: mode === "preview" ? "production" : "development",
+    },
+    startupTimeout: 300_000,
     setup() {
-      setupVuefesWorktree({ enableVize: kind === "candidate", variant });
+      const vuefesDir = setupVuefesWorktree({ enableVize: kind === "candidate", variant });
+      if (mode === "preview") {
+        execSync("npx -y pnpm@10 build", {
+          cwd: vuefesDir,
+          env: {
+            ...process.env,
+            ...VUEFES_E2E_ENV,
+            CONTEXT: "production",
+            NODE_ENV: "production",
+          },
+          stdio: "inherit",
+          timeout: 300_000,
+        });
+      }
     },
   };
 }
 
-export function createVuefesVisualParityApps(): { candidate: AppConfig; reference: AppConfig } {
+export function createVuefesVisualParityApps(mode: VuefesVisualParityMode = "dev"): {
+  candidate: AppConfig;
+  reference: AppConfig;
+} {
+  const referencePort = mode === "preview" ? 5332 : 5326;
+  const candidatePort = mode === "preview" ? 5333 : 5327;
+
   return {
-    reference: createVuefesVisualParityApp("reference", 5326),
-    candidate: createVuefesVisualParityApp("candidate", 5327),
+    reference: createVuefesVisualParityApp("reference", referencePort, mode),
+    candidate: createVuefesVisualParityApp("candidate", candidatePort, mode),
   };
 }
 
