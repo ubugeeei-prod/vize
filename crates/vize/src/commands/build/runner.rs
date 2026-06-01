@@ -16,11 +16,11 @@ use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
     TemplateCompileOptions, compile_sfc, compile_sfc_with_vue_parser_quirks, parse_sfc,
 };
-use vize_carton::String;
-use vize_carton::ToCompactString;
 use vize_carton::cstr;
+use vize_carton::hash::hash_str;
 use vize_carton::profile;
 use vize_carton::profiler::{allocation_snapshot, global_profiler};
+use vize_carton::{FxHashMap, String, ToCompactString};
 
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
@@ -91,17 +91,18 @@ pub(crate) fn run(args: BuildArgs) {
         script_ext: args.script_ext,
         record_profile_totals: args.profile,
     };
-    let results: Vec<_> = files
-        .par_iter()
-        .map(|path| {
-            match compile_file_with_profile(path, compile_settings, &stats) {
-                Ok((output, profile)) => {
+
+    let stats_only = matches!(args.format, OutputFormat::Stats);
+    let results: Vec<_> = if stats_only {
+        let compile_cache = StatsCompileCache::default();
+        files.par_iter().for_each(|path| {
+            match compile_file_stats_with_cache(path, compile_settings, &stats, &compile_cache) {
+                Ok((output_bytes, profile)) => {
                     stats.success.fetch_add(1, Ordering::Relaxed);
                     stats
                         .output_bytes
-                        .fetch_add(output.code.len(), Ordering::Relaxed);
+                        .fetch_add(output_bytes, Ordering::Relaxed);
 
-                    // Check for slow files
                     if profile.is_slow(slow_threshold)
                         && let Ok(mut slow) = slow_files.lock()
                     {
@@ -113,8 +114,6 @@ pub(crate) fn run(args: BuildArgs) {
                     {
                         p.push(profile);
                     }
-
-                    Some((path.clone(), output))
                 }
                 Err(err) => {
                     stats.failed.fetch_add(1, Ordering::Relaxed);
@@ -122,12 +121,49 @@ pub(crate) fn run(args: BuildArgs) {
                     if let Ok(mut errs) = errors.lock() {
                         errs.push(err);
                     }
-
-                    None
                 }
             }
-        })
-        .collect();
+        });
+        Vec::new()
+    } else {
+        files
+            .par_iter()
+            .map(
+                |path| match compile_file_with_profile(path, compile_settings, &stats) {
+                    Ok((output, profile)) => {
+                        stats.success.fetch_add(1, Ordering::Relaxed);
+                        stats
+                            .output_bytes
+                            .fetch_add(output.code.len(), Ordering::Relaxed);
+
+                        // Check for slow files
+                        if profile.is_slow(slow_threshold)
+                            && let Ok(mut slow) = slow_files.lock()
+                        {
+                            slow.push(profile.clone());
+                        }
+
+                        if args.profile
+                            && let Ok(mut p) = profiles.lock()
+                        {
+                            p.push(profile);
+                        }
+
+                        Some((path.clone(), output))
+                    }
+                    Err(err) => {
+                        stats.failed.fetch_add(1, Ordering::Relaxed);
+
+                        if let Ok(mut errs) = errors.lock() {
+                            errs.push(err);
+                        }
+
+                        None
+                    }
+                },
+            )
+            .collect()
+    };
     let compile_elapsed = compile_start.elapsed();
 
     let io_start = Instant::now();
@@ -544,6 +580,285 @@ struct CompileFileSettings {
     vue_parser_quirks: bool,
     script_ext: ScriptExtension,
     record_profile_totals: bool,
+}
+
+impl CompileFileSettings {
+    fn cache_bits(self) -> u8 {
+        u8::from(self.ssr)
+            | (u8::from(self.vapor) << 1)
+            | (u8::from(self.custom_renderer) << 2)
+            | (u8::from(self.vue_parser_quirks) << 3)
+            | match self.script_ext {
+                ScriptExtension::Preserve => 1 << 4,
+                ScriptExtension::Downcompile => 0,
+            }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+struct StatsCompileCacheKey {
+    source_hash: u64,
+    source_len: usize,
+    component_name_len: usize,
+    settings: u8,
+}
+
+#[derive(Clone)]
+enum StatsCompileCacheEntry {
+    Success {
+        output_bytes: usize,
+        template_size: usize,
+        script_size: usize,
+        style_count: usize,
+    },
+    Failure {
+        phase: ErrorPhase,
+        message: String,
+    },
+}
+
+#[derive(Default)]
+struct StatsCompileCache {
+    entries: Mutex<FxHashMap<StatsCompileCacheKey, StatsCompileCacheEntry>>,
+}
+
+fn should_cache_stats_compile(source: &str, component_name: &str) -> bool {
+    // The stats path does not emit code, but the generated byte count can depend
+    // on self-component resolution. Avoid sharing work when the source mentions
+    // its own component name; those cases are rare and cheap to compile normally.
+    if component_name.is_empty() {
+        return true;
+    }
+
+    !source.contains(component_name)
+        && !source.contains(component_name_to_kebab_case(component_name).as_str())
+}
+
+fn component_name_to_kebab_case(component_name: &str) -> std::string::String {
+    let mut out = std::string::String::with_capacity(component_name.len());
+    for (index, ch) in component_name.chars().enumerate() {
+        if ch.is_ascii_uppercase() {
+            if index != 0 {
+                out.push('-');
+            }
+            out.push(ch.to_ascii_lowercase());
+        } else {
+            out.push(ch);
+        }
+    }
+    out
+}
+
+fn compile_file_stats_with_cache(
+    path: &PathBuf,
+    settings: CompileFileSettings,
+    stats: &CompileStats,
+    cache: &StatsCompileCache,
+) -> Result<(usize, FileProfile), CompileError> {
+    let file_start = Instant::now();
+
+    let source = match profile!("cli.build.file.read", fs::read_to_string(path)) {
+        Ok(source) => {
+            global_profiler().record_fs_read_to_string(source.len());
+            source
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(CompileError {
+                path: path.clone(),
+                error: cstr!("Failed to read file: {}", error),
+                phase: ErrorPhase::Read,
+            });
+        }
+    };
+
+    let file_size = source.len();
+    stats.total_bytes.fetch_add(file_size, Ordering::Relaxed);
+
+    let filename: String = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("anonymous.vue")
+        .into();
+    let component_name = path.file_stem().and_then(|n| n.to_str()).unwrap_or("");
+    let cache_key =
+        should_cache_stats_compile(&source, component_name).then(|| StatsCompileCacheKey {
+            source_hash: hash_str(&source),
+            source_len: file_size,
+            component_name_len: component_name.len(),
+            settings: settings.cache_bits(),
+        });
+
+    if let Some(key) = cache_key
+        && let Some(entry) = cache
+            .entries
+            .lock()
+            .map(|entries| entries.get(&key).cloned())
+            .unwrap_or(None)
+    {
+        return match entry {
+            StatsCompileCacheEntry::Success {
+                output_bytes,
+                template_size,
+                script_size,
+                style_count,
+            } => Ok((
+                output_bytes,
+                FileProfile {
+                    path: path.clone(),
+                    file_size,
+                    parse_time: Duration::ZERO,
+                    compile_time: Duration::ZERO,
+                    total_time: file_start.elapsed(),
+                    template_size,
+                    script_size,
+                    style_count,
+                },
+            )),
+            StatsCompileCacheEntry::Failure { phase, message } => Err(CompileError {
+                path: path.clone(),
+                error: message,
+                phase,
+            }),
+        };
+    }
+
+    let parse_start = Instant::now();
+    let parse_opts = SfcParseOptions {
+        filename: filename.clone(),
+        ..Default::default()
+    };
+    let descriptor = match profile!("atelier.sfc.parse", parse_sfc(&source, parse_opts)) {
+        Ok(descriptor) => descriptor,
+        Err(error) => {
+            if let Some(key) = cache_key
+                && let Ok(mut entries) = cache.entries.lock()
+            {
+                entries
+                    .entry(key)
+                    .or_insert_with(|| StatsCompileCacheEntry::Failure {
+                        phase: ErrorPhase::Parse,
+                        message: error.message.clone(),
+                    });
+            }
+            return Err(CompileError {
+                path: path.clone(),
+                error: error.message,
+                phase: ErrorPhase::Parse,
+            });
+        }
+    };
+    let parse_time = parse_start.elapsed();
+    if settings.record_profile_totals {
+        stats.add_parse_time(parse_time);
+    }
+
+    let template_size = descriptor
+        .template
+        .as_ref()
+        .map(|t| t.content.len())
+        .unwrap_or(0);
+    let script_size = descriptor
+        .script
+        .as_ref()
+        .map(|s| s.content.len())
+        .unwrap_or(0)
+        + descriptor
+            .script_setup
+            .as_ref()
+            .map(|s| s.content.len())
+            .unwrap_or(0);
+    let style_count = descriptor.styles.len();
+
+    let compile_start = Instant::now();
+    let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
+    let is_ts = matches!(settings.script_ext, ScriptExtension::Preserve);
+    let compile_opts = SfcCompileOptions {
+        parse: SfcParseOptions {
+            filename: filename.clone(),
+            ..Default::default()
+        },
+        script: ScriptCompileOptions {
+            id: Some(filename.clone()),
+            is_ts,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            id: Some(filename.clone()),
+            scoped: has_scoped,
+            ssr: settings.ssr,
+            is_ts,
+            custom_renderer: settings.custom_renderer,
+            ..Default::default()
+        },
+        style: StyleCompileOptions {
+            id: filename,
+            scoped: has_scoped,
+            ..Default::default()
+        },
+        vapor: settings.vapor,
+        scope_id: None,
+    };
+
+    let result = match profile!(
+        "atelier.sfc.compile",
+        if settings.vue_parser_quirks {
+            compile_sfc_with_vue_parser_quirks(&descriptor, compile_opts)
+        } else {
+            compile_sfc(&descriptor, compile_opts)
+        }
+    ) {
+        Ok(result) => result,
+        Err(error) => {
+            if let Some(key) = cache_key
+                && let Ok(mut entries) = cache.entries.lock()
+            {
+                entries
+                    .entry(key)
+                    .or_insert_with(|| StatsCompileCacheEntry::Failure {
+                        phase: ErrorPhase::Compile,
+                        message: error.message.clone(),
+                    });
+            }
+            return Err(CompileError {
+                path: path.clone(),
+                error: error.message,
+                phase: ErrorPhase::Compile,
+            });
+        }
+    };
+    let compile_time = compile_start.elapsed();
+    if settings.record_profile_totals {
+        stats.add_compile_time(compile_time);
+    }
+
+    let output_bytes = result.code.len();
+    if let Some(key) = cache_key
+        && let Ok(mut entries) = cache.entries.lock()
+    {
+        entries
+            .entry(key)
+            .or_insert_with(|| StatsCompileCacheEntry::Success {
+                output_bytes,
+                template_size,
+                script_size,
+                style_count,
+            });
+    }
+
+    Ok((
+        output_bytes,
+        FileProfile {
+            path: path.clone(),
+            file_size,
+            parse_time,
+            compile_time,
+            total_time: file_start.elapsed(),
+            template_size,
+            script_size,
+            style_count,
+        },
+    ))
 }
 
 fn compile_file_with_profile(
