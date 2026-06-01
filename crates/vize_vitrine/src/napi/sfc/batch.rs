@@ -11,6 +11,11 @@ use vize_carton::{FxHashMap, hash::hash_str};
 
 use super::types::{BatchCompileOptionsNapi, BatchCompileResultNapi};
 
+/// Aggregate counters for the native batch stats surface.
+///
+/// `compileSfcBatch` reports totals instead of per-file code, so each compiled
+/// job can represent many logical input files. These counters must therefore be
+/// updated by the repeat count, not by the number of physical compile jobs.
 #[derive(Default)]
 struct BatchStats {
     success: usize,
@@ -36,6 +41,21 @@ impl BatchStats {
     }
 }
 
+/// Fingerprint used to collapse repeated batch inputs before compiling.
+///
+/// The native aggregate API does not return code for each file. It can group
+/// repeated sources, compile one representative, and multiply the resulting
+/// counters by `repeats`. The key includes only fields that can affect those
+/// counters:
+///
+/// - source hash and length identify the repeated SFC body without storing a
+///   second owned copy of the source in the map key.
+/// - parent hash and length prevent grouping across directories, where
+///   relative type imports inside `<script setup>` can resolve differently.
+/// - component name length preserves output byte counts for the generated
+///   `__name` field, while `should_cache_batch_compile` filters out cases where
+///   the actual name can alter compilation through self-component resolution.
+/// - option bits separate SSR, vapor, TypeScript, and parser-quirk modes.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 struct BatchCompileKey {
     source_hash: u64,
@@ -46,6 +66,11 @@ struct BatchCompileKey {
     options: u8,
 }
 
+/// One physical compile job, possibly standing in for many logical files.
+///
+/// `source` is kept once per unique key. `input_bytes` is the sum for all
+/// grouped files so the API still reports the bytes the caller supplied, not
+/// just the bytes actually compiled.
 struct BatchCompileJob {
     path: PathBuf,
     source: String,
@@ -65,6 +90,10 @@ impl BatchCompileJob {
     }
 }
 
+/// Packs options that can change aggregate compile results into the cache key.
+///
+/// This mirrors the CLI stats cache. N-API options that are not consumed by this
+/// aggregate function are intentionally absent so they do not fragment groups.
 fn batch_options_bits(ssr: bool, vapor: bool, is_ts: bool, vue_parser_quirks: bool) -> u8 {
     u8::from(ssr)
         | (u8::from(vapor) << 1)
@@ -72,6 +101,13 @@ fn batch_options_bits(ssr: bool, vapor: bool, is_ts: bool, vue_parser_quirks: bo
         | (u8::from(vue_parser_quirks) << 3)
 }
 
+/// Returns whether a repeated source body is safe to group for aggregate stats.
+///
+/// Different filenames normally only change fixed-width scope IDs or the length
+/// of `__name`, both of which the key accounts for. A source that mentions its
+/// own component name is different: self-component resolution can change helper
+/// usage and code shape depending on the representative filename. Such files are
+/// left ungrouped.
 fn should_cache_batch_compile(source: &str, component_name: &str) -> bool {
     if component_name.is_empty() {
         return true;
@@ -81,6 +117,11 @@ fn should_cache_batch_compile(source: &str, component_name: &str) -> bool {
         && !source.contains(component_name_to_kebab_case(component_name).as_str())
 }
 
+/// Converts a PascalCase filename stem to the kebab-case spelling used in templates.
+///
+/// This is only a cheap guard for the common ASCII component-name case. It does
+/// not need to be a complete Vue name canonicalizer because exact stem matching
+/// is checked separately.
 fn component_name_to_kebab_case(component_name: &str) -> String {
     let mut out = String::with_capacity(component_name.len());
     for (index, ch) in component_name.chars().enumerate() {
@@ -96,6 +137,13 @@ fn component_name_to_kebab_case(component_name: &str) -> String {
     out
 }
 
+/// Returns parent-directory fingerprint parts for the batch grouping key.
+///
+/// The N-API batch path passes the full file path into SFC compilation. That
+/// lets script setup type imports resolve relative to the file's directory, so
+/// two identical source strings in different directories cannot always share a
+/// compile result. Grouping by parent keeps the optimization useful for
+/// generated corpora while preserving that path-sensitive behavior.
 fn parent_cache_parts(path: &Path) -> (u64, usize) {
     let Some(parent) = path.parent() else {
         return (hash_str(""), 0);
@@ -104,6 +152,13 @@ fn parent_cache_parts(path: &Path) -> (u64, usize) {
     (hash_str(parent.as_ref()), parent.len())
 }
 
+/// Compiles a glob of Vue SFCs and returns aggregate stats for the native API.
+///
+/// This stats-only surface is intentionally optimized differently from
+/// `compileSfcBatchWithResults`: because no per-file code crosses the JS/native
+/// boundary, repeated SFC bodies are grouped before parallel compilation. The
+/// representative compile produces one output length, and the counters are
+/// multiplied by the number of files that shared the same safe key.
 #[napi(js_name = "compileSfcBatch")]
 pub fn compile_sfc_batch(
     pattern: String,
