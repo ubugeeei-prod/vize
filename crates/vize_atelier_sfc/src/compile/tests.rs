@@ -1858,7 +1858,7 @@ const schema = {}
     assert!(
         result
             .code
-            .contains("_unref($setup.valibotResolver)($setup.schema)"),
+            .contains("$setup.valibotResolver($setup.schema)"),
         "{}",
         result.code
     );
