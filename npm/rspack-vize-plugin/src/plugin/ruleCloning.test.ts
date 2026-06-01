@@ -113,11 +113,7 @@ void describe("applyRuleCloning", () => {
 
     const styleRule = oneOf.find((r) => {
       const rq = r.resourceQuery as RegExp;
-      return (
-        rq &&
-        rq.test("vue&type=style&index=0&lang=scss") &&
-        r.type === "css/auto"
-      );
+      return rq && rq.test("vue&type=style&index=0&lang=scss") && r.type === "css/auto";
     });
     assert.ok(styleRule);
     assert.equal(styleRule!.type, "css/auto");
@@ -228,8 +224,7 @@ void describe("applyRuleCloning", () => {
         test: /\.vue$/,
         use: [
           {
-            loader:
-              "/path/to/node_modules/@vizejs/rspack-vize-plugin/dist/loader/index.mjs",
+            loader: "/path/to/node_modules/@vizejs/rspack-vize-plugin/dist/loader/index.mjs",
           },
         ],
       },
@@ -282,13 +277,10 @@ void describe("applyRuleCloning", () => {
 
     const oneOf = vueRule.oneOf as Array<Record<string, unknown>>;
 
-    // Last entry (main loader fallback) should carry the resolved native CSS mode
+    // Last entry (main loader fallback) should have the loader in its use array
     const mainBranch = oneOf[oneOf.length - 1];
-    const use = mainBranch.use as Array<Record<string, unknown>>;
-    assert.deepEqual(use[0], {
-      loader: "@vizejs/rspack-plugin/loader",
-      options: { css: { native: true } },
-    });
+    const use = mainBranch.use as Array<string | Record<string, unknown>>;
+    assert.equal(use[0], "@vizejs/rspack-plugin/loader");
 
     // SCSS clone should exist
     const scssClone = oneOf.find((r) => {
@@ -316,12 +308,9 @@ void describe("applyRuleCloning", () => {
     const mainBranch = oneOf[oneOf.length - 1];
     const use = mainBranch.use as Array<Record<string, unknown>>;
 
-    // Should preserve existing options and carry the resolved native CSS mode
+    // Should be an object entry with loader + options
     assert.equal(use[0].loader, "@vizejs/rspack-plugin/loader");
-    assert.deepEqual(use[0].options, {
-      sourceMap: true,
-      css: { native: true },
-    });
+    assert.deepEqual(use[0].options, { sourceMap: true });
   });
 
   void test("injects scope-loader between user loaders and style-loader in all cloned rules", () => {
@@ -386,11 +375,7 @@ void describe("applyRuleCloning", () => {
     assert.ok(cssFallback, "should have a CSS fallback rule");
 
     const use = cssFallback!.use as Array<Record<string, unknown>>;
-    assert.equal(
-      use.length,
-      2,
-      "CSS fallback should have scope-loader + style-loader",
-    );
+    assert.equal(use.length, 2, "CSS fallback should have scope-loader + style-loader");
     assert.equal(use[0].loader, "@vizejs/rspack-plugin/scope-loader");
     assert.equal(use[1].loader, "@vizejs/rspack-plugin/style-loader");
   });

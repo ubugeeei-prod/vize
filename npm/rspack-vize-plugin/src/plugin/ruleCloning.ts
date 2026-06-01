@@ -76,16 +76,13 @@ export function applyRuleCloning(
   const clonedStyleRules: RuleSetRule[] = [];
 
   for (const entry of cssRuleEntries) {
-    clonedStyleRules.push(
-      ...cloneRulesForVueStyle(entry.rule, entry.lang, nativeCss),
-    );
+    clonedStyleRules.push(...cloneRulesForVueStyle(entry.rule, entry.lang, nativeCss));
   }
 
   // Ensure fallback rule for plain <style lang="css"> blocks
   const hasCssFallback = clonedStyleRules.some(
     (r) =>
-      r.resourceQuery instanceof RegExp &&
-      r.resourceQuery.test("vue&type=style&index=0&lang=css"),
+      r.resourceQuery instanceof RegExp && r.resourceQuery.test("vue&type=style&index=0&lang=css"),
   );
 
   if (!hasCssFallback) {
@@ -94,7 +91,7 @@ export function applyRuleCloning(
 
   // Step 4: build oneOf
   const mainLoaderBranch: RuleSetRule = {
-    use: withNativeCssLoaderOption(normalizeUseFromRule(vueRule), nativeCss),
+    use: normalizeUseFromRule(vueRule),
   };
 
   const oneOf: RuleSetRule[] = [...clonedStyleRules, mainLoaderBranch];
@@ -126,8 +123,7 @@ function isVueMainRule(rule: RuleSetRule): boolean {
 
   const uses = normalizeUseFromRule(rule);
   return uses.some((u) => {
-    const loader =
-      typeof u === "string" ? u : (u as { loader?: string }).loader;
+    const loader = typeof u === "string" ? u : (u as { loader?: string }).loader;
     return loader ? isVizeMainLoader(loader) : false;
   });
 }
@@ -177,11 +173,7 @@ function detectStyleLang(rule: RuleSetRule): string | null {
 }
 
 /** Clone a CSS rule for `?vue&type=style` sub-requests, appending scope-loader + style-loader. */
-function cloneRulesForVueStyle(
-  rule: RuleSetRule,
-  lang: string,
-  nativeCss: boolean,
-): RuleSetRule[] {
+function cloneRulesForVueStyle(rule: RuleSetRule, lang: string, nativeCss: boolean): RuleSetRule[] {
   const uses = normalizeUseFromRule(rule);
   if (uses.length === 0) return [];
 
@@ -192,10 +184,7 @@ function cloneRulesForVueStyle(
     { loader: VIZE_STYLE_LOADER_IDENT },
   ];
 
-  const createRule = (
-    resourceQuery: RegExp,
-    fallbackType?: RuleSetRule["type"],
-  ): RuleSetRule => {
+  const createRule = (resourceQuery: RegExp, fallbackType?: RuleSetRule["type"]): RuleSetRule => {
     const cloned: RuleSetRule = {
       resourceQuery,
       use: deepCloneUse(clonedUse),
@@ -212,10 +201,7 @@ function cloneRulesForVueStyle(
 
   if (nativeCss) {
     return [
-      createRule(
-        new RegExp(`(?=.*type=style)(?=.*lang=${lang})(?=.*module=)`),
-        "css/module",
-      ),
+      createRule(new RegExp(`(?=.*type=style)(?=.*lang=${lang})(?=.*module=)`), "css/module"),
       createRule(new RegExp(`(?=.*type=style)(?=.*lang=${lang})`), "css/auto"),
     ];
   }
@@ -230,18 +216,12 @@ function createFallbackStyleRules(nativeCss: boolean): RuleSetRule[] {
       {
         resourceQuery: /(?=.*type=style)(?=.*lang=css)(?=.*module=)/,
         type: "css/module",
-        use: [
-          { loader: VIZE_SCOPE_LOADER_IDENT },
-          { loader: VIZE_STYLE_LOADER_IDENT },
-        ],
+        use: [{ loader: VIZE_SCOPE_LOADER_IDENT }, { loader: VIZE_STYLE_LOADER_IDENT }],
       },
       {
         resourceQuery: /(?=.*type=style)(?=.*lang=css)/,
         type: "css/auto",
-        use: [
-          { loader: VIZE_SCOPE_LOADER_IDENT },
-          { loader: VIZE_STYLE_LOADER_IDENT },
-        ],
+        use: [{ loader: VIZE_SCOPE_LOADER_IDENT }, { loader: VIZE_STYLE_LOADER_IDENT }],
       },
     ];
   }
@@ -251,63 +231,9 @@ function createFallbackStyleRules(nativeCss: boolean): RuleSetRule[] {
     {
       resourceQuery: /(?=.*type=style)(?=.*lang=css)/,
       type: "javascript/auto",
-      use: [
-        { loader: VIZE_SCOPE_LOADER_IDENT },
-        { loader: VIZE_STYLE_LOADER_IDENT },
-      ],
+      use: [{ loader: VIZE_SCOPE_LOADER_IDENT }, { loader: VIZE_STYLE_LOADER_IDENT }],
     },
   ];
-}
-
-function withNativeCssLoaderOption(
-  uses: RuleSetUseItem[],
-  nativeCss: boolean,
-): RuleSetUseItem[] {
-  return deepCloneUse(uses).map((useItem) => {
-    if (typeof useItem === "string") {
-      return isVizeMainLoader(useItem)
-        ? { loader: useItem, options: { css: { native: nativeCss } } }
-        : useItem;
-    }
-
-    if (typeof useItem !== "object" || useItem === null) {
-      return useItem;
-    }
-
-    const loader = (useItem as { loader?: string }).loader;
-    if (!loader || !isVizeMainLoader(loader)) {
-      return useItem;
-    }
-
-    const options = (useItem as { options?: unknown }).options;
-    if (!options || typeof options !== "object" || Array.isArray(options)) {
-      return { ...useItem, options: { css: { native: nativeCss } } };
-    }
-
-    const optionRecord = options as Record<string, unknown>;
-    const cssOptions = optionRecord.css;
-    if (
-      !cssOptions ||
-      typeof cssOptions !== "object" ||
-      Array.isArray(cssOptions)
-    ) {
-      return {
-        ...useItem,
-        options: { ...optionRecord, css: { native: nativeCss } },
-      };
-    }
-
-    return {
-      ...useItem,
-      options: {
-        ...optionRecord,
-        css: {
-          ...(cssOptions as Record<string, unknown>),
-          native: nativeCss,
-        },
-      },
-    };
-  });
 }
 
 /** Exclude Vue style sub-requests from a rule via `resourceQuery: { not: [/vue/] }`. */
