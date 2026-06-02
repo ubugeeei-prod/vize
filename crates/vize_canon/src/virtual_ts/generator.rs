@@ -163,6 +163,16 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         for re in &summary.re_exports {
             module_spans.push((re.start, re.end));
         }
+        let has_script_setup = summary
+            .scopes
+            .iter()
+            .any(|scope| matches!(scope.kind, ScopeKind::ScriptSetup));
+        if has_script_setup {
+            module_spans.extend(summary.scopes.iter().filter_map(|scope| {
+                matches!(scope.kind, ScopeKind::NonScriptSetup)
+                    .then_some((scope.span.start, scope.span.end))
+            }));
+        }
         for te in &summary.type_exports {
             // Non-hoisted types reference setup-scope values via `typeof`
             // and must stay inside `__setup` so TS can resolve them.
@@ -170,8 +180,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 module_spans.push((te.start, te.end));
             }
         }
-        module_spans.sort_by_key(|&(start, _)| start);
-        module_spans
+        merge_overlapping_spans(module_spans)
     });
 
     // For a `<script setup generic="...">` SFC, hoisted type declarations are
@@ -247,7 +256,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 }
 
                 let gen_start = ts.len();
-                ts.push_str(text);
+                if text.contains("export default") {
+                    let text = rewrite_export_default_for_module_scope(text);
+                    ts.push_str(&text);
+                } else {
+                    ts.push_str(text);
+                }
                 ts.push('\n');
                 let gen_end = ts.len();
                 mappings.push(VizeMapping {
@@ -749,6 +763,50 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str("export default __vize_component__;\n");
 
     VirtualTsOutput { code: ts, mappings }
+}
+
+fn merge_overlapping_spans(mut spans: Vec<(u32, u32)>) -> Vec<(u32, u32)> {
+    spans.retain(|(start, end)| start < end);
+    spans.sort_by_key(|&(start, end)| (start, end));
+
+    let mut merged: Vec<(u32, u32)> = Vec::with_capacity(spans.len());
+    for (start, end) in spans {
+        if let Some((_, previous_end)) = merged.last_mut()
+            && start <= *previous_end
+        {
+            *previous_end = (*previous_end).max(end);
+            continue;
+        }
+        merged.push((start, end));
+    }
+    merged
+}
+
+fn rewrite_export_default_for_module_scope(text: &str) -> String {
+    let mut output = String::with_capacity(text.len());
+    for segment in text.split_inclusive('\n') {
+        let (line_with_optional_cr, newline) = segment
+            .strip_suffix('\n')
+            .map_or((segment, ""), |line| (line, "\n"));
+        let (line, carriage_return) = line_with_optional_cr
+            .strip_suffix('\r')
+            .map_or((line_with_optional_cr, ""), |line| (line, "\r"));
+
+        let trimmed_line = line.trim_start();
+        if let Some(default_expr) = trimmed_line
+            .strip_prefix("export default")
+            .filter(|rest| rest.chars().next().is_none_or(char::is_whitespace))
+        {
+            let leading_ws = &line[..line.len() - trimmed_line.len()];
+            append!(output, "{leading_ws}const __default__ ={default_expr}");
+        } else {
+            output.push_str(line);
+        }
+        output.push_str(carriage_return);
+        output.push_str(newline);
+    }
+
+    output
 }
 
 /// Extract imported identifier names from an import statement string.

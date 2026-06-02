@@ -6,6 +6,7 @@
 use super::Croquis;
 use super::bindings::UnusedTemplateVar;
 use super::bindings::UnusedVarContext;
+use crate::scope::{ScopeData, ScopeKind};
 use vize_carton::CompactString;
 use vize_relief::BindingType;
 
@@ -77,6 +78,19 @@ impl Croquis {
         self.re_exports.extend(plain.re_exports);
         self.component_registrations
             .extend(plain.component_registrations);
+
+        for scope in plain.scopes.iter() {
+            if let (ScopeKind::NonScriptSetup, ScopeData::NonScriptSetup(data)) =
+                (scope.kind, scope.data())
+            {
+                self.scopes.enter_non_script_setup_scope(
+                    data.clone(),
+                    scope.span.start,
+                    scope.span.end,
+                );
+                self.scopes.exit_scope();
+            }
+        }
 
         for (name, span) in plain.binding_spans {
             self.binding_spans.entry(name).or_insert(span);

@@ -218,6 +218,86 @@ fn check_json_reports_empty_result_when_no_files_match() {
 }
 
 #[test]
+fn check_preserves_named_exports_from_split_script_vue() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "split-script-named-exports",
+        &[
+            (
+                "src/Helper.vue",
+                r#"<script lang="ts">
+const DEFAULT_COUNT = 1;
+
+export type HelperOption = {
+  count?: number;
+};
+
+export interface HelperState {
+  count: number;
+}
+
+export function useHelper(options: HelperOption = {}): HelperState {
+  return {
+    count: options.count ?? DEFAULT_COUNT,
+  };
+}
+</script>
+
+<script setup lang="ts">
+defineProps<{ state?: HelperState }>();
+</script>
+
+<template>
+  <div>{{ state?.count }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/Consumer.vue",
+                r#"<script setup lang="ts">
+import { useHelper, type HelperOption } from "./Helper.vue";
+
+const option: HelperOption = {};
+const state = useHelper(option);
+</script>
+
+<template>
+  <Helper :state="state" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", ".", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_directory_pattern_resolves_json_modules_imported_by_ts() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

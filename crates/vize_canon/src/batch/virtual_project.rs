@@ -711,20 +711,76 @@ declare module "*.vue.ts" {
             return Ok(Map::new());
         };
 
+        let mut seen = FxHashSet::default();
+        self.load_compiler_options_inner(tsconfig_path, &mut seen)
+    }
+
+    #[allow(clippy::disallowed_types)]
+    fn load_compiler_options_inner(
+        &self,
+        tsconfig_path: &Path,
+        seen: &mut FxHashSet<PathBuf>,
+    ) -> CorsaResult<Map<std::string::String, Value>> {
         if !tsconfig_path.exists() {
             return Ok(Map::new());
         }
+        let normalized = normalize_path_lexically(tsconfig_path);
+        if !seen.insert(normalized.clone()) {
+            return Ok(Map::new());
+        }
 
-        let content = profile!(
-            "canon.tsconfig.read",
-            std::fs::read_to_string(tsconfig_path)
-        )?;
+        let content = profile!("canon.tsconfig.read", std::fs::read_to_string(&normalized))?;
         let config = profile!("canon.tsconfig.parse", parse_jsonc_value(&content))?;
-        Ok(config
+        let mut compiler_options = config
             .get("compilerOptions")
             .and_then(Value::as_object)
             .cloned()
-            .unwrap_or_default())
+            .unwrap_or_default();
+        let base_dir = normalized.parent().unwrap_or(self.project_root.as_path());
+        self.normalize_paths_for_project_root(&mut compiler_options, base_dir);
+
+        let Some(parent_path) = config
+            .get("extends")
+            .and_then(Value::as_str)
+            .and_then(|extends| resolve_extended_tsconfig_path(&normalized, extends))
+        else {
+            return Ok(compiler_options);
+        };
+
+        let mut inherited = self.load_compiler_options_inner(&parent_path, seen)?;
+        inherited.extend(compiler_options);
+        Ok(inherited)
+    }
+
+    #[allow(clippy::disallowed_types)]
+    fn normalize_paths_for_project_root(
+        &self,
+        compiler_options: &mut Map<std::string::String, Value>,
+        base_dir: &Path,
+    ) {
+        let Some(paths) = compiler_options
+            .get_mut("paths")
+            .and_then(Value::as_object_mut)
+        else {
+            return;
+        };
+
+        for targets in paths.values_mut() {
+            let Some(targets) = targets.as_array_mut() else {
+                continue;
+            };
+            for target in targets {
+                let Some(raw_target) = target.as_str() else {
+                    continue;
+                };
+                if Path::new(raw_target).is_absolute() {
+                    continue;
+                }
+                *target = Value::String(
+                    normalize_tsconfig_path_target(base_dir, &self.project_root, raw_target).into(),
+                );
+            }
+        }
     }
 
     /// Re-anchor tsconfig `paths` targets into the virtual mirror. Each relative
@@ -1429,6 +1485,74 @@ fn source_type_for_path(path: &Path) -> Option<SourceType> {
     None
 }
 
+fn resolve_extended_tsconfig_path(tsconfig_path: &Path, extends: &str) -> Option<PathBuf> {
+    let base_dir = tsconfig_path.parent().unwrap_or(Path::new("."));
+    let extends_path = Path::new(extends);
+    if !(extends_path.is_absolute()
+        || extends.starts_with("./")
+        || extends.starts_with("../")
+        || extends == "."
+        || extends == "..")
+    {
+        return None;
+    }
+
+    let base = if extends_path.is_absolute() {
+        extends_path.to_path_buf()
+    } else {
+        base_dir.join(extends_path)
+    };
+
+    tsconfig_path_candidates(base)
+        .into_iter()
+        .map(|candidate| normalize_path_lexically(&candidate))
+        .find(|candidate| candidate.exists())
+}
+
+fn tsconfig_path_candidates(base: PathBuf) -> Vec<PathBuf> {
+    if base.extension().is_some() {
+        return vec![base];
+    }
+
+    vec![
+        base.clone(),
+        base.with_extension("json"),
+        base.join("tsconfig.json"),
+    ]
+}
+
+fn normalize_tsconfig_path_target(
+    base_dir: &Path,
+    project_root: &Path,
+    target: &str,
+) -> CompactString {
+    let normalized = normalize_path_lexically(&base_dir.join(target));
+    if let Ok(relative) = normalized.strip_prefix(project_root) {
+        return path_to_tsconfig_target(relative);
+    }
+    path_to_tsconfig_target(&normalized)
+}
+
+fn path_to_tsconfig_target(path: &Path) -> CompactString {
+    path.to_string_lossy().replace('\\', "/").into()
+}
+
+fn normalize_path_lexically(path: &Path) -> PathBuf {
+    let mut normalized = PathBuf::new();
+    for component in path.components() {
+        match component {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                if !normalized.pop() {
+                    normalized.push(component.as_os_str());
+                }
+            }
+            _ => normalized.push(component.as_os_str()),
+        }
+    }
+    normalized
+}
+
 fn parse_jsonc_value(content: &str) -> CorsaResult<Value> {
     let stripped = strip_json_comments(content);
     let normalized = strip_trailing_commas(&stripped);
@@ -2068,6 +2192,59 @@ const message = 'Hello'
         assert_eq!(
             paths["#shared"],
             serde_json::json!(["./shared/index.ts", "../../../shared/index.ts"])
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn materialized_tsconfig_reanchors_extended_paths_from_declaring_config_dir() {
+        let case_dir = unique_case_dir("tsconfig-extended-paths-reanchor");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join(".nuxt")).unwrap();
+        fs::create_dir_all(case_dir.join("app/components")).unwrap();
+        fs::write(
+            case_dir.join(".nuxt/tsconfig.json"),
+            r##"{
+  "compilerOptions": {
+    "paths": {
+      "~/*": ["../app/*"],
+      "#imports": ["./imports"]
+    }
+  }
+}"##,
+        )
+        .unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "extends": "./.nuxt/tsconfig.json"
+}"#,
+        )
+        .unwrap();
+        let vue_path = case_dir.join("app/components/App.vue");
+        fs::write(
+            &vue_path,
+            "<script setup lang=\"ts\">const count = 1</script>",
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&vue_path).unwrap();
+        project.materialize().unwrap();
+
+        let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+        let value: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
+        let paths = value["compilerOptions"]["paths"].as_object().unwrap();
+
+        assert_eq!(
+            paths["~/*"],
+            serde_json::json!(["./app/*", "../../../app/*"])
+        );
+        assert_eq!(
+            paths["#imports"],
+            serde_json::json!(["./.nuxt/imports", "../../../.nuxt/imports"])
         );
 
         let _ = fs::remove_dir_all(&case_dir);
