@@ -44,6 +44,6 @@ pub use resolver::{
 };
 pub use transform::{
     DefineReplacement, DynamicImportAliasRule, apply_define_replacements, is_builtin_define,
-    rewrite_dynamic_template_imports, rewrite_static_asset_urls,
+    rewrite_dynamic_template_imports, rewrite_import_meta_glob_base, rewrite_static_asset_urls,
     should_apply_define_in_virtual_module, to_browser_import_prefix,
 };

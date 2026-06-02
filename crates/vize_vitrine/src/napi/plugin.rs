@@ -165,6 +165,11 @@ pub fn rewrite_vite_dynamic_template_imports(
     vize_atelier_sfc::vite_plugin::rewrite_dynamic_template_imports(&code, &alias_rules).into()
 }
 
+#[napi(js_name = "rewriteViteImportMetaGlobBase")]
+pub fn rewrite_vite_import_meta_glob_base(code: String, importer: String, root: String) -> String {
+    vize_atelier_sfc::vite_plugin::rewrite_import_meta_glob_base(&code, &importer, &root).into()
+}
+
 #[napi(js_name = "isBuiltinViteDefine")]
 pub fn is_builtin_vite_define(key: String) -> bool {
     vize_atelier_sfc::vite_plugin::is_builtin_define(&key)

@@ -8,6 +8,7 @@
 import {
   applyViteDefineReplacements,
   isBuiltinViteDefine,
+  rewriteViteImportMetaGlobBase,
   rewriteViteStaticAssetUrls,
   shouldApplyViteDefineInVirtualModule,
 } from "@vizejs/native";
@@ -22,6 +23,13 @@ import type { DynamicImportAliasRule } from "./virtual.ts";
  */
 export function rewriteStaticAssetUrls(code: string, aliasRules: DynamicImportAliasRule[]): string {
   return rewriteViteStaticAssetUrls(code, aliasRules);
+}
+
+export function rewriteImportMetaGlobBase(code: string, importer: string, root: string): string {
+  if (!code.includes("import.meta.glob")) {
+    return code;
+  }
+  return rewriteViteImportMetaGlobBase(code, importer, root);
 }
 
 /**

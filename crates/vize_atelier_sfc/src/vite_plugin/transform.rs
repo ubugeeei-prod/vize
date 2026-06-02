@@ -1,3 +1,10 @@
+use std::path::{Component, Path, PathBuf};
+
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Argument, ArrayExpressionElement, CallExpression, Expression, StringLiteral};
+use oxc_ast_visit::{Visit, walk};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::{SmallVec, String};
 
 use super::js_string::push_js_string_literal;
@@ -20,6 +27,12 @@ pub struct DefineReplacement {
     pub value: String,
 }
 
+struct StringLiteralReplacement {
+    start: usize,
+    end: usize,
+    value: String,
+}
+
 const BUILTIN_DEFINE_PREFIXES: [&str; 10] = [
     "import.meta.server",
     "import.meta.client",
@@ -40,6 +53,32 @@ const VIRTUAL_MODULE_DEFINE_KEYS: [&str; 5] = [
     "import.meta.test",
     "import.meta.prerender",
 ];
+
+/// Rewrite relative `import.meta.glob` literals in Vize virtual modules.
+///
+/// Vite resolves relative glob patterns against the importer ID. Vize virtual
+/// modules are `\0` IDs, so Vite requires globs to be rooted before it sees
+/// the module. This keeps the original SFC path as the base while preserving
+/// Vite's own import-glob transform for the rest of the work.
+pub fn rewrite_import_meta_glob_base(code: &str, importer: &str, root: &str) -> String {
+    if !code.contains("import.meta.glob") {
+        return String::from(code);
+    }
+
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, code, SourceType::tsx().with_module(true)).parse();
+    if !parsed.errors.is_empty() {
+        return String::from(code);
+    }
+
+    let mut collector = ImportMetaGlobCollector {
+        importer,
+        root,
+        replacements: Vec::new(),
+    };
+    collector.visit_program(&parsed.program);
+    apply_string_literal_replacements(code, collector.replacements)
+}
 
 /// Rewrite static asset `src` values in compiled render output into imports.
 pub fn rewrite_static_asset_urls(code: &str, alias_rules: &[DynamicImportAliasRule]) -> String {
@@ -93,6 +132,159 @@ pub fn rewrite_static_asset_urls(code: &str, alias_rules: &[DynamicImportAliasRu
     }
     rewritten.push_str(output.as_str());
     rewritten
+}
+
+struct ImportMetaGlobCollector<'a> {
+    importer: &'a str,
+    root: &'a str,
+    replacements: Vec<StringLiteralReplacement>,
+}
+
+impl ImportMetaGlobCollector<'_> {
+    fn collect_argument<'a>(&mut self, argument: &Argument<'a>) {
+        match argument {
+            Argument::StringLiteral(literal) => self.collect_string_literal(literal),
+            Argument::ArrayExpression(array) => {
+                for element in array.elements.iter() {
+                    if let ArrayExpressionElement::StringLiteral(literal) = element {
+                        self.collect_string_literal(literal);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn collect_string_literal(&mut self, literal: &StringLiteral<'_>) {
+        let value = literal.value.as_str();
+        let Some(rewritten) = normalize_import_meta_glob_pattern(value, self.importer, self.root)
+        else {
+            return;
+        };
+
+        self.replacements.push(StringLiteralReplacement {
+            start: literal.span.start as usize,
+            end: literal.span.end as usize,
+            value: rewritten,
+        });
+    }
+}
+
+impl<'a> Visit<'a> for ImportMetaGlobCollector<'_> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if is_import_meta_glob_call(call)
+            && let Some(argument) = call.arguments.first()
+        {
+            self.collect_argument(argument);
+        }
+        walk::walk_call_expression(self, call);
+    }
+}
+
+fn is_import_meta_glob_call(call: &CallExpression<'_>) -> bool {
+    let Expression::StaticMemberExpression(member) = &call.callee else {
+        return false;
+    };
+    member.property.name.as_str() == "glob" && is_import_meta_expression(&member.object)
+}
+
+fn is_import_meta_expression(expression: &Expression<'_>) -> bool {
+    let Expression::MetaProperty(meta) = expression else {
+        return false;
+    };
+    meta.meta.name.as_str() == "import" && meta.property.name.as_str() == "meta"
+}
+
+fn normalize_import_meta_glob_pattern(pattern: &str, importer: &str, root: &str) -> Option<String> {
+    let (negated, pattern) = pattern
+        .strip_prefix('!')
+        .map_or((false, pattern), |pattern| (true, pattern));
+    if !pattern.starts_with("./") && !pattern.starts_with("../") {
+        return None;
+    }
+
+    let importer_parent = Path::new(importer)
+        .parent()
+        .unwrap_or_else(|| Path::new(""));
+    let absolute_pattern = lexical_normalize(&importer_parent.join(pattern));
+    let absolute_root = lexical_normalize(Path::new(if root.is_empty() { "." } else { root }));
+
+    let mut rewritten = String::with_capacity(pattern.len() + 2);
+    if negated {
+        rewritten.push('!');
+    }
+
+    if let Ok(relative) = absolute_pattern.strip_prefix(&absolute_root) {
+        rewritten.push('/');
+        let relative = normalize_path_for_import(relative);
+        rewritten.push_str(relative.as_str());
+    } else {
+        rewritten.push_str(normalize_path_for_import(&absolute_pattern).as_str());
+    }
+
+    Some(rewritten)
+}
+
+fn normalize_path_for_import(path: &Path) -> String {
+    normalize_slashes(path.to_string_lossy().as_ref())
+}
+
+fn lexical_normalize(path: &Path) -> PathBuf {
+    let mut normalized = PathBuf::new();
+    let mut normal_count = 0usize;
+
+    for component in path.components() {
+        match component {
+            Component::Prefix(prefix) => normalized.push(prefix.as_os_str()),
+            Component::RootDir => normalized.push(component.as_os_str()),
+            Component::CurDir => {}
+            Component::ParentDir => {
+                if normal_count > 0 {
+                    normal_count -= 1;
+                    normalized.pop();
+                } else if !normalized.is_absolute() {
+                    normalized.push(component.as_os_str());
+                }
+            }
+            Component::Normal(part) => {
+                normal_count += 1;
+                normalized.push(part);
+            }
+        }
+    }
+
+    normalized
+}
+
+fn apply_string_literal_replacements(
+    code: &str,
+    mut replacements: Vec<StringLiteralReplacement>,
+) -> String {
+    if replacements.is_empty() {
+        return String::from(code);
+    }
+
+    replacements.sort_by_key(|replacement| replacement.start);
+    let mut output = String::with_capacity(code.len());
+    let mut last = 0usize;
+    let mut changed = false;
+
+    for replacement in replacements {
+        if replacement.start < last || replacement.end > code.len() {
+            continue;
+        }
+        output.push_str(&code[last..replacement.start]);
+        push_js_string_literal(&mut output, replacement.value.as_str());
+        last = replacement.end;
+        changed = true;
+    }
+
+    if !changed {
+        return String::from(code);
+    }
+
+    output.push_str(&code[last..]);
+    output
 }
 
 /// Rewrite dynamic template imports so Vite leaves runtime expressions alone.
@@ -400,6 +592,36 @@ mod tests {
         assert_eq!(
             rewrite_dynamic_template_imports(code, &rules).as_str(),
             "const image = import(/* @vite-ignore */ `/src/assets/${name}.svg`);"
+        );
+    }
+
+    #[test]
+    fn rewrites_import_meta_glob_relative_patterns() {
+        let code = r#"const modules = import.meta.glob("./demos/*.vue", { eager: true });"#;
+
+        assert_eq!(
+            rewrite_import_meta_glob_base(code, "/project/src/App.vue", "/project").as_str(),
+            r#"const modules = import.meta.glob("/src/demos/*.vue", { eager: true });"#
+        );
+    }
+
+    #[test]
+    fn rewrites_import_meta_glob_array_and_negated_patterns() {
+        let code = r#"const modules = import.meta.glob<{ default: unknown }>(["./demos/*.vue", "!../legacy/*.vue", "/src/stable/*.vue"]);"#;
+
+        assert_eq!(
+            rewrite_import_meta_glob_base(code, "/project/src/App.vue", "/project").as_str(),
+            r#"const modules = import.meta.glob<{ default: unknown }>(["/src/demos/*.vue", "!/legacy/*.vue", "/src/stable/*.vue"]);"#
+        );
+    }
+
+    #[test]
+    fn skips_non_calls_and_non_relative_import_meta_globs() {
+        let code = r#"const text = "import.meta.glob('./demos/*.vue')"; const modules = import.meta.glob("/src/demos/*.vue");"#;
+
+        assert_eq!(
+            rewrite_import_meta_glob_base(code, "/project/src/App.vue", "/project").as_str(),
+            code
         );
     }
 

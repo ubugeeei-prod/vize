@@ -126,6 +126,7 @@ module.exports.resolveViteCssImports = nativeBinding.resolveViteCssImports;
 module.exports.resolveViteRelativeImport = nativeBinding.resolveViteRelativeImport;
 module.exports.resolveViteVuePath = nativeBinding.resolveViteVuePath;
 module.exports.rewriteViteDynamicTemplateImports = nativeBinding.rewriteViteDynamicTemplateImports;
+module.exports.rewriteViteImportMetaGlobBase = nativeBinding.rewriteViteImportMetaGlobBase;
 module.exports.rewriteViteStaticAssetUrls = nativeBinding.rewriteViteStaticAssetUrls;
 module.exports.runCli = nativeBinding.runCli;
 module.exports.scopeViteCssForPipeline = nativeBinding.scopeViteCssForPipeline;

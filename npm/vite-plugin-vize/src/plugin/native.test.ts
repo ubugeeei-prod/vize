@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { classifyVitePluginRequest } from "@vizejs/native";
+import { classifyVitePluginRequest, rewriteViteImportMetaGlobBase } from "@vizejs/native";
 
 {
   const request = classifyVitePluginRequest("/src/pages/Home.vue?definePage");
@@ -49,4 +49,12 @@ import { classifyVitePluginRequest } from "@vizejs/native";
   assert.equal(classifyVitePluginRequest("/src/Foo.client.vue").boundaryKind, "client");
   assert.equal(classifyVitePluginRequest("/src/Foo.server.vue").boundaryKind, "server");
   assert.equal(classifyVitePluginRequest("/src/Foo.vue").boundaryKind ?? undefined, undefined);
+}
+
+{
+  const code = `const modules = import.meta.glob(["./demos/*.vue", "!../legacy/*.vue"], { eager: true });`;
+  assert.equal(
+    rewriteViteImportMetaGlobBase(code, "/project/src/App.vue", "/project"),
+    `const modules = import.meta.glob(["/src/demos/*.vue", "!/legacy/*.vue"], { eager: true });`,
+  );
 }

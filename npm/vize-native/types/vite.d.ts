@@ -202,6 +202,12 @@ export declare function rewriteViteDynamicTemplateImports(
   aliasRules: Array<DynamicImportAliasRuleNapi>,
 ): string;
 
+export declare function rewriteViteImportMetaGlobBase(
+  code: string,
+  importer: string,
+  root: string,
+): string;
+
 export declare function rewriteViteStaticAssetUrls(
   code: string,
   aliasRules: Array<DynamicImportAliasRuleNapi>,

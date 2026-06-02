@@ -8,6 +8,7 @@ import { getBoundaryPlaceholderCode } from "./load.ts";
 import { loadHook } from "./load.ts";
 import { normalizeVueServerRendererImport } from "./load.ts";
 import { transformHook } from "./load.ts";
+import { rewriteImportMetaGlobBase } from "../transform.ts";
 import { toVirtualId } from "../virtual.ts";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -65,6 +66,18 @@ assert.equal(
   ),
   'import { ssrRenderAttrs } from "vue/server-renderer";\nexport { ssrRenderAttrs };',
   "SSR helper imports should use Vue's public server-renderer entry for Nuxt/Nitro externalization",
+);
+
+assert.equal(
+  rewriteImportMetaGlobBase(
+    `const modules = import.meta.glob("./demos/*.vue", { eager: true });
+const grouped = import.meta.glob(["./demos/*.vue", "../shared/*.vue"]);`,
+    "/project/src/App.vue",
+    "/project",
+  ),
+  `const modules = import.meta.glob("/src/demos/*.vue", { eager: true });
+const grouped = import.meta.glob(["/src/demos/*.vue", "/shared/*.vue"]);`,
+  "Virtual SFC modules should resolve relative import.meta.glob patterns from the original file",
 );
 
 const realPath = "/src/Hmr.vue";
@@ -377,6 +390,52 @@ assert.match(
   inlineLoad.code,
   /__hmrUpdateType = "full-reload"/,
   "Inline-template components must downgrade template-only HMR to full-reload",
+);
+
+const globRoot = createTempRoot("glob-base");
+const globPath = path.join(globRoot, "src", "App.vue");
+const globState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      globPath,
+      {
+        code: `const modules = import.meta.glob("./demos/*.vue", { eager: true });
+const grouped = import.meta.glob(["./demos/*.vue", "../shared/*.vue"]);
+const _sfc_main = {};
+export default _sfc_main`,
+        scopeId: "globbase",
+        hasScoped: false,
+        styles: [],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+  pendingHmrUpdateTypes: new Map(),
+  root: globRoot,
+};
+
+const globLoad = loadHook(globState, toVirtualId(globPath), {
+  ssr: false,
+});
+assert.ok(
+  globLoad && typeof globLoad === "object",
+  "Virtual modules with import.meta.glob should load as code objects",
+);
+assert.match(
+  globLoad.code,
+  /import\.meta\.glob\("\/src\/demos\/\*\.vue", \{ eager: true \}\)/,
+  "Virtual modules should rewrite single relative glob patterns to root-relative paths",
+);
+assert.match(
+  globLoad.code,
+  /import\.meta\.glob\(\["\/src\/demos\/\*\.vue", "\/shared\/\*\.vue"\]\)/,
+  "Virtual modules should rewrite array relative glob patterns to root-relative paths",
+);
+assert.doesNotMatch(
+  globLoad.code,
+  /import\.meta\.glob\((?:\.\/|\["\.\/)/,
+  "Virtual modules should not leave relative import.meta.glob patterns for Vite's virtual import-glob transform",
 );
 
 const envPath = "/src/Environment.vue";

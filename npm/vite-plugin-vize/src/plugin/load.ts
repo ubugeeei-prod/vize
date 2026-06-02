@@ -24,7 +24,11 @@ import {
   RESOLVED_CSS_MODULE,
   rewriteDynamicTemplateImports,
 } from "../virtual.ts";
-import { rewriteStaticAssetUrls, applyDefineReplacements } from "../transform.ts";
+import {
+  applyDefineReplacements,
+  rewriteImportMetaGlobBase,
+  rewriteStaticAssetUrls,
+} from "../transform.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -169,11 +173,12 @@ function loadCompiledSfcModule(
     ),
     state.dynamicImportAliasRules,
   );
+  const normalizedOutput = rewriteImportMetaGlobBase(output, realPath, state.root);
   if (!loadOptions?.ssr) {
     state.pendingHmrUpdateTypes.delete(realPath);
   }
   return {
-    code: output,
+    code: normalizedOutput,
     map: null,
   };
 }
