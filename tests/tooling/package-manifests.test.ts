@@ -307,6 +307,22 @@ test("pkl runtime stays optional for consumers of the vize package", () => {
   });
 });
 
+test("native preview runtime is declared for vize check users", () => {
+  const packageJson = JSON.parse(readRepoFile("npm/vize/package.json")) as {
+    dependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+    peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+  };
+
+  assert.equal(packageJson.dependencies?.["@typescript/native-preview"], undefined);
+  assert.equal(packageJson.optionalDependencies?.["@typescript/native-preview"], undefined);
+  assert.equal(packageJson.peerDependencies?.["@typescript/native-preview"], "catalog:typescript");
+  assert.deepEqual(packageJson.peerDependenciesMeta?.["@typescript/native-preview"], {
+    optional: true,
+  });
+});
+
 test("musea Nuxt tests the same vue-router major that it declares as a peer", () => {
   const workspaceYaml = readRepoFile("pnpm-workspace.yaml");
   const catalogVersion = workspaceYaml.match(/^\s+vue-router: "([^"]+)"$/m)?.[1];

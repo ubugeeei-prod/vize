@@ -191,11 +191,13 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   const tempRoot = createTempRoot("ssr-vue-runtime");
   const importer = path.join(tempRoot, "App.vue");
   fs.writeFileSync(importer, "<template><div /></template>");
+  const state = createState(tempRoot);
+  state.server = null;
 
   assert.deepEqual(
     await resolveIdHook(
       nullResolveContext,
-      createState(tempRoot),
+      state,
       "@vue/server-renderer",
       toVirtualId(importer, true),
       { ssr: true },
@@ -207,13 +209,130 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   assert.deepEqual(
     await resolveIdHook(
       nullResolveContext,
-      createState(tempRoot),
+      state,
+      "vue/dist/vue.esm-bundler.js/server-renderer",
+      toVirtualId(importer, true),
+      { ssr: true },
+    ),
+    { id: "vue/server-renderer", external: true },
+    "SSR virtual modules should externalize Vue server-renderer suffixes to the public server renderer entry",
+  );
+
+  assert.deepEqual(
+    await resolveIdHook(
+      nullResolveContext,
+      state,
       "vue/dist/vue.esm-bundler.js",
       toVirtualId(importer, true),
       { ssr: true },
     ),
     { id: "vue", external: true },
     "SSR virtual modules should not bundle Vue runtime aliases into Nuxt server output",
+  );
+}
+
+{
+  const projectRoot = createTempProject("dev-ssr-vue-pnpm-isolated");
+  const nuxtImporter = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "nuxt",
+    "dist",
+    "app",
+    "components",
+    "nuxt-root.vue",
+  );
+  const vuePackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.6.0-beta.1_x",
+    "node_modules",
+    "vue",
+  );
+  const rendererPackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "@vue+server-renderer@3.6.0-beta.1_x",
+    "node_modules",
+    "@vue",
+    "server-renderer",
+  );
+  const vueLink = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "vue",
+  );
+  const rendererLink = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "@vue",
+    "server-renderer",
+  );
+  const vueBundlerEntry = path.join(vuePackage, "dist", "vue.runtime.esm-bundler.js");
+  const rendererBundlerEntry = path.join(rendererPackage, "dist", "server-renderer.esm-bundler.js");
+
+  writeFixtureFile(nuxtImporter, "<template><Suspense /></template>");
+  writeFixtureFile(
+    path.join(vuePackage, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(vuePackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(vueBundlerEntry, "export const Suspense = Symbol();");
+  writeFixtureFile(
+    path.join(rendererPackage, "package.json"),
+    JSON.stringify({ name: "@vue/server-renderer", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(rendererPackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(rendererBundlerEntry, "export const ssrRenderSuspense = () => null;");
+  fs.mkdirSync(path.dirname(vueLink), { recursive: true });
+  fs.mkdirSync(path.dirname(rendererLink), { recursive: true });
+  fs.symlinkSync(vuePackage, vueLink, "dir");
+  fs.symlinkSync(rendererPackage, rendererLink, "dir");
+
+  const state = createState(projectRoot);
+  const importer = toVirtualId(nuxtImporter, true);
+
+  assert.equal(
+    expectResolvedId(
+      await resolveIdHook(nullResolveContext, state, "vue", importer, { ssr: true }),
+    ),
+    vueBundlerEntry,
+    "Dev SSR virtual modules should resolve Vue from the importer-local package instead of externalizing a bare import",
+  );
+
+  assert.equal(
+    expectResolvedId(
+      await resolveIdHook(nullResolveContext, state, "vue/server-renderer", importer, {
+        ssr: true,
+      }),
+    ),
+    rendererBundlerEntry,
+    "Dev SSR virtual modules should resolve public Vue server-renderer imports to the renderer ESM bundler entry",
+  );
+
+  assert.equal(
+    expectResolvedId(
+      await resolveIdHook(
+        nullResolveContext,
+        state,
+        "vue/dist/vue.esm-bundler.js/server-renderer",
+        importer,
+        { ssr: true },
+      ),
+    ),
+    rendererBundlerEntry,
+    "Dev SSR virtual modules should resolve Vue server-renderer suffixes to the renderer ESM bundler entry",
   );
 }
 

@@ -8,6 +8,7 @@ export interface NuxtComponentDescriptor {
   name?: string;
   filePath: string;
   export?: string;
+  mode?: "client" | "server";
 }
 
 export interface NuxtComponentImport {
@@ -24,6 +25,7 @@ export interface NuxtComponentResolverOptions {
 }
 
 const COMPONENT_CALL_RE = /_?resolveComponent\s*\(\s*["'`]([^"'`]+)["'`]\s*(?:,\s*[^)]+)?\)/g;
+const COMPONENTS_IMPORT_RE = /import\s+(?!type\b)\{([^}]*)\}\s+from\s+(["'])#components\2\s*;?/g;
 const COMPONENT_EXT_RE = /\.(?:[cm]?js|ts|vue)$/;
 const DTS_COMPONENT_RE =
   /^export const (\w+): (?:LazyComponent<)?typeof import\((["'])(.+?)\2\)(?:\.([A-Za-z_$][\w$]*)|\[['"]([A-Za-z_$][\w$]*)['"]\])>?/;
@@ -36,6 +38,18 @@ const RUNTIME_COMPONENT_DIRS = [
   "dist/runtime/components/nuxt4",
   "runtime/components",
 ];
+const IMPORT_SPECIFIER_RE = /^(type\s+)?([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?$/;
+
+interface ComponentImportSpecifier {
+  importedName: string;
+  localName: string;
+  typeOnly: boolean;
+}
+
+interface ComponentBindingResult {
+  needsCreateClientOnly: boolean;
+  needsDefineAsyncComponent: boolean;
+}
 
 function toKebabCase(name: string): string {
   return name
@@ -114,10 +128,41 @@ function detectComponentMode(filePath: string): NuxtComponentImport["mode"] {
   return undefined;
 }
 
+function normalizeComponentMode(mode: unknown): NuxtComponentImport["mode"] {
+  return mode === "client" || mode === "server" ? mode : undefined;
+}
+
+function parseComponentImportSpecifier(raw: string): ComponentImportSpecifier | null {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const match = trimmed.match(IMPORT_SPECIFIER_RE);
+  if (!match) {
+    return null;
+  }
+
+  const [, typeKeyword, importedName, localName] = match;
+  return {
+    importedName,
+    localName: localName || importedName,
+    typeOnly: Boolean(typeKeyword),
+  };
+}
+
+function splitComponentImportSpecifiers(specifiers: string): string[] {
+  return specifiers
+    .split(",")
+    .map((specifier) => specifier.trim())
+    .filter(Boolean);
+}
+
 function createComponentImport(
   filePath: string,
   exportName: string,
   lazy?: boolean,
+  mode?: unknown,
 ): NuxtComponentImport {
   const componentImport: NuxtComponentImport = {
     exportName,
@@ -128,12 +173,68 @@ function createComponentImport(
     componentImport.lazy = true;
   }
 
-  const mode = detectComponentMode(filePath);
-  if (mode) {
-    componentImport.mode = mode;
+  const resolvedMode = normalizeComponentMode(mode) ?? detectComponentMode(filePath);
+  if (resolvedMode) {
+    componentImport.mode = resolvedMode;
   }
 
   return componentImport;
+}
+
+function addResolvedComponentBinding(
+  componentImports: string[],
+  resolved: NuxtComponentImport,
+  variableName: string,
+  rawVariableName: string,
+): ComponentBindingResult {
+  let needsCreateClientOnly = false;
+  let needsDefineAsyncComponent = false;
+
+  if (resolved.lazy) {
+    needsDefineAsyncComponent = true;
+    const exportAccessor =
+      resolved.exportName === "default"
+        ? "module.default"
+        : `module[${JSON.stringify(resolved.exportName)}]`;
+    if (resolved.mode === "client") {
+      needsCreateClientOnly = true;
+      componentImports.push(
+        `const ${variableName} = __nuxt_define_async_component(() => import(${JSON.stringify(resolved.filePath)}).then((module) => __nuxt_create_client_only(${exportAccessor})));`,
+      );
+    } else {
+      componentImports.push(
+        `const ${variableName} = __nuxt_define_async_component(() => import(${JSON.stringify(resolved.filePath)}).then((module) => ${exportAccessor}));`,
+      );
+    }
+    return { needsCreateClientOnly, needsDefineAsyncComponent };
+  }
+
+  if (resolved.exportName === "default") {
+    if (resolved.mode === "client") {
+      needsCreateClientOnly = true;
+      componentImports.push(`import ${rawVariableName} from ${JSON.stringify(resolved.filePath)};`);
+      componentImports.push(
+        `const ${variableName} = __nuxt_create_client_only(${rawVariableName});`,
+      );
+    } else {
+      componentImports.push(`import ${variableName} from ${JSON.stringify(resolved.filePath)};`);
+    }
+    return { needsCreateClientOnly, needsDefineAsyncComponent };
+  }
+
+  if (resolved.mode === "client") {
+    needsCreateClientOnly = true;
+    componentImports.push(
+      `import { ${resolved.exportName} as ${rawVariableName} } from ${JSON.stringify(resolved.filePath)};`,
+    );
+    componentImports.push(`const ${variableName} = __nuxt_create_client_only(${rawVariableName});`);
+  } else {
+    componentImports.push(
+      `import { ${resolved.exportName} as ${variableName} } from ${JSON.stringify(resolved.filePath)};`,
+    );
+  }
+
+  return { needsCreateClientOnly, needsDefineAsyncComponent };
 }
 
 function getNuxtComponentDtsFiles(rootDir: string, buildDir: string): string[] {
@@ -279,7 +380,12 @@ export function createNuxtComponentResolver(options: NuxtComponentResolverOption
   return {
     register(components: NuxtComponentDescriptor[]): void {
       for (const component of components) {
-        const resolved = createComponentImport(component.filePath, component.export || "default");
+        const resolved = createComponentImport(
+          component.filePath,
+          component.export || "default",
+          false,
+          component.mode,
+        );
         addComponentAlias(registered, component.pascalName, resolved);
         addComponentAlias(registered, component.kebabName, resolved);
         addComponentAlias(registered, component.name, resolved);
@@ -312,71 +418,78 @@ export function injectNuxtComponentImports(
   const componentImports: string[] = [];
   const importedComponents = new Map<string, string>();
   let counter = 0;
+  let importCounter = 0;
   let needsDefineAsyncComponent = false;
   let needsCreateClientOnly = false;
 
-  const nextCode = code.replace(COMPONENT_CALL_RE, (match: string, name: string) => {
-    const resolved = resolveComponentImport(name);
-    if (!resolved) {
-      return match;
-    }
+  const codeWithComponentImports = code.replace(
+    COMPONENTS_IMPORT_RE,
+    (match: string, specifiers: string) => {
+      const unresolvedSpecifiers: string[] = [];
+      let changed = false;
 
-    const importKey = `${resolved.exportName}\u0000${resolved.filePath}\u0000${resolved.lazy ? "lazy" : "eager"}\u0000${resolved.mode ?? "default"}`;
-    let variableName = importedComponents.get(importKey);
-    if (!variableName) {
-      variableName = `__nuxt_component_${counter++}`;
-      importedComponents.set(importKey, variableName);
-      if (resolved.lazy) {
-        needsDefineAsyncComponent = true;
-        const exportAccessor =
-          resolved.exportName === "default"
-            ? "module.default"
-            : `module[${JSON.stringify(resolved.exportName)}]`;
-        if (resolved.mode === "client") {
-          needsCreateClientOnly = true;
-          componentImports.push(
-            `const ${variableName} = __nuxt_define_async_component(() => import(${JSON.stringify(resolved.filePath)}).then((module) => __nuxt_create_client_only(${exportAccessor})));`,
-          );
-        } else {
-          componentImports.push(
-            `const ${variableName} = __nuxt_define_async_component(() => import(${JSON.stringify(resolved.filePath)}).then((module) => ${exportAccessor}));`,
-          );
+      for (const rawSpecifier of splitComponentImportSpecifiers(specifiers)) {
+        const specifier = parseComponentImportSpecifier(rawSpecifier);
+        if (!specifier || specifier.typeOnly) {
+          unresolvedSpecifiers.push(rawSpecifier);
+          continue;
         }
-      } else if (resolved.exportName === "default") {
-        if (resolved.mode === "client") {
-          needsCreateClientOnly = true;
-          const rawVariableName = `${variableName}_raw`;
-          componentImports.push(
-            `import ${rawVariableName} from ${JSON.stringify(resolved.filePath)};`,
-          );
-          componentImports.push(
-            `const ${variableName} = __nuxt_create_client_only(${rawVariableName});`,
-          );
-        } else {
-          componentImports.push(
-            `import ${variableName} from ${JSON.stringify(resolved.filePath)};`,
-          );
+
+        const resolved = resolveComponentImport(specifier.importedName);
+        if (!resolved) {
+          unresolvedSpecifiers.push(rawSpecifier);
+          continue;
         }
-      } else {
-        if (resolved.mode === "client") {
-          needsCreateClientOnly = true;
-          const rawVariableName = `${variableName}_raw`;
-          componentImports.push(
-            `import { ${resolved.exportName} as ${rawVariableName} } from ${JSON.stringify(resolved.filePath)};`,
-          );
-          componentImports.push(
-            `const ${variableName} = __nuxt_create_client_only(${rawVariableName});`,
-          );
-        } else {
-          componentImports.push(
-            `import { ${resolved.exportName} as ${variableName} } from ${JSON.stringify(resolved.filePath)};`,
-          );
-        }
+
+        changed = true;
+        const result = addResolvedComponentBinding(
+          componentImports,
+          resolved,
+          specifier.localName,
+          `__nuxt_import_component_${importCounter++}_raw`,
+        );
+        needsCreateClientOnly ||= result.needsCreateClientOnly;
+        needsDefineAsyncComponent ||= result.needsDefineAsyncComponent;
       }
-    }
 
-    return variableName;
-  });
+      if (!changed) {
+        return match;
+      }
+
+      if (unresolvedSpecifiers.length === 0) {
+        return "";
+      }
+
+      return `import { ${unresolvedSpecifiers.join(", ")} } from "#components";`;
+    },
+  );
+
+  const nextCode = codeWithComponentImports.replace(
+    COMPONENT_CALL_RE,
+    (match: string, name: string) => {
+      const resolved = resolveComponentImport(name);
+      if (!resolved) {
+        return match;
+      }
+
+      const importKey = `${resolved.exportName}\u0000${resolved.filePath}\u0000${resolved.lazy ? "lazy" : "eager"}\u0000${resolved.mode ?? "default"}`;
+      let variableName = importedComponents.get(importKey);
+      if (!variableName) {
+        variableName = `__nuxt_component_${counter++}`;
+        importedComponents.set(importKey, variableName);
+        const result = addResolvedComponentBinding(
+          componentImports,
+          resolved,
+          variableName,
+          `${variableName}_raw`,
+        );
+        needsCreateClientOnly ||= result.needsCreateClientOnly;
+        needsDefineAsyncComponent ||= result.needsDefineAsyncComponent;
+      }
+
+      return variableName;
+    },
+  );
 
   if (componentImports.length === 0) {
     return code;
