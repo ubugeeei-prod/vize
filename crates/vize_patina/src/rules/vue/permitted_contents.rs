@@ -43,7 +43,7 @@ static META: RuleMeta = RuleMeta {
 
 /// Elements that only permit phrasing (inline) content
 const PHRASING_ONLY_PARENTS: &[&str] = &[
-    "p", "span", "a", "em", "strong", "small", "s", "cite", "q", "dfn", "abbr", "ruby", "rt", "rp",
+    "p", "span", "em", "strong", "small", "s", "cite", "q", "dfn", "abbr", "ruby", "rt", "rp",
     "data", "time", "code", "var", "samp", "kbd", "sub", "sup", "i", "b", "u", "mark", "bdi",
     "bdo", "label",
 ];
@@ -107,6 +107,12 @@ fn is_interactive_element(tag: &str) -> bool {
     INTERACTIVE_ELEMENTS.contains(&tag)
 }
 
+/// Check if an element has a transparent content model.
+#[inline]
+fn is_transparent_parent(tag: &str) -> bool {
+    tag == "a"
+}
+
 /// Get required direct children for a parent element (if constrained)
 fn required_children(parent: &str) -> Option<&'static [&'static str]> {
     match parent {
@@ -137,6 +143,16 @@ fn content_model_tag(tag: &str) -> &str {
     intrinsic_member_component_tag(tag).unwrap_or(tag)
 }
 
+fn nearest_non_transparent_parent<'ctx, 'a>(
+    ctx: &'ctx LintContext<'a>,
+) -> Option<(&'ctx str, &'ctx str)> {
+    ctx.element_stack.iter().rev().skip(1).find_map(|ancestor| {
+        let raw_tag = ancestor.tag.as_str();
+        let tag = content_model_tag(raw_tag);
+        (!is_transparent_parent(tag)).then_some((raw_tag, tag))
+    })
+}
+
 #[derive(Default)]
 pub struct PermittedContents;
 
@@ -165,12 +181,12 @@ impl Rule for PermittedContents {
         // 1. Block in inline: check if this block element has a phrasing-only ancestor
         if !is_unknown_component
             && is_block_element(tag)
-            && let Some(parent) = ctx.parent_element()
-            && is_phrasing_only_parent(content_model_tag(parent.tag.as_str()))
+            && let Some((parent_raw_tag, parent_tag)) = nearest_non_transparent_parent(ctx)
+            && is_phrasing_only_parent(parent_tag)
         {
             let message = ctx.t_fmt(
                 "vue/permitted-contents.block_in_inline",
-                &[("child", raw_tag), ("parent", parent.tag.as_str())],
+                &[("child", raw_tag), ("parent", parent_raw_tag)],
             );
             ctx.error(message, &element.loc);
         }
@@ -284,6 +300,16 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_flow_content_in_anchor_when_context_allows_flow() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r##"<main><a href="#"><h2>Documentation</h2><div>Read the guide</div></a></main>"##,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
     fn test_valid_select_with_options() {
         let linter = create_linter();
         let result = linter.lint_template(
@@ -332,6 +358,14 @@ mod tests {
         let result = linter.lint_template(r#"<span><ul><li>item</li></ul></span>"#, "test.vue");
         // ul in span: block_in_inline error
         // But li in ul is valid
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_flow_content_in_anchor_when_outer_context_is_phrasing() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r##"<p><a href="#"><div>block</div></a></p>"##, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 
