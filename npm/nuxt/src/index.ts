@@ -404,6 +404,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
             name: string;
             filePath: string;
             export: string;
+            mode?: "client" | "server";
           }>,
         );
       });

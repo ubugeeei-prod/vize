@@ -222,6 +222,66 @@ export default {
   }
 });
 
+void test("Nuxt component resolver preserves explicit component mode from registry", () => {
+  const fixture = createFixture();
+  try {
+    const routeAnnouncerPath = writeFile(
+      path.join(fixture.rootDir, "node_modules/nuxt/dist/app/components/nuxt-route-announcer.js"),
+    );
+    const resolver = createNuxtComponentResolver({
+      buildDir: fixture.buildDir,
+      rootDir: fixture.rootDir,
+    });
+    resolver.register([
+      {
+        pascalName: "NuxtRouteAnnouncer",
+        kebabName: "nuxt-route-announcer",
+        name: "NuxtRouteAnnouncer",
+        filePath: routeAnnouncerPath,
+        export: "default",
+        mode: "client",
+      },
+    ]);
+
+    assert.deepEqual(
+      resolver.resolve("NuxtRouteAnnouncer"),
+      {
+        exportName: "default",
+        filePath: routeAnnouncerPath,
+        mode: "client",
+      },
+      "components:extend entries should preserve explicit client-only mode",
+    );
+
+    const transformed = injectNuxtComponentImports(
+      `
+export default {
+  setup(__props) {
+    return (_ctx, _cache) => {
+      const _component_NuxtRouteAnnouncer = resolveComponent("NuxtRouteAnnouncer");
+      return _component_NuxtRouteAnnouncer;
+    };
+  }
+}
+`,
+      (name) => resolver.resolve(name),
+    );
+
+    assert.match(
+      transformed,
+      /import \{ createClientOnly as __nuxt_create_client_only \} from "#app\/components\/client-only";/,
+      "registry client-only components should import createClientOnly",
+    );
+    assert.match(
+      transformed,
+      /import __nuxt_component_0_raw from ".*nuxt-route-announcer\.js";\s*const __nuxt_component_0 = __nuxt_create_client_only\(__nuxt_component_0_raw\);/s,
+      "registry client-only components should be wrapped before use",
+    );
+  } finally {
+    fs.rmSync(fixture.rootDir, { recursive: true, force: true });
+  }
+});
+
 void test("Nuxt component import injection dedupes repeated component resolutions", () => {
   const deduped = injectNuxtComponentImports(
     `

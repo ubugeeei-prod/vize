@@ -8,6 +8,7 @@ export interface NuxtComponentDescriptor {
   name?: string;
   filePath: string;
   export?: string;
+  mode?: "client" | "server";
 }
 
 export interface NuxtComponentImport {
@@ -114,10 +115,15 @@ function detectComponentMode(filePath: string): NuxtComponentImport["mode"] {
   return undefined;
 }
 
+function normalizeComponentMode(mode: unknown): NuxtComponentImport["mode"] {
+  return mode === "client" || mode === "server" ? mode : undefined;
+}
+
 function createComponentImport(
   filePath: string,
   exportName: string,
   lazy?: boolean,
+  mode?: unknown,
 ): NuxtComponentImport {
   const componentImport: NuxtComponentImport = {
     exportName,
@@ -128,9 +134,9 @@ function createComponentImport(
     componentImport.lazy = true;
   }
 
-  const mode = detectComponentMode(filePath);
-  if (mode) {
-    componentImport.mode = mode;
+  const resolvedMode = normalizeComponentMode(mode) ?? detectComponentMode(filePath);
+  if (resolvedMode) {
+    componentImport.mode = resolvedMode;
   }
 
   return componentImport;
@@ -279,7 +285,12 @@ export function createNuxtComponentResolver(options: NuxtComponentResolverOption
   return {
     register(components: NuxtComponentDescriptor[]): void {
       for (const component of components) {
-        const resolved = createComponentImport(component.filePath, component.export || "default");
+        const resolved = createComponentImport(
+          component.filePath,
+          component.export || "default",
+          false,
+          component.mode,
+        );
         addComponentAlias(registered, component.pascalName, resolved);
         addComponentAlias(registered, component.kebabName, resolved);
         addComponentAlias(registered, component.name, resolved);
