@@ -749,10 +749,17 @@ fn resolve_project_root(
         } else {
             cwd.join(tsconfig)
         };
-        return tsconfig_path
+        let tsconfig_dir = tsconfig_path
+            .canonicalize()
+            .unwrap_or(tsconfig_path)
             .parent()
             .map(|parent| parent.to_path_buf())
             .unwrap_or_else(|| cwd.to_path_buf());
+        if files.is_empty() {
+            return tsconfig_dir;
+        }
+
+        return common_project_root(tsconfig_dir, files);
     }
 
     if let Some(root) = resolve_project_root_from_files(files) {
@@ -837,6 +844,19 @@ fn common_file_parent(files: &[PathBuf]) -> Option<PathBuf> {
     }
 
     Some(common)
+}
+
+fn common_project_root(mut common: PathBuf, files: &[PathBuf]) -> PathBuf {
+    for file in files {
+        let parent = file.parent().unwrap_or(file.as_path());
+        while !parent.starts_with(&common) {
+            if !common.pop() {
+                return common;
+            }
+        }
+    }
+
+    common
 }
 
 fn display_path(base: &Path, path: &Path) -> vize_carton::String {
@@ -979,6 +999,30 @@ mod tests {
         assert_eq!(resolved_tsconfig, Some(resolved_root.join("tsconfig.json")));
 
         let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn resolves_common_root_when_explicit_tsconfig_is_below_inputs() {
+        let project_root = unique_case_dir("explicit-tsconfig-below-inputs");
+        let _ = std::fs::remove_dir_all(&project_root);
+        let config_dir = project_root.join("config");
+        let src_dir = project_root.join("src");
+        std::fs::create_dir_all(&config_dir).unwrap();
+        std::fs::create_dir_all(&src_dir).unwrap();
+        let tsconfig = config_dir.join("tsconfig.json");
+        let app = src_dir.join("App.vue");
+        std::fs::write(&tsconfig, "{}").unwrap();
+        std::fs::write(&app, "<template />").unwrap();
+        let files = vec![app];
+
+        let resolved_root = resolve_project_root(Some(&tsconfig), &project_root, &files);
+        let resolved_tsconfig =
+            resolve_tsconfig_path(Some(&tsconfig), &project_root, &resolved_root, &files);
+
+        assert_eq!(resolved_root, project_root);
+        assert_eq!(resolved_tsconfig, Some(tsconfig));
+
+        let _ = std::fs::remove_dir_all(&resolved_root);
     }
 
     #[test]
