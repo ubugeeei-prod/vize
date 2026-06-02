@@ -434,6 +434,18 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_v_model_on_input_with_custom_directive() {
+        let result = compile!(r#"<input v-model="inputValue" v-example />"#);
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_nested_v_model_on_input_with_custom_directive() {
+        let result = compile!(r#"<div><input v-model="inputValue" v-example /></div>"#);
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
     fn test_codegen_v_model_with_other_props() {
         // v-model with other props should not produce comments
         let result = compile!(r#"<MonacoEditor v-model="source" :language="editorLanguage" />"#);

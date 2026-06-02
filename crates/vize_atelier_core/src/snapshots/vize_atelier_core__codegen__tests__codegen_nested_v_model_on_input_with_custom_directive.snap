@@ -1,0 +1,18 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { resolveDirective: _resolveDirective, vModelText: _vModelText, withDirectives: _withDirectives, createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _directive_example = _resolveDirective("example")
+  
+  return (_openBlock(), _createElementBlock("div", null, [
+    _withDirectives(_createElementVNode("input", {
+      "onUpdate:modelValue": $event => ((inputValue) = $event)
+    }, null, 8 /* PROPS */, ["onUpdate:modelValue"]), [
+      [_vModelText, inputValue],
+      [_directive_example]
+    ])
+  ]))
+}

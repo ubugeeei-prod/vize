@@ -69,15 +69,16 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.push("(");
     }
 
-    // Check for v-model directive on native elements (only if no custom directives)
-    let has_vmodel = has_vmodel_directive(el) && !has_custom_dirs;
-    if has_vmodel {
+    // Native v-model is a runtime directive. If custom directives are present,
+    // it is merged into their withDirectives array.
+    let has_vmodel = has_vmodel_directive(el);
+    if has_vmodel && !has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);
         ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
         ctx.push("(");
     }
 
-    // Check for v-show directive (only if no custom directives or vmodel)
+    // v-show is merged into custom/v-model wrappers when either is present.
     let has_vshow = has_vshow_directive(el) && !has_vmodel && !has_custom_dirs;
     if has_vshow {
         ctx.use_helper(RuntimeHelper::WithDirectives);
@@ -229,13 +230,14 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
             ctx.push("))");
 
-            // Close withDirectives for custom directives
+            // Close withDirectives for custom directives, merging native
+            // v-model/v-show entries when they share the same element.
             if has_custom_dirs {
                 generate_custom_directives_closing(ctx, el);
             }
 
             // Close withDirectives for v-model
-            if has_vmodel {
+            if has_vmodel && !has_custom_dirs {
                 generate_vmodel_closing(ctx, el);
             }
 

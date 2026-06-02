@@ -368,4 +368,42 @@ const fetchOlder = () => {}
             result.code
         );
     }
+
+    #[test]
+    fn test_compile_sfc_native_v_model_keeps_custom_directive() {
+        let source = r#"
+<template>
+  <input v-model="local" v-example @input="touches++">
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const local = ref('initial')
+const touches = ref(0)
+</script>
+"#;
+        let descriptor = parse_sfc(source, Default::default()).unwrap();
+        let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+        let normalized = result.code.replace('\n', " ");
+
+        assert!(
+            result
+                .code
+                .contains(r#"const _directive_example = _resolveDirective("example")"#),
+            "unexpected code:\n{}",
+            result.code
+        );
+        assert!(
+            normalized.contains(r#"[_vModelText, local.value], [_directive_example]"#),
+            "unexpected code:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains(r#""onUpdate:modelValue":"#)
+                && result.code.contains("local.value = $event"),
+            "unexpected code:\n{}",
+            result.code
+        );
+    }
 }
