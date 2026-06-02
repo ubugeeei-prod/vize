@@ -229,8 +229,8 @@ fn test_slot_projected_child_resolves_provider_context() {
         script_analysis_with_component_usages(
             "// Provider receives Consumer as default slot content",
             vec![
-                component_usage_with_span("Provider", 10, 80),
                 component_usage_with_span("Consumer", 30, 45),
+                component_usage_with_span("Provider", 10, 80),
             ],
         ),
     );

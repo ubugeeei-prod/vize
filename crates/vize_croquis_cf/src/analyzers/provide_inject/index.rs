@@ -29,7 +29,6 @@ struct AncestorFrame {
 struct RuntimeUsage {
     target_id: FileId,
     start: u32,
-    end: u32,
     renders_slot: bool,
 }
 
@@ -213,7 +212,6 @@ fn runtime_usages(
             Some(RuntimeUsage {
                 target_id,
                 start: usage.start,
-                end: usage.end,
                 renders_slot,
             })
         })
@@ -221,14 +219,17 @@ fn runtime_usages(
 }
 
 fn nearest_containing_usage(usages: &[RuntimeUsage], child_index: usize) -> Option<&RuntimeUsage> {
-    let child = usages[child_index];
+    let child_start = usages[child_index].start;
     usages
         .iter()
         .enumerate()
         .filter(|(index, usage)| {
-            *index != child_index && usage.start < child.start && child.end <= usage.end
+            // Component usages are collected in postorder: a component is pushed
+            // after all component children in its template subtree. An ancestor
+            // therefore appears later than the child and starts earlier.
+            *index > child_index && usage.start < child_start
         })
-        .min_by_key(|(_, usage)| usage.end.saturating_sub(usage.start))
+        .max_by_key(|(_, usage)| usage.start)
         .map(|(_, usage)| usage)
 }
 

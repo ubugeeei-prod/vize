@@ -493,7 +493,7 @@ fn generate_component_props(
         }
 
         let src_start = (template_offset + usage.start) as usize;
-        let src_end = (template_offset + component_usage_opening_tag_end(usage)) as usize;
+        let src_end = (template_offset + usage.end) as usize;
 
         append!(*ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
         append!(
@@ -588,20 +588,6 @@ fn generate_component_props(
             generate_closure_component_props_recursive(ts, mappings, &props_ctx, scope, "  ")
         );
     }
-}
-
-fn component_usage_opening_tag_end(usage: &ComponentUsage) -> u32 {
-    let tag_name_end = usage.start + usage.name.len() as u32 + 1;
-    let attribute_end = usage
-        .props
-        .iter()
-        .map(|prop| prop.end)
-        .chain(usage.events.iter().map(|event| event.end))
-        .chain(usage.slots.iter().map(|slot| slot.end))
-        .max()
-        .map(|end| end.saturating_add(1))
-        .unwrap_or(tag_name_end);
-    attribute_end.max(tag_name_end).min(usage.end)
 }
 
 /// Recursively generate a scope node (VFor/VSlot/EventHandler) and its nested children.

@@ -66,7 +66,7 @@ impl Analyzer {
             Some(ComponentUsage {
                 name: CompactString::new(tag),
                 start: el.loc.start.offset,
-                end: *subtree_end.get_or_insert_with(|| element_subtree_end(el)),
+                end: el.loc.end.offset,
                 props: SmallVec::new(),
                 events: SmallVec::new(),
                 slots: SmallVec::new(),
