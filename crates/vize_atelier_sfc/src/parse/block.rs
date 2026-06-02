@@ -157,6 +157,169 @@ fn skip_regex_literal(
     None
 }
 
+fn can_start_string_literal(prev_significant_char: u8, quote: u8) -> bool {
+    matches!(
+        prev_significant_char,
+        b'=' | b'('
+            | b'['
+            | b','
+            | b':'
+            | b'{'
+            | b';'
+            | b'\n'
+            | b'?'
+            | b'&'
+            | b'|'
+            | b'+'
+            | b'-'
+            | b'*'
+            | b'!'
+            | b'>'
+            | b'<'
+            | b'%'
+            | b'^'
+    ) || (quote == b'`'
+        && (prev_significant_char.is_ascii_alphanumeric()
+            || prev_significant_char == b'_'
+            || prev_significant_char == b')'))
+}
+
+fn skip_script_string_literal(
+    bytes: &[u8],
+    mut pos: usize,
+    len: usize,
+    quote: u8,
+    line: &mut usize,
+    last_newline: &mut usize,
+) -> usize {
+    debug_assert_eq!(bytes[pos], quote);
+    pos += 1;
+
+    while pos < len {
+        let c = bytes[pos];
+
+        if c == b'\n' {
+            *line += 1;
+            *last_newline = pos;
+        }
+
+        if c == b'\\' && pos + 1 < len {
+            if bytes[pos + 1] == b'\n' {
+                *line += 1;
+                *last_newline = pos + 1;
+            }
+            pos += 2;
+            continue;
+        }
+
+        if quote == b'`' && c == b'$' && pos + 1 < len && bytes[pos + 1] == b'{' {
+            pos = skip_template_expression(bytes, pos + 2, len, line, last_newline);
+            continue;
+        }
+
+        if c == quote {
+            return pos + 1;
+        }
+
+        if quote != b'`' && c == b'\n' {
+            return pos + 1;
+        }
+
+        pos += 1;
+    }
+
+    len
+}
+
+fn skip_template_expression(
+    bytes: &[u8],
+    mut pos: usize,
+    len: usize,
+    line: &mut usize,
+    last_newline: &mut usize,
+) -> usize {
+    let mut brace_depth = 1;
+    let mut prev_significant_char: u8 = b'{';
+
+    while pos < len && brace_depth > 0 {
+        let b = bytes[pos];
+
+        if b == b'\n' {
+            *line += 1;
+            *last_newline = pos;
+            prev_significant_char = b'\n';
+            pos += 1;
+            continue;
+        }
+
+        if b == b' ' || b == b'\t' || b == b'\r' {
+            pos += 1;
+            continue;
+        }
+
+        if b == b'/' && pos + 1 < len && bytes[pos + 1] == b'/' {
+            pos += 2;
+            if let Some(newline_offset) = memchr(b'\n', &bytes[pos..]) {
+                pos += newline_offset;
+            } else {
+                pos = len;
+            }
+            continue;
+        }
+
+        if b == b'/' && pos + 1 < len && bytes[pos + 1] == b'*' {
+            pos += 2;
+            if let Some(end_offset) = memmem::find(&bytes[pos..], b"*/") {
+                advance_line(&bytes[pos..pos + end_offset], pos, line, last_newline);
+                pos += end_offset + 2;
+            } else {
+                advance_line(&bytes[pos..], pos, line, last_newline);
+                pos = len;
+            }
+            continue;
+        }
+
+        if b == b'/'
+            && can_start_regex_literal(prev_significant_char)
+            && let Some(next_pos) = skip_regex_literal(bytes, pos, len, line, last_newline)
+        {
+            prev_significant_char = b'/';
+            pos = next_pos;
+            continue;
+        }
+
+        if (b == b'\'' || b == b'"' || b == b'`')
+            && can_start_string_literal(prev_significant_char, b)
+        {
+            pos = skip_script_string_literal(bytes, pos, len, b, line, last_newline);
+            prev_significant_char = b;
+            continue;
+        }
+
+        match b {
+            b'{' => {
+                brace_depth += 1;
+                prev_significant_char = b;
+                pos += 1;
+            }
+            b'}' => {
+                brace_depth -= 1;
+                prev_significant_char = b;
+                pos += 1;
+            }
+            b'\\' => {
+                pos = (pos + 2).min(len);
+            }
+            _ => {
+                prev_significant_char = b;
+                pos += 1;
+            }
+        }
+    }
+
+    pos
+}
+
 /// Find the end of a closing tag `</tag_name` followed by optional whitespace and `>`.
 /// Returns the position immediately after `>`, or `None` if no valid closing tag at `pos`.
 #[inline]
@@ -565,85 +728,16 @@ pub(super) fn parse_block_fast<'a>(
             // For backticks specifically, also allow after alphanumeric characters
             // to handle tagged templates (e.g., html`...`) and keywords (e.g., return `...`)
             if b == b'\'' || b == b'"' || b == b'`' {
-                let is_string_context = matches!(
-                    prev_significant_char,
-                    b'=' | b'('
-                        | b'['
-                        | b','
-                        | b':'
-                        | b'{'
-                        | b';'
-                        | b'\n'
-                        | b'?'
-                        | b'&'
-                        | b'|'
-                        | b'+'
-                        | b'-'
-                        | b'*'
-                        | b'!'
-                        | b'>'
-                        | b'<'
-                        | b'%'
-                        | b'^'
-                ) || (b == b'`'
-                    && (prev_significant_char.is_ascii_alphanumeric()
-                        || prev_significant_char == b'_'
-                        || prev_significant_char == b')'));
-
-                if is_string_context {
-                    let quote = b;
-                    pos += 1;
-
-                    while pos < len {
-                        let c = bytes[pos];
-
-                        if c == b'\n' {
-                            line += 1;
-                            last_newline = pos;
-                        }
-
-                        // Handle escape sequences
-                        if c == b'\\' && pos + 1 < len {
-                            pos += 2; // Skip escaped character
-                            continue;
-                        }
-
-                        // Handle template literal expressions ${...}
-                        if quote == b'`' && c == b'$' && pos + 1 < len && bytes[pos + 1] == b'{' {
-                            pos += 2;
-                            let mut brace_depth = 1;
-                            while pos < len && brace_depth > 0 {
-                                let inner = bytes[pos];
-                                if inner == b'\n' {
-                                    line += 1;
-                                    last_newline = pos;
-                                }
-                                if inner == b'{' {
-                                    brace_depth += 1;
-                                } else if inner == b'}' {
-                                    brace_depth -= 1;
-                                } else if inner == b'\\' && pos + 1 < len {
-                                    pos += 1; // Skip escape in template expression
-                                }
-                                pos += 1;
-                            }
-                            continue;
-                        }
-
-                        // End of string
-                        if c == quote {
-                            pos += 1;
-                            break;
-                        }
-
-                        // For non-template strings, newline ends the string (syntax error, but handle gracefully)
-                        if quote != b'`' && c == b'\n' {
-                            break;
-                        }
-
-                        pos += 1;
-                    }
-                    prev_significant_char = quote; // String ended with quote
+                if can_start_string_literal(prev_significant_char, b) {
+                    pos = skip_script_string_literal(
+                        bytes,
+                        pos,
+                        len,
+                        b,
+                        &mut line,
+                        &mut last_newline,
+                    );
+                    prev_significant_char = b; // String ended with quote
                     continue;
                 }
             }

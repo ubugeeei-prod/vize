@@ -311,6 +311,27 @@ const c = 3
 }
 
 #[test]
+fn test_script_template_expression_with_regex_character_class() {
+    let source = r#"<script setup lang="ts">
+const input = 'value'
+
+const markdown = `
+${input.replace(/([ |\t\n]+[}|\])])/g, `${input}`)}
+`
+</script>
+
+<template>
+  <pre>{{ markdown }}</pre>
+</template>"#;
+    let result = parse_sfc(source, Default::default()).unwrap();
+
+    let script = result.script_setup.unwrap();
+    assert!(script.content.contains(r"/([ |\t\n]+[}|\])])/g"));
+    assert!(script.content.contains(r"`${input}`"));
+    assert!(result.template.is_some());
+}
+
+#[test]
 fn test_script_with_escaped_quotes() {
     // Test that escaped quotes in strings are handled correctly
     let source = r#"<script setup>
