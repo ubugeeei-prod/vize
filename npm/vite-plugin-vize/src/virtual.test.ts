@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 
-import { fromVirtualId, isVizeVirtual, normalizeVizeVirtualVueModuleId } from "./virtual.ts";
+import {
+  fromPluginVisibleVirtualId,
+  fromVirtualId,
+  isPluginVisibleSsrVirtualId,
+  isVizeVirtual,
+  normalizeVizeVirtualVueModuleId,
+  toPluginVisibleVirtualId,
+} from "./virtual.ts";
 
 const clientVirtualId = "\0/repo/app/components/Foo.vue.ts?macro=true";
 const ssrVirtualId = "\0vize-ssr:/repo/app/components/Foo.vue.ts?vue&type=template";
@@ -36,6 +43,34 @@ assert.equal(
   normalizeVizeVirtualVueModuleId(ssrVirtualId),
   "/repo/app/components/Foo.vue?vue&type=template",
   "Normalized SSR virtual IDs should keep the original query string for downstream plugins",
+);
+
+const visibleVirtualId = toPluginVisibleVirtualId("/repo/app/components/Foo.vue");
+const visibleSsrVirtualId = toPluginVisibleVirtualId(
+  "/repo/app/components/Foo.vue",
+  true,
+  "?vue&used=true",
+);
+
+assert.equal(
+  visibleVirtualId,
+  "/repo/app/components/Foo.vue.ts?vue&vize",
+  "Plugin-visible virtual IDs should keep the Vue query without using a null-byte prefix",
+);
+assert.equal(
+  visibleSsrVirtualId,
+  "/repo/app/components/Foo.vue.ts?vue&vize-ssr&used=true",
+  "SSR plugin-visible virtual IDs should preserve non-Vize query parameters",
+);
+assert.equal(
+  fromPluginVisibleVirtualId(visibleVirtualId),
+  "/repo/app/components/Foo.vue",
+  "Plugin-visible virtual IDs should resolve back to the real .vue path",
+);
+assert.equal(
+  isPluginVisibleSsrVirtualId(visibleSsrVirtualId),
+  true,
+  "SSR plugin-visible virtual IDs should keep an explicit SSR marker",
 );
 
 console.log("✅ vite-plugin-vize virtual module tests passed!");

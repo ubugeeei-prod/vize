@@ -19,6 +19,9 @@ import {
   LEGACY_VIZE_PREFIX,
   VIRTUAL_CSS_MODULE,
   RESOLVED_CSS_MODULE,
+  fromPluginVisibleVirtualId,
+  isPluginVisibleSsrVirtualId,
+  toPluginVisibleVirtualId,
   toVirtualId,
 } from "../virtual.ts";
 import { toNativeCssAliasRule } from "../utils/css.ts";
@@ -329,6 +332,7 @@ function isPotentialVizeResolveId(id: string): boolean {
     id === VIRTUAL_CSS_MODULE ||
     id.endsWith(".vue") ||
     id.includes(".vue?") ||
+    id.includes(".vue.ts?") ||
     id.includes("?macro=true") ||
     id.includes("?definePage")
   );
@@ -389,7 +393,7 @@ function cleanVueSfcImporter(
   importer: string,
   request: ReturnType<typeof classifyVitePluginRequest> | null,
 ): string {
-  let cleanImporter = request?.normalizedFsId ?? importer;
+  let cleanImporter = request?.normalizedFsId ?? request?.normalizedVuePath ?? importer;
 
   if (cleanImporter.startsWith("/@id/__x00__")) {
     cleanImporter = cleanImporter.slice("/@id/__x00__".length);
@@ -409,6 +413,7 @@ async function resolveAliasedVueImport(
   handleNodeModules: boolean,
   querySuffix: string,
   preserveQueryAsPath: boolean,
+  isDependencyScan: boolean,
 ): Promise<string | null> {
   if (path.isAbsolute(id)) {
     return null;
@@ -436,7 +441,9 @@ async function resolveAliasedVueImport(
     state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
     return preserveQueryAsPath
       ? `${realPath}${querySuffix}`
-      : `${toVirtualId(realPath, isSsrRequest)}${querySuffix}`;
+      : isDependencyScan
+        ? toVirtualId(realPath, isSsrRequest)
+        : toPluginVisibleVirtualId(realPath, isSsrRequest, querySuffix);
   }
 
   return null;
@@ -447,7 +454,7 @@ export async function resolveIdHook(
   state: VizePluginState,
   id: string,
   importer?: string,
-  options?: { ssr?: boolean },
+  options?: { ssr?: boolean; scan?: boolean },
 ): Promise<string | { id: string; external?: boolean } | null | undefined> {
   // Fast-return before request classification for the common case where neither
   // the id nor importer can involve a Vue SFC or Vize virtual module. This was
@@ -458,9 +465,23 @@ export async function resolveIdHook(
   }
 
   const isBuild = state.server === null;
+  const isDependencyScan = !!options?.scan;
   const importerRequest = importer ? classifyVitePluginRequest(importer) : null;
-  const isSsrRequest = !!options?.ssr || (importerRequest?.isVizeSsrVirtual ?? false);
+  const isSsrRequest =
+    !!options?.ssr ||
+    (importerRequest?.isVizeSsrVirtual ?? false) ||
+    (importer ? isPluginVisibleSsrVirtualId(importer) : false);
   const request = classifyVitePluginRequest(id);
+  const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
+
+  if (pluginVisibleVirtualPath) {
+    if (isDependencyScan) {
+      return toVirtualId(pluginVisibleVirtualPath, isSsrRequest);
+    }
+    return isSsrRequest
+      ? toPluginVisibleVirtualId(pluginVisibleVirtualPath, true, request.querySuffix)
+      : id;
+  }
 
   // Skip all virtual module IDs
   if (id.startsWith("\0")) {
@@ -468,7 +489,9 @@ export async function resolveIdHook(
     // treats imports of Vize virtual modules from other virtual modules as resolved.
     if (request.isVizeVirtual) {
       if (isSsrRequest && !request.isVizeSsrVirtual && request.vizeVirtualPath) {
-        return `${toVirtualId(request.vizeVirtualPath, true)}${request.querySuffix}`;
+        return isDependencyScan
+          ? toVirtualId(request.vizeVirtualPath, true)
+          : toPluginVisibleVirtualId(request.vizeVirtualPath, true, request.querySuffix);
       }
       return id;
     }
@@ -803,6 +826,7 @@ export async function resolveIdHook(
         handleNodeModules,
         request.querySuffix,
         preserveQueryAsPath,
+        isDependencyScan,
       );
       if (aliased) {
         return aliased;
@@ -831,7 +855,9 @@ export async function resolveIdHook(
       if (preserveQueryAsPath) {
         return `${resolved}${request.querySuffix}`;
       }
-      return `${toVirtualId(resolved, isSsrRequest)}${request.querySuffix}`;
+      return isDependencyScan
+        ? toVirtualId(resolved, isSsrRequest)
+        : toPluginVisibleVirtualId(resolved, isSsrRequest, request.querySuffix);
     }
   }
 

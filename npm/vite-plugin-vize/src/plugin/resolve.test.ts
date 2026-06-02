@@ -1,18 +1,20 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 import type { VizePluginState } from "./state.ts";
 import { resolveIdHook } from "./resolve.ts";
-import { toVirtualId } from "../virtual.ts";
+import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const workspaceRoot = path.resolve(__dirname, "../../../..");
-const testRoot = path.join(workspaceRoot, "target", "vize-tests", "tests", "vite-plugin-vize");
-fs.mkdirSync(testRoot, { recursive: true });
+const testRoot = fs.mkdtempSync(
+  path.join(fs.realpathSync(os.tmpdir()), "vize-vite-plugin-resolve-"),
+);
 
 function writeFixtureFile(filePath: string, content = ""): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -369,7 +371,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   );
   assert.equal(
     expectResolvedId(resolved),
-    toVirtualId(aliased),
+    toPluginVisibleVirtualId(aliased),
     "Aliased Vue imports should be filtered after Vite resolves the real file path",
   );
 }
@@ -941,6 +943,47 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("plugin-visible-virtual");
+  const source = path.join(projectRoot, "app", "pages", "index.vue");
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    source,
+    undefined,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    toPluginVisibleVirtualId(source),
+    "Resolved Vue SFC modules should keep a Vue-compatible query so post plugins can transform them",
+  );
+  assert.equal(
+    expectResolvedId(resolved).startsWith("\0"),
+    false,
+    "Plugin-visible Vue SFC modules should not use Rollup-internal virtual IDs",
+  );
+}
+
+{
+  const projectRoot = createTempProject("dependency-scan-virtual");
+  const source = path.join(projectRoot, "app", "pages", "index.vue");
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    source,
+    undefined,
+    { scan: true },
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    toVirtualId(source),
+    "Dependency scans should use load-hook virtual IDs instead of plugin-visible file-like IDs",
+  );
+}
+
+{
   const projectRoot = createTempProject("ssr-entry");
   const source = path.join(projectRoot, "app", "pages", "index.vue");
   const resolved = await resolveIdHook(
@@ -953,7 +996,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
   assert.equal(
     expectResolvedId(resolved),
-    toVirtualId(source, true),
+    toPluginVisibleVirtualId(source, true),
     "SSR resolves should use a dedicated virtual module ID",
   );
 }
@@ -971,8 +1014,26 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
   assert.equal(
     expectResolvedId(resolved),
-    toVirtualId(source, true),
+    toPluginVisibleVirtualId(source, true),
     "SSR resolution should upgrade client virtual IDs to SSR-specific virtual IDs",
+  );
+}
+
+{
+  const projectRoot = createTempProject("ssr-upgrade-visible");
+  const source = path.join(projectRoot, "app", "pages", "index.vue");
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    toPluginVisibleVirtualId(source),
+    undefined,
+    { isEntry: false, ssr: true },
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    toPluginVisibleVirtualId(source, true),
+    "SSR resolution should not duplicate the Vue-compatible query",
   );
 }
 
@@ -1060,7 +1121,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
     assert.equal(
       expectResolvedId(resolved),
-      toVirtualId(source, true),
+      toPluginVisibleVirtualId(source, true),
       "SSR resolves should use a dedicated virtual module ID",
     );
   }
@@ -1080,7 +1141,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
     assert.equal(
       expectResolvedId(resolved),
-      toVirtualId(source, true),
+      toPluginVisibleVirtualId(source, true),
       "SSR resolution should upgrade client virtual IDs to SSR-specific virtual IDs",
     );
   }

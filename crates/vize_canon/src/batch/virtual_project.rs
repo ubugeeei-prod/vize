@@ -530,7 +530,9 @@ impl VirtualProject {
     ) -> CorsaResult<Value> {
         let mut config = Map::new();
         let original_tsconfig = self.resolved_tsconfig_path();
-        if let Some(ref tsconfig_path) = original_tsconfig {
+        if out_dir.is_none()
+            && let Some(ref tsconfig_path) = original_tsconfig
+        {
             config.insert(
                 "extends".into(),
                 Value::String(tsconfig_path.to_string_lossy().into_owned()),
