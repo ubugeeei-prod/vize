@@ -86,7 +86,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
 
             if el.tag_type == ElementType::Slot {
                 generate_for_slot_outlet(ctx, el);
-            } else if is_stable {
+            } else if is_stable && !is_component {
                 if gen_is_template {
                     ctx.use_helper(RuntimeHelper::OpenBlock);
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);

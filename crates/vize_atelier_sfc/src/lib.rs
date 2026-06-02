@@ -211,6 +211,43 @@ if (fx == null) {
     }
 
     #[test]
+    fn test_compile_sfc_imported_component_numeric_v_for() {
+        let source = r#"
+<template>
+  <Child
+    v-for="(id, index) in 4"
+    :key="id"
+    :label="String(index)"
+  />
+</template>
+
+<script setup lang="ts">
+import { Child } from "./components";
+</script>
+"#;
+        let descriptor = parse_sfc(source, Default::default()).unwrap();
+        let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+
+        assert!(
+            result
+                .code
+                .contains(r#"import { Child } from "./components";"#),
+            "script setup import should be preserved. Got:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("_createBlock(Child"),
+            "numeric component v-for should render the imported component. Got:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains(r#"_createElementVNode("Child""#),
+            "numeric component v-for must not render Child as a native element. Got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_compile_sfc_ts_ref_condition_and_handler_keep_value_access() {
         use vize_carton::ToCompactString;
 

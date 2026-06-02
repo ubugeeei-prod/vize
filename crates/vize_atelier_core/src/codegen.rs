@@ -387,6 +387,23 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_numeric_component_v_for_uses_component_block() {
+        let result =
+            compile!(r#"<Child v-for="(id, index) in 4" :key="id" :label="String(index)" />"#);
+
+        assert!(
+            result.code.contains("_createBlock(_component_Child"),
+            "numeric component v-for should render a component block. Got:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains(r#"_createElementVNode("Child""#),
+            "numeric component v-for must not render Child as a native element. Got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_codegen_v_if_template_fragment_wraps_interpolation_in_text_vnode() {
         let result = compile!(
             r#"<p><template v-if="ready">{{ count }}</template><span v-if="pending">updating</span></p>"#
