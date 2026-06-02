@@ -309,12 +309,21 @@ fn hash_source(source: &str) -> u64 {
 }
 
 fn source_renders_slot(source: &str) -> bool {
-    source.match_indices("<slot").any(|(index, _)| {
-        source
-            .as_bytes()
-            .get(index + "<slot".len())
+    let bytes = source.as_bytes();
+    let mut offset = 0;
+
+    while let Some(index) = source[offset..].find("<slot") {
+        let end = offset + index + "<slot".len();
+        if bytes
+            .get(end)
             .is_some_and(|byte| matches!(byte, b'>' | b'/' | b' ' | b'\t' | b'\n' | b'\r'))
-    })
+        {
+            return true;
+        }
+        offset = end;
+    }
+
+    false
 }
 
 /// Extract component name from file path.
@@ -327,7 +336,7 @@ fn extract_component_name(path: &Path) -> Option<CompactString> {
 
 #[cfg(test)]
 mod tests {
-    use super::{ModuleRegistry, extract_component_name};
+    use super::{ModuleRegistry, extract_component_name, source_renders_slot};
     use std::path::Path;
     use vize_carton::CompactString;
     use vize_croquis::Croquis;
@@ -351,5 +360,13 @@ mod tests {
         let path = Path::new("/src/components/MyButton.vue");
         let name = extract_component_name(path);
         assert_eq!(name, Some(CompactString::new("MyButton")));
+    }
+
+    #[test]
+    fn test_source_renders_slot_detection() {
+        assert!(source_renders_slot("<template><slot /></template>"));
+        assert!(source_renders_slot("<slot>fallback</slot>"));
+        assert!(!source_renders_slot("<template><slotter /></template>"));
+        assert!(!source_renders_slot("<template></template>"));
     }
 }
