@@ -717,6 +717,39 @@ const editDashboard = ref()
 }
 
 #[test]
+fn test_inline_handler_preserves_local_block_binding() {
+    let source = r#"<script setup lang="ts">
+const emit = defineEmits<{ change: [value: number] }>()
+function compute() { return 1 }
+</script>
+
+<template>
+  <button
+    @click="() => {
+      const value = compute();
+      emit('change', value)
+    }"
+  >
+    Click
+  </button>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(result.code.contains("const value = compute()"));
+    assert!(result.code.contains("emit('change', value)"));
+    assert!(!result.code.contains("_ctx.value"));
+}
+
+#[test]
 fn test_typescript_function_types_preserved() {
     // When is_ts=true, TypeScript is preserved in the output
     // (matching Vue's @vue/compiler-sfc behavior - TS stripping is the bundler's job)

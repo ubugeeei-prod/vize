@@ -193,6 +193,8 @@ mod tests {
         let mut bindings = FxHashMap::default();
         bindings.insert("selectedFolders".into(), BindingType::SetupRef);
         bindings.insert("folder".into(), BindingType::SetupRef);
+        bindings.insert("compute".into(), BindingType::SetupConst);
+        bindings.insert("emit".into(), BindingType::SetupConst);
 
         TransformContext::new(
             allocator,
@@ -245,5 +247,24 @@ mod tests {
                 .contains("selectedFolders.value = selectedFolders.value.filter(")
         );
         assert!(result.content.contains("folder.value.id"));
+    }
+
+    #[test]
+    fn test_process_inline_handler_preserves_local_block_binding() {
+        let allocator = Bump::new();
+        let mut ctx = test_context(&allocator);
+        let expr = compound_expression(
+            &allocator,
+            "() => { const value = compute(); emit('change', value) }",
+        );
+
+        let result = process_inline_handler(&mut ctx, &expr);
+        let ExpressionNode::Simple(result) = result else {
+            panic!("expected simple expression");
+        };
+
+        assert!(result.content.contains("const value = compute()"));
+        assert!(result.content.contains("emit('change', value)"));
+        assert!(!result.content.contains("_ctx.value"));
     }
 }

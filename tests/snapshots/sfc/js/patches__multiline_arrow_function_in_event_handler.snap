@@ -17,7 +17,7 @@ return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("button", {
     onClick: _cache[0] || (_cache[0] = () => {
     const newValue = count.value + 1;
-    count.value = _ctx.newValue;
+    count.value = newValue;
     console.log('incremented');
   })
   }, "Increment"))

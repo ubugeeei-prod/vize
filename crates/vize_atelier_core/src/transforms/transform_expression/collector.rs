@@ -6,8 +6,13 @@
 use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_assignment_expression, walk_object_property, walk_update_expression},
+    walk::{
+        walk_arrow_function_expression, walk_assignment_expression, walk_block_statement,
+        walk_catch_clause, walk_function, walk_object_property, walk_update_expression,
+        walk_variable_declarator,
+    },
 };
+use oxc_syntax::scope::ScopeFlags;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 
@@ -22,8 +27,8 @@ pub(crate) struct IdentifierCollector<'a, 'ctx> {
     pub(crate) ctx: &'a TransformContext<'ctx>,
     /// The wrapped source text (for scanning paren positions)
     pub(crate) source: &'a str,
-    /// Identifiers that are being declared (e.g., in arrow function params)
-    pub(crate) local_scope: FxHashSet<String>,
+    /// Lexical scopes for inline handler locals.
+    pub(crate) local_scopes: Vec<FxHashSet<String>>,
     /// (position, prefix) pairs for rewrites
     pub(crate) rewrites: FxHashSet<(usize, String)>,
     /// (position, suffix) pairs for suffix rewrites (e.g., .value for refs)
@@ -39,7 +44,7 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
         Self {
             ctx,
             source,
-            local_scope: FxHashSet::default(),
+            local_scopes: vec![FxHashSet::default()],
             rewrites: FxHashSet::default(),
             suffix_rewrites: Vec::new(),
             assignment_targets: FxHashSet::default(),
@@ -47,10 +52,31 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
         }
     }
 
+    fn push_scope(&mut self) {
+        self.local_scopes.push(FxHashSet::default());
+    }
+
+    fn pop_scope(&mut self) {
+        self.local_scopes.pop();
+    }
+
+    fn add_local(&mut self, name: &str) {
+        if let Some(scope) = self.local_scopes.last_mut() {
+            scope.insert(String::new(name));
+        }
+    }
+
+    fn is_local(&self, name: &str) -> bool {
+        self.local_scopes
+            .iter()
+            .rev()
+            .any(|scope| scope.contains(name))
+    }
+
     /// Check if an identifier is a ref that needs .value suffix
     fn is_ref_binding(&self, name: &str) -> bool {
         // Skip if in local scope
-        if self.local_scope.contains(name) {
+        if self.is_local(name) {
             return false;
         }
 
@@ -71,7 +97,7 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
     }
 
     fn is_value_access_binding(&self, name: &str) -> bool {
-        if self.local_scope.contains(name) {
+        if self.is_local(name) {
             return false;
         }
 
@@ -93,7 +119,7 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
     /// This applies to let/var declarations and maybe-ref bindings.
     fn needs_unref(&self, name: &str) -> bool {
         // Skip if in local scope
-        if self.local_scope.contains(name) {
+        if self.is_local(name) {
             return false;
         }
 
@@ -122,7 +148,7 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
     pub(crate) fn collect_binding_pattern(&mut self, pattern: &oxc_ast_types::BindingPattern<'_>) {
         match pattern {
             oxc_ast_types::BindingPattern::BindingIdentifier(id) => {
-                self.local_scope.insert(String::new(id.name.as_str()));
+                self.add_local(id.name.as_str());
             }
             oxc_ast_types::BindingPattern::ObjectPattern(obj) => {
                 for prop in &obj.properties {
@@ -242,7 +268,7 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
     fn visit_identifier_reference(&mut self, ident: &oxc_ast_types::IdentifierReference<'_>) {
         let name = ident.name.as_str();
         // Skip if in local scope
-        if self.local_scope.contains(name) {
+        if self.is_local(name) {
             return;
         }
 
@@ -335,16 +361,56 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         &mut self,
         arrow: &oxc_ast_types::ArrowFunctionExpression<'_>,
     ) {
-        // Add params to local scope
+        self.push_scope();
         for param in &arrow.params.items {
             self.collect_binding_pattern(&param.pattern);
         }
         if let Some(rest) = &arrow.params.rest {
             self.collect_binding_pattern(&rest.rest.argument);
         }
+        walk_arrow_function_expression(self, arrow);
+        self.pop_scope();
+    }
 
-        // Visit body
-        self.visit_function_body(&arrow.body);
+    fn visit_function(&mut self, func: &oxc_ast_types::Function<'_>, flags: ScopeFlags) {
+        if func.r#type == oxc_ast_types::FunctionType::FunctionDeclaration
+            && let Some(id) = &func.id
+        {
+            self.add_local(id.name.as_str());
+        }
+
+        self.push_scope();
+        if let Some(id) = &func.id {
+            self.add_local(id.name.as_str());
+        }
+        for param in &func.params.items {
+            self.collect_binding_pattern(&param.pattern);
+        }
+        if let Some(rest) = &func.params.rest {
+            self.collect_binding_pattern(&rest.rest.argument);
+        }
+        walk_function(self, func, flags);
+        self.pop_scope();
+    }
+
+    fn visit_block_statement(&mut self, block: &oxc_ast_types::BlockStatement<'_>) {
+        self.push_scope();
+        walk_block_statement(self, block);
+        self.pop_scope();
+    }
+
+    fn visit_catch_clause(&mut self, catch_clause: &oxc_ast_types::CatchClause<'_>) {
+        self.push_scope();
+        if let Some(param) = &catch_clause.param {
+            self.collect_binding_pattern(&param.pattern);
+        }
+        walk_catch_clause(self, catch_clause);
+        self.pop_scope();
+    }
+
+    fn visit_variable_declarator(&mut self, declarator: &oxc_ast_types::VariableDeclarator<'_>) {
+        walk_variable_declarator(self, declarator);
+        self.collect_binding_pattern(&declarator.id);
     }
 
     fn visit_assignment_expression(&mut self, expr: &oxc_ast_types::AssignmentExpression<'_>) {
@@ -362,7 +428,7 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
             && let oxc_ast_types::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
             let name = ident.name.as_str();
-            if self.local_scope.contains(name) || is_global_allowed(name) {
+            if self.is_local(name) || is_global_allowed(name) {
                 return;
             }
             if self.ctx.is_in_scope(name) {
