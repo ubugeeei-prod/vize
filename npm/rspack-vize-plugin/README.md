@@ -32,7 +32,7 @@ vp install -D @vizejs/rspack-plugin @rspack/core
 ## Usage
 
 > [!IMPORTANT]
-> **Rspack 2.x**: native CSS is the default — you don't need to set `experiments.css` (it was removed) or `css: { native: true }`. Set `css: { native: false }` only if you want to opt out and use a JS-based style pipeline (e.g. `CssExtractRspackPlugin` / `style-loader`).
+> **Rspack 2.x**: native CSS is the default — you don't need to set `experiments.css` or `css: { native: true }`. (`experiments.css` is deprecated in 2.x but still works; the recommended path is to declare CSS rules with `type: "css/auto"`, which VizePlugin does for you.) Set `css: { native: false }` only to opt out and use a JS-based style pipeline (e.g. `CssExtractRspackPlugin` / `style-loader`).
 > **Rspack 1.x**: native CSS is off by default. Set `experiments: { css: true }` (or pass `css: { native: true }`) to enable it.
 
 ### Simple Mode (Recommended)
@@ -611,7 +611,7 @@ Only relative (`./`, `../`), alias (`@/`), and tilde (`~/`, `~pkg`) URLs are tra
 
 ### VizeScopeLoader
 
-Applies native scoped CSS transformation using `@vizejs/native compileCss`. Runs **after** preprocessors (SCSS/Less/Stylus → CSS) and **before** css-loader or Rspack native CSS handling. For native CSS, Rspack 1.x needs `experiments.css`, while Rspack 2.x does not.
+Applies native scoped CSS transformation using `@vizejs/native compileCss`. Runs **after** preprocessors (SCSS/Less/Stylus → CSS) and **before** css-loader or Rspack native CSS handling. For native CSS, Rspack 1.x needs `experiments.css`, while Rspack 2.x enables it by default.
 
 ```typescript
 // In rspack.config.js
