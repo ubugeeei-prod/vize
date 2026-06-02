@@ -106,6 +106,9 @@ pub fn run(args: LintArgs) {
     let render_details = should_render_lint_details(format, args.quiet);
     crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    // Load the shared config and linter section from the same raw parse. The
+    // lint command is often used in watch/CI loops, so avoiding a second config
+    // evaluation keeps startup overhead out of the per-run profile.
     let (loaded_config, linter_config) = if args.no_config {
         (
             crate::config::LoadedConfig {

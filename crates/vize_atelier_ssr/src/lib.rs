@@ -159,7 +159,7 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 
 #[cfg(test)]
 mod tests {
-    use super::{Bump, compile_ssr};
+    use super::{Bump, SsrCompilerOptions, compile_ssr, compile_ssr_with_options};
 
     #[test]
     fn test_compile_simple_element() {
@@ -178,5 +178,35 @@ mod tests {
 
         assert!(errors.is_empty());
         insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_scoped_dynamic_component_keeps_scope_id() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr_with_options(
+            &allocator,
+            r#"<component :is="tag"><span>Logo</span></component>"#,
+            SsrCompilerOptions {
+                scope_id: Some("data-v-test".into()),
+                ..SsrCompilerOptions::default()
+            },
+        );
+
+        assert!(errors.is_empty());
+        assert!(
+            result
+                .code
+                .contains(r#"_mergeProps({  }, { "data-v-test": "" })"#)
+                || result.code.contains(r#"{ "data-v-test": "" }"#),
+            "{}",
+            result.code
+        );
+        assert!(
+            result
+                .code
+                .contains(r#"_createElementVNode("span", { "data-v-test": "" }"#),
+            "{}",
+            result.code
+        );
     }
 }

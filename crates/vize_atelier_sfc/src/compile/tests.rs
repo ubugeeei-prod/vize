@@ -1546,6 +1546,62 @@ import DashTest from './dash-test.vue'
 }
 
 #[test]
+fn test_script_setup_resolve_component_uses_inline_render_mode() {
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue'
+import { computed, resolveComponent } from 'vue'
+
+const componentsMap = computed(() => ({
+  h1: resolveComponent('prose-h1', false),
+}))
+</script>
+
+<template>
+  <Child :components="componentsMap" />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("return (_ctx: any,_cache: any) =>"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("componentsMap.value"),
+        "{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("function _sfc_render("),
+        "{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("__sfc__.render = _sfc_render"),
+        "{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("components: $setup.componentsMap"),
+        "{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_script_setup_sfc_uses_setup_member_bindings_for_dotted_components() {
     let source = r#"<script setup lang="ts">
 import { Form, Input } from 'ant-design-vue'
@@ -1843,7 +1899,7 @@ const schema = {}
     assert!(
         result
             .code
-            .contains("_unref($setup.valibotResolver)($setup.schema)"),
+            .contains("$setup.valibotResolver($setup.schema)"),
         "{}",
         result.code
     );

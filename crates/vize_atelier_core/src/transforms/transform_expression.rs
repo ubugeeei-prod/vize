@@ -266,7 +266,7 @@ mod tests {
     }
 
     #[test]
-    fn test_process_expression_unrefs_function_mode_setup_refs() {
+    fn test_process_expression_uses_setup_proxy_in_function_mode() {
         let allocator = Bump::new();
         let mut bindings = FxHashMap::default();
         bindings.insert("isExternal".into(), BindingType::SetupRef);
@@ -295,9 +295,9 @@ mod tests {
 
         assert_eq!(
             result.content.as_str(),
-            "_unref($setup.isExternal) && $setup.isExternal.value"
+            "$setup.isExternal && $setup.isExternal.value"
         );
-        assert!(ctx.has_helper(RuntimeHelper::Unref));
+        assert!(!ctx.has_helper(RuntimeHelper::Unref));
     }
 
     #[test]

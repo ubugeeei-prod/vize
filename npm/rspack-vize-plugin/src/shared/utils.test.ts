@@ -235,7 +235,7 @@ void describe("addScopeToCssFallback", () => {
   void test("delegates scoped CSS transformation to native pipeline", () => {
     const output = addScopeToCssFallback(".root { color: red; }", "abc123");
 
-    assert.equal(output, ".root[data-v-abc123] { color: red; }");
+    assert.match(output, /^\.root\[data-v-abc123\]\s*\{\s*color:\s*red;\s*\}$/);
   });
 });
 

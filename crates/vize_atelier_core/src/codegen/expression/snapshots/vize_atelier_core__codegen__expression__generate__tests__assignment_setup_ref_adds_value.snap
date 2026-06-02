@@ -2,4 +2,4 @@
 source: crates/vize_atelier_core/src/codegen/expression/generate.rs
 expression: result.as_str()
 ---
-$setup.quoteId.value = null
+$setup.quoteId = null

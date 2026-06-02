@@ -8,6 +8,10 @@ export function resetIssueIdCounter() {
 }
 
 export function parseSuppressions(source: string): Set<number> {
+  // Walk lines once and only retain the line numbers that suppress an issue.
+  // Cross-file diagnostics build this map for every open fixture, so keeping the
+  // representation as a sparse Set avoids carrying per-line objects through the
+  // filter step.
   const suppressedLines = new Set<number>();
   const lines = source.split("\n");
   let pendingSuppression = false;

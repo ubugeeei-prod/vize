@@ -642,7 +642,7 @@ jobs:
     name: test-report-comment
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
-    if: ${{ always() && github.event_name == 'pull_request' }}
+    if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
     needs:
       - test-report
     permissions:

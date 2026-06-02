@@ -327,6 +327,12 @@ impl Default for CounterMetrics {
 }
 
 /// Performance profiler for collecting metrics.
+///
+/// Disabled profiling sits directly on several CLI/LSP hot paths, so the fast
+/// path is just one relaxed atomic load in the `profile!` macro. When enabled,
+/// samples are sharded by operation name to keep parallel file processing from
+/// contending on one global lock, and profiler-internal allocation accounting is
+/// paused so the measurement machinery does not count itself.
 #[derive(Debug)]
 pub struct Profiler {
     /// Metrics by operation name, split into shards to keep parallel profile runs from
@@ -410,6 +416,9 @@ impl Profiler {
     }
 
     /// Record a duration and child duration after the caller has already checked profiling.
+    ///
+    /// `ProfileGuard::drop` uses this path after the macro has checked
+    /// `is_enabled()`, avoiding another atomic load for every nested span.
     #[doc(hidden)]
     pub fn record_sample_enabled(
         &self,
@@ -656,6 +665,8 @@ impl Profiler {
     fn shard_index(name: &str) -> usize {
         debug_assert!(PROFILER_SHARDS.is_power_of_two());
 
+        // FNV-1a over static operation names is cheaper than building a
+        // hasher per sample, and the power-of-two mask keeps sharding branchless.
         let mut hash = 0xcbf2_9ce4_8422_2325u64;
         for byte in name.as_bytes() {
             hash ^= u64::from(*byte);
@@ -1014,6 +1025,8 @@ macro_rules! profile {
     ($name:expr, $block:expr) => {{
         let name: &'static str = $name;
         let profiler = $crate::profiler::global_profiler();
+        // Keep disabled profiling cheap enough to leave at fine-grained call
+        // sites: one relaxed atomic check, then the original block executes.
         if profiler.is_enabled() {
             let _profile_guard = profiler.global_span(name);
             $block

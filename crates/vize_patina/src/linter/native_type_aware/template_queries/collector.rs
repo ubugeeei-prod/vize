@@ -18,6 +18,9 @@ pub(super) fn collect_template_query_sets(
     include_template_queries: bool,
     include_template_promise_queries: bool,
 ) -> (Vec<TemplateQuery>, Vec<TemplatePromiseQuery>) {
+    // One traversal populates both query vectors. `TemplateQuerySinks` keeps
+    // disabled rules out of the hot path while preserving source-order discovery,
+    // which lets the later sort/dedup stages stay deterministic.
     let mut template_queries = Vec::new();
     let mut template_promise_queries = Vec::new();
     let mut sinks = TemplateQuerySinks {
@@ -287,6 +290,10 @@ fn collect_expression_query_sets(
     let source_text = expression.loc().source.as_str();
     let include_template_queries = sinks.template_queries.is_some();
     let include_template_promise_queries = sinks.template_promise_queries.is_some();
+    // Resolve the full expression's generated offset once, then reuse the parsed
+    // call-range result for both callee probes and floating-Promise probes. This
+    // is the key optimization from the type-aware perf work: template expressions
+    // are often short but numerous, so reparsing per rule dominated Corsa time.
     let expression_generated_offset = include_template_queries
         .then(|| generated_offset_for_text(virtual_ts, source_start, source_text))
         .flatten();

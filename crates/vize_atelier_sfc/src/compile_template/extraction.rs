@@ -30,9 +30,15 @@ fn finalize_render_body(render_body: &mut String) {
     }
 }
 
-/// Extract imports, hoisted consts, and render function from compiled template code
-/// Returns (imports, hoisted, render_function, render_function_name)
-/// where render_function is the full function definition.
+/// Extract imports, hoisted consts, and render function from compiled template code.
+///
+/// This is a line scanner over the compiler output rather than a second JS parse
+/// or regex pipeline. `StringTrackState` carries string/comment/template-literal
+/// state across lines so brace depth stays correct while still keeping the
+/// profiled build path allocation-light.
+///
+/// Returns (imports, hoisted, render_function, render_function_name) where
+/// render_function is the full function definition.
 pub(crate) fn extract_template_parts_full(
     template_code: &str,
 ) -> (String, String, String, &'static str) {

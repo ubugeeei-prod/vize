@@ -238,6 +238,9 @@ fn collect_supported_files(
     includes: &[GlobSpec],
     excludes: &[GlobSpec],
 ) -> Vec<PathBuf> {
+    // Keep the tsconfig scan ignore-aware and canonicalize only the root. The
+    // matched files are sorted after collection, so the parallel walk can avoid
+    // expensive per-entry canonicalization without making CLI output unstable.
     let skip_generated = should_skip_generated_for_root(root);
     let normalized_root = normalize_input_path(root);
     let walker = WalkBuilder::new(root)

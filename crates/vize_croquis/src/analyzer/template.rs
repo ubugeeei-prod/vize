@@ -42,7 +42,9 @@ impl Analyzer {
         self.summary.template_info.content_start = root.loc.start.offset;
         self.summary.template_info.content_end = root.loc.end.offset;
 
-        // Single-pass template traversal
+        // Keep profiling around the whole traversal instead of every recursive
+        // child visit. The traversal itself is the hot path; per-node spans
+        // created enough guard/drop overhead to distort normal template walks.
         profile!("croquis.template.traverse", {
             for child in root.children.iter() {
                 self.visit_template_child(child, &mut Vec::new());

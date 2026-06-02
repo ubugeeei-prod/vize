@@ -130,8 +130,12 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) ->
                     && (brace_depth == 1 || (at_rule_depth > 0 && brace_depth > at_rule_depth))
                 {
                     // End of selector, apply scope
-                    if let Some(selector_str) = css.get(last_selector_end..i).map(str::trim) {
-                        scope_selector(&mut output, selector_str, attr_selector);
+                    if let Some(selector_str) = css.get(last_selector_end..i) {
+                        scope_selector_with_leading_comments(
+                            &mut output,
+                            selector_str,
+                            attr_selector,
+                        );
                     }
                     output.push(b'{');
                     in_selector = false;
@@ -181,6 +185,48 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) ->
     // copy owns the bytes for the returned lifetime, and skipping revalidation
     // keeps scoped-style rewriting linear with minimal overhead.
     unsafe { std::str::from_utf8_unchecked(bump.alloc_slice_copy(&output)) }
+}
+
+/// Add scope to selector text while preserving leading CSS comments verbatim.
+fn scope_selector_with_leading_comments(
+    out: &mut BumpVec<u8>,
+    selector: &str,
+    attr_selector: &[u8],
+) {
+    let Some(prefix_end) = leading_css_comment_trivia_end(selector) else {
+        scope_selector(out, selector.trim(), attr_selector);
+        return;
+    };
+
+    out.extend_from_slice(&selector.as_bytes()[..prefix_end]);
+
+    let selector_body = selector[prefix_end..].trim();
+    if !selector_body.is_empty() {
+        scope_selector(out, selector_body, attr_selector);
+    }
+}
+
+fn leading_css_comment_trivia_end(value: &str) -> Option<usize> {
+    let mut cursor = 0usize;
+    let mut found_comment = false;
+
+    loop {
+        let ws_end = value[cursor..]
+            .char_indices()
+            .find(|(_, char)| !char.is_whitespace())
+            .map_or(value.len(), |(index, _)| cursor + index);
+        cursor = ws_end;
+
+        if !value[cursor..].starts_with("/*") {
+            return found_comment.then_some(cursor);
+        }
+
+        found_comment = true;
+        let Some(end) = value[cursor + 2..].find("*/") else {
+            return Some(value.len());
+        };
+        cursor += 2 + end + 2;
+    }
 }
 
 /// Add scope attribute to a selector
@@ -291,17 +337,44 @@ pub(super) fn transform_deep(
         let inner = &after[..end];
         let rest = &after[end + 1..];
 
-        if before.is_empty() {
-            out.extend_from_slice(attr_selector);
-        } else {
-            out.extend_from_slice(before.trim().as_bytes());
-            out.extend_from_slice(attr_selector);
-        }
+        push_deep_scope_prefix(out, before, attr_selector);
         out.push(b' ');
         out.extend_from_slice(inner.as_bytes());
         out.extend_from_slice(rest.as_bytes());
     } else {
         out.extend_from_slice(selector.as_bytes());
+    }
+}
+
+fn push_deep_scope_prefix(out: &mut BumpVec<u8>, before: &str, attr_selector: &[u8]) {
+    let before = before.trim_end();
+    if before.is_empty() {
+        out.extend_from_slice(attr_selector);
+        return;
+    }
+
+    let Some(combinator_start) = trailing_combinator_start(before) else {
+        scope_single_selector(out, before.trim(), attr_selector);
+        return;
+    };
+
+    let target_end = before[..combinator_start].trim_end().len();
+    if target_end == 0 {
+        out.extend_from_slice(attr_selector);
+        out.extend_from_slice(&before.as_bytes()[combinator_start..]);
+        return;
+    }
+
+    scope_single_selector(out, &before[..target_end], attr_selector);
+    out.extend_from_slice(&before.as_bytes()[target_end..]);
+}
+
+fn trailing_combinator_start(value: &str) -> Option<usize> {
+    let bytes = value.as_bytes();
+    match bytes.last().copied()? {
+        b'>' | b'+' | b'~' => Some(bytes.len() - 1),
+        b'|' if bytes.len() >= 2 && bytes[bytes.len() - 2] == b'|' => Some(bytes.len() - 2),
+        _ => None,
     }
 }
 

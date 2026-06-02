@@ -17,6 +17,10 @@ tooling, and ecosystem experiments. In particular, thank you to:
   repositories for difficult issues.
 - [dannote](https://github.com/dannote) for feedback and pull requests from the Elixier ecosystem,
   especially for CSS-facing APIs and bug fixes.
+- [n13u](https://x.com/%5Fn13u%5F) and the `#frontend_phpcon_do` team for debugging and reporting Vize
+  compiler and Nuxt project build pipeline issues on a conference website, and for validating Vize
+  in a production conference site deployment
+  ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)).
 
 Thanks also to everyone who has mentioned, shared, tested, or amplified Vize in the community, and
 to everyone connected to that work. Those signals make it easier to see where the toolchain is

@@ -80,6 +80,10 @@ pub(super) fn lint_with_descriptor<'a>(
         return result;
     }
 
+    // Plan every type-aware probe before generating virtual TS. Most files have
+    // enough static macro information to report or skip immediately; if no active
+    // rule needs Corsa, returning here avoids virtual project creation and the
+    // expensive type-probe round trip entirely.
     let needs_prop_probe = profile!("patina.type_aware.plan_prop_queries", {
         collect_prop_static_warning_or_probe_need(linter, &analysis, &mut result, script_block)
     });
@@ -185,6 +189,10 @@ pub(super) fn lint_with_descriptor<'a>(
         )
     });
 
+    // Template type rules share one AST walk. The collector fans out into
+    // ordinary unsafe-binding queries and Promise-return queries through optional
+    // sinks, so enabling both rules does not double the traversal or reparses of
+    // individual template expressions.
     let (template_queries, template_promise_queries) =
         profile!("patina.type_aware.collect_template_query_sets", {
             if include_template_queries || include_template_promise_queries {

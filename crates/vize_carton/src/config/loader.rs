@@ -70,6 +70,10 @@ pub fn load_config_with_features_and_source(path: Option<&Path>) -> LoadedConfig
 }
 
 /// Load configuration and linter settings from a directory or file path in one pass.
+///
+/// The lint/check CLIs call this on every invocation. Keeping the raw config
+/// around long enough to derive both `VizeConfig` and `LinterConfig` avoids
+/// parsing and normalizing the same config file twice.
 pub fn load_config_and_linter_with_source(path: Option<&Path>) -> (LoadedConfig, LinterConfig) {
     let loaded = load_raw_config_with_source(path);
     let linter = loaded.config.linter.clone();
@@ -84,6 +88,9 @@ pub fn load_config_and_linter_with_source(path: Option<&Path>) -> (LoadedConfig,
 }
 
 /// Load configuration, auxiliary feature flags, and linter settings in one pass.
+///
+/// This is the LSP/native variant of the same optimization: a single raw parse
+/// feeds stable config, feature flags, and lint settings.
 pub fn load_config_and_linter_with_features_and_source(
     path: Option<&Path>,
 ) -> (LoadedConfigWithFeatures, LinterConfig) {
