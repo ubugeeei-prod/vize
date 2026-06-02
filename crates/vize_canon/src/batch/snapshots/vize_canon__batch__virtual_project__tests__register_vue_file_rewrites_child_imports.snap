@@ -93,7 +93,7 @@ function __setup() {
   type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;
   // @vize-map: component -> 97:121
   type __Child_Props_0 = typeof Child extends { new (): { $props: infer __P } } ? __P : (typeof Child extends (props: infer __P) => any ? __P : {});
-  type __Child_0_prop_count = __Child_Props_0 extends { 'count'?: infer T } ? T : __Child_Props_0 extends { 'count': infer T } ? T : unknown;
+  type __Child_0_prop_count = 'count' extends keyof __Child_Props_0 ? __Child_Props_0['count'] : unknown;
   type __Child_Check_0 = __VizePropChecker<typeof Child>;
 
   // Component props value checks (template scope)

@@ -510,7 +510,7 @@ fn generate_component_props(
                 let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
                 append!(
                     *ts,
-                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __{component_type_name}_Props_{idx} extends {{ '{camel_prop_name}'?: infer T }} ? T : __{component_type_name}_Props_{idx} extends {{ '{camel_prop_name}': infer T }} ? T : unknown;\n",
+                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = '{camel_prop_name}' extends keyof __{component_type_name}_Props_{idx} ? __{component_type_name}_Props_{idx}['{camel_prop_name}'] : unknown;\n",
                 );
             }
         }

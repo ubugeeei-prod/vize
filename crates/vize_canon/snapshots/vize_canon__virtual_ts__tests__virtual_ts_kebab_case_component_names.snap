@@ -107,7 +107,7 @@ function __setup() {
   type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;
   // @vize-map: component -> 0:63
   type __my_widget_Props_0 = typeof my_widget extends { new (): { $props: infer __P } } ? __P : (typeof my_widget extends (props: infer __P) => any ? __P : {});
-  type __my_widget_0_prop_label = __my_widget_Props_0 extends { 'label'?: infer T } ? T : __my_widget_Props_0 extends { 'label': infer T } ? T : unknown;
+  type __my_widget_0_prop_label = 'label' extends keyof __my_widget_Props_0 ? __my_widget_Props_0['label'] : unknown;
   type __my_widget_Check_0 = __VizePropChecker<typeof my_widget>;
 
   // Component props value checks (template scope)

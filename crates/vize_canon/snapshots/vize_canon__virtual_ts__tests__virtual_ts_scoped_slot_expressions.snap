@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts.rs
-assertion_line: 41
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -100,7 +99,7 @@ function __setup() {
   type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;
   // @vize-map: component -> 0:23
   type __MyList_Props_0 = typeof MyList extends { new (): { $props: infer __P } } ? __P : (typeof MyList extends (props: infer __P) => any ? __P : {});
-  type __MyList_0_prop_items = __MyList_Props_0 extends { 'items'?: infer T } ? T : __MyList_Props_0 extends { 'items': infer T } ? T : unknown;
+  type __MyList_0_prop_items = 'items' extends keyof __MyList_Props_0 ? __MyList_Props_0['items'] : unknown;
   type __MyList_Check_0 = __VizePropChecker<typeof MyList>;
 
   // Component props value checks (template scope)

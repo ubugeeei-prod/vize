@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts.rs
-assertion_line: 41
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -111,7 +110,7 @@ function __setup() {
   type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;
   // @vize-map: component -> 0:27
   type __TrendChart_Props_0 = typeof TrendChart extends { new (): { $props: infer __P } } ? __P : (typeof TrendChart extends (props: infer __P) => any ? __P : {});
-  type __TrendChart_0_prop_class = __TrendChart_Props_0 extends { 'class'?: infer T } ? T : __TrendChart_Props_0 extends { 'class': infer T } ? T : unknown;
+  type __TrendChart_0_prop_class = 'class' extends keyof __TrendChart_Props_0 ? __TrendChart_Props_0['class'] : unknown;
   type __TrendChart_Check_0 = __VizePropChecker<typeof TrendChart>;
 
   // Component props value checks (template scope)
