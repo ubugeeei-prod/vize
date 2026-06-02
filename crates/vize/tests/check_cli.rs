@@ -218,6 +218,87 @@ fn check_json_reports_empty_result_when_no_files_match() {
 }
 
 #[test]
+fn check_accepts_absolute_input_file_outside_cwd() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let case_root = std::env::temp_dir().join(
+        cstr!(
+            "vize-check-absolute-input-outside-cwd-{}",
+            std::process::id()
+        )
+        .as_str(),
+    );
+    let _ = std::fs::remove_dir_all(&case_root);
+    let cwd = case_root.join("cwd");
+    let source_root = case_root.join("source");
+    let source_dir = source_root.join("src");
+    std::fs::create_dir_all(&cwd).unwrap();
+    std::fs::create_dir_all(&source_dir).unwrap();
+    link_workspace_node_modules(&source_root).unwrap();
+    std::fs::write(
+        source_root.join("shared.ts"),
+        "export const message = 'hello'\n",
+    )
+    .unwrap();
+    let source_file = source_dir.join("Repro.vue");
+    std::fs::write(
+        &source_file,
+        r#"<script setup lang="ts">
+import { message } from '../shared'
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>
+"#,
+    )
+    .unwrap();
+    let source_arg = source_file.to_string_lossy().into_owned();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&cwd)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--no-config",
+            "--format",
+            "json",
+            source_arg.as_str(),
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(json["fileCount"], 1, "stdout:\n{stdout}\nstderr:\n{stderr}");
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let expected_file = source_file.canonicalize().unwrap().display().to_string();
+    assert_eq!(
+        json["files"][0]["file"], expected_file,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert!(
+        !stderr.contains("Failed to strip prefix from path"),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&case_root);
+}
+
+#[test]
 fn check_preserves_named_exports_from_split_script_vue() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

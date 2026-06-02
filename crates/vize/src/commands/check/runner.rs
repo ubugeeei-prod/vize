@@ -133,6 +133,23 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         return;
     }
 
+    // An explicit subset only registers the requested files, so a relative
+    // import (`import { Foo } from './types'`) cannot see its sibling's real
+    // types and degrades to `any`. Register the transitive closure of relative
+    // source imports — analogous to the ambient pull-in below — so cross-file
+    // types resolve precisely, the way tsc/vue-tsc load the reachable program.
+    // Do this before root resolution so cwd-external files without tsconfig can
+    // still choose a materialization root covering all registered source files.
+    if !args.patterns.is_empty() {
+        for path in super::imports::collect_transitive_local_imports(&files, &cwd) {
+            if !files.contains(&path) {
+                files.push(path);
+            }
+        }
+        files.sort();
+        files.dedup();
+    }
+
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);
@@ -143,21 +160,6 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // tsconfig program's `.d.ts` files back in so global types stay in scope.
     if !args.patterns.is_empty() && tsconfig_path.is_some() {
         for path in collect_ambient_declaration_files(&project_root, tsconfig_path.as_deref()) {
-            if !files.contains(&path) {
-                files.push(path);
-            }
-        }
-        files.sort();
-        files.dedup();
-    }
-
-    // An explicit subset only registers the requested files, so a relative
-    // import (`import { Foo } from './types'`) cannot see its sibling's real
-    // types and degrades to `any`. Register the transitive closure of relative
-    // source imports — analogous to the ambient pull-in above — so cross-file
-    // types resolve precisely, the way tsc/vue-tsc load the reachable program.
-    if !args.patterns.is_empty() {
-        for path in super::imports::collect_transitive_local_imports(&files, &cwd) {
             if !files.contains(&path) {
                 files.push(path);
             }
@@ -804,7 +806,7 @@ fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
 
 fn resolve_project_root_from_files(files: &[PathBuf]) -> Option<PathBuf> {
     let common = common_file_parent(files)?;
-    find_nearest_tsconfig_dir(&common)
+    Some(find_nearest_tsconfig_dir(&common).unwrap_or(common))
 }
 
 fn common_file_parent(files: &[PathBuf]) -> Option<PathBuf> {
@@ -991,6 +993,29 @@ mod tests {
         );
 
         let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn falls_back_to_common_file_parent_for_external_files_without_tsconfig() {
+        let case_root = std::env::temp_dir().join(format!(
+            "vize-check-runner-external-root-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&case_root);
+        let cwd = case_root.join("cwd");
+        let source_dir = case_root.join("external");
+        std::fs::create_dir_all(&cwd).unwrap();
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let files = vec![source_dir.join("Repro.vue")];
+        std::fs::write(&files[0], "<template />").unwrap();
+
+        let resolved_root = resolve_project_root(None, &cwd, &files);
+        let resolved_tsconfig = resolve_tsconfig_path(None, &cwd, &resolved_root, &files);
+
+        assert_eq!(resolved_root, source_dir);
+        assert_eq!(resolved_tsconfig, None);
+
+        let _ = std::fs::remove_dir_all(&case_root);
     }
 
     #[test]
