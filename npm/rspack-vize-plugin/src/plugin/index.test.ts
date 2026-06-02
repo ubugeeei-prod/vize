@@ -9,6 +9,7 @@ function createMockCompiler(
     experiments?: { css?: boolean };
     rules?: unknown[];
     warnings?: string[];
+    rspackVersion?: string;
   } = {},
 ) {
   let capturedDefinitions: Record<string, string> | null = null;
@@ -27,14 +28,13 @@ function createMockCompiler(
   const compiler = {
     options: {
       mode: "development",
-      plugins: existingDefinitions
-        ? [{ definitions: existingDefinitions }]
-        : [],
+      plugins: existingDefinitions ? [{ definitions: existingDefinitions }] : [],
       experiments: config.experiments,
       module: config.rules ? { rules: config.rules } : undefined,
     },
     webpack: {
       DefinePlugin: DefinePluginMock,
+      rspackVersion: config.rspackVersion,
     },
     hooks: {
       watchRun: {
@@ -115,4 +115,61 @@ void test("passes explicit native CSS mode to the auto-cloned vue loader", () =>
     loader: "@vizejs/rspack-plugin/loader",
     options: { css: { native: true } },
   });
+});
+
+/** Read the resolved `css.native` the plugin forwarded into the cloned main loader branch. */
+function getForwardedNative(rules: unknown[]): boolean {
+  const vueRule = rules.find(
+    (r) => typeof r === "object" && r !== null && "oneOf" in (r as object),
+  ) as Record<string, unknown>;
+  const oneOf = vueRule.oneOf as Array<Record<string, unknown>>;
+  const mainBranch = oneOf[oneOf.length - 1];
+  const use = mainBranch.use as Array<Record<string, unknown>>;
+  const options = use[0].options as { css?: { native?: boolean } };
+  return options.css?.native ?? false;
+}
+
+void test("defaults to native CSS on Rspack 2.x when neither css.native nor experiments.css is set", () => {
+  const rules = [
+    { test: /\.css$/, use: ["css-loader"] },
+    { test: /\.vue$/, use: ["@vizejs/rspack-plugin/loader"] },
+  ];
+  const { compiler } = createMockCompiler(undefined, {
+    rules,
+    rspackVersion: "2.0.3",
+  });
+
+  new VizePlugin().apply(compiler as never);
+
+  assert.equal(getForwardedNative(rules), true);
+});
+
+void test("defaults to non-native on Rspack 1.x when experiments.css is omitted", () => {
+  const rules = [
+    { test: /\.css$/, use: ["css-loader"] },
+    { test: /\.vue$/, use: ["@vizejs/rspack-plugin/loader"] },
+  ];
+  const { compiler } = createMockCompiler(undefined, {
+    rules,
+    rspackVersion: "1.4.0",
+  });
+
+  new VizePlugin().apply(compiler as never);
+
+  assert.equal(getForwardedNative(rules), false);
+});
+
+void test("explicit css.native: false wins over the Rspack 2.x native default", () => {
+  const rules = [
+    { test: /\.css$/, use: ["css-loader"] },
+    { test: /\.vue$/, use: ["@vizejs/rspack-plugin/loader"] },
+  ];
+  const { compiler } = createMockCompiler(undefined, {
+    rules,
+    rspackVersion: "2.0.3",
+  });
+
+  new VizePlugin({ css: { native: false } }).apply(compiler as never);
+
+  assert.equal(getForwardedNative(rules), false);
 });

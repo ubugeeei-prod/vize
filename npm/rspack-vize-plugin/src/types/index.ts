@@ -274,6 +274,4 @@ export interface VizeRspackPluginOptions {
 // Utility Types
 
 /** Loader entry: either a string (loader name/path) or an object with loader + options */
-export type LoaderEntry =
-  | string
-  | { loader: string; options?: Record<string, unknown> };
+export type LoaderEntry = string | { loader: string; options?: Record<string, unknown> };

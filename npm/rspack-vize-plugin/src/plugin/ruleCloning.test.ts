@@ -113,11 +113,7 @@ void describe("applyRuleCloning", () => {
 
     const styleRule = oneOf.find((r) => {
       const rq = r.resourceQuery as RegExp;
-      return (
-        rq &&
-        rq.test("vue&type=style&index=0&lang=scss") &&
-        r.type === "css/auto"
-      );
+      return rq && rq.test("vue&type=style&index=0&lang=scss") && r.type === "css/auto";
     });
     assert.ok(styleRule);
     assert.equal(styleRule!.type, "css/auto");
@@ -228,8 +224,7 @@ void describe("applyRuleCloning", () => {
         test: /\.vue$/,
         use: [
           {
-            loader:
-              "/path/to/node_modules/@vizejs/rspack-vize-plugin/dist/loader/index.mjs",
+            loader: "/path/to/node_modules/@vizejs/rspack-vize-plugin/dist/loader/index.mjs",
           },
         ],
       },
@@ -386,11 +381,7 @@ void describe("applyRuleCloning", () => {
     assert.ok(cssFallback, "should have a CSS fallback rule");
 
     const use = cssFallback!.use as Array<Record<string, unknown>>;
-    assert.equal(
-      use.length,
-      2,
-      "CSS fallback should have scope-loader + style-loader",
-    );
+    assert.equal(use.length, 2, "CSS fallback should have scope-loader + style-loader");
     assert.equal(use[0].loader, "@vizejs/rspack-plugin/scope-loader");
     assert.equal(use[1].loader, "@vizejs/rspack-plugin/style-loader");
   });

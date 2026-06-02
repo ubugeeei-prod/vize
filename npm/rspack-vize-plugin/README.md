@@ -32,8 +32,8 @@ vp install -D @vizejs/rspack-plugin @rspack/core
 ## Usage
 
 > [!IMPORTANT]
-> Rspack 1.x requires `experiments: { css: true }` when using `css: { native: true }`.
-> Rspack 2.x removed `experiments.css`; do not add that option. Native CSS processing is available by default.
+> **Rspack 2.x**: native CSS is the default — you don't need to set `experiments.css` (it was removed) or `css: { native: true }`. Set `css: { native: false }` only if you want to opt out and use a JS-based style pipeline (e.g. `CssExtractRspackPlugin` / `style-loader`).
+> **Rspack 1.x**: native CSS is off by default. Set `experiments: { css: true }` (or pass `css: { native: true }`) to enable it.
 
 ### Simple Mode (Recommended)
 
@@ -47,9 +47,8 @@ const isProduction = process.env.NODE_ENV === "production";
 
 export default {
   mode: isProduction ? "production" : "development",
-  // Rspack 1.x only when using css.native:
-  // experiments: { css: true },
-  // Rspack 2.x: do not set experiments.css; it was removed.
+  // Rspack 2.x: native CSS is on by default — nothing to configure here.
+  // Rspack 1.x only, to enable native CSS: experiments: { css: true },
 
   module: {
     rules: [
@@ -63,9 +62,9 @@ export default {
   plugins: [
     new VizePlugin({
       isProduction,
-      // Rspack 1.x requires experiments: { css: true }.
-      // Rspack 2.x does not need experiments.css.
-      css: { native: true },
+      // Native CSS is the default on Rspack 2.x.
+      // On Rspack 1.x, pass css: { native: true } and set experiments: { css: true }.
+      // Pass css: { native: false } to opt out of native CSS.
     }),
   ],
 };
@@ -73,7 +72,7 @@ export default {
 
 ### Native CSS with SCSS (Simple Mode)
 
-Uses Rspack native CSS for optimal performance. In Rspack 1.x, add `experiments: { css: true }`; in Rspack 2.x, do not set `experiments.css` because it was removed. Just add your SCSS rule — VizePlugin handles the rest.
+Uses Rspack native CSS for optimal performance. On Rspack 2.x it's the default, so there's nothing extra to configure; on Rspack 1.x, add `experiments: { css: true }`. Just add your SCSS rule — VizePlugin handles the rest.
 
 ```javascript
 // rspack.config.mjs
@@ -85,9 +84,8 @@ const isProduction = process.env.NODE_ENV === "production";
 export default {
   mode: isProduction ? "production" : "development",
 
-  // Rspack 1.x only:
-  // experiments: { css: true },
-  // Rspack 2.x: do not set experiments.css.
+  // Rspack 2.x: native CSS is on by default.
+  // Rspack 1.x only, to enable native CSS: experiments: { css: true },
 
   module: {
     rules: [
@@ -106,7 +104,6 @@ export default {
   plugins: [
     new VizePlugin({
       isProduction,
-      css: { native: true },
     }),
   ],
 
@@ -233,9 +230,8 @@ const isProduction = process.env.NODE_ENV === "production";
 export default {
   mode: isProduction ? "production" : "development",
 
-  // Rspack 1.x only:
-  // experiments: { css: true },
-  // Rspack 2.x: do not set experiments.css.
+  // Rspack 2.x: native CSS is on by default.
+  // Rspack 1.x only, to enable native CSS: experiments: { css: true },
 
   module: {
     rules: [
@@ -437,7 +433,7 @@ new VizePlugin({
   vapor: boolean;           // Enable Vapor mode (default: false)
   root: string;             // Root directory (default: Rspack's root)
   css: {
-    native: boolean;        // Use Rspack native CSS; Rspack 1.x needs experiments: { css: true }, Rspack 2.x does not
+    native: boolean;        // Use Rspack native CSS. Default: true on Rspack 2.x, false on 1.x (1.x also needs experiments: { css: true })
   };
   compilerOptions: {};      // Extra @vizejs/native compileSfc options
   debug: boolean;           // Enable debug logging (default: false)
@@ -608,7 +604,7 @@ Only relative (`./`, `../`), alias (`@/`), and tilde (`~/`, `~pkg`) URLs are tra
 {
   loader: "@vizejs/rspack-plugin/style-loader",
   options: {
-    native: boolean;        // Rspack native CSS mode; Rspack 1.x needs experiments: { css: true }, Rspack 2.x does not
+    native: boolean;        // Rspack native CSS mode. Default: true on Rspack 2.x, false on 1.x (1.x also needs experiments: { css: true })
   };
 }
 ```
