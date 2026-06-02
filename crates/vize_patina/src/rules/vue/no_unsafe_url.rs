@@ -78,6 +78,10 @@ fn is_router_link_tag(tag: &str) -> bool {
     tag == "router-link" || tag == "RouterLink" || tag == "nuxt-link" || tag == "NuxtLink"
 }
 
+fn is_slot_tag(tag: &str) -> bool {
+    tag == "slot"
+}
+
 fn is_unsafe_static_attr_value(attr_name: &str, value: &str) -> bool {
     if attr_name.eq_ignore_ascii_case("srcset") {
         return value
@@ -134,6 +138,11 @@ impl Rule for NoUnsafeUrl {
     ) {
         // Only check v-bind
         if directive.name != "bind" {
+            return;
+        }
+
+        // Bindings on <slot> are slot props, not URL-bearing DOM attributes.
+        if is_slot_tag(element.tag.as_str()) {
             return;
         }
 
@@ -266,6 +275,13 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<iframe :src="url"></iframe>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_allows_slot_prop_bindings() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<slot name="item" :data="item" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
