@@ -130,8 +130,10 @@ Special thanks to:
 - [ushironoko](https://github.com/ushironoko) for compiler, linter, and CLI bug reports,
   reference implementations, and reproduction repositories.
 - [dannote](https://github.com/dannote) for Elixier feedback, PRs, and CSS-facing fixes.
-- [umbrella22](https://github.com/umbrella22) for Rspack Plugin contributions, especially around
-  native CSS compatibility and Rspack 1.x / 2.x behavior.
+- [umbrella22](https://github.com/umbrella22) for shaping the Rspack Plugin integration through
+  real-project validation, native CSS handling reports, Rspack 1.x / 2.x compatibility feedback,
+  and guidance on defaults that keep newer native CSS behavior usable without regressing older
+  Rspack setups.
 - [n13u](https://x.com/%5Fn13u%5F) and `#frontend_phpcon_do` for Nuxt build debugging, reports,
   and production validation
   ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)).

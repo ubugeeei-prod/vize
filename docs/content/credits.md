@@ -17,8 +17,10 @@ tooling, and ecosystem experiments. In particular, thank you to:
   repositories for difficult issues.
 - [dannote](https://github.com/dannote) for feedback and pull requests from the Elixier ecosystem,
   especially for CSS-facing APIs and bug fixes.
-- [umbrella22](https://github.com/umbrella22) for Rspack Plugin contributions, especially around
-  native CSS compatibility and Rspack 1.x / 2.x behavior.
+- [umbrella22](https://github.com/umbrella22) for shaping the Rspack Plugin integration through
+  real-project validation, reports about native CSS handling, compatibility feedback across Rspack
+  1.x and 2.x, and guidance on defaults that keep newer native CSS behavior usable without
+  regressing older Rspack setups.
 - [n13u](https://x.com/%5Fn13u%5F) and the `#frontend_phpcon_do` team for debugging and reporting Vize
   compiler and Nuxt project build pipeline issues on a conference website, and for validating Vize
   in a production conference site deployment
