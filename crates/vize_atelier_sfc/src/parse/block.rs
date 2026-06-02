@@ -727,19 +727,12 @@ pub(super) fn parse_block_fast<'a>(
             //
             // For backticks specifically, also allow after alphanumeric characters
             // to handle tagged templates (e.g., html`...`) and keywords (e.g., return `...`)
-            if b == b'\'' || b == b'"' || b == b'`' {
-                if can_start_string_literal(prev_significant_char, b) {
-                    pos = skip_script_string_literal(
-                        bytes,
-                        pos,
-                        len,
-                        b,
-                        &mut line,
-                        &mut last_newline,
-                    );
-                    prev_significant_char = b; // String ended with quote
-                    continue;
-                }
+            if (b == b'\'' || b == b'"' || b == b'`')
+                && can_start_string_literal(prev_significant_char, b)
+            {
+                pos = skip_script_string_literal(bytes, pos, len, b, &mut line, &mut last_newline);
+                prev_significant_char = b; // String ended with quote
+                continue;
             }
         }
 
