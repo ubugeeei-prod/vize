@@ -22,6 +22,7 @@ import {
   fromPluginVisibleVirtualId,
   isPluginVisibleSsrVirtualId,
   toPluginVisibleVirtualId,
+  toVirtualId,
 } from "../virtual.ts";
 import { toNativeCssAliasRule } from "../utils/css.ts";
 
@@ -412,6 +413,7 @@ async function resolveAliasedVueImport(
   handleNodeModules: boolean,
   querySuffix: string,
   preserveQueryAsPath: boolean,
+  isDependencyScan: boolean,
 ): Promise<string | null> {
   if (path.isAbsolute(id)) {
     return null;
@@ -439,7 +441,9 @@ async function resolveAliasedVueImport(
     state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
     return preserveQueryAsPath
       ? `${realPath}${querySuffix}`
-      : toPluginVisibleVirtualId(realPath, isSsrRequest, querySuffix);
+      : isDependencyScan
+        ? toVirtualId(realPath, isSsrRequest)
+        : toPluginVisibleVirtualId(realPath, isSsrRequest, querySuffix);
   }
 
   return null;
@@ -450,7 +454,7 @@ export async function resolveIdHook(
   state: VizePluginState,
   id: string,
   importer?: string,
-  options?: { ssr?: boolean },
+  options?: { ssr?: boolean; scan?: boolean },
 ): Promise<string | { id: string; external?: boolean } | null | undefined> {
   // Fast-return before request classification for the common case where neither
   // the id nor importer can involve a Vue SFC or Vize virtual module. This was
@@ -461,6 +465,7 @@ export async function resolveIdHook(
   }
 
   const isBuild = state.server === null;
+  const isDependencyScan = !!options?.scan;
   const importerRequest = importer ? classifyVitePluginRequest(importer) : null;
   const isSsrRequest =
     !!options?.ssr ||
@@ -470,6 +475,9 @@ export async function resolveIdHook(
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
 
   if (pluginVisibleVirtualPath) {
+    if (isDependencyScan) {
+      return toVirtualId(pluginVisibleVirtualPath, isSsrRequest);
+    }
     return isSsrRequest
       ? toPluginVisibleVirtualId(pluginVisibleVirtualPath, true, request.querySuffix)
       : id;
@@ -481,7 +489,9 @@ export async function resolveIdHook(
     // treats imports of Vize virtual modules from other virtual modules as resolved.
     if (request.isVizeVirtual) {
       if (isSsrRequest && !request.isVizeSsrVirtual && request.vizeVirtualPath) {
-        return toPluginVisibleVirtualId(request.vizeVirtualPath, true, request.querySuffix);
+        return isDependencyScan
+          ? toVirtualId(request.vizeVirtualPath, true)
+          : toPluginVisibleVirtualId(request.vizeVirtualPath, true, request.querySuffix);
       }
       return id;
     }
@@ -816,6 +826,7 @@ export async function resolveIdHook(
         handleNodeModules,
         request.querySuffix,
         preserveQueryAsPath,
+        isDependencyScan,
       );
       if (aliased) {
         return aliased;
@@ -844,7 +855,9 @@ export async function resolveIdHook(
       if (preserveQueryAsPath) {
         return `${resolved}${request.querySuffix}`;
       }
-      return toPluginVisibleVirtualId(resolved, isSsrRequest, request.querySuffix);
+      return isDependencyScan
+        ? toVirtualId(resolved, isSsrRequest)
+        : toPluginVisibleVirtualId(resolved, isSsrRequest, request.querySuffix);
     }
   }
 

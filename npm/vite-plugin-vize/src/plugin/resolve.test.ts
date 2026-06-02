@@ -966,6 +966,24 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("dependency-scan-virtual");
+  const source = path.join(projectRoot, "app", "pages", "index.vue");
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    source,
+    undefined,
+    { scan: true },
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    toVirtualId(source),
+    "Dependency scans should use load-hook virtual IDs instead of plugin-visible file-like IDs",
+  );
+}
+
+{
   const projectRoot = createTempProject("ssr-entry");
   const source = path.join(projectRoot, "app", "pages", "index.vue");
   const resolved = await resolveIdHook(
