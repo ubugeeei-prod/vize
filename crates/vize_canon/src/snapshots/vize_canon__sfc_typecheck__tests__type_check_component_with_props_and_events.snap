@@ -118,9 +118,18 @@ __setup();
 
 export type Slots = {};
 
+type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
+type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown> = TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>> | ((...args: TArgs) => TReturn) : never;
+type __VizeOverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<__VizeOverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;
+type __VizeOverloadParameters<T extends (...args: any[]) => any> = Parameters<__VizeOverloadUnion<T>>;
+type __VizeIsStringLiteral<T> = T extends string ? string extends T ? false : true : false;
+type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };
+type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});
+type __EmitProps<T> = import('vue').EmitsToProps<__EmitOptions<T>>;
+
 // ========== Default Export ==========
 type __VizeComponentInstance = {
-  $props: Props;
+  $props: Props & __EmitProps<Emits>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };

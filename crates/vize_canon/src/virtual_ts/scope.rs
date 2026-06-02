@@ -733,11 +733,11 @@ fn generate_scope_node(
                 // Include scope_id to deduplicate when same component+event appears multiple times
                 append!(
                     *ts,
-                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }}\n",
+                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_args = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }}\n",
                 );
                 append!(
                     *ts,
-                    "{indent}  ? __P extends {{ {prop_key}?: (arg: infer __A, ...rest: any[]) => any }} ? __A : unknown\n",
+                    "{indent}  ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
                 );
                 append!(
                     *ts,
@@ -745,9 +745,13 @@ fn generate_scope_node(
                 );
                 append!(
                     *ts,
-                    "{indent}    ? __P extends {{ {prop_key}?: (arg: infer __A, ...rest: any[]) => any }} ? __A : unknown\n",
+                    "{indent}    ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
                 );
-                append!(*ts, "{indent}    : unknown;\n");
+                append!(*ts, "{indent}    : unknown[];\n");
+                append!(
+                    *ts,
+                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = __{component_type_name}_{scope_id}_{safe_event_name}_args extends [] ? any : __{component_type_name}_{scope_id}_{safe_event_name}_args[0];\n",
+                );
 
                 let event_type =
                     cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");

@@ -357,6 +357,90 @@ function handleName(name: string): void {
 </template>
 "#,
             ),
+            (
+                "src/ZeroArgButton.vue",
+                r#"<script setup lang="ts">
+const emit = defineEmits<{
+  click: []
+}>()
+</script>
+
+<template>
+  <button @click="emit('click')">Toggle</button>
+</template>
+"#,
+            ),
+            (
+                "src/ComponentZeroArgHandler.vue",
+                r#"<script setup lang="ts">
+import ZeroArgButton from './ZeroArgButton.vue'
+
+function toggle(open = false): void {
+  console.log(open)
+}
+</script>
+
+<template>
+  <ZeroArgButton @click="toggle" />
+</template>
+"#,
+            ),
+            (
+                "src/PayloadButton.vue",
+                r#"<script setup lang="ts">
+const emit = defineEmits<{
+  change: [value: string]
+}>()
+</script>
+
+<template>
+  <button @click="emit('change', 'next')">Change</button>
+</template>
+"#,
+            ),
+            (
+                "src/WrongComponentPayloadHandler.vue",
+                r#"<script setup lang="ts">
+import PayloadButton from './PayloadButton.vue'
+
+function handleValue(value: number): void {
+  console.log(value)
+}
+</script>
+
+<template>
+  <PayloadButton @change="handleValue" />
+</template>
+"#,
+            ),
+            (
+                "src/OverloadPayloadButton.vue",
+                r#"<script setup lang="ts">
+const emit = defineEmits<{
+  (event: 'select', id: number): void
+}>()
+</script>
+
+<template>
+  <button @click="emit('select', 1)">Select</button>
+</template>
+"#,
+            ),
+            (
+                "src/WrongOverloadPayloadHandler.vue",
+                r#"<script setup lang="ts">
+import OverloadPayloadButton from './OverloadPayloadButton.vue'
+
+function handleSelect(id: string): void {
+  console.log(id)
+}
+</script>
+
+<template>
+  <OverloadPayloadButton @select="handleSelect" />
+</template>
+"#,
+            ),
         ],
     );
 
@@ -378,6 +462,28 @@ function handleName(name: string): void {
                 && message.contains("MouseEvent")
         }),
         "expected WrongEventHandler.vue to report MouseEvent mismatch, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().all(|(file, code, _)| {
+            file != "src/ComponentZeroArgHandler.vue" || *code != Some(2345)
+        }),
+        "unexpected zero-arg component event handler mismatch: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/WrongComponentPayloadHandler.vue"
+                && *code == Some(2345)
+                && message.contains("string")
+        }),
+        "expected WrongComponentPayloadHandler.vue to report string payload mismatch, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/WrongOverloadPayloadHandler.vue"
+                && *code == Some(2345)
+                && message.contains("number")
+        }),
+        "expected WrongOverloadPayloadHandler.vue to report number payload mismatch, got: {snapshot:#?}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -1072,6 +1178,29 @@ export interface ComponentPublicInstance {
   $refs: any;
   $emit: (...args: any[]) => void;
 }
+
+export type ObjectEmitsOptions = Record<string, ((...args: any[]) => any) | null>;
+export type EmitsOptions = ObjectEmitsOptions | string[];
+export type ComponentTypeEmits = ((...args: any[]) => any) | Record<string, any>;
+export type EmitsToProps<T extends EmitsOptions | ComponentTypeEmits> = T extends string[]
+  ? { [K in `on${Capitalize<T[number]>}`]?: (...args: any[]) => any }
+  : T extends ObjectEmitsOptions
+    ? { [K in string & keyof T as `on${Capitalize<K>}`]?: (...args: T[K] extends (...args: infer P) => any ? P : T[K] extends null ? any[] : never) => any }
+    : {};
+
+export type DefineComponent<
+  Props = any,
+  _RawBindings = any,
+  _Data = any,
+  _Computed = any,
+  _Methods = any,
+  _Mixin = any,
+  _Extends = any,
+  Emits = any,
+> = new (...args: any[]) => ComponentPublicInstance & {
+  $props: Props;
+  $emit: Emits extends (...args: any[]) => any ? Emits : (...args: any[]) => void;
+};
 
 export declare function ref<T>(value: T): Ref<T>;
 export declare function useTemplateRef<T = any>(key: string): ShallowRef<T | null>;

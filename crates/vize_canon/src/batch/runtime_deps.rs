@@ -35,6 +35,15 @@ export interface ComponentPublicInstance extends ComponentCustomProperties {
   $emit: (...args: any[]) => void;
 }
 
+export type ObjectEmitsOptions = Record<string, ((...args: any[]) => any) | null>;
+export type EmitsOptions = ObjectEmitsOptions | string[];
+export type ComponentTypeEmits = ((...args: any[]) => any) | Record<string, any>;
+export type EmitsToProps<T extends EmitsOptions | ComponentTypeEmits> = T extends string[]
+  ? { [K in `on${Capitalize<T[number]>}`]?: (...args: any[]) => any }
+  : T extends ObjectEmitsOptions
+    ? { [K in string & keyof T as `on${Capitalize<K>}`]?: (...args: T[K] extends (...args: infer P) => any ? P : T[K] extends null ? any[] : never) => any }
+    : {};
+
 export interface App<Element = any> {
   mount(rootContainer: string | Element): ComponentPublicInstance;
   unmount(): void;

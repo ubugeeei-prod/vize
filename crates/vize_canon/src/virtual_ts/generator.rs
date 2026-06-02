@@ -699,8 +699,30 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .type_exports
         .iter()
         .any(|te| te.name.as_str() == "Emits");
+    let define_emits_type_args = summary
+        .macros
+        .define_emits()
+        .and_then(|call| call.type_args.as_ref());
+    let has_emits_for_props = emits_already_defined
+        || define_emits_type_args.is_some()
+        || !summary.macros.emits().is_empty();
     if !emits_already_defined {
-        ts.push_str("export type Emits = {};\n");
+        if let Some(type_args) = define_emits_type_args {
+            let inner_type = type_args
+                .strip_prefix('<')
+                .and_then(|s| s.strip_suffix('>'))
+                .unwrap_or(type_args.as_str());
+            append!(ts, "export type Emits = {inner_type};\n");
+        } else if !summary.macros.emits().is_empty() {
+            ts.push_str("export type Emits = {\n");
+            for emit in summary.macros.emits() {
+                let payload = emit.payload_type.as_deref().unwrap_or("any[]");
+                append!(ts, "  \"{}\": {payload};\n", emit.name);
+            }
+            ts.push_str("};\n");
+        } else {
+            ts.push_str("export type Emits = {};\n");
+        }
     }
 
     // Slots type
@@ -734,10 +756,25 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     }
     ts.push('\n');
 
+    if has_emits_for_props {
+        ts.push_str("type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;\n");
+        ts.push_str("type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown> = TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>> | ((...args: TArgs) => TReturn) : never;\n");
+        ts.push_str("type __VizeOverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<__VizeOverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;\n");
+        ts.push_str("type __VizeOverloadParameters<T extends (...args: any[]) => any> = Parameters<__VizeOverloadUnion<T>>;\n");
+        ts.push_str("type __VizeIsStringLiteral<T> = T extends string ? string extends T ? false : true : false;\n");
+        ts.push_str("type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };\n");
+        ts.push_str("type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});\n");
+        ts.push_str("type __EmitProps<T> = import('vue').EmitsToProps<__EmitOptions<T>>;\n\n");
+    }
+
     // Default export
     ts.push_str("// ========== Default Export ==========\n");
     ts.push_str("type __VizeComponentInstance = {\n");
-    ts.push_str("  $props: Props;\n");
+    if has_emits_for_props {
+        ts.push_str("  $props: Props & __EmitProps<Emits>;\n");
+    } else {
+        ts.push_str("  $props: Props;\n");
+    }
     ts.push_str("  $emit: __EmitFn<Emits>;\n");
     ts.push_str("  $slots: Slots;\n");
     ts.push_str("};\n");

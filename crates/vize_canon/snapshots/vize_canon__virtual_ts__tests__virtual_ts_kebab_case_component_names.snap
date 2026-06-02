@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts.rs
-assertion_line: 41
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -91,11 +90,12 @@ function __setup() {
   // @vize-map: expr -> 19:24
 
   // @update:model-value handler
-  type __my_widget_7_update_model_value_event = typeof my_widget extends { new (): { $props: infer __P } }
-    ? __P extends { "onUpdate:modelValue"?: (arg: infer __A, ...rest: any[]) => any } ? __A : unknown
+  type __my_widget_7_update_model_value_args = typeof my_widget extends { new (): { $props: infer __P } }
+    ? __P extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[]
     : typeof my_widget extends (props: infer __P) => any
-      ? __P extends { "onUpdate:modelValue"?: (arg: infer __A, ...rest: any[]) => any } ? __A : unknown
-      : unknown;
+      ? __P extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[]
+      : unknown[];
+  type __my_widget_7_update_model_value_event = __my_widget_7_update_model_value_args extends [] ? any : __my_widget_7_update_model_value_args[0];
   (($event: __my_widget_7_update_model_value_event) => {
     const __vize_handler_7_26 = ((handler: ($event: __my_widget_7_update_model_value_event) => unknown) => handler)((handleUpdate));
     __vize_handler_7_26($event);  // handler expression
