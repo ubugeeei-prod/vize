@@ -94,6 +94,60 @@ fn is_unsafe_static_attr_value(attr_name: &str, value: &str) -> bool {
     is_unsafe_url(value)
 }
 
+fn is_hash_only_href_binding(attr_name: &str, directive: &DirectiveNode) -> bool {
+    if !attr_name.eq_ignore_ascii_case("href") {
+        return false;
+    }
+
+    let Some(ExpressionNode::Simple(exp)) = directive.exp.as_ref() else {
+        return false;
+    };
+
+    is_hash_prefixed_expression(exp.content.trim())
+}
+
+fn is_hash_prefixed_expression(value: &str) -> bool {
+    if value.starts_with("`#") && value.ends_with('`') {
+        return true;
+    }
+
+    let Some((literal, rest)) = static_string_literal_prefix(value) else {
+        return false;
+    };
+    if !literal.starts_with('#') {
+        return false;
+    }
+
+    let rest = rest.trim_start();
+    rest.is_empty() || rest.starts_with('+')
+}
+
+fn static_string_literal_prefix(value: &str) -> Option<(&str, &str)> {
+    let bytes = value.as_bytes();
+    let quote = *bytes.first()?;
+    if !matches!(quote, b'\'' | b'"') {
+        return None;
+    }
+
+    let mut escaped = false;
+    for index in 1..bytes.len() {
+        let byte = bytes[index];
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if byte == b'\\' {
+            escaped = true;
+            continue;
+        }
+        if byte == quote {
+            return Some((&value[1..index], &value[index + 1..]));
+        }
+    }
+
+    None
+}
+
 impl Rule for NoUnsafeUrl {
     fn meta(&self) -> &'static RuleMeta {
         &META
@@ -159,6 +213,10 @@ impl Rule for NoUnsafeUrl {
 
         // Skip if the element is router-link (it handles routing safely)
         if is_router_link_tag(element.tag.as_str()) {
+            return;
+        }
+
+        if is_hash_only_href_binding(attr_name, directive) {
             return;
         }
 
@@ -267,6 +325,36 @@ mod tests {
     fn test_warns_dynamic_href() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<a :href="userUrl">Link</a>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_allows_hash_template_href_binding() {
+        let linter = create_linter();
+        let result = linter.lint_template(r##"<a :href="`#${props.id}`">Link</a>"##, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_allows_hash_concat_href_binding() {
+        let linter = create_linter();
+        let result = linter.lint_template(r##"<a :href="'#' + props.id">Link</a>"##, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_warns_non_hash_template_href_binding() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r##"<a :href="`${scheme}:${path}`">Link</a>"##, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_hash_template_only_skips_href() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r##"<iframe :src="`#${props.id}`"></iframe>"##, "test.vue");
         assert_eq!(result.warning_count, 1);
     }
 
