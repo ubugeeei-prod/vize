@@ -22,9 +22,16 @@ export interface ComputedRef<T = any> extends Readonly<Ref<T>> {
 
 export type UnwrapRef<T> = T extends Ref<infer V, any> ? V : T;
 export type WatchStopHandle = () => void;
+export type WatchCleanup = (cleanupFn: () => void) => void;
+export type WatchEffect = (onCleanup: WatchCleanup) => void | Promise<void>;
 export type LifecycleHook = () => void | Promise<void>;
 
 export type InjectionKey<T> = symbol & { readonly __vize_injection?: T };
+export type PropConstructor<T = any> =
+  | { new (...args: any[]): T & {} }
+  | { (): T }
+  | ((...args: any[]) => T);
+export type PropType<T> = PropConstructor<T> | readonly PropConstructor<T>[];
 
 export interface ComponentCustomProperties {}
 
@@ -36,6 +43,10 @@ export interface ComponentPublicInstance extends ComponentCustomProperties {
 }
 
 export interface App<Element = any> {
+  config: {
+    globalProperties: ComponentCustomProperties & Record<string, any>;
+    [key: string]: any;
+  };
   mount(rootContainer: string | Element): ComponentPublicInstance;
   unmount(): void;
   use(plugin: any, ...options: any[]): App<Element>;
@@ -65,11 +76,14 @@ export declare function readonly<T>(value: T): Readonly<T>;
 export declare function createApp(rootComponent: any, rootProps?: any): App;
 export declare function createSSRApp(rootComponent: any, rootProps?: any): App;
 export declare function defineComponent<Props = any>(options: any): DefineComponent<Props>;
+export declare function defineProps<T = any>(): T;
+export declare function defineProps<const T extends readonly string[]>(_props: T): { [K in T[number]]?: any };
+export declare function defineProps<const T extends Record<string, any>>(_props: T): T;
 export declare function provide<T>(key: InjectionKey<T> | string | symbol, value: T): void;
 export declare function inject<T>(key: InjectionKey<T> | string | symbol): T | undefined;
 export declare function inject<T>(key: InjectionKey<T> | string | symbol, defaultValue: T): T;
-export declare function watch<T>(source: any, cb: any): WatchStopHandle;
-export declare function watchEffect(effect: () => void | Promise<void>): WatchStopHandle;
+export declare function watch<T>(source: any, cb: any, options?: any): WatchStopHandle;
+export declare function watchEffect(effect: WatchEffect, options?: any): WatchStopHandle;
 export declare function onMounted(hook: LifecycleHook): void;
 export declare function onUnmounted(hook: LifecycleHook): void;
 export declare function onBeforeMount(hook: LifecycleHook): void;
@@ -79,6 +93,9 @@ export declare function onUpdated(hook: LifecycleHook): void;
 export declare function nextTick<T>(fn: () => T | Promise<T>): Promise<T>;
 export declare function nextTick(): Promise<void>;
 export declare function useTemplateRef<T = any>(key: string): ShallowRef<T | null>;
+export declare function useId(): string;
+export declare const Transition: DefineComponent;
+export declare const TransitionGroup: DefineComponent;
 "#;
 
 const VITE_STUB_PACKAGE_JSON: &str = r#"{

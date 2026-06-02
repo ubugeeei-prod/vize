@@ -496,6 +496,90 @@ export default defineComponent({
 }
 
 #[test]
+fn check_stubbed_vue_exports_runtime_helpers_used_by_nuxt_apps() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "stubbed-vue-runtime-helpers",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+import {
+  Transition,
+  createApp,
+  defineProps,
+  ref,
+  useId,
+  watch,
+  watchEffect,
+  type PropType,
+} from "vue";
+
+const labelType = String as PropType<string>;
+const props = defineProps<{ label?: string }>();
+const count = ref(0);
+const id = useId();
+
+watch(count, () => {}, { immediate: true });
+watchEffect((onCleanup) => {
+  onCleanup(() => {});
+});
+
+const app = createApp({});
+app.config.globalProperties.$id = id;
+
+void labelType;
+void Transition;
+</script>
+
+<template>
+  <Transition>
+    <p>{{ props.label }} {{ id }}</p>
+  </Transition>
+</template>
+"#,
+        )],
+    );
+
+    // Force the virtual project to use vize's fallback Vue stub instead of a
+    // workspace-linked full Vue installation.
+    remove_path_if_exists(&project_root.join("node_modules").join("@vue")).unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/App.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_resolves_named_exports_from_vue_imported_via_path_alias() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
@@ -2637,11 +2721,31 @@ fn write_test_vue_stub(target: &Path) -> std::io::Result<()> {
 
 export interface ShallowRef<T = any, S = T> extends Ref<T, S> {}
 
+export type WatchStopHandle = () => void;
+export type WatchCleanup = (cleanupFn: () => void) => void;
+export type WatchEffect = (onCleanup: WatchCleanup) => void | Promise<void>;
+export type PropConstructor<T = any> =
+  | { new (...args: any[]): T & {} }
+  | { (): T }
+  | ((...args: any[]) => T);
+export type PropType<T> = PropConstructor<T> | readonly PropConstructor<T>[];
+
+export interface ComponentCustomProperties {}
+
 export interface ComponentPublicInstance {
   $attrs: any;
   $slots: any;
   $refs: any;
   $emit: (...args: any[]) => void;
+}
+
+export interface App<Element = any> {
+  config: {
+    globalProperties: ComponentCustomProperties & Record<string, any>;
+    [key: string]: any;
+  };
+  mount(rootContainer: string | Element): ComponentPublicInstance;
+  unmount(): void;
 }
 
 export type DefineComponent<
@@ -2661,6 +2765,15 @@ export type DefineComponent<
 export declare function ref<T>(value: T): Ref<T>;
 export declare function useTemplateRef<T = any>(key: string): ShallowRef<T | null>;
 export declare function defineComponent<Props = any>(options: any): DefineComponent<Props>;
+export declare function defineProps<T = any>(): T;
+export declare function defineProps<const T extends readonly string[]>(_props: T): { [K in T[number]]?: any };
+export declare function defineProps<const T extends Record<string, any>>(_props: T): T;
+export declare function createApp(rootComponent: any, rootProps?: any): App;
+export declare function watch<T>(source: any, cb: any, options?: any): WatchStopHandle;
+export declare function watchEffect(effect: WatchEffect, options?: any): WatchStopHandle;
+export declare function useId(): string;
+export declare const Transition: DefineComponent;
+export declare const TransitionGroup: DefineComponent;
 "#,
     )?;
     Ok(())
