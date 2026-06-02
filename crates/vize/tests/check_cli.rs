@@ -120,6 +120,104 @@ void props
 }
 
 #[test]
+fn check_without_patterns_uses_parent_relative_tsconfig_includes() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "default-tsconfig-inputs",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count = 1
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"#,
+        )],
+    );
+    std::fs::create_dir_all(project_root.join(".nuxt")).unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["../src/**/*"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "extends": "./.nuxt/tsconfig.json"
+}"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(json["fileCount"], 1, "stdout:\n{stdout}\nstderr:\n{stderr}");
+    assert_eq!(
+        json["files"][0]["file"], "src/App.vue",
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_json_reports_empty_result_when_no_files_match() {
+    let project_root = create_cli_project("json-empty-inputs", &[]);
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["check", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(json["fileCount"], 0);
+    assert_eq!(json["errorCount"], 0);
+    assert_eq!(json["warningCount"], 0);
+    assert_eq!(json["files"].as_array().unwrap().len(), 0);
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_directory_pattern_resolves_json_modules_imported_by_ts() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

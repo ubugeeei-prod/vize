@@ -99,11 +99,10 @@ struct GlobSpec {
 
 impl GlobSpec {
     fn new(base_dir: &Path, value: &str) -> Option<Self> {
-        let normalized = normalize_tsconfig_glob(value);
-        Pattern::new(&normalized).ok().map(|pattern| Self {
-            base_dir: base_dir.to_path_buf(),
-            pattern,
-        })
+        let (base_dir, normalized) = normalize_tsconfig_glob_base(base_dir, value);
+        Pattern::new(&normalized)
+            .ok()
+            .map(|pattern| Self { base_dir, pattern })
     }
 
     fn matches(&self, path: &Path) -> bool {
@@ -548,6 +547,30 @@ fn normalize_tsconfig_glob(value: &str) -> std::string::String {
     normalized
 }
 
+fn normalize_tsconfig_glob_base(base_dir: &Path, value: &str) -> (PathBuf, std::string::String) {
+    let mut base_dir = base_dir.to_path_buf();
+    let mut normalized = normalize_tsconfig_glob(value);
+
+    loop {
+        if let Some(rest) = normalized.strip_prefix("./") {
+            normalized = rest.to_owned();
+        } else if let Some(rest) = normalized.strip_prefix("../") {
+            if let Some(parent) = base_dir.parent() {
+                base_dir = parent.to_path_buf();
+            }
+            normalized = rest.to_owned();
+        } else {
+            break;
+        }
+    }
+
+    if normalized.is_empty() {
+        normalized.push_str("**/*");
+    }
+
+    (base_dir, normalized)
+}
+
 fn default_exclude_specs(base_dir: &Path) -> Vec<GlobSpec> {
     ["node_modules", "bower_components", "jspm_packages"]
         .into_iter()
@@ -826,6 +849,46 @@ mod tests {
         let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
         assert_eq!(files, vec![case_dir.join("src/App.vue")]);
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn default_collection_matches_parent_relative_extended_include() {
+        let case_dir = unique_case_dir("tsconfig-extends-parent-relative");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join(".nuxt")).unwrap();
+        fs::create_dir_all(case_dir.join("src")).unwrap();
+        fs::create_dir_all(case_dir.join("dist")).unwrap();
+        fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+        fs::write(case_dir.join("src/main.ts"), "export const ok = true").unwrap();
+        fs::write(
+            case_dir.join("dist/generated.ts"),
+            "export const skip = true",
+        )
+        .unwrap();
+        fs::write(case_dir.join(".nuxt/nuxt.d.ts"), "declare const nuxt: true").unwrap();
+        fs::write(
+            case_dir.join(".nuxt/tsconfig.json"),
+            r#"{
+  "include": ["./nuxt.d.ts", "../src/**/*", "../dist/**/*.ts"],
+  "exclude": ["../dist"]
+}"#,
+        )
+        .unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "extends": "./.nuxt/tsconfig.json"
+}"#,
+        )
+        .unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(files.iter().any(|path| path.ends_with("src/App.vue")));
+        assert!(files.iter().any(|path| path.ends_with("src/main.ts")));
+        assert!(!files.iter().any(|path| path.ends_with("dist/generated.ts")));
 
         let _ = fs::remove_dir_all(&case_dir);
     }

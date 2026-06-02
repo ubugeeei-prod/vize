@@ -116,6 +116,16 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
 
     if files.is_empty() {
+        if args.format == "json" {
+            emit_json_output(JsonOutput {
+                files: Vec::new(),
+                error_count: 0,
+                warning_count: 0,
+                file_count: 0,
+                declarations: None,
+            });
+            return;
+        }
         eprintln!(
             "No Vue or TypeScript files found matching inputs: {:?}",
             args.patterns
@@ -199,6 +209,16 @@ pub(crate) fn run_direct(args: &CheckArgs) {
 
     let virtual_files = checker.virtual_files();
     if virtual_files.is_empty() {
+        if args.format == "json" {
+            emit_json_output(JsonOutput {
+                files: Vec::new(),
+                error_count: 0,
+                warning_count: 0,
+                file_count: 0,
+                declarations: None,
+            });
+            return;
+        }
         eprintln!("No files were registered for type checking");
         return;
     }
@@ -407,13 +427,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             file_count: reported_file_count,
             declarations,
         };
-        match serde_json::to_string_pretty(&json_output) {
-            Ok(output) => println!("{output}"),
-            Err(error) => {
-                eprintln!("Failed to serialize check output: {error}");
-                std::process::exit(1);
-            }
-        }
+        emit_json_output(json_output);
         if total_errors > 0 {
             std::process::exit(1);
         }
@@ -495,6 +509,16 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     {
         eprintln!("\nToo many warnings ({total_warnings} > max {max_warnings})");
         std::process::exit(1);
+    }
+}
+
+fn emit_json_output(json_output: JsonOutput) {
+    match serde_json::to_string_pretty(&json_output) {
+        Ok(output) => println!("{output}"),
+        Err(error) => {
+            eprintln!("Failed to serialize check output: {error}");
+            std::process::exit(1);
+        }
     }
 }
 
