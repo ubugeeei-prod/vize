@@ -28,6 +28,7 @@ const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 
 const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/sfc-element-order",
+    "vue/require-scoped-style",
     "vue/single-style-block",
     "ecosystem/void-link-require-href",
     "ecosystem/void-link-valid-method",
