@@ -213,7 +213,7 @@ fn runtime_usages(
             Some(RuntimeUsage {
                 target_id,
                 start: usage.start,
-                end: usage.subtree_end,
+                end: usage.end,
                 renders_slot,
             })
         })

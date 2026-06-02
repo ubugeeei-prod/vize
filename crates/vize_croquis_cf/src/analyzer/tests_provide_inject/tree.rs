@@ -305,7 +305,6 @@ fn component_usage_with_span(
         name: vize_carton::CompactString::new(component),
         start,
         end,
-        subtree_end: end,
         props: vize_carton::SmallVec::new(),
         events: vize_carton::SmallVec::new(),
         slots: vize_carton::SmallVec::new(),
