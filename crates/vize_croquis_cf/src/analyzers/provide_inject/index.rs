@@ -206,9 +206,7 @@ fn runtime_usages(
         .iter()
         .filter_map(|usage| {
             let target_id = graph.find_by_component(usage.name.as_str())?;
-            let renders_slot = registry
-                .get(target_id)
-                .is_some_and(|target| target.analysis.template_info.renders_slot);
+            let renders_slot = registry.renders_slot(target_id);
             Some(RuntimeUsage {
                 target_id,
                 start: usage.start,

@@ -17,8 +17,6 @@ pub struct TemplateInfo {
     pub binds_attrs_explicitly: bool,
     /// Whether inheritAttrs: false is set in defineOptions.
     pub inherit_attrs_disabled: bool,
-    /// Whether the template renders a `<slot>` outlet.
-    pub renders_slot: bool,
     /// Start offset of template content (relative to template block).
     pub content_start: u32,
     /// End offset of template content (relative to template block).

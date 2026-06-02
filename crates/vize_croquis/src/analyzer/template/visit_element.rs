@@ -52,10 +52,6 @@ impl Analyzer {
         let is_component = is_component_tag(tag);
         let mut subtree_end = None;
 
-        if tag == "slot" {
-            self.summary.template_info.renders_slot = true;
-        }
-
         // Track component usage
         if self.options.track_usage && is_component {
             self.summary.used_components.insert(CompactString::new(tag));

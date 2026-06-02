@@ -234,16 +234,16 @@ fn test_slot_projected_child_resolves_provider_context() {
             ],
         ),
     );
-    let provider = analyzer.add_file_with_analysis(Path::new("Provider.vue"), "", {
-        let mut analysis = script_analysis(
+    let provider = analyzer.add_file_with_analysis(
+        Path::new("Provider.vue"),
+        "<template><slot /></template>",
+        script_analysis(
             r#"import { provide, ref } from 'vue'
 const count = ref(0)
 provide('count', count)"#,
             &[],
-        );
-        analysis.template_info.renders_slot = true;
-        analysis
-    });
+        ),
+    );
     let consumer = analyzer.add_file_with_analysis(
         Path::new("Consumer.vue"),
         "",
