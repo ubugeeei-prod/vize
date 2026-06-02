@@ -414,12 +414,7 @@ fn emit_vif_control_flow_chain(
         );
 
         let body_indent = cstr!("{indent}  ");
-        for (expr_index, expr) in exprs
-            .iter()
-            .enumerate()
-            .take(branch.end)
-            .skip(branch.start)
-        {
+        for (expr_index, expr) in exprs.iter().enumerate().take(branch.end).skip(branch.start) {
             if branch.condition_expr_index == Some(expr_index) {
                 continue;
             }
