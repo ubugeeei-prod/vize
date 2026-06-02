@@ -1600,6 +1600,102 @@ export {}
 }
 
 #[test]
+fn check_nuxt_import_meta_augmentations_do_not_conflict() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "nuxt-import-meta",
+        &[
+            ("nuxt.config.ts", "export default {}\n"),
+            (
+                "app.vue",
+                r#"<script setup lang="ts">
+const side = import.meta.client ? 'client' : 'server'
+</script>
+
+<template>
+  <div>{{ side }}</div>
+</template>
+"#,
+            ),
+        ],
+    );
+    std::fs::create_dir_all(project_root.join(".nuxt/types")).unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/types/import-meta.d.ts"),
+        r#"export {};
+
+declare global {
+  interface ImportMeta {
+    client: boolean;
+    server: boolean;
+    dev: boolean;
+    prod: boolean;
+    ssr: boolean;
+  }
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["app.vue", ".nuxt/types/**/*.d.ts"]
+}"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "app.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+    let diagnostics = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(|diagnostic| diagnostic.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .all(|diagnostic| !diagnostic.contains("[TS2687]")),
+        "ImportMeta augmentations should not conflict: {diagnostics:#?}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_declaration_emit_uses_tsconfig_options() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

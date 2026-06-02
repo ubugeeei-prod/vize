@@ -78,11 +78,11 @@ pub(crate) const IMPORT_META_AUGMENTATION: &str = r#"// ImportMeta augmentation 
 declare global {
   // Extend ImportMeta with Nuxt-specific properties not covered by vite/client
   interface ImportMeta {
-    readonly client: boolean;
-    readonly server: boolean;
-    readonly dev: boolean;
-    readonly prod: boolean;
-    readonly ssr: boolean;
+    client: boolean;
+    server: boolean;
+    dev: boolean;
+    prod: boolean;
+    ssr: boolean;
   }
 }
 "#;

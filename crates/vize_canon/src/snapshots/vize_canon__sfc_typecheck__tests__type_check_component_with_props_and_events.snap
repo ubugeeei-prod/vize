@@ -15,11 +15,11 @@ expression: vts.as_str()
 declare global {
   // Extend ImportMeta with Nuxt-specific properties not covered by vite/client
   interface ImportMeta {
-    readonly client: boolean;
-    readonly server: boolean;
-    readonly dev: boolean;
-    readonly prod: boolean;
-    readonly ssr: boolean;
+    client: boolean;
+    server: boolean;
+    dev: boolean;
+    prod: boolean;
+    ssr: boolean;
   }
 }
 
@@ -79,7 +79,7 @@ function __setup() {
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
   
-  // @vize-map: 4929:5008 -> 0:212
+  // @vize-map: 4884:4963 -> 0:212
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

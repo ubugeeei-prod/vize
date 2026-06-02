@@ -15,11 +15,11 @@ expression: virtual_file.content.as_str()
 declare global {
   // Extend ImportMeta with Nuxt-specific properties not covered by vite/client
   interface ImportMeta {
-    readonly client: boolean;
-    readonly server: boolean;
-    readonly dev: boolean;
-    readonly prod: boolean;
-    readonly ssr: boolean;
+    client: boolean;
+    server: boolean;
+    dev: boolean;
+    prod: boolean;
+    ssr: boolean;
   }
 }
 
@@ -75,7 +75,7 @@ function __setup() {
     name: "OptionsApi",
   });
   
-  // @vize-map: 4850:4929 -> 0:100
+  // @vize-map: 4805:4884 -> 0:100
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

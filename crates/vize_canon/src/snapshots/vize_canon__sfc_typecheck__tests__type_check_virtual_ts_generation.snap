@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/sfc_typecheck.rs
+assertion_line: 453
 expression: virtual_ts.as_str()
 ---
 /// <reference lib="es2022" />
@@ -15,11 +16,11 @@ expression: virtual_ts.as_str()
 declare global {
   // Extend ImportMeta with Nuxt-specific properties not covered by vite/client
   interface ImportMeta {
-    readonly client: boolean;
-    readonly server: boolean;
-    readonly dev: boolean;
-    readonly prod: boolean;
-    readonly ssr: boolean;
+    client: boolean;
+    server: boolean;
+    dev: boolean;
+    prod: boolean;
+    ssr: boolean;
   }
 }
 
@@ -72,7 +73,7 @@ function __setup() {
   const props = defineProps<{ count: number }>();
   const message = ref('Hello');
   
-  // @vize-map: 4826:4914 -> 0:79
+  // @vize-map: 4781:4869 -> 0:79
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

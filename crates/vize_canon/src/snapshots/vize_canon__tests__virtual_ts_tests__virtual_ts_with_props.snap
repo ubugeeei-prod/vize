@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/tests.rs
+assertion_line: 59
 expression: virtual_ts
 ---
 /// <reference lib="es2022" />
@@ -15,11 +16,11 @@ expression: virtual_ts
 declare global {
   // Extend ImportMeta with Nuxt-specific properties not covered by vite/client
   interface ImportMeta {
-    readonly client: boolean;
-    readonly server: boolean;
-    readonly dev: boolean;
-    readonly prod: boolean;
-    readonly ssr: boolean;
+    client: boolean;
+    server: boolean;
+    dev: boolean;
+    prod: boolean;
+    ssr: boolean;
   }
 }
 
@@ -75,7 +76,7 @@ function __setup() {
   
   const props = defineProps<Props>()
   
-  // @vize-map: 4840:4886 -> 0:90
+  // @vize-map: 4795:4841 -> 0:90
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
