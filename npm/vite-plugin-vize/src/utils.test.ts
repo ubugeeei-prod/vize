@@ -10,8 +10,36 @@ import assert from "node:assert";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { generateOutput } from "./utils/index.ts";
+import { resolveConfigExport } from "../../vize/src/config.ts";
+import { createFilter, generateOutput } from "./utils/index.ts";
 import { resolveCssImports } from "./utils/css.ts";
+
+// =============================================================================
+// Test: Shared config RegExp filters
+// =============================================================================
+
+const regexpConfig = await resolveConfigExport({
+  vite: {
+    include: [/\.vue$/],
+    exclude: [/node_modules/],
+  },
+});
+const regexpInclude = Array.isArray(regexpConfig.vite?.include)
+  ? regexpConfig.vite.include[0]
+  : regexpConfig.vite?.include;
+const regexpExclude = Array.isArray(regexpConfig.vite?.exclude)
+  ? regexpConfig.vite.exclude[0]
+  : regexpConfig.vite?.exclude;
+assert.ok(regexpInclude instanceof RegExp, "Shared config should preserve include RegExp values");
+assert.ok(regexpExclude instanceof RegExp, "Shared config should preserve exclude RegExp values");
+
+const regexpFilter = createFilter(regexpConfig.vite?.include, regexpConfig.vite?.exclude);
+assert.equal(regexpFilter("/src/App.vue"), true, "RegExp include should match Vue files");
+assert.equal(
+  regexpFilter("/src/node_modules/App.vue"),
+  false,
+  "RegExp exclude should filter node_modules",
+);
 
 // =============================================================================
 // Test: Non-script-setup SFC _sfc_main duplication fix

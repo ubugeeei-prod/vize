@@ -384,10 +384,6 @@ function isEmptyConfigEntry(entry: VizeConfigEntry): boolean {
   return Object.keys(entry).length === 0;
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 function stripNullish(value: unknown): unknown {
   if (value === null) {
     return undefined;
@@ -397,7 +393,7 @@ function stripNullish(value: unknown): unknown {
     return value.map((entry) => stripNullish(entry)).filter((entry) => entry !== undefined);
   }
 
-  if (typeof value === "object" && value !== null) {
+  if (isPlainObject(value)) {
     const result: Record<string, unknown> = {};
     for (const [key, entry] of Object.entries(value)) {
       const normalizedEntry = stripNullish(entry);
@@ -409,6 +405,15 @@ function stripNullish(value: unknown): unknown {
   }
 
   return value;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
 }
 
 function getErrorMessage(error: unknown): string {
