@@ -1,93 +1,24 @@
-use std::path::{Path, PathBuf};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 
 use super::error::CorsaResult;
 use super::materialize_fs::{ensure_dir, prune_dir_entries, remove_path, write_if_changed};
 use vize_carton::FxHashSet;
 
-const VUE_STUB_PACKAGE_JSON: &str = r#"{
+const VIZE_VUE_PACKAGE_ENV: &str = "VIZE_VUE_PACKAGE";
+const VIZE_RUNTIME_NODE_MODULES_ENV: &str = "VIZE_RUNTIME_NODE_MODULES";
+#[cfg(test)]
+const VIZE_TEST_WORKSPACE_NODE_MODULES_ENV: &str = "VIZE_TEST_WORKSPACE_NODE_MODULES";
+
+const VUE_FACADE_PACKAGE_JSON: &str = r#"{
   "name": "vue",
   "types": "index.d.ts"
 }
 "#;
 
-const VUE_STUB_TYPES: &str = r#"export interface Ref<T = any, S = T> {
-  value: T;
-}
-
-export interface ShallowRef<T = any, S = T> extends Ref<T, S> {}
-
-export interface ComputedRef<T = any> extends Readonly<Ref<T>> {
-  readonly value: T;
-}
-
-export type UnwrapRef<T> = T extends Ref<infer V, any> ? V : T;
-export type WatchStopHandle = () => void;
-export type LifecycleHook = () => void | Promise<void>;
-
-export type InjectionKey<T> = symbol & { readonly __vize_injection?: T };
-
-export interface ComponentCustomProperties {}
-
-export interface ComponentPublicInstance extends ComponentCustomProperties {
-  $attrs: any;
-  $slots: any;
-  $refs: any;
-  $emit: (...args: any[]) => void;
-}
-
-export type ObjectEmitsOptions = Record<string, ((...args: any[]) => any) | null>;
-export type EmitsOptions = ObjectEmitsOptions | string[];
-export type ComponentTypeEmits = ((...args: any[]) => any) | Record<string, any>;
-export type EmitsToProps<T extends EmitsOptions | ComponentTypeEmits> = T extends string[]
-  ? { [K in `on${Capitalize<T[number]>}`]?: (...args: any[]) => any }
-  : T extends ObjectEmitsOptions
-    ? { [K in string & keyof T as `on${Capitalize<K>}`]?: (...args: T[K] extends (...args: infer P) => any ? P : T[K] extends null ? any[] : never) => any }
-    : {};
-
-export interface App<Element = any> {
-  mount(rootContainer: string | Element): ComponentPublicInstance;
-  unmount(): void;
-  use(plugin: any, ...options: any[]): App<Element>;
-  provide<T>(key: InjectionKey<T> | string | symbol, value: T): App<Element>;
-  component(name: string, component?: any): any;
-}
-
-export type DefineComponent<
-  Props = any,
-  _RawBindings = any,
-  _Data = any,
-  _Computed = any,
-  _Methods = any,
-  _Mixin = any,
-  _Extends = any,
-  Emits = any,
-> = new (...args: any[]) => ComponentPublicInstance & {
-  $props: Props;
-  $emit: Emits extends (...args: any[]) => any ? Emits : (...args: any[]) => void;
-};
-
-export declare function ref<T>(value: T): Ref<T>;
-export declare function shallowRef<T>(value: T): ShallowRef<T>;
-export declare function computed<T>(getter: () => T): ComputedRef<T>;
-export declare function reactive<T extends object>(value: T): T;
-export declare function readonly<T>(value: T): Readonly<T>;
-export declare function createApp(rootComponent: any, rootProps?: any): App;
-export declare function createSSRApp(rootComponent: any, rootProps?: any): App;
-export declare function defineComponent<Props = any>(options: any): DefineComponent<Props>;
-export declare function provide<T>(key: InjectionKey<T> | string | symbol, value: T): void;
-export declare function inject<T>(key: InjectionKey<T> | string | symbol): T | undefined;
-export declare function inject<T>(key: InjectionKey<T> | string | symbol, defaultValue: T): T;
-export declare function watch<T>(source: any, cb: any): WatchStopHandle;
-export declare function watchEffect(effect: () => void | Promise<void>): WatchStopHandle;
-export declare function onMounted(hook: LifecycleHook): void;
-export declare function onUnmounted(hook: LifecycleHook): void;
-export declare function onBeforeMount(hook: LifecycleHook): void;
-export declare function onBeforeUnmount(hook: LifecycleHook): void;
-export declare function onBeforeUpdate(hook: LifecycleHook): void;
-export declare function onUpdated(hook: LifecycleHook): void;
-export declare function nextTick<T>(fn: () => T | Promise<T>): Promise<T>;
-export declare function nextTick(): Promise<void>;
-export declare function useTemplateRef<T = any>(key: string): ShallowRef<T | null>;
+const VUE_FACADE_TYPES: &str = r#"export * from "@vue/runtime-dom";
 "#;
 
 const VITE_STUB_PACKAGE_JSON: &str = r#"{
@@ -125,7 +56,7 @@ fn materialize_vue_support(project_root: &Path, node_modules_dir: &Path) -> std:
     let vue_target = node_modules_dir.join("vue");
     let vue_namespace_target = node_modules_dir.join("@vue");
 
-    if let Some(vue_source) = resolve_ancestor_package(project_root, "vue")
+    if let Some(vue_source) = resolve_vue_package(project_root)
         && symlink_path(&vue_source, &vue_target).is_ok()
     {
         if let Some(vue_namespace_source) = resolve_vue_namespace_package(project_root, &vue_source)
@@ -139,8 +70,23 @@ fn materialize_vue_support(project_root: &Path, node_modules_dir: &Path) -> std:
         return Ok(());
     }
 
+    if let Some(runtime_dom_source) = resolve_package(project_root, "@vue/runtime-dom") {
+        write_vue_facade(node_modules_dir)?;
+        if let Some(vue_namespace_source) =
+            resolve_adjacent_vue_namespace_package(&runtime_dom_source)
+        {
+            if symlink_path(&vue_namespace_source, &vue_namespace_target).is_err() {
+                remove_path(&vue_namespace_target)?;
+            }
+        } else {
+            remove_path(&vue_namespace_target)?;
+        }
+        return Ok(());
+    }
+
+    remove_path(&vue_target)?;
     remove_path(&vue_namespace_target)?;
-    write_vue_stub(node_modules_dir)
+    Ok(())
 }
 
 fn materialize_vite_support(project_root: &Path, node_modules_dir: &Path) -> std::io::Result<()> {
@@ -156,8 +102,23 @@ fn materialize_vite_support(project_root: &Path, node_modules_dir: &Path) -> std
 }
 
 fn resolve_vue_namespace_package(project_root: &Path, vue_source: &Path) -> Option<PathBuf> {
-    resolve_ancestor_package(project_root, "@vue")
-        .or_else(|| resolve_adjacent_vue_namespace_package(vue_source))
+    let adjacent = resolve_adjacent_vue_namespace_package(vue_source);
+    let ancestor = resolve_ancestor_package(project_root, "@vue");
+
+    adjacent
+        .as_ref()
+        .filter(|path| is_vue_runtime_namespace(path))
+        .cloned()
+        .or_else(|| {
+            ancestor
+                .as_ref()
+                .filter(|path| is_vue_runtime_namespace(path))
+                .cloned()
+        })
+        .or(adjacent)
+        .or(ancestor)
+        .or_else(|| resolve_package_from_runtime_node_modules("@vue"))
+        .or_else(|| resolve_test_workspace_package("@vue"))
 }
 
 fn resolve_adjacent_vue_namespace_package(vue_source: &Path) -> Option<PathBuf> {
@@ -173,14 +134,77 @@ fn resolve_adjacent_vue_namespace_package(vue_source: &Path) -> Option<PathBuf> 
         candidates.push(parent.join("@vue"));
     }
 
-    candidates.into_iter().find(|candidate| candidate.exists())
+    candidates
+        .iter()
+        .find(|candidate| candidate.exists() && is_vue_runtime_namespace(candidate))
+        .cloned()
+        .or_else(|| candidates.into_iter().find(|candidate| candidate.exists()))
+}
+
+fn is_vue_runtime_namespace(path: &Path) -> bool {
+    path.join("runtime-dom").exists() || path.join("runtime-core").exists()
+}
+
+fn resolve_vue_package(project_root: &Path) -> Option<PathBuf> {
+    resolve_ancestor_package(project_root, "vue")
+        .or_else(|| resolve_explicit_package_env(VIZE_VUE_PACKAGE_ENV))
+        .or_else(|| resolve_package_from_runtime_node_modules("vue"))
+        .or_else(|| resolve_test_workspace_package("vue"))
+}
+
+fn resolve_package(project_root: &Path, package: &str) -> Option<PathBuf> {
+    resolve_ancestor_package(project_root, package)
+        .or_else(|| resolve_package_from_runtime_node_modules(package))
+        .or_else(|| resolve_test_workspace_package(package))
+}
+
+fn resolve_explicit_package_env(name: &str) -> Option<PathBuf> {
+    env::var_os(name)
+        .map(PathBuf::from)
+        .filter(|path| path.exists())
+}
+
+fn resolve_package_from_runtime_node_modules(package: &str) -> Option<PathBuf> {
+    env::var_os(VIZE_RUNTIME_NODE_MODULES_ENV)
+        .into_iter()
+        .flat_map(|paths| env::split_paths(&paths).collect::<Vec<_>>())
+        .map(|node_modules| node_modules.join(package_path(package)))
+        .find(|candidate| candidate.exists())
+}
+
+fn package_path(package: &str) -> PathBuf {
+    package.split('/').collect()
+}
+
+#[cfg(test)]
+fn resolve_test_workspace_package(package: &str) -> Option<PathBuf> {
+    if let Some(override_path) = env::var_os(VIZE_TEST_WORKSPACE_NODE_MODULES_ENV) {
+        if override_path.as_os_str() == "__none__" {
+            return None;
+        }
+        let candidate = PathBuf::from(override_path).join(package_path(package));
+        return candidate.exists().then_some(candidate);
+    }
+
+    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)?;
+    let candidate = workspace_root
+        .join("node_modules")
+        .join(package_path(package));
+    candidate.exists().then_some(candidate)
+}
+
+#[cfg(not(test))]
+fn resolve_test_workspace_package(_package: &str) -> Option<PathBuf> {
+    None
 }
 
 fn resolve_ancestor_package(project_root: &Path, package: &str) -> Option<PathBuf> {
     let mut current = Some(project_root);
 
     while let Some(dir) = current {
-        let candidate = dir.join("node_modules").join(package);
+        let candidate = dir.join("node_modules").join(package_path(package));
         if candidate.exists() {
             return Some(candidate);
         }
@@ -190,14 +214,14 @@ fn resolve_ancestor_package(project_root: &Path, package: &str) -> Option<PathBu
     None
 }
 
-fn write_vue_stub(node_modules_dir: &Path) -> std::io::Result<()> {
+fn write_vue_facade(node_modules_dir: &Path) -> std::io::Result<()> {
     let vue_dir = node_modules_dir.join("vue");
     ensure_stub_dir(&vue_dir)?;
     write_if_changed(
         &vue_dir.join("package.json"),
-        VUE_STUB_PACKAGE_JSON.as_bytes(),
+        VUE_FACADE_PACKAGE_JSON.as_bytes(),
     )?;
-    write_if_changed(&vue_dir.join("index.d.ts"), VUE_STUB_TYPES.as_bytes())?;
+    write_if_changed(&vue_dir.join("index.d.ts"), VUE_FACADE_TYPES.as_bytes())?;
     prune_stub_dir(&vue_dir, &["package.json", "index.d.ts"])?;
     Ok(())
 }

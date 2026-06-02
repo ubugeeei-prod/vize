@@ -58,7 +58,8 @@
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
-    "oxc-transform": "catalog:oxc"
+    "oxc-transform": "catalog:oxc",
+    "vue": "catalog:vue-stable"
   },
   "devDependencies": {
     "@pkl-community/pkl": "catalog:repo-tooling",

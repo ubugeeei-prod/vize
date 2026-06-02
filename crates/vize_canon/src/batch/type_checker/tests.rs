@@ -490,7 +490,7 @@ function handleSelect(id: string): void {
 }
 
 #[test]
-fn batch_type_checker_stubs_common_vue_runtime_symbols_without_node_modules() {
+fn batch_type_checker_uses_workspace_vue_runtime_without_node_modules() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
@@ -530,7 +530,7 @@ onMounted(() => {
         snapshot.iter().all(
             |(_, code, message)| *code != Some(2305) && !message.contains("no exported member")
         ),
-        "unexpected vue runtime stub export diagnostic: {snapshot:#?}"
+        "unexpected bundled vue runtime export diagnostic: {snapshot:#?}"
     );
     assert!(
         snapshot.iter().any(|(file, code, _)| {
@@ -1166,44 +1166,7 @@ fn write_test_vue_stub(target: &Path) -> std::io::Result<()> {
     )?;
     std::fs::write(
         vue_dir.join("index.d.ts"),
-        r#"export interface Ref<T = any, S = T> {
-  value: T;
-}
-
-export interface ShallowRef<T = any, S = T> extends Ref<T, S> {}
-
-export interface ComponentPublicInstance {
-  $attrs: any;
-  $slots: any;
-  $refs: any;
-  $emit: (...args: any[]) => void;
-}
-
-export type ObjectEmitsOptions = Record<string, ((...args: any[]) => any) | null>;
-export type EmitsOptions = ObjectEmitsOptions | string[];
-export type ComponentTypeEmits = ((...args: any[]) => any) | Record<string, any>;
-export type EmitsToProps<T extends EmitsOptions | ComponentTypeEmits> = T extends string[]
-  ? { [K in `on${Capitalize<T[number]>}`]?: (...args: any[]) => any }
-  : T extends ObjectEmitsOptions
-    ? { [K in string & keyof T as `on${Capitalize<K>}`]?: (...args: T[K] extends (...args: infer P) => any ? P : T[K] extends null ? any[] : never) => any }
-    : {};
-
-export type DefineComponent<
-  Props = any,
-  _RawBindings = any,
-  _Data = any,
-  _Computed = any,
-  _Methods = any,
-  _Mixin = any,
-  _Extends = any,
-  Emits = any,
-> = new (...args: any[]) => ComponentPublicInstance & {
-  $props: Props;
-  $emit: Emits extends (...args: any[]) => any ? Emits : (...args: any[]) => void;
-};
-
-export declare function ref<T>(value: T): Ref<T>;
-export declare function useTemplateRef<T = any>(key: string): ShallowRef<T | null>;
+        r#"export * from "@vue/runtime-dom";
 "#,
     )?;
     Ok(())

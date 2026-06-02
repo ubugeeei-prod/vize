@@ -515,10 +515,17 @@ const value: Sibling = { count: 'not a number' }
 }
 
 #[test]
-fn check_options_api_can_import_define_component_from_stubbed_vue() {
+fn check_options_api_can_import_define_component_from_bundled_vue() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
+    let Some(workspace_node_modules) = resolve_workspace_node_modules() else {
+        return;
+    };
+    let bundled_vue = workspace_node_modules.join("vue");
+    if !bundled_vue.exists() {
+        return;
+    }
     let project_root = create_cli_project(
         "options-api-define-component",
         &[(
@@ -538,14 +545,15 @@ export default defineComponent({
         )],
     );
 
-    // Force the virtual project to use vize's fallback Vue stub instead of a
-    // workspace-linked full Vue installation.
+    // Force the virtual project to use the bundled CLI Vue fallback instead of
+    // a project-local full Vue installation.
     remove_path_if_exists(&project_root.join("node_modules").join("vue")).unwrap();
     remove_path_if_exists(&project_root.join("node_modules").join("@vue")).unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
+        .env("VIZE_VUE_PACKAGE", bundled_vue)
         .args([
             "check",
             "src/OptionsApi.vue",
@@ -2804,36 +2812,7 @@ fn write_test_vue_stub(target: &Path) -> std::io::Result<()> {
     )?;
     std::fs::write(
         vue_dir.join("index.d.ts"),
-        r#"export interface Ref<T = any, S = T> {
-  value: T;
-}
-
-export interface ShallowRef<T = any, S = T> extends Ref<T, S> {}
-
-export interface ComponentPublicInstance {
-  $attrs: any;
-  $slots: any;
-  $refs: any;
-  $emit: (...args: any[]) => void;
-}
-
-export type DefineComponent<
-  Props = any,
-  _RawBindings = any,
-  _Data = any,
-  _Computed = any,
-  _Methods = any,
-  _Mixin = any,
-  _Extends = any,
-  Emits = any,
-> = new (...args: any[]) => ComponentPublicInstance & {
-  $props: Props;
-  $emit: Emits extends (...args: any[]) => any ? Emits : (...args: any[]) => void;
-};
-
-export declare function ref<T>(value: T): Ref<T>;
-export declare function useTemplateRef<T = any>(key: string): ShallowRef<T | null>;
-export declare function defineComponent<Props = any>(options: any): DefineComponent<Props>;
+        r#"export * from "@vue/runtime-dom";
 "#,
     )?;
     Ok(())

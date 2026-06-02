@@ -746,6 +746,9 @@ importers:
       oxc-transform:
         specifier: catalog:oxc
         version: 0.130.0
+      vue:
+        specifier: catalog:vue-stable
+        version: 3.5.34(typescript@6.0.3)
     devDependencies:
       '@pkl-community/pkl':
         specifier: catalog:repo-tooling
