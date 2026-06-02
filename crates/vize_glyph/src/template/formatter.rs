@@ -122,6 +122,7 @@ impl<'a> TemplateFormatter<'a> {
                     output.push(b'<');
                     output.extend_from_slice(tag_name.as_bytes());
 
+                    let mut closing_bracket_on_own_line = false;
                     if !sorted_attrs.is_empty() {
                         let use_multiline =
                             self.should_use_multiline_attrs(&tag_name, &sorted_attrs, depth);
@@ -151,6 +152,7 @@ impl<'a> TemplateFormatter<'a> {
                             if !self.options.bracket_same_line {
                                 output.extend_from_slice(self.newline);
                                 self.write_indent(&mut output, depth);
+                                closing_bracket_on_own_line = true;
                             }
                         } else {
                             for attr in &sorted_attrs {
@@ -161,7 +163,11 @@ impl<'a> TemplateFormatter<'a> {
                     }
 
                     if is_self_closing {
-                        output.extend_from_slice(b" />");
+                        if closing_bracket_on_own_line {
+                            output.extend_from_slice(b"/>");
+                        } else {
+                            output.extend_from_slice(b" />");
+                        }
                     } else if !is_void_element_str(&tag_name)
                         && let Some(closing_end_pos) =
                             self.parse_immediate_empty_closing_tag(source, end_pos, &tag_name)

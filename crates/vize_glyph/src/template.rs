@@ -83,6 +83,25 @@ mod tests {
     }
 
     #[test]
+    fn test_multiline_self_closing_slash_aligns_with_opening_tag() {
+        let source = r#"<slot name="slide" :data="item" :index="index" :is-active="index === selectedIndex" :is-in-view="slidesInView.includes(index)" />"#;
+        let mut options = FormatOptions::default();
+        options.sort_attributes = false;
+        let result = format_template_content(source, &options).unwrap();
+
+        assert_eq!(
+            result.as_str(),
+            r#"<slot
+  name="slide"
+  :data="item"
+  :index="index"
+  :is-active="index === selectedIndex"
+  :is-in-view="slidesInView.includes(index)"
+/>"#
+        );
+    }
+
+    #[test]
     fn test_empty_element_stays_inline() {
         let source = "<div>\n</div>";
         let options = FormatOptions::default();
