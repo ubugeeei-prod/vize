@@ -70,9 +70,13 @@
     "vite-plus": "catalog:vite-stack"
   },
   "peerDependencies": {
-    "@pkl-community/pkl": "catalog:repo-tooling"
+    "@pkl-community/pkl": "catalog:repo-tooling",
+    "@typescript/native-preview": "catalog:typescript"
   },
   "peerDependenciesMeta": {
+    "@typescript/native-preview": {
+      "optional": true
+    },
     "@pkl-community/pkl": {
       "optional": true
     }

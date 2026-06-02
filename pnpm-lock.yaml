@@ -737,6 +737,9 @@ importers:
 
   npm/vize:
     dependencies:
+      '@typescript/native-preview':
+        specifier: catalog:typescript
+        version: 7.0.0-dev.20260514.1
       '@vizejs/native':
         specifier: workspace:*
         version: link:../vize-native
