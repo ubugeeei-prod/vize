@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts.rs
-assertion_line: 41
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -93,15 +92,10 @@ function __setup() {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  if ((status === 'loading')) {
-    void (status === 'loading'); // VIf
+  if (status === 'loading') {
     // @vize-map: expr -> 19:39
-  }
-  if (!(status === 'loading') && (status === 'error')) {
-    void (status === 'error'); // VIf
+  } else if (status === 'error') {
     // @vize-map: expr -> 73:91
-  }
-  if (!(status === 'loading') && (status === 'error')) {
     void (message); // Interpolation
     // @vize-map: expr -> 96:103
   }

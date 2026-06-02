@@ -15,7 +15,7 @@ use vize_croquis::{
 };
 
 use super::{
-    expressions::{generate_component_prop_checks, generate_expression},
+    expressions::{generate_component_prop_checks, generate_expressions},
     helpers::{
         generated_text_range, get_dom_event_type, to_camel_case, to_safe_identifier,
         to_safe_identifier_fragment,
@@ -137,19 +137,14 @@ pub(crate) fn generate_scope_closures(
             if let Some(exprs) = expressions_by_scope.get(&scope_id)
                 && check_options.check_template_bindings
             {
-                for expr in exprs {
-                    profile!(
-                        "canon.virtual_ts.generate_expression",
-                        generate_expression(
-                            ts,
-                            mappings,
-                            expr,
-                            template_prop_names,
-                            template_offset,
-                            "  "
-                        )
-                    );
-                }
+                generate_expressions(
+                    ts,
+                    mappings,
+                    exprs,
+                    template_prop_names,
+                    template_offset,
+                    "  ",
+                );
             }
             continue;
         }
@@ -640,19 +635,14 @@ fn generate_scope_node(
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
                 && ctx.check_options.check_template_bindings
             {
-                for expr in exprs {
-                    profile!(
-                        "canon.virtual_ts.generate_expression",
-                        generate_expression(
-                            ts,
-                            mappings,
-                            expr,
-                            ctx.template_prop_names,
-                            ctx.template_offset,
-                            &inner_indent
-                        )
-                    );
-                }
+                generate_expressions(
+                    ts,
+                    mappings,
+                    exprs,
+                    ctx.template_prop_names,
+                    ctx.template_offset,
+                    &inner_indent,
+                );
             }
 
             // Recursively generate child scopes inside this closure
@@ -688,19 +678,14 @@ fn generate_scope_node(
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
                 && ctx.check_options.check_template_bindings
             {
-                for expr in exprs {
-                    profile!(
-                        "canon.virtual_ts.generate_expression",
-                        generate_expression(
-                            ts,
-                            mappings,
-                            expr,
-                            ctx.template_prop_names,
-                            ctx.template_offset,
-                            &inner_indent
-                        )
-                    );
-                }
+                generate_expressions(
+                    ts,
+                    mappings,
+                    exprs,
+                    ctx.template_prop_names,
+                    ctx.template_offset,
+                    &inner_indent,
+                );
             }
 
             // Recursively generate child scopes inside this closure
@@ -801,19 +786,14 @@ fn generate_scope_node(
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
                 && ctx.check_options.check_template_bindings
             {
-                for expr in exprs {
-                    profile!(
-                        "canon.virtual_ts.generate_expression",
-                        generate_expression(
-                            ts,
-                            mappings,
-                            expr,
-                            ctx.template_prop_names,
-                            ctx.template_offset,
-                            indent
-                        )
-                    );
-                }
+                generate_expressions(
+                    ts,
+                    mappings,
+                    exprs,
+                    ctx.template_prop_names,
+                    ctx.template_offset,
+                    indent,
+                );
             }
         }
     }

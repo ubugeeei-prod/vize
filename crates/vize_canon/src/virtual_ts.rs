@@ -421,6 +421,56 @@ const message = ref('')
     }
 
     #[test]
+    fn test_v_else_if_chain_uses_linear_control_flow() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"type Log =
+  | { type: 't0'; info: { value0: string } }
+  | { type: 't1'; info: { value1: string } }
+  | { type: 't2'; info: { value2: string } }
+
+defineProps<{ log: Log }>()
+"#;
+        let template = r#"<div>
+  <span v-if="log.type === 't0'">{{ log.info.value0 }}</span>
+  <span v-else-if="log.type === 't1'">{{ log.info.value1 }}</span>
+  <span v-else-if="log.type === 't2'">{{ log.info.value2 }}</span>
+</div>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert!(
+            output.code.contains("if (log.type === 't0') {"),
+            "expected first branch to use native control flow:\n{}",
+            output.code
+        );
+        assert!(
+            output.code.contains("} else if (log.type === 't1') {")
+                && output.code.contains("} else if (log.type === 't2') {"),
+            "expected else-if branches to use native control flow:\n{}",
+            output.code
+        );
+        assert!(
+            !output.code.contains("!(log.type === 't0') &&"),
+            "virtual TS should not repeat cumulative negated branch guards:\n{}",
+            output.code
+        );
+        assert!(
+            !output.code.contains("void (log.type === 't1'); // VIf"),
+            "branch conditions should not be emitted again inside the branch body:\n{}",
+            output.code
+        );
+    }
+
+    #[test]
     fn test_scoped_slot_expressions() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 
