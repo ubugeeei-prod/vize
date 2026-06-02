@@ -39,6 +39,46 @@ fn test_lint_template_uses_semantic_analysis_for_unused_v_for_vars() {
 }
 
 #[test]
+fn test_lint_template_reports_unused_v_for_alias_at_alias_span() {
+    let linter =
+        Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-vars".to_compact_string()]));
+    let source = r#"<template>
+<div>
+  <span v-for="(item, i) in items" :key="item">{{ item }}</span>
+  <span v-for="(entry, j) in items" :key="entry">{{ entry }}</span>
+</div>
+</template>
+<script setup>
+const items = ['a', 'b'];
+</script>"#;
+    let result = linter.lint_sfc(source, "test.vue");
+
+    assert_eq!(result.warning_count, 2);
+
+    let i_start = source.find(", i)").unwrap() as u32 + 2;
+    let j_start = source.find(", j)").unwrap() as u32 + 2;
+    let i_diagnostic = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.message.contains("'i'"))
+        .expect("unused i alias should be reported");
+    let j_diagnostic = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.message.contains("'j'"))
+        .expect("unused j alias should be reported");
+
+    assert_eq!(
+        (i_diagnostic.start, i_diagnostic.end),
+        (i_start, i_start + 1)
+    );
+    assert_eq!(
+        (j_diagnostic.start, j_diagnostic.end),
+        (j_start, j_start + 1)
+    );
+}
+
+#[test]
 fn test_ecosystem_template_rules_are_enabled_by_default() {
     let source = r#"<template><RouterLink>Home</RouterLink></template>"#;
 
