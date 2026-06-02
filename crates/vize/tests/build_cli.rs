@@ -1,0 +1,103 @@
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
+
+fn temp_project_dir(test_name: &str) -> PathBuf {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    std::env::temp_dir().join(format!(
+        "vize-build-cli-{}-{}-{}",
+        std::process::id(),
+        test_name,
+        nonce
+    ))
+}
+
+fn write_project_file(root: &Path, path: &str, content: &str) {
+    let file_path = root.join(path);
+    if let Some(parent) = file_path.parent() {
+        fs::create_dir_all(parent).unwrap();
+    }
+    fs::write(file_path, content).unwrap();
+}
+
+#[test]
+fn build_resolves_imported_base_interface_props_in_normal_script() {
+    let project_root = temp_project_dir("imported-base-interface-props");
+    write_project_file(
+        &project_root,
+        "src/primitive.ts",
+        r#"export interface PrimitiveProps {
+  asChild?: boolean
+  as?: string
+}
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "src/App.vue",
+        r#"<script lang="ts">
+import type { PrimitiveProps } from './primitive'
+
+export interface AppProps extends PrimitiveProps {
+  feature?: 'focusable' | 'hidden'
+}
+</script>
+
+<script setup lang="ts">
+withDefaults(defineProps<AppProps>(), {
+  as: 'span',
+  feature: 'focusable',
+})
+</script>
+
+<template>
+  <div
+    :data-as="as"
+    :data-as-child="asChild"
+    :data-feature="feature"
+  />
+</template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["build", "--format", "js", "src/App.vue", "--output", "dist"])
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let js = fs::read_to_string(project_root.join("dist/App.js")).unwrap();
+    assert!(
+        js.contains("asChild: {\n      type: Boolean,\n      required: false\n    }"),
+        "{js}"
+    );
+    assert!(
+        js.contains(
+            "as: {\n      type: String,\n      required: false,\n      default: \"span\"\n    }"
+        ),
+        "{js}"
+    );
+    assert!(
+        js.contains("feature: {\n      type: String,\n      required: false,\n      default: \"focusable\"\n    }"),
+        "{js}"
+    );
+    assert!(js.contains("\"data-as\": __props.as"), "{js}");
+    assert!(js.contains("\"data-as-child\": __props.asChild"), "{js}");
+    assert!(js.contains("\"data-feature\": __props.feature"), "{js}");
+    assert!(!js.contains("_ctx.as"), "{js}");
+    assert!(!js.contains("_ctx.asChild"), "{js}");
+
+    let _ = fs::remove_dir_all(project_root);
+}

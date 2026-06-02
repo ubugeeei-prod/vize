@@ -737,6 +737,7 @@ fn compile_file_stats_with_cache(
         .and_then(|n| n.to_str())
         .unwrap_or("anonymous.vue")
         .into();
+    let source_id = path.to_string_lossy().as_ref().to_compact_string();
     let component_name = path.file_stem().and_then(|n| n.to_str()).unwrap_or("");
     let cache_key =
         should_cache_stats_compile(&source, component_name).then(|| StatsCompileCacheKey {
@@ -836,7 +837,7 @@ fn compile_file_stats_with_cache(
             ..Default::default()
         },
         script: ScriptCompileOptions {
-            id: Some(filename.clone()),
+            id: Some(source_id),
             is_ts,
             ..Default::default()
         },
@@ -949,6 +950,7 @@ fn compile_file_with_profile(
         .and_then(|n| n.to_str())
         .unwrap_or("anonymous.vue")
         .into();
+    let source_id = path.to_string_lossy().as_ref().to_compact_string();
 
     // Parse
     let parse_start = Instant::now();
@@ -1006,7 +1008,7 @@ fn compile_file_with_profile(
             ..Default::default()
         },
         script: ScriptCompileOptions {
-            id: Some(filename.clone()),
+            id: Some(source_id),
             is_ts,
             ..Default::default()
         },

@@ -134,7 +134,12 @@ fn compile_sfc_inner(
     let mut css = None;
     let macro_artifacts = extract_descriptor_macro_artifacts(descriptor);
 
-    let filename = options.script.id.as_deref().unwrap_or("anonymous.vue");
+    let filename = if options.parse.filename.is_empty() {
+        options.script.id.as_deref().unwrap_or("anonymous.vue")
+    } else {
+        options.parse.filename.as_str()
+    };
+    let source_filename = options.script.id.as_deref().unwrap_or(filename);
 
     let has_styles = !descriptor.styles.is_empty();
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
@@ -489,13 +494,13 @@ fn compile_sfc_inner(
     }
     profile!(
         "atelier.sfc.script_context.collect_setup_import_types",
-        ctx.collect_imported_types_from_path(&script_setup_content, filename)
+        ctx.collect_imported_types_from_path(&script_setup_content, source_filename)
     );
     if has_script {
         let script = descriptor.script.as_ref().unwrap();
         profile!(
             "atelier.sfc.script_context.collect_normal_import_types",
-            ctx.collect_imported_types_from_path(&script.content, filename)
+            ctx.collect_imported_types_from_path(&script.content, source_filename)
         );
     }
     profile!("atelier.sfc.script_context.analyze", ctx.analyze());
@@ -698,7 +703,7 @@ fn compile_sfc_inner(
             normal_script_content.as_deref(),
             &descriptor.css_vars,
             &scope_id,
-            options.script.id.as_deref().unwrap_or(filename),
+            filename,
             options.template.is_prod,
         )
     )?;
