@@ -164,8 +164,10 @@ pub struct ComponentUsage {
     pub name: CompactString,
     /// Start offset in template
     pub start: u32,
-    /// End offset in template, including the component's children.
+    /// End offset of the component's opening tag in template.
     pub end: u32,
+    /// End offset of the component's full subtree, including children.
+    pub subtree_end: u32,
     /// Props passed to this component (stack-allocated for ≤8 props)
     pub props: SmallVec<[PassedProp; 8]>,
     /// Event listeners on this component (stack-allocated for ≤4 events)

@@ -28,6 +28,7 @@ fn component_usage(component: &str) -> ComponentUsage {
         name: CompactString::new(component),
         start: 0,
         end: component.len() as u32,
+        subtree_end: component.len() as u32,
         props: SmallVec::new(),
         events: SmallVec::new(),
         slots: SmallVec::new(),
