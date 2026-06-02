@@ -842,6 +842,76 @@ const props = defineProps<PublicProps>()
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[test]
+fn batch_type_checker_declaration_emit_keeps_paths_alias_imports_in_virtual_project() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "declaration-path-alias",
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import { answer } from '@/helper'
+
+const value = answer
+</script>
+
+<template>
+  <div>{{ value }}</div>
+</template>
+"#,
+            ),
+            ("src/helper.ts", "export const answer = 42;\n"),
+            (
+                "src/index.ts",
+                r#"export { default as App } from './App.vue'
+export { answer } from '@/helper'
+"#,
+            ),
+        ],
+    );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}"#,
+    )
+    .unwrap();
+
+    let mut checker = match BatchTypeChecker::new(&project_root) {
+        Ok(checker) => checker,
+        Err(_) => return,
+    };
+    checker.scan_project().unwrap();
+    let out_dir = project_root.join("types");
+    let emitted = checker
+        .emit_declarations(&DeclarationEmitOptions::new(out_dir.clone()))
+        .unwrap();
+    let mut paths: Vec<_> = emitted
+        .files
+        .into_iter()
+        .map(|file| relative_path(&out_dir, &file.path))
+        .collect();
+    paths.sort();
+
+    assert_eq!(paths, vec!["App.vue.d.ts", "helper.d.ts", "index.d.ts"]);
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 fn relative_path(root: &std::path::Path, file: &std::path::Path) -> String {
     file.strip_prefix(root)
         .map(|path| cstr!("{}", path.display()))
