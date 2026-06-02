@@ -100,6 +100,12 @@ pub struct InspectorArgs {
     pub vue_parser_quirks: bool,
 }
 
+/// Build and print an inspector payload after collecting source files once.
+///
+/// `collect_files` intentionally honors ignore files before the expensive SFC
+/// parse/compile work starts. Inspector payload generation is often pointed at
+/// repository roots, so letting ignored benchmark output or dependency mirrors
+/// into the payload would dominate runtime and produce URLs too large to use.
 pub fn run(args: InspectorArgs) {
     let files = collect_files(&args.patterns, args.max_files);
     if files.is_empty() {

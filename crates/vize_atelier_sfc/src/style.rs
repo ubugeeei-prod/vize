@@ -108,14 +108,20 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
                 } else if in_selector && brace_depth == 1 {
                     // End of selector at root level, apply scope
                     let selector_part = &current[last_selector_end..current.len() - 1];
-                    output.push_str(&scope_selector(selector_part.trim(), &attr_selector));
+                    output.push_str(&scope_selector_with_leading_comments(
+                        selector_part,
+                        &attr_selector,
+                    ));
                     output.push('{');
                     in_selector = false;
                     last_selector_end = current.len();
                 } else if in_selector && at_rule_depth > 0 && brace_depth > at_rule_depth {
                     // End of selector inside at-rule (e.g., inside @media), apply scope
                     let selector_part = &current[last_selector_end..current.len() - 1];
-                    output.push_str(&scope_selector(selector_part.trim(), &attr_selector));
+                    output.push_str(&scope_selector_with_leading_comments(
+                        selector_part,
+                        &attr_selector,
+                    ));
                     output.push('{');
                     in_selector = false;
                     last_selector_end = current.len();
@@ -180,6 +186,46 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
     }
 
     output
+}
+
+/// Add scope to selector text while preserving leading CSS comments verbatim.
+fn scope_selector_with_leading_comments(selector: &str, attr_selector: &str) -> String {
+    let Some(prefix_end) = leading_css_comment_trivia_end(selector) else {
+        return scope_selector(selector.trim(), attr_selector);
+    };
+
+    let mut output = String::with_capacity(selector.len() + attr_selector.len());
+    output.push_str(&selector[..prefix_end]);
+
+    let selector_body = selector[prefix_end..].trim();
+    if !selector_body.is_empty() {
+        output.push_str(&scope_selector(selector_body, attr_selector));
+    }
+
+    output
+}
+
+fn leading_css_comment_trivia_end(value: &str) -> Option<usize> {
+    let mut cursor = 0usize;
+    let mut found_comment = false;
+
+    loop {
+        let ws_end = value[cursor..]
+            .char_indices()
+            .find(|(_, char)| !char.is_whitespace())
+            .map_or(value.len(), |(index, _)| cursor + index);
+        cursor = ws_end;
+
+        if !value[cursor..].starts_with("/*") {
+            return found_comment.then_some(cursor);
+        }
+
+        found_comment = true;
+        let Some(end) = value[cursor + 2..].find("*/") else {
+            return Some(value.len());
+        };
+        cursor += 2 + end + 2;
+    }
 }
 
 /// Add scope attribute to a selector
@@ -279,15 +325,7 @@ fn transform_deep(selector: &str, attr_selector: &str) -> String {
             let inner = &after[..end];
             let rest = &after[end + 1..];
 
-            let scoped_before = if before.is_empty() {
-                attr_selector.to_compact_string()
-            } else {
-                let trimmed = before.trim();
-                let mut result = String::with_capacity(trimmed.len() + attr_selector.len());
-                result.push_str(trimmed);
-                result.push_str(attr_selector);
-                result
-            };
+            let scoped_before = scope_deep_prefix(before, attr_selector);
 
             let mut result =
                 String::with_capacity(scoped_before.len() + inner.len() + rest.len() + 1);
@@ -300,6 +338,40 @@ fn transform_deep(selector: &str, attr_selector: &str) -> String {
     }
 
     selector.to_compact_string()
+}
+
+fn scope_deep_prefix(before: &str, attr_selector: &str) -> String {
+    let before = before.trim_end();
+    if before.is_empty() {
+        return attr_selector.to_compact_string();
+    }
+
+    let Some(combinator_start) = trailing_combinator_start(before) else {
+        return scope_single_selector(before.trim(), attr_selector);
+    };
+
+    let target_end = before[..combinator_start].trim_end().len();
+    if target_end == 0 {
+        let mut result = String::with_capacity(attr_selector.len() + before.len());
+        result.push_str(attr_selector);
+        result.push_str(&before[combinator_start..]);
+        return result;
+    }
+
+    let scoped_target = scope_single_selector(&before[..target_end], attr_selector);
+    let mut result = String::with_capacity(scoped_target.len() + before.len() - target_end);
+    result.push_str(&scoped_target);
+    result.push_str(&before[target_end..]);
+    result
+}
+
+fn trailing_combinator_start(value: &str) -> Option<usize> {
+    let bytes = value.as_bytes();
+    match bytes.last().copied()? {
+        b'>' | b'+' | b'~' => Some(bytes.len() - 1),
+        b'|' if bytes.len() >= 2 && bytes[bytes.len() - 2] == b'|' => Some(bytes.len() - 2),
+        _ => None,
+    }
 }
 
 /// Transform :slotted() for slot content
@@ -380,6 +452,44 @@ mod tests {
     fn test_transform_deep() {
         let result = transform_deep(":deep(.child)", "[data-v-123]");
         assert_eq!(result, "[data-v-123] .child");
+    }
+
+    #[test]
+    fn test_transform_deep_after_child_combinator() {
+        let result = transform_deep(".sponsors__item > :deep(.sponsor)", "[data-v-123]");
+        assert_eq!(result, ".sponsors__item[data-v-123] > .sponsor");
+    }
+
+    #[test]
+    fn test_apply_scoped_css_deep_after_child_combinator() {
+        let css = ".sponsors__item > :deep(.sponsor) { width: 100%; }";
+        let result = apply_scoped_css(css, "data-v-123");
+        assert_eq!(
+            result,
+            ".sponsors__item[data-v-123] > .sponsor{ width: 100%; }"
+        );
+    }
+
+    #[test]
+    fn test_apply_scoped_css_preserves_deep_comment_before_selector() {
+        let css = "/* override :deep(p) from the parent */\n.foo { color: red; }";
+        let result = apply_scoped_css(css, "data-v-123");
+
+        assert_eq!(
+            result,
+            "/* override :deep(p) from the parent */\n.foo[data-v-123]{ color: red; }"
+        );
+    }
+
+    #[test]
+    fn test_apply_scoped_css_preserves_deep_comment_inside_at_rule() {
+        let css = "@media (min-width: 1px) { /* A <span>, not a <p>; ignore :deep(p). */\n.conferences__venue { display: block; } }";
+        let result = apply_scoped_css(css, "data-v-abc");
+
+        assert_eq!(
+            result,
+            "@media (min-width: 1px){ /* A <span>, not a <p>; ignore :deep(p). */\n.conferences__venue[data-v-abc]{ display: block; }}"
+        );
     }
 
     #[test]

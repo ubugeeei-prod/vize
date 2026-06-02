@@ -7,7 +7,8 @@
     "bench:vite": "node vite.ts",
     "bench:lint": "node lint.ts",
     "bench:check": "node check.ts",
-    "bench:fmt": "node fmt.ts"
+    "bench:fmt": "node fmt.ts",
+    "compare-tools": "node compare-tools.mjs"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:vite-stack",

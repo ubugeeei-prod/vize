@@ -98,24 +98,23 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
         }
 
         // In inline mode, known refs are accessed with `.value`. In function
-        // mode, setup bindings live on `$setup` and must be unwrapped when
-        // read from templates.
-        if let Some(kind) = self.ctx.get_reactive_kind(name) {
-            return !self.ctx.options.inline && kind.needs_value_access();
+        // mode, setup bindings are read through Vue's `$setup` proxy, matching
+        // @vue/compiler-sfc output.
+        if self.ctx.get_reactive_kind(name).is_some() {
+            return false;
         }
 
-        // Fallback: SetupLet/SetupMaybeRef have unknown type, need _unref().
-        // SetupRef also needs _unref in function mode because `$setup.foo`
-        // refers to the raw ref/computed object.
+        // Fallback: SetupLet/SetupMaybeRef have unknown type and need
+        // _unref() only when they are captured by an inline render closure.
         if let Some(bindings) = &self.ctx.options.binding_metadata
             && let Some(binding_type) = bindings.bindings.get(name)
         {
-            return match binding_type {
-                crate::options::BindingType::SetupRef => !self.ctx.options.inline,
-                crate::options::BindingType::SetupLet
-                | crate::options::BindingType::SetupMaybeRef => true,
-                _ => false,
-            };
+            return self.ctx.options.inline
+                && matches!(
+                    binding_type,
+                    crate::options::BindingType::SetupLet
+                        | crate::options::BindingType::SetupMaybeRef
+                );
         }
         false
     }
@@ -257,7 +256,7 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
                 self.rewrites
                     .insert((ident.span.start as usize, String::new(prefix)));
             }
-            if self.is_ref_binding(name) || needs_unref {
+            if self.ctx.options.inline && (self.is_ref_binding(name) || needs_unref) {
                 // For assignment targets wrapped in parens like ((model) = $event),
                 // we need to place .value after the closing paren: ((model).value = $event)
                 // Scan forward from ident.span.end to skip past ')' characters
@@ -272,8 +271,6 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         }
 
         if let Some(prefix) = get_identifier_prefix(name, self.ctx) {
-            // In function mode, SetupLet bindings need both $setup. prefix and _unref() wrapper
-            // Result: _unref($setup.b) instead of just $setup.b
             if needs_unref && prefix == "$setup." {
                 self.rewrites
                     .insert((ident.span.start as usize, String::new("_unref($setup.")));
@@ -380,16 +377,13 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
             // or needs _unref() wrapping.
             // In inline mode, refs have no prefix but need .value, so shorthand
             // { hasForm } must become { hasForm: hasForm.value } (not { hasForm.value }).
-            // Similarly, SetupLet/SetupMaybeRef bindings need _unref():
+            // Similarly, inline SetupLet/SetupMaybeRef bindings need _unref():
             // { paddingBottom } must become { paddingBottom: _unref(paddingBottom) }
             if prefix.is_some_and(|p| !p.is_empty()) || is_ref || needs_unref {
                 let p = prefix.unwrap_or("");
                 let (value_prefix, value_suffix) = if needs_unref && p.is_empty() {
                     // Inline mode: wrap with _unref()
                     ("_unref(", ")")
-                } else if needs_unref && p == "$setup." {
-                    // Function mode: wrap with _unref($setup.)
-                    ("_unref($setup.", ")")
                 } else if is_ref {
                     ("", ".value")
                 } else {

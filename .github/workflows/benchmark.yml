@@ -187,6 +187,7 @@ jobs:
     name: pr-benchmark-comment
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     needs:
       - pr-benchmark
     permissions:

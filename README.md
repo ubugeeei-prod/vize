@@ -114,8 +114,7 @@ language-facing change-class guidance.
 
 ## Credits
 
-This project draws inspiration from
-[Volar.js](https://github.com/volarjs/volar.js),
+This project draws inspiration from [Volar.js](https://github.com/volarjs/volar.js),
 [vuejs/language-tools](https://github.com/vuejs/language-tools),
 [eslint-plugin-vue](https://github.com/vuejs/eslint-plugin-vue),
 [eslint-plugin-vuejs-accessibility](https://github.com/vue-a11y/eslint-plugin-vuejs-accessibility),
@@ -130,8 +129,10 @@ Special thanks to:
   Misskey, including many compiler-focused bug reports.
 - [ushironoko](https://github.com/ushironoko) for compiler, linter, and CLI bug reports,
   reference implementations, and reproduction repositories.
-- [dannote](https://github.com/dannote) for Elixier ecosystem feedback and pull requests,
-  especially for CSS-facing APIs and fixes.
+- [dannote](https://github.com/dannote) for Elixier feedback, PRs, and CSS-facing fixes.
+- [n13u](https://x.com/%5Fn13u%5F) and `#frontend_phpcon_do` for Nuxt build debugging, reports,
+  and production validation
+  ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)).
 - Everyone who has mentioned, shared, tested, or amplified Vize across the community.
 
 ## License

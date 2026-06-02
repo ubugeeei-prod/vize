@@ -1,4 +1,11 @@
-/** Convert character offset to line/column (1-based for Monaco) */
+/**
+ * Convert a JavaScript string offset to line/column (1-based for Monaco).
+ *
+ * The loop uses `charCodeAt` instead of slicing/splitting so diagnostics can map
+ * many offsets without allocating one substring or array per lookup. This helper
+ * is intentionally simple because playground diagnostics call it on every
+ * reported issue.
+ */
 export function offsetToLineColumn(
   source: string,
   offset: number,

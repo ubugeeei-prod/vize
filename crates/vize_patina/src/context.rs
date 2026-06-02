@@ -269,6 +269,10 @@ impl<'a> LintContext<'a> {
     }
 
     /// Compute line offsets for fast line number lookup.
+    ///
+    /// Diagnostics ask for byte-offset-to-line conversion repeatedly during one
+    /// lint pass. Building this table once with `memchr` turns those lookups
+    /// into binary searches instead of rescanning the source for every report.
     fn compute_line_offsets(source: &str) -> Vec<u32> {
         let mut offsets = vec![0];
         for offset in memchr_iter(b'\n', source.as_bytes()) {

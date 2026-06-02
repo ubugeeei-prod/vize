@@ -136,10 +136,15 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
     output += "\nexport default _sfc_main;";
   }
 
-  // Determine whether to use delegated style imports or inline CSS injection
-  const useDelegatedStyles = hasDelegatedStyles(compiled) && filePath;
+  // Determine whether to use style imports or inline CSS injection.
+  // Production CSS extraction must still import plain CSS through Vite so its
+  // CSS pipeline can apply nesting, minification, and chunk graph ownership.
+  const useStyleImports =
+    !!filePath &&
+    !!compiled.styles?.length &&
+    (hasDelegatedStyles(compiled) || (!ssr && isProduction && extractCss));
 
-  if (useDelegatedStyles) {
+  if (useStyleImports) {
     // --- Delegated style handling ---
     // Some style blocks require Vite's CSS pipeline (preprocessor or CSS Modules).
     // Emit virtual style imports for ALL blocks so Vite handles them uniformly.

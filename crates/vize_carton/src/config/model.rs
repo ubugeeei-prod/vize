@@ -103,6 +103,11 @@ struct LegacyCheckConfig {
 }
 
 impl RawVizeConfig {
+    /// Normalize raw config and derive auxiliary feature flags once.
+    ///
+    /// Legacy aliases (`check`, `fmt`, `lsp`) are folded here while the raw
+    /// object is still owned. Callers that also need linter settings clone them
+    /// before this conversion, which avoids a second deserialization pass.
     pub(crate) fn into_config_and_features(self) -> (VizeConfig, ConfigFeatureFlags) {
         let RawVizeConfig {
             schema,

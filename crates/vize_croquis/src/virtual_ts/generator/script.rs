@@ -426,6 +426,12 @@ impl VirtualTsGenerator {
     }
 }
 
+/// Find a relative `from "./..."` import range with a byte scanner.
+///
+/// Script virtual-TS generation calls this for every import-looking line. A
+/// regex was measurably expensive in that loop, and the grammar we need is
+/// intentionally narrow: skip to `from`, require whitespace, accept a quoted
+/// path that begins with `.`, then return the path slice boundaries.
 fn find_relative_import_from_range(line: &str) -> Option<(usize, usize, usize, usize)> {
     let bytes = line.as_bytes();
     let mut search_start = 0;

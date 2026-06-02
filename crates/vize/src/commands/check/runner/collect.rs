@@ -98,6 +98,10 @@ fn collect_from_dir_filtered(
     vue_only: bool,
     matcher: Option<&InputGlob>,
 ) {
+    // Walk with the `ignore` crate so repository-level ignore rules prune whole
+    // subtrees before we test patterns. The root path is canonicalized once and
+    // reattached to each relative entry below; doing `canonicalize` per file was
+    // the old hot path when checking large workspaces.
     let skip_generated = should_skip_generated_for_root(dir);
     let normalized_dir = normalize_input_path(dir);
     let walker = WalkBuilder::new(dir)

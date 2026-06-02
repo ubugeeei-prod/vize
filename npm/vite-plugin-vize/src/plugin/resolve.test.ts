@@ -101,6 +101,23 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const tempRoot = createTempRoot("style-query");
+  const source = path.join(tempRoot, "Styled.vue");
+  fs.writeFileSync(source, "<template /><style scoped>.root { color: red; }</style>");
+  const id = `${source}?vue=&type=style&index=0&scoped=data-v-resolve&lang=css`;
+
+  const state = createState(tempRoot);
+  state.server = null;
+  const resolved = await resolveIdHook(nullResolveContext, state, id, undefined, undefined);
+
+  assert.equal(
+    expectResolvedId(resolved),
+    `${id}.css`,
+    "Vue style queries should resolve to CSS-visible virtual style IDs in build mode",
+  );
+}
+
+{
   const tempRoot = createTempRoot("define-page");
   const source = path.join(tempRoot, "Home.vue");
   fs.writeFileSync(source, "<script setup>definePage({})</script>");
@@ -389,6 +406,71 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     expectResolvedId(resolved),
     vueBundlerEntry,
     "Build virtual SFC imports must resolve Vue to an ESM bundler entry, not the CommonJS package entry",
+  );
+}
+
+{
+  const projectRoot = createTempProject("build-vue-compiled-importer");
+  const importer = path.join(projectRoot, "app", "pages", "index.vue");
+  const compiledImporter = `${importer}.ts`;
+  const vueRoot = path.join(projectRoot, "node_modules", "vue");
+  const vueBundlerEntry = path.join(vueRoot, "dist", "vue.runtime.esm-bundler.js");
+  writeFixtureFile(
+    path.join(vueRoot, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(vueRoot, "index.js"), "module.exports = {};");
+  writeFixtureFile(vueBundlerEntry, "export const resolveComponent = () => null;");
+
+  const state = createState(projectRoot);
+  state.server = null;
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async (id) => (id === "vue" ? { id: "#entry" } : null),
+    },
+    state,
+    "vue",
+    compiledImporter,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    vueBundlerEntry,
+    "Build imports from compiled .vue.ts modules must not let Nuxt's #entry alias replace Vue runtime imports",
+  );
+}
+
+{
+  const projectRoot = createTempProject("build-vue-plain-sfc-importer");
+  const importer = path.join(projectRoot, "app", "pages", "index.vue");
+  const vueRoot = path.join(projectRoot, "node_modules", "vue");
+  const vueBundlerEntry = path.join(vueRoot, "dist", "vue.runtime.esm-bundler.js");
+  writeFixtureFile(
+    path.join(vueRoot, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(vueRoot, "index.js"), "module.exports = {};");
+  writeFixtureFile(vueBundlerEntry, "export const resolveComponent = () => null;");
+
+  const state = createState(projectRoot);
+  state.server = null;
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async (id) => (id === "vue" ? { id: "#entry" } : null),
+    },
+    state,
+    "vue",
+    importer,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    vueBundlerEntry,
+    "Build imports from Vue SFC modules should bypass Nuxt's #entry alias for Vue runtime helpers",
   );
 }
 
@@ -704,6 +786,26 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("style-query");
+  const source = path.join(projectRoot, "app", "components", "Styled.vue");
+  writeFixtureFile(source, "<template><div /></template><style>.root{}</style>");
+
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    `${source}?vue=&type=style&index=0&lang=css`,
+    undefined,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    `${source}?vue=&type=style&index=0&lang=css.css`,
+    "Vue style queries should stay CSS-visible so Vite extracts them",
+  );
+}
+
+{
   const projectRoot = createTempProject("vue-raw-query");
   const source = path.join(projectRoot, "app", "components", "Raw.vue");
   writeFixtureFile(source, "<template><div /></template>");
@@ -752,6 +854,41 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     expectResolvedId(resolved),
     toVirtualId(source, true),
     "SSR resolution should upgrade client virtual IDs to SSR-specific virtual IDs",
+  );
+}
+
+{
+  const parentRoot = createTempRoot("vue-parent-runtime");
+  const projectRoot = path.join(parentRoot, "nested-project");
+  writeFixtureFile(path.join(parentRoot, "node_modules", "vue", "package.json"), "{}");
+  writeFixtureFile(path.join(projectRoot, "package.json"), "{}");
+  const source = path.join(projectRoot, "app", "pages", "index.vue");
+  writeFixtureFile(source, "<template />\n");
+  const resolvedVue = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.6.0",
+    "node_modules",
+    "vue",
+    "dist",
+    "vue.runtime.esm-bundler.js",
+  );
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async () => ({ id: resolvedVue }),
+    },
+    createState(projectRoot),
+    "vue",
+    toVirtualId(source),
+    undefined,
+  );
+
+  assert.equal(
+    resolved,
+    null,
+    "Vue runtime imports from virtual modules should defer when Vue resolves from a parent root",
   );
 }
 

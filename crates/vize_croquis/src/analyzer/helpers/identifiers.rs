@@ -17,6 +17,11 @@ use vize_carton::{CompactString, profile};
 
 #[allow(clippy::disallowed_types)]
 /// Strip JS/TS comments while preserving string literals.
+///
+/// The common path for template expressions has no comments, so the function
+/// returns `Cow::Borrowed` without allocating. The owned buffer is reserved only
+/// after the first line/block comment is actually found; until then the scanner
+/// just walks bytes and keeps string/template literals intact.
 pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
     let bytes = expr.as_bytes();
     let len = bytes.len();

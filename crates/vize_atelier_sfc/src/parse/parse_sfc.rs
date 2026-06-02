@@ -27,7 +27,12 @@ fn advance_line_column(bytes: &[u8], line: &mut usize, column: &mut usize) {
     }
 }
 
-/// Parse a Vue SFC into a descriptor with zero-copy strings
+/// Parse a Vue SFC into a descriptor with zero-copy strings.
+///
+/// The outer scan uses `memchr`/`Finder` to jump between candidate tags and HTML
+/// comments, then delegates actual block parsing to `parse_block_fast`. Keeping
+/// line/column counters in the same pass avoids a second source walk for error
+/// locations while preserving borrowed slices in the returned descriptor.
 pub fn parse_sfc<'a>(
     source: &'a str,
     options: SfcParseOptions,

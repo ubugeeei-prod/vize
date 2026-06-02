@@ -30,6 +30,9 @@ impl EventNameCounts {
     }
 
     fn observe(&mut self, key: String) {
+        // Most elements have zero or one repeated event name. Keep that common
+        // case in two fields and allocate the hash map only after a second
+        // distinct event key appears.
         if let Some(counts) = &mut self.many {
             *counts.entry(key).or_insert(0) += 1;
             return;
@@ -81,6 +84,12 @@ pub(super) struct PropsScan<'props> {
 }
 
 impl<'props> PropsScan<'props> {
+    /// Scan all prop facts codegen needs in one pass.
+    ///
+    /// The generator used to rediscover class/style/v-bind/v-on/v-model state in
+    /// several helper calls. Centralizing those facts keeps codegen O(props) and
+    /// preserves source-order details, like static class/style placement relative
+    /// to dynamic bindings, without additional walks.
     pub(super) fn new<'ast>(
         ctx: &CodegenContext,
         props: &'props [PropNode<'ast>],

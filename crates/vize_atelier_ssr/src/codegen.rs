@@ -128,7 +128,11 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    /// Push static string content to the current template literal
+    /// Push static string content to the current template literal.
+    ///
+    /// Adjacent static chunks are coalesced before `flush_push`, so deeply nested
+    /// SSR templates emit fewer `_push(...)` calls and allocate fewer intermediate
+    /// strings while preserving dynamic expression boundaries.
     pub(crate) fn push_string_part_static(&mut self, s: &str) {
         if let Some(TemplatePart::Static(last)) = self.current_template_parts.last_mut() {
             last.push_str(s);
@@ -144,7 +148,12 @@ impl<'a> SsrCodegenContext<'a> {
             .push(TemplatePart::Dynamic(expr.to_compact_string()));
     }
 
-    /// Flush the current template literal as a _push() call
+    /// Flush the current template literal as a _push() call.
+    ///
+    /// Template parts are buffered as a `SmallVec` because most elements contain
+    /// only a handful of static/dynamic pieces. Taking the buffer here lets the
+    /// context reuse the allocation for subsequent chunks while writing directly
+    /// into the final byte buffer.
     pub(crate) fn flush_push(&mut self) {
         if self.current_template_parts.is_empty() {
             return;

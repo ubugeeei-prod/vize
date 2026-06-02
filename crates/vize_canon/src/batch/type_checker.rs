@@ -163,6 +163,12 @@ impl BatchTypeChecker {
     }
 
     /// Scan an explicit set of project files.
+    ///
+    /// The underlying virtual project parallelizes registration for multi-file
+    /// batches, so callers should prefer passing the whole discovered input set
+    /// rather than looping over `register_path` themselves. That keeps SFC parse
+    /// and virtual-TS generation CPU-bound instead of serializing every file on
+    /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
         self.project.register_paths(paths)?;
         self.scanned = true;

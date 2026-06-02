@@ -30,13 +30,30 @@ import {
 } from "./options";
 import {
   buildNuxtDevAssetBase,
+  isVizeGeneratedVueModuleId,
   isVizeVirtualVueModuleId,
   normalizeNuxtInjectedKeysForVizeVirtualModule,
+  preserveExplicitVueImportsFromVizeModuleSource,
   normalizeVizeVirtualVueModuleId,
+  preserveExplicitVueImportsFromNuxtAutoImports,
 } from "./utils";
 import { appendOriginalVueSourceForUnoCss } from "./unocss";
 
 type ViteTransformResult = string | { code?: string; map?: unknown } | null | undefined;
+const VIZE_NUXT_AUTO_IMPORT_PATCHED = "__vizeNuxtAutoImportPatched";
+const VUE_RUNTIME_DEDUPE = [
+  "vue",
+  "@vue/reactivity",
+  "@vue/runtime-core",
+  "@vue/runtime-dom",
+  "@vue/shared",
+];
+const VUE_CLIENT_RUNTIME_IMPORT = "vue/dist/vue.runtime.esm-bundler.js";
+type VitePluginWithTransform = {
+  name?: string;
+  transform?: unknown;
+  [VIZE_NUXT_AUTO_IMPORT_PATCHED]?: boolean;
+};
 type NuxtWithBuilderOptions = {
   options: {
     app?: {
@@ -50,7 +67,7 @@ type NuxtWithBuilderOptions = {
     router?: {
       base?: string;
     };
-    vite?: { plugins?: unknown[] };
+    vite?: { plugins?: unknown[]; resolve?: { dedupe?: string[] } };
     nitro?: { virtual?: Record<string, string> };
   };
 };
@@ -94,6 +111,35 @@ function shouldUseVizeCompiler(
   compilerOptions: false | VizeNuxtCompilerOptions,
 ): compilerOptions is VizeNuxtCompilerOptions {
   return compilerOptions !== false && (compilerOptions.vueVersion ?? 3) === 3;
+}
+
+function dedupeVueRuntimePackages(vite: NonNullable<NuxtWithBuilderOptions["options"]["vite"]>) {
+  vite.resolve ||= {};
+  const dedupe = new Set(vite.resolve.dedupe ?? []);
+  for (const packageName of VUE_RUNTIME_DEDUPE) {
+    dedupe.add(packageName);
+  }
+  vite.resolve.dedupe = [...dedupe];
+}
+
+function isViteSsrTransform(args: unknown[]): boolean {
+  const options = args[0];
+  return (
+    typeof options === "object" &&
+    options !== null &&
+    "ssr" in options &&
+    (options as { ssr?: boolean }).ssr === true
+  );
+}
+
+function rewriteBareVueImportsToClientRuntime(code: string): string {
+  return code
+    .replace(/(\bfrom\s*)(["'])vue\2/g, (_, prefix: string, quote: string) => {
+      return `${prefix}${quote}${VUE_CLIENT_RUNTIME_IMPORT}${quote}`;
+    })
+    .replace(/(\bimport\s*)(["'])vue\2/g, (_, prefix: string, quote: string) => {
+      return `${prefix}${quote}${VUE_CLIENT_RUNTIME_IMPORT}${quote}`;
+    });
 }
 
 function normalizeNuxtKeyedTransformResult(
@@ -140,6 +186,82 @@ function patchNuxtKeyedFunctionsPlugin(plugin: { transform?: unknown }): void {
   };
 }
 
+function normalizeNuxtAutoImportTransformResult(
+  code: string,
+  id: string,
+  result: ViteTransformResult,
+  rewriteVueRuntimeImports: boolean,
+): ViteTransformResult {
+  if (!isVizeGeneratedVueModuleId(id) || result == null) {
+    return result;
+  }
+  if (typeof result === "string") {
+    const normalized = preserveExplicitVueImportsFromNuxtAutoImports(code, result);
+    const restored = preserveExplicitVueImportsFromVizeModuleSource(id, normalized);
+    return rewriteVueRuntimeImports ? rewriteBareVueImportsToClientRuntime(restored) : restored;
+  }
+  if (typeof result.code !== "string") {
+    return result;
+  }
+  let normalized = preserveExplicitVueImportsFromVizeModuleSource(
+    id,
+    preserveExplicitVueImportsFromNuxtAutoImports(code, result.code),
+  );
+  if (rewriteVueRuntimeImports) {
+    normalized = rewriteBareVueImportsToClientRuntime(normalized);
+  }
+  return normalized === result.code ? result : { ...result, code: normalized };
+}
+
+function patchNuxtAutoImportTransformPlugin(
+  plugin: VitePluginWithTransform | undefined,
+  isBuild: boolean,
+): void {
+  if (!plugin) {
+    return;
+  }
+  if (plugin[VIZE_NUXT_AUTO_IMPORT_PATCHED]) {
+    return;
+  }
+
+  if (typeof plugin.transform === "function") {
+    const original = plugin.transform;
+    plugin.transform = async function (
+      this: unknown,
+      code: string,
+      id: string,
+      ...args: unknown[]
+    ) {
+      const result = (await original.call(this, code, id, ...args)) as ViteTransformResult;
+      return normalizeNuxtAutoImportTransformResult(
+        code,
+        id,
+        result,
+        isBuild && !isViteSsrTransform(args),
+      );
+    };
+    plugin[VIZE_NUXT_AUTO_IMPORT_PATCHED] = true;
+    return;
+  }
+
+  const transform = plugin.transform as { handler?: unknown } | undefined;
+  if (!transform || typeof transform.handler !== "function") {
+    return;
+  }
+
+  const original = transform.handler;
+  transform.handler = async function (this: unknown, code: string, id: string, ...args: unknown[]) {
+    const result = (await original.call(this, code, id, ...args)) as ViteTransformResult;
+    return normalizeNuxtAutoImportTransformResult(
+      code,
+      id,
+      result,
+      isBuild && !isViteSsrTransform(args),
+    );
+  };
+  plugin[VIZE_NUXT_AUTO_IMPORT_PATCHED] = true;
+}
+
 export default defineNuxtModule<VizeNuxtOptions>({
   meta: {
     name: "@vizejs/nuxt",
@@ -175,13 +297,25 @@ export default defineNuxtModule<VizeNuxtOptions>({
         vueVersion,
       },
     );
+    const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
     if (compilerOptions !== false) {
       nuxt.options.vite ||= {};
       nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
       nuxt.options.vite.plugins.push(vize(compilerOptions));
     }
 
-    const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
+    let isNuxtBuild = false;
+    let isViteBuild = false;
+    if (usesVizeCompiler) {
+      nuxt.hook("build:before", () => {
+        if (nuxt.options.dev !== false) {
+          return;
+        }
+        isNuxtBuild = true;
+        nuxt.options.vite ||= {};
+        dedupeVueRuntimePackages(nuxt.options.vite);
+      });
+    }
 
     if (usesVizeCompiler) {
       if (nuxt.options.dev && devOptions.stylesheetLinks) {
@@ -206,17 +340,27 @@ export default defineNuxtModule<VizeNuxtOptions>({
       // a shallow copy of the config, so we must MUTATE the plugins array
       // in-place (splice) rather than replacing it (filter), so the change
       // propagates to the original config used by createServer().
-      nuxt.hook("vite:configResolved", (config: { plugins: Array<{ name?: string }> }) => {
-        for (let i = config.plugins.length - 1; i >= 0; i--) {
-          const p = config.plugins[i];
-          const name = p && typeof p === "object" && "name" in p ? p.name : "";
-          if (name === "vite:vue") {
-            config.plugins.splice(i, 1);
-          } else if (bridgeOptions.stableInjectedKeys && name === "nuxt:compiler:keyed-functions") {
-            patchNuxtKeyedFunctionsPlugin(p);
+      nuxt.hook(
+        "vite:configResolved",
+        (config: { command?: string; plugins: VitePluginWithTransform[] }) => {
+          isViteBuild = config.command === "build" || isNuxtBuild || nuxt.options.dev === false;
+          for (let i = config.plugins.length - 1; i >= 0; i--) {
+            const p = config.plugins[i];
+            const name = p && typeof p === "object" && "name" in p ? p.name : "";
+            if (name === "vite:vue") {
+              config.plugins.splice(i, 1);
+            } else if (
+              bridgeOptions.stableInjectedKeys &&
+              name === "nuxt:compiler:keyed-functions"
+            ) {
+              patchNuxtKeyedFunctionsPlugin(p);
+            }
+            if (bridgeOptions.autoImports) {
+              patchNuxtAutoImportTransformPlugin(p, isViteBuild);
+            }
           }
-        }
-      });
+        },
+      );
     }
 
     // ─── Bridge: Apply Nuxt transforms to vize virtual modules ────────────
@@ -276,7 +420,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
       addVitePlugin({
         name: "vizejs:nuxt-transform-bridge",
         enforce: "post" as const,
-        async transform(code: string, id: string) {
+        async transform(code: string, id: string, ...args: unknown[]) {
           // Only process vize virtual modules
           if (!isVizeVirtualVueModuleId(id)) return;
 
@@ -313,9 +457,13 @@ export default defineNuxtModule<VizeNuxtOptions>({
           // Runs after i18n injection so unimport picks up the `useI18n` reference.
           if (unimportCtx) {
             try {
+              const beforeUnimport = result;
               const injected = await unimportCtx.injectImports(result, id);
               if (injected.imports && injected.imports.length > 0) {
-                result = injected.code;
+                result = preserveExplicitVueImportsFromNuxtAutoImports(
+                  beforeUnimport,
+                  injected.code,
+                );
                 changed = true;
               }
             } catch {
@@ -323,10 +471,26 @@ export default defineNuxtModule<VizeNuxtOptions>({
             }
           }
 
+          if (bridgeOptions.autoImports) {
+            const nextResult = preserveExplicitVueImportsFromVizeModuleSource(id, result);
+            if (nextResult !== result) {
+              result = nextResult;
+              changed = true;
+            }
+          }
+
           if (bridgeOptions.stableInjectedKeys) {
             const stableKeyResult = normalizeNuxtInjectedKeysForVizeVirtualModule(result, id);
             if (stableKeyResult !== result) {
               result = stableKeyResult;
+              changed = true;
+            }
+          }
+
+          if (isViteBuild && !isViteSsrTransform(args)) {
+            const clientRuntimeResult = rewriteBareVueImportsToClientRuntime(result);
+            if (clientRuntimeResult !== result) {
+              result = clientRuntimeResult;
               changed = true;
             }
           }

@@ -272,6 +272,7 @@ const isRootSelected = ref(false)
                 apply_scope_id: false,
                 has_scoped: false,
                 is_ts: true,
+                inline: true,
                 component_name: None,
                 bindings: Some(&binding_metadata),
                 croquis: Some(croquis),

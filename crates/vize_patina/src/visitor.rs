@@ -41,7 +41,9 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     /// Visit the root node and traverse the AST
     #[inline]
     pub fn visit_root(&mut self, root: &RootNode<'a>) {
-        // Run template-level checks
+        // Run template-level checks under one profiling span. Rule dispatch
+        // happens for every file, so profiling once around the callback batch is
+        // cheaper than creating a span for every individual rule callback.
         profile!("patina.rules.run_on_template", {
             for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied()) {
                 self.ctx.current_rule = rule_name;
@@ -68,6 +70,9 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 self.visit_element(el);
             }
             TemplateChildNode::Interpolation(interp) => {
+                // Coalesce all interpolation rule callbacks into one span for
+                // the same reason as template-level checks: callback dispatch is
+                // hot and individual rule spans add measurable overhead.
                 profile!("patina.rules.check_interpolation", {
                     for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied())
                     {
@@ -203,7 +208,9 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
 
         self.ctx.push_element(elem_ctx);
 
-        // Enter element - run rules
+        // Enter element - run rules. Element/directive/exit/branch callbacks
+        // follow the same coalesced-span pattern as root/interpolation checks:
+        // one guard around the rule batch, not one guard per rule.
         profile!("patina.rules.enter_element", {
             for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied()) {
                 self.ctx.current_rule = rule_name;

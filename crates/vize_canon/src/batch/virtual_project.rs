@@ -205,6 +205,13 @@ impl VirtualProject {
     /// Register a batch of file paths, parallelizing per-file parse and Virtual TS
     /// generation across rayon's thread pool. Falls back to sequential work when
     /// the batch is small enough that the fan-out cost would dominate.
+    ///
+    /// This is deliberately structured as "parallel build, sequential absorb".
+    /// `build_registered_file` owns the expensive work (disk read, SFC parse,
+    /// template parse, virtual-TS generation, import rewriting) and only needs an
+    /// immutable build context, so it scales cleanly across rayon workers. The
+    /// mutable project indexes are updated after the join point, which preserves
+    /// deterministic maps and avoids locking every insertion in the hot loop.
     pub fn register_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
         let valid_paths: Vec<&Path> = paths
             .iter()
@@ -316,6 +323,13 @@ impl VirtualProject {
     }
 
     /// Materialize the virtual project to disk for diagnostics collection.
+    ///
+    /// The materialized tree is a cache, but Corsa observes it as a real project.
+    /// We therefore prune only entries outside the expected file/dir set and
+    /// preserve nested runtime dependencies under `node_modules`. File writes are
+    /// batched with directory creation de-duplicated per parent path; tsconfig and
+    /// other stable control files still use `write_if_changed` because touching
+    /// them can invalidate TypeScript's own filesystem caches.
     pub fn materialize(&self) -> CorsaResult<()> {
         let expected_files = self.expected_materialized_files();
         profile!(

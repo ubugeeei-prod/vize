@@ -131,6 +131,9 @@ export const testAndBenchmarkTasks = defineTasks({
   "bench:fmt": noCacheTask(moonScript("bench", "fmt")),
   "bench:check": noCacheTask(moonScript("bench", "check")),
   "bench:vite": noCacheTask(moonScript("bench", "vite")),
+  "bench:compare-tools": noCacheTask(
+    "node bench/compare-tools.mjs --input bench/__in__ --out target/tool-benchmark-summary.md --json target/tool-benchmark-results.json --doc target/performance-blacksmith.md",
+  ),
   "bench:all": noCacheTask(
     runTasks("bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite"),
   ),
