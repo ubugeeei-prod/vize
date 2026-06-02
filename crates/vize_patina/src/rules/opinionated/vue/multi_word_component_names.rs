@@ -117,7 +117,10 @@ impl Rule for MultiWordComponentNames {
         // Check if the component name is multi-word
         if !Self::is_multi_word(component_name) {
             ctx.error_with_help(
-                ctx.t("vue/multi-word-component-names.message"),
+                ctx.t_fmt(
+                    "vue/multi-word-component-names.message",
+                    &[("name", component_name)],
+                ),
                 &root.loc,
                 ctx.t("vue/multi-word-component-names.help"),
             );

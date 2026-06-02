@@ -6,7 +6,7 @@ expression: result.diagnostics
     LintDiagnostic {
         rule_name: "vue/multi-word-component-names",
         severity: Error,
-        message: "Component name \"{name}\" should be multi-word to avoid conflicts with HTML elements",
+        message: "Component name \"Item\" should be multi-word to avoid conflicts with HTML elements",
         start: 0,
         end: 0,
         help: Some(

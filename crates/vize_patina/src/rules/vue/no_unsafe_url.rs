@@ -227,7 +227,7 @@ impl Rule for NoUnsafeUrl {
         };
 
         ctx.warn_with_help(
-            ctx.t("vue/no-unsafe-url.message"),
+            ctx.t_fmt("vue/no-unsafe-url.message", &[("attr", attr_name)]),
             &directive.loc,
             help_message,
         );

@@ -606,7 +606,10 @@ impl SourceLineIndex {
 
 #[cfg(test)]
 mod tests {
-    use crate::{LintDiagnostic, LintResult, Linter, OutputFormat, format_results, rule_docs_path};
+    use crate::{
+        LintDiagnostic, LintPreset, LintResult, Linter, OutputFormat, format_results,
+        rule_docs_path,
+    };
     use vize_carton::ToCompactString;
 
     #[test]
@@ -644,6 +647,59 @@ const items = [1]
         assert_eq!(OutputFormat::parse("md"), Some(OutputFormat::Markdown));
         assert_eq!(OutputFormat::parse("telegraph"), Some(OutputFormat::Agent));
         assert_eq!(OutputFormat::parse("unknown"), None);
+    }
+
+    #[test]
+    fn rendered_outputs_interpolate_lint_message_placeholders() {
+        let source = r#"<script setup lang="ts">
+defineOptions({
+  name: "Label",
+})
+
+const url = ""
+</script>
+
+<template>
+  <a :href="url" />
+</template>
+"#;
+        let filename = vize_carton::String::from("Label.vue");
+        let result = Linter::with_preset(LintPreset::Essential).lint_sfc(source, &filename);
+
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.message.contains("Component name \"Label\"")),
+            "{:?}",
+            result.diagnostics
+        );
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.message.contains("Dynamic :href binding")),
+            "{:?}",
+            result.diagnostics
+        );
+
+        let sources = [(filename.clone(), vize_carton::String::from(source))];
+        for format in [
+            OutputFormat::Text,
+            OutputFormat::Ansi,
+            OutputFormat::Plain,
+            OutputFormat::Stylish,
+            OutputFormat::Json,
+            OutputFormat::Markdown,
+            OutputFormat::Html,
+            OutputFormat::Agent,
+        ] {
+            let output = format_results(std::slice::from_ref(&result), &sources, format);
+            assert!(!output.contains("{name}"), "{format:?}\n{output}");
+            assert!(!output.contains("{attr}"), "{format:?}\n{output}");
+            assert!(output.contains("Label"), "{format:?}\n{output}");
+            assert!(output.contains("href"), "{format:?}\n{output}");
+        }
     }
 
     #[test]
