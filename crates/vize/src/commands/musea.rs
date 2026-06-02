@@ -141,7 +141,13 @@ fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> 
         ));
     }
 
-    let program = resolve_vite_binary(cwd).unwrap_or_else(|| PathBuf::from("vite"));
+    let program = match resolve_vite_binary(cwd) {
+        Some(program) => program,
+        None if let Some(nuxt_root) = find_nuxt_project_root(cwd) => {
+            return Err(nuxt_musea_message(&nuxt_root, args.build));
+        }
+        None => PathBuf::from("vite"),
+    };
     let mut vite_args = if args.build {
         vec![cstr!("build")]
     } else {
@@ -175,6 +181,69 @@ fn resolve_vite_binary(cwd: &Path) -> Option<PathBuf> {
         }
     }
     None
+}
+
+fn find_nuxt_project_root(cwd: &Path) -> Option<PathBuf> {
+    cwd.ancestors()
+        .find(|ancestor| is_nuxt_project_root(ancestor))
+        .map(Path::to_path_buf)
+}
+
+fn is_nuxt_project_root(root: &Path) -> bool {
+    ["nuxt.config.ts", "nuxt.config.mts", "nuxt.config.js"]
+        .into_iter()
+        .any(|file_name| root.join(file_name).exists())
+        || package_json_has_dependency(root, "nuxt")
+}
+
+fn package_json_has_dependency(root: &Path, dependency: &str) -> bool {
+    let Ok(content) = fs::read_to_string(root.join("package.json")) else {
+        return false;
+    };
+    let Ok(value) = serde_json::from_str::<serde_json::Value>(&content) else {
+        return false;
+    };
+
+    [
+        "dependencies",
+        "devDependencies",
+        "peerDependencies",
+        "optionalDependencies",
+    ]
+    .into_iter()
+    .any(|section| {
+        value
+            .get(section)
+            .and_then(serde_json::Value::as_object)
+            .is_some_and(|dependencies| dependencies.contains_key(dependency))
+    })
+}
+
+fn has_vize_nuxt_integration(root: &Path) -> bool {
+    package_json_has_dependency(root, "@vizejs/nuxt")
+        || root
+            .join("node_modules")
+            .join("@vizejs")
+            .join("nuxt")
+            .join("package.json")
+            .exists()
+}
+
+fn nuxt_musea_message(root: &Path, build: bool) -> String {
+    let command = if build { "nuxi build" } else { "nuxi dev" };
+    if has_vize_nuxt_integration(root) {
+        return cstr!(
+            "vize musea: detected a Nuxt project using `@vizejs/nuxt` at {}.\n  The standalone `vize musea` command only runs direct Vite projects with `vite` and `@vizejs/vite-plugin-musea` configured in Vite.\n  In this Nuxt setup, Musea is provided by the Nuxt module at `/__musea__/`; run `{}` and open that route instead.",
+            root.display(),
+            command
+        );
+    }
+
+    cstr!(
+        "vize musea: detected a Nuxt project at {}.\n  The standalone `vize musea` command only runs direct Vite projects with `vite` and `@vizejs/vite-plugin-musea` configured in Vite.\n  For Nuxt, enable `@vizejs/nuxt`, run `{}`, and open `/__musea__/` instead.",
+        root.display(),
+        command
+    )
 }
 
 #[cfg(windows)]
@@ -348,6 +417,36 @@ mod tests {
 
         assert_eq!(plan.program, vite_bin);
         assert_eq!(plan.args, ["build"]);
+    }
+
+    #[test]
+    fn serve_plan_rejects_nuxt_project_without_direct_vite() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::write(temp.path().join("nuxt.config.ts"), "export default {}").unwrap();
+        fs::write(
+            temp.path().join("package.json"),
+            r#"{
+  "dependencies": {
+    "@vizejs/nuxt": "0.162.0",
+    "nuxt": "4.3.1"
+  }
+}"#,
+        )
+        .unwrap();
+
+        let error = create_serve_plan(
+            &ServeArgs {
+                build: true,
+                ..ServeArgs::default()
+            },
+            temp.path(),
+        )
+        .unwrap_err();
+
+        assert!(error.contains("detected a Nuxt project"));
+        assert!(error.contains("standalone `vize musea` command only runs direct Vite projects"));
+        assert!(error.contains("nuxi build"));
+        assert!(error.contains("/__musea__/"));
     }
 
     #[test]
