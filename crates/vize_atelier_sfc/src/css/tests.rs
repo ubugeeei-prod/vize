@@ -250,6 +250,30 @@ fn test_scope_deep_after_child_combinator() {
 }
 
 #[test]
+fn test_apply_scoped_css_preserves_deep_comment_before_selector() {
+    let bump = Bump::new();
+    let css = "/* override :deep(p) from the parent */\n.foo { color: red; }";
+    let result = apply_scoped_css(&bump, css, "data-v-123");
+
+    assert_eq!(
+        result,
+        "/* override :deep(p) from the parent */\n.foo[data-v-123]{ color: red; }"
+    );
+}
+
+#[test]
+fn test_apply_scoped_css_preserves_deep_comment_inside_at_rule() {
+    let bump = Bump::new();
+    let css = "@media (min-width: 1px) { /* A <span>, not a <p>; ignore :deep(p). */\n.conferences__venue { display: block; } }";
+    let result = apply_scoped_css(&bump, css, "data-v-abc");
+
+    assert_eq!(
+        result,
+        "@media (min-width: 1px){ /* A <span>, not a <p>; ignore :deep(p). */\n.conferences__venue[data-v-abc]{ display: block; }}"
+    );
+}
+
+#[test]
 fn test_scope_global() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
