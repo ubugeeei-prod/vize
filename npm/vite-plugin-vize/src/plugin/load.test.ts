@@ -9,7 +9,7 @@ import { loadHook } from "./load.ts";
 import { normalizeVueServerRendererImport } from "./load.ts";
 import { transformHook } from "./load.ts";
 import { rewriteImportMetaGlobBase } from "../transform.ts";
-import { toVirtualId } from "../virtual.ts";
+import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -159,6 +159,23 @@ assert.equal(
   virtualDefineTransform.map,
   null,
   "Virtual module OXC transforms should not allocate sourcemaps that Vize discards",
+);
+
+const visibleVirtualDefineTransform = await transformHook(
+  virtualDefineState,
+  `export const flags = [import.meta.client, import.meta.server, import.meta.dev, import.meta.hot];`,
+  toPluginVisibleVirtualId("/src/EnvFlags.vue"),
+  { ssr: false },
+);
+
+assert.ok(
+  visibleVirtualDefineTransform && typeof visibleVirtualDefineTransform === "object",
+  "Plugin-visible virtual module transforms should succeed",
+);
+assert.doesNotMatch(
+  visibleVirtualDefineTransform.code,
+  /import\.meta\.(client|server|dev)/,
+  "Plugin-visible virtual module transforms should inline environment flags before post plugins run",
 );
 
 assert.equal(
@@ -477,6 +494,30 @@ assert.match(
   clientEnvironmentLoad.code,
   /ClientCompiled/,
   "Client loads should read from the client compilation cache",
+);
+
+const visibleClientEnvironmentLoad = loadHook(environmentState, toPluginVisibleVirtualId(envPath), {
+  ssr: false,
+});
+assert.ok(
+  visibleClientEnvironmentLoad && typeof visibleClientEnvironmentLoad === "object",
+  "Plugin-visible client environment loads should succeed",
+);
+assert.match(
+  visibleClientEnvironmentLoad.code,
+  /ClientCompiled/,
+  "Plugin-visible client loads should read from the client compilation cache",
+);
+
+const rawClientEnvironmentLoad = loadHook(environmentState, envPath, { ssr: false });
+assert.ok(
+  rawClientEnvironmentLoad && typeof rawClientEnvironmentLoad === "object",
+  "Raw Vue SFC loads should be claimed when a bundler bypasses resolveId output",
+);
+assert.match(
+  rawClientEnvironmentLoad.code,
+  /ClientCompiled/,
+  "Raw Vue SFC loads should read from the client compilation cache",
 );
 
 const ssrEnvironmentLoad = loadHook(environmentState, toVirtualId(envPath, true), { ssr: true });

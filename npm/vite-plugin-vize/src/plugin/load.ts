@@ -20,6 +20,8 @@ import {
   transformCssVarsForPipeline,
 } from "../utils/css.ts";
 import {
+  fromPluginVisibleVirtualId,
+  isPluginVisibleSsrVirtualId,
   LEGACY_VIZE_PREFIX,
   RESOLVED_CSS_MODULE,
   rewriteDynamicTemplateImports,
@@ -94,12 +96,40 @@ function findMacroArtifactModule(
   return compiled?.macroArtifacts?.find((artifact) => artifact.kind === kind)?.moduleCode ?? null;
 }
 
-function hasNuxtComponentQuery(request: ReturnType<typeof classifyVitePluginRequest>): boolean {
-  if (!request.querySuffix) {
+function shouldLoadVueSfcRequest(request: ReturnType<typeof classifyVitePluginRequest>): boolean {
+  if (
+    !request.isVueSfcPath ||
+    request.isVueStyleQuery ||
+    request.hasMacroQuery ||
+    request.hasDefinePageQuery
+  ) {
     return false;
   }
 
-  return new URLSearchParams(request.querySuffix.slice(1)).has("nuxt_component");
+  if (!request.querySuffix) {
+    return true;
+  }
+
+  const params = new URLSearchParams(request.querySuffix.slice(1));
+  if (
+    params.has("raw") ||
+    params.has("url") ||
+    params.has("worker") ||
+    params.has("sharedworker")
+  ) {
+    return false;
+  }
+
+  return params.has("nuxt_component");
+}
+
+function getLoadableVueSfcPath(
+  request: ReturnType<typeof classifyVitePluginRequest>,
+): string | null {
+  if (!shouldLoadVueSfcRequest(request)) {
+    return null;
+  }
+  return classifyVitePluginRequest(request.normalizedFsId ?? request.path).normalizedVuePath;
 }
 
 function normalizeStyleVirtualId(id: string): string {
@@ -210,6 +240,8 @@ export function loadHook(
   loadOptions?: { ssr?: boolean },
 ): string | { code: string; map: null } | null {
   const request = classifyVitePluginRequest(id);
+  const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
+  const loadableVueSfcPath = getLoadableVueSfcPath(request);
 
   // Pick the correct viteBase for URL resolution based on the build environment.
   const currentBase = loadOptions?.ssr ? state.serverViteBase : state.clientViteBase;
@@ -275,10 +307,13 @@ export function loadHook(
     return "";
   }
 
-  if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0")) {
-    if (!request.isVueSfcPath || !hasNuxtComponentQuery(request)) {
-      return null;
-    }
+  if (
+    id !== RESOLVED_CSS_MODULE &&
+    !id.startsWith("\0") &&
+    !pluginVisibleVirtualPath &&
+    !loadableVueSfcPath
+  ) {
+    return null;
   }
 
   // Handle Vue Router's ?definePage query through extracted artifacts.
@@ -302,9 +337,9 @@ export function loadHook(
   }
 
   // Handle vize virtual modules
-  if (request.isVizeVirtual) {
-    const realPath = request.vizeVirtualPath ?? "";
-    const isSsr = request.isVizeSsrVirtual || !!loadOptions?.ssr;
+  if (request.isVizeVirtual || pluginVisibleVirtualPath) {
+    const realPath = request.vizeVirtualPath ?? pluginVisibleVirtualPath ?? "";
+    const isSsr = request.isVizeSsrVirtual || isPluginVisibleSsrVirtualId(id) || !!loadOptions?.ssr;
 
     if (!realPath.endsWith(".vue")) {
       state.logger.log(`load: skipping non-vue virtual module ${realPath}`);
@@ -313,12 +348,9 @@ export function loadHook(
     return loadCompiledSfcModule(state, realPath, isSsr, currentBase, loadOptions);
   }
 
-  if (request.isVueSfcPath && hasNuxtComponentQuery(request)) {
-    const realPath = classifyVitePluginRequest(
-      request.normalizedFsId ?? request.path,
-    ).normalizedVuePath;
+  if (loadableVueSfcPath) {
     const isSsr = !!loadOptions?.ssr;
-    return loadCompiledSfcModule(state, realPath, isSsr, currentBase, loadOptions);
+    return loadCompiledSfcModule(state, loadableVueSfcPath, isSsr, currentBase, loadOptions);
   }
 
   // Handle \0-prefixed non-vue files leaked from virtual module dynamic imports.
@@ -354,15 +386,16 @@ export async function transformHook(
   id: string,
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
-  if (!id.startsWith("\0")) {
+  const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
+  if (!id.startsWith("\0") && !pluginVisibleVirtualPath) {
     return null;
   }
 
   const request = classifyVitePluginRequest(id);
-  if (request.isVizeVirtual || request.isMacroVirtualId) {
+  if (request.isVizeVirtual || request.isMacroVirtualId || pluginVisibleVirtualPath) {
     const realPath = request.isMacroVirtualId
       ? (request.strippedVirtualPath ?? "")
-      : (request.vizeVirtualPath ?? "");
+      : (request.vizeVirtualPath ?? pluginVisibleVirtualPath ?? "");
     try {
       const result = await transformWithOxc(code, realPath, {
         lang: "ts",
