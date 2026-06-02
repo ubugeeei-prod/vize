@@ -277,6 +277,37 @@ export default {
       /import __nuxt_component_0_raw from ".*nuxt-route-announcer\.js";\s*const __nuxt_component_0 = __nuxt_create_client_only\(__nuxt_component_0_raw\);/s,
       "registry client-only components should be wrapped before use",
     );
+
+    const componentImportTransformed = injectNuxtComponentImports(
+      `
+import { NuxtPage, NuxtRouteAnnouncer } from "#components";
+
+export default {
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return [NuxtPage, NuxtRouteAnnouncer];
+    };
+  }
+}
+`,
+      (name) => resolver.resolve(name),
+    );
+
+    assert.equal(
+      componentImportTransformed.includes('from "#components"'),
+      false,
+      "#components imports should be rewritten when every imported component resolves",
+    );
+    assert.match(
+      componentImportTransformed,
+      /import NuxtPage from ".*page\.js";/,
+      "#components imports should preserve imported local component names",
+    );
+    assert.match(
+      componentImportTransformed,
+      /import (__nuxt_import_component_\d+_raw) from ".*nuxt-route-announcer\.js";\s*const NuxtRouteAnnouncer = __nuxt_create_client_only\(\1\);/s,
+      "#components imports should wrap registry client-only components",
+    );
   } finally {
     fs.rmSync(fixture.rootDir, { recursive: true, force: true });
   }
