@@ -460,6 +460,7 @@ export default defineComponent({
 
     // Force the virtual project to use vize's fallback Vue stub instead of a
     // workspace-linked full Vue installation.
+    remove_path_if_exists(&project_root.join("node_modules").join("vue")).unwrap();
     remove_path_if_exists(&project_root.join("node_modules").join("@vue")).unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -496,12 +497,19 @@ export default defineComponent({
 }
 
 #[test]
-fn check_stubbed_vue_exports_runtime_helpers_used_by_nuxt_apps() {
+fn check_links_real_vue_namespace_from_pnpm_vue_symlink() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
+    let Some(workspace_node_modules) = resolve_workspace_node_modules() else {
+        return;
+    };
+    if !workspace_node_modules.join("vue").exists() {
+        return;
+    }
+
     let project_root = create_cli_project(
-        "stubbed-vue-runtime-helpers",
+        "pnpm-vue-symlink-runtime-helpers",
         &[(
             "src/App.vue",
             r#"<script setup lang="ts">
@@ -542,8 +550,9 @@ void Transition;
         )],
     );
 
-    // Force the virtual project to use vize's fallback Vue stub instead of a
-    // workspace-linked full Vue installation.
+    // Simulate pnpm projects where root node_modules has a vue symlink but no
+    // root @vue namespace. The real @vue packages live next to the symlink
+    // target under node_modules/.pnpm.
     remove_path_if_exists(&project_root.join("node_modules").join("@vue")).unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -2721,31 +2730,11 @@ fn write_test_vue_stub(target: &Path) -> std::io::Result<()> {
 
 export interface ShallowRef<T = any, S = T> extends Ref<T, S> {}
 
-export type WatchStopHandle = () => void;
-export type WatchCleanup = (cleanupFn: () => void) => void;
-export type WatchEffect = (onCleanup: WatchCleanup) => void | Promise<void>;
-export type PropConstructor<T = any> =
-  | { new (...args: any[]): T & {} }
-  | { (): T }
-  | ((...args: any[]) => T);
-export type PropType<T> = PropConstructor<T> | readonly PropConstructor<T>[];
-
-export interface ComponentCustomProperties {}
-
 export interface ComponentPublicInstance {
   $attrs: any;
   $slots: any;
   $refs: any;
   $emit: (...args: any[]) => void;
-}
-
-export interface App<Element = any> {
-  config: {
-    globalProperties: ComponentCustomProperties & Record<string, any>;
-    [key: string]: any;
-  };
-  mount(rootContainer: string | Element): ComponentPublicInstance;
-  unmount(): void;
 }
 
 export type DefineComponent<
@@ -2765,15 +2754,6 @@ export type DefineComponent<
 export declare function ref<T>(value: T): Ref<T>;
 export declare function useTemplateRef<T = any>(key: string): ShallowRef<T | null>;
 export declare function defineComponent<Props = any>(options: any): DefineComponent<Props>;
-export declare function defineProps<T = any>(): T;
-export declare function defineProps<const T extends readonly string[]>(_props: T): { [K in T[number]]?: any };
-export declare function defineProps<const T extends Record<string, any>>(_props: T): T;
-export declare function createApp(rootComponent: any, rootProps?: any): App;
-export declare function watch<T>(source: any, cb: any, options?: any): WatchStopHandle;
-export declare function watchEffect(effect: WatchEffect, options?: any): WatchStopHandle;
-export declare function useId(): string;
-export declare const Transition: DefineComponent;
-export declare const TransitionGroup: DefineComponent;
 "#,
     )?;
     Ok(())
