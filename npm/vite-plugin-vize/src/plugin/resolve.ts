@@ -139,32 +139,41 @@ function findPackageRoot(resolvedFile: string): string | null {
   return null;
 }
 
+function resolvePackageRootWithNode(
+  state: Pick<VizePluginState, "root">,
+  packageName: string,
+  importer?: string,
+): string | null {
+  const packageJson = resolveBareImportWithNode(state, `${packageName}/package.json`, importer);
+  if (packageJson) {
+    return path.dirname(packageJson);
+  }
+
+  const resolvedEntry = resolveBareImportWithNode(state, packageName, importer);
+  return resolvedEntry ? findPackageRoot(resolvedEntry) : null;
+}
+
 function resolveVueBundlerEntryWithNode(
   state: Pick<VizePluginState, "root">,
   id: string,
   importer?: string,
 ): string | null {
   const { request, querySuffix } = splitViteIdQuery(id);
-  if (request !== "vue") {
+  let relativeEntries: string[];
+  if (request === "vue") {
+    relativeEntries = ["dist/vue.runtime.esm-bundler.js", "dist/vue.esm-bundler.js", "index.mjs"];
+  } else if (request.startsWith("vue/dist/") && request.endsWith(".js")) {
+    relativeEntries = [request.slice("vue/".length)];
+  } else {
     return null;
   }
 
-  const packageJson = resolveBareImportWithNode(state, "vue/package.json", importer);
-  const resolvedVue = packageJson ? null : resolveBareImportWithNode(state, "vue", importer);
-  const packageRoot = packageJson
-    ? path.dirname(packageJson)
-    : resolvedVue
-      ? findPackageRoot(resolvedVue)
-      : null;
+  const packageRoot = resolvePackageRootWithNode(state, "vue", importer);
   if (!packageRoot) {
     return null;
   }
 
-  for (const relativeEntry of [
-    "dist/vue.runtime.esm-bundler.js",
-    "dist/vue.esm-bundler.js",
-    "index.mjs",
-  ]) {
+  for (const relativeEntry of relativeEntries) {
     const entry = path.join(packageRoot, relativeEntry);
     if (fs.existsSync(entry)) {
       return `${entry}${querySuffix}`;
@@ -178,13 +187,65 @@ function isVueRuntimeRequest(id: string): boolean {
   return splitViteIdQuery(id).request === "vue";
 }
 
+function isVueServerRendererRequest(request: string): boolean {
+  return (
+    request === "@vue/server-renderer" ||
+    request === "vue/server-renderer" ||
+    (request.startsWith("vue/dist/") && request.endsWith("/server-renderer"))
+  );
+}
+
+function resolveVueServerRendererPackageRootWithNode(
+  state: Pick<VizePluginState, "root">,
+  importer?: string,
+): string | null {
+  const packageRoot = resolvePackageRootWithNode(state, "@vue/server-renderer", importer);
+  if (packageRoot) {
+    return packageRoot;
+  }
+
+  const vuePackageRoot = resolvePackageRootWithNode(state, "vue", importer);
+  return vuePackageRoot
+    ? resolvePackageRootWithNode(
+        state,
+        "@vue/server-renderer",
+        path.join(vuePackageRoot, "package.json"),
+      )
+    : null;
+}
+
+function resolveVueServerRendererBundlerEntryWithNode(
+  state: Pick<VizePluginState, "root">,
+  id: string,
+  importer?: string,
+): string | null {
+  const { request, querySuffix } = splitViteIdQuery(id);
+  if (querySuffix || !isVueServerRendererRequest(request)) {
+    return null;
+  }
+
+  const packageRoot = resolveVueServerRendererPackageRootWithNode(state, importer);
+  if (!packageRoot) {
+    return null;
+  }
+
+  for (const relativeEntry of ["dist/server-renderer.esm-bundler.js", "index.mjs", "index.js"]) {
+    const entry = path.join(packageRoot, relativeEntry);
+    if (fs.existsSync(entry)) {
+      return entry;
+    }
+  }
+
+  return null;
+}
+
 function resolveSsrExternalVueRequest(id: string): string | null {
   const { request, querySuffix } = splitViteIdQuery(id);
   if (querySuffix) {
     return null;
   }
 
-  if (request === "@vue/server-renderer" || request === "vue/server-renderer") {
+  if (isVueServerRendererRequest(request)) {
     return "vue/server-renderer";
   }
 
@@ -518,6 +579,16 @@ export async function resolveIdHook(
     if (!id.endsWith(".vue")) {
       const ssrExternalVueRequest = isSsrRequest ? resolveSsrExternalVueRequest(id) : null;
       if (ssrExternalVueRequest) {
+        if (!isBuild) {
+          const devSsrVueEntry =
+            ssrExternalVueRequest === "vue/server-renderer"
+              ? resolveVueServerRendererBundlerEntryWithNode(state, id, cleanImporter)
+              : resolveVueBundlerEntryWithNode(state, id, cleanImporter);
+          if (devSsrVueEntry) {
+            state.logger.log(`resolveId: resolved SSR Vue request ${id} to ${devSsrVueEntry}`);
+            return devSsrVueEntry;
+          }
+        }
         return { id: ssrExternalVueRequest, external: true };
       }
 
