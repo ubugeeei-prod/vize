@@ -920,6 +920,82 @@ const { count } = inject('state') as { count: number }
     }
 
     #[test]
+    fn cross_file_opt_in_resolves_provide_inject_through_default_slot() {
+        let dir = tempfile::tempdir().unwrap();
+        let app = dir.path().join("App.vue");
+        let provider = dir.path().join("Provider.vue");
+        let consumer = dir.path().join("Consumer.vue");
+
+        fs::write(
+            &provider,
+            r#"<script setup lang="ts">
+import { provide, ref } from 'vue'
+
+const count = ref(0)
+provide('count', count)
+</script>
+
+<template>
+  <slot />
+</template>
+"#,
+        )
+        .unwrap();
+        fs::write(
+            &consumer,
+            r#"<script setup lang="ts">
+import { inject } from 'vue'
+
+const count = inject('count')
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"#,
+        )
+        .unwrap();
+        fs::write(
+            &app,
+            r#"<script setup lang="ts">
+import Consumer from './Consumer.vue'
+import Provider from './Provider.vue'
+</script>
+
+<template>
+  <Provider>
+    <Consumer />
+  </Provider>
+</template>
+"#,
+        )
+        .unwrap();
+
+        let files = [&app, &provider, &consumer]
+            .into_iter()
+            .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
+            .collect::<Vec<_>>();
+        let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, true);
+
+        let diagnostics = output
+            .results
+            .iter()
+            .flat_map(|result| result.diagnostics.iter())
+            .collect::<Vec<_>>();
+        assert!(diagnostics.iter().all(|diagnostic| {
+            !diagnostic.message.contains("unmatched-inject")
+                && !diagnostic.message.contains("unused-provide")
+        }));
+
+        let tree = output
+            .provide_inject_tree
+            .as_deref()
+            .expect("tree should be rendered");
+        assert!(tree.contains("Provider"));
+        assert!(tree.contains("Consumer"));
+    }
+
+    #[test]
     fn cross_file_opt_in_reports_duplicate_element_ids_at_template_offsets() {
         let dir = tempfile::tempdir().unwrap();
         let first = dir.path().join("First.vue");

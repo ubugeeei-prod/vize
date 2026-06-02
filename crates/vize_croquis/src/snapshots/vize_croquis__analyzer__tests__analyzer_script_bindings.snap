@@ -1274,6 +1274,7 @@ Croquis {
         uses_attrs: false,
         binds_attrs_explicitly: false,
         inherit_attrs_disabled: false,
+        renders_slot: false,
         content_start: 0,
         content_end: 0,
     },

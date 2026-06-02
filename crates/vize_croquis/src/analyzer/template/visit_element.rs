@@ -50,6 +50,11 @@ impl Analyzer {
     ) {
         let tag = el.tag.as_str();
         let is_component = is_component_tag(tag);
+        let mut subtree_end = None;
+
+        if tag == "slot" {
+            self.summary.template_info.renders_slot = true;
+        }
 
         // Track component usage
         if self.options.track_usage && is_component {
@@ -61,7 +66,7 @@ impl Analyzer {
             Some(ComponentUsage {
                 name: CompactString::new(tag),
                 start: el.loc.start.offset,
-                end: el.loc.end.offset,
+                end: *subtree_end.get_or_insert_with(|| element_subtree_end(el)),
                 props: SmallVec::new(),
                 events: SmallVec::new(),
                 slots: SmallVec::new(),
@@ -130,11 +135,13 @@ impl Analyzer {
                             );
                             if let Some(aliases) = aliases {
                                 let alias_offsets = v_for_alias_declaration_offsets(exp, &aliases);
+                                let end =
+                                    *subtree_end.get_or_insert_with(|| element_subtree_end(el));
                                 for_scope = Some((
                                     aliases,
                                     alias_offsets,
                                     el.loc.start.offset,
-                                    element_subtree_end(el),
+                                    end,
                                 ));
                             }
                         }
@@ -251,7 +258,7 @@ impl Analyzer {
                             component: is_component.then(|| CompactString::new(tag)),
                         },
                         offset,
-                        element_subtree_end(el),
+                        *subtree_end.get_or_insert_with(|| element_subtree_end(el)),
                     );
 
                     for name in prop_names {

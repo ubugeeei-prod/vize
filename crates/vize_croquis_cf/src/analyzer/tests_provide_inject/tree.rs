@@ -215,3 +215,101 @@ const theme = inject('theme')"#,
             && root.children[0].injects.len() == 1
     }));
 }
+
+#[test]
+fn test_slot_projected_child_resolves_provider_context() {
+    use crate::diagnostics::CrossFileDiagnosticKind;
+
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+    analyzer.add_file_with_analysis(
+        Path::new("App.vue"),
+        "",
+        script_analysis_with_component_usages(
+            "// Provider receives Consumer as default slot content",
+            vec![
+                component_usage_with_span("Provider", 10, 80),
+                component_usage_with_span("Consumer", 30, 45),
+            ],
+        ),
+    );
+    let provider = analyzer.add_file_with_analysis(Path::new("Provider.vue"), "", {
+        let mut analysis = script_analysis(
+            r#"import { provide, ref } from 'vue'
+const count = ref(0)
+provide('count', count)"#,
+            &[],
+        );
+        analysis.template_info.renders_slot = true;
+        analysis
+    });
+    let consumer = analyzer.add_file_with_analysis(
+        Path::new("Consumer.vue"),
+        "",
+        script_analysis(
+            r#"import { inject } from 'vue'
+const count = inject('count')"#,
+            &[],
+        ),
+    );
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    let matches = result
+        .provide_inject_matches
+        .iter()
+        .filter(|provider_match| provider_match.key == "count")
+        .collect::<Vec<_>>();
+
+    assert_eq!(matches.len(), 1);
+    assert_eq!(matches[0].provider, provider);
+    assert_eq!(matches[0].consumer, consumer);
+    assert_eq!(matches[0].path, vec![provider, consumer]);
+    assert!(result.diagnostics.iter().all(|diagnostic| {
+        !matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::UnmatchedInject { .. }
+                | CrossFileDiagnosticKind::UnusedProvide { .. }
+        )
+    }));
+
+    let tree = result
+        .provide_inject_tree
+        .as_ref()
+        .expect("tree should be built");
+    assert_eq!(tree.roots.len(), 1);
+    assert_eq!(tree.roots[0].file_id, provider);
+    assert_eq!(tree.roots[0].children.len(), 1);
+    assert_eq!(tree.roots[0].children[0].file_id, consumer);
+}
+
+fn script_analysis_with_component_usages(
+    script: &str,
+    usages: Vec<vize_croquis::analysis::ComponentUsage>,
+) -> vize_croquis::Croquis {
+    let mut analysis = script_analysis(script, &[]);
+    for usage in usages {
+        analysis.used_components.insert(usage.name.clone());
+        analysis.component_usages.push(usage);
+    }
+    analysis
+}
+
+fn component_usage_with_span(
+    component: &str,
+    start: u32,
+    end: u32,
+) -> vize_croquis::analysis::ComponentUsage {
+    vize_croquis::analysis::ComponentUsage {
+        name: vize_carton::CompactString::new(component),
+        start,
+        end,
+        props: vize_carton::SmallVec::new(),
+        events: vize_carton::SmallVec::new(),
+        slots: vize_carton::SmallVec::new(),
+        has_spread_attrs: false,
+        scope_id: vize_croquis::ScopeId::ROOT,
+        vif_guard: None,
+    }
+}

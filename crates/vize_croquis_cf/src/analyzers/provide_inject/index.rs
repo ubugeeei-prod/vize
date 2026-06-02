@@ -1,7 +1,7 @@
 use super::keys::create_string_key_diagnostic;
 use crate::diagnostics::CrossFileDiagnostic;
 use crate::graph::{DependencyEdge, DependencyGraph};
-use crate::registry::{FileId, ModuleRegistry};
+use crate::registry::{FileId, ModuleEntry, ModuleRegistry};
 use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
 
@@ -25,6 +25,14 @@ struct AncestorFrame {
     parent: Option<usize>,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct RuntimeUsage {
+    target_id: FileId,
+    start: u32,
+    end: u32,
+    renders_slot: bool,
+}
+
 impl ProvideInjectIndex {
     pub(crate) fn new(registry: &ModuleRegistry, graph: &DependencyGraph) -> Self {
         let mut provides = FxHashMap::default();
@@ -40,22 +48,7 @@ impl ProvideInjectIndex {
             }
         }
 
-        let mut component_parents: FxHashMap<FileId, Vec<FileId>> = FxHashMap::default();
-        for node in graph.nodes() {
-            for (child_id, edge_type) in &node.imports {
-                if *edge_type == DependencyEdge::ComponentUsage {
-                    component_parents
-                        .entry(*child_id)
-                        .or_default()
-                        .push(node.file_id);
-                }
-            }
-        }
-
-        for parents in component_parents.values_mut() {
-            parents.sort_by_key(|id| id.as_u32());
-            parents.dedup();
-        }
+        let component_parents = runtime_component_parents(registry, graph);
 
         Self {
             provides,
@@ -163,6 +156,108 @@ impl ProvideInjectIndex {
             )
         });
         matches
+    }
+}
+
+fn runtime_component_parents(
+    registry: &ModuleRegistry,
+    graph: &DependencyGraph,
+) -> FxHashMap<FileId, Vec<FileId>> {
+    let mut component_parents: FxHashMap<FileId, Vec<FileId>> = FxHashMap::default();
+
+    for entry in registry.vue_components() {
+        if entry.analysis.component_usages.is_empty() {
+            add_graph_component_parents(&mut component_parents, graph, entry.id);
+            continue;
+        }
+
+        let usages = runtime_usages(entry, registry, graph);
+        if usages.is_empty() {
+            add_graph_component_parents(&mut component_parents, graph, entry.id);
+            continue;
+        }
+
+        for (index, usage) in usages.iter().enumerate() {
+            match nearest_containing_usage(&usages, index) {
+                Some(host) if host.renders_slot => {
+                    add_component_parent(&mut component_parents, usage.target_id, host.target_id);
+                }
+                Some(_) => {}
+                None => add_component_parent(&mut component_parents, usage.target_id, entry.id),
+            }
+        }
+    }
+
+    for parents in component_parents.values_mut() {
+        parents.sort_by_key(|id| id.as_u32());
+        parents.dedup();
+    }
+
+    component_parents
+}
+
+fn runtime_usages(
+    entry: &ModuleEntry,
+    registry: &ModuleRegistry,
+    graph: &DependencyGraph,
+) -> Vec<RuntimeUsage> {
+    entry
+        .analysis
+        .component_usages
+        .iter()
+        .filter_map(|usage| {
+            let target_id = graph.find_by_component(usage.name.as_str())?;
+            let renders_slot = registry
+                .get(target_id)
+                .is_some_and(|target| target.analysis.template_info.renders_slot);
+            Some(RuntimeUsage {
+                target_id,
+                start: usage.start,
+                end: usage.end,
+                renders_slot,
+            })
+        })
+        .collect()
+}
+
+fn nearest_containing_usage(usages: &[RuntimeUsage], child_index: usize) -> Option<&RuntimeUsage> {
+    let child = usages[child_index];
+    usages
+        .iter()
+        .enumerate()
+        .filter(|(index, usage)| {
+            *index != child_index && usage.start < child.start && child.end <= usage.end
+        })
+        .min_by_key(|(_, usage)| usage.end.saturating_sub(usage.start))
+        .map(|(_, usage)| usage)
+}
+
+fn add_graph_component_parents(
+    component_parents: &mut FxHashMap<FileId, Vec<FileId>>,
+    graph: &DependencyGraph,
+    parent_id: FileId,
+) {
+    let Some(node) = graph.get_node(parent_id) else {
+        return;
+    };
+
+    for (child_id, edge_type) in &node.imports {
+        if *edge_type == DependencyEdge::ComponentUsage {
+            add_component_parent(component_parents, *child_id, parent_id);
+        }
+    }
+}
+
+fn add_component_parent(
+    component_parents: &mut FxHashMap<FileId, Vec<FileId>>,
+    child_id: FileId,
+    parent_id: FileId,
+) {
+    if child_id != parent_id {
+        component_parents
+            .entry(child_id)
+            .or_default()
+            .push(parent_id);
     }
 }
 
