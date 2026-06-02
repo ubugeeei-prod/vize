@@ -144,6 +144,67 @@ const count = 1
     }
 
     #[test]
+    fn test_template_instance_globals_delegate_to_component_public_instance() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let template = r#"<button :title="$t('hello')">{{ missing }}</button>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts_with_offsets(
+            &summary,
+            None,
+            Some(&root),
+            0,
+            0,
+            &VirtualTsOptions::default(),
+        );
+
+        assert!(
+            output
+                .code
+                .contains("const $t: __VizeInstanceGlobal<'$t'> = undefined as any;"),
+            "{}",
+            output.code
+        );
+        assert!(output.code.contains("void ($t('hello'));"));
+        assert!(output.code.contains("void (missing);"));
+        assert!(!output.code.contains("void ($t);"));
+
+        let configured_output = generate_virtual_ts_with_offsets(
+            &summary,
+            None,
+            Some(&root),
+            0,
+            0,
+            &VirtualTsOptions {
+                template_globals: vec![TemplateGlobal {
+                    name: "$t".into(),
+                    type_annotation: "(key: string) => string".into(),
+                    default_value: "(() => '') as any".into(),
+                }],
+                ..Default::default()
+            },
+        );
+
+        assert!(
+            !configured_output
+                .code
+                .contains("__VizeInstanceGlobal<'$t'>")
+        );
+        assert!(
+            configured_output
+                .code
+                .contains("const $t: __Global<'$t', (key: string) => string>")
+        );
+    }
+
+    #[test]
     fn test_kebab_case_component_names_are_sanitized_in_type_helpers() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 

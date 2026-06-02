@@ -11,7 +11,7 @@ use vize_carton::profile;
 
 use vize_croquis::{
     Croquis, EventHandlerScopeData, Scope, ScopeData, ScopeId, ScopeKind, analysis::ComponentUsage,
-    naming::to_pascal_case,
+    analyzer::extract_identifiers_oxc, naming::to_pascal_case,
 };
 
 use super::{
@@ -20,7 +20,7 @@ use super::{
         generated_text_range, get_dom_event_type, to_camel_case, to_safe_identifier,
         to_safe_identifier_fragment,
     },
-    types::{VirtualTsCheckOptions, VizeMapping},
+    types::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping},
 };
 use vize_carton::append;
 use vize_carton::cstr;
@@ -62,6 +62,7 @@ pub(crate) fn generate_scope_closures(
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
     check_options: VirtualTsCheckOptions,
+    options: &VirtualTsOptions,
 ) {
     // Group expressions by scope_id
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
@@ -108,6 +109,13 @@ pub(crate) fn generate_scope_closures(
                 .map(|scope| scope.id)
                 .collect()
         });
+
+    if check_options.check_template_bindings {
+        profile!(
+            "canon.virtual_ts.instance_global_refs",
+            generate_instance_global_refs(ts, mappings, summary, template_offset, options)
+        );
+    }
 
     // Process non-nested scopes at template level
     for scope in summary.scopes.iter() {
@@ -202,10 +210,13 @@ fn generate_undefined_refs(
         .map(|te| te.name.as_str())
         .collect();
 
-    ts.push_str("\n  // Undefined references from template:\n");
     let mut seen_names: FxHashSet<&str> = FxHashSet::default();
+    let mut emitted_header = false;
     for undef in &summary.undefined_refs {
         if !seen_names.insert(undef.name.as_str()) {
+            continue;
+        }
+        if is_template_instance_global_name(undef.name.as_str()) {
             continue;
         }
         // Skip names that match type exports (these are type-level, not value-level)
@@ -215,6 +226,11 @@ fn generate_undefined_refs(
 
         let src_start = (template_offset + undef.offset) as usize;
         let src_end = src_start + undef.name.len();
+
+        if !emitted_header {
+            ts.push_str("\n  // Undefined references from template:\n");
+            emitted_header = true;
+        }
 
         let gen_start = ts.len();
         // Use void expression to reference the name without creating an unused variable
@@ -234,6 +250,125 @@ fn generate_undefined_refs(
             "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
         );
     }
+}
+
+fn generate_instance_global_refs(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    summary: &Croquis,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+) {
+    if summary.undefined_refs.is_empty() && summary.template_expressions.is_empty() {
+        return;
+    }
+
+    let mut emitter = InstanceGlobalRefsEmitter::new(ts, mappings, summary, options);
+    for undef in &summary.undefined_refs {
+        let src_start = (template_offset + undef.offset) as usize;
+        let src_end = src_start + undef.name.len();
+        emitter.emit(undef.name.as_str(), src_start, src_end);
+    }
+
+    for expr in &summary.template_expressions {
+        for ident in extract_identifiers_oxc(expr.content.as_str()) {
+            let name = ident.as_str();
+            let Some(relative_offset) = expr.content.find(name) else {
+                continue;
+            };
+            let src_start = (template_offset + expr.start) as usize + relative_offset;
+            let src_end = src_start + name.len();
+            emitter.emit(name, src_start, src_end);
+        }
+    }
+}
+
+struct InstanceGlobalRefsEmitter<'a> {
+    ts: &'a mut String,
+    mappings: &'a mut Vec<VizeMapping>,
+    options: &'a VirtualTsOptions,
+    type_export_names: FxHashSet<&'a str>,
+    seen_names: FxHashSet<String>,
+    emitted_header: bool,
+}
+
+impl<'a> InstanceGlobalRefsEmitter<'a> {
+    fn new(
+        ts: &'a mut String,
+        mappings: &'a mut Vec<VizeMapping>,
+        summary: &'a Croquis,
+        options: &'a VirtualTsOptions,
+    ) -> Self {
+        Self {
+            ts,
+            mappings,
+            options,
+            type_export_names: summary
+                .type_exports
+                .iter()
+                .map(|te| te.name.as_str())
+                .collect(),
+            seen_names: FxHashSet::default(),
+            emitted_header: false,
+        }
+    }
+
+    fn emit(&mut self, name: &str, src_start: usize, src_end: usize) {
+        if !is_template_instance_global_name(name)
+            || self.type_export_names.contains(name)
+            || is_declared_template_context_name(name, self.options)
+            || !self.seen_names.insert(name.into())
+        {
+            return;
+        }
+
+        if !self.emitted_header {
+            self.ts
+                .push_str("\n  // Instance globals from ComponentPublicInstance:\n");
+            self.ts.push_str(
+                "  type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;\n",
+            );
+            self.emitted_header = true;
+        }
+
+        let gen_start = self.ts.len();
+        let stmt = cstr!("  const {name}: __VizeInstanceGlobal<'{name}'> = undefined as any;\n");
+        let gen_name_start = gen_start + stmt.find(name).unwrap_or(0);
+        let gen_name_end = gen_name_start + name.len();
+
+        self.ts.push_str(&stmt);
+        self.mappings.push(VizeMapping {
+            gen_range: gen_name_start..gen_name_end,
+            src_range: src_start..src_end,
+            sub_spans: Vec::new(),
+        });
+        append!(
+            *self.ts,
+            "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
+        );
+    }
+}
+
+fn is_template_instance_global_name(name: &str) -> bool {
+    let Some(rest) = name.strip_prefix('$') else {
+        return false;
+    };
+    !rest.is_empty()
+        && rest
+            .chars()
+            .all(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric())
+}
+
+fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> bool {
+    matches!(name, "$attrs" | "$slots" | "$refs" | "$emit" | "$event")
+        || options
+            .template_globals
+            .iter()
+            .any(|global| global.name.as_str() == name)
+        || options
+            .css_modules
+            .iter()
+            .any(|module_name| module_name.as_str() == name)
 }
 
 /// Type annotation for a `v-slot` scope's props. When the slot is on a child

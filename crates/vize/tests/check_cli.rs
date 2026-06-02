@@ -728,6 +728,68 @@ const tab: GlobalTabType = "default";
 }
 
 #[test]
+fn check_template_dollar_globals_use_component_custom_properties() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "template-dollar-globals",
+        &[
+            (
+                "src/@types/vue-globals.d.ts",
+                r#"import "vue";
+
+declare module "vue" {
+  interface ComponentCustomProperties {
+    $t: (key: string) => string;
+  }
+}
+"#,
+            ),
+            (
+                "src/App.vue",
+                r#"<template>
+  <p>{{ $t("app.title") }}</p>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/App.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_generic_script_setup_resolves_type_referencing_generic_param() {
     // `<script setup generic="T">` declares a type that references `T`. The
     // type is lifted to module scope, so the generic parameter must be

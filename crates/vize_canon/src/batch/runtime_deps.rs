@@ -26,7 +26,9 @@ export type LifecycleHook = () => void | Promise<void>;
 
 export type InjectionKey<T> = symbol & { readonly __vize_injection?: T };
 
-export interface ComponentPublicInstance {
+export interface ComponentCustomProperties {}
+
+export interface ComponentPublicInstance extends ComponentCustomProperties {
   $attrs: any;
   $slots: any;
   $refs: any;

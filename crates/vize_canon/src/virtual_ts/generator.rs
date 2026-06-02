@@ -526,6 +526,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         &template_prop_names,
                         template_offset,
                         check_options,
+                        options,
                     )
                 );
             }
