@@ -269,7 +269,7 @@ function assertInstalledPackage(nodeModules, packageInfo) {
 // `vite` bin and its rolldown bindings expect a separate `vite-plus`
 // metapackage at runtime, which together broke `vite build` in CI.)
 const RUNTIME_PEER_DEPENDENCIES = {
-  "@typescript/native-preview": "7.0.0-dev.20260514.1",
+  "@typescript/native-preview": "7.0.0-dev.20260602.1",
   typescript: "6.0.3",
   vite: "^8.0.0",
   vue: "3.5.34",
