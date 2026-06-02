@@ -133,12 +133,8 @@ impl Analyzer {
                                 let alias_offsets = v_for_alias_declaration_offsets(exp, &aliases);
                                 let end =
                                     *subtree_end.get_or_insert_with(|| element_subtree_end(el));
-                                for_scope = Some((
-                                    aliases,
-                                    alias_offsets,
-                                    el.loc.start.offset,
-                                    end,
-                                ));
+                                for_scope =
+                                    Some((aliases, alias_offsets, el.loc.start.offset, end));
                             }
                         }
                     }
