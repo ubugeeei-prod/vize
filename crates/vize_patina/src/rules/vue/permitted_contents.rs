@@ -30,6 +30,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_carton::is_html_tag;
 use vize_relief::ast::{ElementNode, ElementType};
 
 static META: RuleMeta = RuleMeta {
@@ -85,6 +86,9 @@ const BLOCK_ELEMENTS: &[&str] = &[
 /// Interactive elements that must not be nested
 const INTERACTIVE_ELEMENTS: &[&str] = &["a", "button", "details", "label", "select", "textarea"];
 
+/// Component namespaces that expose intrinsic HTML wrappers as `namespace.tag`.
+const INTRINSIC_MEMBER_COMPONENT_NAMESPACES: &[&str] = &["motion"];
+
 /// Check if an element is a phrasing-only parent
 #[inline]
 fn is_phrasing_only_parent(tag: &str) -> bool {
@@ -120,6 +124,19 @@ fn required_children(parent: &str) -> Option<&'static [&'static str]> {
     }
 }
 
+fn intrinsic_member_component_tag(tag: &str) -> Option<&str> {
+    let (namespace, member) = tag.split_once('.')?;
+    if INTRINSIC_MEMBER_COMPONENT_NAMESPACES.contains(&namespace) && is_html_tag(member) {
+        Some(member)
+    } else {
+        None
+    }
+}
+
+fn content_model_tag(tag: &str) -> &str {
+    intrinsic_member_component_tag(tag).unwrap_or(tag)
+}
+
 #[derive(Default)]
 pub struct PermittedContents;
 
@@ -129,11 +146,6 @@ impl Rule for PermittedContents {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Skip components — we can't know their rendered output
-        if element.tag_type == ElementType::Component {
-            return;
-        }
-
         // Allow <template> as a transparent wrapper (v-for, v-if, v-slot)
         if element.tag_type == ElementType::Template {
             return;
@@ -144,40 +156,48 @@ impl Rule for PermittedContents {
             return;
         }
 
-        let tag = element.tag.as_str();
+        let raw_tag = element.tag.as_str();
+        let tag = content_model_tag(raw_tag);
+        let has_intrinsic_mapping = tag != raw_tag;
+        let is_unknown_component =
+            element.tag_type == ElementType::Component && !has_intrinsic_mapping;
 
         // 1. Block in inline: check if this block element has a phrasing-only ancestor
-        if is_block_element(tag)
+        if !is_unknown_component
+            && is_block_element(tag)
             && let Some(parent) = ctx.parent_element()
-            && is_phrasing_only_parent(parent.tag.as_str())
+            && is_phrasing_only_parent(content_model_tag(parent.tag.as_str()))
         {
             let message = ctx.t_fmt(
                 "vue/permitted-contents.block_in_inline",
-                &[("child", tag), ("parent", parent.tag.as_str())],
+                &[("child", raw_tag), ("parent", parent.tag.as_str())],
             );
             ctx.error(message, &element.loc);
         }
 
         // 2. Interactive nesting: check if this interactive element is inside another
-        if is_interactive_element(tag)
-            && ctx.has_ancestor(|ancestor| is_interactive_element(ancestor.tag.as_str()))
+        if !is_unknown_component
+            && is_interactive_element(tag)
+            && ctx.has_ancestor(|ancestor| {
+                is_interactive_element(content_model_tag(ancestor.tag.as_str()))
+            })
         {
             let message = ctx.t_fmt(
                 "vue/permitted-contents.interactive_nesting",
-                &[("tag", tag)],
+                &[("tag", raw_tag)],
             );
             ctx.error(message, &element.loc);
         }
 
         // 3 & 4. Required children: check if parent constrains direct children
         if let Some(parent) = ctx.parent_element() {
-            let parent_tag = parent.tag.as_str();
+            let parent_tag = content_model_tag(parent.tag.as_str());
             if let Some(allowed) = required_children(parent_tag)
                 && !allowed.contains(&tag)
             {
                 let message = ctx.t_fmt(
                     "vue/permitted-contents.invalid_child",
-                    &[("child", tag), ("parent", parent_tag)],
+                    &[("child", raw_tag), ("parent", parent.tag.as_str())],
                 );
                 ctx.error(message, &element.loc);
             }
@@ -217,6 +237,13 @@ mod tests {
     fn test_valid_list_with_li() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<ul><li>item</li></ul>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_list_with_known_intrinsic_member_component_li() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<ul><motion.li>item</motion.li></ul>"#, "test.vue");
         assert_eq!(result.error_count, 0);
     }
 
@@ -347,6 +374,27 @@ mod tests {
     fn test_invalid_span_in_ol() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<ol><span>not li</span></ol>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_unknown_component_in_ul() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<ul><MyItem /></ul>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_unknown_member_component_in_ul() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<ul><foo.li>item</foo.li></ul>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_known_intrinsic_member_component_div_in_ul() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<ul><motion.div>item</motion.div></ul>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 
