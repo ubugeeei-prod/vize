@@ -1018,6 +1018,51 @@ loadData()
 }
 
 #[test]
+fn lint_json_output_is_valid_when_error_exit_runs() {
+    let project_root = create_cli_project(
+        "lint-json-error-exit",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const items = [1, 2]
+</script>
+
+<template>
+  <div v-for="item in items">{{ item }}</div>
+</template>
+"#,
+        )],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "lint",
+            "--format",
+            "json",
+            "--help-level",
+            "none",
+            "src/App.vue",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert_eq!(output.status.code(), Some(1), "{stderr}");
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+    let files = json
+        .as_array()
+        .expect("lint JSON output should be an array");
+    assert_eq!(files.len(), 1, "{stdout}");
+    assert_eq!(files[0]["errorCount"], 1, "{stdout}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_rejects_unsupported_corsa_server_count() {
     let project_root = create_cli_project(
         "unsupported-corsa-servers",

@@ -5,6 +5,7 @@ use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
 use rayon::prelude::*;
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -438,6 +439,9 @@ pub fn run(args: LintArgs) {
         };
         print_profile_report(&report);
     }
+
+    // `process::exit` below bypasses normal stdout teardown, so flush report output first.
+    let _ = std::io::stdout().flush();
 
     // Exit with appropriate code
     if total_errors > 0 {
