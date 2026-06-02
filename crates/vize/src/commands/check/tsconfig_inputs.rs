@@ -95,14 +95,17 @@ impl RelativePathSpec {
 struct GlobSpec {
     base_dir: PathBuf,
     pattern: Pattern,
+    normalized: std::string::String,
 }
 
 impl GlobSpec {
     fn new(base_dir: &Path, value: &str) -> Option<Self> {
         let (base_dir, normalized) = normalize_tsconfig_glob_base(base_dir, value);
-        Pattern::new(&normalized)
-            .ok()
-            .map(|pattern| Self { base_dir, pattern })
+        Pattern::new(&normalized).ok().map(|pattern| Self {
+            base_dir,
+            pattern,
+            normalized,
+        })
     }
 
     fn matches(&self, path: &Path) -> bool {
@@ -117,6 +120,14 @@ impl GlobSpec {
 pub(crate) fn collect_default_check_files(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
+) -> Vec<PathBuf> {
+    collect_default_check_files_inner(project_root, tsconfig_path, false)
+}
+
+fn collect_default_check_files_inner(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+    include_hidden_tsconfig_roots: bool,
 ) -> Vec<PathBuf> {
     let Some(tsconfig_path) = tsconfig_path else {
         return collect_supported_files(project_root, &[], &[]);
@@ -163,6 +174,22 @@ pub(crate) fn collect_default_check_files(
                 files.push(path);
             }
         }
+        if include_hidden_tsconfig_roots {
+            for root in explicit_hidden_include_roots(project_root, &includes) {
+                for path in collect_supported_files_with_options(
+                    &root,
+                    &includes,
+                    &excludes,
+                    FileCollectionOptions {
+                        include_hidden: true,
+                    },
+                ) {
+                    if seen.insert(path.clone()) {
+                        files.push(path);
+                    }
+                }
+            }
+        }
     }
 
     files.sort();
@@ -179,21 +206,43 @@ pub(crate) fn collect_default_check_files(
 /// `tsc`, which always loads the declaration files matched by `files`/`include`
 /// regardless of which entry files are requested.
 ///
-/// Module-shim declaration files (`declare module "vue"`, `declare module
-/// "*.css"`) are deliberately excluded: forcing them in as program roots makes
-/// their ambient external-module declarations shadow the real package types
-/// (a `declare module "vue"` block erases `vue`'s real exports). Those files are
-/// already reached through the imports that reference them, so dropping them
-/// from the ambient set is safe.
+/// Project shims such as `declare module "~icons/foo"` and Nuxt's generated
+/// `.nuxt/nuxt.d.ts` are part of that program even though they are not imported
+/// by the checked file. Only unsafe bare Vue package shims without top-level
+/// import/export are excluded, because those replace the real package instead
+/// of augmenting it.
 pub(crate) fn collect_ambient_declaration_files(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
 ) -> Vec<PathBuf> {
-    collect_default_check_files(project_root, tsconfig_path)
+    let project_root = normalize_input_path(project_root);
+    let mut files = collect_default_check_files_inner(&project_root, tsconfig_path, true);
+    let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
+    let mut index = 0;
+    while index < files.len() {
+        let path = files[index].clone();
+        index += 1;
+        if !is_declaration_file(&path) {
+            continue;
+        }
+        let Ok(content) = fs::read_to_string(&path) else {
+            continue;
+        };
+        for referenced in reference_path_declaration_files(&path, &content, &project_root) {
+            if seen.insert(referenced.clone()) {
+                files.push(referenced);
+            }
+        }
+    }
+
+    files
         .into_iter()
         .filter(|path| is_declaration_file(path))
         .filter(|path| match fs::read_to_string(path) {
-            Ok(content) => !declares_ambient_module(&content),
+            Ok(content) => {
+                !is_reference_manifest_declaration(&content)
+                    && !declares_shadowing_ambient_module(&content)
+            }
             Err(_) => false,
         })
         .collect()
@@ -205,24 +254,134 @@ fn is_declaration_file(path: &Path) -> bool {
         .is_some_and(|name| name.ends_with(".d.ts"))
 }
 
-/// Returns `true` when the file declares an ambient *external* module, i.e.
-/// `declare module "<specifier>"` with a quoted specifier. Such declarations
-/// shadow real package types when the file is loaded as a program root, so
-/// these files are excluded from the ambient-globals set. A namespace-style
-/// `declare module Foo {}` (no quotes) is a plain global and does not match.
-fn declares_ambient_module(content: &str) -> bool {
+/// Returns `true` when a declaration file would replace real Vue package types
+/// if loaded as a program root. Project shims such as `declare module "*.css"`
+/// and `declare module "~icons/foo"` must still be loaded for explicit checks,
+/// while bare ambient `declare module "vue"` files without top-level imports or
+/// exports shadow the real package.
+fn declares_shadowing_ambient_module(content: &str) -> bool {
+    if has_top_level_import_or_export(content) {
+        return false;
+    }
+
+    ambient_module_specifiers(content)
+        .iter()
+        .any(|specifier| is_shadowed_vue_package_specifier(specifier))
+}
+
+fn ambient_module_specifiers(content: &str) -> Vec<std::string::String> {
     const NEEDLE: &str = "declare module";
-    content.match_indices(NEEDLE).any(|(index, _)| {
+    let mut specifiers = Vec::new();
+    for (index, _) in content.match_indices(NEEDLE) {
         let preceded_by_boundary = content[..index]
             .chars()
             .next_back()
             .is_none_or(|ch| !ch.is_alphanumeric() && ch != '_' && ch != '$');
-        preceded_by_boundary
-            && content[index + NEEDLE.len()..]
-                .chars()
-                .find(|ch| !ch.is_whitespace())
-                .is_some_and(|ch| ch == '"' || ch == '\'')
+        if !preceded_by_boundary {
+            continue;
+        }
+        let mut chars = content[index + NEEDLE.len()..].chars();
+        let Some(quote) = chars.find(|ch| !ch.is_whitespace()) else {
+            continue;
+        };
+        if quote != '"' && quote != '\'' {
+            continue;
+        }
+        let mut specifier = std::string::String::new();
+        let mut escaped = false;
+        for ch in chars {
+            if escaped {
+                specifier.push(ch);
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == quote {
+                specifiers.push(specifier);
+                break;
+            } else {
+                specifier.push(ch);
+            }
+        }
+    }
+    specifiers
+}
+
+fn reference_path_declaration_files(
+    path: &Path,
+    content: &str,
+    project_root: &Path,
+) -> Vec<PathBuf> {
+    let Some(base_dir) = path.parent() else {
+        return Vec::new();
+    };
+    content
+        .lines()
+        .filter_map(reference_path_attribute)
+        .filter_map(|reference| {
+            let resolved = normalize_input_path(&base_dir.join(reference));
+            (resolved.starts_with(project_root)
+                && !path_has_component(&resolved, NODE_MODULES_DIR)
+                && is_declaration_file(&resolved)
+                && resolved.is_file())
+            .then_some(resolved)
+        })
+        .collect()
+}
+
+fn reference_path_attribute(line: &str) -> Option<&str> {
+    let line = line.trim_start();
+    if !line.starts_with("///") || !line.contains("<reference") {
+        return None;
+    }
+    attribute_value(line, "path")
+}
+
+fn attribute_value<'a>(line: &'a str, name: &str) -> Option<&'a str> {
+    let needle = format!("{name}=");
+    let start = line.find(&needle)? + needle.len();
+    let quote = line[start..].chars().next()?;
+    if quote != '"' && quote != '\'' {
+        return None;
+    }
+    let value_start = start + quote.len_utf8();
+    let value_end = line[value_start..].find(quote)? + value_start;
+    line.get(value_start..value_end)
+}
+
+fn is_reference_manifest_declaration(content: &str) -> bool {
+    let mut has_reference = false;
+    for line in content.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        if trimmed.starts_with("///") && trimmed.contains("<reference") {
+            has_reference = true;
+            continue;
+        }
+        if matches!(trimmed, "export {}" | "export {};") {
+            continue;
+        }
+        return false;
+    }
+    has_reference
+}
+
+fn has_top_level_import_or_export(content: &str) -> bool {
+    content.lines().any(|line| {
+        line.starts_with("import ")
+            || line.starts_with("import{")
+            || line.starts_with("export ")
+            || line.starts_with("export{")
+            || line.starts_with("export {}")
     })
+}
+
+fn is_shadowed_vue_package_specifier(specifier: &str) -> bool {
+    matches!(
+        specifier,
+        "vue" | "@vue/runtime-core" | "@vue/runtime-dom" | "vue-router"
+    )
 }
 
 pub(crate) fn load_tsconfig_declaration_options(
@@ -232,10 +391,24 @@ pub(crate) fn load_tsconfig_declaration_options(
     load_tsconfig_declaration_options_inner(tsconfig_path, &mut seen).unwrap_or_default()
 }
 
+#[derive(Debug, Clone, Copy, Default)]
+struct FileCollectionOptions {
+    include_hidden: bool,
+}
+
 fn collect_supported_files(
     root: &Path,
     includes: &[GlobSpec],
     excludes: &[GlobSpec],
+) -> Vec<PathBuf> {
+    collect_supported_files_with_options(root, includes, excludes, FileCollectionOptions::default())
+}
+
+fn collect_supported_files_with_options(
+    root: &Path,
+    includes: &[GlobSpec],
+    excludes: &[GlobSpec],
+    options: FileCollectionOptions,
 ) -> Vec<PathBuf> {
     // Keep the tsconfig scan ignore-aware and canonicalize only the root. The
     // matched files are sorted after collection, so the parallel walk can avoid
@@ -244,7 +417,7 @@ fn collect_supported_files(
     let normalized_root = normalize_input_path(root);
     let walker = WalkBuilder::new(root)
         .standard_filters(true)
-        .hidden(true)
+        .hidden(!options.include_hidden)
         .build_parallel();
 
     let collected = std::sync::Mutex::new(Vec::<PathBuf>::new());
@@ -273,6 +446,70 @@ fn collect_supported_files(
     collected.sort();
     collected.dedup();
     collected
+}
+
+fn explicit_hidden_include_roots(project_root: &Path, includes: &[GlobSpec]) -> Vec<PathBuf> {
+    let normalized_project_root = normalize_input_path(project_root);
+    let mut roots = Vec::new();
+    let mut seen = FxHashSet::default();
+
+    for include in includes {
+        if path_has_hidden_component_under_root(&include.base_dir, &normalized_project_root) {
+            push_hidden_include_root(&mut roots, &mut seen, &include.base_dir);
+        }
+        if let Some(root) = hidden_pattern_root(&include.base_dir, &include.normalized) {
+            push_hidden_include_root(&mut roots, &mut seen, &root);
+        }
+    }
+
+    roots
+}
+
+fn push_hidden_include_root(roots: &mut Vec<PathBuf>, seen: &mut FxHashSet<PathBuf>, root: &Path) {
+    let root = normalize_input_path(root);
+    if root.is_dir() && seen.insert(root.clone()) {
+        roots.push(root);
+    }
+}
+
+fn path_has_hidden_component_under_root(path: &Path, root: &Path) -> bool {
+    let relative = path.strip_prefix(root).unwrap_or(path);
+    relative.components().any(|component| {
+        component
+            .as_os_str()
+            .to_str()
+            .is_some_and(is_hidden_path_segment)
+    })
+}
+
+fn path_has_component(path: &Path, component_name: &str) -> bool {
+    path.components().any(|component| {
+        component
+            .as_os_str()
+            .to_str()
+            .is_some_and(|name| name == component_name)
+    })
+}
+
+fn hidden_pattern_root(base_dir: &Path, pattern: &str) -> Option<PathBuf> {
+    let mut root = base_dir.to_path_buf();
+    for segment in pattern.split('/') {
+        if segment.is_empty() {
+            continue;
+        }
+        if segment.contains(['*', '?', '[']) {
+            break;
+        }
+        root.push(segment);
+        if is_hidden_path_segment(segment) {
+            return Some(root);
+        }
+    }
+    None
+}
+
+fn is_hidden_path_segment(segment: &str) -> bool {
+    segment.starts_with('.') && segment != "." && segment != ".."
 }
 
 fn matches_tsconfig_patterns(path: &Path, includes: &[GlobSpec], excludes: &[GlobSpec]) -> bool {
@@ -1080,15 +1317,30 @@ mod tests {
     }
 
     #[test]
-    fn ambient_declaration_collection_skips_module_shim_dts() {
+    fn ambient_declaration_collection_keeps_project_shims_but_skips_vue_shadows() {
         let case_dir = unique_case_dir("tsconfig-module-shim-dts");
         let _ = fs::remove_dir_all(&case_dir);
         fs::create_dir_all(case_dir.join("src")).unwrap();
-        // Module-shim file: its `declare module "vue"` block would shadow the
-        // real `vue` package if force-loaded as a program root.
+        fs::create_dir_all(case_dir.join(".nuxt/types")).unwrap();
+        // This file would shadow the real `vue` package if force-loaded as a
+        // program root, so it must remain excluded.
         fs::write(
-            case_dir.join("src/shims.d.ts"),
-            "declare module \"*.css\";\ndeclare module \"vue\" {\n  export interface GlobalComponents {}\n}\n",
+            case_dir.join("src/vue-shadow.d.ts"),
+            "declare module \"vue\" {\n  export interface GlobalComponents {}\n}\n",
+        )
+        .unwrap();
+        // Project shims are needed for explicit checks: no source import can
+        // discover these declarations otherwise.
+        fs::write(
+            case_dir.join("src/project-shims.d.ts"),
+            "declare module \"*.css\";\ndeclare module \"~icons/foo\";\n",
+        )
+        .unwrap();
+        // Nuxt/Vue package augmentations are safe when the declaration file is
+        // an external module.
+        fs::write(
+            case_dir.join("src/vue-augmentation.d.ts"),
+            "import \"vue\";\ndeclare module \"vue\" {\n  export interface GlobalComponents {}\n}\nexport {};\n",
         )
         .unwrap();
         // Genuine ambient-global file: must still be collected.
@@ -1103,11 +1355,23 @@ mod tests {
             "declare module Foo { const bar: string; }\n",
         )
         .unwrap();
+        // Hidden tsconfig roots such as `.nuxt` are excluded by the normal
+        // default scanner but must still be loaded as ambient roots.
+        fs::write(
+            case_dir.join(".nuxt/nuxt.d.ts"),
+            "/// <reference path=\"types/feature-flags.d.ts\" />\nexport {};\n",
+        )
+        .unwrap();
+        fs::write(
+            case_dir.join(".nuxt/types/feature-flags.d.ts"),
+            "export {};\ndeclare global { interface ImportMeta { vfFeatures: { enabled: boolean }; } }\n",
+        )
+        .unwrap();
         fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
         fs::write(
             case_dir.join("tsconfig.json"),
             r#"{
-  "include": ["src/**/*"]
+  "include": ["src/**/*", ".nuxt/nuxt.d.ts"]
 }"#,
         )
         .unwrap();
@@ -1126,8 +1390,32 @@ mod tests {
             "namespace-style declaration should be collected: {files:?}"
         );
         assert!(
-            !files.iter().any(|path| path.ends_with("src/shims.d.ts")),
-            "module-shim declaration file should be skipped: {files:?}"
+            files
+                .iter()
+                .any(|path| path.ends_with("src/project-shims.d.ts")),
+            "project module shims should be collected: {files:?}"
+        );
+        assert!(
+            files
+                .iter()
+                .any(|path| path.ends_with("src/vue-augmentation.d.ts")),
+            "external-module Vue augmentations should be collected: {files:?}"
+        );
+        assert!(
+            !files.iter().any(|path| path.ends_with(".nuxt/nuxt.d.ts")),
+            "reference-only Nuxt declaration manifest should be expanded but not collected: {files:?}"
+        );
+        assert!(
+            files
+                .iter()
+                .any(|path| path.ends_with(".nuxt/types/feature-flags.d.ts")),
+            "hidden Nuxt referenced declaration should be collected: {files:?}"
+        );
+        assert!(
+            !files
+                .iter()
+                .any(|path| path.ends_with("src/vue-shadow.d.ts")),
+            "ambient Vue shadow declaration file should be skipped: {files:?}"
         );
 
         let _ = fs::remove_dir_all(&case_dir);

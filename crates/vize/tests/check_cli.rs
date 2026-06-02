@@ -1794,6 +1794,122 @@ declare global {
 }
 
 #[test]
+fn check_explicit_nuxt_file_loads_hidden_declarations_and_project_shims() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "nuxt-hidden-declarations-and-shims",
+        &[
+            ("nuxt.config.ts", "export default {}\n"),
+            (
+                "app.vue",
+                r#"<script setup lang="ts">
+import IconX from "~icons/icons/ic_x"
+import "~/assets/styles/main.css"
+
+const ticketSalesEnabled: boolean = import.meta.vfFeatures.ticketSales
+</script>
+
+<template>
+  <IconX />
+  <div>{{ ticketSalesEnabled }}</div>
+</template>
+"#,
+            ),
+            ("assets/styles/main.css", "body { color: black; }\n"),
+        ],
+    );
+    std::fs::create_dir_all(project_root.join(".nuxt/types")).unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "paths": {
+      "~/*": ["../*"]
+    }
+  },
+  "include": ["./nuxt.d.ts", "../app.vue", "../shim.d.ts"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/nuxt.d.ts"),
+        r#"/// <reference path="types/feature-flags.d.ts" />
+export {};
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/types/feature-flags.d.ts"),
+        r#"export {};
+
+declare global {
+  interface ImportMetaFeatureFlags {
+    readonly ticketSales: boolean;
+  }
+
+  interface ImportMeta {
+    readonly vfFeatures: ImportMetaFeatureFlags;
+  }
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("shim.d.ts"),
+        r#"declare module "*.css";
+declare module "~icons/icons/ic_x";
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "extends": "./.nuxt/tsconfig.json"
+}"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "app.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_declaration_emit_uses_tsconfig_options() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

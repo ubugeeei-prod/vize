@@ -275,23 +275,17 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let diagnostics_render_start = Instant::now();
     // Restrict diagnostics to the requested files for an explicit subset; the
     // ambient/transitive files were registered only to resolve cross-file types.
-    let reported_raw: std::borrow::Cow<'_, [vize_canon::BatchDiagnostic]> = match &reported_files {
-        None => std::borrow::Cow::Borrowed(result.diagnostics.as_slice()),
-        Some(set) => std::borrow::Cow::Owned(
-            result
-                .diagnostics
-                .iter()
-                .filter(|diagnostic| {
-                    let canonical = diagnostic
-                        .file
-                        .canonicalize()
-                        .unwrap_or_else(|_| diagnostic.file.clone());
-                    set.contains(&canonical)
-                })
-                .cloned()
-                .collect(),
-        ),
-    };
+    let reported_raw = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            if !is_reported(&reported_files, &diagnostic.file) {
+                return false;
+            }
+            !is_suppressed_false_positive(diagnostic)
+        })
+        .cloned()
+        .collect::<Vec<_>>();
     let diagnostics = render_diagnostics(&reported_raw);
     let diagnostics_render_time = diagnostics_render_start.elapsed();
     let total_time = start.elapsed();
@@ -533,6 +527,15 @@ fn is_reported(reported: &Option<FxHashSet<PathBuf>>, path: &Path) -> bool {
             set.contains(&canonical)
         }
     }
+}
+
+fn is_suppressed_false_positive(diagnostic: &vize_canon::BatchDiagnostic) -> bool {
+    diagnostic.code == Some(2320)
+        && diagnostic
+            .message
+            .contains("Interface 'ImportMeta' cannot simultaneously extend types")
+        && diagnostic.message.contains("NitroStaticBuildFlags")
+        && diagnostic.message.contains("NitroImportMeta")
 }
 
 #[allow(clippy::disallowed_types)]
@@ -875,8 +878,9 @@ fn parse_dts_globals(
 #[cfg(test)]
 mod tests {
     use super::{
-        find_nearest_tsconfig_dir, resolve_declaration_dir, resolve_declaration_emit_options,
-        resolve_project_root, resolve_tsconfig_path, validate_corsa_server_count,
+        find_nearest_tsconfig_dir, is_suppressed_false_positive, resolve_declaration_dir,
+        resolve_declaration_emit_options, resolve_project_root, resolve_tsconfig_path,
+        validate_corsa_server_count,
     };
     use crate::commands::check::tsconfig_inputs::TsconfigDeclarationOptions;
     use std::{
@@ -895,6 +899,25 @@ mod tests {
                 "check-runner-{name}-{}-{case_id}",
                 std::process::id()
             ))
+    }
+
+    #[test]
+    fn suppresses_nuxt_nitro_import_meta_conflict_false_positive() {
+        let diagnostic = vize_canon::BatchDiagnostic {
+            file: PathBuf::from("app/app.vue"),
+            line: 0,
+            column: 0,
+            message: "Interface 'ImportMeta' cannot simultaneously extend types 'NitroStaticBuildFlags' and 'NitroImportMeta'.\nNamed property 'preset' of types 'NitroStaticBuildFlags' and 'NitroImportMeta' are not identical.".into(),
+            code: Some(2320),
+            severity: 1,
+            block_type: None,
+        };
+
+        assert!(is_suppressed_false_positive(&diagnostic));
+
+        let mut unrelated = diagnostic.clone();
+        unrelated.message = "Interface 'Other' cannot simultaneously extend types".into();
+        assert!(!is_suppressed_false_positive(&unrelated));
     }
 
     #[test]
