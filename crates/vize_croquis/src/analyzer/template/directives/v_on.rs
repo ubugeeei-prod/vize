@@ -25,6 +25,32 @@ impl Analyzer {
                 ExpressionNode::Compound(c) => c.loc.source.as_str(),
             };
 
+            if dir.arg.is_none() {
+                if self.options.collect_template_expressions {
+                    let loc = exp.loc();
+                    let scope_id = self.summary.scopes.current_id();
+                    self.summary
+                        .template_expressions
+                        .push(crate::analysis::TemplateExpression {
+                            content: CompactString::new(content),
+                            kind: crate::analysis::TemplateExpressionKind::VOn,
+                            start: loc.start.offset,
+                            end: loc.end.offset,
+                            scope_id,
+                            vif_guard: self.current_vif_guard(),
+                        });
+                }
+
+                if self.options.detect_undefined && self.script_analyzed {
+                    profile!(
+                        "croquis.template.v_on.refs",
+                        self.check_expression_refs(exp, scope_vars)
+                    );
+                }
+
+                return;
+            }
+
             // Check for inline arrow/function
             if let Some(params) = profile!(
                 "croquis.template.callback.extract_params",

@@ -597,6 +597,42 @@ function handleHover() {}
     }
 
     #[test]
+    fn test_object_form_v_on_is_preserved_as_expression() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"const props = defineProps<{
+  handlers?: {
+    'update:modelValue'?: () => void
+  }
+}>()
+"#;
+        let template = r#"<button v-on="{ 'update:modelValue': props.handlers?.['update:modelValue'] }">Click</button>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert!(
+            output.code.contains(
+                "void ({ 'update:modelValue': props.handlers?.['update:modelValue'] }); // VOn"
+            ),
+            "object-form v-on should be emitted as an expression:\n{}",
+            output.code
+        );
+        assert!(
+            !output.code.contains("@unknown handler"),
+            "object-form v-on must not create a synthetic event handler:\n{}",
+            output.code
+        );
+    }
+
+    #[test]
     fn test_source_mappings_generated() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 
