@@ -398,6 +398,10 @@ fn emit_vif_control_flow_chain(
     template_offset: u32,
     indent: &str,
 ) {
+    let context = VifBranchEmitContext {
+        template_offset,
+        indent,
+    };
     for (branch_index, branch) in chain.branches.iter().enumerate() {
         emit_vif_branch_open(
             ts,
@@ -406,19 +410,23 @@ fn emit_vif_control_flow_chain(
             chain,
             branch,
             branch_index == 0,
-            template_offset,
-            indent,
+            &context,
         );
 
         let body_indent = cstr!("{indent}  ");
-        for expr_index in branch.start..branch.end {
+        for (expr_index, expr) in exprs
+            .iter()
+            .enumerate()
+            .take(branch.end)
+            .skip(branch.start)
+        {
             if branch.condition_expr_index == Some(expr_index) {
                 continue;
             }
             generate_expression_statement(
                 ts,
                 mappings,
-                exprs[expr_index],
+                expr,
                 template_prop_names,
                 template_offset,
                 &body_indent,
@@ -435,13 +443,12 @@ fn emit_vif_branch_open(
     chain: &VifControlFlowChain<'_>,
     branch: &VifBranch<'_>,
     first: bool,
-    template_offset: u32,
-    indent: &str,
+    context: &VifBranchEmitContext<'_>,
 ) {
     let prefix_is_empty = chain.prefix.is_empty();
     match (first, branch.condition) {
         (true, Some(condition)) => {
-            append!(*ts, "{indent}if (");
+            append!(*ts, "{}if (", context.indent);
             append_guard_condition(
                 ts,
                 &chain.prefix,
@@ -449,12 +456,12 @@ fn emit_vif_branch_open(
                 mappings,
                 exprs,
                 branch,
-                template_offset,
+                context.template_offset,
             );
             ts.push_str(") {\n");
         }
         (false, Some(condition)) => {
-            append!(*ts, "{indent}}} else if (");
+            append!(*ts, "{}}} else if (", context.indent);
             append_guard_condition(
                 ts,
                 &chain.prefix,
@@ -462,15 +469,15 @@ fn emit_vif_branch_open(
                 mappings,
                 exprs,
                 branch,
-                template_offset,
+                context.template_offset,
             );
             ts.push_str(") {\n");
         }
         (false, None) if prefix_is_empty => {
-            append!(*ts, "{indent}}} else {{\n");
+            append!(*ts, "{}}} else {{\n", context.indent);
         }
         (false, None) => {
-            append!(*ts, "{indent}}} else if (");
+            append!(*ts, "{}}} else if (", context.indent);
             append_guard_condition(
                 ts,
                 &chain.prefix,
@@ -478,7 +485,7 @@ fn emit_vif_branch_open(
                 mappings,
                 exprs,
                 branch,
-                template_offset,
+                context.template_offset,
             );
             ts.push_str(") {\n");
         }
@@ -487,13 +494,19 @@ fn emit_vif_branch_open(
 
     if let Some(expr_index) = branch.condition_expr_index {
         let expr = exprs[expr_index];
-        let src_start = (template_offset + expr.start) as usize;
-        let src_end = (template_offset + expr.end) as usize;
+        let src_start = (context.template_offset + expr.start) as usize;
+        let src_end = (context.template_offset + expr.end) as usize;
         append!(
             *ts,
-            "{indent}  // @vize-map: expr -> {src_start}:{src_end}\n",
+            "{}  // @vize-map: expr -> {src_start}:{src_end}\n",
+            context.indent,
         );
     }
+}
+
+struct VifBranchEmitContext<'a> {
+    template_offset: u32,
+    indent: &'a str,
 }
 
 fn append_guard_condition(
