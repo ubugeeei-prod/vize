@@ -9,6 +9,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::a11y::helpers::is_slot_element;
 use vize_relief::ast::{ElementNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -45,6 +46,9 @@ impl HeadingHasContent {
                     return true;
                 }
                 TemplateChildNode::Interpolation(_) => {
+                    return true;
+                }
+                TemplateChildNode::Element(el) if is_slot_element(el) => {
                     return true;
                 }
                 TemplateChildNode::Element(el) if Self::has_accessible_content(el) => {
@@ -130,5 +134,12 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<h1></h1>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_with_default_slot() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<h1><slot></slot></h1>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 }

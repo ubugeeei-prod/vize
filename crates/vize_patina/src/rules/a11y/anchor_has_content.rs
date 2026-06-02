@@ -10,6 +10,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::a11y::helpers::is_slot_element;
 use vize_relief::ast::{ElementNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -52,6 +53,9 @@ impl AnchorHasContent {
                     return true;
                 }
                 TemplateChildNode::Element(el) => {
+                    if is_slot_element(el) {
+                        return true;
+                    }
                     // Check for img with alt
                     if el.tag == "img" {
                         for prop in &el.props {
@@ -134,5 +138,12 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<a href="/">   </a>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_with_default_slot() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<a href="/"><slot></slot></a>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 }

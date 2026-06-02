@@ -19,6 +19,11 @@ pub fn is_component_like_element(element: &ElementNode) -> bool {
     ) || !is_native_tag(element.tag.as_str())
 }
 
+/// Check if an element represents a Vue slot outlet.
+pub fn is_slot_element(element: &ElementNode) -> bool {
+    matches!(element.tag_type, ElementType::Slot) || element.tag == "slot"
+}
+
 /// Check if an element is natively interactive (has implicit keyboard support)
 pub fn is_interactive_element(tag: &str) -> bool {
     matches!(
