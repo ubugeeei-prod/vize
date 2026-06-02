@@ -170,6 +170,27 @@ const msg = 'hello'
     }
 
     #[test]
+    fn test_format_sfc_preserves_leading_comment() {
+        let source = r#"<!--
+SPDX-FileCopyrightText: Example Author
+SPDX-License-Identifier: MIT
+-->
+
+<template>
+<div>Hello</div>
+</template>
+
+<script setup lang="ts">
+const message = 'hello';
+</script>
+"#;
+        let options = FormatOptions::default();
+        let result = format_sfc(source, &options).unwrap();
+
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
     fn test_allocator_reuse() {
         let allocator = Allocator::with_capacity(4096);
         let options = FormatOptions::default();

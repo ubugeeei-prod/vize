@@ -29,6 +29,13 @@ pub struct GlyphFormatter<'a> {
     allocator: &'a Allocator,
 }
 
+enum Block<'b> {
+    Script(&'b vize_atelier_sfc::SfcScriptBlock<'b>),
+    Template(&'b vize_atelier_sfc::SfcTemplateBlock<'b>),
+    Style(&'b vize_atelier_sfc::SfcStyleBlock<'b>),
+    Custom(&'b vize_atelier_sfc::SfcCustomBlock<'b>),
+}
+
 impl<'a> GlyphFormatter<'a> {
     /// Create a new formatter with the given options and allocator
     #[inline]
@@ -47,13 +54,6 @@ impl<'a> GlyphFormatter<'a> {
         let mut output = Vec::with_capacity(estimated_size);
 
         // Collect all blocks with their sort keys
-        enum Block<'b> {
-            Script(&'b vize_atelier_sfc::SfcScriptBlock<'b>),
-            Template(&'b vize_atelier_sfc::SfcTemplateBlock<'b>),
-            Style(&'b vize_atelier_sfc::SfcStyleBlock<'b>),
-            Custom(&'b vize_atelier_sfc::SfcCustomBlock<'b>),
-        }
-
         let mut blocks: Vec<(usize, Block<'_>)> = Vec::new();
 
         if let Some(script) = &descriptor.script {
@@ -98,6 +98,14 @@ impl<'a> GlyphFormatter<'a> {
         }
 
         blocks.sort_by_key(|(order, _)| *order);
+
+        if let Some(prologue) = document_prologue(source, &blocks) {
+            output.extend_from_slice(prologue.as_bytes());
+            if !blocks.is_empty() {
+                output.extend_from_slice(newline);
+                output.extend_from_slice(newline);
+            }
+        }
 
         // Format each block in order
         for (i, (_, block)) in blocks.iter().enumerate() {
@@ -318,6 +326,21 @@ impl<'a> GlyphFormatter<'a> {
 
         Ok(())
     }
+}
+
+fn document_prologue<'a>(source: &'a str, blocks: &[(usize, Block<'_>)]) -> Option<&'a str> {
+    let first_tag_start = blocks
+        .iter()
+        .map(|(_, block)| match block {
+            Block::Script(block) => block.loc.tag_start,
+            Block::Template(block) => block.loc.tag_start,
+            Block::Style(block) => block.loc.tag_start,
+            Block::Custom(block) => block.loc.tag_start,
+        })
+        .min()
+        .unwrap_or(source.len());
+    let prologue = source[..first_tag_start].trim();
+    (!prologue.is_empty()).then_some(prologue)
 }
 
 fn write_remaining_attrs(
