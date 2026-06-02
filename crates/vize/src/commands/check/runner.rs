@@ -28,7 +28,7 @@ use super::{
     reporting::{JsonFileResult, JsonOutput},
     tsconfig_inputs::{
         TsconfigDeclarationOptions, collect_ambient_declaration_files, collect_default_check_files,
-        load_tsconfig_declaration_options,
+        load_tsconfig_declaration_options, resolve_tsconfig_for_files,
     },
 };
 
@@ -97,6 +97,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     } else {
         collect_check_files(&args.patterns)
     };
+    let explicit_files = if args.patterns.is_empty() {
+        Vec::new()
+    } else {
+        files.clone()
+    };
     let collect_time = collect_start.elapsed();
 
     // For an explicit subset, only the requested files' diagnostics are
@@ -153,13 +158,20 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);
+    let program_tsconfig_path = if args.patterns.is_empty() {
+        tsconfig_path.clone()
+    } else {
+        resolve_tsconfig_for_files(tsconfig_path.as_deref(), &explicit_files)
+    };
 
     // An explicit file subset (`vize check src/App.vue`) omits ambient
     // declaration files, since nothing imports them; `declare global` types
     // would then be missing and surface as false `TS2304` errors. Pull the
     // tsconfig program's `.d.ts` files back in so global types stay in scope.
-    if !args.patterns.is_empty() && tsconfig_path.is_some() {
-        for path in collect_ambient_declaration_files(&project_root, tsconfig_path.as_deref()) {
+    if !args.patterns.is_empty() && program_tsconfig_path.is_some() {
+        for path in
+            collect_ambient_declaration_files(&project_root, program_tsconfig_path.as_deref())
+        {
             if !files.contains(&path) {
                 files.push(path);
             }
@@ -183,7 +195,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut checker = match BatchTypeChecker::with_options_and_corsa_path(
         &project_root,
         BatchTypeCheckerOptions {
-            tsconfig_path: tsconfig_path.clone(),
+            tsconfig_path: program_tsconfig_path.clone(),
             virtual_ts_options,
         },
         effective_corsa_path.as_deref(),
@@ -259,7 +271,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let emitted_declarations = if args.declaration {
         let declaration_options = resolve_declaration_emit_options(
             args.declaration_dir.as_deref(),
-            tsconfig_path.as_deref(),
+            program_tsconfig_path.as_deref(),
             &project_root,
         );
         let declaration_dir = declaration_options.out_dir.clone();

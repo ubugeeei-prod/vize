@@ -133,9 +133,30 @@ fn collect_default_check_files_inner(
         return collect_supported_files(project_root, &[], &[]);
     };
 
-    let spec = load_tsconfig_inputs(tsconfig_path).unwrap_or_default();
     let mut files = Vec::new();
     let mut seen = FxHashSet::default();
+    for tsconfig_path in collect_tsconfig_project_paths(tsconfig_path) {
+        collect_default_check_files_for_tsconfig(
+            project_root,
+            &tsconfig_path,
+            include_hidden_tsconfig_roots,
+            &mut files,
+            &mut seen,
+        );
+    }
+
+    files.sort();
+    files
+}
+
+fn collect_default_check_files_for_tsconfig(
+    project_root: &Path,
+    tsconfig_path: &Path,
+    include_hidden_tsconfig_roots: bool,
+    files: &mut Vec<PathBuf>,
+    seen: &mut FxHashSet<PathBuf>,
+) {
+    let spec = load_tsconfig_inputs(tsconfig_path).unwrap_or_default();
 
     for file in spec.files {
         let resolved = normalize_input_path(&file.resolve());
@@ -191,9 +212,50 @@ fn collect_default_check_files_inner(
             }
         }
     }
+}
 
-    files.sort();
-    files
+pub(crate) fn resolve_tsconfig_for_files(
+    tsconfig_path: Option<&Path>,
+    files: &[PathBuf],
+) -> Option<PathBuf> {
+    let tsconfig_path = tsconfig_path?;
+    let projects = collect_tsconfig_project_paths(tsconfig_path);
+    let root_project = projects
+        .first()
+        .cloned()
+        .unwrap_or_else(|| normalize_input_path(tsconfig_path));
+    let files = files
+        .iter()
+        .filter(|path| is_supported_check_file(path))
+        .map(|path| normalize_input_path(path))
+        .collect::<Vec<_>>();
+    if files.is_empty() {
+        return Some(root_project);
+    }
+
+    if let Some(owner) = projects
+        .iter()
+        .find(|project| files.iter().all(|file| tsconfig_owns_file(project, file)))
+    {
+        return Some(owner.clone());
+    }
+
+    let mut shared_owner = None::<PathBuf>;
+    for file in &files {
+        let Some(owner) = projects
+            .iter()
+            .find(|project| tsconfig_owns_file(project, file))
+        else {
+            return Some(root_project);
+        };
+        match &shared_owner {
+            Some(shared) if shared != owner => return Some(root_project),
+            Some(_) => {}
+            None => shared_owner = Some(owner.clone()),
+        }
+    }
+
+    shared_owner.or(Some(root_project))
 }
 
 /// Collect ambient declaration (`.d.ts`) files that belong to the tsconfig
@@ -520,6 +582,72 @@ fn matches_tsconfig_patterns(path: &Path, includes: &[GlobSpec], excludes: &[Glo
     !excludes.iter().any(|glob| glob.matches(path))
 }
 
+fn tsconfig_owns_file(tsconfig_path: &Path, file: &Path) -> bool {
+    let Some(spec) = load_tsconfig_inputs(tsconfig_path) else {
+        return false;
+    };
+    let file = normalize_input_path(file);
+    if spec
+        .files
+        .iter()
+        .any(|entry| normalize_input_path(&entry.resolve()) == file)
+    {
+        return true;
+    }
+
+    let default_base_dir = tsconfig_path
+        .parent()
+        .map(Path::to_path_buf)
+        .unwrap_or_default();
+    let includes = if !spec.has_includes && !spec.has_files {
+        GlobSpec::new(&default_base_dir, "**/*")
+            .into_iter()
+            .collect::<Vec<_>>()
+    } else {
+        spec.includes
+    };
+    if includes.is_empty() || !is_supported_check_file(&file) {
+        return false;
+    }
+    let excludes = if !spec.has_excludes {
+        default_exclude_specs(&default_base_dir)
+    } else {
+        spec.excludes
+    };
+
+    matches_tsconfig_patterns(&file, &includes, &excludes)
+}
+
+fn collect_tsconfig_project_paths(tsconfig_path: &Path) -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+    let mut seen = FxHashSet::default();
+    collect_tsconfig_project_paths_inner(tsconfig_path, &mut seen, &mut paths);
+    paths
+}
+
+fn collect_tsconfig_project_paths_inner(
+    tsconfig_path: &Path,
+    seen: &mut FxHashSet<PathBuf>,
+    paths: &mut Vec<PathBuf>,
+) {
+    let resolved = normalize_input_path(tsconfig_path);
+    if !seen.insert(resolved.clone()) {
+        return;
+    }
+    paths.push(resolved.clone());
+
+    let Ok(content) = tracked_read_to_string(&resolved) else {
+        return;
+    };
+    let value = parse_jsonc_value(&content).unwrap_or(Value::Null);
+    for reference in read_reference_entries(&value) {
+        let Some(reference_path) = resolve_referenced_tsconfig(&resolved, &reference) else {
+            continue;
+        };
+        collect_tsconfig_project_paths_inner(&reference_path, seen, paths);
+    }
+}
+
 fn load_tsconfig_inputs(tsconfig_path: &Path) -> Option<TsconfigInputSpec> {
     let mut seen = FxHashSet::default();
     load_tsconfig_inputs_inner(tsconfig_path, &mut seen).ok()
@@ -639,6 +767,19 @@ fn resolve_extended_tsconfig(tsconfig_path: &Path, extends: &str) -> Option<Path
     candidates.into_iter().find(|candidate| candidate.is_file())
 }
 
+fn resolve_referenced_tsconfig(tsconfig_path: &Path, reference: &str) -> Option<PathBuf> {
+    let base_dir = tsconfig_path.parent().unwrap_or(Path::new("."));
+    let reference_path = Path::new(reference);
+    let base = if reference_path.is_absolute() {
+        reference_path.to_path_buf()
+    } else {
+        base_dir.join(reference_path)
+    };
+    let mut candidates = Vec::new();
+    push_tsconfig_candidates(&mut candidates, base);
+    candidates.into_iter().find(|candidate| candidate.is_file())
+}
+
 fn resolve_tsconfig_path_option(base_dir: &Path, value: &str) -> PathBuf {
     let path = Path::new(value);
     if path.is_absolute() {
@@ -753,6 +894,17 @@ fn read_extends_entries(value: &Value) -> Vec<std::string::String> {
             .collect(),
         _ => Vec::new(),
     }
+}
+
+fn read_reference_entries(value: &Value) -> Vec<std::string::String> {
+    value
+        .get("references")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(|item| item.get("path").and_then(Value::as_str))
+        .map(std::string::String::from)
+        .collect()
 }
 
 fn normalize_tsconfig_glob(value: &str) -> std::string::String {
@@ -1008,7 +1160,7 @@ fn strip_trailing_commas(content: &str) -> std::string::String {
 mod tests {
     use super::{
         collect_ambient_declaration_files, collect_default_check_files,
-        load_tsconfig_declaration_options, resolve_extended_tsconfig,
+        load_tsconfig_declaration_options, resolve_extended_tsconfig, resolve_tsconfig_for_files,
     };
     use std::fs;
     use std::path::{Path, PathBuf};
@@ -1439,6 +1591,87 @@ mod tests {
         let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
         assert_eq!(files, vec![case_dir.join("src/entry.ts")]);
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn default_collection_follows_referenced_tsconfigs() {
+        let case_dir = unique_case_dir("tsconfig-references");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join(".generated")).unwrap();
+        fs::create_dir_all(case_dir.join("src")).unwrap();
+        fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+        fs::write(
+            case_dir.join(".generated/types.d.ts"),
+            "declare const X: true",
+        )
+        .unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "files": [],
+  "references": [{ "path": "./.generated/tsconfig.app.json" }]
+}"#,
+        )
+        .unwrap();
+        fs::write(
+            case_dir.join(".generated/tsconfig.app.json"),
+            r#"{
+  "include": ["./types.d.ts", "../src/**/*.vue"]
+}"#,
+        )
+        .unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(files.iter().any(|path| path.ends_with("src/App.vue")));
+        assert!(
+            !files
+                .iter()
+                .any(|path| path.ends_with(".generated/types.d.ts")),
+            "normal default scan keeps hidden generated roots ignored: {files:?}"
+        );
+
+        let ambient =
+            collect_ambient_declaration_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+        assert!(
+            ambient
+                .iter()
+                .any(|path| path.ends_with(".generated/types.d.ts")),
+            "ambient scan should include hidden referenced declaration roots: {ambient:?}"
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn tsconfig_for_files_uses_referenced_owner() {
+        let case_dir = unique_case_dir("tsconfig-reference-owner");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join(".generated")).unwrap();
+        fs::create_dir_all(case_dir.join("src")).unwrap();
+        let app = case_dir.join("src/App.vue");
+        fs::write(&app, "<template />").unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "files": [],
+  "references": [{ "path": "./.generated/tsconfig.app.json" }]
+}"#,
+        )
+        .unwrap();
+        fs::write(
+            case_dir.join(".generated/tsconfig.app.json"),
+            r#"{
+  "include": ["../src/**/*.vue"]
+}"#,
+        )
+        .unwrap();
+
+        let owner = resolve_tsconfig_for_files(Some(&case_dir.join("tsconfig.json")), &[app]);
+
+        assert_eq!(owner, Some(case_dir.join(".generated/tsconfig.app.json")));
 
         let _ = fs::remove_dir_all(&case_dir);
     }

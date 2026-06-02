@@ -990,6 +990,125 @@ const tab: GlobalTabType = "default";
 }
 
 #[test]
+fn check_solution_tsconfig_uses_referenced_project_for_explicit_file() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "solution-tsconfig-references",
+        &[(
+            "src/App.vue",
+            r##"<script setup lang="ts">
+import { getEntry, type Registry } from "#registry";
+
+const entry = getEntry("home");
+const same: Registry["home"] = entry;
+</script>
+
+<template>
+  <div>{{ same.title }}</div>
+</template>
+"##,
+        )],
+    );
+    std::fs::create_dir_all(project_root.join(".generated")).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "files": [],
+  "references": [{ "path": "./.generated/tsconfig.app.json" }]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".generated/tsconfig.app.json"),
+        r##"{
+  "compilerOptions": {
+    "composite": true,
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "#registry": ["./registry"]
+    }
+  },
+  "include": ["./types.d.ts", "../src/**/*.vue"]
+}"##,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".generated/registry.d.ts"),
+        r#"export interface Registry {
+  home: {
+    title: string;
+  };
+}
+
+export declare function getEntry<K extends keyof Registry>(key: K): Registry[K];
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".generated/types.d.ts"),
+        r##"import type { Registry as GeneratedRegistry } from "#registry";
+
+declare global {
+  type AppRegistry = GeneratedRegistry;
+}
+"##,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "src/App.vue",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+    let diagnostics = json["files"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|file| file["diagnostics"].as_array().cloned().unwrap_or_default())
+        .map(|d| d.as_str().unwrap_or_default().to_string())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "diagnostics: {diagnostics:#?}\nstderr:\n{stderr}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .all(|diagnostic| !diagnostic.contains("Cannot find module")),
+        "referenced project path mappings should resolve #registry: {diagnostics:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_template_dollar_globals_use_component_custom_properties() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
