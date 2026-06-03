@@ -92,7 +92,6 @@ function __setup() {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   if ((item)) {
-    void (item); // VIf
     // @vize-map: expr -> 16:20
   }
   if ((item)) {

@@ -100,7 +100,6 @@ function __setup() {
   void (props.title); // Interpolation
   // @vize-map: expr -> 145:156
   if ((props.count)) {
-    void (props.count); // VIf
     // @vize-map: expr -> 176:187
   }
   if ((props.count)) {
