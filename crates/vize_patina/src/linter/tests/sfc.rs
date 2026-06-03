@@ -270,6 +270,50 @@ import MyButton from './MyButton.vue'
 }
 
 #[test]
+fn test_lint_sfc_no_unused_components_allows_dynamic_component_import_reference() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup lang="ts">
+import { computed } from 'vue'
+import Child from './DynamicChild.vue'
+
+const current = computed(() => Child)
+</script>
+
+<template>
+  <component :is="current" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "component imports referenced from script setup should be treated as used: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_lint_sfc_no_unused_components_reports_shadowed_dynamic_component_import() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup lang="ts">
+import { computed } from 'vue'
+import Child from './DynamicChild.vue'
+
+const current = computed((Child) => Child)
+</script>
+
+<template>
+  <component :is="current" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "vue/no-unused-components");
+    assert!(result.diagnostics[0].message.contains("Child"));
+}
+
+#[test]
 fn test_lint_sfc_no_unused_components_matches_options_api_component_alias() {
     let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
     let sfc = r#"<script lang="ts">

@@ -707,6 +707,58 @@ import GenericList from './GenericList.vue'
 }
 
 #[test]
+fn batch_type_checker_accepts_imported_intersection_template_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "imported-intersection-template-props",
+        &[
+            (
+                "src/imported-options.ts",
+                r#"export type PaginationOptions = {
+  direction?: 'up' | 'down'
+  autoLoad?: boolean
+}
+"#,
+            ),
+            (
+                "src/ImportedIntersectionProps.vue",
+                r#"<template>
+  <div>{{ item.id }} {{ direction }} {{ autoLoad }}</div>
+</template>
+
+<script setup lang="ts" generic="T extends { id: string }">
+import type { PaginationOptions } from './imported-options'
+
+const props = withDefaults(defineProps<PaginationOptions & {
+  item: T
+}>(), {
+  autoLoad: true,
+  direction: 'down',
+})
+
+void props
+</script>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "imported intersection props should be exposed to templates, got: {snapshot:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_snapshots_ts_imports_vue_component() {
     if resolve_test_tsgo_binary().is_none() {
         return;
