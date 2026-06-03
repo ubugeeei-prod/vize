@@ -454,6 +454,33 @@ const message = ref('Hello');
     }
 
     #[test]
+    fn test_type_check_escapes_reserved_template_prop_names() {
+        let source = r#"<template>
+    <div :class="{ active: static, class }">{{ default }}</div>
+</template>
+<script setup lang="ts">
+defineProps<{
+    static?: boolean;
+    default?: string;
+    class?: boolean;
+}>();
+</script>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+        let virtual_ts = result.virtual_ts.expect("virtual ts produced");
+
+        assert!(
+            virtual_ts.contains("void ({ active: props[\"static\"], class: props[\"class\"] });"),
+            "{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("void (props[\"default\"]);"),
+            "{virtual_ts}"
+        );
+        assert!(!virtual_ts.contains("active: static"), "{virtual_ts}");
+    }
+
+    #[test]
     fn test_type_severity_serialization() {
         assert_eq!(
             serde_json::to_string(&SfcTypeSeverity::Error).unwrap(),
