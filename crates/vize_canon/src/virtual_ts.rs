@@ -312,7 +312,6 @@ const wrong = 'not a number'
     #[test]
     fn test_dom_event_type_mapping() {
         // Mouse events
-        assert_eq!(get_dom_event_type("click"), "MouseEvent");
         assert_eq!(get_dom_event_type("dblclick"), "MouseEvent");
         assert_eq!(get_dom_event_type("mousedown"), "MouseEvent");
         assert_eq!(get_dom_event_type("mouseup"), "MouseEvent");
@@ -320,6 +319,8 @@ const wrong = 'not a number'
         assert_eq!(get_dom_event_type("contextmenu"), "MouseEvent");
 
         // Pointer events
+        assert_eq!(get_dom_event_type("click"), "PointerEvent");
+        assert_eq!(get_dom_event_type("auxclick"), "PointerEvent");
         assert_eq!(get_dom_event_type("pointerdown"), "PointerEvent");
         assert_eq!(get_dom_event_type("pointerup"), "PointerEvent");
 

@@ -101,11 +101,11 @@ function __setup() {
   // @vize-map: expr -> 346:362
 
   // @click handler
-  (($event: MouseEvent) => {
-    const __vize_handler_10_62 = ((handler: ($event: MouseEvent) => unknown) => handler)((switchComponent));
+  (($event: PointerEvent) => {
+    const __vize_handler_10_62 = ((handler: ($event: PointerEvent) => unknown) => handler)((switchComponent));
     __vize_handler_10_62($event);  // handler expression
     // @vize-map: handler -> 379:403
-  })({} as MouseEvent);
+  })({} as PointerEvent);
 
   // Reference setup bindings (used in template/CSS v-bind)
   void CompA; void CompB; void currentComponent; void markRaw; void ref; void switchComponent;

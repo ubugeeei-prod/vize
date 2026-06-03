@@ -97,11 +97,11 @@ function __setup() {
   // @vize-map: expr -> 266:288
 
   // @click handler
-  (($event: MouseEvent) => {
-    const __vize_handler_7_11 = ((handler: ($event: MouseEvent) => unknown) => handler)((handleClick));
+  (($event: PointerEvent) => {
+    const __vize_handler_7_11 = ((handler: ($event: PointerEvent) => unknown) => handler)((handleClick));
     __vize_handler_7_11($event);  // handler expression
     // @vize-map: handler -> 219:239
-  })({} as MouseEvent);
+  })({} as PointerEvent);
 
   // Reference setup bindings (used in template/CSS v-bind)
   void emit; void handleClick;
