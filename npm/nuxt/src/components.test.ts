@@ -147,6 +147,57 @@ void test("Nuxt component resolver reads generated d.ts, runtime fallbacks, and 
   }
 });
 
+void test("Nuxt component resolver reads GlobalComponents declarations", () => {
+  const fixture = createFixture();
+  try {
+    const helloCardPath = writeFile(path.join(fixture.rootDir, "app/components/HelloCard.vue"));
+    const quotedWidgetPath = writeFile(
+      path.join(fixture.rootDir, "app/components/widgets/QuotedWidget.vue"),
+    );
+    writeFile(
+      path.join(fixture.buildDir, "types/components.d.ts"),
+      [
+        `declare module "vue" {`,
+        `  export interface GlobalComponents {`,
+        `    HelloCard: typeof import(${JSON.stringify(
+          path.relative(path.join(fixture.buildDir, "types"), helloCardPath),
+        )})["default"]`,
+        `    "QuotedWidget": typeof import(${JSON.stringify(
+          path.relative(path.join(fixture.buildDir, "types"), quotedWidgetPath),
+        )})["default"]`,
+        `  }`,
+        `}`,
+        `export {}`,
+        "",
+      ].join("\n"),
+    );
+
+    const resolver = createNuxtComponentResolver({
+      buildDir: fixture.buildDir,
+      rootDir: fixture.rootDir,
+    });
+
+    assert.deepEqual(
+      resolver.resolve("HelloCard"),
+      {
+        exportName: "default",
+        filePath: path.join(fixture.rootDir, "app/components/HelloCard.vue"),
+      },
+      "Nuxt 4 GlobalComponents d.ts entries should resolve app components",
+    );
+    assert.deepEqual(
+      resolver.resolve("quoted-widget"),
+      {
+        exportName: "default",
+        filePath: path.join(fixture.rootDir, "app/components/widgets/QuotedWidget.vue"),
+      },
+      "quoted GlobalComponents entries should get kebab aliases",
+    );
+  } finally {
+    fs.rmSync(fixture.rootDir, { recursive: true, force: true });
+  }
+});
+
 void test("Nuxt component import injection rewrites resolved runtime components", () => {
   const fixture = createFixture();
   try {

@@ -18,6 +18,7 @@ use super::dts::{
     parse_declared_global_values, parse_interface_members_with_rewritten_imports,
     rewrite_relative_specifier,
 };
+use vize_canon::virtual_ts::TemplateGlobal;
 
 pub(super) fn detect_nuxt_auto_imports(options: &mut VirtualTsOptions, cwd: &Path) {
     if !is_nuxt_project(cwd) {
@@ -48,6 +49,7 @@ pub(super) fn detect_nuxt_auto_imports(options: &mut VirtualTsOptions, cwd: &Pat
     );
     collect_plugin_injection_stubs(cwd, &mut collected, &mut seen_names);
     collect_fallback_stubs(&mut collected, &mut seen_names);
+    collect_generated_template_globals(cwd, options, &seen_names);
 
     for stub in &collected {
         if let Some(name) = declared_name(stub)
@@ -121,6 +123,7 @@ fn collect_generated_stubs(
         }
     }
 
+    collect_root_generated_global_stubs(cwd, stubs, seen_names);
     collect_root_generated_component_stubs(cwd, stubs, seen_names, external_template_bindings);
 
     if found_typed_imports {
@@ -171,26 +174,27 @@ fn collect_generated_stubs(
     }
 }
 
+fn collect_root_generated_global_stubs(
+    cwd: &Path,
+    stubs: &mut Vec<String>,
+    seen_names: &mut FxHashSet<String>,
+) {
+    for path in root_generated_dts_files(cwd) {
+        if let Ok(values) = parse_declared_global_values(path.as_path()) {
+            for (name, type_annotation) in values {
+                push_declared_const(stubs, seen_names, &name, &type_annotation);
+            }
+        }
+    }
+}
+
 fn collect_root_generated_component_stubs(
     cwd: &Path,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
 ) {
-    let nuxt_dir = cwd.join(".nuxt");
-    let Ok(entries) = fs::read_dir(&nuxt_dir) else {
-        return;
-    };
-
-    for entry in entries.flatten() {
-        let path = entry.path();
-        let is_dts = path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| name.ends_with(".d.ts"));
-        if !path.is_file() || !is_dts {
-            continue;
-        }
+    for path in root_generated_dts_files(cwd) {
         collect_global_component_stubs(
             cwd,
             path.as_path(),
@@ -199,6 +203,25 @@ fn collect_root_generated_component_stubs(
             external_template_bindings,
         );
     }
+}
+
+fn root_generated_dts_files(cwd: &Path) -> Vec<std::path::PathBuf> {
+    let nuxt_dir = cwd.join(".nuxt");
+    let Ok(entries) = fs::read_dir(&nuxt_dir) else {
+        return Vec::new();
+    };
+
+    entries
+        .flatten()
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.is_file()
+                && path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.ends_with(".d.ts"))
+        })
+        .collect()
 }
 
 fn collect_global_component_stubs(
@@ -222,6 +245,96 @@ fn collect_global_component_stubs(
             rewrite_component_imports_for_virtual_project(type_annotation.as_str(), cwd);
         external_template_bindings.insert(name.clone());
         push_declared_const(stubs, seen_names, name.as_str(), type_annotation.as_str());
+    }
+}
+
+fn collect_generated_template_globals(
+    cwd: &Path,
+    options: &mut VirtualTsOptions,
+    seen_auto_imports: &FxHashSet<String>,
+) {
+    let mut seen_globals = options
+        .template_globals
+        .iter()
+        .map(|global| global.name.clone())
+        .collect::<FxHashSet<_>>();
+
+    for path in generated_dts_files(cwd) {
+        let Ok(members) = parse_interface_members_with_rewritten_imports(
+            path.as_path(),
+            "interface ComponentCustomProperties",
+        ) else {
+            continue;
+        };
+
+        for (name, _type_annotation) in members {
+            let Some(name) = normalize_component_binding_name(name.as_str()) else {
+                continue;
+            };
+            if !name.starts_with('$') {
+                continue;
+            }
+            push_template_global(options, &mut seen_globals, name.as_str(), "any");
+        }
+    }
+
+    if seen_auto_imports.contains("useI18n") || seen_auto_imports.contains("useLocalePath") {
+        collect_i18n_template_globals(options, &mut seen_globals);
+    }
+}
+
+fn generated_dts_files(cwd: &Path) -> Vec<std::path::PathBuf> {
+    let mut files = root_generated_dts_files(cwd);
+    let nuxt_types_dir = cwd.join(".nuxt/types");
+    if nuxt_types_dir.exists() {
+        let walker = WalkBuilder::new(&nuxt_types_dir)
+            .hidden(false)
+            .standard_filters(false)
+            .build();
+
+        for entry in walker.flatten() {
+            let path = entry.path();
+            let is_dts = path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.ends_with(".d.ts"));
+            if path.is_file() && is_dts {
+                files.push(path.to_path_buf());
+            }
+        }
+    }
+    files
+}
+
+fn collect_i18n_template_globals(
+    options: &mut VirtualTsOptions,
+    seen_globals: &mut FxHashSet<String>,
+) {
+    for (name, type_annotation) in [
+        ("$t", "(...args: any[]) => any"),
+        ("$rt", "(...args: any[]) => any"),
+        ("$d", "(...args: any[]) => any"),
+        ("$n", "(...args: any[]) => any"),
+        ("$tm", "(...args: any[]) => any"),
+        ("$te", "(...args: any[]) => boolean"),
+        ("$i18n", "any"),
+    ] {
+        push_template_global(options, seen_globals, name, type_annotation);
+    }
+}
+
+fn push_template_global(
+    options: &mut VirtualTsOptions,
+    seen_globals: &mut FxHashSet<String>,
+    name: &str,
+    type_annotation: &str,
+) {
+    if seen_globals.insert(name.to_compact_string()) {
+        options.template_globals.push(TemplateGlobal {
+            name: name.to_compact_string(),
+            type_annotation: type_annotation.to_compact_string(),
+            default_value: "undefined as any".into(),
+        });
     }
 }
 
@@ -888,6 +1001,69 @@ export {}
                 .external_template_bindings
                 .iter()
                 .any(|name| name == "ClientOnly")
+        );
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn detects_root_nuxt_imports_and_i18n_template_globals() {
+        let project_root = unique_case_dir("nuxt-root-imports");
+        let _ = std::fs::remove_dir_all(&project_root);
+        std::fs::create_dir_all(project_root.join(".nuxt/types")).unwrap();
+        std::fs::create_dir_all(project_root.join("app/composables")).unwrap();
+        std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+        std::fs::write(
+            project_root.join(".nuxt/imports.d.ts"),
+            r#"declare global {
+  const useI18n: typeof import('../app/composables/i18n')['useI18n']
+  const useLocalePath: typeof import('../app/composables/i18n')['useLocalePath']
+  const queryCollection: typeof import('../app/composables/content')['queryCollection']
+}
+export {}
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            project_root.join(".nuxt/types/i18n.d.ts"),
+            r#"declare module 'vue' {
+  export interface ComponentCustomProperties {
+    $t: (...args: any[]) => string
+  }
+}
+export {}
+"#,
+        )
+        .unwrap();
+
+        let mut options = VirtualTsOptions::default();
+        detect_nuxt_auto_imports(&mut options, &project_root);
+
+        for name in ["useI18n", "useLocalePath", "queryCollection"] {
+            assert!(
+                options
+                    .auto_import_stubs
+                    .iter()
+                    .any(|stub| stub.contains(&format!("declare const {name}:"))),
+                "expected {name} stub, got: {:#?}",
+                options.auto_import_stubs
+            );
+        }
+        assert!(
+            options
+                .template_globals
+                .iter()
+                .any(|global| global.name == "$t"),
+            "expected $t template global, got: {:#?}",
+            options.template_globals
+        );
+        assert!(
+            options
+                .template_globals
+                .iter()
+                .any(|global| global.name == "$te"),
+            "expected i18n fallback template globals, got: {:#?}",
+            options.template_globals
         );
 
         let _ = std::fs::remove_dir_all(&project_root);

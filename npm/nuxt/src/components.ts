@@ -29,6 +29,8 @@ const COMPONENTS_IMPORT_RE = /import\s+(?!type\b)\{([^}]*)\}\s+from\s+(["'])#com
 const COMPONENT_EXT_RE = /\.(?:[cm]?js|ts|vue)$/;
 const DTS_COMPONENT_RE =
   /^export const (\w+): (?:LazyComponent<)?typeof import\((["'])(.+?)\2\)(?:\.([A-Za-z_$][\w$]*)|\[['"]([A-Za-z_$][\w$]*)['"]\])>?/;
+const DTS_GLOBAL_COMPONENT_RE =
+  /^(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\??:\s*(?:LazyComponent<)?typeof import\((["'])(.+?)\4\)(?:\.([A-Za-z_$][\w$]*)|\[['"]([A-Za-z_$][\w$]*)['"]\])>?;?$/;
 const DTS_EXT_RE = /\.d\.ts$/;
 const FILE_EXTS = [".js", ".mjs", ".ts", ".vue"];
 const CLIENT_COMPONENT_RE = /\.client\.(?:[cm]?js|ts|vue)$/;
@@ -267,12 +269,54 @@ function loadDtsComponents(rootDir: string, buildDir: string): Map<string, NuxtC
   const resolved = new Map<string, NuxtComponentImport>();
 
   for (const filePath of getNuxtComponentDtsFiles(rootDir, buildDir)) {
+    let inGlobalComponents = false;
+    let braceDepth = 0;
+
     forEachLine(fs.readFileSync(filePath, "utf-8"), (line) => {
-      const match = line.match(DTS_COMPONENT_RE);
-      if (!match) {
+      const trimmed = line.trim();
+      if (!inGlobalComponents && trimmed.includes("interface GlobalComponents")) {
+        inGlobalComponents = true;
+        braceDepth = countBraceDelta(trimmed);
         return;
       }
 
+      if (inGlobalComponents) {
+        braceDepth += countBraceDelta(trimmed);
+        if (braceDepth <= 0) {
+          inGlobalComponents = false;
+          return;
+        }
+
+        const globalMatch = trimmed.match(DTS_GLOBAL_COMPONENT_RE);
+        if (globalMatch) {
+          const doubleQuotedName = globalMatch[1];
+          const singleQuotedName = globalMatch[2];
+          const bareName = globalMatch[3];
+          const importPath = globalMatch[5]!;
+          const exportNameDot = globalMatch[6];
+          const exportNameBracket = globalMatch[7];
+          const name = doubleQuotedName || singleQuotedName || bareName;
+          const exportName = exportNameDot || exportNameBracket;
+          if (name && exportName) {
+            const absoluteImportPath = resolveImportPath(
+              path.resolve(path.dirname(filePath), importPath),
+            );
+            const componentImport = createComponentImport(
+              absoluteImportPath,
+              exportName,
+              name.startsWith("Lazy"),
+            );
+            addComponentAlias(resolved, name, componentImport);
+            addLazyComponentAlias(resolved, name, componentImport);
+          }
+        }
+        return;
+      }
+
+      const match = trimmed.match(DTS_COMPONENT_RE);
+      if (!match) {
+        return;
+      }
       const [, name, , importPath, exportNameDot, exportNameBracket] = match;
       const exportName = exportNameDot || exportNameBracket;
       if (!exportName) {
@@ -294,6 +338,18 @@ function loadDtsComponents(rootDir: string, buildDir: string): Map<string, NuxtC
   }
 
   return resolved;
+}
+
+function countBraceDelta(line: string): number {
+  let delta = 0;
+  for (const ch of line) {
+    if (ch === "{") {
+      delta++;
+    } else if (ch === "}") {
+      delta--;
+    }
+  }
+  return delta;
 }
 
 function getProjectPackageNames(moduleNames: string[] | undefined): string[] {
