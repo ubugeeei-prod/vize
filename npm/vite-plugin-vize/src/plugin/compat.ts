@@ -77,6 +77,33 @@ export function createStylePostTransformPlugin(): Plugin {
   };
 }
 
+function stripQuery(id: string): string {
+  const queryStart = id.search(/[?#]/);
+  return queryStart === -1 ? id : id.slice(0, queryStart);
+}
+
+function isSfcLikeSource(code: string): boolean {
+  return /^<(?:template|script|style)(?:\s|>|\/)/.test(code.trimStart());
+}
+
+function shouldPostTransformSfcLikeModule(state: VizePluginState, id: string): boolean {
+  const filename = stripQuery(id);
+  if (
+    filename.endsWith(".vue") ||
+    filename.endsWith(".vue.ts") ||
+    filename.includes("node_modules")
+  ) {
+    return false;
+  }
+  if (filename.endsWith(".setup.ts")) {
+    return true;
+  }
+  if (state.filter(filename) || state.filter(id)) {
+    return true;
+  }
+  return /\.(?:md|markdown)$/i.test(filename);
+}
+
 // Post-transform plugin to handle virtual SFC content from other plugins.
 export function createPostTransformPlugin(state: VizePluginState): Plugin {
   return {
@@ -87,13 +114,7 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
       id: string,
       transformOptions?: { ssr?: boolean },
     ): Promise<TransformResult | null> {
-      if (
-        !id.endsWith(".vue") &&
-        !id.endsWith(".vue.ts") &&
-        !id.includes("node_modules") &&
-        id.endsWith(".setup.ts") &&
-        /<script\s+setup[\s>]/.test(code)
-      ) {
+      if (shouldPostTransformSfcLikeModule(state, id) && isSfcLikeSource(code)) {
         state.logger.log(`post-transform: compiling virtual SFC content from ${id}`);
         try {
           const isSsr = !!transformOptions?.ssr;
