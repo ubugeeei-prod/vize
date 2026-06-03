@@ -2,6 +2,8 @@ import type { VizeNuxtCompilerOptions } from "./compiler-options.ts";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 
+export const NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE = /\.takumi\.vue(?:\?|$)/;
+
 function normalizeUrlPrefix(value: string): string {
   const withLeadingSlash = value.startsWith("/") ? value : `/${value}`;
   return withLeadingSlash.endsWith("/") ? withLeadingSlash : `${withLeadingSlash}/`;
@@ -27,15 +29,38 @@ export function buildNuxtCompilerOptions(
     scanPatterns: [],
   };
 
+  if (overrides.customRenderer === true && overrides.exclude !== undefined) {
+    defaults.exclude = overrides.exclude;
+  } else if (overrides.customRenderer !== true) {
+    defaults.exclude = mergeNuxtCompilerPatterns(
+      NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+      overrides.exclude,
+    );
+  }
+
   for (const [key, value] of Object.entries(overrides) as Array<
     [keyof VizeNuxtCompilerOptions, VizeNuxtCompilerOptions[keyof VizeNuxtCompilerOptions]]
   >) {
+    if (key === "exclude") {
+      continue;
+    }
     if (value !== undefined) {
       defaults[key] = value as never;
     }
   }
 
   return defaults;
+}
+
+function mergeNuxtCompilerPatterns(
+  defaultPattern: NonNullable<VizeNuxtCompilerOptions["exclude"]>,
+  userPattern: VizeNuxtCompilerOptions["exclude"],
+): VizeNuxtCompilerOptions["exclude"] {
+  if (userPattern == null) {
+    return defaultPattern;
+  }
+
+  return [defaultPattern, ...(Array.isArray(userPattern) ? userPattern : [userPattern])];
 }
 
 export function isVizeVirtualVueModuleId(id: string): boolean {

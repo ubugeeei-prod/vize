@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import {
+  NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
   resolveNuxtBridgeOptions,
   resolveNuxtCompilerOptions,
   resolveNuxtDevOptions,
@@ -12,6 +13,7 @@ assert.deepEqual(
   resolveNuxtCompilerOptions("/repo/app", "/docs/", "_assets", true),
   {
     devUrlBase: "/docs/_assets/",
+    exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
     root: "/repo/app",
     scanPatterns: [],
   },
@@ -40,11 +42,25 @@ assert.deepEqual(
   }),
   {
     devUrlBase: "/_nuxt/",
+    exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
     root: "/repo/app",
     scanPatterns: [],
     vueVersion: 1,
   },
   "Vite-based legacy Vue projects should pass host-compiler compatibility mode to the Vite plugin",
+);
+
+assert.deepEqual(
+  resolveNuxtCompilerOptions("/repo/app", "/", "/_nuxt/", {
+    exclude: [/\.stories\.vue$/],
+  }),
+  {
+    devUrlBase: "/_nuxt/",
+    exclude: [NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE, /\.stories\.vue$/],
+    root: "/repo/app",
+    scanPatterns: [],
+  },
+  "Nuxt compiler defaults should skip Takumi OG image SFCs while preserving user excludes",
 );
 
 assert.deepEqual(

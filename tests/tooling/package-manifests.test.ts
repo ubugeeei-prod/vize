@@ -316,11 +316,12 @@ test("native preview runtime is declared for vize check users", () => {
   };
 
   assert.equal(packageJson.dependencies?.["@typescript/native-preview"], undefined);
-  assert.equal(packageJson.optionalDependencies?.["@typescript/native-preview"], undefined);
-  assert.equal(packageJson.peerDependencies?.["@typescript/native-preview"], "catalog:typescript");
-  assert.deepEqual(packageJson.peerDependenciesMeta?.["@typescript/native-preview"], {
-    optional: true,
-  });
+  assert.equal(
+    packageJson.optionalDependencies?.["@typescript/native-preview"],
+    "catalog:typescript",
+  );
+  assert.equal(packageJson.peerDependencies?.["@typescript/native-preview"], undefined);
+  assert.equal(packageJson.peerDependenciesMeta?.["@typescript/native-preview"], undefined);
 });
 
 test("musea Nuxt tests the same vue-router major that it declares as a peer", () => {

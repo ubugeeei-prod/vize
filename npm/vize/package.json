@@ -71,16 +71,15 @@
     "vite-plus": "catalog:vite-stack"
   },
   "peerDependencies": {
-    "@pkl-community/pkl": "catalog:repo-tooling",
-    "@typescript/native-preview": "catalog:typescript"
+    "@pkl-community/pkl": "catalog:repo-tooling"
   },
   "peerDependenciesMeta": {
-    "@typescript/native-preview": {
-      "optional": true
-    },
     "@pkl-community/pkl": {
       "optional": true
     }
+  },
+  "optionalDependencies": {
+    "@typescript/native-preview": "catalog:typescript"
   },
   "engines": {
     "node": ">=22"

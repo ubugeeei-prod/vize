@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
+  NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
   buildNuxtCompilerOptions,
   buildNuxtDevAssetBase,
   isVizeGeneratedVueModuleId,
@@ -35,6 +36,7 @@ assert.deepStrictEqual(
   buildNuxtCompilerOptions("/repo/app", "/2026/", "/_nuxt/"),
   {
     devUrlBase: "/2026/_nuxt/",
+    exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
     root: "/repo/app",
     scanPatterns: [],
   },
@@ -54,6 +56,7 @@ assert.deepStrictEqual(
     configFile: "vize.nuxt.config.ts",
     debug: true,
     devUrlBase: "/2026/_nuxt/",
+    exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
     ignorePatterns: ["node_modules/**", ".nuxt/**", "fixtures/**"],
     root: "/repo/app",
     scanPatterns: ["app/**/*.vue", "layers/**/*.vue"],
@@ -61,6 +64,21 @@ assert.deepStrictEqual(
     vapor: true,
   },
   "Nuxt compiler options should forward Vite plugin overrides while keeping Nuxt defaults",
+);
+
+assert.deepStrictEqual(
+  buildNuxtCompilerOptions("/repo/app", "/2026/", "/_nuxt/", {
+    customRenderer: true,
+    exclude: /\.custom-renderer-only\.vue$/,
+  }),
+  {
+    customRenderer: true,
+    devUrlBase: "/2026/_nuxt/",
+    exclude: /\.custom-renderer-only\.vue$/,
+    root: "/repo/app",
+    scanPatterns: [],
+  },
+  "custom renderer Nuxt compiler options should preserve explicit excludes without adding Takumi defaults",
 );
 
 assert.equal(

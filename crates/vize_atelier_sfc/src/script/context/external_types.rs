@@ -230,6 +230,14 @@ fn is_type_re_export(export_decl: &ExportNamedDeclaration<'_>, source: &str) -> 
         return true;
     }
 
+    if export_decl
+        .specifiers
+        .iter()
+        .any(|specifier| specifier.export_kind.is_type())
+    {
+        return true;
+    }
+
     let span = export_decl.span;
     let start = span.start as usize;
     let end = span.end as usize;
@@ -259,7 +267,11 @@ fn path_key(path: &Path) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{resolve_at_src_alias, resolve_import_path};
+    use super::{is_type_re_export, resolve_at_src_alias, resolve_import_path};
+    use oxc_allocator::Allocator;
+    use oxc_ast::ast::Statement;
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
     use std::path::{Path, PathBuf};
 
     fn temp_project_dir(test_name: &str) -> PathBuf {
@@ -341,6 +353,73 @@ const props = defineProps<ParentProps>();
         ctx.analyze();
 
         assert!(ctx.interfaces.contains_key("BaseProps"));
+        assert_eq!(
+            ctx.bindings.bindings.get("as"),
+            Some(&crate::types::BindingType::Props)
+        );
+        assert_eq!(
+            ctx.bindings.bindings.get("asChild"),
+            Some(&crate::types::BindingType::Props)
+        );
+
+        let _ = std::fs::remove_dir_all(project);
+    }
+
+    #[test]
+    fn detects_multiline_mixed_type_reexports() {
+        let source = r#"export {
+  default as Content,
+  type ContentProps,
+} from "./Content.vue";
+"#;
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
+        let Statement::ExportNamedDeclaration(export_decl) = &parsed.program.body[0] else {
+            panic!("expected export declaration");
+        };
+
+        assert!(is_type_re_export(export_decl, source));
+    }
+
+    #[test]
+    fn collects_mixed_type_reexports_from_vue_files() {
+        let project = temp_project_dir("mixed-vue-type-reexport");
+        let components = project.join("src/components");
+        std::fs::create_dir_all(&components).unwrap();
+        std::fs::write(
+            components.join("Content.vue"),
+            r#"<script lang="ts">
+export interface ContentProps {
+  as?: string;
+  asChild?: boolean;
+}
+</script>"#,
+        )
+        .unwrap();
+        std::fs::write(
+            components.join("index.ts"),
+            r#"export {
+  default as Content,
+  type ContentProps,
+} from "./Content.vue";
+"#,
+        )
+        .unwrap();
+
+        let parent = components.join("Parent.vue");
+        let source = r#"
+import type { ContentProps } from "./index";
+
+interface ParentProps extends ContentProps {}
+
+const props = defineProps<ParentProps>();
+"#;
+
+        let mut ctx = super::ScriptCompileContext::new(source);
+        ctx.collect_imported_types_from_path(source, parent.to_string_lossy().as_ref());
+        ctx.analyze();
+
+        assert!(ctx.interfaces.contains_key("ContentProps"));
         assert_eq!(
             ctx.bindings.bindings.get("as"),
             Some(&crate::types::BindingType::Props)
