@@ -32,10 +32,10 @@ import {
   buildNuxtDevAssetBase,
   isVizeGeneratedVueModuleId,
   isVizeVirtualVueModuleId,
-  normalizeNuxtInjectedKeysForVizeVirtualModule,
-  preserveExplicitVueImportsFromVizeModuleSource,
   normalizeVizeVirtualVueModuleId,
   preserveExplicitVueImportsFromNuxtAutoImports,
+  preserveExplicitVueImportsFromVizeModuleSource,
+  stabilizeNuxtInjectedKeysForVizeVirtualModule,
 } from "./utils";
 import { appendOriginalVueSourceForUnoCss } from "./unocss";
 
@@ -422,8 +422,10 @@ export default defineNuxtModule<VizeNuxtOptions>({
         name: "vizejs:nuxt-transform-bridge",
         enforce: "post" as const,
         async transform(code: string, id: string, ...args: unknown[]) {
-          // Only process vize virtual modules
-          if (!isVizeVirtualVueModuleId(id)) return;
+          // Only process vize-generated Vue modules. In dev, Vite can call
+          // transform hooks with the plugin-visible `.vue.ts?vue&vize` ID
+          // rather than Rollup's internal `\0` virtual ID.
+          if (!isVizeGeneratedVueModuleId(id)) return;
 
           let result = code;
           let changed = false;
@@ -481,7 +483,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
           }
 
           if (bridgeOptions.stableInjectedKeys) {
-            const stableKeyResult = normalizeNuxtInjectedKeysForVizeVirtualModule(result, id);
+            const stableKeyResult = stabilizeNuxtInjectedKeysForVizeVirtualModule(result, id);
             if (stableKeyResult !== result) {
               result = stableKeyResult;
               changed = true;

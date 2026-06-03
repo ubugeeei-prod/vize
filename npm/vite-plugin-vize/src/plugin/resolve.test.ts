@@ -168,6 +168,410 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const parentRoot = createTempRoot("regular-vue-project-pnpm-hoist");
+  const projectRoot = path.join(parentRoot, "fixture-app");
+  writeFixtureFile(path.join(projectRoot, "package.json"), "{}");
+  const importer = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "nuxt",
+    "dist",
+    "app",
+    "entry.js",
+  );
+  writeFixtureFile(importer, "import { createApp } from 'vue';");
+
+  const parentVue = path.join(
+    parentRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.6.0-parent",
+    "node_modules",
+    "vue",
+    "dist",
+    "vue.runtime.esm-bundler.js",
+  );
+  const projectVuePackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.6.0-project",
+    "node_modules",
+    "vue",
+  );
+  const projectVueHoist = path.join(projectRoot, "node_modules", ".pnpm", "node_modules", "vue");
+  const projectVueBundlerEntry = path.join(
+    projectVuePackage,
+    "dist",
+    "vue.runtime.esm-bundler.js",
+  );
+
+  writeFixtureFile(parentVue, "export const parent = true;");
+  writeFixtureFile(
+    path.join(projectVuePackage, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(projectVuePackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(projectVueBundlerEntry, "export const project = true;");
+  fs.mkdirSync(path.dirname(projectVueHoist), { recursive: true });
+  fs.symlinkSync(projectVuePackage, projectVueHoist, "dir");
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async () => ({ id: parentVue }),
+    },
+    createState(projectRoot),
+    "vue",
+    importer,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    projectVueBundlerEntry,
+    "Vue runtime imports from project-local runtime modules should prefer the project pnpm hoist over a parent workspace runtime",
+  );
+}
+
+{
+  const parentRoot = createTempRoot("build-vue-project-pnpm-hoist");
+  const projectRoot = path.join(parentRoot, "fixture-app");
+  writeFixtureFile(path.join(projectRoot, "package.json"), "{}");
+  const importer = path.join(projectRoot, "app", "components", "Header.vue");
+  writeFixtureFile(importer, "<template />\n");
+
+  const parentVuePackage = path.join(parentRoot, "node_modules", "vue");
+  const parentVueEntry = path.join(parentVuePackage, "dist", "vue.runtime.esm-bundler.js");
+  const projectVuePackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.6.0-project",
+    "node_modules",
+    "vue",
+  );
+  const projectVueHoist = path.join(projectRoot, "node_modules", ".pnpm", "node_modules", "vue");
+  const projectVueBundlerEntry = path.join(
+    projectVuePackage,
+    "dist",
+    "vue.runtime.esm-bundler.js",
+  );
+
+  writeFixtureFile(
+    path.join(parentVuePackage, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(parentVuePackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(parentVueEntry, "export const parent = true;");
+  writeFixtureFile(
+    path.join(projectVuePackage, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(projectVuePackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(projectVueBundlerEntry, "export const project = true;");
+  fs.mkdirSync(path.dirname(projectVueHoist), { recursive: true });
+  fs.symlinkSync(projectVuePackage, projectVueHoist, "dir");
+
+  const state = createState(projectRoot);
+  state.server = null;
+  const resolved = await resolveIdHook(
+    {
+      resolve: async () => ({ id: parentVueEntry }),
+    },
+    state,
+    "vue",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    projectVueBundlerEntry,
+    "Build Vue imports from virtual SFC modules should prefer project-local pnpm Vue over parent workspace resolution",
+  );
+}
+
+{
+  const parentRoot = createTempRoot("build-vue-peer-dependency-pnpm-hoist");
+  const projectRoot = path.join(parentRoot, "fixture-app");
+  writeFixtureFile(path.join(projectRoot, "package.json"), "{}");
+  const importer = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "motion-v@2.2.1_vue@3.6.0-project",
+    "node_modules",
+    "motion-v",
+    "dist",
+    "index.mjs",
+  );
+  writeFixtureFile(importer, "import { ref } from 'vue';");
+
+  const parentVuePackage = path.join(parentRoot, "node_modules", "vue");
+  const parentVueEntry = path.join(parentVuePackage, "dist", "vue.runtime.esm-bundler.js");
+  const projectVuePackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.6.0-project",
+    "node_modules",
+    "vue",
+  );
+  const dependencyVueLink = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "motion-v@2.2.1_vue@3.6.0-project",
+    "node_modules",
+    "vue",
+  );
+  const projectVueBundlerEntry = path.join(
+    projectVuePackage,
+    "dist",
+    "vue.runtime.esm-bundler.js",
+  );
+
+  writeFixtureFile(
+    path.join(parentVuePackage, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(parentVuePackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(parentVueEntry, "export const parent = true;");
+  writeFixtureFile(
+    path.join(projectVuePackage, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(projectVuePackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(projectVueBundlerEntry, "export const project = true;");
+  fs.mkdirSync(path.dirname(dependencyVueLink), { recursive: true });
+  fs.symlinkSync(projectVuePackage, dependencyVueLink, "dir");
+
+  const state = createState(projectRoot);
+  state.server = null;
+  const resolved = await resolveIdHook(
+    {
+      resolve: async () => ({ id: parentVueEntry }),
+    },
+    state,
+    "vue",
+    importer,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    projectVueBundlerEntry,
+    "Build Vue imports from project-local peer dependencies should share the project Vue runtime",
+  );
+}
+
+{
+  const parentRoot = createTempRoot("regular-vue-peer-project-runtime");
+  const projectRoot = path.join(parentRoot, "fixture-app");
+  writeFixtureFile(path.join(projectRoot, "package.json"), "{}");
+  const importer = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "nuxt",
+    "dist",
+    "pages",
+    "runtime",
+    "page.js",
+  );
+  writeFixtureFile(importer, "import { RouterView } from 'vue-router';");
+
+  const parentRouter = path.join(
+    parentRoot,
+    "node_modules",
+    ".pnpm",
+    "vue-router@4.5.1-parent",
+    "node_modules",
+    "vue-router",
+    "dist",
+    "vue-router.mjs",
+  );
+  const projectRouterPackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue-router@5.0.3-project",
+    "node_modules",
+    "vue-router",
+  );
+  const projectRouterLink = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "vue-router",
+  );
+  const projectRouterEntry = path.join(projectRouterPackage, "dist", "vue-router.js");
+
+  writeFixtureFile(parentRouter, "export const parent = true;");
+  writeFixtureFile(
+    path.join(projectRouterPackage, "package.json"),
+    JSON.stringify(
+      {
+        name: "vue-router",
+        exports: {
+          ".": {
+            import: "./dist/vue-router.js",
+            require: "./index.cjs",
+          },
+          "./package.json": "./package.json",
+        },
+        main: "index.cjs",
+      },
+      null,
+      2,
+    ),
+  );
+  writeFixtureFile(path.join(projectRouterPackage, "index.cjs"), "module.exports = {};");
+  writeFixtureFile(projectRouterEntry, "export const RouterView = {};");
+  fs.mkdirSync(path.dirname(projectRouterLink), { recursive: true });
+  fs.symlinkSync(projectRouterPackage, projectRouterLink, "dir");
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async () => ({ id: parentRouter }),
+    },
+    createState(projectRoot),
+    "vue-router",
+    importer,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    projectRouterEntry,
+    "Vue peer runtime imports from project-local runtime modules should prefer the importer-local package over a parent workspace runtime",
+  );
+}
+
+{
+  const parentRoot = createTempRoot("regular-vue-peer-nuxt-runtime");
+  const projectRoot = path.join(parentRoot, "fixture-app");
+  writeFixtureFile(path.join(projectRoot, "package.json"), "{}");
+
+  const appImporter = path.join(projectRoot, "composables", "content-render.ts");
+  const nuxtVirtualImporter = `/@id/virtual:nuxt:${encodeURIComponent(
+    path.join(projectRoot, ".nuxt", "pages.mjs"),
+  )}`;
+  writeFixtureFile(appImporter, "import { RouterLink } from 'vue-router';");
+
+  const nuxtPackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "nuxt",
+  );
+  const nuxtPackageLink = path.join(projectRoot, "node_modules", "nuxt");
+  const nuxtRouterPackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue-router@4.5.1-nuxt",
+    "node_modules",
+    "vue-router",
+  );
+  const projectHoistedRouterPackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue-router@4.6.4-hoisted",
+    "node_modules",
+    "vue-router",
+  );
+  const projectHoistedRouterLink = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "node_modules",
+    "vue-router",
+  );
+  const nuxtRouterLink = path.join(nuxtPackage, "node_modules", "vue-router");
+  const nuxtRouterEntry = path.join(nuxtRouterPackage, "dist", "vue-router.mjs");
+  const projectHoistedRouterEntry = path.join(
+    projectHoistedRouterPackage,
+    "dist",
+    "vue-router.mjs",
+  );
+
+  writeFixtureFile(
+    path.join(nuxtPackage, "package.json"),
+    JSON.stringify({ name: "nuxt", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(nuxtPackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(
+    path.join(nuxtRouterPackage, "package.json"),
+    JSON.stringify({ name: "vue-router", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(nuxtRouterPackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(nuxtRouterEntry, "export const RouterView = {};");
+  writeFixtureFile(
+    path.join(projectHoistedRouterPackage, "package.json"),
+    JSON.stringify({ name: "vue-router", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(projectHoistedRouterPackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(projectHoistedRouterEntry, "export const RouterView = {};");
+  fs.mkdirSync(path.dirname(nuxtPackageLink), { recursive: true });
+  fs.mkdirSync(path.dirname(nuxtRouterLink), { recursive: true });
+  fs.mkdirSync(path.dirname(projectHoistedRouterLink), { recursive: true });
+  fs.symlinkSync(nuxtPackage, nuxtPackageLink, "dir");
+  fs.symlinkSync(nuxtRouterPackage, nuxtRouterLink, "dir");
+  fs.symlinkSync(projectHoistedRouterPackage, projectHoistedRouterLink, "dir");
+
+  for (const importer of [appImporter, nuxtVirtualImporter]) {
+    const resolved = await resolveIdHook(
+      nullResolveContext,
+      createState(projectRoot),
+      "vue-router",
+      importer,
+      undefined,
+    );
+
+    assert.equal(
+      expectResolvedId(resolved),
+      nuxtRouterEntry,
+      "Nuxt project Vue Router imports should share Nuxt's runtime peer package instead of a project hoist or parent workspace runtime",
+    );
+  }
+}
+
+{
+  const projectRoot = createTempProject("regular-vue-outside-project");
+  let resolverCalled = false;
+  const resolved = await resolveIdHook(
+    {
+      resolve: async () => {
+        resolverCalled = true;
+        return null;
+      },
+    },
+    createState(projectRoot),
+    "vue",
+    path.join(path.dirname(projectRoot), "outside.js"),
+    undefined,
+  );
+
+  assert.equal(resolved, null, "Vue imports outside the project should stay owned by Vite");
+  assert.equal(
+    resolverCalled,
+    false,
+    "Outside-project Vue imports should not enter Vite fallback resolution through Vize",
+  );
+}
+
+{
   const tempRoot = createTempRoot("js-macro");
   const importer = path.join(tempRoot, "App.vue");
   const stub = path.join(tempRoot, "component-stub.js");
@@ -659,6 +1063,65 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   );
 }
 
+{
+  const parentRoot = createTempRoot("dev-vue-parent-with-project-pnpm-hoist");
+  const projectRoot = path.join(parentRoot, "fixture-app");
+  writeFixtureFile(path.join(projectRoot, "package.json"), "{}");
+  const importer = path.join(projectRoot, "app", "components", "NewsSection.vue");
+  writeFixtureFile(importer, "<template />\n");
+
+  const parentVue = path.join(
+    parentRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.6.0-parent",
+    "node_modules",
+    "vue",
+    "dist",
+    "vue.runtime.esm-bundler.js",
+  );
+  const projectVuePackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.6.0-project",
+    "node_modules",
+    "vue",
+  );
+  const projectVueHoist = path.join(projectRoot, "node_modules", ".pnpm", "node_modules", "vue");
+  const projectVueBundlerEntry = path.join(
+    projectVuePackage,
+    "dist",
+    "vue.runtime.esm-bundler.js",
+  );
+
+  writeFixtureFile(parentVue, "export const parent = true;");
+  writeFixtureFile(
+    path.join(projectVuePackage, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(projectVuePackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(projectVueBundlerEntry, "export const project = true;");
+  fs.mkdirSync(path.dirname(projectVueHoist), { recursive: true });
+  fs.symlinkSync(projectVuePackage, projectVueHoist, "dir");
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async () => ({ id: parentVue }),
+    },
+    createState(projectRoot),
+    "vue",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    projectVueBundlerEntry,
+    "Dev virtual SFC Vue imports must prefer the project pnpm hoist over a parent workspace runtime",
+  );
+}
+
 // Same pnpm-isolated dev scenario, but Vite's own resolver cannot see Vue
 // (e.g. when the secondary lookup uses the virtual ID as importer). The
 // plugin must still find Vue via Node's resolution chain through the
@@ -1066,9 +1529,9 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   );
 
   assert.equal(
-    resolved,
-    null,
-    "Vue runtime imports from virtual modules should defer when Vue resolves from a parent root",
+    expectResolvedId(resolved),
+    resolvedVue,
+    "Vue runtime imports from virtual modules should prefer project-local pnpm Vue over parent root resolution",
   );
 }
 

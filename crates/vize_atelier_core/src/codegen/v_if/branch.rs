@@ -156,9 +156,7 @@ fn generate_if_branch_component(
         ctx.push("(");
     }
 
-    // Components: skip scope_id in props -- Vue runtime applies it via __scopeId
     let prev_skip_scope_id = ctx.skip_scope_id;
-    ctx.skip_scope_id = true;
     ctx.use_helper(RuntimeHelper::CreateBlock);
     ctx.push("(");
     ctx.push(ctx.helper(RuntimeHelper::OpenBlock));

@@ -3,7 +3,13 @@ import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { misskeyApp, CORSA_BIN, VIZE_BIN, requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
+import {
+  misskeyApp,
+  MISSKEY_WORK_DIR,
+  CORSA_BIN,
+  VIZE_BIN,
+  requireVizeAndCorsaBins,
+} from "../../_helpers/apps.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -42,7 +48,9 @@ describe(`${app.name} check (type checker)`, () => {
     assert.ok(parsed.fileCount > 0, "fileCount should be > 0");
 
     const prettyOutput =
-      JSON.stringify(parsed, null, 2).replaceAll(checkConfig.cwd, "<cwd>") + "\n";
+      JSON.stringify(parsed, null, 2)
+        .replaceAll(checkConfig.cwd, "<cwd>")
+        .replaceAll(MISSKEY_WORK_DIR, "<project>") + "\n";
     assertSnapshot(SNAPSHOT_DIR, `${app.name}-check`, prettyOutput);
   });
 });

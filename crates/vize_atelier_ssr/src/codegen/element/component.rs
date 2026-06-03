@@ -38,11 +38,7 @@ impl<'a> SsrCodegenContext<'a> {
             self.resolve_component_binding_name(tag)
         };
         let props = self.build_component_props(el, false, is_dynamic_component);
-        let props = if is_dynamic_component {
-            self.with_scope_id_prop(props)
-        } else {
-            props
-        };
+        let props = self.with_scope_id_prop(props);
         let props = self.with_fallthrough_attrs(props, inherit_attrs);
 
         if is_dynamic_component {

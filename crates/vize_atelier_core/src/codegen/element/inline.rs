@@ -289,11 +289,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 if is_dynamic {
                     ctx.skip_is_prop = true;
                 }
-                // Components: skip scope_id in props -- Vue runtime applies it via __scopeId
-                let prev_skip_scope_id = ctx.skip_scope_id;
-                ctx.skip_scope_id = true;
                 generate_props(ctx, &el.props);
-                ctx.skip_scope_id = prev_skip_scope_id;
                 ctx.skip_is_prop = false;
             } else if !el.children.is_empty() || has_patch_info {
                 ctx.push(", null");

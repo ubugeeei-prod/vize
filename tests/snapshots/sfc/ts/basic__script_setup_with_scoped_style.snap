@@ -1,11 +1,12 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 175
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-const _hoisted_1 = { class: "text" }
+const _hoisted_1 = { class: "text", "data-v-a6e04d40": "" }
 
 const msg = 'hello'
 

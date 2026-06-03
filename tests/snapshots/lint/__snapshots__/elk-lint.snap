@@ -12,7 +12,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 24,
         "column": 5,
         "endLine": 24,
@@ -36,15 +36,37 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 21,
         "column": 41,
         "endLine": 21,
         "endColumn": 62,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 31,
+        "column": 11,
+        "endLine": 31,
+        "endColumn": 69,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 49,
+        "column": 9,
+        "endLine": 49,
+        "endColumn": 67,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 2,
     "warningCount": 1
   },
   {
@@ -107,12 +129,23 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 135,
         "column": 50,
         "endLine": 135,
         "endColumn": 71,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 147,
+        "column": 15,
+        "endLine": 147,
+        "endColumn": 48,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       },
       {
         "ruleId": "html/deprecated-attr",
@@ -168,7 +201,7 @@
       }
     ],
     "errorCount": 3,
-    "warningCount": 4
+    "warningCount": 5
   },
   {
     "file": "app/components/account/AccountHoverCard.vue",
@@ -202,9 +235,65 @@
   },
   {
     "file": "app/components/account/AccountMoreButton.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 196,
+        "column": 21,
+        "endLine": 196,
+        "endColumn": 33,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      },
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 199,
+        "column": 21,
+        "endLine": 199,
+        "endColumn": 37,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      },
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 202,
+        "column": 21,
+        "endLine": 202,
+        "endColumn": 32,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      },
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 205,
+        "column": 21,
+        "endLine": 205,
+        "endColumn": 33,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      },
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 208,
+        "column": 21,
+        "endLine": 208,
+        "endColumn": 40,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 5
   },
   {
     "file": "app/components/account/AccountMoved.vue",
@@ -214,8 +303,20 @@
   },
   {
     "file": "app/components/account/AccountPaginator.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 32,
+        "column": 9,
+        "endLine": 36,
+        "endColumn": 10,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -315,10 +416,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 185,
-        "column": 11,
-        "endLine": 186,
-        "endColumn": 5,
+        "line": 217,
+        "column": 34,
+        "endLine": 217,
+        "endColumn": 39,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -376,7 +477,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 15,
         "column": 53,
         "endLine": 15,
@@ -434,7 +535,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 72,
         "column": 11,
         "endLine": 72,
@@ -525,7 +626,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 85,
         "column": 7,
         "endLine": 85,
@@ -579,8 +680,20 @@
   },
   {
     "file": "app/components/common/CommonPreviewPrompt.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 16,
+        "column": 9,
+        "endLine": 16,
+        "endColumn": 126,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -803,12 +916,34 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 15,
         "column": 32,
         "endLine": 15,
         "endColumn": 55,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 28,
+        "column": 7,
+        "endLine": 28,
+        "endColumn": 95,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 33,
+        "column": 5,
+        "endLine": 33,
+        "endColumn": 94,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       },
       {
         "ruleId": "html/no-empty-palpable-content",
@@ -822,18 +957,40 @@
         "help": "Add text content, child elements, or use aria-label for accessible content."
       },
       {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 38,
+        "column": 9,
+        "endLine": 38,
+        "endColumn": 155,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 39,
         "column": 16,
         "endLine": 39,
         "endColumn": 60,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 44,
+        "column": 7,
+        "endLine": 44,
+        "endColumn": 77,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 4,
     "warningCount": 3
   },
   {
@@ -879,9 +1036,21 @@
   },
   {
     "file": "app/components/list/Lists.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 55,
+        "column": 9,
+        "endLine": 55,
+        "endColumn": 20,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/magickeys/MagickeysKeyboardShortcuts.vue",
@@ -1093,7 +1262,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 282,
         "column": 11,
         "endLine": 282,
@@ -1142,9 +1311,87 @@
   },
   {
     "file": "app/components/nav/NavFooter.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
+    "messages": [
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 35,
+        "column": 9,
+        "endLine": 42,
+        "endColumn": 11,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 53,
+        "column": 7,
+        "endLine": 59,
+        "endColumn": 8,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 65,
+        "column": 9,
+        "endLine": 70,
+        "endColumn": 10,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 76,
+        "column": 48,
+        "endLine": 76,
+        "endColumn": 68,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 86,
+        "column": 7,
+        "endLine": 86,
+        "endColumn": 58,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 90,
+        "column": 7,
+        "endLine": 90,
+        "endColumn": 71,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 94,
+        "column": 7,
+        "endLine": 94,
+        "endColumn": 81,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      }
+    ],
+    "errorCount": 6,
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/NavLogo.vue",
@@ -1166,9 +1413,21 @@
   },
   {
     "file": "app/components/nav/NavTitle.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 28,
+        "column": 7,
+        "endLine": 28,
+        "endColumn": 17,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/NavUser.vue",
@@ -1184,15 +1443,39 @@
   },
   {
     "file": "app/components/nav/button/Bookmark.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 8,
+        "column": 13,
+        "endLine": 8,
+        "endColumn": 28,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/button/Compose.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 8,
+        "column": 13,
+        "endLine": 8,
+        "endColumn": 26,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/button/Explore.vue",
@@ -1202,9 +1485,21 @@
   },
   {
     "file": "app/components/nav/button/Favorite.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 8,
+        "column": 13,
+        "endLine": 8,
+        "endColumn": 29,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/button/Federated.vue",
@@ -1214,21 +1509,57 @@
   },
   {
     "file": "app/components/nav/button/Hashtag.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 8,
+        "column": 13,
+        "endLine": 8,
+        "endColumn": 27,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/button/Home.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 8,
+        "column": 13,
+        "endLine": 8,
+        "endColumn": 23,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/button/List.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 9,
+        "column": 5,
+        "endLine": 9,
+        "endColumn": 16,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/button/Local.vue",
@@ -1238,9 +1569,21 @@
   },
   {
     "file": "app/components/nav/button/Mention.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 9,
+        "column": 5,
+        "endLine": 9,
+        "endColumn": 24,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/button/MoreMenu.vue",
@@ -1279,9 +1622,21 @@
   },
   {
     "file": "app/components/nav/button/ScheduledPosts.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 8,
+        "column": 13,
+        "endLine": 8,
+        "endColumn": 34,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/button/Search.vue",
@@ -1296,16 +1651,39 @@
         "endLine": 7,
         "endColumn": 11,
         "help": "Rename the component to avoid using reserved names"
+      },
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 8,
+        "column": 13,
+        "endLine": 8,
+        "endColumn": 25,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       }
     ],
     "errorCount": 1,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/notification/NotificationCard.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 149,
+        "column": 33,
+        "endLine": 149,
+        "endColumn": 54,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/notification/NotificationEnablePushNotification.client.vue",
@@ -1497,9 +1875,31 @@
         "endLine": 18,
         "endColumn": 49,
         "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 39,
+        "column": 9,
+        "endLine": 39,
+        "endColumn": 123,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 46,
+        "column": 7,
+        "endLine": 46,
+        "endColumn": 129,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 2,
     "warningCount": 1
   },
   {
@@ -1903,7 +2303,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 17,
         "column": 7,
         "endLine": 17,
@@ -2081,8 +2481,31 @@
   },
   {
     "file": "app/components/settings/SettingsSponsorsList.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 3,
+        "column": 5,
+        "endLine": 3,
+        "endColumn": 59,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 13,
+        "column": 5,
+        "endLine": 13,
+        "endColumn": 61,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -2169,7 +2592,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 151,
         "column": 19,
         "endLine": 151,
@@ -2191,7 +2614,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 188,
         "column": 19,
         "endLine": 188,
@@ -2213,7 +2636,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 205,
         "column": 17,
         "endLine": 205,
@@ -2224,7 +2647,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 223,
         "column": 11,
         "endLine": 223,
@@ -2235,7 +2658,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :srcset binding may be vulnerable to XSS via javascript: protocol",
         "line": 224,
         "column": 11,
         "endLine": 224,
@@ -2343,9 +2766,20 @@
         "endLine": 177,
         "endColumn": 39,
         "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 194,
+        "column": 21,
+        "endLine": 194,
+        "endColumn": 110,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 5
   },
   {
@@ -2393,10 +2827,21 @@
     "file": "app/components/status/StatusEmbeddedMedia.vue",
     "messages": [
       {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 35,
+        "column": 9,
+        "endLine": 35,
+        "endColumn": 119,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 86,
         "column": 9,
         "endLine": 86,
@@ -2415,7 +2860,7 @@
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 2
   },
   {
@@ -2425,7 +2870,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :srcset binding may be vulnerable to XSS via javascript: protocol",
         "line": 29,
         "column": 17,
         "endLine": 29,
@@ -2436,7 +2881,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 30,
         "column": 14,
         "endLine": 30,
@@ -2554,7 +2999,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 72,
         "column": 11,
         "endLine": 72,
@@ -2598,6 +3043,39 @@
     "file": "app/components/status/StatusPreviewGitHub.vue",
     "messages": [
       {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 99,
+        "column": 11,
+        "endLine": 99,
+        "endColumn": 122,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 105,
+        "column": 11,
+        "endLine": 105,
+        "endColumn": 74,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 116,
+        "column": 11,
+        "endLine": 116,
+        "endColumn": 68,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
         "ruleId": "a11y/img-alt",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2623,7 +3101,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 117,
         "column": 74,
         "endLine": 117,
@@ -2656,7 +3134,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 124,
         "column": 72,
         "endLine": 124,
@@ -2664,7 +3142,7 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 3,
     "warningCount": 6
   },
   {
@@ -2843,7 +3321,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 78,
         "column": 11,
         "endLine": 78,
@@ -3028,9 +3506,20 @@
         "endLine": 35,
         "endColumn": 59,
         "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 56,
+        "column": 11,
+        "endLine": 60,
+        "endColumn": 12,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 1
   },
   {
@@ -3070,9 +3559,20 @@
         "endLine": 37,
         "endColumn": 59,
         "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 60,
+        "column": 11,
+        "endLine": 64,
+        "endColumn": 12,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 1
   },
   {
@@ -3183,7 +3683,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 102,
         "column": 12,
         "endLine": 102,
@@ -3233,9 +3733,20 @@
         "endLine": 148,
         "endColumn": 24,
         "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 170,
+        "column": 11,
+        "endLine": 170,
+        "endColumn": 125,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 5
   },
   {
@@ -3319,7 +3830,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 71,
         "column": 30,
         "endLine": 71,
@@ -3397,21 +3908,9 @@
   },
   {
     "file": "app/pages/[[server]]/@[account]/index/with_replies.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'with_replies' should be PascalCase",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/[[server]]/@[account]/index.vue",
@@ -3478,7 +3977,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 13,
         "column": 50,
         "endLine": 13,
@@ -3677,21 +4176,9 @@
   },
   {
     "file": "app/pages/domain_blocks.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'domain_blocks' should be PascalCase",
-        "line": 13,
-        "column": 11,
-        "endLine": 13,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/favourites.vue",
@@ -3713,9 +4200,21 @@
   },
   {
     "file": "app/pages/home.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-push",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-push] Prefer a named route object for router navigation",
+        "line": 10,
+        "column": 15,
+        "endLine": 10,
+        "endColumn": 22,
+        "help": "Use router.push({ name: 'route-name' }) or router.replace({ name: 'route-name' }) so typed routes can validate params and editor completions."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/pages/index.vue",
@@ -3725,9 +4224,21 @@
   },
   {
     "file": "app/pages/intent/post.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-push",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-push] Prefer a named route object for router navigation",
+        "line": 18,
+        "column": 24,
+        "endLine": 18,
+        "endColumn": 31,
+        "help": "Use router.push({ name: 'route-name' }) or router.replace({ name: 'route-name' }) so typed routes can validate params and editor completions."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/pages/mutes.vue",
@@ -3749,9 +4260,21 @@
   },
   {
     "file": "app/pages/notifications.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 87,
+        "column": 9,
+        "endLine": 87,
+        "endColumn": 37,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/pages/pinned.vue",
@@ -3763,15 +4286,15 @@
     "file": "app/pages/scheduled-posts.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'scheduled-posts' should be PascalCase",
-        "line": 13,
-        "column": 11,
-        "endLine": 13,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 16,
+        "column": 17,
+        "endLine": 16,
+        "endColumn": 37,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       }
     ],
     "errorCount": 0,
@@ -3784,7 +4307,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 28,
         "column": 34,
         "endLine": 28,
@@ -3795,7 +4318,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 131,
         "column": 16,
         "endLine": 131,
@@ -3820,8 +4343,20 @@
   },
   {
     "file": "app/pages/settings/language/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "ecosystem/router-link-require-to",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/router-link-require-to] RouterLink components must declare a `to` target",
+        "line": 33,
+        "column": 9,
+        "endLine": 37,
+        "endColumn": 10,
+        "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -3838,21 +4373,9 @@
   },
   {
     "file": "app/pages/settings/notifications/push-notifications.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'push-notifications' should be PascalCase",
-        "line": 16,
-        "column": 11,
-        "endLine": 16,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/settings/preferences/index.vue",
@@ -3899,21 +4422,9 @@
   },
   {
     "file": "app/pages/settings/profile/featured-tags.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'featured-tags' should be PascalCase",
-        "line": 13,
-        "column": 11,
-        "endLine": 13,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/settings/profile/index.vue",
@@ -3961,15 +4472,15 @@
     "file": "app/pages/share-target.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'share-target' should be PascalCase",
-        "line": 14,
-        "column": 11,
-        "endLine": 14,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 17,
+        "column": 17,
+        "endLine": 17,
+        "endColumn": 35,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       },
       {
         "ruleId": "html/deprecated-attr",

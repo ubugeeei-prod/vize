@@ -165,7 +165,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 111,
         "column": 7,
         "endLine": 111,
@@ -574,10 +574,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 77,
-        "column": 11,
-        "endLine": 78,
-        "endColumn": 5,
+        "line": 122,
+        "column": 36,
+        "endLine": 122,
+        "endColumn": 41,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -658,39 +658,6 @@
     "file": "src/runtime/components/DashboardSidebar.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'UDrawer' is registered but never used in template",
-        "line": 147,
-        "column": 11,
-        "endLine": 148,
-        "endColumn": 7,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'UModal' is registered but never used in template",
-        "line": 147,
-        "column": 11,
-        "endLine": 148,
-        "endColumn": 6,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'USlideover' is registered but never used in template",
-        "line": 147,
-        "column": 11,
-        "endLine": 148,
-        "endColumn": 10,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -703,7 +670,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/DashboardSidebarCollapse.vue",
@@ -777,10 +744,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 89,
-        "column": 11,
-        "endLine": 90,
-        "endColumn": 5,
+        "line": 134,
+        "column": 37,
+        "endLine": 134,
+        "endColumn": 42,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -829,50 +796,15 @@
   },
   {
     "file": "src/runtime/components/EditorMentionMenu.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'UAvatar' is registered but never used in template",
-        "line": 123,
-        "column": 11,
-        "endLine": 124,
-        "endColumn": 7,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'UIcon' is registered but never used in template",
-        "line": 123,
-        "column": 11,
-        "endLine": 124,
-        "endColumn": 5,
-        "help": "Remove the unused import or use the component in your template"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/EditorSuggestionMenu.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'UIcon' is registered but never used in template",
-        "line": 144,
-        "column": 11,
-        "endLine": 145,
-        "endColumn": 5,
-        "help": "Remove the unused import or use the component in your template"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/EditorToolbar.vue",
@@ -882,10 +814,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 311,
-        "column": 11,
-        "endLine": 312,
-        "endColumn": 5,
+        "line": 326,
+        "column": 25,
+        "endLine": 326,
+        "endColumn": 30,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       }
     ],
@@ -917,7 +849,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 290,
         "column": 19,
         "endLine": 290,
@@ -1023,43 +955,10 @@
         "endLine": 134,
         "endColumn": 11,
         "help": "Rename the component to avoid using reserved names"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'UDrawer' is registered but never used in template",
-        "line": 134,
-        "column": 11,
-        "endLine": 135,
-        "endColumn": 7,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'UModal' is registered but never used in template",
-        "line": 134,
-        "column": 11,
-        "endLine": 135,
-        "endColumn": 6,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'USlideover' is registered but never used in template",
-        "line": 134,
-        "column": 11,
-        "endLine": 135,
-        "endColumn": 10,
-        "help": "Remove the unused import or use the component in your template"
       }
     ],
     "errorCount": 1,
-    "warningCount": 3
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/Icon.vue",
@@ -1144,10 +1043,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 504,
-        "column": 11,
-        "endLine": 505,
-        "endColumn": 5,
+        "line": 702,
+        "column": 36,
+        "endLine": 702,
+        "endColumn": 41,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -1734,7 +1633,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 67,
         "column": 11,
         "endLine": 67,
@@ -1993,10 +1892,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 297,
-        "column": 11,
-        "endLine": 298,
-        "endColumn": 5,
+        "line": 346,
+        "column": 32,
+        "endLine": 346,
+        "endColumn": 37,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -2088,10 +1987,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 495,
-        "column": 11,
-        "endLine": 496,
-        "endColumn": 5,
+        "line": 667,
+        "column": 38,
+        "endLine": 667,
+        "endColumn": 43,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -2613,6 +2512,16 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <ReuseTreeTemplate> is not allowed as a direct child of <ul>",
+        "line": 353,
+        "column": 11,
+        "endLine": 353,
+        "endColumn": 74
+      },
+      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2646,7 +2555,7 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 5
   },
   {
@@ -2662,7 +2571,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 23,
         "column": 51,
         "endLine": 23,
@@ -2673,7 +2582,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 24,
         "column": 51,
         "endLine": 24,
@@ -2697,7 +2606,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 25,
         "column": 35,
         "endLine": 25,
@@ -2708,7 +2617,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 26,
         "column": 35,
         "endLine": 26,
@@ -2803,17 +2712,6 @@
         "endLine": 149,
         "endColumn": 48,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
-        "line": 152,
-        "column": 12,
-        "endLine": 152,
-        "endColumn": 33,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
       {
         "ruleId": "vue/v-slot-style",
@@ -2916,7 +2814,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 11
+    "warningCount": 10
   },
   {
     "file": "src/runtime/components/locale/LocaleSelect.vue",
@@ -2953,7 +2851,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 39,
         "column": 10,
         "endLine": 39,
@@ -3084,9 +2982,19 @@
         "endLine": 206,
         "endColumn": 44,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <ReuseTreeTemplate> is not allowed as a direct child of <ul>",
+        "line": 243,
+        "column": 11,
+        "endLine": 243,
+        "endColumn": 74
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 2
   },
   {
@@ -3172,43 +3080,10 @@
         "endLine": 39,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "a11y/heading-has-content",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/heading-has-content] <h1> elements must have accessible content",
-        "line": 40,
-        "column": 3,
-        "endLine": 40,
-        "endColumn": 73,
-        "help": "Why: Empty headings confuse screen reader users and break document structure.\nFix:\n  <!-- Add text content -->\n  <h2>Section Title</h2>\n  \n  <!-- Or use aria-label for dynamic content -->\n  <h2 aria-label=\"Loading...\"><Spinner /></h2>"
-      },
-      {
-        "ruleId": "a11y/anchor-has-content",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
-        "line": 41,
-        "column": 5,
-        "endLine": 41,
-        "endColumn": 89,
-        "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
-        "line": 41,
-        "column": 30,
-        "endLine": 41,
-        "endColumn": 46,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
     "errorCount": 1,
-    "warningCount": 4
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/prose/H2.vue",
@@ -3234,43 +3109,10 @@
         "endLine": 40,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "a11y/heading-has-content",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/heading-has-content] <h2> elements must have accessible content",
-        "line": 41,
-        "column": 3,
-        "endLine": 41,
-        "endColumn": 73,
-        "help": "Why: Empty headings confuse screen reader users and break document structure.\nFix:\n  <!-- Add text content -->\n  <h2>Section Title</h2>\n  \n  <!-- Or use aria-label for dynamic content -->\n  <h2 aria-label=\"Loading...\"><Spinner /></h2>"
-      },
-      {
-        "ruleId": "a11y/anchor-has-content",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
-        "line": 42,
-        "column": 5,
-        "endLine": 42,
-        "endColumn": 89,
-        "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
-        "line": 42,
-        "column": 30,
-        "endLine": 42,
-        "endColumn": 46,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
     "errorCount": 1,
-    "warningCount": 4
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/prose/H3.vue",
@@ -3296,43 +3138,10 @@
         "endLine": 40,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "a11y/heading-has-content",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/heading-has-content] <h3> elements must have accessible content",
-        "line": 41,
-        "column": 3,
-        "endLine": 41,
-        "endColumn": 73,
-        "help": "Why: Empty headings confuse screen reader users and break document structure.\nFix:\n  <!-- Add text content -->\n  <h2>Section Title</h2>\n  \n  <!-- Or use aria-label for dynamic content -->\n  <h2 aria-label=\"Loading...\"><Spinner /></h2>"
-      },
-      {
-        "ruleId": "a11y/anchor-has-content",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
-        "line": 42,
-        "column": 5,
-        "endLine": 42,
-        "endColumn": 89,
-        "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
-        "line": 42,
-        "column": 30,
-        "endLine": 42,
-        "endColumn": 46,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
     "errorCount": 1,
-    "warningCount": 4
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/prose/H4.vue",
@@ -3358,43 +3167,10 @@
         "endLine": 39,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "a11y/heading-has-content",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/heading-has-content] <h4> elements must have accessible content",
-        "line": 40,
-        "column": 3,
-        "endLine": 40,
-        "endColumn": 73,
-        "help": "Why: Empty headings confuse screen reader users and break document structure.\nFix:\n  <!-- Add text content -->\n  <h2>Section Title</h2>\n  \n  <!-- Or use aria-label for dynamic content -->\n  <h2 aria-label=\"Loading...\"><Spinner /></h2>"
-      },
-      {
-        "ruleId": "a11y/anchor-has-content",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
-        "line": 41,
-        "column": 5,
-        "endLine": 41,
-        "endColumn": 89,
-        "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
-        "line": 41,
-        "column": 30,
-        "endLine": 41,
-        "endColumn": 46,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
     "errorCount": 1,
-    "warningCount": 4
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/prose/Hr.vue",
@@ -3438,7 +3214,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 68,
         "column": 7,
         "endLine": 68,
@@ -3449,7 +3225,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 80,
         "column": 7,
         "endLine": 80,
@@ -3885,7 +3661,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 46,
         "column": 5,
         "endLine": 46,

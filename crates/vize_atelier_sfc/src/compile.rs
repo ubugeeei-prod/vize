@@ -220,9 +220,9 @@ fn compile_sfc_inner(
             let mut dom_opts = template_opts.compiler_options.take().unwrap_or_default();
             dom_opts.hoist_static = true;
             template_opts.compiler_options = Some(dom_opts);
-            // Don't pass scope IDs to template compiler - scoped CSS is handled by
-            // runtime __scopeId and CSS transformation, not by adding attributes
-            // to template elements during compilation.
+            // Also pass scope IDs to the client template compiler. Vue's runtime
+            // normally propagates __scopeId, but wrapper components such as NuxtLink
+            // can otherwise lose parent scoped attrs before the final DOM root.
             profile!(
                 "atelier.sfc.template.compile",
                 compile_template_block(
@@ -230,7 +230,7 @@ fn compile_sfc_inner(
                     &template_opts,
                     TemplateBlockCompileContext {
                         scope_id: &scope_id,
-                        apply_scope_id: options.template.ssr && has_scoped,
+                        apply_scope_id: has_scoped,
                         has_scoped,
                         is_ts: template_is_ts,
                         inline: false,
@@ -341,8 +341,9 @@ fn compile_sfc_inner(
                 dom_opts.hoist_static = true;
                 template_opts.compiler_options = Some(dom_opts);
 
-                // Don't pass scope IDs to template compiler - scoped CSS is handled by
-                // runtime __scopeId and CSS transformation.
+                // Also pass scope IDs to the client template compiler. Vue's runtime
+                // normally propagates __scopeId, but wrapper components such as NuxtLink
+                // can otherwise lose parent scoped attrs before the final DOM root.
                 profile!(
                     "atelier.sfc.template.compile",
                     compile_template_block(
@@ -350,7 +351,7 @@ fn compile_sfc_inner(
                         &template_opts,
                         TemplateBlockCompileContext {
                             scope_id: &scope_id,
-                            apply_scope_id: options.template.ssr && has_scoped,
+                            apply_scope_id: has_scoped,
                             has_scoped,
                             is_ts: template_is_ts,
                             inline: false,
@@ -593,8 +594,9 @@ fn compile_sfc_inner(
                 )
             ))
         } else {
-            // Don't pass scope IDs to template compiler - scoped CSS is handled by
-            // runtime __scopeId and CSS transformation.
+            // Also pass scope IDs to the client template compiler. Vue's runtime
+            // normally propagates __scopeId, but wrapper components such as NuxtLink
+            // can otherwise lose parent scoped attrs before the final DOM root.
             Some(profile!(
                 "atelier.sfc.template.compile",
                 compile_template_block(
@@ -602,7 +604,7 @@ fn compile_sfc_inner(
                     &options.template,
                     TemplateBlockCompileContext {
                         scope_id: &scope_id,
-                        apply_scope_id: options.template.ssr && has_scoped,
+                        apply_scope_id: has_scoped,
                         has_scoped,
                         is_ts: template_is_ts,
                         inline: true,

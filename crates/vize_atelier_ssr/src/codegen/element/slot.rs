@@ -13,10 +13,9 @@ impl<'a> SsrCodegenContext<'a> {
         self.push("_ssrRenderSlot(_ctx.$slots, ");
 
         // Get slot name
-        let slot_name = self.get_slot_name(el);
-        self.push("\"");
+        let slot_name = self.slot_outlet_name_expression(el);
         self.push(&slot_name);
-        self.push("\", ");
+        self.push(", ");
 
         // Slot props
         let props = self.build_slot_outlet_props(el);
@@ -126,8 +125,8 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    /// Get the name of a slot
-    pub(super) fn get_slot_name(&self, el: &ElementNode) -> String {
+    /// Get the JavaScript expression for a slot outlet name.
+    pub(super) fn slot_outlet_name_expression(&mut self, el: &ElementNode) -> String {
         use vize_atelier_core::ast::{ExpressionNode, PropNode};
 
         for prop in &el.props {
@@ -135,17 +134,20 @@ impl<'a> SsrCodegenContext<'a> {
                 if dir.name == "bind"
                     && let Some(ExpressionNode::Simple(arg)) = &dir.arg
                     && arg.content == "name"
-                    && let Some(ExpressionNode::Simple(exp)) = &dir.exp
                 {
-                    return exp.content.to_compact_string();
+                    return dir
+                        .exp
+                        .as_ref()
+                        .map(|exp| self.expression_to_string(exp))
+                        .unwrap_or_else(|| quoted_js_string("default"));
                 }
             } else if let PropNode::Attribute(attr) = prop
                 && attr.name == "name"
                 && let Some(value) = &attr.value
             {
-                return value.content.to_compact_string();
+                return quoted_js_string(&value.content);
             }
         }
-        "default".to_compact_string()
+        quoted_js_string("default")
     }
 }

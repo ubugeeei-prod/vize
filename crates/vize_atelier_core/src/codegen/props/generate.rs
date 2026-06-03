@@ -19,7 +19,7 @@ use vize_carton::{FxHashSet, String};
 /// Generate props object
 pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
     // Clone scope_id to avoid borrow checker issues.
-    // For component/slot elements, skip_scope_id suppresses the attribute.
+    // skip_scope_id suppresses duplicate scope attrs for synthetic prop objects.
     let scope_id = if ctx.skip_scope_id {
         None
     } else {
@@ -316,7 +316,7 @@ fn generate_props_object_inner(
     }
 
     // Clone scope_id to avoid borrow checker issues.
-    // For component/slot elements, skip_scope_id suppresses the attribute.
+    // skip_scope_id suppresses duplicate scope attrs for synthetic prop objects.
     let scope_id = if ctx.skip_scope_id {
         None
     } else {

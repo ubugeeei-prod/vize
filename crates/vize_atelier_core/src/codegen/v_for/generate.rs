@@ -79,11 +79,6 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 ctx.push("(");
             }
 
-            // Components: skip scope_id in props -- Vue runtime applies it via __scopeId
-            if is_component {
-                ctx.skip_scope_id = true;
-            }
-
             if el.tag_type == ElementType::Slot {
                 generate_for_slot_outlet(ctx, el);
             } else if is_stable && !is_component {
@@ -447,7 +442,7 @@ pub(crate) fn generate_for_item_props(
     } else {
         has_other_props(el)
     };
-    // For component elements, skip_scope_id suppresses the attribute.
+    // skip_scope_id suppresses duplicate scope attrs for synthetic prop objects.
     let scope_id = if ctx.skip_scope_id {
         None
     } else {

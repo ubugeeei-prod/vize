@@ -14,6 +14,7 @@ import {
   installVisualStabilityHooks,
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
+import { waitForMountedAppContent } from "../../_helpers/assertions";
 
 interface VisualRoute {
   maxDiffRatio?: number;
@@ -140,16 +141,7 @@ async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promi
   });
   expect(response?.status()).toBeLessThan(500);
   await expect(page.locator("#__nuxt")).toBeAttached({ timeout: 15_000 });
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const el = document.querySelector("#__nuxt");
-          return el?.textContent?.trim().length ?? 0;
-        }),
-      { timeout: 30_000 },
-    )
-    .toBeGreaterThan(0);
+  await waitForMountedAppContent(page, "#__nuxt");
   await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => undefined);
   await page.waitForTimeout(1000);
 }

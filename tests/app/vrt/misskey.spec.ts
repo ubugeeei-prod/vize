@@ -16,12 +16,14 @@ import {
   installVisualStabilityHooks,
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
+import { waitForMountedAppContent } from "../../_helpers/assertions";
 
 interface VisualRoute {
   account?: boolean;
   maxDiffRatio?: number;
   name: string;
   path: string;
+  ready?: (page: Page) => Promise<void>;
   viewport?: { height: number; width: number };
 }
 
@@ -117,7 +119,19 @@ const accountRoutes: VisualRoute[] = [
   { name: "settings-other", path: "/settings/other", account: true },
   { name: "theme-editor", path: "/theme-editor", account: true },
   { name: "lookup", path: "/lookup", account: true },
-  { name: "share", path: "/share?text=hello", account: true },
+  {
+    name: "share",
+    path: "/share?text=hello",
+    account: true,
+    ready: async (page) => {
+      const textbox = page.getByRole("textbox", { name: "What's on your mind?" });
+      await expect(textbox).toBeVisible({ timeout: 15_000 });
+      if ((await textbox.inputValue()) !== "hello") {
+        await textbox.fill("hello");
+      }
+      await expect(textbox).toHaveValue("hello");
+    },
+  },
   { name: "api-console", path: "/api-console", account: true },
   { name: "scratchpad", path: "/scratchpad", account: true },
   { name: "pages-new", path: "/pages/new", account: true },
@@ -228,6 +242,10 @@ async function compareRoute(browser: Browser, route: VisualRoute): Promise<void>
       openRoute(candidatePage, apps.candidate.url, route),
     ]);
 
+    if (route.ready) {
+      await Promise.all([route.ready(referencePage), route.ready(candidatePage)]);
+    }
+
     await Promise.all([
       prepareStableVisualState(referencePage),
       prepareStableVisualState(candidatePage),
@@ -269,16 +287,7 @@ async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promi
   });
   expect(response?.status()).toBeLessThan(500);
   await expect(page.locator("#misskey_app")).toBeAttached({ timeout: 15_000 });
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const el = document.querySelector("#misskey_app");
-          return el?.textContent?.trim().length ?? 0;
-        }),
-      { timeout: 30_000 },
-    )
-    .toBeGreaterThan(0);
+  await waitForMountedAppContent(page, "#misskey_app");
   await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => undefined);
   await page.waitForTimeout(1000);
 }

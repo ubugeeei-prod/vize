@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { misskeyApp, VIZE_BIN, requireVizeBin } from "../../_helpers/apps.ts";
+import { misskeyApp, MISSKEY_WORK_DIR, VIZE_BIN, requireVizeBin } from "../../_helpers/apps.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -79,7 +79,9 @@ describe(`${app.name} lint (linter)`, () => {
       .sort((left, right) => compareStrings(left.file, right.file));
 
     const prettyOutput =
-      JSON.stringify(normalized, null, 2).replaceAll(lintConfig.cwd, "<cwd>") + "\n";
+      JSON.stringify(normalized, null, 2)
+        .replaceAll(lintConfig.cwd, "<cwd>")
+        .replaceAll(MISSKEY_WORK_DIR, "<project>") + "\n";
 
     console.log(`fileCount=${parsed.length}`);
     assertSnapshot(SNAPSHOT_DIR, `${app.name}-lint`, prettyOutput);

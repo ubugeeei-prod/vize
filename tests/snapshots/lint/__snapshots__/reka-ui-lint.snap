@@ -322,7 +322,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 53,
         "column": 5,
         "endLine": 53,
@@ -346,7 +346,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 90,
         "column": 11,
         "endLine": 90,
@@ -461,10 +461,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 9,
+        "line": 59,
+        "column": 25,
+        "endLine": 59,
+        "endColumn": 34,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -490,10 +490,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 7,
-        "column": 11,
-        "endLine": 8,
-        "endColumn": 9,
+        "line": 62,
+        "column": 27,
+        "endLine": 62,
+        "endColumn": 36,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -537,10 +537,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 20,
-        "column": 11,
-        "endLine": 21,
-        "endColumn": 9,
+        "line": 107,
+        "column": 25,
+        "endLine": 107,
+        "endColumn": 34,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -621,10 +621,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 55,
-        "column": 11,
-        "endLine": 56,
-        "endColumn": 9,
+        "line": 250,
+        "column": 27,
+        "endLine": 250,
+        "endColumn": 36,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -685,10 +685,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 13,
-        "column": 11,
-        "endLine": 14,
-        "endColumn": 9,
+        "line": 84,
+        "column": 25,
+        "endLine": 84,
+        "endColumn": 34,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -714,10 +714,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 15,
-        "column": 11,
-        "endLine": 16,
-        "endColumn": 9,
+        "line": 58,
+        "column": 19,
+        "endLine": 58,
+        "endColumn": 28,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -754,10 +754,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 9,
-        "column": 11,
-        "endLine": 10,
-        "endColumn": 9,
+        "line": 44,
+        "column": 19,
+        "endLine": 44,
+        "endColumn": 28,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -812,10 +812,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 13,
-        "column": 11,
-        "endLine": 14,
-        "endColumn": 9,
+        "line": 60,
+        "column": 21,
+        "endLine": 60,
+        "endColumn": 30,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -1588,7 +1588,7 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 60,
         "column": 19,
         "endLine": 60,
@@ -2506,10 +2506,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 26,
-        "column": 11,
-        "endLine": 27,
-        "endColumn": 9,
+        "line": 119,
+        "column": 31,
+        "endLine": 119,
+        "endColumn": 40,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -2558,10 +2558,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 28,
-        "column": 11,
-        "endLine": 29,
-        "endColumn": 9,
+        "line": 87,
+        "column": 23,
+        "endLine": 87,
+        "endColumn": 32,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -2609,10 +2609,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 32,
-        "column": 11,
-        "endLine": 33,
-        "endColumn": 9,
+        "line": 117,
+        "column": 25,
+        "endLine": 117,
+        "endColumn": 34,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -3023,10 +3023,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 26,
-        "column": 11,
-        "endLine": 27,
-        "endColumn": 9,
+        "line": 143,
+        "column": 31,
+        "endLine": 143,
+        "endColumn": 40,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -3075,10 +3075,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 28,
-        "column": 11,
-        "endLine": 29,
-        "endColumn": 9,
+        "line": 97,
+        "column": 23,
+        "endLine": 97,
+        "endColumn": 32,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -3126,10 +3126,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 33,
-        "column": 11,
-        "endLine": 34,
-        "endColumn": 9,
+        "line": 139,
+        "column": 25,
+        "endLine": 139,
+        "endColumn": 34,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -4040,10 +4040,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'entry' is defined by v-for but never used",
-        "line": 10,
-        "column": 11,
-        "endLine": 11,
-        "endColumn": 5,
+        "line": 18,
+        "column": 19,
+        "endLine": 18,
+        "endColumn": 24,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -4792,10 +4792,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'monthRow' is defined by v-for but never used",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 8,
+        "line": 41,
+        "column": 23,
+        "endLine": 41,
+        "endColumn": 31,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -4821,10 +4821,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'monthRow' is defined by v-for but never used",
-        "line": 9,
-        "column": 11,
-        "endLine": 10,
-        "endColumn": 8,
+        "line": 25,
+        "column": 19,
+        "endLine": 25,
+        "endColumn": 27,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -4927,10 +4927,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'monthRow' is defined by v-for but never used",
-        "line": 9,
-        "column": 11,
-        "endLine": 10,
-        "endColumn": 8,
+        "line": 25,
+        "column": 19,
+        "endLine": 25,
+        "endColumn": 27,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -5045,8 +5045,99 @@
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuAlignment.story.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 101,
+        "column": 19,
+        "endLine": 104,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 107,
+        "column": 19,
+        "endLine": 110,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 114,
+        "column": 19,
+        "endLine": 117,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 140,
+        "column": 19,
+        "endLine": 143,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 146,
+        "column": 19,
+        "endLine": 149,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 153,
+        "column": 19,
+        "endLine": 156,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 159,
+        "column": 19,
+        "endLine": 162,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 165,
+        "column": 19,
+        "endLine": 168,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 171,
+        "column": 19,
+        "endLine": 174,
+        "endColumn": 20
+      }
+    ],
+    "errorCount": 9,
     "warningCount": 0
   },
   {
@@ -5064,6 +5155,17 @@
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuDemo.story.vue",
     "messages": [
+      {
+        "ruleId": "ecosystem/nuxt-prefer-nuxt-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/nuxt-prefer-nuxt-link] Use NuxtLink for internal links",
+        "line": 49,
+        "column": 25,
+        "endLine": 49,
+        "endColumn": 33,
+        "help": "Replace the anchor with <NuxtLink to=\"...\"> so Nuxt can prefetch, route, and type-check the navigation target."
+      },
       {
         "ruleId": "a11y/img-alt",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -5090,25 +5192,95 @@
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
-        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <a> (phrasing content only)",
-        "line": 55,
-        "column": 25,
-        "endLine": 55,
-        "endColumn": 101
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 61,
+        "column": 19,
+        "endLine": 64,
+        "endColumn": 20
       },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
-        "message": "[vize:vue/permitted-contents] <p> (block element) is not allowed inside <a> (phrasing content only)",
-        "line": 56,
-        "column": 25,
-        "endLine": 56,
-        "endColumn": 74
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 67,
+        "column": 19,
+        "endLine": 70,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 73,
+        "column": 19,
+        "endLine": 76,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 95,
+        "column": 19,
+        "endLine": 98,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 101,
+        "column": 19,
+        "endLine": 104,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 107,
+        "column": 19,
+        "endLine": 110,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 113,
+        "column": 19,
+        "endLine": 116,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 119,
+        "column": 19,
+        "endLine": 122,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 125,
+        "column": 19,
+        "endLine": 128,
+        "endColumn": 20
       }
     ],
-    "errorCount": 2,
-    "warningCount": 2
+    "errorCount": 9,
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuSubmenus.story.vue",
@@ -5153,9 +5325,99 @@
         "endLine": 30,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 86,
+        "column": 15,
+        "endLine": 89,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 92,
+        "column": 15,
+        "endLine": 95,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 98,
+        "column": 15,
+        "endLine": 101,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 120,
+        "column": 15,
+        "endLine": 123,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 126,
+        "column": 15,
+        "endLine": 129,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 133,
+        "column": 15,
+        "endLine": 136,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 139,
+        "column": 15,
+        "endLine": 142,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 145,
+        "column": 15,
+        "endLine": 148,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <NavigationMenuListItem> is not allowed as a direct child of <ul>",
+        "line": 151,
+        "column": 15,
+        "endLine": 154,
+        "endColumn": 16
       }
     ],
-    "errorCount": 0,
+    "errorCount": 9,
     "warningCount": 1
   },
   {
@@ -5182,29 +5444,9 @@
         "endLine": 15,
         "endColumn": 8,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <a> (phrasing content only)",
-        "line": 16,
-        "column": 9,
-        "endLine": 16,
-        "endColumn": 70
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <p> (block element) is not allowed inside <a> (phrasing content only)",
-        "line": 19,
-        "column": 9,
-        "endLine": 19,
-        "endColumn": 47
       }
     ],
-    "errorCount": 2,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -6070,10 +6312,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 9,
+        "line": 57,
+        "column": 25,
+        "endLine": 57,
+        "endColumn": 34,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -6105,10 +6347,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 17,
-        "column": 11,
-        "endLine": 18,
-        "endColumn": 9,
+        "line": 103,
+        "column": 25,
+        "endLine": 103,
+        "endColumn": 34,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -6213,10 +6455,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 13,
-        "column": 11,
-        "endLine": 14,
-        "endColumn": 9,
+        "line": 59,
+        "column": 21,
+        "endLine": 59,
+        "endColumn": 30,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -6253,10 +6495,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
-        "line": 18,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 9,
+        "line": 61,
+        "column": 19,
+        "endLine": 61,
+        "endColumn": 28,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -8597,6 +8839,16 @@
         "endColumn": 22
       },
       {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <TooltipArrow> is not allowed as a direct child of <ul>",
+        "line": 41,
+        "column": 19,
+        "endLine": 41,
+        "endColumn": 54
+      },
+      {
         "ruleId": "html/no-empty-palpable-content",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
@@ -8608,7 +8860,7 @@
         "help": "Add text content, child elements, or use aria-label for accessible content."
       }
     ],
-    "errorCount": 2,
+    "errorCount": 3,
     "warningCount": 1
   },
   {
@@ -8925,10 +9177,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'yearRow' is defined by v-for but never used",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 7,
+        "line": 41,
+        "column": 23,
+        "endLine": 41,
+        "endColumn": 30,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -8954,10 +9206,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'yearRow' is defined by v-for but never used",
-        "line": 9,
-        "column": 11,
-        "endLine": 10,
-        "endColumn": 7,
+        "line": 25,
+        "column": 19,
+        "endLine": 25,
+        "endColumn": 26,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
@@ -9060,10 +9312,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'yearRow' is defined by v-for but never used",
-        "line": 9,
-        "column": 11,
-        "endLine": 10,
-        "endColumn": 7,
+        "line": 25,
+        "column": 19,
+        "endLine": 25,
+        "endColumn": 26,
         "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {

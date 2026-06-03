@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 const BROWSER_LOG_EMISSION = new WeakMap<
   Page,
@@ -127,6 +127,87 @@ export async function getComputedStyleValue(
 export async function verifySSRContent(page: Page, url: string): Promise<string> {
   const response = await page.request.get(url);
   return response.text();
+}
+
+export async function waitForMountedAppContent(
+  page: Page,
+  selector: string,
+  options: { minTextLength?: number; reloadAfter?: number; timeout?: number } = {},
+): Promise<void> {
+  const timeout = options.timeout ?? 90_000;
+  const reloadAfter = options.reloadAfter ?? 30_000;
+  const minTextLength = options.minTextLength ?? 1;
+  const deadline = Date.now() + timeout;
+  let lastError: unknown;
+
+  while (Date.now() < deadline) {
+    const remaining = deadline - Date.now();
+    const pollTimeout = Math.min(remaining, reloadAfter);
+
+    try {
+      await expect
+        .poll(() => mountedAppContentState(page, selector, minTextLength), {
+          intervals: [250, 500, 1_000],
+          timeout: pollTimeout,
+        })
+        .toBe("ready");
+      return;
+    } catch (error) {
+      lastError = error;
+      if (Date.now() >= deadline) {
+        break;
+      }
+
+      await page
+        .reload({ timeout: 30_000, waitUntil: "domcontentloaded" })
+        .catch(() => page.waitForTimeout(1_000).catch(() => undefined));
+      await page.waitForLoadState("load", { timeout: 10_000 }).catch(() => undefined);
+    }
+  }
+
+  if (lastError instanceof Error) {
+    throw lastError;
+  }
+  throw new Error(`Mounted app content did not become ready for ${selector}`);
+}
+
+async function mountedAppContentState(
+  page: Page,
+  selector: string,
+  minTextLength: number,
+): Promise<string> {
+  try {
+    return await page.evaluate(
+      ({ minTextLength, selector }) => {
+        const root = document.querySelector(selector);
+        if (!root) {
+          return "missing-root";
+        }
+
+        const textLength = (root.textContent ?? "").replace(/\s+/g, " ").trim().length;
+        if (textLength >= minTextLength) {
+          return "ready";
+        }
+
+        return `empty:text=${textLength}:elements=${root.querySelectorAll("*").length}`;
+      },
+      { minTextLength, selector },
+    );
+  } catch (error) {
+    if (isNavigationRace(error)) {
+      return "navigating";
+    }
+    throw error;
+  }
+}
+
+function isNavigationRace(error: unknown): boolean {
+  const message = String(error);
+  return (
+    message.includes("Execution context was destroyed") ||
+    message.includes("Target page, context or browser has been closed") ||
+    message.includes("navigation")
+  );
 }
 
 function emitBrowserDiagnostic(page: Page, label: string, text: string): void {

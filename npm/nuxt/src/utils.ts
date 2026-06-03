@@ -57,8 +57,20 @@ export function normalizeVizeVirtualVueModuleId(id: string): string {
   return withoutPrefix.replace(/\.ts(?=\?|$)/, "");
 }
 
+export function normalizeVizeGeneratedVueModuleId(id: string): string {
+  if (isVizeVirtualVueModuleId(id)) {
+    return normalizeVizeVirtualVueModuleId(id);
+  }
+
+  return id
+    .replace(/^\/@id\/__x00__/, "")
+    .replace(/^__x00__/, "")
+    .replace(/\.ts(?=\?|$)/, "");
+}
+
 const NUXT_INJECTED_MARKER = "/* nuxt-injected */";
 const NUXT_INJECTED_KEY_RE = /'\$[^']+'\s+\/\* nuxt-injected \*\//g;
+const NUXT_FETCH_COMPOSABLE_RE = /\b(?:useFetch|useLazyFetch)\s*\(/g;
 
 function buildStableNuxtKey(id: string, index: number): string {
   return createHash("sha256")
@@ -70,12 +82,114 @@ function buildStableNuxtKey(id: string, index: number): string {
 }
 
 export function normalizeNuxtInjectedKeysForVizeVirtualModule(code: string, id: string): string {
-  const normalizedId = normalizeVizeVirtualVueModuleId(id);
+  const normalizedId = normalizeVizeGeneratedVueModuleId(id).replace(/\?.*$/, "");
   let index = 0;
   return code.replace(NUXT_INJECTED_KEY_RE, () => {
     index += 1;
     return `'$${buildStableNuxtKey(normalizedId, index)}' ${NUXT_INJECTED_MARKER}`;
   });
+}
+
+export function stabilizeNuxtInjectedKeysForVizeVirtualModule(code: string, id: string): string {
+  return normalizeNuxtInjectedKeysForVizeVirtualModule(
+    injectMissingNuxtFetchKeys(code),
+    id,
+  );
+}
+
+function injectMissingNuxtFetchKeys(code: string): string {
+  let output = "";
+  let cursor = 0;
+
+  for (const match of code.matchAll(NUXT_FETCH_COMPOSABLE_RE)) {
+    const matchIndex = match.index ?? 0;
+    const openParenIndex = matchIndex + match[0].length - 1;
+    if (openParenIndex < cursor) {
+      continue;
+    }
+
+    const closeParenIndex = findMatchingParen(code, openParenIndex);
+    if (closeParenIndex === -1) {
+      continue;
+    }
+
+    const args = code.slice(openParenIndex + 1, closeParenIndex);
+    if (args.includes(NUXT_INJECTED_MARKER)) {
+      continue;
+    }
+
+    output += code.slice(cursor, closeParenIndex);
+    output += `${args.trim().length === 0 ? "" : ", "}'$__vize_nuxt_key__' ${NUXT_INJECTED_MARKER}`;
+    cursor = closeParenIndex;
+  }
+
+  return cursor === 0 ? code : output + code.slice(cursor);
+}
+
+function findMatchingParen(code: string, openParenIndex: number): number {
+  let depth = 0;
+  let quote: "'" | '"' | "`" | null = null;
+  let escaped = false;
+  let lineComment = false;
+  let blockComment = false;
+
+  for (let index = openParenIndex; index < code.length; index += 1) {
+    const char = code[index]!;
+    const next = code[index + 1];
+
+    if (lineComment) {
+      if (char === "\n" || char === "\r") {
+        lineComment = false;
+      }
+      continue;
+    }
+
+    if (blockComment) {
+      if (char === "*" && next === "/") {
+        blockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+
+    if (quote) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (char === "/" && next === "/") {
+      lineComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === "/" && next === "*") {
+      blockComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === "'" || char === '"' || char === "`") {
+      quote = char;
+      continue;
+    }
+    if (char === "(") {
+      depth += 1;
+      continue;
+    }
+    if (char === ")") {
+      depth -= 1;
+      if (depth === 0) {
+        return index;
+      }
+    }
+  }
+
+  return -1;
 }
 
 type NamedImportSpecifier = {
@@ -219,12 +333,7 @@ export function preserveExplicitVueImportsFromVizeModuleSource(id: string, code:
     return code;
   }
 
-  const normalizedId = isVizeVirtualVueModuleId(id)
-    ? normalizeVizeVirtualVueModuleId(id)
-    : id
-        .replace(/^\/@id\/__x00__/, "")
-        .replace(/^__x00__/, "")
-        .replace(/\.ts(?=\?|$)/, "");
+  const normalizedId = normalizeVizeGeneratedVueModuleId(id);
   const sourcePath = normalizedId.replace(/\?.*$/, "");
   if (!sourcePath.endsWith(".vue") || !fs.existsSync(sourcePath)) {
     return code;

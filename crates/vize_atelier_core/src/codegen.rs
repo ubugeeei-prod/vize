@@ -357,6 +357,51 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_inline_setup_ref_component_prop_uses_value() {
+        let allocator = bumpalo::Bump::new();
+        let (mut root, errors) =
+            crate::parse(&allocator, r#"<Child :initialText="initialText" />"#);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        let mut bindings = vize_carton::FxHashMap::default();
+        bindings.insert("Child".into(), crate::BindingType::SetupConst);
+        bindings.insert("initialText".into(), crate::BindingType::SetupRef);
+        let binding_metadata = crate::BindingMetadata {
+            bindings,
+            props_aliases: vize_carton::FxHashMap::default(),
+            is_script_setup: true,
+        };
+
+        crate::transform::transform(
+            &allocator,
+            &mut root,
+            crate::TransformOptions {
+                prefix_identifiers: true,
+                inline: true,
+                binding_metadata: Some(binding_metadata.clone()),
+                ..Default::default()
+            },
+            None,
+        );
+
+        let output = result_output(&super::generate(
+            &root,
+            crate::CodegenOptions {
+                prefix_identifiers: true,
+                inline: true,
+                binding_metadata: Some(binding_metadata),
+                ..Default::default()
+            },
+        ));
+
+        assert!(
+            output.contains("initialText: initialText.value"),
+            "component prop should unwrap setup refs in inline mode. Got:\n{}",
+            output
+        );
+    }
+
+    #[test]
     fn test_root_directive_comment_does_not_create_fragment_hole() {
         let result =
             compile!("<!-- @vize:forget sections are labeled by their headings --><section />");

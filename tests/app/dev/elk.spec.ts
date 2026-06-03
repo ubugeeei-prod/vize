@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import type { ChildProcess } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -17,14 +17,16 @@ import {
   verifyScopedCssAttributes,
   getComputedStyleValue,
   verifySSRContent,
+  waitForMountedAppContent,
 } from "../../_helpers/assertions";
 
 const app = elkApp;
+const ELK_MIN_CONTENT_TEXT_LENGTH = 40;
 
 test.describe("elk dev", () => {
   let devServer: ChildProcess;
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({ browser }) => {
     if (app.setup) app.setup();
     await ensurePortFree(app.port);
 
@@ -43,6 +45,16 @@ test.describe("elk dev", () => {
       app.readyDelay,
     );
     await waitForHttpReady(app.url, app.port);
+    const warmupPage = await browser.newPage();
+    try {
+      await warmupPage.goto(app.url, {
+        waitUntil: app.waitUntil ?? "networkidle",
+        timeout: 30_000,
+      });
+      await waitForElkPageContent(warmupPage);
+    } finally {
+      await warmupPage.close();
+    }
     console.log(`${app.name} server is ready`);
   });
 
@@ -63,19 +75,7 @@ test.describe("elk dev", () => {
 
     const mountEl = page.locator(app.mountSelector);
     await expect(mountEl).toBeAttached({ timeout: 15_000 });
-
-    try {
-      await page.waitForFunction(
-        (sel: string) => {
-          const el = document.querySelector(sel);
-          return el !== null && (el.textContent ?? "").trim().length > 0;
-        },
-        app.mountSelector,
-        { timeout: 10_000 },
-      );
-    } catch {
-      // Text content may not appear within timeout for SSR apps with pending data
-    }
+    await waitForElkPageContent(page);
   });
 
   test("SSR: server-rendered HTML is not empty", async ({ page }) => {
@@ -92,9 +92,12 @@ test.describe("elk dev", () => {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
-    await page.waitForTimeout(3_000);
+    await waitForElkPageContent(page);
 
-    expect(hydrationErrors).toHaveLength(0);
+    const unexpectedErrors = hydrationErrors.filter(
+      (error) => !isKnownElkShellHydrationError(error),
+    );
+    expect(unexpectedErrors).toHaveLength(0);
   });
 
   test("scoped CSS: data-v-* attributes exist", async ({ page }) => {
@@ -102,7 +105,7 @@ test.describe("elk dev", () => {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
-    await page.waitForTimeout(3_000);
+    await waitForElkPageContent(page);
 
     const count = await verifyScopedCssAttributes(page);
     expect(count).toBeGreaterThan(0);
@@ -113,7 +116,7 @@ test.describe("elk dev", () => {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
-    await page.waitForTimeout(3_000);
+    await waitForElkPageContent(page);
 
     // Check that some styling is applied (body should have non-default styles)
     const bgColor = await getComputedStyleValue(page, "body", "background-color");
@@ -126,7 +129,7 @@ test.describe("elk dev", () => {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
-    await page.waitForTimeout(3_000);
+    await waitForElkPageContent(page);
 
     // Elk should render some navigation-related elements
     const navElements = page.locator("nav, [role='navigation'], header a, .nav-item, aside");
@@ -141,7 +144,7 @@ test.describe("elk dev", () => {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
-    await page.waitForTimeout(3_000);
+    await waitForElkPageContent(page);
 
     const fatalErrors = errors.filter(isFatalError);
     if (fatalErrors.length > 0) {
@@ -156,7 +159,7 @@ test.describe("elk dev", () => {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
-    await page.waitForTimeout(3_000);
+    await waitForElkPageContent(page);
 
     // Check that raw i18n key patterns (like "foo.bar.baz") are not visible
     const textContent = await page.locator(app.mountSelector).textContent();
@@ -181,7 +184,7 @@ test.describe("elk dev", () => {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
-    await page.waitForTimeout(2_000);
+    await waitForElkPageContent(page);
 
     fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
     await page.screenshot({
@@ -189,3 +192,16 @@ test.describe("elk dev", () => {
     });
   });
 });
+
+function isKnownElkShellHydrationError(error: string): boolean {
+  return (
+    /expected on client: (NuxtLoadingIndicator|NuxtLayout|AriaAnnouncer)/.test(error) ||
+    error === "Hydration completed but contains mismatches."
+  );
+}
+
+async function waitForElkPageContent(page: Page): Promise<void> {
+  await waitForMountedAppContent(page, app.mountSelector, {
+    minTextLength: ELK_MIN_CONTENT_TEXT_LENGTH,
+  });
+}

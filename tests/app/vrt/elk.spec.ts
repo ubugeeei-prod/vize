@@ -15,6 +15,7 @@ import {
   installVisualStabilityHooks,
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
+import { waitForMountedAppContent } from "../../_helpers/assertions";
 
 interface VisualRoute {
   maxDiffRatio?: number;
@@ -30,6 +31,7 @@ const OUTPUT_DIR =
   path.resolve(__dirname, "../../../__agent_only/elk-vrt/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const DEFAULT_MAX_DIFF_RATIO = 0.04;
+const ELK_MIN_CONTENT_TEXT_LENGTH = 40;
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const apps = createElkVisualParityApps();
 
@@ -78,9 +80,11 @@ test.describe("elk visual parity", () => {
   let candidateServer: ChildProcess | undefined;
   let referenceServer: ChildProcess | undefined;
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({ browser }) => {
     referenceServer = await startApp(apps.reference);
     candidateServer = await startApp(apps.candidate);
+    await warmUpApp(browser, apps.reference);
+    await warmUpApp(browser, apps.candidate);
   });
 
   test.afterAll(async () => {
@@ -138,6 +142,25 @@ async function compareRoute(browser: Browser, route: VisualRoute): Promise<void>
   }
 }
 
+async function warmUpApp(browser: Browser, app: AppConfig): Promise<void> {
+  const context = await browser.newContext({
+    colorScheme: "light",
+    deviceScaleFactor: 1,
+    reducedMotion: "reduce",
+    viewport: DEFAULT_VIEWPORT,
+  });
+
+  try {
+    const page = await context.newPage();
+    const route = routes[0];
+    await setupPage(page, route);
+    await openRoute(page, app.url, route);
+    await prepareStableVisualState(page);
+  } finally {
+    await context.close();
+  }
+}
+
 async function setupPage(page: Page, route: VisualRoute): Promise<void> {
   await installVisualStabilityHooks(page);
   await page.addInitScript(
@@ -158,16 +181,9 @@ async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promi
   });
   expect(response?.status()).toBeLessThan(500);
   await expect(page.locator("#__nuxt")).toBeAttached({ timeout: 15_000 });
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const el = document.querySelector("#__nuxt");
-          return el?.textContent?.trim().length ?? 0;
-        }),
-      { timeout: 30_000 },
-    )
-    .toBeGreaterThan(0);
+  await waitForMountedAppContent(page, "#__nuxt", {
+    minTextLength: ELK_MIN_CONTENT_TEXT_LENGTH,
+  });
   await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => undefined);
   await page.waitForTimeout(1000);
 }

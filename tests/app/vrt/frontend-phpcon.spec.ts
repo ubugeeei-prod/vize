@@ -14,6 +14,7 @@ import {
   installVisualStabilityHooks,
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
+import { waitForMountedAppContent } from "../../_helpers/assertions";
 
 interface VisualRoute {
   action?: (page: Page) => Promise<void>;
@@ -43,8 +44,7 @@ const routes: VisualRoute[] = [
     viewport: MOBILE_VIEWPORT,
     maxDiffRatio: 0.004,
     action: async (page) => {
-      await page.getByRole("button", { name: /open menu/i }).click();
-      await expect(page.locator("#mobile-menu")).toBeVisible({ timeout: 10_000 });
+      await openMobileMenu(page);
       await page.waitForTimeout(1200);
     },
   },
@@ -182,6 +182,25 @@ async function prepareFrontendPhpconVisualState(page: Page): Promise<void> {
   await prepareStableVisualState(page);
 }
 
+async function openMobileMenu(page: Page): Promise<void> {
+  const menu = page.locator("#mobile-menu");
+  const button = page.locator('button[aria-controls="mobile-menu"]');
+  await expect(button).toBeVisible({ timeout: 10_000 });
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await button.click();
+    try {
+      await expect(menu).toBeVisible({ timeout: 3_000 });
+      return;
+    } catch (error) {
+      if (attempt === 2) {
+        throw error;
+      }
+      await page.waitForTimeout(500);
+    }
+  }
+}
+
 async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promise<void> {
   const response = await page.goto(`${baseUrl}${route.path}`, {
     timeout: 60_000,
@@ -189,16 +208,7 @@ async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promi
   });
   expect(response?.status()).toBeLessThan(500);
   await expect(page.locator("#__nuxt")).toBeAttached({ timeout: 15_000 });
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const el = document.querySelector("#__nuxt");
-          return el?.textContent?.trim().length ?? 0;
-        }),
-      { timeout: 30_000 },
-    )
-    .toBeGreaterThan(0);
+  await waitForMountedAppContent(page, "#__nuxt");
   await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => undefined);
   await page.waitForTimeout(1000);
 }

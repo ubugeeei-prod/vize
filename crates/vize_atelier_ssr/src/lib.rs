@@ -209,4 +209,58 @@ mod tests {
             result.code
         );
     }
+
+    #[test]
+    fn test_scoped_component_keeps_scope_id() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr_with_options(
+            &allocator,
+            r#"<NuxtLink to="/news" class="news__link"><span>News</span></NuxtLink>"#,
+            SsrCompilerOptions {
+                scope_id: Some("data-v-news".into()),
+                ..SsrCompilerOptions::default()
+            },
+        );
+
+        assert!(errors.is_empty());
+        assert!(
+            result.code.contains(r#""data-v-news": """#),
+            "{}",
+            result.code
+        );
+        assert!(
+            result.code.contains(r#"class: "news__link""#),
+            "{}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn test_dynamic_slot_outlet_name_stays_expression() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr_with_options(
+            &allocator,
+            r#"<Parent><slot :name="((item.slot || 'item') as keyof Slots)" :item="item" /></Parent>"#,
+            SsrCompilerOptions {
+                is_ts: true,
+                ..SsrCompilerOptions::default()
+            },
+        );
+
+        assert!(errors.is_empty());
+        assert!(
+            result
+                .code
+                .contains(r#"_ssrRenderSlot(_ctx.$slots, _ctx.item.slot || "item""#),
+            "{}",
+            result.code
+        );
+        assert!(
+            result
+                .code
+                .contains(r#"_renderSlot(_ctx.$slots, _ctx.item.slot || "item""#),
+            "{}",
+            result.code
+        );
+    }
 }

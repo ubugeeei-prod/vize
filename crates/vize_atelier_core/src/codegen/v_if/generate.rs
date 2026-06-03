@@ -167,7 +167,7 @@ pub(super) fn generate_if_branch_props_object(
             && !is_vbind_spread_prop(p)
             && !is_von_spread_prop(p)
     });
-    // For component elements, skip_scope_id suppresses the attribute.
+    // skip_scope_id suppresses duplicate scope attrs for synthetic prop objects.
     let scope_id = if ctx.skip_scope_id {
         None
     } else {

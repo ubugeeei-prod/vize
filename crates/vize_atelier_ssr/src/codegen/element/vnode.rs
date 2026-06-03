@@ -205,7 +205,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.use_core_helper(RuntimeHelper::RenderSlot);
 
         let mut out = String::from("_renderSlot(_ctx.$slots, ");
-        out.push_str(&quoted_js_string(&self.get_slot_name(el)));
+        out.push_str(&self.slot_outlet_name_expression(el));
         out.push_str(", ");
         out.push_str(&self.build_slot_outlet_props(el));
         out.push(')');
