@@ -371,6 +371,19 @@ const emit = defineEmits<{
 "#,
             ),
             (
+                "src/ClickPointerEvent.vue",
+                r#"<script setup lang="ts">
+const emit = defineEmits<{
+  (event: 'click', payload: PointerEvent): void
+}>()
+</script>
+
+<template>
+  <button @click="emit('click', $event)">Click</button>
+</template>
+"#,
+            ),
+            (
                 "src/ComponentZeroArgHandler.vue",
                 r#"<script setup lang="ts">
 import ZeroArgButton from './ZeroArgButton.vue'
@@ -403,9 +416,15 @@ function toggle(open = false): void {
         snapshot.iter().any(|(file, code, message)| {
             file == "src/WrongEventHandler.vue"
                 && *code == Some(2345)
-                && message.contains("MouseEvent")
+                && message.contains("PointerEvent")
         }),
-        "expected WrongEventHandler.vue to report MouseEvent mismatch, got: {snapshot:#?}"
+        "expected WrongEventHandler.vue to report PointerEvent mismatch, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot
+            .iter()
+            .all(|(file, code, _)| { file != "src/ClickPointerEvent.vue" || *code != Some(2740) }),
+        "unexpected PointerEvent payload mismatch: {snapshot:#?}"
     );
     assert!(
         snapshot.iter().all(|(file, code, _)| {
