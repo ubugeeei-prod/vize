@@ -221,11 +221,7 @@ function resolveVueBundlerEntryFromPnpmHoist(
     return null;
   }
 
-  const packageJson = resolveBareImportFromPnpmHoistWithNode(
-    state,
-    "vue/package.json",
-    importer,
-  );
+  const packageJson = resolveBareImportFromPnpmHoistWithNode(state, "vue/package.json", importer);
   if (!packageJson) {
     return null;
   }
@@ -343,7 +339,9 @@ function isVuePackageEntry(id: string): boolean {
 
 function isInsidePath(parent: string, child: string): boolean {
   const relative = path.relative(parent, child);
-  return relative === "" || (!!relative && !relative.startsWith("..") && !path.isAbsolute(relative));
+  return (
+    relative === "" || (!!relative && !relative.startsWith("..") && !path.isAbsolute(relative))
+  );
 }
 
 function normalizeNuxtVirtualImporterPath(importer: string): string | null {
@@ -590,11 +588,7 @@ async function resolveProjectVueRuntime(
   importer: string | undefined,
   isSsrRequest: boolean,
 ): Promise<string | null> {
-  if (
-    isSsrRequest ||
-    !isProjectVueRuntimeRequest(id) ||
-    !isProjectLocalImporter(state, importer)
-  ) {
+  if (isSsrRequest || !isProjectVueRuntimeRequest(id) || !isProjectLocalImporter(state, importer)) {
     return null;
   }
 
@@ -602,9 +596,7 @@ async function resolveProjectVueRuntime(
   if (isVuePeerRuntimeRequest(id)) {
     const nuxtPeerEntry = resolveProjectNuxtVuePeerRuntimeEntryWithNode(state, id);
     if (nuxtPeerEntry) {
-      state.logger.log(
-        `resolveId: resolved Nuxt Vue peer runtime ${id} to ${nuxtPeerEntry}`,
-      );
+      state.logger.log(`resolveId: resolved Nuxt Vue peer runtime ${id} to ${nuxtPeerEntry}`);
       return nuxtPeerEntry;
     }
 
@@ -811,13 +803,7 @@ export async function resolveIdHook(
   const request = classifyVitePluginRequest(id);
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
 
-  const projectVueRuntime = await resolveProjectVueRuntime(
-    ctx,
-    state,
-    id,
-    importer,
-    isSsrRequest,
-  );
+  const projectVueRuntime = await resolveProjectVueRuntime(ctx, state, id, importer, isSsrRequest);
   if (projectVueRuntime) {
     return projectVueRuntime;
   }
@@ -1087,9 +1073,7 @@ export async function resolveIdHook(
           }
 
           const vueBundlerEntry =
-            isBuild || !isVueResolvableFromRoot(state.root)
-              ? importerLocalEntry
-              : null;
+            isBuild || !isVueResolvableFromRoot(state.root) ? importerLocalEntry : null;
           if (vueBundlerEntry) {
             state.logger.log(`resolveId: resolved Vue runtime to ${vueBundlerEntry}`);
             return vueBundlerEntry;

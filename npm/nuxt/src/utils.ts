@@ -116,10 +116,7 @@ export function normalizeNuxtInjectedKeysForVizeVirtualModule(code: string, id: 
 }
 
 export function stabilizeNuxtInjectedKeysForVizeVirtualModule(code: string, id: string): string {
-  return normalizeNuxtInjectedKeysForVizeVirtualModule(
-    injectMissingNuxtFetchKeys(code),
-    id,
-  );
+  return normalizeNuxtInjectedKeysForVizeVirtualModule(injectMissingNuxtFetchKeys(code), id);
 }
 
 function injectMissingNuxtFetchKeys(code: string): string {

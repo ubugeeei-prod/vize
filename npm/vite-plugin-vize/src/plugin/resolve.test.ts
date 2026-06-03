@@ -203,11 +203,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     "vue",
   );
   const projectVueHoist = path.join(projectRoot, "node_modules", ".pnpm", "node_modules", "vue");
-  const projectVueBundlerEntry = path.join(
-    projectVuePackage,
-    "dist",
-    "vue.runtime.esm-bundler.js",
-  );
+  const projectVueBundlerEntry = path.join(projectVuePackage, "dist", "vue.runtime.esm-bundler.js");
 
   writeFixtureFile(parentVue, "export const parent = true;");
   writeFixtureFile(
@@ -254,11 +250,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     "vue",
   );
   const projectVueHoist = path.join(projectRoot, "node_modules", ".pnpm", "node_modules", "vue");
-  const projectVueBundlerEntry = path.join(
-    projectVuePackage,
-    "dist",
-    "vue.runtime.esm-bundler.js",
-  );
+  const projectVueBundlerEntry = path.join(projectVuePackage, "dist", "vue.runtime.esm-bundler.js");
 
   writeFixtureFile(
     path.join(parentVuePackage, "package.json"),
@@ -328,11 +320,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     "node_modules",
     "vue",
   );
-  const projectVueBundlerEntry = path.join(
-    projectVuePackage,
-    "dist",
-    "vue.runtime.esm-bundler.js",
-  );
+  const projectVueBundlerEntry = path.join(projectVuePackage, "dist", "vue.runtime.esm-bundler.js");
 
   writeFixtureFile(
     path.join(parentVuePackage, "package.json"),
@@ -1089,11 +1077,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     "vue",
   );
   const projectVueHoist = path.join(projectRoot, "node_modules", ".pnpm", "node_modules", "vue");
-  const projectVueBundlerEntry = path.join(
-    projectVuePackage,
-    "dist",
-    "vue.runtime.esm-bundler.js",
-  );
+  const projectVueBundlerEntry = path.join(projectVuePackage, "dist", "vue.runtime.esm-bundler.js");
 
   writeFixtureFile(parentVue, "export const parent = true;");
   writeFixtureFile(
