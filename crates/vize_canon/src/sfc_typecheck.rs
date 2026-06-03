@@ -656,6 +656,35 @@ const message = ref('')
     }
 
     #[test]
+    fn test_type_check_v_if_condition_is_not_rechecked_inside_own_guard() {
+        let source = r#"<template>
+  <div v-if="visibility !== 'public'">
+    <span v-if="visibility === 'home'">home</span>
+    <span v-else-if="visibility === 'followers'">followers</span>
+    <span v-else>specified</span>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineProps<{
+  visibility: 'public' | 'home' | 'followers' | 'specified';
+}>();
+</script>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+        let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+
+        assert!(
+            virtual_ts.contains(r#"if ((visibility !== 'public')) {"#),
+            "{virtual_ts}"
+        );
+        assert!(
+            !virtual_ts.contains(r#"void (visibility !== 'public'); // VIf"#),
+            "{virtual_ts}"
+        );
+    }
+
+    #[test]
     fn test_type_check_scoped_slots() {
         let source = r#"<script setup lang="ts">
 import MyList from './MyList.vue'
