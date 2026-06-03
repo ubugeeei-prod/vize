@@ -261,11 +261,19 @@ See [Compiler Inspector](./compiler-inspector.md) for the contributor workflow.
 ```bash
 vize clean
 vize clean --dry-run
+vize clean --scope node-modules
+vize clean --scope project
+vize clean --force
 vize clean path/to/project
 ```
 
-`vize clean` removes `node_modules/.vize` for the selected project root. Use it when profile
-artifacts or materialized Corsa project files should be rebuilt from a blank cache directory.
+`vize clean` removes known Vize-owned local artifacts for the selected project root, then removes
+empty `.vize` and `node_modules/.vize` parents. The managed artifact list covers profile outputs,
+Musea reports/snapshots/tokens, Patina sessions, config schemas, LSP logs, socket leftovers, OXC
+dumps, Oxlint workaround files, and materialized Corsa project files. Unknown entries under `.vize`
+are preserved by default; use `--force` only when the selected artifact root should be removed
+wholesale. `--dry-run` prints the artifact paths that would be removed. Use `--scope node-modules`
+or `--scope project` when only one artifact root should be cleaned.
 
 ## Ready
 

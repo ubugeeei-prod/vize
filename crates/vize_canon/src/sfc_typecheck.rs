@@ -196,6 +196,49 @@ const { thickness, label } = props;
     }
 
     #[test]
+    fn test_type_check_with_defaults_narrows_direct_template_prop_identifiers() {
+        let source = r#"<script setup lang="ts">
+const props = withDefaults(
+  defineProps<{
+    count?: number;
+    label: string;
+  }>(),
+  { count: 0 },
+);
+
+const emit = defineEmits<{
+  increment: [value: number];
+}>();
+
+void props;
+</script>
+
+<template>
+  <button type="button" @click="emit('increment', count + 1)">
+    {{ label }}: {{ count }}
+  </button>
+</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+        let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+
+        assert!(
+            virtual_ts.contains(
+                r#"const count = props["count"] as Exclude<__WithDefaultsResult<Props, Pick<Props, "count">>["count"], undefined>;"#
+            ),
+            "{virtual_ts}"
+        );
+        assert!(
+            !virtual_ts.contains(r#"const count = props["count"];"#),
+            "{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains(r#"void (emit('increment', count + 1));"#),
+            "{virtual_ts}"
+        );
+    }
+
+    #[test]
     fn test_type_check_with_untyped_props_non_strict() {
         let source = r#"<script setup>
 const props = defineProps(['count', 'name']);
@@ -523,6 +566,58 @@ defineProps<{
             "{virtual_ts}"
         );
         assert!(!virtual_ts.contains("active: static"), "{virtual_ts}");
+    }
+
+    #[test]
+    fn test_type_check_preserves_ts_as_assertions_when_prop_is_named_as() {
+        let source = r#"<script setup lang="ts">
+defineProps<{
+  as?: string
+}>()
+
+const value = 'demo'
+const onFocus = (target: HTMLElement) => {
+  target.dataset.focused = 'true'
+}
+</script>
+
+<template>
+  <div
+    :data-value="(value as any)"
+    :style="{
+      ['--demo-value' as any]: value,
+    }"
+    v-on="{
+      focusin: (event: FocusEvent) => {
+        onFocus(event.target as HTMLElement)
+      },
+    }"
+  />
+</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+        let virtual_ts = result.virtual_ts.expect("virtual ts produced");
+
+        assert!(
+            virtual_ts.contains("void ((value as any));"),
+            "{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("['--demo-value' as any]: value"),
+            "{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("onFocus(event.target as HTMLElement)"),
+            "{virtual_ts}"
+        );
+        assert!(
+            !virtual_ts.contains("value props[\"as\"] any"),
+            "{virtual_ts}"
+        );
+        assert!(
+            !virtual_ts.contains("event.target props[\"as\"] HTMLElement"),
+            "{virtual_ts}"
+        );
     }
 
     #[test]

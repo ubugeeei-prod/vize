@@ -759,6 +759,209 @@ void props
 }
 
 #[test]
+fn batch_type_checker_accepts_with_defaults_direct_template_prop_identifiers() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "with-defaults-direct-template-props",
+        &[(
+            "src/CounterButton.vue",
+            r#"<script setup lang="ts">
+const props = withDefaults(
+  defineProps<{
+    count?: number;
+    label: string;
+  }>(),
+  { count: 0 },
+);
+
+const emit = defineEmits<{
+  increment: [value: number];
+}>();
+
+void props;
+</script>
+
+<template>
+  <button type="button" @click="emit('increment', count + 1)">
+    {{ label }}: {{ count }}
+  </button>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "defaulted direct template prop identifiers should not report diagnostics, got: {snapshot:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_accepts_reexported_vue_interface_template_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "reexported-vue-interface-template-props",
+        &[
+            (
+                "src/Base.vue",
+                r#"<script lang="ts">
+export interface BaseProps {
+  as?: string
+  asChild?: boolean
+}
+</script>
+
+<template><div /></template>
+"#,
+            ),
+            (
+                "src/index.ts",
+                r#"export { type BaseProps } from "./Base.vue";"#,
+            ),
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineProps<{
+  as?: string
+  asChild?: boolean
+}>()
+</script>
+
+<template><div /></template>
+"#,
+            ),
+            (
+                "src/ParentWidget.vue",
+                r#"<script lang="ts">
+import type { BaseProps } from './index'
+
+export interface ParentWidgetProps extends BaseProps {}
+</script>
+
+<script setup lang="ts">
+import Child from './Child.vue'
+
+const props = defineProps<ParentWidgetProps>()
+</script>
+
+<template>
+  <Child
+    :as="as"
+    :as-child="props.asChild"
+  />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "re-exported Vue interface props should resolve in Corsa diagnostics, got: {snapshot:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_accepts_mixed_reexported_vue_interface_template_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "mixed-reexported-vue-interface-template-props",
+        &[
+            (
+                "src/primitive.ts",
+                r#"export type AsTag = 'div' | 'span' | ({} & string)
+
+export interface PrimitiveProps {
+  asChild?: boolean
+  as?: AsTag
+}
+"#,
+            ),
+            (
+                "src/content/Content.vue",
+                r#"<script lang="ts">
+import type { PrimitiveProps } from '../primitive'
+
+export interface ContentProps extends PrimitiveProps {
+  forceMount?: boolean
+}
+</script>
+
+<script setup lang="ts">
+defineProps<ContentProps>()
+</script>
+
+<template><div /></template>
+"#,
+            ),
+            (
+                "src/content/index.ts",
+                r#"export {
+  default as Content,
+  type ContentProps,
+} from './Content.vue'
+"#,
+            ),
+            (
+                "src/Wrapper.vue",
+                r#"<script lang="ts">
+import type { ContentProps } from './content'
+
+export interface WrapperProps extends ContentProps {}
+</script>
+
+<script setup lang="ts">
+import { Content } from './content'
+
+const props = defineProps<WrapperProps>()
+</script>
+
+<template>
+  <Content
+    :as-child="props.asChild"
+    :as="as"
+    :force-mount="props.forceMount"
+  />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "mixed Vue type re-exports should resolve in Corsa diagnostics, got: {snapshot:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_snapshots_ts_imports_vue_component() {
     if resolve_test_tsgo_binary().is_none() {
         return;

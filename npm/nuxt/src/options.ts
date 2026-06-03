@@ -1,9 +1,10 @@
 import type { MuseaOptions } from "@vizejs/vite-plugin-musea";
 import type { NuxtMuseaOptions } from "@vizejs/musea-nuxt";
 import type { VizeNuxtCompilerOptions, VizeNuxtVueVersion } from "./compiler-options.ts";
-import { buildNuxtCompilerOptions } from "./utils.ts";
+import { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE, buildNuxtCompilerOptions } from "./utils.ts";
 
 export type { VizeNuxtCompilerOptions, VizeNuxtVueVersion } from "./compiler-options.ts";
+export { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE };
 
 export type VizeNuxtMajorVersion = 2 | 3 | 4;
 

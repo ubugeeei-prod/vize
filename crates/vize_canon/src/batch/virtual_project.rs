@@ -2127,6 +2127,79 @@ const props = defineProps<ParentWidgetProps>();
     }
 
     #[test]
+    fn test_virtual_ts_preserves_ts_as_assertions_when_prop_is_named_as() {
+        let case_dir = unique_case_dir("template-as-assertion-prop");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+
+        let vue_path = src_dir.join("App.vue");
+        fs::write(
+            &vue_path,
+            r#"<script setup lang="ts">
+defineProps<{
+  as?: string
+}>()
+
+const value = 'demo'
+const onFocus = (target: HTMLElement) => {
+  target.dataset.focused = 'true'
+}
+</script>
+
+<template>
+  <div
+    :data-value="(value as any)"
+    :style="{
+      ['--demo-value' as any]: value,
+    }"
+    v-on="{
+      focusin: (event: FocusEvent) => {
+        onFocus(event.target as HTMLElement)
+      },
+    }"
+  />
+</template>
+"#,
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project
+            .register_vue_file(&vue_path, &fs::read_to_string(&vue_path).unwrap())
+            .unwrap();
+
+        let virtual_file = project.find_by_original(&vue_path).unwrap();
+        assert_ts_parses(&virtual_file.content);
+        assert!(
+            virtual_file.content.contains("void ((value as any));"),
+            "{}",
+            virtual_file.content
+        );
+        assert!(
+            virtual_file
+                .content
+                .contains("['--demo-value' as any]: value"),
+            "{}",
+            virtual_file.content
+        );
+        assert!(
+            virtual_file
+                .content
+                .contains("onFocus(event.target as HTMLElement)"),
+            "{}",
+            virtual_file.content
+        );
+        assert!(
+            !virtual_file.content.contains(r#"value props["as"] any"#),
+            "{}",
+            virtual_file.content
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
     fn test_materialize_writes_tsconfig_and_virtual_files() {
         let case_dir = unique_case_dir("materialize");
         let _ = fs::remove_dir_all(&case_dir);

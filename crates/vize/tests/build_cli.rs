@@ -101,3 +101,104 @@ withDefaults(defineProps<AppProps>(), {
 
     let _ = fs::remove_dir_all(project_root);
 }
+
+#[test]
+fn build_resolves_props_from_mixed_reexported_vue_interface() {
+    let project_root = temp_project_dir("mixed-reexported-vue-interface-props");
+    write_project_file(
+        &project_root,
+        "src/primitive.ts",
+        r#"export type AsTag = 'div' | 'span' | ({} & string)
+
+export interface PrimitiveProps {
+  asChild?: boolean
+  as?: AsTag
+}
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "src/content/Content.vue",
+        r#"<script lang="ts">
+import type { PrimitiveProps } from '../primitive'
+
+export interface ContentProps extends PrimitiveProps {
+  forceMount?: boolean
+}
+</script>
+
+<script setup lang="ts">
+defineProps<ContentProps>()
+</script>
+
+<template><div /></template>
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "src/content/index.ts",
+        r#"export {
+  default as Content,
+  type ContentProps,
+} from './Content.vue'
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "src/Wrapper.vue",
+        r#"<script lang="ts">
+import type { ContentProps } from './content'
+
+export interface WrapperProps extends ContentProps {}
+</script>
+
+<script setup lang="ts">
+import { Content } from './content'
+
+const props = defineProps<WrapperProps>()
+</script>
+
+<template>
+  <Content
+    :as-child="props.asChild"
+    :as="as"
+    :force-mount="props.forceMount"
+  />
+</template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "build",
+            "--format",
+            "js",
+            "src/Wrapper.vue",
+            "--output",
+            "dist",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let js = fs::read_to_string(project_root.join("dist/Wrapper.js")).unwrap();
+    assert!(
+        js.contains("asChild: {\n      type: Boolean,\n      required: false\n    }"),
+        "{js}"
+    );
+    assert!(
+        js.contains("forceMount: {\n      type: Boolean,\n      required: false\n    }"),
+        "{js}"
+    );
+    assert!(js.contains("as: __props.as"), "{js}");
+    assert!(!js.contains("_ctx.as"), "{js}");
+
+    let _ = fs::remove_dir_all(project_root);
+}

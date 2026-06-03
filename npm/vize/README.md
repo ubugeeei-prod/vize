@@ -23,12 +23,9 @@ Need `vp` first? Install Vite+ once from the [Vite+ install guide](https://vitep
 vp install -D vize
 ```
 
-`vize check` also needs the Corsa runtime from `@typescript/native-preview`. Install it in projects
-that run `vize check` from package scripts:
-
-```bash
-vp install -D @typescript/native-preview
-```
+The package declares the `@typescript/native-preview` Corsa runtime as an optional dependency, so
+standard installs include the runtime needed by `vize check`. The `--corsa-path` CLI option remains
+available for custom native TypeScript builds.
 
 ## CLI
 
@@ -112,7 +109,7 @@ The human and agent-friendly formats include local rule documentation paths such
 `docs/content/rules/vue.md`.
 
 `vize check` in the npm package uses the packaged NAPI checker and the `@typescript/native-preview`
-Corsa runtime, so it can run from `package.json` scripts after installing both packages:
+Corsa runtime, so it can run from `package.json` scripts after installing `vize`:
 
 ```bash
 vp exec vize check src --strict

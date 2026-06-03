@@ -90,10 +90,9 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   const script = fs.readFileSync(smokeScript, "utf8");
 
   assert.match(script, /--runtime-checks/);
-  // Runtime peer deps must include the TS native preview pin used by the
-  // smoke project; the version is the single source of truth for what the
-  // matrix runners install.
-  assert.match(script, /"@typescript\/native-preview":\s*"7\.0\.0-dev\.20260602\.1"/);
+  // vize declares @typescript/native-preview itself, so the fresh-install smoke
+  // must not manually add it as a project runtime peer.
+  assert.doesNotMatch(script, /"@typescript\/native-preview":/);
   assert.match(script, /require\("@vizejs\/native"\)/);
   assert.match(script, /import\("@vizejs\/native"\)/);
   assert.match(script, /native\.compileSfc/);

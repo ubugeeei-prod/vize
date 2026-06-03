@@ -261,6 +261,7 @@ fn rewrite_reserved_template_prop(
                 && template_prop_names.contains(ident)
                 && !is_property_access(bytes, start)
                 && !is_object_property_key(bytes, i)
+                && !is_typescript_as_assertion_operator(bytes, start, i, ident)
             {
                 if is_object_shorthand(bytes, start, i) {
                     append!(output, "{ident}: props[\"{ident}\"]");
@@ -381,6 +382,31 @@ fn is_object_shorthand(bytes: &[u8], ident_start: usize, ident_end: usize) -> bo
     )
 }
 
+fn is_typescript_as_assertion_operator(
+    bytes: &[u8],
+    ident_start: usize,
+    ident_end: usize,
+    ident: &str,
+) -> bool {
+    if ident != "as" {
+        return false;
+    }
+
+    let Some(prev) = previous_significant_byte(bytes, ident_start) else {
+        return false;
+    };
+    let Some(next) = next_significant_byte(bytes, ident_end) else {
+        return false;
+    };
+
+    let expression_before_as = prev.is_ascii_alphanumeric()
+        || matches!(prev, b'_' | b'$' | b')' | b']' | b'}' | b'\'' | b'"' | b'`');
+    let type_after_as =
+        is_identifier_start(next) || matches!(next, b'{' | b'[' | b'(' | b'\'' | b'"');
+
+    expression_before_as && type_after_as
+}
+
 fn is_identifier_start(byte: u8) -> bool {
     byte.is_ascii_alphabetic() || byte == b'_' || byte == b'$'
 }
@@ -455,6 +481,41 @@ mod tests {
     fn ignores_non_reserved_props() {
         let props = ["count"].into_iter().map(Into::into).collect();
         assert_eq!(rewrite_reserved_template_prop("count + 1", &props), None);
+    }
+
+    #[test]
+    fn preserves_typescript_as_assertions_when_prop_is_named_as() {
+        let props = ["as"].into_iter().map(Into::into).collect();
+
+        assert_eq!(
+            rewrite_reserved_template_prop("(value as any)", &props),
+            None
+        );
+        assert_eq!(
+            rewrite_reserved_template_prop("{ ['--demo-value' as any]: value }", &props),
+            None
+        );
+        assert_eq!(
+            rewrite_reserved_template_prop(
+                "{ focusin: (event: FocusEvent) => onFocus(event.target as HTMLElement) }",
+                &props,
+            ),
+            None
+        );
+    }
+
+    #[test]
+    fn still_rewrites_as_when_used_as_template_prop_identifier() {
+        let props = ["as"].into_iter().map(Into::into).collect();
+
+        assert_eq!(
+            rewrite_reserved_template_prop("as", &props).as_deref(),
+            Some("props[\"as\"]")
+        );
+        assert_eq!(
+            rewrite_reserved_template_prop("{ as, tag: as }", &props).as_deref(),
+            Some("{ as: props[\"as\"], tag: props[\"as\"] }")
+        );
     }
 }
 

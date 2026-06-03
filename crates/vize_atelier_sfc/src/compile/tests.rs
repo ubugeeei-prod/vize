@@ -1444,6 +1444,94 @@ fn test_define_props_interface_extends_reexported_vue_interface() {
 }
 
 #[test]
+fn test_define_props_interface_extends_mixed_reexported_vue_interface() {
+    let project = temp_compile_project_dir("mixed-reexported-vue-interface-props");
+    let src = project.join("src");
+    let content_dir = src.join("content");
+    fs::create_dir_all(&content_dir).unwrap();
+
+    fs::write(
+        src.join("primitive.ts"),
+        r#"export type AsTag = 'div' | 'span' | ({} & string)
+
+export interface PrimitiveProps {
+  asChild?: boolean
+  as?: AsTag
+}
+"#,
+    )
+    .unwrap();
+    fs::write(
+        content_dir.join("Content.vue"),
+        r#"<script lang="ts">
+import type { PrimitiveProps } from '../primitive'
+
+export interface ContentProps extends PrimitiveProps {
+  forceMount?: boolean
+}
+</script>
+
+<script setup lang="ts">
+defineProps<ContentProps>()
+</script>
+
+<template><div /></template>"#,
+    )
+    .unwrap();
+    fs::write(
+        content_dir.join("index.ts"),
+        r#"export {
+  default as Content,
+  type ContentProps,
+} from './Content.vue'
+"#,
+    )
+    .unwrap();
+
+    let wrapper_path = src.join("Wrapper.vue");
+    let source = r#"<script lang="ts">
+import type { ContentProps } from './content'
+
+export interface WrapperProps extends ContentProps {}
+</script>
+
+<script setup lang="ts">
+import { Content } from './content'
+
+const props = defineProps<WrapperProps>()
+</script>
+
+<template>
+  <Content
+    :as-child="props.asChild"
+    :as="as"
+    :force-mount="props.forceMount"
+  />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some(wrapper_path.to_string_lossy().as_ref().to_compact_string());
+
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("asChild: {\n      type: Boolean"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("forceMount: {\n      type: Boolean"),
+        "{}",
+        result.code
+    );
+    assert!(result.code.contains("as: __props.as"), "{}", result.code);
+    assert!(!result.code.contains("_ctx.as"), "{}", result.code);
+
+    let _ = fs::remove_dir_all(project);
+}
+
+#[test]
 fn test_with_defaults_resolves_imported_vue_type_from_src_alias() {
     let project = temp_compile_project_dir("with-defaults-src-alias");
     let components = project.join("packages/frontend/src/components");
