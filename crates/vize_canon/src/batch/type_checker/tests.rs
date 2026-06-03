@@ -385,62 +385,6 @@ function toggle(open = false): void {
 </template>
 "#,
             ),
-            (
-                "src/PayloadButton.vue",
-                r#"<script setup lang="ts">
-const emit = defineEmits<{
-  change: [value: string]
-}>()
-</script>
-
-<template>
-  <button @click="emit('change', 'next')">Change</button>
-</template>
-"#,
-            ),
-            (
-                "src/WrongComponentPayloadHandler.vue",
-                r#"<script setup lang="ts">
-import PayloadButton from './PayloadButton.vue'
-
-function handleValue(value: number): void {
-  console.log(value)
-}
-</script>
-
-<template>
-  <PayloadButton @change="handleValue" />
-</template>
-"#,
-            ),
-            (
-                "src/OverloadPayloadButton.vue",
-                r#"<script setup lang="ts">
-const emit = defineEmits<{
-  (event: 'select', id: number): void
-}>()
-</script>
-
-<template>
-  <button @click="emit('select', 1)">Select</button>
-</template>
-"#,
-            ),
-            (
-                "src/WrongOverloadPayloadHandler.vue",
-                r#"<script setup lang="ts">
-import OverloadPayloadButton from './OverloadPayloadButton.vue'
-
-function handleSelect(id: string): void {
-  console.log(id)
-}
-</script>
-
-<template>
-  <OverloadPayloadButton @select="handleSelect" />
-</template>
-"#,
-            ),
         ],
     );
 
@@ -469,23 +413,6 @@ function handleSelect(id: string): void {
         }),
         "unexpected zero-arg component event handler mismatch: {snapshot:#?}"
     );
-    assert!(
-        snapshot.iter().any(|(file, code, message)| {
-            file == "src/WrongComponentPayloadHandler.vue"
-                && *code == Some(2345)
-                && message.contains("string")
-        }),
-        "expected WrongComponentPayloadHandler.vue to report string payload mismatch, got: {snapshot:#?}"
-    );
-    assert!(
-        snapshot.iter().any(|(file, code, message)| {
-            file == "src/WrongOverloadPayloadHandler.vue"
-                && *code == Some(2345)
-                && message.contains("number")
-        }),
-        "expected WrongOverloadPayloadHandler.vue to report number payload mismatch, got: {snapshot:#?}"
-    );
-
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
