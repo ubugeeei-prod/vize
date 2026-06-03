@@ -79,6 +79,68 @@ const msg = 'hello'
 }
 
 {
+  const state = createState({
+    filter: () => false,
+  });
+  const plugin = createPostTransformPlugin(state);
+  const markdownSfcId = path.join("/docs", "Page.md");
+  const result = await plugin.transform?.(virtualSfcSource, markdownSfcId, {
+    ssr: false,
+  });
+
+  assert.ok(
+    result && typeof result === "object",
+    "Markdown modules that contain transformed SFC source should compile by default",
+  );
+  assert.doesNotMatch(
+    result.code,
+    /^<template>/,
+    "Compiled Markdown SFC modules should not leak raw SFC blocks to Rolldown",
+  );
+  assert.match(
+    result.code,
+    /export default _sfc_main/,
+    "Compiled Markdown SFC modules should export the component",
+  );
+}
+
+{
+  const state = createState({
+    filter: (id) => id.endsWith(".mdx"),
+  });
+  const plugin = createPostTransformPlugin(state);
+  const mdxSfcId = path.join("/docs", "Page.mdx");
+  const result = await plugin.transform?.(virtualSfcSource, mdxSfcId, {
+    ssr: false,
+  });
+
+  assert.ok(
+    result && typeof result === "object",
+    "Custom extensions included by plugin options should compile when they contain SFC source",
+  );
+}
+
+{
+  const state = createState({
+    filter: () => true,
+  });
+  const plugin = createPostTransformPlugin(state);
+  const result = await plugin.transform?.(
+    `export default "<template><div /></template>";`,
+    path.join("/docs", "literal.md"),
+    {
+      ssr: false,
+    },
+  );
+
+  assert.equal(
+    result,
+    null,
+    "Post-transform should ignore regular JavaScript modules that merely contain SFC-looking strings",
+  );
+}
+
+{
   const transformed = transformScopedPreprocessorCss(
     ".rrevdjwu > .group + .group { color: red; }",
     "\0/src/MkSuperMenu.vue?vue=&type=style&index=0&scoped=data-v-menu&lang=scss.scss",

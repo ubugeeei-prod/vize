@@ -488,6 +488,8 @@ fn diagnostics_api_is_unsupported(error: &str) -> bool {
     error.contains("unknown API method")
         || error.contains("method not found")
         || error.contains("Unsupported")
+        || error.contains("unsupported")
+        || error.contains("not supported")
 }
 
 fn lsp_diagnostics_error_is_transient(error: &str) -> bool {
@@ -668,7 +670,21 @@ fn language_id_for_uri(uri: &str) -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    use super::lsp_diagnostics_error_is_transient;
+    use super::{diagnostics_api_is_unsupported, lsp_diagnostics_error_is_transient};
+
+    #[test]
+    fn recognizes_unsupported_diagnostics_api_errors() {
+        assert!(diagnostics_api_is_unsupported("unknown API method"));
+        assert!(diagnostics_api_is_unsupported(
+            "unsupported: project diagnostics are not supported by this runtime"
+        ));
+        assert!(diagnostics_api_is_unsupported(
+            "project diagnostics are not supported by this runtime"
+        ));
+        assert!(!diagnostics_api_is_unsupported(
+            "Failed to request Corsa project diagnostics: process exited"
+        ));
+    }
 
     #[test]
     fn recognizes_transient_lsp_transport_errors() {

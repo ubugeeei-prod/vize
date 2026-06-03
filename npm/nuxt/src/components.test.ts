@@ -147,6 +147,57 @@ void test("Nuxt component resolver reads generated d.ts, runtime fallbacks, and 
   }
 });
 
+void test("Nuxt component resolver reads GlobalComponents declarations", () => {
+  const fixture = createFixture();
+  try {
+    const helloCardPath = writeFile(path.join(fixture.rootDir, "app/components/HelloCard.vue"));
+    const quotedWidgetPath = writeFile(
+      path.join(fixture.rootDir, "app/components/widgets/QuotedWidget.vue"),
+    );
+    writeFile(
+      path.join(fixture.buildDir, "types/components.d.ts"),
+      [
+        `declare module "vue" {`,
+        `  export interface GlobalComponents {`,
+        `    HelloCard: typeof import(${JSON.stringify(
+          path.relative(path.join(fixture.buildDir, "types"), helloCardPath),
+        )})["default"]`,
+        `    "QuotedWidget": typeof import(${JSON.stringify(
+          path.relative(path.join(fixture.buildDir, "types"), quotedWidgetPath),
+        )})["default"]`,
+        `  }`,
+        `}`,
+        `export {}`,
+        "",
+      ].join("\n"),
+    );
+
+    const resolver = createNuxtComponentResolver({
+      buildDir: fixture.buildDir,
+      rootDir: fixture.rootDir,
+    });
+
+    assert.deepEqual(
+      resolver.resolve("HelloCard"),
+      {
+        exportName: "default",
+        filePath: path.join(fixture.rootDir, "app/components/HelloCard.vue"),
+      },
+      "Nuxt 4 GlobalComponents d.ts entries should resolve app components",
+    );
+    assert.deepEqual(
+      resolver.resolve("quoted-widget"),
+      {
+        exportName: "default",
+        filePath: path.join(fixture.rootDir, "app/components/widgets/QuotedWidget.vue"),
+      },
+      "quoted GlobalComponents entries should get kebab aliases",
+    );
+  } finally {
+    fs.rmSync(fixture.rootDir, { recursive: true, force: true });
+  }
+});
+
 void test("Nuxt component import injection rewrites resolved runtime components", () => {
   const fixture = createFixture();
   try {
@@ -222,7 +273,7 @@ export default {
   }
 });
 
-void test("Nuxt component resolver preserves explicit component mode from registry", () => {
+void test("Nuxt component resolver keeps NuxtRouteAnnouncer unwrapped", () => {
   const fixture = createFixture();
   try {
     const routeAnnouncerPath = writeFile(
@@ -269,13 +320,13 @@ export default {
 
     assert.match(
       transformed,
-      /import \{ createClientOnly as __nuxt_create_client_only \} from "#app\/components\/client-only";/,
-      "registry client-only components should import createClientOnly",
+      /import __nuxt_component_0 from ".*nuxt-route-announcer\.js";/,
+      "NuxtRouteAnnouncer should be imported directly before use",
     );
-    assert.match(
-      transformed,
-      /import __nuxt_component_0_raw from ".*nuxt-route-announcer\.js";\s*const __nuxt_component_0 = __nuxt_create_client_only\(__nuxt_component_0_raw\);/s,
-      "registry client-only components should be wrapped before use",
+    assert.equal(
+      transformed.includes("__nuxt_create_client_only"),
+      false,
+      "NuxtRouteAnnouncer should not use createClientOnly",
     );
 
     const componentImportTransformed = injectNuxtComponentImports(
@@ -305,8 +356,13 @@ export default {
     );
     assert.match(
       componentImportTransformed,
-      /import (__nuxt_import_component_\d+_raw) from ".*nuxt-route-announcer\.js";\s*const NuxtRouteAnnouncer = __nuxt_create_client_only\(\1\);/s,
-      "#components imports should wrap registry client-only components",
+      /import NuxtRouteAnnouncer from ".*nuxt-route-announcer\.js";/,
+      "#components imports should keep NuxtRouteAnnouncer direct",
+    );
+    assert.equal(
+      componentImportTransformed.includes("__nuxt_create_client_only"),
+      false,
+      "#components imports should not wrap NuxtRouteAnnouncer",
     );
   } finally {
     fs.rmSync(fixture.rootDir, { recursive: true, force: true });

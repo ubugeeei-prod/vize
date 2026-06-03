@@ -3,11 +3,11 @@
 use super::{CorsaProjectClient, utils::remap_serialized_uris};
 use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 use corsa::{
+    CorsaError,
     api::{
         ApiMode, ApiSpawnConfig, CapabilitiesResponse, DocumentIdentifier, FileChangeSummary,
         FileChanges, OverlayChanges, OverlayUpdate, ProjectSession,
     },
-    error::TsgoError,
     fast::CompactString,
     runtime::block_on,
 };
@@ -59,7 +59,7 @@ async fn spawn_project_session_with_mode(
     cwd: &Path,
     config_path: &str,
     mode: ApiMode,
-) -> Result<ProjectSession, TsgoError> {
+) -> Result<ProjectSession, CorsaError> {
     ProjectSession::spawn(
         ApiSpawnConfig::new(executable)
             .with_mode(mode)
@@ -70,12 +70,12 @@ async fn spawn_project_session_with_mode(
     .await
 }
 
-fn should_retry_json_rpc(mode: ApiMode, error: &TsgoError) -> bool {
+fn should_retry_json_rpc(mode: ApiMode, error: &CorsaError) -> bool {
     if mode != ApiMode::SyncMsgpackStdio {
         return false;
     }
 
-    let TsgoError::Protocol(message) = error else {
+    let CorsaError::Protocol(message) = error else {
         return false;
     };
 
@@ -413,8 +413,8 @@ mod tests {
         api_mode_for_executable, line_character_to_utf16_offset, should_retry_json_rpc,
         uri_document_identifier,
     };
+    use corsa::CorsaError;
     use corsa::api::{ApiMode, DocumentIdentifier};
-    use corsa::error::TsgoError;
 
     #[test]
     fn uses_async_json_rpc_for_node_modules_bin_wrappers() {
@@ -444,7 +444,7 @@ mod tests {
 
     #[test]
     fn retries_json_rpc_after_msgpack_shape_mismatch() {
-        let error = TsgoError::Protocol("expected tuple marker, got 61".into());
+        let error = CorsaError::Protocol("expected tuple marker, got 61".into());
 
         assert!(should_retry_json_rpc(ApiMode::SyncMsgpackStdio, &error));
         assert!(!should_retry_json_rpc(ApiMode::AsyncJsonRpcStdio, &error));
