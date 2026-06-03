@@ -326,6 +326,10 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<a :href="userUrl">Link</a>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Dynamic :href binding may be vulnerable to XSS via javascript: protocol"
+        );
     }
 
     #[test]
@@ -363,6 +367,10 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<iframe :src="url"></iframe>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Dynamic :src binding may be vulnerable to XSS via javascript: protocol"
+        );
     }
 
     #[test]
