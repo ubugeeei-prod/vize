@@ -60,6 +60,13 @@ fn is_pascal_case(s: &str) -> bool {
     true
 }
 
+fn is_nuxt_route_file(filename: &str) -> bool {
+    filename
+        .replace('\\', "/")
+        .split('/')
+        .any(|segment| segment == "pages")
+}
+
 /// Common exception filenames that don't need PascalCase
 const EXCEPTION_NAMES: &[&str] = &["App"];
 
@@ -71,6 +78,10 @@ impl Rule for ComponentDefinitionNameCasing {
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         let filename = ctx.filename;
         if !filename.ends_with(".vue") {
+            return;
+        }
+
+        if is_nuxt_route_file(filename) {
             return;
         }
 
@@ -153,6 +164,27 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_nuxt_pages_route_kebab_case() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div>Content</div>"#, "pages/job-board.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_nuxt_app_pages_route_kebab_case() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div>Content</div>"#, "app/pages/job-board.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_nuxt_src_pages_route_kebab_case() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div>Content</div>"#, "src/pages/job-board.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
     fn test_invalid_camel_case() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>Content</div>"#, "myComponent.vue");
@@ -165,6 +197,13 @@ mod tests {
         let result =
             linter.lint_template(r#"<div>Content</div>"#, "src/components/MyComponent.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_component_kebab_case_with_path() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div>Content</div>"#, "src/components/job-board.vue");
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
