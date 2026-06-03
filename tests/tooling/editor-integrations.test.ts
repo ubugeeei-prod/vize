@@ -2,9 +2,21 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const textmateModulePath = path.join(
+  root,
+  "node_modules/.pnpm/@shikijs+vscode-textmate@10.0.2/node_modules/@shikijs/vscode-textmate/dist/index.js",
+);
+const onigurumaModulePath = path.join(
+  root,
+  "node_modules/.pnpm/@shikijs+engine-oniguruma@4.0.2/node_modules/@shikijs/engine-oniguruma/dist/index.mjs",
+);
+const onigurumaWasmPath = path.join(
+  root,
+  "node_modules/.pnpm/shiki@4.0.2/node_modules/shiki/dist/onig.wasm",
+);
 
 function readJson<T>(relativePath: string): T {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), "utf-8")) as T;
@@ -25,11 +37,132 @@ function quoteAwareTagLookahead(begin: string | undefined): void {
   assert.doesNotMatch(begin, /\[\^>\]\*/);
 }
 
+function createStubGrammar(scopeName: string) {
+  const patterns = [
+    { match: "\\b(as|extends|keyof|typeof|infer|satisfies)\\b", name: "keyword.operator.ts" },
+    { match: "\\b[A-Za-z_$][\\w$]*\\b", name: "identifier.ts" },
+    { match: "[<>{}()\\[\\].,:?=+\\-*/|&!]+", name: "punctuation.ts" },
+    { match: "\"(?:\\\\.|[^\"])*\"|'(?:\\\\.|[^'])*'|`(?:\\\\.|[^`])*`", name: "string.ts" },
+  ];
+
+  return {
+    scopeName,
+    patterns,
+    repository: {
+      expression: { patterns },
+      "type-inner": { patterns },
+    },
+  };
+}
+
+async function loadVueTextMateGrammar() {
+  const [{ Registry }, { createOnigurumaEngine }] = await Promise.all([
+    import(pathToFileURL(textmateModulePath).href),
+    import(pathToFileURL(onigurumaModulePath).href),
+  ]);
+  const engine = await createOnigurumaEngine(fs.readFileSync(onigurumaWasmPath));
+  const grammars = new Map<string, unknown>([
+    ["source.vue", readJson("npm/vscode-vize/syntaxes/vue.tmLanguage.json")],
+    ["source.art-vue", readJson("npm/vscode-vize/syntaxes/art-vue.tmLanguage.json")],
+  ]);
+  const registry = new Registry({
+    onigLib: {
+      createOnigScanner(patterns: Array<string | RegExp>) {
+        return engine.createScanner(patterns);
+      },
+      createOnigString(value: string) {
+        return engine.createString(value);
+      },
+    },
+    loadGrammar(scopeName: string) {
+      return grammars.get(scopeName) ?? createStubGrammar(scopeName);
+    },
+  });
+
+  const grammar = registry.loadGrammar("source.vue");
+  assert.ok(grammar);
+  return { grammar, registry };
+}
+
+function tokenizeLines(
+  grammar: {
+    tokenizeLine(
+      lineText: string,
+      prevState: unknown,
+    ): { ruleStack: unknown; tokens: TextMateToken[] };
+  },
+  lines: string[],
+): TextMateToken[] {
+  let ruleStack: unknown = null;
+  const tokens: TextMateToken[] = [];
+
+  for (const line of lines) {
+    const result = grammar.tokenizeLine(line, ruleStack);
+    for (const token of result.tokens) {
+      tokens.push({
+        endIndex: token.endIndex,
+        line,
+        scopes: token.scopes,
+        startIndex: token.startIndex,
+        text: line.slice(token.startIndex, token.endIndex),
+      });
+    }
+    ruleStack = result.ruleStack;
+  }
+
+  return tokens;
+}
+
+type TextMateToken = {
+  endIndex: number;
+  line: string;
+  scopes: string[];
+  startIndex: number;
+  text: string;
+};
+
+function tokensForText(tokens: TextMateToken[], text: string): TextMateToken[] {
+  return tokens.filter((token) => token.text.includes(text));
+}
+
+function assertTextHasScope(tokens: TextMateToken[], text: string, scopePart: string): void {
+  assert.equal(
+    tokensForText(tokens, text).some((token) =>
+      token.scopes.some((scope) => scope.includes(scopePart)),
+    ),
+    true,
+    `${JSON.stringify(text)} should include scope ${scopePart}. Tokens: ${JSON.stringify(
+      tokensForText(tokens, text),
+    )}`,
+  );
+}
+
+function assertTextDoesNotHaveScope(
+  tokens: TextMateToken[],
+  text: string,
+  scopePart: string,
+): void {
+  assert.equal(
+    tokensForText(tokens, text).some((token) =>
+      token.scopes.some((scope) => scope.includes(scopePart)),
+    ),
+    false,
+    `${JSON.stringify(text)} should not include scope ${scopePart}. Tokens: ${JSON.stringify(
+      tokensForText(tokens, text),
+    )}`,
+  );
+}
+
 test("vscode-vize wires art-vue documents into editor features", () => {
   const manifest = readJson<{
     activationEvents?: string[];
     contributes?: {
-      grammars?: Array<{ language?: string; path?: string; scopeName?: string }>;
+      grammars?: Array<{
+        embeddedLanguages?: Record<string, string>;
+        language?: string;
+        path?: string;
+        scopeName?: string;
+      }>;
       languages?: Array<{ id?: string; extensions?: string[] }>;
       menus?: {
         commandPalette?: Array<{ command?: string; when?: string }>;
@@ -53,6 +186,13 @@ test("vscode-vize wires art-vue documents into editor features", () => {
     ),
     true,
   );
+  const vueGrammarContribution = manifest.contributes?.grammars?.find(
+    (grammar) => grammar.language === "vue",
+  );
+  assert.equal(vueGrammarContribution?.embeddedLanguages?.["source.tsx"], "typescriptreact");
+  assert.equal(vueGrammarContribution?.embeddedLanguages?.["source.js.jsx"], "javascriptreact");
+  assert.equal(vueGrammarContribution?.embeddedLanguages?.["text.pug"], "pug");
+  assert.equal(vueGrammarContribution?.embeddedLanguages?.["source.graphql"], "graphql");
 
   const languageScopedCommands = new Set(["vize.restartServer", "vize.showOutput"]);
   for (const item of manifest.contributes?.menus?.commandPalette ?? []) {
@@ -78,19 +218,45 @@ test("vscode-vize wires art-vue documents into editor features", () => {
 });
 
 test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
+  type GrammarCapture = {
+    name?: string;
+    patterns?: GrammarPattern[];
+  };
+  type GrammarPattern = {
+    begin?: string;
+    beginCaptures?: Record<string, GrammarCapture>;
+    captures?: Record<string, GrammarCapture>;
+    contentName?: string;
+    include?: string;
+    match?: string;
+    patterns?: GrammarPattern[];
+  };
   const grammar = readJson<{
-    repository?: Record<string, { begin?: string; patterns?: Array<{ begin?: string }> }>;
+    repository?: Record<
+      string,
+      { begin?: string; contentName?: string; patterns?: GrammarPattern[] }
+    >;
   }>("npm/vscode-vize/syntaxes/vue.tmLanguage.json");
 
   const repository = grammar.repository ?? {};
 
   for (const key of [
+    "vue-template-pug",
     "vue-template",
+    "vue-script-tsx",
     "vue-script-ts",
+    "vue-script-jsx",
     "vue-script-js",
     "vue-style-scss",
     "vue-style-less",
+    "vue-style-sass",
+    "vue-style-stylus",
+    "vue-style-postcss",
     "vue-style-css",
+    "vue-custom-block-json",
+    "vue-custom-block-yaml",
+    "vue-custom-block-toml",
+    "vue-custom-block-graphql",
     "vue-custom-block",
   ]) {
     quoteAwareTagLookahead(repository[key]?.begin);
@@ -99,6 +265,77 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   for (const pattern of repository["vue-directive-attributes"]?.patterns ?? []) {
     assert.doesNotMatch(pattern.begin ?? "", /\(\?<=\\s\|\^\)/);
   }
+  const directivePatterns = repository["vue-directive-attributes"]?.patterns ?? [];
+  assert.match(
+    ' v-bind:[activeKey as keyof Props].camel="makeValue<User>() as User"',
+    new RegExp(directivePatterns[0]?.begin ?? ""),
+  );
+  assert.match(
+    ' :[activeKey as keyof Props].prop="makeValue<User>() as User"',
+    new RegExp(directivePatterns[2]?.begin ?? ""),
+  );
+  assert.match(
+    ' @[eventName as keyof Emits].stop="handler($event as MouseEvent)"',
+    new RegExp(directivePatterns[4]?.begin ?? ""),
+  );
+  assert.match(
+    ' #[slotName as keyof Slots]="slotProps as SlotProps"',
+    new RegExp(directivePatterns[6]?.begin ?? ""),
+  );
+  for (const pattern of directivePatterns) {
+    assert.equal(pattern.contentName, "meta.embedded.expression.vue");
+    assert.equal(pattern.patterns?.[0]?.include, "source.ts#expression");
+  }
+  assert.equal(
+    directivePatterns[0]?.beginCaptures?.["5"]?.patterns?.[0]?.include,
+    "source.ts#expression",
+  );
+  assert.equal(
+    directivePatterns[2]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
+    "source.ts#expression",
+  );
+  assert.equal(
+    directivePatterns[4]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
+    "source.ts#expression",
+  );
+  assert.equal(
+    directivePatterns[6]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
+    "source.ts#expression",
+  );
+  assert.equal(repository["vue-interpolation"]?.patterns?.[0]?.include, "source.ts#expression");
+  assert.equal(repository["vue-template-pug"]?.patterns?.[1]?.patterns?.[0]?.include, "text.pug");
+  assert.equal(repository["vue-script-tsx"]?.patterns?.[1]?.patterns?.[0]?.include, "source.tsx");
+  assert.equal(
+    repository["vue-generic-attribute"]?.patterns?.[0]?.contentName,
+    "meta.embedded.type.typescript",
+  );
+  assert.equal(
+    repository["vue-generic-attribute"]?.patterns?.[0]?.patterns?.[0]?.include,
+    "source.ts#type-inner",
+  );
+  assert.match(
+    'generic="T extends Record<string, unknown> = Foo<User>"',
+    new RegExp(repository["vue-generic-attribute"]?.patterns?.[0]?.begin ?? ""),
+  );
+  const valueLessDirectivePatterns = repository["vue-directives"]?.patterns ?? [];
+  assert.match(
+    "v-bind:[activeKey as keyof Props].camel",
+    new RegExp(valueLessDirectivePatterns[1]?.match ?? ""),
+  );
+  assert.equal(
+    valueLessDirectivePatterns[1]?.captures?.["5"]?.patterns?.[0]?.include,
+    "source.ts#expression",
+  );
+  assert.equal(
+    valueLessDirectivePatterns[2]?.captures?.["4"]?.patterns?.[0]?.include,
+    "source.ts#expression",
+  );
+  assert.match(
+    '<i18n message="a > b" lang="json">',
+    new RegExp(repository["vue-custom-block-json"]?.begin ?? ""),
+  );
+  assert.equal(repository["vue-custom-block-json"]?.contentName, "meta.embedded.block.json");
+  assert.equal(repository["vue-custom-block-graphql"]?.patterns?.[0]?.include, "source.graphql");
 
   const artGrammar = readJson<{
     patterns?: Array<{ include?: string }>;
@@ -110,6 +347,36 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
     { include: "#art-block" },
     { include: "source.vue" },
   ]);
+});
+
+test("vscode-vize grammar tokenizes TypeScript template expressions without falling back to HTML", async () => {
+  const { grammar, registry } = await loadVueTextMateGrammar();
+
+  try {
+    const tokens = tokenizeLines(grammar, [
+      '<script setup lang="ts" generic="T extends Record<string, unknown> = Foo<User>">',
+      "const value = makeValue<T>() as T",
+      "</script>",
+      "<template>",
+      '  <button v-bind:[activeKey as keyof Props].camel="makeValue<User>() as User" :[propName as keyof Props].prop="read<User>() as User" @[eventName as keyof Emits].stop="emit($event as MouseEvent)">',
+      "    {{ makeValue<User>() as User }}",
+      "  </button>",
+      "</template>",
+    ]);
+
+    assertTextHasScope(tokens, "Record", "meta.embedded.type.typescript");
+    assertTextHasScope(tokens, "User", "meta.embedded.type.typescript");
+    assertTextHasScope(tokens, "activeKey", "meta.embedded.expression.vue");
+    assertTextHasScope(tokens, "keyof", "meta.embedded.expression.vue");
+    assertTextHasScope(tokens, "Props", "meta.embedded.expression.vue");
+    assertTextHasScope(tokens, "makeValue", "meta.embedded.expression.vue");
+    assertTextHasScope(tokens, "MouseEvent", "meta.embedded.expression.vue");
+    assertTextDoesNotHaveScope(tokens, "User", "entity.name.tag.html");
+    assertTextDoesNotHaveScope(tokens, "Props", "entity.name.tag.html");
+    assertTextDoesNotHaveScope(tokens, "MouseEvent", "entity.name.tag.html");
+  } finally {
+    registry.dispose();
+  }
 });
 
 test("vscode-art grammar stays aligned with vue-aware editor support", () => {

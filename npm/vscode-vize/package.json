@@ -92,12 +92,21 @@
         "path": "./syntaxes/art-vue.tmLanguage.json",
         "embeddedLanguages": {
           "text.html.basic": "html",
+          "text.pug": "pug",
           "source.js": "javascript",
+          "source.js.jsx": "javascriptreact",
           "source.ts": "typescript",
+          "source.tsx": "typescriptreact",
           "source.css": "css",
           "source.css.scss": "scss",
           "source.css.less": "less",
-          "source.json": "json"
+          "source.sass": "sass",
+          "source.stylus": "stylus",
+          "source.postcss": "postcss",
+          "source.json": "json",
+          "source.yaml": "yaml",
+          "source.toml": "toml",
+          "source.graphql": "graphql"
         }
       },
       {
@@ -106,12 +115,21 @@
         "path": "./syntaxes/vue.tmLanguage.json",
         "embeddedLanguages": {
           "text.html.basic": "html",
+          "text.pug": "pug",
           "source.js": "javascript",
+          "source.js.jsx": "javascriptreact",
           "source.ts": "typescript",
+          "source.tsx": "typescriptreact",
           "source.css": "css",
           "source.css.scss": "scss",
           "source.css.less": "less",
-          "source.json": "json"
+          "source.sass": "sass",
+          "source.stylus": "stylus",
+          "source.postcss": "postcss",
+          "source.json": "json",
+          "source.yaml": "yaml",
+          "source.toml": "toml",
+          "source.graphql": "graphql"
         }
       }
     ],

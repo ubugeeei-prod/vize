@@ -148,10 +148,19 @@ async function runSyntaxHighlightContributionSmoke() {
     "source.css": "css",
     "source.css.less": "less",
     "source.css.scss": "scss",
+    "source.graphql": "graphql",
     "source.js": "javascript",
+    "source.js.jsx": "javascriptreact",
     "source.json": "json",
+    "source.postcss": "postcss",
+    "source.sass": "sass",
+    "source.stylus": "stylus",
     "source.ts": "typescript",
+    "source.toml": "toml",
+    "source.tsx": "typescriptreact",
+    "source.yaml": "yaml",
     "text.html.basic": "html",
+    "text.pug": "pug",
   });
   assert.equal(artVueGrammarContribution.scopeName, "source.art-vue");
   assert.deepEqual(
@@ -165,9 +174,14 @@ async function runSyntaxHighlightContributionSmoke() {
   assert.equal(vueGrammar.scopeName, "source.vue");
   assert.deepEqual(vueGrammar.patterns, [
     { include: "#vue-comments" },
+    { include: "#vue-template-pug" },
     { include: "#vue-template" },
     { include: "#vue-script" },
     { include: "#vue-style" },
+    { include: "#vue-custom-block-json" },
+    { include: "#vue-custom-block-yaml" },
+    { include: "#vue-custom-block-toml" },
+    { include: "#vue-custom-block-graphql" },
     { include: "#vue-custom-block" },
   ]);
   assert.equal(
@@ -176,8 +190,20 @@ async function runSyntaxHighlightContributionSmoke() {
   );
   assert.equal(vueGrammar.repository["vue-interpolation"].name, "meta.embedded.expression.vue");
   assert.equal(
+    vueGrammar.repository["vue-template-pug"].patterns[1].contentName,
+    "meta.embedded.block.pug",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-script-tsx"].patterns[1].contentName,
+    "meta.embedded.block.tsx",
+  );
+  assert.equal(
     vueGrammar.repository["vue-script-ts"].patterns[1].contentName,
     "meta.embedded.block.typescript",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-script-jsx"].patterns[1].contentName,
+    "meta.embedded.block.jsx",
   );
   assert.equal(
     vueGrammar.repository["vue-style-scss"].patterns[1].contentName,
@@ -188,8 +214,57 @@ async function runSyntaxHighlightContributionSmoke() {
     "meta.embedded.block.less",
   );
   assert.equal(
+    vueGrammar.repository["vue-style-sass"].patterns[1].contentName,
+    "meta.embedded.block.sass",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-style-stylus"].patterns[1].contentName,
+    "meta.embedded.block.stylus",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-style-postcss"].patterns[1].contentName,
+    "meta.embedded.block.postcss",
+  );
+  assert.equal(
     vueGrammar.repository["vue-style-css"].patterns[1].contentName,
     "meta.embedded.block.css",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-custom-block-json"].contentName,
+    "meta.embedded.block.json",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-custom-block-yaml"].contentName,
+    "meta.embedded.block.yaml",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-custom-block-toml"].contentName,
+    "meta.embedded.block.toml",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-custom-block-graphql"].contentName,
+    "meta.embedded.block.graphql",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-generic-attribute"].patterns[0].contentName,
+    "meta.embedded.type.typescript",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-generic-attribute"].patterns[0].patterns[0].include,
+    "source.ts#type-inner",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-interpolation"].patterns[0].include,
+    "source.ts#expression",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-directive-attributes"].patterns[0].patterns[0].include,
+    "source.ts#expression",
+  );
+  assert.equal(
+    vueGrammar.repository["vue-directive-attributes"].patterns[0].beginCaptures["5"].patterns[0]
+      .include,
+    "source.ts#expression",
   );
   assert.equal(
     vueGrammar.repository["vue-directive-attributes"].patterns[0].beginCaptures["1"].name,
