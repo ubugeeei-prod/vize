@@ -35,6 +35,7 @@ const DTS_EXT_RE = /\.d\.ts$/;
 const FILE_EXTS = [".js", ".mjs", ".ts", ".vue"];
 const CLIENT_COMPONENT_RE = /\.client\.(?:[cm]?js|ts|vue)$/;
 const SERVER_COMPONENT_RE = /\.server\.(?:[cm]?js|ts|vue)$/;
+const NUXT_ROUTE_ANNOUNCER_RE = /(?:^|[/\\])nuxt-route-announcer\.(?:[cm]?js|ts|vue)$/;
 const RUNTIME_COMPONENT_DIRS = [
   "dist/runtime/components",
   "dist/runtime/components/nuxt4",
@@ -134,6 +135,17 @@ function normalizeComponentMode(mode: unknown): NuxtComponentImport["mode"] {
   return mode === "client" || mode === "server" ? mode : undefined;
 }
 
+function needsClientOnlyWrapper(resolved: NuxtComponentImport): boolean {
+  if (resolved.mode !== "client") {
+    return false;
+  }
+
+  // NuxtRouteAnnouncer supplies scoped default slot props itself. The generic
+  // client-only wrapper can expose a props-less placeholder slot path during
+  // hydration, which breaks destructured slots like `v-slot="{ message }"`.
+  return !NUXT_ROUTE_ANNOUNCER_RE.test(resolved.filePath);
+}
+
 function parseComponentImportSpecifier(raw: string): ComponentImportSpecifier | null {
   const trimmed = raw.trim();
   if (!trimmed) {
@@ -191,6 +203,7 @@ function addResolvedComponentBinding(
 ): ComponentBindingResult {
   let needsCreateClientOnly = false;
   let needsDefineAsyncComponent = false;
+  const wrapClientOnly = needsClientOnlyWrapper(resolved);
 
   if (resolved.lazy) {
     needsDefineAsyncComponent = true;
@@ -198,7 +211,7 @@ function addResolvedComponentBinding(
       resolved.exportName === "default"
         ? "module.default"
         : `module[${JSON.stringify(resolved.exportName)}]`;
-    if (resolved.mode === "client") {
+    if (wrapClientOnly) {
       needsCreateClientOnly = true;
       componentImports.push(
         `const ${variableName} = __nuxt_define_async_component(() => import(${JSON.stringify(resolved.filePath)}).then((module) => __nuxt_create_client_only(${exportAccessor})));`,
@@ -212,7 +225,7 @@ function addResolvedComponentBinding(
   }
 
   if (resolved.exportName === "default") {
-    if (resolved.mode === "client") {
+    if (wrapClientOnly) {
       needsCreateClientOnly = true;
       componentImports.push(`import ${rawVariableName} from ${JSON.stringify(resolved.filePath)};`);
       componentImports.push(
@@ -224,7 +237,7 @@ function addResolvedComponentBinding(
     return { needsCreateClientOnly, needsDefineAsyncComponent };
   }
 
-  if (resolved.mode === "client") {
+  if (wrapClientOnly) {
     needsCreateClientOnly = true;
     componentImports.push(
       `import { ${resolved.exportName} as ${rawVariableName} } from ${JSON.stringify(resolved.filePath)};`,

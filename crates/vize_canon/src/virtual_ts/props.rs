@@ -53,6 +53,132 @@ fn emit_template_prop_binding(
     append!(*ts, "  void {binding_name};\n");
 }
 
+fn emit_keyed_template_prop_binding(
+    ts: &mut String,
+    props_type_ref: &str,
+    prop_name: &str,
+    has_default: bool,
+) {
+    let binding_name = to_safe_identifier(prop_name);
+    if has_default {
+        append!(
+            *ts,
+            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {props_type_ref})] as Exclude<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
+        );
+    } else {
+        append!(
+            *ts,
+            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {props_type_ref})];\n"
+        );
+    }
+    append!(*ts, "  void {binding_name};\n");
+}
+
+fn can_emit_keyed_template_prop_binding(prop_name: &str) -> bool {
+    let mut chars = prop_name.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    (first.is_ascii_alphabetic() || first == '_' || first == '$')
+        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
+        && !prop_name.starts_with('$')
+        && !is_reserved_identifier(prop_name)
+}
+
+fn collect_keyed_template_prop_names(
+    summary: &Croquis,
+    emitted_names: &FxHashSet<String>,
+) -> Vec<String> {
+    let mut names = FxHashSet::default();
+    for undef in &summary.undefined_refs {
+        let name = undef.name.as_str();
+        if emitted_names.contains(name)
+            || should_skip_template_prop_binding(summary, name)
+            || !can_emit_keyed_template_prop_binding(name)
+        {
+            continue;
+        }
+        names.insert(name.into());
+    }
+
+    let mut names: Vec<String> = names.into_iter().collect();
+    names.sort_unstable();
+    names
+}
+
+fn should_emit_keyed_template_prop_bindings(
+    summary: &Croquis,
+    type_name: &str,
+    emitted_names: &FxHashSet<String>,
+) -> bool {
+    if has_top_level_type_operator(type_name) {
+        return true;
+    }
+    if is_plain_inline_type_literal(type_name) {
+        return false;
+    }
+
+    let base_name = strip_generic_params(type_name).trim();
+    if let Some(body) = summary.types.definitions().resolve(base_name) {
+        return has_top_level_type_operator(body.as_str())
+            || (emitted_names.is_empty() && !is_plain_inline_type_literal(body.as_str()));
+    }
+
+    emitted_names.is_empty() && !summary.types.definitions().is_defined(base_name)
+}
+
+fn is_plain_inline_type_literal(type_name: &str) -> bool {
+    let type_name = type_name.trim();
+    if !type_name.starts_with('{') {
+        return false;
+    }
+
+    let mut depth = 0i32;
+    for (idx, c) in type_name.char_indices() {
+        match c {
+            '{' => depth += 1,
+            '}' => {
+                depth -= 1;
+                if depth == 0 {
+                    return type_name[idx + c.len_utf8()..].trim().is_empty();
+                }
+            }
+            _ => {}
+        }
+    }
+    false
+}
+
+fn has_top_level_type_operator(type_name: &str) -> bool {
+    let mut angle_depth = 0i32;
+    let mut brace_depth = 0i32;
+    let mut paren_depth = 0i32;
+    let mut bracket_depth = 0i32;
+
+    for c in type_name.chars() {
+        match c {
+            '<' => angle_depth += 1,
+            '>' => angle_depth -= 1,
+            '{' => brace_depth += 1,
+            '}' => brace_depth -= 1,
+            '(' => paren_depth += 1,
+            ')' => paren_depth -= 1,
+            '[' => bracket_depth += 1,
+            ']' => bracket_depth -= 1,
+            '&' | '|'
+                if angle_depth == 0
+                    && brace_depth == 0
+                    && paren_depth == 0
+                    && bracket_depth == 0 =>
+            {
+                return true;
+            }
+            _ => {}
+        }
+    }
+    false
+}
+
 fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
     let mut names = FxHashSet::default();
     for call in summary.macros.all_calls() {
@@ -216,6 +342,7 @@ pub(crate) fn generate_props_variables(
         );
         ts.push_str("  void props; // Mark as used to avoid TS6133\n");
 
+        let mut emitted_names = FxHashSet::default();
         if has_props {
             // Runtime-declared props: generate individual variables
             for prop in props {
@@ -228,6 +355,7 @@ pub(crate) fn generate_props_variables(
                     prop.name.as_str(),
                     prop.default_value.is_some() || defaulted_prop_names.contains(&prop.name),
                 );
+                emitted_names.insert(prop.name.as_str().into());
             }
         } else if let Some(type_args) = define_props_type_args {
             // Type-only defineProps<TypeName>(): extract fields
@@ -247,6 +375,7 @@ pub(crate) fn generate_props_variables(
                         prop.name.as_str(),
                         defaulted_prop_names.contains(&prop.name),
                     );
+                    emitted_names.insert(prop.name.as_str().into());
                 }
             } else if let Some(script) = script_content {
                 // Fallback: extract field names from script text (for local interfaces)
@@ -263,6 +392,18 @@ pub(crate) fn generate_props_variables(
                         template_props_type_ref.as_str(),
                         field.as_str(),
                         defaulted_prop_names.contains(field),
+                    );
+                    emitted_names.insert(field.as_str().into());
+                }
+            }
+
+            if should_emit_keyed_template_prop_bindings(summary, type_name, &emitted_names) {
+                for name in collect_keyed_template_prop_names(summary, &emitted_names) {
+                    emit_keyed_template_prop_binding(
+                        ts,
+                        template_props_type_ref.as_str(),
+                        name.as_str(),
+                        defaulted_prop_names.contains(&name),
                     );
                 }
             }
