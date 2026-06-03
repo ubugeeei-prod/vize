@@ -21,6 +21,7 @@ pub use generator::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_legacy_vue2,
 };
+pub(crate) use props::extract_interface_fields;
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping};
 #[cfg(any(test, feature = "native"))]
 pub(crate) use types::{VirtualTsCheckOptions, VirtualTsGenerationOptions};

@@ -17,7 +17,7 @@ use super::source_map::{CompositeSourceMap, SfcBlockRange, SfcSourceMap};
 use super::{Diagnostic, SfcBlockType};
 use crate::script_parse::collect_script_parse_diagnostics;
 use crate::virtual_ts::{
-    VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions,
+    VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions, extract_interface_fields,
     generate_virtual_ts_with_offsets_and_checks,
 };
 use oxc_span::SourceType;
@@ -30,7 +30,9 @@ use vize_atelier_sfc::{
         SfcCroquisOptions, analyze_sfc_descriptor_with_context,
         analyze_sfc_descriptor_with_context_legacy_vue2,
     },
-    parse_sfc, validate_script_setup_semantics_located,
+    parse_sfc,
+    script::ScriptCompileContext,
+    validate_script_setup_semantics_located,
 };
 use vize_carton::{
     Bump, FxHashMap, FxHashSet, String as CompactString, ToCompactString, cstr, profile,
@@ -938,14 +940,23 @@ fn generate_vue_virtual_ts(
             analyze_sfc_descriptor_with_context(descriptor, template_ast.as_ref(), croquis_options)
         }
     );
+    let vize_atelier_sfc::croquis::SfcCroquisAnalysis {
+        mut croquis,
+        script_content,
+        script_offset,
+    } = analysis;
+    profile!(
+        "canon.croquis.augment_type_props",
+        augment_type_based_props_from_script_context(&mut croquis, descriptor, path)
+    );
 
     let output = profile!(
         "canon.virtual_ts.generate",
         generate_virtual_ts_with_offsets_and_checks(
-            &analysis.croquis,
-            analysis.script_content_ref(),
+            &croquis,
+            script_content.as_deref(),
             template_ast.as_ref(),
-            analysis.script_offset,
+            script_offset,
             template_offset,
             options,
             VirtualTsGenerationOptions {
@@ -970,6 +981,105 @@ fn generate_vue_virtual_ts(
         mappings: output.mappings,
         diagnostics,
     })
+}
+
+fn augment_type_based_props_from_script_context(
+    croquis: &mut vize_croquis::Croquis,
+    descriptor: &SfcDescriptor<'_>,
+    path: &Path,
+) {
+    let Some(script_setup) = descriptor.script_setup.as_ref() else {
+        return;
+    };
+    if croquis
+        .macros
+        .define_props()
+        .is_none_or(|call| call.type_args.is_none())
+    {
+        return;
+    }
+
+    let mut ctx = ScriptCompileContext::new(&script_setup.content);
+    let path_string = path.to_string_lossy();
+
+    if let Some(script) = descriptor.script.as_ref()
+        && !script.content.is_empty()
+    {
+        ctx.collect_types_from(&script.content);
+        ctx.collect_imported_types_from_path(&script.content, path_string.as_ref());
+    }
+    ctx.collect_imported_types_from_path(&script_setup.content, path_string.as_ref());
+    ctx.analyze();
+
+    let known_props = known_type_based_prop_names(croquis, &script_setup.content);
+    let mut missing_props: Vec<CompactString> = ctx
+        .bindings
+        .bindings
+        .iter()
+        .filter_map(|(name, binding_type)| {
+            matches!(binding_type, vize_relief::BindingType::Props)
+                .then(|| name)
+                .filter(|name| !known_props.contains(*name))
+                .cloned()
+        })
+        .collect();
+    if missing_props.is_empty() {
+        return;
+    }
+    missing_props.sort();
+
+    for name in missing_props {
+        croquis
+            .bindings
+            .bindings
+            .entry(name.clone())
+            .or_insert(vize_relief::BindingType::Props);
+        croquis
+            .macros
+            .add_prop(vize_croquis::macros::PropDefinition {
+                name,
+                prop_type: None,
+                required: false,
+                default_value: None,
+            });
+    }
+}
+
+fn known_type_based_prop_names(
+    croquis: &vize_croquis::Croquis,
+    script_setup: &str,
+) -> FxHashSet<CompactString> {
+    let mut names: FxHashSet<CompactString> = croquis
+        .macros
+        .props()
+        .iter()
+        .map(|prop| prop.name.clone())
+        .collect();
+
+    let Some(type_args) = croquis
+        .macros
+        .define_props()
+        .and_then(|call| call.type_args.as_ref())
+    else {
+        return names;
+    };
+
+    let type_name = strip_outer_angle_brackets(type_args.trim());
+    for prop in croquis.types.extract_properties(type_name) {
+        names.insert(prop.name);
+    }
+    for field in extract_interface_fields(script_setup, type_name) {
+        names.insert(CompactString::new(field));
+    }
+
+    names
+}
+
+fn strip_outer_angle_brackets(value: &str) -> &str {
+    value
+        .strip_prefix('<')
+        .and_then(|value| value.strip_suffix('>'))
+        .unwrap_or(value)
 }
 
 /// Run only the script-setup semantic validators on this SFC. We deliberately
@@ -1932,6 +2042,86 @@ const count = 1
                 .contains("export default __vize_component")
         );
         assert!(!virtual_file.content.contains("__vize_check_template"));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn test_virtual_ts_exposes_props_from_reexported_vue_interface() {
+        let case_dir = unique_case_dir("reexported-vue-interface-props");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+
+        let base = src_dir.join("Base.vue");
+        let index = src_dir.join("index.ts");
+        let child = src_dir.join("Child.vue");
+        let parent = src_dir.join("ParentWidget.vue");
+
+        fs::write(
+            &base,
+            r#"<script lang="ts">
+export interface BaseProps {
+  as?: string;
+  asChild?: boolean;
+}
+</script>
+<template><div /></template>"#,
+        )
+        .unwrap();
+        fs::write(&index, r#"export { type BaseProps } from "./Base.vue";"#).unwrap();
+        fs::write(
+            &child,
+            r#"<script setup lang="ts">
+defineProps<{ as?: string; asChild?: boolean }>();
+</script>
+<template><div /></template>"#,
+        )
+        .unwrap();
+        fs::write(
+            &parent,
+            r#"<script lang="ts">
+import type { BaseProps } from "./index";
+
+export interface ParentWidgetProps extends BaseProps {}
+</script>
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+const props = defineProps<ParentWidgetProps>();
+</script>
+<template>
+  <Child :as="as" :as-child="props.asChild" />
+</template>"#,
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project
+            .register_paths(&[base, index, child, parent.clone()])
+            .unwrap();
+
+        let virtual_parent = project.find_by_original(&parent).unwrap();
+        assert_ts_parses(&virtual_parent.content);
+        assert!(
+            virtual_parent
+                .content
+                .contains(r#"const _as = props["as"];"#),
+            "{}",
+            virtual_parent.content
+        );
+        assert!(
+            virtual_parent.content.contains(r#"void (props["as"]);"#),
+            "{}",
+            virtual_parent.content
+        );
+        assert!(
+            virtual_parent
+                .content
+                .contains(r#"type Props = ParentWidgetProps;"#),
+            "{}",
+            virtual_parent.content
+        );
 
         let _ = fs::remove_dir_all(&case_dir);
     }

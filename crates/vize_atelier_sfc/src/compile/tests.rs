@@ -1415,6 +1415,35 @@ fn test_define_props_interface_extends_imported_type_alias() {
 }
 
 #[test]
+fn test_define_props_interface_extends_reexported_vue_interface() {
+    let fixture_path = fixtures_path().join("ReExportedParentWidget.vue");
+    let source = fs::read_to_string(&fixture_path).expect("fixture should load");
+    let descriptor = parse_sfc(&source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some(fixture_path.to_string_lossy().as_ref().to_compact_string());
+
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(result.code.contains("props: {"), "{}", result.code);
+    assert!(
+        result.code.contains("as: {\n      type: String"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("asChild: {\n      type: Boolean"),
+        "{}",
+        result.code
+    );
+    assert!(result.code.contains("as: __props.as"), "{}", result.code);
+    assert!(
+        result.code.contains("\"as-child\": props.asChild"),
+        "{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_with_defaults_resolves_imported_vue_type_from_src_alias() {
     let project = temp_compile_project_dir("with-defaults-src-alias");
     let components = project.join("packages/frontend/src/components");
