@@ -5,6 +5,7 @@
 //! and interpolation formatting.
 
 use crate::{error::FormatError, options::FormatOptions, script};
+use memchr::memchr3;
 use vize_carton::{String, ToCompactString};
 
 use super::{
@@ -193,8 +194,24 @@ impl<'a> TemplateFormatter<'a> {
 
             // Accumulate text content until newline or tag
             let content_start = pos;
-            while pos < len && source[pos] != b'\n' && source[pos] != b'<' {
-                pos += 1;
+            while pos < len {
+                let Some(offset) = memchr3(b'\n', b'<', b'{', &source[pos..]) else {
+                    pos = len;
+                    break;
+                };
+                pos += offset;
+
+                match source[pos] {
+                    b'\n' | b'<' => break,
+                    b'{' if pos + 1 < len && source[pos + 1] == b'{' => {
+                        if let Some((_, _, end_pos)) = parse_interpolation_range(source, pos) {
+                            pos = end_pos;
+                        } else {
+                            pos += 1;
+                        }
+                    }
+                    _ => pos += 1,
+                }
             }
 
             if pos > content_start {

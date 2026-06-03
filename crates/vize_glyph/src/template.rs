@@ -227,6 +227,34 @@ mod tests {
     }
 
     #[test]
+    fn test_interpolation_less_than_comparison() {
+        let source = "<span>{{ i < items.length - 1 ? ',' : '' }}</span>";
+        let options = FormatOptions::default();
+        let result = format_template_content(source, &options).unwrap();
+
+        assert_eq!(
+            result.as_str(),
+            r#"<span>
+  {{ i < items.length - 1 ? "," : "" }}
+</span>"#
+        );
+    }
+
+    #[test]
+    fn test_v_for_interpolation_less_than_comparison() {
+        let source = r#"<span v-for="(item, index) in list" :key="item">{{ item }}{{ index < list.length - 1 ? ',' : '' }}</span>"#;
+        let options = FormatOptions::default();
+        let result = format_template_content(source, &options).unwrap();
+
+        assert_eq!(
+            result.as_str(),
+            r#"<span v-for="(item, index) in list" :key="item">
+  {{ item }}{{ index < list.length - 1 ? "," : "" }}
+</span>"#
+        );
+    }
+
+    #[test]
     fn test_v_for_normalization() {
         let result = format_v_for_expression("(item,index) in items");
         assert_eq!(result, "(item, index) in items");
