@@ -45,6 +45,9 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_croquis::builtins::is_builtin_component;
+use vize_croquis::naming::{names_match, to_pascal_case};
+use vize_croquis::{Croquis, ScopeData};
+use vize_relief::BindingType;
 use vize_relief::ast::{ElementNode, RootNode};
 
 static META: RuleMeta = RuleMeta {
@@ -142,6 +145,25 @@ impl RequireComponentRegistration {
                 .iter()
                 .any(|g| g.eq_ignore_ascii_case(tag) || g.eq_ignore_ascii_case(&kebab))
     }
+
+    fn is_script_setup_imported_component(&self, analysis: &Croquis, tag: &str) -> bool {
+        analysis
+            .scopes
+            .iter()
+            .filter(|scope| {
+                matches!(
+                    scope.data(),
+                    ScopeData::ExternalModule(data) if !data.is_type_only
+                )
+            })
+            .flat_map(|scope| scope.bindings())
+            .any(|(name, binding)| {
+                matches!(
+                    binding.binding_type,
+                    BindingType::SetupConst | BindingType::SetupMaybeRef
+                ) && component_name_matches(tag, name)
+            })
+    }
 }
 
 impl Rule for RequireComponentRegistration {
@@ -155,12 +177,18 @@ impl Rule for RequireComponentRegistration {
         collect_components(root, &mut used_components);
 
         // For now, we warn on all custom components that aren't built-in or framework globals
-        // A full implementation would parse the script block to find imports
         for (tag, start, end) in used_components {
             if self.is_custom_component(&tag)
                 && !self.is_builtin(&tag)
                 && !self.is_framework_global(&tag)
             {
+                if ctx
+                    .analysis()
+                    .is_some_and(|analysis| self.is_script_setup_imported_component(analysis, &tag))
+                {
+                    continue;
+                }
+
                 // In Nuxt mode, don't warn as components are auto-imported
                 if self.nuxt_mode {
                     continue;
@@ -221,9 +249,21 @@ fn pascal_to_kebab(s: &str) -> String {
     result
 }
 
+fn component_name_matches(used: &str, registered: &str) -> bool {
+    used == registered
+        || names_match(used, registered)
+        || to_pascal_case(used).as_str() == registered
+}
+
 #[cfg(test)]
 mod tests {
     use super::{RequireComponentRegistration, pascal_to_kebab};
+    use crate::{LintPreset, Linter};
+
+    fn create_linter() -> Linter {
+        Linter::with_preset(LintPreset::Opinionated)
+            .with_enabled_rules(Some(vec!["vue/require-component-registration".into()]))
+    }
 
     #[test]
     fn test_pascal_to_kebab() {
@@ -248,5 +288,55 @@ mod tests {
         assert!(rule.is_builtin("Transition"));
         assert!(rule.is_builtin("keep-alive"));
         assert!(!rule.is_builtin("MyButton"));
+    }
+
+    #[test]
+    fn test_allows_script_setup_component_imports() {
+        let linter = create_linter();
+        let sfc = r#"<script setup lang="ts">
+import Child from './Child.vue'
+import { NamedWidget } from './widgets'
+import { LibraryWidget as RenamedWidget } from '@example/widgets'
+</script>
+
+<template>
+  <Child />
+  <NamedWidget />
+  <renamed-widget />
+</template>
+"#;
+        let result = linter.lint_sfc(sfc, "ParentWidget.vue");
+
+        assert!(
+            result.diagnostics.is_empty(),
+            "script setup imports should be recognized as registered components: {:?}",
+            result.diagnostics
+        );
+    }
+
+    #[test]
+    fn test_reports_unimported_script_setup_component() {
+        let linter = create_linter();
+        let sfc = r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child />
+  <MissingWidget />
+</template>
+"#;
+        let result = linter.lint_sfc(sfc, "ParentWidget.vue");
+
+        assert_eq!(result.warning_count, 1);
+        assert_eq!(
+            result.diagnostics[0].rule_name,
+            "vue/require-component-registration"
+        );
+        assert!(
+            result.diagnostics[0]
+                .message
+                .contains("Component is used but not explicitly imported")
+        );
     }
 }
