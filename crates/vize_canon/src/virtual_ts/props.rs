@@ -16,7 +16,7 @@ use vize_croquis::BindingType;
 use vize_croquis::Croquis;
 use vize_croquis::macros::MacroKind;
 
-use super::helpers::to_safe_identifier;
+use super::helpers::{is_reserved_identifier, to_safe_identifier};
 
 #[inline]
 fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool {
@@ -282,6 +282,9 @@ pub(crate) fn collect_template_prop_names(
             if should_skip_template_prop_binding(summary, prop.name.as_str()) {
                 continue;
             }
+            if !is_reserved_identifier(prop.name.as_str()) {
+                continue;
+            }
             names.insert(prop.name.as_str().into());
         }
         return names;
@@ -301,6 +304,9 @@ pub(crate) fn collect_template_prop_names(
             if should_skip_template_prop_binding(summary, prop.name.as_str()) {
                 continue;
             }
+            if !is_reserved_identifier(prop.name.as_str()) {
+                continue;
+            }
             names.insert(prop.name.as_str().into());
         }
         return names;
@@ -315,6 +321,9 @@ pub(crate) fn collect_template_prop_names(
     );
     for field in &field_names {
         if should_skip_template_prop_binding(summary, field.as_str()) {
+            continue;
+        }
+        if !is_reserved_identifier(field.as_str()) {
             continue;
         }
         names.insert(field.clone());

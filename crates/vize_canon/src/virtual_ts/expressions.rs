@@ -154,10 +154,244 @@ fn rewrite_reserved_template_prop(
     expression: &str,
     template_prop_names: &FxHashSet<String>,
 ) -> Option<String> {
-    if !is_reserved_identifier(expression) || !template_prop_names.contains(expression) {
+    if template_prop_names.is_empty() {
         return None;
     }
-    Some(cstr!("props[\"{expression}\"]"))
+
+    let bytes = expression.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+    let mut output = String::with_capacity(expression.len());
+    let mut changed = false;
+
+    while i < len {
+        let current = bytes[i];
+
+        if current == b'\'' || current == b'"' || current == b'`' {
+            let end = skip_quoted_literal(bytes, i);
+            output.push_str(&expression[i..end]);
+            i = end;
+            continue;
+        }
+
+        if current == b'/'
+            && i + 1 < len
+            && bytes[i + 1] != b'/'
+            && bytes[i + 1] != b'*'
+            && starts_regex_literal(bytes, i)
+        {
+            let end = skip_regex_literal(bytes, i);
+            output.push_str(&expression[i..end]);
+            i = end;
+            continue;
+        }
+
+        if is_identifier_start(current) {
+            let start = i;
+            i += 1;
+            while i < len && is_identifier_continue(bytes[i]) {
+                i += 1;
+            }
+            let ident = &expression[start..i];
+            if is_reserved_identifier(ident)
+                && template_prop_names.contains(ident)
+                && !is_property_access(bytes, start)
+                && !is_object_property_key(bytes, i)
+            {
+                if is_object_shorthand(bytes, start, i) {
+                    append!(output, "{ident}: props[\"{ident}\"]");
+                } else {
+                    append!(output, "props[\"{ident}\"]");
+                }
+                changed = true;
+            } else {
+                output.push_str(ident);
+            }
+            continue;
+        }
+
+        output.push(current as char);
+        i += 1;
+    }
+
+    changed.then_some(output)
+}
+
+fn skip_quoted_literal(bytes: &[u8], start: usize) -> usize {
+    let quote = bytes[start];
+    let mut i = start + 1;
+    while i < bytes.len() {
+        let current = bytes[i];
+        i += 1;
+        if current == b'\\' {
+            i = (i + 1).min(bytes.len());
+            continue;
+        }
+        if current == quote {
+            break;
+        }
+    }
+    i
+}
+
+fn skip_regex_literal(bytes: &[u8], start: usize) -> usize {
+    let mut i = start + 1;
+    let mut in_class = false;
+    while i < bytes.len() {
+        let current = bytes[i];
+        i += 1;
+        if current == b'\\' {
+            i = (i + 1).min(bytes.len());
+            continue;
+        }
+        match current {
+            b'[' => in_class = true,
+            b']' => in_class = false,
+            b'/' if !in_class => break,
+            _ => {}
+        }
+    }
+    while i < bytes.len() && bytes[i].is_ascii_alphabetic() {
+        i += 1;
+    }
+    i
+}
+
+fn starts_regex_literal(bytes: &[u8], slash: usize) -> bool {
+    let Some(prev) = previous_significant_byte(bytes, slash) else {
+        return true;
+    };
+    matches!(
+        prev,
+        b'(' | b'{'
+            | b'['
+            | b','
+            | b':'
+            | b';'
+            | b'='
+            | b'?'
+            | b'!'
+            | b'&'
+            | b'|'
+            | b'+'
+            | b'-'
+            | b'*'
+            | b'%'
+            | b'^'
+            | b'~'
+            | b'<'
+            | b'>'
+    )
+}
+
+fn previous_significant_byte(bytes: &[u8], before: usize) -> Option<u8> {
+    bytes[..before]
+        .iter()
+        .rev()
+        .copied()
+        .find(|b| !b.is_ascii_whitespace())
+}
+
+fn next_significant_byte(bytes: &[u8], after: usize) -> Option<u8> {
+    bytes[after..]
+        .iter()
+        .copied()
+        .find(|b| !b.is_ascii_whitespace())
+}
+
+fn is_property_access(bytes: &[u8], ident_start: usize) -> bool {
+    previous_significant_byte(bytes, ident_start) == Some(b'.')
+}
+
+fn is_object_property_key(bytes: &[u8], ident_end: usize) -> bool {
+    next_significant_byte(bytes, ident_end) == Some(b':')
+}
+
+fn is_object_shorthand(bytes: &[u8], ident_start: usize, ident_end: usize) -> bool {
+    matches!(
+        previous_significant_byte(bytes, ident_start),
+        Some(b'{') | Some(b',')
+    ) && matches!(
+        next_significant_byte(bytes, ident_end),
+        Some(b'}') | Some(b',')
+    )
+}
+
+fn is_identifier_start(byte: u8) -> bool {
+    byte.is_ascii_alphabetic() || byte == b'_' || byte == b'$'
+}
+
+fn is_identifier_continue(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+}
+
+#[cfg(test)]
+mod tests {
+    use super::rewrite_reserved_template_prop;
+    use vize_carton::FxHashSet;
+
+    fn reserved_props() -> FxHashSet<vize_carton::String> {
+        ["static", "default", "class"]
+            .into_iter()
+            .map(Into::into)
+            .collect()
+    }
+
+    #[test]
+    fn rewrites_reserved_prop_identifier() {
+        assert_eq!(
+            rewrite_reserved_template_prop("static", &reserved_props()).as_deref(),
+            Some("props[\"static\"]")
+        );
+    }
+
+    #[test]
+    fn rewrites_reserved_prop_inside_object_value() {
+        assert_eq!(
+            rewrite_reserved_template_prop("{ active: static }", &reserved_props()).as_deref(),
+            Some("{ active: props[\"static\"] }")
+        );
+    }
+
+    #[test]
+    fn rewrites_reserved_prop_shorthand() {
+        assert_eq!(
+            rewrite_reserved_template_prop("{ static, class }", &reserved_props()).as_deref(),
+            Some("{ static: props[\"static\"], class: props[\"class\"] }")
+        );
+    }
+
+    #[test]
+    fn leaves_property_keys_and_member_accesses_alone() {
+        assert_eq!(
+            rewrite_reserved_template_prop(
+                "{ static: true, value: props.static, nested: item.default, active: static }",
+                &reserved_props(),
+            )
+            .as_deref(),
+            Some(
+                "{ static: true, value: props.static, nested: item.default, active: props[\"static\"] }",
+            )
+        );
+    }
+
+    #[test]
+    fn leaves_literals_and_regexes_alone() {
+        assert_eq!(
+            rewrite_reserved_template_prop(
+                "'static' + /static/.test(value) + `class` + static",
+                &reserved_props(),
+            )
+            .as_deref(),
+            Some("'static' + /static/.test(value) + `class` + props[\"static\"]")
+        );
+    }
+
+    #[test]
+    fn ignores_non_reserved_props() {
+        let props = ["count"].into_iter().map(Into::into).collect();
+        assert_eq!(rewrite_reserved_template_prop("count + 1", &props), None);
+    }
 }
 
 #[derive(Clone, Copy)]
