@@ -28,8 +28,60 @@ interface TokenNativeBinding {
   findDependentDesignTokens(tokenMap: Record<string, DesignToken>, targetPath: string): string[];
 }
 
+interface RawTokenNativeBinding {
+  parseDesignTokensFromPath(path: string): string;
+  buildDesignTokenMap(categories: string): string;
+  resolveDesignTokenReferences(categories: string): string;
+  flattenDesignTokenCategories(categories: string): string;
+  generateDesignTokensMarkdown(categories: string, generatedAt?: string): string;
+  validateDesignTokenReference(tokenMap: string, reference: string, selfPath?: string): string;
+  findDependentDesignTokens(tokenMap: string, targetPath: string): string[];
+}
+
 export function tokenNative(): TokenNativeBinding {
-  return loadNative() as typeof loadNative extends () => infer T ? T & TokenNativeBinding : never;
+  const native = loadNative() as typeof loadNative extends () => infer T
+    ? T & RawTokenNativeBinding
+    : RawTokenNativeBinding;
+
+  return {
+    parseDesignTokensFromPath(path) {
+      return normalizeCategories(parseJsonResult(native.parseDesignTokensFromPath(path)));
+    },
+    buildDesignTokenMap(categories) {
+      return nullRecord(parseJsonResult(native.buildDesignTokenMap(JSON.stringify(categories))));
+    },
+    resolveDesignTokenReferences(categories) {
+      const resolved = parseJsonResult<ResolvedTokensNative>(
+        native.resolveDesignTokenReferences(JSON.stringify(categories)),
+      );
+      return {
+        ...resolved,
+        categories: normalizeCategories(resolved.categories),
+        tokenMap: nullRecord(resolved.tokenMap),
+      };
+    },
+    flattenDesignTokenCategories(categories) {
+      return parseJsonResult(native.flattenDesignTokenCategories(JSON.stringify(categories)));
+    },
+    generateDesignTokensMarkdown(categories, generatedAt) {
+      return native.generateDesignTokensMarkdown(JSON.stringify(categories), generatedAt);
+    },
+    validateDesignTokenReference(tokenMap, reference, selfPath) {
+      return parseJsonResult(
+        native.validateDesignTokenReference(JSON.stringify(tokenMap), reference, selfPath),
+      );
+    },
+    findDependentDesignTokens(tokenMap, targetPath) {
+      return native.findDependentDesignTokens(JSON.stringify(tokenMap), targetPath);
+    },
+  };
+}
+
+function parseJsonResult<T>(value: unknown): T {
+  if (typeof value === "string") {
+    return JSON.parse(value) as T;
+  }
+  return value as T;
 }
 
 export function normalizeCategories(categories: TokenCategory[]): TokenCategory[] {
