@@ -9,16 +9,29 @@ Usage: clean [OPTIONS] [ROOT]
 
 Arguments:
   [ROOT]
-          Project root whose node_modules/.vize cache should be removed
+          Project root whose Vize-generated artifacts should be removed
 
           [default: .]
 
 Options:
+      --scope <SCOPE>
+          Which Vize artifact roots to remove
+
+          Possible values:
+          - all:          Remove both .vize and node_modules/.vize
+          - project:      Remove .vize under the project root
+          - node-modules: Remove node_modules/.vize under the project root
+
+          [default: all]
+
+      --force
+          Remove the selected artifact roots, including unrecognized entries
+
       --dry-run
-          Print the cache path without deleting it
+          Print artifact paths without deleting them
 
   -q, --quiet
           Suppress status output
 
   -h, --help
-          Print help
+          Print help (see a summary with '-h')
