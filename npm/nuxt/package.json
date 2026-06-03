@@ -62,7 +62,8 @@
     "vue-router": "catalog:vue-stable"
   },
   "peerDependencies": {
-    "nuxt": "^2.16.0 || ^3.0.0 || ^4.0.0"
+    "nuxt": "^2.16.0 || ^3.0.0 || ^4.0.0",
+    "vite": "^8.0.0"
   },
   "engines": {
     "node": ">=22"
