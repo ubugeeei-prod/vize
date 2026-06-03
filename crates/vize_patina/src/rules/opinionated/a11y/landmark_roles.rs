@@ -30,10 +30,13 @@
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::a11y::helpers::get_static_or_bound_literal_attribute_value;
 use vize_carton::FxHashMap;
 use vize_carton::String;
 use vize_carton::ToCompactString;
-use vize_relief::ast::{ElementNode, ElementType, PropNode, RootNode, TemplateChildNode};
+use vize_relief::ast::{
+    ElementNode, ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/landmark-roles",
@@ -48,9 +51,14 @@ pub struct LandmarkRoles;
 
 struct LandmarkInfo {
     role: String,
-    label: Option<String>,
+    label: Option<LandmarkLabel>,
     start: u32,
     end: u32,
+}
+
+enum LandmarkLabel {
+    Static(String),
+    Dynamic,
 }
 
 /// Get the landmark role for an element (from tag or explicit role attribute)
@@ -93,17 +101,30 @@ fn get_landmark_role<'a>(element: &ElementNode<'a>) -> Option<&'static str> {
     }
 }
 
-fn get_label(element: &ElementNode) -> Option<String> {
+fn has_bound_attribute(element: &ElementNode, name: &str) -> bool {
     for prop in &element.props {
-        if let PropNode::Attribute(attr) = prop {
-            if attr.name == "aria-label" {
-                return attr.value.as_ref().map(|v| v.content.to_compact_string());
-            }
-            if attr.name == "aria-labelledby" {
-                return attr.value.as_ref().map(|v| v.content.to_compact_string());
-            }
+        if let PropNode::Directive(dir) = prop
+            && dir.name == "bind"
+            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+            && arg.content == name
+        {
+            return true;
         }
     }
+    false
+}
+
+fn get_label(element: &ElementNode) -> Option<LandmarkLabel> {
+    for name in ["aria-label", "aria-labelledby"] {
+        if let Some(value) = get_static_or_bound_literal_attribute_value(element, name) {
+            return Some(LandmarkLabel::Static(value.to_compact_string()));
+        }
+
+        if has_bound_attribute(element, name) {
+            return Some(LandmarkLabel::Dynamic);
+        }
+    }
+
     None
 }
 
@@ -185,6 +206,29 @@ impl Rule for LandmarkRoles {
                             );
                     ctx.report(diag);
                 }
+
+                let mut static_labels: FxHashMap<&str, Vec<&LandmarkInfo>> = FxHashMap::default();
+                for landmark in group {
+                    if let Some(LandmarkLabel::Static(label)) = &landmark.label {
+                        static_labels
+                            .entry(label.as_str())
+                            .or_default()
+                            .push(landmark);
+                    }
+                }
+
+                for duplicate_group in static_labels.values().filter(|labels| labels.len() > 1) {
+                    for landmark in duplicate_group {
+                        let message =
+                            ctx.t_fmt("a11y/landmark-roles.missing_label", &[("role", *role)]);
+                        let diag =
+                            LintDiagnostic::warn(META.name, message, landmark.start, landmark.end)
+                                .with_help(
+                                    ctx.t("a11y/landmark-roles.help_missing_label").into_owned(),
+                                );
+                        ctx.report(diag);
+                    }
+                }
             }
         }
     }
@@ -217,6 +261,36 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_dynamically_labeled_navs() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<nav :aria-label="primaryLabel">nav1</nav><nav v-bind:aria-label="footerLabel">nav2</nav>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_bound_literal_labeled_navs() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<nav :aria-label="'Primary'">nav1</nav><nav v-bind:aria-labelledby="'footer-heading'">nav2</nav>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_duplicate_bound_literal_labels() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<nav :aria-label="'Links'">nav1</nav><nav v-bind:aria-label="'Links'">nav2</nav>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 2);
     }
 
     #[test]
