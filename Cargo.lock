@@ -394,21 +394,6 @@ checksum = "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570"
 
 [[package]]
 name = "compact_str"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b79c4069c6cad78e2e0cdfcbd26275770669fb39fd308a752dc110e83b9af32"
-dependencies = [
- "castaway",
- "cfg-if",
- "itoa",
- "rustversion",
- "ryu",
- "serde",
- "static_assertions",
-]
-
-[[package]]
-name = "compact_str"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb1325a1cece981e8a296ab8f0f9b63ae357bd0784a9faaf548cc7b480707a"
@@ -488,9 +473,9 @@ dependencies = [
 
 [[package]]
 name = "corsa"
-version = "0.7.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33c2e4bfb456dc2e76c7d79b9df8feae329f71e6118f24c9b572ed058d7db16d"
+checksum = "05cae3e14a400484c06b0578e63cb14f60de01fd33f4e0a143e64c4d96ad2924"
 dependencies = [
  "base64",
  "corsa_client",
@@ -505,9 +490,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_client"
-version = "0.7.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffe10d23b91bc741d8a8f7321ce511217e4d3fefad9b06339bbe1080701a0ca5"
+checksum = "3acf8c65e85211669765894f4253700de59e8e1e2b6264b1faf6a3aafba901b0"
 dependencies = [
  "base64",
  "corsa_core",
@@ -516,20 +501,20 @@ dependencies = [
  "log",
  "lsp-types 0.97.0",
  "parking_lot",
- "phf 0.11.3",
+ "phf 0.13.1",
  "serde",
  "serde_json",
 ]
 
 [[package]]
 name = "corsa_core"
-version = "0.7.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9f06b9e750f1fe976dee2fd0de533e3a29cbba9ce65ca976d2116f46cef09cf"
+checksum = "31da616b7b3ee544694fa852a66e92a1656fdcaa99562020f1d3670662c2a1e6"
 dependencies = [
  "base64",
  "bumpalo",
- "compact_str 0.8.1",
+ "compact_str",
  "memchr",
  "rustc-hash",
  "serde",
@@ -540,9 +525,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_jsonrpc"
-version = "0.7.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "779769900e053e7c3dbb7f30c0d56feb81f49f03630c4ba076d3d44c5c4f2b1e"
+checksum = "e9400f1602c4fc0c3b5a66efe30a951f1030cd2c6e0e3cf4984785e4a3b46159"
 dependencies = [
  "corsa_core",
  "corsa_runtime",
@@ -554,9 +539,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_lsp"
-version = "0.7.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc18e8e59f595f5d6975a81a9a980832002c557a13e8484f77632d2dcaa738f7"
+checksum = "ddd75a7c6341921b87108af76c298e2ef0e83312282e78927c5e95387c0730e5"
 dependencies = [
  "corsa_core",
  "corsa_jsonrpc",
@@ -569,9 +554,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_orchestrator"
-version = "0.7.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52150949519b09b03ad8d63e3f310b35b921b23b4cf9f6b15976c0f1cecd7730"
+checksum = "cb47caeb0f4a355d43e71de4df4a84ba6c2d2ff70ea7420a967c4588f088270c"
 dependencies = [
  "corsa_client",
  "corsa_core",
@@ -586,9 +571,9 @@ dependencies = [
 
 [[package]]
 name = "corsa_runtime"
-version = "0.7.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b023b8de46eaca504cec95861ce4d19970e99e199c3fc2128067189634450df8"
+checksum = "c88dc8c86f67beee84e4ff5b3ba2398f63db78213a8631d1ed7c3a5f0a96e407"
 dependencies = [
  "smallvec",
 ]
@@ -2027,7 +2012,7 @@ name = "oxc_span"
 version = "0.127.0"
 source = "git+https://github.com/oxc-project/oxc?rev=8265ed94b8f743a11dbf6f81fdd6fd248906f366#8265ed94b8f743a11dbf6f81fdd6fd248906f366"
 dependencies = [
- "compact_str 0.9.0",
+ "compact_str",
  "oxc-miette",
  "oxc_allocator",
  "oxc_ast_macros",
@@ -2040,7 +2025,7 @@ name = "oxc_str"
 version = "0.127.0"
 source = "git+https://github.com/oxc-project/oxc?rev=8265ed94b8f743a11dbf6f81fdd6fd248906f366#8265ed94b8f743a11dbf6f81fdd6fd248906f366"
 dependencies = [
- "compact_str 0.9.0",
+ "compact_str",
  "hashbrown 0.17.0",
  "oxc_allocator",
  "oxc_estree",
@@ -2071,7 +2056,7 @@ version = "0.127.0"
 source = "git+https://github.com/oxc-project/oxc?rev=8265ed94b8f743a11dbf6f81fdd6fd248906f366#8265ed94b8f743a11dbf6f81fdd6fd248906f366"
 dependencies = [
  "base64",
- "compact_str 0.9.0",
+ "compact_str",
  "indexmap",
  "itoa",
  "memchr",
@@ -3428,7 +3413,7 @@ dependencies = [
 name = "vize_armature"
 version = "0.164.0"
 dependencies = [
- "compact_str 0.9.0",
+ "compact_str",
  "htmlize",
  "insta",
  "serde",
@@ -3442,7 +3427,7 @@ name = "vize_atelier_core"
 version = "0.164.0"
 dependencies = [
  "bumpalo",
- "compact_str 0.9.0",
+ "compact_str",
  "insta",
  "memoffset",
  "oxc_allocator",
@@ -3577,7 +3562,7 @@ version = "0.164.0"
 dependencies = [
  "bitflags 2.11.1",
  "bumpalo",
- "compact_str 0.9.0",
+ "compact_str",
  "insta",
  "once_cell",
  "phf 0.13.1",
@@ -3639,7 +3624,7 @@ dependencies = [
 name = "vize_fresco"
 version = "0.164.0"
 dependencies = [
- "compact_str 0.9.0",
+ "compact_str",
  "criterion",
  "crossterm",
  "insta",

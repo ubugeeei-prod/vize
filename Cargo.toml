@@ -136,9 +136,9 @@ insta = { version = "=1.47.2", features = ["toml"] }
 criterion = "=0.8.2"
 
 # Published corsa crates
-corsa = { package = "corsa", version = "=0.7.0" }
-corsa_lsp = { package = "corsa_lsp", version = "=0.7.0" }
-corsa_runtime = { package = "corsa_runtime", version = "=0.7.0" }
+corsa = { package = "corsa", version = "=0.36.0" }
+corsa_lsp = { package = "corsa_lsp", version = "=0.36.0" }
+corsa_runtime = { package = "corsa_runtime", version = "=0.36.0" }
 
 [profile.release]
 # Release artifacts are benchmarked and shipped from this profile. Fat LTO plus
