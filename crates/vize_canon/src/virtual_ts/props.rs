@@ -3,22 +3,36 @@
 //! Generates `Props` type definitions and template-level prop variable
 //! declarations from Vue SFC macro analysis.
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
+use vize_croquis::BindingType;
 use vize_croquis::Croquis;
+use vize_croquis::macros::MacroKind;
 
 use super::helpers::to_safe_identifier;
 
 #[inline]
 fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool {
-    summary
+    if summary
         .macros
         .props_destructure()
         .and_then(|destructure| destructure.get(prop_name))
         .is_some_and(|binding| binding.local.as_str() == prop_name)
+    {
+        return true;
+    }
+
+    summary
+        .bindings
+        .get(prop_name)
+        .is_some_and(|binding_type| !matches!(binding_type, BindingType::Props))
 }
 
 fn emit_template_prop_binding(
@@ -37,6 +51,85 @@ fn emit_template_prop_binding(
         append!(*ts, "  const {binding_name} = props[\"{prop_name}\"];\n");
     }
     append!(*ts, "  void {binding_name};\n");
+}
+
+fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
+    let mut names = FxHashSet::default();
+    for call in summary.macros.all_calls() {
+        if call.kind != MacroKind::WithDefaults {
+            continue;
+        }
+        let Some(runtime_args) = &call.runtime_args else {
+            continue;
+        };
+        collect_with_defaults_default_names_from_source(runtime_args.as_str(), &mut names);
+    }
+    names
+}
+
+fn collect_with_defaults_default_names_from_source(source: &str, names: &mut FxHashSet<String>) {
+    let allocator = Allocator::default();
+    let source_type = SourceType::ts();
+    let Ok(Expression::CallExpression(call)) =
+        Parser::new(&allocator, source, source_type).parse_expression()
+    else {
+        return;
+    };
+    let Expression::Identifier(callee) = &call.callee else {
+        return;
+    };
+    if callee.name.as_str() != "withDefaults" {
+        return;
+    }
+    let Some(Argument::ObjectExpression(defaults)) = call.arguments.get(1) else {
+        return;
+    };
+
+    for prop in &defaults.properties {
+        let ObjectPropertyKind::ObjectProperty(prop) = prop else {
+            continue;
+        };
+        if prop.computed {
+            continue;
+        }
+        let Some(name) = property_key_name(&prop.key) else {
+            continue;
+        };
+        names.insert(name.into());
+    }
+}
+
+fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(id) => Some(id.name.as_str()),
+        PropertyKey::StringLiteral(s) => Some(s.value.as_str()),
+        _ => None,
+    }
+}
+
+fn template_props_type_ref(
+    base_type_ref: &str,
+    defaulted_prop_names: &FxHashSet<String>,
+) -> String {
+    if defaulted_prop_names.is_empty() {
+        return base_type_ref.into();
+    }
+
+    let mut names: Vec<&str> = defaulted_prop_names
+        .iter()
+        .map(|name| name.as_str())
+        .collect();
+    names.sort_unstable();
+
+    let mut default_keys = String::default();
+    for name in names {
+        if !default_keys.is_empty() {
+            default_keys.push_str(" | ");
+        }
+        append!(default_keys, "\"{name}\"");
+    }
+
+    cstr!("__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>>")
 }
 
 /// Generate Props type definition at module level.
@@ -110,13 +203,16 @@ pub(crate) fn generate_props_variables(
             cstr!("Props<{names}>")
         })
         .unwrap_or_else(|| "Props".into());
+    let defaulted_prop_names = collect_with_defaults_default_names(summary);
+    let template_props_type_ref =
+        template_props_type_ref(props_type_ref.as_str(), &defaulted_prop_names);
 
     if has_props || define_props_type_args.is_some() {
         ts.push_str("  // Props are available in template as variables\n");
         ts.push_str("  // Access via `propName` or `props.propName`\n");
         append!(
             *ts,
-            "  const props: {props_type_ref} = {{}} as {props_type_ref};\n"
+            "  const props: {template_props_type_ref} = {{}} as {template_props_type_ref};\n"
         );
         ts.push_str("  void props; // Mark as used to avoid TS6133\n");
 
@@ -128,9 +224,9 @@ pub(crate) fn generate_props_variables(
                 }
                 emit_template_prop_binding(
                     ts,
-                    props_type_ref.as_str(),
+                    template_props_type_ref.as_str(),
                     prop.name.as_str(),
-                    prop.default_value.is_some(),
+                    prop.default_value.is_some() || defaulted_prop_names.contains(&prop.name),
                 );
             }
         } else if let Some(type_args) = define_props_type_args {
@@ -147,9 +243,9 @@ pub(crate) fn generate_props_variables(
                     }
                     emit_template_prop_binding(
                         ts,
-                        props_type_ref.as_str(),
+                        template_props_type_ref.as_str(),
                         prop.name.as_str(),
-                        false,
+                        defaulted_prop_names.contains(&prop.name),
                     );
                 }
             } else if let Some(script) = script_content {
@@ -162,7 +258,12 @@ pub(crate) fn generate_props_variables(
                     if should_skip_template_prop_binding(summary, field.as_str()) {
                         continue;
                     }
-                    emit_template_prop_binding(ts, props_type_ref.as_str(), field.as_str(), false);
+                    emit_template_prop_binding(
+                        ts,
+                        template_props_type_ref.as_str(),
+                        field.as_str(),
+                        defaulted_prop_names.contains(field),
+                    );
                 }
             }
         }
@@ -444,5 +545,42 @@ fn append_param_with_default(result: &mut String, param: &str) {
     });
     if !has_default {
         result.push_str(" = any");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{collect_with_defaults_default_names_from_source, template_props_type_ref};
+    use vize_carton::{FxHashSet, String};
+
+    #[test]
+    fn collects_with_defaults_object_keys() {
+        let mut names = FxHashSet::default();
+        collect_with_defaults_default_names_from_source(
+            r#"withDefaults(defineProps<Props>(), {
+  thickness: 0.1,
+  "label": "ok",
+  ...moreDefaults,
+  [dynamicKey]: 1,
+})"#,
+            &mut names,
+        );
+
+        assert!(names.contains("thickness"));
+        assert!(names.contains("label"));
+        assert!(!names.contains("dynamicKey"));
+        assert_eq!(names.len(), 2);
+    }
+
+    #[test]
+    fn builds_deterministic_with_defaults_props_type() {
+        let mut names: FxHashSet<String> = FxHashSet::default();
+        names.insert("label".into());
+        names.insert("thickness".into());
+
+        assert_eq!(
+            template_props_type_ref("Props", &names),
+            r#"__WithDefaultsResult<Props, Pick<Props, "label" | "thickness">>"#
+        );
     }
 }

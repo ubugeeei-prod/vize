@@ -151,6 +151,51 @@ const props = defineProps<Props>();
     }
 
     #[test]
+    fn test_type_check_with_defaults_template_props_are_default_resolved() {
+        let source = r#"<template>
+  <svg>
+    <line :stroke-width="props.thickness / 2" />
+    <text>{{ label.toUpperCase() }} {{ props.label.toUpperCase() }}</text>
+  </svg>
+</template>
+
+<script setup lang="ts">
+const props = withDefaults(defineProps<{
+  thickness?: number;
+  label?: string;
+  raw?: string;
+}>(), {
+  thickness: 0.1,
+  label: 'ok',
+});
+
+const { thickness, label } = props;
+</script>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+        let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+
+        assert!(
+            virtual_ts.contains(
+                r#"type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;"#
+            ),
+            "{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains(
+                r#"const props: __WithDefaultsResult<Props, Pick<Props, "label" | "thickness">>"#
+            ),
+            "{virtual_ts}"
+        );
+        assert!(!virtual_ts.contains(r#"const thickness = props["thickness"]"#));
+        assert!(!virtual_ts.contains(r#"const label = props["label"]"#));
+        assert!(
+            virtual_ts.contains(r#"const raw = props["raw"];"#),
+            "{virtual_ts}"
+        );
+    }
+
+    #[test]
     fn test_type_check_with_untyped_props_non_strict() {
         let source = r#"<script setup>
 const props = defineProps(['count', 'name']);

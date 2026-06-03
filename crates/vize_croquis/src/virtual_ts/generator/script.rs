@@ -259,7 +259,7 @@ impl VirtualTsGenerator {
         self.emit_line(
             "type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };",
         );
-        self.emit_line("type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };");
+        self.emit_line("type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;");
         self.emit_line("function defineProps<T>(): T { return undefined as unknown as T; }");
         self.emit_line("function defineProps<const T extends readonly string[]>(props: T): { [K in T[number]]?: any } { return undefined as unknown as { [K in T[number]]?: any }; }");
         self.emit_line("function defineProps<const T extends Record<string, any>>(props: T): __RuntimePropShape<T> { return undefined as unknown as __RuntimePropShape<T>; }");
