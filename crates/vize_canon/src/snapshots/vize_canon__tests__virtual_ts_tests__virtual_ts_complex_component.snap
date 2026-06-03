@@ -33,7 +33,7 @@ type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __Run
 type __DefaultFactory<T> = (props: any) => T;
 type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
 declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
@@ -119,9 +119,9 @@ function __setup() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: Props = {} as Props;
+  const props: __WithDefaultsResult<Props, Pick<Props, "initialCount">> = {} as __WithDefaultsResult<Props, Pick<Props, "initialCount">>;
   void props; // Mark as used to avoid TS6133
-  const initialCount = props["initialCount"];
+  const initialCount = props["initialCount"] as Exclude<__WithDefaultsResult<Props, Pick<Props, "initialCount">>["initialCount"], undefined>;
   void initialCount;
   const title = props["title"];
   void title;

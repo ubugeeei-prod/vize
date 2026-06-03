@@ -19,7 +19,7 @@ type __BatchEmitFn<T> = __BatchEmitShape<T> extends (...args: any[]) => any ? __
 type __DefaultFactory<T> = (props: any) => T;
 type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
 function defineProps<T>(): T;
 function defineProps<const T extends readonly string[]>(_props: T): { [K in T[number]]?: any };
 function defineProps<const T extends Record<string, any>>(_props: T): __RuntimePropShape<T>;
