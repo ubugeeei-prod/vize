@@ -789,7 +789,7 @@ async function findServerPath(
   const expectedVersion = getExtensionVersion(context);
   selectedServerCandidate = undefined;
 
-  const configuredPath = config.get<string>("serverPath")?.trim();
+  const configuredPath = resolveTrustedServerPath(config);
   if (configuredPath) {
     if (fs.existsSync(configuredPath)) {
       const candidate = await inspectServerCandidate({
@@ -1041,6 +1041,12 @@ async function warnAboutVersionMismatch(
 }
 
 function getWorkspaceDevPaths(exeName: string): string[] {
+  // Skip workspace-derived server paths in untrusted workspaces — a cloned
+  // repo that ships a malicious binary at `target/{release,debug}/vize`
+  // would otherwise be executed when the workspace was opened. (#969)
+  if (!workspace.isTrusted) {
+    return [];
+  }
   const paths: string[] = [];
   const workspaceFolders = workspace.workspaceFolders;
   if (workspaceFolders) {
@@ -1050,6 +1056,35 @@ function getWorkspaceDevPaths(exeName: string): string[] {
     }
   }
   return paths;
+}
+
+/// Resolve the user-/machine-scoped value of `vize.serverPath` only.
+/// Workspace-scoped values (e.g. a `.vscode/settings.json` shipped in a
+/// cloned repo) are intentionally ignored — that file is repo-controlled
+/// and could otherwise point the extension at any executable. The
+/// untrusted-workspace branch declared in `package.json::capabilities`
+/// covers the first defense in depth; this is the second. (#969)
+function resolveTrustedServerPath(
+  config: ReturnType<typeof workspace.getConfiguration>,
+): string | undefined {
+  const inspected = config.inspect<string>("serverPath");
+  if (!inspected) {
+    return undefined;
+  }
+  const candidates: Array<string | undefined> = [
+    inspected.globalValue,
+    inspected.workspaceValue && workspace.isTrusted ? inspected.workspaceValue : undefined,
+    inspected.workspaceFolderValue && workspace.isTrusted
+      ? inspected.workspaceFolderValue
+      : undefined,
+  ];
+  for (const raw of candidates) {
+    const trimmed = raw?.trim();
+    if (trimmed) {
+      return trimmed;
+    }
+  }
+  return undefined;
 }
 
 function getImplicitPathDirs(): string[] {
