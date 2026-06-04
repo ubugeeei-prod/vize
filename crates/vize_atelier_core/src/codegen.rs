@@ -458,10 +458,26 @@ mod tests {
             r#"<div><div v-if="a">A</div><div v-else>B</div><div v-if="c">C</div><div v-else>D</div></div>"#
         );
 
-        assert!(result.code.contains("{ key: 0 }"), "missing key 0:\n{}", result.code);
-        assert!(result.code.contains("{ key: 1 }"), "missing key 1:\n{}", result.code);
-        assert!(result.code.contains("{ key: 2 }"), "missing key 2:\n{}", result.code);
-        assert!(result.code.contains("{ key: 3 }"), "missing key 3:\n{}", result.code);
+        assert!(
+            result.code.contains("{ key: 0 }"),
+            "missing key 0:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("{ key: 1 }"),
+            "missing key 1:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("{ key: 2 }"),
+            "missing key 2:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("{ key: 3 }"),
+            "missing key 3:\n{}",
+            result.code
+        );
     }
 
     #[test]
