@@ -742,7 +742,13 @@ fn offset_to_line_column(source: &str, offset: usize) -> (u32, u32) {
             line_start = index + 1;
         }
     }
-    let column = source[line_start..target].chars().count() as u32;
+    // LSP `Position.character` is in UTF-16 code units. Astral characters
+    // (`len_utf16() == 2`) count as two so the column lines up with
+    // `vue-tsc` / `@vue/language-tools`. (#965)
+    let column: u32 = source[line_start..target]
+        .chars()
+        .map(|ch| ch.len_utf16() as u32)
+        .sum();
     (line, column)
 }
 

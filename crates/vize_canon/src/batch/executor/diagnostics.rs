@@ -163,6 +163,8 @@ impl LineIndex {
         }
     }
 
+    /// Convert an LSP (line, character) — where character is in UTF-16 code
+    /// units — back to a byte offset into `content`. (#965)
     fn line_col_to_offset(&self, content: &str, line: u32, col: u32) -> Option<u32> {
         let line = usize::try_from(line).ok()?;
         let start = *self.starts.get(line)?;
@@ -176,8 +178,8 @@ impl LineIndex {
 
         for ch in content[start..end].chars() {
             offset += ch.len_utf8();
-            current_col += 1;
-            if current_col == col {
+            current_col += ch.len_utf16() as u32;
+            if current_col >= col {
                 return u32::try_from(offset).ok();
             }
         }
@@ -189,6 +191,10 @@ impl LineIndex {
         }
     }
 
+    /// Convert a byte offset to LSP (line, character). `character` is in
+    /// UTF-16 code units — astral characters (`len_utf16() == 2`) count as
+    /// two so the column matches what `vue-tsc` / `@vue/language-tools`
+    /// report. (#965)
     fn offset_to_line_col(&self, content: &str, offset: u32) -> Option<(u32, u32)> {
         let offset = usize::try_from(offset).ok()?;
         if offset > self.len {
@@ -199,16 +205,16 @@ impl LineIndex {
         let line = line.saturating_sub(1);
         let start = *self.starts.get(line)?;
         let end = self.line_end(line);
-        let mut col = 0usize;
+        let mut col = 0u32;
         let mut cursor = start;
         for ch in content[start..end].chars() {
             if cursor >= offset {
                 break;
             }
-            col += 1;
+            col += ch.len_utf16() as u32;
             cursor += ch.len_utf8();
         }
-        Some((u32::try_from(line).ok()?, u32::try_from(col).ok()?))
+        Some((u32::try_from(line).ok()?, col))
     }
 
     fn line_end(&self, line: usize) -> usize {
@@ -422,6 +428,23 @@ mod tests {
         let content = "é\n";
         let index = LineIndex::new(content);
         assert_eq!(index.offset_to_line_col(content, 1), Some((0, 1)));
+    }
+
+    #[test]
+    fn line_index_counts_astral_chars_as_two_utf16_units() {
+        // Regression for #965: LSP `Position.character` is in UTF-16 code
+        // units. An emoji (`U+1F600`) is one Unicode scalar but TWO UTF-16
+        // units (encoded as a surrogate pair) — `vue-tsc` /
+        // `@vue/language-tools` report the post-emoji column as `+2`, so
+        // vize must too.
+        let content = "\u{1F600}x\n";
+        let index = LineIndex::new(content);
+
+        // Byte offset 4 is right after the emoji + `x`. The emoji is 4
+        // UTF-8 bytes and counts as 2 UTF-16 units; `x` is 1 of each.
+        assert_eq!(index.offset_to_line_col(content, 5), Some((0, 3)));
+        // The reverse direction must round-trip.
+        assert_eq!(index.line_col_to_offset(content, 0, 3), Some(5));
     }
 
     #[test]

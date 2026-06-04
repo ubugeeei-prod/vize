@@ -255,7 +255,7 @@ impl DiagnosticService {
     /// Collect template parser diagnostics.
     pub(super) fn collect_template_diagnostics(
         _uri: &Url,
-        _content: &str,
+        content: &str,
         descriptor: &SfcDescriptor<'_>,
     ) -> Vec<Diagnostic> {
         let Some(ref template) = descriptor.template else {
@@ -270,20 +270,27 @@ impl DiagnosticService {
             .filter_map(|error| {
                 let loc = error.loc.as_ref()?;
 
-                // Adjust line numbers based on template block position
-                let start_line =
-                    (template.loc.start_line as u32) + loc.start.line.saturating_sub(1);
-                let end_line = (template.loc.start_line as u32) + loc.end.line.saturating_sub(1);
+                // The template parser stores `line=1`/`column=byte_offset`
+                // today; translate via the byte `offset` plus the template
+                // block's position in the SFC. `offset_to_line_col` counts
+                // UTF-16 code units so the position lands at the right
+                // editor column for non-ASCII content. (#965)
+                let absolute_start_offset = template.loc.start as u32 + loc.start.offset;
+                let absolute_end_offset = template.loc.start as u32 + loc.end.offset;
+                let (start_line, start_character) =
+                    offset_to_line_col(content, absolute_start_offset as usize);
+                let (end_line, end_character) =
+                    offset_to_line_col(content, absolute_end_offset as usize);
 
                 Some(Diagnostic {
                     range: Range {
                         start: Position {
-                            line: start_line.saturating_sub(1),
-                            character: loc.start.column.saturating_sub(1),
+                            line: start_line,
+                            character: start_character,
                         },
                         end: Position {
-                            line: end_line.saturating_sub(1),
-                            character: loc.end.column.saturating_sub(1),
+                            line: end_line,
+                            character: end_character,
                         },
                     },
                     severity: Some(DiagnosticSeverity::ERROR),
