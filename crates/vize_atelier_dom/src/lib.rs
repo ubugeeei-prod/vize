@@ -196,7 +196,12 @@ fn compile_template_inner<'a>(
     (root, errors.to_vec(), codegen_result)
 }
 
-/// Get the namespace for an element based on its parent
+/// Get the namespace for an element based on its parent.
+///
+/// Mirrors the HTML tree-construction namespace rules used by `@vue/compiler-dom`: a tag
+/// that names a foreign root (`<svg>`/`<math>`) always (re)enters that namespace, otherwise
+/// the element inherits its parent's namespace — except across the HTML integration points
+/// where SVG/MathML hand their descendants back to the HTML namespace.
 fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
     if vize_carton::is_svg_tag(tag) {
         return Namespace::Svg;
@@ -205,15 +210,21 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
         return Namespace::MathMl;
     }
 
-    // Inherit namespace from parent
+    // Inherit namespace from the parent, honouring the integration-point boundaries.
     if let Some(parent_tag) = parent {
-        if vize_carton::is_svg_tag(parent_tag) && tag != "foreignObject" {
+        // Inside SVG, <foreignObject>/<desc>/<title> switch their descendants back to HTML
+        // (e.g. a <div> inside <foreignObject> must NOT be in the SVG namespace).
+        let svg_to_html = matches!(parent_tag, "foreignObject" | "desc" | "title");
+        if vize_carton::is_svg_tag(parent_tag) && !svg_to_html {
             return Namespace::Svg;
         }
-        if vize_carton::is_math_ml_tag(parent_tag)
-            && tag != "annotation-xml"
-            && tag != "foreignObject"
-        {
+        // Inside MathML, <annotation-xml> and the text containers (<mi>/<mo>/<mn>/<ms>/
+        // <mtext>) are HTML integration points; their descendants are HTML.
+        let mathml_to_html = matches!(
+            parent_tag,
+            "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
+        );
+        if vize_carton::is_math_ml_tag(parent_tag) && !mathml_to_html {
             return Namespace::MathMl;
         }
     }
@@ -281,6 +292,141 @@ mod tests {
             !code.contains("_mergeProps({ }") && !code.contains("_mergeProps({  }"),
             "no empty object literal should be flushed into mergeProps:\n{code}"
         );
+    }
+
+    /// Recursively find the first element with the given tag, descending through `v-if`
+    /// branches and `v-for` bodies so the search works on the transformed tree as well.
+    fn find_element<'a, 'b>(
+        children: &'b [TemplateChildNode<'a>],
+        tag: &str,
+    ) -> Option<&'b super::ast::ElementNode<'a>> {
+        for child in children {
+            match child {
+                TemplateChildNode::Element(el) => {
+                    if el.tag.as_str() == tag {
+                        return Some(el);
+                    }
+                    if let Some(found) = find_element(&el.children, tag) {
+                        return Some(found);
+                    }
+                }
+                TemplateChildNode::If(node) => {
+                    for branch in &node.branches {
+                        if let Some(found) = find_element(&branch.children, tag) {
+                            return Some(found);
+                        }
+                    }
+                }
+                TemplateChildNode::IfBranch(branch) => {
+                    if let Some(found) = find_element(&branch.children, tag) {
+                        return Some(found);
+                    }
+                }
+                TemplateChildNode::For(node) => {
+                    if let Some(found) = find_element(&node.children, tag) {
+                        return Some(found);
+                    }
+                }
+                _ => {}
+            }
+        }
+        None
+    }
+
+    /// #992: the SVG namespace must propagate from `<svg>` into every descendant so the
+    /// runtime mounts them with `setAttributeNS`/the SVG namespace URI. This locks the
+    /// parser-side propagation that codegen relies on (vize, like @vue/compiler-sfc, emits
+    /// no namespace argument and depends on the runtime inferring it from a contiguous tree).
+    #[test]
+    fn test_svg_namespace_propagates_to_descendants() {
+        let allocator = Bump::new();
+        let (root, errors, _) = compile_template(
+            &allocator,
+            "<svg><g><path d=\"M0 0\"/></g><rect x=\"0\" y=\"0\"/></svg>",
+        );
+        assert!(errors.is_empty());
+
+        let svg = find_element(&root.children, "svg").expect("svg present");
+        assert_eq!(svg.ns, Namespace::Svg);
+        assert_eq!(
+            find_element(&root.children, "g").unwrap().ns,
+            Namespace::Svg,
+            "direct child <g> inherits svg namespace"
+        );
+        assert_eq!(
+            find_element(&root.children, "path").unwrap().ns,
+            Namespace::Svg,
+            "nested <path> keeps svg namespace"
+        );
+        assert_eq!(
+            find_element(&root.children, "rect").unwrap().ns,
+            Namespace::Svg,
+            "sibling <rect> inherits svg namespace"
+        );
+    }
+
+    /// #992: `<foreignObject>` is the one boundary where the SVG namespace must NOT
+    /// propagate further — its HTML descendants go back to the HTML namespace, while a
+    /// `<rect>` sibling after the `<foreignObject>` stays in the SVG namespace.
+    #[test]
+    fn test_svg_foreign_object_resets_namespace() {
+        let allocator = Bump::new();
+        let (root, errors, _) = compile_template(
+            &allocator,
+            "<svg><foreignObject><div>hi</div></foreignObject><rect x=\"1\" y=\"1\"/></svg>",
+        );
+        assert!(errors.is_empty());
+
+        assert_eq!(
+            find_element(&root.children, "foreignObject").unwrap().ns,
+            Namespace::Svg,
+            "<foreignObject> itself is in the svg namespace"
+        );
+        assert_eq!(
+            find_element(&root.children, "div").unwrap().ns,
+            Namespace::Html,
+            "<div> inside <foreignObject> returns to the HTML namespace"
+        );
+        assert_eq!(
+            find_element(&root.children, "rect").unwrap().ns,
+            Namespace::Svg,
+            "<rect> after <foreignObject> is still in the svg namespace"
+        );
+    }
+
+    /// #992: namespace propagation must survive the codegen shapes that could otherwise
+    /// detach a child from its `<svg>` ancestor in the vnode tree — a `v-if` branch
+    /// (re-entered via `createElementBlock`) keeps the `<rect>` nested inside the `<svg>`
+    /// element call, so the runtime still threads the svg namespace into it.
+    #[test]
+    fn test_svg_namespace_with_v_if_branch() {
+        let allocator = Bump::new();
+        let (root, errors, _) = compile_template(
+            &allocator,
+            "<svg><rect v-if=\"show\" x=\"0\" y=\"0\"/></svg>",
+        );
+        assert!(errors.is_empty());
+        assert_eq!(
+            find_element(&root.children, "rect").unwrap().ns,
+            Namespace::Svg,
+            "v-if <rect> still carries the svg namespace"
+        );
+    }
+
+    /// #992: lock the emitted shape for an SVG tree with a `<foreignObject>` exit. The SVG
+    /// children must stay nested inside the `<svg>` `createElementVNode`/`createElementBlock`
+    /// call so the runtime threads the SVG namespace into them at patch time (vize, like
+    /// @vue/compiler-sfc, emits no explicit namespace argument).
+    #[test]
+    fn test_svg_codegen_shape_keeps_children_nested() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template(
+            &allocator,
+            "<svg><foreignObject><div>hi</div></foreignObject><rect x=\"1\" y=\"1\"/></svg>",
+        );
+        assert!(errors.is_empty());
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
     }
 
     #[test]

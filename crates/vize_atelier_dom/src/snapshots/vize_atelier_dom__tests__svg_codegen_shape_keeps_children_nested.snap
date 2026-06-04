@@ -1,0 +1,18 @@
+---
+source: crates/vize_atelier_dom/src/lib.rs
+assertion_line: 402
+expression: full.as_str()
+---
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("svg", null, [
+    _createElementVNode("foreignObject", null, [
+      _createElementVNode("div", null, "hi")
+    ]),
+    _createElementVNode("rect", {
+      x: "1",
+      y: "1"
+    })
+  ]))
+}
