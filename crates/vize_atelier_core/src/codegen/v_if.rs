@@ -22,10 +22,12 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     ctx.use_helper(RuntimeHelper::CreateComment);
 
     for (i, branch) in if_node.branches.iter().enumerate() {
-        // Allocate a template-wide key for this branch so sibling
-        // conditional blocks don't reuse the same `{ key: n }` and patch
-        // the wrong element across branches (#961). Matches Vue's shared
-        // counter.
+        // Allocate a key from the per-scope counter so sibling conditional
+        // blocks at the same level get unique keys (Vue parity: 0,1,2,3 —
+        // not the per-chain 0,1,0,1 vize used to emit). The counter is
+        // snapshotted and reset around the branch's content so a nested
+        // v-if inside this branch starts at 0 again, matching Vue's
+        // recursive transform. (#961)
         let branch_key = ctx.next_v_if_branch_key();
         if let Some(condition) = &branch.condition {
             if i == 0 {
@@ -52,8 +54,12 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
             ctx.push(": ");
         }
 
-        // Generate branch content based on children
+        // Generate branch content with a fresh counter so a nested v-if
+        // inside the branch doesn't continue the outer numbering.
+        let saved_counter = ctx.v_if_branch_counter;
+        ctx.v_if_branch_counter = 0;
         generate_if_branch(ctx, branch, branch_key);
+        ctx.v_if_branch_counter = saved_counter;
 
         if branch.condition.is_some() && i > 0 {
             ctx.deindent();

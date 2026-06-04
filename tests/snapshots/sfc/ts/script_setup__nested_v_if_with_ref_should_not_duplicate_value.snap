@@ -22,14 +22,14 @@ return (_ctx: any,_cache: any) => {
     (true)
       ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
         (true)
-          ? (_openBlock(), _createElementBlock("div", { key: 1 }, [
+          ? (_openBlock(), _createElementBlock("div", { key: 0 }, [
             _createElementVNode("button", {
               class: _normalizeClass({ active: mode.value === 'a' }),
               onClick: _cache[0] || (_cache[0] = ($event: any) => (mode.value = 'b'))
             }, "Test", 2 /* CLASS */)
           ]))
           : (false)
-            ? (_openBlock(), _createElementBlock("div", { key: 2 }, [
+            ? (_openBlock(), _createElementBlock("div", { key: 1 }, [
               _hoisted_1
             ]))
           : _createCommentVNode("v-if", true)

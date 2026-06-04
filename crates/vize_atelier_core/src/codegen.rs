@@ -449,6 +449,29 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_v_if_nested_branch_keys_reset_per_scope() {
+        // Regression for #961 (Vue-parity): a nested v-if (inside another
+        // v-if's branch) starts its key counter at 0 again, matching Vue's
+        // recursive transform. Without the per-branch reset, sibling
+        // sub-chains would consume keys from the outer counter and drift
+        // from `@vue/compiler-sfc`.
+        let result =
+            compile!(r#"<div v-if="a"><span v-if="b">B</span><span v-else>C</span></div>"#);
+        // Outer key 0, inner keys 0 and 1.
+        let key_count_0 = result.code.matches("{ key: 0 }").count();
+        assert!(
+            key_count_0 >= 2,
+            "expected outer + inner key 0 (>=2 occurrences), got {key_count_0}:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("{ key: 1 }"),
+            "missing inner key 1:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_codegen_v_if_sibling_chains_allocate_unique_branch_keys() {
         // Regression for #961: sibling `v-if`/`v-else` blocks must get keys
         // from a template-wide counter (Vue parity: 0,1,2,3 — not the

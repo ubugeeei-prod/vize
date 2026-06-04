@@ -28,12 +28,12 @@ return (_ctx: any,_cache: any) => {
       ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
         (activeTab.value === 'code')
           ? (_openBlock(), _createElementBlock("div", {
-            key: 1,
+            key: 0,
             class: "code-output"
           }, [
             (isTypeScript.value)
               ? (_openBlock(), _createElementBlock("div", {
-                key: 2,
+                key: 0,
                 class: "code-mode-toggle"
               }, [
                 _createElementVNode("button", {
@@ -49,21 +49,21 @@ return (_ctx: any,_cache: any) => {
           ]))
           : (activeTab.value === 'ast')
             ? (_openBlock(), _createElementBlock("div", {
-              key: 3,
+              key: 1,
               class: "ast-output"
             }, [
               _hoisted_1
             ]))
           : (activeTab.value === 'helpers')
             ? (_openBlock(), _createElementBlock("div", {
-              key: 4,
+              key: 2,
               class: "helpers-output"
             }, [
               _hoisted_2
             ]))
           : (activeTab.value === 'sfc')
             ? (_openBlock(), _createElementBlock("div", {
-              key: 5,
+              key: 3,
               class: "sfc-output"
             }, [
               _hoisted_3
