@@ -1,7 +1,8 @@
 ---
 source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+assertion_line: 264
 expression: "get_compiled_string(r#\"<textarea v-model=\"msg\"></textarea>\"#)"
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<div${_ssrRenderAttrs(_attrs)}><textarea></textarea></div>`)
+  _push(`<div${_ssrRenderAttrs(_attrs)}><textarea>${_ssrInterpolate(_ctx.msg)}</textarea></div>`)
 }
