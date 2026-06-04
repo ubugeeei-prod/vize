@@ -88,10 +88,14 @@ pub(crate) fn compile_template_block(
             }
         );
 
-        if !errors.is_empty() {
+        // Recoverable parser diagnostics (e.g. duplicate attribute) must
+        // not gate SFC compilation, or a single `<div id=a id=b>` produces
+        // a 0-byte module marked as success. (#958)
+        let fatal: Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
+        if !fatal.is_empty() {
             let mut message = String::from("Template compilation errors: ");
             use std::fmt::Write as _;
-            let _ = write!(&mut message, "{:?}", errors);
+            let _ = write!(&mut message, "{:?}", fatal);
             return Err(SfcError {
                 message,
                 code: Some("TEMPLATE_ERROR".to_compact_string()),
@@ -166,10 +170,13 @@ pub(crate) fn compile_template_block(
         }
     );
 
-    if !errors.is_empty() {
+    // See above — drop recoverable parser diagnostics from the gating
+    // check so duplicate-attribute SFCs still produce valid render code. (#958)
+    let fatal: Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
+    if !fatal.is_empty() {
         let mut message = String::from("Template compilation errors: ");
         use std::fmt::Write as _;
-        let _ = write!(&mut message, "{:?}", errors);
+        let _ = write!(&mut message, "{:?}", fatal);
         return Err(SfcError {
             message,
             code: Some("TEMPLATE_ERROR".to_compact_string()),

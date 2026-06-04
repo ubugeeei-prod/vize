@@ -449,6 +449,45 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_duplicate_attribute_keeps_first_occurrence() {
+        // Regression for #958: a `<div id="a" id="b">x</div>` template
+        // used to produce a 0-byte module marked as success because the
+        // parser pushed a fatal-looking diagnostic and the SFC pipeline
+        // discarded the template output. Codegen now dedupes by
+        // attribute name (Vue parity: first wins); the parser
+        // diagnostic is classified as recoverable so downstream
+        // continues. The compile macro bails on parse errors, so this
+        // test drives the pipeline by hand.
+        let allocator = bumpalo::Bump::new();
+        let (mut root, errors) = crate::parser::parse(&allocator, r#"<div id="a" id="b">x</div>"#);
+        assert!(
+            errors
+                .iter()
+                .any(|e| e.code == vize_relief::errors::ErrorCode::DuplicateAttribute),
+            "expected a DuplicateAttribute diagnostic, got {errors:?}"
+        );
+        assert!(errors.iter().all(|e| e.is_recoverable()));
+        crate::transform::transform(
+            &allocator,
+            &mut root,
+            crate::options::TransformOptions::default(),
+            None,
+        );
+        let result = crate::codegen::generate(&root, crate::options::CodegenOptions::default());
+        assert!(!result.code.is_empty(), "compiled output must not be empty");
+        assert!(
+            result.code.contains(r#"id: "a""#),
+            "expected first `id` to be retained, got:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains(r#"id: "b""#),
+            "expected duplicate `id` to be dropped, got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_codegen_v_if_nested_branch_keys_reset_per_scope() {
         // Regression for #961 (Vue-parity): a nested v-if (inside another
         // v-if's branch) starts its key counter at 0 again, matching Vue's

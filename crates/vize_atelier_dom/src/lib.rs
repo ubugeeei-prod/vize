@@ -116,7 +116,14 @@ fn compile_template_inner<'a>(
         parse_with_options(allocator, source, parser_opts)
     );
 
-    if !errors.is_empty() {
+    // Parser-level diagnostics that are recoverable (e.g. duplicate
+    // attribute — Vue keeps the first and continues) must NOT gate
+    // codegen, or downstream callers see a 0-byte module reported as a
+    // success. (#958) The recoverable diagnostics still ride along in
+    // the returned errors vec so the caller can surface them as
+    // warnings or test for parity.
+    let fatal_count = errors.iter().filter(|e| !e.is_recoverable()).count();
+    if fatal_count > 0 {
         let codegen_result = CodegenResult {
             code: String::default(),
             preamble: String::default(),

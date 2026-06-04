@@ -182,6 +182,13 @@ impl<'a> Parser<'a> {
         let name_loc = self.create_loc(attr.name_start, attr.name_end);
 
         if self.has_duplicate_attribute(attr.name.as_str()) {
+            // Vue recovers from duplicate attributes — codegen ignores
+            // repeats and keeps the first occurrence — but linters still
+            // want to see both in the AST so they can warn about the
+            // repeat. So we KEEP both in `props` and emit a
+            // *recoverable* diagnostic; downstream pipelines treat it
+            // as non-fatal so a `<div id=a id=b>` no longer yields a
+            // 0-byte module marked as success. (#958)
             let mut message = String::with_capacity(attr.name.len() + 79);
             appends!(
                 message,

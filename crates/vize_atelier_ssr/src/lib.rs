@@ -93,7 +93,11 @@ fn compile_ssr_inner<'a>(
         parse_with_options(allocator, source, parser_opts)
     );
 
-    if !errors.is_empty() {
+    // Parser-level diagnostics that are recoverable (e.g. duplicate
+    // attribute) must NOT gate SSR codegen for the same reason as the
+    // DOM compiler — see #958.
+    let fatal_count = errors.iter().filter(|e| !e.is_recoverable()).count();
+    if fatal_count > 0 {
         let codegen_result = SsrCodegenResult {
             code: String::default(),
             preamble: String::default(),

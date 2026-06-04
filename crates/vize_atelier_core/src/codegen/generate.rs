@@ -224,10 +224,28 @@ fn generate_props_expression_to_bytes(
     match props {
         PropsExpression::Object(obj) => {
             out.push_str("{ ");
-            for (i, prop) in obj.properties.iter().enumerate() {
-                if i > 0 {
+            // Vue keeps the first occurrence on duplicate attributes; vize's
+            // parser records both nodes so the linter can flag the repeat,
+            // so dedupe by key name here before emitting the props object.
+            // (#958)
+            let mut seen: vize_carton::FxHashSet<vize_carton::String> =
+                vize_carton::FxHashSet::default();
+            let mut emitted = 0usize;
+            for prop in obj.properties.iter() {
+                let key_string = match &prop.key {
+                    ExpressionNode::Simple(exp) if exp.is_static => Some(exp.content.clone()),
+                    _ => None,
+                };
+                if let Some(key) = &key_string {
+                    if seen.contains(key.as_str()) {
+                        continue;
+                    }
+                    seen.insert(key.clone());
+                }
+                if emitted > 0 {
                     out.push_str(", ");
                 }
+                emitted += 1;
                 // Key - quote if contains special characters like hyphens
                 match &prop.key {
                     ExpressionNode::Simple(exp) => {

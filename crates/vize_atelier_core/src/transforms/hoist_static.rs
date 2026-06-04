@@ -260,11 +260,19 @@ fn create_props_expression<'a>(
     props: &[PropNode<'a>],
     scope_id: Option<&vize_carton::String>,
 ) -> Option<PropsExpression<'a>> {
-    // Build object properties from attributes
+    // Build object properties from attributes. Vue keeps the first
+    // occurrence on duplicate attributes (parser records both but
+    // codegen dedupes), so skip names we've already emitted. (#958)
     let mut obj_props = Vec::new_in(allocator);
+    let mut seen: vize_carton::FxHashSet<vize_carton::String> = vize_carton::FxHashSet::default();
 
     for prop in props {
         if let PropNode::Attribute(attr) = prop {
+            if seen.contains(attr.name.as_str()) {
+                continue;
+            }
+            seen.insert(attr.name.clone());
+
             let key = ExpressionNode::Simple(Box::new_in(
                 SimpleExpressionNode::new(attr.name.clone(), true, attr.loc.clone()),
                 allocator,
@@ -441,11 +449,20 @@ fn hoist_element_props<'a>(
     el: &mut ElementNode<'a>,
     allocator: &'a Bump,
 ) {
-    // Build props object from element attributes
+    // Build props object from element attributes. Vue keeps the first
+    // occurrence on duplicate attributes (parser records both for
+    // linters); dedupe here so a hoisted `_hoisted_N` literal doesn't
+    // emit `{ id: "a", id: "b" }`. (#958)
     let mut obj_props = Vec::new_in(allocator);
+    let mut seen: vize_carton::FxHashSet<vize_carton::String> = vize_carton::FxHashSet::default();
 
     for prop in el.props.iter() {
         if let PropNode::Attribute(attr) = prop {
+            if seen.contains(attr.name.as_str()) {
+                continue;
+            }
+            seen.insert(attr.name.clone());
+
             let key = ExpressionNode::Simple(Box::new_in(
                 SimpleExpressionNode::new(attr.name.clone(), true, attr.loc.clone()),
                 allocator,

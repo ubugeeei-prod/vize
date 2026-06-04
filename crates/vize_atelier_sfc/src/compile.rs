@@ -256,7 +256,11 @@ fn compile_sfc_inner(
                     code.push_str("export default _sfc_main\n");
                 }
             }
-            Err(e) => errors.push(e),
+            // Previously this just collected the error into a local vec
+            // and continued, returning Ok with empty code — so callers
+            // wrote a 0-byte module and exited 0 (#958). Propagate the
+            // template error up so the build/CLI surfaces it.
+            Err(e) => return Err(e),
         }
 
         // Compile styles

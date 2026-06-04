@@ -623,6 +623,10 @@ fn test_parse_error_missing_end_tag() {
 
 #[test]
 fn test_parse_error_duplicate_attribute() {
+    // A duplicate attribute is recorded as a recoverable diagnostic
+    // (#958). Both occurrences remain in the AST so linters can warn
+    // about the repeat; downstream codegen treats the diagnostic as
+    // non-fatal and emits valid render code for the first occurrence.
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, r#"<div id="a" id="b"></div>"#);
     assert!(

@@ -218,7 +218,24 @@ fn try_generate_static_attrs(
         return false;
     }
 
-    let multiline = props.len() + usize::from(scope_id.is_some()) > 1;
+    // Vue's behavior on duplicate attributes is to keep the first
+    // occurrence and ignore later repeats — the parser already records
+    // a recoverable diagnostic for the duplicate but leaves both nodes
+    // in the AST so linters can flag them. Dedupe here so the rendered
+    // props object doesn't emit `{ id: "a", id: "b" }`. (#958)
+    let mut seen: FxHashSet<String> = FxHashSet::default();
+    let mut unique_props: Vec<&PropNode<'_>> = Vec::with_capacity(props.len());
+    for prop in props {
+        if let PropNode::Attribute(attr) = prop {
+            if seen.contains(attr.name.as_str()) {
+                continue;
+            }
+            seen.insert(attr.name.clone());
+        }
+        unique_props.push(prop);
+    }
+
+    let multiline = unique_props.len() + usize::from(scope_id.is_some()) > 1;
     if multiline {
         ctx.push("{");
         ctx.indent();
@@ -227,7 +244,7 @@ fn try_generate_static_attrs(
     }
 
     let mut first = true;
-    for prop in props {
+    for prop in unique_props {
         let PropNode::Attribute(attr) = prop else {
             // Panic path by invariant: the preflight `all(Attribute)` check above
             // has already rejected directive props. Reaching this arm would mean

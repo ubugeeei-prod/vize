@@ -33,6 +33,15 @@ impl CompilerError {
             loc,
         }
     }
+
+    /// Returns true when this diagnostic is a parser-level warning that
+    /// downstream codegen can recover from. Mirrors `@vue/compiler-sfc`'s
+    /// classification: a duplicate attribute is reported but does not
+    /// gate render emission (#958).
+    #[must_use]
+    pub fn is_recoverable(&self) -> bool {
+        matches!(self.code, ErrorCode::DuplicateAttribute)
+    }
 }
 
 /// Error codes for compiler errors

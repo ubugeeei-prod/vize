@@ -107,10 +107,18 @@ pub fn build_props<'a>(
     let mut properties: Vec<PropItem<'a>> = Vec::new();
     let mut dynamic_prop_names: Vec<String> = Vec::new();
     let mut has_runtime_props = false;
+    // Dedupe by attribute name — Vue keeps the first occurrence on a
+    // duplicate attribute. The parser records both nodes so linters can
+    // warn about the repeat; codegen takes the first only. (#958)
+    let mut seen_attr_names: vize_carton::FxHashSet<String> = vize_carton::FxHashSet::default();
 
     for prop in el.props.iter() {
         match prop {
             PropNode::Attribute(attr) => {
+                if seen_attr_names.contains(attr.name.as_str()) {
+                    continue;
+                }
+                seen_attr_names.insert(attr.name.clone());
                 // Static attribute
                 let key = attr.name.clone();
                 let value = attr.value.as_ref().map(|v| v.content.clone());
