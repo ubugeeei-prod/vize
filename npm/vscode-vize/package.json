@@ -52,12 +52,6 @@
     "typescript": "6.0.3",
     "vite-plus": "0.1.19"
   },
-  "capabilities": {
-    "untrustedWorkspaces": {
-      "supported": "limited",
-      "description": "Vize runs a native language-server binary. In untrusted workspaces it ignores workspace-controlled server paths and skips workspace-local server binaries to prevent code execution from cloned repositories. Enable Workspace Trust to use the full feature set."
-    }
-  },
   "contributes": {
     "languages": [
       {
@@ -400,5 +394,11 @@
   "icon": "icons/logo.png",
   "engines": {
     "vscode": "^1.75.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Vize runs a native language-server binary. In untrusted workspaces it ignores workspace-controlled server paths and skips workspace-local server binaries to prevent code execution from cloned repositories. Enable Workspace Trust to use the full feature set."
+    }
   }
 }
