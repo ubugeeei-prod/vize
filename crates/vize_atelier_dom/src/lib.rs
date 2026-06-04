@@ -260,6 +260,29 @@ mod tests {
         }
     }
 
+    /// A dynamic component whose `:is` is written as `v-bind:is` must not flush an empty
+    /// `{}` segment into `mergeProps`: `:is` is consumed as the component tag, so the first
+    /// real merge argument is the `v-bind="obj"` spread — matching @vue/compiler-dom's
+    /// `_mergeProps(obj, { ... })` rather than `_mergeProps({}, obj, { ... })`.
+    #[test]
+    fn test_dynamic_component_vbind_is_no_empty_merge_object() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template(
+            &allocator,
+            r#"<component :is="popup.component" v-bind="popup.props" :key="popup.id" @closed="onClose"/>"#,
+        );
+        assert!(errors.is_empty());
+        let code = result.code.as_str();
+        assert!(
+            code.contains("_mergeProps(popup.props, {"),
+            "merge should start with the spread, not an empty object:\n{code}"
+        );
+        assert!(
+            !code.contains("_mergeProps({ }") && !code.contains("_mergeProps({  }"),
+            "no empty object literal should be flushed into mergeProps:\n{code}"
+        );
+    }
+
     #[test]
     fn test_compile_with_options() {
         let allocator = Bump::new();

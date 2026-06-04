@@ -69,7 +69,18 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                     let has_renderable = segment.iter().any(|p| match p {
                         PropNode::Attribute(attr) => !(ctx.skip_is_prop && attr.name == "is"),
                         PropNode::Directive(dir) => {
-                            !(dir.arg.is_none() && (dir.name == "bind" || dir.name == "on"))
+                            // A `:is`/`v-bind:is` directive on a dynamic component is consumed
+                            // as the component tag and skipped during generation (mirrors the
+                            // skip_is_prop branch in generate_props_object_inner). It must not
+                            // count as renderable, or an empty `{}` is flushed into mergeProps.
+                            let is_skipped_is = ctx.skip_is_prop
+                                && dir.name == "bind"
+                                && matches!(
+                                    &dir.arg,
+                                    Some(ExpressionNode::Simple(exp)) if exp.content == "is"
+                                );
+                            !is_skipped_is
+                                && !(dir.arg.is_none() && (dir.name == "bind" || dir.name == "on"))
                                 && is_supported_directive(dir)
                                 && dir.name != "slot"
                         }
