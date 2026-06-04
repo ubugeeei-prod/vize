@@ -25,6 +25,10 @@ tooling, and ecosystem experiments. In particular, thank you to:
   compiler and Nuxt project build pipeline issues on a conference website, and for validating Vize
   in a production conference site deployment
   ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)).
+- [sevenc-nanashi](https://github.com/sevenc-nanashi) for building the
+  [VOICEVOX](https://github.com/VOICEVOX/voicevox) editor — an Electron-based Vue application with
+  ~26k lines of Vue across 128 SFCs — against Vize as a real-world milestone and example, surfacing
+  valuable compatibility feedback from a large production codebase.
 
 Thanks also to everyone who has mentioned, shared, tested, or amplified Vize in the community, and
 to everyone connected to that work. Those signals make it easier to see where the toolchain is
