@@ -137,7 +137,7 @@ pub(super) fn condense_whitespace<'a>(
                 if let TemplateChildNode::Text(ref mut text) = children[i]
                     && let Some(condensed) = condense_internal_whitespace(text.content.as_str())
                 {
-                    text.content = condensed.into();
+                    text.content = condensed;
                 }
             }
         }
