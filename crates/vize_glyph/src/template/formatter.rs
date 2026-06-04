@@ -285,8 +285,146 @@ impl<'a> TemplateFormatter<'a> {
         }
         let text = std::str::from_utf8(buffer).unwrap_or("");
         let formatted = format_interpolations(text, self.options);
+        // If the formatted expression wraps onto multiple lines, single-line
+        // `{{ expr }}` emission would leave the wrapped lines indented
+        // relative to column 0 instead of the interpolation's depth — so a
+        // second `vize fmt` pass would re-emit them under the canonical
+        // multi-line `{{\n  expr\n}}` shape. Detect that case here and emit
+        // the multi-line form on the first pass to keep `vize fmt`
+        // idempotent. (#957)
+        if formatted.contains('\n')
+            && let Some(rewrapped) =
+                self.rewrap_text_with_multiline_interpolation(&formatted, depth)
+        {
+            output.extend_from_slice(rewrapped.as_bytes());
+            buffer.clear();
+            return;
+        }
         self.write_indented_line(output, formatted.as_bytes(), depth);
         buffer.clear();
+    }
+
+    /// Rewrap a `format_interpolations` result into multi-line shape if any
+    /// of its interpolations span multiple lines. Surrounding text is
+    /// preserved on its own line (matching the existing flush pattern).
+    /// Returns `None` if there is nothing to rewrap. (#957)
+    fn rewrap_text_with_multiline_interpolation(&self, text: &str, depth: usize) -> Option<String> {
+        // Quick scan: look for `{{ ... \n ... }}` segments.
+        let bytes = text.as_bytes();
+        let mut has_multiline_interp = false;
+        let mut i = 0;
+        while i + 1 < bytes.len() {
+            if bytes[i] == b'{' && bytes[i + 1] == b'{' {
+                let mut j = i + 2;
+                let mut depth_in = 1;
+                let mut saw_newline = false;
+                while j + 1 < bytes.len() {
+                    if bytes[j] == b'\n' {
+                        saw_newline = true;
+                    }
+                    if bytes[j] == b'{' && bytes[j + 1] == b'{' {
+                        depth_in += 1;
+                        j += 2;
+                    } else if bytes[j] == b'}' && bytes[j + 1] == b'}' {
+                        depth_in -= 1;
+                        if depth_in == 0 {
+                            if saw_newline {
+                                has_multiline_interp = true;
+                            }
+                            j += 2;
+                            break;
+                        }
+                        j += 2;
+                    } else {
+                        j += 1;
+                    }
+                }
+                i = j;
+                if has_multiline_interp {
+                    break;
+                }
+                continue;
+            }
+            i += 1;
+        }
+        if !has_multiline_interp {
+            return None;
+        }
+
+        let mut out = String::default();
+        let mut cursor = 0;
+        let bytes = text.as_bytes();
+        while cursor < bytes.len() {
+            // Find next `{{`.
+            let mut next = cursor;
+            while next + 1 < bytes.len() && !(bytes[next] == b'{' && bytes[next + 1] == b'{') {
+                next += 1;
+            }
+            if next >= bytes.len() {
+                let leading = &text[cursor..];
+                if !leading.is_empty() {
+                    self.write_indent_string(&mut out, depth);
+                    out.push_str(leading);
+                    out.push_str(self.newline_str());
+                }
+                break;
+            }
+            // Emit any text before the interpolation as its own line.
+            if next > cursor {
+                let leading = text[cursor..next].trim_end_matches([' ', '\t']);
+                if !leading.is_empty() {
+                    self.write_indent_string(&mut out, depth);
+                    out.push_str(leading);
+                    out.push_str(self.newline_str());
+                }
+            }
+            // Locate the matching `}}` to extract the expression.
+            let mut k = next + 2;
+            let mut d = 1;
+            while k + 1 < bytes.len() {
+                if bytes[k] == b'{' && bytes[k + 1] == b'{' {
+                    d += 1;
+                    k += 2;
+                } else if bytes[k] == b'}' && bytes[k + 1] == b'}' {
+                    d -= 1;
+                    if d == 0 {
+                        break;
+                    }
+                    k += 2;
+                } else {
+                    k += 1;
+                }
+            }
+            if d != 0 {
+                // Malformed — bail to caller's single-line path.
+                return None;
+            }
+            let expr = &text[next + 2..k];
+            self.write_indent_string(&mut out, depth);
+            out.push_str("{{");
+            out.push_str(self.newline_str());
+            for line in expr.trim().lines() {
+                self.write_indent_string(&mut out, depth + 1);
+                out.push_str(line.trim_end_matches('\r'));
+                out.push_str(self.newline_str());
+            }
+            self.write_indent_string(&mut out, depth);
+            out.push_str("}}");
+            out.push_str(self.newline_str());
+            cursor = k + 2;
+        }
+        Some(out)
+    }
+
+    fn write_indent_string(&self, out: &mut String, depth: usize) {
+        let indent = std::str::from_utf8(self.indent).unwrap_or("  ");
+        for _ in 0..depth {
+            out.push_str(indent);
+        }
+    }
+
+    fn newline_str(&self) -> &str {
+        std::str::from_utf8(self.newline).unwrap_or("\n")
     }
 
     fn write_multiline_interpolation(&self, output: &mut Vec<u8>, expr: &str, depth: usize) {
