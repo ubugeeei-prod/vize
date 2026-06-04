@@ -1923,7 +1923,7 @@ return (_ctx: any,_cache: any) => {
           class: _normalizeClass(["base", klass.value]),
           onClick: toggle
         }, "\n    open\n  ", 10 /* CLASS, PROPS */, ["id"])) : _createCommentVNode("v-if", true), (isOpen.value) ? (_openBlock(), _createElementBlock("div", {
-          key: 0,
+          key: 1,
           ref_key: "floating", ref: floating,
           style: _normalizeStyle(styles.value)
         }, "\n    panel\n  ", 4 /* STYLE */)) : _createCommentVNode("v-if", true) ], 64 /* STABLE_FRAGMENT */))
