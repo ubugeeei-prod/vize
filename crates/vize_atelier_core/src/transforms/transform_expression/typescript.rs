@@ -209,6 +209,12 @@ fn is_ident_char(ch: char) -> bool {
 
 /// Strip TypeScript type annotations from an expression
 pub fn strip_typescript_from_expression(content: &str) -> String {
+    // Skip parsing for inputs that would overflow the parser stack — return
+    // the original content unchanged so the surrounding pipeline emits a
+    // normal diagnostic instead of aborting. (#956)
+    if super::expression_exceeds_max_depth(content) {
+        return String::new(content);
+    }
     // Only process if TypeScript syntax is detected
     if !needs_typescript_stripping(content) {
         return String::new(content);

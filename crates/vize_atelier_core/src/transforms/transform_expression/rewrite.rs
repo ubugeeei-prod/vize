@@ -99,6 +99,15 @@ pub(crate) fn rewrite_expression(
     ctx: &TransformContext<'_>,
     _as_params: bool,
 ) -> RewriteResult {
+    // Skip parsing for inputs that would overflow the parser stack — return
+    // the original content unchanged so the compile pipeline emits a normal
+    // diagnostic for the surrounding directive instead of aborting. (#956)
+    if super::expression_exceeds_max_depth(content) {
+        return RewriteResult {
+            code: String::new(content),
+            used_unref: false,
+        };
+    }
     // First, if this is TypeScript, strip type annotations
     let js_content = if ctx.options.is_ts {
         strip_typescript_from_expression(content)

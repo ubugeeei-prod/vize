@@ -102,6 +102,12 @@ pub fn is_simple_identifier(s: &str) -> bool {
 ///
 /// This is a simpler version that doesn't require `TransformContext`.
 pub fn prefix_identifiers_in_expression(content: &str) -> String {
+    // Skip parsing for inputs that would overflow the parser stack — return
+    // the original content unchanged so the compile pipeline emits a normal
+    // diagnostic for the surrounding directive instead of aborting. (#956)
+    if super::expression_exceeds_max_depth(content) {
+        return String::new(content);
+    }
     let allocator = OxcAllocator::default();
     let source_type = SourceType::default().with_module(true);
 

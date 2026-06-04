@@ -14,6 +14,82 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{Box, Bump, String};
 
+/// Maximum bracket nesting depth allowed in a template expression.
+///
+/// Mirrors the parser's `MAX_ELEMENT_NESTING_DEPTH = 256`, but for the JS/TS
+/// expression text inside `{{ … }}` / directive values. The oxc parser
+/// recurses for each `(` / `[` / `{` it sees, so a sufficiently nested
+/// expression overflows the native stack and aborts the process — a stack
+/// overflow cannot be caught with `catch_unwind`. The same expression
+/// path is shared by `vize build`, `vize check`, the LSP, the linter,
+/// the formatter, and the Vite dev-server middleware. (#956)
+pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 256;
+
+/// Returns the maximum bracket nesting depth in `content`. Only counts
+/// `(`, `[`, `{` and their closers — these are what drive recursion in the
+/// JS parser and the recursive AST walkers in `prefix` / `rewrite`. Strings
+/// and template literals are skipped so contents like `"((((((((..."` don't
+/// trigger a false positive.
+pub fn expression_nesting_depth(content: &str) -> usize {
+    let bytes = content.as_bytes();
+    let mut depth: usize = 0;
+    let mut max_depth: usize = 0;
+    let mut i = 0;
+    while i < bytes.len() {
+        let b = bytes[i];
+        match b {
+            b'"' | b'\'' | b'`' => {
+                let quote = b;
+                i += 1;
+                while i < bytes.len() {
+                    if bytes[i] == b'\\' {
+                        i = i.saturating_add(2);
+                        continue;
+                    }
+                    if bytes[i] == quote {
+                        i += 1;
+                        break;
+                    }
+                    i += 1;
+                }
+                continue;
+            }
+            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'/' => {
+                while i < bytes.len() && bytes[i] != b'\n' {
+                    i += 1;
+                }
+                continue;
+            }
+            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'*' => {
+                i += 2;
+                while i + 1 < bytes.len() && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
+                    i += 1;
+                }
+                i = i.saturating_add(2);
+                continue;
+            }
+            b'(' | b'[' | b'{' => {
+                depth += 1;
+                if depth > max_depth {
+                    max_depth = depth;
+                }
+            }
+            b')' | b']' | b'}' => {
+                depth = depth.saturating_sub(1);
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    max_depth
+}
+
+/// Returns true if `content` exceeds [`MAX_EXPRESSION_NESTING_DEPTH`].
+#[inline]
+pub fn expression_exceeds_max_depth(content: &str) -> bool {
+    expression_nesting_depth(content) > MAX_EXPRESSION_NESTING_DEPTH
+}
+
 use crate::{
     ast::{ConstantType, ExpressionNode, SimpleExpressionNode},
     transform::TransformContext,
@@ -28,6 +104,9 @@ use rewrite::rewrite_expression;
 /// Returns true if an expression is a callable reference that should be passed
 /// through directly as an event handler, not wrapped as `$event => (...)`.
 pub fn is_event_handler_reference_expression(content: &str) -> bool {
+    if expression_exceeds_max_depth(content) {
+        return false;
+    }
     let allocator = oxc_allocator::Allocator::default();
     let parser = Parser::new(&allocator, content, SourceType::default().with_module(true));
     let Ok(expr) = parser.parse_expression() else {
@@ -49,6 +128,9 @@ pub fn is_event_handler_reference_expression(content: &str) -> bool {
 
 /// Returns true if the whole expression is a function / arrow function expression.
 pub fn is_function_expression(content: &str) -> bool {
+    if expression_exceeds_max_depth(content) {
+        return false;
+    }
     let allocator = oxc_allocator::Allocator::default();
     let parser = Parser::new(&allocator, content, SourceType::default().with_module(true));
     let Ok(expr) = parser.parse_expression() else {
@@ -204,7 +286,12 @@ pub(crate) fn normalize_expression<'a>(
 
 #[cfg(test)]
 mod tests {
-    use super::{clone_expression, process_expression};
+    use super::{
+        MAX_EXPRESSION_NESTING_DEPTH, clone_expression, expression_exceeds_max_depth,
+        expression_nesting_depth, is_event_handler_reference_expression, is_function_expression,
+        prefix::prefix_identifiers_in_expression, process_expression,
+        typescript::strip_typescript_from_expression,
+    };
     use crate::{
         ast::{CompoundExpressionNode, ExpressionNode, Position, RuntimeHelper, SourceLocation},
         options::{BindingMetadata, BindingType, TransformOptions},
@@ -298,6 +385,51 @@ mod tests {
             "$setup.isExternal && $setup.isExternal.value"
         );
         assert!(!ctx.has_helper(RuntimeHelper::Unref));
+    }
+
+    #[test]
+    fn test_expression_nesting_depth_counts_parens() {
+        assert_eq!(expression_nesting_depth("a + b"), 0);
+        assert_eq!(expression_nesting_depth("(a + b)"), 1);
+        assert_eq!(expression_nesting_depth("((a + b))"), 2);
+        assert_eq!(expression_nesting_depth("[[[1]]]"), 3);
+        assert_eq!(expression_nesting_depth("{a: 1}"), 1);
+    }
+
+    #[test]
+    fn test_expression_nesting_depth_ignores_brackets_in_strings_and_comments() {
+        assert_eq!(expression_nesting_depth(r#""((((""#), 0);
+        assert_eq!(expression_nesting_depth(r#"'((((((' + 1"#), 0);
+        assert_eq!(expression_nesting_depth("`((((`"), 0);
+        assert_eq!(expression_nesting_depth("a /* (((( */ b"), 0);
+        assert_eq!(expression_nesting_depth("a // ((((\n + b"), 0);
+    }
+
+    #[test]
+    fn test_expression_exceeds_max_depth_guards_deeply_nested() {
+        let deep = "(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)
+            + "1"
+            + &")".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1);
+        assert!(expression_exceeds_max_depth(&deep));
+        let shallow = "(".repeat(MAX_EXPRESSION_NESTING_DEPTH)
+            + "1"
+            + &")".repeat(MAX_EXPRESSION_NESTING_DEPTH);
+        assert!(!expression_exceeds_max_depth(&shallow));
+    }
+
+    #[test]
+    fn test_expression_entry_points_do_not_overflow_on_deep_input() {
+        // Regression for #956: every entry point that previously fed the
+        // recursive oxc parser must return a benign value for an input
+        // beyond MAX_EXPRESSION_NESTING_DEPTH rather than abort the
+        // process via stack overflow.
+        let deep = "(".repeat(100_000) + "1" + &")".repeat(100_000);
+        assert!(!is_event_handler_reference_expression(&deep));
+        assert!(!is_function_expression(&deep));
+        let prefixed = prefix_identifiers_in_expression(&deep);
+        assert_eq!(prefixed.as_str(), deep.as_str());
+        let stripped = strip_typescript_from_expression(&deep);
+        assert_eq!(stripped.as_str(), deep.as_str());
     }
 
     #[test]
