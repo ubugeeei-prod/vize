@@ -133,6 +133,9 @@ Special thanks to:
 - [n13u](https://x.com/%5Fn13u%5F) and `#frontend_phpcon_do` for Nuxt build debugging, reports,
   and production validation
   ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)).
+- [sevenc-nanashi](https://github.com/sevenc-nanashi) for building the
+  [VOICEVOX](https://github.com/VOICEVOX/voicevox) editor (~26k lines of Vue across 128 SFCs)
+  against Vize as a real-world milestone and compatibility feedback.
 - Everyone who has mentioned, shared, tested, or amplified Vize across the community.
 
 ## License

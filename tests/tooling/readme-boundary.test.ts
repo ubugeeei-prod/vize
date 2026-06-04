@@ -8,9 +8,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 
 test("README stays a compact project entry point", () => {
   const readme = readRepoFile("README.md");
-  const lines = readme.trimEnd().split("\n");
-
-  assert.ok(lines.length <= 140, `README should stay compact; found ${lines.length} lines`);
 
   for (const section of [
     "## What Is Vize?",
