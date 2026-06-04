@@ -1,13 +1,20 @@
 ---
 source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+assertion_line: 412
 expression: output.as_str()
 ---
 import { computed } from "vue";
 export default {
   __name: "TestComponent",
   props: {
-    msg: { type: String },
-    count: { type: Number }
+    msg: {
+      type: String,
+      required: true
+    },
+    count: {
+      type: Number,
+      required: true
+    }
   },
   setup(__props) {
     const props = __props;

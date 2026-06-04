@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 152
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
@@ -16,7 +17,7 @@ interface Props {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    msg: { type: String },
+    msg: { type: String, required: true },
     count: { type: Number, required: false, default: 0 },
     disabled: { type: Boolean, required: false, default: false }
   },

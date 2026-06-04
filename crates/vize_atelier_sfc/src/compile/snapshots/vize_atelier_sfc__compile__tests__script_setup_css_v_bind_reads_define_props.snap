@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
+assertion_line: 336
 expression: "sfc_compile_snapshot(&descriptor.css_vars, &result)"
 ---
 css vars:
@@ -24,9 +25,18 @@ import { resolveDirective as _resolveDirective, withDirectives as _withDirective
 export default {
   __name: "MkFeatureBanner",
   props: {
-    icon: { type: String },
-    color: { type: String },
-    offset: { type: Number }
+    icon: {
+      type: String,
+      required: true
+    },
+    color: {
+      type: String,
+      required: true
+    },
+    offset: {
+      type: Number,
+      required: true
+    }
   },
   setup(__props) {
     _useCssVars((_ctx) => ({

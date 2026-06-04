@@ -112,13 +112,21 @@ pub(super) fn build_user_props_decl(
                         decl.push(b'>');
                     }
                 }
-                if prop_type.optional && !is_prod {
+                if !is_prod {
+                    // Vue's type-only inference emits `required` explicitly
+                    // for both branches in dev mode so prop-validation
+                    // warnings fire for required props that are omitted. The
+                    // previous output skipped `required: true` entirely. (#967)
                     if has_option {
                         decl.extend_from_slice(b", ");
                     } else {
                         decl.push(b' ');
                     }
-                    decl.extend_from_slice(b"required: false");
+                    if prop_type.optional {
+                        decl.extend_from_slice(b"required: false");
+                    } else {
+                        decl.extend_from_slice(b"required: true");
+                    }
                     has_option = true;
                 }
                 let mut has_default = false;

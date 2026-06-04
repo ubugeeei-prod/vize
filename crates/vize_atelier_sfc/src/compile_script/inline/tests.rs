@@ -444,6 +444,45 @@ const x = computed(() => 1)
     }
 
     #[test]
+    fn test_define_props_type_only_required_and_undefined_union() {
+        // Regression for #967: type-only `defineProps` must emit
+        // `required: true` for required props (no `?`) — including unions
+        // with `undefined` — and `required: false` only when the `?`
+        // modifier is present. Method-signature props must surface as
+        // `Function`-typed props instead of being silently dropped.
+        let content = r#"
+defineProps<{
+  a: string
+  b?: number
+  c: string | undefined
+  onChange(e: Event): void
+}>()
+"#;
+        let output = compile_setup(content);
+        let normalized: String = output
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .into();
+        assert!(
+            normalized.contains("a: { type: String, required: true }"),
+            "expected `a` to be required, got:\n{output}"
+        );
+        assert!(
+            normalized.contains("b: { type: Number, required: false }"),
+            "expected `b` to be optional, got:\n{output}"
+        );
+        assert!(
+            normalized.contains("c: { type: String, required: true }"),
+            "expected `c` (union with undefined, no ?) to stay required, got:\n{output}"
+        );
+        assert!(
+            normalized.contains("onChange: { type: Function, required: true }"),
+            "expected `onChange` method-signature prop to surface, got:\n{output}"
+        );
+    }
+
+    #[test]
     fn test_non_props_destructure_value_on_next_line() {
         // Ensure regular (non-defineProps) destructures with value on next line
         // still work correctly

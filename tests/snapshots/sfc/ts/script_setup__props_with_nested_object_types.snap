@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 152
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
@@ -9,7 +10,7 @@ import { toDisplayString as _toDisplayString, openBlock as _openBlock, createEle
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    config: { type: Object }
+    config: { type: Object, required: true }
   },
   setup(__props: any) {
 

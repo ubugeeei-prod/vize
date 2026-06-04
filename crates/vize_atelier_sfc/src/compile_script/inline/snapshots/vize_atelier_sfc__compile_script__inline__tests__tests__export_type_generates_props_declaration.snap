@@ -1,13 +1,23 @@
 ---
 source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+assertion_line: 341
 expression: output.as_str()
 ---
 export default {
   __name: "TestComponent",
   props: {
-    id: { type: String },
-    label: { type: String },
-    routeName: { type: String },
+    id: {
+      type: String,
+      required: true
+    },
+    label: {
+      type: String,
+      required: true
+    },
+    routeName: {
+      type: String,
+      required: true
+    },
     disabled: {
       type: Boolean,
       required: false

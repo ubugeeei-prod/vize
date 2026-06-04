@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 152
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
@@ -11,8 +12,8 @@ import { ref } from 'vue'
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    initialState: { type: null },
-    onSubmit: { type: Function }
+    initialState: { type: null, required: true },
+    onSubmit: { type: Function, required: true }
   },
   setup(__props: any) {
 

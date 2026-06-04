@@ -1,11 +1,15 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 221
 expression: js_output.as_str()
 ---
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue";
 export default {
   __name: "test",
-  props: { item: { type: Object } },
+  props: { item: {
+    type: Object,
+    required: true
+  } },
   setup(__props) {
     const props = __props;
     return (_ctx, _cache) => {

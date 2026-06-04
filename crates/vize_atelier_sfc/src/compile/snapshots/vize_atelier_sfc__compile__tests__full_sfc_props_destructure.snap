@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
+assertion_line: 978
 expression: result.code.as_str()
 ---
 import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
@@ -8,7 +9,10 @@ import { computed } from "vue";
 export default {
   __name: "test",
   props: {
-    name: { type: String },
+    name: {
+      type: String,
+      required: true
+    },
     count: {
       type: Number,
       required: false,

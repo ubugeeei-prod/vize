@@ -1,12 +1,16 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 221
 expression: js_output.as_str()
 ---
 import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue";
 export default {
   __name: "test",
   props: {
-    title: { type: String },
+    title: {
+      type: String,
+      required: true
+    },
     count: {
       type: Number,
       required: false,

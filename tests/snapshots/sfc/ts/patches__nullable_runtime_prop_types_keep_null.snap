@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 198
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
@@ -9,9 +10,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    activeKey: { type: [String, null] },
-    items: { type: [Array, null] },
-    groupName: { type: [String, null] }
+    activeKey: { type: [String, null], required: true },
+    items: { type: [Array, null], required: true },
+    groupName: { type: [String, null], required: true }
   },
   setup(__props: any) {
 

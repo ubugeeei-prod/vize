@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
+assertion_line: 368
 expression: "sfc_compile_snapshot(&descriptor.css_vars, &result)"
 ---
 css vars:
@@ -20,7 +21,10 @@ const _hoisted_1 = {
 };
 export default {
   __name: "Alias",
-  props: { color: { type: String } },
+  props: { color: {
+    type: String,
+    required: true
+  } },
   setup(__props) {
     _useCssVars((_ctx) => ({ "test-bannerColor": __props.color }));
     return (_ctx, _cache) => {

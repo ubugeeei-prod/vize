@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
+assertion_line: 1414
 expression: result.code.as_str()
 ---
 import { useModel as _useModel, mergeModels as _mergeModels } from "vue";
@@ -16,7 +17,10 @@ export default {
       required: false,
       default: "md"
     },
-    items: { type: Array }
+    items: {
+      type: Array,
+      required: true
+    }
   }, {
     "modelValue": {
       type: String,

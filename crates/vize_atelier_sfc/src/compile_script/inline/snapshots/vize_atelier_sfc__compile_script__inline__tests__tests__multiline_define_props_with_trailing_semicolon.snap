@@ -1,12 +1,16 @@
 ---
 source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+assertion_line: 252
 expression: output.as_str()
 ---
 import { ref } from "vue";
 export default {
   __name: "TestComponent",
   props: {
-    label: { type: String },
+    label: {
+      type: String,
+      required: true
+    },
     disabled: {
       type: Boolean,
       required: false
