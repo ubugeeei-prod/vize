@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_core/src/codegen.rs
+assertion_line: 457
 expression: output.as_str()
 ---
 const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, createTextVNode: _createTextVNode } = Vue
@@ -12,7 +13,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       ], 64 /* STABLE_FRAGMENT */))
       : _createCommentVNode("v-if", true),
     (pending)
-      ? (_openBlock(), _createElementBlock("span", { key: 0 }, "updating"))
+      ? (_openBlock(), _createElementBlock("span", { key: 1 }, "updating"))
       : _createCommentVNode("v-if", true)
   ]))
 }

@@ -22,6 +22,11 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     ctx.use_helper(RuntimeHelper::CreateComment);
 
     for (i, branch) in if_node.branches.iter().enumerate() {
+        // Allocate a template-wide key for this branch so sibling
+        // conditional blocks don't reuse the same `{ key: n }` and patch
+        // the wrong element across branches (#961). Matches Vue's shared
+        // counter.
+        let branch_key = ctx.next_v_if_branch_key();
         if let Some(condition) = &branch.condition {
             if i == 0 {
                 // First branch: output condition with parentheses
@@ -48,7 +53,7 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
         }
 
         // Generate branch content based on children
-        generate_if_branch(ctx, branch, i);
+        generate_if_branch(ctx, branch, branch_key);
 
         if branch.condition.is_some() && i > 0 {
             ctx.deindent();

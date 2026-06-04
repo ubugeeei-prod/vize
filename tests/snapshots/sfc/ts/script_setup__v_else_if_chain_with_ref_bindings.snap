@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 152
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
@@ -27,12 +28,12 @@ return (_ctx: any,_cache: any) => {
       ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
         (activeTab.value === 'code')
           ? (_openBlock(), _createElementBlock("div", {
-            key: 0,
+            key: 1,
             class: "code-output"
           }, [
             (isTypeScript.value)
               ? (_openBlock(), _createElementBlock("div", {
-                key: 0,
+                key: 2,
                 class: "code-mode-toggle"
               }, [
                 _createElementVNode("button", {
@@ -48,21 +49,21 @@ return (_ctx: any,_cache: any) => {
           ]))
           : (activeTab.value === 'ast')
             ? (_openBlock(), _createElementBlock("div", {
-              key: 1,
+              key: 3,
               class: "ast-output"
             }, [
               _hoisted_1
             ]))
           : (activeTab.value === 'helpers')
             ? (_openBlock(), _createElementBlock("div", {
-              key: 2,
+              key: 4,
               class: "helpers-output"
             }, [
               _hoisted_2
             ]))
           : (activeTab.value === 'sfc')
             ? (_openBlock(), _createElementBlock("div", {
-              key: 3,
+              key: 5,
               class: "sfc-output"
             }, [
               _hoisted_3

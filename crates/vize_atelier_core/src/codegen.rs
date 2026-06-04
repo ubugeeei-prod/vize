@@ -449,6 +449,22 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_v_if_sibling_chains_allocate_unique_branch_keys() {
+        // Regression for #961: sibling `v-if`/`v-else` blocks must get keys
+        // from a template-wide counter (Vue parity: 0,1,2,3 — not the
+        // per-chain 0,1,0,1 vize used to emit), so a patch can't reuse a
+        // first-block element for a second-block element.
+        let result = compile!(
+            r#"<div><div v-if="a">A</div><div v-else>B</div><div v-if="c">C</div><div v-else>D</div></div>"#
+        );
+
+        assert!(result.code.contains("{ key: 0 }"), "missing key 0:\n{}", result.code);
+        assert!(result.code.contains("{ key: 1 }"), "missing key 1:\n{}", result.code);
+        assert!(result.code.contains("{ key: 2 }"), "missing key 2:\n{}", result.code);
+        assert!(result.code.contains("{ key: 3 }"), "missing key 3:\n{}", result.code);
+    }
+
+    #[test]
     fn test_codegen_v_if_template_fragment_wraps_interpolation_in_text_vnode() {
         let result = compile!(
             r#"<p><template v-if="ready">{{ count }}</template><span v-if="pending">updating</span></p>"#

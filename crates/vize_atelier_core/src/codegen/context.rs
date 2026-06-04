@@ -54,6 +54,12 @@ pub struct CodegenContext {
     pub(super) props_is_plain_element: bool,
     /// Whether static child VNodes should be cached in the render function.
     pub(super) static_cache: bool,
+    /// Template-wide counter for v-if branch keys. Each branch in any
+    /// conditional chain in the template consumes one value, so sibling
+    /// `v-if`/`v-else` blocks do not reuse the same `{ key: n }` and a
+    /// patch-time element from one branch can't be reused for another
+    /// (#961). Vue uses the same shared counter.
+    pub(super) v_if_branch_counter: usize,
 }
 
 /// Code generation result
@@ -88,7 +94,19 @@ impl CodegenContext {
             skip_v_memo: false,
             props_is_plain_element: false,
             static_cache: false,
+            v_if_branch_counter: 0,
         }
+    }
+
+    /// Allocate the next v-if branch key for the current template.
+    ///
+    /// Branch keys are unique across the whole template, matching Vue's
+    /// shared counter, so two sibling conditional blocks never collide on
+    /// `{ key: n }`.
+    pub(super) fn next_v_if_branch_key(&mut self) -> usize {
+        let key = self.v_if_branch_counter;
+        self.v_if_branch_counter = self.v_if_branch_counter.saturating_add(1);
+        key
     }
 
     /// Add template-scope parameters (identifiers that should not be prefixed)

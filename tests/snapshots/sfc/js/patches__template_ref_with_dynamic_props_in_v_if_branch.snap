@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 221
 expression: js_output.as_str()
 ---
 import { normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from "vue";
@@ -30,7 +31,7 @@ export default {
         }, "\n    open\n  ", 10, ["id"])) : _createCommentVNode("v-if", true), isOpen.value ? (_openBlock(), _createElementBlock(
           "div",
           {
-            key: 0,
+            key: 1,
             ref_key: "floating",
             ref: floating,
             style: _normalizeStyle(styles.value)
