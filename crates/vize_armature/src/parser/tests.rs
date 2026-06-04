@@ -54,6 +54,28 @@ fn test_parse_text() {
 }
 
 #[test]
+fn test_parse_condense_whitespace_collapses_runs_inside_text_nodes() {
+    // Regression for #960: `whitespace: 'condense'` (the default) must
+    // collapse runs of `[ \t\n\f\r]` to a single U+0020 inside text
+    // nodes, matching `@vue/compiler-sfc`. The previous behavior left
+    // mixed text nodes verbatim, so `x   y\n   z` stayed raw.
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div>x   y\n   z</div>");
+    assert!(errors.is_empty(), "{errors:?}");
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.children.len(), 1);
+        if let TemplateChildNode::Text(text) = &el.children[0] {
+            assert_eq!(text.content.as_str(), "x y z");
+        } else {
+            panic!("expected text child, got {:?}", el.children[0]);
+        }
+    } else {
+        panic!("expected element root");
+    }
+}
+
+#[test]
 fn test_parse_text_with_entities_preserves_raw_source() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, "&lt;foo&gt;");

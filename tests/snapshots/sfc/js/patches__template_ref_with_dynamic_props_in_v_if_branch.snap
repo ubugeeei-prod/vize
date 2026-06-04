@@ -28,7 +28,7 @@ export default {
           id: isOpen.value ? "open" : undefined,
           class: _normalizeClass(["base", klass.value]),
           onClick: toggle
-        }, "\n    open\n  ", 10, ["id"])) : _createCommentVNode("v-if", true), isOpen.value ? (_openBlock(), _createElementBlock(
+        }, " open ", 10, ["id"])) : _createCommentVNode("v-if", true), isOpen.value ? (_openBlock(), _createElementBlock(
           "div",
           {
             key: 1,
@@ -36,7 +36,7 @@ export default {
             ref: floating,
             style: _normalizeStyle(styles.value)
           },
-          "\n    panel\n  ",
+          " panel ",
           4
           /* STYLE */
         )) : _createCommentVNode("v-if", true)],

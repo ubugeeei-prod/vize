@@ -796,10 +796,13 @@ mod tests {
     #[test]
     fn test_compile_dynamic_text_escapes_multiline_static_part() {
         let allocator = Bump::new();
+        // Condense mode collapses the `\n` in the static part to a space
+        // (Vue parity, #960), so a `<pre>` wrapper preserves it for this
+        // escape-handling check.
         let result = compile_vapor(
             &allocator,
-            r#"<button :class="cls">{{ count }} all
-selected</button>"#,
+            r#"<pre :class="cls">{{ count }} all
+selected</pre>"#,
             Default::default(),
         );
 
