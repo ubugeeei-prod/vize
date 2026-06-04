@@ -185,8 +185,7 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
     // treat the prop as a Function type. (#967)
     if let Some(paren_pos) = trimmed.find('(') {
         let before_paren = &trimmed[..paren_pos];
-        let has_colon_before_paren =
-            trimmed[..paren_pos].find(':').is_some();
+        let has_colon_before_paren = trimmed[..paren_pos].find(':').is_some();
         if !has_colon_before_paren {
             let optional = before_paren.trim_end().ends_with('?');
             let name = before_paren.trim_end_matches('?').trim();
