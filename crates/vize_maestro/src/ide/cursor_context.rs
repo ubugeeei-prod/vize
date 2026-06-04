@@ -79,7 +79,12 @@ fn clamp_offset(content: &str, offset: usize) -> usize {
 /// block. Mirrors `crate::ide::completion::is_inside_html_comment` so the
 /// detector can be used outside the completion module too.
 fn is_inside_html_comment(content: &str, offset: usize) -> bool {
-    let before = &content[..offset];
+    // Guard against an offset that lands mid-codepoint (the LSP may report a
+    // UTF-16 column that doesn't translate cleanly back to a UTF-8 byte
+    // boundary) — bail out rather than panic. #964
+    let Some(before) = content.get(..offset) else {
+        return false;
+    };
     let Some(comment_start) = before.rfind("<!--") else {
         return false;
     };
@@ -88,7 +93,7 @@ fn is_inside_html_comment(content: &str, offset: usize) -> bool {
 }
 
 fn detect_member_access<'a>(content: &'a str, offset: usize) -> Option<CursorContext<'a>> {
-    let before = &content[..offset];
+    let before = content.get(..offset)?;
     // Allow whitespace between the `.` and the cursor — e.g. when the
     // editor's auto-indent inserts a newline.
     let trimmed = before.trim_end();
@@ -123,6 +128,9 @@ fn is_receiver_byte(byte: u8) -> bool {
 }
 
 fn detect_identifier<'a>(content: &'a str, offset: usize) -> CursorContext<'a> {
+    if offset > content.len() {
+        return CursorContext::Other;
+    }
     let bytes = content.as_bytes();
     let mut start = offset;
     while start > 0 && is_ident_byte(bytes[start - 1]) {
@@ -131,10 +139,14 @@ fn detect_identifier<'a>(content: &'a str, offset: usize) -> CursorContext<'a> {
     if start == offset {
         return CursorContext::Other;
     }
-    CursorContext::Identifier {
-        prefix: &content[start..offset],
-        start,
-    }
+    // Both `start` and `offset` sit on UTF-8 boundaries because the ident-byte
+    // predicate only matches ASCII bytes; `get` over `Other`-on-mismatch is a
+    // belt-and-braces guard for upstream offset arithmetic that may have
+    // landed mid-codepoint. #964
+    let Some(prefix) = content.get(start..offset) else {
+        return CursorContext::Other;
+    };
+    CursorContext::Identifier { prefix, start }
 }
 
 #[inline]

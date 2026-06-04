@@ -617,6 +617,33 @@ const color = 'red'
         assert!(DefinitionService::definition(&ctx).is_none());
     }
 
+    #[test]
+    fn test_definition_does_not_panic_on_non_ascii_before_identifier() {
+        // Regression for #964: a non-ASCII character right before an
+        // identifier used to place `word_start - 6` inside a multi-byte
+        // codepoint and panic the LSP with "byte index N is not a char
+        // boundary". The handler must return a normal (possibly empty)
+        // response instead.
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("CJK.vue");
+        let source = "<script setup lang=\"ts\">\nconst title = 'こんにちは'\n</script>\n\n<template>\n  <div>あいうえおtitle</div>\n</template>\n";
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        // Land right after the `title` identifier that is preceded by CJK.
+        let offset = source.rfind("title").unwrap() + "title".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+
+        // Must not panic. Returning Some or None are both acceptable.
+        let _ = DefinitionService::definition(&ctx);
+    }
+
     fn scalar_location(response: GotoDefinitionResponse) -> Location {
         match response {
             GotoDefinitionResponse::Scalar(location) => location,

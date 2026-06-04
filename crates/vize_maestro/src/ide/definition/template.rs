@@ -331,7 +331,11 @@ pub(crate) fn find_props_property_definition(
         return None;
     }
 
-    let prefix = &ctx.content[word_start.saturating_sub(6)..word_start];
+    // Use checked slicing — non-ASCII text right before the identifier could
+    // place `word_start - 6` mid-codepoint, panicking the LSP. Skip the prefix
+    // check on a non-boundary instead of slicing. (#964)
+    let prefix_start = word_start.saturating_sub(6);
+    let prefix = ctx.content.get(prefix_start..word_start)?;
     if prefix != "props." {
         return None;
     }
