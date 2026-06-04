@@ -96,16 +96,16 @@ function __setup() {
 
   // @click handler
   (($event: PointerEvent) => {
-    const __vize_handler_9_16 = ((handler: ($event: PointerEvent) => unknown) => handler)((handleClick));
-    __vize_handler_9_16($event);  // handler expression
-    // @vize-map: handler -> 16:36
+    const __vize_handler_9_24 = ((handler: ($event: PointerEvent) => unknown) => handler)((handleClick));
+    __vize_handler_9_24($event);  // handler expression
+    // @vize-map: handler -> 24:35
   })({} as PointerEvent);
 
   // @mouseenter handler
   (($event: MouseEvent) => {
-    const __vize_handler_10_37 = ((handler: ($event: MouseEvent) => unknown) => handler)((handleHover));
-    __vize_handler_10_37($event);  // handler expression
-    // @vize-map: handler -> 37:62
+    const __vize_handler_10_50 = ((handler: ($event: MouseEvent) => unknown) => handler)((handleHover));
+    __vize_handler_10_50($event);  // handler expression
+    // @vize-map: handler -> 50:61
   })({} as MouseEvent);
 
   // Reference setup bindings (used in template/CSS v-bind)

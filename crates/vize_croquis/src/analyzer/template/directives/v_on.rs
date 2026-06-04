@@ -79,13 +79,14 @@ impl Analyzer {
 
                 if self.options.collect_template_expressions {
                     let scope_id = self.summary.scopes.current_scope().id;
+                    let exp_loc = exp.loc();
                     self.summary
                         .template_expressions
                         .push(crate::analysis::TemplateExpression {
                             content: CompactString::new(content),
                             kind: crate::analysis::TemplateExpressionKind::VOn,
-                            start: dir.loc.start.offset,
-                            end: dir.loc.end.offset,
+                            start: exp_loc.start.offset,
+                            end: exp_loc.end.offset,
                             scope_id,
                             vif_guard: self.current_vif_guard(),
                         });
@@ -146,12 +147,13 @@ impl Analyzer {
 
                     if self.options.collect_template_expressions {
                         let scope_id = self.summary.scopes.current_scope().id;
+                        let exp_loc = exp.loc();
                         self.summary.template_expressions.push(
                             crate::analysis::TemplateExpression {
                                 content: CompactString::new(content),
                                 kind: crate::analysis::TemplateExpressionKind::VOn,
-                                start: dir.loc.start.offset,
-                                end: dir.loc.end.offset,
+                                start: exp_loc.start.offset,
+                                end: exp_loc.end.offset,
                                 scope_id,
                                 vif_guard: self.current_vif_guard(),
                             },
@@ -172,12 +174,13 @@ impl Analyzer {
                 } else {
                     if self.options.collect_template_expressions {
                         let scope_id = self.summary.scopes.current_scope().id;
+                        let exp_loc = exp.loc();
                         self.summary.template_expressions.push(
                             crate::analysis::TemplateExpression {
                                 content: CompactString::new(content),
                                 kind: crate::analysis::TemplateExpressionKind::VOn,
-                                start: dir.loc.start.offset,
-                                end: dir.loc.end.offset,
+                                start: exp_loc.start.offset,
+                                end: exp_loc.end.offset,
                                 scope_id,
                                 vif_guard: self.current_vif_guard(),
                             },

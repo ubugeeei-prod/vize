@@ -436,6 +436,68 @@ function toggle(open = false): void {
 }
 
 #[test]
+fn batch_type_checker_multiline_inline_handler_points_into_offending_line() {
+    // Regression: the inline-callback @event path used the directive span
+    // (covering `@click="..."`) as the source-map src_range while emitting
+    // only the value into virtual TS. The size mismatch made diagnostic
+    // columns drift left — multi-line handler errors clamped to the line
+    // indent instead of the failing statement.
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "multiline-handler-mapping",
+        &[(
+            "src/MultilineHandler.vue",
+            r#"<script setup lang="ts">
+function doA(): number { return 1 }
+function doB(): string { return 'x' }
+</script>
+
+<template>
+  <button @click="() => {
+    doA();
+    doB();
+    const z: number = doB()
+  }">click</button>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    let mismatch = snapshot
+        .iter()
+        .find(|(file, code, _)| file == "src/MultilineHandler.vue" && *code == Some(2322));
+    let Some((_, _, message)) = mismatch else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        panic!("expected MultilineHandler.vue TS2322 diagnostic, got: {snapshot:#?}");
+    };
+
+    let prefix = message.split(' ').next().unwrap_or("");
+    let mut parts = prefix.split(':');
+    let line: u32 = parts.next().and_then(|s| s.parse().ok()).unwrap_or(0);
+    let column: u32 = parts.next().and_then(|s| s.parse().ok()).unwrap_or(0);
+
+    let expected_line = 10;
+    assert_eq!(
+        line, expected_line,
+        "expected diagnostic on line {expected_line} of SFC, got line {line}; full: {message}"
+    );
+    assert!(
+        column > 4,
+        "expected diagnostic column past the 4-space indent on line {expected_line}, got col {column}; full: {message}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_uses_workspace_vue_runtime_without_node_modules() {
     if resolve_test_tsgo_binary().is_none() {
         return;
