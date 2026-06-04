@@ -1111,6 +1111,24 @@ jobs:
         with:
           cosign-release: v2.4.1
 
+      # SHA-256 sums are the simplest integrity check downstream tools
+      # (the VS Code extension's pre-execution download) can verify
+      # without pulling in cosign or sigstore-verify libraries. Cosign
+      # remains the source of truth via the bundle below; the .sha256
+      # files are an easy-to-verify hash pin. (#969)
+      - name: Generate SHA-256 checksums for release artifacts
+        run: |
+          for artifact in \
+            cli-artifacts/*.tar.gz \
+            cli-artifacts/*.zip \
+            editor-extension-artifacts/npm/vscode-vize/dist/*.vsix \
+            editor-extension-artifacts/*.tar.gz; do
+            if [ -f "$artifact" ]; then
+              echo "Hashing $artifact"
+              ( cd "$(dirname "$artifact")" && sha256sum "$(basename "$artifact")" ) > "${artifact}.sha256"
+            fi
+          done
+
       - name: Sign release artifacts (keyless)
         env:
           COSIGN_YES: "true"
@@ -1146,9 +1164,11 @@ jobs:
             editor-extension-artifacts/*.tar.gz
             vize-${{ github.ref_name }}-cyclonedx.sbom.json
             vize-${{ github.ref_name }}-spdx.sbom.json
+            cli-artifacts/*.sha256
             cli-artifacts/*.sig
             cli-artifacts/*.pem
             cli-artifacts/*.cosign.bundle
+            editor-extension-artifacts/**/*.sha256
             editor-extension-artifacts/**/*.sig
             editor-extension-artifacts/**/*.pem
             editor-extension-artifacts/**/*.cosign.bundle

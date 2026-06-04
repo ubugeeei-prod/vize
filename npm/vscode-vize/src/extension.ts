@@ -1,3 +1,4 @@
+import * as crypto from "crypto";
 import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
@@ -1100,6 +1101,8 @@ async function resolveReleaseServerCandidate(
 
   const archivePath = path.join(installDir, target.archiveName);
   const downloadUrl = createReleaseDownloadUrl(expectedVersion, target.archiveName);
+  const checksumUrl = `${downloadUrl}.sha256`;
+  const checksumPath = `${archivePath}.sha256`;
 
   try {
     updateStatusBar("starting", `Downloading Vize language server ${expectedVersion}`);
@@ -1107,6 +1110,14 @@ async function resolveReleaseServerCandidate(
     fs.rmSync(installDir, { force: true, recursive: true });
     await fs.promises.mkdir(installDir, { recursive: true });
     await downloadFile(downloadUrl, archivePath);
+
+    // Verify integrity: the release pipeline publishes a SHA-256 checksum
+    // alongside each archive. Fetch it and compare against a hash of the
+    // local file; fail closed if the checksum is unavailable or mismatched
+    // so a tampered mirror/CDN/MITM can't get a binary executed. (#969)
+    await downloadFile(checksumUrl, checksumPath);
+    await verifyArchiveChecksum(archivePath, checksumPath);
+
     await extractReleaseArchive(archivePath, installDir, exeName);
 
     const candidate = await inspectServerCandidate({
@@ -1189,6 +1200,36 @@ function releaseTarget(targetName: string, extension: "tar.gz" | "zip"): Release
 
 function createReleaseDownloadUrl(version: string, archiveName: string): string {
   return `https://github.com/ubugeeei-prod/vize/releases/download/v${version}/${archiveName}`;
+}
+
+/// Verify that the SHA-256 of `archivePath` matches the hash declared in
+/// `checksumPath`. The checksum file is the GNU sha256sum format
+/// (`<hex>  <name>`), so we accept either bare hex or that shape. Throws
+/// if the file is missing, malformed, or mismatched — caller's catch
+/// surfaces the failure in the output channel and falls back to other
+/// sources. (#969)
+async function verifyArchiveChecksum(archivePath: string, checksumPath: string): Promise<void> {
+  const declared = (await fs.promises.readFile(checksumPath, "utf8"))
+    .trim()
+    .split(/\s+/)[0]
+    ?.toLowerCase();
+  if (!declared || !/^[0-9a-f]{64}$/.test(declared)) {
+    throw new Error(`malformed SHA-256 checksum file at ${checksumPath}`);
+  }
+  const hash = crypto.createHash("sha256");
+  await new Promise<void>((resolve, reject) => {
+    const stream = fs.createReadStream(archivePath);
+    stream.on("data", (chunk: string | Buffer) => {
+      hash.update(chunk);
+    });
+    stream.on("end", () => resolve());
+    stream.on("error", reject);
+  });
+  const got = hash.digest("hex");
+  if (got !== declared) {
+    throw new Error(`SHA-256 mismatch for ${archivePath}: declared ${declared}, computed ${got}`);
+  }
+  outputChannel.appendLine(`Verified ${path.basename(archivePath)} (SHA-256 ${got}).`);
 }
 
 async function downloadFile(url: string, destination: string, redirectCount = 0): Promise<void> {
