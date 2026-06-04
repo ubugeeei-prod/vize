@@ -220,8 +220,10 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
         }
         // Inside MathML, <annotation-xml> and the text containers (<mi>/<mo>/<mn>/<ms>/
         // <mtext>) are HTML integration points; their descendants are HTML.
-        let mathml_to_html =
-            matches!(parent_tag, "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext");
+        let mathml_to_html = matches!(
+            parent_tag,
+            "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
+        );
         if vize_carton::is_math_ml_tag(parent_tag) && !mathml_to_html {
             return Namespace::MathMl;
         }
@@ -399,8 +401,10 @@ mod tests {
     #[test]
     fn test_svg_namespace_with_v_if_branch() {
         let allocator = Bump::new();
-        let (root, errors, _) =
-            compile_template(&allocator, "<svg><rect v-if=\"show\" x=\"0\" y=\"0\"/></svg>");
+        let (root, errors, _) = compile_template(
+            &allocator,
+            "<svg><rect v-if=\"show\" x=\"0\" y=\"0\"/></svg>",
+        );
         assert!(errors.is_empty());
         assert_eq!(
             find_element(&root.children, "rect").unwrap().ns,
