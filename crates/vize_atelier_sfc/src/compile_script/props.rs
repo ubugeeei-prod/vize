@@ -179,14 +179,17 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
         return;
     }
 
-    // Method-signature props (`onChange(e: E): void`, `update?(): T`) — the
-    // first `:` lives inside the parameter list. Detect by an opening paren
-    // before any colon, recover the name from the part preceding `(`, and
-    // treat the prop as a Function type. (#967)
-    if let Some(paren_pos) = trimmed.find('(') {
-        let before_paren = &trimmed[..paren_pos];
-        let has_colon_before_paren = trimmed[..paren_pos].find(':').is_some();
-        if !has_colon_before_paren {
+    // Parse "name?: Type" or "name: Type"
+    if let Some(colon_pos) = trimmed.find(':') {
+        // Method-signature props (`onChange(e: E): void`, `update?(): T`)
+        // have a `(` somewhere in the parameter list *before* this colon.
+        // Detect by scanning the bytes up to `colon_pos` for `(`; on a hit,
+        // recover the name from before that `(` and treat the prop as
+        // `Function`-typed. Plain props (`name: Type`) skip this branch
+        // because there's no `(` before the colon. (#967)
+        let before_colon_bytes = &trimmed.as_bytes()[..colon_pos];
+        if let Some(paren_pos) = before_colon_bytes.iter().position(|&b| b == b'(') {
+            let before_paren = &trimmed[..paren_pos];
             let optional = before_paren.trim_end().ends_with('?');
             let name = before_paren.trim_end_matches('?').trim();
             if !name.is_empty() && is_valid_identifier(name) {
@@ -205,10 +208,6 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
             }
             return;
         }
-    }
-
-    // Parse "name?: Type" or "name: Type"
-    if let Some(colon_pos) = trimmed.find(':') {
         let name_part = &trimmed[..colon_pos];
         let type_part = &trimmed[colon_pos + 1..];
 
