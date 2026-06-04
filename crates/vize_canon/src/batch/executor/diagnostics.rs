@@ -245,7 +245,16 @@ fn parse_severity(severity: Option<i32>) -> u8 {
 pub(super) fn should_skip_diagnostic(code: Option<u32>, message: &str) -> bool {
     match code {
         Some(2307) => is_vue_module_not_found(message),
-        Some(2666) | Some(6133) | Some(7006) | Some(7043) | Some(7044) => true,
+        // TS2666: virtual-TS generation injects helper bindings that can trip
+        // this code outside the user's source — suppress to match vue-tsc.
+        // TS6133 ("declared but never read"): virtual-TS shadows __setup
+        // imports with macros, which generates spurious TS6133 at module
+        // level; the virtual-TS generator emits `void` markers but the rest
+        // is suppressed here. See virtual_ts/generator.rs.
+        Some(2666) | Some(6133) => true,
+        // TS7006/TS7043/TS7044 (noImplicitAny family) are user-facing errors
+        // and must surface so `vize check` matches vue-tsc under
+        // `noImplicitAny`/`strict`. They were previously suppressed (#966).
         _ => false,
     }
 }
@@ -432,9 +441,14 @@ mod tests {
         assert!(should_skip_diagnostic(Some(2307), double_quoted));
         assert!(should_skip_diagnostic(Some(2307), smart_quoted));
 
-        // Non-2307 codes in the blanket list are still always suppressed.
+        // TS6133 / TS2666 are virtual-TS-driven and still suppressed.
         assert!(should_skip_diagnostic(Some(6133), "any message"));
-        assert!(should_skip_diagnostic(Some(7006), "any message"));
+        assert!(should_skip_diagnostic(Some(2666), "any message"));
+        // TS7006/7043/7044 (noImplicitAny family) must surface to match
+        // vue-tsc — #966.
+        assert!(!should_skip_diagnostic(Some(7006), "any message"));
+        assert!(!should_skip_diagnostic(Some(7043), "any message"));
+        assert!(!should_skip_diagnostic(Some(7044), "any message"));
         assert!(!should_skip_diagnostic(Some(2322), "any message"));
         assert!(!should_skip_diagnostic(None, "any message"));
     }
