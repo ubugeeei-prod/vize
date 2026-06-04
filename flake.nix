@@ -140,7 +140,7 @@
           };
           x86_64-linux = {
             url = "https://clireleases.blacksmith.sh/cli/latest/linux/amd64/blacksmith";
-            hash = "sha256-W8ljKPdzda1SCCpg8FbxlsioKA8GlNqueLtePYb/XZg=";
+            hash = "sha256-m9pQ9hQUjzfrNrLOa3NQrrxVP9J9Ing2Rwnp5B9LCsw=";
           };
           aarch64-linux = {
             url = "https://clireleases.blacksmith.sh/cli/latest/linux/arm64/blacksmith";
