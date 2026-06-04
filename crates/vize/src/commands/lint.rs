@@ -97,6 +97,13 @@ pub struct LintArgs {
 
 pub fn run(args: LintArgs) {
     let start = Instant::now();
+    if let Some(path) = args.config.as_deref()
+        && !args.no_config
+        && let Err(error) = crate::config::validate_explicit_config_path(path)
+    {
+        eprintln!("\x1b[31mError:\x1b[0m {}", error);
+        std::process::exit(2);
+    }
     let format = OutputFormat::parse(args.format.as_str()).unwrap_or_else(|| {
         eprintln!(
             "Unknown lint output format '{}'. Expected one of: text, ansi, plain, json, stylish, markdown, html, agent",

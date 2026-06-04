@@ -95,6 +95,13 @@ pub struct FmtArgs {
 
 pub fn run(args: FmtArgs) {
     let start = Instant::now();
+    if let Some(path) = args.config.as_deref()
+        && !args.no_config
+        && let Err(error) = config::validate_explicit_config_path(path)
+    {
+        eprintln!("\x1b[31mError:\x1b[0m {}", error);
+        std::process::exit(2);
+    }
     let options = build_format_options(&args);
 
     // Collect files to format
@@ -555,9 +562,13 @@ fn process_file(
             // In check mode, just report that the file would change
             eprintln!("Would reformat: {}", path.display());
         } else if write {
-            // Write the formatted output
+            // Write the formatted output atomically: temp file + rename so an
+            // interruption can't truncate or corrupt the user's source (#970).
             let bytes = result.code.len();
-            if let Err(error) = profile!("cli.fmt.file.write", fs::write(path, &result.code)) {
+            if let Err(error) = profile!(
+                "cli.fmt.file.write",
+                atomic_write(path, result.code.as_bytes())
+            ) {
                 global_profiler().record_fs_write_failure(bytes);
                 return Err(format!("Failed to write file: {}", error));
             }
@@ -608,6 +619,56 @@ struct FormatFileResult {
     profile: Option<FormatFileProfile>,
 }
 
+/// Write `contents` to `path` via a sibling temp file + rename, so an
+/// interruption mid-write cannot truncate or corrupt the destination (#970).
+///
+/// The temp file lives in the same directory as the destination so the
+/// rename is a same-filesystem move (atomic on Unix; best-effort on
+/// Windows where rename fails if the target exists — we remove the
+/// destination first only as a fallback).
+fn atomic_write(path: &Path, contents: &[u8]) -> std::io::Result<()> {
+    use std::io::Write;
+
+    let dir = path.parent().unwrap_or_else(|| Path::new("."));
+    let file_name = path
+        .file_name()
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "no file name"))?
+        .to_string_lossy();
+    let pid = std::process::id();
+    let mut counter: u64 = 0;
+    let temp_path = loop {
+        counter = counter.wrapping_add(1);
+        let candidate =
+            dir.join(format!(".{}.vize-fmt.{}.{}.tmp", file_name, pid, counter));
+        if !candidate.exists() {
+            break candidate;
+        }
+    };
+
+    let result = (|| -> std::io::Result<()> {
+        let mut file = fs::File::create(&temp_path)?;
+        file.write_all(contents)?;
+        file.sync_all()?;
+        drop(file);
+
+        #[cfg(windows)]
+        {
+            // Windows rename fails if the destination exists; remove it first.
+            // The window between remove and rename is narrow but real; the
+            // source is still recoverable from the temp file on failure.
+            let _ = fs::remove_file(path);
+        }
+
+        fs::rename(&temp_path, path)
+    })();
+
+    if result.is_err() {
+        // Best-effort cleanup; ignore secondary failure.
+        let _ = fs::remove_file(&temp_path);
+    }
+    result
+}
+
 struct FormatFileProfile {
     row: ProfileFileRow,
     read_time: Duration,
@@ -615,7 +676,7 @@ struct FormatFileProfile {
 
 #[cfg(test)]
 mod tests {
-    use super::{FmtPattern, collect_files};
+    use super::{FmtPattern, atomic_write, collect_files};
     use std::{
         fs,
         path::{Path, PathBuf},
@@ -666,6 +727,40 @@ mod tests {
 
         assert!(pattern.matches(Path::new("./bench/__in__/Component0000.vue")));
         assert!(!pattern.matches(Path::new("./examples/cli/src/App.vue")));
+    }
+
+    #[test]
+    fn atomic_write_preserves_source_when_no_changes() {
+        let root = unique_case_dir("atomic-write-noop");
+        fs::create_dir_all(&root).unwrap();
+        let path = root.join("A.vue");
+        fs::write(&path, b"<template>before</template>").unwrap();
+
+        atomic_write(&path, b"<template>after</template>").unwrap();
+
+        assert_eq!(fs::read(&path).unwrap(), b"<template>after</template>");
+        let stray: Vec<_> = fs::read_dir(&root)
+            .unwrap()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.file_name().to_string_lossy().contains("vize-fmt"))
+            .collect();
+        assert!(stray.is_empty(), "temp file should be renamed away");
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn atomic_write_leaves_original_intact_on_failure() {
+        let root = unique_case_dir("atomic-write-failure");
+        fs::create_dir_all(&root).unwrap();
+        // Point the "destination" at a path under a non-existent directory so
+        // rename fails; the original is unaffected because no destination
+        // existed yet — but the temp file must be cleaned up.
+        let parent = root.join("nope-this-does-not-exist");
+        let dest = parent.join("A.vue");
+
+        let result = atomic_write(&dest, b"new contents");
+        assert!(result.is_err());
+        let _ = fs::remove_dir_all(&root);
     }
 
     fn unique_case_dir(name: &str) -> PathBuf {

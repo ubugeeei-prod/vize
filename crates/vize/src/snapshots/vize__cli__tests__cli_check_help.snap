@@ -1,5 +1,6 @@
 ---
 source: crates/vize/src/cli.rs
+assertion_line: 126
 expression: "command_help(\"check\")"
 ---
 Type check Vue SFC files
@@ -31,12 +32,6 @@ Options:
       --show-virtual-ts
           Show generated virtual TypeScript
 
-      --strict
-          Enable strict Vue SFC checks where supported
-
-      --no-strict
-          Disable strict Vue SFC checks where supported
-
       --max-warnings <MAX_WARNINGS>
           Maximum number of warnings before failing
 
@@ -48,18 +43,6 @@ Options:
 
       --no-check-template-bindings
           Disable template binding checks where supported
-
-      --no-check-reactivity
-          Disable reactivity checks where supported
-
-      --no-check-setup-context
-          Disable setup context checks where supported
-
-      --no-check-invalid-exports
-          Disable invalid export checks where supported
-
-      --no-check-fallthrough-attrs
-          Disable fallthrough attrs checks where supported
 
   -q, --quiet
           Quiet mode - only show summary

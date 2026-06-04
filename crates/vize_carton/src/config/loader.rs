@@ -43,6 +43,50 @@ struct LoadedRawConfig {
     source_path: Option<PathBuf>,
 }
 
+/// Validate that an explicitly-provided `--config` path exists and parses.
+///
+/// Auto-discovery silently falls back to defaults when no config is found
+/// or a candidate fails to parse, but an explicit `--config <path>` must
+/// hard-error so CI/scripts don't silently run with the wrong rules (#970).
+///
+/// Returns `Ok(())` if the path resolves to a parseable config file (or to
+/// a directory that contains one). Returns `Err(message)` if the path is
+/// missing, points at a non-config file with no parseable form, or fails
+/// to parse.
+pub fn validate_explicit_config_path(path: &Path) -> Result<(), std::string::String> {
+    if !path.exists() {
+        return Err(std::format!("config file not found: {}", path.display()));
+    }
+
+    if path.is_file() {
+        return parse_raw_config_file(path).map(|_| ()).map_err(|error| {
+            std::format!("failed to parse {}: {}", path.display(), error)
+        });
+    }
+
+    if path.is_dir() {
+        for file_name in CONFIG_FILE_NAMES {
+            let candidate = path.join(file_name);
+            if candidate.exists() {
+                return parse_raw_config_file(&candidate)
+                    .map(|_| ())
+                    .map_err(|error| {
+                        std::format!("failed to parse {}: {}", candidate.display(), error)
+                    });
+            }
+        }
+        return Err(std::format!(
+            "no vize config file found under {}",
+            path.display()
+        ));
+    }
+
+    Err(std::format!(
+        "config path is neither a file nor a directory: {}",
+        path.display()
+    ))
+}
+
 /// Load configuration from a directory or file path.
 pub fn load_config(path: Option<&Path>) -> VizeConfig {
     load_config_with_source(path).config
@@ -338,7 +382,60 @@ fn local_pkl_candidates(base: &Path) -> [PathBuf; 6] {
 }
 #[cfg(test)]
 mod tests {
-    use super::{load_config_and_linter_with_source, load_config_with_source, load_linter_config};
+    use super::{
+        load_config_and_linter_with_source, load_config_with_source, load_linter_config,
+        validate_explicit_config_path,
+    };
+
+    #[test]
+    fn validate_explicit_config_path_missing_errors() {
+        let dir = tempfile::tempdir().unwrap();
+        let missing = dir.path().join("does-not-exist.toml");
+
+        let result = validate_explicit_config_path(&missing);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("config file not found"));
+    }
+
+    #[test]
+    fn validate_explicit_config_path_malformed_errors() {
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join("vize.config.json");
+        std::fs::write(&config_path, "this is { not valid json ===").unwrap();
+
+        let result = validate_explicit_config_path(&config_path);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("failed to parse"));
+    }
+
+    #[test]
+    fn validate_explicit_config_path_valid_ok() {
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join("vize.config.json");
+        std::fs::write(&config_path, r#"{ "formatter": { "singleQuote": true } }"#).unwrap();
+
+        assert!(validate_explicit_config_path(&config_path).is_ok());
+    }
+
+    #[test]
+    fn validate_explicit_config_path_dir_with_config_ok() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{ "formatter": {} }"#,
+        )
+        .unwrap();
+
+        assert!(validate_explicit_config_path(dir.path()).is_ok());
+    }
+
+    #[test]
+    fn validate_explicit_config_path_empty_dir_errors() {
+        let dir = tempfile::tempdir().unwrap();
+        let result = validate_explicit_config_path(dir.path());
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("no vize config file found"));
+    }
 
     #[test]
     fn load_config_uses_explicit_file_path() {

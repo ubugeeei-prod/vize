@@ -45,14 +45,6 @@ pub struct CheckArgs {
     #[arg(long, alias = "include-virtual-ts")]
     pub show_virtual_ts: bool,
 
-    /// Enable strict Vue SFC checks where supported
-    #[arg(long)]
-    pub strict: bool,
-
-    /// Disable strict Vue SFC checks where supported
-    #[arg(long)]
-    pub no_strict: bool,
-
     /// Maximum number of warnings before failing
     #[arg(long)]
     pub max_warnings: Option<usize>,
@@ -68,22 +60,6 @@ pub struct CheckArgs {
     /// Disable template binding checks where supported
     #[arg(long)]
     pub no_check_template_bindings: bool,
-
-    /// Disable reactivity checks where supported
-    #[arg(long)]
-    pub no_check_reactivity: bool,
-
-    /// Disable setup context checks where supported
-    #[arg(long)]
-    pub no_check_setup_context: bool,
-
-    /// Disable invalid export checks where supported
-    #[arg(long)]
-    pub no_check_invalid_exports: bool,
-
-    /// Disable fallthrough attrs checks where supported
-    #[arg(long)]
-    pub no_check_fallthrough_attrs: bool,
 
     /// Quiet mode - only show summary
     #[arg(short, long)]

@@ -53,6 +53,14 @@ pub(crate) fn run_direct(args: &CheckArgs) {
 
     crate::config::write_schema(None);
 
+    if let Some(path) = args.config.as_deref()
+        && !args.no_config
+        && let Err(error) = crate::config::validate_explicit_config_path(path)
+    {
+        eprintln!("\x1b[31mError:\x1b[0m {}", error);
+        std::process::exit(2);
+    }
+
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let loaded_config = if args.no_config {
         crate::config::LoadedConfigWithFeatures {
