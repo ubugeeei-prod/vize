@@ -517,13 +517,16 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 ErrorCode::UnexpectedEqualsSignBeforeAttributeName,
                 self.index,
             );
-        } else if c == GT || c == SLASH {
+        } else if c == GT {
             self.callbacks
                 .on_error(ErrorCode::MissingAttributeValue, self.index);
             self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
             self.state = State::BeforeAttrName;
             self.state_before_attr_name(c);
         } else if !is_whitespace(c) {
+            // Per HTML spec, anything other than `"`, `'`, `>`, or whitespace
+            // (including `/`) is reconsumed in the attribute value (unquoted)
+            // state. This keeps unquoted URL-ish values intact (#959).
             self.section_start = self.index;
             self.state = State::InAttrValueNq;
             self.state_in_attr_value_nq(c);
@@ -550,8 +553,6 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         if is_whitespace(c) || c == GT {
             self.emit_attr_value(QuoteType::Unquoted);
             self.state_before_attr_name(c);
-        } else if c == SLASH {
-            self.emit_attr_value(QuoteType::Unquoted);
         } else if c == AMP {
             self.start_entity();
         } else if matches!(c, DOUBLE_QUOTE | SINGLE_QUOTE | LT | EQ | GRAVE_ACCENT) {
@@ -560,6 +561,10 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 self.index,
             );
         }
+        // Per HTML spec, only whitespace and `>` terminate an unquoted
+        // attribute value. `/` is an ordinary value character here; the
+        // self-closing `/` is only recognized in the *before/after attribute*
+        // states. See https://html.spec.whatwg.org/multipage/parsing.html#attribute-value-(unquoted)-state
     }
 
     pub(super) fn emit_attr_value(&mut self, quote: QuoteType) {

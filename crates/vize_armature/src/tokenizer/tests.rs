@@ -258,6 +258,29 @@ fn test_attribute_unquoted() {
 }
 
 #[test]
+fn test_attribute_unquoted_slash_is_value_char() {
+    // Per HTML spec, only whitespace and `>` terminate an unquoted attribute
+    // value. `/` is an ordinary value character. Regression for #959.
+    let cb = tokenize("<a href=a/b/c>x</a>");
+    assert!(cb.events.contains(&TokenEvent::AttribName(3, 7)));
+    assert!(cb.events.contains(&TokenEvent::AttribData(8, 13)));
+    assert!(
+        cb.events
+            .contains(&TokenEvent::AttribEnd(QuoteType::Unquoted, 13))
+    );
+}
+
+#[test]
+fn test_attribute_unquoted_slash_in_url_value() {
+    let cb = tokenize("<a href=//cdn/x>x</a>");
+    assert!(cb.events.contains(&TokenEvent::AttribData(8, 15)));
+    assert!(
+        cb.events
+            .contains(&TokenEvent::AttribEnd(QuoteType::Unquoted, 15))
+    );
+}
+
+#[test]
 fn test_attribute_no_value() {
     let cb = tokenize("<input disabled>");
     assert!(cb.events.contains(&TokenEvent::AttribName(7, 15)));
