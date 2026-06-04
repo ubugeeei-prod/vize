@@ -110,16 +110,20 @@ pub(super) fn emit_preamble(
         }
     }
 
-    // User imports (after hoisted consts) - deduplicate to avoid "already declared" errors
-    let deduped_imports = profile!(
-        "atelier.script_inline.dedupe_imports",
-        dedupe_imports(user_imports, is_ts)
-    );
+    // User imports (after hoisted consts) - deduplicate to avoid "already declared" errors.
+    // Imports from the preserved normal `<script>` are merged into the same
+    // deduped emit so each user import appears exactly once; their statements
+    // are stripped from the appended normal-script body below (#993).
     let normal_script_imports = preserved_normal_script
         .map(|script| parse_script_content(script, is_ts).0)
         .unwrap_or_default();
-    let mut setup_return_imports = deduped_imports.clone();
-    setup_return_imports.extend(normal_script_imports.iter().cloned());
+    let mut all_user_imports = user_imports.to_vec();
+    all_user_imports.extend(normal_script_imports.iter().cloned());
+    let deduped_imports = profile!(
+        "atelier.script_inline.dedupe_imports",
+        dedupe_imports(&all_user_imports, is_ts)
+    );
+    let setup_return_imports = deduped_imports.clone();
     if !deduped_imports.is_empty() && !template.hoisted.is_empty() {
         ensure_blank_line(output);
     }
@@ -147,7 +151,11 @@ pub(super) fn emit_preamble(
     // This matches Vue's @vue/compiler-sfc output order
     let has_default_export = if let Some(normal_script) = preserved_normal_script {
         output.push(b'\n');
-        output.extend_from_slice(normal_script.as_bytes());
+        // Its `import` statements were already emitted via the deduped
+        // import block above; keeping them here would duplicate them in
+        // the compiled module (#993).
+        let stripped = strip_import_statements(normal_script);
+        output.extend_from_slice(stripped.trim_end_matches('\n').as_bytes());
         output.push(b'\n');
         normal_script.contains("const __default__")
     } else {
@@ -166,4 +174,68 @@ fn ensure_blank_line(output: &mut vize_carton::Vec<u8>) {
         bytes if bytes.ends_with(b"\n") => output.push(b'\n'),
         _ => output.extend_from_slice(b"\n\n"),
     }
+}
+
+/// Remove top-level `import` statements from a preserved normal `<script>`
+/// body. They are emitted through the deduped import block instead, so
+/// leaving them in place would duplicate them in the compiled output (#993).
+/// Mirrors the import detection in `parser::parse_script_content`, including
+/// its template-literal guard.
+fn strip_import_statements(content: &str) -> String {
+    let mut out = String::default();
+    let mut in_import = false;
+    let mut in_template_literal = false;
+
+    for line in content.lines() {
+        let backtick_count = line
+            .chars()
+            .fold((0, false), |(count, escaped), c| {
+                if escaped {
+                    (count, false)
+                } else if c == '\\' {
+                    (count, true)
+                } else if c == '`' {
+                    (count + 1, false)
+                } else {
+                    (count, false)
+                }
+            })
+            .0;
+        let was_in_template_literal = in_template_literal;
+        if backtick_count % 2 == 1 {
+            in_template_literal = !in_template_literal;
+        }
+
+        if was_in_template_literal {
+            out.push_str(line);
+            out.push('\n');
+            continue;
+        }
+
+        let trimmed = line.trim();
+
+        if in_import {
+            if trimmed.ends_with(';') || (trimmed.contains(" from ") && !trimmed.ends_with(',')) {
+                in_import = false;
+            }
+            continue;
+        }
+
+        if trimmed.starts_with("import ") {
+            // Single-line side-effect import (no `from` clause)
+            if !trimmed.contains(" from ") && (trimmed.contains('\'') || trimmed.contains('"')) {
+                continue;
+            }
+            if !(trimmed.ends_with(';') || (trimmed.contains(" from ") && !trimmed.ends_with(',')))
+            {
+                in_import = true;
+            }
+            continue;
+        }
+
+        out.push_str(line);
+        out.push('\n');
+    }
+
+    out
 }

@@ -1166,6 +1166,65 @@ const { items } = defineProps<{
 }
 
 #[test]
+fn test_compile_both_script_blocks_dedupes_imports() {
+    // Regression test for #993: an import present in BOTH blocks must be
+    // emitted exactly once, and a side-effect import that lives only in the
+    // normal `<script>` must survive (exactly once).
+    let source = r#"<script lang="ts">
+import { ref } from "vue";
+import { registerHotkey } from "./hotkey-plugin";
+import "./side-effect-only";
+
+registerHotkey();
+</script>
+
+<script setup lang="ts">
+import { ref } from "vue";
+
+const count = ref(0);
+</script>
+
+<template>{{ count }}</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+    let code = result.code.as_str();
+
+    assert_eq!(
+        code.matches("import { ref } from \"vue\"").count(),
+        1,
+        "shared import must be emitted exactly once:\n{code}"
+    );
+    assert_eq!(
+        code.matches("registerHotkey } from").count(),
+        1,
+        "normal-script-only import must be emitted exactly once:\n{code}"
+    );
+    assert_eq!(
+        code.matches("import \"./side-effect-only\"").count()
+            + code.matches("import './side-effect-only'").count(),
+        1,
+        "side-effect import must survive exactly once:\n{code}"
+    );
+    assert_eq!(
+        code.matches("registerHotkey();").count(),
+        1,
+        "normal-script statements must survive:\n{code}"
+    );
+}
+
+#[test]
 fn test_compile_both_script_blocks_exposes_normal_script_bindings_to_template() {
     let source = r#"<script lang="ts">
 import { ref } from "vue";
