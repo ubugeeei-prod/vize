@@ -54,37 +54,33 @@ struct LoadedRawConfig {
 /// missing, points at a non-config file with no parseable form, or fails
 /// to parse.
 pub fn validate_explicit_config_path(path: &Path) -> Result<(), std::string::String> {
+    let display = path.display();
     if !path.exists() {
-        return Err(std::format!("config file not found: {}", path.display()));
+        return Err(crate::cstr!("config file not found: {display}").into());
     }
 
     if path.is_file() {
         return parse_raw_config_file(path)
             .map(|_| ())
-            .map_err(|error| std::format!("failed to parse {}: {}", path.display(), error));
+            .map_err(|error| crate::cstr!("failed to parse {display}: {error}").into());
     }
 
     if path.is_dir() {
         for file_name in CONFIG_FILE_NAMES {
             let candidate = path.join(file_name);
             if candidate.exists() {
+                let candidate_display = candidate.display();
                 return parse_raw_config_file(&candidate)
                     .map(|_| ())
                     .map_err(|error| {
-                        std::format!("failed to parse {}: {}", candidate.display(), error)
+                        crate::cstr!("failed to parse {candidate_display}: {error}").into()
                     });
             }
         }
-        return Err(std::format!(
-            "no vize config file found under {}",
-            path.display()
-        ));
+        return Err(crate::cstr!("no vize config file found under {display}").into());
     }
 
-    Err(std::format!(
-        "config path is neither a file nor a directory: {}",
-        path.display()
-    ))
+    Err(crate::cstr!("config path is neither a file nor a directory: {display}").into())
 }
 
 /// Load configuration from a directory or file path.
