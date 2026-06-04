@@ -191,7 +191,7 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
 /// Add scope to selector text while preserving leading CSS comments verbatim.
 fn scope_selector_with_leading_comments(selector: &str, attr_selector: &str) -> String {
     let Some(prefix_end) = leading_css_comment_trivia_end(selector) else {
-        return scope_selector(selector.trim(), attr_selector);
+        return scope_selector(&normalize_deep_selectors(selector.trim()), attr_selector);
     };
 
     let mut output = String::with_capacity(selector.len() + attr_selector.len());
@@ -199,10 +199,82 @@ fn scope_selector_with_leading_comments(selector: &str, attr_selector: &str) -> 
 
     let selector_body = selector[prefix_end..].trim();
     if !selector_body.is_empty() {
-        output.push_str(&scope_selector(selector_body, attr_selector));
+        output.push_str(&scope_selector(
+            &normalize_deep_selectors(selector_body),
+            attr_selector,
+        ));
     }
 
     output
+}
+
+/// Normalize the pre-CSS-Scoped-syntax deep combinators (`>>>`, `/deep/`,
+/// `::v-deep`, `::v-slotted`, `::v-global`) to the modern `:deep(...)` /
+/// `:slotted(...)` / `:global(...)` function form so the downstream
+/// scope-attr inserter handles them uniformly with Vue. (#971)
+fn normalize_deep_selectors(selector: &str) -> String {
+    if !looks_like_deep_legacy(selector) {
+        return selector.to_compact_string();
+    }
+
+    const MARKERS: &[(&str, &str)] = &[
+        ("::v-deep", ":deep"),
+        ("::v-slotted", ":slotted"),
+        ("::v-global", ":global"),
+        (">>>", ":deep"),
+        ("/deep/", ":deep"),
+    ];
+
+    // Find the earliest marker.
+    let mut best: Option<(usize, &str, &str)> = None;
+    for (needle, modern) in MARKERS {
+        if let Some(pos) = selector.find(needle)
+            && best.is_none_or(|(p, _, _)| pos < p)
+        {
+            best = Some((pos, *needle, *modern));
+        }
+    }
+    let Some((pos, needle, modern)) = best else {
+        return selector.to_compact_string();
+    };
+
+    let before = selector[..pos].trim_end();
+    let after = selector[pos + needle.len()..].trim_start();
+
+    // Function form (e.g. `::v-deep(.x)`): consume the parenthesised
+    // argument and emit `modern(inner)<rest>`. Combinator form
+    // (e.g. `.foo >>> .bar`): wrap the remainder of the selector in
+    // `modern(...)`.
+    let mut out = String::with_capacity(selector.len() + 8);
+    out.push_str(before);
+    if !before.is_empty() {
+        out.push(' ');
+    }
+    if let Some(rest) = after.strip_prefix('(')
+        && let Some(end) = rest.find(')')
+    {
+        let inner = rest[..end].trim();
+        let trailing = &rest[end + 1..];
+        out.push_str(modern);
+        out.push('(');
+        out.push_str(inner);
+        out.push(')');
+        out.push_str(trailing);
+    } else {
+        out.push_str(modern);
+        out.push('(');
+        out.push_str(after);
+        out.push(')');
+    }
+    out
+}
+
+fn looks_like_deep_legacy(s: &str) -> bool {
+    s.contains(">>>")
+        || s.contains("/deep/")
+        || s.contains("::v-deep")
+        || s.contains("::v-slotted")
+        || s.contains("::v-global")
 }
 
 fn leading_css_comment_trivia_end(value: &str) -> Option<usize> {
@@ -230,13 +302,40 @@ fn leading_css_comment_trivia_end(value: &str) -> Option<usize> {
 
 /// Add scope attribute to a selector
 fn scope_selector(selector: &str, attr_selector: &str) -> String {
-    // Handle multiple selectors separated by comma
-    selector
-        .split(',')
+    // Normalize legacy deep combinators (`>>>`, `/deep/`, `::v-deep`, etc.)
+    // to their modern `:deep(...)` / `:slotted(...)` / `:global(...)` form
+    // before splitting on `,`. (#971)
+    let normalized = normalize_deep_selectors(selector);
+    // Split on top-level commas only — a comma inside `:not(a, b)` or
+    // `:is(a, b)` is part of one selector, not a list separator.
+    split_top_level_commas(&normalized)
+        .into_iter()
         .map(|s| scope_single_selector(s.trim(), attr_selector))
         .collect::<Vec<_>>()
         .join(", ")
         .into()
+}
+
+fn split_top_level_commas(s: &str) -> Vec<&str> {
+    let bytes = s.as_bytes();
+    let mut out = Vec::new();
+    let mut depth: i32 = 0;
+    let mut last = 0;
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'(' | b'[' => depth += 1,
+            b')' | b']' => depth -= 1,
+            b',' if depth == 0 => {
+                out.push(&s[last..i]);
+                last = i + 1;
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    out.push(&s[last..]);
+    out
 }
 
 /// Add scope attribute to a single selector
@@ -258,8 +357,10 @@ fn scope_single_selector(selector: &str, attr_selector: &str) -> String {
         return transform_global(selector);
     }
 
-    // Find the last simple selector to append the attribute
-    let parts: Vec<&str> = selector.split_whitespace().collect();
+    // Split into compound selectors at top-level whitespace only — whitespace
+    // inside `:is(...)`, `:not(...)`, etc. is part of the same compound and
+    // must stay verbatim. (#971)
+    let parts: Vec<&str> = split_top_level_whitespace(selector);
     if parts.is_empty() {
         return selector.to_compact_string();
     }
@@ -282,23 +383,55 @@ fn scope_single_selector(selector: &str, attr_selector: &str) -> String {
     result
 }
 
+fn split_top_level_whitespace(s: &str) -> Vec<&str> {
+    let bytes = s.as_bytes();
+    let mut out = Vec::new();
+    let mut depth: i32 = 0;
+    let mut start: Option<usize> = None;
+    let mut i = 0;
+    while i < bytes.len() {
+        let b = bytes[i];
+        match b {
+            b'(' | b'[' => {
+                if start.is_none() {
+                    start = Some(i);
+                }
+                depth += 1;
+            }
+            b')' | b']' => {
+                depth -= 1;
+            }
+            b' ' | b'\t' | b'\n' | b'\r' if depth == 0 => {
+                if let Some(s_pos) = start.take() {
+                    out.push(&s[s_pos..i]);
+                }
+            }
+            _ => {
+                if start.is_none() {
+                    start = Some(i);
+                }
+            }
+        }
+        i += 1;
+    }
+    if let Some(s_pos) = start {
+        out.push(&s[s_pos..]);
+    }
+    out
+}
+
 /// Add scope attribute to an element selector
 fn add_scope_to_element(selector: &str, attr_selector: &str) -> String {
-    // Handle pseudo-elements and pseudo-classes
-    if let Some(pseudo_pos) = selector.find("::") {
-        let (before, after) = selector.split_at(pseudo_pos);
-        let mut result = String::with_capacity(before.len() + attr_selector.len() + after.len());
-        result.push_str(before);
-        result.push_str(attr_selector);
-        result.push_str(after);
-        return result;
-    }
-
-    if let Some(pseudo_pos) = selector.rfind(':') {
-        // Check if it's a pseudo-class (not part of element name)
+    // Find the FIRST top-level pseudo-element or pseudo-class so the scope
+    // attribute lands on the compound selector, not inside a functional
+    // pseudo-class argument (e.g. `.x:not(:checked)` → `.x[attr]:not(:checked)`,
+    // not `.x:not(:[attr]checked)`). Skip colons inside parentheses. (#971)
+    if let Some(pseudo_pos) = find_top_level_pseudo(selector) {
         let before = &selector[..pseudo_pos];
-        if !before.is_empty() && !before.ends_with('\\') {
-            let after = &selector[pseudo_pos..];
+        let after = &selector[pseudo_pos..];
+        // Avoid splitting at a pseudo that is part of an escape sequence
+        // (`\:`), which is rare but valid in CSS.
+        if !before.ends_with('\\') {
             let mut result =
                 String::with_capacity(before.len() + attr_selector.len() + after.len());
             result.push_str(before);
@@ -312,6 +445,25 @@ fn add_scope_to_element(selector: &str, attr_selector: &str) -> String {
     result.push_str(selector);
     result.push_str(attr_selector);
     result
+}
+
+/// Find the first top-level `:` introducing a pseudo-class or `::` introducing
+/// a pseudo-element, skipping any colon that lives inside parentheses (i.e.
+/// inside `:not(...)`, `:is(...)`, `:where(...)`, `:has(...)` arguments).
+fn find_top_level_pseudo(selector: &str) -> Option<usize> {
+    let bytes = selector.as_bytes();
+    let mut depth: i32 = 0;
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'(' => depth += 1,
+            b')' => depth -= 1,
+            b':' if depth == 0 => return Some(i),
+            _ => {}
+        }
+        i += 1;
+    }
+    None
 }
 
 /// Transform :deep() to descendant selector
@@ -434,6 +586,49 @@ mod tests {
     fn test_scope_simple_selector() {
         let result = scope_selector(".foo", "[data-v-123]");
         assert_eq!(result, ".foo[data-v-123]");
+    }
+
+    #[test]
+    fn test_scope_functional_pseudo_class_keeps_inner_intact() {
+        // #971: a colon inside `:not(...)` / `:is(...)` / `:where(...)` /
+        // `:has(...)` must not be where the scope attribute lands. The
+        // scope attaches to the compound selector instead.
+        let result = scope_selector(".x:not(:checked)", "[data-v-123]");
+        assert_eq!(result, ".x[data-v-123]:not(:checked)");
+
+        let result = scope_selector(".btn:is(:hover, :focus)", "[data-v-123]");
+        assert_eq!(result, ".btn[data-v-123]:is(:hover, :focus)");
+    }
+
+    #[test]
+    fn test_scope_v_deep_combinator_form() {
+        // Legacy `::v-deep` combinator form normalizes to `:deep(...)`.
+        let result = scope_selector(".foo ::v-deep .bar", "[data-v-123]");
+        assert_eq!(result, ".foo[data-v-123] .bar");
+    }
+
+    #[test]
+    fn test_scope_v_deep_function_form() {
+        // Legacy `::v-deep(.x)` function form normalizes to `:deep(.x)`.
+        let result = scope_selector(".foo ::v-deep(.bar)", "[data-v-123]");
+        assert_eq!(result, ".foo[data-v-123] .bar");
+    }
+
+    #[test]
+    fn test_scope_legacy_deep_combinators() {
+        // Both `>>>` and `/deep/` normalize to `:deep(...)` wrapping the
+        // remainder.
+        let result = scope_selector(".foo >>> .bar", "[data-v-123]");
+        assert_eq!(result, ".foo[data-v-123] .bar");
+
+        let result = scope_selector(".foo /deep/ .bar", "[data-v-123]");
+        assert_eq!(result, ".foo[data-v-123] .bar");
+    }
+
+    #[test]
+    fn test_scope_v_slotted_function_form() {
+        let result = scope_selector("::v-slotted(.bar)", "[data-v-123]");
+        assert_eq!(result, ".bar[data-v-123]-s");
     }
 
     #[test]
