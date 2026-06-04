@@ -191,6 +191,49 @@ const message = 'hello';
     }
 
     #[test]
+    fn test_format_sfc_preserves_pre_content_verbatim() {
+        // Regression for #963: `<pre>` content must be emitted byte-for-byte;
+        // the formatter must never normalize the leading indentation or
+        // collapse internal whitespace.
+        let source = "<template>\n  <pre>\nline1\n      indented\n   z\n</pre>\n</template>\n";
+        let options = FormatOptions::default();
+        let result = format_sfc(source, &options).unwrap();
+        assert!(
+            result
+                .code
+                .contains("<pre>\nline1\n      indented\n   z\n</pre>"),
+            "expected <pre> body to round-trip verbatim, got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn test_format_sfc_preserves_textarea_content_verbatim() {
+        let source = "<template>\n  <textarea>\nA\n   B\n</textarea>\n</template>\n";
+        let options = FormatOptions::default();
+        let result = format_sfc(source, &options).unwrap();
+        assert!(
+            result.code.contains("<textarea>\nA\n   B\n</textarea>"),
+            "expected <textarea> body to round-trip verbatim, got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn test_format_sfc_preserves_v_pre_subtree_verbatim() {
+        // Regression for #963: a `v-pre` subtree is literal text — the
+        // formatter must not reformat its interpolations.
+        let source = "<template>\n  <div v-pre>{{   raw   }}</div>\n</template>\n";
+        let options = FormatOptions::default();
+        let result = format_sfc(source, &options).unwrap();
+        assert!(
+            result.code.contains("{{   raw   }}"),
+            "expected v-pre body to keep `{{{{   raw   }}}}` verbatim, got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_allocator_reuse() {
         let allocator = Allocator::with_capacity(4096);
         let options = FormatOptions::default();

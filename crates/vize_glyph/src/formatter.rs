@@ -234,13 +234,20 @@ impl<'a> GlyphFormatter<'a> {
         output.push(b'>');
         output.extend_from_slice(self.options.newline_bytes());
 
-        // Template content is always indented by one level from the template tag
+        // Template content is always indented by one level from the template
+        // tag — except inside whitespace-significant regions (`<pre>`,
+        // `<textarea>`, `v-pre`) where the inner content must round-trip
+        // byte-for-byte. The inner template formatter already preserves
+        // those regions verbatim; here we make sure the SFC layer doesn't
+        // re-indent each of their inner lines on top. (#963)
         let indent = self.options.indent_bytes();
         let trimmed = formatted_content
             .trim_end_matches('\n')
             .trim_end_matches('\r');
-        for line in trimmed.as_bytes().split(|&b| b == b'\n') {
-            if !line.is_empty() && line != b"\r" {
+        let lines: Vec<&[u8]> = trimmed.as_bytes().split(|&b| b == b'\n').collect();
+        let raw_mask = compute_raw_line_mask(&lines);
+        for (i, line) in lines.iter().enumerate() {
+            if !line.is_empty() && line != b"\r" && !raw_mask[i] {
                 output.extend_from_slice(indent);
             }
             output.extend_from_slice(line);
@@ -362,6 +369,71 @@ fn write_remaining_attrs(
         };
         write_attr(output, name, value);
     }
+}
+
+/// Per-line "this line is inside a whitespace-significant block" mask.
+///
+/// We walk the already-formatted template body line by line. A line that
+/// opens `<pre>`, `<textarea>`, or any element with `v-pre` is itself
+/// indented as a normal opening tag (mask = false), but every subsequent
+/// line until the matching close tag is marked raw (mask = true) so the
+/// SFC layer leaves it byte-for-byte. (#963)
+fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
+    let mut mask = vec![false; lines.len()];
+    let mut depth_stack: Vec<&'static str> = Vec::new();
+    const TAGS: [(&str, &str, &str); 2] = [
+        ("pre", "<pre", "</pre>"),
+        ("textarea", "<textarea", "</textarea>"),
+    ];
+    for (i, line) in lines.iter().enumerate() {
+        if !depth_stack.is_empty() {
+            mask[i] = true;
+        }
+        // Walk the line bytes and bump the depth stack on every open/close
+        // marker we find. Case-insensitive byte compare avoids allocating
+        // a lowercase copy (the disallowed-types lint forbids std::String
+        // here anyway).
+        let bytes = line;
+        let mut cursor = 0;
+        while cursor < bytes.len() {
+            if bytes[cursor] != b'<' {
+                cursor += 1;
+                continue;
+            }
+            let mut matched = false;
+            for (tag, open_needle, close_needle) in &TAGS {
+                if starts_with_ascii_ci(&bytes[cursor..], close_needle.as_bytes()) {
+                    if let Some(idx) = depth_stack.iter().rposition(|t| t == tag) {
+                        depth_stack.remove(idx);
+                    }
+                    cursor += close_needle.len();
+                    matched = true;
+                    break;
+                }
+                if starts_with_ascii_ci(&bytes[cursor..], open_needle.as_bytes())
+                    && let Some(after) = bytes.get(cursor + open_needle.len()).copied()
+                    && matches!(after, b'>' | b' ' | b'\t' | b'\n' | b'\r' | b'/')
+                {
+                    depth_stack.push(tag);
+                    cursor += open_needle.len();
+                    matched = true;
+                    break;
+                }
+            }
+            if !matched {
+                cursor += 1;
+            }
+        }
+    }
+    mask
+}
+
+fn starts_with_ascii_ci(haystack: &[u8], needle: &[u8]) -> bool {
+    haystack.len() >= needle.len()
+        && haystack[..needle.len()]
+            .iter()
+            .zip(needle.iter())
+            .all(|(a, b)| a.eq_ignore_ascii_case(b))
 }
 
 fn write_attr(output: &mut Vec<u8>, name: &str, value: Option<&str>) {
