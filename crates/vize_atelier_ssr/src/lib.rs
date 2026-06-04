@@ -236,6 +236,22 @@ mod tests {
     }
 
     #[test]
+    fn test_ssr_v_model_textarea_renders_bound_value() {
+        // Regression for #962: `<textarea v-model="x">` must render `x` as
+        // escaped text content. The previous SSR path emitted
+        // `<textarea></textarea>` with no body, losing the initial value
+        // and triggering hydration mismatches.
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(&allocator, r#"<textarea v-model="x"></textarea>"#);
+        assert!(errors.is_empty(), "{errors:?}");
+        assert!(
+            result.code.contains("_ssrInterpolate(_ctx.x)"),
+            "expected textarea body to interpolate the model value, got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_dynamic_slot_outlet_name_stays_expression() {
         let allocator = Bump::new();
         let (_, errors, result) = compile_ssr_with_options(

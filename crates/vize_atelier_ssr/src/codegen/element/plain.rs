@@ -44,6 +44,16 @@ impl<'a> SsrCodegenContext<'a> {
             self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
             let exp = self.expression_to_string(exp);
             self.push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
+        } else if tag.as_str() == "textarea"
+            && let Some(exp) = crate::get_v_model_exp(el)
+        {
+            // SSR `<textarea v-model>` renders the bound value as escaped
+            // text content (matching `@vue/server-renderer`). The earlier
+            // path emitted `<textarea></textarea>` with no content, so the
+            // initial value was lost and hydration mismatched. (#962)
+            self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
+            let exp = self.expression_to_string(exp);
+            self.push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
         } else {
             self.process_children(&el.children, false, false, false);
         }
@@ -228,6 +238,12 @@ impl<'a> SsrCodegenContext<'a> {
         };
 
         if el.tag == "input" {
+            // Dynamic `:type` — fall back to `value` for now, but flag the
+            // direct-process path (called when inherit_attrs=false) so
+            // checkbox/radio at runtime render `checked`. The merged-attrs
+            // path here still emits `value=...` rather than Vue's `_temp0`
+            // trick because the surrounding merge expression isn't shaped
+            // for the dynamic helper yet. (#962)
             let input_type = self.get_element_attr_value(el, "type");
             match input_type.as_deref() {
                 Some("checkbox") => {
@@ -369,6 +385,19 @@ impl<'a> SsrCodegenContext<'a> {
 
         match tag {
             "input" => {
+                // For a dynamic `:type="t"`, the input could be a text input,
+                // checkbox, radio, etc. at runtime — use the dynamic-model
+                // helper so checkbox/radio cases render `checked` correctly.
+                // Without this the SSR path hard-coded the text-input shape
+                // and the `:type` itself was ignored. (#962)
+                if let Some(type_exp) = self.get_dynamic_bind_exp(el, "type") {
+                    self.use_ssr_helper(RuntimeHelper::SsrRenderDynamicModel);
+                    self.push_string_part_dynamic(&cstr!(
+                        "_ssrRenderDynamicModel({type_exp}, {exp}, null)"
+                    ));
+                    return;
+                }
+
                 // Check input type from attributes
                 let input_type = self.get_element_attr_value(el, "type");
                 match input_type.as_deref() {
@@ -450,6 +479,29 @@ impl<'a> SsrCodegenContext<'a> {
                 && attr.name == name
             {
                 return attr.value.as_ref().map(|v| v.content.to_compact_string());
+            }
+        }
+        None
+    }
+
+    /// Return the source expression bound by `:name` (or `v-bind:name`) on
+    /// `el`, if any. Used by SSR v-model lowering to find `:type` on
+    /// `<input :type="t" v-model>` so the dynamic-model helper kicks in.
+    /// (#962)
+    fn get_dynamic_bind_exp(&mut self, el: &ElementNode, name: &str) -> Option<String> {
+        for prop in &el.props {
+            let PropNode::Directive(dir) = prop else {
+                continue;
+            };
+            if dir.name != "bind" {
+                continue;
+            }
+            let matches_name = matches!(
+                &dir.arg,
+                Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == name
+            );
+            if matches_name && let Some(exp) = &dir.exp {
+                return Some(self.expression_to_string(exp));
             }
         }
         None
