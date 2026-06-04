@@ -6,7 +6,6 @@ expression: ts_output.as_str()
 import { defineComponent as _defineComponent } from 'vue'
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
 
-
 import type { RouteLocation } from "vue-router";
 
 interface TabItem {

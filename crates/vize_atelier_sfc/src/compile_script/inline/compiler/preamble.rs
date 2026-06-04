@@ -110,16 +110,24 @@ pub(super) fn emit_preamble(
         }
     }
 
-    // User imports (after hoisted consts) - deduplicate to avoid "already declared" errors
-    let deduped_imports = profile!(
-        "atelier.script_inline.dedupe_imports",
-        dedupe_imports(user_imports, is_ts)
-    );
+    // User imports (after hoisted consts) - deduplicate to avoid "already declared" errors.
+    //
+    // Imports from BOTH the normal `<script>` block and `<script setup>` are merged and
+    // deduplicated here. `dedupe_imports` keys on `source::local`, so an import that appears
+    // in both blocks (or the same side-effect import) is emitted exactly once. The normal
+    // script's own `import` statements are stripped from its preserved body below, so this is
+    // the single emission point for every user import. See #993 (side-effect imports running
+    // twice when an SFC has both `<script>` and `<script setup>`).
     let normal_script_imports = preserved_normal_script
         .map(|script| parse_script_content(script, is_ts).0)
         .unwrap_or_default();
-    let mut setup_return_imports = deduped_imports.clone();
-    setup_return_imports.extend(normal_script_imports.iter().cloned());
+    let mut combined_imports: Vec<String> = normal_script_imports;
+    combined_imports.extend_from_slice(user_imports);
+    let deduped_imports = profile!(
+        "atelier.script_inline.dedupe_imports",
+        dedupe_imports(&combined_imports, is_ts)
+    );
+    let setup_return_imports = deduped_imports.clone();
     if !deduped_imports.is_empty() && !template.hoisted.is_empty() {
         ensure_blank_line(output);
     }
@@ -146,8 +154,12 @@ pub(super) fn emit_preamble(
     // Normal script content goes AFTER imports/hoisted, BEFORE component definition
     // This matches Vue's @vue/compiler-sfc output order
     let has_default_export = if let Some(normal_script) = preserved_normal_script {
+        // Strip the block's own `import` statements: they were already merged into the
+        // deduplicated import emission above. Leaving them here would emit each import twice,
+        // re-running any top-level side effects in the imported module (#993).
+        let body = strip_import_statements(normal_script);
         output.push(b'\n');
-        output.extend_from_slice(normal_script.as_bytes());
+        output.extend_from_slice(body.as_bytes());
         output.push(b'\n');
         normal_script.contains("const __default__")
     } else {
@@ -158,6 +170,47 @@ pub(super) fn emit_preamble(
         setup_return_imports,
         has_default_export,
     }
+}
+
+/// Remove top-level `import` statements (single-line, multi-line, and side-effect forms)
+/// from a preserved `<script>` body, keeping every other line verbatim. Import detection
+/// mirrors the logic in [`parse_script_content`]; surrounding blank lines left behind by a
+/// removed leading/trailing import are trimmed so the emitted body keeps the same spacing
+/// the verbatim block had (the caller frames the body with its own newlines).
+fn strip_import_statements(content: &str) -> String {
+    let mut out = String::with_capacity(content.len());
+    let mut in_import = false;
+    for line in content.lines() {
+        let trimmed = line.trim();
+
+        if in_import {
+            // Continuation lines of a multi-line import: an import ends on a line that
+            // terminates with `;` or contains the `from` clause without a trailing comma.
+            if trimmed.ends_with(';') || (trimmed.contains(" from ") && !trimmed.ends_with(',')) {
+                in_import = false;
+            }
+            continue;
+        }
+
+        if trimmed.starts_with("import ") {
+            // Side-effect import (no `from`, single-line): `import './reset.css'`.
+            if !trimmed.contains(" from ") && (trimmed.contains('\'') || trimmed.contains('"')) {
+                continue;
+            }
+            // Single-line named/default import completes on this line.
+            if trimmed.ends_with(';') || (trimmed.contains(" from ") && !trimmed.ends_with(',')) {
+                continue;
+            }
+            // Otherwise the import spans multiple lines; skip until it closes.
+            in_import = true;
+            continue;
+        }
+
+        out.push_str(line);
+        out.push('\n');
+    }
+
+    out.trim_matches('\n').into()
 }
 
 fn ensure_blank_line(output: &mut vize_carton::Vec<u8>) {

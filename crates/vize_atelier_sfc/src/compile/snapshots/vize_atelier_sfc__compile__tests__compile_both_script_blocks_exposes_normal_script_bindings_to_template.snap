@@ -1,10 +1,10 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
+assertion_line: 1210
 expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
-
 
 import { ref } from "vue";
 

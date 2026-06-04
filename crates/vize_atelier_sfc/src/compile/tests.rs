@@ -1233,6 +1233,141 @@ function start() {
     );
 }
 
+/// #993: when both `<script>` and `<script setup>` import from the SAME module, the
+/// import must be emitted exactly once. Otherwise the module's top-level side effects run
+/// twice in the bundled output.
+#[test]
+fn test_dual_script_dedupes_shared_module_import() {
+    let source = r#"<script lang="ts">
+import { registerHotkey } from './hotkey-plugin'
+registerHotkey()
+</script>
+
+<script setup lang="ts">
+import { registerHotkey } from './hotkey-plugin'
+import { ref } from 'vue'
+const count = ref(0)
+registerHotkey()
+</script>
+
+<template>{{ count }}</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+    let code = result.code.as_str();
+
+    let occurrences = code.matches("from './hotkey-plugin'").count();
+    assert_eq!(
+        occurrences, 1,
+        "import from './hotkey-plugin' must appear exactly once, got {occurrences}:\n{code}"
+    );
+}
+
+/// #993: imports from DIFFERENT modules in the two blocks must both survive, each emitted
+/// exactly once.
+#[test]
+fn test_dual_script_keeps_distinct_module_imports() {
+    let source = r#"<script lang="ts">
+import { installPlugin } from './plugin'
+installPlugin()
+</script>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+const count = ref(0)
+</script>
+
+<template>{{ count }}</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+    let code = result.code.as_str();
+
+    assert_eq!(
+        code.matches("from './plugin'").count(),
+        1,
+        "normal-script import must appear exactly once:\n{code}"
+    );
+    assert_eq!(
+        code.matches("installPlugin").count(),
+        2,
+        "installPlugin should appear once in its import and once at the call site:\n{code}"
+    );
+    // `installPlugin()` (the call) must still flow through from the normal-script body.
+    assert!(
+        code.contains("installPlugin()"),
+        "normal-script side-effect call must be preserved:\n{code}"
+    );
+}
+
+/// #993: a module-scope side effect in the normal `<script>` block must appear exactly once
+/// in the output (it would run twice if the import line were duplicated).
+#[test]
+fn test_dual_script_side_effect_emitted_once() {
+    let source = r#"<script lang="ts">
+import { ref } from 'vue'
+console.log("once")
+const seed = ref(1)
+</script>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+const count = ref(0)
+void seed
+</script>
+
+<template>{{ count }}</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+    let code = result.code.as_str();
+
+    assert_eq!(
+        code.matches(r#"console.log("once")"#).count(),
+        1,
+        "module-scope side effect must be emitted exactly once:\n{code}"
+    );
+    // The shared `ref` import collapses to a single user statement.
+    assert_eq!(
+        code.matches("import { ref } from 'vue'").count(),
+        1,
+        "shared `ref` import must be deduplicated to one line:\n{code}"
+    );
+}
+
 #[test]
 fn test_script_setup_typescript_downcompiles_to_javascript_by_default() {
     let source = r#"<script setup lang="ts">
