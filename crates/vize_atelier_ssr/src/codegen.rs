@@ -51,6 +51,11 @@ pub struct SsrCodegenContext<'a> {
     pub(crate) with_slot_scope_id: bool,
     /// Template-local identifiers from v-for and scoped slots.
     pub(crate) scoped_params: std::vec::Vec<FxHashSet<String>>,
+    /// Stack of `v-model` expressions on currently-open `<select>` ancestors.
+    /// When non-empty, an `<option>` child uses the top entry to render
+    /// `selected` for the matching value. Vue's SSR runtime tracks the same
+    /// state in JS via `_temp`; we thread it through codegen instead. (#962)
+    pub(crate) select_v_model_stack: std::vec::Vec<String>,
 }
 
 impl<'a> SsrCodegenContext<'a> {
@@ -66,6 +71,7 @@ impl<'a> SsrCodegenContext<'a> {
             has_open_push: false,
             with_slot_scope_id: false,
             scoped_params: std::vec::Vec::new(),
+            select_v_model_stack: std::vec::Vec::new(),
         }
     }
 

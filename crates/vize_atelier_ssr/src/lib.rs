@@ -256,6 +256,34 @@ mod tests {
     }
 
     #[test]
+    fn test_ssr_v_model_select_marks_matching_option_selected() {
+        // Regression for #962: `<select v-model="x">` must render the
+        // matching `<option>` with `selected` set, not silently drop the
+        // bound value.
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<select v-model="x"><option value="a">A</option><option value="b">B</option></select>"#,
+        );
+        assert!(errors.is_empty(), "{errors:?}");
+        assert!(
+            result.code.contains("_ssrLooseEqual(_ctx.x, \"a\")"),
+            "expected loose-equal for option a, got:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("_ssrLooseEqual(_ctx.x, \"b\")"),
+            "expected loose-equal for option b, got:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("\" selected\""),
+            "expected ` selected` literal, got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_dynamic_slot_outlet_name_stays_expression() {
         let allocator = Bump::new();
         let (_, errors, result) = compile_ssr_with_options(

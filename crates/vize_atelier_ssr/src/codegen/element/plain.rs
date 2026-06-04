@@ -29,6 +29,28 @@ impl<'a> SsrCodegenContext<'a> {
             self.push_string_part_static(scope_id);
         }
 
+        // `<option>` inside a `<select v-model>` ancestor needs a runtime
+        // `selected` injection. The option's `value` (a static attribute
+        // here — dynamic `:value` falls through and gets `selected`
+        // emitted via the bind path). (#962)
+        if tag.as_str() == "option"
+            && let Some(model_exp) = self.select_v_model_stack.last().cloned()
+        {
+            self.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
+            self.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            self.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
+            let value_exp = if let Some(value) = self.get_element_attr_value(el, "value") {
+                quoted_js_string(&value)
+            } else if let Some(dyn_value) = self.get_dynamic_bind_exp(el, "value") {
+                dyn_value
+            } else {
+                "null".to_compact_string()
+            };
+            self.push_string_part_dynamic(&cstr!(
+                "((_ssrIncludeBooleanAttr(Array.isArray({model_exp}) ? _ssrLooseContain({model_exp}, {value_exp}) : _ssrLooseEqual({model_exp}, {value_exp}))) ? \" selected\" : \"\")"
+            ));
+        }
+
         // Check if void element
         if vize_carton::is_void_tag(tag) {
             self.push_string_part_static(">");
@@ -54,6 +76,20 @@ impl<'a> SsrCodegenContext<'a> {
             self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
             let exp = self.expression_to_string(exp);
             self.push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
+        } else if tag.as_str() == "select"
+            && let Some(exp) = crate::get_v_model_exp(el)
+        {
+            // SSR `<select v-model>` marks the matching `<option>` as
+            // `selected` while emitting children. Push the model
+            // expression onto a stack so each child option can read it,
+            // and pop after the subtree. Matches Vue's SSR output:
+            //   `${_ssrIncludeBooleanAttr((Array.isArray(M)) ?
+            //       _ssrLooseContain(M, V) : _ssrLooseEqual(M, V)))
+            //       ? " selected" : ""}`. (#962)
+            let exp = self.expression_to_string(exp);
+            self.select_v_model_stack.push(exp);
+            self.process_children(&el.children, false, false, false);
+            self.select_v_model_stack.pop();
         } else {
             self.process_children(&el.children, false, false, false);
         }
