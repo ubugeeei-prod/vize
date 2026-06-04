@@ -316,14 +316,17 @@ impl<'a> LintContext<'a> {
             return;
         }
 
-        // Check if this line has an @vize:expected directive
-        if self.expected_error_lines.remove(&line) {
-            // Error was expected -- suppress it
+        // Check if this line has an @vize:expected directive. Use
+        // `contains`, not `remove`, so a line that legitimately emits
+        // multiple diagnostics has them all suppressed (#968).
+        if self.expected_error_lines.contains(&line) {
             return;
         }
 
-        // Apply @vize:level severity override
-        if let Some(override_severity) = self.severity_overrides.remove(&line) {
+        // Apply @vize:level severity override. Same reasoning: the directive
+        // applies to every diagnostic on the targeted line, not just the
+        // first one we happen to report. (#968)
+        if let Some(override_severity) = self.severity_overrides.get(&line).copied() {
             match override_severity {
                 DirectiveSeverity::Off => return,
                 DirectiveSeverity::Warn => diagnostic.severity = Severity::Warning,

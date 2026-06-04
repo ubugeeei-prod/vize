@@ -63,6 +63,51 @@ fn test_vize_expected_suppresses_error() {
 }
 
 #[test]
+fn test_vize_expected_suppresses_every_diagnostic_on_the_line() {
+    // Regression for #968: `@vize:expected` was implemented with `remove`
+    // and so consumed itself after the first matching diagnostic — any
+    // additional diagnostic on the same line then leaked through. The
+    // directive must scope to the whole line.
+    let linter = Linter::new();
+    let result = linter.lint_template(
+        r#"<!-- @vize:expected -->
+<li v-for="item in items" v-if="item.active">{{ item }}</li>"#,
+        "test.vue",
+    );
+    assert_eq!(
+        result.error_count, 0,
+        "v-for missing-key error should be suppressed"
+    );
+    assert_eq!(
+        result.warning_count, 0,
+        "v-if-with-v-for warning on the same line must also be suppressed"
+    );
+}
+
+#[test]
+fn test_vize_expected_suppresses_run_on_template_diagnostic() {
+    // Regression for #968: `run_on_template` rules emit during a phase
+    // that runs *before* per-element traversal would register directives,
+    // so suppression directives must be pre-scanned. `vue/no-dupe-v-else-if`
+    // reports in that phase.
+    let linter = Linter::new();
+    let result = linter.lint_template(
+        r#"<!-- @vize:expected -->
+<div v-if="a"></div><div v-else-if="a"></div>"#,
+        "test.vue",
+    );
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|d| d.rule_name == "vue/no-dupe-v-else-if")
+            .count(),
+        0,
+        "run_on_template-phase rule must be suppressed by @vize:expected"
+    );
+}
+
+#[test]
 fn test_vize_ignore_start_end_region() {
     let linter = Linter::new();
     let result = linter.lint_template(

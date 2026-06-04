@@ -80,7 +80,10 @@ impl Rule for NoUseVIfWithVFor {
                 })
                 .unwrap_or_default();
 
-            // Check if v-if uses any v-for variables
+            // Check if v-if uses any v-for variables. Match resolved
+            // identifiers, not raw substrings, so `v-for="item in items"`
+            // plus `v-if="itemCount > 0"` does not misclassify `itemCount`
+            // as a reference to `item`. (#968)
             let v_if_uses_v_for_var = if let Some(exp) = v_if_exp {
                 let v_if_content = match exp {
                     ExpressionNode::Simple(s) => s.content.as_str(),
@@ -88,7 +91,7 @@ impl Rule for NoUseVIfWithVFor {
                 };
                 v_for_vars
                     .iter()
-                    .any(|var| v_if_content.contains(var.as_str()))
+                    .any(|var| expression_references_identifier(v_if_content, var.as_str()))
             } else {
                 false
             };
@@ -184,4 +187,65 @@ mod tests {
         );
         assert_eq!(result.warning_count, 1);
     }
+
+    #[test]
+    fn test_v_if_with_v_for_substring_identifier_is_not_a_reference() {
+        // Regression for #968: `itemCount` must NOT be treated as a
+        // reference to `item` — the previous substring match flagged this
+        // as an access-pattern false positive.
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div v-for="item in items" v-if="itemCount > 0">{{ item }}</div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+        assert!(
+            result.diagnostics[0].message.as_str().contains("access")
+                || result.diagnostics[0]
+                    .message
+                    .as_str()
+                    .contains("v-if condition"),
+            "expected access-style message (not access-pattern), got: {}",
+            result.diagnostics[0].message
+        );
+    }
+
+    #[test]
+    fn test_v_if_with_v_for_real_identifier_reference_is_flagged() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div v-for="item in items" v-if="item.active">{{ item }}</div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+}
+
+/// Returns true if `expression` references `name` as a distinct identifier
+/// (rather than appearing only as a substring of another identifier).
+/// Walks the expression text byte-by-byte and respects identifier boundaries.
+fn expression_references_identifier(expression: &str, name: &str) -> bool {
+    if name.is_empty() || expression.is_empty() {
+        return false;
+    }
+    let bytes = expression.as_bytes();
+    let needle = name.as_bytes();
+    let mut i = 0;
+    while i + needle.len() <= bytes.len() {
+        if bytes[i..i + needle.len()] == *needle {
+            let prev_is_ident = i > 0 && is_ident_byte(bytes[i - 1]);
+            let next = bytes.get(i + needle.len()).copied();
+            let next_is_ident = matches!(next, Some(b) if is_ident_byte(b));
+            if !prev_is_ident && !next_is_ident {
+                return true;
+            }
+        }
+        i += 1;
+    }
+    false
+}
+
+#[inline]
+fn is_ident_byte(b: u8) -> bool {
+    b.is_ascii_alphanumeric() || b == b'_' || b == b'$'
 }

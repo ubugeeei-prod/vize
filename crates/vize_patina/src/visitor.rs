@@ -41,6 +41,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     /// Visit the root node and traverse the AST
     #[inline]
     pub fn visit_root(&mut self, root: &RootNode<'a>) {
+        // Pre-scan for `@vize:expected` / `@vize:level` directives so they
+        // can suppress diagnostics produced by `run_on_template` rules
+        // (which fire before per-element traversal would register them).
+        // Without this pass, directives are registered too late and
+        // template-phase rules — `vue/no-dupe-v-else-if`,
+        // `vue/no-mutating-props`, etc. — can't be suppressed. (#968)
+        self.prescan_suppression_directives(root);
+
         // Run template-level checks under one profiling span. Rule dispatch
         // happens for every file, so profiling once around the callback batch is
         // cheaper than creating a span for every individual rule callback.
@@ -54,6 +62,55 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Visit children
         for child in root.children.iter() {
             self.visit_child(child);
+        }
+    }
+
+    /// Walk the AST and register every `@vize:expected` / `@vize:level`
+    /// directive into the context up-front. Other directive kinds (Todo,
+    /// Fixme, IgnoreStart/End, Forget, Deprecated) are intentionally NOT
+    /// processed here — they may emit diagnostics and rely on the existing
+    /// ordering and ignore-region bookkeeping that runs during the main
+    /// traversal. (#968)
+    fn prescan_suppression_directives(&mut self, root: &RootNode<'a>) {
+        for child in root.children.iter() {
+            self.prescan_suppression_in_child(child);
+        }
+    }
+
+    fn prescan_suppression_in_child(&mut self, node: &TemplateChildNode<'a>) {
+        match node {
+            TemplateChildNode::Comment(comment) => {
+                if let Some(kind) = comment.directive {
+                    let line = comment.loc.start.line;
+                    match kind {
+                        DirectiveKind::Expected => {
+                            self.ctx.expect_error_next_line(line);
+                        }
+                        DirectiveKind::Level => {
+                            if let Some(d) = parse_vize_directive(
+                                &comment.content,
+                                line,
+                                comment.loc.start.offset,
+                            ) && let Some(severity) = parse_level_severity(&d.payload)
+                            {
+                                self.ctx.set_severity_override_next_line(line, severity);
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            TemplateChildNode::Element(el) => {
+                for child in el.children.iter() {
+                    self.prescan_suppression_in_child(child);
+                }
+            }
+            TemplateChildNode::For(for_node) => {
+                for child in for_node.children.iter() {
+                    self.prescan_suppression_in_child(child);
+                }
+            }
+            _ => {}
         }
     }
 
