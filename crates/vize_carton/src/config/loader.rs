@@ -59,9 +59,9 @@ pub fn validate_explicit_config_path(path: &Path) -> Result<(), std::string::Str
     }
 
     if path.is_file() {
-        return parse_raw_config_file(path).map(|_| ()).map_err(|error| {
-            std::format!("failed to parse {}: {}", path.display(), error)
-        });
+        return parse_raw_config_file(path)
+            .map(|_| ())
+            .map_err(|error| std::format!("failed to parse {}: {}", path.display(), error));
     }
 
     if path.is_dir() {

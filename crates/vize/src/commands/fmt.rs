@@ -638,8 +638,7 @@ fn atomic_write(path: &Path, contents: &[u8]) -> std::io::Result<()> {
     let mut counter: u64 = 0;
     let temp_path = loop {
         counter = counter.wrapping_add(1);
-        let candidate =
-            dir.join(format!(".{}.vize-fmt.{}.{}.tmp", file_name, pid, counter));
+        let candidate = dir.join(format!(".{}.vize-fmt.{}.{}.tmp", file_name, pid, counter));
         if !candidate.exists() {
             break candidate;
         }
