@@ -84,9 +84,12 @@ test("atelier code targets expose VDOM, SSR, and Vapor outputs with stable toggl
     /_ssrRenderAttrs\(_mergeProps\(\{\s*class:\s*['"]card['"]\s*\},\s*_attrs\)\)/,
   );
   expect(ssrLines).toContain("  <h2>${_ssrInterpolate(name)}</h2>");
-  expect(ssrLines).toContain("  <button${_ssrIncludeBooleanAttr(disabled) ? ' disabled' : ''}>");
-  expect(ssrLines).toContain("      Increment");
-  expect(ssrLines).toContain("    </button>");
+  // SSR static parts are condensed per Vue's `whitespace: 'condense'` (#960),
+  // so the multi-line `<button>\n  Increment\n</button>` source renders as
+  // a single-line emit with the inner whitespace collapsed.
+  expect(
+    ssrLines.some((line) => line.includes("_ssrIncludeBooleanAttr(disabled)") && line.includes("Increment")),
+  ).toBe(true);
 
   await vaporButton.click();
   await expect(page.locator(".code-header h4")).toHaveText("Vapor Output");
