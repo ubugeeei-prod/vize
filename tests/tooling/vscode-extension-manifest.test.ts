@@ -190,11 +190,10 @@ test("semantic token contributions and inlay-hint colors stay registered", () =>
 test("extension entry point, engine, and trust contract are present", () => {
   const manifest = readManifest();
 
-  assert.ok(manifest.main, "manifest should declare a main entry point");
-  assert.ok(
-    fs.existsSync(path.join(root, "npm/vscode-vize", manifest.main)),
-    `main entry ${manifest.main} should exist`,
-  );
+  // `main` points at a build artifact (dist/extension.cjs) that only exists
+  // after `vp pack`, so assert the declared contract rather than the file on
+  // disk; the editor-extensions CI job verifies the build output itself.
+  assert.equal(manifest.main, "./dist/extension.cjs");
 
   assert.ok(manifest.engines?.vscode, "manifest should pin a vscode engine range");
 
