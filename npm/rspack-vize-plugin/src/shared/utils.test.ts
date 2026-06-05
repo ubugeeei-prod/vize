@@ -1,4 +1,4 @@
-import { describe, test } from "node:test";
+import { describe, snapshot, test } from "node:test";
 import assert from "node:assert/strict";
 import {
   extractCustomBlocks,
@@ -9,6 +9,10 @@ import {
   matchesPattern,
   stripCssCommentsForScoped,
 } from "./utils.ts";
+
+snapshot.setDefaultSnapshotSerializers([
+  (value) => (typeof value === "string" ? value : JSON.stringify(value, null, 2)),
+]);
 
 void describe("extractCustomBlocks", () => {
   void test("extracts a simple <i18n> custom block", () => {
@@ -213,29 +217,26 @@ void describe("extractStyleBlocks", () => {
 });
 
 void describe("stripCssCommentsForScoped", () => {
-  void test("removes block comments and preserves newlines", () => {
+  void test("removes block comments and preserves newlines", (t) => {
     const input = `.a { color: red; }\n/* :deep(.x) */\n.b { color: blue; }`;
     const output = stripCssCommentsForScoped(input);
 
-    assert.equal(output.includes(":deep("), false);
-    assert.equal(output.split("\n").length, input.split("\n").length);
-    assert.equal(output.includes(".a { color: red; }"), true);
-    assert.equal(output.includes(".b { color: blue; }"), true);
+    t.assert.snapshot(output);
   });
 
-  void test("keeps comment-like text inside strings", () => {
+  void test("keeps comment-like text inside strings", (t) => {
     const input = `.a::before { content: "/* :deep(.x) */"; }`;
     const output = stripCssCommentsForScoped(input);
 
-    assert.equal(output.includes('content: "/* :deep(.x) */"'), true);
+    t.assert.snapshot(output);
   });
 });
 
 void describe("addScopeToCssFallback", () => {
-  void test("delegates scoped CSS transformation to native pipeline", () => {
+  void test("delegates scoped CSS transformation to native pipeline", (t) => {
     const output = addScopeToCssFallback(".root { color: red; }", "abc123");
 
-    assert.match(output, /^\.root\[data-v-abc123\]\s*\{\s*color:\s*red;\s*\}$/);
+    t.assert.snapshot(output);
   });
 });
 
@@ -335,16 +336,14 @@ void describe("collectTemplateAssetUrls", () => {
     assert.equal(result[1].url, "./b.png");
   });
 
-  void test("collects poster from video tag", () => {
+  void test("collects poster from video tag", (t) => {
     const source = `
 <template>
   <video src="./video.mp4" poster="./poster.jpg"></video>
 </template>
 `;
     const result = collectTemplateAssetUrls(source);
-    const urls = result.map((r) => r.url);
-    assert.ok(urls.includes("./video.mp4"), "should include src");
-    assert.ok(urls.includes("./poster.jpg"), "should include poster");
+    t.assert.snapshot(result);
   });
 
   void test("ignores dynamic bindings (v-bind / :attr)", () => {
@@ -398,7 +397,7 @@ void describe("collectTemplateAssetUrls", () => {
     assert.equal(result.length, 0);
   });
 
-  void test("collects href from image/use SVG elements", () => {
+  void test("collects href from image/use SVG elements", (t) => {
     const source = `
 <template>
   <svg>
@@ -408,9 +407,7 @@ void describe("collectTemplateAssetUrls", () => {
 </template>
 `;
     const result = collectTemplateAssetUrls(source);
-    const urls = result.map((r) => r.url);
-    assert.ok(urls.includes("./sprite.svg"), "should include image href");
-    assert.ok(urls.includes("./icon.svg#arrow"), "should include use href with fragment");
+    t.assert.snapshot(result);
   });
 
   void test("URL with hash fragment is collected as-is (fragment split happens in generateOutput)", () => {

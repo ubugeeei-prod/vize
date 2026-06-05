@@ -1,0 +1,39 @@
+exports[`addScopeToCssFallback > delegates scoped CSS transformation to native pipeline 1`] = `
+.root[data-v-abc123]{color: red;}
+`;
+
+exports[`collectTemplateAssetUrls > collects href from image/use SVG elements 1`] = `
+[
+  {
+    "url": "./sprite.svg",
+    "varName": "_imports_0"
+  },
+  {
+    "url": "./icon.svg#arrow",
+    "varName": "_imports_1"
+  }
+]
+`;
+
+exports[`collectTemplateAssetUrls > collects poster from video tag 1`] = `
+[
+  {
+    "url": "./video.mp4",
+    "varName": "_imports_0"
+  },
+  {
+    "url": "./poster.jpg",
+    "varName": "_imports_1"
+  }
+]
+`;
+
+exports[`stripCssCommentsForScoped > keeps comment-like text inside strings 1`] = `
+.a::before { content: "/* :deep(.x) */"; }
+`;
+
+exports[`stripCssCommentsForScoped > removes block comments and preserves newlines 1`] = `
+.a { color: red; }
+               
+.b { color: blue; }
+`;

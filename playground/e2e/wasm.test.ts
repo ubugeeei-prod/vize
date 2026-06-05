@@ -58,33 +58,27 @@ const msg = 'Hello'
 
     const generalRecommendedRule = rules.find((rule) => rule.name === "vue/require-v-for-key");
     expect(generalRecommendedRule).toBeDefined();
-    expect(generalRecommendedRule?.presets).toContain("general-recommended");
-    expect(generalRecommendedRule?.presets).toContain("opinionated");
 
     const opinionatedRule = rules.find((rule) => rule.name === "vue/no-inline-style");
     expect(opinionatedRule).toBeDefined();
-    expect(opinionatedRule?.presets).toContain("opinionated");
-    expect(opinionatedRule?.presets).not.toContain("general-recommended");
 
     const scriptRule = rules.find((rule) => rule.name === "script/no-options-api");
     expect(scriptRule).toBeDefined();
-    expect(scriptRule?.presets).toContain("opinionated");
-    expect(scriptRule?.presets).toContain("nuxt");
-    expect(scriptRule?.presets).not.toContain("general-recommended");
 
     const noGetCurrentInstanceRule = rules.find(
       (rule) => rule.name === "script/no-get-current-instance",
     );
     expect(noGetCurrentInstanceRule).toBeDefined();
-    expect(noGetCurrentInstanceRule?.presets).toContain("opinionated");
-    expect(noGetCurrentInstanceRule?.presets).toContain("nuxt");
-    expect(noGetCurrentInstanceRule?.presets).not.toContain("general-recommended");
 
     const noNextTickRule = rules.find((rule) => rule.name === "script/no-next-tick");
     expect(noNextTickRule).toBeDefined();
-    expect(noNextTickRule?.presets).toContain("opinionated");
-    expect(noNextTickRule?.presets).toContain("nuxt");
-    expect(noNextTickRule?.presets).not.toContain("general-recommended");
+    expect({
+      noGetCurrentInstance: noGetCurrentInstanceRule?.presets,
+      noInlineStyle: opinionatedRule?.presets,
+      noNextTick: noNextTickRule?.presets,
+      noOptionsApi: scriptRule?.presets,
+      requireVForKey: generalRecommendedRule?.presets,
+    }).toMatchSnapshot();
   });
 
   it("should lint with different built-in presets", () => {

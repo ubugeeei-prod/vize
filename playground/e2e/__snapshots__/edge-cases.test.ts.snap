@@ -1,0 +1,130 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Edge Cases > Complex TypeScript > should downcompile optional chaining type declarations by default 1`] = `
+"import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue";
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    const user = {};
+    const name = user?.name?.first;
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        "div",
+        null,
+        _toDisplayString(_unref(name)),
+        1
+        /* TEXT */
+      );
+    };
+  }
+};"
+`;
+
+exports[`Edge Cases > Complex TypeScript > should handle async/await with types 1`] = `
+"import { withAsyncContext as _withAsyncContext } from "vue";
+import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue";
+export default {
+  __name: "anonymous",
+  async setup(__props) {
+    let __temp, __restore;
+    async function fetchData() {
+      return "data";
+    }
+    const data = ([__temp, __restore] = _withAsyncContext(() => fetchData()), __temp = await __temp, __restore(), __temp);
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        "div",
+        null,
+        _toDisplayString(_unref(data)),
+        1
+        /* TEXT */
+      );
+    };
+  }
+};"
+`;
+
+exports[`Edge Cases > Complex TypeScript > should handle class with decorators pattern 1`] = `
+"import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue";
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    class MyClass {
+      name;
+      constructor(name) {
+        this.name = name;
+      }
+      getName() {
+        return this.name;
+      }
+    }
+    const instance = new MyClass("test");
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        "div",
+        null,
+        _toDisplayString(_unref(instance).getName()),
+        1
+        /* TEXT */
+      );
+    };
+  }
+};"
+`;
+
+exports[`Edge Cases > Complex TypeScript > should handle generic function declarations 1`] = `
+"import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue";
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    function identity(value) {
+      return value;
+    }
+    const result = identity("test");
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        "div",
+        null,
+        _toDisplayString(_unref(result)),
+        1
+        /* TEXT */
+      );
+    };
+  }
+};"
+`;
+
+exports[`Edge Cases > Complex TypeScript > should handle type assertions 1`] = `
+"import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    const element = document.querySelector(".test");
+    const value = someValue;
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("div", null, "Test");
+    };
+  }
+};"
+`;
+
+exports[`Edge Cases > Complex TypeScript > should preserve optional chaining type declarations when requested 1`] = `
+"import { defineComponent as _defineComponent } from 'vue'
+import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
+
+interface User { name?: { first: string } }
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  setup(__props) {
+
+const user: User = {}
+const name = user?.name?.first
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(name)), 1 /* TEXT */))
+}
+}
+
+})"
+`;

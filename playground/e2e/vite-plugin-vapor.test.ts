@@ -17,15 +17,7 @@ describe("vite-plugin vapor options", () => {
       vapor: true,
     });
 
-    expect(options).toMatchObject({
-      filename: "/src/App.vue",
-      sourceMap: true,
-      ssr: false,
-      vapor: true,
-      customRenderer: false,
-      vueParserQuirks: false,
-    });
-    expect(options.scopeId).toMatch(/^data-v-/);
+    expect(options).toMatchSnapshot();
   });
 
   it("builds SSR single-file options while keeping vapor", () => {
@@ -75,12 +67,7 @@ const count = ref(1);
       },
     );
 
-    expect(result.code).toContain("_defineVaporComponent");
-    expect(result.code).toContain("const n0 = t0()");
-    expect(result.code).toContain("const __ctx = _proxyRefs(__returned__)");
-    expect(result.code).toContain("const __vaporRender = render");
-    expect(result.code).toContain("return __vaporRender(__ctx, __props, __emit, __attrs, __slots)");
-    expect(result.code).toContain("return n0");
+    expect(result.code).toMatchSnapshot();
   });
 
   it("warns and falls back to standard SSR when Vapor is requested for SFCs", () => {
@@ -101,12 +88,11 @@ const count = 1;
       },
     );
 
-    expect(result.code).toContain("ssrRender");
-    expect(result.code).not.toContain("__vapor");
     expect(result.errors).toEqual([]);
     expect(result.warnings).toEqual([
       "SFC Vapor SSR is not supported yet; falling back to standard SSR output.",
     ]);
+    expect(result.code).toMatchSnapshot();
   });
 
   it("compiles the playground app itself to Vapor output", () => {
@@ -119,21 +105,7 @@ const count = 1;
       isTs: true,
     });
 
-    expect(result.code).toContain("_defineVaporComponent");
-    expect(result.code).toContain("_createComponentWithFallback");
-    expect(result.code).toContain("_createIf");
-    expect(result.code).toContain("_setClass");
-    expect(result.code).toContain('_delegateEvents("click")');
-    expect(result.code).toContain("_setInsertionState(n17, null, true)\n  const n18 = _createIf(");
-    expect(result.code).toContain("_setInsertionState(n1, null, true)\n  const n23 = _createIf(");
-    expect(result.code).toContain(
-      '<g transform=\\"translate(15, 10) skewX(-15)\\"><path d=\\"M 65 0 L 40 60 L 70 20 L 65 0 Z\\" fill=\\"currentColor\\"></path><path d=\\"M 20 0 L 40 60 L 53 13 L 20 0 Z\\" fill=\\"currentColor\\"></path></g>',
-    );
-    expect(result.code).toContain("const __vaporRender = render");
-    expect(result.code).toContain("return __vaporRender(__ctx, __props, __emit, __attrs, __slots)");
-    expect(result.code).not.toContain("_openBlock");
-    expect(result.code).not.toContain("_createElementBlock");
-    expect(result.code).not.toContain("_ctx.===");
+    expect(result.code).toMatchSnapshot();
   });
 
   it("avoids collisions with local render bindings in script setup", () => {
@@ -156,9 +128,7 @@ function render() {
       },
     );
 
-    expect(result.code).toContain("const __vaporRender = render");
-    expect(result.code).toContain("render: __vaporRender");
-    expect(result.code).toContain("return __vaporRender(__ctx, __props, __emit, __attrs, __slots)");
+    expect(result.code).toMatchSnapshot();
   });
 
   it("emits Vapor template ref setters for DOM refs used by playground components", () => {
@@ -185,18 +155,10 @@ function render() {
       isTs: true,
     });
 
-    expect(monacoResult.code).toContain("createTemplateRefSetter as _createTemplateRefSetter");
-    expect(monacoResult.code).toContain(
-      "const vaporTemplateRefSetter = _createTemplateRefSetter()",
-    );
-    expect(monacoResult.code).toContain(
-      "const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()",
-    );
-    expect(monacoResult.code).toContain('_setRef(n0, "containerRef")');
-    expect(monacoResult.code).not.toContain('ref="containerRef"');
-    expect(highlightResult.code).toContain('"codeContentEl"');
-    expect(highlightResult.code).toContain('"lineNumbersEl"');
-    expect(highlightResult.code).not.toContain('ref="codeContentEl"');
+    expect({
+      highlight: highlightResult.code,
+      monaco: monacoResult.code,
+    }).toMatchSnapshot();
   });
 
   it("keeps v-for aliases inside Vapor v-html expressions", () => {
@@ -212,8 +174,7 @@ function render() {
       isTs: true,
     });
 
-    expect(result.code).toContain("_ctx.formatHelp(_for_item0.value.help)");
-    expect(result.code).not.toContain("formatHelp(diagnostic.help)");
+    expect(result.code).toMatchSnapshot();
   });
 
   it("treats lowercase imported Tres-style components as Vapor components", () => {
@@ -234,9 +195,7 @@ import { Primitive } from "@tresjs/core";
       },
     );
 
-    expect(result.code).toContain("const _component_primitive = _ctx.Primitive");
-    expect(result.code).toContain("_createComponentWithFallback(_component_primitive");
-    expect(result.code).not.toContain('_template("<primitive></primitive>", true)');
+    expect(result.code).toMatchSnapshot();
   });
 
   it("keeps Tres-style custom renderer intrinsics as elements around imported lowercase components", () => {
@@ -263,11 +222,7 @@ const visible = true;
       },
     );
 
-    expect(result.code).toContain('const t1 = _template("<mesh></mesh>", true)');
-    expect(result.code).toContain('const t0 = _template("<group></group>", true)');
-    expect(result.code).toContain("const _component_primitive = _ctx.Primitive");
-    expect(result.code).not.toContain('_resolveComponent("mesh")');
-    expect(result.code).not.toContain('_resolveComponent("group")');
+    expect(result.code).toMatchSnapshot();
   });
 
   it("keeps Atelier output tabs reactive even when v-if siblings are present", () => {
@@ -283,12 +238,6 @@ const visible = true;
       isTs: true,
     });
 
-    expect(result.code).toContain("_createInvoker(() => (_ctx.activeTab = 'code'))");
-    expect(result.code).toContain("_createInvoker(() => (_ctx.activeTab = 'ast'))");
-    expect(result.code).toContain("_createInvoker(() => (_ctx.activeTab = 'helpers'))");
-    expect(result.code).toContain("_ctx.activeTab === 'code'");
-    expect(result.code).toContain("_ctx.activeTab === 'ast'");
-    expect(result.code).toContain("_ctx.activeTab === 'helpers'");
-    expect(result.code).toContain("_createIf(() => (_ctx.inputMode === 'sfc')");
+    expect(result.code).toMatchSnapshot();
   });
 });

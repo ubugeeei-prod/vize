@@ -1,0 +1,1876 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`vite-plugin vapor options > avoids collisions with local render bindings in script setup 1`] = `
+"import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { template as _template } from 'vue';
+
+const t0 = _template("<div>Hello</div>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n0 = t0()
+  return n0
+}
+const __vaporRender = render
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'Collision',
+  render: __vaporRender,
+  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+function render() {
+  return "local";
+}
+
+const __returned__ = { render }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})"
+`;
+
+exports[`vite-plugin vapor options > builds scoped single-file options with vapor enabled 1`] = `
+{
+  "customRenderer": false,
+  "filename": "/src/App.vue",
+  "scopeId": "data-v-c0cc6f12",
+  "sourceMap": true,
+  "ssr": false,
+  "vapor": true,
+  "vueParserQuirks": false,
+}
+`;
+
+exports[`vite-plugin vapor options > compiles script setup SFCs to a full Vapor render block 1`] = `
+"import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+
+const t0 = _template("<div> </div>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setText(x0, _toDisplayString(_ctx.count)))
+  return n0
+}
+const __vaporRender = render
+
+import { ref } from "vue";
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'App',
+  render: __vaporRender,
+  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+const count = ref(1);
+
+const __returned__ = { ref, count }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})"
+`;
+
+exports[`vite-plugin vapor options > compiles the playground app itself to Vapor output 1`] = `
+"import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+
+const t0 = _template("<svg viewBox=\\"0 0 24 24\\" width=\\"18\\" height=\\"18\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><circle cx=\\"12\\" cy=\\"12\\" r=\\"5\\"></circle><line x1=\\"12\\" y1=\\"1\\" x2=\\"12\\" y2=\\"3\\"></line><line x1=\\"12\\" y1=\\"21\\" x2=\\"12\\" y2=\\"23\\"></line><line x1=\\"4.22\\" y1=\\"4.22\\" x2=\\"5.64\\" y2=\\"5.64\\"></line><line x1=\\"18.36\\" y1=\\"18.36\\" x2=\\"19.78\\" y2=\\"19.78\\"></line><line x1=\\"1\\" y1=\\"12\\" x2=\\"3\\" y2=\\"12\\"></line><line x1=\\"21\\" y1=\\"12\\" x2=\\"23\\" y2=\\"12\\"></line><line x1=\\"4.22\\" y1=\\"19.78\\" x2=\\"5.64\\" y2=\\"18.36\\"></line><line x1=\\"18.36\\" y1=\\"5.64\\" x2=\\"19.78\\" y2=\\"4.22\\"></line></svg>", true, 1)
+const t1 = _template("<svg viewBox=\\"0 0 24 24\\" width=\\"18\\" height=\\"18\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><path d=\\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\\"></path></svg>", true, 1)
+const t2 = _template("<div class=\\"app\\"><header class=\\"header\\"><div class=\\"logo\\"><div class=\\"logo-icon\\"><svg viewBox=\\"0 0 100 100\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><g transform=\\"translate(15, 10) skewX(-15)\\"><path d=\\"M 65 0 L 40 60 L 70 20 L 65 0 Z\\" fill=\\"currentColor\\"></path><path d=\\"M 20 0 L 40 60 L 53 13 L 20 0 Z\\" fill=\\"currentColor\\"></path></g></svg></div><div class=\\"logo-text\\"><h1>Vize</h1><span class=\\"version\\">\\n            Playground\\n            <span> </span><span id=\\"vize-playground-version\\" class=\\"version-number\\"></span></span></div></div><div class=\\"main-tabs\\"><button><span class=\\"tab-name\\">Atelier</span><span class=\\"tab-desc\\">compiler</span></button><button><span class=\\"tab-name\\">Inspector</span><span class=\\"tab-desc\\">diff</span></button><button><span class=\\"tab-name\\">Patina</span><span class=\\"tab-desc\\">linter</span></button><button><span class=\\"tab-name\\">Glyph</span><span class=\\"tab-desc\\">formatter</span></button><button><span class=\\"tab-name\\">Canon</span><span class=\\"tab-desc\\">typecheck</span></button><button><span class=\\"tab-name\\">Croquis</span><span class=\\"tab-desc\\">analyzer</span></button><button><span class=\\"tab-name\\">Cross</span><span class=\\"tab-desc\\">xfile</span></button><button><span class=\\"tab-name\\">Musea</span><span class=\\"tab-desc\\">story</span></button></div><div class=\\"options\\"><button class=\\"theme-toggle\\" title=\\"Copy environment information\\" aria-label=\\"Copy environment information\\"><svg viewBox=\\"0 0 24 24\\" width=\\"18\\" height=\\"18\\" aria-hidden=\\"true\\"><path fill=\\"currentColor\\"></path></svg></button><button class=\\"theme-toggle\\"></button><a href=\\"https://github.com/ubugeeei-prod/vize\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\" class=\\"github-link\\" aria-label=\\"GitHub repository\\"><svg viewBox=\\"0 0 24 24\\" width=\\"24\\" height=\\"24\\" fill=\\"currentColor\\"><path d=\\"M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z\\"></path></svg></a></div></header><main class=\\"main\\"></main><footer class=\\"footer\\"><span>Built with Rust + WASM</span><span class=\\"separator\\">|</span><span>by\\n        <a href=\\"https://github.com/ubugeeei\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">@ubugeeei</a></span></footer></div>", true)
+_delegateEvents("click")
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n2 = t2()
+  const n0 = _child(n2)
+  const n3 = _child(n0)
+  const n6 = _next(_child(n3), 1)
+  const n7 = _next(_child(n6), 1)
+  const n8 = _next(_child(n7), 1)
+  const n4 = _next(n3, 1)
+  const n9 = _child(n4)
+  const n10 = _next(n9, 1)
+  const n11 = _next(n10, 1)
+  const n12 = _next(n11, 1)
+  const n13 = _next(n12, 1)
+  const n14 = _next(n13, 1)
+  const n15 = _next(n14, 1)
+  const n16 = _next(n15, 1)
+  const n5 = _next(n4, 1)
+  const n17 = _child(n5)
+  const n19 = _child(n17)
+  const n20 = _child(n19)
+  const n18 = _next(n17, 1)
+  const n1 = _next(n0, 1)
+  const x8 = _txt(n8)
+  n9.$evtclick = _createInvoker(() => (_ctx.mainTab = 'atelier'))
+  n10.$evtclick = _createInvoker(() => (_ctx.mainTab = 'inspector'))
+  n11.$evtclick = _createInvoker(() => (_ctx.mainTab = 'patina'))
+  n12.$evtclick = _createInvoker(() => (_ctx.mainTab = 'glyph'))
+  n13.$evtclick = _createInvoker(() => (_ctx.mainTab = 'canon'))
+  n14.$evtclick = _createInvoker(() => (_ctx.mainTab = 'croquis'))
+  n15.$evtclick = _createInvoker(() => (_ctx.mainTab = 'cross-file'))
+  n16.$evtclick = _createInvoker(() => (_ctx.mainTab = 'musea'))
+  n17.$evtclick = _createInvoker(e => _ctx.copyEnvironmentInfo(e))
+  n18.$evtclick = _createInvoker(e => _ctx.toggleTheme(e))
+  _setInsertionState(n18, null, true)
+  const n21 = _createIf(() => (_ctx.isDark), () => {
+    const n23 = t0()
+    return n23
+  }, () => {
+    const n25 = t1()
+    return n25
+  })
+  _setInsertionState(n1, null, true)
+  const n26 = _createIf(() => (_ctx.mainTab === 'patina'), () => {
+    _setInsertionState(n1, null, true)
+    const _component_PatinaPlayground = _ctx.PatinaPlayground
+    const n28 = _createComponentWithFallback(_component_PatinaPlayground, { compiler: () => (_ctx.compiler) }, null, true)
+    return n28
+  }, () => {
+    _setInsertionState(n1, null, true)
+    return _createIf(() => (_ctx.mainTab === 'inspector'), () => {
+      _setInsertionState(n1, null, true)
+      const _component_InspectorPlayground = _ctx.InspectorPlayground
+      const n30 = _createComponentWithFallback(_component_InspectorPlayground, { compiler: () => (_ctx.compiler) }, null, true)
+      return n30
+    }, () => {
+      _setInsertionState(n1, null, true)
+      return _createIf(() => (_ctx.mainTab === 'canon'), () => {
+        _setInsertionState(n1, null, true)
+        const _component_TypeCheckPlayground = _ctx.TypeCheckPlayground
+        const n33 = _createComponentWithFallback(_component_TypeCheckPlayground, { compiler: () => (_ctx.compiler) }, null, true)
+        return n33
+      }, () => {
+        _setInsertionState(n1, null, true)
+        return _createIf(() => (_ctx.mainTab === 'croquis'), () => {
+          _setInsertionState(n1, null, true)
+          const _component_CroquisPlayground = _ctx.CroquisPlayground
+          const n36 = _createComponentWithFallback(_component_CroquisPlayground, { compiler: () => (_ctx.compiler) }, null, true)
+          return n36
+        }, () => {
+          _setInsertionState(n1, null, true)
+          return _createIf(() => (_ctx.mainTab === 'cross-file'), () => {
+            _setInsertionState(n1, null, true)
+            const _component_CrossFilePlayground = _ctx.CrossFilePlayground
+            const n39 = _createComponentWithFallback(_component_CrossFilePlayground, { compiler: () => (_ctx.compiler) }, null, true)
+            return n39
+          }, () => {
+            _setInsertionState(n1, null, true)
+            return _createIf(() => (_ctx.mainTab === 'musea'), () => {
+              _setInsertionState(n1, null, true)
+              const _component_MuseaPlayground = _ctx.MuseaPlayground
+              const n42 = _createComponentWithFallback(_component_MuseaPlayground, { compiler: () => (_ctx.compiler) }, null, true)
+              return n42
+            }, () => {
+              _setInsertionState(n1, null, true)
+              return _createIf(() => (_ctx.mainTab === 'glyph'), () => {
+                _setInsertionState(n1, null, true)
+                const _component_GlyphPlayground = _ctx.GlyphPlayground
+                const n45 = _createComponentWithFallback(_component_GlyphPlayground, { compiler: () => (_ctx.compiler) }, null, true)
+                return n45
+              }, () => {
+                _setInsertionState(n1, null, true)
+                const _component_AtelierPlayground = _ctx.AtelierPlayground
+                const n48 = _createComponentWithFallback(_component_AtelierPlayground, { compiler: () => (_ctx.compiler) }, null, true)
+                return n48
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+  _renderEffect(() => {
+    _setClass(n8, ['wasm-status', _ctx.wasmStatus])
+    _setText(x8, _toDisplayString(_ctx.wasmStatus === "loading"
+                  ? " (Loading...)"
+                  : _ctx.wasmStatus === "mock"
+                    ? " (Mock)"
+                    : " (WASM)"))
+    _setClass(n9, ['main-tab', { active: _ctx.mainTab === 'atelier' }])
+    _setClass(n10, ['main-tab', { active: _ctx.mainTab === 'inspector' }])
+    _setClass(n11, ['main-tab', { active: _ctx.mainTab === 'patina' }])
+    _setClass(n12, ['main-tab', { active: _ctx.mainTab === 'glyph' }])
+    _setClass(n13, ['main-tab', { active: _ctx.mainTab === 'canon' }])
+    _setClass(n14, ['main-tab', { active: _ctx.mainTab === 'croquis' }])
+    _setClass(n15, ['main-tab', { active: _ctx.mainTab === 'cross-file' }])
+    _setClass(n16, ['main-tab', { active: _ctx.mainTab === 'musea' }])
+    _setProp(n20, "d", _ctx.mdiClipboardTextOutline)
+    _setProp(n18, "title", _ctx.isDark ? 'Light mode' : 'Dark mode')
+  })
+  return n2
+}
+const __vaporRender = render
+
+import { ref, computed, watch, onMounted, shallowRef, provide } from "vue";
+import { mdiClipboardTextOutline } from "@mdi/js";
+import { loadWasm } from "./wasm/index";
+import AtelierPlayground from "./features/atelier/AtelierPlayground.vue";
+import MuseaPlayground from "./features/musea/MuseaPlayground.vue";
+import PatinaPlayground from "./features/patina/PatinaPlayground.vue";
+import GlyphPlayground from "./features/glyph/GlyphPlayground.vue";
+import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
+import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
+import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
+import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
+import { getPlaygroundEnvironmentInfo } from "./utils/environment";
+import { useClipboard } from "./utils/useClipboard";
+
+// Main tab
+type MainTab =
+  | "atelier"
+  | "inspector"
+  | "patina"
+  | "canon"
+  | "croquis"
+  | "cross-file"
+  | "musea"
+  | "glyph";
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'App',
+  render: __vaporRender,
+  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+// Theme toggle
+const isDark = ref(false);
+const currentTheme = computed<"dark" | "light">(() => (isDark.value ? "dark" : "light"));
+provide("theme", currentTheme);
+function toggleTheme() {
+  isDark.value = !isDark.value;
+  document.body.dataset.theme = isDark.value ? "dark" : "";
+}
+const vizeVersionLabel = \` v\${__VIZE_VERSION__}\`;
+const { copyToClipboard } = useClipboard();
+const validTabs: MainTab[] = [
+  "atelier",
+  "inspector",
+  "patina",
+  "canon",
+  "croquis",
+  "cross-file",
+  "musea",
+  "glyph",
+];
+function getInitialTab(): MainTab {
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get("tab");
+  if (tab && validTabs.includes(tab as MainTab)) {
+    return tab as MainTab;
+  }
+  return "atelier";
+}
+const mainTab = ref<MainTab>(getInitialTab());
+watch(mainTab, (newTab) => {
+  const url = new URL(window.location.href);
+  url.searchParams.set("tab", newTab);
+  window.history.replaceState({}, "", url.toString());
+});
+// WASM
+const wasmStatus = ref<"loading" | "ready" | "mock">("loading");
+const compiler = shallowRef<Awaited<ReturnType<typeof loadWasm>> | null>(null);
+function copyEnvironmentInfo() {
+  copyToClipboard(
+    getPlaygroundEnvironmentInfo({
+      tab: mainTab.value,
+      wasmStatus: wasmStatus.value,
+    }),
+  );
+}
+function updateVersionLabel() {
+  document.getElementById("vize-playground-version")?.replaceChildren(vizeVersionLabel);
+}
+onMounted(async () => {
+  updateVersionLabel();
+  try {
+    const loaded = await loadWasm();
+    compiler.value = loaded;
+    wasmStatus.value = "ready";
+  } catch (e) {
+    console.error("Failed to load WASM:", e);
+  }
+});
+
+const __returned__ = { currentTheme, mainTab, watch, mdiClipboardTextOutline, AtelierPlayground, getPlaygroundEnvironmentInfo, useClipboard, updateVersionLabel, MuseaPlayground, loadWasm, validTabs, CrossFilePlayground, TypeCheckPlayground, shallowRef, provide, CroquisPlayground, InspectorPlayground, copyToClipboard, ref, wasmStatus, copyEnvironmentInfo, isDark, toggleTheme, vizeVersionLabel, PatinaPlayground, GlyphPlayground, computed, onMounted, getInitialTab, compiler }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})"
+`;
+
+exports[`vite-plugin vapor options > emits Vapor template ref setters for DOM refs used by playground components 1`] = `
+{
+  "highlight": "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { child as _child, createTemplateRefSetter as _createTemplateRefSetter, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+
+const t0 = _template("<div data-v-2bad5e65 class=\\"line-numbers\\"></div>", true)
+const t1 = _template("<div data-v-2bad5e65><div class=\\"code-content\\"></div></div>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()
+  const n1 = t1()
+  const n0 = _child(n1)
+  _setRef(n0, "codeContentEl")
+  _setInsertionState(n1, null, true)
+  const n2 = _createIf(() => (_ctx.props.showLineNumbers), () => {
+    const n4 = t0()
+    _setRef(n4, "lineNumbersEl")
+    return n4
+  })
+  _renderEffect(() => _setClass(n1, ["code-highlight", { 'with-line-numbers': _ctx.props.showLineNumbers }]))
+  return n1
+}
+const __vaporRender = render
+
+import { useTemplateRef, watch } from "vue";
+import {
+  codeToThemedHtmlLines,
+  normalizePlainHtmlLines,
+  type CodeHighlightLanguage,
+} from "./codeHighlighting";
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'CodeHighlight',
+  props: {
+    code: { type: String },
+    language: { type: null },
+    showLineNumbers: { type: Boolean, required: false },
+    theme: { type: String, required: false }
+  },
+  render: __vaporRender,
+  setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+const props = __props;
+const codeContentEl = useTemplateRef<HTMLDivElement>("codeContentEl");
+const lineNumbersEl = useTemplateRef<HTMLDivElement>("lineNumbersEl");
+let latestRenderId = 0;
+function renderLineNumbers(count: number) {
+  if (!lineNumbersEl.value) {
+    return;
+  }
+  if (!props.showLineNumbers) {
+    lineNumbersEl.value.innerHTML = "";
+    return;
+  }
+  let html = "";
+  for (let index = 0; index < count; index += 1) {
+    html += \`<span class="line-number">\${index + 1}</span>\`;
+  }
+  lineNumbersEl.value.innerHTML = html;
+}
+function renderCodeLines(lines: string[]) {
+  if (!codeContentEl.value) {
+    return;
+  }
+  let html = "";
+  for (const line of lines) {
+    html += \`<div class="code-line">\${line}</div>\`;
+  }
+  codeContentEl.value.innerHTML = html;
+  renderLineNumbers(lines.length);
+}
+async function highlight(renderId: number) {
+  const nextLines = await codeToThemedHtmlLines(props.code, props.language);
+  if (renderId !== latestRenderId) {
+    return;
+  }
+  renderCodeLines(nextLines);
+}
+function render() {
+  const renderId = ++latestRenderId;
+  renderCodeLines(normalizePlainHtmlLines(props.code));
+  void highlight(renderId);
+}
+function renderWhenReady() {
+  if (!codeContentEl.value) {
+    return;
+  }
+  if (props.showLineNumbers && !lineNumbersEl.value) {
+    return;
+  }
+  render();
+}
+watch(
+  [
+    codeContentEl,
+    lineNumbersEl,
+    () => props.code,
+    () => props.language,
+    () => props.showLineNumbers,
+  ],
+  renderWhenReady,
+  { immediate: true, flush: "post" },
+);
+
+const vaporTemplateRefSetter = _createTemplateRefSetter()
+const __returned__ = { vaporTemplateRefSetter, codeToThemedHtmlLines, renderCodeLines, watch, latestRenderId, lineNumbersEl, render, useTemplateRef, props, renderLineNumbers, highlight, renderWhenReady, normalizePlainHtmlLines, codeContentEl }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})",
+  "monaco": "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { createTemplateRefSetter as _createTemplateRefSetter, template as _template } from 'vue';
+
+const t0 = _template("<div data-v-3a9d3f90 class=\\"monaco-container\\"></div>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()
+  const n0 = t0()
+  _setRef(n0, "containerRef")
+  return n0
+}
+const __vaporRender = render
+
+import "./MonacoEditor.css";
+import { useTemplateRef, watch, onUnmounted, shallowRef, inject, type ComputedRef } from "vue";
+import * as monaco from "monaco-editor";
+import { configureMonaco, addVueCommentAction } from "./monacoConfig";
+import {
+  getScopeDecorationClass,
+  offsetToPosition,
+  getOverviewRulerColor,
+  getScopeDecorationHoverMessage,
+  type ScopeDecorationInfo,
+} from "./scopeDecorations";
+
+export interface Diagnostic {
+  message: string;
+  startLine: number;
+  startColumn: number;
+  endLine?: number;
+  endColumn?: number;
+  severity: "error" | "warning" | "info";
+}
+export interface ScopeDecoration extends ScopeDecorationInfo {}
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'MonacoEditor',
+  props: {
+    modelValue: { type: String },
+    language: { type: String },
+    diagnostics: { type: Array, required: false },
+    scopes: { type: Array, required: false },
+    readOnly: { type: Boolean, required: false },
+    theme: { type: String, required: false }
+  },
+  emits: ["update"],
+  render: __vaporRender,
+  setup(__props: any, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
+
+const emit = __emit
+
+const props = __props;
+const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
+const editorInstance = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme", undefined as any);
+const resolvedTheme = () => _injectedTheme?.value ?? props.theme ?? "light";
+let scopeDecorationIds: string[] = [];
+function applyScopeDecorations(scopes: ScopeDecoration[] | undefined) {
+  if (!editorInstance.value) return;
+  const model = editorInstance.value.getModel();
+  if (!model) return;
+  if (!scopes || scopes.length === 0) {
+    scopeDecorationIds = editorInstance.value.deltaDecorations(scopeDecorationIds, []);
+    return;
+  }
+  const newDecorations: monaco.editor.IModelDeltaDecoration[] = scopes.map((scope) => {
+    const startPos = offsetToPosition(model, scope.start);
+    const endPos = offsetToPosition(model, scope.end);
+    const className = getScopeDecorationClass(scope.kind);
+    return {
+      range: new monaco.Range(
+        startPos.lineNumber,
+        startPos.column,
+        endPos.lineNumber,
+        endPos.column,
+      ),
+      options: {
+        className,
+        hoverMessage: getScopeDecorationHoverMessage(scope),
+        isWholeLine: false,
+        overviewRuler: {
+          color: getOverviewRulerColor(scope.kind),
+          position: monaco.editor.OverviewRulerLane.Right,
+        },
+      },
+    };
+  });
+  scopeDecorationIds = editorInstance.value.deltaDecorations(scopeDecorationIds, newDecorations);
+}
+function applyDiagnostics(diagnostics: Diagnostic[] | undefined) {
+  if (!editorInstance.value) return;
+  const model = editorInstance.value.getModel();
+  if (!model) return;
+  if (!diagnostics || diagnostics.length === 0) {
+    monaco.editor.setModelMarkers(model, "vize", []);
+    return;
+  }
+  const markers: monaco.editor.IMarkerData[] = diagnostics.map((d) => ({
+    severity:
+      d.severity === "error"
+        ? monaco.MarkerSeverity.Error
+        : d.severity === "warning"
+          ? monaco.MarkerSeverity.Warning
+          : monaco.MarkerSeverity.Info,
+    message: d.message,
+    startLineNumber: d.startLine,
+    startColumn: d.startColumn,
+    endLineNumber: d.endLine ?? d.startLine,
+    endColumn: d.endColumn ?? d.startColumn + 1,
+  }));
+  monaco.editor.setModelMarkers(model, "vize", markers);
+}
+function setValue(value: string) {
+  if (editorInstance.value) {
+    editorInstance.value.setValue(value);
+  }
+}
+function mountEditor(container: HTMLDivElement) {
+  if (editorInstance.value) {
+    return;
+  }
+  configureMonaco();
+  const editor = monaco.editor.create(container, {
+    value: props.modelValue,
+    language: props.language,
+    theme: resolvedTheme() === "light" ? "vue-light" : "vue-dark",
+    fontSize: 14,
+    fontFamily: "'JetBrains Mono', monospace",
+    minimap: { enabled: false },
+    lineNumbers: "on",
+    scrollBeyondLastLine: false,
+    padding: { top: 16 },
+    automaticLayout: true,
+    quickSuggestions: !props.readOnly,
+    suggestOnTriggerCharacters: !props.readOnly,
+    readOnly: props.readOnly ?? false,
+    domReadOnly: props.readOnly ?? false,
+  });
+  editorInstance.value = editor;
+  // Store on DOM for vite-plugin-vize workaround (ref binding may fail)
+  (container as any).__monacoEditor = editor;
+  editor.onDidChangeModelContent(() => {
+    const value = editor.getValue() || "";
+    emit("update:modelValue", value);
+  });
+  if (props.language === "vue") {
+    addVueCommentAction(editor);
+  }
+  if (props.scopes && props.scopes.length > 0) {
+    applyScopeDecorations(props.scopes);
+  }
+  if (props.diagnostics && props.diagnostics.length > 0) {
+    applyDiagnostics(props.diagnostics);
+  }
+}
+watch(
+  containerRef,
+  (container) => {
+    if (container) {
+      mountEditor(container);
+    }
+  },
+  { immediate: true, flush: "post" },
+);
+onUnmounted(() => {
+  editorInstance.value?.dispose();
+});
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (editorInstance.value && editorInstance.value.getValue() !== newValue) {
+      editorInstance.value.setValue(newValue);
+    }
+  },
+);
+watch(
+  () => _injectedTheme?.value ?? props.theme,
+  (newTheme) => {
+    if (editorInstance.value) {
+      monaco.editor.setTheme(newTheme === "light" ? "vue-light" : "vue-dark");
+    }
+  },
+);
+watch(
+  () => props.language,
+  (newLanguage) => {
+    if (editorInstance.value) {
+      const model = editorInstance.value.getModel();
+      if (model) {
+        monaco.editor.setModelLanguage(model, newLanguage);
+      }
+    }
+  },
+);
+watch(
+  () => props.diagnostics,
+  (diagnostics) => {
+    applyDiagnostics(diagnostics);
+  },
+  { immediate: true, deep: true },
+);
+watch(
+  () => props.scopes,
+  (scopes) => {
+    applyScopeDecorations(scopes);
+  },
+  { immediate: true, deep: true },
+);
+__expose({
+  applyDiagnostics,
+  applyScopeDecorations,
+  setValue,
+})
+
+const vaporTemplateRefSetter = _createTemplateRefSetter()
+const __returned__ = { vaporTemplateRefSetter, scopeDecorationIds, inject, watch, configureMonaco, _injectedTheme, emit, mountEditor, useTemplateRef, applyDiagnostics, getScopeDecorationClass, getOverviewRulerColor, applyScopeDecorations, monaco, shallowRef, editorInstance, getScopeDecorationHoverMessage, props, onUnmounted, setValue, offsetToPosition, containerRef, addVueCommentAction, resolvedTheme }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})",
+}
+`;
+
+exports[`vite-plugin vapor options > keeps Atelier output tabs reactive even when v-if siblings are present 1`] = `
+"import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, setStyle as _setStyle, applyCheckboxModel as _applyCheckboxModel, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
+
+const t0 = _template("<div class=\\"panel input-panel\\"><div class=\\"panel-header\\"><h2> </h2><div class=\\"panel-actions\\"><button class=\\"btn-ghost\\">Reset</button><button class=\\"btn-ghost\\">Copy</button></div></div><div class=\\"editor-container\\"></div></div>")
+const t1 = _template("<span class=\\"compile-time\\"> </span>", true)
+const t2 = _template("<button>\\n          Bindings\\n        </button>", true)
+const t3 = _template("<button>\\n            SFC\\n          </button>")
+const t4 = _template("<button>\\n            CSS\\n          </button>")
+const t5 = _template("<div class=\\"compiling\\"><div class=\\"spinner\\"></div><span>Compiling...</span></div>", true)
+const t6 = _template("<div class=\\"wasm-error\\"><h3>Compilation Error</h3><pre> </pre></div>", true)
+const t7 = _template("<button> </button>")
+const t8 = _template("<div class=\\"wasm-error\\"><h3> </h3><pre> </pre></div>")
+const t9 = _template("<pre> </pre>")
+const t10 = _template("<div class=\\"wasm-warning\\"><h3> </h3></div>")
+const t11 = _template("<div class=\\"style-block\\"><span class=\\"style-meta\\"><span class=\\"badge\\"> </span></span></div>")
+const t12 = _template("<div class=\\"sfc-block\\"><p class=\\"section-label\\"> </p></div>")
+const t13 = _template("<div class=\\"code-output\\"><div class=\\"code-header\\"><h4> </h4><div class=\\"code-header-actions\\"><div class=\\"code-mode-toggle\\"></div><div class=\\"code-mode-toggle code-view-toggle\\"><button>\\n                  TS\\n                </button><button>\\n                  JS\\n                </button></div><button class=\\"btn-ghost\\">Copy</button></div></div></div>")
+const t14 = _template("<div class=\\"ast-output\\"><div class=\\"ast-header\\"><h4>Abstract Syntax Tree</h4><div class=\\"ast-options\\"><label class=\\"ast-option\\"><input type=\\"checkbox\\"><span>Hide loc</span></label><label class=\\"ast-option\\"><input type=\\"checkbox\\"><span>Hide source</span></label><label class=\\"ast-option\\"><input type=\\"checkbox\\"><span>Compact</span></label><button class=\\"btn-ghost btn-small\\">Copy</button></div></div></div>")
+const t15 = _template("<li class=\\"helper-item\\"><span class=\\"helper-name\\"> </span></li>")
+const t16 = _template("<ul class=\\"helpers-list\\"></ul>")
+const t17 = _template("<p class=\\"no-helpers\\">No runtime helpers needed</p>")
+const t18 = _template("<div class=\\"helpers-output\\"><h4> </h4></div>")
+const t19 = _template("<div class=\\"sfc-block\\"><h5> </h5></div>")
+const t20 = _template("<div class=\\"sfc-block\\"><h5> </h5></div>")
+const t21 = _template("<div class=\\"sfc-block\\"><h5> </h5></div>")
+const t22 = _template("<span class=\\"badge\\">scoped</span>")
+const t23 = _template("<span class=\\"badge\\"> </span>")
+const t24 = _template("<div class=\\"style-block\\"><span class=\\"style-meta\\"></span></div>")
+const t25 = _template("<div class=\\"sfc-block\\"><h5> </h5></div>")
+const t26 = _template("<div class=\\"sfc-output\\"><h4>SFC Descriptor</h4></div>")
+const t27 = _template("<div class=\\"css-compiled\\"><h5>Compiled CSS</h5><div class=\\"code-actions\\"><button class=\\"btn-ghost\\">\\n                  Copy\\n                </button></div></div>")
+const t28 = _template("<li class=\\"helper-item\\"><span class=\\"helper-name\\"> </span></li>")
+const t29 = _template("<div class=\\"css-vars\\"><h5>CSS Variables (v-bind)</h5><ul class=\\"helpers-list\\"></ul></div>")
+const t30 = _template("<pre class=\\"error-message\\"> </pre>")
+const t31 = _template("<div class=\\"css-errors\\"><h5>Errors</h5></div>")
+const t32 = _template("<p class=\\"no-css\\">No styles in this SFC</p>")
+const t33 = _template("<div class=\\"css-output\\"><h4>CSS Compilation (LightningCSS)</h4><div class=\\"css-options\\"><label class=\\"option checkbox\\"><input type=\\"checkbox\\"><span>Minify</span></label><label class=\\"option checkbox\\"><input type=\\"checkbox\\"><span>Force Scoped</span></label></div></div>")
+const t34 = _template("<div class=\\"summary-card\\"><span class=\\"summary-count\\"> </span><span> </span></div>")
+const t35 = _template("<span> </span>")
+const t36 = _template("<div class=\\"binding-group\\"><div><span class=\\"group-icon\\"> </span><span class=\\"group-title\\"> </span><span class=\\"group-count\\"> </span></div><div class=\\"group-vars\\"></div></div>")
+const t37 = _template("<div class=\\"bindings-output\\"><h4>Script Setup Bindings</h4><div class=\\"bindings-summary\\"></div><div class=\\"bindings-groups\\"></div></div>")
+const t38 = _template("<div class=\\"bindings-output\\"><p class=\\"no-bindings\\">No bindings information available</p></div>")
+const t39 = _template("<span class=\\"token-name\\"> </span>")
+const t40 = _template("<span class=\\"token-value-text\\"> </span>")
+const t41 = _template("<div class=\\"token-item\\"><span class=\\"token-badge\\"> </span><div class=\\"token-content\\"><div class=\\"token-main\\"></div><span class=\\"token-location\\"> </span></div></div>")
+const t42 = _template("<span class=\\"group-token-chip\\"> </span>")
+const t43 = _template("<span class=\\"more-indicator\\"> </span>")
+const t44 = _template("<div class=\\"token-group\\"><div class=\\"group-header\\"><span class=\\"group-icon\\"> </span><span class=\\"group-title\\"> </span><span class=\\"group-count\\"> </span></div><div class=\\"group-tokens\\"></div></div>")
+const t45 = _template("<div class=\\"tokens-output\\"><div class=\\"token-stats\\"><div class=\\"stat-card\\"><span class=\\"stat-value\\"> </span><span class=\\"stat-label\\">Total</span></div><div class=\\"stat-card\\"><span class=\\"stat-value\\"> </span><span class=\\"stat-label\\">Tags</span></div><div class=\\"stat-card\\"><span class=\\"stat-value\\"> </span><span class=\\"stat-label\\">Directives</span></div><div class=\\"stat-card\\"><span class=\\"stat-value\\"> </span><span class=\\"stat-label\\">Interpolations</span></div></div><h4>Token Stream</h4><div class=\\"token-stream\\"></div><h4>By Type</h4><div class=\\"token-groups\\"></div></div>")
+const t46 = _template("<div class=\\"panel output-panel\\"><div class=\\"panel-header\\"><h2>\\n        Output\\n        </h2><div class=\\"tabs\\"><button>\\n          Code\\n        </button><button>\\n          AST\\n        </button><button> </button><button>\\n          Helpers\\n        </button></div></div><div class=\\"output-content\\"></div></div>")
+_delegateEvents("click")
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n2 = t0()
+  const n10 = t46()
+  const n0 = _child(n2)
+  const n3 = _child(n0)
+  const n4 = _next(n3, 1)
+  const n5 = _child(n4)
+  const n6 = _next(n5, 1)
+  const n1 = _next(n0, 1)
+  const n8 = _child(n10)
+  const n11 = _child(n8)
+  const n12 = _next(n11, 1)
+  const n16 = _child(n12)
+  const n17 = _next(n16, 1)
+  const n18 = _next(n17, 1)
+  const n19 = _next(n18, 1)
+  const n9 = _next(n8, 1)
+  const x3 = _txt(n3)
+  const x18 = _txt(n18)
+  n5.$evtclick = _createInvoker(() => (_ctx.handlePresetChange(_ctx.selectedPreset)))
+  n6.$evtclick = _createInvoker(() => (_ctx.copyToClipboard(_ctx.source)))
+  const _component_MonacoEditor = _ctx.MonacoEditor
+  _setInsertionState(n1, null, true)
+  const n7 = _createComponentWithFallback(_component_MonacoEditor, {
+    modelValue: () => (_ctx.source),
+    "onUpdate:modelValue": () => _value => (_ctx.source = _value),
+    language: () => (_ctx.editorLanguage),
+    theme: () => (_ctx.theme)
+  }, null, true)
+  _setInsertionState(n11, null, true)
+  const n13 = _createIf(() => (_ctx.compileTime !== null), () => {
+    const n15 = t1()
+    const x15 = _txt(n15)
+    _renderEffect(() => _setText(x15, _toDisplayString(_ctx.compileTime.toFixed(4)) + "ms"))
+    return n15
+  })
+  n16.$evtclick = _createInvoker(() => (_ctx.activeTab = 'code'))
+  n17.$evtclick = _createInvoker(() => (_ctx.activeTab = 'ast'))
+  n18.$evtclick = _createInvoker(() => (_ctx.activeTab = 'tokens'))
+  n19.$evtclick = _createInvoker(() => (_ctx.activeTab = 'helpers'))
+  _setInsertionState(n12, null, true)
+  const n20 = _createIf(() => (_ctx.inputMode === 'sfc'), () => {
+    const n22 = t2()
+    n22.$evtclick = _createInvoker(() => (_ctx.activeTab = 'bindings'))
+    _renderEffect(() => _setClass(n22, ['tab', { active: _ctx.activeTab === 'bindings' }]))
+    return n22
+  })
+  _setInsertionState(n12, null, true)
+  const n23 = _createIf(() => (_ctx.inputMode === 'sfc'), () => {
+    const n25 = t3()
+    const n26 = t4()
+    n25.$evtclick = _createInvoker(() => (_ctx.activeTab = 'sfc'))
+    n26.$evtclick = _createInvoker(() => (_ctx.activeTab = 'css'))
+    _renderEffect(() => {
+      _setClass(n25, ['tab', { active: _ctx.activeTab === 'sfc' }])
+      _setClass(n26, ['tab', { active: _ctx.activeTab === 'css' }])
+    })
+    return [n25, n26]
+  })
+  _setInsertionState(n9, null, true)
+  const n27 = _createIf(() => (_ctx.isCompiling), () => {
+    const n29 = t5()
+    return n29
+  }, () => {
+    _setInsertionState(n9, null, true)
+    return _createIf(() => (_ctx.error), () => {
+      const n32 = t6()
+      const n31 = _next(_child(n32), 1)
+      const x31 = _txt(n31)
+      _renderEffect(() => _setText(x31, _toDisplayString(_ctx.error)))
+      return n32
+    }, () => {
+      _setInsertionState(n9, null, true)
+      return _createIf(() => (_ctx.output), () => {
+        _setInsertionState(n9, null, true)
+        const n35 = _createIf(() => (_ctx.activeTab === 'code'), () => {
+          const n38 = t13()
+          const n37 = _child(n38)
+          const n39 = _child(n37)
+          const n40 = _next(n39, 1)
+          const n41 = _child(n40)
+          const n42 = _next(n41, 1)
+          const n47 = _child(n42)
+          const n48 = _next(n47, 1)
+          const n43 = _next(n42, 1)
+          const x39 = _txt(n39)
+          _setInsertionState(n41, null, true)
+          const n44 = _createFor(() => (_ctx.availableCodeOutputTargets), (_for_item0) => {
+            const n46 = t7()
+            const x46 = _txt(n46)
+            n46.$evtclick = _createInvoker(() => (_ctx.codeOutputTarget = _for_item0.value))
+            _renderEffect(() => {
+              _setClass(n46, ['toggle-btn', { active: _ctx.codeOutputTarget === _for_item0.value }])
+              _setText(x46, _toDisplayString(_ctx.CODE_OUTPUT_LABELS[_for_item0.value]))
+            })
+            return n46
+          }, (target) => (target), 1)
+          n47.$evtclick = _createInvoker(() => (_ctx.activeCodeOutput.isTypeScript && (_ctx.codeViewMode = 'ts')))
+          n48.$evtclick = _createInvoker(() => (_ctx.activeCodeOutput.isTypeScript && (_ctx.codeViewMode = 'js')))
+          n43.$evtclick = _createInvoker(() => (_ctx.copyToClipboard(_ctx.activeCodeOutputText)))
+          _setInsertionState(n38, null, true)
+          const n49 = _createIf(() => (_ctx.activeCodeOutput.error), () => {
+            const n53 = t8()
+            const n51 = _child(n53)
+            const n52 = _next(n51, 1)
+            const x51 = _txt(n51)
+            const x52 = _txt(n52)
+            _renderEffect(() => {
+              _setText(x51, _toDisplayString(_ctx.CODE_OUTPUT_LABELS[_ctx.codeOutputTarget]) + " Compilation Error")
+              _setText(x52, _toDisplayString(_ctx.activeCodeOutput.error))
+            })
+            return n53
+          }, () => {
+            _setInsertionState(n38, null, true)
+            const n55 = _createIf(() => (_ctx.activeCodeOutput.warnings.length > 0), () => {
+              const n58 = t10()
+              const n57 = _child(n58)
+              const x57 = _txt(n57)
+              _setInsertionState(n58, null, true)
+              const n59 = _createFor(() => (_ctx.activeCodeOutput.warnings), (_for_item0, _for_key0) => {
+                const n61 = t9()
+                const x61 = _txt(n61)
+                _renderEffect(() => _setText(x61, _toDisplayString(_for_item0.value)))
+                return n61
+              }, (warning, index) => (\`\${_ctx.codeOutputTarget}-warning-\${index}\`), 1)
+              _renderEffect(() => _setText(x57, _toDisplayString(_ctx.CODE_OUTPUT_LABELS[_ctx.codeOutputTarget]) + " Warnings (" + _toDisplayString(_ctx.activeCodeOutput.warnings.length) + ")\\n              "))
+              return n58
+            })
+            const n62 = _createIf(() => (_ctx.activeCodeOutput.isTypeScript && _ctx.codeViewMode === 'js'), () => {
+              const _component_CodeHighlight = _ctx.CodeHighlight
+              const n64 = _createComponentWithFallback(_component_CodeHighlight, {
+    code: () => (_ctx.activeCodeOutput.formattedJsCode),
+    language: () => ("javascript"),
+    theme: () => (_ctx.theme),
+    "show-line-numbers": undefined
+  }, null, true)
+              return n64
+            }, () => {
+              const _component_CodeHighlight = _ctx.CodeHighlight
+              const n66 = _createComponentWithFallback(_component_CodeHighlight, {
+    code: () => (_ctx.activeCodeOutput.formattedCode || _ctx.activeCodeOutput.code),
+    language: () => (_ctx.activeCodeOutput.isTypeScript ? 'typescript' : 'javascript'),
+    theme: () => (_ctx.theme),
+    "show-line-numbers": undefined
+  }, null, true)
+              return n66
+            })
+            const n67 = _createIf(() => (_ctx.activeCodeOutput.templates.length > 0 &&
+                _ctx.codeOutputTarget !== 'vapor' &&
+                _ctx.codeOutputTarget !== 'vaporSsr'), () => {
+              const n70 = t12()
+              const n69 = _child(n70)
+              const x69 = _txt(n69)
+              _setInsertionState(n70, null, true)
+              const n71 = _createFor(() => (_ctx.activeCodeOutput.templates), (_for_item0, _for_key0) => {
+                const n75 = t11()
+                const n73 = _child(n75)
+                const n76 = _child(n73)
+                const x76 = _txt(n76)
+                const _component_CodeHighlight = _ctx.CodeHighlight
+                _setInsertionState(n75, null, true)
+                const n74 = _createComponentWithFallback(_component_CodeHighlight, {
+    code: () => (_for_item0.value),
+    language: () => ("javascript"),
+    theme: () => (_ctx.theme),
+    "show-line-numbers": undefined
+  }, null, true)
+                _renderEffect(() => _setText(x76, "template " + _toDisplayString(_for_key0.value + 1)))
+                return n75
+              }, (template, index) => (\`\${_ctx.codeOutputTarget}-\${index}\`), 1)
+              _renderEffect(() => _setText(x69, "\\n                Template Fragments (" + _toDisplayString(_ctx.activeCodeOutput.templates.length) + ")\\n              "))
+              return n70
+            })
+            return [n55, n62, n67]
+          })
+          _renderEffect(() => {
+            _setText(x39, _toDisplayString(_ctx.CODE_OUTPUT_LABELS[_ctx.codeOutputTarget]) + " Output")
+            _setClass(n47, ['toggle-btn', { active: _ctx.codeViewMode === 'ts' }])
+            _setProp(n47, "disabled", !_ctx.activeCodeOutput.isTypeScript)
+            _setClass(n48, ['toggle-btn', { active: _ctx.codeViewMode === 'js' }])
+            _setProp(n48, "disabled", !_ctx.activeCodeOutput.isTypeScript)
+          })
+          return n38
+}, () => _createIf(() => (_ctx.activeTab === 'ast'), () => {
+          const n80 = t14()
+          const n78 = _child(n80)
+          const n81 = _next(_child(n78), 1)
+          const n82 = _child(n81)
+          const n86 = _child(n82)
+          const n83 = _next(n82, 1)
+          const n87 = _child(n83)
+          const n84 = _next(n83, 1)
+          const n88 = _child(n84)
+          const n85 = _next(n84, 1)
+          _applyCheckboxModel(n86, () => (_ctx.astHideLoc), _value => (_ctx.astHideLoc = _value))
+          _applyCheckboxModel(n87, () => (_ctx.astHideSource), _value => (_ctx.astHideSource = _value))
+          _applyCheckboxModel(n88, () => (_ctx.astCollapsed), _value => (_ctx.astCollapsed = _value))
+          n85.$evtclick = _createInvoker(() => (_ctx.copyToClipboard(_ctx.astJson)))
+          const _component_CodeHighlight = _ctx.CodeHighlight
+          _setInsertionState(n80, null, true)
+          const n79 = _createComponentWithFallback(_component_CodeHighlight, {
+    code: () => (_ctx.astJson),
+    language: () => ("json"),
+    theme: () => (_ctx.theme),
+    "show-line-numbers": undefined
+  }, null, true)
+          return n80
+}, () => _createIf(() => (_ctx.activeTab === 'helpers'), () => {
+          const n92 = t18()
+          const n91 = _child(n92)
+          const x91 = _txt(n91)
+          _setInsertionState(n92, null, true)
+          const n93 = _createIf(() => (_ctx.output.helpers?.length > 0), () => {
+            const n99 = t16()
+            _setInsertionState(n99, null, true)
+            const n95 = _createFor(() => (_ctx.output.helpers), (_for_item0, _for_key0) => {
+              const n98 = t15()
+              const n97 = _child(n98)
+              const x97 = _txt(n97)
+              _renderEffect(() => _setText(x97, _toDisplayString(_for_item0.value)))
+              return n98
+            }, (helper, i) => (i), 1)
+            return n99
+          }, () => {
+            const n101 = t17()
+            return n101
+          })
+          _renderEffect(() => _setText(x91, "Runtime Helpers Used (" + _toDisplayString(_ctx.output.helpers?.length ?? 0) + ")"))
+          return n92
+}, () => _createIf(() => (_ctx.activeTab === 'sfc' && _ctx.sfcResult), () => {
+          const n134 = t26()
+          _setInsertionState(n134, null, true)
+          const n104 = _createIf(() => (_ctx.sfcResult.descriptor.template), () => {
+            const n108 = t19()
+            const n106 = _child(n108)
+            const x106 = _txt(n106)
+            const _component_CodeHighlight = _ctx.CodeHighlight
+            _setInsertionState(n108, null, true)
+            const n107 = _createComponentWithFallback(_component_CodeHighlight, {
+    code: () => (_ctx.sfcResult.descriptor.template.content),
+    language: () => ("html"),
+    theme: () => (_ctx.theme)
+  }, null, true)
+            _renderEffect(() => _setText(x106, "\\n              Template\\n              " + _toDisplayString(_ctx.sfcResult.descriptor.template.lang ? \`(\${_ctx.sfcResult.descriptor.template.lang})\` : "")))
+            return n108
+          })
+          _setInsertionState(n134, null, true)
+          const n109 = _createIf(() => (_ctx.sfcResult.descriptor.scriptSetup), () => {
+            const n113 = t20()
+            const n111 = _child(n113)
+            const x111 = _txt(n111)
+            const _component_CodeHighlight = _ctx.CodeHighlight
+            _setInsertionState(n113, null, true)
+            const n112 = _createComponentWithFallback(_component_CodeHighlight, {
+    code: () => (_ctx.sfcResult.descriptor.scriptSetup.content),
+    language: () => ("typescript"),
+    theme: () => (_ctx.theme)
+  }, null, true)
+            _renderEffect(() => _setText(x111, "\\n              Script Setup\\n              " + _toDisplayString(_ctx.sfcResult.descriptor.scriptSetup.lang
+                  ? \`(\${_ctx.sfcResult.descriptor.scriptSetup.lang})\`
+                  : "")))
+            return n113
+          })
+          _setInsertionState(n134, null, true)
+          const n114 = _createIf(() => (_ctx.sfcResult.descriptor.script), () => {
+            const n118 = t21()
+            const n116 = _child(n118)
+            const x116 = _txt(n116)
+            const _component_CodeHighlight = _ctx.CodeHighlight
+            _setInsertionState(n118, null, true)
+            const n117 = _createComponentWithFallback(_component_CodeHighlight, {
+    code: () => (_ctx.sfcResult.descriptor.script.content),
+    language: () => ("typescript"),
+    theme: () => (_ctx.theme)
+  }, null, true)
+            _renderEffect(() => _setText(x116, "\\n              Script\\n              " + _toDisplayString(_ctx.sfcResult.descriptor.script.lang ? \`(\${_ctx.sfcResult.descriptor.script.lang})\` : "")))
+            return n118
+          })
+          _setInsertionState(n134, null, true)
+          const n119 = _createIf(() => (_ctx.sfcResult.descriptor.styles?.length > 0), () => {
+            const n122 = t25()
+            const n121 = _child(n122)
+            const x121 = _txt(n121)
+            _setInsertionState(n122, null, true)
+            const n123 = _createFor(() => (_ctx.sfcResult.descriptor.styles), (_for_item0, _for_key0) => {
+              const n127 = t24()
+              const n125 = _child(n127)
+              _setInsertionState(n125, null, true)
+              const n128 = _createIf(() => (_for_item0.value.scoped), () => {
+                const n130 = t22()
+                return n130
+              })
+              _setInsertionState(n125, null, true)
+              const n131 = _createIf(() => (_for_item0.value.lang), () => {
+                const n133 = t23()
+                const x133 = _txt(n133)
+                _renderEffect(() => _setText(x133, _toDisplayString(_for_item0.value.lang)))
+                return n133
+              })
+              const _component_CodeHighlight = _ctx.CodeHighlight
+              _setInsertionState(n127, null, true)
+              const n126 = _createComponentWithFallback(_component_CodeHighlight, {
+    code: () => (_for_item0.value.content),
+    language: () => ("css"),
+    theme: () => (_ctx.theme)
+  }, null, true)
+              return n127
+            }, (style, i) => (i), 1)
+            _renderEffect(() => _setText(x121, "Styles (" + _toDisplayString(_ctx.sfcResult.descriptor.styles?.length) + ")"))
+            return n122
+          })
+          return n134
+}, () => _createIf(() => (_ctx.activeTab === 'css'), () => {
+          const n138 = t33()
+          const n137 = _next(_child(n138), 1)
+          const n139 = _child(n137)
+          const n141 = _child(n139)
+          const n140 = _next(n139, 1)
+          const n142 = _child(n140)
+          _applyCheckboxModel(n141, () => (_ctx.cssOptions.minify), _value => (_ctx.cssOptions.minify = _value))
+          _applyCheckboxModel(n142, () => (_ctx.cssOptions.scoped), _value => (_ctx.cssOptions.scoped = _value))
+          _setInsertionState(n138, null, true)
+          const n143 = _createIf(() => (_ctx.cssResult), () => {
+            _setInsertionState(n138, null, true)
+            const n147 = t27()
+            const n145 = _next(_child(n147), 1)
+            const n148 = _child(n145)
+            n148.$evtclick = _createInvoker(() => (_ctx.copyToClipboard(_ctx.formattedCss || _ctx.cssResult.code)))
+            const _component_CodeHighlight = _ctx.CodeHighlight
+            _setInsertionState(n147, null, true)
+            const n146 = _createComponentWithFallback(_component_CodeHighlight, {
+    code: () => (_ctx.formattedCss || _ctx.cssResult.code),
+    language: () => ("css"),
+    theme: () => (_ctx.theme),
+    "show-line-numbers": undefined
+  }, null, true)
+            const n149 = _createIf(() => (_ctx.cssResult.cssVars?.length > 0), () => {
+              const n152 = t29()
+              const n151 = _next(_child(n152), 1)
+              _setInsertionState(n151, null, true)
+              const n153 = _createFor(() => (_ctx.cssResult.cssVars), (_for_item0, _for_key0) => {
+                const n156 = t28()
+                const n155 = _child(n156)
+                const x155 = _txt(n155)
+                _renderEffect(() => _setText(x155, _toDisplayString(_for_item0.value)))
+                return n156
+              }, (v, i) => (i), 1)
+              return n152
+            })
+            const n157 = _createIf(() => (_ctx.cssResult.errors?.length > 0), () => {
+              const n162 = t31()
+              _setInsertionState(n162, null, true)
+              const n159 = _createFor(() => (_ctx.cssResult.errors), (_for_item0, _for_key0) => {
+                const n161 = t30()
+                const x161 = _txt(n161)
+                _renderEffect(() => _setText(x161, _toDisplayString(_for_item0.value)))
+                return n161
+              }, (err, i) => (i), 1)
+              return n162
+            })
+            return [n147, n149, n157]
+          }, () => {
+            const n164 = t32()
+            return n164
+          })
+          return n138
+}, () => _createIf(() => (_ctx.activeTab === 'bindings' && _ctx.sfcResult?.script?.bindings), () => {
+          const n169 = t37()
+          const n167 = _next(_child(n169), 1)
+          const n168 = _next(n167, 1)
+          _setInsertionState(n167, null, true)
+          const n170 = _createFor(() => (_ctx.bindingsSummary), (_for_item0, _for_key0) => {
+            const n174 = t34()
+            const n172 = _child(n174)
+            const n173 = _next(n172, 1)
+            const x172 = _txt(n172)
+            const x173 = _txt(n173)
+            _renderEffect(() => {
+              _setText(x172, _toDisplayString(_for_item0.value))
+              _setClass(n173, ['summary-type', \`type-\${_for_key0.value}\`])
+              _setText(x173, _toDisplayString(_for_key0.value))
+            })
+            return n174
+          }, (count, type) => (type), 1)
+          _setInsertionState(n168, null, true)
+          const n175 = _createFor(() => (_ctx.groupedBindings), (_for_item0, _for_key0) => {
+            const n179 = t36()
+            const n177 = _child(n179)
+            const n180 = _child(n177)
+            const n181 = _next(n180, 1)
+            const n182 = _next(n181, 1)
+            const n178 = _next(n177, 1)
+            const x180 = _txt(n180)
+            const x181 = _txt(n181)
+            const x182 = _txt(n182)
+            _setInsertionState(n178, null, true)
+            const n183 = _createFor(() => (_for_item0.value), (_for_item1) => {
+              const n185 = t35()
+              const x185 = _txt(n185)
+              _renderEffect(() => {
+                _setClass(n185, ['var-chip', \`type-\${_for_key0.value}\`])
+                _setText(x185, _toDisplayString(_for_item1.value))
+              })
+              return n185
+            }, (v) => (v), 1)
+            _renderEffect(() => {
+              _setClass(n177, ['group-header', \`type-\${_for_key0.value}\`])
+              _setText(x180, _toDisplayString(_ctx.getBindingIcon(_for_key0.value as string)))
+              _setText(x181, _toDisplayString(_ctx.getBindingLabel(_for_key0.value as string)))
+              _setText(x182, _toDisplayString(_for_item0.value.length))
+            })
+            return n179
+          }, (vars, type) => (type), 1)
+          return n169
+}, () => _createIf(() => (_ctx.activeTab === 'bindings'), () => {
+          const n188 = t38()
+          return n188
+}, () => _createIf(() => (_ctx.activeTab === 'tokens'), () => {
+          const n194 = t45()
+          const n191 = _child(n194)
+          const n195 = _child(n191)
+          const n199 = _child(n195)
+          const n196 = _next(n195, 1)
+          const n200 = _child(n196)
+          const n197 = _next(n196, 1)
+          const n201 = _child(n197)
+          const n198 = _next(n197, 1)
+          const n202 = _child(n198)
+          const n192 = _next(n191, 2)
+          const n193 = _next(n192, 2)
+          const x199 = _txt(n199)
+          const x200 = _txt(n200)
+          const x201 = _txt(n201)
+          const x202 = _txt(n202)
+          _setInsertionState(n192, null, true)
+          const n203 = _createFor(() => (_ctx.lexicalTokens), (_for_item0, _for_key0) => {
+            const n207 = t41()
+            const n205 = _child(n207)
+            const n206 = _next(n205, 1)
+            const n208 = _child(n206)
+            const n209 = _next(n208, 1)
+            const x205 = _txt(n205)
+            const x209 = _txt(n209)
+            _setInsertionState(n208, null, true)
+            const n210 = _createIf(() => (_for_item0.value.name), () => {
+              const n212 = t39()
+              const x212 = _txt(n212)
+              _renderEffect(() => _setText(x212, _toDisplayString(_for_item0.value.name)))
+              return n212
+            })
+            _setInsertionState(n208, null, true)
+            const n213 = _createIf(() => (_for_item0.value.value), () => {
+              const n215 = t40()
+              const x215 = _txt(n215)
+              _renderEffect(() => _setText(x215, _toDisplayString(_for_item0.value.value)))
+              return n215
+            })
+            _renderEffect(() => {
+              _setStyle(n207, { '--token-color': _ctx.getTokenTypeColor(_for_item0.value.type) })
+              _setStyle(n205, { background: _ctx.getTokenTypeColor(_for_item0.value.type) })
+              _setText(x205, _toDisplayString(_ctx.getTokenTypeIcon(_for_item0.value.type)))
+              _setText(x209, _toDisplayString(_for_item0.value.line) + ":" + _toDisplayString(_for_item0.value.column))
+            })
+            return n207
+          }, (token, i) => (i), 1)
+          _setInsertionState(n193, null, true)
+          const n216 = _createFor(() => (_ctx.tokensByType), (_for_item0, _for_key0) => {
+            _setInsertionState(n193, null, true)
+            const n218 = _createIf(() => (_for_item0.value.length > 0), () => {
+              const n222 = t44()
+              const n220 = _child(n222)
+              const n223 = _child(n220)
+              const n224 = _next(n223, 1)
+              const n225 = _next(n224, 1)
+              const n221 = _next(n220, 1)
+              const x223 = _txt(n223)
+              const x224 = _txt(n224)
+              const x225 = _txt(n225)
+              _setInsertionState(n221, null, true)
+              const n226 = _createFor(() => (_for_item0.value.slice(0, 12)), (_for_item1, _for_key1) => {
+                const n228 = t42()
+                const x228 = _txt(n228)
+                _renderEffect(() => {
+                  _setStyle(n228, {
+                      '--chip-color': _ctx.getTokenTypeColor(String(_for_key0.value)),
+                    })
+                  _setText(x228, _toDisplayString(_for_item1.value.name || _for_item1.value.value?.slice(0, 25) || _for_item1.value.raw.slice(0, 25)))
+                })
+                return n228
+              }, (token, i) => (i), 1)
+              _setInsertionState(n221, null, true)
+              const n229 = _createIf(() => (_for_item0.value.length > 12), () => {
+                const n231 = t43()
+                const x231 = _txt(n231)
+                _renderEffect(() => _setText(x231, "\\n                    +" + _toDisplayString(_for_item0.value.length - 12) + " more\\n                  "))
+                return n231
+              })
+              _renderEffect(() => {
+                _setStyle(n220, {
+                    borderLeftColor: _ctx.getTokenTypeColor(String(_for_key0.value)),
+                  })
+                _setStyle(n223, {
+                      background: _ctx.getTokenTypeColor(String(_for_key0.value)),
+                    })
+                _setText(x223, _toDisplayString(_ctx.getTokenTypeIcon(String(_for_key0.value))))
+                _setText(x224, _toDisplayString(_ctx.getTokenTypeLabel(String(_for_key0.value))))
+                _setText(x225, _toDisplayString(_for_item0.value.length))
+              })
+              return n222
+            })
+            return n218
+          })
+          _renderEffect(() => {
+            _setText(x199, _toDisplayString(_ctx.tokenStats.total))
+            _setText(x200, _toDisplayString(_ctx.tokenStats.tags))
+            _setText(x201, _toDisplayString(_ctx.tokenStats.directives))
+            _setText(x202, _toDisplayString(_ctx.tokenStats.interpolations))
+          })
+          return n194
+        }))))))))
+        return n35
+      })
+    })
+  })
+  _renderEffect(() => {
+    _setText(x3, _toDisplayString(_ctx.inputMode === "sfc" ? "SFC (.vue)" : "Template"))
+    _setClass(n16, ['tab', { active: _ctx.activeTab === 'code' }])
+    _setClass(n17, ['tab', { active: _ctx.activeTab === 'ast' }])
+    _setClass(n18, ['tab', { active: _ctx.activeTab === 'tokens' }])
+    _setText(x18, "\\n          Tokens (" + _toDisplayString(_ctx.tokenStats.total) + ")\\n        ")
+    _setClass(n19, ['tab', { active: _ctx.activeTab === 'helpers' }])
+  })
+  return [n2, n10]
+}
+const __vaporRender = render
+
+import { computed, watch, onMounted, onUnmounted } from "vue";
+import MonacoEditor from "../../shared/MonacoEditor.vue";
+import CodeHighlight from "../../shared/CodeHighlight.vue";
+import { useTheme } from "../../utils/useTheme";
+import { useClipboard } from "../../utils/useClipboard";
+import { useAtelierCompiler } from "./useAtelierCompiler";
+import { CODE_OUTPUT_LABELS } from "./codeOutputs";
+import {
+  useTokenAnalysis,
+  getTokenTypeIcon,
+  getTokenTypeLabel,
+  getTokenTypeColor,
+} from "./useTokenAnalysis";
+import { getBindingIcon, getBindingLabel } from "./bindingHelpers";
+import { type loadWasm, getWasm } from "../../wasm/index";
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'AtelierPlayground',
+  props: {
+    compiler: { type: null }
+  },
+  render: __vaporRender,
+  setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+const props = __props;
+const { theme } = useTheme();
+const { copyToClipboard } = useClipboard();
+const {
+  inputMode,
+  source,
+  output,
+  sfcResult,
+  error,
+  activeTab,
+  isCompiling,
+  selectedPreset,
+  compileTime,
+  cssResult,
+  cssOptions,
+  formattedCss,
+  codeViewMode,
+  codeOutputTarget,
+  availableCodeOutputTargets,
+  codeOutputVersion,
+  activeCodeOutput,
+  astHideLoc,
+  astHideSource,
+  astCollapsed,
+  editorLanguage,
+  astJson,
+  bindingsSummary,
+  groupedBindings,
+  compile,
+  handlePresetChange,
+} = useAtelierCompiler(() => props.compiler ?? getWasm());
+const { lexicalTokens, tokensByType, tokenStats } = useTokenAnalysis(source);
+const activeCodeOutputText = computed(() => {
+  const code =
+    activeCodeOutput.value.isTypeScript && codeViewMode.value === "js"
+      ? activeCodeOutput.value.formattedJsCode
+      : activeCodeOutput.value.formattedCode || activeCodeOutput.value.code;
+  return activeCodeOutput.value.error || code;
+});
+const activeCodeHighlightKey = computed(
+  () => \`\${codeOutputVersion.value}:\${codeOutputTarget.value}:\${codeViewMode.value}\`,
+);
+watch(
+  () => props.compiler,
+  () => {
+    if (props.compiler) compile();
+  },
+  { immediate: true },
+);
+// Workaround for vite-plugin-vize prop reactivity issue
+let hasCompilerInitialized = false;
+let pollInterval: ReturnType<typeof setInterval> | null = null;
+function tryInitialize() {
+  const compiler = getWasm();
+  if (compiler && !hasCompilerInitialized) {
+    hasCompilerInitialized = true;
+    if (pollInterval) {
+      clearInterval(pollInterval);
+      pollInterval = null;
+    }
+    compile();
+  }
+}
+onMounted(() => {
+  tryInitialize();
+  if (!hasCompilerInitialized) {
+    pollInterval = setInterval(tryInitialize, 100);
+    setTimeout(() => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    }, 10000);
+  }
+});
+onUnmounted(() => {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+  }
+});
+
+const __returned__ = { inputMode, groupedBindings, tokensByType, pollInterval, handlePresetChange, isCompiling, CODE_OUTPUT_LABELS, watch, useClipboard, getBindingLabel, cssResult, cssOptions, compileTime, codeOutputTarget, activeTab, availableCodeOutputTargets, getWasm, astCollapsed, editorLanguage, lexicalTokens, hasCompilerInitialized, astJson, tryInitialize, useAtelierCompiler, activeCodeOutput, compile, activeCodeHighlightKey, astHideSource, getBindingIcon, MonacoEditor, source, selectedPreset, tokenStats, getTokenTypeIcon, getTokenTypeLabel, astHideLoc, bindingsSummary, copyToClipboard, error, codeOutputVersion, getTokenTypeColor, sfcResult, useTokenAnalysis, theme, props, onUnmounted, activeCodeOutputText, computed, useTheme, CodeHighlight, onMounted, output, codeViewMode, formattedCss }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})"
+`;
+
+exports[`vite-plugin vapor options > keeps Tres-style custom renderer intrinsics as elements around imported lowercase components 1`] = `
+"import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+
+const t0 = _template("<group></group>", true)
+const t1 = _template("<mesh></mesh>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n4 = t1()
+  _setInsertionState(n4, null, true)
+  const n0 = _createIf(() => (_ctx.visible), () => {
+    const n3 = t0()
+    const _component_primitive = _ctx.Primitive
+    _setInsertionState(n3, null, true)
+    const n2 = _createComponentWithFallback(_component_primitive, null, null, true)
+    return n3
+  })
+  return n4
+}
+const __vaporRender = render
+
+import { Primitive } from "@tresjs/core";
+
+const visible = true;
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'TresCustomRenderer',
+  render: __vaporRender,
+  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+
+const __returned__ = { visible, Primitive }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})"
+`;
+
+exports[`vite-plugin vapor options > keeps v-for aliases inside Vapor v-html expressions 1`] = `
+"import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, applyTextModel as _applyTextModel, applySelectModel as _applySelectModel, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
+
+const t0 = _template("<span class=\\"perf-badge\\"> </span>", true)
+const t1 = _template("<span class=\\"count-badge errors\\"> </span>")
+const t2 = _template("<span class=\\"count-badge warnings\\"> </span>")
+const t3 = _template("<span class=\\"tab-badge\\"> </span>", true)
+const t4 = _template("<div class=\\"error-panel\\"><div class=\\"error-header\\">Lint Error</div><pre class=\\"error-content\\"> </pre></div>", true)
+const t5 = _template("<option> </option>")
+const t6 = _template("<div class=\\"success-state\\"><svg class=\\"success-icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><span>No issues found</span></div>")
+const t7 = _template("<div class=\\"diagnostic-help\\"><div class=\\"help-header\\"><span class=\\"help-icon\\">?</span><span class=\\"help-label\\">Hint</span></div><div class=\\"help-content\\"></div></div>")
+const t8 = _template("<div><div class=\\"diagnostic-header\\"><svg class=\\"severity-icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><code class=\\"rule-id\\"> </code><span class=\\"location-badge\\"> </span></div><div class=\\"diagnostic-message\\"> </div></div>")
+const t9 = _template("<div class=\\"diagnostics-list\\"></div>")
+const t10 = _template("<div class=\\"diagnostics-output\\"><div class=\\"output-header-bar\\"><span class=\\"output-title\\">Issues</span><div class=\\"locale-selector\\"><select aria-label=\\"Locale\\"></select></div></div></div>")
+const t11 = _template("<option> </option>")
+const t12 = _template("<span class=\\"badge fixable-badge\\">fix</span>")
+const t13 = _template("<div><div class=\\"rule-main\\"><label class=\\"rule-toggle\\"><input type=\\"checkbox\\" class=\\"rule-checkbox\\"><code class=\\"rule-id\\"> </code></label><div class=\\"rule-badges\\"><span class=\\"badge category-badge\\"> </span><span> </span></div></div><div class=\\"rule-description\\"> </div></div>")
+const t14 = _template("<div class=\\"empty-state\\">\\n                No rules match your search\\n              </div>")
+const t15 = _template("<div class=\\"category-toggle\\"><label class=\\"toggle-label\\"><input type=\\"checkbox\\" class=\\"rule-checkbox\\"><span class=\\"category-label\\"> </span><span class=\\"category-count\\"> </span></label></div>")
+const t16 = _template("<div class=\\"rules-output\\"><div class=\\"output-header-bar\\"><span class=\\"output-title\\">Rule Configuration</span><div class=\\"rules-actions\\"><div class=\\"preset-actions\\" role=\\"group\\" aria-label=\\"Lint preset\\"><button>\\n                    General Recommended\\n                  </button><button>\\n                    Opinionated\\n                  </button></div><button class=\\"btn-action\\">Enable All</button><button class=\\"btn-action\\">Disable All</button></div></div><div class=\\"rules-toolbar\\"><input type=\\"text\\" placeholder=\\"Search rules...\\" aria-label=\\"Search rules\\" class=\\"search-input\\"><select aria-label=\\"Category filter\\" class=\\"category-select\\"></select></div><div class=\\"rules-list\\"></div></div>")
+const t17 = _template("<div class=\\"loading-state\\"><span>Enter Vue code to see lint results</span></div>", true)
+const t18 = _template("<div class=\\"patina-playground\\"><div class=\\"panel input-panel\\"><div class=\\"panel-header\\"><div class=\\"header-title\\"><svg class=\\"icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><h2>Source</h2></div><div class=\\"panel-actions\\"><button class=\\"btn-ghost\\">Reset</button></div></div><div class=\\"editor-container\\"></div></div><div class=\\"panel output-panel\\"><div class=\\"panel-header\\"><div class=\\"header-title\\"><svg class=\\"icon\\" viewBox=\\"0 0 24 24\\"><path fill=\\"currentColor\\"></path></svg><h2>Lint Analysis</h2></div><div class=\\"tabs\\"><button>\\n            Diagnostics\\n            </button><button>\\n            Rules\\n            <span class=\\"tab-count\\"> </span></button></div></div><div class=\\"output-content\\"></div></div></div>", true)
+_delegateEvents("click")
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n2 = t18()
+  const n0 = _child(n2)
+  const n3 = _child(n0)
+  const n5 = _child(n3)
+  const n7 = _child(n5)
+  const n8 = _child(n7)
+  const n6 = _next(n5, 1)
+  const n9 = _child(n6)
+  const n4 = _next(n3, 1)
+  const n1 = _next(n0, 1)
+  const n11 = _child(n1)
+  const n13 = _child(n11)
+  const n15 = _child(n13)
+  const n16 = _child(n15)
+  const n14 = _next(n13, 1)
+  const n28 = _child(n14)
+  const n29 = _next(n28, 1)
+  const n33 = _next(_child(n29), 1)
+  const n12 = _next(n11, 1)
+  const x33 = _txt(n33)
+  n9.$evtclick = _createInvoker(() => (_ctx.source = _ctx.LINT_PRESET))
+  const _component_MonacoEditor = _ctx.MonacoEditor
+  _setInsertionState(n4, null, true)
+  const n10 = _createComponentWithFallback(_component_MonacoEditor, {
+    ref: () => ("editorRef"),
+    modelValue: () => (_ctx.source),
+    "onUpdate:modelValue": () => _value => (_ctx.source = _value),
+    language: () => ("vue"),
+    diagnostics: () => (_ctx.diagnostics),
+    theme: () => (_ctx.theme)
+  }, null, true)
+  _setInsertionState(n13, null, true)
+  const n17 = _createIf(() => (_ctx.lintTime !== null), () => {
+    const n19 = t0()
+    const x19 = _txt(n19)
+    _renderEffect(() => _setText(x19, _toDisplayString(_ctx.lintTime.toFixed(2)) + "ms "))
+    return n19
+  })
+  _setInsertionState(n13, null, true)
+  const n20 = _createIf(() => (_ctx.lintResult), () => {
+    _setInsertionState(n13, null, true)
+    const n22 = _createIf(() => (_ctx.errorCount > 0), () => {
+      const n24 = t1()
+      const x24 = _txt(n24)
+      _renderEffect(() => _setText(x24, _toDisplayString(_ctx.errorCount)))
+      return n24
+    })
+    const n25 = _createIf(() => (_ctx.warningCount > 0), () => {
+      const n27 = t2()
+      const x27 = _txt(n27)
+      _renderEffect(() => _setText(x27, _toDisplayString(_ctx.warningCount)))
+      return n27
+    })
+    return [n22, n25]
+  })
+  n28.$evtclick = _createInvoker(() => (_ctx.activeTab = 'diagnostics'))
+  _setInsertionState(n28, null, true)
+  const n30 = _createIf(() => (_ctx.lintResult?.diagnostics.length), () => {
+    const n32 = t3()
+    const x32 = _txt(n32)
+    _renderEffect(() => _setText(x32, _toDisplayString(_ctx.lintResult.diagnostics.length)))
+    return n32
+  })
+  n29.$evtclick = _createInvoker(() => (_ctx.activeTab = 'rules'))
+  _setInsertionState(n12, null, true)
+  const n34 = _createIf(() => (_ctx.error), () => {
+    const n37 = t4()
+    const n36 = _next(_child(n37), 1)
+    const x36 = _txt(n36)
+    _renderEffect(() => _setText(x36, _toDisplayString(_ctx.error)))
+    return n37
+  }, () => {
+    _setInsertionState(n12, null, true)
+    return _createIf(() => (_ctx.lintResult), () => {
+      _setInsertionState(n12, null, true)
+      const n39 = _createIf(() => (_ctx.activeTab === 'diagnostics'), () => {
+        const n42 = t10()
+        const n41 = _child(n42)
+        const n43 = _next(_child(n41), 1)
+        const n44 = _child(n43)
+        _applySelectModel(n44, () => (_ctx.currentLocale), _value => (_ctx.currentLocale = _value))
+        n44.$evtchange = _createInvoker(() => (_ctx.setLocale(_ctx.currentLocale)))
+        _setInsertionState(n44, null, true)
+        const n45 = _createFor(() => (_ctx.locales), (_for_item0) => {
+          const n47 = t5()
+          const x47 = _txt(n47)
+          _renderEffect(() => {
+            _setProp(n47, "value", _for_item0.value.code)
+            _setText(x47, _toDisplayString(_for_item0.value.name))
+          })
+          return n47
+        }, (locale) => (locale.code), 1)
+        _setInsertionState(n42, null, true)
+        const n48 = _createIf(() => (_ctx.lintResult.diagnostics.length === 0), () => {
+          const n51 = t6()
+          const n50 = _child(n51)
+          const n52 = _child(n50)
+          _renderEffect(() => _setProp(n52, "d", _ctx.mdiCheck))
+          return n51
+        }, () => {
+          const n67 = t9()
+          _setInsertionState(n67, null, true)
+          const n54 = _createFor(() => (_ctx.lintResult.diagnostics), (_for_item0, _for_key0) => {
+            const n58 = t8()
+            const n56 = _child(n58)
+            const n59 = _child(n56)
+            const n62 = _child(n59)
+            const n60 = _next(n59, 1)
+            const n61 = _next(n60, 1)
+            const n57 = _next(n56, 1)
+            const x60 = _txt(n60)
+            const x61 = _txt(n61)
+            const x57 = _txt(n57)
+            _setInsertionState(n58, null, true)
+            const n63 = _createIf(() => (_for_item0.value.help), () => {
+              const n66 = t7()
+              const n65 = _next(_child(n66), 1)
+              _renderEffect(() => {
+                n65.innerHTML = _ctx.formatHelp(_for_item0.value.help)
+              })
+              return n66
+            })
+            _renderEffect(() => {
+              _setClass(n58, ['diagnostic-item', \`severity-\${_for_item0.value.severity}\`])
+              _setProp(n62, "d", _ctx.getSeverityIcon(_for_item0.value.severity))
+              _setText(x60, _toDisplayString(_for_item0.value.rule))
+              _setText(x61, _toDisplayString(_for_item0.value.location.start.line) + ":" + _toDisplayString(_for_item0.value.location.start.column))
+              _setText(x57, _toDisplayString(_for_item0.value.message))
+            })
+            return n58
+          }, (diagnostic, i) => (i), 1)
+          return n67
+        })
+        return n42
+}, () => _createIf(() => (_ctx.activeTab === 'rules'), () => {
+        const n72 = t16()
+        const n69 = _child(n72)
+        const n73 = _next(_child(n69), 1)
+        const n74 = _child(n73)
+        const n77 = _child(n74)
+        const n78 = _next(n77, 1)
+        const n75 = _next(n74, 1)
+        const n76 = _next(n75, 1)
+        const n70 = _next(n69, 1)
+        const n79 = _child(n70)
+        const n80 = _next(n79, 1)
+        const n71 = _next(n70, 1)
+        n77.$evtclick = _createInvoker(() => (_ctx.applyPreset('general-recommended')))
+        n78.$evtclick = _createInvoker(() => (_ctx.applyPreset('opinionated')))
+        n75.$evtclick = _createInvoker(e => _ctx.enableAllRules(e))
+        n76.$evtclick = _createInvoker(e => _ctx.disableAllRules(e))
+        _applyTextModel(n79, () => (_ctx.searchQuery), _value => (_ctx.searchQuery = _value))
+        _applySelectModel(n80, () => (_ctx.selectedCategory), _value => (_ctx.selectedCategory = _value))
+        _setInsertionState(n80, null, true)
+        const n81 = _createFor(() => (_ctx.categories), (_for_item0) => {
+          const n83 = t11()
+          const x83 = _txt(n83)
+          _renderEffect(() => {
+            _setProp(n83, "value", _for_item0.value)
+            _setText(x83, _toDisplayString(_for_item0.value === "all" ? "All Categories" : _for_item0.value))
+          })
+          return n83
+        }, (cat) => (cat), 1)
+        _setInsertionState(n71, null, true)
+        const n84 = _createFor(() => (_ctx.filteredRules), (_for_item0) => {
+          const n88 = t13()
+          const n86 = _child(n88)
+          const n89 = _child(n86)
+          const n91 = _child(n89)
+          const n92 = _next(n91, 1)
+          const n90 = _next(n89, 1)
+          const n93 = _child(n90)
+          const n94 = _next(n93, 1)
+          const n87 = _next(n86, 1)
+          const x92 = _txt(n92)
+          const x93 = _txt(n93)
+          const x94 = _txt(n94)
+          const x87 = _txt(n87)
+          n91.$evtchange = _createInvoker(() => (_ctx.toggleRule(_for_item0.value.name)))
+          _setInsertionState(n90, null, true)
+          const n95 = _createIf(() => (_for_item0.value.fixable), () => {
+            const n97 = t12()
+            return n97
+          })
+          _renderEffect(() => {
+            _setClass(n88, ['rule-item', { disabled: !_ctx.enabledRules.has(_for_item0.value.name) }])
+            _setProp(n91, "checked", _ctx.enabledRules.has(_for_item0.value.name))
+            _setText(x92, _toDisplayString(_for_item0.value.name))
+            _setText(x93, _toDisplayString(_for_item0.value.category))
+            _setClass(n94, ['badge', 'severity-badge', _for_item0.value.defaultSeverity])
+            _setText(x94, _toDisplayString(_for_item0.value.defaultSeverity))
+            _setText(x87, _toDisplayString(_for_item0.value.description))
+          })
+          return n88
+        }, (rule) => (rule.name), 1)
+        _setInsertionState(n71, null, true)
+        const n98 = _createIf(() => (_ctx.filteredRules.length === 0), () => {
+          const n100 = t14()
+          return n100
+        })
+        _setInsertionState(n72, null, true)
+        const n101 = _createIf(() => (_ctx.selectedCategory !== 'all'), () => {
+          const n104 = t15()
+          const n103 = _child(n104)
+          const n105 = _child(n103)
+          const n106 = _next(n105, 1)
+          const n107 = _next(n106, 1)
+          const x106 = _txt(n106)
+          const x107 = _txt(n107)
+          n105.$evtchange = _createInvoker(($event: any) => (_ctx.toggleCategory(_ctx.selectedCategory, $event.target.checked)))
+          _renderEffect(() => {
+            _setProp(n105, "checked", _ctx.isCategoryFullyEnabled(_ctx.selectedCategory))
+            _setProp(n105, "indeterminate", _ctx.isCategoryPartiallyEnabled(_ctx.selectedCategory))
+            _setText(x106, _toDisplayString(_ctx.selectedCategory))
+            _setText(x107, _toDisplayString(_ctx.filteredRules.length) + " rules")
+          })
+          return n104
+        })
+        _renderEffect(() => {
+          _setClass(n77, [
+                      'btn-action',
+                      'btn-preset',
+                      { active: _ctx.selectedPreset === 'general-recommended' },
+                    ])
+          _setClass(n78, [
+                      'btn-action',
+                      'btn-preset',
+                      { active: _ctx.selectedPreset === 'opinionated' },
+                    ])
+        })
+        return n72
+      }))
+      return n39
+    }, () => {
+      const n110 = t17()
+      return n110
+    })
+  })
+  _renderEffect(() => {
+    _setProp(n8, "d", _ctx.mdiAlert)
+    _setProp(n16, "d", _ctx.mdiCheckCircle)
+    _setClass(n28, ['tab', { active: _ctx.activeTab === 'diagnostics' }])
+    _setClass(n29, ['tab', { active: _ctx.activeTab === 'rules' }])
+    _setText(x33, _toDisplayString(_ctx.enabledRuleCount) + "/" + _toDisplayString(_ctx.rules.length))
+  })
+  return n2
+}
+const __vaporRender = render
+
+import "./PatinaPlayground.css";
+import { ref, watch, computed, onMounted, onUnmounted, inject, type ComputedRef } from "vue";
+import MonacoEditor from "../../shared/MonacoEditor.vue";
+import type { WasmModule, LintResult, LintRule } from "../../wasm/index";
+import { getWasm } from "../../wasm/index";
+import { LINT_PRESET } from "../../shared/presets/patina";
+import { mdiAlert, mdiCheckCircle, mdiCheck } from "@mdi/js";
+import { formatHelp } from "../../utils/highlightCode";
+import { useLocale } from "./useLocale";
+import { useRuleManagement } from "./useRuleManagement";
+import { useLinting } from "./useLinting";
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'PatinaPlayground',
+  props: {
+    compiler: { type: null }
+  },
+  render: __vaporRender,
+  setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+const props = __props;
+const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
+const theme = computed<"dark" | "light">(() => _injectedTheme?.value ?? "light");
+const source = ref(LINT_PRESET);
+const lintResult = ref<LintResult | null>(null);
+const rules = ref<LintRule[]>([]);
+const error = ref<string | null>(null);
+const activeTab = ref<"diagnostics" | "rules">("diagnostics");
+const lintTime = ref<number | null>(null);
+const editorRef = ref<InstanceType<typeof MonacoEditor> | null>(null);
+// Wire in composables (lazy callbacks to resolve circular dependency)
+let lintFn: () => void = () => {};
+const { locales, currentLocale, loadLocaleConfig, setLocale } = useLocale(() => lintFn());
+const {
+  selectedPreset,
+  enabledRules,
+  severityOverrides,
+  selectedCategory,
+  searchQuery,
+  categories,
+  filteredRules,
+  loadRuleConfig,
+  initializeRuleState,
+  applyPreset,
+  toggleRule,
+  toggleCategory,
+  enableAllRules,
+  disableAllRules,
+  isCategoryFullyEnabled,
+  isCategoryPartiallyEnabled,
+} = useRuleManagement(rules, () => lintFn());
+const { lint, loadRules, registerHoverProvider, disposeHoverProvider, getSeverityIcon } =
+  useLinting({
+    source,
+    selectedPreset,
+    enabledRules,
+    severityOverrides,
+    currentLocale,
+    editorRef,
+    lintResult,
+    rules,
+    error,
+    lintTime,
+    initializeRuleState,
+  });
+lintFn = lint;
+const errorCount = computed(() => lintResult.value?.errorCount ?? 0);
+const warningCount = computed(() => lintResult.value?.warningCount ?? 0);
+const enabledRuleCount = computed(() => enabledRules.value.size);
+const diagnostics = computed(() => {
+  if (!lintResult.value?.diagnostics) return [];
+  return lintResult.value.diagnostics.map((d) => ({
+    message: d.message,
+    help: d.help,
+    startLine: d.location.start.line,
+    startColumn: d.location.start.column,
+    endLine: d.location.end?.line ?? d.location.start.line,
+    endColumn: d.location.end?.column ?? d.location.start.column + 1,
+    severity: d.severity,
+  }));
+});
+let lintTimer: ReturnType<typeof setTimeout> | null = null;
+watch(
+  source,
+  () => {
+    if (lintTimer) clearTimeout(lintTimer);
+    lintTimer = setTimeout(lint, 300);
+  },
+  { immediate: true },
+);
+// Workaround for vite-plugin-vize prop reactivity issue
+let hasCompilerInitialized = false;
+let pollInterval: ReturnType<typeof setInterval> | null = null;
+function tryInitialize() {
+  const compiler = getWasm();
+  if (compiler && !hasCompilerInitialized) {
+    hasCompilerInitialized = true;
+    if (pollInterval) {
+      clearInterval(pollInterval);
+      pollInterval = null;
+    }
+    loadRules();
+    lint();
+  }
+}
+onMounted(() => {
+  loadLocaleConfig();
+  loadRuleConfig();
+  registerHoverProvider();
+  tryInitialize();
+  if (!hasCompilerInitialized) {
+    pollInterval = setInterval(tryInitialize, 100);
+    setTimeout(() => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    }, 10000);
+  }
+});
+onUnmounted(() => {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+  }
+  disposeHoverProvider();
+});
+
+const __returned__ = { filteredRules, severityOverrides, disposeHoverProvider, watch, isCategoryFullyEnabled, warningCount, useLocale, getWasm, lintResult, isCategoryPartiallyEnabled, lintFn, lintTimer, MonacoEditor, enabledRules, lint, editorRef, categories, diagnostics, theme, props, registerHoverProvider, computed, pollInterval, searchQuery, LINT_PRESET, inject, currentLocale, loadLocaleConfig, toggleCategory, initializeRuleState, mdiAlert, _injectedTheme, activeTab, locales, toggleRule, hasCompilerInitialized, tryInitialize, mdiCheckCircle, rules, useLinting, applyPreset, source, selectedPreset, getSeverityIcon, setLocale, loadRuleConfig, error, ref, selectedCategory, enabledRuleCount, onUnmounted, mdiCheck, errorCount, formatHelp, disableAllRules, enableAllRules, onMounted, loadRules, useRuleManagement, lintTime }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})"
+`;
+
+exports[`vite-plugin vapor options > treats lowercase imported Tres-style components as Vapor components 1`] = `
+"import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { createComponentWithFallback as _createComponentWithFallback } from 'vue';
+
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const _component_primitive = _ctx.Primitive
+  const n0 = _createComponentWithFallback(_component_primitive, null, null, true)
+  return n0
+}
+const __vaporRender = render
+import { Primitive } from "@tresjs/core";
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'TresPrimitive',
+  render: __vaporRender,
+  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+
+const __returned__ = { Primitive }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})"
+`;
+
+exports[`vite-plugin vapor options > warns and falls back to standard SSR when Vapor is requested for SFCs 1`] = `
+"import { defineComponent as _defineComponent } from 'vue'
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(\`<div\${_ssrRenderAttrs(_attrs)}>\${_ssrInterpolate($setup.count)}</div>\`)
+}
+
+const count = 1;
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'SsrFallback',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+
+const __returned__ = { count }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+})"
+`;

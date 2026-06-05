@@ -169,12 +169,12 @@ describe("compileCodeOutputs", () => {
     expect(outputs.dom.code).toBe("dom-script");
     expect(outputs.dom.isTypeScript).toBe(true);
     expect(outputs.dom.formattedJsCode).toBe("[babel] js:dom-script");
-    expect(outputs.ssr.code).toContain("_ssrInterpolate(count)");
-    expect(outputs.ssr.code).toContain("_ssrInterpolate(doubled.value)");
-    expect(outputs.ssr.code).not.toContain("_ctx.count");
-    expect(outputs.ssr.code).not.toContain("_ctx.doubled");
-    expect(outputs.vapor.code).toContain("_toDisplayString(count)");
-    expect(outputs.vapor.code).toContain("_toDisplayString(doubled.value)");
+    expect(outputs.ssr.code).toMatchInlineSnapshot(
+      `"function ssrRender(_ctx, _push, _parent, _attrs) { _push(_ssrInterpolate(count) + _ssrInterpolate(doubled.value)) }"`,
+    );
+    expect(outputs.vapor.code).toMatchInlineSnapshot(
+      `"export function render(_ctx) { return _toDisplayString(count) + _toDisplayString(doubled.value) }"`,
+    );
     expect(outputs.vapor.templates).toEqual(["tpl-vapor"]);
     expect(outputs.vaporSsr.code).toBe("");
     expect(compileSfc).toHaveBeenNthCalledWith(1, "<template><div /></template>", {
