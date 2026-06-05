@@ -1,13 +1,12 @@
 ---
 source: crates/vize_croquis/src/analyzer.rs
-assertion_line: 487
 expression: output
 ---
 === Bindings ===
   model: SetupRef
   emit: SetupConst
   count: Props
-  theme: SetupConst
+  theme: SetupMaybeRef
   props: SetupReactiveConst
   provide: SetupMaybeRef
   inject: SetupMaybeRef
