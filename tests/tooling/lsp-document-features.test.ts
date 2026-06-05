@@ -80,27 +80,20 @@ async function openDocument(
     textDocument: { uri, languageId, version: 1, text },
   });
 
-  const publish = (await session.waitForNotification(
-    "textDocument/publishDiagnostics",
-    (params) => isDiagnosticsForUri(params, uri),
+  const publish = (await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+    isDiagnosticsForUri(params, uri),
   )) as PublishDiagnosticsParams;
 
   return { uri, publish };
 }
 
-function requestDocumentSymbol(
-  session: LspSession,
-  uri: string,
-): Promise<DocumentSymbol[] | null> {
+function requestDocumentSymbol(session: LspSession, uri: string): Promise<DocumentSymbol[] | null> {
   return session.request("textDocument/documentSymbol", {
     textDocument: { uri },
   }) as Promise<DocumentSymbol[] | null>;
 }
 
-function requestFoldingRange(
-  session: LspSession,
-  uri: string,
-): Promise<FoldingRange[] | null> {
+function requestFoldingRange(session: LspSession, uri: string): Promise<FoldingRange[] | null> {
   return session.request("textDocument/foldingRange", {
     textDocument: { uri },
   }) as Promise<FoldingRange[] | null>;
