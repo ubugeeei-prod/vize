@@ -101,8 +101,11 @@ pub(crate) fn generate_scope_closures(
                 .iter()
                 .filter(|scope| {
                     scope.parent().is_some_and(|pid| {
-                        summary.scopes.iter().any(|s| {
-                            s.id == pid && matches!(s.kind, ScopeKind::VFor | ScopeKind::VSlot)
+                        // Scope ids are arena indices, so resolve the parent
+                        // with the O(1) indexed lookup instead of rescanning
+                        // every scope (was O(n^2) over the scope arena).
+                        summary.scopes.get_scope(pid).is_some_and(|parent| {
+                            matches!(parent.kind, ScopeKind::VFor | ScopeKind::VSlot)
                         })
                     })
                 })
@@ -557,10 +560,11 @@ fn generate_component_props(
         .filter(|s| {
             matches!(s.kind, ScopeKind::VFor | ScopeKind::VSlot)
                 && s.parent().is_none_or(|pid| {
+                    // O(1) arena lookup of the parent scope rather than a
+                    // linear find per scope (was O(n^2) over the arena).
                     summary
                         .scopes
-                        .iter()
-                        .find(|p| p.id == pid)
+                        .get_scope(pid)
                         .is_none_or(|p| !matches!(p.kind, ScopeKind::VFor | ScopeKind::VSlot))
                 })
         })
