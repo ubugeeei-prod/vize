@@ -15,7 +15,7 @@ code:
 import { useCssVars as _useCssVars } from 'vue'
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from "vue"
 
-const _hoisted_1 = { class: "box", "data-v-test": "" }
+const _hoisted_1 = { class: "box" }
 
 export default {
   __name: 'Box',

@@ -1,6 +1,5 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
-assertion_line: 368
 expression: "sfc_compile_snapshot(&descriptor.css_vars, &result)"
 ---
 css vars:
@@ -15,10 +14,7 @@ css:
 code:
 import { useCssVars as _useCssVars } from "vue";
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
-const _hoisted_1 = {
-  class: "root",
-  "data-v-test": ""
-};
+const _hoisted_1 = { class: "root" };
 export default {
   __name: "Alias",
   props: { color: {
