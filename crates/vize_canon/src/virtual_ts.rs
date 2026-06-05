@@ -145,6 +145,35 @@ const count = 1
     }
 
     #[test]
+    fn test_unresolved_component_props_are_not_checked() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = "const count = 'unknown'\n";
+        let template = r#"<AutoCard :count="count" />"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts_with_offsets(
+            &summary,
+            Some(script),
+            Some(&root),
+            0,
+            0,
+            &VirtualTsOptions::default(),
+        );
+
+        assert!(output.code.contains("const AutoCard: any"));
+        assert!(!output.code.contains("type __AutoCard_Props_0"));
+        assert!(!output.code.contains("__AutoCard_Check_0"));
+    }
+
+    #[test]
     fn test_template_instance_globals_delegate_to_component_public_instance() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 

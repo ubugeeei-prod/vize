@@ -182,6 +182,7 @@ pub(crate) fn generate_scope_closures(
                 &children_map,
                 template_prop_names,
                 template_offset,
+                options,
             )
         );
     }
@@ -435,15 +436,33 @@ fn generate_component_props(
     children_map: &FxHashMap<u32, Vec<ScopeId>>,
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
+    options: &VirtualTsOptions,
 ) {
     if summary.component_usages.is_empty() {
+        return;
+    }
+
+    let external_template_bindings: FxHashSet<&str> = options
+        .external_template_bindings
+        .iter()
+        .map(|name| name.as_str())
+        .collect();
+    let checkable_usages: Vec<(usize, &ComponentUsage)> = summary
+        .component_usages
+        .iter()
+        .enumerate()
+        .filter(|(_, usage)| {
+            component_usage_has_checkable_binding(summary, usage, &external_template_bindings)
+        })
+        .collect();
+    if checkable_usages.is_empty() {
         return;
     }
 
     // Group component usages by scope_id
     let mut components_by_scope: FxHashMap<u32, Vec<(usize, &ComponentUsage)>> =
         FxHashMap::default();
-    for (idx, usage) in summary.component_usages.iter().enumerate() {
+    for &(idx, usage) in &checkable_usages {
         components_by_scope
             .entry(usage.scope_id.as_u32())
             .or_default()
@@ -462,7 +481,7 @@ fn generate_component_props(
     // component, or `any`, it falls back to `(props: any) => void`, a no-op that
     // never reports, so only generic components take the new path and the
     // well-tested `typeof Comp extends { $props }` extraction below is preserved.
-    let any_dynamic_props = summary.component_usages.iter().any(|usage| {
+    let any_dynamic_props = checkable_usages.iter().any(|(_, usage)| {
         usage.props.iter().any(|p| {
             p.name.as_str() != "key"
                 && p.name.as_str() != "ref"
@@ -477,7 +496,7 @@ fn generate_component_props(
         );
     }
 
-    for (idx, usage) in summary.component_usages.iter().enumerate() {
+    for &(idx, usage) in &checkable_usages {
         let component_ref = to_safe_identifier(usage.name.as_str());
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
@@ -549,7 +568,7 @@ fn generate_component_props(
         .collect();
 
     ts.push_str("\n  // Component props value checks (template scope)\n");
-    for (idx, usage) in summary.component_usages.iter().enumerate() {
+    for &(idx, usage) in &checkable_usages {
         if closure_scope_ids.contains(&usage.scope_id.as_u32()) {
             continue; // Will be emitted inside v-for/v-slot scope
         }
@@ -588,6 +607,15 @@ fn generate_component_props(
             generate_closure_component_props_recursive(ts, mappings, &props_ctx, scope, "  ")
         );
     }
+}
+
+fn component_usage_has_checkable_binding(
+    summary: &Croquis,
+    usage: &ComponentUsage,
+    external_template_bindings: &FxHashSet<&str>,
+) -> bool {
+    let name = usage.name.as_str();
+    summary.bindings.bindings.contains_key(name) || external_template_bindings.contains(name)
 }
 
 /// Recursively generate a scope node (VFor/VSlot/EventHandler) and its nested children.

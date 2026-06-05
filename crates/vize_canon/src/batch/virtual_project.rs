@@ -548,7 +548,8 @@ impl VirtualProject {
         let original_paths = compiler_options
             .get("paths")
             .and_then(Value::as_object)
-            .cloned();
+            .cloned()
+            .unwrap_or_default();
 
         for option in PATH_SENSITIVE_COMPILER_OPTIONS {
             compiler_options.remove(*option);
@@ -562,8 +563,11 @@ impl VirtualProject {
         // target gets a mirror candidate first (so the generated `.vue.ts`
         // modules win) and the real-tree path as a fallback (so aliases to files
         // outside the checked set keep resolving).
-        if let Some(paths) = original_paths {
-            compiler_options.insert("paths".into(), Value::Object(self.remap_paths(&paths)));
+        if !original_paths.is_empty() {
+            compiler_options.insert(
+                "paths".into(),
+                Value::Object(self.remap_paths(&original_paths)),
+            );
         }
 
         if let Some(out_dir) = out_dir {

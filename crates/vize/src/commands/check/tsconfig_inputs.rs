@@ -747,7 +747,7 @@ fn load_tsconfig_declaration_options_inner(
     Ok(merged)
 }
 
-fn resolve_extended_tsconfig(tsconfig_path: &Path, extends: &str) -> Option<PathBuf> {
+pub(super) fn resolve_extended_tsconfig(tsconfig_path: &Path, extends: &str) -> Option<PathBuf> {
     let base_dir = tsconfig_path.parent().unwrap_or(Path::new("."));
     let mut candidates = Vec::new();
 
@@ -885,7 +885,7 @@ fn read_string_array(value: &Value, key: &str) -> Option<Vec<std::string::String
     })
 }
 
-fn read_extends_entries(value: &Value) -> Vec<std::string::String> {
+pub(super) fn read_extends_entries(value: &Value) -> Vec<std::string::String> {
     match value.get("extends") {
         Some(Value::String(extends)) => vec![extends.clone()],
         Some(Value::Array(extends)) => extends
@@ -1040,7 +1040,7 @@ fn glob_match_options() -> MatchOptions {
     }
 }
 
-fn parse_jsonc_value(content: &str) -> Result<Value, serde_json::Error> {
+pub(super) fn parse_jsonc_value(content: &str) -> Result<Value, serde_json::Error> {
     let stripped = strip_json_comments(content);
     let normalized = strip_trailing_commas(&stripped);
     serde_json::from_str(&normalized)

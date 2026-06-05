@@ -2,17 +2,25 @@
 
 #![allow(clippy::disallowed_macros)]
 
-use std::{fs, path::Path};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 use ignore::WalkBuilder;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Argument, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey, Statement,
+    Argument, BindingPattern, Declaration, ExportDefaultDeclarationKind, Expression,
+    ImportDeclarationSpecifier, ModuleExportName, ObjectExpression, ObjectPropertyKind,
+    PropertyKey, Statement,
 };
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_carton::{FxHashSet, String, ToCompactString, cstr, profile, profiler::global_profiler};
+use vize_carton::{
+    FxHashMap, FxHashSet, String, ToCompactString, append, cstr, profile, profiler::global_profiler,
+};
 
 use super::dts::{
     parse_declared_global_values, parse_interface_members_with_rewritten_imports,
@@ -20,9 +28,18 @@ use super::dts::{
 };
 use vize_canon::virtual_ts::TemplateGlobal;
 
-pub(super) fn detect_nuxt_auto_imports(options: &mut VirtualTsOptions, cwd: &Path) {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) struct NuxtPathAlias {
+    pub(super) pattern: String,
+    pub(super) targets: Vec<String>,
+}
+
+pub(super) fn detect_nuxt_auto_imports(
+    options: &mut VirtualTsOptions,
+    cwd: &Path,
+) -> Vec<NuxtPathAlias> {
     if !is_nuxt_project(cwd) {
-        return;
+        return Vec::new();
     }
 
     let mut seen_names = FxHashSet::default();
@@ -41,7 +58,7 @@ pub(super) fn detect_nuxt_auto_imports(options: &mut VirtualTsOptions, cwd: &Pat
     }
 
     let mut collected = Vec::new();
-    collect_generated_stubs(
+    let has_generated_imports = collect_generated_stubs(
         cwd,
         &mut collected,
         &mut seen_names,
@@ -49,6 +66,13 @@ pub(super) fn detect_nuxt_auto_imports(options: &mut VirtualTsOptions, cwd: &Pat
     );
     collect_plugin_injection_stubs(cwd, &mut collected, &mut seen_names);
     collect_fallback_stubs(&mut collected, &mut seen_names);
+    if !has_generated_imports {
+        collect_module_fallback_stubs(cwd, &mut collected, &mut seen_names);
+        collect_source_auto_import_stubs(cwd, &mut collected, &mut seen_names);
+        collect_source_type_auto_import_stubs(cwd, &mut collected);
+    }
+    collect_fallback_module_stubs(cwd, &mut collected);
+    let path_aliases = collect_fallback_path_aliases(cwd);
     collect_generated_template_globals(cwd, options, &seen_names);
 
     for stub in &collected {
@@ -63,6 +87,585 @@ pub(super) fn detect_nuxt_auto_imports(options: &mut VirtualTsOptions, cwd: &Pat
     let mut external_template_bindings = external_template_bindings.into_iter().collect::<Vec<_>>();
     external_template_bindings.sort();
     options.external_template_bindings = external_template_bindings;
+    path_aliases
+}
+
+fn collect_fallback_module_stubs(cwd: &Path, stubs: &mut Vec<String>) {
+    let imports = collect_nuxt_virtual_module_imports(cwd);
+    if imports.is_empty() {
+        return;
+    }
+
+    let mut modules: Vec<_> = imports.into_iter().collect();
+    modules.sort_by(|left, right| left.0.cmp(&right.0));
+    for (module, imports) in modules {
+        if let Some(stub) = render_module_stub(module.as_str(), &imports) {
+            stubs.push(stub);
+        }
+    }
+}
+
+fn collect_fallback_path_aliases(cwd: &Path) -> Vec<NuxtPathAlias> {
+    let source_target = if cwd.join("app").is_dir() {
+        "app/*"
+    } else {
+        "*"
+    };
+
+    let mut aliases = Vec::new();
+    for (pattern, targets) in [
+        ("~/*", vec![source_target]),
+        ("@/*", vec![source_target]),
+        ("~~/*", vec!["*"]),
+        ("@@/*", vec!["*"]),
+    ] {
+        push_path_alias(&mut aliases, pattern, targets);
+    }
+    if cwd.join("shared").is_dir() {
+        push_path_alias(&mut aliases, "#shared/*", vec!["shared/*"]);
+    }
+    aliases
+}
+
+fn push_path_alias(aliases: &mut Vec<NuxtPathAlias>, pattern: &str, targets: Vec<&str>) {
+    if aliases
+        .iter()
+        .any(|alias| alias.pattern.as_str() == pattern)
+    {
+        return;
+    }
+    aliases.push(NuxtPathAlias {
+        pattern: pattern.into(),
+        targets: targets.into_iter().map(Into::into).collect(),
+    });
+}
+
+fn collect_source_auto_import_stubs(
+    cwd: &Path,
+    stubs: &mut Vec<String>,
+    seen_names: &mut FxHashSet<String>,
+) {
+    let mut imports = FxHashMap::default();
+    for root in nuxt_auto_import_roots(cwd) {
+        let walker = WalkBuilder::new(root)
+            .hidden(false)
+            .standard_filters(true)
+            .build();
+
+        for entry in walker.flatten() {
+            let path = entry.path();
+            if !path.is_file() || !is_script_source(path) {
+                continue;
+            }
+            let Ok(source) = tracked_read_to_string(path) else {
+                continue;
+            };
+            collect_source_auto_imports_from_source(path, source.as_str(), &mut imports);
+        }
+    }
+
+    let mut imports: Vec<_> = imports.into_iter().collect();
+    imports.sort_by(|left, right| left.0.cmp(&right.0));
+    for (name, kind) in imports {
+        match kind {
+            SourceAutoImportKind::Function => {
+                push_generic_function_stub(stubs, seen_names, name.as_str());
+            }
+            SourceAutoImportKind::Composable => {
+                push_stub(stubs, seen_names, generic_composable_stub(name.as_str()));
+            }
+            SourceAutoImportKind::Value => {
+                push_declared_const(stubs, seen_names, name.as_str(), "any");
+            }
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SourceAutoImportKind {
+    Value,
+    Function,
+    Composable,
+}
+
+fn nuxt_auto_import_roots(cwd: &Path) -> Vec<PathBuf> {
+    [
+        "app/composables",
+        "app/utils",
+        "composables",
+        "utils",
+        "shared/utils",
+    ]
+    .into_iter()
+    .map(|dir| cwd.join(dir))
+    .filter(|path| path.is_dir())
+    .collect()
+}
+
+fn collect_source_type_auto_import_stubs(cwd: &Path, stubs: &mut Vec<String>) {
+    let mut names = FxHashSet::default();
+    for root in nuxt_type_auto_import_roots(cwd) {
+        let walker = WalkBuilder::new(root)
+            .hidden(false)
+            .standard_filters(true)
+            .build();
+
+        for entry in walker.flatten() {
+            let path = entry.path();
+            if !path.is_file() || !is_script_source(path) {
+                continue;
+            }
+            let Ok(source) = tracked_read_to_string(path) else {
+                continue;
+            };
+            collect_source_type_auto_import_names_from_source(path, source.as_str(), &mut names);
+        }
+    }
+
+    let mut names: Vec<_> = names.into_iter().collect();
+    names.sort();
+    for name in names {
+        stubs.push(cstr!("type {name} = any;"));
+    }
+}
+
+fn nuxt_type_auto_import_roots(cwd: &Path) -> Vec<PathBuf> {
+    ["app/types", "types", "shared/types"]
+        .into_iter()
+        .map(|dir| cwd.join(dir))
+        .filter(|path| path.is_dir())
+        .collect()
+}
+
+fn is_script_source(path: &Path) -> bool {
+    matches!(
+        path.extension().and_then(|ext| ext.to_str()),
+        Some("ts" | "tsx" | "js" | "jsx" | "mts" | "cts" | "mjs" | "cjs")
+    )
+}
+
+fn collect_source_type_auto_import_names_from_source(
+    path: &Path,
+    source: &str,
+    names: &mut FxHashSet<String>,
+) {
+    let allocator = Allocator::default();
+    let ret = Parser::new(&allocator, source, source_type_for_path(path)).parse();
+
+    for statement in &ret.program.body {
+        let Statement::ExportNamedDeclaration(export) = statement else {
+            continue;
+        };
+        if let Some(declaration) = &export.declaration {
+            match declaration {
+                Declaration::TSTypeAliasDeclaration(alias)
+                    if is_ts_identifier(alias.id.name.as_str()) =>
+                {
+                    names.insert(alias.id.name.to_compact_string());
+                }
+                Declaration::TSInterfaceDeclaration(interface)
+                    if is_ts_identifier(interface.id.name.as_str()) =>
+                {
+                    names.insert(interface.id.name.to_compact_string());
+                }
+                _ => {}
+            }
+            continue;
+        }
+
+        if !export.export_kind.is_type() {
+            continue;
+        }
+        for specifier in &export.specifiers {
+            if let Some(name) = module_export_name(&specifier.exported)
+                && name != "default"
+                && is_ts_identifier(name)
+            {
+                names.insert(name.to_compact_string());
+            }
+        }
+    }
+}
+
+fn collect_source_auto_imports_from_source(
+    path: &Path,
+    source: &str,
+    imports: &mut FxHashMap<String, SourceAutoImportKind>,
+) {
+    let allocator = Allocator::default();
+    let ret = Parser::new(&allocator, source, source_type_for_path(path)).parse();
+
+    for statement in &ret.program.body {
+        match statement {
+            Statement::ExportNamedDeclaration(export) => {
+                if export.export_kind.is_type() {
+                    continue;
+                }
+                if let Some(declaration) = &export.declaration {
+                    collect_value_declaration_imports(declaration, imports);
+                    continue;
+                }
+                for specifier in &export.specifiers {
+                    if specifier.export_kind.is_type() {
+                        continue;
+                    }
+                    if let Some(name) = module_export_name(&specifier.exported)
+                        && name != "default"
+                        && is_ts_identifier(name)
+                    {
+                        push_source_auto_import(
+                            imports,
+                            name,
+                            source_auto_import_kind_for_name(name),
+                        );
+                    }
+                }
+            }
+            Statement::ExportDefaultDeclaration(export) => {
+                if let Some(name) = default_export_name(path, &export.declaration)
+                    && is_ts_identifier(name.as_str())
+                {
+                    let kind = source_auto_import_kind_for_name(name.as_str());
+                    push_source_auto_import(imports, name.as_str(), kind);
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_value_declaration_imports(
+    declaration: &Declaration<'_>,
+    imports: &mut FxHashMap<String, SourceAutoImportKind>,
+) {
+    match declaration {
+        Declaration::VariableDeclaration(variable) => {
+            for declarator in &variable.declarations {
+                collect_binding_pattern_imports(&declarator.id, imports);
+            }
+        }
+        Declaration::FunctionDeclaration(function) => {
+            if let Some(id) = &function.id
+                && is_ts_identifier(id.name.as_str())
+            {
+                push_source_auto_import(
+                    imports,
+                    id.name.as_str(),
+                    source_function_auto_import_kind_for_name(id.name.as_str()),
+                );
+            }
+        }
+        Declaration::ClassDeclaration(class) => {
+            if let Some(id) = &class.id
+                && is_ts_identifier(id.name.as_str())
+            {
+                push_source_auto_import(imports, id.name.as_str(), SourceAutoImportKind::Value);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn collect_binding_pattern_imports(
+    pattern: &BindingPattern<'_>,
+    imports: &mut FxHashMap<String, SourceAutoImportKind>,
+) {
+    match pattern {
+        BindingPattern::BindingIdentifier(identifier) => {
+            if is_ts_identifier(identifier.name.as_str()) {
+                push_source_auto_import(
+                    imports,
+                    identifier.name.as_str(),
+                    source_auto_import_kind_for_name(identifier.name.as_str()),
+                );
+            }
+        }
+        BindingPattern::AssignmentPattern(assignment) => {
+            collect_binding_pattern_imports(&assignment.left, imports);
+        }
+        BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_) => {}
+    }
+}
+
+fn push_source_auto_import(
+    imports: &mut FxHashMap<String, SourceAutoImportKind>,
+    name: &str,
+    kind: SourceAutoImportKind,
+) {
+    imports
+        .entry(name.to_compact_string())
+        .and_modify(|existing| {
+            if matches!(
+                kind,
+                SourceAutoImportKind::Function | SourceAutoImportKind::Composable
+            ) {
+                *existing = kind;
+            }
+        })
+        .or_insert(kind);
+}
+
+fn source_auto_import_kind_for_name(name: &str) -> SourceAutoImportKind {
+    if name.starts_with("use") {
+        SourceAutoImportKind::Composable
+    } else {
+        SourceAutoImportKind::Value
+    }
+}
+
+fn source_function_auto_import_kind_for_name(name: &str) -> SourceAutoImportKind {
+    if name.starts_with("use") {
+        SourceAutoImportKind::Composable
+    } else {
+        SourceAutoImportKind::Function
+    }
+}
+
+fn default_export_name(
+    path: &Path,
+    declaration: &ExportDefaultDeclarationKind<'_>,
+) -> Option<String> {
+    match declaration {
+        ExportDefaultDeclarationKind::FunctionDeclaration(function) => function
+            .id
+            .as_ref()
+            .map(|id| id.name.to_compact_string())
+            .or_else(|| inferred_auto_import_name_from_path(path)),
+        ExportDefaultDeclarationKind::ClassDeclaration(class) => class
+            .id
+            .as_ref()
+            .map(|id| id.name.to_compact_string())
+            .or_else(|| inferred_auto_import_name_from_path(path)),
+        _ => inferred_auto_import_name_from_path(path),
+    }
+}
+
+fn inferred_auto_import_name_from_path(path: &Path) -> Option<String> {
+    let stem = path.file_stem().and_then(|stem| stem.to_str())?;
+    if stem == "index" {
+        return path
+            .parent()
+            .and_then(|parent| parent.file_name())
+            .and_then(|name| name.to_str())
+            .filter(|name| is_ts_identifier(name))
+            .map(|name| name.to_compact_string());
+    }
+    if is_ts_identifier(stem) {
+        Some(stem.to_compact_string())
+    } else {
+        None
+    }
+}
+
+fn module_export_name<'a>(name: &'a ModuleExportName<'a>) -> Option<&'a str> {
+    match name {
+        ModuleExportName::IdentifierName(identifier) => Some(identifier.name.as_str()),
+        ModuleExportName::IdentifierReference(identifier) => Some(identifier.name.as_str()),
+        ModuleExportName::StringLiteral(literal) => Some(literal.value.as_str()),
+    }
+}
+
+#[derive(Default)]
+struct ModuleImports {
+    named: FxHashSet<String>,
+    has_default: bool,
+}
+
+fn collect_nuxt_virtual_module_imports(cwd: &Path) -> FxHashMap<String, ModuleImports> {
+    let mut imports = FxHashMap::default();
+
+    for root in nuxt_source_roots(cwd) {
+        let walker = WalkBuilder::new(root)
+            .hidden(false)
+            .standard_filters(true)
+            .build();
+
+        for entry in walker.flatten() {
+            let path = entry.path();
+            if !path.is_file() || !is_import_scan_source(path) {
+                continue;
+            }
+            let Ok(source) = tracked_read_to_string(path) else {
+                continue;
+            };
+            collect_nuxt_virtual_module_imports_from_source(path, source.as_str(), &mut imports);
+        }
+    }
+
+    imports
+}
+
+fn nuxt_source_roots(cwd: &Path) -> Vec<PathBuf> {
+    [
+        "app",
+        "pages",
+        "components",
+        "composables",
+        "layouts",
+        "middleware",
+        "plugins",
+        "server",
+        "shared",
+        "utils",
+        "modules",
+        "i18n",
+    ]
+    .into_iter()
+    .map(|dir| cwd.join(dir))
+    .filter(|path| path.is_dir())
+    .collect()
+}
+
+fn is_import_scan_source(path: &Path) -> bool {
+    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    matches!(
+        name.rsplit_once('.').map(|(_, ext)| ext),
+        Some("vue" | "ts" | "tsx" | "js" | "jsx" | "mts" | "cts" | "mjs" | "cjs")
+    )
+}
+
+fn collect_nuxt_virtual_module_imports_from_source(
+    path: &Path,
+    source: &str,
+    imports: &mut FxHashMap<String, ModuleImports>,
+) {
+    if path.extension().and_then(|ext| ext.to_str()) == Some("vue") {
+        let Ok(descriptor) = parse_sfc(
+            source,
+            SfcParseOptions {
+                filename: path.to_string_lossy().to_compact_string(),
+                ..Default::default()
+            },
+        ) else {
+            return;
+        };
+        if let Some(script) = descriptor.script.as_ref() {
+            collect_nuxt_virtual_module_imports_from_script(
+                script.content.as_ref(),
+                source_type_for_script_lang(script.lang.as_deref()),
+                imports,
+            );
+        }
+        if let Some(script_setup) = descriptor.script_setup.as_ref() {
+            collect_nuxt_virtual_module_imports_from_script(
+                script_setup.content.as_ref(),
+                source_type_for_script_lang(script_setup.lang.as_deref()),
+                imports,
+            );
+        }
+        return;
+    }
+
+    let source_type = source_type_for_path(path);
+    collect_nuxt_virtual_module_imports_from_script(source, source_type, imports);
+}
+
+fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {
+    match lang {
+        Some("tsx") => SourceType::tsx().with_module(true),
+        Some("jsx") => SourceType::jsx().with_module(true),
+        Some("js") => SourceType::default().with_module(true),
+        _ => SourceType::default()
+            .with_module(true)
+            .with_typescript(true),
+    }
+}
+
+fn source_type_for_path(path: &Path) -> SourceType {
+    match path.extension().and_then(|ext| ext.to_str()) {
+        Some("tsx") => SourceType::tsx().with_module(true),
+        Some("jsx") => SourceType::jsx().with_module(true),
+        Some("js" | "mjs" | "cjs") => SourceType::default().with_module(true),
+        _ => SourceType::default()
+            .with_module(true)
+            .with_typescript(true),
+    }
+}
+
+fn collect_nuxt_virtual_module_imports_from_script(
+    source: &str,
+    source_type: SourceType,
+    imports: &mut FxHashMap<String, ModuleImports>,
+) {
+    let allocator = Allocator::default();
+    let ret = Parser::new(&allocator, source, source_type).parse();
+
+    for statement in &ret.program.body {
+        let Statement::ImportDeclaration(import) = statement else {
+            continue;
+        };
+        let module_name = import.source.value.as_str();
+        if !is_nuxt_fallback_module(module_name) {
+            continue;
+        }
+        let entry = imports.entry(module_name.into()).or_default();
+        let Some(specifiers) = &import.specifiers else {
+            continue;
+        };
+        for specifier in specifiers {
+            match specifier {
+                ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
+                    let imported = specifier.imported.name().as_str();
+                    if is_ts_identifier(imported) {
+                        entry.named.insert(imported.into());
+                    }
+                }
+                ImportDeclarationSpecifier::ImportDefaultSpecifier(_) => {
+                    entry.has_default = true;
+                }
+                ImportDeclarationSpecifier::ImportNamespaceSpecifier(_) => {}
+            }
+        }
+    }
+}
+
+fn is_nuxt_fallback_module(module_name: &str) -> bool {
+    matches!(
+        module_name,
+        "#imports" | "#components" | "#app" | "@typed-router"
+    )
+}
+
+fn render_module_stub(module_name: &str, imports: &ModuleImports) -> Option<String> {
+    if imports.named.is_empty() && !imports.has_default {
+        return None;
+    }
+
+    let mut names: Vec<_> = imports.named.iter().map(|name| name.as_str()).collect();
+    names.sort_unstable();
+
+    let mut stub = cstr!("declare module \"{module_name}\" {{\n");
+    if imports.has_default {
+        stub.push_str("  const __vize_default: any;\n");
+        stub.push_str("  export default __vize_default;\n");
+    }
+    for name in names {
+        if module_name == "#components" {
+            append!(stub, "  export const {name}: any;\n");
+        } else {
+            append!(
+                stub,
+                "  export function {name}<T = any, T1 = any, T2 = any, T3 = any>(...args: any[]): any;\n"
+            );
+        }
+        append!(
+            stub,
+            "  export type {name}<T = any, T1 = any, T2 = any, T3 = any> = any;\n"
+        );
+    }
+    stub.push_str("}\n");
+    Some(stub)
+}
+
+fn is_ts_identifier(value: &str) -> bool {
+    let mut chars = value.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    (first == '_' || first == '$' || first.is_ascii_alphabetic())
+        && chars.all(|ch| ch == '_' || ch == '$' || ch.is_ascii_alphanumeric())
 }
 
 fn is_nuxt_project(cwd: &Path) -> bool {
@@ -76,9 +679,9 @@ fn collect_generated_stubs(
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
-) {
+) -> bool {
     let nuxt_types_dir = cwd.join(".nuxt/types");
-    let mut found_typed_imports = false;
+    let mut found_import_manifest = false;
 
     if nuxt_types_dir.exists() {
         let walker = WalkBuilder::new(&nuxt_types_dir)
@@ -104,7 +707,7 @@ fn collect_generated_stubs(
                 continue;
             }
             if file_name == "imports.d.ts" {
-                found_typed_imports = true;
+                found_import_manifest = true;
             }
 
             if let Ok(values) = parse_declared_global_values(path) {
@@ -126,14 +729,15 @@ fn collect_generated_stubs(
     collect_root_generated_global_stubs(cwd, stubs, seen_names);
     collect_root_generated_component_stubs(cwd, stubs, seen_names, external_template_bindings);
 
-    if found_typed_imports {
-        return;
+    if found_import_manifest {
+        return true;
     }
 
     let imports_path = cwd.join(".nuxt/imports.d.ts");
     if !imports_path.exists() {
-        return;
+        return false;
     }
+    found_import_manifest = true;
 
     if let Ok(content) = tracked_read_to_string(&imports_path) {
         let base_dir = imports_path.parent().unwrap_or_else(|| Path::new("."));
@@ -172,6 +776,8 @@ fn collect_generated_stubs(
             }
         }
     }
+
+    found_import_manifest
 }
 
 fn collect_root_generated_global_stubs(
@@ -566,9 +1172,119 @@ fn virtual_project_specifier(specifier: &str, project_root: &Path) -> String {
 }
 
 fn collect_fallback_stubs(stubs: &mut Vec<String>, seen_names: &mut FxHashSet<String>) {
+    let mut fallback_names = FxHashSet::default();
     for stub in fallback_stub_strings() {
-        push_stub(stubs, seen_names, stub);
+        if let Some(name) = declared_name(&stub) {
+            let name = name.to_compact_string();
+            if fallback_names.contains(name.as_str()) {
+                stubs.push(stub);
+                continue;
+            }
+            if seen_names.insert(name.clone()) {
+                fallback_names.insert(name);
+                stubs.push(stub);
+            }
+            continue;
+        }
+        stubs.push(stub);
     }
+}
+
+fn collect_module_fallback_stubs(
+    cwd: &Path,
+    stubs: &mut Vec<String>,
+    seen_names: &mut FxHashSet<String>,
+) {
+    let config_source = nuxt_config_source(cwd);
+    if config_source.is_empty() {
+        return;
+    }
+
+    if config_source.contains("@nuxtjs/i18n") || config_source.contains("@nuxt/i18n") {
+        push_stub(
+            stubs,
+            seen_names,
+            "declare function useI18n(): ({ locale: { value: string }; locales: (Array<{ code: string; name?: string; dir?: any }> & { value: Array<{ code: string; name?: string; dir?: any }> }); t: (...args: any[]) => any } & Record<string, any>);"
+                .into(),
+        );
+        push_generic_function_stub(stubs, seen_names, "useLocalePath");
+        push_generic_function_stub(stubs, seen_names, "$t");
+        stubs.push("declare module \"@nuxtjs/i18n\" { export type Directions = any; }".into());
+    }
+
+    if config_source.contains("@vueuse/nuxt") {
+        for name in ["useClipboard", "usePreferredDark", "useScrollLock"] {
+            push_generic_function_stub(stubs, seen_names, name);
+        }
+        push_named_overload_stubs(
+            stubs,
+            seen_names,
+            "onKeyStroke",
+            vec![
+                "declare function onKeyStroke(key: string | string[], handler: (event: KeyboardEvent) => any, options?: any): void;".into(),
+                "declare function onKeyStroke(predicate: (event: KeyboardEvent) => any, handler: (event: KeyboardEvent) => any, options?: any): void;".into(),
+                "declare function onKeyStroke(handler: (event: KeyboardEvent) => any, options?: any): void;".into(),
+            ],
+        );
+        stubs.push(
+            "declare module \"@vueuse/integrations/useFocusTrap\" { export function useFocusTrap(...args: any[]): any; }"
+                .into(),
+        );
+    }
+
+    if config_source.contains("@nuxtjs/color-mode") {
+        push_stub(
+            stubs,
+            seen_names,
+            "declare function useColorMode(): ({ preference: 'system' | 'light' | 'dark'; value: any } & Record<string, any>);"
+                .into(),
+        );
+    }
+
+    if config_source.contains("nuxt-og-image") {
+        push_generic_function_stub(stubs, seen_names, "defineOgImageComponent");
+    }
+}
+
+fn nuxt_config_source(cwd: &Path) -> String {
+    for file_name in ["nuxt.config.ts", "nuxt.config.js", "nuxt.config.mts"] {
+        let path = cwd.join(file_name);
+        if let Ok(source) = tracked_read_to_string(path.as_path()) {
+            return source.into();
+        }
+    }
+    String::default()
+}
+
+fn push_generic_function_stub(
+    stubs: &mut Vec<String>,
+    seen_names: &mut FxHashSet<String>,
+    name: &str,
+) -> bool {
+    push_stub(stubs, seen_names, generic_function_stub(name))
+}
+
+fn generic_function_stub(name: &str) -> String {
+    cstr!("declare function {name}<T = any, T1 = any, T2 = any, T3 = any>(...args: any[]): any;")
+}
+
+fn generic_composable_stub(name: &str) -> String {
+    cstr!(
+        "declare function {name}<T = any, T1 = any, T2 = any, T3 = any>(...args: any[]): ({{ value: T }} & Record<string, any>);"
+    )
+}
+
+fn push_named_overload_stubs(
+    stubs: &mut Vec<String>,
+    seen_names: &mut FxHashSet<String>,
+    name: &str,
+    overloads: Vec<String>,
+) -> bool {
+    if !seen_names.insert(name.to_compact_string()) {
+        return false;
+    }
+    stubs.extend(overloads);
+    true
 }
 
 fn fallback_stub_strings() -> Vec<String> {
@@ -644,6 +1360,7 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function useAppConfig(): any;".into(),
         "declare function useState<T = any>(key: string, init?: () => T): Ref<T>;".into(),
         "declare function useCookie<T = any>(name: string, options?: any): Ref<T>;".into(),
+        "declare function useHead(input: { titleTemplate?: (titleChunk?: string) => any; [key: string]: any }): void;".into(),
         "declare function useHead(input: any): void;".into(),
         "declare function useRequestHeaders(headers?: string[]): Record<string, string>;".into(),
         "declare function useRequestURL(): URL;".into(),
@@ -667,6 +1384,7 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function useRequestEvent(): any;".into(),
         "declare function useRequestFetch(): typeof globalThis.fetch;".into(),
         "declare function useResponseHeaders(headers?: Record<string, string>): any;".into(),
+        "declare function $fetch<T = any>(...args: any[]): Promise<T>;".into(),
         "declare const NuxtLink: any;".into(),
         "declare const NuxtPage: any;".into(),
         "declare const NuxtLayout: any;".into(),
@@ -981,7 +1699,7 @@ export {}
         .unwrap();
 
         let mut options = VirtualTsOptions::default();
-        detect_nuxt_auto_imports(&mut options, &project_root);
+        let _ = detect_nuxt_auto_imports(&mut options, &project_root);
 
         assert!(
             options.auto_import_stubs.iter().any(|stub| stub.contains(
@@ -1037,7 +1755,7 @@ export {}
         .unwrap();
 
         let mut options = VirtualTsOptions::default();
-        detect_nuxt_auto_imports(&mut options, &project_root);
+        let _ = detect_nuxt_auto_imports(&mut options, &project_root);
 
         for name in ["useI18n", "useLocalePath", "queryCollection"] {
             assert!(
@@ -1063,6 +1781,233 @@ export {}
                 .iter()
                 .any(|global| global.name == "$te"),
             "expected i18n fallback template globals, got: {:#?}",
+            options.template_globals
+        );
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn detects_fallback_modules_and_aliases_without_generated_nuxt_dir() {
+        let project_root = unique_case_dir("nuxt-fallback-modules");
+        let _ = std::fs::remove_dir_all(&project_root);
+        std::fs::create_dir_all(project_root.join("app/pages")).unwrap();
+        std::fs::create_dir_all(project_root.join("shared")).unwrap();
+        std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+        std::fs::write(
+            project_root.join("app/pages/index.vue"),
+            r##"<script setup lang="ts">
+import { useI18n, type Breakpoint } from "#imports";
+import { VFButton } from "#components";
+import { useRoute, type RoutesNamesList } from "@typed-router";
+import type { NuxtError } from "#app";
+
+void useI18n;
+void VFButton;
+void useRoute;
+type _B = Breakpoint;
+type _R = RoutesNamesList;
+type _E = NuxtError;
+</script>"##,
+        )
+        .unwrap();
+
+        let mut options = VirtualTsOptions::default();
+        let aliases = detect_nuxt_auto_imports(&mut options, &project_root);
+
+        assert!(aliases.iter().any(|alias| {
+            alias.pattern.as_str() == "~/*"
+                && alias
+                    .targets
+                    .iter()
+                    .any(|target| target.as_str() == "app/*")
+        }));
+        assert!(aliases.iter().any(|alias| {
+            alias.pattern.as_str() == "~~/*"
+                && alias.targets.iter().any(|target| target.as_str() == "*")
+        }));
+        assert!(aliases.iter().any(|alias| {
+            alias.pattern.as_str() == "#shared/*"
+                && alias
+                    .targets
+                    .iter()
+                    .any(|target| target.as_str() == "shared/*")
+        }));
+
+        let modules = options.auto_import_stubs.join("\n");
+        for expected in [
+            "declare module \"#imports\"",
+            "export function useI18n<T = any",
+            "export type Breakpoint<T = any",
+            "declare module \"#components\"",
+            "export const VFButton: any;",
+            "declare module \"@typed-router\"",
+            "export type RoutesNamesList<T = any",
+            "declare module \"#app\"",
+            "export type NuxtError<T = any",
+        ] {
+            assert!(
+                modules.contains(expected),
+                "expected fallback module stubs to contain {expected:?}, got:\n{modules}"
+            );
+        }
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn detects_source_auto_imports_without_generated_import_manifest() {
+        let project_root = unique_case_dir("nuxt-source-auto-imports");
+        let _ = std::fs::remove_dir_all(&project_root);
+        std::fs::create_dir_all(project_root.join("app/composables")).unwrap();
+        std::fs::create_dir_all(project_root.join("app/utils")).unwrap();
+        std::fs::create_dir_all(project_root.join("shared/types")).unwrap();
+        std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+        std::fs::write(
+            project_root.join("app/composables/useSettings.ts"),
+            r#"
+export type Settings = { enabled: boolean }
+export const useKeyboardShortcuts = () => true
+export default function useDefaultSettings() {}
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            project_root.join("app/utils/router.ts"),
+            r#"
+const localHelper = 1
+export { localHelper as exportedHelper }
+export const packageManagers = []
+export function packageRoute() {}
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            project_root.join("shared/types/social.ts"),
+            "export type NPMXProfile = { displayName: string }",
+        )
+        .unwrap();
+
+        let mut options = VirtualTsOptions::default();
+        let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+
+        for expected in [
+            "declare const exportedHelper: any;",
+            "declare const packageManagers: any;",
+            "declare function packageRoute<T = any, T1 = any, T2 = any, T3 = any>(...args: any[]): any;",
+            "declare function useDefaultSettings<T = any, T1 = any, T2 = any, T3 = any>(...args: any[]): ({ value: T } & Record<string, any>);",
+            "declare function useKeyboardShortcuts<T = any, T1 = any, T2 = any, T3 = any>(...args: any[]): ({ value: T } & Record<string, any>);",
+        ] {
+            assert!(
+                options
+                    .auto_import_stubs
+                    .iter()
+                    .any(|stub| stub == expected),
+                "expected source auto-import stub {expected:?}, got: {:#?}",
+                options.auto_import_stubs
+            );
+        }
+        assert!(
+            !options
+                .auto_import_stubs
+                .iter()
+                .any(|stub| stub == "declare const Settings: any;"),
+            "type-only exports should not become auto-import values: {:#?}",
+            options.auto_import_stubs
+        );
+        assert!(
+            options
+                .auto_import_stubs
+                .iter()
+                .any(|stub| stub == "type NPMXProfile = any;"),
+            "expected source type auto-import stub, got: {:#?}",
+            options.auto_import_stubs
+        );
+
+        std::fs::create_dir_all(project_root.join(".nuxt")).unwrap();
+        std::fs::write(
+            project_root.join(".nuxt/imports.d.ts"),
+            r#"
+declare global {
+  const generatedOnly: any
+}
+export {}
+"#,
+        )
+        .unwrap();
+
+        let mut generated_options = VirtualTsOptions::default();
+        let _ = detect_nuxt_auto_imports(&mut generated_options, &project_root);
+        assert!(
+            generated_options
+                .auto_import_stubs
+                .iter()
+                .any(|stub| stub == "declare const generatedOnly: any;"),
+            "expected generated import stub, got: {:#?}",
+            generated_options.auto_import_stubs
+        );
+        assert!(
+            !generated_options
+                .auto_import_stubs
+                .iter()
+                .any(|stub| stub.contains(" packageRoute<")
+                    || stub.starts_with("declare const packageRoute:")),
+            "source fallback should defer to generated import manifests: {:#?}",
+            generated_options.auto_import_stubs
+        );
+        assert!(
+            !generated_options
+                .auto_import_stubs
+                .iter()
+                .any(|stub| stub == "type NPMXProfile = any;"),
+            "source type fallback should defer to generated import manifests: {:#?}",
+            generated_options.auto_import_stubs
+        );
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn detects_module_fallbacks_from_nuxt_config() {
+        let project_root = unique_case_dir("nuxt-module-fallbacks");
+        let _ = std::fs::remove_dir_all(&project_root);
+        std::fs::create_dir_all(project_root.join("app/pages")).unwrap();
+        std::fs::write(
+            project_root.join("nuxt.config.ts"),
+            r#"
+export default defineNuxtConfig({
+  modules: ['@nuxtjs/i18n', '@vueuse/nuxt', '@nuxtjs/color-mode', 'nuxt-og-image'],
+})
+"#,
+        )
+        .unwrap();
+
+        let mut options = VirtualTsOptions::default();
+        let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+
+        for expected in [
+            "declare function useI18n():",
+            "declare function useLocalePath<T = any",
+            "declare function useClipboard<T = any",
+            "declare function useScrollLock<T = any",
+            "declare function useColorMode():",
+            "declare function defineOgImageComponent<T = any",
+        ] {
+            assert!(
+                options
+                    .auto_import_stubs
+                    .iter()
+                    .any(|stub| stub.starts_with(expected)),
+                "expected module fallback stub {expected:?}, got: {:#?}",
+                options.auto_import_stubs
+            );
+        }
+        assert!(
+            options
+                .template_globals
+                .iter()
+                .any(|global| global.name == "$t"),
+            "expected i18n template globals, got: {:#?}",
             options.template_globals
         );
 
