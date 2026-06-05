@@ -1,8 +1,15 @@
+import { createRequire } from "node:module";
 import { defineConfig } from "vite-plus";
 import { vize } from "@vizejs/vite-plugin";
 
+const require = createRequire(import.meta.url);
+const vizePackage = require("../npm/vize/package.json") as { version: string };
+
 export default defineConfig({
   base: process.env.CI ? "/play/" : "/",
+  define: {
+    __VIZE_VERSION__: JSON.stringify(vizePackage.version),
+  },
   plugins: [vize({ vapor: true })],
   resolve: {
     alias: [

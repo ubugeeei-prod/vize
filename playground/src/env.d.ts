@@ -13,3 +13,4 @@ interface Window {
 }
 
 declare const self: Window & typeof globalThis;
+declare const __VIZE_VERSION__: string;

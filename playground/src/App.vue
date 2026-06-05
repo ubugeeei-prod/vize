@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, shallowRef, provide } from "vue";
+import { mdiClipboardTextOutline } from "@mdi/js";
 import { loadWasm } from "./wasm/index";
 import AtelierPlayground from "./features/atelier/AtelierPlayground.vue";
 import MuseaPlayground from "./features/musea/MuseaPlayground.vue";
@@ -9,6 +10,8 @@ import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
 import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
 import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
 import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
+import { getPlaygroundEnvironmentInfo } from "./utils/environment";
+import { useClipboard } from "./utils/useClipboard";
 
 // Theme toggle
 const isDark = ref(false);
@@ -18,6 +21,9 @@ function toggleTheme() {
   isDark.value = !isDark.value;
   document.body.dataset.theme = isDark.value ? "dark" : "";
 }
+
+const vizeVersionLabel = ` v${__VIZE_VERSION__}`;
+const { copyToClipboard } = useClipboard();
 
 // Main tab
 type MainTab =
@@ -61,7 +67,21 @@ watch(mainTab, (newTab) => {
 const wasmStatus = ref<"loading" | "ready" | "mock">("loading");
 const compiler = shallowRef<Awaited<ReturnType<typeof loadWasm>> | null>(null);
 
+function copyEnvironmentInfo() {
+  copyToClipboard(
+    getPlaygroundEnvironmentInfo({
+      tab: mainTab.value,
+      wasmStatus: wasmStatus.value,
+    }),
+  );
+}
+
+function updateVersionLabel() {
+  document.getElementById("vize-playground-version")?.replaceChildren(vizeVersionLabel);
+}
+
 onMounted(async () => {
+  updateVersionLabel();
   try {
     const loaded = await loadWasm();
     compiler.value = loaded;
@@ -97,6 +117,7 @@ onMounted(async () => {
                     : " (WASM)"
               }}
             </span>
+            <span id="vize-playground-version" class="version-number"></span>
           </span>
         </div>
       </div>
@@ -149,6 +170,17 @@ onMounted(async () => {
       </div>
 
       <div class="options">
+        <button
+          class="theme-toggle"
+          title="Copy environment information"
+          aria-label="Copy environment information"
+          @click="copyEnvironmentInfo"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path :d="mdiClipboardTextOutline" fill="currentColor" />
+          </svg>
+        </button>
+
         <button
           class="theme-toggle"
           :title="isDark ? 'Light mode' : 'Dark mode'"
