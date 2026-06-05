@@ -542,6 +542,24 @@ mod tests {
             !code.contains(r#"_createElementVNode("svg""#),
             "nested SVG elements with dynamic props must not render as plain VNodes:\n{code}"
         );
+        assert!(
+            result.preamble.contains("const _hoisted_1"),
+            "constant SVG props should be hoisted:\n{}\n{code}",
+            result.preamble
+        );
+        assert!(
+            result
+                .preamble
+                .contains(r#"xmlns: "http://www.w3.org/2000/svg""#)
+                && result.preamble.contains("width: 0"),
+            "hoisted SVG props should include static attrs and constant v-bind values:\n{}\n{code}",
+            result.preamble
+        );
+        assert!(
+            code.contains(r#"_createElementBlock("svg", _hoisted_1)"#),
+            "nested SVG block should use the hoisted props object:\n{}\n{code}",
+            result.preamble
+        );
     }
 
     #[test]

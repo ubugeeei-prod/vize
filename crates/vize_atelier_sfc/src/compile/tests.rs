@@ -260,6 +260,43 @@ const active = ref(false)
 }
 
 #[test]
+fn test_template_only_sfc_hoists_constant_svg_bind_props() {
+    let source = r#"<template>
+  <div>
+    <svg xmlns="http://www.w3.org/2000/svg" :width="0"></svg>
+  </div>
+</template>"#;
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse");
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile");
+
+    assert!(
+        result.code.contains("const _hoisted_1"),
+        "constant SVG props should be hoisted:\n{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains(r#"xmlns: "http://www.w3.org/2000/svg""#)
+            && result.code.contains("width: 0"),
+        "hoisted SVG props should include the static attr and constant v-bind:\n{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains(r#"_createElementBlock("svg", _hoisted_1)"#),
+        "nested SVG block should use the hoisted props object:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains(r#"_createElementVNode("svg""#),
+        "nested SVG with constant v-bind should not render as a plain VNode:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_script_setup_css_v_bind_uses_scoped_vars() {
     let source = r#"<script setup>
 const height = 12

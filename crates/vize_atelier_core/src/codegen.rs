@@ -26,6 +26,7 @@ use children::is_directive_comment;
 pub use context::{CodegenContext, CodegenResult};
 use element::generate_root_node;
 use generate::{collect_hoist_helpers, generate_hoists};
+pub(crate) use helpers::is_constant_simple_expression;
 use node::generate_node;
 use root::{
     generate_assets, generate_function_signature, generate_preamble_from_helpers,
