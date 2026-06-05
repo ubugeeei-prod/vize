@@ -86,10 +86,7 @@ const doubled = computed(() => count.value * 2)
     const computedHint = hints.find((hint) => inlayLabel(hint) === ": ComputedRef<number>");
 
     assert.ok(refHint, `expected ": Ref<number>" hint, got ${JSON.stringify(hints)}`);
-    assert.ok(
-      computedHint,
-      `expected ": ComputedRef<number>" hint, got ${JSON.stringify(hints)}`,
-    );
+    assert.ok(computedHint, `expected ": ComputedRef<number>" hint, got ${JSON.stringify(hints)}`);
 
     assert.equal(refHint.kind, 1);
     assert.equal(computedHint.kind, 1);
