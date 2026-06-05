@@ -260,6 +260,36 @@ const active = ref(false)
 }
 
 #[test]
+fn test_scoped_runtime_vnodes_do_not_bake_scope_id() {
+    let source = r#"<template>
+  <div :class="[]">Hoge</div>
+  <Test :x="1" />
+</template>
+
+<script setup>
+const marker = true
+</script>
+
+<style scoped lang="scss">
+div {
+  color: red;
+}
+</style>"#;
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse");
+    let opts = SfcCompileOptions {
+        scope_id: Some("abc123".into()),
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("compile");
+
+    assert!(
+        !result.code.contains("data-v-abc123"),
+        "runtime-created VNodes should not receive baked scoped attrs:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_template_only_sfc_hoists_constant_svg_bind_props() {
     let source = r#"<template>
   <div>

@@ -1602,6 +1602,49 @@ return (_ctx, _cache) => {
 
 }
 ===
+name: scoped style does not bake scope attrs into render props
+options: sfc
+--- INPUT ---
+<template>
+  <div :class="[]">Hoge</div>
+  <Test :x="1" />
+</template>
+
+<script setup>
+const marker = true
+</script>
+
+<style scoped lang="scss">
+div {
+  color: red;
+}
+</style>
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from "vue"
+
+const _hoisted_1 = { x: 1 }
+
+const marker = true
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+
+return (_ctx, _cache) => {
+  const _component_Test = _resolveComponent("Test")
+
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("div", {
+      class: _normalizeClass([])
+    }, "Hoge"),
+    _createVNode(_component_Test, { x: 1 })
+  ], 64 /* STABLE_FRAGMENT */))
+}
+}
+
+}
+===
 name: component event rest params stay local
 options: sfc
 --- INPUT ---

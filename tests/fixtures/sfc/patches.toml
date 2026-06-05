@@ -1035,6 +1035,25 @@ import MyComponent from './MyComponent.vue'
 """
 
 [[cases]]
+name = "scoped style does not bake scope attrs into render props"
+input = """
+<template>
+  <div :class="[]">Hoge</div>
+  <Test :x="1" />
+</template>
+
+<script setup>
+const marker = true
+</script>
+
+<style scoped lang="scss">
+div {
+  color: red;
+}
+</style>
+"""
+
+[[cases]]
 name = "defineEmits binding preserves blank line before setup body"
 input = """
 <script setup lang="ts">

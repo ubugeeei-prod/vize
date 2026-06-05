@@ -115,7 +115,9 @@ pub(crate) fn compile_template_block(
     let mut dom_opts = options.compiler_options.clone().unwrap_or_default();
     dom_opts.mode = vize_atelier_core::options::CodegenMode::Module;
     dom_opts.prefix_identifiers = true;
-    dom_opts.scope_id = scope_attr;
+    // Vue applies SFC scope IDs at runtime. Only module-level hoisted VNodes
+    // need an explicit scope attr baked into their props.
+    dom_opts.scope_id = None;
     // Hoisted module-level static vnodes are created at import time, when the
     // runtime's `currentScopeId` is null, so the runtime cannot stamp the
     // scoped-CSS attribute on them. Bake `data-v-*` directly into their props

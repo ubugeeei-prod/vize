@@ -78,7 +78,7 @@ const msg = 'hello'
 --- OUTPUT ---
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-const _hoisted_1 = { class: "text", "data-v-a6e04d40": "" }
+const _hoisted_1 = { class: "text" }
 
 const msg = 'hello'
 
@@ -176,7 +176,7 @@ options: sfc
 --- OUTPUT ---
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-const _hoisted_1 = { class: "a b", "data-v-a6e04d40": "" }
+const _hoisted_1 = { class: "a b" }
 
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _hoisted_1, "Test"))

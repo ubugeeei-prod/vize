@@ -1,0 +1,28 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: js_output.as_str()
+---
+import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from "vue"
+
+const _hoisted_1 = { x: 1 }
+
+const marker = true
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+
+return (_ctx, _cache) => {
+  const _component_Test = _resolveComponent("Test")
+
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("div", {
+      class: _normalizeClass([])
+    }, "Hoge"),
+    _createVNode(_component_Test, { x: 1 })
+  ], 64 /* STABLE_FRAGMENT */))
+}
+}
+
+}
