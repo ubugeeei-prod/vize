@@ -1675,4 +1675,237 @@ mod tests {
 
         let _ = fs::remove_dir_all(&case_dir);
     }
+
+    #[test]
+    fn jsonc_comments_and_trailing_commas_are_stripped_before_parsing() {
+        // If the JSONC stripping failed, the tsconfig would parse as null, fall
+        // back to an implicit `**/*` scan, and `src/skip.ts` would be collected.
+        // Asserting it is excluded proves the comment/trailing-comma stripping ran.
+        let case_dir = unique_case_dir("tsconfig-jsonc-comments");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src")).unwrap();
+        fs::write(case_dir.join("src/keep.ts"), "export const keep = true").unwrap();
+        fs::write(case_dir.join("src/skip.ts"), "export const skip = true").unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            "{\n  // leading line comment\n  \"include\": [\"src/**/*.ts\"], /* trailing block\n  comment spanning lines */\n  \"exclude\": [\n    \"src/skip.ts\",\n  ],\n}\n",
+        )
+        .unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(files.iter().any(|path| path.ends_with("src/keep.ts")));
+        assert!(
+            !files.iter().any(|path| path.ends_with("src/skip.ts")),
+            "JSONC parsing should have applied the exclude: {files:?}"
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn jsonc_does_not_strip_comment_like_sequences_inside_strings() {
+        // The exclude value literally contains `//`; if the comment stripper
+        // ignored string boundaries it would truncate the pattern and stop
+        // excluding the file.
+        let case_dir = unique_case_dir("tsconfig-jsonc-string");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src")).unwrap();
+        fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+        fs::write(case_dir.join("src/skip.ts"), "export const skip = true").unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/skip.ts"]
+}"#,
+        )
+        .unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+        assert!(!files.iter().any(|path| path.ends_with("src/skip.ts")));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn single_star_include_does_not_cross_directory_separator() {
+        let case_dir = unique_case_dir("tsconfig-glob-single-star");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src/nested")).unwrap();
+        fs::write(case_dir.join("src/top.ts"), "export const top = true").unwrap();
+        fs::write(
+            case_dir.join("src/nested/deep.ts"),
+            "export const deep = true",
+        )
+        .unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{ "include": ["src/*.ts"] }"#,
+        )
+        .unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(files.iter().any(|path| path.ends_with("src/top.ts")));
+        assert!(
+            !files
+                .iter()
+                .any(|path| path.ends_with("src/nested/deep.ts")),
+            "a single * must not match across a directory separator: {files:?}"
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn bare_directory_include_expands_to_recursive_glob() {
+        let case_dir = unique_case_dir("tsconfig-glob-bare-dir");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src/nested")).unwrap();
+        fs::write(case_dir.join("src/top.ts"), "export const top = true").unwrap();
+        fs::write(
+            case_dir.join("src/nested/deep.ts"),
+            "export const deep = true",
+        )
+        .unwrap();
+        fs::write(case_dir.join("tsconfig.json"), r#"{ "include": ["src"] }"#).unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(files.iter().any(|path| path.ends_with("src/top.ts")));
+        assert!(
+            files
+                .iter()
+                .any(|path| path.ends_with("src/nested/deep.ts")),
+            "a bare directory include should expand to a recursive glob: {files:?}"
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn dot_include_matches_every_supported_file() {
+        let case_dir = unique_case_dir("tsconfig-glob-dot");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("nested")).unwrap();
+        fs::write(case_dir.join("root.ts"), "export const root = true").unwrap();
+        fs::write(case_dir.join("nested/leaf.ts"), "export const leaf = true").unwrap();
+        fs::write(case_dir.join("tsconfig.json"), r#"{ "include": ["."] }"#).unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(files.iter().any(|path| path.ends_with("root.ts")));
+        assert!(files.iter().any(|path| path.ends_with("nested/leaf.ts")));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn leading_dot_slash_include_is_normalized() {
+        let case_dir = unique_case_dir("tsconfig-glob-dot-slash");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src")).unwrap();
+        fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{ "include": ["./src/**/*.ts"] }"#,
+        )
+        .unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn include_glob_matching_is_case_sensitive_on_unix() {
+        let case_dir = unique_case_dir("tsconfig-glob-case");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src")).unwrap();
+        fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{ "include": ["SRC/**/*.ts"] }"#,
+        )
+        .unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(
+            files.is_empty(),
+            "an upper-case include must not match a lower-case directory on Unix: {files:?}"
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn declaration_files_are_always_supported() {
+        let case_dir = unique_case_dir("tsconfig-ext-dts");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src")).unwrap();
+        fs::write(case_dir.join("src/env.d.ts"), "declare const X: string;").unwrap();
+        fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+        fs::write(case_dir.join("src/ignore.js"), "module.exports = {}").unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{ "include": ["src/**/*"] }"#,
+        )
+        .unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(files.iter().any(|path| path.ends_with("src/env.d.ts")));
+        assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+        assert!(
+            !files.iter().any(|path| path.ends_with("src/ignore.js")),
+            ".js is not a supported check extension: {files:?}"
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn supported_extensions_cover_ts_family_and_reject_js_family() {
+        let case_dir = unique_case_dir("tsconfig-ext-family");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src")).unwrap();
+        let supported = ["App.vue", "a.ts", "b.tsx", "c.mts", "d.cts"];
+        let unsupported = ["e.js", "f.jsx", "g.cjs", "h.mjs", "data.json"];
+        for name in supported.iter().chain(unsupported.iter()) {
+            fs::write(case_dir.join("src").join(name), "x").unwrap();
+        }
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{ "include": ["src/**/*"] }"#,
+        )
+        .unwrap();
+
+        let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        for name in supported {
+            assert!(
+                files
+                    .iter()
+                    .any(|path| path.ends_with(&format!("src/{name}"))),
+                "{name} should be collected: {files:?}"
+            );
+        }
+        for name in unsupported {
+            assert!(
+                !files
+                    .iter()
+                    .any(|path| path.ends_with(&format!("src/{name}"))),
+                "{name} should be rejected: {files:?}"
+            );
+        }
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
 }
