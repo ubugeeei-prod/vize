@@ -1875,6 +1875,89 @@ const count =
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[test]
+fn check_define_emits_quoted_colon_key_accepts_valid_payload_and_reports_invalid_payload() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "define-emits-quoted-colon-key",
+        &[
+            (
+                "src/Good.vue",
+                r#"<script setup lang="ts">
+const emit = defineEmits<{
+  "update:open": [value: boolean]
+}>()
+
+emit("update:open", true)
+</script>
+"#,
+            ),
+            (
+                "src/Bad.vue",
+                r#"<script setup lang="ts">
+const emit = defineEmits<{
+  "update:open": [value: boolean]
+}>()
+
+emit("update:open", "bad")
+</script>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+    let files = json["files"].as_array().unwrap();
+    let diagnostics: Vec<_> = files
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(|diagnostic| diagnostic.as_str())
+        .collect();
+    let bad_file = files
+        .iter()
+        .find(|file| file["file"] == "src/Bad.vue")
+        .expect("Bad.vue should be present");
+    let good_file = files
+        .iter()
+        .find(|file| file["file"] == "src/Good.vue")
+        .expect("Good.vue should be present");
+
+    assert_eq!(output.status.code(), Some(1), "stderr:\n{stderr}");
+    assert_eq!(json["errorCount"], 1, "diagnostics: {diagnostics:#?}");
+    assert_eq!(bad_file["diagnostics"].as_array().unwrap().len(), 1);
+    assert_eq!(good_file["diagnostics"].as_array().unwrap().len(), 0);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.contains("[TS2345]")
+                && diagnostic.contains("string")
+                && diagnostic.contains("boolean")),
+        "expected invalid payload diagnostic, got: {diagnostics:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 #[cfg(unix)]
 #[test]
 fn check_socket_json_preserves_json_output_contract() {

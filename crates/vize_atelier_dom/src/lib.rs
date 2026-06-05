@@ -294,6 +294,81 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_dynamic_component_v_if_does_not_emit_is_prop() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template(
+            &allocator,
+            r#"<Component :is="current" v-if="ok" :foo="foo" />"#,
+        );
+        assert!(errors.is_empty());
+        let code = result.code.as_str();
+        assert!(
+            code.contains("_resolveDynamicComponent(current)"),
+            "dynamic component should be resolved from the :is binding:\n{code}"
+        );
+        assert!(
+            !code.contains("is:"),
+            "v-if dynamic component branch must not pass consumed :is as a prop:\n{code}"
+        );
+        assert!(
+            !code.contains(r#""is""#),
+            "v-if dynamic component branch must not track consumed :is as a dynamic prop:\n{code}"
+        );
+    }
+
+    #[test]
+    fn test_template_ref_in_v_for_emits_ref_for() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template(
+            &allocator,
+            r#"<span v-for="item in items" ref="itemEls" />"#,
+        );
+        assert!(errors.is_empty());
+        let code = result.code.as_str();
+        assert!(
+            code.contains("ref_for: true"),
+            "template refs inside v-for must be marked as ref_for so Vue stores an array:\n{code}"
+        );
+    }
+
+    #[test]
+    fn test_static_ref_matching_prop_name_stays_string_ref() {
+        use vize_atelier_core::options::{BindingMetadata, BindingType};
+        use vize_carton::FxHashMap;
+
+        let allocator = Bump::new();
+        let mut bindings = FxHashMap::default();
+        bindings.insert("buttons".into(), BindingType::Props);
+
+        let options = DomCompilerOptions {
+            mode: CodegenMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        };
+
+        let (_, errors, result) = compile_template_with_options(
+            &allocator,
+            r#"<button v-for="button in buttons" ref="buttons" :key="button" />"#,
+            options,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        let code = result.code.as_str();
+        assert!(code.contains("ref_for: true"), "{code}");
+        assert!(code.contains(r#"ref: "buttons""#), "{code}");
+        assert!(
+            !code.contains("ref: buttons"),
+            "props bindings must not be emitted as runtime ref identifiers:\n{code}"
+        );
+    }
+
     /// Recursively find the first element with the given tag, descending through `v-if`
     /// branches and `v-for` bodies so the search works on the transformed tree as well.
     fn find_element<'a, 'b>(
@@ -427,6 +502,46 @@ mod tests {
         assert!(errors.is_empty());
         let full = full_output(&result.preamble, &result.code);
         insta::assert_snapshot!(full.as_str());
+    }
+
+    #[test]
+    fn test_inline_svg_dynamic_subtree_uses_own_block() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template(
+            &allocator,
+            "<div><svg :width=\"w\"><g v-if=\"ok\"><rect :x=\"x\"/></g></svg></div>",
+        );
+        assert!(errors.is_empty());
+
+        let code = result.code.as_str();
+        assert!(
+            code.contains(r#"_createElementBlock("svg""#),
+            "inline <svg> must be a block so dynamic descendants patch with SVG namespace:\n{code}"
+        );
+        assert!(
+            code.contains(r#"_createElementBlock("g""#),
+            "dynamic SVG branch should keep its own block under the SVG namespace:\n{code}"
+        );
+    }
+
+    #[test]
+    fn test_nested_svg_with_v_bind_uses_own_block() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template(
+            &allocator,
+            r#"<div><svg xmlns="http://www.w3.org/2000/svg" :width="0" /></div>"#,
+        );
+        assert!(errors.is_empty());
+
+        let code = result.code.as_str();
+        assert!(
+            code.contains(r#"_createElementBlock("svg""#),
+            "nested SVG elements with dynamic props must render as blocks:\n{code}"
+        );
+        assert!(
+            !code.contains(r#"_createElementVNode("svg""#),
+            "nested SVG elements with dynamic props must not render as plain VNodes:\n{code}"
+        );
     }
 
     #[test]

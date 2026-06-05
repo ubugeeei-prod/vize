@@ -384,7 +384,8 @@ pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
         return false;
     }
 
-    // Teleport and KeepAlive pass children as arrays, not slot objects
+    // Teleport and KeepAlive consume raw children rather than a slot object.
+    // KeepAlive still gets DYNAMIC_SLOTS at the vnode patch-flag layer.
     if matches!(
         el.tag.as_str(),
         "Teleport" | "teleport" | "KeepAlive" | "keep-alive"

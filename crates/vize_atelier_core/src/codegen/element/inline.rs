@@ -36,6 +36,22 @@ use vize_carton::ToCompactString;
 
 /// Generate element code (non-block)
 pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    if el.tag_type == ElementType::Element && el.ns != Namespace::Html {
+        super::block::generate_element_block(ctx, el);
+        return;
+    }
+
+    if el.tag_type == ElementType::Component
+        && (is_dynamic_component(el)
+            || matches!(
+                el.tag.as_str(),
+                "Teleport" | "teleport" | "Suspense" | "suspense" | "KeepAlive" | "keep-alive"
+            ))
+    {
+        super::block::generate_element_block(ctx, el);
+        return;
+    }
+
     // Check for v-once directive - handle it specially with cache
     if super::helpers::has_v_once(el) {
         super::v_once::generate_v_once_element(ctx, el);
@@ -300,7 +316,6 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(", ");
                 generate_slots(ctx, el);
             } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
-                let is_keep_alive = matches!(el.tag.as_str(), "KeepAlive" | "keep-alive");
                 ctx.push(", [");
                 ctx.indent();
                 let filtered: Vec<_> = el
@@ -313,14 +328,6 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                         ctx.push(",");
                     }
                     ctx.newline();
-                    if is_keep_alive
-                        && let TemplateChildNode::Element(child_el) = child
-                        && child_el.tag_type == ElementType::Component
-                        && is_dynamic_component(child_el)
-                    {
-                        super::block::generate_element_block(ctx, child_el);
-                        continue;
-                    }
                     generate_node(ctx, child);
                 }
                 ctx.deindent();

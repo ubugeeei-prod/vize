@@ -1390,7 +1390,7 @@ import { RouterView } from 'vue-router'
   </RouterView>
 </template>
 --- OUTPUT ---
-import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent, withCtx as _withCtx } from "vue"
+import { openBlock as _openBlock, createBlock as _createBlock, resolveDynamicComponent as _resolveDynamicComponent, withCtx as _withCtx } from "vue"
 
 import { RouterView } from 'vue-router'
 
@@ -1402,7 +1402,7 @@ export default {
 return (_ctx, _cache) => {
   return (_openBlock(), _createBlock(RouterView, null, {
     default: _withCtx(({ Component }) => [
-      _createVNode(_resolveDynamicComponent(Component))
+      (_openBlock(), _createBlock(_resolveDynamicComponent(Component)))
     ]),
     _: 1 /* STABLE */
   }))
@@ -1468,7 +1468,7 @@ const tabs = ref([{ id: 1, component: 'TabA' }])
   </keep-alive>
 </template>
 --- OUTPUT ---
-import { Fragment as _Fragment, KeepAlive as _KeepAlive, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent, renderList as _renderList } from "vue"
+import { Fragment as _Fragment, KeepAlive as _KeepAlive, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, resolveDynamicComponent as _resolveDynamicComponent, renderList as _renderList } from "vue"
 
 import { ref } from 'vue'
 
@@ -1481,8 +1481,8 @@ const tabs = ref([{ id: 1, component: 'TabA' }])
 return (_ctx, _cache) => {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(tabs.value, (tab) => {
     return (_openBlock(), _createBlock(_KeepAlive, { key: tab.id }, [
-      _createVNode(_resolveDynamicComponent(tab.component))
-    ]))
+      (_openBlock(), _createBlock(_resolveDynamicComponent(tab.component)))
+    ], 1024 /* DYNAMIC_SLOTS */))
   }), 128 /* KEYED_FRAGMENT */))
 }
 }

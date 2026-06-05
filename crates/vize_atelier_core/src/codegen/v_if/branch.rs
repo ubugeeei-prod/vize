@@ -300,6 +300,7 @@ fn generate_if_branch_component(
             static_merge,
             has_dyn_class,
             has_dyn_style,
+            is_dynamic,
         );
         ctx.push(")");
     } else {
@@ -312,6 +313,7 @@ fn generate_if_branch_component(
             static_merge,
             has_dyn_class,
             has_dyn_style,
+            is_dynamic,
         );
     }
 
@@ -322,7 +324,7 @@ fn generate_if_branch_component(
         ctx.push(", ");
         generate_slots(ctx, el);
     } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
-        // Teleport/KeepAlive: pass children as array, not slot object
+        // Teleport passes children as an array, not a slot object.
         ctx.push(", [");
         let filtered: Vec<_> = el
             .children
@@ -475,6 +477,7 @@ fn generate_if_branch_element(
             static_merge,
             has_dyn_class,
             has_dyn_style,
+            false,
         );
         ctx.push(")");
     } else {
@@ -487,6 +490,7 @@ fn generate_if_branch_element(
             static_merge,
             has_dyn_class,
             has_dyn_style,
+            false,
         );
     }
 

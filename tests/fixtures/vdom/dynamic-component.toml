@@ -25,6 +25,10 @@ name = "dynamic component with children"
 input = '<component :is="foo"><span>hi</span></component>'
 
 [[cases]]
+name = "nested dynamic component"
+input = '<div><component :is="foo" /></div>'
+
+[[cases]]
 name = "dynamic component with slot content"
 input = '<component :is="tab"><template #header>H</template></component>'
 

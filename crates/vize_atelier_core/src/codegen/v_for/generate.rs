@@ -290,8 +290,11 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         let new_flag = flag & !1;
                         patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
                     }
-                    // Inside v-for, component slots are always dynamic
-                    if ctx.in_v_for && has_slot_children(el) {
+                    // KeepAlive always gets DYNAMIC_SLOTS, and component
+                    // slots inside v-for are dynamic by construction.
+                    if matches!(el.tag.as_str(), "KeepAlive" | "keep-alive")
+                        || (ctx.in_v_for && has_slot_children(el))
+                    {
                         let dynamic_slots_flag = 1024;
                         patch_flag = Some(patch_flag.unwrap_or(0) | dynamic_slots_flag);
                     }
@@ -746,6 +749,42 @@ fn generate_single_prop(
 ) {
     match prop {
         PropNode::Attribute(attr) => {
+            let ref_value = if attr.name == "ref" && ctx.options.inline {
+                attr.value.as_ref()
+            } else {
+                None
+            };
+            let ref_binding_type = ref_value.and_then(|v| {
+                ctx.options
+                    .binding_metadata
+                    .as_ref()
+                    .and_then(|m| m.bindings.get(v.content.as_str()).copied())
+            });
+            let should_ref_runtime_binding = matches!(
+                ref_binding_type,
+                Some(
+                    crate::options::BindingType::SetupLet
+                        | crate::options::BindingType::SetupRef
+                        | crate::options::BindingType::SetupMaybeRef
+                )
+            );
+            let needs_ref_for = attr.name == "ref" && ctx.in_v_for;
+
+            if let (true, Some(ref_value)) = (should_ref_runtime_binding, ref_value) {
+                let ref_name = &ref_value.content;
+                if needs_ref_for {
+                    ctx.push("ref_for: true, ");
+                }
+                ctx.push("ref_key: \"");
+                ctx.push(ref_name);
+                ctx.push("\", ref: ");
+                ctx.push(ref_name);
+                return;
+            }
+
+            if needs_ref_for {
+                ctx.push("ref_for: true, ");
+            }
             let needs_quotes = !super::super::helpers::is_valid_js_identifier(&attr.name);
             if needs_quotes {
                 ctx.push("\"");
@@ -756,9 +795,13 @@ fn generate_single_prop(
             }
             ctx.push(": ");
             if let Some(value) = &attr.value {
-                ctx.push("\"");
-                ctx.push(&escape_js_string(&value.content));
-                ctx.push("\"");
+                if should_ref_runtime_binding {
+                    ctx.push(&value.content);
+                } else {
+                    ctx.push("\"");
+                    ctx.push(&escape_js_string(&value.content));
+                    ctx.push("\"");
+                }
             } else {
                 ctx.push("\"\"");
             }

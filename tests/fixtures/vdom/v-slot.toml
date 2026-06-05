@@ -131,5 +131,17 @@ name = "KeepAlive slot"
 input = '<KeepAlive><component :is="current" /></KeepAlive>'
 
 [[cases]]
+name = "nested KeepAlive block"
+input = '<div><KeepAlive><component :is="current" /></KeepAlive></div>'
+
+[[cases]]
+name = "nested Teleport block"
+input = '<div><Teleport to="body"><span /></Teleport></div>'
+
+[[cases]]
+name = "nested Suspense block"
+input = '<div><Suspense><AsyncComponent /></Suspense></div>'
+
+[[cases]]
 name = "Suspense slots"
 input = '<Suspense><template #default><AsyncComponent /></template><template #fallback>Loading...</template></Suspense>'

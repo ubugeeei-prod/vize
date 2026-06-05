@@ -604,24 +604,10 @@ pub fn extract_emit_names_from_type(type_args: &str) -> Vec<String> {
             trimmed
         };
 
-        // Split by lines or semicolons and extract property names
+        // Split by lines or semicolons and extract property names.
         for segment in inner.split([';', '\n']) {
-            let seg = segment.trim();
-            if seg.is_empty() {
-                continue;
-            }
-            // Find the property name before the first ':'
-            if let Some(colon_pos) = seg.find(':') {
-                let name = seg[..colon_pos].trim();
-                // Remove quotes if present
-                let name = name.trim_matches(|c| c == '\'' || c == '"');
-                if !name.is_empty()
-                    && name
-                        .chars()
-                        .all(|c| c.is_alphanumeric() || c == '_' || c == '-')
-                {
-                    emits.push(name.to_compact_string());
-                }
+            if let Some(name) = extract_emit_shorthand_key(segment) {
+                emits.push(name);
             }
         }
 
@@ -653,6 +639,60 @@ pub fn extract_emit_names_from_type(type_args: &str) -> Vec<String> {
     }
 
     emits
+}
+
+fn extract_emit_shorthand_key(segment: &str) -> Option<String> {
+    let seg = segment.trim();
+    if seg.is_empty() || seg.starts_with("...") {
+        return None;
+    }
+
+    let bytes = seg.as_bytes();
+    let first = *bytes.first()?;
+    if matches!(first, b'\'' | b'"' | b'`') {
+        let quote = first;
+        let mut key = String::default();
+        let mut i = 1;
+        while i < bytes.len() {
+            let c = bytes[i];
+            if c == b'\\' {
+                if i + 1 < bytes.len() {
+                    key.push(bytes[i + 1] as char);
+                    i += 2;
+                    continue;
+                }
+                return None;
+            }
+            if c == quote {
+                let rest = seg[i + 1..].trim_start();
+                if rest.starts_with(':') && !key.is_empty() {
+                    return Some(key);
+                }
+                return None;
+            }
+            key.push(c as char);
+            i += 1;
+        }
+        return None;
+    }
+
+    let mut colon_pos = None;
+    for (idx, ch) in seg.char_indices() {
+        if ch == ':' {
+            colon_pos = Some(idx);
+            break;
+        }
+    }
+    let name = seg[..colon_pos?].trim().trim_end_matches('?').trim();
+    if !name.is_empty()
+        && name
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '_' || c == '-' || c == '$')
+    {
+        Some(name.to_compact_string())
+    } else {
+        None
+    }
 }
 
 /// Extract default values from withDefaults second argument
@@ -1075,4 +1115,22 @@ pub fn is_valid_identifier(s: &str) -> bool {
     }
 
     chars.all(|c| c.is_alphanumeric() || c == '_' || c == '$')
+}
+
+#[cfg(test)]
+mod tests {
+    use super::extract_emit_names_from_type;
+
+    #[test]
+    fn extract_emit_names_keeps_quoted_colon_keys() {
+        let names = extract_emit_names_from_type(
+            r#"{
+              "update:open": [value: boolean]
+              'select:item': [id: string]
+              close: []
+            }"#,
+        );
+
+        assert_eq!(names, vec!["update:open", "select:item", "close"]);
+    }
 }

@@ -28,6 +28,7 @@ import {
   createVueCompatPlugin,
 } from "./compat.ts";
 import { patchUnoCssBridge } from "./unocss.ts";
+import { patchQuasarBridge } from "./quasar.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installVirtualAssetMiddleware } from "./dev-middleware.ts";
 import {
@@ -331,6 +332,12 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         ...DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
       ];
       patchUnoCssBridge(
+        resolvedConfig.plugins as Array<{
+          name?: string;
+          transform?: Function;
+        }>,
+      );
+      patchQuasarBridge(
         resolvedConfig.plugins as Array<{
           name?: string;
           transform?: Function;

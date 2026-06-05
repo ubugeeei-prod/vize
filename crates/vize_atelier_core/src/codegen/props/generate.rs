@@ -222,6 +222,13 @@ fn try_generate_static_attrs(
     if ctx.skip_is_prop || ctx.options.inline {
         return false;
     }
+    if ctx.in_v_for
+        && props
+            .iter()
+            .any(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name == "ref"))
+    {
+        return false;
+    }
     if !props
         .iter()
         .all(|prop| matches!(prop, PropNode::Attribute(_)))
@@ -422,23 +429,30 @@ fn generate_props_object_inner(
                 } else {
                     None
                 };
-                let needs_ref_key = matches!(
+                let should_ref_runtime_binding = matches!(
                     ref_binding_type,
                     Some(
                         BindingType::SetupLet | BindingType::SetupRef | BindingType::SetupMaybeRef
                     )
                 );
+                let needs_ref_for = attr.name == "ref" && ctx.in_v_for;
 
-                if let (true, Some(ref_value)) = (needs_ref_key, ref_value) {
+                if let (true, Some(ref_value)) = (should_ref_runtime_binding, ref_value) {
                     // Emit ref_key + ref pair for setup-let/ref/maybe-ref bindings.
                     // Vue's runtime setRef() needs ref_key to write to instance.refs,
                     // which is essential for useTemplateRef to receive the element.
                     let ref_name = &ref_value.content;
+                    if needs_ref_for {
+                        ctx.push("ref_for: true, ");
+                    }
                     ctx.push("ref_key: \"");
                     ctx.push(ref_name);
                     ctx.push("\", ref: ");
                     ctx.push(ref_name);
                 } else {
+                    if needs_ref_for {
+                        ctx.push("ref_for: true, ");
+                    }
                     // Normal attribute output
                     let needs_quotes = !is_valid_js_identifier(&attr.name);
                     if needs_quotes {
@@ -450,9 +464,9 @@ fn generate_props_object_inner(
                     }
                     ctx.push(": ");
                     if let Some(value) = &attr.value {
-                        // In inline mode, ref="refName" should reference the setup variable
-                        // instead of being a string literal, if refName is a known binding
-                        if ref_binding_type.is_some() {
+                        // In inline mode, ref="refName" should reference a mutable/setup-ref
+                        // binding. Other bindings (notably props) are still string refs.
+                        if should_ref_runtime_binding {
                             ctx.push(&value.content);
                         } else {
                             ctx.push("\"");

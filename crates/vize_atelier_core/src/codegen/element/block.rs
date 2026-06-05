@@ -3,9 +3,7 @@
 //! Generates elements that open a new block scope using `openBlock()` and
 //! `createElementBlock()` / `createBlock()` for efficient patching.
 
-use crate::ast::{
-    ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
-};
+use crate::ast::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper};
 use crate::transforms::v_memo::{get_memo_exp, has_v_memo};
 
 use super::{
@@ -372,9 +370,8 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(", ");
                 generate_slots(ctx, el);
             } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
-                // Teleport, KeepAlive: pass children as array, not slot object
+                // Teleport passes children as an array, not a slot object.
                 // (whitespace-only children are skipped to match Vue's behavior)
-                let is_keep_alive = matches!(el.tag.as_str(), "KeepAlive" | "keep-alive");
                 ctx.push(", [");
                 ctx.indent();
                 let filtered: Vec<_> = el
@@ -387,16 +384,6 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                         ctx.push(",");
                     }
                     ctx.newline();
-                    // KeepAlive: dynamic components (<component :is="...">) are
-                    // rendered as blocks so KeepAlive can track their identity
-                    if is_keep_alive
-                        && let TemplateChildNode::Element(child_el) = child
-                        && child_el.tag_type == ElementType::Component
-                        && is_dynamic_component(child_el)
-                    {
-                        generate_element_block(ctx, child_el);
-                        continue;
-                    }
                     generate_node(ctx, child);
                 }
                 ctx.deindent();

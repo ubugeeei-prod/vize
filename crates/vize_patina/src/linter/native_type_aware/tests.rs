@@ -64,6 +64,40 @@ defineEmits(['save'])
 }
 
 #[test]
+fn require_typed_emits_accepts_quoted_colon_key_and_reports_runtime_array() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let typed_source = r#"<script setup lang="ts">
+defineEmits<{ "update:open": [value: boolean] }>()
+</script>"#;
+    let typed_result = lint_sfc_with_corsa(&linter, typed_source, "TypedDialog.vue");
+    assert!(
+        !typed_result
+            .diagnostics
+            .iter()
+            .any(|diag| diag.rule_name == RULE_REQUIRE_TYPED_EMITS),
+        "quoted colon emit keys should be treated as typed: {:?}",
+        typed_result.diagnostics
+    );
+
+    let runtime_source = r#"<script setup lang="ts">
+defineEmits(["update:open"])
+</script>"#;
+    let runtime_result = lint_sfc_with_corsa(&linter, runtime_source, "RuntimeDialog.vue");
+    assert!(
+        runtime_result
+            .diagnostics
+            .iter()
+            .any(|diag| diag.rule_name == RULE_REQUIRE_TYPED_EMITS),
+        "runtime-only emits should still be reported: {:?}",
+        runtime_result.diagnostics
+    );
+}
+
+#[test]
 fn no_floating_promises_uses_corsa() {
     if !corsa_available() {
         return;

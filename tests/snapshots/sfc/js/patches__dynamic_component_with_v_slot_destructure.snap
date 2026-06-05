@@ -1,8 +1,9 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 221
 expression: js_output.as_str()
 ---
-import { resolveDynamicComponent as _resolveDynamicComponent, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
+import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 
 import { RouterView } from 'vue-router'
 
@@ -15,7 +16,7 @@ export default {
 return (_ctx, _cache) => {
   return (_openBlock(), _createBlock(RouterView, null, {
     default: _withCtx(({ Component }) => [
-      _createVNode(_resolveDynamicComponent(Component))
+      (_openBlock(), _createBlock(_resolveDynamicComponent(Component)))
     ]),
     _: 1 /* STABLE */
   }))

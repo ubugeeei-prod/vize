@@ -7,6 +7,7 @@ use crate::ast::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropN
 
 use super::super::{
     context::CodegenContext,
+    element::helpers::is_is_prop,
     helpers::{camelize, capitalize_first, escape_js_string, is_valid_js_identifier},
     props::{StaticMerge, generate_directive_prop_with_static, is_supported_directive},
 };
@@ -99,7 +100,7 @@ pub(super) fn generate_single_prop_for_if(
                     .as_ref()
                     .and_then(|m| m.bindings.get(v.content.as_str()).copied())
             });
-            let needs_ref_key = matches!(
+            let should_ref_runtime_binding = matches!(
                 ref_binding_type,
                 Some(
                     crate::options::BindingType::SetupLet
@@ -107,9 +108,13 @@ pub(super) fn generate_single_prop_for_if(
                         | crate::options::BindingType::SetupMaybeRef
                 )
             );
+            let needs_ref_for = attr.name == "ref" && ctx.in_v_for;
 
-            if let (true, Some(ref_value)) = (needs_ref_key, ref_value) {
+            if let (true, Some(ref_value)) = (should_ref_runtime_binding, ref_value) {
                 let ref_name = &ref_value.content;
+                if needs_ref_for {
+                    ctx.push("ref_for: true, ");
+                }
                 ctx.push("ref_key: \"");
                 ctx.push(ref_name);
                 ctx.push("\", ref: ");
@@ -117,6 +122,9 @@ pub(super) fn generate_single_prop_for_if(
                 return;
             }
 
+            if needs_ref_for {
+                ctx.push("ref_for: true, ");
+            }
             let needs_quotes = !is_valid_js_identifier(&attr.name);
             if needs_quotes {
                 ctx.push("\"");
@@ -127,7 +135,7 @@ pub(super) fn generate_single_prop_for_if(
             }
             ctx.push(": ");
             if let Some(value) = &attr.value {
-                if ref_binding_type.is_some() {
+                if should_ref_runtime_binding {
                     ctx.push(&value.content);
                 } else {
                     ctx.push("\"");
@@ -154,6 +162,7 @@ pub(super) fn generate_if_branch_props_object(
     static_merge: StaticMerge<'_>,
     has_dynamic_class: bool,
     has_dynamic_style: bool,
+    skip_is_prop: bool,
 ) {
     // Check if there are other props besides key (skip excluded ones)
     let has_other_props = el.props.iter().any(|p| {
@@ -161,6 +170,9 @@ pub(super) fn generate_if_branch_props_object(
         if let PropNode::Directive(dir) = p
             && !is_supported_directive(dir)
         {
+            return false;
+        }
+        if skip_is_prop && is_is_prop(p) {
             return false;
         }
         !should_skip_prop_for_if(p, has_dynamic_class, has_dynamic_style)
@@ -197,6 +209,9 @@ pub(super) fn generate_if_branch_props_object(
         if let PropNode::Directive(dir) = prop
             && !is_supported_directive(dir)
         {
+            continue;
+        }
+        if skip_is_prop && is_is_prop(prop) {
             continue;
         }
         if should_skip_prop_for_if(prop, has_dynamic_class, has_dynamic_style) {

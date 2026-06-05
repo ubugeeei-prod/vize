@@ -62,6 +62,19 @@ export function render(_ctx, _cache) {
   }))
 }
 ===
+name: nested dynamic component
+options: vdom
+--- INPUT ---
+<div><component :is="foo" /></div>
+--- OUTPUT ---
+import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.foo)))
+  ]))
+}
+===
 name: dynamic component with slot content
 options: vdom
 --- INPUT ---
