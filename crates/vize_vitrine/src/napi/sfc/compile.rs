@@ -58,14 +58,6 @@ pub fn compile_sfc(
     let is_ts = opts.is_ts.unwrap_or(false);
     let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
     let standalone = opts.mode.as_deref() == Some("function");
-    let runtime_module_name = opts
-        .runtime_module_name
-        .unwrap_or_else(|| "vue".to_string())
-        .into();
-    let runtime_global_name = opts
-        .runtime_global_name
-        .unwrap_or_else(|| "Vue".to_string())
-        .into();
     let external_scope_id: Option<vize_carton::CompactString> = opts
         .scope_id
         .as_ref()
@@ -80,8 +72,6 @@ pub fn compile_sfc(
         };
         Some(vize_atelier_dom::DomCompilerOptions {
             scope_id,
-            runtime_module_name,
-            runtime_global_name,
             ..Default::default()
         })
     };

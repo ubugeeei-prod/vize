@@ -116,24 +116,12 @@ fn trim_trailing_newlines(code: &mut String) {
     }
 }
 
-fn runtime_module_name(options: &SfcCompileOptions) -> &str {
-    options
-        .template
-        .compiler_options
-        .as_ref()
-        .map(|opts| opts.runtime_module_name.as_str())
-        .filter(|name| !name.is_empty())
-        .unwrap_or("vue")
+fn runtime_module_name(_options: &SfcCompileOptions) -> &str {
+    "vue"
 }
 
-fn runtime_global_name(options: &SfcCompileOptions) -> &str {
-    options
-        .template
-        .compiler_options
-        .as_ref()
-        .map(|opts| opts.runtime_global_name.as_str())
-        .filter(|name| !name.is_empty())
-        .unwrap_or("Vue")
+fn runtime_global_name(_options: &SfcCompileOptions) -> &str {
+    "Vue"
 }
 
 fn rewrite_runtime_import_line(

@@ -5,7 +5,6 @@ use crate::types::{
 use crate::{SfcParseOptions, parse_sfc};
 use std::fs;
 use std::path::PathBuf;
-use vize_atelier_dom::DomCompilerOptions;
 use vize_carton::ToCompactString;
 
 fn fixtures_path() -> PathBuf {
@@ -1014,21 +1013,14 @@ const count = ref(0)
                 inline_template: true,
                 ..Default::default()
             },
-            template: TemplateCompileOptions {
-                compiler_options: Some(DomCompilerOptions {
-                    runtime_global_name: "PetiteVue".into(),
-                    ..Default::default()
-                }),
-                ..Default::default()
-            },
             ..Default::default()
         },
     )
     .expect("Failed to compile SFC");
 
     assert!(
-        result.code.contains("PetiteVue"),
-        "standalone output should read Vue helpers from the configured global:\n{}",
+        result.code.contains("Vue"),
+        "standalone output should read Vue helpers from the CDN global:\n{}",
         result.code
     );
     assert!(

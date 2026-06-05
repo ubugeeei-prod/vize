@@ -62,10 +62,6 @@ struct BatchCompileKey {
     source_len: usize,
     parent_hash: u64,
     parent_len: usize,
-    runtime_module_hash: u64,
-    runtime_module_len: usize,
-    runtime_global_hash: u64,
-    runtime_global_len: usize,
     component_name_len: usize,
     options: u8,
 }
@@ -212,14 +208,6 @@ pub fn compile_sfc_batch(
     let is_ts = opts.is_ts.unwrap_or(false);
     let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
     let standalone = opts.mode.as_deref() == Some("function");
-    let runtime_module_name: vize_carton::String = opts
-        .runtime_module_name
-        .unwrap_or_else(|| "vue".to_string())
-        .into();
-    let runtime_global_name: vize_carton::String = opts
-        .runtime_global_name
-        .unwrap_or_else(|| "Vue".to_string())
-        .into();
     let start = Instant::now();
     let option_bits = batch_options_bits(ssr, vapor, is_ts, vue_parser_quirks, standalone);
     let read_inputs: Vec<_> = files
@@ -254,10 +242,6 @@ pub fn compile_sfc_batch(
                 source_len: source.len(),
                 parent_hash,
                 parent_len,
-                runtime_module_hash: hash_str(&runtime_module_name),
-                runtime_module_len: runtime_module_name.len(),
-                runtime_global_hash: hash_str(&runtime_global_name),
-                runtime_global_len: runtime_global_name.len(),
                 component_name_len: component_name.len(),
                 options: option_bits,
             };
@@ -310,11 +294,7 @@ pub fn compile_sfc_batch(
                     scoped: has_scoped,
                     ssr,
                     is_ts,
-                    compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
-                        runtime_module_name: runtime_module_name.clone(),
-                        runtime_global_name: runtime_global_name.clone(),
-                        ..Default::default()
-                    }),
+                    compiler_options: Some(vize_atelier_dom::DomCompilerOptions::default()),
                     ..Default::default()
                 },
                 style: StyleCompileOptions {
