@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from "vite-plus/test";
 import { loadWasm, type WasmModule } from "../src/wasm/index";
+import { normalizeGeneratedCodeForSnapshot } from "./snapshot-utils";
 
 describe("Edge Cases", () => {
   let wasm: WasmModule | null = null;
@@ -58,9 +59,7 @@ const result = identity<string>('test')
       const result = wasm!.compileSfc(sfc, {});
       const code = result.script?.code;
       expect(code).toBeDefined();
-      // The compiled code should contain the function and call
-      expect(code).toContain("identity");
-      expect(code).toContain("result");
+      expect(normalizeGeneratedCodeForSnapshot(code)).toMatchSnapshot();
     });
 
     it("should handle async/await with types", () => {
@@ -79,9 +78,7 @@ const data = await fetchData()
       const result = wasm!.compileSfc(sfc, {});
       const code = result.script?.code;
       expect(code).toBeDefined();
-      // The compiled code should contain async function
-      expect(code).toContain("fetchData");
-      expect(code).toContain("data");
+      expect(normalizeGeneratedCodeForSnapshot(code)).toMatchSnapshot();
     });
 
     it("should handle type assertions", () => {
@@ -98,9 +95,7 @@ const value = (someValue as unknown) as number
       const result = wasm!.compileSfc(sfc, {});
       const code = result.script?.code;
       expect(code).toBeDefined();
-      // The compiled code should contain the variables
-      expect(code).toContain("element");
-      expect(code).toContain("document.querySelector");
+      expect(normalizeGeneratedCodeForSnapshot(code)).toMatchSnapshot();
     });
 
     it("should handle non-null assertions", () => {
@@ -132,10 +127,7 @@ const name = user?.name?.first
 `;
       const result = wasm!.compileSfc(sfc, {});
       expect(result.script?.code).toBeDefined();
-      expect(result.script?.code).toContain("const user = {}");
-      expect(result.script?.code).toContain("const name = user?.name?.first");
-      expect(result.script?.code).not.toContain("interface User");
-      expect(result.script?.code).not.toContain(": User");
+      expect(normalizeGeneratedCodeForSnapshot(result.script?.code)).toMatchSnapshot();
     });
 
     it("should preserve optional chaining type declarations when requested", () => {
@@ -152,9 +144,7 @@ const name = user?.name?.first
 `;
       const result = wasm!.compileSfc(sfc, { scriptExt: "preserve" });
       expect(result.script?.code).toBeDefined();
-      expect(result.script?.code).toContain("interface User");
-      expect(result.script?.code).toContain("const user: User = {}");
-      expect(result.script?.code).toContain("const name = user?.name?.first");
+      expect(normalizeGeneratedCodeForSnapshot(result.script?.code)).toMatchSnapshot();
     });
 
     it("should handle enum declarations", () => {
@@ -217,10 +207,7 @@ const instance = new MyClass('test')
       const result = wasm!.compileSfc(sfc, {});
       const code = result.script?.code;
       expect(code).toBeDefined();
-      // The compiled code should contain the class
-      expect(code).toContain("MyClass");
-      expect(code).toContain("instance");
-      expect(code).toContain("constructor");
+      expect(normalizeGeneratedCodeForSnapshot(code)).toMatchSnapshot();
     });
   });
 

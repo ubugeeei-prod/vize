@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from "vite-plus/test";
 import { loadWasm, type WasmModule } from "../src/wasm/index";
+import { normalizeGeneratedCodeForSnapshot } from "./snapshot-utils";
 
 describe("SFC Compilation", () => {
   let wasm: WasmModule | null = null;
@@ -19,7 +20,7 @@ describe("SFC Compilation", () => {
       expect(result).toBeDefined();
       expect(result.descriptor).toBeDefined();
       expect(result.descriptor.template).toBeDefined();
-      expect(result.descriptor.template?.content).toContain("Hello World");
+      expect(result.descriptor.template?.content).toMatchSnapshot();
     });
 
     it("should compile SFC with script setup", () => {
@@ -76,12 +77,7 @@ const name: string = 'test'
       // Check code is defined (may be in script.code or result directly)
       const code = result.script?.code;
       expect(code).toBeDefined();
-      // Type annotations should be stripped from the output
-      // The compiled output should have 'const count = 0' not 'const count: number = 0'
-      expect(code).toContain("count");
-      expect(code).toContain("name");
-      expect(code).not.toContain(": number");
-      expect(code).not.toContain(": string");
+      expect(normalizeGeneratedCodeForSnapshot(code)).toMatchSnapshot();
     });
 
     it("should strip generic type parameters from ref/reactive", () => {
@@ -100,13 +96,7 @@ const state = reactive<{ name: string }>({ name: 'test' })
       const result = wasm!.compileSfc(sfc, {});
       const code = result.script?.code;
       expect(code).toBeDefined();
-      // The compiled code should contain the variables
-      expect(code).toContain("count");
-      expect(code).toContain("items");
-      expect(code).toContain("state");
-      expect(code).not.toContain("ref<number>");
-      expect(code).not.toContain("ref<string[]>");
-      expect(code).not.toContain("reactive<{ name: string }>");
+      expect(normalizeGeneratedCodeForSnapshot(code)).toMatchSnapshot();
     });
 
     it("should handle complex generic types", () => {
@@ -124,11 +114,7 @@ const instance = shallowRef<Map<string, number> | null>(null)
       const result = wasm!.compileSfc(sfc, {});
       const code = result.script?.code;
       expect(code).toBeDefined();
-      // The compiled code should contain the variables
-      expect(code).toContain("editorRef");
-      expect(code).toContain("instance");
-      expect(code).not.toContain("ref<HTMLDivElement | null>");
-      expect(code).not.toContain("shallowRef<Map<string, number> | null>");
+      expect(normalizeGeneratedCodeForSnapshot(code)).toMatchSnapshot();
     });
 
     it("should handle interface declarations", () => {
@@ -147,8 +133,7 @@ const user: User = { name: 'test', age: 25 }
 `;
       const result = wasm!.compileSfc(sfc, { scriptExt: "preserve" });
       expect(result.script?.code).toBeDefined();
-      // TypeScript should remain available when preserve mode is requested.
-      expect(result.script?.code).toContain("interface User");
+      expect(normalizeGeneratedCodeForSnapshot(result.script?.code)).toMatchSnapshot();
     });
 
     it("should handle type aliases", () => {
@@ -164,8 +149,7 @@ const status: Status = 'active'
 `;
       const result = wasm!.compileSfc(sfc, { scriptExt: "preserve" });
       expect(result.script?.code).toBeDefined();
-      // TypeScript should remain available when preserve mode is requested.
-      expect(result.script?.code).toContain("type Status");
+      expect(normalizeGeneratedCodeForSnapshot(result.script?.code)).toMatchSnapshot();
     });
   });
 
@@ -328,15 +312,17 @@ import DashTest from './dash-test.vue'
 <template>
   <dash-test />
   <DashTest />
-</template>
+      </template>
 `;
       const domResult = wasm!.compileSfc(sfc, {});
-      expect(domResult.script?.code).toContain("_createVNode(DashTest)");
-      expect(domResult.script?.code).not.toContain('_resolveComponent("dash-test")');
 
       const ssrResult = wasm!.compileSfc(sfc, { ssr: true });
-      expect(ssrResult.script?.code).toContain("$setup.DashTest");
-      expect(ssrResult.script?.code).not.toContain('_resolveComponent("dash-test")');
+      expect(
+        normalizeGeneratedCodeForSnapshot({
+          dom: domResult.script?.code,
+          ssr: ssrResult.script?.code,
+        }),
+      ).toMatchSnapshot();
     });
 
     it("should resolve dotted component tags through setup member bindings in both DOM and SSR output", () => {
@@ -352,12 +338,14 @@ import { Form, Input } from 'ant-design-vue'
 </template>
 `;
       const domResult = wasm!.compileSfc(sfc, {});
-      expect(domResult.script?.code).toMatch(/_create(?:Block|VNode)\(Form\.Item/);
-      expect(domResult.script?.code).not.toContain('_resolveComponent("Form.Item")');
 
       const ssrResult = wasm!.compileSfc(sfc, { ssr: true });
-      expect(ssrResult.script?.code).toContain("$setup.Form.Item");
-      expect(ssrResult.script?.code).not.toContain('_resolveComponent("Form.Item")');
+      expect(
+        normalizeGeneratedCodeForSnapshot({
+          dom: domResult.script?.code,
+          ssr: ssrResult.script?.code,
+        }),
+      ).toMatchSnapshot();
     });
 
     it("should resolve lowercase imported components from setup bindings in SSR mode", () => {
@@ -371,8 +359,7 @@ import { Primitive } from '@tresjs/core'
 </template>
 `;
       const result = wasm!.compileSfc(sfc, { ssr: true });
-      expect(result.script?.code).toContain("_ssrRenderComponent($setup.Primitive");
-      expect(result.script?.code).not.toContain('_resolveComponent("primitive")');
+      expect(normalizeGeneratedCodeForSnapshot(result.script?.code)).toMatchSnapshot();
     });
 
     it("should keep custom renderer intrinsics as elements while preserving imported lowercase bindings", () => {
@@ -391,17 +378,17 @@ const visible = true
 </template>
 `;
       const domResult = wasm!.compileSfc(sfc, { customRenderer: true });
-      expect(domResult.script?.code).toContain("Primitive");
-      expect(domResult.script?.code).not.toContain('_createElementBlock("primitive")');
-      expect(domResult.script?.code).not.toContain('_resolveComponent("group")');
 
       const ssrResult = wasm!.compileSfc(sfc, {
         ssr: true,
         customRenderer: true,
       });
-      expect(ssrResult.script?.code).toContain("$setup.Primitive");
-      expect(ssrResult.script?.code).not.toContain('_resolveComponent("group")');
-      expect(ssrResult.script?.code).not.toContain("<primitive></primitive>");
+      expect(
+        normalizeGeneratedCodeForSnapshot({
+          dom: domResult.script?.code,
+          ssr: ssrResult.script?.code,
+        }),
+      ).toMatchSnapshot();
     });
   });
 });

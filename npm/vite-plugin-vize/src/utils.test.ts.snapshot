@@ -1,0 +1,188 @@
+exports[`applyDefineReplacements snapshots basic define replacement 1`] = `
+if (true) { show(); }
+`;
+
+exports[`applyDefineReplacements snapshots longest key precedence 1`] = `
+"production" + "full"
+`;
+
+exports[`applyDefineReplacements snapshots partial-match preservation 1`] = `
+import.meta.vfFeatures.photoSectionEnabled
+`;
+
+exports[`generateOutput snapshots CSS Modules binding injection 1`] = `
+import buttonStyles from "/src/ModuleButton.vue?vue=&type=style&index=0&lang=css&module=buttonStyles";
+
+const _sfc_main = { name: "ModuleButton" }
+_sfc_main.__cssModules = _sfc_main.__cssModules || {};
+_sfc_main.__cssModules["buttonStyles"] = buttonStyles;
+export default _sfc_main;
+
+`;
+
+exports[`generateOutput snapshots SSR template-only default export shim 1`] = `
+
+export function ssrRender() {
+  return null
+}
+
+const _sfc_main = {};
+_sfc_main.ssrRender = ssrRender;
+export default _sfc_main;
+`;
+
+exports[`generateOutput snapshots delegated style import order 1`] = `
+
+import { openBlock as _openBlock } from "vue"
+const _hoisted_1 = {}
+import Child from "./Child.vue"
+import $style from "/src/Parent.vue?vue=&type=style&index=0&lang=css&module=";
+const _sfc_main = { name: "Parent" }
+_sfc_main.__cssModules = _sfc_main.__cssModules || {};
+_sfc_main.__cssModules["$style"] = $style;
+export default _sfc_main;
+
+`;
+
+exports[`generateOutput snapshots inline-template full-reload HMR downgrade 1`] = `
+
+const _sfc_main = {
+  __name: "InlineOnly",
+  setup() {
+    return (_ctx, _cache) => null
+  }
+}
+
+export default _sfc_main;
+if (import.meta.hot) {
+  _sfc_main.__hmrId = "inlinehmr";
+  _sfc_main.__hmrUpdateType = "full-reload";
+
+  import.meta.hot.accept((mod) => {
+    if (!mod) return;
+    const { default: updated } = mod;
+    if (typeof __VUE_HMR_RUNTIME__ !== 'undefined') {
+      const updateType = updated.__hmrUpdateType || 'full-reload';
+      if (updateType === 'template-only') {
+        __VUE_HMR_RUNTIME__.rerender(updated.__hmrId, updated.render);
+      } else {
+        __VUE_HMR_RUNTIME__.reload(updated.__hmrId, updated);
+      }
+    }
+  });
+
+  import.meta.hot.on('vize:update', (data) => {
+    if (data.id !== _sfc_main.__hmrId) return;
+
+    if (data.type === 'style-only') {
+      const styleId = 'vize-style-' + _sfc_main.__hmrId;
+      const styleEl = document.getElementById(styleId);
+      if (styleEl && data.css) {
+        styleEl.textContent = data.css;
+      }
+    }
+  });
+
+  if (typeof __VUE_HMR_RUNTIME__ !== 'undefined') {
+    __VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId, _sfc_main);
+  }
+}
+`;
+
+exports[`generateOutput snapshots production extracted plain CSS 1`] = `
+
+import { openBlock as _openBlock } from "vue"
+import "/src/ProdStyles.vue?vue=&type=style&index=0&lang=css";
+const _sfc_main = { name: "ProdStyles" }
+export default _sfc_main
+
+`;
+
+exports[`generateOutput snapshots production scoped CSS extraction 1`] = `
+import "/src/PlainCss.vue?vue=&type=style&index=0&scoped=data-v-plaincss&lang=css";
+
+const _sfc_main = { name: "PlainCss" }
+_sfc_main.__scopeId = "data-v-plaincss";
+export default _sfc_main
+
+`;
+
+exports[`generateOutput snapshots standalone render template-only HMR 1`] = `
+
+export function render() {
+  return null
+}
+const _sfc_main = {}
+_sfc_main.render = render
+export default _sfc_main
+
+if (import.meta.hot) {
+  _sfc_main.__hmrId = "separatehmr";
+  _sfc_main.__hmrUpdateType = "template-only";
+
+  import.meta.hot.accept((mod) => {
+    if (!mod) return;
+    const { default: updated } = mod;
+    if (typeof __VUE_HMR_RUNTIME__ !== 'undefined') {
+      const updateType = updated.__hmrUpdateType || 'full-reload';
+      if (updateType === 'template-only') {
+        __VUE_HMR_RUNTIME__.rerender(updated.__hmrId, updated.render);
+      } else {
+        __VUE_HMR_RUNTIME__.reload(updated.__hmrId, updated);
+      }
+    }
+  });
+
+  import.meta.hot.on('vize:update', (data) => {
+    if (data.id !== _sfc_main.__hmrId) return;
+
+    if (data.type === 'style-only') {
+      const styleId = 'vize-style-' + _sfc_main.__hmrId;
+      const styleEl = document.getElementById(styleId);
+      if (styleEl && data.css) {
+        styleEl.textContent = data.css;
+      }
+    }
+  });
+
+  if (typeof __VUE_HMR_RUNTIME__ !== 'undefined') {
+    __VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId, _sfc_main);
+  }
+}
+`;
+
+exports[`resolveCssImports snapshots RegExp alias URL resolution 1`] = `
+.logo { background-image: url("/@fs<asset>"); }
+`;
+
+exports[`resolveCssImports snapshots alias and package-like URLs 1`] = `
+
+.local { background-image: url("/@fs<src-asset>"); }
+.package { background-image: url("@scope/icons/logo.svg"); }
+
+`;
+
+exports[`resolveCssImports snapshots dev asset URLs with base path 1`] = `
+.hero { background-image: url("/_nuxt/@fs<asset>"); }
+`;
+
+exports[`resolveCssTransforms snapshots :deep() unwrapping 1`] = `
+.parent .child { color: red; }
+`;
+
+exports[`resolveCssTransforms snapshots @custom-media resolution 1`] = `
+
+.foo { color: red; }
+@media (max-width: 768px) { .foo { font-size: 12px; } }
+`;
+
+exports[`resolveCssTransforms snapshots multiple @custom-media definitions 1`] = `
+
+
+@media (max-width: 768px) { .a { color: red; } }
+@media (min-width: 1024px) { .b { color: blue; } }
+`;
+
+exports[`resolveCssTransforms snapshots nested :deep() unwrapping 1`] = `
+.parent .child:nth-child(2) { color: red; }
+`;

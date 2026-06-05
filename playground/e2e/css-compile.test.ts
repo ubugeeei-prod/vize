@@ -13,8 +13,7 @@ describe("CSS Compilation", () => {
       const css = `.container { display: flex; }`;
       const result = wasm!.compileCss(css, {});
       expect(result).toBeDefined();
-      expect(result.code).toContain(".container");
-      expect(result.code).toContain("display");
+      expect(result.code).toMatchSnapshot();
     });
 
     it("should compile multiple rules", () => {
@@ -24,9 +23,7 @@ describe("CSS Compilation", () => {
 .footer { margin-top: 20px; }
 `;
       const result = wasm!.compileCss(css, {});
-      expect(result.code).toContain(".header");
-      expect(result.code).toContain(".content");
-      expect(result.code).toContain(".footer");
+      expect(result.code).toMatchSnapshot();
     });
 
     it("should handle nested selectors", () => {
@@ -39,7 +36,7 @@ describe("CSS Compilation", () => {
 }
 `;
       const result = wasm!.compileCss(css, {});
-      expect(result.code).toContain(".parent");
+      expect(result.code).toMatchSnapshot();
     });
   });
 
@@ -50,7 +47,7 @@ describe("CSS Compilation", () => {
         scoped: true,
         scopeId: "data-v-abc123",
       });
-      expect(result.code).toContain("data-v-abc123");
+      expect(result.code).toMatchSnapshot();
     });
 
     it("should scope multiple selectors", () => {
@@ -62,7 +59,7 @@ describe("CSS Compilation", () => {
         scoped: true,
         scopeId: "data-v-test",
       });
-      expect(result.code).toContain("data-v-test");
+      expect(result.code).toMatchSnapshot();
     });
 
     it("should handle :deep() pseudo-selector", () => {
@@ -115,20 +112,17 @@ describe("CSS Compilation", () => {
 }
 `;
       const result = wasm!.compileCss(css, { minify: true });
-      // Minified CSS should be more compact (less whitespace)
-      // The minified version should contain less whitespace than original
-      expect(result.code).toContain(".container");
-      expect(result.code).toContain("display");
-      // Minified output is more compact - no need for exact format check
+      expect(result.code).toMatchSnapshot();
     });
 
     it("should not minify by default", () => {
       const css = `.container { display: flex; }`;
       const resultMinified = wasm!.compileCss(css, { minify: true });
       const resultNormal = wasm!.compileCss(css, { minify: false });
-      // Both should contain the same CSS rule
-      expect(resultMinified.code).toContain(".container");
-      expect(resultNormal.code).toContain(".container");
+      expect({
+        minified: resultMinified.code,
+        normal: resultNormal.code,
+      }).toMatchSnapshot();
     });
   });
 
@@ -142,7 +136,7 @@ describe("CSS Compilation", () => {
       const result = wasm!.compileCss(css, {});
       expect(result.cssVars).toBeDefined();
       if (result.cssVars && result.cssVars.length > 0) {
-        expect(result.cssVars).toContain("textColor");
+        expect(result.cssVars).toMatchSnapshot();
       }
     });
 

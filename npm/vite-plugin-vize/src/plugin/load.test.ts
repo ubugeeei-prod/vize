@@ -697,17 +697,10 @@ assert.ok(
   applyCssVirtualLoad && typeof applyCssVirtualLoad === "object",
   "Delegated @apply CSS should load as a virtual style module",
 );
-assert.match(
+assert.equal(
   applyCssVirtualLoad.code,
-  /\.root\[data-v-applycss\]\s*\{/,
+  String.raw`.root[data-v-applycss]{@apply text-fg; height: var(--applycss-height\ \+\ \'px\');}`,
   "Delegated @apply CSS should keep @apply while applying scoped selector and CSS vars",
-);
-assert.match(applyCssVirtualLoad.code, /@apply text-fg/);
-assert.ok(applyCssVirtualLoad.code.includes(String.raw`var(--applycss-height\ \+\ \'px\')`));
-assert.doesNotMatch(
-  applyCssVirtualLoad.code,
-  /v-bind\(/,
-  "Delegated style CSS should not leak v-bind() to Vite",
 );
 
 const applyCssVisibleStyleLoad = loadHook(

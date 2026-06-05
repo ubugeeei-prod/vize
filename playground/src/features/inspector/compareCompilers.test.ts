@@ -155,7 +155,10 @@ describe("compileInspectorReport", () => {
     });
 
     expect(report.virtualTs.code).toBe("const __vts = 1;");
-    expect(report.virtualTs.formattedCode).toContain("[typescript]");
+    expect(report.virtualTs.formattedCode).toMatchInlineSnapshot(`
+      "[typescript]
+      const __vts = 1;"
+    `);
     expect(report.virtualTs.warnings).toEqual(["warning vts-note: virtual note"]);
     expect(report.vir.code).toBe("[vir]\nbindings=0\n");
     expect(report.graph.nodes).toHaveLength(2);
@@ -283,9 +286,23 @@ describe("compileInspectorReport", () => {
 
     const [officialOutput] = buildInspectorDiff.mock.calls[0]!;
 
-    expect(officialOutput).toContain("return (_ctx: any,_cache: any) => {");
-    expect(officialOutput).not.toContain("export function render");
-    expect(officialOutput).not.toContain("Object.defineProperty(__returned__");
+    expect(officialOutput).toMatchInlineSnapshot(`
+      "[typescript]
+      import { defineComponent as _defineComponent } from 'vue'
+      import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+      const msg: string = 'hi'
+      export default /*@__PURE__*/_defineComponent({
+        __name: 'App',
+        setup(__props) {
+
+      return (_ctx: any,_cache: any) => {
+        return (_openBlock(), _createElementBlock("div", null, _toDisplayString(msg)))
+      }
+      }
+
+      })"
+    `);
 
     buildInspectorDiff.mockClear();
 
@@ -301,7 +318,31 @@ describe("compileInspectorReport", () => {
 
     const [ssrOfficialOutput] = buildInspectorDiff.mock.calls[0]!;
 
-    expect(ssrOfficialOutput).toContain("export function ssrRender");
-    expect(ssrOfficialOutput).not.toContain("return (_ctx: any,_cache: any) => {");
+    expect(ssrOfficialOutput).toMatchInlineSnapshot(`
+      "[typescript]
+      import { defineComponent as _defineComponent } from 'vue'
+      const msg: string = 'hi'
+      export default /*@__PURE__*/_defineComponent({
+        __name: 'App',
+        setup(__props, { expose: __expose }) {
+        __expose();
+
+      const __returned__ = { msg }
+      Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+      return __returned__
+      }
+
+      })
+
+      import { ssrRenderAttrs as _ssrRenderAttrs, ssrInterpolate as _ssrInterpolate } from "vue/server-renderer"
+
+      export function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+        _push(\`<div\${
+          _ssrRenderAttrs(_attrs)
+        }>\${
+          _ssrInterpolate($setup.msg)
+        }</div>\`)
+      }"
+    `);
   });
 });

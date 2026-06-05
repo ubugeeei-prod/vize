@@ -1,0 +1,263 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SFC Compilation > Basic SFC > should compile template-only SFC 1`] = `
+"
+  <div>Hello World</div>
+"
+`;
+
+exports[`SFC Compilation > SSR Mode > should keep custom renderer intrinsics as elements while preserving imported lowercase bindings 1`] = `
+{
+  "dom": "import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
+import { Primitive } from "@tresjs/core";
+const visible = true;
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("mesh", null, [visible ? (_openBlock(), _createElementBlock("group", { key: 0 }, [_createVNode(Primitive)])) : _createCommentVNode("v-if", true)]);
+    };
+  }
+};",
+  "ssr": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(\`<mesh\${_ssrRenderAttrs(_attrs)}>\`);
+  if ($setup.visible) {
+    _push(\`<group>\`);
+    _push(_ssrRenderComponent($setup.Primitive, null, null, _parent));
+    _push(\`</group>\`);
+  } else {
+    _push(\`<!---->\`);
+  }
+  _push(\`</mesh>\`);
+}
+import { Primitive } from "@tresjs/core";
+const visible = true;
+export default {
+  __name: "anonymous",
+  ssrRender,
+  setup(__props) {
+    const __returned__ = {
+      Primitive,
+      visible
+    };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};",
+}
+`;
+
+exports[`SFC Compilation > SSR Mode > should resolve dotted component tags through setup member bindings in both DOM and SSR output 1`] = `
+{
+  "dom": "import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+import { Form, Input } from "ant-design-vue";
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return _openBlock(), _createBlock(Form.Item, { label: "Teacher" }, {
+        default: _withCtx(() => [_createVNode(Input)]),
+        _: 1
+      });
+    };
+  }
+};",
+  "ssr": "import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer";
+import { createVNode as _createVNode, mergeProps as _mergeProps, withCtx as _withCtx } from "vue";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(_ssrRenderComponent($setup.Form.Item, _mergeProps({ label: "Teacher" }, _attrs), {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(_ssrRenderComponent($setup.Input, null, null, _parent));
+      } else {
+        return [_createVNode($setup.Input, null, null)];
+      }
+    }),
+    _: 1
+  }, _parent));
+}
+import { Form, Input } from "ant-design-vue";
+export default {
+  __name: "anonymous",
+  ssrRender,
+  setup(__props) {
+    const __returned__ = {
+      Input,
+      Form
+    };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};",
+}
+`;
+
+exports[`SFC Compilation > SSR Mode > should resolve kebab-case imported components through setup bindings in both DOM and SSR output 1`] = `
+{
+  "dom": "import { createElementBlock as _createElementBlock, createVNode as _createVNode, Fragment as _Fragment, openBlock as _openBlock } from "vue";
+import DashTest from "./dash-test.vue";
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        _Fragment,
+        null,
+        [_createVNode(DashTest), _createVNode(DashTest)],
+        64
+        /* STABLE_FRAGMENT */
+      );
+    };
+  }
+};",
+  "ssr": "import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(\`<!--[-->\`);
+  _push(_ssrRenderComponent($setup.DashTest, null, null, _parent));
+  _push(_ssrRenderComponent($setup.DashTest, null, null, _parent));
+  _push(\`<!--]-->\`);
+}
+import DashTest from "./dash-test.vue";
+export default {
+  __name: "anonymous",
+  ssrRender,
+  setup(__props) {
+    const __returned__ = { DashTest };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};",
+}
+`;
+
+exports[`SFC Compilation > SSR Mode > should resolve lowercase imported components from setup bindings in SSR mode 1`] = `
+"import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer";
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(_ssrRenderComponent($setup.Primitive, _attrs, null, _parent));
+}
+import { Primitive } from "@tresjs/core";
+export default {
+  __name: "anonymous",
+  ssrRender,
+  setup(__props) {
+    const __returned__ = { Primitive };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};"
+`;
+
+exports[`SFC Compilation > TypeScript Support > should handle complex generic types 1`] = `
+"import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+import { ref, shallowRef } from "vue";
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    const editorRef = ref(null);
+    const instance = shallowRef(null);
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        "div",
+        {
+          ref_key: "editorRef",
+          ref: editorRef
+        },
+        null,
+        512
+        /* NEED_PATCH */
+      );
+    };
+  }
+};"
+`;
+
+exports[`SFC Compilation > TypeScript Support > should handle interface declarations 1`] = `
+"import { defineComponent as _defineComponent } from 'vue'
+import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue"
+
+interface User {
+  name: string
+  age: number
+}
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  setup(__props) {
+
+const user: User = { name: 'test', age: 25 }
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(user.name), 1 /* TEXT */))
+}
+}
+
+})"
+`;
+
+exports[`SFC Compilation > TypeScript Support > should handle type aliases 1`] = `
+"import { defineComponent as _defineComponent } from 'vue'
+import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue"
+
+type Status = 'active' | 'inactive'
+const status: Status = 'active'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  setup(__props) {
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(status)))
+}
+}
+
+})"
+`;
+
+exports[`SFC Compilation > TypeScript Support > should strip generic type parameters from ref/reactive 1`] = `
+"import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
+import { reactive, ref } from "vue";
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    const count = ref(0);
+    const items = ref([]);
+    const state = reactive({ name: "test" });
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        "div",
+        null,
+        _toDisplayString(count.value),
+        1
+        /* TEXT */
+      );
+    };
+  }
+};"
+`;
+
+exports[`SFC Compilation > TypeScript Support > should strip type annotations from script setup 1`] = `
+"import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
+const count = 0;
+const name = "test";
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("div", null, _toDisplayString(count));
+    };
+  }
+};"
+`;

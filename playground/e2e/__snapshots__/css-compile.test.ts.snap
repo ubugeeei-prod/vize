@@ -1,0 +1,52 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CSS Compilation > Basic CSS > should compile basic CSS 1`] = `".container { display: flex; }"`;
+
+exports[`CSS Compilation > Basic CSS > should compile multiple rules 1`] = `
+"
+.header { font-size: 24px; }
+.content { padding: 16px; }
+.footer { margin-top: 20px; }
+"
+`;
+
+exports[`CSS Compilation > Basic CSS > should handle nested selectors 1`] = `
+"
+.parent {
+  color: black;
+}
+.parent .child {
+  color: blue;
+}
+"
+`;
+
+exports[`CSS Compilation > CSS Minification > should minify CSS when option is enabled 1`] = `
+"
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+"
+`;
+
+exports[`CSS Compilation > CSS Minification > should not minify by default 1`] = `
+{
+  "minified": ".container { display: flex; }",
+  "normal": ".container { display: flex; }",
+}
+`;
+
+exports[`CSS Compilation > Scoped CSS > should add scope attribute to selectors 1`] = `".container[data-v-abc123]{ display: flex; }"`;
+
+exports[`CSS Compilation > Scoped CSS > should scope multiple selectors 1`] = `
+".header[data-v-test]{ font-size: 24px; }.content[data-v-test]{ padding: 16px; }
+"
+`;
+
+exports[`CSS Compilation > v-bind in CSS > should detect v-bind() usage 1`] = `
+[
+  "textColor",
+]
+`;

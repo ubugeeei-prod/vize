@@ -8,11 +8,20 @@
 
 import assert from "node:assert";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import os from "node:os";
 import path from "node:path";
+import { snapshot, test } from "node:test";
 import { resolveConfigExport } from "../../vize/src/config.ts";
 import { createFilter, generateOutput } from "./utils/index.ts";
 import { resolveCssImports } from "./utils/css.ts";
+
+snapshot.setDefaultSnapshotSerializers([
+  (value) => (typeof value === "string" ? value : JSON.stringify(value, null, 2)),
+]);
+snapshot.setResolveSnapshotPath(() =>
+  fileURLToPath(new URL("./utils.test.ts.snapshot", import.meta.url)),
+);
 
 // =============================================================================
 // Test: Shared config RegExp filters
@@ -119,7 +128,7 @@ assert.strictEqual(
 );
 
 // Test 3b-ssr: SSR template-only SFCs need an ssrRender default export shim
-{
+void test("generateOutput snapshots SSR template-only default export shim", (t) => {
   const output = generateOutput(
     {
       code: `
@@ -136,18 +145,11 @@ export function ssrRender() {
       isDev: false,
     },
   );
-  assert.ok(
-    output.includes("_sfc_main.ssrRender = ssrRender"),
-    "SSR template-only output should attach ssrRender to the default export",
-  );
-  assert.ok(
-    output.includes("export default _sfc_main;"),
-    "SSR template-only output should expose a default export",
-  );
-}
+  t.assert.snapshot(output);
+});
 
 // Test 3c: Inline-template script setup must not claim template-only HMR
-{
+void test("generateOutput snapshots inline-template full-reload HMR downgrade", (t) => {
   const output = generateOutput(
     {
       code: `
@@ -168,14 +170,11 @@ export default {
       hmrUpdateType: "template-only",
     },
   );
-  assert.ok(
-    output.includes('__hmrUpdateType = "full-reload"'),
-    "Inline-template output must downgrade unsupported template-only HMR",
-  );
-}
+  t.assert.snapshot(output);
+});
 
 // Test 3d: Components with standalone render may keep template-only HMR
-{
+void test("generateOutput snapshots standalone render template-only HMR", (t) => {
   const output = generateOutput(
     {
       code: `
@@ -196,14 +195,11 @@ export default _sfc_main
       hmrUpdateType: "template-only",
     },
   );
-  assert.ok(
-    output.includes('__hmrUpdateType = "template-only"'),
-    "Standalone render output should preserve template-only HMR",
-  );
-}
+  t.assert.snapshot(output);
+});
 
 // Test 3e: CSS Modules bindings should be injected even when export default has no semicolon
-{
+void test("generateOutput snapshots CSS Modules binding injection", (t) => {
   const output = generateOutput(
     {
       code: `
@@ -228,20 +224,11 @@ export default _sfc_main
       filePath: "/src/ModuleButton.vue",
     },
   );
-  assert.ok(
-    output.includes(
-      'import buttonStyles from "/src/ModuleButton.vue?vue=&type=style&index=0&lang=css&module=buttonStyles";',
-    ),
-    "CSS Modules should emit a virtual style import with the original binding name",
-  );
-  assert.ok(
-    output.includes('_sfc_main.__cssModules["buttonStyles"] = buttonStyles;'),
-    "CSS Modules should attach bindings even when export default omits a semicolon",
-  );
-}
+  t.assert.snapshot(output);
+});
 
 // Test 3f: delegated SFC styles should load after imported child components
-{
+void test("generateOutput snapshots delegated style import order", (t) => {
   const output = generateOutput(
     {
       code: `
@@ -269,25 +256,11 @@ export default _sfc_main
       filePath: "/src/Parent.vue",
     },
   );
-  const childImportIndex = output.indexOf('import Child from "./Child.vue"');
-  const styleImportIndex = output.indexOf(
-    'import $style from "/src/Parent.vue?vue=&type=style&index=0&lang=css&module=";',
-  );
-  const componentIndex = output.indexOf('const _sfc_main = { name: "Parent" }');
-  assert.ok(childImportIndex >= 0, "Fixture should contain the child import");
-  assert.ok(styleImportIndex >= 0, "Delegated CSS module import should be emitted");
-  assert.ok(
-    childImportIndex < styleImportIndex,
-    "Parent delegated styles should be imported after child component imports",
-  );
-  assert.ok(
-    styleImportIndex < componentIndex,
-    "Delegated style imports should still appear before component initialization",
-  );
-}
+  t.assert.snapshot(output);
+});
 
 // Test 3g: production extracted plain CSS should flow through Vite's CSS pipeline
-{
+void test("generateOutput snapshots production extracted plain CSS", (t) => {
   const output = generateOutput(
     {
       code: `
@@ -315,18 +288,11 @@ export default _sfc_main
       filePath: "/src/ProdStyles.vue",
     },
   );
-  assert.ok(
-    output.includes('import "/src/ProdStyles.vue?vue=&type=style&index=0&lang=css";'),
-    "Production extracted plain CSS should emit a virtual style import",
-  );
-  assert.ok(
-    !output.includes("__vize_css__"),
-    "Production extracted plain CSS should not use runtime style injection",
-  );
-}
+  t.assert.snapshot(output);
+});
 
 // Test 3h: production scoped CSS extraction should still delegate plain CSS to Vite
-{
+void test("generateOutput snapshots production scoped CSS extraction", (t) => {
   const output = generateOutput(
     {
       code: `
@@ -353,17 +319,8 @@ export default _sfc_main
     },
   );
 
-  assert.ok(
-    output.includes(
-      'import "/src/PlainCss.vue?vue=&type=style&index=0&scoped=data-v-plaincss&lang=css";',
-    ),
-    "Production plain CSS extraction should emit a Vite-visible style import",
-  );
-  assert.ok(
-    !output.includes("__vize_css__"),
-    "Production plain CSS extraction should not use inline CSS injection",
-  );
-}
+  t.assert.snapshot(output);
+});
 
 // =============================================================================
 // Test: Query parameter preservation in relative imports
@@ -499,49 +456,37 @@ function resolveCssTransforms(css: string): string {
 }
 
 // Test 15: @custom-media resolution
-{
+void test("resolveCssTransforms snapshots @custom-media resolution", (t) => {
   const css = `@custom-media --mobile (max-width: 768px);
 .foo { color: red; }
 @media (--mobile) { .foo { font-size: 12px; } }`;
   const result = resolveCssTransforms(css);
-  assert.ok(!result.includes("@custom-media"), "@custom-media definition should be removed");
-  assert.ok(
-    result.includes("@media (max-width: 768px)"),
-    "@media (--mobile) should be resolved to (max-width: 768px). Got:\n" + result,
-  );
-}
+  t.assert.snapshot(result);
+});
 
 // Test 16: Multiple @custom-media definitions
-{
+void test("resolveCssTransforms snapshots multiple @custom-media definitions", (t) => {
   const css = `@custom-media --mobile (max-width: 768px);
 @custom-media --desktop (min-width: 1024px);
 @media (--mobile) { .a { color: red; } }
 @media (--desktop) { .b { color: blue; } }`;
   const result = resolveCssTransforms(css);
-  assert.ok(result.includes("(max-width: 768px)"), "Should resolve --mobile");
-  assert.ok(result.includes("(min-width: 1024px)"), "Should resolve --desktop");
-}
+  t.assert.snapshot(result);
+});
 
 // Test 17: :deep() unwrapping
-{
+void test("resolveCssTransforms snapshots :deep() unwrapping", (t) => {
   const css = `.parent :deep(.child) { color: red; }`;
   const result = resolveCssTransforms(css);
-  assert.ok(
-    result.includes(".parent .child"),
-    ":deep(.child) should be unwrapped to .child. Got:\n" + result,
-  );
-  assert.ok(!result.includes(":deep"), ":deep should be removed");
-}
+  t.assert.snapshot(result);
+});
 
 // Test 18: :deep() with nested parens
-{
+void test("resolveCssTransforms snapshots nested :deep() unwrapping", (t) => {
   const css = `.parent :deep(.child:nth-child(2)) { color: red; }`;
   const result = resolveCssTransforms(css);
-  assert.ok(
-    result.includes(".child:nth-child(2)"),
-    ":deep() with nested parens should be unwrapped. Got:\n" + result,
-  );
-}
+  t.assert.snapshot(result);
+});
 
 // Test 19: CSS without @custom-media passes through unchanged
 {
@@ -551,7 +496,7 @@ function resolveCssTransforms(css: string): string {
 }
 
 // Test 20: dev asset URLs honor configured base path
-{
+void test("resolveCssImports snapshots dev asset URLs with base path", (t) => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-"));
   const assetPath = path.join(tempDir, "assets", "noise.png");
   fs.mkdirSync(path.dirname(assetPath), { recursive: true });
@@ -565,14 +510,11 @@ function resolveCssTransforms(css: string): string {
     "/_nuxt/",
   );
 
-  assert.ok(
-    result.includes(`url("/_nuxt/@fs${assetPath.replace(/\\/g, "/")}")`),
-    "dev CSS asset URLs should be prefixed with the configured base path",
-  );
-}
+  t.assert.snapshot(result.replace(assetPath.replace(/\\/g, "/"), "<asset>"));
+});
 
 // Test 21: CSS aliases should not match package prefixes
-{
+void test("resolveCssImports snapshots alias and package-like URLs", (t) => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-alias-"));
   const srcAssetPath = path.join(tempDir, "src", "assets", "logo.svg");
   const packageAssetPath = path.join(tempDir, "node_modules", "@scope", "icons", "logo.svg");
@@ -591,18 +533,11 @@ function resolveCssTransforms(css: string): string {
     true,
   );
 
-  assert.ok(
-    result.includes(`url("/@fs${srcAssetPath.replace(/\\/g, "/")}")`),
-    "CSS alias should resolve @/ URLs",
-  );
-  assert.ok(
-    result.includes('url("@scope/icons/logo.svg")'),
-    "CSS alias should not rewrite package specifiers that only share the first character",
-  );
-}
+  t.assert.snapshot(result.replace(srcAssetPath.replace(/\\/g, "/"), "<src-asset>"));
+});
 
 // Test 22: CSS aliases should support RegExp find rules
-{
+void test("resolveCssImports snapshots RegExp alias URL resolution", (t) => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-regexp-alias-"));
   const assetPath = path.join(tempDir, "src", "assets", "logo.svg");
   fs.mkdirSync(path.dirname(assetPath), { recursive: true });
@@ -615,11 +550,8 @@ function resolveCssTransforms(css: string): string {
     true,
   );
 
-  assert.ok(
-    result.includes(`url("/@fs${assetPath.replace(/\\/g, "/")}")`),
-    "CSS alias should resolve RegExp find rules",
-  );
-}
+  t.assert.snapshot(result.replace(assetPath.replace(/\\/g, "/"), "<asset>"));
+});
 
 // =============================================================================
 // Test: applyDefineReplacements
@@ -638,44 +570,31 @@ function applyDefineReplacements(code: string, defines: Record<string, string>):
 }
 
 // Test 20: Basic define replacement
-{
+void test("applyDefineReplacements snapshots basic define replacement", (t) => {
   const code = `if (import.meta.vfFeatures.photoSection) { show(); }`;
   const defines = { "import.meta.vfFeatures.photoSection": "true" };
   const result = applyDefineReplacements(code, defines);
-  assert.ok(
-    result.includes("if (true)"),
-    "Should replace import.meta.vfFeatures.photoSection with true. Got:\n" + result,
-  );
-}
+  t.assert.snapshot(result);
+});
 
 // Test 21: Should not replace partial matches
-{
+void test("applyDefineReplacements snapshots partial-match preservation", (t) => {
   const code = `import.meta.vfFeatures.photoSectionEnabled`;
   const defines = { "import.meta.vfFeatures.photoSection": "true" };
   const result = applyDefineReplacements(code, defines);
-  assert.ok(
-    result.includes("import.meta.vfFeatures.photoSectionEnabled"),
-    "Should not replace partial match (longer identifier). Got:\n" + result,
-  );
-}
+  t.assert.snapshot(result);
+});
 
 // Test 22: Longest key matched first
-{
+void test("applyDefineReplacements snapshots longest key precedence", (t) => {
   const code = `import.meta.env.MODE + import.meta.env.MODE_DETAIL`;
   const defines = {
     "import.meta.env.MODE": '"production"',
     "import.meta.env.MODE_DETAIL": '"full"',
   };
   const result = applyDefineReplacements(code, defines);
-  assert.ok(
-    result.includes('"production"'),
-    "Should replace import.meta.env.MODE. Got:\n" + result,
-  );
-  assert.ok(
-    result.includes('"full"'),
-    "Should replace import.meta.env.MODE_DETAIL. Got:\n" + result,
-  );
-}
+  t.assert.snapshot(result);
+});
 
 // Test 23: No replacement when key not present
 {
