@@ -124,6 +124,36 @@ fn snapshots_style_virtual_queries() {
 }
 
 #[test]
+fn classifies_virtual_vue_ts_with_query_consistently() {
+    // Exercises the fields that are now all derived from a single split of the
+    // id: is_vize_virtual (from split.path), the query suffix, and
+    // normalized_fs_id (None for a non-/@fs path).
+    let request = classify_vite_plugin_request("\0/src/App.vue.ts?foo=bar");
+
+    assert!(request.is_vize_virtual);
+    assert!(!request.is_vize_ssr_virtual);
+    assert_eq!(request.query_suffix.as_str(), "?foo=bar");
+    assert_eq!(request.path.as_str(), "\0/src/App.vue.ts");
+    assert_eq!(request.vize_virtual_path.as_deref(), Some("/src/App.vue"));
+    assert!(request.normalized_fs_id.is_none());
+}
+
+#[test]
+fn classifies_fs_prefixed_vue_request() {
+    // A /@fs path that is also a .vue request: normalized_fs_id strips the
+    // prefix and keeps the query, while the .vue (not .vue.ts) path is not a
+    // Vize virtual module — both read off the same single split.
+    let request = classify_vite_plugin_request("/@fs/abs/src/App.vue?vue&type=template");
+
+    assert_eq!(
+        request.normalized_fs_id.as_deref(),
+        Some("/abs/src/App.vue?vue&type=template")
+    );
+    assert!(!request.is_vize_virtual);
+    assert!(request.is_vue_sfc_path);
+}
+
+#[test]
 fn classifies_vue_boundaries() {
     assert_eq!(
         classify_vite_plugin_request("/src/Foo.client.vue")

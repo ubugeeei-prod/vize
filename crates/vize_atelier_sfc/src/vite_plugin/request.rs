@@ -2,7 +2,7 @@ use vize_carton::String;
 
 use super::{
     boundary::boundary_kind,
-    query::{query_has_key, query_value_is, split_request},
+    query::{SplitRequest, query_has_key, query_value_is, split_request},
     style::classify_style,
 };
 
@@ -61,7 +61,7 @@ pub fn classify_vite_plugin_request(id: &str) -> VitePluginRequest {
     let has_macro_query = query_value_is(split.query, "macro", "true");
     let has_define_page_query = query_has_key(split.query, "definePage");
     let style = classify_style(split.query);
-    let is_vize_virtual = is_vize_virtual_vue_module_id(id);
+    let is_vize_virtual = is_vize_virtual_vue_module_id(id, split.path);
     let is_vize_ssr_virtual = id.starts_with(VIZE_SSR_PREFIX);
 
     VitePluginRequest {
@@ -72,7 +72,7 @@ pub fn classify_vite_plugin_request(id: &str) -> VitePluginRequest {
         is_vize_virtual,
         is_vize_ssr_virtual,
         vize_virtual_path: is_vize_virtual.then(|| vize_virtual_path(id)),
-        normalized_fs_id: normalized_fs_id(id),
+        normalized_fs_id: normalized_fs_id(&split),
         has_macro_query,
         has_define_page_query,
         is_macro_virtual_id: id.starts_with('\0') && (has_macro_query || has_define_page_query),
@@ -151,8 +151,8 @@ fn stripped_virtual_query_path(id: &str) -> Option<String> {
     })
 }
 
-fn is_vize_virtual_vue_module_id(id: &str) -> bool {
-    id.starts_with('\0') && split_request(id).path.ends_with(".vue.ts")
+fn is_vize_virtual_vue_module_id(id: &str, path: &str) -> bool {
+    id.starts_with('\0') && path.ends_with(".vue.ts")
 }
 
 fn vize_virtual_path(id: &str) -> String {
@@ -166,8 +166,7 @@ fn vize_virtual_path(id: &str) -> String {
     String::from(normalize_vue_path(split.path))
 }
 
-fn normalized_fs_id(id: &str) -> Option<String> {
-    let split = split_request(id);
+fn normalized_fs_id(split: &SplitRequest<'_>) -> Option<String> {
     let path = split.path.strip_prefix("/@fs")?;
     let mut normalized = String::with_capacity(path.len() + split.query_suffix.len());
     normalized.push_str(path);
