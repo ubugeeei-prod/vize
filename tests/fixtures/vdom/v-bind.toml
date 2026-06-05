@@ -139,6 +139,10 @@ name = "v-bind.camel"
 input = '<svg :view-box.camel="viewBox"></svg>'
 
 [[cases]]
+name = "svg child constant binding"
+input = '<svg xmlns="http://www.w3.org/2000/svg"><rect :x="1" /><rect x="1" /></svg>'
+
+[[cases]]
 name = "v-bind.prop"
 input = '<div :text-content.prop="text"></div>'
 

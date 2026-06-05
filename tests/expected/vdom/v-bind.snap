@@ -343,6 +343,20 @@ export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("svg", { viewBox: _ctx.viewBox }, null, 8 /* PROPS */, ["viewBox"]))
 }
 ===
+name: svg child constant binding
+options: vdom
+--- INPUT ---
+<svg xmlns="http://www.w3.org/2000/svg"><rect :x="1" /><rect x="1" /></svg>
+--- OUTPUT ---
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("svg", { xmlns: "http://www.w3.org/2000/svg" }, [
+    _createElementVNode("rect", { x: 1 }),
+    _createElementVNode("rect", { x: "1" })
+  ]))
+}
+===
 name: v-bind.prop
 options: vdom
 --- INPUT ---
