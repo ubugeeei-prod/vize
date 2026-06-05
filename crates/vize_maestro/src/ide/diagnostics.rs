@@ -230,6 +230,77 @@ impl DiagnosticService {
         diagnostics
     }
 
+    /// Collect only the lint-sourced diagnostics (`vize/lint`, `vize/musea`)
+    /// for a document.
+    ///
+    /// This is a fast subset of [`Self::collect`] used by the hover handler,
+    /// which only ever reads diagnostics whose source is `vize/lint` or
+    /// `vize/musea`. It reproduces exactly the lint/musea diagnostics that the
+    /// full pipeline would publish — including the parser-error short-circuit
+    /// that gates them — while skipping the expensive SFC compile, ecosystem,
+    /// and (per-call, uncached) SFC type-check passes that hover discards. The
+    /// returned set is byte-for-byte the lint/musea subset of `collect`'s
+    /// output for every document shape (Art file, standalone HTML, SFC).
+    pub fn collect_lint_only(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
+        let Some(doc) = state.documents.get(uri) else {
+            return vec![];
+        };
+
+        let content = doc.text();
+        let features = state.lsp_features();
+        let mut diagnostics = Vec::new();
+
+        if !features.has_diagnostics() || !features.lint {
+            return diagnostics;
+        }
+
+        // Art files (*.art.vue): Musea-specific lint only.
+        let path = uri.path();
+        if path.ends_with(".art.vue") {
+            diagnostics.extend(Self::collect_musea_diagnostics(uri, &content));
+            return diagnostics;
+        }
+
+        // Standalone HTML: patina lint only.
+        if is_standalone_html_path(path) {
+            let linter_config = state.get_linter_config();
+            diagnostics.extend(Self::collect_lint_diagnostics(
+                uri,
+                &content,
+                features.ecosystem,
+                &linter_config,
+            ));
+            return diagnostics;
+        }
+
+        // Standard SFC: parse once, then mirror `collect`'s parser-error
+        // short-circuit so lint only surfaces when the full pipeline would
+        // also surface it.
+        let Ok(descriptor) = Self::parse_sfc_for_collect(uri, &content) else {
+            return diagnostics;
+        };
+        let has_block_parse_error = !Self::collect_script_diagnostics(uri, &content, &descriptor)
+            .is_empty()
+            || !Self::collect_template_diagnostics(uri, &content, &descriptor).is_empty();
+        if has_block_parse_error {
+            return diagnostics;
+        }
+
+        let linter_config = state.get_linter_config();
+        diagnostics.extend(Self::collect_lint_diagnostics(
+            uri,
+            &content,
+            features.ecosystem,
+            &linter_config,
+        ));
+        diagnostics.extend(Self::collect_inline_art_diagnostics(
+            uri,
+            &content,
+            &descriptor,
+        ));
+        diagnostics
+    }
+
     /// Collect diagnostics asynchronously (includes Corsa diagnostics when available).
     #[cfg(feature = "native")]
     pub async fn collect_async(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
@@ -452,7 +523,7 @@ mod tests {
 
     use super::{DiagnosticBuilder, DiagnosticService, Severity, offset_to_line_col, sources};
     use crate::server::ServerState;
-    use tower_lsp::lsp_types::{DiagnosticSeverity, NumberOrString, Url};
+    use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Url};
 
     fn state_with_lsp_diagnostics(lint: bool, typecheck: bool) -> ServerState {
         let state = ServerState::new();
@@ -944,6 +1015,97 @@ const title = t("auth.missing")
                 .iter()
                 .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER))
         );
+    }
+
+    fn lint_subset(diagnostics: &[Diagnostic]) -> Vec<Diagnostic> {
+        diagnostics
+            .iter()
+            .filter(|d| {
+                matches!(
+                    d.source.as_deref(),
+                    Some(sources::LINTER) | Some(sources::MUSEA)
+                )
+            })
+            .cloned()
+            .collect()
+    }
+
+    #[test]
+    fn collect_lint_only_equals_lint_subset_of_collect() {
+        // With both lint and typecheck enabled, collect() produces LINTER and
+        // TYPE_CHECKER diagnostics; collect_lint_only() must return exactly the
+        // LINTER/MUSEA subset (same diagnostics, same order) and nothing else.
+        let state = state_with_lsp_diagnostics(true, true);
+        let uri = Url::parse("file:///OutOfOrder.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<template><div /></template>\n<script setup>const count = 1</script>".to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let full = DiagnosticService::collect(&state, &uri);
+        let lint_only = DiagnosticService::collect_lint_only(&state, &uri);
+
+        // Sanity: the full pipeline really did surface a lint diagnostic here.
+        assert!(
+            full.iter()
+                .any(|d| d.source.as_deref() == Some(sources::LINTER)),
+            "expected a lint diagnostic from the full pipeline"
+        );
+        // The lint-only result is byte-for-byte the lint/musea subset.
+        assert_eq!(lint_only, lint_subset(&full));
+        // And it carries no non-lint sources (no type-check / parser / sfc-compile).
+        assert!(
+            lint_only.iter().all(|d| {
+                matches!(
+                    d.source.as_deref(),
+                    Some(sources::LINTER) | Some(sources::MUSEA)
+                )
+            }),
+            "collect_lint_only must only return lint/musea diagnostics, got: {:?}",
+            lint_only
+                .iter()
+                .map(|d| d.source.as_deref())
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn collect_lint_only_short_circuits_on_parse_error() {
+        // A block parse error gates lint in the full pipeline, so the lint-only
+        // path must also return nothing — matching what hover would otherwise see.
+        let state = state_with_lsp_diagnostics(true, true);
+        let uri = Url::parse("file:///BrokenTemplateLintOnly.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<script setup lang=\"ts\">const count = 1</script>\n<template><div>{{ count }}</template>"
+                .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let full = DiagnosticService::collect(&state, &uri);
+        let lint_only = DiagnosticService::collect_lint_only(&state, &uri);
+
+        assert_eq!(lint_only, lint_subset(&full));
+        assert!(lint_only.is_empty());
+    }
+
+    #[test]
+    fn collect_lint_only_is_empty_when_lint_disabled() {
+        // Hover gates on is_lsp_lint_enabled, but the collector is defensively
+        // empty when lint is off even if typecheck is on.
+        let state = state_with_lsp_diagnostics(false, true);
+        let uri = Url::parse("file:///NoLint.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<script setup>const props = defineProps(['count'])</script><template>{{ props.count }}</template>".to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        assert!(DiagnosticService::collect_lint_only(&state, &uri).is_empty());
     }
 
     #[test]

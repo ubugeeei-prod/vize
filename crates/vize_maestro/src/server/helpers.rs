@@ -140,7 +140,10 @@ impl MaestroServer {
             return None;
         }
 
-        let diagnostics = DiagnosticService::collect(&self.state, uri);
+        // Hover only surfaces `vize/lint` / `vize/musea` diagnostics at the
+        // cursor, so collect just that subset instead of re-running the entire
+        // pipeline (full SFC type-check + ecosystem passes) on every hover.
+        let diagnostics = DiagnosticService::collect_lint_only(&self.state, uri);
 
         let lint_diags: Vec<_> = diagnostics
             .iter()
