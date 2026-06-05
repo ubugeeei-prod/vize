@@ -457,6 +457,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
 }
 
 .virtual-ts-notice {
@@ -472,7 +473,12 @@
 
 .virtualts-output .editor-container {
   flex: 1;
-  min-height: 200px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.virtualts-output .code-highlight {
+  min-height: 100%;
 }
 
 /* Capabilities Output */
