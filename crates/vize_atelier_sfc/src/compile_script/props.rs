@@ -420,10 +420,10 @@ pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
             let mut js_types: Vec<String> = Vec::new();
             for part in &meaningful {
                 let jt = ts_type_to_js_type(part);
-                if jt == "null" {
-                    return jt;
-                }
                 if !js_types.contains(&jt) {
+                    if jt == "null" {
+                        return jt;
+                    }
                     js_types.push(jt);
                 }
             }
