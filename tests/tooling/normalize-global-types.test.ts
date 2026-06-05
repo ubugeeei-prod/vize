@@ -22,10 +22,9 @@ test("expands string shorthands to {type} and preserves object form", () => {
 
   // A value that is already an object passes through unchanged (including any
   // extra fields such as defaultValue).
-  assert.deepEqual(
-    normalizeGlobalTypes({ Bar: { type: "BarType", defaultValue: "x" } }),
-    { Bar: { type: "BarType", defaultValue: "x" } },
-  );
+  assert.deepEqual(normalizeGlobalTypes({ Bar: { type: "BarType", defaultValue: "x" } }), {
+    Bar: { type: "BarType", defaultValue: "x" },
+  });
 });
 
 test("unwraps a nested {types:{...}} object wrapper", () => {
