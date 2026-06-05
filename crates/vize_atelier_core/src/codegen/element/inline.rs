@@ -36,6 +36,11 @@ use vize_carton::ToCompactString;
 
 /// Generate element code (non-block)
 pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    if el.tag_type == ElementType::Element && el.ns != Namespace::Html && el.tag == "svg" {
+        super::block::generate_element_block(ctx, el);
+        return;
+    }
+
     if el.tag_type == ElementType::Component
         && (is_dynamic_component(el)
             || matches!(
