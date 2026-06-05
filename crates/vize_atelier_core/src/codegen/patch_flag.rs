@@ -455,12 +455,16 @@ fn calculate_element_patch_info_inner(
         }
     }
 
-    // Add NEED_PATCH for v-show, custom directives, or ref only if no other dynamic bindings exist
+    // Add NEED_PATCH for v-show, custom directives, v-model, or refs when no
+    // normal prop patch flag will already force runtime patching. Vue still
+    // combines NEED_PATCH with TEXT and NEED_HYDRATION because neither updates
+    // refs/directives on its own.
     // Custom directives only need NEED_PATCH when the element has no children
     // (children already cause the element to be tracked for patching by the runtime)
-    // This must come after TEXT flag check so we don't add NEED_PATCH when TEXT is about to be set
     let custom_dir_needs_patch = has_custom_directive && el.children.is_empty();
-    if (has_vshow || has_vmodel || custom_dir_needs_patch || has_ref) && flag == 0 {
+    let has_normal_prop_patch_flag = flag & (2 | 4 | 8 | 16) != 0;
+    if (has_vshow || has_vmodel || custom_dir_needs_patch || has_ref) && !has_normal_prop_patch_flag
+    {
         flag |= 512; // NEED_PATCH
     }
 

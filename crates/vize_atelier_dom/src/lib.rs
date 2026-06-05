@@ -526,6 +526,75 @@ mod tests {
     }
 
     #[test]
+    fn test_ref_scroll_keeps_need_patch_with_need_hydration() {
+        use vize_atelier_core::options::{BindingMetadata, BindingType};
+        use vize_carton::FxHashMap;
+
+        let allocator = Bump::new();
+        let mut bindings = FxHashMap::default();
+        bindings.insert("onScroll".into(), BindingType::SetupConst);
+
+        let options = DomCompilerOptions {
+            mode: CodegenMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            cache_handlers: true,
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        };
+
+        let (_, errors, result) = compile_template_with_options(
+            &allocator,
+            r#"<div ref="container" @scroll="onScroll"></div>"#,
+            options,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        let full = full_output(&result.preamble, &result.code);
+        assert!(
+            full.contains("544 /* NEED_HYDRATION, NEED_PATCH */"),
+            "{full}"
+        );
+    }
+
+    #[test]
+    fn test_ref_text_keeps_need_patch_with_text_flag() {
+        use vize_atelier_core::options::{BindingMetadata, BindingType};
+        use vize_carton::FxHashMap;
+
+        let allocator = Bump::new();
+        let mut bindings = FxHashMap::default();
+        bindings.insert("message".into(), BindingType::SetupRef);
+
+        let options = DomCompilerOptions {
+            mode: CodegenMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            cache_handlers: true,
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        };
+
+        let (_, errors, result) = compile_template_with_options(
+            &allocator,
+            r#"<div ref="container">{{ message }}</div>"#,
+            options,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        let full = full_output(&result.preamble, &result.code);
+        assert!(full.contains("513 /* TEXT, NEED_PATCH */"), "{full}");
+    }
+
+    #[test]
     fn test_inline_hoisted_bare_static_attrs_are_empty_strings() {
         let allocator = Bump::new();
         let options = DomCompilerOptions {

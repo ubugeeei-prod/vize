@@ -851,6 +851,40 @@ const activeTab = ref<'a' | 'b'>('a');
 }
 
 #[test]
+fn test_script_setup_scroll_ref_keeps_need_patch_with_need_hydration() {
+    let source = r#"<script setup lang="ts">
+import { nextTick, onMounted, ref } from 'vue';
+
+const container = ref<HTMLElement | null>(null);
+
+function onScroll() {
+  console.log(container.value?.scrollTop ?? 0);
+}
+
+onMounted(async () => {
+  await nextTick();
+  container.value?.scrollTo({ top: 240 });
+});
+</script>
+
+<template>
+  <div ref="container" class="piano-roll" @scroll="onScroll">
+    <div v-for="note in 88" :key="note" class="key">{{ note }}</div>
+  </div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("544") && result.code.contains("NEED_HYDRATION, NEED_PATCH"),
+        "{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_inline_component_dynamic_prop_keeps_props_patch_flag() {
     let source = r#"<script setup lang="ts">
 import { ref } from 'vue';

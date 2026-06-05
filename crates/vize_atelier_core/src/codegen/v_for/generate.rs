@@ -30,6 +30,13 @@ use super::super::{
 use super::helpers::{get_element_key, has_other_props, should_skip_prop};
 use vize_carton::ToCompactString;
 
+fn strip_need_patch_for_v_for_item(patch_flag: Option<i32>) -> Option<i32> {
+    patch_flag.and_then(|flag| {
+        let next = flag & !512;
+        (next > 0).then_some(next)
+    })
+}
+
 /// Generate item for v-for (as block, not regular vnode)
 pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>, is_stable: bool) {
     match node {
@@ -288,6 +295,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         let dynamic_slots_flag = 1024;
                         patch_flag = Some(patch_flag.unwrap_or(0) | dynamic_slots_flag);
                     }
+                    patch_flag = strip_need_patch_for_v_for_item(patch_flag);
                     if el.children.is_empty() && (patch_flag.is_some() || dynamic_props.is_some()) {
                         ctx.push(", null");
                     }
@@ -320,6 +328,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         ctx.options.binding_metadata.as_ref(),
                         ctx.cache_handlers_in_current_scope(),
                     );
+                    let patch_flag = strip_need_patch_for_v_for_item(patch_flag);
                     if let Some(flag) = patch_flag {
                         ctx.push(", ");
                         ctx.push(&flag.to_compact_string());
