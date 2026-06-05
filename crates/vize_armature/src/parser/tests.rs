@@ -1031,6 +1031,29 @@ fn test_parse_incorrectly_closed_comment_reports_error_and_continues() {
 }
 
 #[test]
+fn test_parse_abrupt_empty_comment_reports_error_and_continues() {
+    for comment_source in ["<!-->", "<!--->"] {
+        let allocator = Bump::new();
+        let source = format!("{comment_source}<div></div>");
+        let (root, errors) = parse(&allocator, &source);
+
+        assert!(
+            errors
+                .iter()
+                .any(|e| e.code == ErrorCode::AbruptClosingOfEmptyComment)
+        );
+        assert_eq!(root.children.len(), 2);
+        if let TemplateChildNode::Comment(comment) = &root.children[0] {
+            assert_eq!(comment.content.as_str(), "");
+            assert_eq!(comment.loc.source.as_str(), comment_source);
+        } else {
+            panic!("Expected recovered comment");
+        }
+        assert!(matches!(&root.children[1], TemplateChildNode::Element(_)));
+    }
+}
+
+#[test]
 fn test_parse_unclosed_comment_reports_error_without_losing_comment() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, "before<!-- open");

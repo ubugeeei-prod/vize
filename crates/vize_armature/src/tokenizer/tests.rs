@@ -340,6 +340,26 @@ fn test_comment() {
     assert!(cb.events.contains(&TokenEvent::Comment(4, 13)));
 }
 
+#[test]
+fn test_comment_abrupt_empty_close_reports_error() {
+    let cb = tokenize("<!-->");
+    assert!(
+        cb.errors
+            .contains(&(ErrorCode::AbruptClosingOfEmptyComment, 4))
+    );
+    assert!(cb.events.contains(&TokenEvent::Comment(4, 4)));
+}
+
+#[test]
+fn test_comment_abrupt_empty_close_after_dash_reports_error() {
+    let cb = tokenize("<!--->");
+    assert!(
+        cb.errors
+            .contains(&(ErrorCode::AbruptClosingOfEmptyComment, 5))
+    );
+    assert!(cb.events.contains(&TokenEvent::Comment(4, 4)));
+}
+
 // ========================================================================
 // CDATA tests (SVG / XML-style `<![CDATA[ ... ]]>`)
 // ========================================================================

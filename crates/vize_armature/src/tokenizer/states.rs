@@ -673,7 +673,20 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             return;
         };
 
-        if c == sequence_bytes[self.sequence_index] {
+        if sequence == Sequence::CommentEnd
+            && self.sequence_index == 2
+            && c == GT
+            && self.index.saturating_sub(self.section_start) < 2
+        {
+            self.callbacks
+                .on_error(ErrorCode::AbruptClosingOfEmptyComment, self.index);
+            self.callbacks
+                .on_comment(self.section_start, self.section_start);
+            self.sequence_index = 0;
+            self.current_sequence = None;
+            self.section_start = self.index + 1;
+            self.state = State::Text;
+        } else if c == sequence_bytes[self.sequence_index] {
             self.sequence_index += 1;
             if self.sequence_index == sequence_bytes.len() {
                 self.finish_comment_like(sequence);
