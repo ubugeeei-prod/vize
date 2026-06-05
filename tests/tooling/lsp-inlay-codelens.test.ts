@@ -5,7 +5,6 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { testOutputRoot } from "./support/lsp/paths.ts";
-import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
 type InlayHint = {
