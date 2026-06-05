@@ -628,6 +628,50 @@ function handleHover() {}
     }
 
     #[test]
+    fn test_multiline_statement_event_handler_uses_handler_scope() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"const keys = ['a']
+function selectWord(key: string) {}
+function editWord() {}
+"#;
+        let template = r#"<button
+  v-for="key in keys"
+  @click.stop="
+    selectWord(key);
+    editWord();
+  "
+>edit</button>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert!(
+            output.code.contains("// @click handler"),
+            "statement-list handlers should get an event handler scope:\n{}",
+            output.code
+        );
+        assert!(
+            output.code.contains("selectWord(key);") && output.code.contains("editWord();"),
+            "handler statements should be preserved:\n{}",
+            output.code
+        );
+        assert!(
+            !output.code.contains("void (selectWord(key);")
+                && !output.code.contains("void (\n    selectWord(key);"),
+            "statement-list handlers must not be emitted as parenthesized expressions:\n{}",
+            output.code
+        );
+    }
+
+    #[test]
     fn test_object_form_v_on_is_preserved_as_expression() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 

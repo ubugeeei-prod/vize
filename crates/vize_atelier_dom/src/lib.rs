@@ -529,7 +529,7 @@ mod tests {
         let allocator = Bump::new();
         let (_, errors, result) = compile_template(
             &allocator,
-            r#"<div><svg xmlns="http://www.w3.org/2000/svg" :width="0" /></div>"#,
+            r#"<div><svg xmlns="http://www.w3.org/2000/svg" :width="w" /></div>"#,
         );
         assert!(errors.is_empty());
 
@@ -542,22 +542,31 @@ mod tests {
             !code.contains(r#"_createElementVNode("svg""#),
             "nested SVG elements with dynamic props must not render as plain VNodes:\n{code}"
         );
+    }
+
+    #[test]
+    fn test_svg_constant_bound_children_are_cached_vnodes() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template(
+            &allocator,
+            r#"<svg xmlns="http://www.w3.org/2000/svg"><rect :x="1" /><rect x="1" /></svg>"#,
+        );
+        assert!(errors.is_empty());
+
+        let code = result.code.as_str();
         assert!(
-            result.preamble.contains("const _hoisted_1"),
-            "constant SVG props should be hoisted:\n{}\n{code}",
+            code.contains("[...(_cache[0]"),
+            "static SVG children should be cached together:\n{}\n{code}",
             result.preamble
         );
         assert!(
-            result
-                .preamble
-                .contains(r#"xmlns: "http://www.w3.org/2000/svg""#)
-                && result.preamble.contains("width: 0"),
-            "hoisted SVG props should include static attrs and constant v-bind values:\n{}\n{code}",
+            code.contains(r#"_createElementVNode("rect", { x: 1 }, null, -1 /* CACHED */)"#),
+            "constant v-bind SVG child should compile as a cached VNode:\n{}\n{code}",
             result.preamble
         );
         assert!(
-            code.contains(r#"_createElementBlock("svg", _hoisted_1)"#),
-            "nested SVG block should use the hoisted props object:\n{}\n{code}",
+            !code.contains(r#"_createElementBlock("rect""#),
+            "constant SVG children must not become block roots:\n{}\n{code}",
             result.preamble
         );
     }

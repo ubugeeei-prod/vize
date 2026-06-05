@@ -498,6 +498,50 @@ function doB(): string { return 'x' }
 }
 
 #[test]
+fn batch_type_checker_multiline_statement_handler_does_not_parse_error() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "multiline-statement-handler",
+        &[(
+            "src/StatementHandler.vue",
+            r#"<script setup lang="ts">
+const keys = ['a']
+function selectWord(key: string) {}
+function editWord() {}
+</script>
+
+<template>
+  <button
+    v-for="key in keys"
+    @click.stop="
+      selectWord(key);
+      editWord();
+    "
+  >edit</button>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot
+            .iter()
+            .all(|(file, code, _)| { file != "src/StatementHandler.vue" || *code != Some(1005) }),
+        "unexpected TS1005 parse diagnostic for statement-list handler: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_uses_workspace_vue_runtime_without_node_modules() {
     if resolve_test_tsgo_binary().is_none() {
         return;

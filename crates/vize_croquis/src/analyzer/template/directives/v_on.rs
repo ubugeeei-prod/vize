@@ -118,10 +118,11 @@ impl Analyzer {
 
                 self.summary.scopes.exit_scope();
             } else {
-                // Simple handler reference
+                // Simple handler reference, or inline statement-list handler.
                 let has_implicit_event = content.contains("$event") || !content.contains('(');
+                let is_statement_list = is_inline_statement_list(content);
 
-                if has_implicit_event && !content.contains("=>") {
+                if (has_implicit_event || is_statement_list) && !content.contains("=>") {
                     self.summary.scopes.enter_event_handler_scope(
                         EventHandlerScopeData {
                             event_name: dir
@@ -136,7 +137,7 @@ impl Analyzer {
                                     }
                                 })
                                 .unwrap_or_else(|| CompactString::const_new("unknown")),
-                            has_implicit_event: true,
+                            has_implicit_event,
                             param_names: smallvec![],
                             handler_expression: Some(CompactString::new(content)),
                             target_component,
@@ -197,4 +198,18 @@ impl Analyzer {
             }
         }
     }
+}
+
+fn is_inline_statement_list(content: &str) -> bool {
+    let trimmed = content.trim_end();
+    if trimmed.ends_with(';') {
+        return true;
+    }
+
+    content
+        .split(';')
+        .take(2)
+        .filter(|part| !part.trim().is_empty())
+        .count()
+        > 1
 }

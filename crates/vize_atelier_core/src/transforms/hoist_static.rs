@@ -31,7 +31,9 @@ fn is_static_element(el: &ElementNode<'_>) -> bool {
     // Check for dynamic props or ref
     for prop in el.props.iter() {
         match prop {
-            PropNode::Directive(_) => return false,
+            PropNode::Directive(_) if el.tag == "svg" => return false,
+            PropNode::Directive(_) if !is_hoistable_static_prop(prop) => return false,
+            PropNode::Directive(_) => {}
             PropNode::Attribute(attr) => {
                 // ref attribute prevents hoisting - refs need runtime owner context
                 if attr.name == "ref" {
@@ -82,11 +84,14 @@ fn get_element_static_type(el: &ElementNode<'_>) -> StaticType {
 
     for prop in el.props.iter() {
         match prop {
-            PropNode::Directive(_) => {
-                // Any directive makes the element dynamic (non-static)
-                // This includes v-bind:class, v-bind:style, v-on:*, etc.
+            PropNode::Directive(_) if el.tag == "svg" => {
                 return StaticType::NotStatic;
             }
+            PropNode::Directive(_) if !is_hoistable_static_prop(prop) => {
+                // Non-constant directives make the element dynamic.
+                return StaticType::NotStatic;
+            }
+            PropNode::Directive(_) => {}
             PropNode::Attribute(attr) => {
                 // ref attribute prevents hoisting - refs need runtime owner context
                 if attr.name == "ref" {
@@ -269,28 +274,62 @@ fn create_props_expression<'a>(
     let mut seen: vize_carton::FxHashSet<vize_carton::String> = vize_carton::FxHashSet::default();
 
     for prop in props {
-        if let PropNode::Attribute(attr) = prop {
-            if seen.contains(attr.name.as_str()) {
-                continue;
+        match prop {
+            PropNode::Attribute(attr) => {
+                if seen.contains(attr.name.as_str()) {
+                    continue;
+                }
+                seen.insert(attr.name.clone());
+
+                let key = ExpressionNode::Simple(Box::new_in(
+                    SimpleExpressionNode::new(attr.name.clone(), true, attr.loc.clone()),
+                    allocator,
+                ));
+                let value_exp = if let Some(v) = &attr.value {
+                    SimpleExpressionNode::new(v.content.clone(), true, v.loc.clone())
+                } else {
+                    SimpleExpressionNode::new("", true, attr.loc.clone())
+                };
+                let value = JsChildNode::SimpleExpression(Box::new_in(value_exp, allocator));
+
+                obj_props.push(Property {
+                    key,
+                    value,
+                    loc: attr.loc.clone(),
+                });
             }
-            seen.insert(attr.name.clone());
+            PropNode::Directive(dir) => {
+                let Some((name, exp)) = hoistable_static_bind_parts(dir) else {
+                    continue;
+                };
+                if seen.contains(name.as_str()) {
+                    continue;
+                }
+                seen.insert(name.clone());
 
-            let key = ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode::new(attr.name.clone(), true, attr.loc.clone()),
-                allocator,
-            ));
-            let value_exp = if let Some(v) = &attr.value {
-                SimpleExpressionNode::new(v.content.clone(), true, v.loc.clone())
-            } else {
-                SimpleExpressionNode::new("", true, attr.loc.clone())
-            };
-            let value = JsChildNode::SimpleExpression(Box::new_in(value_exp, allocator));
+                let key = ExpressionNode::Simple(Box::new_in(
+                    SimpleExpressionNode::new(name, true, dir.loc.clone()),
+                    allocator,
+                ));
+                let value_exp = SimpleExpressionNode {
+                    content: exp.content.clone(),
+                    is_static: false,
+                    const_type: exp.const_type,
+                    loc: exp.loc.clone(),
+                    js_ast: None,
+                    hoisted: None,
+                    identifiers: None,
+                    is_handler_key: false,
+                    is_ref_transformed: false,
+                };
+                let value = JsChildNode::SimpleExpression(Box::new_in(value_exp, allocator));
 
-            obj_props.push(Property {
-                key,
-                value,
-                loc: attr.loc.clone(),
-            });
+                obj_props.push(Property {
+                    key,
+                    value,
+                    loc: dir.loc.clone(),
+                });
+            }
         }
     }
 
@@ -489,10 +528,7 @@ fn is_plain_static_nested_element(el: &ElementNode<'_>) -> bool {
 }
 
 fn props_are_static_attrs(el: &ElementNode<'_>) -> bool {
-    el.props.iter().all(|prop| match prop {
-        PropNode::Directive(_) => false,
-        PropNode::Attribute(attr) => attr.name != "ref",
-    })
+    el.props.iter().all(is_hoistable_static_prop)
 }
 
 /// Hoist the props of an element with static props
