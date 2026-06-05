@@ -96,24 +96,6 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
         false
     }
 
-    fn is_value_access_binding(&self, name: &str) -> bool {
-        if self.is_local(name) {
-            return false;
-        }
-
-        if let Some(kind) = self.ctx.get_reactive_kind(name) {
-            return kind.needs_value_access();
-        }
-
-        if let Some(bindings) = &self.ctx.options.binding_metadata
-            && let Some(binding_type) = bindings.bindings.get(name)
-        {
-            return matches!(binding_type, crate::options::BindingType::SetupRef);
-        }
-
-        false
-    }
-
     /// Check if an identifier needs _unref() wrapping.
     ///
     /// This applies to let/var declarations and maybe-ref bindings.
@@ -322,7 +304,9 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
     }
 
     fn visit_member_expression(&mut self, expr: &oxc_ast_types::MemberExpression<'_>) {
-        // Visit the object part, but skip .value addition if already accessing .value
+        // Visit the object part. Vue's inline template compiler unwraps the
+        // top-level binding even when the template explicitly accesses
+        // `.value`, so `count.value` becomes `count.value.value`.
         match expr {
             oxc_ast_types::MemberExpression::ComputedMemberExpression(computed) => {
                 self.visit_expression(&computed.object);
@@ -330,23 +314,6 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
                 self.visit_expression(&computed.expression);
             }
             oxc_ast_types::MemberExpression::StaticMemberExpression(static_expr) => {
-                // If this is `ref.value`, don't add another .value to the ref object
-                let property_name = static_expr.property.name.as_str();
-                if property_name == "value" {
-                    // Check if object is a simple identifier that is a ref
-                    if let oxc_ast_types::Expression::Identifier(ident) = &static_expr.object {
-                        let name = ident.name.as_str();
-                        if self.is_value_access_binding(name) {
-                            // Skip adding .value - it's already accessed via .value
-                            // But still add _ctx. prefix if needed
-                            if let Some(prefix) = get_identifier_prefix(name, self.ctx) {
-                                self.rewrites
-                                    .insert((ident.span.start as usize, String::new(prefix)));
-                            }
-                            return;
-                        }
-                    }
-                }
                 self.visit_expression(&static_expr.object);
                 // Don't visit the property - it's a static name, not a reference
             }

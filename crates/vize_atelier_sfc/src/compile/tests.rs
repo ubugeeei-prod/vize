@@ -133,6 +133,44 @@ const msg = ref('')
 }
 
 #[test]
+fn test_script_setup_inject_component_props_are_unwrapped() {
+    let source = r#"<template>
+  <SubComponent
+    :injectedValue="injectedValue"
+    :injectedValueProp="injectedValueProp.value"
+  />
+</template>
+
+<script setup lang="ts">
+import { computed, inject } from "vue"
+
+const injectedValue = inject("test")
+const injectedValueProp = computed(() => injectedValue.prop)
+</script>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile");
+
+    assert!(
+        result.code.contains("unref as _unref"),
+        "inject props should import unref:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("injectedValue: _unref(injectedValue)"),
+        "inject binding prop should be unref'd:\n{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("injectedValueProp: injectedValueProp.value.value"),
+        "explicit computed .value access should still unwrap the top-level binding:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_script_setup_self_component_resolves_for_recursion() {
     let source = r#"<script setup lang="ts">
 const items = [{ name: 'dist', children: [{ name: 'file.js', children: [] }] }]

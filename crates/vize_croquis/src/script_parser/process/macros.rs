@@ -125,8 +125,14 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         );
                         // Walk into the call's callback arguments to track nested scopes
                         walk_call_arguments(result, call, source);
-                        // Add binding and return
-                        let binding_type = get_binding_type_from_kind(kind);
+                        // `inject()` can return either a plain value or a ref.
+                        // Vue marks const inject bindings as maybe-ref so
+                        // template expressions use `_unref()` at read sites.
+                        let binding_type = if kind == VariableDeclarationKind::Const {
+                            BindingType::SetupMaybeRef
+                        } else {
+                            get_binding_type_from_kind(kind)
+                        };
                         result.bindings.add(name, binding_type);
                         return;
                     }
