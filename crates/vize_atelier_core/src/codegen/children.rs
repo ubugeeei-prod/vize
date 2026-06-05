@@ -4,7 +4,7 @@ use crate::ast::*;
 use crate::transforms::hoist_static::is_static_node;
 
 use super::context::CodegenContext;
-use super::element::helpers::has_renderable_props;
+use super::element::helpers::{child_namespace, has_renderable_props};
 use super::expression::generate_expression;
 use super::helpers::escape_js_string;
 use super::node::generate_node;
@@ -282,7 +282,9 @@ fn generate_cached_static_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) 
 
     if !el.children.is_empty() {
         ctx.push(", ");
-        generate_children(ctx, &el.children);
+        ctx.with_parent_namespace(child_namespace(el), |ctx| {
+            generate_children(ctx, &el.children);
+        });
     } else {
         ctx.push(", null");
     }

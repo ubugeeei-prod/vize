@@ -525,6 +525,52 @@ mod tests {
     }
 
     #[test]
+    fn test_inline_svg_descendants_inside_same_namespace_stay_vnodes() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template(
+            &allocator,
+            r#"<div><svg><defs><pattern :x="0"><line :x1="w"/></pattern></defs></svg></div>"#,
+        );
+        assert!(errors.is_empty());
+
+        let code = result.code.as_str();
+        assert!(
+            code.contains(r#"_createElementBlock("svg""#),
+            "inline <svg> must still enter the SVG namespace with a block:\n{code}"
+        );
+        for tag in ["defs", "pattern", "line"] {
+            assert!(
+                code.contains(&format!(r#"_createElementVNode("{tag}""#)),
+                "SVG descendants inside the same namespace should be VNodes:\n{code}"
+            );
+            assert!(
+                !code.contains(&format!(r#"_createElementBlock("{tag}""#)),
+                "SVG descendants inside the same namespace should not be blocks:\n{code}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_svg_foreign_object_namespace_exit_uses_boundary_block() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template(
+            &allocator,
+            r#"<svg><foreignObject><div :id="id">hi</div></foreignObject></svg>"#,
+        );
+        assert!(errors.is_empty());
+
+        let code = result.code.as_str();
+        assert!(
+            code.contains(r#"_createElementBlock("foreignObject""#),
+            "<foreignObject> must keep its own block when descendants leave SVG namespace:\n{code}"
+        );
+        assert!(
+            code.contains(r#"_createElementVNode("div""#),
+            "HTML descendants after the namespace exit should remain VNodes:\n{code}"
+        );
+    }
+
+    #[test]
     fn test_nested_svg_with_v_bind_uses_own_block() {
         let allocator = Bump::new();
         let (_, errors, result) = compile_template(

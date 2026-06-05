@@ -26,8 +26,9 @@ use super::{
         generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
     },
     helpers::{
-        has_custom_directives, has_renderable_props, has_vmodel_directive, has_vshow_directive,
-        is_dynamic_component, is_is_prop, is_renderable_prop, is_whitespace_or_comment,
+        child_namespace, has_custom_directives, has_renderable_props, has_vmodel_directive,
+        has_vshow_directive, is_dynamic_component, is_is_prop, is_renderable_prop,
+        is_whitespace_or_comment,
     },
     v_once::generate_v_once_element,
 };
@@ -194,9 +195,13 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(", ");
                 // Custom directives and v-memo require array children with createTextVNode
                 if has_custom_dirs || memo_cache_index.is_some() {
-                    generate_children_force_array(ctx, &el.children);
+                    ctx.with_parent_namespace(child_namespace(el), |ctx| {
+                        generate_children_force_array(ctx, &el.children);
+                    });
                 } else {
-                    generate_children(ctx, &el.children);
+                    ctx.with_parent_namespace(child_namespace(el), |ctx| {
+                        generate_children(ctx, &el.children);
+                    });
                 }
             } else if effective_has_patch_info {
                 ctx.push(", null");

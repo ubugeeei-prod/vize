@@ -1,6 +1,6 @@
 //! Code generation context and result types.
 
-use crate::ast::RuntimeHelper;
+use crate::ast::{Namespace, RuntimeHelper};
 use crate::options::CodegenOptions;
 use crate::runtime_helpers::RuntimeHelpers;
 
@@ -52,6 +52,10 @@ pub struct CodegenContext {
     /// event-name casing rules (Vue preserves case via `on:` for plain
     /// elements that have uppercase letters in the raw event name).
     pub(super) props_is_plain_element: bool,
+    /// Namespace of the native parent currently generating children. Vue only
+    /// needs block creation at SVG/MathML namespace boundaries, not for every
+    /// descendant inside the same namespace.
+    pub(super) parent_ns: Namespace,
     /// Whether static child VNodes should be cached in the render function.
     pub(super) static_cache: bool,
     /// Template-wide counter for v-if branch keys. Each branch in any
@@ -93,9 +97,23 @@ impl CodegenContext {
             in_v_for: false,
             skip_v_memo: false,
             props_is_plain_element: false,
+            parent_ns: Namespace::Html,
             static_cache: false,
             v_if_branch_counter: 0,
         }
+    }
+
+    /// Run codegen while treating `ns` as the current native parent namespace.
+    pub(super) fn with_parent_namespace<T>(
+        &mut self,
+        ns: Namespace,
+        f: impl FnOnce(&mut Self) -> T,
+    ) -> T {
+        let prev = self.parent_ns;
+        self.parent_ns = ns;
+        let result = f(self);
+        self.parent_ns = prev;
+        result
     }
 
     /// Allocate the next v-if branch key for the current template.

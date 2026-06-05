@@ -17,7 +17,10 @@ use super::{
             generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
             has_custom_directives, has_vmodel_directive, has_vshow_directive,
         },
-        element::{helpers::is_dynamic_component, is_whitespace_or_comment},
+        element::{
+            helpers::{child_namespace, is_dynamic_component},
+            is_whitespace_or_comment,
+        },
         expression::generate_expression,
         helpers::{escape_js_string, is_builtin_component, to_valid_asset_identifier},
         node::generate_node,
@@ -503,10 +506,14 @@ fn generate_if_branch_element(
                 ctx.push(&escape_js_string(text.content.as_str()));
                 ctx.push("\"");
             } else {
-                generate_if_branch_children(ctx, &el.children);
+                ctx.with_parent_namespace(child_namespace(el), |ctx| {
+                    generate_if_branch_children(ctx, &el.children);
+                });
             }
         } else {
-            generate_if_branch_children(ctx, &el.children);
+            ctx.with_parent_namespace(child_namespace(el), |ctx| {
+                generate_if_branch_children(ctx, &el.children);
+            });
         }
     } else if has_patch_info {
         ctx.push(", null");

@@ -4,7 +4,7 @@
 //! renderable props, and special element types.
 
 use crate::ast::{
-    DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
+    DirectiveNode, ElementNode, ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
 };
 use vize_carton::is_builtin_directive;
 
@@ -140,6 +140,55 @@ pub(crate) fn is_renderable_prop(prop: &PropNode<'_>) -> bool {
 /// Check if element has any renderable props
 pub fn has_renderable_props(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| is_renderable_prop(prop))
+}
+
+/// Check whether a native element needs its own block to enter or leave an
+/// SVG/MathML namespace boundary. Descendants already inside the same
+/// namespace can stay as inline VNodes, matching Vue's DOM compiler output.
+pub(crate) fn crosses_namespace_boundary(ctx: &CodegenContext, el: &ElementNode<'_>) -> bool {
+    el.tag_type == ElementType::Element
+        && (el.ns != ctx.parent_ns || children_cross_namespace_boundary(el.ns, &el.children))
+}
+
+pub(crate) fn child_namespace(el: &ElementNode<'_>) -> Namespace {
+    match el.ns {
+        Namespace::Svg if matches!(el.tag.as_str(), "foreignObject" | "desc" | "title") => {
+            Namespace::Html
+        }
+        Namespace::MathMl
+            if matches!(
+                el.tag.as_str(),
+                "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
+            ) =>
+        {
+            Namespace::Html
+        }
+        _ => el.ns,
+    }
+}
+
+fn children_cross_namespace_boundary(ns: Namespace, children: &[TemplateChildNode<'_>]) -> bool {
+    children
+        .iter()
+        .any(|child| child_crosses_namespace_boundary(ns, child))
+}
+
+fn child_crosses_namespace_boundary(ns: Namespace, child: &TemplateChildNode<'_>) -> bool {
+    match child {
+        TemplateChildNode::Element(el) => match el.tag_type {
+            ElementType::Element => el.ns != ns,
+            ElementType::Template => children_cross_namespace_boundary(ns, &el.children),
+            _ => false,
+        },
+        TemplateChildNode::If(if_node) => if_node
+            .branches
+            .iter()
+            .any(|branch| children_cross_namespace_boundary(ns, &branch.children)),
+        TemplateChildNode::For(for_node) => {
+            children_cross_namespace_boundary(ns, &for_node.children)
+        }
+        _ => false,
+    }
 }
 
 /// Generate root node (wrapped in block)

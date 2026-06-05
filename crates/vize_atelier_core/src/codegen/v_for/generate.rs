@@ -11,7 +11,7 @@ use crate::{
 use super::super::{
     children::{generate_children, generate_children_force_array, is_directive_comment},
     context::CodegenContext,
-    element::helpers::{is_dynamic_component, is_is_prop},
+    element::helpers::{child_namespace, is_dynamic_component, is_is_prop},
     element::{
         generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
         has_custom_directives, has_vmodel_directive, has_vshow_directive,
@@ -131,7 +131,9 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         ctx.newline();
                         ctx.push("]");
                     } else {
-                        generate_children(ctx, &children_el.children);
+                        ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
+                            generate_children(ctx, &children_el.children);
+                        });
                     }
                 }
 
@@ -262,9 +264,21 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         ctx.push("]");
                     } else if ctx.skip_v_memo {
                         // v-for + v-memo: force array form for children
-                        generate_children_force_array(ctx, &children_el.children);
+                        if children_el.tag_type == ElementType::Element {
+                            ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
+                                generate_children_force_array(ctx, &children_el.children);
+                            });
+                        } else {
+                            generate_children_force_array(ctx, &children_el.children);
+                        }
                     } else {
-                        generate_children(ctx, &children_el.children);
+                        if children_el.tag_type == ElementType::Element {
+                            ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
+                                generate_children(ctx, &children_el.children);
+                            });
+                        } else {
+                            generate_children(ctx, &children_el.children);
+                        }
                     }
                 }
 
