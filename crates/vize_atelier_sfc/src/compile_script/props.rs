@@ -409,7 +409,7 @@ pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
             let meaningful: Vec<&str> = parts
                 .iter()
                 .map(|p| p.trim())
-                .filter(|p| *p != "undefined" && *p != "null")
+                .filter(|p| !p.is_empty() && *p != "undefined" && *p != "null")
                 .collect();
 
             if meaningful.is_empty() {
@@ -420,6 +420,9 @@ pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
             let mut js_types: Vec<String> = Vec::new();
             for part in &meaningful {
                 let jt = ts_type_to_js_type(part);
+                if jt == "null" {
+                    return jt;
+                }
                 if !js_types.contains(&jt) {
                     js_types.push(jt);
                 }
@@ -1119,7 +1122,7 @@ pub fn is_valid_identifier(s: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::extract_emit_names_from_type;
+    use super::{extract_emit_names_from_type, ts_type_to_js_type};
 
     #[test]
     fn extract_emit_names_keeps_quoted_colon_keys() {
@@ -1132,5 +1135,20 @@ mod tests {
         );
 
         assert_eq!(names, vec!["update:open", "select:item", "close"]);
+    }
+
+    #[test]
+    fn generic_union_with_array_falls_back_to_unknown_runtime_type() {
+        assert_eq!(ts_type_to_js_type("T | T[]"), "null");
+    }
+
+    #[test]
+    fn leading_union_separator_does_not_add_null_runtime_type() {
+        let ty = r#"
+          | { type: "link"; href: string }
+          | { type: "button"; onClick: () => void }
+        "#;
+
+        assert_eq!(ts_type_to_js_type(ty), "Object");
     }
 }

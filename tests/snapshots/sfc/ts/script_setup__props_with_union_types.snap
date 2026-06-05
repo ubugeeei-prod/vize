@@ -1,6 +1,5 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 152
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
@@ -15,7 +14,7 @@ type ButtonVariant =
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    variant: { type: [null, Object], required: true }
+    variant: { type: Object, required: true }
   },
   setup(__props: any) {
 

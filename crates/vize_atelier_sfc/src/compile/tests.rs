@@ -1625,6 +1625,42 @@ const title = defineModel('title')
 }
 
 #[test]
+fn test_generic_union_props_and_model_do_not_emit_null_array_runtime_type() {
+    let source = r#"<template>
+</template>
+
+<script setup lang="ts" generic="T extends string">
+defineProps<{
+  title: T | T[];
+}>();
+
+const model = defineModel<T | T[]>({
+  required: true,
+});
+</script>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
+    assert!(!result.code.contains("[null, Array]"), "{}", result.code);
+    assert!(
+        result
+            .code
+            .contains("title: {\n    type: null,\n    required: true\n  }"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("\"modelValue\": {\n      type: null,\n      ...{ required: true }"),
+        "{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_non_script_setup_typescript_preserved() {
     // Non-script-setup SFC with is_ts=true preserves TypeScript in the output
     // (matching Vue's @vue/compiler-sfc behavior - TS stripping is the bundler's job)
