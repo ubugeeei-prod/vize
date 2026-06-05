@@ -186,6 +186,8 @@ fn compile_template_inner<'a>(
         inline: options.inline,
         cache_handlers: options.cache_handlers,
         binding_metadata: options.binding_metadata,
+        runtime_module_name: options.runtime_module_name,
+        runtime_global_name: options.runtime_global_name,
         ..Default::default()
     };
     let codegen_result = profile!(

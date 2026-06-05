@@ -110,6 +110,8 @@ fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions {
             is_ts: get_bool("isTs"),
             custom_renderer: get_bool("customRenderer"),
             vue_parser_quirks: get_bool("vueParserQuirks"),
+            runtime_module_name: get_string("runtimeModuleName"),
+            runtime_global_name: get_string("runtimeGlobalName"),
             script_ext: get_string("scriptExt"),
         },
         binding_metadata,
@@ -620,6 +622,20 @@ impl Compiler {
 
         // Full SFC compilation using sfc_compile
         // Use output_is_ts to control whether TypeScript is preserved or transpiled
+        let standalone = opts.mode.as_deref() == Some("function");
+        let template_compiler_options = Some(DomCompilerOptions {
+            runtime_module_name: opts
+                .runtime_module_name
+                .clone()
+                .unwrap_or_else(|| "vue".to_string())
+                .into(),
+            runtime_global_name: opts
+                .runtime_global_name
+                .clone()
+                .unwrap_or_else(|| "Vue".to_string())
+                .into(),
+            ..Default::default()
+        });
         let sfc_opts = SfcCompileOptions {
             parse: SfcParseOptions {
                 filename: filename.clone(),
@@ -627,6 +643,7 @@ impl Compiler {
             },
             script: ScriptCompileOptions {
                 id: Some(filename.clone()),
+                inline_template: standalone,
                 is_ts: output_is_ts,
                 ..Default::default()
             },
@@ -636,6 +653,7 @@ impl Compiler {
                 ssr: opts.ssr.unwrap_or(false),
                 is_ts: output_is_ts,
                 custom_renderer: opts.custom_renderer.unwrap_or(false),
+                compiler_options: template_compiler_options,
                 ..Default::default()
             },
             style: StyleCompileOptions {
@@ -814,6 +832,16 @@ fn compile_internal(
         source_map: opts.source_map.unwrap_or(false),
         is_ts: opts.is_ts.unwrap_or(false),
         custom_renderer: opts.custom_renderer.unwrap_or(false),
+        runtime_module_name: opts
+            .runtime_module_name
+            .clone()
+            .unwrap_or_else(|| "vue".to_string())
+            .into(),
+        runtime_global_name: opts
+            .runtime_global_name
+            .clone()
+            .unwrap_or_else(|| "Vue".to_string())
+            .into(),
         binding_metadata,
         inline: has_binding_metadata,
         ..Default::default()

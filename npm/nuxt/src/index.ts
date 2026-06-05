@@ -110,7 +110,11 @@ function getNuxtBuildAssetsDir(nuxt: NuxtWithBuilderOptions): string | undefined
 function shouldUseVizeCompiler(
   compilerOptions: false | VizeNuxtCompilerOptions,
 ): compilerOptions is VizeNuxtCompilerOptions {
-  return compilerOptions !== false && (compilerOptions.vueVersion ?? 3) === 3;
+  return (
+    compilerOptions !== false &&
+    compilerOptions.compatibility?.hostCompiler !== true &&
+    (compilerOptions.vueVersion ?? 3) === 3
+  );
 }
 
 function dedupeVueRuntimePackages(vite: NonNullable<NuxtWithBuilderOptions["options"]["vite"]>) {
@@ -585,6 +589,7 @@ export type { MuseaOptions } from "@vizejs/vite-plugin-musea";
 export type { NuxtMuseaOptions } from "@vizejs/musea-nuxt";
 export type {
   VizeNuxtBridgeOptions,
+  VizeNuxtCompilerCompatibilityOptions,
   VizeNuxtCompatibilityOptions,
   VizeNuxtCompilerOptions,
   VizeNuxtDevOptions,

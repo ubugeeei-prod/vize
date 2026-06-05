@@ -16,6 +16,11 @@
           "default": false,
           "type": "boolean"
         },
+        "customRenderer": {
+          "description": "Treat lowercase non-HTML tags as custom renderer elements",
+          "default": false,
+          "type": "boolean"
+        },
         "ssr": {
           "description": "Enable SSR mode",
           "default": false,
@@ -65,6 +70,56 @@
           "description": "Global variable name for runtime (IIFE builds)",
           "default": "Vue",
           "type": "string"
+        },
+        "compatibility": {
+          "$ref": "#/definitions/CompilerCompatibilityConfig"
+        }
+      },
+      "additionalProperties": false
+    },
+    "VueVersion": {
+      "description": "Host Vue runtime version for opt-in compatibility modes",
+      "oneOf": [
+        {
+          "type": "number",
+          "enum": [0.11, 1, 2, 3]
+        },
+        {
+          "type": "string",
+          "enum": ["legacy"]
+        }
+      ]
+    },
+    "CompilerCompatibilityConfig": {
+      "description": "Opt-in compatibility features for unsupported host/runtime combinations",
+      "type": "object",
+      "properties": {
+        "vueVersion": {
+          "$ref": "#/definitions/VueVersion"
+        },
+        "hostCompiler": {
+          "description": "Delegate .vue compilation to the host Vue compiler for legacy Vue runtimes",
+          "type": "boolean"
+        },
+        "scriptSetupInStandalone": {
+          "description": "Enable <script setup> when emitting function-body output for CDN/global Vue usage",
+          "default": false,
+          "type": "boolean"
+        },
+        "optionsApiVapor": {
+          "description": "Allow Vapor output for Options API SFCs when Vapor mode is enabled",
+          "default": false,
+          "type": "boolean"
+        },
+        "nuxtVersion": {
+          "description": "Host Nuxt major version for compatibility bridges",
+          "type": "integer",
+          "enum": [2, 3, 4]
+        },
+        "webpackVersion": {
+          "description": "Host Webpack major version for compatibility bridges",
+          "type": "integer",
+          "enum": [4, 5]
         }
       },
       "additionalProperties": false

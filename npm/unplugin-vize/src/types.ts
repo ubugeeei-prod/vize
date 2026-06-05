@@ -1,10 +1,14 @@
 export interface SfcCompileOptionsNapi {
   filename?: string;
+  mode?: "module" | "function";
   sourceMap?: boolean;
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
   vueParserQuirks?: boolean;
+  runtimeModuleName?: string;
+  runtimeGlobalName?: string;
+  vueVersion?: VizeVueVersion;
   scopeId?: string;
 }
 
@@ -44,14 +48,53 @@ export interface StyleBlockNapi {
 export interface VizeUnpluginOptions {
   include?: string | RegExp | Array<string | RegExp>;
   exclude?: string | RegExp | Array<string | RegExp>;
+  compatibility?: VizeCompatibilityOptions;
   isProduction?: boolean;
   ssr?: boolean;
   sourceMap?: boolean;
+  mode?: "module" | "function";
   vapor?: boolean;
   customRenderer?: boolean;
   vueParserQuirks?: boolean;
+  runtimeModuleName?: string;
+  runtimeGlobalName?: string;
+  vueVersion?: VizeVueVersion;
   root?: string;
   debug?: boolean;
+}
+
+export type VizeVueVersion = 0.11 | 1 | 2 | 3 | "legacy";
+
+export interface VizeCompatibilityOptions {
+  /**
+   * Host Vue version. Vue 0.11/1/2 opt into host-compiler compatibility.
+   */
+  vueVersion?: VizeVueVersion;
+  /**
+   * Keep .vue files on the existing Vue compiler for legacy Vue runtimes.
+   * @default true when vueVersion is 0.11, 1, 2, or "legacy"
+   */
+  hostCompiler?: boolean;
+  /**
+   * Enable function-body output for CDN/global Vue evaluation.
+   */
+  scriptSetupInStandalone?: boolean;
+  /**
+   * Allow Vapor output for Options API SFCs when vapor is enabled.
+   */
+  optionsApiVapor?: boolean;
+  /**
+   * Override the host Nuxt major when this option object is shared with Nuxt.
+   */
+  nuxtVersion?: 2 | 3 | 4;
+  /**
+   * Force Webpack compatibility behavior.
+   *
+   * Webpack 4 does not expose `compiler.webpack`, so the plugin resolves
+   * `DefinePlugin` from the host `webpack` package when this is `4` or when
+   * auto-detection sees a Webpack 4 compiler shape.
+   */
+  webpackVersion?: 4 | 5;
 }
 
 export interface StyleBlockInfo {
@@ -84,12 +127,18 @@ export interface CachedCompiledModule {
 export interface NormalizedVizeUnpluginOptions {
   include?: string | RegExp | Array<string | RegExp>;
   exclude?: string | RegExp | Array<string | RegExp>;
+  compatibility: VizeCompatibilityOptions;
   isProduction: boolean;
   ssr: boolean;
   sourceMap: boolean;
+  mode: "module" | "function";
   vapor: boolean;
   customRenderer: boolean;
   vueParserQuirks: boolean;
+  runtimeModuleName: string;
+  runtimeGlobalName: string;
+  vueVersion: VizeVueVersion;
+  hostCompiler: boolean;
   root: string;
   debug: boolean;
 }

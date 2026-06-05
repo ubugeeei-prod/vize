@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import type { Compiler as WebpackCompiler } from "webpack";
 import { createUnplugin } from "unplugin";
 import { createFilter } from "./filter.ts";
@@ -16,22 +17,54 @@ import type {
   CachedCompiledModule,
   CompiledModule,
   NormalizedVizeUnpluginOptions,
+  VizeVueVersion,
   VizeUnpluginOptions,
 } from "./types.ts";
+
+const require = createRequire(import.meta.url);
+
+type WebpackDefinePluginConstructor = new (definitions: Record<string, string>) => {
+  apply(compiler: WebpackCompiler): void;
+};
+
+interface WebpackCompilerWithRuntime extends WebpackCompiler {
+  webpack?: {
+    DefinePlugin?: WebpackDefinePluginConstructor;
+  };
+}
+
+function normalizeVueVersion(version: VizeUnpluginOptions["vueVersion"]): VizeVueVersion {
+  return version ?? 3;
+}
+
+function isLegacyVueVersion(version: VizeVueVersion): boolean {
+  return version === "legacy" || version === 0.11 || version === 1 || version === 2;
+}
 
 export function normalizeOptions(
   rawOptions: VizeUnpluginOptions = {},
 ): NormalizedVizeUnpluginOptions {
   const isProduction = rawOptions.isProduction ?? process.env.NODE_ENV === "production";
+  const compatibility = rawOptions.compatibility ?? {};
+  const vueVersion = normalizeVueVersion(rawOptions.vueVersion ?? compatibility.vueVersion);
+  const mode =
+    rawOptions.mode ?? (compatibility.scriptSetupInStandalone === true ? "function" : "module");
+  const hostCompiler = compatibility.hostCompiler ?? isLegacyVueVersion(vueVersion);
   return {
     include: rawOptions.include,
     exclude: rawOptions.exclude,
+    compatibility,
     isProduction,
     ssr: rawOptions.ssr ?? false,
     sourceMap: rawOptions.sourceMap ?? !isProduction,
+    mode,
     vapor: rawOptions.vapor ?? false,
     customRenderer: rawOptions.customRenderer ?? false,
     vueParserQuirks: rawOptions.vueParserQuirks ?? false,
+    runtimeModuleName: rawOptions.runtimeModuleName ?? "vue",
+    runtimeGlobalName: rawOptions.runtimeGlobalName ?? "Vue",
+    vueVersion,
+    hostCompiler,
     root: rawOptions.root ?? process.cwd(),
     debug: rawOptions.debug ?? false,
   };
@@ -45,8 +78,39 @@ function createVueDefineMap(isProduction: boolean): Record<string, string> {
   };
 }
 
-function injectWebpackVueDefines(compiler: WebpackCompiler, isProduction: boolean): void {
-  const { DefinePlugin } = compiler.webpack;
+function resolveWebpackDefinePlugin(
+  compiler: WebpackCompilerWithRuntime,
+  webpackVersion: 4 | 5 | undefined,
+): WebpackDefinePluginConstructor | null {
+  if (webpackVersion !== 4 && compiler.webpack?.DefinePlugin) {
+    return compiler.webpack.DefinePlugin;
+  }
+
+  try {
+    const hostWebpack = require("webpack") as {
+      DefinePlugin?: WebpackDefinePluginConstructor;
+    };
+    return hostWebpack.DefinePlugin ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function injectWebpackVueDefines(
+  compiler: WebpackCompiler,
+  isProduction: boolean,
+  webpackVersion?: 4 | 5,
+  definePluginConstructor?: WebpackDefinePluginConstructor,
+): void {
+  const DefinePlugin =
+    definePluginConstructor ??
+    resolveWebpackDefinePlugin(compiler as WebpackCompilerWithRuntime, webpackVersion);
+  if (!DefinePlugin) {
+    throw new Error(
+      "[vize] Could not resolve webpack DefinePlugin. Install webpack in the host project or disable the Vize compiler with compatibility.hostCompiler.",
+    );
+  }
+
   const existingDefines = new Set<string>();
 
   for (const plugin of compiler.options.plugins ?? []) {
@@ -109,6 +173,9 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
     name: "unplugin-vize",
 
     resolveId(id) {
+      if (options.hostCompiler) {
+        return null;
+      }
       if (isVueStyleRequest(id)) {
         return createVirtualStyleId(id);
       }
@@ -116,10 +183,16 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
     },
 
     loadInclude(id) {
+      if (options.hostCompiler) {
+        return false;
+      }
       return isVirtualStyleId(id);
     },
 
     async load(id) {
+      if (options.hostCompiler) {
+        return null;
+      }
       if (!isVirtualStyleId(id)) {
         return null;
       }
@@ -131,11 +204,17 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
     },
 
     transformInclude(id) {
+      if (options.hostCompiler) {
+        return false;
+      }
       const request = parseVueRequest(id);
       return !request.query.vue && isVueFile(request.filename) && filter(request.filename);
     },
 
     async transform(code, id) {
+      if (options.hostCompiler) {
+        return null;
+      }
       if (!isVueFile(id) || !filter(id)) {
         return null;
       }
@@ -165,7 +244,13 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
     },
 
     webpack(compiler) {
-      injectWebpackVueDefines(compiler, options.isProduction);
+      if (!options.hostCompiler) {
+        injectWebpackVueDefines(
+          compiler,
+          options.isProduction,
+          options.compatibility.webpackVersion,
+        );
+      }
     },
 
     esbuild: {
@@ -179,6 +264,9 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
         return "js";
       },
       config(buildOptions) {
+        if (options.hostCompiler) {
+          return;
+        }
         buildOptions.define = {
           ...createVueDefineMap(options.isProduction),
           ...buildOptions.define,

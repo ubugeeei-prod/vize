@@ -51,6 +51,12 @@ pub struct CompilerOptions {
     /// Enable Vue parser quirk compatibility for known edge cases.
     #[serde(default)]
     pub vue_parser_quirks: Option<bool>,
+    /// Module name for runtime imports.
+    #[serde(default)]
+    pub runtime_module_name: Option<String>,
+    /// Global variable name for standalone/function mode.
+    #[serde(default)]
+    pub runtime_global_name: Option<String>,
     /// Script extension handling: "preserve" (keep TypeScript) or "downcompile" (transpile to JS)
     /// Defaults to "downcompile"
     #[serde(default)]

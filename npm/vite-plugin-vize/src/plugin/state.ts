@@ -65,17 +65,23 @@ export function getEnvironmentCache(
   return ssr ? state.ssrCache : state.cache;
 }
 
-export function getCompileOptionsForRequest(
-  state: Pick<VizePluginState, "isProduction" | "mergedOptions">,
-  ssr: boolean,
-): {
+export interface CompileOptionsForRequest {
   sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
+  mode?: "module" | "function";
   customRenderer: boolean;
   vueParserQuirks: boolean;
-} {
-  return {
+  runtimeModuleName?: string;
+  runtimeGlobalName?: string;
+  vueVersion?: string | number;
+}
+
+export function getCompileOptionsForRequest(
+  state: Pick<VizePluginState, "isProduction" | "mergedOptions">,
+  ssr: boolean,
+): CompileOptionsForRequest {
+  const options: CompileOptionsForRequest = {
     sourceMap: state.mergedOptions?.sourceMap ?? !state.isProduction,
     ssr,
     // Vapor runtime is client-oriented today; use VDOM for SSR and Vapor on the client.
@@ -83,6 +89,21 @@ export function getCompileOptionsForRequest(
     customRenderer: state.mergedOptions?.customRenderer ?? false,
     vueParserQuirks: state.mergedOptions?.vueParserQuirks ?? false,
   };
+
+  if (state.mergedOptions?.mode !== undefined) {
+    options.mode = state.mergedOptions.mode;
+  }
+  if (state.mergedOptions?.runtimeModuleName !== undefined) {
+    options.runtimeModuleName = state.mergedOptions.runtimeModuleName;
+  }
+  if (state.mergedOptions?.runtimeGlobalName !== undefined) {
+    options.runtimeGlobalName = state.mergedOptions.runtimeGlobalName;
+  }
+  if (state.mergedOptions?.vueVersion !== undefined) {
+    options.vueVersion = state.mergedOptions.vueVersion;
+  }
+
+  return options;
 }
 
 export function syncCollectedCssForFile(
@@ -220,8 +241,12 @@ export async function compileAll(state: VizePluginState): Promise<void> {
     const result = compileBatch(fileContents, state.cache, {
       ssr: false,
       vapor: state.mergedOptions.vapor ?? false,
+      mode: state.mergedOptions.mode,
       customRenderer: state.mergedOptions.customRenderer ?? false,
       vueParserQuirks: state.mergedOptions.vueParserQuirks ?? false,
+      runtimeModuleName: state.mergedOptions.runtimeModuleName,
+      runtimeGlobalName: state.mergedOptions.runtimeGlobalName,
+      vueVersion: state.mergedOptions.vueVersion,
     });
 
     const chunkFailedCount = result.results.filter(

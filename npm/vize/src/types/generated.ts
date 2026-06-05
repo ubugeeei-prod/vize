@@ -18,6 +18,11 @@ export type RuleSeverity = "off" | "warn" | "error";
 export type RuleCategory = "correctness" | "suspicious" | "style" | "perf" | "a11y" | "security";
 
 /**
+ * Host Vue runtime version for opt-in compatibility modes
+ */
+export type VueVersion = 0.11 | 1 | 2 | 3 | "legacy";
+
+/**
  * Configuration file for vize - High-performance Vue.js toolchain
  */
 export interface VizeConfig {
@@ -68,6 +73,10 @@ export interface CompilerConfig {
    */
   vapor?: boolean;
   /**
+   * Treat lowercase non-HTML tags as custom renderer elements
+   */
+  customRenderer?: boolean;
+  /**
    * Enable SSR mode
    */
   ssr?: boolean;
@@ -107,6 +116,33 @@ export interface CompilerConfig {
    * Global variable name for runtime (IIFE builds)
    */
   runtimeGlobalName?: string;
+  compatibility?: CompilerCompatibilityConfig;
+}
+/**
+ * Opt-in compatibility features for unsupported host/runtime combinations
+ */
+export interface CompilerCompatibilityConfig {
+  vueVersion?: VueVersion;
+  /**
+   * Delegate .vue compilation to the host Vue compiler for legacy Vue runtimes
+   */
+  hostCompiler?: boolean;
+  /**
+   * Enable <script setup> when emitting function-body output for CDN/global Vue usage
+   */
+  scriptSetupInStandalone?: boolean;
+  /**
+   * Allow Vapor output for Options API SFCs when Vapor mode is enabled
+   */
+  optionsApiVapor?: boolean;
+  /**
+   * Host Nuxt major version for compatibility bridges
+   */
+  nuxtVersion?: 2 | 3 | 4;
+  /**
+   * Host Webpack major version for compatibility bridges
+   */
+  webpackVersion?: 4 | 5;
 }
 /**
  * Vite plugin options

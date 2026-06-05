@@ -4,6 +4,7 @@ import path from "node:path";
 import webpack from "webpack";
 import "./test/setup.ts";
 import vize from "./webpack.ts";
+import { injectWebpackVueDefines } from "./unplugin.ts";
 import { normalizeSnapshot, prepareOutputDir, resolveFixturePath } from "./test/helpers.ts";
 
 function runWebpackCompiler(compiler: webpack.Compiler): Promise<webpack.Stats> {
@@ -25,6 +26,43 @@ function runWebpackCompiler(compiler: webpack.Compiler): Promise<webpack.Stats> 
     });
   });
 }
+
+void test("webpack define injection supports a Webpack 4 compiler shape", (t) => {
+  const appliedDefinitions: Array<Record<string, string>> = [];
+
+  class FakeDefinePlugin {
+    definitions: Record<string, string>;
+
+    constructor(definitions: Record<string, string>) {
+      this.definitions = definitions;
+    }
+
+    apply() {
+      appliedDefinitions.push(this.definitions);
+    }
+  }
+
+  const compiler = {
+    options: {
+      plugins: [
+        {
+          definitions: {
+            __VUE_OPTIONS_API__: JSON.stringify(true),
+          },
+        },
+      ],
+    },
+  } as unknown as webpack.Compiler;
+
+  injectWebpackVueDefines(compiler, true, 4, FakeDefinePlugin);
+
+  t.assert.deepStrictEqual(appliedDefinitions, [
+    {
+      __VUE_PROD_DEVTOOLS__: JSON.stringify(false),
+      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: JSON.stringify(false),
+    },
+  ]);
+});
 
 void test("webpack bundles a basic SFC", async (t) => {
   const outputPath = prepareOutputDir("webpack");

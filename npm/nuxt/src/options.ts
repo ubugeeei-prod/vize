@@ -1,9 +1,17 @@
 import type { MuseaOptions } from "@vizejs/vite-plugin-musea";
 import type { NuxtMuseaOptions } from "@vizejs/musea-nuxt";
-import type { VizeNuxtCompilerOptions, VizeNuxtVueVersion } from "./compiler-options.ts";
+import type {
+  VizeNuxtCompilerCompatibilityOptions,
+  VizeNuxtCompilerOptions,
+  VizeNuxtVueVersion,
+} from "./compiler-options.ts";
 import { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE, buildNuxtCompilerOptions } from "./utils.ts";
 
-export type { VizeNuxtCompilerOptions, VizeNuxtVueVersion } from "./compiler-options.ts";
+export type {
+  VizeNuxtCompilerCompatibilityOptions,
+  VizeNuxtCompilerOptions,
+  VizeNuxtVueVersion,
+} from "./compiler-options.ts";
 export { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE };
 
 export type VizeNuxtMajorVersion = 2 | 3 | 4;
@@ -24,6 +32,38 @@ export interface VizeNuxtCompatibilityOptions {
    * Vue 0.11, Vue 1, and Vue 2 all use host-compiler compatibility mode.
    */
   vueVersion?: VizeNuxtVueVersion;
+
+  /**
+   * Keep legacy Vue projects on the host Vue compiler while still allowing the
+   * Vize Nuxt module to provide bridges, linting, type checking, and Musea.
+   *
+   * @default true for Vue 0.11, Vue 1, Vue 2, and Nuxt 2
+   */
+  hostCompiler?: boolean;
+
+  /**
+   * Allow registering the Vite compiler bridge even when Nuxt's builder
+   * detection cannot prove Vite support.
+   *
+   * @default false
+   */
+  forceViteCompiler?: boolean;
+
+  /**
+   * Enable function-body output for CDN/global Vue evaluation.
+   */
+  scriptSetupInStandalone?: boolean;
+
+  /**
+   * Allow Vapor output for Options API SFCs when the compiler is active.
+   */
+  optionsApiVapor?: boolean;
+
+  /**
+   * Preserve shared compatibility objects that also configure
+   * `@vizejs/unplugin/webpack`.
+   */
+  webpackVersion?: 4 | 5;
 }
 
 export interface VizeNuxtBridgeOptions {
@@ -156,6 +196,39 @@ export const DEFAULT_NUXT_DEV_OPTIONS: Required<VizeNuxtDevOptions> = {
   stylesheetLinks: true,
 };
 
+function isLegacyVueVersion(version: VizeNuxtVueVersion | undefined): boolean {
+  return version === 0.11 || version === 1 || version === 2 || version === "legacy";
+}
+
+function normalizeNuxtCompilerCompatibilityOptions(
+  compatibility: VizeNuxtCompatibilityOptions,
+): VizeNuxtCompilerCompatibilityOptions {
+  const normalized: VizeNuxtCompilerCompatibilityOptions = {};
+  const legacyHost =
+    isLegacyVueVersion(compatibility.vueVersion) || compatibility.nuxtVersion === 2;
+
+  if (compatibility.vueVersion !== undefined) {
+    normalized.vueVersion = compatibility.vueVersion;
+  }
+  if (compatibility.hostCompiler !== undefined || legacyHost) {
+    normalized.hostCompiler = compatibility.hostCompiler ?? true;
+  }
+  if (compatibility.scriptSetupInStandalone !== undefined) {
+    normalized.scriptSetupInStandalone = compatibility.scriptSetupInStandalone;
+  }
+  if (compatibility.optionsApiVapor !== undefined) {
+    normalized.optionsApiVapor = compatibility.optionsApiVapor;
+  }
+  if (compatibility.nuxtVersion !== undefined) {
+    normalized.nuxtVersion = compatibility.nuxtVersion;
+  }
+  if (compatibility.webpackVersion !== undefined) {
+    normalized.webpackVersion = compatibility.webpackVersion;
+  }
+
+  return normalized;
+}
+
 export function resolveNuxtCompilerOptions(
   rootDir: string,
   baseURL: string | undefined,
@@ -167,13 +240,17 @@ export function resolveNuxtCompilerOptions(
     return false;
   }
 
-  if (compatibility.supportsViteCompiler === false) {
+  if (compatibility.supportsViteCompiler === false && compatibility.forceViteCompiler !== true) {
     return false;
   }
 
+  const compatibilityOptions = normalizeNuxtCompilerCompatibilityOptions(compatibility);
+  const hasCompatibilityOptions = Object.keys(compatibilityOptions).length > 0;
   const overrides = typeof compiler === "object" && compiler != null ? compiler : {};
   return buildNuxtCompilerOptions(rootDir, baseURL, buildAssetsDir, {
     vueVersion: compatibility.vueVersion,
+    ...(hasCompatibilityOptions ? { compatibility: compatibilityOptions } : {}),
+    mode: compatibility.scriptSetupInStandalone === true ? "function" : undefined,
     ...overrides,
   });
 }

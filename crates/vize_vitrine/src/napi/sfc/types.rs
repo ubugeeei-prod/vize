@@ -65,11 +65,15 @@ pub struct SfcParseOptionsNapi {
 #[derive(Default)]
 pub struct SfcCompileOptionsNapi {
     pub filename: Option<String>,
+    pub mode: Option<String>,
     pub source_map: Option<bool>,
     pub ssr: Option<bool>,
     pub vapor: Option<bool>,
     pub custom_renderer: Option<bool>,
     pub vue_parser_quirks: Option<bool>,
+    pub runtime_module_name: Option<String>,
+    pub runtime_global_name: Option<String>,
+    pub vue_version: Option<String>,
     /// Preserve TypeScript in output when true
     pub is_ts: Option<bool>,
     /// Scope ID for scoped CSS (e.g., "data-v-abc123")
@@ -94,10 +98,14 @@ pub struct SfcCompileResultNapi {
 #[napi(object)]
 #[derive(Default)]
 pub struct BatchCompileOptionsNapi {
+    pub mode: Option<String>,
     pub ssr: Option<bool>,
     pub vapor: Option<bool>,
     pub custom_renderer: Option<bool>,
     pub vue_parser_quirks: Option<bool>,
+    pub runtime_module_name: Option<String>,
+    pub runtime_global_name: Option<String>,
+    pub vue_version: Option<String>,
     /// Preserve TypeScript in output when true
     pub is_ts: Option<bool>,
     pub threads: Option<u32>,

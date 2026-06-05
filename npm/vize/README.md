@@ -132,6 +132,7 @@ Important shared fields:
 | `compiler.vapor`           | npm build, Vite plugin | Enable Vapor compilation                                |
 | `compiler.customRenderer`  | npm build, Vite plugin | Support custom renderer element semantics               |
 | `compiler.vueParserQuirks` | npm build, Vite plugin | Enable Vue parser quirk compatibility                   |
+| `compiler.compatibility`   | integrations           | Opt into legacy Vue, Nuxt, CDN, Vapor, or Webpack bridges |
 | `compiler.scriptExt`       | npm build              | Preserve TypeScript output or downcompile to JavaScript |
 | `vite.scanPatterns`        | Vite plugin            | Pre-compile matching Vue files                          |
 | `linter.preset`            | npm lint               | Select the Patina lint preset                           |

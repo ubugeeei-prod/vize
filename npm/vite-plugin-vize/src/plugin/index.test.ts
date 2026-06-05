@@ -31,6 +31,16 @@ import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from
     "vueVersion: 3 should keep Vize's Vue 3 compiler pipeline enabled",
   );
   assert.equal(
+    isLegacyVueCompatibilityMode({ compatibility: { vueVersion: 2 } }),
+    true,
+    "compatibility.vueVersion should enable legacy Vue compatibility mode",
+  );
+  assert.equal(
+    isLegacyVueCompatibilityMode({ vueVersion: 2, compatibility: { hostCompiler: false } }),
+    false,
+    "hostCompiler: false should let advanced legacy users force the Vize compiler pipeline",
+  );
+  assert.equal(
     plugin.name,
     "vite-plugin-vize:legacy-vue-compat",
     "Legacy Vue compatibility mode should expose a non-invasive marker plugin",

@@ -1,12 +1,37 @@
 /// Compiler configuration for Vize.
 module vize.CompilerConfig
 
+typealias VueVersion = 0.11 | 1 | 2 | 3 | "legacy"
+
+class CompilerCompatibilityConfig {
+  /// Host Vue runtime version for opt-in compatibility modes.
+  vueVersion: VueVersion? = null
+
+  /// Delegate .vue compilation to the host Vue compiler for legacy Vue runtimes.
+  hostCompiler: Boolean? = null
+
+  /// Enable <script setup> when emitting function-body output for CDN/global Vue usage.
+  scriptSetupInStandalone: Boolean = false
+
+  /// Allow Vapor output for Options API SFCs when Vapor mode is enabled.
+  optionsApiVapor: Boolean = false
+
+  /// Host Nuxt major version for compatibility bridges.
+  nuxtVersion: (2|3|4)? = null
+
+  /// Host Webpack major version for compatibility bridges.
+  webpackVersion: (4|5)? = null
+}
+
 class CompilerConfig {
   /// Compilation mode.
   mode: ("module"|"function") = "module"
 
   /// Enable Vapor mode compilation.
   vapor: Boolean = false
+
+  /// Treat lowercase non-HTML tags as custom renderer elements.
+  customRenderer: Boolean = false
 
   /// Enable SSR mode.
   ssr: Boolean = false
@@ -37,4 +62,7 @@ class CompilerConfig {
 
   /// Global variable name for runtime (IIFE builds).
   runtimeGlobalName: String = "Vue"
+
+  /// Opt-in compatibility features for unsupported host/runtime combinations.
+  compatibility: CompilerCompatibilityConfig = new CompilerCompatibilityConfig {}
 }

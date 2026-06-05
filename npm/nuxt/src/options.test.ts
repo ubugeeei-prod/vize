@@ -41,6 +41,10 @@ assert.deepEqual(
     vueVersion: 1,
   }),
   {
+    compatibility: {
+      vueVersion: 1,
+      hostCompiler: true,
+    },
     devUrlBase: "/_nuxt/",
     exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
     root: "/repo/app",
@@ -48,6 +52,50 @@ assert.deepEqual(
     vueVersion: 1,
   },
   "Vite-based legacy Vue projects should pass host-compiler compatibility mode to the Vite plugin",
+);
+
+assert.deepEqual(
+  resolveNuxtCompilerOptions("/repo/app", "/", "/_nuxt/", true, {
+    forceViteCompiler: true,
+    supportsViteCompiler: false,
+    nuxtVersion: 2,
+    vueVersion: 2,
+  }),
+  {
+    compatibility: {
+      vueVersion: 2,
+      hostCompiler: true,
+      nuxtVersion: 2,
+    },
+    devUrlBase: "/_nuxt/",
+    exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+    root: "/repo/app",
+    scanPatterns: [],
+    vueVersion: 2,
+  },
+  "Nuxt 2 projects should be able to opt into the Vite bridge while keeping the host compiler",
+);
+
+assert.deepEqual(
+  resolveNuxtCompilerOptions("/repo/app", "/", "/_nuxt/", true, {
+    scriptSetupInStandalone: true,
+    optionsApiVapor: true,
+    vueVersion: 3,
+  }),
+  {
+    compatibility: {
+      vueVersion: 3,
+      scriptSetupInStandalone: true,
+      optionsApiVapor: true,
+    },
+    devUrlBase: "/_nuxt/",
+    exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+    mode: "function",
+    root: "/repo/app",
+    scanPatterns: [],
+    vueVersion: 3,
+  },
+  "Nuxt compatibility flags should expose standalone script setup and Options API Vapor opt-ins",
 );
 
 assert.deepEqual(

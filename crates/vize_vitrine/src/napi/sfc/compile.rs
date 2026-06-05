@@ -57,19 +57,33 @@ pub fn compile_sfc(
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
     let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
+    let standalone = opts.mode.as_deref() == Some("function");
+    let runtime_module_name = opts
+        .runtime_module_name
+        .unwrap_or_else(|| "vue".to_string())
+        .into();
+    let runtime_global_name = opts
+        .runtime_global_name
+        .unwrap_or_else(|| "Vue".to_string())
+        .into();
     let external_scope_id: Option<vize_carton::CompactString> = opts
         .scope_id
         .as_ref()
         .map(|sid| sid.strip_prefix("data-v-").unwrap_or(sid).into());
-    let template_compiler_options = if has_scoped {
-        external_scope_id
-            .as_ref()
-            .map(|scope_id| vize_atelier_dom::DomCompilerOptions {
-                scope_id: Some(cstr!("data-v-{scope_id}")),
-                ..Default::default()
-            })
-    } else {
-        None
+    let template_compiler_options = {
+        let scope_id = if has_scoped {
+            external_scope_id
+                .as_ref()
+                .map(|scope_id| cstr!("data-v-{scope_id}"))
+        } else {
+            None
+        };
+        Some(vize_atelier_dom::DomCompilerOptions {
+            scope_id,
+            runtime_module_name,
+            runtime_global_name,
+            ..Default::default()
+        })
     };
 
     let compile_opts = SfcCompileOptions {
@@ -79,6 +93,7 @@ pub fn compile_sfc(
         },
         script: ScriptCompileOptions {
             id: Some(filename.clone()),
+            inline_template: standalone,
             is_ts,
             ..Default::default()
         },

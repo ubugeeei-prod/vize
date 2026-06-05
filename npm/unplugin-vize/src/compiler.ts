@@ -20,6 +20,11 @@ function buildSignature(options: NormalizedVizeUnpluginOptions): string {
     options.customRenderer ? "1" : "0",
     options.vueParserQuirks ? "1" : "0",
     options.sourceMap ? "1" : "0",
+    options.mode,
+    options.runtimeModuleName,
+    options.runtimeGlobalName,
+    String(options.vueVersion),
+    options.hostCompiler ? "1" : "0",
     options.root,
   ].join(":");
 }
@@ -45,11 +50,15 @@ export function compileVueModule(
   const scopeId = generateScopeId(filePath, options.root, options.isProduction, source);
   const result = compileSfc(source, {
     filename: filePath,
+    mode: options.mode,
     sourceMap: options.sourceMap,
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer,
     vueParserQuirks: options.vueParserQuirks,
+    runtimeModuleName: options.runtimeModuleName,
+    runtimeGlobalName: options.runtimeGlobalName,
+    vueVersion: String(options.vueVersion),
     scopeId: `data-v-${scopeId}`,
   });
 

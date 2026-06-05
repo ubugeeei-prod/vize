@@ -70,6 +70,16 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         },
         source_map: opts.source_map.unwrap_or(false),
         ssr: opts.ssr.unwrap_or(false),
+        runtime_module_name: opts
+            .runtime_module_name
+            .clone()
+            .unwrap_or_else(|| "vue".to_string())
+            .into(),
+        runtime_global_name: opts
+            .runtime_global_name
+            .clone()
+            .unwrap_or_else(|| "Vue".to_string())
+            .into(),
         ..Default::default()
     };
     let result = generate(&root, codegen_opts);

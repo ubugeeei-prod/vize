@@ -3,8 +3,14 @@ import type { Plugin } from "vite";
 import type { VizeOptions } from "../types.ts";
 import { createLogger } from "../transform.ts";
 
+export function isLegacyVueVersion(version: VizeOptions["vueVersion"] | undefined): boolean {
+  return version === "legacy" || version === 0.11 || version === 1 || version === 2;
+}
+
 export function isLegacyVueCompatibilityMode(options: VizeOptions): boolean {
-  return options.vueVersion !== undefined && options.vueVersion !== 3;
+  const vueVersion = options.vueVersion ?? options.compatibility?.vueVersion;
+  const hostCompiler = options.compatibility?.hostCompiler ?? isLegacyVueVersion(vueVersion);
+  return hostCompiler && isLegacyVueVersion(vueVersion);
 }
 
 export function createLegacyVueCompatibilityPlugin(options: VizeOptions): Plugin {

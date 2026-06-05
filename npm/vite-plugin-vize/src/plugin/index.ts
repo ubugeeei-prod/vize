@@ -30,7 +30,11 @@ import {
 import { patchUnoCssBridge } from "./unocss.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installVirtualAssetMiddleware } from "./dev-middleware.ts";
-import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from "./vue-version.ts";
+import {
+  createLegacyVueCompatibilityPlugin,
+  isLegacyVueCompatibilityMode,
+  isLegacyVueVersion,
+} from "./vue-version.ts";
 
 export type { VizePluginState } from "./state.ts";
 
@@ -101,6 +105,23 @@ function shouldExtractCssForBuild(
   }
 
   return state.extractCss;
+}
+
+function resolveCompatibilityOptions(
+  options: VizeOptions,
+  compilerConfig: ResolvedVizeConfig["compiler"] = {},
+): NonNullable<VizeOptions["compatibility"]> {
+  const compatibility = {
+    ...compilerConfig.compatibility,
+    ...options.compatibility,
+  };
+  const vueVersion = options.vueVersion ?? compatibility.vueVersion ?? 3;
+
+  if (compatibility.hostCompiler === undefined && isLegacyVueVersion(vueVersion)) {
+    compatibility.hostCompiler = true;
+  }
+
+  return compatibility;
 }
 
 export function vize(options: VizeOptions = {}): Plugin[] {
@@ -240,6 +261,12 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
       const viteConfig = sharedConfig?.vite ?? {};
       const compilerConfig = sharedConfig?.compiler ?? {};
+      const compatibility = resolveCompatibilityOptions(options, compilerConfig);
+      const vueVersion = options.vueVersion ?? compatibility.vueVersion ?? 3;
+      const mode =
+        options.mode ??
+        compilerConfig.mode ??
+        (compatibility.scriptSetupInStandalone === true ? "function" : "module");
 
       state.mergedOptions = {
         ...options,
@@ -248,6 +275,11 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         vapor: options.vapor ?? compilerConfig.vapor ?? false,
         customRenderer: options.customRenderer ?? compilerConfig.customRenderer ?? false,
         vueParserQuirks: options.vueParserQuirks ?? compilerConfig.vueParserQuirks ?? false,
+        compatibility,
+        vueVersion,
+        mode,
+        runtimeModuleName: options.runtimeModuleName ?? compilerConfig.runtimeModuleName ?? "vue",
+        runtimeGlobalName: options.runtimeGlobalName ?? compilerConfig.runtimeGlobalName ?? "Vue",
         include: options.include ?? viteConfig.include,
         exclude: options.exclude ?? viteConfig.exclude,
         scanPatterns: options.scanPatterns ?? viteConfig.scanPatterns,
@@ -285,8 +317,13 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       // Prefer longer alias keys first
       state.cssAliasRules.sort((a, b) => aliasSortKey(b.find) - aliasSortKey(a.find));
 
-      state.filter = createFilter(state.mergedOptions.include, state.mergedOptions.exclude);
-      state.scanPatterns = state.mergedOptions.scanPatterns ?? ["**/*.vue"];
+      if (isLegacyVueCompatibilityMode(state.mergedOptions)) {
+        state.filter = () => false;
+        state.scanPatterns = [];
+      } else {
+        state.filter = createFilter(state.mergedOptions.include, state.mergedOptions.exclude);
+        state.scanPatterns = state.mergedOptions.scanPatterns ?? ["**/*.vue"];
+      }
       state.precompileBatchSize = normalizePrecompileBatchSize(
         state.mergedOptions.precompileBatchSize,
       );

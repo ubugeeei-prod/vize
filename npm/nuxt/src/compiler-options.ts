@@ -1,6 +1,15 @@
 export type VizeNuxtPattern = string | RegExp;
 export type VizeNuxtVueVersion = 0.11 | 1 | 2 | 3 | "legacy";
 
+export interface VizeNuxtCompilerCompatibilityOptions {
+  vueVersion?: VizeNuxtVueVersion;
+  hostCompiler?: boolean;
+  scriptSetupInStandalone?: boolean;
+  optionsApiVapor?: boolean;
+  nuxtVersion?: 2 | 3 | 4;
+  webpackVersion?: 4 | 5;
+}
+
 /**
  * Nuxt-facing mirror of the public `@vizejs/vite-plugin` options.
  *
@@ -17,6 +26,16 @@ export interface VizeNuxtCompilerOptions {
    * compatibility mode and does not intercept `.vue` files.
    */
   vueVersion?: VizeNuxtVueVersion;
+  /**
+   * Opt-in compatibility features shared with `@vizejs/vite-plugin`.
+   */
+  compatibility?: VizeNuxtCompilerCompatibilityOptions;
+  /** Emit function-body output for CDN/global Vue evaluation. */
+  mode?: "module" | "function";
+  /** Module name for runtime imports. */
+  runtimeModuleName?: string;
+  /** Global variable name for standalone/function mode. */
+  runtimeGlobalName?: string;
   /** Override the public base used for dev-time asset URLs. */
   devUrlBase?: string;
   /** Files to include in compilation. */

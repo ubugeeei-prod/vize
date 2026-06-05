@@ -10,11 +10,15 @@ export type {
 
 export interface SfcCompileOptionsNapi {
   filename?: string;
+  mode?: "module" | "function";
   sourceMap?: boolean;
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
   vueParserQuirks?: boolean;
+  runtimeModuleName?: string;
+  runtimeGlobalName?: string;
+  vueVersion?: string;
   scopeId?: string;
 }
 
@@ -48,6 +52,34 @@ export type CompileSfcFn = (
 
 export type VizeVueVersion = 0.11 | 1 | 2 | 3 | "legacy";
 
+export interface VizeCompatibilityOptions {
+  /**
+   * Host Vue version. Vue 0.11/1/2 opt into host-compiler compatibility.
+   */
+  vueVersion?: VizeVueVersion;
+  /**
+   * Keep .vue files on the existing Vue compiler for legacy Vue runtimes.
+   * @default true when vueVersion is 0.11, 1, 2, or "legacy"
+   */
+  hostCompiler?: boolean;
+  /**
+   * Enable function-body output for CDN/global Vue evaluation.
+   */
+  scriptSetupInStandalone?: boolean;
+  /**
+   * Allow Vapor output for Options API SFCs when vapor is enabled.
+   */
+  optionsApiVapor?: boolean;
+  /**
+   * Override the host Nuxt major when this option object is shared with Nuxt.
+   */
+  nuxtVersion?: 2 | 3 | 4;
+  /**
+   * Override the host Webpack major when this option object is shared with unplugin.
+   */
+  webpackVersion?: 4 | 5;
+}
+
 export interface VizeOptions {
   /**
    * Inline shared Vize config for Vite Plus-first projects.
@@ -66,6 +98,29 @@ export interface VizeOptions {
    * @default 3
    */
   vueVersion?: VizeVueVersion;
+
+  /**
+   * Opt-in compatibility features for unsupported host/runtime combinations.
+   */
+  compatibility?: VizeCompatibilityOptions;
+
+  /**
+   * Compilation output mode. Use "function" for CDN/global Vue evaluation.
+   * @default "module"
+   */
+  mode?: "module" | "function";
+
+  /**
+   * Module name for runtime imports.
+   * @default "vue"
+   */
+  runtimeModuleName?: string;
+
+  /**
+   * Global variable name for function/standalone output.
+   * @default "Vue"
+   */
+  runtimeGlobalName?: string;
 
   /**
    * Override the public base used for dev-time asset URLs such as /@fs paths.
@@ -243,10 +298,14 @@ export interface BatchFileResult {
 }
 
 export interface BatchCompileOptionsNapi {
+  mode?: "module" | "function";
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
   vueParserQuirks?: boolean;
+  runtimeModuleName?: string;
+  runtimeGlobalName?: string;
+  vueVersion?: string;
   threads?: number;
 }
 

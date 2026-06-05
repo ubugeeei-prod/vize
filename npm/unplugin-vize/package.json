@@ -80,6 +80,14 @@
     "oxc-transform": "catalog:oxc",
     "unplugin": "catalog:vite-stack"
   },
+  "peerDependencies": {
+    "webpack": "^4.46.0 || ^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "webpack": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@types/node": "catalog:typescript",
     "esbuild": "catalog:bundlers",

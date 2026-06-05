@@ -46,6 +46,36 @@ export default {
 };
 ```
 
+Webpack 5 is detected through `compiler.webpack`. Webpack 4 is supported by resolving
+`DefinePlugin` from the host project's `webpack` package:
+
+```javascript
+import Vize from "@vizejs/unplugin/webpack";
+
+export default {
+  plugins: [
+    Vize({
+      compatibility: {
+        webpackVersion: 4,
+      },
+    }),
+  ],
+};
+```
+
+For Vue 0.11, Vue 1, Vue 2, or Nuxt 2 projects that already use the legacy
+Vue/Webpack compiler chain, keep Vize non-invasive and let the host compiler
+handle `.vue` files:
+
+```javascript
+Vize({
+  compatibility: {
+    vueVersion: 2,
+    webpackVersion: 4,
+  },
+});
+```
+
 ### rolldown
 
 ```javascript
@@ -86,5 +116,5 @@ TypeScript/JSX transforms in the pipeline if your SFC scripts use those syntaxes
 
 - Vite is still the recommended integration if you need the most complete behavior today.
 - CSS Modules and preprocessors depend on the host bundler CSS pipeline and are more likely to change than the Vite path.
-- If your bundler inlines the Vue runtime, configure the usual Vue compile-time feature flags for that bundler.
+- If your bundler inlines the Vue runtime, Vize injects the usual Vue 3 compile-time feature flags for Rollup-like and Webpack hosts when its compiler is active.
 - Test carefully before depending on this package in production.

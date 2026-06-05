@@ -35,7 +35,7 @@ use self::styles::compile_styles;
 
 // Re-export ScriptCompileResult for public API
 pub use crate::compile_script::ScriptCompileResult;
-use vize_carton::{String, ToCompactString, profile};
+use vize_carton::{String, ToCompactString, cstr, profile};
 
 fn create_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor) -> SfcError {
     SfcError {
@@ -61,6 +61,15 @@ fn create_v_model_reactive_const_warning(
         message,
         code: Some("V_MODEL_CONST_REACTIVE_DEMOTED".to_compact_string()),
         loc: Some(script_setup.loc.clone()),
+    }
+}
+
+fn create_standalone_import_warning() -> SfcError {
+    SfcError {
+        message: "Standalone SFC output still contains non-Vue ES module imports; CDN evaluation requires those dependencies to be provided separately."
+            .to_compact_string(),
+        code: Some("STANDALONE_EXTERNAL_IMPORT".to_compact_string()),
+        loc: None,
     }
 }
 
@@ -104,6 +113,131 @@ fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacr
 fn trim_trailing_newlines(code: &mut String) {
     while code.ends_with('\n') {
         code.pop();
+    }
+}
+
+fn runtime_module_name(options: &SfcCompileOptions) -> &str {
+    options
+        .template
+        .compiler_options
+        .as_ref()
+        .map(|opts| opts.runtime_module_name.as_str())
+        .filter(|name| !name.is_empty())
+        .unwrap_or("vue")
+}
+
+fn runtime_global_name(options: &SfcCompileOptions) -> &str {
+    options
+        .template
+        .compiler_options
+        .as_ref()
+        .map(|opts| opts.runtime_global_name.as_str())
+        .filter(|name| !name.is_empty())
+        .unwrap_or("Vue")
+}
+
+fn rewrite_runtime_import_line(
+    trimmed: &str,
+    runtime_module_name: &str,
+    runtime_global_name: &str,
+) -> Option<String> {
+    let rest = trimmed.strip_prefix("import {")?;
+    let (specifiers, rest) = rest.split_once("} from ")?;
+    let source = rest.trim().trim_end_matches(';');
+    let expected_double = cstr!("\"{runtime_module_name}\"");
+    let expected_single = cstr!("'{runtime_module_name}'");
+    if source != expected_double && source != expected_single {
+        return None;
+    }
+
+    let bindings: Vec<_> = specifiers
+        .split(',')
+        .filter_map(|specifier| {
+            let specifier = specifier.trim();
+            let specifier = specifier.strip_prefix("type ").unwrap_or(specifier).trim();
+            if specifier.is_empty() {
+                return None;
+            }
+
+            if let Some((imported, local)) = specifier.split_once(" as ") {
+                Some(cstr!("{}: {}", imported.trim(), local.trim()))
+            } else {
+                Some(specifier.to_compact_string())
+            }
+        })
+        .collect();
+
+    if bindings.is_empty() {
+        return Some(String::default());
+    }
+
+    let mut joined = String::default();
+    for (index, binding) in bindings.iter().enumerate() {
+        if index > 0 {
+            joined.push_str(", ");
+        }
+        joined.push_str(binding);
+    }
+
+    Some(cstr!("const {{ {} }} = {}", joined, runtime_global_name))
+}
+
+fn rewrite_module_sfc_to_standalone(
+    code: &str,
+    runtime_module_name: &str,
+    runtime_global_name: &str,
+) -> (String, bool) {
+    let mut output = String::with_capacity(code.len());
+    let mut has_external_imports = false;
+
+    for line in code.lines() {
+        let trimmed = line.trim();
+        if trimmed.starts_with("import ") {
+            if let Some(rewritten) =
+                rewrite_runtime_import_line(trimmed, runtime_module_name, runtime_global_name)
+            {
+                if !rewritten.is_empty() {
+                    output.push_str(&rewritten);
+                    output.push('\n');
+                }
+                continue;
+            }
+            has_external_imports = true;
+        }
+
+        let mut rewritten = line
+            .replace("export function render(", "function render(")
+            .replace("export function ssrRender(", "function ssrRender(");
+        if let Some(index) = rewritten.find("export default")
+            && rewritten[..index].trim().is_empty()
+        {
+            rewritten.replace_range(index..index + "export default".len(), "return");
+        }
+        output.push_str(&rewritten);
+        output.push('\n');
+    }
+
+    (output, has_external_imports)
+}
+
+fn finalize_output_mode(
+    code: &mut String,
+    warnings: &mut Vec<SfcError>,
+    options: &SfcCompileOptions,
+) {
+    if !options.script.inline_template {
+        return;
+    }
+
+    let (rewritten, has_external_imports) = rewrite_module_sfc_to_standalone(
+        code,
+        runtime_module_name(options),
+        runtime_global_name(options),
+    );
+    *code = rewritten;
+
+    if has_external_imports {
+        warnings.push(create_standalone_import_warning());
     }
 }
 
@@ -272,6 +406,7 @@ fn compile_sfc_inner(
             css = Some(all_css);
         }
 
+        finalize_output_mode(&mut code, &mut warnings, &options);
         trim_trailing_newlines(&mut code);
 
         return Ok(SfcCompileResult {
@@ -422,6 +557,7 @@ fn compile_sfc_inner(
             css = Some(all_css);
         }
 
+        finalize_output_mode(&mut code, &mut warnings, &options);
         trim_trailing_newlines(&mut code);
 
         return Ok(SfcCompileResult {
@@ -730,6 +866,7 @@ fn compile_sfc_inner(
         css = Some(all_css);
     }
 
+    finalize_output_mode(&mut code, &mut warnings, &options);
     trim_trailing_newlines(&mut code);
 
     Ok(SfcCompileResult {

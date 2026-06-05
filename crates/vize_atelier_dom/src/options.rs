@@ -53,6 +53,14 @@ pub struct DomCompilerOptions {
     #[serde(default)]
     pub custom_renderer: bool,
 
+    /// Module name for runtime imports in module mode.
+    #[serde(default = "default_runtime_module_name")]
+    pub runtime_module_name: String,
+
+    /// Global variable name for runtime helpers in function mode.
+    #[serde(default = "default_runtime_global_name")]
+    pub runtime_global_name: String,
+
     /// Binding metadata from script setup
     #[serde(skip)]
     pub binding_metadata: Option<BindingMetadata>,
@@ -80,6 +88,8 @@ impl Clone for DomCompilerOptions {
             component_name: self.component_name.clone(),
             inline: self.inline,
             custom_renderer: self.custom_renderer,
+            runtime_module_name: self.runtime_module_name.clone(),
+            runtime_global_name: self.runtime_global_name.clone(),
             binding_metadata: self.binding_metadata.clone(),
             is_ts: self.is_ts,
             // Croquis is not cloneable; it will be consumed when passed to the compiler
@@ -102,11 +112,21 @@ impl Default for DomCompilerOptions {
             component_name: None,
             inline: false,
             custom_renderer: false,
+            runtime_module_name: default_runtime_module_name(),
+            runtime_global_name: default_runtime_global_name(),
             binding_metadata: None,
             is_ts: false,
             croquis: None,
         }
     }
+}
+
+fn default_runtime_module_name() -> String {
+    String::from("vue")
+}
+
+fn default_runtime_global_name() -> String {
+    String::from("Vue")
 }
 
 /// DOM-specific element checks

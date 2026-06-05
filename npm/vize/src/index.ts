@@ -29,6 +29,8 @@ export type {
   LintPreset,
   RuleSeverity,
   RuleCategory,
+  VueVersion,
+  CompilerCompatibilityConfig,
   VizeConfigEntry,
   LintRuleName,
   LintRulesConfig,

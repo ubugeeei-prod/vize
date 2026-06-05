@@ -5,6 +5,7 @@ use crate::types::{
 use crate::{SfcParseOptions, parse_sfc};
 use std::fs;
 use std::path::PathBuf;
+use vize_atelier_dom::DomCompilerOptions;
 use vize_carton::ToCompactString;
 
 fn fixtures_path() -> PathBuf {
@@ -991,6 +992,59 @@ const count = 1
     assert_eq!(
         result.warnings[0].message.as_str(),
         "SFC Vapor SSR is not supported yet; falling back to standard SSR output."
+    );
+}
+
+#[test]
+fn test_script_setup_standalone_rewrites_vue_imports_to_global_runtime() {
+    let source = r#"<script setup>
+import { ref } from "vue"
+const count = ref(0)
+</script>
+
+<template>
+  <button>{{ count }}</button>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            script: ScriptCompileOptions {
+                inline_template: true,
+                ..Default::default()
+            },
+            template: TemplateCompileOptions {
+                compiler_options: Some(DomCompilerOptions {
+                    runtime_global_name: "PetiteVue".into(),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    )
+    .expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("PetiteVue"),
+        "standalone output should read Vue helpers from the configured global:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("import {"),
+        "standalone output should rewrite Vue runtime imports:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("export default"),
+        "standalone output should be a function body without ESM default export:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("return {"),
+        "standalone output should return the compiled component:\n{}",
+        result.code
     );
 }
 
