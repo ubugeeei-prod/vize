@@ -393,10 +393,27 @@ pub struct IdeContext<'a> {
 
 impl<'a> IdeContext<'a> {
     /// Create a new IDE context.
+    ///
+    /// This re-fetches the document from the store and materializes its content.
+    /// Callers that have already materialized the document content should prefer
+    /// [`IdeContext::with_content`] to avoid a redundant document lookup and a
+    /// second full Rope→String allocation.
     pub fn new(state: &'a ServerState, uri: &'a Url, offset: usize) -> Option<Self> {
-        let doc = state.documents.get(uri)?;
-        let content = doc.text();
+        let content = state.documents.get(uri)?.text();
+        Some(Self::with_content(state, uri, offset, content))
+    }
 
+    /// Create a new IDE context from already-materialized document content.
+    ///
+    /// Reuses the provided `content` instead of re-reading the document from the
+    /// store, avoiding a redundant `DashMap` lookup and a second full
+    /// Rope→String allocation per request.
+    pub fn with_content(
+        state: &'a ServerState,
+        uri: &'a Url,
+        offset: usize,
+        content: String,
+    ) -> Self {
         // Determine block type
         let block_type = if uri.path().ends_with(".art.vue") {
             // For art files, use art-specific block detection
@@ -418,14 +435,14 @@ impl<'a> IdeContext<'a> {
 
         let virtual_docs = state.get_virtual_docs(uri);
 
-        Some(Self {
+        Self {
             state,
             uri,
             content,
             offset,
             block_type,
             virtual_docs,
-        })
+        }
     }
 
     /// Check if cursor is in template block.

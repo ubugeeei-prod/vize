@@ -41,6 +41,8 @@ pub(super) struct TemplateCallRanges {
 const TEMPLATE_HANDLER_PREFIX: &str = "function __vize_template_handler(){\n";
 
 pub(super) fn collect_template_call_ranges(
+    allocator: &OxcAllocator,
+    source_type: SourceType,
     source: &str,
     allow_statement_fallback: bool,
     include_callees: bool,
@@ -49,24 +51,25 @@ pub(super) fn collect_template_call_ranges(
     // Parse the template expression once and derive every range family from the
     // same AST. Event handlers can contain statement bodies, so only those callers
     // enable the statement fallback; ordinary bindings stay on the cheaper
-    // expression parse path.
+    // expression parse path. The arena and source type are owned by the caller and
+    // reused across every template expression in the file; each call copies all
+    // needed data into owned ranges before returning, so the caller may reset the
+    // arena afterwards without invalidating the result.
     let mut ranges = TemplateCallRanges::default();
     if !include_callees && !include_floating_promises {
         return ranges;
     }
 
-    let allocator = OxcAllocator::default();
-    let source_type = SourceType::from_path("template.ts").unwrap_or_default();
     if let Ok(expression) = profile!(
         "patina.type_aware.template_queries.parse_expression",
-        OxcParser::new(&allocator, source, source_type).parse_expression()
+        OxcParser::new(allocator, source, source_type).parse_expression()
     ) {
         ranges.probe_expression_binding = expression_prefers_binding_probe(&expression);
         let expression_consumes_source = expression.span().end as usize == source.trim_end().len();
         ranges.expression_consumes_source = expression_consumes_source;
         if allow_statement_fallback && !expression_consumes_source {
             let statement_ranges = collect_statement_template_call_ranges(
-                &allocator,
+                allocator,
                 source_type,
                 source,
                 include_callees,
@@ -112,7 +115,7 @@ pub(super) fn collect_template_call_ranges(
     }
 
     collect_statement_template_call_ranges(
-        &allocator,
+        allocator,
         source_type,
         source,
         include_callees,
@@ -546,7 +549,27 @@ fn is_handled_promise_chain(expression: &Expression<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{FloatingPromiseRange, RelativeRange, collect_template_call_ranges};
+    use super::{
+        FloatingPromiseRange, OxcAllocator, RelativeRange, SourceType, TemplateCallRanges,
+    };
+
+    fn collect_template_call_ranges(
+        source: &str,
+        allow_statement_fallback: bool,
+        include_callees: bool,
+        include_floating_promises: bool,
+    ) -> TemplateCallRanges {
+        let allocator = OxcAllocator::default();
+        let source_type = SourceType::from_path("template.ts").unwrap_or_default();
+        super::collect_template_call_ranges(
+            &allocator,
+            source_type,
+            source,
+            allow_statement_fallback,
+            include_callees,
+            include_floating_promises,
+        )
+    }
 
     fn range_slices<'a>(source: &'a str, ranges: &[RelativeRange]) -> Vec<&'a str> {
         ranges

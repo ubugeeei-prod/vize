@@ -154,22 +154,18 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        let mut hover_result: Option<Hover> = None;
+        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
 
-        if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
-            #[cfg(feature = "native")]
-            {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                hover_result = HoverService::hover_with_corsa(&ctx, corsa_bridge).await;
-            }
+        #[cfg(feature = "native")]
+        let mut hover_result: Option<Hover> = {
+            let corsa_bridge = self.state.get_corsa_bridge().await;
+            HoverService::hover_with_corsa(&ctx, corsa_bridge).await
+        };
 
-            #[cfg(not(feature = "native"))]
-            {
-                hover_result = HoverService::hover(&ctx);
-            }
-        }
+        #[cfg(not(feature = "native"))]
+        let mut hover_result: Option<Hover> = HoverService::hover(&ctx);
 
-        let lint_hover = self.get_lint_hover_at_position(uri, &content, position);
+        let lint_hover = self.get_lint_hover_at_position(uri, &ctx.content, position);
         if let Some(lint_info) = lint_hover {
             hover_result = Some(Self::merge_hover_with_lint(hover_result, lint_info));
         }
@@ -194,7 +190,8 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
+        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+        {
             #[cfg(feature = "native")]
             {
                 let corsa_bridge = self.state.get_corsa_bridge().await;
@@ -245,7 +242,8 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
+        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+        {
             #[cfg(feature = "native")]
             {
                 let corsa_bridge = self.state.get_corsa_bridge().await;
@@ -283,7 +281,8 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
+        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+        {
             #[cfg(feature = "native")]
             {
                 let corsa_bridge = self.state.get_corsa_bridge().await;
@@ -329,9 +328,7 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        let Some(ctx) = IdeContext::new(&self.state, uri, offset) else {
-            return Ok(None);
-        };
+        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
 
         Ok(DocumentHighlightService::highlights(&ctx))
     }
@@ -548,20 +545,18 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
-            #[cfg(feature = "native")]
-            {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                return Ok(RenameService::prepare_rename_with_corsa(&ctx, corsa_bridge).await);
-            }
+        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
 
-            #[cfg(not(feature = "native"))]
-            {
-                return Ok(RenameService::prepare_rename(&ctx));
-            }
+        #[cfg(feature = "native")]
+        {
+            let corsa_bridge = self.state.get_corsa_bridge().await;
+            Ok(RenameService::prepare_rename_with_corsa(&ctx, corsa_bridge).await)
         }
 
-        Ok(None)
+        #[cfg(not(feature = "native"))]
+        {
+            Ok(RenameService::prepare_rename(&ctx))
+        }
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
@@ -582,20 +577,18 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         };
 
-        if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
-            #[cfg(feature = "native")]
-            {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                return Ok(RenameService::rename_with_corsa(&ctx, new_name, corsa_bridge).await);
-            }
+        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
 
-            #[cfg(not(feature = "native"))]
-            {
-                return Ok(RenameService::rename(&ctx, new_name));
-            }
+        #[cfg(feature = "native")]
+        {
+            let corsa_bridge = self.state.get_corsa_bridge().await;
+            Ok(RenameService::rename_with_corsa(&ctx, new_name, corsa_bridge).await)
         }
 
-        Ok(None)
+        #[cfg(not(feature = "native"))]
+        {
+            Ok(RenameService::rename(&ctx, new_name))
+        }
     }
 
     async fn semantic_tokens_full(

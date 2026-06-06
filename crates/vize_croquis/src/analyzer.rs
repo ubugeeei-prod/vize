@@ -108,11 +108,21 @@ pub struct Analyzer {
     pub(crate) script_analyzed: bool,
     /// Current v-if guard stack (for type narrowing in templates)
     pub(crate) vif_guard_stack: Vec<CompactString>,
+    /// Memoized join of `vif_guard_stack` (` && `-separated). `None` when the
+    /// stack is empty. Recomputed eagerly whenever `vif_guard_stack` is pushed
+    /// to or popped (both happen behind `&mut self`), so the read path
+    /// (`current_vif_guard`) is a cheap `&self` clone. A plain `Option` (rather
+    /// than interior mutability) keeps `Analyzer: Sync`.
+    pub(crate) vif_guard_cache: Option<CompactString>,
     /// Conditions of the preceding `v-if` / `v-else-if` siblings in the current
     /// sibling group. Used to build the negated guard for a flat `v-else` /
     /// `v-else-if` element when the parser keeps branches as sibling elements
     /// (rather than grouping them into an `IfNode`).
     pub(crate) vif_branch_conditions: Vec<CompactString>,
+    /// Number of v-for scopes currently entered. `is_in_vfor_scope` reads this
+    /// instead of walking the parent scope chain. Incremented on v-for scope
+    /// enter, decremented on exit (paired with `vif_guard_stack` discipline).
+    pub(crate) vfor_depth: u32,
 }
 
 impl Analyzer {
@@ -131,7 +141,9 @@ impl Analyzer {
             summary: Croquis::new(),
             script_analyzed: false,
             vif_guard_stack: Vec::new(),
+            vif_guard_cache: None,
             vif_branch_conditions: Vec::new(),
+            vfor_depth: 0,
         }
     }
 
@@ -147,7 +159,9 @@ impl Analyzer {
             summary,
             script_analyzed,
             vif_guard_stack: Vec::new(),
+            vif_guard_cache: None,
             vif_branch_conditions: Vec::new(),
+            vfor_depth: 0,
         }
     }
 
@@ -158,13 +172,23 @@ impl Analyzer {
         self
     }
 
-    /// Get the current v-if guard (combined from stack)
+    /// Get the current v-if guard (combined from stack).
+    ///
+    /// The joined string is invariant for a given `vif_guard_stack` state, so it
+    /// is memoized in `vif_guard_cache` (recomputed by `refresh_vif_guard_cache`
+    /// on every push/pop) and this read path is a cheap clone.
     pub(crate) fn current_vif_guard(&self) -> Option<CompactString> {
-        if self.vif_guard_stack.is_empty() {
+        self.vif_guard_cache.clone()
+    }
+
+    /// Recompute the memoized joined v-if guard. Call after every push/pop of
+    /// `vif_guard_stack` (both behind `&mut self`) to keep the cache current.
+    pub(crate) fn refresh_vif_guard_cache(&mut self) {
+        self.vif_guard_cache = if self.vif_guard_stack.is_empty() {
             None
         } else {
             Some(CompactString::new(self.vif_guard_stack.join(" && ")))
-        }
+        };
     }
 
     /// Create analyzer for linting (optimized)

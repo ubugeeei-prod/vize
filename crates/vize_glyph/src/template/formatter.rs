@@ -125,8 +125,13 @@ impl<'a> TemplateFormatter<'a> {
 
                     let mut closing_bracket_on_own_line = false;
                     if !sorted_attrs.is_empty() {
+                        // Render each attribute exactly once; both the
+                        // multiline decision and emission below reuse this.
+                        let mut rendered: Vec<String> = Vec::with_capacity(sorted_attrs.len());
+                        rendered.extend(sorted_attrs.iter().map(render_attribute));
+
                         let use_multiline =
-                            self.should_use_multiline_attrs(&tag_name, &sorted_attrs, depth);
+                            self.should_use_multiline_attrs(&tag_name, &rendered, depth);
 
                         if use_multiline {
                             let max_per_line = self
@@ -136,7 +141,7 @@ impl<'a> TemplateFormatter<'a> {
                                 .max(1) as usize;
 
                             let mut line_count = 0;
-                            for attr in &sorted_attrs {
+                            for attr in &rendered {
                                 if line_count == 0 {
                                     // Start a new attribute line
                                     output.extend_from_slice(self.newline);
@@ -144,7 +149,7 @@ impl<'a> TemplateFormatter<'a> {
                                 } else {
                                     output.push(b' ');
                                 }
-                                output.extend_from_slice(render_attribute(attr).as_bytes());
+                                output.extend_from_slice(attr.as_bytes());
                                 line_count += 1;
                                 if line_count >= max_per_line {
                                     line_count = 0;
@@ -156,20 +161,23 @@ impl<'a> TemplateFormatter<'a> {
                                 closing_bracket_on_own_line = true;
                             }
                         } else {
-                            for attr in &sorted_attrs {
+                            for attr in &rendered {
                                 output.push(b' ');
-                                output.extend_from_slice(render_attribute(attr).as_bytes());
+                                output.extend_from_slice(attr.as_bytes());
                             }
                         }
                     }
 
+                    // Compute once per opening tag; consumed in the two
+                    // void-element branches below.
+                    let is_void = is_void_element_str(&tag_name);
                     if is_self_closing {
                         if closing_bracket_on_own_line {
                             output.extend_from_slice(b"/>");
                         } else {
                             output.extend_from_slice(b" />");
                         }
-                    } else if !is_void_element_str(&tag_name)
+                    } else if !is_void
                         && let Some(closing_end_pos) =
                             self.parse_immediate_empty_closing_tag(source, end_pos, &tag_name)
                     {
@@ -206,7 +214,7 @@ impl<'a> TemplateFormatter<'a> {
                         }
                     } else {
                         output.push(b'>');
-                        if !is_void_element_str(&tag_name) {
+                        if !is_void {
                             depth += 1;
                         }
                     }
@@ -455,19 +463,22 @@ impl<'a> TemplateFormatter<'a> {
     }
 
     /// Determine whether attributes should be rendered in multiline mode.
+    ///
+    /// Takes the pre-rendered attribute strings so each attribute is rendered
+    /// exactly once on the common path (shared with the emission loop).
     fn should_use_multiline_attrs(
         &self,
         tag_name: &str,
-        attrs: &[ParsedAttribute],
+        rendered: &[String],
         depth: usize,
     ) -> bool {
-        if attrs.len() <= 1 {
+        if rendered.len() <= 1 {
             return false;
         }
 
         // Explicit max_attributes_per_line takes priority
         if let Some(max) = self.options.max_attributes_per_line {
-            return attrs.len() > max as usize;
+            return rendered.len() > max as usize;
         }
 
         // single_attribute_per_line
@@ -478,9 +489,9 @@ impl<'a> TemplateFormatter<'a> {
         // Check if all attributes on one line would exceed print_width
         let indent_len = self.indent.len() * depth;
         let tag_len = 1 + tag_name.len(); // '<' + tag_name
-        let attrs_len: usize = attrs
+        let attrs_len: usize = rendered
             .iter()
-            .map(|a| 1 + render_attribute(a).len()) // ' ' + attr
+            .map(|a| 1 + a.len()) // ' ' + attr
             .sum();
         let closing_len = 1; // '>'
         let total = indent_len + tag_len + attrs_len + closing_len;
@@ -677,8 +688,17 @@ impl<'a> TemplateFormatter<'a> {
 pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> String {
     let bytes = text.as_bytes();
     let len = bytes.len();
+
+    // Fast path: no `{` at all means no interpolations and no special bytes,
+    // so the text is returned verbatim with a single allocation.
+    let Some(first_brace) = memchr::memchr(b'{', bytes) else {
+        return text.to_compact_string();
+    };
+
     let mut result = String::with_capacity(len + 16);
-    let mut pos = 0;
+    // Everything before the first `{` is ordinary text; copy it in one shot.
+    result.push_str(&text[..first_brace]);
+    let mut pos = first_brace;
 
     while pos < len {
         if pos + 1 < len && bytes[pos] == b'{' && bytes[pos + 1] == b'{' {
@@ -715,13 +735,14 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
                 pos += 1;
             }
         } else {
-            // Push one UTF-8 character
-            if let Some(ch) = text[pos..].chars().next() {
-                result.push(ch);
-                pos += ch.len_utf8();
-            } else {
-                pos += 1;
-            }
+            // Ordinary text. Copy the run up to (but not including) the next
+            // `{` in a single push instead of char-by-char. A lone `{` (one
+            // not starting a `{{`) is emitted and stepped over individually,
+            // exactly as before.
+            let rest = &bytes[pos + 1..];
+            let next = memchr::memchr(b'{', rest).map_or(len, |off| pos + 1 + off);
+            result.push_str(&text[pos..next]);
+            pos = next;
         }
     }
 

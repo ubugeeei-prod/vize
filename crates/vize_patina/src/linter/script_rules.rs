@@ -1,11 +1,60 @@
 use super::{LintResult, Linter};
 use crate::rules::script::{
     NoGetCurrentInstance, NoNextTick, NoOptionsApi, PiniaPreferStoreToRefs, ScriptRule,
-    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
+    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot, script_source_type,
 };
 use memchr::memmem;
+use oxc_allocator::Allocator;
+use oxc_parser::Parser;
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 use vize_carton::profile;
+
+/// A built-in script rule paired with its registry name and profiling label.
+///
+/// All built-in script rules are AST-based, so a single oxc parse per script
+/// block can be shared across every enabled rule.
+struct BuiltinScriptRuleEntry {
+    rule_name: &'static str,
+    profile_name: &'static str,
+    rule: &'static (dyn ScriptRule + 'static),
+}
+
+/// The full ordered set of built-in script rules.
+///
+/// Order matches the previous sequence of `append_builtin_script_rule` calls so
+/// emitted diagnostics keep the same ordering.
+static BUILTIN_SCRIPT_RULES: &[BuiltinScriptRuleEntry] = &[
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_OPTIONS_API,
+        profile_name: "patina.script_rule.no_options_api",
+        rule: &NoOptionsApi,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_GET_CURRENT_INSTANCE,
+        profile_name: "patina.script_rule.no_get_current_instance",
+        rule: &NoGetCurrentInstance,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_NEXT_TICK,
+        profile_name: "patina.script_rule.no_next_tick",
+        rule: &NoNextTick,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PINIA_PREFER_STORE_TO_REFS,
+        profile_name: "patina.script_rule.pinia_prefer_store_to_refs",
+        rule: &PiniaPreferStoreToRefs,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+        profile_name: "patina.script_rule.vue_router_prefer_named_push",
+        rule: &VueRouterPreferNamedPush,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+        profile_name: "patina.script_rule.vue_test_utils_no_html_snapshot",
+        rule: &VueTestUtilsNoHtmlSnapshot,
+    },
+];
 
 pub(crate) const RULE_NO_OPTIONS_API: &str = "script/no-options-api";
 pub(crate) const RULE_NO_GET_CURRENT_INSTANCE: &str = "script/no-get-current-instance";
@@ -169,54 +218,94 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         return;
     }
 
-    append_builtin_script_rule(
-        linter,
-        descriptor,
-        result,
-        RULE_NO_OPTIONS_API,
-        "patina.script_rule.no_options_api",
-        NoOptionsApi,
+    // Parse each block at most once and reuse the program across every rule.
+    // A block is only parsed if at least one enabled rule could match it (the
+    // same `is_rule_enabled` + `script_rules.contains` + `script_rule_may_match`
+    // gate the previous per-rule path applied before parsing). Diagnostics are
+    // emitted rule-major / block-minor to preserve the exact ordering of the
+    // previous per-rule call sequence (which iterated `script` then
+    // `script_setup` inside each rule).
+    let script_alloc = Allocator::default();
+    let script = descriptor
+        .script
+        .as_ref()
+        .filter(|block| block_has_active_rule(linter, block.content.as_ref()))
+        .map(|block| {
+            let source = block.content.as_ref();
+            let parsed = profile!(
+                "patina.script_rule.parse",
+                Parser::new(&script_alloc, source, script_source_type()).parse()
+            );
+            (source, block.loc.start, parsed)
+        });
+
+    let setup_alloc = Allocator::default();
+    let script_setup = descriptor
+        .script_setup
+        .as_ref()
+        .filter(|block| block_has_active_rule(linter, block.content.as_ref()))
+        .map(|block| {
+            let source = block.content.as_ref();
+            let parsed = profile!(
+                "patina.script_rule.parse",
+                Parser::new(&setup_alloc, source, script_source_type()).parse()
+            );
+            (source, block.loc.start, parsed)
+        });
+
+    for entry in BUILTIN_SCRIPT_RULES {
+        if !linter.is_rule_enabled(entry.rule_name)
+            || !linter.script_rules.contains(&entry.rule_name)
+        {
+            continue;
+        }
+        if let Some((source, offset, parsed)) = script.as_ref() {
+            run_builtin_script_rule_on_parsed(entry, source, *offset, parsed, result);
+        }
+        if let Some((source, offset, parsed)) = script_setup.as_ref() {
+            run_builtin_script_rule_on_parsed(entry, source, *offset, parsed, result);
+        }
+    }
+}
+
+/// Whether any enabled built-in script rule could match `source`.
+///
+/// Mirrors the per-rule `is_rule_enabled` + `script_rules.contains` +
+/// `script_rule_may_match` gate so a block matching no rule is never parsed.
+fn block_has_active_rule(linter: &Linter, source: &str) -> bool {
+    BUILTIN_SCRIPT_RULES.iter().any(|entry| {
+        linter.is_rule_enabled(entry.rule_name)
+            && linter.script_rules.contains(&entry.rule_name)
+            && script_rule_may_match(entry.rule_name, source)
+    })
+}
+
+/// Run a single built-in script rule against a pre-parsed script block.
+///
+/// Applies the same `script_rule_may_match` byte prefilter and parse-failure
+/// guard the per-rule `check` used to apply, then dispatches to `check_program`
+/// with the shared program.
+fn run_builtin_script_rule_on_parsed(
+    entry: &BuiltinScriptRuleEntry,
+    source: &str,
+    offset: usize,
+    parsed: &oxc_parser::ParserReturn<'_>,
+    result: &mut LintResult,
+) {
+    if parsed.panicked || !parsed.errors.is_empty() {
+        return;
+    }
+    if !script_rule_may_match(entry.rule_name, source) {
+        return;
+    }
+    let mut lint = crate::rules::script::ScriptLintResult::default();
+    profile!(
+        entry.profile_name,
+        entry
+            .rule
+            .check_program(&parsed.program, source, offset, &mut lint)
     );
-    append_builtin_script_rule(
-        linter,
-        descriptor,
-        result,
-        RULE_NO_GET_CURRENT_INSTANCE,
-        "patina.script_rule.no_get_current_instance",
-        NoGetCurrentInstance,
-    );
-    append_builtin_script_rule(
-        linter,
-        descriptor,
-        result,
-        RULE_NO_NEXT_TICK,
-        "patina.script_rule.no_next_tick",
-        NoNextTick,
-    );
-    append_builtin_script_rule(
-        linter,
-        descriptor,
-        result,
-        RULE_PINIA_PREFER_STORE_TO_REFS,
-        "patina.script_rule.pinia_prefer_store_to_refs",
-        PiniaPreferStoreToRefs,
-    );
-    append_builtin_script_rule(
-        linter,
-        descriptor,
-        result,
-        RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-        "patina.script_rule.vue_router_prefer_named_push",
-        VueRouterPreferNamedPush,
-    );
-    append_builtin_script_rule(
-        linter,
-        descriptor,
-        result,
-        RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
-        "patina.script_rule.vue_test_utils_no_html_snapshot",
-        VueTestUtilsNoHtmlSnapshot,
-    );
+    merge_script_result(result, lint);
 }
 
 pub(crate) fn append_builtin_script_diagnostics_from_html(
@@ -229,60 +318,7 @@ pub(crate) fn append_builtin_script_diagnostics_from_html(
     }
 
     for (script, offset) in extract_inline_scripts(source) {
-        append_builtin_script_rule_for_source(
-            linter,
-            script,
-            offset,
-            result,
-            RULE_NO_OPTIONS_API,
-            "patina.script_rule.no_options_api",
-            &NoOptionsApi,
-        );
-        append_builtin_script_rule_for_source(
-            linter,
-            script,
-            offset,
-            result,
-            RULE_NO_GET_CURRENT_INSTANCE,
-            "patina.script_rule.no_get_current_instance",
-            &NoGetCurrentInstance,
-        );
-        append_builtin_script_rule_for_source(
-            linter,
-            script,
-            offset,
-            result,
-            RULE_NO_NEXT_TICK,
-            "patina.script_rule.no_next_tick",
-            &NoNextTick,
-        );
-        append_builtin_script_rule_for_source(
-            linter,
-            script,
-            offset,
-            result,
-            RULE_PINIA_PREFER_STORE_TO_REFS,
-            "patina.script_rule.pinia_prefer_store_to_refs",
-            &PiniaPreferStoreToRefs,
-        );
-        append_builtin_script_rule_for_source(
-            linter,
-            script,
-            offset,
-            result,
-            RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-            "patina.script_rule.vue_router_prefer_named_push",
-            &VueRouterPreferNamedPush,
-        );
-        append_builtin_script_rule_for_source(
-            linter,
-            script,
-            offset,
-            result,
-            RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
-            "patina.script_rule.vue_test_utils_no_html_snapshot",
-            &VueTestUtilsNoHtmlSnapshot,
-        );
+        append_builtin_script_rules_for_source(linter, script, offset, result);
     }
 }
 
@@ -295,61 +331,40 @@ fn merge_script_result(
     result.diagnostics.extend(script_result.diagnostics);
 }
 
-fn append_builtin_script_rule<'a, R: ScriptRule>(
-    linter: &Linter,
-    descriptor: &SfcDescriptor<'a>,
-    result: &mut LintResult,
-    rule_name: &str,
-    profile_name: &'static str,
-    rule: R,
-) {
-    if !linter.is_rule_enabled(rule_name) || !linter.script_rules.contains(&rule_name) {
-        return;
-    }
-
-    if let Some(script) = descriptor.script.as_ref() {
-        append_builtin_script_rule_for_source(
-            linter,
-            script.content.as_ref(),
-            script.loc.start,
-            result,
-            rule_name,
-            profile_name,
-            &rule,
-        );
-    }
-    if let Some(script_setup) = descriptor.script_setup.as_ref() {
-        append_builtin_script_rule_for_source(
-            linter,
-            script_setup.content.as_ref(),
-            script_setup.loc.start,
-            result,
-            rule_name,
-            profile_name,
-            &rule,
-        );
-    }
-}
-
-fn append_builtin_script_rule_for_source<R: ScriptRule>(
+/// Run every enabled built-in script rule against a single script block,
+/// sharing **one** oxc parse across all of them.
+///
+/// Mirrors the previous per-rule flow exactly: each rule is gated on
+/// `is_rule_enabled` + `script_rules.contains` and on its `script_rule_may_match`
+/// byte prefilter, runs into its own [`ScriptLintResult`], and is merged in the
+/// original rule order. The only change is that the oxc parse happens once here
+/// instead of once inside every rule's `check`.
+fn append_builtin_script_rules_for_source(
     linter: &Linter,
     source: &str,
     offset: usize,
     result: &mut LintResult,
-    rule_name: &str,
-    profile_name: &'static str,
-    rule: &R,
 ) {
-    if !linter.is_rule_enabled(rule_name) || !linter.script_rules.contains(&rule_name) {
-        return;
-    }
-    if !script_rule_may_match(rule_name, source) {
+    // Skip parsing entirely when no enabled rule could match this block.
+    if !block_has_active_rule(linter, source) {
         return;
     }
 
-    let mut lint = crate::rules::script::ScriptLintResult::default();
-    profile!(profile_name, rule.check(source, offset, &mut lint));
-    merge_script_result(result, lint);
+    // Parse the script block exactly once and share the program with each rule.
+    let allocator = Allocator::default();
+    let parsed = profile!(
+        "patina.script_rule.parse",
+        Parser::new(&allocator, source, script_source_type()).parse()
+    );
+
+    for entry in BUILTIN_SCRIPT_RULES {
+        if !linter.is_rule_enabled(entry.rule_name)
+            || !linter.script_rules.contains(&entry.rule_name)
+        {
+            continue;
+        }
+        run_builtin_script_rule_on_parsed(entry, source, offset, &parsed, result);
+    }
 }
 
 fn script_rule_may_match(rule_name: &str, source: &str) -> bool {

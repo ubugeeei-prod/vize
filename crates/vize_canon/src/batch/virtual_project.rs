@@ -1336,9 +1336,8 @@ fn build_vue_registered_file(
         .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))
     )?;
 
-    let mut effective_options =
+    let effective_options =
         virtual_ts_options_for_descriptor(context.virtual_ts_options, &descriptor);
-    effective_options.auto_import_stubs.clear();
     let generated = profile!(
         "canon.vue.virtual_ts",
         generate_vue_virtual_ts(
@@ -1545,6 +1544,11 @@ fn virtual_ts_options_for_descriptor(
     base: &VirtualTsOptions,
     descriptor: &SfcDescriptor,
 ) -> VirtualTsOptions {
+    // Per-file generation never re-emits the global auto-import stubs inline:
+    // they are written once to a shared ambient `.d.ts` (see
+    // `write_auto_import_stubs`). Build the per-file options with an empty
+    // `auto_import_stubs` instead of deep-cloning the (potentially large,
+    // Nuxt/auto-import) global Vec only to clear it again at the call site.
     let css_modules: Vec<CompactString> = descriptor
         .styles
         .iter()
@@ -1555,13 +1559,20 @@ fn virtual_ts_options_for_descriptor(
                 .map(|module| module.to_compact_string())
         })
         .collect();
-    if css_modules.is_empty() {
-        return base.clone();
-    }
+    let css_modules = if css_modules.is_empty() {
+        // No `<style module>` blocks: reuse the global css_modules (typically
+        // also empty) rather than the freshly collected empty Vec.
+        base.css_modules.clone()
+    } else {
+        css_modules
+    };
 
-    let mut options = base.clone();
-    options.css_modules = css_modules;
-    options
+    VirtualTsOptions {
+        template_globals: base.template_globals.clone(),
+        css_modules,
+        auto_import_stubs: Vec::new(),
+        external_template_bindings: base.external_template_bindings.clone(),
+    }
 }
 
 fn mirrored_virtual_path(

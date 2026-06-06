@@ -106,12 +106,17 @@ impl DiagnosticService {
             return diagnostics;
         }
 
+        // Build the line index once for this document. Every collector below
+        // maps byte offsets in `content` to (line, utf16_col) against it, so
+        // sharing one index avoids re-scanning the whole document per offset.
+        let line_index = LineIndex::new(&content);
+
         // Check if this is an Art file (*.art.vue)
         let path = uri.path();
         if path.ends_with(".art.vue") {
             // Musea-specific diagnostics for Art files
             if features.lint {
-                diagnostics.extend(Self::collect_musea_diagnostics(uri, &content));
+                diagnostics.extend(Self::collect_musea_diagnostics(uri, &content, &line_index));
             }
             // Don't return early here; async collection still adds Corsa diagnostics.
             return diagnostics;
@@ -125,6 +130,7 @@ impl DiagnosticService {
                     &content,
                     features.ecosystem,
                     &linter_config,
+                    &line_index,
                 );
                 tracing::info!(
                     "collect: standalone HTML patina lint diagnostics: {}",
@@ -149,12 +155,14 @@ impl DiagnosticService {
         // Collect parser diagnostics for script and template blocks before
         // dependent analyzers, so broken blocks do not fan out into noisy
         // lint/type/Corsa diagnostics.
-        let script_diags = Self::collect_script_diagnostics(uri, &content, &descriptor);
+        let script_diags =
+            Self::collect_script_diagnostics(uri, &content, &descriptor, &line_index);
         let has_script_parse_error = !script_diags.is_empty();
         tracing::info!("collect: script parser diagnostics: {}", script_diags.len());
         diagnostics.extend(script_diags);
 
-        let template_diags = Self::collect_template_diagnostics(uri, &content, &descriptor);
+        let template_diags =
+            Self::collect_template_diagnostics(uri, &content, &descriptor, &line_index);
         let has_template_parse_error = !template_diags.is_empty();
         tracing::info!(
             "collect: template parser diagnostics: {}",
@@ -169,7 +177,8 @@ impl DiagnosticService {
         // Surface Vue-specific compile errors (e.g. DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE)
         // that the TypeScript checker cannot derive on its own. Mirrors the
         // canon path used by `vize check` so editor and CLI stay aligned.
-        let sfc_compile_diags = Self::collect_sfc_compile_diagnostics(uri, &content, &descriptor);
+        let sfc_compile_diags =
+            Self::collect_sfc_compile_diagnostics(uri, &content, &descriptor, &line_index);
         tracing::info!(
             "collect: sfc compile diagnostics: {}",
             sfc_compile_diags.len()
@@ -179,8 +188,13 @@ impl DiagnosticService {
         if features.lint {
             // Collect linter diagnostics (vize_patina)
             let linter_config = state.get_linter_config();
-            let lint_diags =
-                Self::collect_lint_diagnostics(uri, &content, features.ecosystem, &linter_config);
+            let lint_diags = Self::collect_lint_diagnostics(
+                uri,
+                &content,
+                features.ecosystem,
+                &linter_config,
+                &line_index,
+            );
             tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
             diagnostics.extend(lint_diags);
             if features.cross_file {
@@ -219,7 +233,8 @@ impl DiagnosticService {
 
         // Also lint inline <art> blocks in regular .vue files
         if features.lint {
-            let inline_art_diags = Self::collect_inline_art_diagnostics(uri, &content, &descriptor);
+            let inline_art_diags =
+                Self::collect_inline_art_diagnostics(uri, &content, &descriptor, &line_index);
             tracing::info!(
                 "collect: inline art diagnostics: {}",
                 inline_art_diags.len()
@@ -254,10 +269,14 @@ impl DiagnosticService {
             return diagnostics;
         }
 
+        // Build the line index once for this document, shared by every
+        // collector below (mirrors `collect`).
+        let line_index = LineIndex::new(&content);
+
         // Art files (*.art.vue): Musea-specific lint only.
         let path = uri.path();
         if path.ends_with(".art.vue") {
-            diagnostics.extend(Self::collect_musea_diagnostics(uri, &content));
+            diagnostics.extend(Self::collect_musea_diagnostics(uri, &content, &line_index));
             return diagnostics;
         }
 
@@ -269,6 +288,7 @@ impl DiagnosticService {
                 &content,
                 features.ecosystem,
                 &linter_config,
+                &line_index,
             ));
             return diagnostics;
         }
@@ -279,9 +299,10 @@ impl DiagnosticService {
         let Ok(descriptor) = Self::parse_sfc_for_collect(uri, &content) else {
             return diagnostics;
         };
-        let has_block_parse_error = !Self::collect_script_diagnostics(uri, &content, &descriptor)
-            .is_empty()
-            || !Self::collect_template_diagnostics(uri, &content, &descriptor).is_empty();
+        let has_block_parse_error =
+            !Self::collect_script_diagnostics(uri, &content, &descriptor, &line_index).is_empty()
+                || !Self::collect_template_diagnostics(uri, &content, &descriptor, &line_index)
+                    .is_empty();
         if has_block_parse_error {
             return diagnostics;
         }
@@ -292,11 +313,13 @@ impl DiagnosticService {
             &content,
             features.ecosystem,
             &linter_config,
+            &line_index,
         ));
         diagnostics.extend(Self::collect_inline_art_diagnostics(
             uri,
             &content,
             &descriptor,
+            &line_index,
         ));
         diagnostics
     }
@@ -495,26 +518,78 @@ impl DiagnosticBuilder {
     }
 }
 
-/// Convert byte offset to (line, column) - both 0-indexed for LSP.
-pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
-    let mut line = 0u32;
-    let mut col = 0u32;
-    let mut current_offset = 0;
+/// Precomputed byte offsets of every line start in a source string.
+///
+/// Building this once and reusing it turns the per-call O(offset) scan of
+/// [`offset_to_line_col`] into a binary search over line starts plus a short
+/// UTF-16 column scan within the target line. Callers that map many offsets
+/// against the same `content` (the diagnostics collectors, the semantic-token
+/// collectors) build it once and thread it through.
+///
+/// `line_col` reproduces [`offset_to_line_col`] byte-for-byte, including the
+/// UTF-16 code-unit column semantics LSP requires.
+pub(super) struct LineIndex<'a> {
+    source: &'a str,
+    /// Byte offset of the start of each line. `line_starts[0]` is always `0`.
+    line_starts: Vec<usize>,
+}
 
-    for ch in source.chars() {
-        if current_offset >= offset {
-            break;
+impl<'a> LineIndex<'a> {
+    /// Build a line index in a single pass over `source`.
+    pub(super) fn new(source: &'a str) -> Self {
+        let mut line_starts = Vec::with_capacity(source.len() / 32 + 1);
+        line_starts.push(0);
+        for (idx, byte) in source.bytes().enumerate() {
+            if byte == b'\n' {
+                line_starts.push(idx + 1);
+            }
         }
-        if ch == '\n' {
-            line += 1;
-            col = 0;
-        } else {
-            col += ch.len_utf16() as u32;
+        Self {
+            source,
+            line_starts,
         }
-        current_offset += ch.len_utf8();
     }
 
-    (line, col)
+    /// Convert a byte offset to (line, column), both 0-indexed for LSP.
+    ///
+    /// `column` is measured in UTF-16 code units, matching the editor's
+    /// coordinate system. Offsets past the end of the source are clamped,
+    /// matching the natural EOF behavior of the legacy scan.
+    pub(super) fn line_col(&self, offset: usize) -> (u32, u32) {
+        let offset = offset.min(self.source.len());
+
+        // Greatest line start <= offset.
+        let line = match self.line_starts.binary_search(&offset) {
+            Ok(line) => line,
+            Err(next) => next - 1,
+        };
+        let line_start = self.line_starts[line];
+
+        // Sum UTF-16 code units of every character on this line whose byte
+        // start is before `offset`. Bounded to the target line, and tolerant of
+        // an `offset` that falls mid-character (it counts the partial char,
+        // matching the legacy scan's break-at-top behavior) so it never panics.
+        let mut col = 0u32;
+        for (i, ch) in self.source[line_start..].char_indices() {
+            if line_start + i >= offset {
+                break;
+            }
+            col += ch.len_utf16() as u32;
+        }
+
+        (line as u32, col)
+    }
+}
+
+/// Convert byte offset to (line, column) - both 0-indexed for LSP.
+///
+/// Thin wrapper over [`LineIndex`] for single-shot callers. Hot paths that map
+/// many offsets against the same content build a [`LineIndex`] once and call
+/// [`LineIndex::line_col`] instead, so the only remaining caller is the parity
+/// unit test below.
+#[cfg(test)]
+pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
+    LineIndex::new(source).line_col(offset)
 }
 
 #[cfg(test)]

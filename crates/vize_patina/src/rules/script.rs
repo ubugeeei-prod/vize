@@ -46,6 +46,10 @@ mod vue_router_prefer_named_push;
 mod vue_test_utils_no_html_snapshot;
 
 use memchr::memmem;
+use oxc_allocator::Allocator;
+use oxc_ast::ast::Program;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_carton::profile;
@@ -110,17 +114,75 @@ impl ScriptLintResult {
     }
 }
 
+/// Resolve the [`SourceType`] used for parsing script blocks.
+///
+/// All built-in script rules parse with TypeScript semantics (`component.ts`),
+/// which yields a non-JSX standard TypeScript source type. This is shared so a
+/// single oxc parse can be reused across every rule.
+#[inline]
+pub(crate) fn script_source_type() -> SourceType {
+    SourceType::from_path("component.ts").unwrap_or_else(|_| SourceType::ts())
+}
+
 /// Trait for script-level lint rules
 pub trait ScriptRule: Send + Sync {
     /// Get rule metadata
     fn meta(&self) -> &'static ScriptRuleMeta;
 
-    /// Check the script content
+    /// Check the script content.
+    ///
+    /// This is a thin wrapper that parses the source once and delegates to
+    /// [`ScriptRule::check_program`]. Rules that rely on an oxc parse should
+    /// override `check_program` instead so a shared parse can be reused by
+    /// [`ScriptLinter::lint`]. Rules that operate purely on the raw bytes (no
+    /// oxc AST) override `check` directly and leave `check_program` empty.
     ///
     /// * `source` - The script block content
     /// * `offset` - The offset of the script block in the original file
     /// * `result` - Accumulator for diagnostics
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult);
+    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, source, script_source_type()).parse();
+        if parsed.panicked || !parsed.errors.is_empty() {
+            return;
+        }
+        self.check_program(&parsed.program, source, offset, result);
+    }
+
+    /// Check an already-parsed script program.
+    ///
+    /// Rules that need an oxc AST implement their visitor logic here, dropping
+    /// their per-rule `Parser::new`, and override [`ScriptRule::uses_ast`] to
+    /// return `true`. The default implementation does nothing so that byte-only
+    /// rules (which override `check`) need not implement it.
+    ///
+    /// The program reference and the AST allocation share a single lifetime
+    /// (`&'a Program<'a>`) so rules can hand out AST node references that live as
+    /// long as the program (required by some rules' binding maps).
+    ///
+    /// * `program` - The parsed oxc program (parsed with [`script_source_type`])
+    /// * `source` - The script block content
+    /// * `offset` - The offset of the script block in the original file
+    /// * `result` - Accumulator for diagnostics
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        let _ = (program, source, offset, result);
+    }
+
+    /// Whether this rule consumes the oxc AST via [`ScriptRule::check_program`].
+    ///
+    /// Rules that parse the script return `true` so callers can feed them a
+    /// shared, pre-parsed program. Byte-only rules leave this `false` and are
+    /// driven through [`ScriptRule::check`].
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        false
+    }
 }
 
 /// Linter for script blocks
@@ -169,12 +231,50 @@ impl ScriptLinter {
     }
 
     /// Lint a script block
+    ///
+    /// AST-based rules share a **single** oxc parse of the source (one
+    /// [`Allocator`] + one [`Program`]) via [`ScriptRule::check_program`],
+    /// collapsing what used to be N redundant parses (one per rule) into one.
+    /// Byte-only rules continue to scan the raw source directly via
+    /// [`ScriptRule::check`].
     pub fn lint(&self, source: &str, offset: usize) -> ScriptLintResult {
         let mut result = ScriptLintResult::default();
 
+        if self.rules.is_empty() {
+            return result;
+        }
+
+        // Parse once only if at least one rule actually consumes the AST.
+        let needs_ast = self.rules.iter().any(|rule| rule.uses_ast());
+        let allocator;
+        let parsed = if needs_ast {
+            allocator = Allocator::default();
+            Some(profile!(
+                "patina.script_linter.parse",
+                Parser::new(&allocator, source, script_source_type()).parse()
+            ))
+        } else {
+            None
+        };
+        // AST rules only run when parsing succeeded (matching the previous
+        // per-rule `parsed.panicked || !errors.is_empty()` early-return).
+        let program = parsed.as_ref().and_then(|parsed| {
+            if parsed.panicked || !parsed.errors.is_empty() {
+                None
+            } else {
+                Some(&parsed.program)
+            }
+        });
+
         for rule in &self.rules {
             profile!("patina.script_linter.rule.check", {
-                rule.check(source, offset, &mut result);
+                if rule.uses_ast() {
+                    if let Some(program) = program {
+                        rule.check_program(program, source, offset, &mut result);
+                    }
+                } else {
+                    rule.check(source, offset, &mut result);
+                }
             });
         }
 

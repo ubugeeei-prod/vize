@@ -51,6 +51,8 @@ impl Analyzer {
                 build_branch_guard(previous_conditions.as_slice(), current_condition);
             let guard_pushed = if let Some(ref guard) = branch_guard {
                 self.vif_guard_stack.push(guard.clone());
+                // Stack changed: recompute the memoized joined guard.
+                self.refresh_vif_guard_cache();
                 true
             } else {
                 false
@@ -66,6 +68,8 @@ impl Analyzer {
             // Pop v-if guard
             if guard_pushed {
                 self.vif_guard_stack.pop();
+                // Stack changed: recompute the memoized joined guard.
+                self.refresh_vif_guard_cache();
             }
 
             if let Some(condition) = current_condition {
@@ -109,6 +113,8 @@ impl Analyzer {
                 for_node.loc.start.offset,
                 for_node.loc.end.offset,
             );
+            // Entering a v-for scope: O(1) flag read by `is_in_vfor_scope`.
+            self.vfor_depth += 1;
             for var in &vars_added {
                 self.summary
                     .scopes
@@ -139,6 +145,8 @@ impl Analyzer {
         }
         if self.options.analyze_template_scopes && vars_count > 0 {
             self.summary.scopes.exit_scope();
+            // Pairs with the increment at v-for scope enter above.
+            self.vfor_depth -= 1;
         }
     }
 

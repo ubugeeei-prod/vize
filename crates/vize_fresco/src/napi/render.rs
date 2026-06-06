@@ -625,25 +625,57 @@ fn parse_color(s: &str) -> Option<Color> {
         return Some(color);
     }
 
-    // Try named color
-    match s.to_lowercase().as_str() {
-        "black" => Some(Color::Black),
-        "red" => Some(Color::Red),
-        "green" => Some(Color::Green),
-        "yellow" => Some(Color::Yellow),
-        "blue" => Some(Color::Blue),
-        "magenta" => Some(Color::Magenta),
-        "cyan" => Some(Color::Cyan),
-        "white" => Some(Color::White),
-        "gray" | "grey" => Some(Color::Gray),
-        "lightred" => Some(Color::LightRed),
-        "lightgreen" => Some(Color::LightGreen),
-        "lightyellow" => Some(Color::LightYellow),
-        "lightblue" => Some(Color::LightBlue),
-        "lightmagenta" => Some(Color::LightMagenta),
-        "lightcyan" => Some(Color::LightCyan),
-        "lightwhite" => Some(Color::LightWhite),
-        "reset" => Some(Color::Reset),
-        _ => None,
+    // Try named color (alloc-free, case-insensitive ASCII match)
+    if s.eq_ignore_ascii_case("black") {
+        return Some(Color::Black);
     }
+    if s.eq_ignore_ascii_case("red") {
+        return Some(Color::Red);
+    }
+    if s.eq_ignore_ascii_case("green") {
+        return Some(Color::Green);
+    }
+    if s.eq_ignore_ascii_case("yellow") {
+        return Some(Color::Yellow);
+    }
+    if s.eq_ignore_ascii_case("blue") {
+        return Some(Color::Blue);
+    }
+    if s.eq_ignore_ascii_case("magenta") {
+        return Some(Color::Magenta);
+    }
+    if s.eq_ignore_ascii_case("cyan") {
+        return Some(Color::Cyan);
+    }
+    if s.eq_ignore_ascii_case("white") {
+        return Some(Color::White);
+    }
+    if s.eq_ignore_ascii_case("gray") || s.eq_ignore_ascii_case("grey") {
+        return Some(Color::Gray);
+    }
+    if s.eq_ignore_ascii_case("lightred") {
+        return Some(Color::LightRed);
+    }
+    if s.eq_ignore_ascii_case("lightgreen") {
+        return Some(Color::LightGreen);
+    }
+    if s.eq_ignore_ascii_case("lightyellow") {
+        return Some(Color::LightYellow);
+    }
+    if s.eq_ignore_ascii_case("lightblue") {
+        return Some(Color::LightBlue);
+    }
+    if s.eq_ignore_ascii_case("lightmagenta") {
+        return Some(Color::LightMagenta);
+    }
+    if s.eq_ignore_ascii_case("lightcyan") {
+        return Some(Color::LightCyan);
+    }
+    if s.eq_ignore_ascii_case("lightwhite") {
+        return Some(Color::LightWhite);
+    }
+    if s.eq_ignore_ascii_case("reset") {
+        return Some(Color::Reset);
+    }
+    None
 }

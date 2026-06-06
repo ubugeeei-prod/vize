@@ -117,32 +117,12 @@ impl Analyzer {
     }
 
     /// Check if the current scope is inside a v-for loop.
+    ///
+    /// `vfor_depth` is maintained as v-for scopes are entered/exited (in
+    /// `visit_element` and `visit_for`), so this is O(1) instead of walking the
+    /// parent scope chain per element.
     fn is_in_vfor_scope(&self) -> bool {
-        use crate::scope::ScopeKind;
-
-        let current_id = self.summary.scopes.current_id();
-        let mut to_visit = vec![current_id];
-        let mut visited_count = 0;
-        const MAX_VISITS: usize = 50;
-
-        while let Some(scope_id) = to_visit.pop() {
-            if visited_count >= MAX_VISITS {
-                break;
-            }
-            visited_count += 1;
-
-            if let Some(scope) = self.summary.scopes.get_scope(scope_id) {
-                if scope.kind == ScopeKind::VFor {
-                    return true;
-                }
-                // Add parents to visit
-                for &parent in &scope.parents {
-                    to_visit.push(parent);
-                }
-            }
-        }
-
-        false
+        self.vfor_depth > 0
     }
 
     /// Check if an expression is a static string literal.

@@ -908,15 +908,12 @@ fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<Stri
     )
     .ok()?;
     let component_path = art_desc.metadata.component?;
-    if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(
-        &ctx.content,
-        vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        },
-    ) && let Some(script_setup) = descriptor.script_setup.as_ref()
+    // Reuse the script_setup already extracted by `parse_art` above instead of
+    // re-parsing the whole buffer with `parse_sfc` just to read the defineArt
+    // component name.
+    if let Some(script_setup) = art_desc.script_setup.as_ref()
         && let Some(defined_component) =
-            crate::virtual_code::find_define_art_component_name(script_setup.content.as_ref())
+            crate::virtual_code::find_define_art_component_name(script_setup.content)
     {
         let pascal_component = kebab_to_pascal(component_name);
         if component_name == defined_component || pascal_component == defined_component {

@@ -64,14 +64,25 @@ impl Rule for ComponentNameInTemplateCasing {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         let tag = element.tag.as_str();
 
-        // Skip HTML elements, SVG elements, and Vue built-ins
-        let tag_lower = tag.to_lowercase();
-        if is_html_tag(&tag_lower)
-            || is_svg_tag(tag)
-            || is_builtin_component(tag)
-            || is_builtin_component(&tag_lower)
-        {
-            return;
+        // Skip HTML elements, SVG elements, and Vue built-ins.
+        //
+        // Fast path: native tags (div/span/...) contain no uppercase bytes, so
+        // their lowercased form is identical. Only allocate via `to_lowercase()`
+        // when the tag actually has an uppercase byte, sparing an allocation for
+        // every native element (the overwhelmingly common case).
+        if tag.bytes().all(|b| !b.is_ascii_uppercase()) {
+            if is_html_tag(tag) || is_svg_tag(tag) || is_builtin_component(tag) {
+                return;
+            }
+        } else {
+            let tag_lower = tag.to_lowercase();
+            if is_html_tag(&tag_lower)
+                || is_svg_tag(tag)
+                || is_builtin_component(tag)
+                || is_builtin_component(&tag_lower)
+            {
+                return;
+            }
         }
 
         match self.casing {

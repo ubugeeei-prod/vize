@@ -1,10 +1,7 @@
 //! General utility functions shared across the compiler.
 
 use crate::String;
-use once_cell::sync::Lazy;
 use phf::phf_set;
-use rustc_hash::FxHashMap;
-use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 /// Reserved props that should not be passed to components
 pub static RESERVED_PROPS: phf::Set<&'static str> = phf_set! {
@@ -65,57 +62,10 @@ pub fn is_model_listener(key: &str) -> bool {
     key.starts_with("onUpdate:")
 }
 
-// String transformation caches
-static CAMELIZE_CACHE: Lazy<RwLock<FxHashMap<String, String>>> =
-    Lazy::new(|| RwLock::new(FxHashMap::default()));
-static HYPHENATE_CACHE: Lazy<RwLock<FxHashMap<String, String>>> =
-    Lazy::new(|| RwLock::new(FxHashMap::default()));
-static CAPITALIZE_CACHE: Lazy<RwLock<FxHashMap<String, String>>> =
-    Lazy::new(|| RwLock::new(FxHashMap::default()));
-
-#[inline]
-fn read_cache(
-    cache: &RwLock<FxHashMap<String, String>>,
-) -> RwLockReadGuard<'_, FxHashMap<String, String>> {
-    match cache.read() {
-        Ok(guard) => guard,
-        Err(poisoned) => poisoned.into_inner(),
-    }
-}
-
-#[inline]
-fn write_cache(
-    cache: &RwLock<FxHashMap<String, String>>,
-) -> RwLockWriteGuard<'_, FxHashMap<String, String>> {
-    match cache.write() {
-        Ok(guard) => guard,
-        Err(poisoned) => poisoned.into_inner(),
-    }
-}
-
 /// Convert kebab-case to camelCase
 /// Example: "foo-bar" -> "fooBar"
+#[inline]
 pub fn camelize(s: &str) -> String {
-    // Check cache first
-    {
-        let cache = read_cache(&CAMELIZE_CACHE);
-        if let Some(cached) = cache.get(s) {
-            return cached.clone();
-        }
-    }
-
-    let result = camelize_uncached(s);
-
-    // Store in cache
-    {
-        let mut cache = write_cache(&CAMELIZE_CACHE);
-        cache.insert(String::from(s), result.clone());
-    }
-
-    result
-}
-
-fn camelize_uncached(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
     let mut capitalize_next = false;
 
@@ -135,27 +85,8 @@ fn camelize_uncached(s: &str) -> String {
 
 /// Convert camelCase to kebab-case
 /// Example: "fooBar" -> "foo-bar"
+#[inline]
 pub fn hyphenate(s: &str) -> String {
-    // Check cache first
-    {
-        let cache = read_cache(&HYPHENATE_CACHE);
-        if let Some(cached) = cache.get(s) {
-            return cached.clone();
-        }
-    }
-
-    let result = hyphenate_uncached(s);
-
-    // Store in cache
-    {
-        let mut cache = write_cache(&HYPHENATE_CACHE);
-        cache.insert(String::from(s), result.clone());
-    }
-
-    result
-}
-
-fn hyphenate_uncached(s: &str) -> String {
     let mut result = String::with_capacity(s.len() + 4);
 
     for (i, c) in s.chars().enumerate() {
@@ -172,31 +103,12 @@ fn hyphenate_uncached(s: &str) -> String {
 
 /// Capitalize the first letter
 /// Example: "foo" -> "Foo"
+#[inline]
 pub fn capitalize(s: &str) -> String {
     if s.is_empty() {
         return String::new("");
     }
 
-    // Check cache first
-    {
-        let cache = read_cache(&CAPITALIZE_CACHE);
-        if let Some(cached) = cache.get(s) {
-            return cached.clone();
-        }
-    }
-
-    let result = capitalize_uncached(s);
-
-    // Store in cache
-    {
-        let mut cache = write_cache(&CAPITALIZE_CACHE);
-        cache.insert(String::from(s), result.clone());
-    }
-
-    result
-}
-
-fn capitalize_uncached(s: &str) -> String {
     let mut chars = s.chars();
     match chars.next() {
         None => String::new(""),

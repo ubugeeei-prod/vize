@@ -11,12 +11,17 @@ use super::{BorderStyle, NodeKind, RenderNode, RenderTree};
 /// Painter renders nodes to a terminal buffer.
 pub struct Painter<'a> {
     buffer: &'a mut Buffer,
+    /// Reusable scratch buffer for wrapped lines (cleared per use).
+    wrap_scratch: Vec<CompactString>,
 }
 
 impl<'a> Painter<'a> {
     /// Create a new painter.
     pub fn new(buffer: &'a mut Buffer) -> Self {
-        Self { buffer }
+        Self {
+            buffer,
+            wrap_scratch: Vec::new(),
+        }
     }
 
     /// Paint the entire tree to the buffer.
@@ -122,9 +127,17 @@ impl<'a> Painter<'a> {
             return;
         }
 
-        let lines = TextWrap::wrap(text, area.width as usize, mode);
+        // Fast path: NoWrap is a single line clipped to the buffer width, which
+        // is exactly what `set_string` does. Bypass wrapping entirely so we
+        // avoid allocating a Vec + a CompactString copy of the whole string.
+        if mode == WrapMode::NoWrap {
+            self.buffer.set_string(area.x, area.y, text, style);
+            return;
+        }
 
-        for (i, line) in lines.iter().enumerate() {
+        TextWrap::wrap_into(text, area.width as usize, mode, &mut self.wrap_scratch);
+
+        for (i, line) in self.wrap_scratch.iter().enumerate() {
             if i >= area.height as usize {
                 break;
             }
@@ -160,10 +173,15 @@ impl<'a> Painter<'a> {
 
         // Wrap text to fit area width
         let area_width = area.width as usize;
-        let wrapped_lines = TextWrap::wrap(&display_text, area_width, WrapMode::Char);
+        TextWrap::wrap_into(
+            &display_text,
+            area_width,
+            WrapMode::Char,
+            &mut self.wrap_scratch,
+        );
 
         // Render each wrapped line
-        for (i, line) in wrapped_lines.iter().enumerate() {
+        for (i, line) in self.wrap_scratch.iter().enumerate() {
             if i >= area.height as usize {
                 break;
             }
