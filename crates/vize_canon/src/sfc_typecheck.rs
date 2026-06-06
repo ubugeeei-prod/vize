@@ -50,9 +50,10 @@ pub use runner::{type_check_sfc, type_check_sfc_with_legacy_vue2};
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "legacy")]
+    use super::type_check_sfc_with_legacy_vue2;
     use super::{
-        SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity,
-        type_check_sfc, type_check_sfc_with_legacy_vue2,
+        SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity, type_check_sfc,
     };
 
     fn stable_snapshot_result(mut result: SfcTypeCheckResult) -> SfcTypeCheckResult {
@@ -412,6 +413,7 @@ export const buttonId =
         );
     }
 
+    #[cfg(feature = "legacy")]
     #[test]
     fn test_type_check_legacy_vue2_options_api_opt_in() {
         let source = r#"<script lang="ts">

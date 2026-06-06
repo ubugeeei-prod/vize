@@ -929,6 +929,7 @@ fn is_local_setup_binding(summary: &Croquis, name: &str) -> bool {
         .any(|import| start >= import.start && end <= import.end)
 }
 
+#[cfg(feature = "legacy")]
 fn generate_legacy_vue2_variables(
     mut ts: &mut String,
     summary: &Croquis,
@@ -978,6 +979,17 @@ fn generate_legacy_vue2_variables(
     ts.push('\n');
 }
 
+// No-op stub: legacy Vue (v0/v1/v2) Options-API variable generation is compiled
+// out without the `legacy` feature, so the default Vue 3 build carries none of it.
+#[cfg(not(feature = "legacy"))]
+fn generate_legacy_vue2_variables(
+    _ts: &mut String,
+    _summary: &Croquis,
+    _options: &VirtualTsOptions,
+) {
+}
+
+#[cfg(feature = "legacy")]
 fn is_safe_value_identifier(name: &str) -> bool {
     let mut chars = name.chars();
     let Some(first) = chars.next() else {
