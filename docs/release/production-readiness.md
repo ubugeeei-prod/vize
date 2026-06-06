@@ -15,6 +15,21 @@ repository is not yet a stable, production-ready toolchain.
 | Experimental packages          | Experimental    | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, and `@vizejs/wasm` may change APIs, commands, output, or workflow shape during alpha. |
 | Incubating packages            | Incubating      | `@vizejs/fresco`, `@vizejs/fresco-native`, and editor extension packages are not part of the production-ready target yet.                                            |
 
+## Planned Production-Ready Surfaces
+
+These surfaces are on the roadmap as production-ready targets. They are **not yet
+implemented** and must not be described as production-ready until they are built and
+clear every required gate below for their scope:
+
+| Surface                                | Target tier   | Status                                                                                              |
+| -------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------- |
+| Zero-JavaScript prerenderer (Island)   | Alpha-supported | Planned. Island-architecture prerendering that emits zero client JavaScript for static islands. |
+
+Experimental opt-in surfaces tracked alongside this work (Vapor compiler mode, Vapor
+mode Options API, and the standalone CDN build) are listed in the
+[Vue Parity Matrix](./vue-parity-matrix.md) and may change APIs, output, or workflow
+shape during alpha.
+
 ## Required Gates
 
 A production-ready claim for any supported surface requires current evidence for all of these:
