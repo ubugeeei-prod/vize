@@ -390,6 +390,34 @@ export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { key: _ctx.id }))
 }
 ===
+name: nested v-bind key
+options: vdom
+--- INPUT ---
+<section><div :key="id">content</div></section>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("section", null, [
+    (_openBlock(), _createElementBlock("div", { key: _ctx.id }, "content"))
+  ]))
+}
+===
+name: nested component v-bind key
+options: vdom
+--- INPUT ---
+<section><MyComponent :key="id" /></section>
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+
+  return (_openBlock(), _createElementBlock("section", null, [
+    (_openBlock(), _createBlock(_component_MyComponent, { key: _ctx.id }))
+  ]))
+}
+===
 name: v-bind ref
 options: vdom
 --- INPUT ---

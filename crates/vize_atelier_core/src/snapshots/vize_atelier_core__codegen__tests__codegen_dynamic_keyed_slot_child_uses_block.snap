@@ -1,0 +1,24 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, createVNode: _createVNode, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_MkPagination = _resolveComponent("MkPagination")
+  const _component_PageWithHeader = _resolveComponent("PageWithHeader")
+  
+  return (_openBlock(), _createBlock(_component_PageWithHeader, null, {
+    default: _withCtx(() => [
+      (_openBlock(), _createElementBlock("div", { key: tab }, [
+        _createVNode(_component_MkPagination, { paginator: paginator }, {
+          default: _withCtx(({ items }) => [
+            _createTextVNode(_toDisplayString(items.length), 1 /* TEXT */)
+          ]),
+          _: 1 /* STABLE */
+        }, 8 /* PROPS */, ["paginator"])
+      ]))
+    ]),
+    _: 1 /* STABLE */
+  }))
+}

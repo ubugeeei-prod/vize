@@ -725,6 +725,21 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_dynamic_keyed_slot_child_uses_block() {
+        let result = compile!(
+            r#"<PageWithHeader>
+  <div :key="tab">
+    <MkPagination :paginator="paginator">
+      <template #default="{ items }">{{ items.length }}</template>
+    </MkPagination>
+  </div>
+</PageWithHeader>"#
+        );
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
     fn test_codegen_forwarded_default_slot_is_marked_forwarded() {
         let result = compile!(r#"<MkSwiper><slot /></MkSwiper>"#);
 

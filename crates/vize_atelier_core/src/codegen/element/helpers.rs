@@ -142,6 +142,23 @@ pub fn has_renderable_props(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| is_renderable_prop(prop))
 }
 
+/// Check if an element has a static-arg dynamic key binding (`:key="..."`).
+pub(crate) fn has_dynamic_key_binding(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Directive(dir)
+                if dir.name == "bind"
+                    && dir.exp.is_some()
+                    && matches!(
+                        dir.arg.as_ref(),
+                        Some(ExpressionNode::Simple(arg))
+                            if arg.is_static && arg.content.as_str() == "key"
+                    )
+        )
+    })
+}
+
 /// Check whether a native element needs its own block to enter or leave an
 /// SVG/MathML namespace boundary. Descendants already inside the same
 /// namespace can stay as inline VNodes, matching Vue's DOM compiler output.

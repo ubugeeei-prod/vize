@@ -28,9 +28,9 @@ use super::{
         generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
     },
     helpers::{
-        child_namespace, crosses_namespace_boundary, has_custom_directives, has_renderable_props,
-        has_vmodel_directive, has_vshow_directive, is_dynamic_component, is_is_prop,
-        is_renderable_prop, is_whitespace_or_comment,
+        child_namespace, crosses_namespace_boundary, has_custom_directives,
+        has_dynamic_key_binding, has_renderable_props, has_vmodel_directive, has_vshow_directive,
+        is_dynamic_component, is_is_prop, is_renderable_prop, is_whitespace_or_comment,
     },
 };
 use vize_carton::ToCompactString;
@@ -38,6 +38,13 @@ use vize_carton::ToCompactString;
 /// Generate element code (non-block)
 pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     if crosses_namespace_boundary(ctx, el) {
+        super::block::generate_element_block(ctx, el);
+        return;
+    }
+
+    if matches!(el.tag_type, ElementType::Element | ElementType::Component)
+        && has_dynamic_key_binding(el)
+    {
         super::block::generate_element_block(ctx, el);
         return;
     }

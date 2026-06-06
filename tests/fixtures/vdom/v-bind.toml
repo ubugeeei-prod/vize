@@ -159,6 +159,14 @@ name = "v-bind key"
 input = '<div :key="id"></div>'
 
 [[cases]]
+name = "nested v-bind key"
+input = '<section><div :key="id">content</div></section>'
+
+[[cases]]
+name = "nested component v-bind key"
+input = '<section><MyComponent :key="id" /></section>'
+
+[[cases]]
 name = "v-bind ref"
 input = '<div :ref="refName"></div>'
 
