@@ -1346,6 +1346,46 @@ fn test_parse_in_body_omits_p_and_li_end_tags() {
 }
 
 #[test]
+fn test_parse_nested_list_items_respect_list_item_scope() {
+    for list_tag in ["ol", "ul"] {
+        let allocator = Bump::new();
+        let source = format!(
+            "<{list_tag}><li><span>outer</span><{list_tag}><li>inner</li></{list_tag}></li></{list_tag}>"
+        );
+        let (root, errors) = parse(&allocator, &source);
+
+        assert!(
+            errors.is_empty(),
+            "unexpected errors for {list_tag}: {errors:?}"
+        );
+        assert_eq!(root.children.len(), 1);
+        let TemplateChildNode::Element(list) = &root.children[0] else {
+            panic!("Expected {list_tag}");
+        };
+        assert_eq!(list.tag.as_str(), list_tag);
+        assert_eq!(list.children.len(), 1);
+
+        let TemplateChildNode::Element(outer_li) = &list.children[0] else {
+            panic!("Expected outer li");
+        };
+        assert_eq!(outer_li.tag.as_str(), "li");
+        assert_eq!(outer_li.children.len(), 2);
+        assert!(
+            matches!(&outer_li.children[0], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
+        );
+
+        let TemplateChildNode::Element(inner_list) = &outer_li.children[1] else {
+            panic!("Expected nested {list_tag}");
+        };
+        assert_eq!(inner_list.tag.as_str(), list_tag);
+        assert_eq!(inner_list.children.len(), 1);
+        assert!(
+            matches!(&inner_list.children[0], TemplateChildNode::Element(li) if li.tag.as_str() == "li")
+        );
+    }
+}
+
+#[test]
 fn test_parse_nested_anchor_and_button_are_split() {
     let allocator = Bump::new();
     let (anchor_root, anchor_errors) = parse(

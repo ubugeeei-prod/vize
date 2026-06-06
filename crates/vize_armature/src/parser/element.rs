@@ -601,7 +601,7 @@ impl<'a> Parser<'a> {
         }
 
         if tag.eq_ignore_ascii_case("li") {
-            if let Some(index) = self.find_open_element_index("li") {
+            if let Some(index) = self.find_open_li_element_in_list_item_scope() {
                 self.close_stack_element_at(index, false);
             }
         } else if Self::tag_in(tag, &["dt", "dd"]) {
@@ -637,6 +637,30 @@ impl<'a> Parser<'a> {
         (0..self.stack.len())
             .rev()
             .find(|&i| Self::tag_in(self.stack[i].element.tag.as_str(), tags))
+    }
+
+    fn find_open_li_element_in_list_item_scope(&self) -> Option<usize> {
+        for i in (0..self.stack.len()).rev() {
+            let tag = self.stack[i].element.tag.as_str();
+            if tag.eq_ignore_ascii_case("li") {
+                return Some(i);
+            }
+            if Self::is_list_item_scope_boundary(tag) {
+                return None;
+            }
+        }
+
+        None
+    }
+
+    fn is_list_item_scope_boundary(tag: &str) -> bool {
+        Self::tag_in(
+            tag,
+            &[
+                "applet", "caption", "html", "table", "td", "th", "marquee", "object", "template",
+                "ol", "ul",
+            ],
+        )
     }
 
     fn should_ignore_start_tag(&self, element: &ElementNode<'a>) -> bool {

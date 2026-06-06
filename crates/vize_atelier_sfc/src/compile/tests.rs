@@ -219,6 +219,39 @@ const items = [{ name: 'dist', children: [{ name: 'file.js', children: [] }] }]
 }
 
 #[test]
+fn test_script_setup_nested_list_items_compile() {
+    let source = r#"<script setup lang="ts">
+const groups = [{ year: "2024", items: ["a", "b"] }];
+</script>
+
+<template>
+  <ol>
+    <li v-for="g in groups" :key="g.year">
+      <span>{{ g.year }}</span>
+      <ol>
+        <li v-for="item in g.items" :key="item">{{ item }}</li>
+      </ol>
+    </li>
+  </ol>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default())
+        .expect("Failed to compile nested list SFC");
+
+    assert!(
+        result.code.contains("_renderList(groups"),
+        "outer list should compile with renderList:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("_renderList(g.items"),
+        "inner list should compile with renderList:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_scoped_hoisted_static_vnode_carries_scope_id() {
     // Regression: module-level hoisted static vnodes are created at import time,
     // when the runtime's `currentScopeId` is null, so the runtime cannot stamp
