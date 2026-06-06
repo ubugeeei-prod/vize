@@ -129,11 +129,19 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
     ) -> Vec<ProvideDefinition> {
         let mut providers = Vec::new();
         let mut seen_providers = FxHashSet::default();
-        let mut queue = vec![(consumer_file_id, vec![consumer_file_id])];
+        // Parent-pointer BFS frames: each frame records the visited file and the
+        // index of the frame it was reached from. The visited path (used only for
+        // cycle detection) is recovered by walking `parent` pointers, which avoids
+        // cloning an O(depth) `Vec<FileId>` for every queued node.
+        let mut frames = vec![AncestorFrame {
+            current: consumer_file_id,
+            parent: None,
+        }];
         let mut cursor = 0;
 
-        while cursor < queue.len() {
-            let (current, path) = queue[cursor].clone();
+        while cursor < frames.len() {
+            let frame_index = cursor;
+            let current = frames[frame_index].current;
             cursor += 1;
 
             if current != consumer_file_id
@@ -153,19 +161,43 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                 .graph
                 .dependents(current)
                 .filter(|(parent_id, edge_type)| {
-                    *edge_type == DependencyEdge::ComponentUsage && !path.contains(parent_id)
+                    *edge_type == DependencyEdge::ComponentUsage
+                        && !frame_contains(&frames, frame_index, *parent_id)
                 })
                 .collect();
             parents.sort_by_key(|(parent_id, _)| parent_id.as_u32());
 
             for (parent_id, _) in parents {
-                let mut new_path = path.clone();
-                new_path.push(parent_id);
-                queue.push((parent_id, new_path));
+                frames.push(AncestorFrame {
+                    current: parent_id,
+                    parent: Some(frame_index),
+                });
             }
         }
 
         providers.sort_by_key(|provider| (provider.file_id.as_u32(), provider.offset));
         providers
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct AncestorFrame {
+    current: FileId,
+    parent: Option<usize>,
+}
+
+/// Returns true if `needle` appears on the visited path ending at `index`,
+/// walking `parent` pointers to the root. Mirrors `path.contains(..)` over the
+/// path that the original `(FileId, Vec<FileId>)` queue accumulated.
+fn frame_contains(frames: &[AncestorFrame], mut index: usize, needle: FileId) -> bool {
+    loop {
+        let frame = frames[index];
+        if frame.current == needle {
+            return true;
+        }
+        let Some(parent) = frame.parent else {
+            return false;
+        };
+        index = parent;
     }
 }
