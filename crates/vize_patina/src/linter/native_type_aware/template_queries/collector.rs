@@ -4,6 +4,8 @@ use super::{
     calls::{FloatingPromiseProbeTarget, collect_template_call_ranges},
     generated_offset_for_text,
 };
+use oxc_allocator::Allocator as OxcAllocator;
+use oxc_span::SourceType;
 use vize_carton::profile;
 use vize_croquis::virtual_ts::VirtualTsOutput;
 use vize_relief::ast::{
@@ -29,12 +31,21 @@ pub(super) fn collect_template_query_sets(
             .then_some(&mut template_promise_queries),
     };
 
+    // Build the parsing arena and source type once per file. Every template
+    // expression reuses the same allocator (reset between expressions so its
+    // memory is recycled rather than freed and re-reserved) and the same source
+    // type (avoids re-deriving it from a path per expression).
+    let mut allocator = OxcAllocator::default();
+    let source_type = SourceType::from_path("template.ts").unwrap_or_default();
+
     profile!(
         "patina.type_aware.template_query_sets.walk",
         collect_children(
             virtual_ts,
             &template_ast.children,
             template_offset,
+            &mut allocator,
+            source_type,
             &mut sinks,
         )
     );
@@ -106,6 +117,8 @@ fn collect_children(
     virtual_ts: &VirtualTsOutput,
     children: &[TemplateChildNode<'_>],
     template_offset: u32,
+    allocator: &mut OxcAllocator,
+    source_type: SourceType,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
     for child in children {
@@ -118,13 +131,27 @@ fn collect_children(
                     if sinks.has_queries() {
                         profile!(
                             "patina.type_aware.template_query_sets.directive",
-                            collect_directive(virtual_ts, directive, template_offset, sinks)
+                            collect_directive(
+                                virtual_ts,
+                                directive,
+                                template_offset,
+                                allocator,
+                                source_type,
+                                sinks,
+                            )
                         );
                     }
                 }
                 profile!(
                     "patina.type_aware.template_query_sets.children",
-                    collect_children(virtual_ts, &element.children, template_offset, sinks)
+                    collect_children(
+                        virtual_ts,
+                        &element.children,
+                        template_offset,
+                        allocator,
+                        source_type,
+                        sinks,
+                    )
                 );
             }
             TemplateChildNode::Interpolation(interpolation) => {
@@ -134,13 +161,22 @@ fn collect_children(
                     template_offset,
                     TemplateContext::Interpolation,
                     false,
+                    allocator,
+                    source_type,
                     sinks,
                 );
             }
             TemplateChildNode::If(if_node) => {
                 profile!(
                     "patina.type_aware.template_query_sets.if",
-                    collect_if(virtual_ts, if_node, template_offset, sinks)
+                    collect_if(
+                        virtual_ts,
+                        if_node,
+                        template_offset,
+                        allocator,
+                        source_type,
+                        sinks
+                    )
                 )
             }
             TemplateChildNode::IfBranch(branch) => {
@@ -151,18 +187,34 @@ fn collect_children(
                         template_offset,
                         TemplateContext::Directive,
                         false,
+                        allocator,
+                        source_type,
                         sinks,
                     );
                 }
                 profile!(
                     "patina.type_aware.template_query_sets.children",
-                    collect_children(virtual_ts, &branch.children, template_offset, sinks)
+                    collect_children(
+                        virtual_ts,
+                        &branch.children,
+                        template_offset,
+                        allocator,
+                        source_type,
+                        sinks,
+                    )
                 );
             }
             TemplateChildNode::For(for_node) => {
                 profile!(
                     "patina.type_aware.template_query_sets.for",
-                    collect_for(virtual_ts, for_node, template_offset, sinks)
+                    collect_for(
+                        virtual_ts,
+                        for_node,
+                        template_offset,
+                        allocator,
+                        source_type,
+                        sinks
+                    )
                 )
             }
             TemplateChildNode::TextCall(text_call) => {
@@ -173,6 +225,8 @@ fn collect_children(
                         template_offset,
                         TemplateContext::Interpolation,
                         false,
+                        allocator,
+                        source_type,
                         sinks,
                     );
                 }
@@ -186,6 +240,8 @@ fn collect_if(
     virtual_ts: &VirtualTsOutput,
     if_node: &IfNode<'_>,
     template_offset: u32,
+    allocator: &mut OxcAllocator,
+    source_type: SourceType,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
     for branch in &if_node.branches {
@@ -196,12 +252,21 @@ fn collect_if(
                 template_offset,
                 TemplateContext::Directive,
                 false,
+                allocator,
+                source_type,
                 sinks,
             );
         }
         profile!(
             "patina.type_aware.template_query_sets.children",
-            collect_children(virtual_ts, &branch.children, template_offset, sinks)
+            collect_children(
+                virtual_ts,
+                &branch.children,
+                template_offset,
+                allocator,
+                source_type,
+                sinks,
+            )
         );
     }
 }
@@ -210,6 +275,8 @@ fn collect_for(
     virtual_ts: &VirtualTsOutput,
     for_node: &ForNode<'_>,
     template_offset: u32,
+    allocator: &mut OxcAllocator,
+    source_type: SourceType,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
     collect_expression(
@@ -218,20 +285,32 @@ fn collect_for(
         template_offset,
         TemplateContext::Directive,
         false,
+        allocator,
+        source_type,
         sinks,
     );
     profile!(
         "patina.type_aware.template_query_sets.children",
-        collect_children(virtual_ts, &for_node.children, template_offset, sinks)
+        collect_children(
+            virtual_ts,
+            &for_node.children,
+            template_offset,
+            allocator,
+            source_type,
+            sinks,
+        )
     );
 }
 
+#[allow(clippy::too_many_arguments)]
 fn collect_expression(
     virtual_ts: &VirtualTsOutput,
     expression: &ExpressionNode<'_>,
     template_offset: u32,
     context: TemplateContext,
     allow_statement_fallback: bool,
+    allocator: &mut OxcAllocator,
+    source_type: SourceType,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
     let include_template_queries = sinks.template_queries.is_some();
@@ -245,6 +324,8 @@ fn collect_expression(
                 template_offset,
                 context,
                 allow_statement_fallback,
+                allocator,
+                source_type,
                 sinks,
             )
         );
@@ -255,6 +336,8 @@ fn collect_directive(
     virtual_ts: &VirtualTsOutput,
     directive: &DirectiveNode<'_>,
     template_offset: u32,
+    allocator: &mut OxcAllocator,
+    source_type: SourceType,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
     let Some(expression) = &directive.exp else {
@@ -271,16 +354,21 @@ fn collect_directive(
         template_offset,
         context,
         matches!(context, TemplateContext::Event),
+        allocator,
+        source_type,
         sinks,
     );
 }
 
+#[allow(clippy::too_many_arguments)]
 fn collect_expression_query_sets(
     virtual_ts: &VirtualTsOutput,
     expression: &ExpressionNode<'_>,
     template_offset: u32,
     context: TemplateContext,
     allow_statement_fallback: bool,
+    allocator: &mut OxcAllocator,
+    source_type: SourceType,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
     let Some((source_start, source_end)) = absolute_expression_range(expression, template_offset)
@@ -301,12 +389,18 @@ fn collect_expression_query_sets(
     let call_ranges = profile!(
         "patina.type_aware.template_query_sets.call_ranges",
         collect_template_call_ranges(
+            allocator,
+            source_type,
             source_text,
             allow_statement_fallback,
             include_call_callees,
             include_template_promise_queries,
         )
     );
+    // `call_ranges` owns every range (plain integers / bools) and borrows nothing
+    // from the arena, so the arena can be recycled before the ranges are consumed.
+    // Resetting here reuses the parse memory for the next template expression.
+    allocator.reset();
 
     if let Some(queries) = sinks.template_queries.as_deref_mut() {
         if call_ranges.expression_consumes_source
