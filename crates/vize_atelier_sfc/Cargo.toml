@@ -41,6 +41,7 @@ sha2 = { workspace = true }
 [dev-dependencies]
 insta = { workspace = true }
 criterion = { workspace = true }
+pklrust = { workspace = true }
 toml = { workspace = true }
 
 [[bench]]

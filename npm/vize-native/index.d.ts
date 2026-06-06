@@ -61,10 +61,14 @@ export interface AutogenOutputNapi {
 }
 
 export interface BatchCompileOptionsNapi {
+  mode?: string;
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
   vueParserQuirks?: boolean;
+  runtimeModuleName?: string;
+  runtimeGlobalName?: string;
+  vueVersion?: string;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
   threads?: number;
@@ -205,6 +209,10 @@ export interface CompilerOptions {
   customRenderer?: boolean;
   /** Enable Vue parser quirk compatibility for known edge cases. */
   vueParserQuirks?: boolean;
+  /** Module name for runtime imports. */
+  runtimeModuleName?: string;
+  /** Global variable name for standalone/function mode. */
+  runtimeGlobalName?: string;
   /**
    * Script extension handling: "preserve" (keep TypeScript) or "downcompile" (transpile to JS)
    * Defaults to "downcompile"
@@ -576,6 +584,16 @@ export declare function normalizeViteResolvedVuePath(id: string): string | null;
 
 export declare function normalizeViteVirtualVueModuleId(id: string): string;
 
+/**
+ * Normalize a raw `vize.config.*` export into the public resolved shape.
+ *
+ * The implementation works directly with NAPI values instead of serializing
+ * through JSON. That keeps JavaScript-only values such as `RegExp` filters
+ * intact while still moving the merge, null stripping, and legacy alias
+ * handling out of the TypeScript loader.
+ */
+export declare function normalizeVizeConfig(value: unknown): unknown;
+
 /** Palette options for NAPI */
 export interface PaletteOptionsNapi {
   inferOptions?: boolean;
@@ -728,11 +746,15 @@ export interface SfcBlockAttributeNapi {
 
 export interface SfcCompileOptionsNapi {
   filename?: string;
+  mode?: string;
   sourceMap?: boolean;
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
   vueParserQuirks?: boolean;
+  runtimeModuleName?: string;
+  runtimeGlobalName?: string;
+  vueVersion?: string;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
   /** Scope ID for scoped CSS (e.g., "data-v-abc123") */

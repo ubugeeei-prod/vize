@@ -1,13 +1,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { transform } from "oxc-transform";
 import type {
-  LanguageServerConfig,
-  VizeConfig,
-  VizeConfigEntry,
   ResolvedVizeConfig,
   LoadConfigOptions,
   UserConfigExport,
@@ -15,6 +12,14 @@ import type {
   GlobalTypesConfig,
   GlobalTypeDeclaration,
 } from "./types/index.js";
+import { loadPklConfigJson } from "./config/pkl.js";
+
+type NativeConfigHelpers = {
+  normalizeVizeConfig(value: unknown): unknown;
+};
+
+const require = createRequire(import.meta.url);
+const native = require("@vizejs/native") as NativeConfigHelpers;
 
 export const CONFIG_FILE_NAMES = [
   "vize.config.pkl",
@@ -38,17 +43,6 @@ export const VIZE_CONFIG_JSON_SCHEMA_PATH = path.join(
 );
 
 export const VIZE_CONFIG_PKL_SCHEMA_PATH = path.join(PACKAGE_ROOT, "pkl", "vize.pkl");
-
-const DOCUMENTED_PKL_SCHEMA_IMPORT_RE =
-  /^(\s*(?:amends|import)\s+)(["'])node_modules\/vize\/pkl\/(VizeConfig\.pkl|vize\.pkl)\2/gm;
-
-type CompatVizeConfig = VizeConfig & {
-  lsp?: LanguageServerConfig;
-};
-
-type CompatVizeConfigEntry = VizeConfigEntry & {
-  lsp?: LanguageServerConfig;
-};
 
 /**
  * Define a Vize configuration with type checking.
@@ -149,104 +143,9 @@ async function loadConfigFile(
   return loadESMConfig(absolutePath, env);
 }
 
-function findPklBinary(): string | null {
-  try {
-    const pklPkgPath = import.meta.resolve?.("@pkl-community/pkl");
-    if (pklPkgPath) {
-      const pklLibDir = path.dirname(fileURLToPath(pklPkgPath));
-      const pklPackageDir = path.dirname(pklLibDir);
-      const candidates = [
-        path.join(pklLibDir, "main.js"),
-        path.join(pklPackageDir, "pkl"),
-        path.join(pklPackageDir, "pkl.exe"),
-      ];
-
-      for (const candidate of candidates) {
-        if (fs.existsSync(candidate)) {
-          try {
-            execFileSync(candidate, ["--version"], { stdio: "ignore" });
-            return candidate;
-          } catch {
-            // Keep looking: the bundled shim can exist even when its runtime is unavailable.
-          }
-        }
-      }
-    }
-  } catch {
-    // Fall back to PATH below.
-  }
-
-  try {
-    execFileSync("pkl", ["--version"], { stdio: "ignore" });
-    return "pkl";
-  } catch {
-    return null;
-  }
-}
-
 function loadPklConfig(filePath: string): ResolvedVizeConfig | null {
-  const pklBin = findPklBinary();
-  if (!pklBin) {
-    console.warn(
-      "[vize] pkl CLI not found. Install @pkl-community/pkl or add pkl to PATH. " +
-        "Falling back to the next config format.",
-    );
-    return null;
-  }
-
-  let output: string;
-  const patchedFilePath = createPklConfigWithBundledSchemaImports(filePath);
-  const evalFilePath = patchedFilePath ?? filePath;
-  try {
-    output = execFileSync(pklBin, ["eval", "-f", "json", evalFilePath], {
-      cwd: path.dirname(filePath),
-      encoding: "utf-8",
-      stdio: ["ignore", "pipe", "pipe"],
-      timeout: 30_000,
-    });
-  } catch (error) {
-    throw new Error(`Failed to evaluate vize PKL config at ${filePath}: ${getErrorMessage(error)}`);
-  } finally {
-    if (patchedFilePath) {
-      fs.rmSync(patchedFilePath, { force: true });
-    }
-  }
-  return parseJsonConfig(output, filePath);
-}
-
-function createPklConfigWithBundledSchemaImports(filePath: string): string | null {
-  const configDir = path.dirname(filePath);
-  const source = fs.readFileSync(filePath, "utf-8");
-  let patched = false;
-
-  const content = source.replace(
-    DOCUMENTED_PKL_SCHEMA_IMPORT_RE,
-    (match, prefix, quote, schemaFile) => {
-      const projectSchemaPath = path.join(configDir, "node_modules", "vize", "pkl", schemaFile);
-      if (fs.existsSync(projectSchemaPath)) {
-        return match;
-      }
-
-      const bundledSchemaPath = path.join(PACKAGE_ROOT, "pkl", schemaFile);
-      if (!fs.existsSync(bundledSchemaPath)) {
-        return match;
-      }
-
-      patched = true;
-      return `${prefix}${quote}${pathToFileURL(bundledSchemaPath).href}${quote}`;
-    },
-  );
-
-  if (!patched) {
-    return null;
-  }
-
-  const tempFile = path.join(
-    configDir,
-    `.vize-config-${process.pid}-${Date.now()}-${randomUUID()}.pkl`,
-  );
-  fs.writeFileSync(tempFile, content, { flag: "wx", mode: 0o600 });
-  return tempFile;
+  const output = loadPklConfigJson(filePath);
+  return output === null ? null : parseJsonConfig(output, filePath);
 }
 
 export async function resolveConfigExport(
@@ -307,113 +206,7 @@ function parseJsonConfig(content: string, filePath: string): ResolvedVizeConfig 
 }
 
 function normalizeLoadedConfig(config: unknown): ResolvedVizeConfig {
-  const normalized = stripNullish(config);
-  if (Array.isArray(normalized)) {
-    return normalizeConfigEntries(normalized as CompatVizeConfigEntry[]);
-  }
-
-  return normalizeConfigObject((normalized ?? {}) as CompatVizeConfig);
-}
-
-function normalizeConfigObject(config: CompatVizeConfig): ResolvedVizeConfig {
-  const { entries: rawEntries, ...rootConfig } = normalizeConfigAliases(config) as VizeConfig & {
-    entries?: CompatVizeConfigEntry[];
-  };
-  const rootEntry = rootConfig as VizeConfigEntry;
-  const entries = [
-    ...(isEmptyConfigEntry(rootEntry) ? [] : [rootEntry]),
-    ...(rawEntries ?? []).map((entry) => normalizeConfigAliases(entry) as VizeConfigEntry),
-  ];
-
-  return {
-    ...rootEntry,
-    entries,
-  };
-}
-
-function normalizeConfigEntries(entries: CompatVizeConfigEntry[]): ResolvedVizeConfig {
-  const normalizedEntries = entries.map(
-    (entry) => normalizeConfigAliases(entry) as VizeConfigEntry,
-  );
-  const globalConfig = mergeConfigEntries(normalizedEntries.filter(isGlobalConfigEntry));
-
-  return {
-    ...globalConfig,
-    entries: normalizedEntries,
-  };
-}
-
-function mergeConfigEntries(entries: VizeConfigEntry[]): VizeConfigEntry {
-  const result: Record<string, unknown> = {};
-  for (const entry of entries) {
-    deepMerge(result, stripEntryMetadata(entry));
-  }
-  return result as VizeConfigEntry;
-}
-
-function stripEntryMetadata(entry: VizeConfigEntry): Partial<VizeConfigEntry> {
-  const { name, basePath, files, ignores, extends: extendsConfig, ...config } = entry;
-  void name;
-  void basePath;
-  void files;
-  void ignores;
-  void extendsConfig;
-  return config;
-}
-
-function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): void {
-  for (const [key, value] of Object.entries(source)) {
-    if (value === undefined) {
-      continue;
-    }
-
-    const current = target[key];
-    if (isPlainObject(current) && isPlainObject(value)) {
-      deepMerge(current, value);
-    } else {
-      target[key] = value;
-    }
-  }
-}
-
-function isGlobalConfigEntry(entry: VizeConfigEntry): boolean {
-  return entry.basePath === undefined && entry.files === undefined && entry.ignores === undefined;
-}
-
-function isEmptyConfigEntry(entry: VizeConfigEntry): boolean {
-  return Object.keys(entry).length === 0;
-}
-
-function stripNullish(value: unknown): unknown {
-  if (value === null) {
-    return undefined;
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((entry) => stripNullish(entry)).filter((entry) => entry !== undefined);
-  }
-
-  if (isPlainObject(value)) {
-    const result: Record<string, unknown> = {};
-    for (const [key, entry] of Object.entries(value)) {
-      const normalizedEntry = stripNullish(entry);
-      if (normalizedEntry !== undefined) {
-        result[key] = normalizedEntry;
-      }
-    }
-    return result;
-  }
-
-  return value;
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return false;
-  }
-
-  const prototype = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
+  return native.normalizeVizeConfig(config ?? null) as ResolvedVizeConfig;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -447,20 +240,4 @@ export function normalizeGlobalTypes(
     }
   }
   return result;
-}
-
-function normalizeConfigAliases(config: CompatVizeConfig): VizeConfig {
-  if (config.lsp === undefined) {
-    return config;
-  }
-
-  const { lsp, ...rest } = config;
-  if (config.languageServer !== undefined) {
-    return rest;
-  }
-
-  return {
-    ...rest,
-    languageServer: lsp,
-  };
 }

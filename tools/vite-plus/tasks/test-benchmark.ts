@@ -69,7 +69,9 @@ export const testAndBenchmarkTasks = defineTasks({
   // overwritten by vite-plugin-vize's pretest hook, which also rebuilds in
   // dev profile (~1m20s). Building once in the CI profile saves both legs.
   "test:js": noCacheTask(`${runTask("build:native:test")} && ${jsPackageTestCommand}`),
-  "test:scripts": noCacheTask("node --test --test-concurrency=1 tests/tooling/*.test.ts"),
+  "test:scripts": noCacheTask(
+    `${runTask("build:native:test")} && node --test --test-concurrency=1 tests/tooling/*.test.ts`,
+  ),
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(
       "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",

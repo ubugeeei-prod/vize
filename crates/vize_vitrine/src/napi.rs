@@ -6,9 +6,11 @@
 //! - `art`: Art file parsing, CSF transform, docs, palette, and autogen
 //! - `format`: Vue SFC formatting
 //! - `lint`: Vue SFC linting
+//! - `config`: Public config normalization helpers
 
 mod art;
 mod cli;
+mod config;
 mod format;
 mod lint;
 mod plugin;
@@ -22,6 +24,7 @@ pub use napi_typecheck::*;
 
 pub use art::*;
 pub use cli::*;
+pub use config::*;
 pub use format::*;
 pub use lint::*;
 pub use plugin::*;

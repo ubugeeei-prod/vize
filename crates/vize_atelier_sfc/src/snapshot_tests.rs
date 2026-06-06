@@ -4,16 +4,17 @@
 //! It uses the insta crate for snapshot testing, with snapshots stored
 //! in tests/snapshots/sfc/ts/.
 //!
-//! The test cases are loaded from TOML fixtures in tests/fixtures/sfc/.
+//! The test cases are loaded from PKL or TOML fixtures in tests/fixtures/sfc/.
 #![allow(clippy::disallowed_macros)]
 
 use crate::{SfcCompileOptions, compile_sfc, parse_sfc};
+use pklrust::{EvaluatorManager, EvaluatorOptions, ModuleSource};
 use serde::Deserialize;
 use std::fmt::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use vize_carton::{String, ToCompactString};
 
-/// A test case from a TOML fixture
+/// A test case from a snapshot fixture.
 #[derive(Debug, Deserialize)]
 struct TestCase {
     name: String,
@@ -22,7 +23,7 @@ struct TestCase {
     expected: Option<String>,
 }
 
-/// A fixture file containing multiple test cases
+/// A fixture file containing multiple test cases.
 #[derive(Debug, Deserialize)]
 struct Fixture {
     #[allow(dead_code)]
@@ -54,11 +55,70 @@ fn snapshots_path() -> PathBuf {
         .join("snapshots")
 }
 
-/// Load a fixture from a TOML file
-fn load_fixture(path: &PathBuf) -> Result<Fixture, Box<dyn std::error::Error>> {
+/// Resolve an SFC snapshot fixture by preferring PKL over legacy TOML.
+///
+/// PKL is the preferred authoring format because it gives fixture files a real
+/// typed module language instead of a flat data encoding. TOML remains as a
+/// fallback so existing fixtures can migrate gradually without widening this
+/// test harness change.
+fn fixture_file(name: &str) -> PathBuf {
+    let base = fixtures_path().join("sfc").join(name);
+    let pkl = base.with_extension("pkl");
+    if pkl.exists() {
+        pkl
+    } else {
+        base.with_extension("toml")
+    }
+}
+
+/// Load a fixture from a PKL or TOML file.
+fn load_fixture(path: &Path) -> Result<Fixture, Box<dyn std::error::Error>> {
+    if path.extension().and_then(|ext| ext.to_str()) == Some("pkl") {
+        return load_pkl_fixture(path);
+    }
+
     let content = std::fs::read_to_string(path)?;
     let fixture: Fixture = toml::from_str(&content)?;
     Ok(fixture)
+}
+
+/// Evaluate a PKL fixture with a project-local `pkl` binary when available.
+///
+/// Cargo test does not automatically put `node_modules/.bin` on PATH, so the
+/// loader checks ancestor directories before falling back to the user's PATH.
+fn load_pkl_fixture(path: &Path) -> Result<Fixture, Box<dyn std::error::Error>> {
+    let command = pkl_command(path);
+    let command = command.to_string_lossy();
+    let mut manager = EvaluatorManager::with_command(command.as_ref())?;
+    let options = pkl_evaluator_options(path);
+    let evaluator = manager.new_evaluator(options)?;
+    let result = manager.evaluate_module_typed::<Fixture>(&evaluator, ModuleSource::file(path));
+    let _ = manager.close_evaluator(&evaluator);
+    Ok(result?)
+}
+
+fn pkl_evaluator_options(path: &Path) -> EvaluatorOptions {
+    let Some(root_dir) = path.parent() else {
+        return EvaluatorOptions::preconfigured();
+    };
+
+    let root_dir = root_dir.to_string_lossy();
+    EvaluatorOptions::preconfigured().root_dir(root_dir.as_ref())
+}
+
+fn pkl_command(path: &Path) -> PathBuf {
+    for ancestor in path.ancestors() {
+        for candidate in [
+            ancestor.join("node_modules/.bin/pkl"),
+            ancestor.join("node_modules/@pkl-community/pkl/pkl"),
+        ] {
+            if candidate.exists() {
+                return candidate;
+            }
+        }
+    }
+
+    PathBuf::from("pkl")
 }
 
 /// Normalize a test case name to a valid snapshot file name
@@ -131,140 +191,57 @@ fn compile_sfc_js(input: &str) -> String {
     }
 }
 
-#[test]
-fn test_script_setup_ts_snapshots() {
-    let snapshot_path = snapshots_path().join("sfc").join("ts");
+fn assert_sfc_snapshots(fixture_name: &str, snapshot_kind: &str, prefix: &str) {
+    let snapshot_path = snapshots_path().join("sfc").join(snapshot_kind);
     std::fs::create_dir_all(&snapshot_path).ok();
 
-    let fixture_path = fixtures_path().join("sfc").join("script-setup.toml");
+    let fixture_path = fixture_file(fixture_name);
     let fixture = load_fixture(&fixture_path).expect("Failed to load fixture");
 
     for case in &fixture.cases {
         let normalized_name = normalize_name(&case.name);
-        let ts_output = compile_sfc_ts(&case.input);
+        let output = match snapshot_kind {
+            "js" => compile_sfc_js(&case.input),
+            _ => compile_sfc_ts(&case.input),
+        };
 
         insta::with_settings!({
             snapshot_path => &snapshot_path,
             prepend_module_to_snapshot => false,
             snapshot_suffix => "",
         }, {
-            let snapshot_name = build_snapshot_name("script_setup__", &normalized_name);
-            insta::assert_snapshot!(snapshot_name.as_str(), ts_output.as_str());
+            let snapshot_name = build_snapshot_name(prefix, &normalized_name);
+            insta::assert_snapshot!(snapshot_name.as_str(), output.as_str());
         });
     }
+}
+
+#[test]
+fn test_script_setup_ts_snapshots() {
+    assert_sfc_snapshots("script-setup", "ts", "script_setup__");
 }
 
 #[test]
 fn test_basic_sfc_ts_snapshots() {
-    let snapshot_path = snapshots_path().join("sfc").join("ts");
-    std::fs::create_dir_all(&snapshot_path).ok();
-
-    let fixture_path = fixtures_path().join("sfc").join("basic.toml");
-    let fixture = load_fixture(&fixture_path).expect("Failed to load fixture");
-
-    for case in &fixture.cases {
-        let normalized_name = normalize_name(&case.name);
-        let ts_output = compile_sfc_ts(&case.input);
-
-        insta::with_settings!({
-            snapshot_path => &snapshot_path,
-            prepend_module_to_snapshot => false,
-            snapshot_suffix => "",
-        }, {
-            let snapshot_name = build_snapshot_name("basic__", &normalized_name);
-            insta::assert_snapshot!(snapshot_name.as_str(), ts_output.as_str());
-        });
-    }
+    assert_sfc_snapshots("basic", "ts", "basic__");
 }
 
 #[test]
 fn test_patches_ts_snapshots() {
-    let snapshot_path = snapshots_path().join("sfc").join("ts");
-    std::fs::create_dir_all(&snapshot_path).ok();
-
-    let fixture_path = fixtures_path().join("sfc").join("patches.toml");
-    let fixture = load_fixture(&fixture_path).expect("Failed to load fixture");
-
-    for case in &fixture.cases {
-        let normalized_name = normalize_name(&case.name);
-        let ts_output = compile_sfc_ts(&case.input);
-
-        insta::with_settings!({
-            snapshot_path => &snapshot_path,
-            prepend_module_to_snapshot => false,
-            snapshot_suffix => "",
-        }, {
-            let snapshot_name = build_snapshot_name("patches__", &normalized_name);
-            insta::assert_snapshot!(snapshot_name.as_str(), ts_output.as_str());
-        });
-    }
+    assert_sfc_snapshots("patches", "ts", "patches__");
 }
 
 #[test]
 fn test_patches_js_snapshots() {
-    let snapshot_path = snapshots_path().join("sfc").join("js");
-    std::fs::create_dir_all(&snapshot_path).ok();
-
-    let fixture_path = fixtures_path().join("sfc").join("patches.toml");
-    let fixture = load_fixture(&fixture_path).expect("Failed to load patches fixture");
-
-    for case in &fixture.cases {
-        let normalized_name = normalize_name(&case.name);
-        let js_output = compile_sfc_js(&case.input);
-
-        insta::with_settings!({
-            snapshot_path => &snapshot_path,
-            prepend_module_to_snapshot => false,
-            snapshot_suffix => "",
-        }, {
-            let snapshot_name = build_snapshot_name("patches__", &normalized_name);
-            insta::assert_snapshot!(snapshot_name.as_str(), js_output.as_str());
-        });
-    }
+    assert_sfc_snapshots("patches", "js", "patches__");
 }
 
 #[test]
 fn test_directives_ts_snapshots() {
-    let snapshot_path = snapshots_path().join("sfc").join("ts");
-    std::fs::create_dir_all(&snapshot_path).ok();
-
-    let fixture_path = fixtures_path().join("sfc").join("directives.toml");
-    let fixture = load_fixture(&fixture_path).expect("Failed to load directives fixture");
-
-    for case in &fixture.cases {
-        let normalized_name = normalize_name(&case.name);
-        let ts_output = compile_sfc_ts(&case.input);
-
-        insta::with_settings!({
-            snapshot_path => &snapshot_path,
-            prepend_module_to_snapshot => false,
-            snapshot_suffix => "",
-        }, {
-            let snapshot_name = build_snapshot_name("directives__", &normalized_name);
-            insta::assert_snapshot!(snapshot_name.as_str(), ts_output.as_str());
-        });
-    }
+    assert_sfc_snapshots("directives", "ts", "directives__");
 }
 
 #[test]
 fn test_directives_js_snapshots() {
-    let snapshot_path = snapshots_path().join("sfc").join("js");
-    std::fs::create_dir_all(&snapshot_path).ok();
-
-    let fixture_path = fixtures_path().join("sfc").join("directives.toml");
-    let fixture = load_fixture(&fixture_path).expect("Failed to load directives fixture");
-
-    for case in &fixture.cases {
-        let normalized_name = normalize_name(&case.name);
-        let js_output = compile_sfc_js(&case.input);
-
-        insta::with_settings!({
-            snapshot_path => &snapshot_path,
-            prepend_module_to_snapshot => false,
-            snapshot_suffix => "",
-        }, {
-            let snapshot_name = build_snapshot_name("directives__", &normalized_name);
-            insta::assert_snapshot!(snapshot_name.as_str(), js_output.as_str());
-        });
-    }
+    assert_sfc_snapshots("directives", "js", "directives__");
 }

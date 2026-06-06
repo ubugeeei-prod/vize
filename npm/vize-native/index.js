@@ -80,12 +80,12 @@ function requireNative() {
         const binding = require("@vizejs/native-android-arm64");
         const bindingPackageVersion = require("@vizejs/native-android-arm64/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -103,12 +103,12 @@ function requireNative() {
         const bindingPackageVersion =
           require("@vizejs/native-android-arm-eabi/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -134,12 +134,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-win32-x64-gnu/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -157,12 +157,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-win32-x64-msvc/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -181,12 +181,12 @@ function requireNative() {
         const bindingPackageVersion =
           require("@vizejs/native-win32-ia32-msvc/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -204,12 +204,12 @@ function requireNative() {
         const bindingPackageVersion =
           require("@vizejs/native-win32-arm64-msvc/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -229,12 +229,12 @@ function requireNative() {
       const binding = require("@vizejs/native-darwin-universal");
       const bindingPackageVersion = require("@vizejs/native-darwin-universal/package.json").version;
       if (
-        bindingPackageVersion !== "0.165.0" &&
+        bindingPackageVersion !== "0.174.0" &&
         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
       ) {
         throw new Error(
-          `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+          `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
         );
       }
       return binding;
@@ -251,12 +251,12 @@ function requireNative() {
         const binding = require("@vizejs/native-darwin-x64");
         const bindingPackageVersion = require("@vizejs/native-darwin-x64/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -273,12 +273,12 @@ function requireNative() {
         const binding = require("@vizejs/native-darwin-arm64");
         const bindingPackageVersion = require("@vizejs/native-darwin-arm64/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -299,12 +299,12 @@ function requireNative() {
         const binding = require("@vizejs/native-freebsd-x64");
         const bindingPackageVersion = require("@vizejs/native-freebsd-x64/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -321,12 +321,12 @@ function requireNative() {
         const binding = require("@vizejs/native-freebsd-arm64");
         const bindingPackageVersion = require("@vizejs/native-freebsd-arm64/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -349,12 +349,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-linux-x64-musl/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -372,12 +372,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-linux-x64-gnu/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -397,12 +397,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-linux-arm64-musl/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -420,12 +420,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-linux-arm64-gnu/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -445,12 +445,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-linux-arm-musleabihf/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -468,12 +468,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-linux-arm-gnueabihf/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -493,12 +493,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-linux-loong64-musl/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -516,12 +516,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-linux-loong64-gnu/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -541,12 +541,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-linux-riscv64-musl/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -564,12 +564,12 @@ function requireNative() {
           const bindingPackageVersion =
             require("@vizejs/native-linux-riscv64-gnu/package.json").version;
           if (
-            bindingPackageVersion !== "0.165.0" &&
+            bindingPackageVersion !== "0.174.0" &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
           ) {
             throw new Error(
-              `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+              `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             );
           }
           return binding;
@@ -588,12 +588,12 @@ function requireNative() {
         const bindingPackageVersion =
           require("@vizejs/native-linux-ppc64-gnu/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -611,12 +611,12 @@ function requireNative() {
         const bindingPackageVersion =
           require("@vizejs/native-linux-s390x-gnu/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -638,12 +638,12 @@ function requireNative() {
         const bindingPackageVersion =
           require("@vizejs/native-openharmony-arm64/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -661,12 +661,12 @@ function requireNative() {
         const bindingPackageVersion =
           require("@vizejs/native-openharmony-x64/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -684,12 +684,12 @@ function requireNative() {
         const bindingPackageVersion =
           require("@vizejs/native-openharmony-arm/package.json").version;
         if (
-          bindingPackageVersion !== "0.165.0" &&
+          bindingPackageVersion !== "0.174.0" &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
         ) {
           throw new Error(
-            `Native binding package version mismatch, expected 0.165.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+            `Native binding package version mismatch, expected 0.174.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
           );
         }
         return binding;
@@ -810,6 +810,7 @@ module.exports.normalizeVitePrecompileBatchSize = nativeBinding.normalizeVitePre
 module.exports.normalizeViteRequireBase = nativeBinding.normalizeViteRequireBase;
 module.exports.normalizeViteResolvedVuePath = nativeBinding.normalizeViteResolvedVuePath;
 module.exports.normalizeViteVirtualVueModuleId = nativeBinding.normalizeViteVirtualVueModuleId;
+module.exports.normalizeVizeConfig = nativeBinding.normalizeVizeConfig;
 module.exports.parseArt = nativeBinding.parseArt;
 module.exports.parseCssAst = nativeBinding.parseCssAst;
 module.exports.parseDesignTokensFromJson = nativeBinding.parseDesignTokensFromJson;

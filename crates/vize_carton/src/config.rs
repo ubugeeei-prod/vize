@@ -2,6 +2,7 @@
 
 mod loader;
 mod model;
+mod normalize;
 
 pub use loader::{
     LoadedConfig, LoadedConfigWithFeatures, load_config,
@@ -14,3 +15,4 @@ pub use model::{
     GlobalTypeDeclaration, GlobalTypesConfig, LanguageServerConfig, LintRuleSeverity, LinterConfig,
     LspConfig, QuoteProps, TrailingComma, TypeCheckerConfig, VizeConfig,
 };
+pub use normalize::normalize_public_config_value;

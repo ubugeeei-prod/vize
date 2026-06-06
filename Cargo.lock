@@ -3479,6 +3479,7 @@ dependencies = [
  "oxc_span",
  "oxc_syntax",
  "oxc_transformer",
+ "pklrust",
  "regex",
  "serde",
  "serde_json",
