@@ -19,11 +19,130 @@ use tower_lsp::lsp_types::{
     Range, SemanticTokens, SemanticTokensRangeResult, SemanticTokensResult,
 };
 
-use encoding::{encode_tokens, offset_to_line_col, utf16_len};
+use encoding::{LineIndex, encode_tokens, utf16_len};
 use types::AbsoluteToken;
 
 /// Semantic tokens service.
 pub struct SemanticTokensService;
+
+/// Art-specific attribute names highlighted as `name="value"` in `.art.vue`
+/// files. Combines the `<art>` block attributes with the `<variant>` block
+/// attributes (including the valued `default="..."` form). Built once as a
+/// `const` instead of allocating a `format!("{name}=")` string per attribute
+/// on every request.
+///
+/// Invariant: no entry is a suffix of another, so at most one name matches a
+/// given `=`. This keeps the single-pass scan equivalent to the previous
+/// per-attribute `content.find` loops.
+const ART_FILE_ATTR_NAMES: &[&str] = &[
+    "title",
+    "description",
+    "component",
+    "category",
+    "tags",
+    "status",
+    "order",
+    "name",
+    "default",
+    "args",
+    "viewport",
+    "skip-vrt",
+];
+
+/// Art-specific attribute names highlighted as `name="value"` in inline
+/// `<art>` blocks of regular `.vue` files. Unlike [`ART_FILE_ATTR_NAMES`],
+/// the inline path never treats `default="..."` as a valued attribute (it is
+/// only ever highlighted as a boolean modifier), matching prior behavior.
+const INLINE_ART_ATTR_NAMES: &[&str] = &[
+    "title",
+    "description",
+    "component",
+    "category",
+    "tags",
+    "status",
+    "order",
+    "name",
+    "args",
+    "viewport",
+    "skip-vrt",
+];
+
+/// Scan `slice` once for `name="value"` art attributes, emitting a `Property`
+/// token for each known attribute name preceded by whitespace and a `String`
+/// token for its quoted value. `range_start` is the byte offset of `slice`
+/// within the document `line_index` was built for (0 when `slice` is the whole
+/// document).
+///
+/// This collapses the previous N full `slice.find("{name}=")` scans (one per
+/// attribute) into a single pass over the `=` bytes: on each `=` it looks
+/// backward for a known attribute name from `attr_names`. Because no attribute
+/// name is a suffix of another, at most one name matches a given `=`, so the
+/// emitted token set is identical to the per-attribute loops.
+fn collect_named_attribute_tokens(
+    slice: &str,
+    range_start: usize,
+    attr_names: &[&str],
+    line_index: &LineIndex<'_>,
+    tokens: &mut Vec<AbsoluteToken>,
+) {
+    let bytes = slice.as_bytes();
+    for (eq, &byte) in bytes.iter().enumerate() {
+        if byte != b'=' {
+            continue;
+        }
+
+        for attr in attr_names {
+            let len = attr.len();
+            // Attribute name must end exactly at `=` and have a whitespace
+            // character before it (so `eq` must be at least `len + 1`).
+            if eq < len + 1 {
+                continue;
+            }
+            let name_start = eq - len;
+            // Compare bytes (attribute names are ASCII) so a `name_start` that
+            // happens to fall inside a multi-byte UTF-8 character never panics
+            // the way string slicing would; non-matching bytes simply skip.
+            if &bytes[name_start..eq] != attr.as_bytes() {
+                continue;
+            }
+            let before = bytes[name_start - 1];
+            if before != b' ' && before != b'\n' && before != b'\t' {
+                continue;
+            }
+
+            // Highlight attribute name.
+            let (line, col) = line_index.line_col(range_start + name_start);
+            tokens.push(AbsoluteToken {
+                line,
+                start: col,
+                length: utf16_len(attr),
+                token_type: TokenType::Property as u32,
+                modifiers: 0,
+            });
+
+            // Highlight quoted string value, if present.
+            let value_start = eq + 1; // after `=`
+            if value_start < slice.len() {
+                let quote_char = bytes[value_start];
+                if (quote_char == b'"' || quote_char == b'\'')
+                    && let Some(end) = slice[value_start + 1..].find(quote_char as char)
+                {
+                    let (val_line, val_col) = line_index.line_col(range_start + value_start);
+                    tokens.push(AbsoluteToken {
+                        line: val_line,
+                        start: val_col,
+                        length: utf16_len(&slice[value_start..value_start + end + 2]),
+                        token_type: TokenType::String as u32,
+                        modifiers: 0,
+                    });
+                }
+            }
+
+            // At most one attribute name matches a given `=`.
+            break;
+        }
+    }
+}
 
 fn token_overlaps_range(token: &AbsoluteToken, range: Range) -> bool {
     if token.line < range.start.line || token.line > range.end.line {
@@ -128,10 +247,19 @@ impl SemanticTokensService {
             );
         }
 
-        // Collect tokens from inline <art> custom blocks
-        for custom in &descriptor.custom_blocks {
-            if custom.block_type == "art" {
-                Self::collect_inline_art_tokens(content, &mut tokens, &custom.loc);
+        // Collect tokens from inline <art> custom blocks. Build the line index
+        // once and share it across every art block instead of re-scanning the
+        // document per offset.
+        let has_art_block = descriptor
+            .custom_blocks
+            .iter()
+            .any(|custom| custom.block_type == "art");
+        if has_art_block {
+            let line_index = LineIndex::new(content);
+            for custom in &descriptor.custom_blocks {
+                if custom.block_type == "art" {
+                    Self::collect_inline_art_tokens(content, &mut tokens, &custom.loc, &line_index);
+                }
             }
         }
 
@@ -144,12 +272,15 @@ impl SemanticTokensService {
     fn collect_art_tokens(content: &str) -> Vec<AbsoluteToken> {
         let mut tokens: Vec<AbsoluteToken> = Vec::new();
 
+        // Build the line index once and share it across every collector below.
+        let line_index = LineIndex::new(content);
+
         // Collect Art-specific tokens
-        Self::collect_art_block_tokens(content, &mut tokens);
-        Self::collect_variant_block_tokens(content, &mut tokens);
-        Self::collect_art_attribute_tokens(content, &mut tokens);
-        Self::collect_art_variant_template_tokens(content, &mut tokens);
-        Self::collect_art_script_tokens(content, &mut tokens);
+        Self::collect_art_block_tokens(content, &mut tokens, &line_index);
+        Self::collect_variant_block_tokens(content, &mut tokens, &line_index);
+        Self::collect_art_attribute_tokens(content, &mut tokens, &line_index);
+        Self::collect_art_variant_template_tokens(content, &mut tokens, &line_index);
+        Self::collect_art_script_tokens(content, &mut tokens, &line_index);
 
         // Sort by position
         tokens.sort_by_key(|token| (token.line, token.start));
@@ -158,7 +289,11 @@ impl SemanticTokensService {
     }
 
     /// Collect <art> and </art> tag tokens.
-    fn collect_art_block_tokens(content: &str, tokens: &mut Vec<AbsoluteToken>) {
+    fn collect_art_block_tokens(
+        content: &str,
+        tokens: &mut Vec<AbsoluteToken>,
+        line_index: &LineIndex<'_>,
+    ) {
         // Find <art ...> opening tags
         let mut pos = 0;
         while let Some(start) = content[pos..].find("<art") {
@@ -172,7 +307,7 @@ impl SemanticTokensService {
                     || next_char == b'\t'
                     || next_char == b'>'
                 {
-                    let (line, col) = offset_to_line_col(content, abs_start);
+                    let (line, col) = line_index.line_col(abs_start);
                     tokens.push(AbsoluteToken {
                         line,
                         start: col,
@@ -189,7 +324,7 @@ impl SemanticTokensService {
         pos = 0;
         while let Some(start) = content[pos..].find("</art>") {
             let abs_start = pos + start;
-            let (line, col) = offset_to_line_col(content, abs_start);
+            let (line, col) = line_index.line_col(abs_start);
             tokens.push(AbsoluteToken {
                 line,
                 start: col,
@@ -202,7 +337,11 @@ impl SemanticTokensService {
     }
 
     /// Collect <variant> and </variant> tag tokens.
-    fn collect_variant_block_tokens(content: &str, tokens: &mut Vec<AbsoluteToken>) {
+    fn collect_variant_block_tokens(
+        content: &str,
+        tokens: &mut Vec<AbsoluteToken>,
+        line_index: &LineIndex<'_>,
+    ) {
         // Find <variant ...> opening tags
         let mut pos = 0;
         while let Some(start) = content[pos..].find("<variant") {
@@ -215,7 +354,7 @@ impl SemanticTokensService {
                     || next_char == b'\t'
                     || next_char == b'>'
                 {
-                    let (line, col) = offset_to_line_col(content, abs_start);
+                    let (line, col) = line_index.line_col(abs_start);
                     tokens.push(AbsoluteToken {
                         line,
                         start: col,
@@ -232,7 +371,7 @@ impl SemanticTokensService {
         pos = 0;
         while let Some(start) = content[pos..].find("</variant>") {
             let abs_start = pos + start;
-            let (line, col) = offset_to_line_col(content, abs_start);
+            let (line, col) = line_index.line_col(abs_start);
             tokens.push(AbsoluteToken {
                 line,
                 start: col,
@@ -245,66 +384,15 @@ impl SemanticTokensService {
     }
 
     /// Collect Art-specific attribute tokens.
-    fn collect_art_attribute_tokens(content: &str, tokens: &mut Vec<AbsoluteToken>) {
-        // Art block attributes
-        let art_attrs = [
-            "title",
-            "description",
-            "component",
-            "category",
-            "tags",
-            "status",
-            "order",
-        ];
-        // Variant block attributes
-        let variant_attrs = ["name", "default", "args", "viewport", "skip-vrt"];
-
-        // Find attributes and their values
-        for attr in art_attrs.iter().chain(variant_attrs.iter()) {
-            #[allow(clippy::disallowed_macros)]
-            let pattern_eq = format!("{}=", attr);
-            let mut pos = 0;
-            while let Some(start) = content[pos..].find(pattern_eq.as_str()) {
-                let abs_start = pos + start;
-
-                // Check if preceded by whitespace (attribute context)
-                if abs_start > 0 {
-                    let before = content.as_bytes()[abs_start - 1];
-                    if before == b' ' || before == b'\n' || before == b'\t' {
-                        let (line, col) = offset_to_line_col(content, abs_start);
-
-                        // Highlight attribute name
-                        tokens.push(AbsoluteToken {
-                            line,
-                            start: col,
-                            length: utf16_len(attr),
-                            token_type: TokenType::Property as u32,
-                            modifiers: 0,
-                        });
-
-                        // Find and highlight string value
-                        let value_start = abs_start + attr.len() + 1; // after =
-                        if value_start < content.len() {
-                            let quote_char = content.as_bytes()[value_start];
-                            if (quote_char == b'"' || quote_char == b'\'')
-                                && let Some(end) =
-                                    content[value_start + 1..].find(quote_char as char)
-                            {
-                                let (val_line, val_col) = offset_to_line_col(content, value_start);
-                                tokens.push(AbsoluteToken {
-                                    line: val_line,
-                                    start: val_col,
-                                    length: utf16_len(&content[value_start..value_start + end + 2]),
-                                    token_type: TokenType::String as u32,
-                                    modifiers: 0,
-                                });
-                            }
-                        }
-                    }
-                }
-                pos = abs_start + attr.len();
-            }
-        }
+    fn collect_art_attribute_tokens(
+        content: &str,
+        tokens: &mut Vec<AbsoluteToken>,
+        line_index: &LineIndex<'_>,
+    ) {
+        // Find attributes and their values in a single pass (see
+        // `collect_named_attribute_tokens`). `content` is the whole document,
+        // so the slice offset is 0.
+        collect_named_attribute_tokens(content, 0, ART_FILE_ATTR_NAMES, line_index, tokens);
 
         // Highlight 'default' as boolean attribute (no value)
         let mut pos = 0;
@@ -321,7 +409,7 @@ impl SemanticTokensService {
                     || after == b'\t'
                     || after == b'/'
                 {
-                    let (line, col) = offset_to_line_col(content, abs_start);
+                    let (line, col) = line_index.line_col(abs_start);
                     tokens.push(AbsoluteToken {
                         line,
                         start: col,
@@ -336,7 +424,11 @@ impl SemanticTokensService {
     }
 
     /// Collect Vue template semantic tokens from each `<variant>` body in an `.art.vue` file.
-    fn collect_art_variant_template_tokens(content: &str, tokens: &mut Vec<AbsoluteToken>) {
+    fn collect_art_variant_template_tokens(
+        content: &str,
+        tokens: &mut Vec<AbsoluteToken>,
+        line_index: &LineIndex<'_>,
+    ) {
         let allocator = vize_carton::Bump::new();
         let Ok(art_desc) =
             vize_musea::parse_art(&allocator, content, vize_musea::ArtParseOptions::default())
@@ -345,7 +437,7 @@ impl SemanticTokensService {
         };
 
         for variant in art_desc.variants.iter() {
-            Self::collect_template_slice_tokens(content, variant.template, tokens);
+            Self::collect_template_slice_tokens(content, variant.template, tokens, line_index);
         }
     }
 
@@ -353,6 +445,7 @@ impl SemanticTokensService {
         full_content: &str,
         template_slice: &str,
         tokens: &mut Vec<AbsoluteToken>,
+        line_index: &LineIndex<'_>,
     ) {
         if template_slice.trim().is_empty() {
             return;
@@ -367,7 +460,7 @@ impl SemanticTokensService {
             return;
         }
 
-        let (base_line, base_col) = offset_to_line_col(full_content, start_offset);
+        let (base_line, base_col) = line_index.line_col(start_offset);
         let mut local_tokens = Vec::new();
         template::collect_template_tokens(template_slice, 0, &mut local_tokens);
 
@@ -381,7 +474,11 @@ impl SemanticTokensService {
     }
 
     /// Collect tokens from script in Art files.
-    fn collect_art_script_tokens(content: &str, tokens: &mut Vec<AbsoluteToken>) {
+    fn collect_art_script_tokens(
+        content: &str,
+        tokens: &mut Vec<AbsoluteToken>,
+        line_index: &LineIndex<'_>,
+    ) {
         // Find script setup block
         if let Some(script_start) = content.find("<script")
             && let Some(script_end) = content[script_start..].find("</script>")
@@ -400,7 +497,7 @@ impl SemanticTokensService {
                 let mut pos = 0;
                 while let Some(start) = script_content[pos..].find("import ") {
                     let abs_start = base_offset + pos + start;
-                    let (line, col) = offset_to_line_col(content, abs_start);
+                    let (line, col) = line_index.line_col(abs_start);
                     tokens.push(AbsoluteToken {
                         line,
                         start: col,
@@ -415,7 +512,7 @@ impl SemanticTokensService {
                 pos = 0;
                 while let Some(start) = script_content[pos..].find(" from ") {
                     let abs_start = base_offset + pos + start + 1; // skip leading space
-                    let (line, col) = offset_to_line_col(content, abs_start);
+                    let (line, col) = line_index.line_col(abs_start);
                     tokens.push(AbsoluteToken {
                         line,
                         start: col,
@@ -436,7 +533,7 @@ impl SemanticTokensService {
                         let after_quote = &remaining[start + 1..];
                         if let Some(end) = after_quote.find(quote_char as char) {
                             let abs_start = base_offset + pos + start;
-                            let (line, col) = offset_to_line_col(content, abs_start);
+                            let (line, col) = line_index.line_col(abs_start);
                             tokens.push(AbsoluteToken {
                                 line,
                                 start: col,
@@ -464,6 +561,7 @@ impl SemanticTokensService {
         content: &str,
         tokens: &mut Vec<AbsoluteToken>,
         loc: &vize_atelier_sfc::BlockLocation,
+        line_index: &LineIndex<'_>,
     ) {
         let range_start = loc.tag_start;
         let range_end = loc.end;
@@ -489,7 +587,7 @@ impl SemanticTokensService {
                         || next_char == b'\t'
                         || next_char == b'>'
                     {
-                        let (line, col) = offset_to_line_col(content, abs_pos);
+                        let (line, col) = line_index.line_col(abs_pos);
                         tokens.push(AbsoluteToken {
                             line,
                             start: col,
@@ -505,7 +603,7 @@ impl SemanticTokensService {
             pos = 0;
             while let Some(start) = slice[pos..].find("</art>") {
                 let abs_pos = range_start + pos + start;
-                let (line, col) = offset_to_line_col(content, abs_pos);
+                let (line, col) = line_index.line_col(abs_pos);
                 tokens.push(AbsoluteToken {
                     line,
                     start: col,
@@ -530,7 +628,7 @@ impl SemanticTokensService {
                         || next_char == b'\t'
                         || next_char == b'>'
                     {
-                        let (line, col) = offset_to_line_col(content, abs_pos);
+                        let (line, col) = line_index.line_col(abs_pos);
                         tokens.push(AbsoluteToken {
                             line,
                             start: col,
@@ -546,7 +644,7 @@ impl SemanticTokensService {
             pos = 0;
             while let Some(start) = slice[pos..].find("</variant>") {
                 let abs_pos = range_start + pos + start;
-                let (line, col) = offset_to_line_col(content, abs_pos);
+                let (line, col) = line_index.line_col(abs_pos);
                 tokens.push(AbsoluteToken {
                     line,
                     start: col,
@@ -558,61 +656,16 @@ impl SemanticTokensService {
             }
         }
 
-        // Collect art-specific attribute tokens in the slice
-        let art_attrs = [
-            "title",
-            "description",
-            "component",
-            "category",
-            "tags",
-            "status",
-            "order",
-        ];
-        let variant_attrs = ["name", "args", "viewport", "skip-vrt"];
-
-        for attr in art_attrs.iter().chain(variant_attrs.iter()) {
-            #[allow(clippy::disallowed_macros)]
-            let pattern_eq = format!("{}=", attr);
-            let mut pos = 0;
-            while let Some(start) = slice[pos..].find(pattern_eq.as_str()) {
-                let rel_pos = pos + start;
-                let abs_pos = range_start + rel_pos;
-
-                if rel_pos > 0 {
-                    let before = slice.as_bytes()[rel_pos - 1];
-                    if before == b' ' || before == b'\n' || before == b'\t' {
-                        let (line, col) = offset_to_line_col(content, abs_pos);
-                        tokens.push(AbsoluteToken {
-                            line,
-                            start: col,
-                            length: utf16_len(attr),
-                            token_type: TokenType::Property as u32,
-                            modifiers: 0,
-                        });
-
-                        // Highlight string value
-                        let value_start = rel_pos + attr.len() + 1;
-                        if value_start < slice.len() {
-                            let quote_char = slice.as_bytes()[value_start];
-                            if (quote_char == b'"' || quote_char == b'\'')
-                                && let Some(end) = slice[value_start + 1..].find(quote_char as char)
-                            {
-                                let abs_val = range_start + value_start;
-                                let (val_line, val_col) = offset_to_line_col(content, abs_val);
-                                tokens.push(AbsoluteToken {
-                                    line: val_line,
-                                    start: val_col,
-                                    length: utf16_len(&slice[value_start..value_start + end + 2]),
-                                    token_type: TokenType::String as u32,
-                                    modifiers: 0,
-                                });
-                            }
-                        }
-                    }
-                }
-                pos = rel_pos + attr.len();
-            }
-        }
+        // Collect art-specific attribute tokens in the slice in a single pass
+        // (see `collect_named_attribute_tokens`). Inline blocks never treat
+        // `default="..."` as a valued attribute, so use `INLINE_ART_ATTR_NAMES`.
+        collect_named_attribute_tokens(
+            slice,
+            range_start,
+            INLINE_ART_ATTR_NAMES,
+            line_index,
+            tokens,
+        );
 
         // Highlight 'default' boolean attribute
         {
@@ -630,7 +683,7 @@ impl SemanticTokensService {
                         || after == b'\t'
                         || after == b'/'
                     {
-                        let (line, col) = offset_to_line_col(content, abs_pos);
+                        let (line, col) = line_index.line_col(abs_pos);
                         tokens.push(AbsoluteToken {
                             line,
                             start: col,
@@ -666,7 +719,7 @@ impl SemanticTokensService {
             }
 
             let absolute_start = range_start + relative_start;
-            let (base_line, base_col) = offset_to_line_col(content, absolute_start);
+            let (base_line, base_col) = line_index.line_col(absolute_start);
             let mut local_tokens = Vec::new();
             template::collect_template_tokens(variant.template, 0, &mut local_tokens);
 
@@ -684,8 +737,8 @@ impl SemanticTokensService {
 #[cfg(test)]
 mod tests {
     use super::{
-        SemanticTokensService, TokenModifier, TokenType, encoding::offset_to_line_col, expressions,
-        template,
+        LineIndex, SemanticTokensService, TokenModifier, TokenType, encoding::offset_to_line_col,
+        expressions, template,
     };
     use tower_lsp::lsp_types::{
         Position, Range, SemanticToken, SemanticTokensRangeResult, SemanticTokensResult,
@@ -808,7 +861,8 @@ import Button from './Button.vue'
     fn test_art_block_tokens() {
         let content = "<art title=\"Test\">\n</art>";
         let mut tokens = Vec::new();
-        SemanticTokensService::collect_art_block_tokens(content, &mut tokens);
+        let line_index = LineIndex::new(content);
+        SemanticTokensService::collect_art_block_tokens(content, &mut tokens, &line_index);
 
         // Should find <art and </art>
         assert_eq!(tokens.len(), 2);
@@ -820,7 +874,8 @@ import Button from './Button.vue'
     fn test_variant_block_tokens() {
         let content = "<variant name=\"Primary\">\n</variant>";
         let mut tokens = Vec::new();
-        SemanticTokensService::collect_variant_block_tokens(content, &mut tokens);
+        let line_index = LineIndex::new(content);
+        SemanticTokensService::collect_variant_block_tokens(content, &mut tokens, &line_index);
 
         // Should find <variant and </variant>
         assert_eq!(tokens.len(), 2);
@@ -832,7 +887,8 @@ import Button from './Button.vue'
     fn test_art_attribute_tokens() {
         let content = r#"<art title="Button" component="./Button.vue">"#;
         let mut tokens = Vec::new();
-        SemanticTokensService::collect_art_attribute_tokens(content, &mut tokens);
+        let line_index = LineIndex::new(content);
+        SemanticTokensService::collect_art_attribute_tokens(content, &mut tokens, &line_index);
 
         // Should find title, "Button", component, "./Button.vue"
         assert!(tokens.len() >= 4);
@@ -846,7 +902,12 @@ import Button from './Button.vue'
   </variant>
 </art>"#;
         let mut tokens = Vec::new();
-        SemanticTokensService::collect_art_variant_template_tokens(content, &mut tokens);
+        let line_index = LineIndex::new(content);
+        SemanticTokensService::collect_art_variant_template_tokens(
+            content,
+            &mut tokens,
+            &line_index,
+        );
 
         assert!(
             tokens
@@ -874,7 +935,8 @@ import Button from './Button.vue'
 import Button from './Button.vue'
 </script>"#;
         let mut tokens = Vec::new();
-        SemanticTokensService::collect_art_script_tokens(content, &mut tokens);
+        let line_index = LineIndex::new(content);
+        SemanticTokensService::collect_art_script_tokens(content, &mut tokens, &line_index);
 
         // Should find import, from, and string literal
         assert!(tokens.len() >= 3);

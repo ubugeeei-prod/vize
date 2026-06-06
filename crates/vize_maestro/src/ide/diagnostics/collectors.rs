@@ -16,12 +16,16 @@ use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::config::LinterConfig;
 use vize_patina::{HelpRenderTarget, LintPreset, render_help};
 
-use super::{DiagnosticService, offset_to_line_col, sources};
+use super::{DiagnosticService, LineIndex, sources};
 use vize_carton::append;
 
 impl DiagnosticService {
     /// Collect diagnostics for Art files (*.art.vue) using vize_patina's MuseaLinter.
-    pub(super) fn collect_musea_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
+    pub(super) fn collect_musea_diagnostics(
+        uri: &Url,
+        content: &str,
+        line_index: &LineIndex<'_>,
+    ) -> Vec<Diagnostic> {
         use vize_patina::rules::musea::MuseaLinter;
 
         let linter = MuseaLinter::new();
@@ -32,8 +36,8 @@ impl DiagnosticService {
             .into_iter()
             .map(|lint_diag| {
                 // Convert byte offset to line/column
-                let (start_line, start_col) = offset_to_line_col(content, lint_diag.start as usize);
-                let (end_line, end_col) = offset_to_line_col(content, lint_diag.end as usize);
+                let (start_line, start_col) = line_index.line_col(lint_diag.start as usize);
+                let (end_line, end_col) = line_index.line_col(lint_diag.end as usize);
 
                 // Build the diagnostic message with help text (render as plain text for LSP)
                 #[allow(clippy::disallowed_macros)]
@@ -85,6 +89,7 @@ impl DiagnosticService {
         _uri: &Url,
         content: &str,
         descriptor: &SfcDescriptor<'_>,
+        line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
         use vize_patina::rules::musea::MuseaLinter;
 
@@ -122,9 +127,9 @@ impl DiagnosticService {
                 // Only process diagnostics that fall within the content area
                 if (lint_diag.start as usize) < art_tag_prefix_len {
                     // Diagnostic is on the <art> tag itself - map to the original tag
-                    let (start_line, start_col) = offset_to_line_col(content, custom.loc.tag_start);
+                    let (start_line, start_col) = line_index.line_col(custom.loc.tag_start);
                     let (end_line, end_col) =
-                        offset_to_line_col(content, custom.loc.tag_end.min(content.len()));
+                        line_index.line_col(custom.loc.tag_end.min(content.len()));
 
                     #[allow(clippy::disallowed_macros)]
                     let message = if let Some(ref help) = lint_diag.help {
@@ -167,10 +172,8 @@ impl DiagnosticService {
                     let sfc_start = block_content_start + content_relative_start;
                     let sfc_end = block_content_start + content_relative_end;
 
-                    let (start_line, start_col) =
-                        offset_to_line_col(content, sfc_start.min(content.len()));
-                    let (end_line, end_col) =
-                        offset_to_line_col(content, sfc_end.min(content.len()));
+                    let (start_line, start_col) = line_index.line_col(sfc_start.min(content.len()));
+                    let (end_line, end_col) = line_index.line_col(sfc_end.min(content.len()));
 
                     #[allow(clippy::disallowed_macros)]
                     let message = if let Some(ref help) = lint_diag.help {
@@ -255,8 +258,9 @@ impl DiagnosticService {
     /// Collect template parser diagnostics.
     pub(super) fn collect_template_diagnostics(
         _uri: &Url,
-        content: &str,
+        _content: &str,
         descriptor: &SfcDescriptor<'_>,
+        line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
         let Some(ref template) = descriptor.template else {
             return vec![];
@@ -272,15 +276,14 @@ impl DiagnosticService {
 
                 // The template parser stores `line=1`/`column=byte_offset`
                 // today; translate via the byte `offset` plus the template
-                // block's position in the SFC. `offset_to_line_col` counts
+                // block's position in the SFC. `LineIndex::line_col` counts
                 // UTF-16 code units so the position lands at the right
                 // editor column for non-ASCII content. (#965)
                 let absolute_start_offset = template.loc.start as u32 + loc.start.offset;
                 let absolute_end_offset = template.loc.start as u32 + loc.end.offset;
                 let (start_line, start_character) =
-                    offset_to_line_col(content, absolute_start_offset as usize);
-                let (end_line, end_character) =
-                    offset_to_line_col(content, absolute_end_offset as usize);
+                    line_index.line_col(absolute_start_offset as usize);
+                let (end_line, end_character) = line_index.line_col(absolute_end_offset as usize);
 
                 Some(Diagnostic {
                     range: Range {
@@ -313,6 +316,7 @@ impl DiagnosticService {
         _uri: &Url,
         content: &str,
         descriptor: &SfcDescriptor<'_>,
+        line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
         let Some(script_setup) = descriptor.script_setup.as_ref() else {
             return Vec::new();
@@ -344,7 +348,7 @@ impl DiagnosticService {
             // Fall back to the start of the most relevant block so the
             // diagnostic lands somewhere clickable in the editor.
             let (offset, _block) = sfc_block_fallback_offset(descriptor);
-            let (line, column) = offset_to_line_col(content, offset);
+            let (line, column) = line_index.line_col(offset);
             Range {
                 start: Position {
                     line,
@@ -380,14 +384,15 @@ impl DiagnosticService {
     /// Collect script parser diagnostics.
     pub(super) fn collect_script_diagnostics(
         _uri: &Url,
-        content: &str,
+        _content: &str,
         descriptor: &SfcDescriptor<'_>,
+        line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
         let mut diagnostics = Vec::new();
 
         if let Some(ref script) = descriptor.script {
             diagnostics.extend(collect_script_block_diagnostics(
-                content,
+                line_index,
                 &script.content,
                 script.loc.start,
                 script.lang.as_deref(),
@@ -396,7 +401,7 @@ impl DiagnosticService {
 
         if let Some(ref script_setup) = descriptor.script_setup {
             diagnostics.extend(collect_script_block_diagnostics(
-                content,
+                line_index,
                 &script_setup.content,
                 script_setup.loc.start,
                 script_setup.lang.as_deref(),
@@ -412,6 +417,7 @@ impl DiagnosticService {
         content: &str,
         ecosystem_enabled: bool,
         linter_config: &LinterConfig,
+        line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
         if !linter_config.enabled {
             return vec![];
@@ -459,8 +465,8 @@ impl DiagnosticService {
             .map(|lint_diag| {
                 // Convert byte offsets directly in the SFC. vize_patina::lint_sfc
                 // already maps template diagnostics back to source coordinates.
-                let (start_line, start_col) = offset_to_line_col(content, lint_diag.start as usize);
-                let (end_line, end_col) = offset_to_line_col(content, lint_diag.end as usize);
+                let (start_line, start_col) = line_index.line_col(lint_diag.start as usize);
+                let (end_line, end_col) = line_index.line_col(lint_diag.end as usize);
 
                 // Build the diagnostic message with help text (render as plain text for LSP)
                 #[allow(clippy::disallowed_macros)]
@@ -559,7 +565,7 @@ fn collect_define_art_source_diagnostics(uri: &Url, content: &str) -> Vec<Diagno
 }
 
 fn collect_script_block_diagnostics(
-    sfc_content: &str,
+    line_index: &LineIndex<'_>,
     script_content: &str,
     script_offset: usize,
     lang: Option<&str>,
@@ -578,8 +584,8 @@ fn collect_script_block_diagnostics(
             let (local_start, local_end) = diagnostic_span(error, script_content.len());
             let start = script_offset + local_start;
             let end = script_offset + local_end;
-            let (start_line, start_col) = offset_to_line_col(sfc_content, start);
-            let (end_line, end_col) = offset_to_line_col(sfc_content, end);
+            let (start_line, start_col) = line_index.line_col(start);
+            let (end_line, end_col) = line_index.line_col(end);
 
             Diagnostic {
                 range: Range {
