@@ -86,7 +86,7 @@ impl AttributeNode {
     pub fn new(name: impl Into<String>, loc: SourceLocation) -> Self {
         Self {
             name: name.into(),
-            name_loc: loc.clone(),
+            name_loc: SourceLocation::default(),
             value: None,
             loc,
         }
