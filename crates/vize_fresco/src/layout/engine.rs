@@ -192,30 +192,27 @@ impl LayoutEngine {
             );
         }
 
-        // Collect children sizes and margins from style
+        // Collect children to release the `&self` borrow before recursing.
         let children: Vec<_> = self.tree.children(node_id).unwrap_or_default();
-        let child_info: Vec<(NodeId, f32, f32, f32, f32, f32, f32)> = children
-            .iter()
-            .map(|&cid| {
-                // Panic path by child invariant: `cid` came directly from
-                // `tree.children(node_id)`, so layout/style lookup should be
-                // available after the successful compute pass above.
-                let cl = self.tree.layout(cid).expect("child layout");
-                let cs = self.tree.style(cid).expect("child style");
-                // Get margin from style (not layout) to avoid auto-margin issues
-                let mt = resolve_margin(cs.margin.top);
-                let mr = resolve_margin(cs.margin.right);
-                let mb = resolve_margin(cs.margin.bottom);
-                let ml = resolve_margin(cs.margin.left);
-                (cid, cl.size.width, cl.size.height, mt, mr, mb, ml)
-            })
-            .collect();
 
         // Position children manually based on flex_direction
         let mut offset_x = parent_x + padding_left;
         let mut offset_y = parent_y + padding_top;
 
-        for (child_id, child_width, child_height, mt, mr, mb, ml) in child_info {
+        for child_id in children {
+            // Panic path by child invariant: `child_id` came directly from
+            // `tree.children(node_id)`, so layout/style lookup should be
+            // available after the successful compute pass above.
+            let cl = self.tree.layout(child_id).expect("child layout");
+            let cs = self.tree.style(child_id).expect("child style");
+            // Get margin from style (not layout) to avoid auto-margin issues
+            let mt = resolve_margin(cs.margin.top);
+            let mr = resolve_margin(cs.margin.right);
+            let mb = resolve_margin(cs.margin.bottom);
+            let ml = resolve_margin(cs.margin.left);
+            let child_width = cl.size.width;
+            let child_height = cl.size.height;
+
             // Apply margin to position
             let child_x = offset_x + ml;
             let child_y = offset_y + mt;

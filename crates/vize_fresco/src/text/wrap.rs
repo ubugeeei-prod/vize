@@ -30,13 +30,27 @@ pub struct TextWrap;
 impl TextWrap {
     /// Wrap text to fit within max_width columns.
     pub fn wrap(text: &str, max_width: usize, mode: WrapMode) -> Vec<CompactString> {
+        let mut out = Vec::new();
+        Self::wrap_into(text, max_width, mode, &mut out);
+        out
+    }
+
+    /// Wrap text into a reusable buffer, clearing it first.
+    ///
+    /// Produces the same lines as [`Self::wrap`] but lets callers reuse the
+    /// outer `Vec` allocation across frames; only the per-line `CompactString`s
+    /// are allocated.
+    pub fn wrap_into(text: &str, max_width: usize, mode: WrapMode, out: &mut Vec<CompactString>) {
+        out.clear();
         match mode {
-            WrapMode::NoWrap => vec![CompactString::from(text)],
-            WrapMode::Word => Self::wrap_word(text, max_width),
-            WrapMode::Char => Self::wrap_char(text, max_width),
-            WrapMode::Truncate | WrapMode::TruncateEnd => vec![Self::truncate_end(text, max_width)],
-            WrapMode::TruncateStart => vec![Self::truncate_start(text, max_width)],
-            WrapMode::TruncateMiddle => vec![Self::truncate_middle(text, max_width)],
+            WrapMode::NoWrap => out.push(CompactString::from(text)),
+            WrapMode::Word => Self::wrap_word_into(text, max_width, out),
+            WrapMode::Char => Self::wrap_char_into(text, max_width, out),
+            WrapMode::Truncate | WrapMode::TruncateEnd => {
+                out.push(Self::truncate_end(text, max_width))
+            }
+            WrapMode::TruncateStart => out.push(Self::truncate_start(text, max_width)),
+            WrapMode::TruncateMiddle => out.push(Self::truncate_middle(text, max_width)),
         }
     }
 
@@ -143,13 +157,13 @@ impl TextWrap {
         prefix
     }
 
-    /// Wrap at word boundaries.
-    fn wrap_word(text: &str, max_width: usize) -> Vec<CompactString> {
+    /// Wrap at word boundaries into a (pre-cleared) buffer.
+    fn wrap_word_into(text: &str, max_width: usize, lines: &mut Vec<CompactString>) {
         if max_width == 0 {
-            return vec![];
+            return;
         }
 
-        let mut lines = Vec::new();
+        let start_len = lines.len();
         let mut current_line = CompactString::default();
         let mut current_width = 0;
 
@@ -192,20 +206,25 @@ impl TextWrap {
             lines.push(CompactString::from(current_line.trim_end()));
         }
 
-        if lines.is_empty() {
+        if lines.len() == start_len {
             lines.push(CompactString::new(""));
         }
-
-        lines
     }
 
     /// Wrap at character boundaries.
     fn wrap_char(text: &str, max_width: usize) -> Vec<CompactString> {
+        let mut lines = Vec::new();
+        Self::wrap_char_into(text, max_width, &mut lines);
+        lines
+    }
+
+    /// Wrap at character boundaries into a (pre-cleared) buffer.
+    fn wrap_char_into(text: &str, max_width: usize, lines: &mut Vec<CompactString>) {
         if max_width == 0 {
-            return vec![];
+            return;
         }
 
-        let mut lines = Vec::new();
+        let start_len = lines.len();
         let mut current_line = CompactString::default();
         let mut current_width = 0;
 
@@ -236,11 +255,9 @@ impl TextWrap {
             lines.push(current_line);
         }
 
-        if lines.is_empty() {
+        if lines.len() == start_len {
             lines.push(CompactString::new(""));
         }
-
-        lines
     }
 
     /// Split text into lines (preserving existing newlines).
