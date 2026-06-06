@@ -7,11 +7,11 @@ use crate::transforms::v_slot::{collect_slots, get_slot_name, has_v_slot};
 
 use super::context::CodegenContext;
 use super::expression::generate_expression;
-use super::helpers::{escape_js_string, is_valid_js_identifier};
+use super::helpers::{camelize, escape_js_string, is_valid_js_identifier};
 use super::node::generate_node;
 use super::props::{
-    generate_directive_prop_with_static, generate_vbind_object_exp, generate_von_object_exp,
-    is_supported_directive,
+    generate_slot_outlet_directive_prop_with_static, generate_vbind_object_exp,
+    generate_von_object_exp, is_supported_directive,
 };
 use vize_carton::String;
 use vize_carton::ToCompactString;
@@ -242,11 +242,12 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
                     ctx.push(", ");
                 }
 
-                if is_valid_js_identifier(&attr.name) {
-                    ctx.push(&attr.name);
+                let key = camelize(&attr.name);
+                if is_valid_js_identifier(&key) {
+                    ctx.push(&key);
                 } else {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(&attr.name));
+                    ctx.push(&escape_js_string(&key));
                     ctx.push("\"");
                 }
                 ctx.push(": ");
@@ -270,7 +271,7 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
                 if !first {
                     ctx.push(", ");
                 }
-                generate_directive_prop_with_static(ctx, dir, static_merge);
+                generate_slot_outlet_directive_prop_with_static(ctx, dir, static_merge);
                 first = false;
             }
         }

@@ -158,6 +158,10 @@ input = '<slot name="header"></slot>'
 name = "slot with fallback"
 input = "<slot>fallback content</slot>"
 
+[[cases]]
+name = "slot with camelized prop"
+input = '<slot :slot-key="slotValue"></slot>'
+
 # =============================================================================
 # SVG elements
 # =============================================================================

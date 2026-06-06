@@ -391,6 +391,17 @@ export function render(_ctx, _cache) {
   ])
 }
 ===
+name: slot with camelized prop
+options: vdom
+--- INPUT ---
+<slot :slot-key="slotValue"></slot>
+--- OUTPUT ---
+import { renderSlot as _renderSlot } from "vue"
+
+export function render(_ctx, _cache) {
+  return _renderSlot(_ctx.$slots, "default", { slotKey: _ctx.slotValue })
+}
+===
 name: svg element
 options: vdom
 --- INPUT ---

@@ -114,6 +114,25 @@ pub(super) fn transform_bound_prop_key(key: &str, dir: &DirectiveNode) -> String
     key.to_compact_string()
 }
 
+pub(super) fn static_slot_outlet_prop_key(key: &str) -> String {
+    vize_carton::camelize(key)
+}
+
+pub(super) fn transform_slot_outlet_bound_prop_key(key: &str, dir: &DirectiveNode) -> String {
+    let base = vize_carton::camelize(key);
+    if dir.modifiers.iter().any(|m| m.content == "prop") {
+        let mut out = String::from(".");
+        out.push_str(&base);
+        return out;
+    }
+    if dir.modifiers.iter().any(|m| m.content == "attr") {
+        let mut out = String::from("^");
+        out.push_str(&base);
+        return out;
+    }
+    base
+}
+
 pub(super) fn push_js_object_key(out: &mut String, key: &str) {
     if is_valid_js_identifier(key) {
         out.push_str(key);

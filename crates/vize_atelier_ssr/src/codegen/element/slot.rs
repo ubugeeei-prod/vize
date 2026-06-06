@@ -64,7 +64,8 @@ impl<'a> SsrCodegenContext<'a> {
                         .as_ref()
                         .map(|v| quoted_js_string(&v.content))
                         .unwrap_or_else(|| "true".to_compact_string());
-                    entries.push(component_prop_entry(&attr.name, &value, false));
+                    let key = static_slot_outlet_prop_key(&attr.name);
+                    entries.push(component_prop_entry(&key, &value, false));
                 }
                 PropNode::Directive(dir) if dir.name == "bind" => {
                     let value = dir
@@ -91,7 +92,12 @@ impl<'a> SsrCodegenContext<'a> {
                         continue;
                     }
 
-                    entries.push(component_prop_entry(&arg.content, &value, !arg.is_static));
+                    let key = if arg.is_static {
+                        transform_slot_outlet_bound_prop_key(&arg.content, dir)
+                    } else {
+                        arg.content.clone()
+                    };
+                    entries.push(component_prop_entry(&key, &value, !arg.is_static));
                 }
                 _ => {}
             }

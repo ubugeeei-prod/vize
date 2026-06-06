@@ -437,6 +437,13 @@ mod slot {
             r#"<slot v-bind="formState" :status="status">fallback content</slot>"#
         ));
     }
+
+    #[test]
+    fn slot_with_camelized_prop() {
+        insta::assert_snapshot!(get_compiled_string(
+            r#"<slot :slot-key="slotValue"></slot>"#
+        ));
+    }
 }
 
 // =============================================================================

@@ -88,9 +88,45 @@ pub fn generate_directive_prop_with_static(
     dir: &DirectiveNode<'_>,
     static_merge: StaticMerge<'_>,
 ) {
+    generate_directive_prop_with_static_key_casing(
+        ctx,
+        dir,
+        static_merge,
+        StaticBindKeyCasing::Preserve,
+    );
+}
+
+/// Generate a directive prop for a `<slot>` outlet.
+///
+/// Vue camelizes static slot prop keys before passing them to renderSlot.
+pub fn generate_slot_outlet_directive_prop_with_static(
+    ctx: &mut CodegenContext,
+    dir: &DirectiveNode<'_>,
+    static_merge: StaticMerge<'_>,
+) {
+    generate_directive_prop_with_static_key_casing(
+        ctx,
+        dir,
+        static_merge,
+        StaticBindKeyCasing::Camelize,
+    );
+}
+
+#[derive(Clone, Copy)]
+enum StaticBindKeyCasing {
+    Preserve,
+    Camelize,
+}
+
+fn generate_directive_prop_with_static_key_casing(
+    ctx: &mut CodegenContext,
+    dir: &DirectiveNode<'_>,
+    static_merge: StaticMerge<'_>,
+    static_key_casing: StaticBindKeyCasing,
+) {
     match dir.name.as_str() {
         "bind" => {
-            generate_vbind_prop(ctx, dir, static_merge);
+            generate_vbind_prop(ctx, dir, static_merge, static_key_casing);
         }
         "on" => {
             generate_von_prop(ctx, dir);
@@ -132,6 +168,7 @@ fn generate_vbind_prop(
     ctx: &mut CodegenContext,
     dir: &DirectiveNode<'_>,
     static_merge: StaticMerge<'_>,
+    static_key_casing: StaticBindKeyCasing,
 ) {
     let static_class = static_merge.class;
     let static_style = static_merge.style;
@@ -207,23 +244,27 @@ fn generate_vbind_prop(
             is_style = key == "style";
 
             // Transform key based on modifiers
-            let transformed_key: vize_carton::String = if has_camel {
-                // Convert kebab-case to camelCase
-                camelize(key)
-            } else if has_prop {
+            let base_key: vize_carton::String =
+                if has_camel || matches!(static_key_casing, StaticBindKeyCasing::Camelize) {
+                    camelize(key)
+                } else {
+                    key.to_compact_string()
+                };
+
+            let transformed_key: vize_carton::String = if has_prop {
                 // Add . prefix for DOM property binding
-                let mut name = String::with_capacity(1 + key.len());
+                let mut name = String::with_capacity(1 + base_key.len());
                 name.push('.');
-                name.push_str(key);
+                name.push_str(&base_key);
                 name
             } else if has_attr {
                 // Add ^ prefix for attribute binding
-                let mut name = String::with_capacity(1 + key.len());
+                let mut name = String::with_capacity(1 + base_key.len());
                 name.push('^');
-                name.push_str(key);
+                name.push_str(&base_key);
                 name
             } else {
-                key.to_compact_string()
+                base_key
             };
 
             let needs_quotes = !is_valid_js_identifier(&transformed_key);
