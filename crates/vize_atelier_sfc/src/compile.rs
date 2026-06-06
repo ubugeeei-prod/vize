@@ -514,13 +514,23 @@ fn compile_sfc_inner(
                     // 3. _sfc_main.render = _sfc_render / _sfc_main.ssrRender = ssrRender
                     // 4. export default _sfc_main
                     if is_vapor || options.template.ssr {
+                        // Vapor / SSR keep the render block first, then the script.
                         code.push_str(&template_code);
+                        code.push_str(&final_script);
+                        code.push('\n');
                     } else {
+                        // Client render: match @vue/compiler-sfc / plugin-vue ordering —
+                        // the <script> block (and its own imports) comes first, then the
+                        // template render block. This keeps user imports at the top of the
+                        // module instead of after the generated render function.
                         let template_code = rewrite_client_render_for_sfc_main(&template_code);
+                        code.push_str(&final_script);
+                        code.push('\n');
                         code.push_str(&template_code);
+                        if !code.ends_with('\n') {
+                            code.push('\n');
+                        }
                     }
-                    code.push_str(&final_script);
-                    code.push('\n');
 
                     // Export the component with render attached
                     if is_vapor {

@@ -2,13 +2,6 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: output.as_str()
 ---
-import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
-
-function _sfc_render(_ctx, _cache) {
-  const _component_ChildComp = _resolveComponent("ChildComp")
-  
-  return (_openBlock(), _createBlock(_component_ChildComp))
-}
 
 import ChildComp from './Child.vue'
 
@@ -16,5 +9,12 @@ const _sfc_main = {
   components: { ChildComp }
 }
 
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  const _component_ChildComp = _resolveComponent("ChildComp")
+  
+  return (_openBlock(), _createBlock(_component_ChildComp))
+}
 _sfc_main.render = _sfc_render
 export default _sfc_main

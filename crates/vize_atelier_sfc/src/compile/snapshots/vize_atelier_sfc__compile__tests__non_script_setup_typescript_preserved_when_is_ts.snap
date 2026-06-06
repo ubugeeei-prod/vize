@@ -1,13 +1,7 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
-assertion_line: 890
 expression: result.code.as_str()
 ---
-import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
-
-function _sfc_render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div"))
-}
 
 interface Props {
     name: string;
@@ -17,5 +11,10 @@ const _sfc_main = {
     props: {} as Props
 }
 
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div"))
+}
 _sfc_main.render = _sfc_render
 export default _sfc_main

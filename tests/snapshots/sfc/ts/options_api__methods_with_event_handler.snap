@@ -2,11 +2,6 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: output.as_str()
 ---
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
-
-function _sfc_render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("button", { onClick: _ctx.increment }, _toDisplayString(_ctx.count), 9 /* TEXT, PROPS */, ["onClick"]))
-}
 
 const _sfc_main = {
   data() {
@@ -19,5 +14,10 @@ const _sfc_main = {
   }
 }
 
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", { onClick: _ctx.increment }, _toDisplayString(_ctx.count), 9 /* TEXT, PROPS */, ["onClick"]))
+}
 _sfc_main.render = _sfc_render
 export default _sfc_main
