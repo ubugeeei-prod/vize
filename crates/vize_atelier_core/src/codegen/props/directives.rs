@@ -279,9 +279,6 @@ fn generate_vbind_prop(
         }
     }
     if let Some(exp) = &dir.exp {
-        // Check if expression is a static literal (no runtime references)
-        let is_static_literal = is_static_expression(exp, ctx);
-
         if is_class {
             if !ctx.skip_normalize {
                 ctx.use_helper(RuntimeHelper::NormalizeClass);
@@ -311,8 +308,11 @@ fn generate_vbind_prop(
                 ctx.push(")");
             }
         } else if is_style {
-            // Skip normalizeStyle for static literal expressions (e.g., { color: 'red' })
-            let needs_normalize = !ctx.skip_normalize && !is_static_literal;
+            // Skip normalizeStyle for static literal expressions (e.g., { color: 'red' }).
+            // `is_static_expression` runs a full oxc parse, so the `&&` short-circuit
+            // keeps it off the hot path for every non-:style v-bind (the common case)
+            // and even for :style when normalization is already skipped.
+            let needs_normalize = !ctx.skip_normalize && !is_static_expression(exp, ctx);
             if needs_normalize {
                 ctx.use_helper(RuntimeHelper::NormalizeStyle);
                 ctx.push("_normalizeStyle(");
