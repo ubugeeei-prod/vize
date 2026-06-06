@@ -51,22 +51,13 @@ pub(crate) fn is_whitespace(b: u8) -> bool {
 }
 
 /// Check if an element is a void element (self-closing in HTML).
+///
+/// Alloc-free: void element names are 2..=6 ASCII bytes, so a length guard
+/// plus case-insensitive comparison avoids the lowercasing allocation.
 pub(crate) fn is_void_element_str(tag: &str) -> bool {
-    matches!(
-        tag.to_ascii_lowercase().as_str(),
-        "area"
-            | "base"
-            | "br"
-            | "col"
-            | "embed"
-            | "hr"
-            | "img"
-            | "input"
-            | "link"
-            | "meta"
-            | "param"
-            | "source"
-            | "track"
-            | "wbr"
-    )
+    const VOID_ELEMENTS: [&str; 14] = [
+        "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param",
+        "source", "track", "wbr",
+    ];
+    matches!(tag.len(), 2..=6) && VOID_ELEMENTS.iter().any(|v| tag.eq_ignore_ascii_case(v))
 }

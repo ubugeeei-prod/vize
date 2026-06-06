@@ -23,21 +23,17 @@ pub(crate) struct ParsedAttribute {
 pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOptions) {
     match options.attribute_sort_order {
         AttributeSortOrder::Alphabetical => {
-            attrs.sort_by(|a, b| {
-                // Primary: priority group
-                let cmp = a.priority.cmp(&b.priority);
-                if cmp != std::cmp::Ordering::Equal {
-                    return cmp;
-                }
-                // Secondary: alphabetical within same group
-                let a_key = attr_sort_key(&a.name, options.merge_bind_and_non_bind_attrs);
-                let b_key = attr_sort_key(&b.name, options.merge_bind_and_non_bind_attrs);
-                let alpha_cmp = a_key.cmp(&b_key);
-                if alpha_cmp != std::cmp::Ordering::Equal {
-                    return alpha_cmp;
-                }
-                // Tertiary: original order for stability
-                a.original_index.cmp(&b.original_index)
+            // Decorate-sort-undecorate: `attr_sort_key` lowercases the name,
+            // so computing it inside a comparator re-allocates O(n log n)
+            // times. `sort_by_cached_key` evaluates the key closure exactly
+            // once per attribute and caches it, then sorts on the cached
+            // tuples. The composite key `(priority, group, lowercased base,
+            // original index)` reproduces the previous comparator (including
+            // the stable original-index tie-break) exactly.
+            let merge_bind = options.merge_bind_and_non_bind_attrs;
+            attrs.sort_by_cached_key(|attr| {
+                let (group, base) = attr_sort_key(&attr.name, merge_bind);
+                (attr.priority, group, base, attr.original_index)
             });
         }
         AttributeSortOrder::AsWritten => {
