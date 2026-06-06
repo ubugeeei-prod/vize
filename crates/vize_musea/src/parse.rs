@@ -202,6 +202,11 @@ fn parse_define_art_metadata<'a>(
     allocator: &'a Bump,
     script: &'a str,
 ) -> Option<DefineArtMetadata<'a>> {
+    // Cheap pre-check: defineArt() can only return Some if the literal token
+    // "defineArt" appears in the source (it is a compiler macro recognized by
+    // name and cannot be aliased), so skip the heavyweight OXC parse otherwise.
+    memmem::find(script.as_bytes(), b"defineArt")?;
+
     let parsed = vize_croquis::script_parser::parse_script_setup(script);
     let art = parsed.macros.define_art()?;
     let mut meta = DefineArtMetadata::new(allocator);
