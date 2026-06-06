@@ -9,13 +9,12 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use memchr::memmem;
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Argument, CallExpression, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey,
+    Argument, CallExpression, Expression, ObjectExpression, ObjectPropertyKind, Program,
+    PropertyKey,
 };
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
-use oxc_parser::Parser;
-use oxc_span::{SourceType, Span};
+use oxc_span::Span;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "ecosystem/vue-router-prefer-named-push",
@@ -30,7 +29,18 @@ impl ScriptRule for VueRouterPreferNamedPush {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        true
+    }
+
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
         let bytes = source.as_bytes();
         if (memmem::find(bytes, b".push").is_none() && memmem::find(bytes, b".replace").is_none())
             || (memmem::find(bytes, b"'/").is_none() && memmem::find(bytes, b"\"/").is_none())
@@ -40,16 +50,8 @@ impl ScriptRule for VueRouterPreferNamedPush {
             return;
         }
 
-        let allocator = Allocator::default();
-        let source_type =
-            SourceType::from_path("component.ts").unwrap_or_else(|_| SourceType::ts());
-        let parsed = Parser::new(&allocator, source, source_type).parse();
-        if parsed.panicked || !parsed.errors.is_empty() {
-            return;
-        }
-
         let mut visitor = RouterPushVisitor { offset, result };
-        visitor.visit_program(&parsed.program);
+        visitor.visit_program(program);
     }
 }
 

@@ -9,11 +9,8 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use memchr::memmem;
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, CallExpression, Expression};
+use oxc_ast::ast::{Argument, CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "ecosystem/vue-test-utils-no-html-snapshot",
@@ -28,7 +25,18 @@ impl ScriptRule for VueTestUtilsNoHtmlSnapshot {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        true
+    }
+
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
         let bytes = source.as_bytes();
         if memmem::find(bytes, b"toMatchSnapshot").is_none()
             || memmem::find(bytes, b".html").is_none()
@@ -36,16 +44,8 @@ impl ScriptRule for VueTestUtilsNoHtmlSnapshot {
             return;
         }
 
-        let allocator = Allocator::default();
-        let source_type =
-            SourceType::from_path("component.test.ts").unwrap_or_else(|_| SourceType::ts());
-        let parsed = Parser::new(&allocator, source, source_type).parse();
-        if parsed.panicked || !parsed.errors.is_empty() {
-            return;
-        }
-
         let mut visitor = HtmlSnapshotVisitor { offset, result };
-        visitor.visit_program(&parsed.program);
+        visitor.visit_program(program);
     }
 }
 

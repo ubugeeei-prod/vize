@@ -27,14 +27,14 @@
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier};
+use oxc_ast::ast::{
+    CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier, Program,
+};
 use oxc_ast_visit::{
     Visit,
     walk::{walk_call_expression, walk_import_declaration},
 };
-use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType, Span};
+use oxc_span::{GetSpan, Span};
 use vize_carton::{CompactString, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -52,21 +52,24 @@ impl ScriptRule for NoNextTick {
     }
 
     #[inline]
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let allocator = Allocator::default();
-        let source_type =
-            SourceType::from_path("component.ts").unwrap_or_else(|_| SourceType::ts());
-        let parsed = Parser::new(&allocator, source, source_type).parse();
-        if parsed.panicked || !parsed.errors.is_empty() {
-            return;
-        }
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
+    #[inline]
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
         let mut visitor = NoNextTickVisitor {
             offset,
             result,
             imported_aliases: FxHashSet::default(),
         };
-        visitor.visit_program(&parsed.program);
+        visitor.visit_program(program);
     }
 }
 

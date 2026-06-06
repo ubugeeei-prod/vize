@@ -9,11 +9,9 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use memchr::memmem;
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{BindingPattern, CallExpression, Expression, VariableDeclarator};
+use oxc_ast::ast::{BindingPattern, CallExpression, Expression, Program, VariableDeclarator};
 use oxc_ast_visit::{Visit, walk::walk_variable_declarator};
-use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType, Span};
+use oxc_span::{GetSpan, Span};
 use vize_carton::{CompactString, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -29,16 +27,19 @@ impl ScriptRule for PiniaPreferStoreToRefs {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        if memmem::find(source.as_bytes(), b"Store").is_none() {
-            return;
-        }
+    #[inline]
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        let allocator = Allocator::default();
-        let source_type =
-            SourceType::from_path("component.ts").unwrap_or_else(|_| SourceType::ts());
-        let parsed = Parser::new(&allocator, source, source_type).parse();
-        if parsed.panicked || !parsed.errors.is_empty() {
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        if memmem::find(source.as_bytes(), b"Store").is_none() {
             return;
         }
 
@@ -47,7 +48,7 @@ impl ScriptRule for PiniaPreferStoreToRefs {
             result,
             store_bindings: FxHashSet::default(),
         };
-        visitor.visit_program(&parsed.program);
+        visitor.visit_program(program);
     }
 }
 

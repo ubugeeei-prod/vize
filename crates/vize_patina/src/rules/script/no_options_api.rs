@@ -32,13 +32,11 @@
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Argument, BindingPattern, ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier,
-    ObjectExpression, ObjectPropertyKind, PropertyKey, Statement,
+    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
-use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::GetSpan;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -56,8 +54,19 @@ impl ScriptRule for NoOptionsApi {
     }
 
     #[inline]
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let Some(component_options) = find_component_options(source) else {
+    fn uses_ast(&self) -> bool {
+        true
+    }
+
+    #[inline]
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        let Some(component_options) = find_component_options(program) else {
             return;
         };
 
@@ -113,22 +122,15 @@ struct OptionLabel {
     end: u32,
 }
 
-fn find_component_options(source: &str) -> Option<ComponentOptionsMatch> {
-    let allocator = Allocator::default();
-    let source_type = SourceType::from_path("component.ts").unwrap_or_else(|_| SourceType::ts());
-    let parsed = Parser::new(&allocator, source, source_type).parse();
-    if parsed.panicked || !parsed.errors.is_empty() {
-        return None;
-    }
-
+fn find_component_options<'a>(program: &'a Program<'a>) -> Option<ComponentOptionsMatch> {
     let mut bindings = FxHashMap::default();
     let mut petite_vue = PetiteVueBindings::default();
 
-    for statement in parsed.program.body.iter() {
+    for statement in program.body.iter() {
         collect_petite_vue_imports(statement, &mut petite_vue);
     }
 
-    for statement in parsed.program.body.iter() {
+    for statement in program.body.iter() {
         let Statement::VariableDeclaration(declaration) = statement else {
             continue;
         };
@@ -148,7 +150,7 @@ fn find_component_options(source: &str) -> Option<ComponentOptionsMatch> {
         }
     }
 
-    for statement in parsed.program.body.iter() {
+    for statement in program.body.iter() {
         let Statement::ExportDefaultDeclaration(export) = statement else {
             continue;
         };
@@ -160,7 +162,7 @@ fn find_component_options(source: &str) -> Option<ComponentOptionsMatch> {
         return Some(build_component_options_match(options.object));
     }
 
-    for statement in parsed.program.body.iter() {
+    for statement in program.body.iter() {
         let Some(options) =
             extract_create_app_options_from_statement(statement, &bindings, &petite_vue)
         else {
