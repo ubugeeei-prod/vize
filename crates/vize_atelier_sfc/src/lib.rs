@@ -404,7 +404,7 @@ const isRootSelected = ref(false)
             template_code
         );
         let (_imports, _hoisted, _preamble, render_body, _render_fn_name) =
-            crate::compile_template::extract_template_parts(&template_code);
+            crate::compile_template::extract_template_parts(&template_code, None);
         assert!(
             render_body.contains("!selectedFolders.value.some((f) => f.id === folder.value.id)"),
             "unexpected render body:\n{}",

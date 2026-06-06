@@ -109,7 +109,7 @@ export function render(_ctx, _cache) {
 }"#;
 
     let (imports, hoisted, _preamble, render_body, render_fn_name) =
-        extract_template_parts(template_code);
+        extract_template_parts(template_code, None);
 
     assert_eq!(render_fn_name, "render");
     insta::assert_debug_snapshot!((&imports, &hoisted, &render_body));
@@ -128,7 +128,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
 }"#;
 
     let (_imports, hoisted, _preamble, render_body, render_fn_name) =
-        extract_template_parts(template_code);
+        extract_template_parts(template_code, None);
 
     assert_eq!(render_fn_name, "render");
     insta::assert_debug_snapshot!((&hoisted, &render_body));
@@ -175,7 +175,7 @@ export function ssrRender(_ctx, _push, _parent, _attrs) {
 }"#;
 
     let (_imports, _hoisted, _preamble, render_body, render_fn_name) =
-        extract_template_parts(template_code);
+        extract_template_parts(template_code, None);
 
     assert_eq!(render_fn_name, "ssrRender");
     assert!(
@@ -237,7 +237,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 }"#;
 
     let (_imports, _hoisted, _preamble, render_body, _render_fn_name) =
-        extract_template_parts(template_code);
+        extract_template_parts(template_code, None);
 
     insta::assert_snapshot!(render_body.as_str());
 }
@@ -386,7 +386,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 }"#;
 
     let (_imports, _hoisted, _preamble, render_body, _render_fn_name) =
-        extract_template_parts(template_code);
+        extract_template_parts(template_code, None);
 
     insta::assert_snapshot!(render_body.as_str());
 }

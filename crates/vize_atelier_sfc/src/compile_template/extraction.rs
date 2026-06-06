@@ -84,13 +84,91 @@ pub(crate) fn extract_template_parts_full(
     (imports, hoisted, render_fn, render_fn_name)
 }
 
+/// Slice-based fast path for [`extract_template_parts`].
+///
+/// `span` is the byte range of the render body inside `template_code` (already
+/// adjusted for the preamble prefix by the SFC layer). The body lines are
+/// covered by the slice, so this pass only classifies the surrounding lines
+/// (imports / hoisted consts / component-directive preamble / render fn name)
+/// with cheap `starts_with` checks — no brace/paren state machine.
+///
+/// Returns `None` (so the caller falls back to the line scanner) for the
+/// `function render($props)` block-render shape, an out-of-bounds / non-char-
+/// boundary span, or output with no recognizable render function.
+fn extract_template_parts_sliced(
+    template_code: &str,
+    start: usize,
+    end: usize,
+) -> Option<(String, String, String, String, &'static str)> {
+    if start > end
+        || end > template_code.len()
+        || !template_code.is_char_boundary(start)
+        || !template_code.is_char_boundary(end)
+    {
+        return None;
+    }
+
+    let mut imports = String::default();
+    let mut hoisted = String::default();
+    let mut preamble = String::default();
+    let mut render_fn_name = "";
+
+    for line in template_code.lines() {
+        let trimmed = line.trim();
+
+        if trimmed.starts_with("import ") {
+            imports.push_str(line);
+            imports.push('\n');
+        } else if trimmed.starts_with("const _hoisted_") || is_vapor_template_declaration(trimmed) {
+            hoisted.push_str(line);
+            hoisted.push('\n');
+        } else if let Some(name) = detect_render_export_name(trimmed) {
+            // The block-render shape (`function render($props)`) has no top-level
+            // `return`, so the recorded span does not describe its body — defer
+            // to the scanner.
+            if trimmed.starts_with("function render(") && trimmed.contains("$props") {
+                return None;
+            }
+            render_fn_name = name;
+        } else if trimmed.starts_with("const _component_")
+            || trimmed.starts_with("const _directive_")
+        {
+            // Component/directive resolution statements go in the preamble.
+            preamble.push_str(trimmed);
+            preamble.push('\n');
+        }
+        // Render-body lines fall through here; they are reproduced from the slice.
+    }
+
+    if render_fn_name.is_empty() {
+        return None;
+    }
+
+    let body_slice: &str = &template_code[start..end];
+    let mut render_body = body_slice.to_compact_string();
+    finalize_render_body(&mut render_body);
+
+    Some((imports, hoisted, preamble, render_body, render_fn_name))
+}
+
 /// Extract imports, hoisted consts, preamble (component/directive resolution), and render body
 /// from compiled template code.
 /// Returns (imports, hoisted, preamble, render_body, render_function_name)
 #[allow(dead_code)]
 pub(crate) fn extract_template_parts(
     template_code: &str,
+    render_body_span: Option<(usize, usize)>,
 ) -> (String, String, String, String, &'static str) {
+    // Fast path: codegen recorded the render-body byte span, so slice it out
+    // directly instead of re-running the brace/paren state machine and copying
+    // the body line by line. Falls back to the scanner below for block-render
+    // and any shape the slice path does not recognize.
+    if let Some((start, end)) = render_body_span
+        && let Some(parts) = extract_template_parts_sliced(template_code, start, end)
+    {
+        return parts;
+    }
+
     let mut imports = String::default();
     let mut hoisted = String::default();
     let mut preamble = String::default(); // Component/directive resolution statements

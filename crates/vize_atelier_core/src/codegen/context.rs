@@ -74,6 +74,11 @@ pub struct CodegenResult {
     pub preamble: String,
     /// Source map (JSON)
     pub map: Option<String>,
+    /// Byte offsets `(start, end)` of the render body within `code` — the slice
+    /// immediately after `return ` up to (but excluding) the closing `}`. Lets
+    /// the SFC layer slice the render body out instead of re-scanning and
+    /// re-copying it line by line. `None` when the backend does not record it.
+    pub render_body_span: Option<(usize, usize)>,
 }
 
 impl CodegenContext {

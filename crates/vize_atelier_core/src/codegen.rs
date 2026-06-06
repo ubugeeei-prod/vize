@@ -59,6 +59,11 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     // Generate return statement
     ctx.push("return ");
 
+    // Record where the render body begins so the SFC layer can slice it out
+    // instead of re-scanning the generated function. `ctx.code` is appended to
+    // monotonically from here, so this byte offset stays valid.
+    let render_body_start = ctx.code.len();
+
     // Generate root node
     if root_children.is_empty() {
         ctx.push("null");
@@ -105,6 +110,10 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
             ctx.push("], 64 /* STABLE_FRAGMENT */))");
         }
     }
+
+    // Record the end of the render body (before the closing brace's leading
+    // newline + `}`), completing the slice the SFC layer can lift directly.
+    let render_body_end = ctx.code.len();
 
     ctx.deindent();
     ctx.newline();
@@ -156,6 +165,7 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         code: ctx.into_code(),
         preamble,
         map: None,
+        render_body_span: Some((render_body_start, render_body_end)),
     }
 }
 

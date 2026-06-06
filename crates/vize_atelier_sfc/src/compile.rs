@@ -794,7 +794,7 @@ fn compile_sfc_inner(
             } else {
                 let (imports, hoisted, preamble, body, render_fn_name) = profile!(
                     "atelier.sfc.template.extract_parts",
-                    extract_template_parts(template_code)
+                    extract_template_parts(template_code, template_output.render_body_span)
                 );
                 (
                     imports,

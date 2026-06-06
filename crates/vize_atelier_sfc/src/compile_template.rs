@@ -22,6 +22,10 @@ use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileO
 pub(crate) struct TemplateBlockCompileResult {
     pub(crate) code: String,
     pub(crate) warnings: std::vec::Vec<SfcError>,
+    /// Byte offsets `(start, end)` of the render body within `code` (the
+    /// concatenated preamble + render fn), when the DOM backend reported them.
+    /// Lets `extract_template_parts` slice the render body instead of re-scanning.
+    pub(crate) render_body_span: Option<(usize, usize)>,
 }
 
 pub(crate) struct TemplateBlockCompileContext<'a> {
@@ -114,6 +118,9 @@ pub(crate) fn compile_template_block(
         return Ok(TemplateBlockCompileResult {
             code: output,
             warnings: recoverable_template_warnings(&errors),
+            // SSR uses a separate codegen result and the extract_parts_full path,
+            // which does not consume the render-body span.
+            render_body_span: None,
         });
     }
 
@@ -187,6 +194,11 @@ pub(crate) fn compile_template_block(
     // Generate render function with proper imports
     let mut output = String::default();
 
+    // The render fn `code` lands after `preamble` + a single '\n', so codegen's
+    // render-body offsets (into `code`) shift by exactly that prefix length in
+    // the concatenated output.
+    let preamble_offset = result.preamble.len() + 1;
+
     // Add Vue imports
     output.push_str(&result.preamble);
     output.push('\n');
@@ -196,9 +208,14 @@ pub(crate) fn compile_template_block(
     output.push_str(&result.code);
     output.push('\n');
 
+    let render_body_span = result
+        .render_body_span
+        .map(|(start, end)| (preamble_offset + start, preamble_offset + end));
+
     Ok(TemplateBlockCompileResult {
         code: output,
         warnings: recoverable_template_warnings(&errors),
+        render_body_span,
     })
 }
 

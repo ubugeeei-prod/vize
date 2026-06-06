@@ -178,6 +178,7 @@ fn compile_template_inner<'a>(
             code: String::default(),
             preamble: String::default(),
             map: None,
+            render_body_span: None,
         };
         return (root, errors.to_vec(), codegen_result);
     }

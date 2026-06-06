@@ -71,6 +71,9 @@ pub(crate) fn compile_template_block_vapor(
     Ok(TemplateBlockCompileResult {
         code,
         warnings: recoverable_template_warnings(&diagnostics),
+        // Vapor uses a separate output shape + the extract_parts_full path, which
+        // does not consume the render-body span.
+        render_body_span: None,
     })
 }
 
