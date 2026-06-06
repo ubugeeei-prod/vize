@@ -158,10 +158,23 @@ impl Analyzer {
         };
         let base_offset = expr.loc().start.offset;
 
-        for ident in profile!(
-            "croquis.template.expression.extract_identifiers",
-            extract_identifiers_oxc(content)
-        ) {
+        // Identifier extraction is a pure function of the expression text, and
+        // template expressions repeat heavily (the same bindings/handlers across
+        // every v-for iteration's rendered element). Memoize the parse+walk per
+        // distinct expression; scope resolution below still runs per call. The
+        // cached idents are read by reference (disjoint from `self.summary`), so
+        // a hit costs neither a parse nor a clone.
+        if !self.ident_cache.contains_key(content) {
+            let computed = profile!(
+                "croquis.template.expression.extract_identifiers",
+                extract_identifiers_oxc(content)
+            );
+            self.ident_cache
+                .insert(CompactString::new(content), computed);
+        }
+        let idents = &self.ident_cache[content];
+
+        for ident in idents {
             let ident_str = ident.as_str();
 
             let in_scope_vars = scope_vars.iter().any(|v| v.as_str() == ident_str);
@@ -180,7 +193,7 @@ impl Analyzer {
             } else if !is_defined {
                 let ident_offset_in_content = content.find(ident_str).unwrap_or(0) as u32;
                 self.summary.undefined_refs.push(UndefinedRef {
-                    name: ident,
+                    name: ident.clone(),
                     offset: base_offset + ident_offset_in_content,
                     context: CompactString::new("template expression"),
                 });

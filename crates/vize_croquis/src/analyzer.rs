@@ -35,7 +35,7 @@ pub use helpers::{
 };
 
 use crate::analysis::Croquis;
-use vize_carton::{CompactString, profile};
+use vize_carton::{CompactString, FxHashMap, profile};
 
 /// Analysis options for controlling what gets analyzed.
 ///
@@ -123,6 +123,14 @@ pub struct Analyzer {
     /// instead of walking the parent scope chain. Incremented on v-for scope
     /// enter, decremented on exit (paired with `vif_guard_stack` discipline).
     pub(crate) vfor_depth: u32,
+    /// Memoized identifier extraction keyed by expression text. Template
+    /// expressions repeat heavily (e.g. the same `:to`/`@click`/`{{ }}` across
+    /// every `v-for` iteration's rendered element), and `extract_identifiers_oxc`
+    /// is a pure function of the expression string, so the parse+walk is done
+    /// once per distinct expression instead of once per occurrence. The cached
+    /// `Vec` is read by reference (disjoint field borrow), so cache hits avoid
+    /// both the parse and any clone.
+    pub(crate) ident_cache: FxHashMap<CompactString, Vec<CompactString>>,
 }
 
 impl Analyzer {
@@ -144,6 +152,7 @@ impl Analyzer {
             vif_guard_cache: None,
             vif_branch_conditions: Vec::new(),
             vfor_depth: 0,
+            ident_cache: FxHashMap::default(),
         }
     }
 
@@ -162,6 +171,7 @@ impl Analyzer {
             vif_guard_cache: None,
             vif_branch_conditions: Vec::new(),
             vfor_depth: 0,
+            ident_cache: FxHashMap::default(),
         }
     }
 
