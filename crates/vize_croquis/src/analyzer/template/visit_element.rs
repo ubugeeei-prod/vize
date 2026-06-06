@@ -281,6 +281,8 @@ impl Analyzer {
                     start,
                     end,
                 );
+                // Entering a v-for scope: O(1) flag read by `is_in_vfor_scope`.
+                self.vfor_depth += 1;
 
                 let scope = self.summary.scopes.current_scope_mut();
                 for (name, offset) in &alias_offsets {
@@ -308,6 +310,8 @@ impl Analyzer {
         // so bindings and handlers on the same element are narrowed too.
         let vif_guard_pushed = if let Some(ref cond) = vif_condition {
             self.vif_guard_stack.push(cond.clone());
+            // Stack changed: recompute the memoized joined guard.
+            self.refresh_vif_guard_cache();
             true
         } else {
             false
@@ -445,6 +449,8 @@ impl Analyzer {
         // Pop v-if guard after visiting children
         if vif_guard_pushed {
             self.vif_guard_stack.pop();
+            // Stack changed: recompute the memoized joined guard.
+            self.refresh_vif_guard_cache();
         }
 
         // Exit v-for scope
@@ -453,6 +459,8 @@ impl Analyzer {
                 scope_vars.pop();
             }
             self.summary.scopes.exit_scope();
+            // Pairs with the increment at v-for scope enter above.
+            self.vfor_depth -= 1;
         }
 
         // Exit v-slot scope

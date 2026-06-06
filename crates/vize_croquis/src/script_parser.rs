@@ -19,6 +19,8 @@ mod process;
 mod typeof_refs;
 mod walk;
 
+use std::sync::LazyLock;
+
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -30,8 +32,8 @@ use crate::provide::ProvideInjectTracker;
 use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
 use crate::scope::{
-    JsGlobalScopeData, JsRuntime, NonScriptSetupScopeData, ScopeChain, ScriptSetupScopeData,
-    VueGlobalScopeData,
+    JsGlobalScopeData, JsRuntime, NonScriptSetupScopeData, ParamNames, ScopeChain,
+    ScriptSetupScopeData, VueGlobalScopeData,
 };
 use crate::setup_context::SetupContextTracker;
 use vize_carton::{CompactString, FxHashMap, FxHashSet, profile};
@@ -206,6 +208,105 @@ impl ScriptParseResult {
     }
 }
 
+/// Browser-only globals (WHATWG Living Standard + HTML timers).
+///
+/// Immutable, identical for every file. Kept as a static `&[&str]` so the
+/// `CompactString` list (see `BROWSER_GLOBAL_NAMES`) is materialized once
+/// instead of re-running the `smallvec!`/`const_new` construction per file.
+static BROWSER_GLOBALS: &[&str] = &[
+    "alert",
+    "Audio",
+    "cancelAnimationFrame",
+    "cancelIdleCallback",
+    "CanvasRenderingContext2D",
+    "clearInterval",
+    "clearTimeout",
+    "close",
+    "confirm",
+    "customElements",
+    "document",
+    "Document",
+    "DocumentFragment",
+    "Element",
+    "FocusEvent",
+    "getComputedStyle",
+    "getSelection",
+    "history",
+    "HTMLElement",
+    "Image",
+    "indexedDB",
+    "InputEvent",
+    "IntersectionObserver",
+    "KeyboardEvent",
+    "localStorage",
+    "location",
+    "matchMedia",
+    "MediaQueryList",
+    "MouseEvent",
+    "MutationObserver",
+    "navigator",
+    "Node",
+    "NodeList",
+    "open",
+    "PerformanceObserver",
+    "PointerEvent",
+    "print",
+    "prompt",
+    "queueMicrotask",
+    "requestAnimationFrame",
+    "requestIdleCallback",
+    "ResizeObserver",
+    "screen",
+    "self",
+    "sessionStorage",
+    "setInterval",
+    "setTimeout",
+    "ShadowRoot",
+    "TouchEvent",
+    "WebGL2RenderingContext",
+    "WebGLRenderingContext",
+    "WebSocket",
+    "window",
+    "XMLHttpRequest",
+];
+
+/// Server-only globals (WinterCG extensions, ESM-based).
+static NODE_GLOBALS: &[&str] = &["Buffer", "clearImmediate", "process", "setImmediate"];
+
+/// Vue globals ($refs, $emit, $slots, $attrs, $el, etc.).
+static VUE_GLOBALS: &[&str] = &[
+    "$attrs",
+    "$data",
+    "$el",
+    "$emit",
+    "$forceUpdate",
+    "$nextTick",
+    "$options",
+    "$parent",
+    "$props",
+    "$refs",
+    "$root",
+    "$slots",
+    "$watch",
+];
+
+/// `ParamNames` (the owned form stored in each global scope) built once from the
+/// static name lists. Each `enter_*_scope` consumes an owned list, so we clone
+/// per file — but the `CompactString` values (all short enough to stay inline)
+/// are constructed only once here rather than per file.
+static BROWSER_GLOBAL_NAMES: LazyLock<ParamNames> =
+    LazyLock::new(|| build_global_names(BROWSER_GLOBALS));
+static NODE_GLOBAL_NAMES: LazyLock<ParamNames> = LazyLock::new(|| build_global_names(NODE_GLOBALS));
+static VUE_GLOBAL_NAMES: LazyLock<ParamNames> = LazyLock::new(|| build_global_names(VUE_GLOBALS));
+
+/// Materialize a `&'static [&str]` into the owned `ParamNames` form.
+fn build_global_names(names: &'static [&'static str]) -> ParamNames {
+    names
+        .iter()
+        .map(|&name| CompactString::const_new(name))
+        .collect()
+}
+
 /// Setup global scopes hierarchy:
 /// - ~universal (JS globals) - root, @0:0 (meta)
 /// - ~vue (Vue globals) - parent: ~universal, @0:0 (meta)
@@ -219,62 +320,7 @@ fn setup_global_scopes(scopes: &mut ScopeChain, source_len: u32) {
     scopes.enter_js_global_scope(
         JsGlobalScopeData {
             runtime: JsRuntime::Browser,
-            globals: vize_carton::smallvec![
-                CompactString::const_new("alert"),
-                CompactString::const_new("Audio"),
-                CompactString::const_new("cancelAnimationFrame"),
-                CompactString::const_new("cancelIdleCallback"),
-                CompactString::const_new("CanvasRenderingContext2D"),
-                CompactString::const_new("clearInterval"),
-                CompactString::const_new("clearTimeout"),
-                CompactString::const_new("close"),
-                CompactString::const_new("confirm"),
-                CompactString::const_new("customElements"),
-                CompactString::const_new("document"),
-                CompactString::const_new("Document"),
-                CompactString::const_new("DocumentFragment"),
-                CompactString::const_new("Element"),
-                CompactString::const_new("FocusEvent"),
-                CompactString::const_new("getComputedStyle"),
-                CompactString::const_new("getSelection"),
-                CompactString::const_new("history"),
-                CompactString::const_new("HTMLElement"),
-                CompactString::const_new("Image"),
-                CompactString::const_new("indexedDB"),
-                CompactString::const_new("InputEvent"),
-                CompactString::const_new("IntersectionObserver"),
-                CompactString::const_new("KeyboardEvent"),
-                CompactString::const_new("localStorage"),
-                CompactString::const_new("location"),
-                CompactString::const_new("matchMedia"),
-                CompactString::const_new("MediaQueryList"),
-                CompactString::const_new("MouseEvent"),
-                CompactString::const_new("MutationObserver"),
-                CompactString::const_new("navigator"),
-                CompactString::const_new("Node"),
-                CompactString::const_new("NodeList"),
-                CompactString::const_new("open"),
-                CompactString::const_new("PerformanceObserver"),
-                CompactString::const_new("PointerEvent"),
-                CompactString::const_new("print"),
-                CompactString::const_new("prompt"),
-                CompactString::const_new("queueMicrotask"),
-                CompactString::const_new("requestAnimationFrame"),
-                CompactString::const_new("requestIdleCallback"),
-                CompactString::const_new("ResizeObserver"),
-                CompactString::const_new("screen"),
-                CompactString::const_new("self"),
-                CompactString::const_new("sessionStorage"),
-                CompactString::const_new("setInterval"),
-                CompactString::const_new("setTimeout"),
-                CompactString::const_new("ShadowRoot"),
-                CompactString::const_new("TouchEvent"),
-                CompactString::const_new("WebGL2RenderingContext"),
-                CompactString::const_new("WebGLRenderingContext"),
-                CompactString::const_new("WebSocket"),
-                CompactString::const_new("window"),
-                CompactString::const_new("XMLHttpRequest"),
-            ],
+            globals: BROWSER_GLOBAL_NAMES.clone(),
         },
         0,
         0,
@@ -286,12 +332,7 @@ fn setup_global_scopes(scopes: &mut ScopeChain, source_len: u32) {
     scopes.enter_js_global_scope(
         JsGlobalScopeData {
             runtime: JsRuntime::Node,
-            globals: vize_carton::smallvec![
-                CompactString::const_new("Buffer"),
-                CompactString::const_new("clearImmediate"),
-                CompactString::const_new("process"),
-                CompactString::const_new("setImmediate"),
-            ],
+            globals: NODE_GLOBAL_NAMES.clone(),
         },
         0,
         0,
@@ -301,21 +342,7 @@ fn setup_global_scopes(scopes: &mut ScopeChain, source_len: u32) {
     // ~vue - Vue globals (parent: ~univ, meta scope)
     scopes.enter_vue_global_scope(
         VueGlobalScopeData {
-            globals: vize_carton::smallvec![
-                CompactString::const_new("$attrs"),
-                CompactString::const_new("$data"),
-                CompactString::const_new("$el"),
-                CompactString::const_new("$emit"),
-                CompactString::const_new("$forceUpdate"),
-                CompactString::const_new("$nextTick"),
-                CompactString::const_new("$options"),
-                CompactString::const_new("$parent"),
-                CompactString::const_new("$props"),
-                CompactString::const_new("$refs"),
-                CompactString::const_new("$root"),
-                CompactString::const_new("$slots"),
-                CompactString::const_new("$watch"),
-            ],
+            globals: VUE_GLOBAL_NAMES.clone(),
         },
         0,
         0,
