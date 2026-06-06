@@ -126,7 +126,7 @@ Special thanks to:
 
 - [Blacksmith](https://www.blacksmith.sh/) for sponsoring CI/CD runner infrastructure.
 - [かっこかり](https://github.com/kakkokari-gtyih) for regular debugging and monitoring around
-  Misskey, including many compiler-focused bug reports.
+  [Misskey](https://github.com/misskey-dev/misskey) (~103k lines of Vue across 586 SFCs), including many compiler-focused bug reports.
 - [ushironoko](https://github.com/ushironoko) for compiler, linter, and CLI bug reports,
   reference implementations, and reproduction repositories.
 - [dannote](https://github.com/dannote) for Elixier feedback, PRs, and CSS-facing fixes.

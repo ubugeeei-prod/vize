@@ -11,7 +11,7 @@ tooling, and ecosystem experiments. In particular, thank you to:
 - [Blacksmith](https://www.blacksmith.sh/) for sponsoring the CI/CD runner infrastructure that
   keeps the full workflow matrix practical to run.
 - [かっこかり](https://github.com/kakkokari-gtyih) for regular debugging and monitoring around
-  Misskey, with many reports around compiler behavior and edge cases.
+  [Misskey](https://github.com/misskey-dev/misskey) — a large Vue codebase with ~103k lines of Vue across 586 SFCs — with many reports around compiler behavior and edge cases.
 - [ushironoko](https://github.com/ushironoko) for bug reports from the compiler, linter, and CLI
   sides of the project, along with reference implementations for fixes and reproduction
   repositories for difficult issues.
