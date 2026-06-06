@@ -55,48 +55,67 @@ pub fn format_script_content(
     Ok(formatted.into())
 }
 
+thread_local! {
+    /// Per-thread scratch reused across template-expression formats. A single
+    /// template can call `format_js_expression` thousands of times (once per
+    /// interpolation / directive value); reusing the arena (reset between calls)
+    /// avoids a bumpalo chunk alloc+teardown per call, and reusing the `void (…)`
+    /// wrapper buffer avoids a heap allocation per call. The CLI formats files in
+    /// parallel, so per-thread state keeps each worker independent and lock-free.
+    static EXPR_SCRATCH: core::cell::RefCell<(OxcAllocator, String)> =
+        core::cell::RefCell::new((OxcAllocator::default(), String::default()));
+}
+
 /// Format a JS expression (for use in template directive values and interpolations).
 /// Returns None if the expression cannot be parsed/formatted.
-#[allow(clippy::disallowed_macros)]
 pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<String> {
     let trimmed = expr.trim();
     if trimmed.is_empty() {
         return Some(String::default());
     }
 
-    let oxc_allocator = OxcAllocator::default();
-    let source_type = SourceType::ts().with_module(true);
+    EXPR_SCRATCH.with(|cell| {
+        let mut scratch = cell.borrow_mut();
+        let (oxc_allocator, wrapped) = &mut *scratch;
+        // Recycle the arena memory instead of allocating/freeing a fresh one.
+        oxc_allocator.reset();
 
-    // Wrap expression in a variable declaration to make it parseable.
-    // Use `void` so the expression is a complete statement and the formatter
-    // can output it cleanly. We extract the part after "void ".
-    let wrapped = format!("void ({})", trimmed);
-    let parsed = Parser::new(&oxc_allocator, &wrapped, source_type)
-        .with_options(get_parse_options())
-        .parse();
+        let source_type = SourceType::ts().with_module(true);
 
-    if !parsed.errors.is_empty() {
-        return None;
-    }
+        // Wrap the expression in a `void (…)` statement so it parses as a complete
+        // statement the formatter can emit cleanly; we extract the inner part
+        // below. Build the wrapper in the reused buffer (no per-call allocation).
+        wrapped.clear();
+        wrapped.push_str("void (");
+        wrapped.push_str(trimmed);
+        wrapped.push(')');
+        let parsed = Parser::new(oxc_allocator, wrapped.as_str(), source_type)
+            .with_options(get_parse_options())
+            .parse();
 
-    let oxc_options = options.to_oxc_format_options();
-    let formatted = OxcFormatter::new(&oxc_allocator, oxc_options).build(&parsed.program);
+        if !parsed.errors.is_empty() {
+            return None;
+        }
 
-    // Extract the expression back from the formatted output.
-    // preserve_parens is false, so the formatter may remove the wrapping parens.
-    // Expected forms:  "void expression;\n"  or  "void (expression);\n"
-    let formatted = formatted.trim();
-    let formatted = formatted.strip_suffix(';').unwrap_or(formatted);
-    let inner = formatted.strip_prefix("void ").unwrap_or(formatted);
+        let oxc_options = options.to_oxc_format_options();
+        let formatted = OxcFormatter::new(oxc_allocator, oxc_options).build(&parsed.program);
 
-    // Strip outer parens if the formatter kept them
-    let inner = if inner.starts_with('(') && inner.ends_with(')') {
-        &inner[1..inner.len() - 1]
-    } else {
-        inner
-    };
+        // Extract the expression back from the formatted output.
+        // preserve_parens is false, so the formatter may remove the wrapping parens.
+        // Expected forms:  "void expression;\n"  or  "void (expression);\n"
+        let formatted = formatted.trim();
+        let formatted = formatted.strip_suffix(';').unwrap_or(formatted);
+        let inner = formatted.strip_prefix("void ").unwrap_or(formatted);
 
-    Some(inner.trim().to_compact_string())
+        // Strip outer parens if the formatter kept them
+        let inner = if inner.starts_with('(') && inner.ends_with(')') {
+            &inner[1..inner.len() - 1]
+        } else {
+            inner
+        };
+
+        Some(inner.trim().to_compact_string())
+    })
 }
 
 #[cfg(test)]
