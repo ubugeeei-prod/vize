@@ -1,0 +1,24 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.parentTheme), 1 /* TEXT */))
+}
+
+const _sfc_main = {
+  provide() {
+    return { theme: this.theme }
+  },
+  inject: {
+    parentTheme: { from: 'theme', default: 'light' }
+  },
+  data() {
+    return { theme: 'dark' }
+  }
+}
+
+_sfc_main.render = _sfc_render
+export default _sfc_main

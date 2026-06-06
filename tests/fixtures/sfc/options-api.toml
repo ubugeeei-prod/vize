@@ -1,0 +1,530 @@
+# SFC tests: Options API coverage
+#
+# Exercises non-`<script setup>` components and how the template compiler resolves
+# bindings to Options API members (data / computed / methods / props / emits / etc.).
+# Each case is compiled in both JS and TS output modes by the snapshot harness.
+#
+# The official Vue baseline is `@vue/compiler-sfc`; when Vize output here disagrees
+# with the official compiler for one of these inputs, treat it as a parity bug to file.
+
+mode = "sfc"
+
+[[cases]]
+name = "data with multiple properties"
+input = """
+<script>
+export default {
+  data() {
+    return { firstName: 'Ada', lastName: 'Lovelace', count: 0 }
+  }
+}
+</script>
+
+<template>
+  <div>{{ firstName }} {{ lastName }} ({{ count }})</div>
+</template>
+"""
+
+[[cases]]
+name = "computed object form"
+input = """
+<script>
+export default {
+  data() {
+    return { first: 'Ada', last: 'Lovelace' }
+  },
+  computed: {
+    fullName() {
+      return this.first + ' ' + this.last
+    }
+  }
+}
+</script>
+
+<template>
+  <div>{{ fullName }}</div>
+</template>
+"""
+
+[[cases]]
+name = "computed get set with v-model"
+input = """
+<script>
+export default {
+  data() {
+    return { firstName: 'Ada', lastName: 'Lovelace' }
+  },
+  computed: {
+    fullName: {
+      get() {
+        return this.firstName + ' ' + this.lastName
+      },
+      set(value) {
+        const parts = value.split(' ')
+        this.firstName = parts[0]
+        this.lastName = parts[1]
+      }
+    }
+  }
+}
+</script>
+
+<template>
+  <input v-model="fullName" />
+</template>
+"""
+
+[[cases]]
+name = "methods with event handler"
+input = """
+<script>
+export default {
+  data() {
+    return { count: 0 }
+  },
+  methods: {
+    increment() {
+      this.count++
+    }
+  }
+}
+</script>
+
+<template>
+  <button @click="increment">{{ count }}</button>
+</template>
+"""
+
+[[cases]]
+name = "method called in interpolation"
+input = """
+<script>
+export default {
+  data() {
+    return { name: 'world' }
+  },
+  methods: {
+    greet(who) {
+      return 'Hello, ' + who
+    }
+  }
+}
+</script>
+
+<template>
+  <div>{{ greet(name) }}</div>
+</template>
+"""
+
+[[cases]]
+name = "watch handlers object and deep"
+input = """
+<script>
+export default {
+  data() {
+    return { question: '', answer: '', list: [] }
+  },
+  watch: {
+    question(newValue, oldValue) {
+      this.answer = newValue
+    },
+    list: {
+      handler(value) {
+        this.answer = String(value.length)
+      },
+      deep: true,
+      immediate: true
+    }
+  }
+}
+</script>
+
+<template>
+  <input v-model="question" />
+</template>
+"""
+
+[[cases]]
+name = "lifecycle hooks"
+input = """
+<script>
+export default {
+  data() {
+    return { ready: false }
+  },
+  created() {
+    this.ready = false
+  },
+  mounted() {
+    this.ready = true
+  },
+  beforeUnmount() {
+    this.ready = false
+  }
+}
+</script>
+
+<template>
+  <div>{{ ready }}</div>
+</template>
+"""
+
+[[cases]]
+name = "props array form"
+input = """
+<script>
+export default {
+  props: ['title', 'count']
+}
+</script>
+
+<template>
+  <div>{{ title }}: {{ count }}</div>
+</template>
+"""
+
+[[cases]]
+name = "props object form with defaults"
+input = """
+<script>
+export default {
+  props: {
+    title: String,
+    count: {
+      type: Number,
+      default: 0,
+      required: false
+    },
+    items: {
+      type: Array,
+      default() {
+        return []
+      }
+    }
+  }
+}
+</script>
+
+<template>
+  <div>{{ title }}: {{ count }} ({{ items.length }})</div>
+</template>
+"""
+
+[[cases]]
+name = "emits with template emit"
+input = """
+<script>
+export default {
+  emits: ['submit', 'cancel'],
+  data() {
+    return { value: '' }
+  }
+}
+</script>
+
+<template>
+  <form @submit.prevent="$emit('submit', value)">
+    <button type="button" @click="$emit('cancel')">Cancel</button>
+  </form>
+</template>
+"""
+
+[[cases]]
+name = "local component registration"
+input = """
+<script>
+import ChildComp from './Child.vue'
+
+export default {
+  components: { ChildComp }
+}
+</script>
+
+<template>
+  <ChildComp />
+</template>
+"""
+
+[[cases]]
+name = "local custom directive"
+input = """
+<script>
+export default {
+  directives: {
+    focus: {
+      mounted(el) {
+        el.focus()
+      }
+    }
+  }
+}
+</script>
+
+<template>
+  <input v-focus />
+</template>
+"""
+
+[[cases]]
+name = "mixins"
+input = """
+<script>
+import { loggerMixin } from './mixins.js'
+
+export default {
+  mixins: [loggerMixin],
+  data() {
+    return { local: 1 }
+  }
+}
+</script>
+
+<template>
+  <div>{{ local }} {{ sharedValue }}</div>
+</template>
+"""
+
+[[cases]]
+name = "extends base component"
+input = """
+<script>
+import Base from './Base.vue'
+
+export default {
+  extends: Base,
+  data() {
+    return { extra: true }
+  }
+}
+</script>
+
+<template>
+  <div>{{ extra }}</div>
+</template>
+"""
+
+[[cases]]
+name = "provide and inject"
+input = """
+<script>
+export default {
+  provide() {
+    return { theme: this.theme }
+  },
+  inject: {
+    parentTheme: { from: 'theme', default: 'light' }
+  },
+  data() {
+    return { theme: 'dark' }
+  }
+}
+</script>
+
+<template>
+  <div>{{ parentTheme }}</div>
+</template>
+"""
+
+[[cases]]
+name = "setup function with options api"
+input = """
+<script>
+import { ref } from 'vue'
+
+export default {
+  data() {
+    return { fromData: 'data' }
+  },
+  setup() {
+    const fromSetup = ref('setup')
+    return { fromSetup }
+  }
+}
+</script>
+
+<template>
+  <div>{{ fromSetup }} {{ fromData }}</div>
+</template>
+"""
+
+[[cases]]
+name = "render function no template"
+input = """
+<script>
+import { h } from 'vue'
+
+export default {
+  data() {
+    return { msg: 'hello' }
+  },
+  render() {
+    return h('div', this.msg)
+  }
+}
+</script>
+"""
+
+[[cases]]
+name = "name and inherit attrs"
+input = """
+<script>
+export default {
+  name: 'MyWidget',
+  inheritAttrs: false,
+  props: ['label']
+}
+</script>
+
+<template>
+  <div v-bind="$attrs">{{ label }}</div>
+</template>
+"""
+
+[[cases]]
+name = "expose option"
+input = """
+<script>
+export default {
+  data() {
+    return { count: 0 }
+  },
+  expose: ['count'],
+  methods: {
+    reset() {
+      this.count = 0
+    }
+  }
+}
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"""
+
+[[cases]]
+name = "dynamic class and style from data"
+input = """
+<script>
+export default {
+  data() {
+    return { active: true, color: 'red' }
+  }
+}
+</script>
+
+<template>
+  <div :class="{ active: active }" :style="{ color: color }">content</div>
+</template>
+"""
+
+[[cases]]
+name = "v-for over data array"
+input = """
+<script>
+export default {
+  data() {
+    return { items: ['a', 'b', 'c'] }
+  }
+}
+</script>
+
+<template>
+  <ul>
+    <li v-for="(item, index) in items" :key="index">{{ item }}</li>
+  </ul>
+</template>
+"""
+
+[[cases]]
+name = "v-if with computed condition"
+input = """
+<script>
+export default {
+  data() {
+    return { count: 0 }
+  },
+  computed: {
+    isEmpty() {
+      return this.count === 0
+    }
+  }
+}
+</script>
+
+<template>
+  <div>
+    <p v-if="isEmpty">empty</p>
+    <p v-else>{{ count }}</p>
+  </div>
+</template>
+"""
+
+[[cases]]
+name = "define component options api ts"
+input = """
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  data() {
+    return { count: 0 as number }
+  },
+  computed: {
+    doubled(): number {
+      return this.count * 2
+    }
+  }
+})
+</script>
+
+<template>
+  <div>{{ doubled }}</div>
+</template>
+"""
+
+[[cases]]
+name = "props with prop type typescript"
+input = """
+<script lang="ts">
+import { defineComponent, PropType } from 'vue'
+
+interface Item {
+  id: number
+  label: string
+}
+
+export default defineComponent({
+  props: {
+    items: {
+      type: Array as PropType<Item[]>,
+      default: () => []
+    }
+  }
+})
+</script>
+
+<template>
+  <div>{{ items.length }}</div>
+</template>
+"""
+
+[[cases]]
+name = "script and script setup combined"
+input = """
+<script>
+export default {
+  inheritAttrs: false,
+  name: 'Combined'
+}
+</script>
+
+<script setup>
+import { ref } from 'vue'
+const count = ref(0)
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"""

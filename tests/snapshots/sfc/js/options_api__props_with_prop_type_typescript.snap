@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.items.length), 1 /* TEXT */))
+}
+import { defineComponent } from "vue";
+const _sfc_main = defineComponent({ props: { items: {
+  type: Array,
+  default: () => []
+} } });
+
+_sfc_main.render = _sfc_render
+export default _sfc_main

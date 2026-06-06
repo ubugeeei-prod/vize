@@ -1,0 +1,18 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+import { toDisplayString as _toDisplayString, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(_ctx.$attrs)), _toDisplayString(_ctx.label), 17 /* TEXT, FULL_PROPS */))
+}
+
+const _sfc_main = {
+  name: 'MyWidget',
+  inheritAttrs: false,
+  props: ['label']
+}
+
+_sfc_main.render = _sfc_render
+export default _sfc_main

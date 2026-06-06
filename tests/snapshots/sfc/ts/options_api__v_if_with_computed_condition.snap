@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (_ctx.isEmpty)
+      ? (_openBlock(), _createElementBlock("p", { key: 0 }, "empty"))
+      : (_openBlock(), _createElementBlock("p", { key: 1 }, _toDisplayString(_ctx.count), 1 /* TEXT */))
+  ]))
+}
+
+const _sfc_main = {
+  data() {
+    return { count: 0 }
+  },
+  computed: {
+    isEmpty() {
+      return this.count === 0
+    }
+  }
+}
+
+_sfc_main.render = _sfc_render
+export default _sfc_main

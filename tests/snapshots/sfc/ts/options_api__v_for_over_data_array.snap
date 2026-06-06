@@ -1,0 +1,22 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("ul", null, [
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, (item, index) => {
+      return (_openBlock(), _createElementBlock("li", { key: index }, _toDisplayString(item), 1 /* TEXT */))
+    }), 128 /* KEYED_FRAGMENT */))
+  ]))
+}
+
+const _sfc_main = {
+  data() {
+    return { items: ['a', 'b', 'c'] }
+  }
+}
+
+_sfc_main.render = _sfc_render
+export default _sfc_main

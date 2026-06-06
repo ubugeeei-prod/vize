@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+import { withModifiers as _withModifiers, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("form", {
+    onSubmit: _withModifiers($event => (_ctx.$emit('submit', _ctx.value)), ["prevent"])
+  }, [
+    _createElementVNode("button", {
+      type: "button",
+      onClick: $event => (_ctx.$emit('cancel'))
+    }, "Cancel", 8 /* PROPS */, ["onClick"])
+  ], 40 /* PROPS, NEED_HYDRATION */, ["onSubmit"]))
+}
+
+const _sfc_main = {
+  emits: ['submit', 'cancel'],
+  data() {
+    return { value: '' }
+  }
+}
+
+_sfc_main.render = _sfc_render
+export default _sfc_main

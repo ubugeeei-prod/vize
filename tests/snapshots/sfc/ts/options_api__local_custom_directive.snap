@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  const _directive_focus = _resolveDirective("focus")
+  
+  return _withDirectives((_openBlock(), _createElementBlock("input", null, null, 512 /* NEED_PATCH */)), [
+    [_directive_focus]
+  ])
+}
+
+const _sfc_main = {
+  directives: {
+    focus: {
+      mounted(el) {
+        el.focus()
+      }
+    }
+  }
+}
+
+_sfc_main.render = _sfc_render
+export default _sfc_main

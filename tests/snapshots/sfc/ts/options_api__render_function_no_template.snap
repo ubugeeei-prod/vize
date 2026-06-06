@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+
+import { h } from 'vue'
+
+const _sfc_main = {
+  data() {
+    return { msg: 'hello' }
+  },
+  render() {
+    return h('div', this.msg)
+  }
+}
+
+export default _sfc_main

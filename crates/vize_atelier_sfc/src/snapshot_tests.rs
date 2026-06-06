@@ -245,3 +245,13 @@ fn test_directives_ts_snapshots() {
 fn test_directives_js_snapshots() {
     assert_sfc_snapshots("directives", "js", "directives__");
 }
+
+#[test]
+fn test_options_api_ts_snapshots() {
+    assert_sfc_snapshots("options-api", "ts", "options_api__");
+}
+
+#[test]
+fn test_options_api_js_snapshots() {
+    assert_sfc_snapshots("options-api", "js", "options_api__");
+}
