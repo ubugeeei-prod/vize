@@ -40,6 +40,19 @@ export function render(_ctx, _cache) {
   }), 128 /* KEYED_FRAGMENT */))
 }
 ===
+name: v-for with dynamic prop and no children
+options: vdom
+--- INPUT ---
+<div v-for="(_, i) in ary" :prop="val" />
+--- OUTPUT ---
+import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.ary, (_, i) => {
+    return (_openBlock(), _createElementBlock("div", { prop: _ctx.val }, null, 8 /* PROPS */, ["prop"]))
+  }), 256 /* UNKEYED_FRAGMENT */))
+}
+===
 name: v-for object
 options: vdom
 --- INPUT ---
@@ -76,6 +89,19 @@ import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlo
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock(_Fragment, null, _renderList(10, (n) => {
     return _createElementVNode("div", { key: n }, _toDisplayString(n), 1 /* TEXT */)
+  }), 64 /* STABLE_FRAGMENT */))
+}
+===
+name: v-for range with dynamic prop and no children
+options: vdom
+--- INPUT ---
+<div v-for="n in 10" :prop="val" />
+--- OUTPUT ---
+import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, _renderList(10, (n) => {
+    return _createElementVNode("div", { prop: _ctx.val }, null, 8 /* PROPS */, ["prop"])
   }), 64 /* STABLE_FRAGMENT */))
 }
 ===

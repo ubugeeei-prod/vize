@@ -248,6 +248,38 @@ import { Child } from "./components";
     }
 
     #[test]
+    fn test_compile_sfc_v_for_dynamic_prop_without_children_emits_null_children() {
+        let source = r#"
+<template>
+  <div
+    v-for="_, i in ary"
+    :prop="val"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue"
+const ary = ref([])
+const val = ref(0)
+</script>
+"#;
+        let descriptor = parse_sfc(source, Default::default()).unwrap();
+        let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+        let normalized = result.code.replace('\n', " ");
+
+        assert!(
+            normalized.contains(r#"_createElementBlock("div", { prop: val.value }, null, 8"#),
+            "v-for element with dynamic props and no children must emit a null children argument. Got:\n{}",
+            result.code
+        );
+        assert!(
+            !normalized.contains(r#"_createElementBlock("div", { prop: val.value }, 8"#),
+            "patch flag must not occupy the children argument. Got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_compile_sfc_ts_ref_condition_and_handler_keep_value_access() {
         use vize_carton::ToCompactString;
 

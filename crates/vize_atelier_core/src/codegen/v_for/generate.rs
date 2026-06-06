@@ -137,15 +137,39 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     }
                 }
 
-                // Add TEXT patch flag if has interpolation
-                let has_interpolation = children_el
-                    .children
-                    .iter()
-                    .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
                 if gen_is_template {
                     ctx.push(", 64 /* STABLE_FRAGMENT */");
-                } else if has_interpolation {
-                    ctx.push(", 1 /* TEXT */");
+                } else {
+                    let (patch_flag, dynamic_props) = calculate_element_patch_info(
+                        children_el,
+                        ctx.options.binding_metadata.as_ref(),
+                        ctx.cache_handlers_in_current_scope(),
+                    );
+                    let patch_flag = strip_need_patch_for_v_for_item(patch_flag);
+                    if children_el.children.is_empty()
+                        && (patch_flag.is_some() || dynamic_props.is_some())
+                    {
+                        ctx.push(", null");
+                    }
+                    if let Some(flag) = patch_flag {
+                        ctx.push(", ");
+                        ctx.push(&flag.to_compact_string());
+                        ctx.push(" /* ");
+                        ctx.push(&patch_flag_name(flag));
+                        ctx.push(" */");
+                    }
+                    if let Some(props) = dynamic_props {
+                        ctx.push(", [");
+                        for (i, prop) in props.iter().enumerate() {
+                            if i > 0 {
+                                ctx.push(", ");
+                            }
+                            ctx.push("\"");
+                            ctx.push(prop);
+                            ctx.push("\"");
+                        }
+                        ctx.push("]");
+                    }
                 }
 
                 if gen_is_template {
@@ -346,6 +370,11 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         ctx.cache_handlers_in_current_scope(),
                     );
                     let patch_flag = strip_need_patch_for_v_for_item(patch_flag);
+                    if flag_el.children.is_empty()
+                        && (patch_flag.is_some() || dynamic_props.is_some())
+                    {
+                        ctx.push(", null");
+                    }
                     if let Some(flag) = patch_flag {
                         ctx.push(", ");
                         ctx.push(&flag.to_compact_string());

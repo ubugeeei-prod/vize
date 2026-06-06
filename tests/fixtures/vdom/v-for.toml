@@ -19,6 +19,10 @@ name = "v-for with index"
 input = '<div v-for="(item, index) in items" :key="index">{{ index }}: {{ item }}</div>'
 
 [[cases]]
+name = "v-for with dynamic prop and no children"
+input = '<div v-for="(_, i) in ary" :prop="val" />'
+
+[[cases]]
 name = "v-for object"
 input = '<div v-for="(value, key) in obj" :key="key">{{ key }}: {{ value }}</div>'
 
@@ -29,6 +33,10 @@ input = '<div v-for="(value, key, index) in obj" :key="index">{{ index }}. {{ ke
 [[cases]]
 name = "v-for range"
 input = '<div v-for="n in 10" :key="n">{{ n }}</div>'
+
+[[cases]]
+name = "v-for range with dynamic prop and no children"
+input = '<div v-for="n in 10" :prop="val" />'
 
 # =============================================================================
 # v-for of syntax
