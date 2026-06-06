@@ -8,11 +8,15 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 
 const realworldSnapshotApps = [
   "ant-design-vue",
+  "element-plus",
   "elk",
+  "hoppscotch",
   "misskey",
   "npmx",
   "nuxt-ui",
   "reka-ui",
+  "voicevox",
+  "vue-vben-admin",
   "vuefes",
 ] as const;
 

@@ -29,3 +29,23 @@
 [submodule "tests/_fixtures/_git/reka-ui"]
 	path = tests/_fixtures/_git/reka-ui
 	url = https://github.com/unovue/reka-ui
+
+[submodule "tests/_fixtures/_git/vue-vben-admin"]
+	path = tests/_fixtures/_git/vue-vben-admin
+	url = https://github.com/vbenjs/vue-vben-admin
+	shallow = true
+
+[submodule "tests/_fixtures/_git/hoppscotch"]
+	path = tests/_fixtures/_git/hoppscotch
+	url = https://github.com/hoppscotch/hoppscotch
+	shallow = true
+
+[submodule "tests/_fixtures/_git/element-plus"]
+	path = tests/_fixtures/_git/element-plus
+	url = https://github.com/element-plus/element-plus
+	shallow = true
+
+[submodule "tests/_fixtures/_git/voicevox"]
+	path = tests/_fixtures/_git/voicevox
+	url = https://github.com/VOICEVOX/voicevox
+	shallow = true

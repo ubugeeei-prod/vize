@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "requiredToolCoverage": [
+    "compiler",
+    "linter",
+    "typechecker",
+    "formatter",
+    "syntax-highlighter",
+    "lsp"
+  ],
+  "projects": [
+    {
+      "id": "vue-vben-admin",
+      "displayName": "Vue Vben Admin",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/vue-vben-admin",
+      "repository": "https://github.com/vbenjs/vue-vben-admin",
+      "revision": "748b182e440863711dc9624924e92440f5ddc4d3",
+      "license": {
+        "spdx": "MIT",
+        "files": ["LICENSE"]
+      },
+      "vueGlobs": ["playground/src/**/*.vue", "apps/**/*.vue", "packages/**/*.vue"],
+      "tsconfig": "playground/tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0.05
+      }
+    },
+    {
+      "id": "hoppscotch",
+      "displayName": "Hoppscotch",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/hoppscotch",
+      "repository": "https://github.com/hoppscotch/hoppscotch",
+      "revision": "e067ee0b3224c675ba4b9bcd98366d0f1b6be3ee",
+      "license": {
+        "spdx": "MIT",
+        "files": ["LICENSE"]
+      },
+      "vueGlobs": ["packages/**/*.vue"],
+      "tsconfig": "packages/hoppscotch-common/tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0.05
+      }
+    },
+    {
+      "id": "element-plus",
+      "displayName": "Element Plus",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/element-plus",
+      "repository": "https://github.com/element-plus/element-plus",
+      "revision": "20298a21ae54a5417955373b80130ae7c548a6bb",
+      "license": {
+        "spdx": "MIT",
+        "files": ["LICENSE"]
+      },
+      "vueGlobs": ["packages/**/*.vue", "docs/**/*.vue", "ssr-testing/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0.05
+      }
+    },
+    {
+      "id": "ant-design-vue",
+      "displayName": "Ant Design Vue",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/ant-design-vue",
+      "repository": "https://github.com/vueComponent/ant-design-vue",
+      "revision": "f0c2a92f935789581bca4b011fe491bc493fd9d5",
+      "license": {
+        "spdx": "MIT",
+        "files": ["LICENSE"]
+      },
+      "vueGlobs": ["components/**/*.vue", "site/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0.05
+      }
+    },
+    {
+      "id": "reka-ui",
+      "displayName": "Reka UI",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/reka-ui",
+      "repository": "https://github.com/unovue/reka-ui",
+      "revision": "cf31bdd17e5004763fdc6797fbd70380653c5f83",
+      "license": {
+        "spdx": "MIT",
+        "files": ["LICENSE"]
+      },
+      "vueGlobs": ["packages/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0.05
+      }
+    },
+    {
+      "id": "voicevox",
+      "displayName": "VOICEVOX",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/voicevox",
+      "repository": "https://github.com/VOICEVOX/voicevox",
+      "revision": "10e8a478167d82202fee682e4c95d75b612c7a96",
+      "license": {
+        "spdx": "LGPL-3.0-or-later OR LicenseRef-VOICEVOX-Commercial",
+        "files": ["LICENSE", "LGPL_LICENSE"]
+      },
+      "vueGlobs": ["src/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0.02,
+        "largeProjectRegressionTarget": true
+      }
+    },
+    {
+      "id": "elk",
+      "displayName": "Elk",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/elk",
+      "repository": "https://github.com/elk-zone/elk",
+      "revision": "e0aaee6868d870a5af431bf71d75fcfbc3c4f25a",
+      "license": {
+        "spdx": "MIT",
+        "files": ["LICENSE"]
+      },
+      "vueGlobs": ["app/**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0.02,
+        "largeProjectRegressionTarget": true
+      }
+    },
+    {
+      "id": "misskey",
+      "displayName": "Misskey",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/misskey",
+      "repository": "https://github.com/misskey-dev/misskey",
+      "revision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "files": ["LICENSE"]
+      },
+      "vueGlobs": ["packages/frontend/src/**/*.vue"],
+      "tsconfig": "packages/frontend/tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0.02,
+        "largeProjectRegressionTarget": true
+      }
+    }
+  ]
+}

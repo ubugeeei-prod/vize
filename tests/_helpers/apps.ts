@@ -42,6 +42,7 @@ export interface AppConfig {
   check?: {
     cwd: string;
     patterns: string[];
+    tsconfig?: string;
   };
   lint?: {
     cwd: string;
@@ -710,6 +711,10 @@ const FRONTEND_PHPCON_WORK_DIR = getMutableGitFixtureDir("frontend-phpcon-do-web
 const NUXT_UI_WORK_DIR = getMutableGitFixtureDir("nuxt-ui", "playground");
 const REKA_UI_DOCS_WORK_DIR = getMutableGitFixtureDir("reka-ui", "docs");
 const VUEFES_WORK_DIR = getMutableGitFixtureDir("vuefes-2025");
+const VUE_VBEN_ADMIN_DIR = path.join(GIT_DIR, "vue-vben-admin");
+const HOPPSCOTCH_DIR = path.join(GIT_DIR, "hoppscotch");
+const ELEMENT_PLUS_DIR = path.join(GIT_DIR, "element-plus");
+const VOICEVOX_DIR = path.join(GIT_DIR, "voicevox");
 
 // --- App configurations ---
 
@@ -1834,6 +1839,76 @@ export const antDesignVueApp: AppConfig = {
   },
 };
 
+export const vueVbenAdminApp: AppConfig = {
+  name: "vue-vben-admin",
+  cwd: VUE_VBEN_ADMIN_DIR,
+  command: "npx",
+  args: ["-y", "pnpm@10", "dev:antd", "--host", "0.0.0.0", "--port", "5340"],
+  port: 5340,
+  url: "http://localhost:5340",
+  mountSelector: "#app",
+  readyPattern: /Local:\s+http:\/\/localhost:5340/,
+  allowNon200: true,
+  waitUntil: "load",
+  readyDelay: 10_000,
+  startupTimeout: 180_000,
+  check: {
+    cwd: VUE_VBEN_ADMIN_DIR,
+    patterns: ["playground/src/**/*.vue", "apps/**/*.vue", "packages/**/*.vue"],
+  },
+  lint: {
+    cwd: VUE_VBEN_ADMIN_DIR,
+    patterns: ["playground/src/**/*.vue", "apps/**/*.vue", "packages/**/*.vue"],
+  },
+};
+
+export const hoppscotchApp: AppConfig = {
+  name: "hoppscotch",
+  cwd: HOPPSCOTCH_DIR,
+  command: "npx",
+  args: ["-y", "pnpm@10", "dev"],
+  port: 5341,
+  url: "http://localhost:5341",
+  mountSelector: "#app",
+  readyPattern: /Local:\s+http:\/\//,
+  allowNon200: true,
+  waitUntil: "load",
+  readyDelay: 10_000,
+  startupTimeout: 180_000,
+  check: {
+    cwd: HOPPSCOTCH_DIR,
+    patterns: ["packages/**/*.vue"],
+  },
+  lint: {
+    cwd: HOPPSCOTCH_DIR,
+    patterns: ["packages/**/*.vue"],
+  },
+};
+
+export const elementPlusApp: AppConfig = {
+  name: "element-plus",
+  cwd: ELEMENT_PLUS_DIR,
+  command: "npx",
+  args: ["-y", "pnpm@10", "dev", "--host", "0.0.0.0", "--port", "5342"],
+  port: 5342,
+  url: "http://localhost:5342",
+  mountSelector: "#app",
+  readyPattern: /Local:\s+http:\/\//,
+  allowNon200: true,
+  waitUntil: "load",
+  readyDelay: 10_000,
+  startupTimeout: 180_000,
+  check: {
+    cwd: ELEMENT_PLUS_DIR,
+    patterns: ["packages/**/*.vue", "docs/**/*.vue", "ssr-testing/**/*.vue"],
+    tsconfig: "tsconfig.json",
+  },
+  lint: {
+    cwd: ELEMENT_PLUS_DIR,
+    patterns: ["packages/**/*.vue", "docs/**/*.vue", "ssr-testing/**/*.vue"],
+  },
+};
+
 export const nuxtUiApp: AppConfig = {
   name: "nuxt-ui",
   cwd: NUXT_UI_WORK_DIR,
@@ -1940,6 +2015,30 @@ export const rekaUiDocsApp: AppConfig = {
       stdio: "inherit",
       timeout: 900_000,
     });
+  },
+};
+
+export const voicevoxApp: AppConfig = {
+  name: "voicevox",
+  cwd: VOICEVOX_DIR,
+  command: "npx",
+  args: ["-y", "pnpm@10", "dev", "--host", "0.0.0.0", "--port", "5343"],
+  port: 5343,
+  url: "http://localhost:5343",
+  mountSelector: "#app",
+  readyPattern: /Local:\s+http:\/\//,
+  allowNon200: true,
+  waitUntil: "load",
+  readyDelay: 10_000,
+  startupTimeout: 180_000,
+  check: {
+    cwd: VOICEVOX_DIR,
+    patterns: ["src/**/*.vue"],
+    tsconfig: "tsconfig.json",
+  },
+  lint: {
+    cwd: VOICEVOX_DIR,
+    patterns: ["src/**/*.vue"],
   },
 };
 
