@@ -11,7 +11,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
   ],
   "options": {
     "customRenderer": false,
-    "vueParserQuirks": true
+    "templateSyntax": "quirks"
   },
   "selectedFile": "src/App.vue",
   "target": "ssr",

@@ -65,7 +65,7 @@ export interface BatchCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
-  vueParserQuirks?: boolean;
+  templateSyntax?: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;
@@ -207,8 +207,8 @@ export interface CompilerOptions {
   isTs?: boolean;
   /** Whether the template targets a custom renderer instead of the DOM. */
   customRenderer?: boolean;
-  /** Enable Vue parser quirk compatibility for known edge cases. */
-  vueParserQuirks?: boolean;
+  /** Template syntax compatibility mode. */
+  templateSyntax?: "standard" | "strict" | "quirks";
   /** Module name for runtime imports. */
   runtimeModuleName?: string;
   /** Global variable name for standalone/function mode. */
@@ -751,7 +751,7 @@ export interface SfcCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
-  vueParserQuirks?: boolean;
+  templateSyntax?: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;

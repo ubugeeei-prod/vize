@@ -30,6 +30,27 @@ pub enum TextMode {
     AttributeValue,
 }
 
+/// Template syntax compatibility mode.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[non_exhaustive]
+pub enum TemplateSyntaxMode {
+    /// Accept common recoverable template syntax issues with warnings and rewrite them.
+    #[default]
+    Standard,
+    /// Report recoverable template syntax issues as fatal errors.
+    Strict,
+    /// Preserve template syntax compatibility quirks without additional warnings.
+    Quirks,
+}
+
+impl TemplateSyntaxMode {
+    /// Whether template syntax quirks should be enabled.
+    #[must_use]
+    pub fn is_quirks(self) -> bool {
+        matches!(self, Self::Quirks)
+    }
+}
+
 /// Parser options
 #[derive(Debug, Clone)]
 pub struct ParserOptions {

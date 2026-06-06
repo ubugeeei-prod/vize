@@ -4,7 +4,7 @@ export type InspectorTarget = "dom" | "ssr";
 
 export interface InspectorOptions {
   customRenderer: boolean;
-  vueParserQuirks: boolean;
+  templateSyntax: "standard" | "strict" | "quirks";
 }
 
 export interface InspectorFile {

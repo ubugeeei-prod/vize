@@ -36,22 +36,26 @@ pub use vize_relief::ast::{
 pub use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};
 pub use vize_relief::options::{
     BindingMetadata, BindingType, CodegenMode, CodegenOptions, CompilerOptions, ParseMode,
-    ParserOptions, TextMode, TransformOptions, WhitespaceStrategy,
+    ParserOptions, TemplateSyntaxMode, TextMode, TransformOptions, WhitespaceStrategy,
 };
 pub use vize_relief::{ast, errors, options};
 
 // Re-export from vize_armature (parser, tokenizer)
 pub use vize_armature as parser;
 pub use vize_armature::tokenizer;
+#[allow(deprecated)]
 pub use vize_armature::{
     Parser, parse, parse_with_options, parse_with_options_and_invalid_html_self_closing,
+    parse_with_options_and_template_syntax,
 };
 
 pub use codegen::{CodegenContext, CodegenResult, generate};
 pub use runtime_helpers::{RuntimeHelpers, get_vnode_block_helper, get_vnode_helper};
+#[allow(deprecated)]
 pub use transform::{
     DirectiveTransform, DirectiveTransformResult, ExitFn, NodeTransform, ParentNode,
-    StructuralDirectiveTransform, TransformContext, transform, transform_with_vue_parser_quirks,
+    StructuralDirectiveTransform, TransformContext, transform,
+    transform_with_template_syntax_quirks, transform_with_vue_parser_quirks,
 };
 pub use transforms::{
     ChildrenType, EventModifiers, MemoInfo, PropItem, SlotInfo, SlotOutletInfo, StaticType,

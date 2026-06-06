@@ -1,4 +1,4 @@
-use napi::Result;
+use napi::{Result, Status};
 use napi_derive::napi;
 use vize_carton::cstr;
 
@@ -6,6 +6,7 @@ use super::types::{
     SfcCompileOptionsNapi, SfcCompileResultNapi, custom_blocks_to_napi, macro_artifacts_to_napi,
     style_blocks_to_napi,
 };
+use crate::template_syntax::resolve_template_syntax;
 
 #[napi(js_name = "compileSfc")]
 pub fn compile_sfc(
@@ -14,8 +15,8 @@ pub fn compile_sfc(
 ) -> Result<SfcCompileResultNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-        TemplateCompileOptions, compile_sfc as sfc_compile,
-        compile_sfc_with_vue_parser_quirks as sfc_compile_with_vue_parser_quirks,
+        TemplateCompileOptions,
+        compile_sfc_with_template_syntax as sfc_compile_with_template_syntax,
         parse_sfc as sfc_parse,
     };
 
@@ -56,7 +57,8 @@ pub fn compile_sfc(
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
-    let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
+    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+        .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
     let external_scope_id: Option<vize_carton::CompactString> = opts
         .scope_id
@@ -105,11 +107,8 @@ pub fn compile_sfc(
         scope_id: external_scope_id,
     };
 
-    let compile_result = if vue_parser_quirks {
-        sfc_compile_with_vue_parser_quirks(&descriptor, compile_opts)
-    } else {
-        sfc_compile(&descriptor, compile_opts)
-    };
+    let compile_result =
+        sfc_compile_with_template_syntax(&descriptor, compile_opts, template_syntax);
 
     match compile_result {
         Ok(result) => Ok(SfcCompileResultNapi {

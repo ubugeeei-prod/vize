@@ -34,26 +34,18 @@ use std::collections::BTreeMap;
 use vize_carton::Bump;
 use wasm_bindgen::prelude::*;
 
-use crate::{CompileResult, CompilerOptions};
+use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
 use vize_atelier_core::options::CodegenMode;
 use vize_atelier_core::parser::parse;
-use vize_atelier_dom::{
-    DomCompilerOptions, compile_template_with_options, compile_template_with_vue_parser_quirks,
-};
+use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
 use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
     CssCompileOptions, CssTargets, ScriptCompileOptions, SfcCompileOptions, SfcDescriptor,
     SfcMacroArtifact, SfcParseOptions, StyleCompileOptions, TemplateCompileOptions,
-    compile_sfc as sfc_compile,
-    compile_sfc_with_vue_parser_quirks as sfc_compile_with_vue_parser_quirks, parse_sfc,
+    compile_sfc_with_template_syntax as sfc_compile_with_template_syntax, parse_sfc,
 };
-use vize_atelier_ssr::{
-    SsrCompilerOptions, compile_ssr_with_options, compile_ssr_with_vue_parser_quirks,
-};
-use vize_atelier_vapor::{
-    VaporCompilerOptions, compile_vapor as vapor_compile,
-    compile_vapor_with_vue_parser_quirks as vapor_compile_with_vue_parser_quirks,
-};
+use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_template_syntax};
+use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
 
 /// Helper function to serialize values to JsValue with maps as objects
 pub(crate) fn to_js_value<T: Serialize>(value: &T) -> Result<JsValue, JsValue> {
@@ -109,7 +101,7 @@ fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions {
             output_mode: get_string("outputMode"),
             is_ts: get_bool("isTs"),
             custom_renderer: get_bool("customRenderer"),
-            vue_parser_quirks: get_bool("vueParserQuirks"),
+            template_syntax: get_string("templateSyntax"),
             runtime_module_name: get_string("runtimeModuleName"),
             runtime_global_name: get_string("runtimeGlobalName"),
             script_ext: get_string("scriptExt"),
@@ -652,12 +644,12 @@ impl Compiler {
             scope_id: None,
         };
 
+        let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+            .map_err(|message| JsValue::from_str(&message))?;
+
         // Compile the full SFC
-        let compile_result = if opts.vue_parser_quirks.unwrap_or(false) {
-            sfc_compile_with_vue_parser_quirks(&descriptor, sfc_opts)
-        } else {
-            sfc_compile(&descriptor, sfc_opts)
-        };
+        let compile_result =
+            sfc_compile_with_template_syntax(&descriptor, sfc_opts, template_syntax);
         let sfc_result = match compile_result {
             Ok(r) => r,
             Err(e) => return Err(JsValue::from_str(&e.message)),
@@ -730,6 +722,7 @@ fn compile_internal(
     binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
 ) -> Result<CompileResult, String> {
     let allocator = Bump::new();
+    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())?;
 
     // SSR mode - use dedicated SSR compiler
     if opts.ssr.unwrap_or(false) && !vapor && binding_metadata.is_none() {
@@ -738,14 +731,15 @@ fn compile_internal(
             custom_renderer: opts.custom_renderer.unwrap_or(false),
             ..Default::default()
         };
-        let (root, errors, result) = if opts.vue_parser_quirks.unwrap_or(false) {
-            compile_ssr_with_vue_parser_quirks(&allocator, template, ssr_opts)
-        } else {
-            compile_ssr_with_options(&allocator, template, ssr_opts)
-        };
+        let (root, errors, result) =
+            compile_ssr_with_template_syntax(&allocator, template, ssr_opts, template_syntax);
 
-        if !errors.is_empty() {
-            return Err(format!("SSR compile errors: {:?}", errors));
+        let fatal: Vec<_> = errors
+            .iter()
+            .filter(|error| !error.is_recoverable())
+            .collect();
+        if !fatal.is_empty() {
+            return Err(format!("SSR compile errors: {:?}", fatal));
         }
 
         // Collect helpers
@@ -773,11 +767,8 @@ fn compile_internal(
             binding_metadata,
             ..Default::default()
         };
-        let result = if opts.vue_parser_quirks.unwrap_or(false) {
-            vapor_compile_with_vue_parser_quirks(&allocator, template, vapor_opts)
-        } else {
-            vapor_compile(&allocator, template, vapor_opts)
-        };
+        let result =
+            compile_vapor_with_template_syntax(&allocator, template, vapor_opts, template_syntax);
 
         if !result.error_messages.is_empty() {
             return Err(result
@@ -824,14 +815,15 @@ fn compile_internal(
         ..Default::default()
     };
 
-    let (root, errors, result) = if opts.vue_parser_quirks.unwrap_or(false) {
-        compile_template_with_vue_parser_quirks(&allocator, template, dom_opts)
-    } else {
-        compile_template_with_options(&allocator, template, dom_opts)
-    };
+    let (root, errors, result) =
+        compile_template_with_template_syntax(&allocator, template, dom_opts, template_syntax);
 
-    if !errors.is_empty() {
-        return Err(format!("Compile errors: {:?}", errors));
+    let fatal: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_recoverable())
+        .collect();
+    if !fatal.is_empty() {
+        return Err(format!("Compile errors: {:?}", fatal));
     }
 
     // Collect helpers

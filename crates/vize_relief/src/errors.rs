@@ -41,6 +41,10 @@ impl CompilerError {
     #[must_use]
     pub fn is_recoverable(&self) -> bool {
         matches!(self.code, ErrorCode::DuplicateAttribute)
+            || (self.code == ErrorCode::ExtendPoint
+                && self
+                    .message
+                    .starts_with("Invalid self-closing syntax on non-void HTML element"))
     }
 }
 

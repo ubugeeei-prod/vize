@@ -33,7 +33,6 @@ describe("vite-plugin vapor options", () => {
       ssr: true,
       vapor: true,
       customRenderer: false,
-      vueParserQuirks: false,
       scopeId: "data-v-c0cc6f12",
     });
   });
@@ -43,7 +42,6 @@ describe("vite-plugin vapor options", () => {
       ssr: false,
       vapor: true,
       customRenderer: false,
-      vueParserQuirks: false,
     });
   });
 

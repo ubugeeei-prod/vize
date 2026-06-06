@@ -5,7 +5,7 @@ export interface SfcCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
-  vueParserQuirks?: boolean;
+  templateSyntax?: VizeTemplateSyntax;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: VizeVueVersion;
@@ -55,7 +55,7 @@ export interface VizeUnpluginOptions {
   mode?: "module" | "function";
   vapor?: boolean;
   customRenderer?: boolean;
-  vueParserQuirks?: boolean;
+  templateSyntax?: VizeTemplateSyntax;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: VizeVueVersion;
@@ -64,6 +64,7 @@ export interface VizeUnpluginOptions {
 }
 
 export type VizeVueVersion = 0.11 | 1 | 2 | 3 | "legacy";
+export type VizeTemplateSyntax = "standard" | "strict" | "quirks";
 
 export interface VizeCompatibilityOptions {
   /**
@@ -134,7 +135,7 @@ export interface NormalizedVizeUnpluginOptions {
   mode: "module" | "function";
   vapor: boolean;
   customRenderer: boolean;
-  vueParserQuirks: boolean;
+  templateSyntax: VizeTemplateSyntax;
   runtimeModuleName: string;
   runtimeGlobalName: string;
   vueVersion: VizeVueVersion;

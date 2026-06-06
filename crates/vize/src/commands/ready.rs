@@ -111,7 +111,7 @@ pub fn run(args: ReadyArgs) {
         ssr: args.ssr,
         vapor: false,
         custom_renderer: false,
-        vue_parser_quirks: false,
+        template_syntax: None,
         script_ext: args.script_ext,
         threads: None,
         profile: false,

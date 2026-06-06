@@ -268,6 +268,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         options.mode ??
         compilerConfig.mode ??
         (compatibility.scriptSetupInStandalone === true ? "function" : "module");
+      const templateSyntax = options.templateSyntax ?? compilerConfig.templateSyntax ?? "standard";
 
       state.mergedOptions = {
         ...options,
@@ -275,7 +276,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         sourceMap: options.sourceMap ?? compilerConfig.sourceMap,
         vapor: options.vapor ?? compilerConfig.vapor ?? false,
         customRenderer: options.customRenderer ?? compilerConfig.customRenderer ?? false,
-        vueParserQuirks: options.vueParserQuirks ?? compilerConfig.vueParserQuirks ?? false,
+        templateSyntax,
         compatibility,
         vueVersion,
         mode,

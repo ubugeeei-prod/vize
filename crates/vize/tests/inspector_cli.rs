@@ -27,7 +27,8 @@ const msg: string = "hello";
             "json",
             "--target",
             "ssr",
-            "--vue-parser-quirks",
+            "--template-syntax",
+            "quirks",
         ])
         .output()
         .unwrap();

@@ -26,10 +26,11 @@
           "default": false,
           "type": "boolean"
         },
-        "vueParserQuirks": {
-          "description": "Enable Vue parser quirk compatibility",
-          "default": false,
-          "type": "boolean"
+        "templateSyntax": {
+          "description": "Template syntax compatibility mode",
+          "default": "standard",
+          "type": "string",
+          "enum": ["standard", "strict", "quirks"]
         },
         "sourceMap": {
           "description": "Enable source map generation",

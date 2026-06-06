@@ -4,11 +4,10 @@ title: Troubleshooting
 
 # Troubleshooting
 
-## Strict HTML Parsing vs Vue Parser Quirks
+## Template Syntax Modes
 
-Vize keeps `compiler.vueParserQuirks` disabled by default. In strict mode, the template parser treats
-HTML syntax according to HTML tree-construction behavior instead of silently accepting every Vue
-compiler edge case.
+Vize defaults `compiler.templateSyntax` to `"standard"`. Standard mode accepts recoverable template
+syntax issues, reports warnings, and rewrites them to valid output.
 
 A common migration case is self-closing syntax on non-void HTML elements:
 
@@ -19,9 +18,9 @@ A common migration case is self-closing syntax on non-void HTML elements:
 </template>
 ```
 
-`<div />` and `<span />` are not valid self-closing HTML elements. Strict mode treats the `/` as an
-ignored self-closing flag on a start tag, so the parser may report a missing end tag and the following
-nodes can become children of the open element.
+`<div />` and `<span />` are not valid self-closing HTML elements. Standard mode rewrites them as
+empty elements, equivalent to `<div></div>` and `<span></span>`, and emits a warning. Strict mode
+reports them as errors. Quirks mode keeps them as self-closing leaves without a warning.
 
 Prefer writing explicit end tags:
 
@@ -32,8 +31,7 @@ Prefer writing explicit end tags:
 </template>
 ```
 
-If you are migrating existing templates that rely on Vue accepting those tags as self-closing leaves,
-enable parser quirks:
+Choose a mode explicitly when migrating:
 
 ```ts
 import vize from "@vizejs/vite-plugin";
@@ -41,15 +39,12 @@ import vize from "@vizejs/vite-plugin";
 export default {
   plugins: [
     vize({
-      vueParserQuirks: true,
+      templateSyntax: "standard",
     }),
   ],
 };
 ```
 
-This keeps invalid non-void HTML self-closing tags as leaf elements in the DOM, SSR, and Vapor
-compiler paths. Valid void elements such as `<input />`, `<img />`, `<br />`, and `<meta />` do not
-need quirks.
-
-Use quirks as a compatibility switch, not as the preferred style for new code. Keeping strict mode on
-makes parser diagnostics and HTML lint rules easier to reason about.
+Use `"strict"` to fail on invalid syntax, or `"quirks"` when a project relies on Vue accepting those
+tags as self-closing leaves. Valid void elements such as `<input />`, `<img />`, `<br />`, and
+`<meta />` do not need quirks.

@@ -36,9 +36,9 @@ pub use vize_atelier_core::{
 };
 
 use vize_atelier_core::{
-    options::{ParserOptions, TransformOptions},
-    parser::parse_with_options_and_invalid_html_self_closing,
-    transform::{transform as do_transform, transform_with_vue_parser_quirks},
+    options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
+    parser::parse_with_options_and_template_syntax,
+    transform::{transform as do_transform, transform_with_template_syntax_quirks},
 };
 use vize_carton::{Bump, String, profile};
 
@@ -56,23 +56,35 @@ pub fn compile_ssr_with_options<'a>(
     source: &'a str,
     options: SsrCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(allocator, source, options, false)
+    compile_ssr_inner(allocator, source, options, TemplateSyntaxMode::Standard)
 }
 
 /// Compile a Vue template for SSR with Vue parser quirk compatibility.
+#[deprecated(note = "use compile_ssr_with_template_syntax instead")]
 pub fn compile_ssr_with_vue_parser_quirks<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: SsrCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(allocator, source, options, true)
+    compile_ssr_inner(allocator, source, options, TemplateSyntaxMode::Quirks)
+}
+
+/// Compile a Vue template for SSR with an explicit template syntax mode.
+#[doc(hidden)]
+pub fn compile_ssr_with_template_syntax<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner(allocator, source, options, template_syntax)
 }
 
 fn compile_ssr_inner<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: SsrCompilerOptions,
-    vue_parser_quirks: bool,
+    template_syntax: TemplateSyntaxMode,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     let codegen_options = options.clone();
 
@@ -90,12 +102,7 @@ fn compile_ssr_inner<'a>(
     // Parse
     let (mut root, errors) = profile!(
         "atelier.ssr.template.parse",
-        parse_with_options_and_invalid_html_self_closing(
-            allocator,
-            source,
-            parser_opts,
-            vue_parser_quirks
-        )
+        parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax)
     );
 
     // Parser-level diagnostics that are recoverable (e.g. duplicate
@@ -125,10 +132,11 @@ fn compile_ssr_inner<'a>(
         ..Default::default()
     };
     let analysis = options.croquis.map(|c| &*allocator.alloc(*c));
+    let template_syntax_quirks = template_syntax.is_quirks();
     profile!(
         "atelier.ssr.template.transform",
-        if vue_parser_quirks {
-            transform_with_vue_parser_quirks(allocator, &mut root, transform_opts, analysis)
+        if template_syntax_quirks {
+            transform_with_template_syntax_quirks(allocator, &mut root, transform_opts, analysis)
         } else {
             do_transform(allocator, &mut root, transform_opts, analysis)
         }
@@ -170,8 +178,9 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 mod tests {
     use super::{
         Bump, SsrCompilerOptions, compile_ssr, compile_ssr_with_options,
-        compile_ssr_with_vue_parser_quirks,
+        compile_ssr_with_template_syntax,
     };
+    use vize_atelier_core::TemplateSyntaxMode;
 
     #[test]
     fn test_compile_simple_element() {
@@ -248,16 +257,40 @@ mod tests {
     }
 
     #[test]
-    fn test_compile_vue_parser_quirks_accepts_invalid_html_self_closing() {
+    fn test_compile_template_syntax_quirks_accepts_invalid_html_self_closing() {
         let allocator = Bump::new();
-        let (_, errors, result) = compile_ssr_with_vue_parser_quirks(
+        let (_, errors, result) = compile_ssr_with_template_syntax(
             &allocator,
             "<div /><span></span>",
             Default::default(),
+            TemplateSyntaxMode::Quirks,
         );
 
         assert!(errors.is_empty(), "Errors: {:?}", errors);
         assert!(!result.code.is_empty());
+    }
+
+    #[test]
+    fn test_compile_standard_warns_and_rewrites_invalid_html_self_closing() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(&allocator, "<div /><span></span>");
+
+        assert!(errors.iter().any(|error| error.is_recoverable()));
+        assert!(!result.code.is_empty());
+    }
+
+    #[test]
+    fn test_compile_strict_rejects_invalid_html_self_closing() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr_with_template_syntax(
+            &allocator,
+            "<div /><span></span>",
+            Default::default(),
+            TemplateSyntaxMode::Strict,
+        );
+
+        assert!(errors.iter().any(|error| !error.is_recoverable()));
+        assert!(result.code.is_empty());
     }
 
     #[test]

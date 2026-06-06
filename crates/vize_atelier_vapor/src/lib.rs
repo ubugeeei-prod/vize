@@ -48,10 +48,10 @@ pub use transforms::{
 };
 
 use vize_atelier_core::{
-    Namespace,
-    options::{ParserOptions, TransformOptions},
-    parser::parse_with_options_and_invalid_html_self_closing,
-    transform::{transform, transform_with_vue_parser_quirks},
+    CompilerError, Namespace,
+    options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
+    parser::parse_with_options_and_template_syntax,
+    transform::{transform, transform_with_template_syntax_quirks},
 };
 use vize_carton::{Bump, String};
 
@@ -87,24 +87,68 @@ pub fn compile_vapor<'a>(
     source: &'a str,
     options: VaporCompilerOptions,
 ) -> VaporCompileResult {
-    compile_vapor_inner(allocator, source, options, false)
+    compile_vapor_inner(allocator, source, options, TemplateSyntaxMode::Standard).0
 }
 
 /// Compile a Vue template to Vapor mode with Vue parser quirk compatibility.
+#[deprecated(note = "use compile_vapor_with_template_syntax instead")]
 pub fn compile_vapor_with_vue_parser_quirks<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: VaporCompilerOptions,
 ) -> VaporCompileResult {
-    compile_vapor_inner(allocator, source, options, true)
+    compile_vapor_inner(allocator, source, options, TemplateSyntaxMode::Quirks).0
+}
+
+/// Compile a Vue template to Vapor mode with an explicit template syntax mode.
+#[doc(hidden)]
+pub fn compile_vapor_with_template_syntax<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+) -> VaporCompileResult {
+    compile_vapor_inner(allocator, source, options, template_syntax).0
+}
+
+/// Compile a Vue template to Vapor mode and return parser diagnostics.
+#[doc(hidden)]
+pub fn compile_vapor_with_diagnostics<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: VaporCompilerOptions,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    compile_vapor_inner(allocator, source, options, TemplateSyntaxMode::Standard)
+}
+
+/// Compile a Vue template to Vapor mode with Vue parser quirks and return parser diagnostics.
+#[doc(hidden)]
+#[deprecated(note = "use compile_vapor_with_template_syntax_and_diagnostics instead")]
+pub fn compile_vapor_with_vue_parser_quirks_and_diagnostics<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: VaporCompilerOptions,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    compile_vapor_inner(allocator, source, options, TemplateSyntaxMode::Quirks)
+}
+
+/// Compile a Vue template to Vapor mode with template syntax mode and return parser diagnostics.
+#[doc(hidden)]
+pub fn compile_vapor_with_template_syntax_and_diagnostics<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    compile_vapor_inner(allocator, source, options, template_syntax)
 }
 
 fn compile_vapor_inner<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: VaporCompilerOptions,
-    vue_parser_quirks: bool,
-) -> VaporCompileResult {
+    template_syntax: TemplateSyntaxMode,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     // Parse
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
@@ -114,19 +158,20 @@ fn compile_vapor_inner<'a>(
         get_namespace,
         ..ParserOptions::default()
     };
-    let (mut root, errors) = parse_with_options_and_invalid_html_self_closing(
-        allocator,
-        source,
-        parser_opts,
-        vue_parser_quirks,
-    );
+    let (mut root, errors) =
+        parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax);
+    let diagnostics = errors.to_vec();
 
-    if !errors.is_empty() {
-        return VaporCompileResult {
-            code: String::default(),
-            templates: Vec::new(),
-            error_messages: errors.iter().map(|e| e.message.clone()).collect(),
-        };
+    let fatal: std::vec::Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
+    if !fatal.is_empty() {
+        return (
+            VaporCompileResult {
+                code: String::default(),
+                templates: Vec::new(),
+                error_messages: fatal.iter().map(|e| e.message.clone()).collect(),
+            },
+            diagnostics,
+        );
     }
 
     // Transform to Vapor IR
@@ -140,8 +185,8 @@ fn compile_vapor_inner<'a>(
         custom_renderer: options.custom_renderer,
         ..Default::default()
     };
-    if vue_parser_quirks {
-        transform_with_vue_parser_quirks(allocator, &mut root, transform_opts, None);
+    if template_syntax.is_quirks() {
+        transform_with_template_syntax_quirks(allocator, &mut root, transform_opts, None);
     } else {
         transform(allocator, &mut root, transform_opts, None);
     }
@@ -152,11 +197,14 @@ fn compile_vapor_inner<'a>(
     // Generate Vapor code
     let result = generate_vapor(&ir, binding_metadata.as_ref());
 
-    VaporCompileResult {
-        code: result.code,
-        templates: result.templates,
-        error_messages: Vec::new(),
-    }
+    (
+        VaporCompileResult {
+            code: result.code,
+            templates: result.templates,
+            error_messages: Vec::new(),
+        },
+        diagnostics,
+    )
 }
 
 fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
@@ -184,10 +232,11 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 
 #[cfg(test)]
 mod tests {
-    use super::{compile_vapor, compile_vapor_with_vue_parser_quirks};
+    use super::{compile_vapor, compile_vapor_with_template_syntax};
     use oxc_allocator::Allocator;
     use oxc_parser::Parser;
     use oxc_span::SourceType;
+    use vize_atelier_core::TemplateSyntaxMode;
     use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_carton::Bump;
     use vize_carton::FxHashMap;
@@ -587,12 +636,13 @@ mod tests {
     }
 
     #[test]
-    fn test_compile_vue_parser_quirks_accepts_invalid_html_self_closing() {
+    fn test_compile_template_syntax_quirks_accepts_invalid_html_self_closing() {
         let allocator = Bump::new();
-        let result = compile_vapor_with_vue_parser_quirks(
+        let result = compile_vapor_with_template_syntax(
             &allocator,
             "<div /><span></span>",
             Default::default(),
+            TemplateSyntaxMode::Quirks,
         );
 
         assert!(
@@ -601,6 +651,38 @@ mod tests {
             result.error_messages
         );
         assert!(!result.code.is_empty());
+    }
+
+    #[test]
+    fn test_compile_standard_rewrites_invalid_html_self_closing() {
+        let allocator = Bump::new();
+        let result = compile_vapor(&allocator, "<div /><span></span>", Default::default());
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+        assert!(!result.code.is_empty());
+    }
+
+    #[test]
+    fn test_compile_strict_rejects_invalid_html_self_closing() {
+        let allocator = Bump::new();
+        let result = compile_vapor_with_template_syntax(
+            &allocator,
+            "<div /><span></span>",
+            Default::default(),
+            TemplateSyntaxMode::Strict,
+        );
+
+        assert!(
+            result
+                .error_messages
+                .iter()
+                .any(|message| message.contains("Invalid self-closing syntax"))
+        );
+        assert!(result.code.is_empty());
     }
 
     #[test]

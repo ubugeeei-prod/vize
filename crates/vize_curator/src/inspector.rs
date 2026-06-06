@@ -19,10 +19,19 @@ impl InspectorTarget {
     }
 }
 
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum InspectorTemplateSyntax {
+    #[default]
+    Standard,
+    Strict,
+    Quirks,
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct InspectorOptions {
     pub custom_renderer: bool,
-    pub vue_parser_quirks: bool,
+    pub template_syntax: InspectorTemplateSyntax,
 }
 
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -45,7 +54,7 @@ pub struct InspectorPayload {
 #[serde(rename_all = "camelCase")]
 struct InspectorPayloadOptions {
     custom_renderer: bool,
-    vue_parser_quirks: bool,
+    template_syntax: InspectorTemplateSyntax,
 }
 
 #[derive(serde::Serialize)]
@@ -147,7 +156,7 @@ pub fn build_payload(
         selected_file,
         options: InspectorPayloadOptions {
             custom_renderer: options.custom_renderer,
-            vue_parser_quirks: options.vue_parser_quirks,
+            template_syntax: options.template_syntax,
         },
         files,
     }
@@ -172,7 +181,7 @@ pub fn build_agent_report(
         source_lines,
         options: InspectorPayloadOptions {
             custom_renderer: payload.options.custom_renderer,
-            vue_parser_quirks: payload.options.vue_parser_quirks,
+            template_syntax: payload.options.template_syntax,
         },
     };
 
@@ -778,9 +787,9 @@ fn line_count(source: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::{
-        InspectorOptions, InspectorSourceFile, InspectorTarget, build_agent_report, build_diff,
-        build_graph, build_line_diff, build_payload, build_playground_url, serialize_agent_report,
-        serialize_payload,
+        InspectorOptions, InspectorSourceFile, InspectorTarget, InspectorTemplateSyntax,
+        build_agent_report, build_diff, build_graph, build_line_diff, build_payload,
+        build_playground_url, serialize_agent_report, serialize_payload,
     };
     use vize_carton::cstr;
 
@@ -790,7 +799,7 @@ mod tests {
             InspectorTarget::Dom,
             InspectorOptions {
                 custom_renderer: false,
-                vue_parser_quirks: true,
+                template_syntax: InspectorTemplateSyntax::Quirks,
             },
             vec![InspectorSourceFile {
                 path: cstr!("src/App.vue"),
@@ -801,11 +810,11 @@ mod tests {
 
         assert_eq!(
             json.as_str(),
-            r#"{"version":1,"target":"dom","selectedFile":"src/App.vue","options":{"customRenderer":false,"vueParserQuirks":true},"files":[{"path":"src/App.vue","source":"<template><div>msg</div></template>"}]}"#
+            r#"{"version":1,"target":"dom","selectedFile":"src/App.vue","options":{"customRenderer":false,"templateSyntax":"quirks"},"files":[{"path":"src/App.vue","source":"<template><div>msg</div></template>"}]}"#
         );
         assert_eq!(
             build_playground_url("https://vizejs.dev/play/?foo=bar#old", json.as_str()).as_str(),
-            "https://vizejs.dev/play/?foo=bar&tab=inspector#inspector=%7B%22version%22%3A1%2C%22target%22%3A%22dom%22%2C%22selectedFile%22%3A%22src%2FApp.vue%22%2C%22options%22%3A%7B%22customRenderer%22%3Afalse%2C%22vueParserQuirks%22%3Atrue%7D%2C%22files%22%3A%5B%7B%22path%22%3A%22src%2FApp.vue%22%2C%22source%22%3A%22%3Ctemplate%3E%3Cdiv%3Emsg%3C%2Fdiv%3E%3C%2Ftemplate%3E%22%7D%5D%7D"
+            "https://vizejs.dev/play/?foo=bar&tab=inspector#inspector=%7B%22version%22%3A1%2C%22target%22%3A%22dom%22%2C%22selectedFile%22%3A%22src%2FApp.vue%22%2C%22options%22%3A%7B%22customRenderer%22%3Afalse%2C%22templateSyntax%22%3A%22quirks%22%7D%2C%22files%22%3A%5B%7B%22path%22%3A%22src%2FApp.vue%22%2C%22source%22%3A%22%3Ctemplate%3E%3Cdiv%3Emsg%3C%2Fdiv%3E%3C%2Ftemplate%3E%22%7D%5D%7D"
         );
     }
 
@@ -951,7 +960,7 @@ export default {}";
             InspectorTarget::Ssr,
             InspectorOptions {
                 custom_renderer: true,
-                vue_parser_quirks: false,
+                template_syntax: InspectorTemplateSyntax::Standard,
             },
             files.clone(),
         );

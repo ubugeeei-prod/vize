@@ -23,7 +23,7 @@ The inspector runs these checks in the browser:
 - Native `vize_curator` graph and diff metadata shared with the CLI
 - Cross-file diagnostics for the payload files
 - DOM or SSR target selection
-- Optional custom renderer and Vue parser quirk toggles
+- Optional custom renderer and template syntax mode controls
 - Full output tabs for both compilers
 - A compare tab with Vue-only and Vize-only lines
 - A permalink and prefilled pull request link
@@ -72,16 +72,16 @@ browser inspection aligned while leaving the official Vue compiler run inside th
 
 Useful options:
 
-| Option                | Description                                    |
-| --------------------- | ---------------------------------------------- |
-| `--target dom`        | Compare DOM compiler output                    |
-| `--target ssr`        | Compare SSR compiler output                    |
-| `--format agent`      | Emit agent-readable JSON with graph metadata   |
-| `--format compare`    | Run dev-only CLI comparison against Vue        |
-| `--custom-renderer`   | Enable custom renderer mode in the playground  |
-| `--vue-parser-quirks` | Enable Vue parser compatibility quirks in Vize |
-| `--max-files <n>`     | Limit the number of files in a batch payload   |
-| `--playground-url`    | Override the playground URL used for links     |
+| Option              | Description                                   |
+| ------------------- | --------------------------------------------- |
+| `--target dom`      | Compare DOM compiler output                   |
+| `--target ssr`      | Compare SSR compiler output                   |
+| `--format agent`    | Emit agent-readable JSON with graph metadata  |
+| `--format compare`  | Run dev-only CLI comparison against Vue       |
+| `--custom-renderer` | Enable custom renderer mode in the playground |
+| `--template-syntax` | Choose `standard`, `strict`, or `quirks`      |
+| `--max-files <n>`   | Limit the number of files in a batch payload  |
+| `--playground-url`  | Override the playground URL used for links    |
 
 ## PR Workflow
 

@@ -7,6 +7,7 @@ use vize_carton::{Box, String, Vec, appends, directive::parse_vize_directive};
 use vize_relief::{
     ast::*,
     errors::{CompilerError, ErrorCode},
+    options::TemplateSyntaxMode,
 };
 
 use super::{CurrentElement, Parser, ParserStackEntry, StackInsertion};
@@ -237,19 +238,39 @@ impl<'a> Parser<'a> {
             }
 
             let html_non_void_self_closing =
-                current.is_self_closing && self.should_ignore_self_closing_flag(&element);
+                current.is_self_closing && self.is_invalid_html_self_closing(&element);
 
             if html_non_void_self_closing {
-                self.report_tree_construction_recovery(
-                    &element.loc,
-                    "Self-closing flag is ignored for non-void HTML elements; treating this as a start tag.",
-                );
-                element.is_self_closing = false;
+                match self.template_syntax {
+                    TemplateSyntaxMode::Standard => {
+                        self.report_tree_construction_recovery(
+                            &element.loc,
+                            "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+                        );
+                        element.is_self_closing = false;
+                    }
+                    TemplateSyntaxMode::Strict => {
+                        self.errors.push(CompilerError::with_message(
+                            ErrorCode::UnexpectedSolidusInTag,
+                            "Invalid self-closing syntax on non-void HTML element.",
+                            Some(element.loc.clone()),
+                        ));
+                        element.is_self_closing = false;
+                    }
+                    TemplateSyntaxMode::Quirks => {
+                        element.is_self_closing = true;
+                    }
+                    _ => {
+                        self.report_tree_construction_recovery(
+                            &element.loc,
+                            "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+                        );
+                        element.is_self_closing = false;
+                    }
+                }
             }
 
-            if (current.is_self_closing && !html_non_void_self_closing)
-                || (self.options.is_void_tag)(element.tag.as_str())
-            {
+            if current.is_self_closing || (self.options.is_void_tag)(element.tag.as_str()) {
                 let should_foster_direct = self.should_foster_start_tag(
                     element.tag.as_str(),
                     element.ns == Namespace::Html && element.tag_type == ElementType::Element,
@@ -622,9 +643,8 @@ impl<'a> Parser<'a> {
         element.tag.eq_ignore_ascii_case("form") && self.open_form_count > 0
     }
 
-    fn should_ignore_self_closing_flag(&self, element: &ElementNode<'a>) -> bool {
-        !self.allow_invalid_html_self_closing
-            && element.ns == Namespace::Html
+    fn is_invalid_html_self_closing(&self, element: &ElementNode<'a>) -> bool {
+        element.ns == Namespace::Html
             && element.tag_type == ElementType::Element
             && (!self.options.custom_renderer || vize_carton::is_html_tag(element.tag.as_str()))
             && !(self.options.is_void_tag)(element.tag.as_str())

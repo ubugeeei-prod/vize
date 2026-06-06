@@ -7,9 +7,11 @@ use std::{
     path::{Path, PathBuf},
     time::Instant,
 };
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{FxHashMap, hash::hash_str};
 
 use super::types::{BatchCompileOptionsNapi, BatchCompileResultNapi};
+use crate::template_syntax::resolve_template_syntax;
 
 /// Aggregate counters for the native batch stats surface.
 ///
@@ -98,14 +100,23 @@ fn batch_options_bits(
     ssr: bool,
     vapor: bool,
     is_ts: bool,
-    vue_parser_quirks: bool,
+    template_syntax: TemplateSyntaxMode,
     standalone: bool,
 ) -> u8 {
     u8::from(ssr)
         | (u8::from(vapor) << 1)
         | (u8::from(is_ts) << 2)
-        | (u8::from(vue_parser_quirks) << 3)
-        | (u8::from(standalone) << 4)
+        | (template_syntax_bits(template_syntax) << 3)
+        | (u8::from(standalone) << 5)
+}
+
+fn template_syntax_bits(template_syntax: TemplateSyntaxMode) -> u8 {
+    match template_syntax {
+        TemplateSyntaxMode::Standard => 0,
+        TemplateSyntaxMode::Strict => 1,
+        TemplateSyntaxMode::Quirks => 2,
+        _ => 3,
+    }
 }
 
 /// Returns whether a repeated source body is safe to group for aggregate stats.
@@ -173,8 +184,8 @@ pub fn compile_sfc_batch(
 ) -> Result<BatchCompileResultNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-        TemplateCompileOptions, compile_sfc as sfc_compile,
-        compile_sfc_with_vue_parser_quirks as sfc_compile_with_vue_parser_quirks,
+        TemplateCompileOptions,
+        compile_sfc_with_template_syntax as sfc_compile_with_template_syntax,
         parse_sfc as sfc_parse,
     };
 
@@ -206,10 +217,11 @@ pub fn compile_sfc_batch(
     let ssr = opts.ssr.unwrap_or(false);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
-    let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
+    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+        .map_err(|message| Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
     let start = Instant::now();
-    let option_bits = batch_options_bits(ssr, vapor, is_ts, vue_parser_quirks, standalone);
+    let option_bits = batch_options_bits(ssr, vapor, is_ts, template_syntax, standalone);
     let read_inputs: Vec<_> = files
         .par_iter()
         .map(|path| match fs::read_to_string(path) {
@@ -306,11 +318,8 @@ pub fn compile_sfc_batch(
                 scope_id: None,
             };
 
-            let compile_result = if vue_parser_quirks {
-                sfc_compile_with_vue_parser_quirks(&descriptor, compile_opts)
-            } else {
-                sfc_compile(&descriptor, compile_opts)
-            };
+            let compile_result =
+                sfc_compile_with_template_syntax(&descriptor, compile_opts, template_syntax);
 
             match compile_result {
                 Ok(result) => BatchStats {

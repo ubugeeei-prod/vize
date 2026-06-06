@@ -1,12 +1,12 @@
 //! Tests for the Vue template parser.
 #![allow(clippy::disallowed_macros)]
 
-use super::{parse, parse_with_options, parse_with_options_and_invalid_html_self_closing};
+use super::{parse, parse_with_options, parse_with_options_and_template_syntax};
 use vize_carton::Bump;
 use vize_relief::{
     ast::{ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode},
     errors::{CompilerError, ErrorCode},
-    options::ParserOptions,
+    options::{ParserOptions, TemplateSyntaxMode},
 };
 
 fn error_recovery_snapshot(errors: &[CompilerError]) -> std::vec::Vec<(ErrorCode, &str, &str)> {
@@ -206,36 +206,37 @@ fn test_parse_self_closing() {
 }
 
 #[test]
-fn test_parse_self_closing_textarea_uses_raw_text_recovery() {
+fn test_parse_self_closing_textarea_warns_and_rewrites() {
     let allocator = Bump::new();
     let source = r#"<Primitive :class="ui.root({ class: [uiProp?.root, props.class] })"><textarea :class="ui.base({ class: uiProp?.base })" /><slot :ui="ui" /><span v-if="isLeading || !!avatar || !!slots.leading"><slot><UIcon v-if="isLeading && leadingIconName" /><UAvatar v-else-if="!!avatar" /></slot></span></Primitive>"#;
     let (root, errors) = parse(&allocator, source);
 
     assert!(
         errors.iter().any(|e| e.code == ErrorCode::ExtendPoint
-            && e.message.contains("Self-closing flag is ignored")),
+            && e.message
+                .contains("Invalid self-closing syntax on non-void HTML element")),
         "unexpected errors: {errors:?}"
     );
-    assert!(errors.iter().any(|e| e.code == ErrorCode::MissingEndTag));
+    assert!(errors.iter().all(CompilerError::is_recoverable));
     assert_eq!(root.children.len(), 1);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.tag.as_str(), "Primitive");
-        assert_eq!(el.children.len(), 1);
+        assert_eq!(el.children.len(), 3);
 
         if let TemplateChildNode::Element(textarea) = &el.children[0] {
             assert_eq!(textarea.tag.as_str(), "textarea");
             assert!(!textarea.is_self_closing);
-            assert_eq!(textarea.children.len(), 1);
-            if let TemplateChildNode::Text(text) = &textarea.children[0] {
-                assert!(text.content.contains("<slot"));
-                assert!(text.content.contains("</Primitive>"));
-            } else {
-                panic!("Expected textarea raw text");
-            }
+            assert!(textarea.children.is_empty());
         } else {
             panic!("Expected textarea element");
         }
+        assert!(
+            matches!(&el.children[1], TemplateChildNode::Element(slot) if slot.tag.as_str() == "slot")
+        );
+        assert!(
+            matches!(&el.children[2], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
+        );
     } else {
         panic!("Expected Primitive element");
     }
@@ -1126,36 +1127,66 @@ fn test_parse_unexpected_solidus_before_attribute_reports_error_and_continues() 
 }
 
 #[test]
-fn test_parse_self_closing_non_void_html_element_ignores_flag() {
+fn test_parse_self_closing_non_void_html_element_warns_and_rewrites() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, "<div /><span></span>");
 
-    assert!(
-        errors.iter().any(|e| e.code == ErrorCode::ExtendPoint
-            && e.message.contains("Self-closing flag is ignored"))
-    );
-    assert!(errors.iter().any(|e| e.code == ErrorCode::MissingEndTag));
-    assert_eq!(root.children.len(), 1);
+    assert!(errors.iter().any(|e| {
+        e.code == ErrorCode::ExtendPoint
+            && e.message
+                .contains("Invalid self-closing syntax on non-void HTML element")
+    }));
+    assert!(errors.iter().all(CompilerError::is_recoverable));
+    assert_eq!(root.children.len(), 2);
     if let TemplateChildNode::Element(div) = &root.children[0] {
         assert_eq!(div.tag.as_str(), "div");
         assert!(!div.is_self_closing);
-        assert_eq!(div.children.len(), 1);
-        assert!(
-            matches!(&div.children[0], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
-        );
+        assert!(div.children.is_empty());
     } else {
         panic!("Expected div");
     }
+    assert!(
+        matches!(&root.children[1], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
+    );
+}
+
+#[test]
+fn test_parse_self_closing_non_void_html_element_strict_errors_and_rewrites() {
+    let allocator = Bump::new();
+    let (root, errors) = parse_with_options_and_template_syntax(
+        &allocator,
+        "<div /><span></span>",
+        ParserOptions::default(),
+        TemplateSyntaxMode::Strict,
+    );
+
+    assert!(errors.iter().any(|e| {
+        e.code == ErrorCode::UnexpectedSolidusInTag
+            && e.message
+                .contains("Invalid self-closing syntax on non-void HTML element")
+    }));
+    assert!(errors.iter().any(|e| !e.is_recoverable()));
+    assert_eq!(root.children.len(), 2);
+    if let TemplateChildNode::Element(div) = &root.children[0] {
+        assert_eq!(div.tag.as_str(), "div");
+        assert!(!div.is_self_closing);
+        assert!(div.children.is_empty());
+    } else {
+        panic!("Expected div");
+    }
+    assert!(
+        matches!(&root.children[1], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
+    );
 }
 
 #[test]
 fn test_parse_self_closing_non_void_html_element_quirk_keeps_flag() {
     let allocator = Bump::new();
-    let (root, errors) = parse_with_options_and_invalid_html_self_closing(
+    let (root, errors) = parse_with_options_and_template_syntax(
         &allocator,
         "<div /><span></span>",
         ParserOptions::default(),
-        true,
+        TemplateSyntaxMode::Quirks,
     );
 
     assert!(errors.is_empty(), "unexpected errors: {errors:?}");

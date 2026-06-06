@@ -14,7 +14,7 @@ const payload: InspectorPayload = {
   selectedFile: "src/App.vue",
   options: {
     customRenderer: false,
-    vueParserQuirks: true,
+    templateSyntax: "quirks",
   },
   files: [
     {

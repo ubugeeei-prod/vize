@@ -9,6 +9,7 @@
 module vize.Config
 
 typealias CompilerMode = "module" | "function"
+typealias TemplateSyntax = "standard" | "strict" | "quirks"
 typealias ScriptExt = "ts" | "js"
 typealias RuleSeverity = "off" | "warn" | "error"
 typealias LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "ecosystem" | "nuxt"
@@ -22,7 +23,7 @@ class CompilerConfig {
   vapor: Boolean? = null
   customRenderer: Boolean? = null
   ssr: Boolean? = null
-  vueParserQuirks: Boolean? = null
+  templateSyntax: TemplateSyntax? = null
   sourceMap: Boolean? = null
   prefixIdentifiers: Boolean? = null
   hoistStatic: Boolean? = null

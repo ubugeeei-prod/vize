@@ -13,15 +13,15 @@ use super::TransformContext;
 impl<'a> TransformContext<'a> {
     /// Create a new transform context
     pub fn new(allocator: &'a Bump, source: String, options: TransformOptions) -> Self {
-        Self::new_with_vue_parser_quirks(allocator, source, options, false)
+        Self::new_with_template_syntax_quirks(allocator, source, options, false)
     }
 
-    /// Create a new transform context with Vue parser quirk compatibility.
-    pub fn new_with_vue_parser_quirks(
+    /// Create a new transform context with template syntax quirk compatibility.
+    pub fn new_with_template_syntax_quirks(
         allocator: &'a Bump,
         source: String,
         options: TransformOptions,
-        vue_parser_quirks: bool,
+        template_syntax_quirks: bool,
     ) -> Self {
         let ssr = options.ssr;
         Self {
@@ -44,11 +44,22 @@ impl<'a> TransformContext<'a> {
             in_v_once: false,
             in_ssr: ssr,
             errors: std::vec::Vec::new(),
-            vue_parser_quirks,
+            template_syntax_quirks,
             node_removed: false,
             analysis: None,
             hoisted_scope_id: None,
         }
+    }
+
+    /// Create a new transform context with Vue parser quirk compatibility.
+    #[deprecated(note = "use new_with_template_syntax_quirks instead")]
+    pub fn new_with_vue_parser_quirks(
+        allocator: &'a Bump,
+        source: String,
+        options: TransformOptions,
+        vue_parser_quirks: bool,
+    ) -> Self {
+        Self::new_with_template_syntax_quirks(allocator, source, options, vue_parser_quirks)
     }
 
     /// Create a new transform context with semantic analysis data
@@ -58,10 +69,29 @@ impl<'a> TransformContext<'a> {
         options: TransformOptions,
         analysis: &'a Croquis,
     ) -> Self {
-        Self::with_analysis_and_vue_parser_quirks(allocator, source, options, analysis, false)
+        Self::with_analysis_and_template_syntax_quirks(allocator, source, options, analysis, false)
+    }
+
+    /// Create a new transform context with semantic analysis data and template syntax quirks.
+    pub fn with_analysis_and_template_syntax_quirks(
+        allocator: &'a Bump,
+        source: String,
+        options: TransformOptions,
+        analysis: &'a Croquis,
+        template_syntax_quirks: bool,
+    ) -> Self {
+        let mut ctx = Self::new_with_template_syntax_quirks(
+            allocator,
+            source,
+            options,
+            template_syntax_quirks,
+        );
+        ctx.analysis = Some(analysis);
+        ctx
     }
 
     /// Create a new transform context with semantic analysis data and Vue parser quirks.
+    #[deprecated(note = "use with_analysis_and_template_syntax_quirks instead")]
     pub fn with_analysis_and_vue_parser_quirks(
         allocator: &'a Bump,
         source: String,
@@ -69,10 +99,13 @@ impl<'a> TransformContext<'a> {
         analysis: &'a Croquis,
         vue_parser_quirks: bool,
     ) -> Self {
-        let mut ctx =
-            Self::new_with_vue_parser_quirks(allocator, source, options, vue_parser_quirks);
-        ctx.analysis = Some(analysis);
-        ctx
+        Self::with_analysis_and_template_syntax_quirks(
+            allocator,
+            source,
+            options,
+            analysis,
+            vue_parser_quirks,
+        )
     }
 
     /// Set the analysis summary
@@ -92,10 +125,17 @@ impl<'a> TransformContext<'a> {
         self.analysis.is_some()
     }
 
+    /// Whether template syntax quirk compatibility is enabled.
+    #[inline]
+    pub fn template_syntax_quirks(&self) -> bool {
+        self.template_syntax_quirks
+    }
+
     /// Whether Vue parser quirk compatibility is enabled.
     #[inline]
+    #[deprecated(note = "use template_syntax_quirks instead")]
     pub fn vue_parser_quirks(&self) -> bool {
-        self.vue_parser_quirks
+        self.template_syntax_quirks()
     }
 
     /// Check if a variable is defined (from analysis or binding metadata)

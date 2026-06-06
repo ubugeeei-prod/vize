@@ -23,6 +23,7 @@ use crate::script::ScriptCompileContext;
 use crate::types::{
     BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError, SfcMacroArtifact,
 };
+use vize_atelier_core::TemplateSyntaxMode;
 
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
@@ -234,21 +235,32 @@ pub fn compile_sfc(
     descriptor: &SfcDescriptor,
     options: SfcCompileOptions,
 ) -> Result<SfcCompileResult, SfcError> {
-    compile_sfc_inner(descriptor, options, false)
+    compile_sfc_inner(descriptor, options, TemplateSyntaxMode::Standard)
 }
 
 /// Compile an SFC descriptor with Vue parser quirk compatibility.
+#[deprecated(note = "use compile_sfc_with_template_syntax instead")]
 pub fn compile_sfc_with_vue_parser_quirks(
     descriptor: &SfcDescriptor,
     options: SfcCompileOptions,
 ) -> Result<SfcCompileResult, SfcError> {
-    compile_sfc_inner(descriptor, options, true)
+    compile_sfc_inner(descriptor, options, TemplateSyntaxMode::Quirks)
+}
+
+/// Compile an SFC descriptor with an explicit template syntax mode.
+#[doc(hidden)]
+pub fn compile_sfc_with_template_syntax(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+    template_syntax: TemplateSyntaxMode,
+) -> Result<SfcCompileResult, SfcError> {
+    compile_sfc_inner(descriptor, options, template_syntax)
 }
 
 fn compile_sfc_inner(
     descriptor: &SfcDescriptor,
     options: SfcCompileOptions,
-    vue_parser_quirks: bool,
+    template_syntax: TemplateSyntaxMode,
 ) -> Result<SfcCompileResult, SfcError> {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
@@ -333,7 +345,7 @@ fn compile_sfc_inner(
                     has_scoped,
                     None,
                     options.template.custom_renderer,
-                    vue_parser_quirks,
+                    template_syntax,
                 )
             )
         } else {
@@ -360,14 +372,15 @@ fn compile_sfc_inner(
                         bindings: None,
                         croquis: None,
                     },
-                    vue_parser_quirks,
+                    template_syntax,
                 )
             )
         };
 
         match template_result {
-            Ok(template_code) => {
-                code = template_code;
+            Ok(template_output) => {
+                warnings.extend(template_output.warnings);
+                code = template_output.code;
                 if is_vapor {
                     code.push_str("const _sfc_main = { __vapor: true }\n");
                     code.push_str("_sfc_main.render = render\n");
@@ -459,7 +472,7 @@ fn compile_sfc_inner(
                         has_scoped,
                         None,
                         options.template.custom_renderer,
-                        vue_parser_quirks,
+                        template_syntax,
                     )
                 )
             } else {
@@ -486,13 +499,15 @@ fn compile_sfc_inner(
                             bindings: None,
                             croquis: None,
                         },
-                        vue_parser_quirks,
+                        template_syntax,
                     )
                 )
             };
 
             match template_result {
-                Ok(template_code) => {
+                Ok(template_output) => {
+                    warnings.extend(template_output.warnings);
+                    let template_code = template_output.code;
                     // Build output matching Vue's compiler-sfc:
                     // 1. Full template output (imports + hoisted + function _sfc_render(...))
                     // 2. Rewritten script
@@ -718,7 +733,7 @@ fn compile_sfc_inner(
                     has_scoped,
                     Some(&script_bindings),
                     options.template.custom_renderer,
-                    vue_parser_quirks,
+                    template_syntax,
                 )
             ))
         } else {
@@ -740,13 +755,17 @@ fn compile_sfc_inner(
                         bindings: Some(&script_bindings),
                         croquis: Some(croquis),
                     },
-                    vue_parser_quirks,
+                    template_syntax,
                 )
             ))
         }
     } else {
         None
     };
+
+    if let Some(Ok(template_output)) = &template_result {
+        warnings.extend(template_output.warnings.clone());
+    }
 
     // Extract template parts for inline mode (imports, hoisted, preamble, render_body)
     let (
@@ -757,7 +776,8 @@ fn compile_sfc_inner(
         template_preamble,
         render_body,
     ) = match &template_result {
-        Some(Ok(template_code)) => {
+        Some(Ok(template_output)) => {
+            let template_code = &template_output.code;
             if is_vapor || options.template.ssr {
                 let (imports, hoisted, render_fn, render_fn_name) = profile!(
                     "atelier.sfc.template.extract_parts_full",

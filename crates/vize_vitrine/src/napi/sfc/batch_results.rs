@@ -1,4 +1,4 @@
-use napi::Result;
+use napi::{Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use std::{
@@ -14,6 +14,7 @@ use super::types::{
     BatchCompileOptionsNapi, BatchCompileResultWithFilesNapi, BatchFileInputNapi,
     BatchFileResultNapi, custom_blocks_to_napi, macro_artifacts_to_napi, style_blocks_to_napi,
 };
+use crate::template_syntax::resolve_template_syntax;
 
 #[napi(js_name = "compileSfcBatchWithResults")]
 pub fn compile_sfc_batch_with_results(
@@ -22,8 +23,8 @@ pub fn compile_sfc_batch_with_results(
 ) -> Result<BatchCompileResultWithFilesNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-        TemplateCompileOptions, compile_sfc as sfc_compile,
-        compile_sfc_with_vue_parser_quirks as sfc_compile_with_vue_parser_quirks,
+        TemplateCompileOptions,
+        compile_sfc_with_template_syntax as sfc_compile_with_template_syntax,
         parse_sfc as sfc_parse,
     };
 
@@ -41,7 +42,8 @@ pub fn compile_sfc_batch_with_results(
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
     let custom_renderer = opts.custom_renderer.unwrap_or(false);
-    let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
+    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+        .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
     let start = Instant::now();
 
@@ -121,11 +123,8 @@ pub fn compile_sfc_batch_with_results(
             scope_id: Some(scope_id.clone()),
         };
 
-        let compile_result = if vue_parser_quirks {
-            sfc_compile_with_vue_parser_quirks(&descriptor, compile_opts)
-        } else {
-            sfc_compile(&descriptor, compile_opts)
-        };
+        let compile_result =
+            sfc_compile_with_template_syntax(&descriptor, compile_opts, template_syntax);
 
         match compile_result {
             Ok(result) => {

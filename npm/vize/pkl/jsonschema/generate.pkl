@@ -48,10 +48,11 @@ local compilerConfigDef: JsonSchema = new JsonSchema {
       description = "Enable SSR mode"
       default = false
     }
-    ["vueParserQuirks"] = new JsonSchema {
-      type = "boolean"
-      description = "Enable Vue parser quirk compatibility"
-      default = false
+    ["templateSyntax"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "standard"; "strict"; "quirks" }
+      description = "Template syntax compatibility mode"
+      default = "standard"
     }
     ["sourceMap"] = new JsonSchema {
       type = "boolean"

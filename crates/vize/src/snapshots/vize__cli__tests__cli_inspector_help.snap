@@ -1,6 +1,5 @@
 ---
 source: crates/vize/src/cli.rs
-assertion_line: 136
 expression: "command_help(\"inspector\")"
 ---
 Create playground compiler inspector payloads and agent reports
@@ -48,8 +47,15 @@ Options:
       --custom-renderer
           Enable custom renderer comparison in the playground
 
-      --vue-parser-quirks
-          Enable Vue parser compatibility quirks in the Vize side of the comparison
+      --template-syntax <TEMPLATE_SYNTAX>
+          Template syntax compatibility mode
+
+          Possible values:
+          - standard: Warn and rewrite recoverable invalid template syntax
+          - strict:   Report recoverable invalid template syntax as errors
+          - quirks:   Preserve parser compatibility quirks without warnings
+
+          [default: standard]
 
   -h, --help
           Print help (see a summary with '-h')

@@ -23,7 +23,7 @@ import type {
 
 const DEFAULT_OPTIONS: InspectorOptions = {
   customRenderer: false,
-  vueParserQuirks: false,
+  templateSyntax: "standard",
 };
 
 function toErrorMessage(error: unknown): string {
@@ -164,7 +164,7 @@ async function compileVize(
       scriptExt: "preserve",
       outputMode: "vdom",
       customRenderer: options.customRenderer,
-      vueParserQuirks: options.vueParserQuirks,
+      templateSyntax: options.templateSyntax,
     };
     const result = compiler.compileSfc(file.source, compileOptions);
     const code = result.script?.code || result.template?.code || "";

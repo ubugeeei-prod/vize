@@ -17,6 +17,7 @@ import type {
   CachedCompiledModule,
   CompiledModule,
   NormalizedVizeUnpluginOptions,
+  VizeTemplateSyntax,
   VizeVueVersion,
   VizeUnpluginOptions,
 } from "./types.ts";
@@ -41,6 +42,12 @@ function isLegacyVueVersion(version: VizeVueVersion): boolean {
   return version === "legacy" || version === 0.11 || version === 1 || version === 2;
 }
 
+function normalizeTemplateSyntax(
+  templateSyntax: VizeTemplateSyntax | undefined,
+): VizeTemplateSyntax {
+  return templateSyntax ?? "standard";
+}
+
 export function normalizeOptions(
   rawOptions: VizeUnpluginOptions = {},
 ): NormalizedVizeUnpluginOptions {
@@ -50,6 +57,7 @@ export function normalizeOptions(
   const mode =
     rawOptions.mode ?? (compatibility.scriptSetupInStandalone === true ? "function" : "module");
   const hostCompiler = compatibility.hostCompiler ?? isLegacyVueVersion(vueVersion);
+  const templateSyntax = normalizeTemplateSyntax(rawOptions.templateSyntax);
   return {
     include: rawOptions.include,
     exclude: rawOptions.exclude,
@@ -60,7 +68,7 @@ export function normalizeOptions(
     mode,
     vapor: rawOptions.vapor ?? false,
     customRenderer: rawOptions.customRenderer ?? false,
-    vueParserQuirks: rawOptions.vueParserQuirks ?? false,
+    templateSyntax,
     runtimeModuleName: rawOptions.runtimeModuleName ?? "vue",
     runtimeGlobalName: rawOptions.runtimeGlobalName ?? "Vue",
     vueVersion,

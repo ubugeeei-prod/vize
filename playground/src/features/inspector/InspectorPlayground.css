@@ -107,6 +107,15 @@
   accent-color: var(--accent-rust);
 }
 
+.inspector-option select {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font: inherit;
+  padding: 2px 6px;
+}
+
 .inspector-tab-panel {
   min-height: 0;
 }

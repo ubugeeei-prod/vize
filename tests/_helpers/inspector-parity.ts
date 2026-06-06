@@ -69,7 +69,8 @@ function runInspectorCompare(app: AppConfig, target: "dom" | "ssr"): InspectorCo
       "compare",
       "--target",
       target,
-      "--vue-parser-quirks",
+      "--template-syntax",
+      "quirks",
     ],
     {
       cwd: check.cwd,

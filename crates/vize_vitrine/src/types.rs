@@ -48,9 +48,9 @@ pub struct CompilerOptions {
     /// Whether the template targets a custom renderer instead of the DOM.
     #[serde(default)]
     pub custom_renderer: Option<bool>,
-    /// Enable Vue parser quirk compatibility for known edge cases.
+    /// Template syntax compatibility mode: "standard", "strict", or "quirks".
     #[serde(default)]
-    pub vue_parser_quirks: Option<bool>,
+    pub template_syntax: Option<String>,
     /// Module name for runtime imports.
     #[serde(default)]
     pub runtime_module_name: Option<String>,

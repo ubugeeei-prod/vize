@@ -8,6 +8,8 @@ export interface SfcCompileOptionsNapi {
   ssr?: boolean;
   /** Enable Vapor mode compilation */
   vapor?: boolean;
+  /** Template syntax compatibility mode */
+  templateSyntax?: "standard" | "strict" | "quirks";
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
   /** Scope ID for scoped CSS (e.g., "data-v-abc123") */

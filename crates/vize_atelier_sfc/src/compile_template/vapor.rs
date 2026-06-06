@@ -1,12 +1,16 @@
 //! Vapor mode template compilation.
 
 use super::string_tracking::{StringTrackState, count_braces_with_state};
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_vapor::{
-    VaporCompilerOptions, compile_vapor, compile_vapor_with_vue_parser_quirks,
+    VaporCompilerOptions, compile_vapor_with_template_syntax_and_diagnostics,
 };
 use vize_carton::{Bump, String, ToCompactString};
 
-use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock};
+use crate::{
+    compile_template::{TemplateBlockCompileResult, recoverable_template_warnings},
+    types::{BindingMetadata, SfcError, SfcTemplateBlock},
+};
 
 /// Compile template block using Vapor mode
 pub(crate) fn compile_template_block_vapor(
@@ -15,8 +19,8 @@ pub(crate) fn compile_template_block_vapor(
     has_scoped: bool,
     bindings: Option<&BindingMetadata>,
     custom_renderer: bool,
-    vue_parser_quirks: bool,
-) -> Result<String, SfcError> {
+    template_syntax: TemplateSyntaxMode,
+) -> Result<TemplateBlockCompileResult, SfcError> {
     let allocator = Bump::new();
 
     // Build Vapor compiler options
@@ -29,11 +33,12 @@ pub(crate) fn compile_template_block_vapor(
     };
 
     // Compile template with Vapor
-    let result = if vue_parser_quirks {
-        compile_vapor_with_vue_parser_quirks(&allocator, &template.content, vapor_opts)
-    } else {
-        compile_vapor(&allocator, &template.content, vapor_opts)
-    };
+    let (result, diagnostics) = compile_vapor_with_template_syntax_and_diagnostics(
+        &allocator,
+        &template.content,
+        vapor_opts,
+        template_syntax,
+    );
 
     if !result.error_messages.is_empty() {
         let mut message = String::from("Vapor template compilation errors: ");
@@ -56,12 +61,17 @@ pub(crate) fn compile_template_block_vapor(
         String::default()
     };
 
-    transform_vapor_template_output(
+    let code = transform_vapor_template_output(
         &result.code,
         has_scoped.then_some(scope_attr.as_str()),
         template,
         bindings,
-    )
+    )?;
+
+    Ok(TemplateBlockCompileResult {
+        code,
+        warnings: recoverable_template_warnings(&diagnostics),
+    })
 }
 
 /// Add scope ID to template string

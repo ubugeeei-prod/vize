@@ -92,7 +92,7 @@ export default defineConfig({
     sourceMap: true,
     vapor: false,
     customRenderer: false,
-    vueParserQuirks: false,
+    templateSyntax: "standard",
   },
   vite: {
     scanPatterns: ["src/**/*.vue"],
@@ -173,29 +173,29 @@ vize({
   ssr: false,
   vapor: false,
   customRenderer: false,
-  vueParserQuirks: false,
+  templateSyntax: "standard",
   scanPatterns: ["src/**/*.vue"],
   ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
 });
 ```
 
-| Option                 | Where to set it                                           | Description                                                                                                                              |
-| ---------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `vueVersion`           | `vize({ vueVersion })`                                    | Set `0.11`, `1`, `2`, or `"legacy"` to run in non-invasive legacy Vue compatibility mode and leave SFC compilation to the host compiler. |
-| `sourceMap`            | `compiler.sourceMap` or `vize({ sourceMap })`             | Generate source maps. Defaults to development on, production off.                                                                        |
-| `ssr`                  | `compiler.ssr` or `vize({ ssr })`                         | Force SSR compilation when Vite's SSR build flag is not enough.                                                                          |
-| `vapor`                | `compiler.vapor` or `vize({ vapor })`                     | Compile templates through the Vapor backend.                                                                                             |
-| `customRenderer`       | `compiler.customRenderer` or `vize({ customRenderer })`   | Treat lowercase non-HTML tags as custom renderer elements. Useful for renderer ecosystems such as TresJS.                                |
-| `vueParserQuirks`      | `compiler.vueParserQuirks` or `vize({ vueParserQuirks })` | Match Vue parser quirks for known edge cases.                                                                                            |
-| `include`              | `vite.include` or `vize({ include })`                     | Files that the plugin should compile.                                                                                                    |
-| `exclude`              | `vite.exclude` or `vize({ exclude })`                     | Files that the plugin should ignore.                                                                                                     |
-| `scanPatterns`         | `vite.scanPatterns` or `vize({ scanPatterns })`           | Glob patterns used for startup pre-compilation.                                                                                          |
-| `ignorePatterns`       | `vite.ignorePatterns` or `vize({ ignorePatterns })`       | Glob patterns skipped during startup pre-compilation.                                                                                    |
-| `configMode`           | `vize({ configMode })`                                    | Use `"root"`, `"auto"`, or `false` for shared config loading.                                                                            |
-| `configFile`           | `vize({ configFile })`                                    | Load a specific config file.                                                                                                             |
-| `config`               | `vize({ config })`                                        | Inline shared config for Vite Plus runtime settings.                                                                                     |
-| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                          | Compile `.vue` files imported from `node_modules` on demand.                                                                             |
-| `debug`                | `vize({ debug })`                                         | Print plugin debug logs.                                                                                                                 |
+| Option                 | Where to set it                                         | Description                                                                                                                              |
+| ---------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `vueVersion`           | `vize({ vueVersion })`                                  | Set `0.11`, `1`, `2`, or `"legacy"` to run in non-invasive legacy Vue compatibility mode and leave SFC compilation to the host compiler. |
+| `sourceMap`            | `compiler.sourceMap` or `vize({ sourceMap })`           | Generate source maps. Defaults to development on, production off.                                                                        |
+| `ssr`                  | `compiler.ssr` or `vize({ ssr })`                       | Force SSR compilation when Vite's SSR build flag is not enough.                                                                          |
+| `vapor`                | `compiler.vapor` or `vize({ vapor })`                   | Compile templates through the Vapor backend.                                                                                             |
+| `customRenderer`       | `compiler.customRenderer` or `vize({ customRenderer })` | Treat lowercase non-HTML tags as custom renderer elements. Useful for renderer ecosystems such as TresJS.                                |
+| `templateSyntax`       | `compiler.templateSyntax` or `vize({ templateSyntax })` | Choose `"standard"`, `"strict"`, or `"quirks"` template syntax handling.                                                                 |
+| `include`              | `vite.include` or `vize({ include })`                   | Files that the plugin should compile.                                                                                                    |
+| `exclude`              | `vite.exclude` or `vize({ exclude })`                   | Files that the plugin should ignore.                                                                                                     |
+| `scanPatterns`         | `vite.scanPatterns` or `vize({ scanPatterns })`         | Glob patterns used for startup pre-compilation.                                                                                          |
+| `ignorePatterns`       | `vite.ignorePatterns` or `vize({ ignorePatterns })`     | Glob patterns skipped during startup pre-compilation.                                                                                    |
+| `configMode`           | `vize({ configMode })`                                  | Use `"root"`, `"auto"`, or `false` for shared config loading.                                                                            |
+| `configFile`           | `vize({ configFile })`                                  | Load a specific config file.                                                                                                             |
+| `config`               | `vize({ config })`                                      | Inline shared config for Vite Plus runtime settings.                                                                                     |
+| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                        | Compile `.vue` files imported from `node_modules` on demand.                                                                             |
+| `debug`                | `vize({ debug })`                                       | Print plugin debug logs.                                                                                                                 |
 
 Common recipes:
 
@@ -206,9 +206,9 @@ vize({ vapor: true });
 // TresJS or another custom renderer
 vize({ customRenderer: true });
 
-// Existing templates that rely on Vue parser edge cases, such as
+// Existing templates that rely on parser edge cases, such as
 // v-for alias edge parens or `<div />` as a self-closing leaf
-vize({ vueParserQuirks: true });
+vize({ templateSyntax: "quirks" });
 
 // Monorepo package with explicit scan roots
 vize({

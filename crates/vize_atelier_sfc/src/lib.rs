@@ -58,7 +58,9 @@ pub use bundler::{
     extract_style_blocks, generate_bundler_scope_id, has_scoped_style, is_importable_asset_url,
     strip_css_comments_for_scoped, wrap_scoped_preprocessor_style,
 };
-pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_vue_parser_quirks};
+#[allow(deprecated)]
+pub use compile::compile_sfc_with_vue_parser_quirks;
+pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
 pub use compile_script::props::{
     validate_script_setup_semantics, validate_script_setup_semantics_located,
 };
@@ -83,7 +85,8 @@ mod snapshot_tests;
 
 #[cfg(test)]
 mod tests {
-    use super::{SfcCompileOptions, compile_sfc, parse_sfc};
+    use super::{SfcCompileOptions, compile_sfc, compile_sfc_with_template_syntax, parse_sfc};
+    use vize_atelier_core::TemplateSyntaxMode;
 
     #[test]
     fn test_parse_simple_sfc() {
@@ -182,6 +185,46 @@ function onClick() {
         );
 
         insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_compile_sfc_standard_warns_for_invalid_html_self_closing() {
+        let source = r#"
+<template>
+  <div />
+  <span></span>
+</template>
+"#;
+        let descriptor = parse_sfc(source, Default::default()).unwrap();
+        let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+
+        assert!(
+            result
+                .warnings
+                .iter()
+                .any(|warning| warning.message.contains("Invalid self-closing syntax")),
+            "expected invalid self-closing warning: {:?}",
+            result.warnings
+        );
+        assert!(result.code.contains("_createElementVNode(\"div\""));
+    }
+
+    #[test]
+    fn test_compile_sfc_strict_errors_for_invalid_html_self_closing() {
+        let source = r#"
+<template>
+  <div />
+</template>
+"#;
+        let descriptor = parse_sfc(source, Default::default()).unwrap();
+        let error = compile_sfc_with_template_syntax(
+            &descriptor,
+            SfcCompileOptions::default(),
+            TemplateSyntaxMode::Strict,
+        )
+        .expect_err("strict syntax should reject invalid self-closing HTML");
+
+        assert!(error.message.contains("Invalid self-closing syntax"));
     }
 
     #[test]
@@ -333,7 +376,7 @@ const isRootSelected = ref(false)
                 .insert(local.to_compact_string(), key.to_compact_string());
         }
 
-        let template_code = crate::compile_template::compile_template_block(
+        let template_output = crate::compile_template::compile_template_block(
             template,
             &crate::TemplateCompileOptions::default(),
             crate::compile_template::TemplateBlockCompileContext {
@@ -346,9 +389,10 @@ const isRootSelected = ref(false)
                 bindings: Some(&binding_metadata),
                 croquis: Some(croquis),
             },
-            false,
+            vize_atelier_core::TemplateSyntaxMode::Standard,
         )
         .expect("template compile should succeed");
+        let template_code = template_output.code;
         assert!(
             template_code.contains("!selectedFolders.value.some((f) => f.id === folder.value.id)"),
             "unexpected template code:\n{}",

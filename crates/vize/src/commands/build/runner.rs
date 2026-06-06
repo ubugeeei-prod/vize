@@ -12,9 +12,10 @@ use std::{
 
 use ignore::Walk;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-    TemplateCompileOptions, compile_sfc, compile_sfc_with_vue_parser_quirks, parse_sfc,
+    TemplateCompileOptions, compile_sfc_with_template_syntax, parse_sfc,
 };
 use vize_carton::cstr;
 use vize_carton::hash::hash_str;
@@ -87,7 +88,7 @@ pub(crate) fn run(args: BuildArgs) {
         ssr: args.ssr,
         vapor: args.vapor,
         custom_renderer: args.custom_renderer,
-        vue_parser_quirks: args.vue_parser_quirks,
+        template_syntax: args.template_syntax.map(Into::into).unwrap_or_default(),
         script_ext: args.script_ext,
         record_profile_totals: args.profile,
     };
@@ -581,7 +582,7 @@ struct CompileFileSettings {
     ssr: bool,
     vapor: bool,
     custom_renderer: bool,
-    vue_parser_quirks: bool,
+    template_syntax: TemplateSyntaxMode,
     script_ext: ScriptExtension,
     record_profile_totals: bool,
 }
@@ -596,11 +597,20 @@ impl CompileFileSettings {
         u8::from(self.ssr)
             | (u8::from(self.vapor) << 1)
             | (u8::from(self.custom_renderer) << 2)
-            | (u8::from(self.vue_parser_quirks) << 3)
+            | (template_syntax_bits(self.template_syntax) << 3)
             | match self.script_ext {
-                ScriptExtension::Preserve => 1 << 4,
+                ScriptExtension::Preserve => 1 << 5,
                 ScriptExtension::Downcompile => 0,
             }
+    }
+}
+
+fn template_syntax_bits(template_syntax: TemplateSyntaxMode) -> u8 {
+    match template_syntax {
+        TemplateSyntaxMode::Standard => 0,
+        TemplateSyntaxMode::Strict => 1,
+        TemplateSyntaxMode::Quirks => 2,
+        _ => 3,
     }
 }
 
@@ -860,11 +870,7 @@ fn compile_file_stats_with_cache(
 
     let result = match profile!(
         "atelier.sfc.compile",
-        if settings.vue_parser_quirks {
-            compile_sfc_with_vue_parser_quirks(&descriptor, compile_opts)
-        } else {
-            compile_sfc(&descriptor, compile_opts)
-        }
+        compile_sfc_with_template_syntax(&descriptor, compile_opts, settings.template_syntax)
     ) {
         Ok(result) => result,
         Err(error) => {
@@ -1031,11 +1037,7 @@ fn compile_file_with_profile(
 
     let result = profile!(
         "atelier.sfc.compile",
-        if settings.vue_parser_quirks {
-            compile_sfc_with_vue_parser_quirks(&descriptor, compile_opts)
-        } else {
-            compile_sfc(&descriptor, compile_opts)
-        }
+        compile_sfc_with_template_syntax(&descriptor, compile_opts, settings.template_syntax)
     )
     .map_err(|e| CompileError {
         path: path.clone(),

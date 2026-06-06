@@ -10,6 +10,8 @@ pub mod napi;
 #[cfg(feature = "wasm")]
 pub mod wasm;
 
+#[cfg(any(feature = "napi", feature = "wasm"))]
+mod template_syntax;
 pub mod typecheck;
 pub mod types;
 

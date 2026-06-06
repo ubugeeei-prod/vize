@@ -14,10 +14,10 @@ use std::{
     process::{Command, Stdio},
     time::Instant,
 };
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-    TemplateCompileOptions, compile_sfc as compile_vize_sfc,
-    compile_sfc_with_vue_parser_quirks as compile_vize_sfc_with_vue_parser_quirks,
+    TemplateCompileOptions, compile_sfc_with_template_syntax as compile_vize_sfc,
     parse_sfc as parse_vize_sfc,
 };
 use vize_carton::{String, ToCompactString};
@@ -64,6 +64,38 @@ impl InspectorTarget {
     }
 }
 
+#[derive(Debug, Clone, Copy, ValueEnum, Default, serde::Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum InspectorTemplateSyntaxArg {
+    /// Warn and rewrite recoverable invalid template syntax.
+    #[default]
+    Standard,
+    /// Report recoverable invalid template syntax as errors.
+    Strict,
+    /// Preserve parser compatibility quirks without warnings.
+    Quirks,
+}
+
+impl From<InspectorTemplateSyntaxArg> for TemplateSyntaxMode {
+    fn from(value: InspectorTemplateSyntaxArg) -> Self {
+        match value {
+            InspectorTemplateSyntaxArg::Standard => Self::Standard,
+            InspectorTemplateSyntaxArg::Strict => Self::Strict,
+            InspectorTemplateSyntaxArg::Quirks => Self::Quirks,
+        }
+    }
+}
+
+impl From<InspectorTemplateSyntaxArg> for curator_inspector::InspectorTemplateSyntax {
+    fn from(value: InspectorTemplateSyntaxArg) -> Self {
+        match value {
+            InspectorTemplateSyntaxArg::Standard => Self::Standard,
+            InspectorTemplateSyntaxArg::Strict => Self::Strict,
+            InspectorTemplateSyntaxArg::Quirks => Self::Quirks,
+        }
+    }
+}
+
 #[derive(Args, Default)]
 #[allow(clippy::disallowed_types)]
 pub struct InspectorArgs {
@@ -95,9 +127,9 @@ pub struct InspectorArgs {
     #[arg(long)]
     pub custom_renderer: bool,
 
-    /// Enable Vue parser compatibility quirks in the Vize side of the comparison
-    #[arg(long)]
-    pub vue_parser_quirks: bool,
+    /// Template syntax compatibility mode
+    #[arg(long, value_enum, default_value = "standard")]
+    pub template_syntax: InspectorTemplateSyntaxArg,
 }
 
 /// Build and print an inspector payload after collecting source files once.
@@ -187,7 +219,7 @@ struct InspectorCompareSummary {
 #[serde(rename_all = "camelCase")]
 struct InspectorCompareOptions {
     custom_renderer: bool,
-    vue_parser_quirks: bool,
+    template_syntax: InspectorTemplateSyntaxArg,
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -344,7 +376,7 @@ fn build_compare_report(
             .count(),
         options: InspectorCompareOptions {
             custom_renderer: args.custom_renderer,
-            vue_parser_quirks: args.vue_parser_quirks,
+            template_syntax: args.template_syntax,
         },
     };
 
@@ -410,11 +442,7 @@ fn compile_vize_for_compare(
         ..Default::default()
     };
 
-    let result = if args.vue_parser_quirks {
-        compile_vize_sfc_with_vue_parser_quirks(&descriptor, compile_options)
-    } else {
-        compile_vize_sfc(&descriptor, compile_options)
-    };
+    let result = compile_vize_sfc(&descriptor, compile_options, args.template_syntax.into());
 
     match result {
         Ok(result) => VizeCompilerRun {
@@ -868,7 +896,7 @@ fn build_payload(
         args.target.into(),
         curator_inspector::InspectorOptions {
             custom_renderer: args.custom_renderer,
-            vue_parser_quirks: args.vue_parser_quirks,
+            template_syntax: args.template_syntax.into(),
         },
         files,
     )

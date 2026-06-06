@@ -29,6 +29,26 @@ pub enum ScriptExtension {
     Downcompile,
 }
 
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum TemplateSyntaxArg {
+    /// Warn and rewrite recoverable invalid template syntax.
+    Standard,
+    /// Report recoverable invalid template syntax as errors.
+    Strict,
+    /// Preserve template syntax compatibility quirks without warnings.
+    Quirks,
+}
+
+impl From<TemplateSyntaxArg> for vize_atelier_core::TemplateSyntaxMode {
+    fn from(value: TemplateSyntaxArg) -> Self {
+        match value {
+            TemplateSyntaxArg::Standard => Self::Standard,
+            TemplateSyntaxArg::Strict => Self::Strict,
+            TemplateSyntaxArg::Quirks => Self::Quirks,
+        }
+    }
+}
+
 #[derive(Args, Default)]
 #[allow(clippy::disallowed_types)]
 pub struct BuildArgs {
@@ -64,9 +84,9 @@ pub struct BuildArgs {
     #[arg(long)]
     pub custom_renderer: bool,
 
-    /// Enable Vue parser quirk compatibility for known edge cases
-    #[arg(long)]
-    pub vue_parser_quirks: bool,
+    /// Template syntax compatibility mode
+    #[arg(long, value_enum)]
+    pub template_syntax: Option<TemplateSyntaxArg>,
 
     /// Script extension handling: 'preserve' keeps original extension (.ts/.tsx/.jsx), 'downcompile' converts to .js
     #[arg(long, value_enum, default_value = "downcompile")]

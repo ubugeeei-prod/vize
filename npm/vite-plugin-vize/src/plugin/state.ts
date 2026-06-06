@@ -71,7 +71,7 @@ export interface CompileOptionsForRequest {
   vapor: boolean;
   mode?: "module" | "function";
   customRenderer: boolean;
-  vueParserQuirks: boolean;
+  templateSyntax: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
@@ -87,7 +87,7 @@ export function getCompileOptionsForRequest(
     // Vapor runtime is client-oriented today; use VDOM for SSR and Vapor on the client.
     vapor: !ssr && (state.mergedOptions?.vapor ?? false),
     customRenderer: state.mergedOptions?.customRenderer ?? false,
-    vueParserQuirks: state.mergedOptions?.vueParserQuirks ?? false,
+    templateSyntax: state.mergedOptions?.templateSyntax ?? "standard",
   };
 
   if (state.mergedOptions?.mode !== undefined) {
@@ -243,7 +243,7 @@ export async function compileAll(state: VizePluginState): Promise<void> {
       vapor: state.mergedOptions.vapor ?? false,
       mode: state.mergedOptions.mode,
       customRenderer: state.mergedOptions.customRenderer ?? false,
-      vueParserQuirks: state.mergedOptions.vueParserQuirks ?? false,
+      templateSyntax: state.mergedOptions.templateSyntax ?? "standard",
       runtimeModuleName: state.mergedOptions.runtimeModuleName,
       runtimeGlobalName: state.mergedOptions.runtimeGlobalName,
       vueVersion: state.mergedOptions.vueVersion,

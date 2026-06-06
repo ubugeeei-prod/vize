@@ -52,6 +52,8 @@ export interface VizeNuxtCompilerOptions {
   vapor?: boolean;
   /** Treat lowercase non-HTML tags as custom renderer elements. */
   customRenderer?: boolean;
+  /** Template syntax compatibility mode. */
+  templateSyntax?: "standard" | "strict" | "quirks";
   /** Root directory to scan for .vue files. */
   root?: string;
   /** Glob patterns to scan for .vue files during pre-compilation. */

@@ -14,9 +14,15 @@ mod tests;
 pub(crate) use extraction::{extract_template_parts, extract_template_parts_full};
 pub(crate) use vapor::compile_template_block_vapor;
 
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Bump;
 
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
+
+pub(crate) struct TemplateBlockCompileResult {
+    pub(crate) code: String,
+    pub(crate) warnings: std::vec::Vec<SfcError>,
+}
 
 pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) scope_id: &'a str,
@@ -37,8 +43,8 @@ pub(crate) fn compile_template_block(
     template: &SfcTemplateBlock,
     options: &TemplateCompileOptions,
     ctx: TemplateBlockCompileContext<'_>,
-    vue_parser_quirks: bool,
-) -> Result<String, SfcError> {
+    template_syntax: TemplateSyntaxMode,
+) -> Result<TemplateBlockCompileResult, SfcError> {
     let TemplateBlockCompileContext {
         scope_id,
         apply_scope_id,
@@ -77,15 +83,12 @@ pub(crate) fn compile_template_block(
 
         let (_, errors, result) = profile!(
             "atelier.sfc.template.ssr",
-            if vue_parser_quirks {
-                vize_atelier_ssr::compile_ssr_with_vue_parser_quirks(
-                    &allocator,
-                    &template.content,
-                    ssr_opts,
-                )
-            } else {
-                vize_atelier_ssr::compile_ssr_with_options(&allocator, &template.content, ssr_opts)
-            }
+            vize_atelier_ssr::compile_ssr_with_template_syntax(
+                &allocator,
+                &template.content,
+                ssr_opts,
+                template_syntax,
+            )
         );
 
         // Recoverable parser diagnostics (e.g. duplicate attribute) must
@@ -108,7 +111,10 @@ pub(crate) fn compile_template_block(
         output.push('\n');
         output.push_str(&result.code);
         output.push('\n');
-        return Ok(output);
+        return Ok(TemplateBlockCompileResult {
+            code: output,
+            warnings: recoverable_template_warnings(&errors),
+        });
     }
 
     // Build DOM compiler options
@@ -155,21 +161,13 @@ pub(crate) fn compile_template_block(
     // Compile template
     let (_, errors, result) = profile!(
         "atelier.sfc.template.dom",
-        if vue_parser_quirks {
-            vize_atelier_dom::compile_template_with_vue_parser_quirks_and_hoisted_scope_id(
-                &allocator,
-                &template.content,
-                dom_opts,
-                hoisted_scope_attr,
-            )
-        } else {
-            vize_atelier_dom::compile_template_with_options_and_hoisted_scope_id(
-                &allocator,
-                &template.content,
-                dom_opts,
-                hoisted_scope_attr,
-            )
-        }
+        vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id(
+            &allocator,
+            &template.content,
+            dom_opts,
+            template_syntax,
+            hoisted_scope_attr,
+        )
     );
 
     // See above — drop recoverable parser diagnostics from the gating
@@ -198,5 +196,19 @@ pub(crate) fn compile_template_block(
     output.push_str(&result.code);
     output.push('\n');
 
-    Ok(output)
+    Ok(TemplateBlockCompileResult {
+        code: output,
+        warnings: recoverable_template_warnings(&errors),
+    })
+}
+
+pub(crate) fn recoverable_template_warnings(
+    errors: &[vize_atelier_core::CompilerError],
+) -> std::vec::Vec<SfcError> {
+    errors
+        .iter()
+        .filter(|error| error.is_recoverable())
+        .cloned()
+        .map(Into::into)
+        .collect()
 }

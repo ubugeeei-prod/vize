@@ -44,7 +44,7 @@ const selectedFileIndex = ref(0);
 const target = ref<InspectorTarget>("dom");
 const options = ref<InspectorOptions>({
   customRenderer: false,
-  vueParserQuirks: false,
+  templateSyntax: "standard",
 });
 const report = ref<InspectorReport | null>(null);
 const error = ref<string | null>(null);
@@ -144,7 +144,7 @@ function applyPayload(nextPayload: InspectorPayload) {
   target.value = nextPayload.target === "ssr" ? "ssr" : "dom";
   options.value = {
     customRenderer: nextPayload.options?.customRenderer ?? false,
-    vueParserQuirks: nextPayload.options?.vueParserQuirks ?? false,
+    templateSyntax: nextPayload.options?.templateSyntax ?? "standard",
   };
   const selected = nextPayload.selectedFile
     ? files.value.findIndex((file) => file.path === nextPayload.selectedFile)
@@ -321,10 +321,14 @@ onUnmounted(() => {
           <input v-model="options.customRenderer" type="checkbox" />
           <span>custom renderer</span>
         </label>
-        <label class="inspector-option">
-          <input v-model="options.vueParserQuirks" type="checkbox" />
-          <span>Vue parser quirks</span>
-        </label>
+        <div class="inspector-option">
+          <label for="inspector-template-syntax">template syntax</label>
+          <select id="inspector-template-syntax" v-model="options.templateSyntax">
+            <option value="standard">standard</option>
+            <option value="strict">strict</option>
+            <option value="quirks">quirks</option>
+          </select>
+        </div>
       </div>
     </div>
 

@@ -19,7 +19,7 @@ use vize_carton::{Bump, String, Vec};
 use vize_relief::{
     ast::*,
     errors::{CompilerError, ErrorCode},
-    options::{ParserOptions, WhitespaceStrategy},
+    options::{ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
 };
 
 use crate::tokenizer::Tokenizer;
@@ -35,9 +35,8 @@ pub struct Parser<'a> {
     source: &'a str,
     /// Parser options
     options: ParserOptions,
-    /// Whether invalid self-closing syntax on non-void HTML elements should be
-    /// accepted as a Vue parser compatibility quirk.
-    allow_invalid_html_self_closing: bool,
+    /// Template syntax compatibility mode.
+    template_syntax: TemplateSyntaxMode,
     /// Current node stack
     stack: Vec<'a, ParserStackEntry<'a>>,
     /// Root node
@@ -125,21 +124,46 @@ impl<'a> Parser<'a> {
 
     /// Create a new parser with options
     pub fn with_options(allocator: &'a Bump, source: &'a str, options: ParserOptions) -> Self {
-        Self::with_options_and_invalid_html_self_closing(allocator, source, options, false)
+        Self::with_options_and_template_syntax(
+            allocator,
+            source,
+            options,
+            TemplateSyntaxMode::Standard,
+        )
     }
 
     /// Create a new parser with options and invalid HTML self-closing compatibility.
+    #[deprecated(note = "use with_options_and_template_syntax instead")]
     pub fn with_options_and_invalid_html_self_closing(
         allocator: &'a Bump,
         source: &'a str,
         options: ParserOptions,
         allow_invalid_html_self_closing: bool,
     ) -> Self {
+        Self::with_options_and_template_syntax(
+            allocator,
+            source,
+            options,
+            if allow_invalid_html_self_closing {
+                TemplateSyntaxMode::Quirks
+            } else {
+                TemplateSyntaxMode::Standard
+            },
+        )
+    }
+
+    /// Create a new parser with options and template syntax compatibility.
+    pub fn with_options_and_template_syntax(
+        allocator: &'a Bump,
+        source: &'a str,
+        options: ParserOptions,
+        template_syntax: TemplateSyntaxMode,
+    ) -> Self {
         Self {
             allocator,
             source,
             options,
-            allow_invalid_html_self_closing,
+            template_syntax,
             stack: Vec::new_in(allocator),
             root: None,
             current_element: None,
@@ -336,17 +360,32 @@ pub fn parse_with_options<'a>(
 }
 
 /// Parse a Vue template with options and invalid HTML self-closing compatibility.
+#[deprecated(note = "use parse_with_options_and_template_syntax instead")]
 pub fn parse_with_options_and_invalid_html_self_closing<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: ParserOptions,
     allow_invalid_html_self_closing: bool,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    Parser::with_options_and_invalid_html_self_closing(
+    Parser::with_options_and_template_syntax(
         allocator,
         source,
         options,
-        allow_invalid_html_self_closing,
+        if allow_invalid_html_self_closing {
+            TemplateSyntaxMode::Quirks
+        } else {
+            TemplateSyntaxMode::Standard
+        },
     )
     .parse()
+}
+
+/// Parse a Vue template with options and template syntax compatibility.
+pub fn parse_with_options_and_template_syntax<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: ParserOptions,
+    template_syntax: TemplateSyntaxMode,
+) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    Parser::with_options_and_template_syntax(allocator, source, options, template_syntax).parse()
 }

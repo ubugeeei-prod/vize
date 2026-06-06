@@ -7,7 +7,7 @@ export interface CompileFileOptions {
   vapor: boolean;
   mode?: "module" | "function";
   customRenderer?: boolean;
-  vueParserQuirks?: boolean;
+  templateSyntax?: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
@@ -18,7 +18,7 @@ export interface CompileBatchOptions {
   vapor: boolean;
   mode?: "module" | "function";
   customRenderer?: boolean;
-  vueParserQuirks?: boolean;
+  templateSyntax?: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
@@ -30,28 +30,36 @@ export function buildCompileFileOptions(
 ): SfcCompileOptionsNapi {
   return {
     filename: filePath,
-    mode: options.mode,
     sourceMap: options.sourceMap,
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer ?? false,
-    vueParserQuirks: options.vueParserQuirks ?? false,
-    runtimeModuleName: options.runtimeModuleName,
-    runtimeGlobalName: options.runtimeGlobalName,
-    vueVersion: options.vueVersion == null ? undefined : String(options.vueVersion),
     scopeId: `data-v-${generateScopeId(filePath)}`,
+    ...(options.mode === undefined ? {} : { mode: options.mode }),
+    ...(options.templateSyntax === undefined ? {} : { templateSyntax: options.templateSyntax }),
+    ...(options.runtimeModuleName === undefined
+      ? {}
+      : { runtimeModuleName: options.runtimeModuleName }),
+    ...(options.runtimeGlobalName === undefined
+      ? {}
+      : { runtimeGlobalName: options.runtimeGlobalName }),
+    ...(options.vueVersion == null ? {} : { vueVersion: String(options.vueVersion) }),
   };
 }
 
 export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCompileOptionsNapi {
   return {
-    mode: options.mode,
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer ?? false,
-    vueParserQuirks: options.vueParserQuirks ?? false,
-    runtimeModuleName: options.runtimeModuleName,
-    runtimeGlobalName: options.runtimeGlobalName,
-    vueVersion: options.vueVersion == null ? undefined : String(options.vueVersion),
+    ...(options.mode === undefined ? {} : { mode: options.mode }),
+    ...(options.templateSyntax === undefined ? {} : { templateSyntax: options.templateSyntax }),
+    ...(options.runtimeModuleName === undefined
+      ? {}
+      : { runtimeModuleName: options.runtimeModuleName }),
+    ...(options.runtimeGlobalName === undefined
+      ? {}
+      : { runtimeGlobalName: options.runtimeGlobalName }),
+    ...(options.vueVersion == null ? {} : { vueVersion: String(options.vueVersion) }),
   };
 }

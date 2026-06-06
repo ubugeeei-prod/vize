@@ -61,13 +61,14 @@ export function compileFile(
   const isProd = options.isProduction ?? false;
   // Normalize transformAssetUrls for cache key
   const transformAssetUrls = options.transformAssetUrls ?? true;
+  const templateSyntax = options.compilerOptions?.templateSyntax ?? "standard";
   const tauKey =
     transformAssetUrls === false
       ? "tau=false"
       : transformAssetUrls === true
         ? "tau=true"
         : `tau=${JSON.stringify(transformAssetUrls)}`;
-  const cacheKey = `${filePath}:ssr=${ssr}:vapor=${vapor}:ts=${autoIsTs}:map=${sourceMap}:ce=${isCustomElement}:root=${rootCtx}:prod=${isProd}:${tauKey}`;
+  const cacheKey = `${filePath}:ssr=${ssr}:vapor=${vapor}:ts=${autoIsTs}:map=${sourceMap}:ce=${isCustomElement}:syntax=${templateSyntax}:root=${rootCtx}:prod=${isProd}:${tauKey}`;
 
   const contentHash = computeContentHash(source);
   const cached = compilationCache.get(cacheKey);

@@ -4,6 +4,7 @@ exports[`vite-plugin vapor options > avoids collisions with local render binding
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { template as _template } from 'vue';
 
+
 const t0 = _template("<div>Hello</div>", true)
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
@@ -29,7 +30,8 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})"
+})
+"
 `;
 
 exports[`vite-plugin vapor options > builds scoped single-file options with vapor enabled 1`] = `
@@ -40,13 +42,13 @@ exports[`vite-plugin vapor options > builds scoped single-file options with vapo
   "sourceMap": true,
   "ssr": false,
   "vapor": true,
-  "vueParserQuirks": false,
 }
 `;
 
 exports[`vite-plugin vapor options > compiles script setup SFCs to a full Vapor render block 1`] = `
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+
 
 const t0 = _template("<div> </div>", true)
 
@@ -57,9 +59,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n0
 }
 const __vaporRender = render
-
-import { ref } from "vue";
-
+import { ref } from 'vue'
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'App',
@@ -76,12 +76,14 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})"
+})
+"
 `;
 
 exports[`vite-plugin vapor options > compiles the playground app itself to Vapor output 1`] = `
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+
 
 const t0 = _template("<svg viewBox=\\"0 0 24 24\\" width=\\"18\\" height=\\"18\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><circle cx=\\"12\\" cy=\\"12\\" r=\\"5\\"></circle><line x1=\\"12\\" y1=\\"1\\" x2=\\"12\\" y2=\\"3\\"></line><line x1=\\"12\\" y1=\\"21\\" x2=\\"12\\" y2=\\"23\\"></line><line x1=\\"4.22\\" y1=\\"4.22\\" x2=\\"5.64\\" y2=\\"5.64\\"></line><line x1=\\"18.36\\" y1=\\"18.36\\" x2=\\"19.78\\" y2=\\"19.78\\"></line><line x1=\\"1\\" y1=\\"12\\" x2=\\"3\\" y2=\\"12\\"></line><line x1=\\"21\\" y1=\\"12\\" x2=\\"23\\" y2=\\"12\\"></line><line x1=\\"4.22\\" y1=\\"19.78\\" x2=\\"5.64\\" y2=\\"18.36\\"></line><line x1=\\"18.36\\" y1=\\"5.64\\" x2=\\"19.78\\" y2=\\"4.22\\"></line></svg>", true, 1)
 const t1 = _template("<svg viewBox=\\"0 0 24 24\\" width=\\"18\\" height=\\"18\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><path d=\\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\\"></path></svg>", true, 1)
@@ -210,20 +212,19 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n2
 }
 const __vaporRender = render
-
-import { ref, computed, watch, onMounted, shallowRef, provide } from "vue";
-import { mdiClipboardTextOutline } from "@mdi/js";
-import { loadWasm } from "./wasm/index";
-import AtelierPlayground from "./features/atelier/AtelierPlayground.vue";
-import MuseaPlayground from "./features/musea/MuseaPlayground.vue";
-import PatinaPlayground from "./features/patina/PatinaPlayground.vue";
-import GlyphPlayground from "./features/glyph/GlyphPlayground.vue";
-import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
-import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
-import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
-import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
-import { getPlaygroundEnvironmentInfo } from "./utils/environment";
-import { useClipboard } from "./utils/useClipboard";
+import { ref, computed, watch, onMounted, shallowRef, provide } from 'vue'
+import { mdiClipboardTextOutline } from '@mdi/js'
+import { loadWasm } from './wasm/index'
+import AtelierPlayground from './features/atelier/AtelierPlayground.vue'
+import MuseaPlayground from './features/musea/MuseaPlayground.vue'
+import PatinaPlayground from './features/patina/PatinaPlayground.vue'
+import GlyphPlayground from './features/glyph/GlyphPlayground.vue'
+import CroquisPlayground from './features/croquis/CroquisPlayground.vue'
+import CrossFilePlayground from './features/cross-file/CrossFilePlayground.vue'
+import TypeCheckPlayground from './features/canon/TypeCheckPlayground.vue'
+import InspectorPlayground from './features/inspector/InspectorPlayground.vue'
+import { getPlaygroundEnvironmentInfo } from './utils/environment'
+import { useClipboard } from './utils/useClipboard'
 
 // Main tab
 type MainTab =
@@ -235,7 +236,6 @@ type MainTab =
   | "cross-file"
   | "musea"
   | "glyph";
-
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'App',
@@ -309,13 +309,15 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})"
+})
+"
 `;
 
 exports[`vite-plugin vapor options > emits Vapor template ref setters for DOM refs used by playground components 1`] = `
 {
   "highlight": "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { child as _child, createTemplateRefSetter as _createTemplateRefSetter, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+
 
 const t0 = _template("<div data-v-2bad5e65 class=\\"line-numbers\\"></div>", true)
 const t1 = _template("<div data-v-2bad5e65><div class=\\"code-content\\"></div></div>", true)
@@ -335,27 +337,21 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n1
 }
 const __vaporRender = render
-
-import { useTemplateRef, watch } from "vue";
-import {
-  codeToThemedHtmlLines,
-  normalizePlainHtmlLines,
-  type CodeHighlightLanguage,
-} from "./codeHighlighting";
-
+import { useTemplateRef, watch } from 'vue'
+import { codeToThemedHtmlLines, normalizePlainHtmlLines, type CodeHighlightLanguage } from './codeHighlighting'
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'CodeHighlight',
   props: {
-    code: { type: String },
-    language: { type: null },
+    code: { type: String, required: true },
+    language: { type: null, required: true },
     showLineNumbers: { type: Boolean, required: false },
     theme: { type: String, required: false }
   },
   render: __vaporRender,
   setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
 
-const props = __props;
+const props = __props
 const codeContentEl = useTemplateRef<HTMLDivElement>("codeContentEl");
 const lineNumbersEl = useTemplateRef<HTMLDivElement>("lineNumbersEl");
 let latestRenderId = 0;
@@ -426,9 +422,11 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})",
+})
+",
   "monaco": "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createTemplateRefSetter as _createTemplateRefSetter, template as _template } from 'vue';
+
 
 const t0 = _template("<div data-v-3a9d3f90 class=\\"monaco-container\\"></div>", true)
 
@@ -439,18 +437,11 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n0
 }
 const __vaporRender = render
-
-import "./MonacoEditor.css";
-import { useTemplateRef, watch, onUnmounted, shallowRef, inject, type ComputedRef } from "vue";
-import * as monaco from "monaco-editor";
-import { configureMonaco, addVueCommentAction } from "./monacoConfig";
-import {
-  getScopeDecorationClass,
-  offsetToPosition,
-  getOverviewRulerColor,
-  getScopeDecorationHoverMessage,
-  type ScopeDecorationInfo,
-} from "./scopeDecorations";
+import './MonacoEditor.css'
+import { useTemplateRef, watch, onUnmounted, shallowRef, inject, type ComputedRef } from 'vue'
+import * as monaco from 'monaco-editor'
+import { configureMonaco, addVueCommentAction } from './monacoConfig'
+import { getScopeDecorationClass, offsetToPosition, getOverviewRulerColor, getScopeDecorationHoverMessage, type ScopeDecorationInfo } from './scopeDecorations'
 
 export interface Diagnostic {
   message: string;
@@ -462,12 +453,11 @@ export interface Diagnostic {
 }
 export interface ScopeDecoration extends ScopeDecorationInfo {}
 
-
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'MonacoEditor',
   props: {
-    modelValue: { type: String },
-    language: { type: String },
+    modelValue: { type: String, required: true },
+    language: { type: String, required: true },
     diagnostics: { type: Array, required: false },
     scopes: { type: Array, required: false },
     readOnly: { type: Boolean, required: false },
@@ -478,8 +468,7 @@ export default /*@__PURE__*/_defineVaporComponent({
   setup(__props: any, { expose: __expose, emit: __emit, attrs: __attrs, slots: __slots }) {
 
 const emit = __emit
-
-const props = __props;
+const props = __props
 const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
 const editorInstance = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme", undefined as any);
@@ -651,13 +640,15 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})",
+})
+",
 }
 `;
 
 exports[`vite-plugin vapor options > keeps Atelier output tabs reactive even when v-if siblings are present 1`] = `
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, setStyle as _setStyle, applyCheckboxModel as _applyCheckboxModel, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
+
 
 const t0 = _template("<div class=\\"panel input-panel\\"><div class=\\"panel-header\\"><h2> </h2><div class=\\"panel-actions\\"><button class=\\"btn-ghost\\">Reset</button><button class=\\"btn-ghost\\">Copy</button></div></div><div class=\\"editor-container\\"></div></div>")
 const t1 = _template("<span class=\\"compile-time\\"> </span>", true)
@@ -1243,33 +1234,26 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return [n2, n10]
 }
 const __vaporRender = render
-
-import { computed, watch, onMounted, onUnmounted } from "vue";
-import MonacoEditor from "../../shared/MonacoEditor.vue";
-import CodeHighlight from "../../shared/CodeHighlight.vue";
-import { useTheme } from "../../utils/useTheme";
-import { useClipboard } from "../../utils/useClipboard";
-import { useAtelierCompiler } from "./useAtelierCompiler";
-import { CODE_OUTPUT_LABELS } from "./codeOutputs";
-import {
-  useTokenAnalysis,
-  getTokenTypeIcon,
-  getTokenTypeLabel,
-  getTokenTypeColor,
-} from "./useTokenAnalysis";
-import { getBindingIcon, getBindingLabel } from "./bindingHelpers";
-import { type loadWasm, getWasm } from "../../wasm/index";
-
+import { computed, watch, onMounted, onUnmounted } from 'vue'
+import MonacoEditor from '../../shared/MonacoEditor.vue'
+import CodeHighlight from '../../shared/CodeHighlight.vue'
+import { useTheme } from '../../utils/useTheme'
+import { useClipboard } from '../../utils/useClipboard'
+import { useAtelierCompiler } from './useAtelierCompiler'
+import { CODE_OUTPUT_LABELS } from './codeOutputs'
+import { useTokenAnalysis, getTokenTypeIcon, getTokenTypeLabel, getTokenTypeColor } from './useTokenAnalysis'
+import { getBindingIcon, getBindingLabel } from './bindingHelpers'
+import { type loadWasm, getWasm } from '../../wasm/index'
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'AtelierPlayground',
   props: {
-    compiler: { type: null }
+    compiler: { type: null, required: true }
   },
   render: __vaporRender,
   setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
 
-const props = __props;
+const props = __props
 const { theme } = useTheme();
 const { copyToClipboard } = useClipboard();
 const {
@@ -1359,12 +1343,14 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})"
+})
+"
 `;
 
 exports[`vite-plugin vapor options > keeps Tres-style custom renderer intrinsics as elements around imported lowercase components 1`] = `
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+
 
 const t0 = _template("<group></group>", true)
 const t1 = _template("<mesh></mesh>", true)
@@ -1382,9 +1368,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n4
 }
 const __vaporRender = render
-
-import { Primitive } from "@tresjs/core";
-
+import { Primitive } from '@tresjs/core'
 const visible = true;
 
 export default /*@__PURE__*/_defineVaporComponent({
@@ -1401,12 +1385,14 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})"
+})
+"
 `;
 
 exports[`vite-plugin vapor options > keeps v-for aliases inside Vapor v-html expressions 1`] = `
 "import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
 import { createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, applyTextModel as _applyTextModel, applySelectModel as _applySelectModel, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
+
 
 const t0 = _template("<span class=\\"perf-badge\\"> </span>", true)
 const t1 = _template("<span class=\\"count-badge errors\\"> </span>")
@@ -1678,29 +1664,27 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n2
 }
 const __vaporRender = render
-
-import "./PatinaPlayground.css";
-import { ref, watch, computed, onMounted, onUnmounted, inject, type ComputedRef } from "vue";
-import MonacoEditor from "../../shared/MonacoEditor.vue";
-import type { WasmModule, LintResult, LintRule } from "../../wasm/index";
-import { getWasm } from "../../wasm/index";
-import { LINT_PRESET } from "../../shared/presets/patina";
-import { mdiAlert, mdiCheckCircle, mdiCheck } from "@mdi/js";
-import { formatHelp } from "../../utils/highlightCode";
-import { useLocale } from "./useLocale";
-import { useRuleManagement } from "./useRuleManagement";
-import { useLinting } from "./useLinting";
-
+import './PatinaPlayground.css'
+import { ref, watch, computed, onMounted, onUnmounted, inject, type ComputedRef } from 'vue'
+import MonacoEditor from '../../shared/MonacoEditor.vue'
+import type { WasmModule, LintResult, LintRule } from '../../wasm/index'
+import { getWasm } from '../../wasm/index'
+import { LINT_PRESET } from '../../shared/presets/patina'
+import { mdiAlert, mdiCheckCircle, mdiCheck } from '@mdi/js'
+import { formatHelp } from '../../utils/highlightCode'
+import { useLocale } from './useLocale'
+import { useRuleManagement } from './useRuleManagement'
+import { useLinting } from './useLinting'
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'PatinaPlayground',
   props: {
-    compiler: { type: null }
+    compiler: { type: null, required: true }
   },
   render: __vaporRender,
   setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
 
-const props = __props;
+const props = __props
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
 const theme = computed<"dark" | "light">(() => _injectedTheme?.value ?? "light");
 const source = ref(LINT_PRESET);
@@ -1816,7 +1800,8 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})"
+})
+"
 `;
 
 exports[`vite-plugin vapor options > treats lowercase imported Tres-style components as Vapor components 1`] = `
@@ -1830,8 +1815,7 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
   return n0
 }
 const __vaporRender = render
-import { Primitive } from "@tresjs/core";
-
+import { Primitive } from '@tresjs/core'
 
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'TresPrimitive',
@@ -1847,7 +1831,8 @@ if (__instance) __instance.setupState = __ctx
 return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
 }
 
-})"
+})
+"
 `;
 
 exports[`vite-plugin vapor options > warns and falls back to standard SSR when Vapor is requested for SFCs 1`] = `
@@ -1858,7 +1843,6 @@ import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
   _push(\`<div\${_ssrRenderAttrs(_attrs)}>\${_ssrInterpolate($setup.count)}</div>\`)
 }
-
 const count = 1;
 
 export default /*@__PURE__*/_defineComponent({
@@ -1872,5 +1856,6 @@ Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, valu
 return __returned__
 }
 
-})"
+})
+"
 `;

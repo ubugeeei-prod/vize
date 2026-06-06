@@ -31,7 +31,7 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
     ssr: isSsrBuild,
     vapor: false,
     customRenderer: false,
-    vueParserQuirks: false,
+    templateSyntax: "standard",
   },
   vite: {
     include: [/\.vue$/],
@@ -105,7 +105,7 @@ compiler {
   sourceMap = true
   vapor = false
   customRenderer = false
-  vueParserQuirks = false
+  templateSyntax = "standard"
 }
 
 vite {
@@ -151,7 +151,7 @@ lsp {
     "sourceMap": true,
     "vapor": false,
     "customRenderer": false,
-    "vueParserQuirks": false
+    "templateSyntax": "standard"
   },
   "vite": {
     "scanPatterns": ["src/**/*.vue"]
@@ -175,21 +175,21 @@ lsp {
 These options live under `compiler`. They are schema-backed and shared through `defineConfig`; not
 every integration consumes every field yet.
 
-| Option              | Values                     | Common use                                                       |
-| ------------------- | -------------------------- | ---------------------------------------------------------------- |
-| `sourceMap`         | `boolean`                  | Enable source maps in the Vite plugin                            |
-| `ssr`               | `boolean`                  | Compile for SSR when not relying on Vite's SSR build flag        |
-| `vapor`             | `boolean`                  | Enable Vapor-mode compilation                                    |
-| `customRenderer`    | `boolean`                  | Treat lowercase non-HTML tags as custom renderer elements        |
-| `vueParserQuirks`   | `boolean`                  | Match Vue parser quirks for known edge cases                     |
-| `scriptExt`         | `"ts"` or `"js"`           | Preserve TS output or downcompile to JS in the npm build command |
-| `mode`              | `"module"` or `"function"` | Lower-level compiler output mode                                 |
-| `prefixIdentifiers` | `boolean`                  | Prefix template identifiers with `_ctx`                          |
-| `hoistStatic`       | `boolean`                  | Control static node hoisting                                     |
-| `cacheHandlers`     | `boolean`                  | Control event handler caching                                    |
-| `isTs`              | `boolean`                  | Parse script blocks as TypeScript                                |
-| `runtimeModuleName` | `string`                   | Override runtime import module                                   |
-| `runtimeGlobalName` | `string`                   | Override runtime global for function/IIFE-style output           |
+| Option              | Values                                  | Common use                                                       |
+| ------------------- | --------------------------------------- | ---------------------------------------------------------------- |
+| `sourceMap`         | `boolean`                               | Enable source maps in the Vite plugin                            |
+| `ssr`               | `boolean`                               | Compile for SSR when not relying on Vite's SSR build flag        |
+| `vapor`             | `boolean`                               | Enable Vapor-mode compilation                                    |
+| `customRenderer`    | `boolean`                               | Treat lowercase non-HTML tags as custom renderer elements        |
+| `templateSyntax`    | `"standard"`, `"strict"`, or `"quirks"` | Choose warning, error, or Vue-quirk handling for template syntax |
+| `scriptExt`         | `"ts"` or `"js"`                        | Preserve TS output or downcompile to JS in the npm build command |
+| `mode`              | `"module"` or `"function"`              | Lower-level compiler output mode                                 |
+| `prefixIdentifiers` | `boolean`                               | Prefix template identifiers with `_ctx`                          |
+| `hoistStatic`       | `boolean`                               | Control static node hoisting                                     |
+| `cacheHandlers`     | `boolean`                               | Control event handler caching                                    |
+| `isTs`              | `boolean`                               | Parse script blocks as TypeScript                                |
+| `runtimeModuleName` | `string`                                | Override runtime import module                                   |
+| `runtimeGlobalName` | `string`                                | Override runtime global for function/IIFE-style output           |
 
 For Vite projects, direct plugin options override shared config:
 
@@ -203,35 +203,38 @@ export default defineConfig({
       vapor: true,
       sourceMap: true,
       customRenderer: true,
-      vueParserQuirks: false,
+      templateSyntax: "standard",
     }),
   ],
 });
 ```
 
-## Vue Parser Quirks
+## Template Syntax
 
-`compiler.vueParserQuirks` defaults to `false`. Keep strict mode unless you need to compile
-existing templates that Vue accepts through parser edge-case behavior.
+`compiler.templateSyntax` defaults to `"standard"`.
 
-The compatibility cases are:
+- `"standard"` accepts recoverable invalid syntax, emits warnings, and rewrites to valid output.
+- `"strict"` reports invalid syntax as compilation errors.
+- `"quirks"` preserves template syntax compatibility quirks without additional warnings.
+
+The known cases are:
 
 - `v-for` aliases with an unmatched edge parenthesis. Vue strips a leading `(` or trailing `)`
-  from the alias before it splits `value`, `key`, and `index`; strict Vize reports those aliases as
-  malformed.
-- Non-void HTML elements written with self-closing syntax, such as `<div />` or `<span />`. Strict
-  Vize follows HTML tree construction and ignores the self-closing flag, while quirk mode keeps the
-  element as a self-closing leaf to match Vue parser compatibility.
+  from the alias before it splits `value`, `key`, and `index`; standard and strict modes report
+  those aliases as malformed, while quirk mode mirrors Vue.
+- Non-void HTML elements written with self-closing syntax, such as `<div />` or `<span />`.
+  Standard mode warns and rewrites them as empty elements, strict mode errors, and quirk mode keeps
+  them as self-closing leaves.
 
 ```text
 <template>
-  <!-- Strict mode rejects this. Quirk mode compiles it as `item in items`. -->
+  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
   <div v-for="(item in items">{{ item }}</div>
 
-  <!-- Strict mode rejects this. Quirk mode compiles it as `item in items`. -->
+  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
   <div v-for="item) in items">{{ item }}</div>
 
-  <!-- Strict mode treats this as an open `<div>` start tag. Quirk mode keeps it as a leaf. -->
+  <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->
   <div />
 </template>
 ```

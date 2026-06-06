@@ -244,15 +244,15 @@ playground inspection stay aligned.
 
 Key options:
 
-| Option                | Description                              |
-| --------------------- | ---------------------------------------- |
-| `-f, --format`        | Output format: `url`, `json`, or `agent` |
-| `--target`            | Compiler target: `dom` or `ssr`          |
-| `--playground-url`    | Playground base URL for generated links  |
-| `--max-files`         | Limit files included in a batch payload  |
-| `--custom-renderer`   | Enable custom renderer comparison        |
-| `--vue-parser-quirks` | Enable Vue parser compatibility quirks   |
-| `-o, --output`        | Write the URL or JSON payload to a file  |
+| Option              | Description                              |
+| ------------------- | ---------------------------------------- |
+| `-f, --format`      | Output format: `url`, `json`, or `agent` |
+| `--target`          | Compiler target: `dom` or `ssr`          |
+| `--playground-url`  | Playground base URL for generated links  |
+| `--max-files`       | Limit files included in a batch payload  |
+| `--custom-renderer` | Enable custom renderer comparison        |
+| `--template-syntax` | Choose `standard`, `strict`, or `quirks` |
+| `-o, --output`      | Write the URL or JSON payload to a file  |
 
 See [Compiler Inspector](./compiler-inspector.md) for the contributor workflow.
 

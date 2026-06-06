@@ -2,6 +2,7 @@
 module vize.CompilerConfig
 
 typealias VueVersion = Number | "legacy"
+typealias TemplateSyntax = "standard" | "strict" | "quirks"
 
 class CompilerCompatibilityConfig {
   /// Host Vue runtime version for opt-in compatibility modes.
@@ -36,8 +37,8 @@ class CompilerConfig {
   /// Enable SSR mode.
   ssr: Boolean = false
 
-  /// Enable Vue parser quirk compatibility.
-  vueParserQuirks: Boolean = false
+  /// Template syntax compatibility mode.
+  templateSyntax: TemplateSyntax = "standard"
 
   /// Enable source map generation.
   sourceMap: Boolean = false

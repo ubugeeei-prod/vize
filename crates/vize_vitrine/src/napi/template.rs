@@ -14,31 +14,36 @@ use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use vize_carton::Bump;
 
-use crate::{CompileResult, CompilerOptions};
+use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
 use vize_atelier_core::{
     codegen::generate,
-    options::{CodegenMode, CodegenOptions, TransformOptions},
-    parser::parse,
-    transform::{transform, transform_with_vue_parser_quirks},
+    options::{CodegenMode, CodegenOptions, ParserOptions, TransformOptions},
+    parser::{parse, parse_with_options_and_template_syntax},
+    transform::{transform, transform_with_template_syntax_quirks},
 };
-use vize_atelier_vapor::{
-    VaporCompilerOptions, compile_vapor as vapor_compile,
-    compile_vapor_with_vue_parser_quirks as vapor_compile_with_vue_parser_quirks,
-};
+use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
 
 /// Compile Vue template to VDom render function
 #[napi]
 pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<CompileResult> {
     let opts = options.unwrap_or_default();
     let allocator = Bump::new();
+    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+        .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
     // Parse
-    let (mut root, errors) = parse(&allocator, &template);
+    let parser_opts = ParserOptions {
+        custom_renderer: opts.custom_renderer.unwrap_or(false),
+        ..Default::default()
+    };
+    let (mut root, errors) =
+        parse_with_options_and_template_syntax(&allocator, &template, parser_opts, template_syntax);
 
-    if !errors.is_empty() {
+    let fatal: Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
+    if !fatal.is_empty() {
         return Err(Error::new(
             Status::GenericFailure,
-            format!("Parse errors: {:?}", errors),
+            format!("Parse errors: {:?}", fatal),
         ));
     }
 
@@ -55,8 +60,8 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         ssr: opts.ssr.unwrap_or(false),
         ..Default::default()
     };
-    if opts.vue_parser_quirks.unwrap_or(false) {
-        transform_with_vue_parser_quirks(&allocator, &mut root, transform_opts, None);
+    if template_syntax.is_quirks() {
+        transform_with_template_syntax_quirks(&allocator, &mut root, transform_opts, None);
     } else {
         transform(&allocator, &mut root, transform_opts, None);
     }
@@ -105,6 +110,8 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
 pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Result<CompileResult> {
     let opts = options.unwrap_or_default();
     let allocator = Bump::new();
+    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+        .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
     // Use actual Vapor compiler
     let vapor_opts = VaporCompilerOptions {
@@ -112,11 +119,8 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
         ssr: opts.ssr.unwrap_or(false),
         ..Default::default()
     };
-    let result = if opts.vue_parser_quirks.unwrap_or(false) {
-        vapor_compile_with_vue_parser_quirks(&allocator, &template, vapor_opts)
-    } else {
-        vapor_compile(&allocator, &template, vapor_opts)
-    };
+    let result =
+        compile_vapor_with_template_syntax(&allocator, &template, vapor_opts, template_syntax);
 
     if !result.error_messages.is_empty() {
         return Err(Error::new(

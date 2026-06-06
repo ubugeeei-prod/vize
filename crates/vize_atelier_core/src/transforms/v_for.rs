@@ -49,13 +49,13 @@ pub fn parse_for_expression<'a>(
     parse_for_expression_with_options(allocator, content, loc, false)
 }
 
-/// Parse v-for expression with optional Vue parser quirk compatibility.
+/// Parse v-for expression with optional template syntax quirk compatibility.
 ///
 /// Vue's compiler currently strips a leading `(` or trailing `)` independently
 /// from the v-for alias via `stripParensRE`. That means expressions like
 /// `item) in items` are accepted by Vue even though they look malformed. Vize
 /// keeps strict parsing by default and exposes the compatibility path behind
-/// `vue_parser_quirks`.
+/// `template_syntax_quirks`.
 ///
 /// Upstream references:
 /// - https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571
@@ -64,7 +64,7 @@ pub fn parse_for_expression_with_options<'a>(
     allocator: &'a Bump,
     content: &str,
     _loc: &SourceLocation,
-    vue_parser_quirks: bool,
+    template_syntax_quirks: bool,
 ) -> Option<ForParseResult<'a>> {
     let (alias_end, source_start) = find_for_separator(content)?;
     let alias_part = &content[..alias_end];
@@ -81,7 +81,7 @@ pub fn parse_for_expression_with_options<'a>(
         allocator,
     ));
 
-    let aliases = split_for_aliases(alias_str, vue_parser_quirks)?;
+    let aliases = split_for_aliases(alias_str, template_syntax_quirks)?;
 
     let value = aliases.first().and_then(|alias| {
         if alias.is_empty() {
@@ -165,7 +165,7 @@ fn find_for_separator(content: &str) -> Option<(usize, usize)> {
     None
 }
 
-fn split_for_aliases(alias: &str, vue_parser_quirks: bool) -> Option<Vec<&str>> {
+fn split_for_aliases(alias: &str, template_syntax_quirks: bool) -> Option<Vec<&str>> {
     let trimmed = alias.trim();
     if trimmed.is_empty() {
         return Some(Vec::new());
@@ -179,7 +179,7 @@ fn split_for_aliases(alias: &str, vue_parser_quirks: bool) -> Option<Vec<&str>> 
         }
         &trimmed[1..trimmed.len() - 1]
     } else if starts_with_paren || ends_with_paren {
-        if !vue_parser_quirks {
+        if !template_syntax_quirks {
             return None;
         }
 
@@ -371,7 +371,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_for_vue_parser_quirks_strips_unmatched_edge_parens() {
+    fn test_parse_for_template_syntax_quirks_strips_unmatched_edge_parens() {
         let allocator = Bump::new();
 
         let trailing = parse_for_expression_with_options(
@@ -380,7 +380,7 @@ mod tests {
             &SourceLocation::STUB,
             true,
         )
-        .expect("Vue parser quirk mode should strip trailing parens");
+        .expect("template syntax quirk mode should strip trailing parens");
         match trailing.value.as_ref() {
             Some(ExpressionNode::Simple(value)) => assert_eq!(value.content.as_str(), "item"),
             _ => panic!("expected trailing-paren value alias"),
@@ -392,7 +392,7 @@ mod tests {
             &SourceLocation::STUB,
             true,
         )
-        .expect("Vue parser quirk mode should strip leading parens");
+        .expect("template syntax quirk mode should strip leading parens");
         match leading.value.as_ref() {
             Some(ExpressionNode::Simple(value)) => assert_eq!(value.content.as_str(), "item"),
             _ => panic!("expected leading-paren value alias"),

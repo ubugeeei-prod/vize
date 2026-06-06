@@ -43,8 +43,13 @@ Options:
       --custom-renderer
           Target a custom renderer instead of DOM runtime helpers
 
-      --vue-parser-quirks
-          Enable Vue parser quirk compatibility for known edge cases
+      --template-syntax <TEMPLATE_SYNTAX>
+          Template syntax compatibility mode
+
+          Possible values:
+          - standard: Warn and rewrite recoverable invalid template syntax
+          - strict:   Report recoverable invalid template syntax as errors
+          - quirks:   Preserve template syntax compatibility quirks without warnings
 
       --script-ext <SCRIPT_EXT>
           Script extension handling: 'preserve' keeps original extension (.ts/.tsx/.jsx), 'downcompile' converts to .js

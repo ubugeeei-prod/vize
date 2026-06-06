@@ -14,7 +14,7 @@ export interface CompilerOptions {
   // Script extension: 'preserve' keeps TypeScript, 'downcompile' (default) transpiles to JS
   scriptExt?: "preserve" | "downcompile";
   customRenderer?: boolean;
-  vueParserQuirks?: boolean;
+  templateSyntax?: "standard" | "strict" | "quirks";
   bindingMetadata?: SfcBindingMetadata;
 }
 

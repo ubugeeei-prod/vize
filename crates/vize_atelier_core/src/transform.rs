@@ -86,8 +86,8 @@ pub struct TransformContext<'a> {
     pub in_ssr: bool,
     /// Errors collected
     pub errors: std::vec::Vec<CompilerError>,
-    /// Enables compatibility for Vue parser edge-case behavior.
-    pub(crate) vue_parser_quirks: bool,
+    /// Enables compatibility for template syntax edge-case behavior.
+    pub(crate) template_syntax_quirks: bool,
     /// Node was removed flag
     pub(crate) node_removed: bool,
     /// Semantic analysis summary (optional, for enhanced transforms)
@@ -152,14 +152,25 @@ pub fn transform<'a>(
     transform_inner(allocator, root, options, analysis, false, None);
 }
 
-/// Transform the root AST node with Vue parser quirk compatibility enabled.
-pub fn transform_with_vue_parser_quirks<'a>(
+/// Transform the root AST node with template syntax quirk compatibility enabled.
+pub fn transform_with_template_syntax_quirks<'a>(
     allocator: &'a Bump,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
 ) {
     transform_inner(allocator, root, options, analysis, true, None);
+}
+
+/// Transform the root AST node with Vue parser quirk compatibility enabled.
+#[deprecated(note = "use transform_with_template_syntax_quirks instead")]
+pub fn transform_with_vue_parser_quirks<'a>(
+    allocator: &'a Bump,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    analysis: Option<&'a Croquis>,
+) {
+    transform_with_template_syntax_quirks(allocator, root, options, analysis);
 }
 
 /// Transform the root AST node with an explicit scope ID for hoisted VNodes.
@@ -174,9 +185,9 @@ pub fn transform_with_hoisted_scope_id<'a>(
     transform_inner(allocator, root, options, analysis, false, hoisted_scope_id);
 }
 
-/// Transform the root AST node with Vue parser quirks and an explicit hoisted scope ID.
+/// Transform the root AST node with template syntax quirks and an explicit hoisted scope ID.
 #[doc(hidden)]
-pub fn transform_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
+pub fn transform_with_template_syntax_quirks_and_hoisted_scope_id<'a>(
     allocator: &'a Bump,
     root: &mut RootNode<'a>,
     options: TransformOptions,
@@ -186,25 +197,49 @@ pub fn transform_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
     transform_inner(allocator, root, options, analysis, true, hoisted_scope_id);
 }
 
+/// Transform the root AST node with Vue parser quirks and an explicit hoisted scope ID.
+#[doc(hidden)]
+#[deprecated(note = "use transform_with_template_syntax_quirks_and_hoisted_scope_id instead")]
+pub fn transform_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
+    allocator: &'a Bump,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    analysis: Option<&'a Croquis>,
+    hoisted_scope_id: Option<String>,
+) {
+    transform_with_template_syntax_quirks_and_hoisted_scope_id(
+        allocator,
+        root,
+        options,
+        analysis,
+        hoisted_scope_id,
+    );
+}
+
 fn transform_inner<'a>(
     allocator: &'a Bump,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
-    vue_parser_quirks: bool,
+    template_syntax_quirks: bool,
     hoisted_scope_id: Option<String>,
 ) {
     let source = root.source.clone();
     let mut ctx = if let Some(analysis) = analysis {
-        TransformContext::with_analysis_and_vue_parser_quirks(
+        TransformContext::with_analysis_and_template_syntax_quirks(
             allocator,
             source,
             options,
             analysis,
-            vue_parser_quirks,
+            template_syntax_quirks,
         )
     } else {
-        TransformContext::new_with_vue_parser_quirks(allocator, source, options, vue_parser_quirks)
+        TransformContext::new_with_template_syntax_quirks(
+            allocator,
+            source,
+            options,
+            template_syntax_quirks,
+        )
     };
     ctx.hoisted_scope_id = hoisted_scope_id;
     ctx.root = Some(root as *mut _);
@@ -266,7 +301,7 @@ fn create_root_codegen<'a>(ctx: &mut TransformContext<'a>, root: &mut RootNode<'
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
 mod tests {
-    use super::{transform, transform_with_vue_parser_quirks};
+    use super::{transform, transform_with_template_syntax_quirks};
     use crate::codegen::generate;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
@@ -337,12 +372,17 @@ mod tests {
     }
 
     #[test]
-    fn test_transform_v_for_vue_parser_quirks_accepts_unmatched_edge_parens() {
+    fn test_transform_v_for_template_syntax_quirks_accepts_unmatched_edge_parens() {
         let allocator = Bump::new();
         let (mut root, errors) = parse(&allocator, r#"<div v-for="item) in items"></div>"#);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-        transform_with_vue_parser_quirks(&allocator, &mut root, TransformOptions::default(), None);
+        transform_with_template_syntax_quirks(
+            &allocator,
+            &mut root,
+            TransformOptions::default(),
+            None,
+        );
 
         match &root.children[0] {
             crate::ast::TemplateChildNode::For(for_node) => match &for_node.value_alias {

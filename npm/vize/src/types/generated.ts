@@ -81,9 +81,9 @@ export interface CompilerConfig {
    */
   ssr?: boolean;
   /**
-   * Enable Vue parser quirk compatibility
+   * Template syntax compatibility mode
    */
-  vueParserQuirks?: boolean;
+  templateSyntax?: "standard" | "strict" | "quirks";
   /**
    * Enable source map generation
    */

@@ -1,6 +1,5 @@
 ---
 source: crates/vize/tests/inspector_cli.rs
-assertion_line: 156
 expression: "serde_json::to_string_pretty(&json).unwrap()"
 ---
 {
@@ -50,19 +49,19 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
     ],
     "options": {
       "customRenderer": false,
-      "vueParserQuirks": false
+      "templateSyntax": "standard"
     },
     "selectedFile": "src/App.vue",
     "target": "dom",
     "version": 1
   },
-  "playgroundUrl": "https://example.test/play/?tab=inspector#inspector=%7B%22version%22%3A1%2C%22target%22%3A%22dom%22%2C%22selectedFile%22%3A%22src%2FApp.vue%22%2C%22options%22%3A%7B%22customRenderer%22%3Afalse%2C%22vueParserQuirks%22%3Afalse%7D%2C%22files%22%3A%5B%7B%22path%22%3A%22src%2FApp.vue%22%2C%22source%22%3A%22%3Cscript%20setup%20lang%3D%5C%22ts%5C%22%3E%5Cnimport%20Child%20from%20%27.%2FChild%27%5Cn%3C%2Fscript%3E%5Cn%5Cn%3Ctemplate%3E%5Cn%20%20%3CChild%20%2F%3E%5Cn%3C%2Ftemplate%3E%5Cn%22%7D%2C%7B%22path%22%3A%22src%2FChild.vue%22%2C%22source%22%3A%22%3Ctemplate%3E%5Cn%20%20%3Cspan%3Echild%3C%2Fspan%3E%5Cn%3C%2Ftemplate%3E%5Cn%22%7D%5D%7D",
+  "playgroundUrl": "https://example.test/play/?tab=inspector#inspector=%7B%22version%22%3A1%2C%22target%22%3A%22dom%22%2C%22selectedFile%22%3A%22src%2FApp.vue%22%2C%22options%22%3A%7B%22customRenderer%22%3Afalse%2C%22templateSyntax%22%3A%22standard%22%7D%2C%22files%22%3A%5B%7B%22path%22%3A%22src%2FApp.vue%22%2C%22source%22%3A%22%3Cscript%20setup%20lang%3D%5C%22ts%5C%22%3E%5Cnimport%20Child%20from%20%27.%2FChild%27%5Cn%3C%2Fscript%3E%5Cn%5Cn%3Ctemplate%3E%5Cn%20%20%3CChild%20%2F%3E%5Cn%3C%2Ftemplate%3E%5Cn%22%7D%2C%7B%22path%22%3A%22src%2FChild.vue%22%2C%22source%22%3A%22%3Ctemplate%3E%5Cn%20%20%3Cspan%3Echild%3C%2Fspan%3E%5Cn%3C%2Ftemplate%3E%5Cn%22%7D%5D%7D",
   "schema": "vize.inspector.agent",
   "summary": {
     "fileCount": 2,
     "options": {
       "customRenderer": false,
-      "vueParserQuirks": false
+      "templateSyntax": "standard"
     },
     "selectedFile": "src/App.vue",
     "sourceBytes": 143,

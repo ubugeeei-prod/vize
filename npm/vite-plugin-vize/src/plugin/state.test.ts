@@ -157,7 +157,7 @@ assert.deepEqual(
     ssr: false,
     vapor: true,
     customRenderer: false,
-    vueParserQuirks: false,
+    templateSyntax: "standard",
   },
   "Client requests should keep Vapor enabled when the plugin is configured for it",
 );
@@ -175,7 +175,7 @@ assert.deepEqual(
     ssr: true,
     vapor: false,
     customRenderer: false,
-    vueParserQuirks: false,
+    templateSyntax: "standard",
   },
   "SSR requests should continue to use the VDOM compiler while client builds hydrate with Vapor",
 );

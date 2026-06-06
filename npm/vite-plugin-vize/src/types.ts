@@ -15,7 +15,7 @@ export interface SfcCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
-  vueParserQuirks?: boolean;
+  templateSyntax?: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;
@@ -172,10 +172,10 @@ export interface VizeOptions {
   customRenderer?: boolean;
 
   /**
-   * Enable compatibility for known Vue compiler parser quirks.
-   * @default false
+   * Template syntax compatibility mode.
+   * @default "standard"
    */
-  vueParserQuirks?: boolean;
+  templateSyntax?: "standard" | "strict" | "quirks";
 
   /**
    * Root directory to scan for .vue files
@@ -302,7 +302,7 @@ export interface BatchCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
-  vueParserQuirks?: boolean;
+  templateSyntax?: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;

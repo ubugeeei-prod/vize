@@ -34,11 +34,12 @@ pub use vize_atelier_core::{
 use vize_atelier_core::codegen::CodegenResult;
 use vize_atelier_core::{
     codegen::generate,
-    options::{CodegenOptions, ParserOptions, TransformOptions},
-    parser::parse_with_options_and_invalid_html_self_closing,
+    options::{CodegenOptions, ParserOptions, TemplateSyntaxMode, TransformOptions},
+    parser::parse_with_options_and_template_syntax,
     transform::{
         transform as do_transform, transform_with_hoisted_scope_id,
-        transform_with_vue_parser_quirks, transform_with_vue_parser_quirks_and_hoisted_scope_id,
+        transform_with_template_syntax_quirks,
+        transform_with_template_syntax_quirks_and_hoisted_scope_id,
     },
 };
 use vize_carton::{Bump, String, profile};
@@ -58,16 +59,34 @@ pub fn compile_template_with_options<'a>(
     source: &'a str,
     options: DomCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    compile_template_inner(allocator, source, options, false, None)
+    compile_template_inner(
+        allocator,
+        source,
+        options,
+        TemplateSyntaxMode::Standard,
+        None,
+    )
 }
 
 /// Compile a Vue template for DOM with Vue parser quirk compatibility.
+#[deprecated(note = "use compile_template_with_template_syntax instead")]
 pub fn compile_template_with_vue_parser_quirks<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: DomCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    compile_template_inner(allocator, source, options, true, None)
+    compile_template_inner(allocator, source, options, TemplateSyntaxMode::Quirks, None)
+}
+
+/// Compile a Vue template for DOM with an explicit template syntax mode.
+#[doc(hidden)]
+pub fn compile_template_with_template_syntax<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(allocator, source, options, template_syntax, None)
 }
 
 /// Compile a Vue template for DOM with an explicit scope ID for hoisted static VNodes.
@@ -78,25 +97,56 @@ pub fn compile_template_with_options_and_hoisted_scope_id<'a>(
     options: DomCompilerOptions,
     hoisted_scope_id: Option<String>,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    compile_template_inner(allocator, source, options, false, hoisted_scope_id)
+    compile_template_inner(
+        allocator,
+        source,
+        options,
+        TemplateSyntaxMode::Standard,
+        hoisted_scope_id,
+    )
 }
 
 /// Compile a Vue template for DOM with Vue parser quirks and an explicit hoisted scope ID.
 #[doc(hidden)]
+#[deprecated(note = "use compile_template_with_template_syntax_and_hoisted_scope_id instead")]
 pub fn compile_template_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: DomCompilerOptions,
     hoisted_scope_id: Option<String>,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    compile_template_inner(allocator, source, options, true, hoisted_scope_id)
+    compile_template_inner(
+        allocator,
+        source,
+        options,
+        TemplateSyntaxMode::Quirks,
+        hoisted_scope_id,
+    )
+}
+
+/// Compile a Vue template for DOM with template syntax mode and hoisted scope ID.
+#[doc(hidden)]
+pub fn compile_template_with_template_syntax_and_hoisted_scope_id<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+    )
 }
 
 fn compile_template_inner<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: DomCompilerOptions,
-    vue_parser_quirks: bool,
+    template_syntax: TemplateSyntaxMode,
     hoisted_scope_id: Option<String>,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
     // Create parser options with DOM-specific settings
@@ -113,12 +163,7 @@ fn compile_template_inner<'a>(
     // Parse
     let (mut root, errors) = profile!(
         "atelier.dom.template.parse",
-        parse_with_options_and_invalid_html_self_closing(
-            allocator,
-            source,
-            parser_opts,
-            vue_parser_quirks
-        )
+        parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax)
     );
 
     // Parser-level diagnostics that are recoverable (e.g. duplicate
@@ -151,13 +196,14 @@ fn compile_template_inner<'a>(
         binding_metadata: options.binding_metadata.clone(),
         ..Default::default()
     };
+    let template_syntax_quirks = template_syntax.is_quirks();
     // Allocate Croquis in the arena so it shares the allocator lifetime
     let analysis: Option<&Croquis> = options.croquis.map(|c| &*allocator.alloc(*c));
     profile!(
         "atelier.dom.template.transform",
-        if vue_parser_quirks {
+        if template_syntax_quirks {
             if hoisted_scope_id.is_some() {
-                transform_with_vue_parser_quirks_and_hoisted_scope_id(
+                transform_with_template_syntax_quirks_and_hoisted_scope_id(
                     allocator,
                     &mut root,
                     transform_opts,
@@ -165,7 +211,12 @@ fn compile_template_inner<'a>(
                     hoisted_scope_id,
                 )
             } else {
-                transform_with_vue_parser_quirks(allocator, &mut root, transform_opts, analysis)
+                transform_with_template_syntax_quirks(
+                    allocator,
+                    &mut root,
+                    transform_opts,
+                    analysis,
+                )
             }
         } else if hoisted_scope_id.is_some() {
             transform_with_hoisted_scope_id(
@@ -241,9 +292,9 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 mod tests {
     use super::{
         DomCompilerOptions, Namespace, TemplateChildNode, compile_template,
-        compile_template_with_options, compile_template_with_vue_parser_quirks,
+        compile_template_with_options, compile_template_with_template_syntax,
     };
-    use vize_atelier_core::options::CodegenMode;
+    use vize_atelier_core::options::{CodegenMode, TemplateSyntaxMode};
     use vize_carton::Bump;
 
     fn full_output(preamble: &str, code: &str) -> vize_carton::String {
@@ -637,13 +688,14 @@ mod tests {
     }
 
     #[test]
-    fn test_compile_v_for_vue_parser_quirks_accepts_unmatched_alias_paren() {
+    fn test_compile_v_for_template_syntax_quirks_accepts_unmatched_alias_paren() {
         let allocator = Bump::new();
         let opts = DomCompilerOptions::default();
-        let (_, errors, result) = compile_template_with_vue_parser_quirks(
+        let (_, errors, result) = compile_template_with_template_syntax(
             &allocator,
             r#"<div v-for="item) in items">{{ item }}</div>"#,
             opts,
+            TemplateSyntaxMode::Quirks,
         );
 
         assert!(errors.is_empty(), "Errors: {:?}", errors);
@@ -651,18 +703,48 @@ mod tests {
     }
 
     #[test]
-    fn test_compile_vue_parser_quirks_accepts_invalid_html_self_closing() {
+    fn test_compile_template_syntax_quirks_accepts_invalid_html_self_closing() {
         let allocator = Bump::new();
-        let (_, errors, result) = compile_template_with_vue_parser_quirks(
+        let (_, errors, result) = compile_template_with_template_syntax(
             &allocator,
             "<div /><span></span>",
             DomCompilerOptions::default(),
+            TemplateSyntaxMode::Quirks,
         );
 
         assert!(errors.is_empty(), "Errors: {:?}", errors);
         assert!(!result.code.is_empty());
         assert!(result.code.contains(r#"_createElementVNode("div""#));
         assert!(result.code.contains(r#"_createElementVNode("span""#));
+    }
+
+    #[test]
+    fn test_compile_standard_warns_and_rewrites_invalid_html_self_closing() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template_with_options(
+            &allocator,
+            "<div /><span></span>",
+            DomCompilerOptions::default(),
+        );
+
+        assert!(errors.iter().any(|error| error.is_recoverable()));
+        assert!(!result.code.is_empty());
+        assert!(result.code.contains(r#"_createElementVNode("div""#));
+        assert!(result.code.contains(r#"_createElementVNode("span""#));
+    }
+
+    #[test]
+    fn test_compile_strict_rejects_invalid_html_self_closing() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template_with_template_syntax(
+            &allocator,
+            "<div /><span></span>",
+            DomCompilerOptions::default(),
+            TemplateSyntaxMode::Strict,
+        );
+
+        assert!(errors.iter().any(|error| !error.is_recoverable()));
+        assert!(result.code.is_empty());
     }
 
     #[test]
