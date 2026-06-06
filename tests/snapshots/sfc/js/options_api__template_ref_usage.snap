@@ -1,0 +1,18 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+
+const _sfc_main = {
+  mounted() {
+    this.$refs.input.focus()
+  }
+}
+
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("input", { ref: "input" }, null, 512 /* NEED_PATCH */))
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main

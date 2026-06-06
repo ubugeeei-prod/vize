@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+
+import TextField from './TextField.vue'
+
+const _sfc_main = {
+  components: { TextField },
+  data() {
+    return { name: '' }
+  }
+}
+
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  const _component_TextField = _resolveComponent("TextField")
+  
+  return (_openBlock(), _createBlock(_component_TextField, {
+    modelValue: _ctx.name,
+    "onUpdate:modelValue": $event => ((_ctx.name) = $event)
+  }, null, 8 /* PROPS */, ["modelValue", "onUpdate:modelValue"]))
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main

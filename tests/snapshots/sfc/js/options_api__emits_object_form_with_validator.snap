@@ -1,0 +1,24 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+
+const _sfc_main = {
+  emits: {
+    submit: (payload) => typeof payload === 'string',
+    cancel: null
+  },
+  data() {
+    return { value: '' }
+  }
+}
+
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", {
+    onClick: $event => (_ctx.$emit('submit', _ctx.value))
+  }, "go", 8 /* PROPS */, ["onClick"]))
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main

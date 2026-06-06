@@ -1,0 +1,22 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+
+import Foo from './Foo.vue'
+import Bar from './Bar.vue'
+
+const _sfc_main = {
+  components: { Foo, Bar },
+  data() {
+    return { current: 'Foo' }
+  }
+}
+
+import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.current)))
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main

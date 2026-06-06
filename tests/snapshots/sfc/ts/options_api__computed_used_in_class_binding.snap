@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+
+const _sfc_main = {
+  data() {
+    return { active: true }
+  },
+  computed: {
+    classes() {
+      return { 'is-active': this.active }
+    }
+  }
+}
+
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    class: _normalizeClass(_ctx.classes)
+  }, "content", 2 /* CLASS */))
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main

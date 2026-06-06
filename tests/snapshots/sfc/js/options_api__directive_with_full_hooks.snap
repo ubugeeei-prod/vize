@@ -1,0 +1,34 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+
+const _sfc_main = {
+  directives: {
+    color: {
+      mounted(el, binding) {
+        el.style.color = binding.value
+      },
+      updated(el, binding) {
+        el.style.color = binding.value
+      }
+    }
+  },
+  data() {
+    return { tint: 'red' }
+  }
+}
+
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  const _directive_color = _resolveDirective("color")
+  
+  return _withDirectives((_openBlock(), _createElementBlock("p", null, [
+    _createTextVNode("text")
+  ])), [
+    [_directive_color, _ctx.tint]
+  ])
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main

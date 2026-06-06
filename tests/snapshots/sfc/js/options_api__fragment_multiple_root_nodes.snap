@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: output.as_str()
+---
+
+const _sfc_main = {
+  data() {
+    return { a: 1, b: 2 }
+  }
+}
+
+import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("header", null, _toDisplayString(_ctx.a), 1 /* TEXT */),
+    _createElementVNode("main", null, _toDisplayString(_ctx.b), 1 /* TEXT */)
+  ], 64 /* STABLE_FRAGMENT */))
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main
