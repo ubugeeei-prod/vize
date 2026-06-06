@@ -50,7 +50,7 @@ pub use transforms::{
 use vize_atelier_core::{
     Namespace,
     options::{ParserOptions, TransformOptions},
-    parser::parse_with_options,
+    parser::parse_with_options_and_invalid_html_self_closing,
     transform::{transform, transform_with_vue_parser_quirks},
 };
 use vize_carton::{Bump, String};
@@ -114,7 +114,12 @@ fn compile_vapor_inner<'a>(
         get_namespace,
         ..ParserOptions::default()
     };
-    let (mut root, errors) = parse_with_options(allocator, source, parser_opts);
+    let (mut root, errors) = parse_with_options_and_invalid_html_self_closing(
+        allocator,
+        source,
+        parser_opts,
+        vue_parser_quirks,
+    );
 
     if !errors.is_empty() {
         return VaporCompileResult {
@@ -179,7 +184,7 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 
 #[cfg(test)]
 mod tests {
-    use super::compile_vapor;
+    use super::{compile_vapor, compile_vapor_with_vue_parser_quirks};
     use oxc_allocator::Allocator;
     use oxc_parser::Parser;
     use oxc_span::SourceType;
@@ -579,6 +584,23 @@ mod tests {
 
         let code = normalize_code(&result.code);
         insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_vue_parser_quirks_accepts_invalid_html_self_closing() {
+        let allocator = Bump::new();
+        let result = compile_vapor_with_vue_parser_quirks(
+            &allocator,
+            "<div /><span></span>",
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+        assert!(!result.code.is_empty());
     }
 
     #[test]

@@ -43,7 +43,9 @@ pub use vize_relief::{ast, errors, options};
 // Re-export from vize_armature (parser, tokenizer)
 pub use vize_armature as parser;
 pub use vize_armature::tokenizer;
-pub use vize_armature::{Parser, parse, parse_with_options};
+pub use vize_armature::{
+    Parser, parse, parse_with_options, parse_with_options_and_invalid_html_self_closing,
+};
 
 pub use codegen::{CodegenContext, CodegenResult, generate};
 pub use runtime_helpers::{RuntimeHelpers, get_vnode_block_helper, get_vnode_helper};

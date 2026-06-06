@@ -35,7 +35,7 @@ use vize_atelier_core::codegen::CodegenResult;
 use vize_atelier_core::{
     codegen::generate,
     options::{CodegenOptions, ParserOptions, TransformOptions},
-    parser::parse_with_options,
+    parser::parse_with_options_and_invalid_html_self_closing,
     transform::{
         transform as do_transform, transform_with_hoisted_scope_id,
         transform_with_vue_parser_quirks, transform_with_vue_parser_quirks_and_hoisted_scope_id,
@@ -113,7 +113,12 @@ fn compile_template_inner<'a>(
     // Parse
     let (mut root, errors) = profile!(
         "atelier.dom.template.parse",
-        parse_with_options(allocator, source, parser_opts)
+        parse_with_options_and_invalid_html_self_closing(
+            allocator,
+            source,
+            parser_opts,
+            vue_parser_quirks
+        )
     );
 
     // Parser-level diagnostics that are recoverable (e.g. duplicate
@@ -643,6 +648,21 @@ mod tests {
 
         assert!(errors.is_empty(), "Errors: {:?}", errors);
         assert!(result.code.contains("_renderList(items, (item) =>"));
+    }
+
+    #[test]
+    fn test_compile_vue_parser_quirks_accepts_invalid_html_self_closing() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_template_with_vue_parser_quirks(
+            &allocator,
+            "<div /><span></span>",
+            DomCompilerOptions::default(),
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        assert!(!result.code.is_empty());
+        assert!(result.code.contains(r#"_createElementVNode("div""#));
+        assert!(result.code.contains(r#"_createElementVNode("span""#));
     }
 
     #[test]

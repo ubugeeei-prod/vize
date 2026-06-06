@@ -1,7 +1,7 @@
 //! Tests for the Vue template parser.
 #![allow(clippy::disallowed_macros)]
 
-use super::{parse, parse_with_options};
+use super::{parse, parse_with_options, parse_with_options_and_invalid_html_self_closing};
 use vize_carton::Bump;
 use vize_relief::{
     ast::{ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode},
@@ -1146,6 +1146,30 @@ fn test_parse_self_closing_non_void_html_element_ignores_flag() {
     } else {
         panic!("Expected div");
     }
+}
+
+#[test]
+fn test_parse_self_closing_non_void_html_element_quirk_keeps_flag() {
+    let allocator = Bump::new();
+    let (root, errors) = parse_with_options_and_invalid_html_self_closing(
+        &allocator,
+        "<div /><span></span>",
+        ParserOptions::default(),
+        true,
+    );
+
+    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+    assert_eq!(root.children.len(), 2);
+    if let TemplateChildNode::Element(div) = &root.children[0] {
+        assert_eq!(div.tag.as_str(), "div");
+        assert!(div.is_self_closing);
+        assert!(div.children.is_empty());
+    } else {
+        panic!("Expected div");
+    }
+    assert!(
+        matches!(&root.children[1], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
+    );
 }
 
 #[test]

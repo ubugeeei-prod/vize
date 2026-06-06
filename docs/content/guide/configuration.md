@@ -214,17 +214,25 @@ export default defineConfig({
 `compiler.vueParserQuirks` defaults to `false`. Keep strict mode unless you need to compile
 existing templates that Vue accepts through parser edge-case behavior.
 
-The current compatibility case is `v-for` alias parsing. Vue strips a leading `(` or trailing `)`
-from the alias before it splits `value`, `key`, and `index`; strict Vize reports those aliases as
-malformed.
+The compatibility cases are:
 
-```vue
+- `v-for` aliases with an unmatched edge parenthesis. Vue strips a leading `(` or trailing `)`
+  from the alias before it splits `value`, `key`, and `index`; strict Vize reports those aliases as
+  malformed.
+- Non-void HTML elements written with self-closing syntax, such as `<div />` or `<span />`. Strict
+  Vize follows HTML tree construction and ignores the self-closing flag, while quirk mode keeps the
+  element as a self-closing leaf to match Vue parser compatibility.
+
+```text
 <template>
   <!-- Strict mode rejects this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="item in items">{{ item }}</div>
+  <div v-for="(item in items">{{ item }}</div>
 
   <!-- Strict mode rejects this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="item in items">{{ item }}</div>
+  <div v-for="item) in items">{{ item }}</div>
+
+  <!-- Strict mode treats this as an open `<div>` start tag. Quirk mode keeps it as a leaf. -->
+  <div />
 </template>
 ```
 
@@ -232,6 +240,9 @@ Vue upstream implementation:
 
 - [`forAliasRE`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571)
 - [`stripParensRE` in `parseForExpression`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530)
+
+See [Troubleshooting](./troubleshooting.md) for the HTML strict-mode behavior behind invalid
+self-closing tags.
 
 ## Static Analysis Options
 

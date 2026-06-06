@@ -37,7 +37,7 @@ pub use vize_atelier_core::{
 
 use vize_atelier_core::{
     options::{ParserOptions, TransformOptions},
-    parser::parse_with_options,
+    parser::parse_with_options_and_invalid_html_self_closing,
     transform::{transform as do_transform, transform_with_vue_parser_quirks},
 };
 use vize_carton::{Bump, String, profile};
@@ -90,7 +90,12 @@ fn compile_ssr_inner<'a>(
     // Parse
     let (mut root, errors) = profile!(
         "atelier.ssr.template.parse",
-        parse_with_options(allocator, source, parser_opts)
+        parse_with_options_and_invalid_html_self_closing(
+            allocator,
+            source,
+            parser_opts,
+            vue_parser_quirks
+        )
     );
 
     // Parser-level diagnostics that are recoverable (e.g. duplicate
@@ -163,7 +168,10 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 
 #[cfg(test)]
 mod tests {
-    use super::{Bump, SsrCompilerOptions, compile_ssr, compile_ssr_with_options};
+    use super::{
+        Bump, SsrCompilerOptions, compile_ssr, compile_ssr_with_options,
+        compile_ssr_with_vue_parser_quirks,
+    };
 
     #[test]
     fn test_compile_simple_element() {
@@ -237,6 +245,19 @@ mod tests {
             "{}",
             result.code
         );
+    }
+
+    #[test]
+    fn test_compile_vue_parser_quirks_accepts_invalid_html_self_closing() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr_with_vue_parser_quirks(
+            &allocator,
+            "<div /><span></span>",
+            Default::default(),
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        assert!(!result.code.is_empty());
     }
 
     #[test]

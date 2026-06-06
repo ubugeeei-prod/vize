@@ -206,7 +206,8 @@ vize({ vapor: true });
 // TresJS or another custom renderer
 vize({ customRenderer: true });
 
-// Existing templates that rely on Vue's v-for alias edge-paren behavior
+// Existing templates that rely on Vue parser edge cases, such as
+// v-for alias edge parens or `<div />` as a self-closing leaf
 vize({ vueParserQuirks: true });
 
 // Monorepo package with explicit scan roots

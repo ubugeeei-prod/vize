@@ -623,7 +623,8 @@ impl<'a> Parser<'a> {
     }
 
     fn should_ignore_self_closing_flag(&self, element: &ElementNode<'a>) -> bool {
-        element.ns == Namespace::Html
+        !self.allow_invalid_html_self_closing
+            && element.ns == Namespace::Html
             && element.tag_type == ElementType::Element
             && (!self.options.custom_renderer || vize_carton::is_html_tag(element.tag.as_str()))
             && !(self.options.is_void_tag)(element.tag.as_str())

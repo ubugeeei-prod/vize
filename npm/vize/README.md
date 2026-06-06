@@ -144,17 +144,23 @@ Important shared fields:
 `compiler.vueParserQuirks` is off by default. Keep it disabled for strict parsing, and enable it
 when a project must compile templates that Vue currently accepts through parser edge-case behavior.
 
-The supported quirk covers `v-for` aliases with an unmatched edge parenthesis. Vue strips a leading
-`(` or trailing `)` from the alias before splitting `value`, `key`, and `index`; Vize reports those
-as malformed in strict mode and mirrors Vue only when this flag is enabled.
+The supported quirks cover `v-for` aliases with an unmatched edge parenthesis and invalid
+self-closing syntax on non-void HTML elements. Vue strips a leading `(` or trailing `)` from
+`v-for` aliases before splitting `value`, `key`, and `index`; Vize reports those as malformed in
+strict mode and mirrors Vue only when this flag is enabled. Strict mode also follows HTML tree
+construction for `<div />` and `<span />`, while quirk mode keeps those elements as self-closing
+leaves.
 
-```vue
+```text
 <template>
   <!-- Strict mode rejects this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="item in items">{{ item }}</div>
+  <div v-for="(item in items">{{ item }}</div>
 
   <!-- Strict mode rejects this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="item in items">{{ item }}</div>
+  <div v-for="item) in items">{{ item }}</div>
+
+  <!-- Strict mode treats this as an open `<div>` start tag. Quirk mode keeps it as a leaf. -->
+  <div />
 </template>
 ```
 
