@@ -365,4 +365,99 @@ mod tests {
             result.code
         );
     }
+
+    #[test]
+    fn test_ssr_v_if_v_else() {
+        let allocator = Bump::new();
+        let (_, errors, result) =
+            compile_ssr(&allocator, r#"<div v-if="ok">yes</div><p v-else>no</p>"#);
+        assert!(errors.is_empty());
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_ssr_v_for_list() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>"#,
+        );
+        assert!(errors.is_empty());
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_ssr_static_and_dynamic_attrs() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<a class="link" :href="url" target="_blank">{{ label }}</a>"#,
+        );
+        assert!(errors.is_empty());
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_ssr_v_bind_object() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(&allocator, r#"<div v-bind="attrs">content</div>"#);
+        assert!(errors.is_empty());
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_ssr_v_html() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(&allocator, r#"<div v-html="raw"></div>"#);
+        assert!(errors.is_empty());
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_ssr_dynamic_class_and_style() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<div :class="{ active: isActive }" :style="{ color }">x</div>"#,
+        );
+        assert!(errors.is_empty());
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_ssr_component_with_props_and_slot() {
+        let allocator = Bump::new();
+        let (_, errors, result) =
+            compile_ssr(&allocator, r#"<MyCard :title="t"><p>body</p></MyCard>"#);
+        assert!(errors.is_empty());
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_ssr_fragment_multiple_roots() {
+        let allocator = Bump::new();
+        let (_, errors, result) =
+            compile_ssr(&allocator, r#"<header>a</header><main>{{ b }}</main>"#);
+        assert!(errors.is_empty());
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_ssr_text_and_interpolation_mix() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<p>Hello {{ name }}, you have {{ count }} items</p>"#,
+        );
+        assert!(errors.is_empty());
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_ssr_v_show() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(&allocator, r#"<div v-show="visible">toggle</div>"#);
+        assert!(errors.is_empty());
+        insta::assert_snapshot!(result.code.as_str());
+    }
 }

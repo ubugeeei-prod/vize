@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_ssr/src/lib.rs
+expression: result.code.as_str()
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}>Hello ${_ssrInterpolate(_ctx.name)}, you have ${_ssrInterpolate(_ctx.count)} items</p>`)
+}

@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_ssr/src/lib.rs
+expression: result.code.as_str()
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<ul${_ssrRenderAttrs(_attrs)}>`)
+  _push(`<!--[-->`)
+  _ssrRenderList(_ctx.items, (item) => {
+    _push(`<li${_ssrRenderAttr("key", item.id)}>${_ssrInterpolate(item.name)}</li>`)
+  })
+  _push(`<!--]-->`)
+  _push(`</ul>`)
+}

@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_ssr/src/lib.rs
+expression: result.code.as_str()
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  if (_ctx.ok) {
+    _push(`<div${_ssrRenderAttrs(_attrs)}>yes</div>`)
+  } else {
+    _push(`<p${_ssrRenderAttrs(_attrs)}>no</p>`)
+  }
+}

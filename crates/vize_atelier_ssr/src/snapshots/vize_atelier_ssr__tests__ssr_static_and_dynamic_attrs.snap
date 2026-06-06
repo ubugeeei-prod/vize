@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_ssr/src/lib.rs
+expression: result.code.as_str()
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<a${_ssrRenderAttrs(_mergeProps({ href: _ctx.url, target: "_blank", class: "link" }, _attrs))}>${_ssrInterpolate(_ctx.label)}</a>`)
+}
