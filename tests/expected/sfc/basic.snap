@@ -109,18 +109,17 @@ export default {
   <div>{{ msg }}</div>
 </template>
 --- OUTPUT ---
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
-
-function _sfc_render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg), 1 /* TEXT */))
-}
-
 const _sfc_main = {
   data() {
     return { msg: 'hello' }
   }
 }
 
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg), 1 /* TEXT */))
+}
 _sfc_main.render = _sfc_render
 export default _sfc_main
 ===
@@ -148,14 +147,13 @@ export default { name: 'MyComponent' }
   <div>Component</div>
 </template>
 --- OUTPUT ---
+const _sfc_main = { name: 'MyComponent' }
+
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 function _sfc_render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, "Component"))
 }
-
-const _sfc_main = { name: 'MyComponent' }
-
 _sfc_main.render = _sfc_render
 export default _sfc_main
 ===

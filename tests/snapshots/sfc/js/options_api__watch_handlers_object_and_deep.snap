@@ -2,15 +2,6 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: output.as_str()
 ---
-import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
-
-function _sfc_render(_ctx, _cache) {
-  return _withDirectives((_openBlock(), _createElementBlock("input", {
-    "onUpdate:modelValue": $event => ((_ctx.question) = $event)
-  }, null, 8 /* PROPS */, ["onUpdate:modelValue"])), [
-    [_vModelText, _ctx.question]
-  ])
-}
 
 const _sfc_main = {
   data() {
@@ -30,5 +21,14 @@ const _sfc_main = {
   }
 }
 
+import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return _withDirectives((_openBlock(), _createElementBlock("input", {
+    "onUpdate:modelValue": $event => ((_ctx.question) = $event)
+  }, null, 8 /* PROPS */, ["onUpdate:modelValue"])), [
+    [_vModelText, _ctx.question]
+  ])
+}
 _sfc_main.render = _sfc_render
 export default _sfc_main

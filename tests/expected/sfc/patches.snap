@@ -1080,12 +1080,6 @@ export default {
   <div>{{ msg }} - {{ count }}</div>
 </template>
 --- OUTPUT ---
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
-
-function _sfc_render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg) + " - " + _toDisplayString(_ctx.count), 1 /* TEXT */))
-}
-
 const _sfc_main = {
   name: 'MyComponent',
   props: {
@@ -1098,6 +1092,11 @@ const _sfc_main = {
   }
 }
 
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg) + " - " + _toDisplayString(_ctx.count), 1 /* TEXT */))
+}
 _sfc_main.render = _sfc_render
 export default _sfc_main
 ===
@@ -1120,12 +1119,6 @@ export default {
   <div>{{ count }}</div>
 </template>
 --- OUTPUT ---
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
-
-function _sfc_render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.count), 1 /* TEXT */))
-}
-
 import { ref } from 'vue'
 
 const _sfc_main = {
@@ -1136,6 +1129,11 @@ const _sfc_main = {
   }
 }
 
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.count), 1 /* TEXT */))
+}
 _sfc_main.render = _sfc_render
 export default _sfc_main
 ===
@@ -1994,6 +1992,14 @@ export default {
   </div>
 </template>
 --- OUTPUT ---
+const _sfc_main = {
+  computed: {
+    knobStyle() {
+      return { transform: 'translate(10px, 20px)' }
+    },
+  },
+}
+
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle } from "vue"
 
 function _sfc_render(_ctx, _cache) {
@@ -2004,15 +2010,6 @@ function _sfc_render(_ctx, _cache) {
     }, null, 6 /* CLASS, STYLE */)
   ]))
 }
-
-const _sfc_main = {
-  computed: {
-    knobStyle() {
-      return { transform: 'translate(10px, 20px)' }
-    },
-  },
-}
-
 _sfc_main.render = _sfc_render
 export default _sfc_main
 ===

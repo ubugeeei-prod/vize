@@ -131,10 +131,18 @@ function compileSFC(source: string, filename: string = "test.vue"): string {
     const rewritten = scriptContent.replace(/export\s+default\s+\{/, "const _sfc_main = {");
 
     if (templateResult) {
+      // The render function is attached as `_sfc_main.render` instead of being
+      // exported, so rename `export function render` to `function _sfc_render`.
+      const renderCode = templateResult.code.replace(
+        "export function render(",
+        "function _sfc_render(",
+      );
+      // Match @vue/compiler-sfc / plugin-vue ordering: the <script> block (and
+      // its imports) comes first, then the template render block.
       code =
-        templateResult.code +
-        "\n" +
         rewritten +
+        "\n" +
+        renderCode +
         "\n_sfc_main.render = _sfc_render\nexport default _sfc_main";
     } else {
       code = rewritten + "\nexport default _sfc_main";

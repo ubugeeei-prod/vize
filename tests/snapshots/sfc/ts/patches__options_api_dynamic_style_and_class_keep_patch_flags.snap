@@ -1,7 +1,16 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output.as_str()
+expression: output.as_str()
 ---
+
+const _sfc_main = {
+  computed: {
+    knobStyle() {
+      return { transform: 'translate(10px, 20px)' }
+    },
+  },
+}
+
 import { createElementVNode as _createElementVNode, normalizeStyle as _normalizeStyle, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 function _sfc_render(_ctx, _cache) {
@@ -12,14 +21,5 @@ function _sfc_render(_ctx, _cache) {
     }, null, 6 /* CLASS, STYLE */)
   ]))
 }
-
-const _sfc_main = {
-  computed: {
-    knobStyle() {
-      return { transform: 'translate(10px, 20px)' }
-    },
-  },
-}
-
 _sfc_main.render = _sfc_render
 export default _sfc_main
