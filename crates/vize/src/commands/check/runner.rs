@@ -76,7 +76,19 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     } else {
         crate::config::load_config_with_features_and_source(args.config.as_deref())
     };
+    // Legacy Vue 2.7 / Nuxt 2 Options-API type checking is opt-in and compiled out
+    // of the default Vue 3 binary. Without the `legacy` feature, honor the config
+    // flag by warning instead of silently ignoring it.
+    #[cfg(feature = "legacy")]
     let legacy_vue2 = loaded_config.features.type_checker_legacy_vue2;
+    #[cfg(not(feature = "legacy"))]
+    if loaded_config.features.type_checker_legacy_vue2 {
+        eprintln!(
+            "\x1b[33mwarning:\x1b[0m `type_checker_legacy_vue2` is set but this `vize` build \
+             has no legacy Vue support; rebuild with `--features legacy` to enable Vue 2 \
+             Options API type checking."
+        );
+    }
     let config = loaded_config.config;
     let config_dir = loaded_config
         .source_path
@@ -233,6 +245,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             std::process::exit(1);
         }
     };
+    #[cfg(feature = "legacy")]
     if legacy_vue2 {
         checker.enable_legacy_vue2();
     }
