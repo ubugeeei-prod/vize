@@ -207,6 +207,12 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
       if (options.hostCompiler) {
         return false;
       }
+      // A `.vue` filename (from the path or a `vize-file` query) is required for a
+      // match, so ids without a `.vue` substring can never be transformed. Skip
+      // URLSearchParams parsing for the common plain-JS imports.
+      if (!id.includes(".vue")) {
+        return false;
+      }
       const request = parseVueRequest(id);
       return !request.query.vue && isVueFile(request.filename) && filter(request.filename);
     },

@@ -667,7 +667,16 @@ function isPotentialVizeResolveId(id: string): boolean {
   );
 }
 
-function isPotentialVizeImporter(importer: string | undefined): boolean {
+function classifyImporterRequest(
+  importer: string | undefined,
+): ReturnType<typeof classifyVitePluginRequest> | null {
+  return importer ? classifyVitePluginRequest(importer) : null;
+}
+
+function isPotentialVizeImporter(
+  importer: string | undefined,
+  importerRequest: ReturnType<typeof classifyVitePluginRequest> | null,
+): boolean {
   // Imports from Vize virtual modules still need custom resolution even when the
   // requested id itself is a regular-looking relative or bare specifier.
   if (importer === undefined) {
@@ -677,8 +686,7 @@ function isPotentialVizeImporter(importer: string | undefined): boolean {
     return true;
   }
 
-  const request = classifyVitePluginRequest(importer);
-  return request.isVueSfcPath;
+  return importerRequest?.isVueSfcPath ?? false;
 }
 
 function shouldCompileVueSfcRequest(
@@ -789,13 +797,20 @@ export async function resolveIdHook(
   // the id nor importer can involve a Vue SFC or Vize virtual module. This was
   // added after profiles showed ordinary dependency graph edges dominating the
   // plugin hook cost in dev servers.
-  if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer)) {
+  //
+  // Classify the importer at most once: the importer gate (`isPotentialVizeImporter`)
+  // and the later `importerRequest` derivations both need the same classification,
+  // so crossing the NAPI boundary twice for the same importer string is pure
+  // overhead. Classify the defined importer once here and reuse the result for
+  // both the gate below and the rest of the hook; `isPotentialVizeImporter` reads
+  // its `isVueSfcPath` rather than re-classifying.
+  const importerRequest = classifyImporterRequest(importer);
+  if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer, importerRequest)) {
     return null;
   }
 
   const isBuild = state.server === null;
   const isDependencyScan = !!options?.scan;
-  const importerRequest = importer ? classifyVitePluginRequest(importer) : null;
   const isSsrRequest =
     !!options?.ssr ||
     (importerRequest?.isVizeSsrVirtual ?? false) ||
