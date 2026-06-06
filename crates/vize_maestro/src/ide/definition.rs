@@ -261,7 +261,7 @@ import MyComponent from './MyComponent.vue'
 
         fs::write(
             &component_path,
-            "<script setup lang=\"ts\"></script>\n<template><button /></template>\n",
+            "<script setup lang=\"ts\"></script>\n<template><button></button></template>\n",
         )
         .unwrap();
 
@@ -298,7 +298,7 @@ import MyButton from './MyButton.vue'
         let component_path = dir.path().join("Button.vue");
         let source_path = dir.path().join("Button.art.vue");
 
-        fs::write(&component_path, "<template><button /></template>\n").unwrap();
+        fs::write(&component_path, "<template><button></button></template>\n").unwrap();
 
         let source = r#"<script setup lang="ts">
 defineArt("./Button.vue", {

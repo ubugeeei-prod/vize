@@ -15,7 +15,7 @@ mod whitespace;
 #[cfg(test)]
 mod tests;
 
-use vize_carton::{Box, Bump, String, Vec};
+use vize_carton::{Bump, String, Vec};
 use vize_relief::{
     ast::*,
     errors::{CompilerError, ErrorCode},
@@ -53,6 +53,11 @@ pub struct Parser<'a> {
     in_pre: bool,
     /// Whether in v-pre block
     in_v_pre: bool,
+    open_table_count: usize,
+    open_p_count: usize,
+    open_a_count: usize,
+    open_button_count: usize,
+    open_form_count: usize,
 }
 
 /// Stack entry for tracking parent elements
@@ -61,6 +66,15 @@ pub(super) struct ParserStackEntry<'a> {
     pub(super) element: ElementNode<'a>,
     pub(super) in_pre: bool,
     pub(super) in_v_pre: bool,
+    pub(super) insertion: StackInsertion,
+    pub(super) implicit: bool,
+    pub(super) fostered_before: Vec<'a, TemplateChildNode<'a>>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum StackInsertion {
+    Normal,
+    Fostered,
 }
 
 /// Current element being parsed
@@ -121,6 +135,11 @@ impl<'a> Parser<'a> {
             newlines: Vec::new_in(allocator),
             in_pre: false,
             in_v_pre: false,
+            open_table_count: 0,
+            open_p_count: 0,
+            open_a_count: 0,
+            open_button_count: 0,
+            open_form_count: 0,
         }
     }
 
@@ -223,16 +242,67 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn add_fostered_child(&mut self, child: TemplateChildNode<'a>) {
+        if let Some(table_index) = self.nearest_table_index() {
+            self.stack[table_index].fostered_before.push(child);
+        } else {
+            self.add_child(child);
+        }
+    }
+
+    pub(super) fn push_stack_entry(&mut self, entry: ParserStackEntry<'a>) {
+        self.note_stack_tag_open(entry.element.tag.as_str());
+        self.stack.push(entry);
+    }
+
+    pub(super) fn pop_stack_entry(&mut self) -> Option<ParserStackEntry<'a>> {
+        let entry = self.stack.pop()?;
+        self.note_stack_tag_close(entry.element.tag.as_str());
+        Some(entry)
+    }
+
+    fn note_stack_tag_open(&mut self, tag: &str) {
+        match tag.len() {
+            1 if tag.eq_ignore_ascii_case("p") => self.open_p_count += 1,
+            1 if tag.eq_ignore_ascii_case("a") => self.open_a_count += 1,
+            4 if tag.eq_ignore_ascii_case("form") => self.open_form_count += 1,
+            5 if tag.eq_ignore_ascii_case("table") => self.open_table_count += 1,
+            6 if tag.eq_ignore_ascii_case("button") => self.open_button_count += 1,
+            _ => {}
+        }
+    }
+
+    fn note_stack_tag_close(&mut self, tag: &str) {
+        match tag.len() {
+            1 if tag.eq_ignore_ascii_case("p") => {
+                self.open_p_count = self.open_p_count.saturating_sub(1);
+            }
+            1 if tag.eq_ignore_ascii_case("a") => {
+                self.open_a_count = self.open_a_count.saturating_sub(1);
+            }
+            4 if tag.eq_ignore_ascii_case("form") => {
+                self.open_form_count = self.open_form_count.saturating_sub(1);
+            }
+            5 if tag.eq_ignore_ascii_case("table") => {
+                self.open_table_count = self.open_table_count.saturating_sub(1);
+            }
+            6 if tag.eq_ignore_ascii_case("button") => {
+                self.open_button_count = self.open_button_count.saturating_sub(1);
+            }
+            _ => {}
+        }
+    }
+
     /// Handle unclosed elements at end of parsing
     fn handle_unclosed_elements(&mut self) {
-        while let Some(entry) = self.stack.pop() {
-            let loc = entry.element.loc.clone();
-            self.errors
-                .push(CompilerError::new(ErrorCode::MissingEndTag, Some(loc)));
+        while let Some(entry) = self.pop_stack_entry() {
+            if !entry.implicit && !Self::can_omit_end_tag(entry.element.tag.as_str()) {
+                let loc = entry.element.loc.clone();
+                self.errors
+                    .push(CompilerError::new(ErrorCode::MissingEndTag, Some(loc)));
+            }
 
-            // Add the unclosed element to parent
-            let boxed = Box::new_in(entry.element, self.allocator);
-            self.add_child(TemplateChildNode::Element(boxed));
+            self.emit_stack_entry(entry);
         }
     }
 }

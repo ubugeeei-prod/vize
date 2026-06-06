@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/tests.rs
+assertion_line: 361
 expression: virtual_ts
 ---
 /// <reference lib="es2022" />
@@ -102,9 +103,9 @@ function __setup() {
 
   // @click handler
   (($event: PointerEvent) => {
-    const __vize_handler_10_70 = ((handler: ($event: PointerEvent) => unknown) => handler)((switchComponent));
-    __vize_handler_10_70($event);  // handler expression
-    // @vize-map: handler -> 387:402
+    const __vize_handler_10_80 = ((handler: ($event: PointerEvent) => unknown) => handler)((switchComponent));
+    __vize_handler_10_80($event);  // handler expression
+    // @vize-map: handler -> 397:412
   })({} as PointerEvent);
 
   // Reference setup bindings (used in template/CSS v-bind)

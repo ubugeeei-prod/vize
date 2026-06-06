@@ -1854,7 +1854,7 @@ export interface ContentProps extends PrimitiveProps {
 defineProps<ContentProps>()
 </script>
 
-<template><div /></template>"#,
+<template><div></div></template>"#,
     )
     .unwrap();
     fs::write(
@@ -2688,7 +2688,7 @@ const visible = true
 <template>
   <mesh>
     <group v-if="visible">
-      <primitive />
+      <primitive></primitive>
     </group>
   </mesh>
 </template>"#;
@@ -2722,7 +2722,7 @@ const visible = true
 <template>
   <mesh>
     <group v-if="visible">
-      <primitive />
+      <primitive></primitive>
     </group>
   </mesh>
 </template>"#;

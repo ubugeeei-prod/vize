@@ -823,7 +823,7 @@ selected</pre>"#,
         bindings.insert("Primitive".into(), BindingType::SetupConst);
         let result = compile_vapor(
             &allocator,
-            r#"<mesh><group v-if="visible"><primitive /></group></mesh>"#,
+            r#"<mesh><group v-if="visible"><primitive></primitive></group></mesh>"#,
             super::VaporCompilerOptions {
                 custom_renderer: true,
                 binding_metadata: Some(BindingMetadata {

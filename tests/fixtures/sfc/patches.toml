@@ -329,7 +329,7 @@ import { vElementHover } from '@vueuse/components'
 </script>
 
 <template>
-  <div v-element-hover="() => {}" />
+  <div v-element-hover="() => {}"></div>
 </template>
 """
 
@@ -396,7 +396,7 @@ defineProps<{
 </script>
 
 <template>
-  <div />
+  <div></div>
 </template>
 """
 

@@ -352,7 +352,7 @@ function switchComponent() {
 
 <template>
   <div>
-    <component :is="currentComponent" />
+    <component :is="currentComponent"></component>
     <button @click="switchComponent">Switch</button>
   </div>
 </template>"#;

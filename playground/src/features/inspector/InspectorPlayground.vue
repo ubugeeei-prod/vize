@@ -399,7 +399,7 @@ onUnmounted(() => {
 
     <div class="output-content">
       <div v-if="isCompiling" class="compiling">
-        <div class="spinner" />
+        <div class="spinner"></div>
         <span>Compiling...</span>
       </div>
 

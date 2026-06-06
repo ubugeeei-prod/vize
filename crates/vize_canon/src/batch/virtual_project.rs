@@ -2070,7 +2070,7 @@ export interface BaseProps {
   asChild?: boolean;
 }
 </script>
-<template><div /></template>"#,
+<template><div></div></template>"#,
         )
         .unwrap();
         fs::write(&index, r#"export { type BaseProps } from "./Base.vue";"#).unwrap();
@@ -2079,7 +2079,7 @@ export interface BaseProps {
             r#"<script setup lang="ts">
 defineProps<{ as?: string; asChild?: boolean }>();
 </script>
-<template><div /></template>"#,
+<template><div></div></template>"#,
         )
         .unwrap();
         fs::write(
@@ -2162,7 +2162,7 @@ const onFocus = (target: HTMLElement) => {
         onFocus(event.target as HTMLElement)
       },
     }"
-  />
+  ></div>
 </template>
 "#,
         )

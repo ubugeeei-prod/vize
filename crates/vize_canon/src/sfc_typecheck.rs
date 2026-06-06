@@ -154,7 +154,7 @@ const props = defineProps<Props>();
     fn test_type_check_with_defaults_template_props_are_default_resolved() {
         let source = r#"<template>
   <svg>
-    <line :stroke-width="props.thickness / 2" />
+    <line :stroke-width="props.thickness / 2"></line>
     <text>{{ label.toUpperCase() }} {{ props.label.toUpperCase() }}</text>
   </svg>
 </template>
@@ -397,7 +397,7 @@ export const buttonId =
   "button-id";
 </script>
 <template>
-    <button :id="buttonId" />
+    <button :id="buttonId"></button>
 </template>"#;
         let options = SfcTypeCheckOptions::new("test.vue");
         let result = type_check_sfc(source, &options);
@@ -465,7 +465,7 @@ export default {
     fn test_type_check_template_undefined_binding_uses_expression_offset() {
         let source = r#"<script lang="ts"></script>
 <template>
-    <button :id="missingButtonId" />
+    <button :id="missingButtonId"></button>
 </template>"#;
         let options = SfcTypeCheckOptions::new("test.vue");
         let result = type_check_sfc(source, &options);
@@ -592,7 +592,7 @@ const onFocus = (target: HTMLElement) => {
         onFocus(event.target as HTMLElement)
       },
     }"
-  />
+  ></div>
 </template>"#;
         let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
         let result = type_check_sfc(source, &options);

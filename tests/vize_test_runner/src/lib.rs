@@ -7,6 +7,7 @@
 use serde::Deserialize;
 use std::path::Path;
 use vize_atelier_core::{
+    Namespace,
     codegen::generate,
     options::{CodegenMode, CodegenOptions, ParserOptions, TransformOptions},
     parser::parse_with_options,
@@ -162,6 +163,7 @@ pub fn compile_vdom(input: &str, options: &TestOptions) -> String {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
         is_pre_tag: |tag| tag == "pre",
+        get_namespace: get_dom_namespace,
         ..Default::default()
     };
 
@@ -191,6 +193,32 @@ pub fn compile_vdom(input: &str, options: &TestOptions) -> String {
     } else {
         format!("{}\n\n{}", preamble, result.code).into()
     }
+}
+
+fn get_dom_namespace(tag: &str, parent: Option<&str>) -> Namespace {
+    if vize_carton::is_svg_tag(tag) {
+        return Namespace::Svg;
+    }
+    if vize_carton::is_math_ml_tag(tag) {
+        return Namespace::MathMl;
+    }
+
+    if let Some(parent_tag) = parent {
+        let svg_to_html = matches!(parent_tag, "foreignObject" | "desc" | "title");
+        if vize_carton::is_svg_tag(parent_tag) && !svg_to_html {
+            return Namespace::Svg;
+        }
+
+        let mathml_to_html = matches!(
+            parent_tag,
+            "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
+        );
+        if vize_carton::is_math_ml_tag(parent_tag) && !mathml_to_html {
+            return Namespace::MathMl;
+        }
+    }
+
+    Namespace::Html
 }
 
 /// Compile a template with Vapor mode

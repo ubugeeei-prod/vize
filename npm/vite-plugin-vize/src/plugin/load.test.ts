@@ -304,7 +304,7 @@ fs.writeFileSync(
 const { t } = useI18n()
 useSeoMeta({ title: () => t("site.name") })
 </script>
-<template><div /></template>`,
+<template><div></div></template>`,
 );
 
 const emptyPageMetaLoad = loadHook(

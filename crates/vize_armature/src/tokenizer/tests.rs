@@ -414,6 +414,18 @@ fn test_comment_extra_hyphens_before_close() {
     assert!(cb.events.contains(&TokenEvent::Comment(4, 9)));
 }
 
+#[test]
+fn test_comment_nested_opener_reports_error_and_closes_at_first_end() {
+    let cb = tokenize("<!-- <!-- nested --> -->");
+    assert!(
+        cb.errors
+            .iter()
+            .any(|(code, _)| *code == ErrorCode::NestedComment)
+    );
+    assert!(cb.events.contains(&TokenEvent::Comment(4, 17)));
+    assert!(cb.events.contains(&TokenEvent::Text(20, 24)));
+}
+
 // ========================================================================
 // Error tests
 // ========================================================================
@@ -458,6 +470,29 @@ fn test_error_eof_in_empty_cdata() {
             .any(|(code, _)| *code == ErrorCode::EofInCdata)
     );
     assert!(cb.events.contains(&TokenEvent::Cdata(9, 9)));
+}
+
+#[test]
+fn test_error_processing_instruction_reports_question_mark() {
+    let cb = tokenize(r#"<?xml version="1.0"?><div></div>"#);
+    assert!(
+        cb.errors
+            .iter()
+            .any(|(code, _)| *code == ErrorCode::UnexpectedQuestionMarkInsteadOfTagName)
+    );
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(22, 25)));
+}
+
+#[test]
+fn test_error_unexpected_solidus_before_attribute() {
+    let cb = tokenize("<div / id=foo></div>");
+    assert!(
+        cb.errors
+            .iter()
+            .any(|(code, _)| *code == ErrorCode::UnexpectedSolidusInTag)
+    );
+    assert!(cb.events.contains(&TokenEvent::AttribName(7, 9)));
+    assert!(cb.events.contains(&TokenEvent::AttribData(10, 13)));
 }
 
 // ========================================================================
@@ -586,14 +621,13 @@ fn test_special_opening_textarea_text_and_close() {
 }
 
 #[test]
-fn test_self_closing_textarea_returns_to_text_state() {
+fn test_self_closing_textarea_stays_in_rcdata() {
     let cb = tokenize("<textarea /><span>ok</span>");
     assert!(cb.errors.is_empty());
     assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 9)));
     assert!(cb.events.contains(&TokenEvent::SelfClosingTag(11)));
-    assert!(cb.events.contains(&TokenEvent::OpenTagName(13, 17)));
-    assert!(cb.events.contains(&TokenEvent::Text(18, 20)));
-    assert!(cb.events.contains(&TokenEvent::CloseTag(22, 26)));
+    assert!(cb.events.contains(&TokenEvent::Text(12, 27)));
+    assert!(!cb.events.contains(&TokenEvent::OpenTagName(13, 17)));
 }
 
 #[test]

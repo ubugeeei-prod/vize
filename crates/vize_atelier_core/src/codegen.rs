@@ -404,8 +404,9 @@ mod tests {
 
     #[test]
     fn test_root_directive_comment_does_not_create_fragment_hole() {
-        let result =
-            compile!("<!-- @vize:forget sections are labeled by their headings --><section />");
+        let result = compile!(
+            "<!-- @vize:forget sections are labeled by their headings --><section></section>"
+        );
 
         assert_codegen_snapshot!(result);
     }
@@ -796,7 +797,7 @@ mod tests {
     #[test]
     fn test_codegen_numeric_template_v_for_uses_fragment() {
         let result = compile!(
-            r#"<div><template v-for="n in 4" :key="`set-${n}`"><button /><span v-for="(icon, i) in icons" :key="`${n}-${i}`" :class="icon" /></template></div>"#
+            r#"<div><template v-for="n in 4" :key="`set-${n}`"><button></button><span v-for="(icon, i) in icons" :key="`${n}-${i}`" :class="icon"></span></template></div>"#
         );
 
         assert!(

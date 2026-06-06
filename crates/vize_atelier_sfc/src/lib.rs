@@ -254,7 +254,7 @@ import { Child } from "./components";
   <div
     v-for="_, i in ary"
     :prop="val"
-  />
+  ></div>
 </template>
 
 <script setup lang="ts">

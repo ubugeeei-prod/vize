@@ -1001,7 +1001,7 @@ mod tests {
                        const _w = Aliased\n\
                        const _r = ref(0)\n\
                        </script>\n\
-                       <template><div /></template>";
+                       <template><div></div></template>";
 
         let result = DiagnosticService::generate_virtual_ts(&uri, content, false)
             .expect("virtual ts generated");

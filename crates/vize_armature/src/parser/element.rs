@@ -3,13 +3,13 @@
 //! Handles text, interpolation, open/close tags, element type determination,
 //! comments, and error reporting.
 
-use vize_carton::{Box, String, appends, directive::parse_vize_directive};
+use vize_carton::{Box, String, Vec, appends, directive::parse_vize_directive};
 use vize_relief::{
     ast::*,
     errors::{CompilerError, ErrorCode},
 };
 
-use super::{CurrentElement, Parser, ParserStackEntry};
+use super::{CurrentElement, Parser, ParserStackEntry, StackInsertion};
 
 /// Maximum element nesting depth retained by the parser.
 ///
@@ -43,6 +43,11 @@ impl<'a> Parser<'a> {
 
     /// Append or merge text node
     fn append_or_merge_text(&mut self, content: &str, start: usize, end: usize) {
+        if self.should_foster_text(content) {
+            self.append_or_merge_fostered_text(content, start, end);
+            return;
+        }
+
         let merge_start_off = match self.stack.last().and_then(|e| e.element.children.last()) {
             Some(TemplateChildNode::Text(t)) => Some(t.loc.start.offset as usize),
             _ => None,
@@ -63,6 +68,37 @@ impl<'a> Parser<'a> {
             let text_node = TextNode::new(content, loc);
             let boxed = Box::new_in(text_node, self.allocator);
             self.add_child(TemplateChildNode::Text(boxed));
+        }
+    }
+
+    fn append_or_merge_fostered_text(&mut self, content: &str, start: usize, end: usize) {
+        let Some(table_index) = self.nearest_table_index() else {
+            self.append_or_merge_text(content, start, end);
+            return;
+        };
+
+        let merge_start_off = match self.stack[table_index].fostered_before.last() {
+            Some(TemplateChildNode::Text(t)) => Some(t.loc.start.offset as usize),
+            _ => None,
+        };
+
+        if let Some(merge_start) = merge_start_off {
+            let end_pos = self.get_pos(end);
+            let source_span = self.get_source(merge_start, end).into();
+            if let Some(TemplateChildNode::Text(text_node)) =
+                self.stack[table_index].fostered_before.last_mut()
+            {
+                text_node.content.push_str(content);
+                text_node.loc.end = end_pos;
+                text_node.loc.source = source_span;
+            }
+        } else {
+            let loc = self.create_loc(start, end);
+            let text_node = TextNode::new(content, loc);
+            let boxed = Box::new_in(text_node, self.allocator);
+            self.stack[table_index]
+                .fostered_before
+                .push(TemplateChildNode::Text(boxed));
         }
     }
 
@@ -127,6 +163,17 @@ impl<'a> Parser<'a> {
             // Determine element type
             element.tag_type = self.determine_element_type(&element);
 
+            if self.should_ignore_start_tag(&element) {
+                self.report_tree_construction_recovery(
+                    &element.loc,
+                    "HTML tree construction ignored this start tag because an equivalent element is already open.",
+                );
+                return;
+            }
+
+            self.handle_in_body_start_tag(element.tag.as_str(), tag_start);
+            self.handle_in_table_start_tag(element.tag.as_str(), tag_start);
+
             // Check for pre tags
             let is_pre = (self.options.is_pre_tag)(element.tag.as_str());
             let has_v_pre = element
@@ -189,10 +236,32 @@ impl<'a> Parser<'a> {
                 }
             }
 
-            if current.is_self_closing || (self.options.is_void_tag)(element.tag.as_str()) {
+            let html_non_void_self_closing =
+                current.is_self_closing && self.should_ignore_self_closing_flag(&element);
+
+            if html_non_void_self_closing {
+                self.report_tree_construction_recovery(
+                    &element.loc,
+                    "Self-closing flag is ignored for non-void HTML elements; treating this as a start tag.",
+                );
+                element.is_self_closing = false;
+            }
+
+            if (current.is_self_closing && !html_non_void_self_closing)
+                || (self.options.is_void_tag)(element.tag.as_str())
+            {
+                let should_foster_direct = self.should_foster_start_tag(
+                    element.tag.as_str(),
+                    element.ns == Namespace::Html && element.tag_type == ElementType::Element,
+                );
                 // Self-closing or void tag, add directly
                 let boxed = Box::new_in(element, self.allocator);
-                self.add_child(TemplateChildNode::Element(boxed));
+                let child = TemplateChildNode::Element(boxed);
+                if should_foster_direct {
+                    self.add_fostered_child(child);
+                } else {
+                    self.add_child(child);
+                }
             } else if self.stack.len() >= MAX_ELEMENT_NESTING_DEPTH {
                 // Nesting limit reached: keep the element but do not descend any
                 // further, so the resulting tree depth stays bounded. The
@@ -206,11 +275,23 @@ impl<'a> Parser<'a> {
                 let boxed = Box::new_in(element, self.allocator);
                 self.add_child(TemplateChildNode::Element(boxed));
             } else {
+                let insertion = if self.should_foster_start_tag(element.tag.as_str(), true) {
+                    self.report_tree_construction_recovery(
+                        &element.loc,
+                        "Foster parenting moved this element before the nearest open table.",
+                    );
+                    StackInsertion::Fostered
+                } else {
+                    StackInsertion::Normal
+                };
                 // Push to stack
-                self.stack.push(ParserStackEntry {
+                self.push_stack_entry(ParserStackEntry {
                     element,
                     in_pre: self.in_pre,
                     in_v_pre: self.in_v_pre,
+                    insertion,
+                    implicit: false,
+                    fostered_before: Vec::new_in(self.allocator),
                 });
                 self.in_pre = is_pre || self.in_pre;
                 self.in_v_pre = has_v_pre || self.in_v_pre;
@@ -227,53 +308,470 @@ impl<'a> Parser<'a> {
 
     /// Process close tag
     pub(super) fn on_close_tag_impl(&mut self, start: usize, end: usize) {
-        let tag = self.get_source(start, end);
+        let tag = self.get_source(start, end).to_owned();
+
+        if self.handle_formatting_end_tag(tag.as_str(), start, end) {
+            return;
+        }
 
         // Find matching open tag
-        let mut found = false;
-        for i in (0..self.stack.len()).rev() {
-            if self.stack[i].element.tag.eq_ignore_ascii_case(tag) {
-                found = true;
+        if let Some(i) = self.find_open_element_index(tag.as_str()) {
+            self.close_stack_element_at(i, true);
+            return;
+        }
 
-                // Pop all elements up to and including the match
-                let mut elements: vize_carton::Vec<'a, ParserStackEntry<'a>> =
-                    vize_carton::Vec::new_in(self.allocator);
-                while self.stack.len() > i {
-                    if let Some(entry) = self.stack.pop() {
-                        elements.push(entry);
-                    } else {
-                        break;
-                    }
-                }
+        let loc = self.create_loc(start.saturating_sub(2), end + 1); // Include </ and >
+        self.errors
+            .push(CompilerError::new(ErrorCode::InvalidEndTag, Some(loc)));
+    }
 
-                // Report errors for unclosed elements (except the matching one)
-                for entry in elements.iter().skip(1) {
+    pub(super) fn emit_stack_entry(&mut self, entry: ParserStackEntry<'a>) {
+        let insertion = entry.insertion;
+        let mut nodes = entry.fostered_before;
+        let boxed = Box::new_in(entry.element, self.allocator);
+        nodes.push(TemplateChildNode::Element(boxed));
+
+        for node in nodes {
+            if insertion == StackInsertion::Fostered {
+                self.add_fostered_child(node);
+            } else {
+                self.add_child(node);
+            }
+        }
+    }
+
+    fn close_stack_element_at(&mut self, index: usize, report_unclosed: bool) {
+        let mut entries = Vec::new_in(self.allocator);
+        while self.stack.len() > index {
+            if let Some(entry) = self.pop_stack_entry() {
+                entries.push(entry);
+            }
+        }
+
+        let Some(target) = entries.last() else {
+            return;
+        };
+        let restored_in_pre = target.in_pre;
+        let restored_in_v_pre = target.in_v_pre;
+
+        if report_unclosed {
+            for entry in entries.iter().take(entries.len().saturating_sub(1)) {
+                if !entry.implicit && !Self::can_omit_end_tag(entry.element.tag.as_str()) {
                     let loc = entry.element.loc.clone();
                     self.errors
                         .push(CompilerError::new(ErrorCode::MissingEndTag, Some(loc)));
                 }
-
-                // Add all popped elements back as children
-                for entry in elements.into_iter().rev() {
-                    let in_pre = entry.in_pre;
-                    let in_v_pre = entry.in_v_pre;
-
-                    let boxed = Box::new_in(entry.element, self.allocator);
-                    self.add_child(TemplateChildNode::Element(boxed));
-
-                    self.in_pre = in_pre;
-                    self.in_v_pre = in_v_pre;
-                }
-
-                break;
             }
         }
 
-        if !found {
-            let loc = self.create_loc(start.saturating_sub(2), end + 1); // Include </ and >
-            self.errors
-                .push(CompilerError::new(ErrorCode::InvalidEndTag, Some(loc)));
+        let mut child: Option<ParserStackEntry<'a>> = None;
+        for mut entry in entries {
+            if let Some(child_entry) = child.take() {
+                self.push_entry_as_child(&mut entry.element.children, child_entry);
+            }
+            child = Some(entry);
         }
+
+        if let Some(entry) = child {
+            self.emit_stack_entry(entry);
+        }
+
+        self.in_pre = restored_in_pre;
+        self.in_v_pre = restored_in_v_pre;
+    }
+
+    fn push_entry_as_child(
+        &mut self,
+        children: &mut Vec<'a, TemplateChildNode<'a>>,
+        entry: ParserStackEntry<'a>,
+    ) {
+        for node in entry.fostered_before {
+            children.push(node);
+        }
+        let boxed = Box::new_in(entry.element, self.allocator);
+        children.push(TemplateChildNode::Element(boxed));
+    }
+
+    fn find_open_element_index(&self, tag: &str) -> Option<usize> {
+        (0..self.stack.len())
+            .rev()
+            .find(|&i| self.stack[i].element.tag.eq_ignore_ascii_case(tag))
+    }
+
+    pub(super) fn nearest_table_index(&self) -> Option<usize> {
+        if self.open_table_count == 0 {
+            return None;
+        }
+
+        (0..self.stack.len())
+            .rev()
+            .find(|&i| self.stack[i].element.tag.eq_ignore_ascii_case("table"))
+    }
+
+    fn should_foster_text(&self, content: &str) -> bool {
+        self.open_table_count > 0
+            && content
+                .chars()
+                .any(|c| !matches!(c, ' ' | '\t' | '\n' | '\r' | '\u{000C}'))
+            && self.is_in_table_insertion_context()
+    }
+
+    fn should_foster_start_tag(&self, tag: &str, is_html_element: bool) -> bool {
+        is_html_element
+            && self.open_table_count > 0
+            && self.is_in_table_insertion_context()
+            && !self.is_allowed_in_table_insertion_context(tag)
+    }
+
+    fn is_in_table_insertion_context(&self) -> bool {
+        let Some(table_index) = self.nearest_table_index() else {
+            return false;
+        };
+
+        for entry in self.stack.iter().skip(table_index + 1) {
+            if entry.insertion == StackInsertion::Fostered
+                || Self::tag_in(entry.element.tag.as_str(), &["caption", "td", "th"])
+            {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    fn is_allowed_in_table_insertion_context(&self, tag: &str) -> bool {
+        let current = self.stack.last().map(|entry| entry.element.tag.as_str());
+        match current {
+            Some(current) if Self::tag_in(current, &["tbody", "thead", "tfoot"]) => {
+                Self::tag_in(tag, &["tr", "script", "style", "template"])
+            }
+            Some(current) if current.eq_ignore_ascii_case("tr") => {
+                Self::tag_in(tag, &["td", "th", "script", "style", "template"])
+            }
+            _ => Self::tag_in(
+                tag,
+                &[
+                    "caption", "colgroup", "col", "tbody", "thead", "tfoot", "tr", "td", "th",
+                    "script", "style", "template",
+                ],
+            ),
+        }
+    }
+
+    fn handle_in_table_start_tag(&mut self, tag: &str, offset: usize) {
+        if self.open_table_count == 0 {
+            return;
+        }
+
+        if !self.is_in_table_insertion_context() {
+            return;
+        }
+
+        if Self::tag_in(tag, &["tbody", "thead", "tfoot"])
+            && self.stack.last().is_some_and(|entry| {
+                Self::tag_in(entry.element.tag.as_str(), &["tbody", "thead", "tfoot"])
+            })
+        {
+            let last = self.stack.len() - 1;
+            self.close_stack_element_at(last, false);
+        }
+
+        if tag.eq_ignore_ascii_case("tr") {
+            if self
+                .stack
+                .last()
+                .is_some_and(|entry| entry.element.tag.eq_ignore_ascii_case("tr"))
+            {
+                let last = self.stack.len() - 1;
+                self.close_stack_element_at(last, false);
+            }
+            self.ensure_table_section(offset);
+        } else if Self::tag_in(tag, &["td", "th"]) {
+            if self
+                .stack
+                .last()
+                .is_some_and(|entry| Self::tag_in(entry.element.tag.as_str(), &["td", "th"]))
+            {
+                let last = self.stack.len() - 1;
+                self.close_stack_element_at(last, false);
+            }
+            self.ensure_table_section(offset);
+            self.ensure_table_row(offset);
+        }
+    }
+
+    fn ensure_table_section(&mut self, offset: usize) {
+        let Some(table_index) = self.nearest_table_index() else {
+            return;
+        };
+        if self
+            .stack
+            .iter()
+            .skip(table_index + 1)
+            .any(|entry| Self::tag_in(entry.element.tag.as_str(), &["tbody", "thead", "tfoot"]))
+        {
+            return;
+        }
+        self.push_implicit_element("tbody", offset);
+    }
+
+    fn ensure_table_row(&mut self, offset: usize) {
+        if self
+            .stack
+            .last()
+            .is_some_and(|entry| entry.element.tag.eq_ignore_ascii_case("tr"))
+        {
+            return;
+        }
+        self.push_implicit_element("tr", offset);
+    }
+
+    fn push_implicit_element(&mut self, tag: &str, offset: usize) {
+        let loc = self.create_loc(offset, offset);
+        let mut element = ElementNode::new(self.allocator, tag, loc);
+        element.tag_type = self.determine_element_type(&element);
+        self.push_stack_entry(ParserStackEntry {
+            element,
+            in_pre: self.in_pre,
+            in_v_pre: self.in_v_pre,
+            insertion: StackInsertion::Normal,
+            implicit: true,
+            fostered_before: Vec::new_in(self.allocator),
+        });
+    }
+
+    fn handle_in_body_start_tag(&mut self, tag: &str, offset: usize) {
+        if tag.eq_ignore_ascii_case("html") || tag.eq_ignore_ascii_case("body") {
+            return;
+        }
+
+        if self.open_a_count == 0
+            && self.open_button_count == 0
+            && self.open_p_count == 0
+            && !Self::starts_optional_end_tag_scope(tag)
+        {
+            return;
+        }
+
+        if tag.eq_ignore_ascii_case("a") {
+            if self.open_a_count > 0
+                && let Some(index) = self.find_open_element_index("a")
+            {
+                self.report_tree_construction_recovery(
+                    &self.stack[index].element.loc.clone(),
+                    "Nested anchor start tag closed the previous anchor before inserting the new one.",
+                );
+                self.close_stack_element_at(index, false);
+            }
+            return;
+        }
+
+        if tag.eq_ignore_ascii_case("button") {
+            if self.open_button_count > 0
+                && let Some(index) = self.find_open_element_index("button")
+            {
+                self.report_tree_construction_recovery(
+                    &self.stack[index].element.loc.clone(),
+                    "Nested button start tag closed the previous button before inserting the new one.",
+                );
+                self.close_stack_element_at(index, false);
+            }
+            return;
+        }
+
+        if tag.eq_ignore_ascii_case("li") {
+            if let Some(index) = self.find_open_element_index("li") {
+                self.close_stack_element_at(index, false);
+            }
+        } else if Self::tag_in(tag, &["dt", "dd"]) {
+            if let Some(index) = self.find_last_open_element_index(&["dt", "dd"]) {
+                self.close_stack_element_at(index, false);
+            }
+        } else if tag.eq_ignore_ascii_case("option") {
+            if let Some(index) = self.find_open_element_index("option") {
+                self.close_stack_element_at(index, false);
+            }
+        } else if tag.eq_ignore_ascii_case("optgroup")
+            && let Some(index) = self.find_last_open_element_index(&["option", "optgroup"])
+        {
+            self.close_stack_element_at(index, false);
+        }
+
+        if self.open_p_count > 0 {
+            if tag.eq_ignore_ascii_case("p") {
+                if let Some(index) = self.find_open_element_index("p") {
+                    self.close_stack_element_at(index, false);
+                }
+            } else if Self::closes_open_p_before_start(tag)
+                && let Some(index) = self.find_open_element_index("p")
+            {
+                self.close_stack_element_at(index, false);
+            }
+        }
+
+        let _ = offset;
+    }
+
+    fn find_last_open_element_index(&self, tags: &[&str]) -> Option<usize> {
+        (0..self.stack.len())
+            .rev()
+            .find(|&i| Self::tag_in(self.stack[i].element.tag.as_str(), tags))
+    }
+
+    fn should_ignore_start_tag(&self, element: &ElementNode<'a>) -> bool {
+        element.tag.eq_ignore_ascii_case("form") && self.open_form_count > 0
+    }
+
+    fn should_ignore_self_closing_flag(&self, element: &ElementNode<'a>) -> bool {
+        element.ns == Namespace::Html
+            && element.tag_type == ElementType::Element
+            && (!self.options.custom_renderer || vize_carton::is_html_tag(element.tag.as_str()))
+            && !(self.options.is_void_tag)(element.tag.as_str())
+    }
+
+    fn handle_formatting_end_tag(&mut self, tag: &str, start: usize, end: usize) -> bool {
+        if !Self::is_formatting_tag(tag) {
+            return false;
+        }
+        if self
+            .stack
+            .last()
+            .is_some_and(|entry| entry.element.tag.eq_ignore_ascii_case(tag))
+        {
+            return false;
+        }
+        let Some(index) = self.find_open_element_index(tag) else {
+            return false;
+        };
+        if index + 1 == self.stack.len() {
+            return false;
+        }
+
+        let loc = self.create_loc(start.saturating_sub(2), end + 1);
+        self.report_tree_construction_recovery(
+            &loc,
+            "Misnested formatting end tag was repaired using the adoption agency recovery path.",
+        );
+
+        let mut reopened = Vec::new_in(self.allocator);
+        while self.stack.len() > index + 1 {
+            if let Some(entry) = self.pop_stack_entry() {
+                if Self::is_formatting_tag(entry.element.tag.as_str()) {
+                    reopened.push(Self::formatting_shell(
+                        self.allocator,
+                        &entry.element,
+                        self.in_pre,
+                        self.in_v_pre,
+                    ));
+                }
+                let mut parent = self
+                    .pop_stack_entry()
+                    .expect("formatting match is still open");
+                self.push_entry_as_child(&mut parent.element.children, entry);
+                self.push_stack_entry(parent);
+            }
+        }
+
+        let match_index = self.stack.len() - 1;
+        self.close_stack_element_at(match_index, false);
+
+        for mut entry in reopened.into_iter().rev() {
+            entry.in_pre = self.in_pre;
+            entry.in_v_pre = self.in_v_pre;
+            self.push_stack_entry(entry);
+        }
+
+        true
+    }
+
+    fn formatting_shell(
+        allocator: &'a vize_carton::Bump,
+        element: &ElementNode<'a>,
+        in_pre: bool,
+        in_v_pre: bool,
+    ) -> ParserStackEntry<'a> {
+        let mut reopened = ElementNode::new(allocator, element.tag.clone(), element.loc.clone());
+        reopened.ns = element.ns;
+        reopened.tag_type = element.tag_type;
+        ParserStackEntry {
+            element: reopened,
+            in_pre,
+            in_v_pre,
+            insertion: StackInsertion::Normal,
+            implicit: true,
+            fostered_before: Vec::new_in(allocator),
+        }
+    }
+
+    fn report_tree_construction_recovery(&mut self, loc: &SourceLocation, message: &str) {
+        self.errors.push(CompilerError::with_message(
+            ErrorCode::ExtendPoint,
+            message,
+            Some(loc.clone()),
+        ));
+    }
+
+    fn tag_in(tag: &str, candidates: &[&str]) -> bool {
+        candidates
+            .iter()
+            .any(|candidate| tag.eq_ignore_ascii_case(candidate))
+    }
+
+    fn is_formatting_tag(tag: &str) -> bool {
+        Self::tag_in(
+            tag,
+            &[
+                "a", "b", "big", "code", "em", "font", "i", "nobr", "s", "small", "strike",
+                "strong", "tt", "u",
+            ],
+        )
+    }
+
+    pub(super) fn can_omit_end_tag(tag: &str) -> bool {
+        Self::tag_in(
+            tag,
+            &[
+                "li", "dt", "dd", "p", "rt", "rp", "optgroup", "option", "thead", "tbody", "tfoot",
+                "tr", "td", "th",
+            ],
+        )
+    }
+
+    fn closes_open_p_before_start(tag: &str) -> bool {
+        Self::tag_in(
+            tag,
+            &[
+                "address",
+                "article",
+                "aside",
+                "blockquote",
+                "div",
+                "dl",
+                "fieldset",
+                "footer",
+                "form",
+                "h1",
+                "h2",
+                "h3",
+                "h4",
+                "h5",
+                "h6",
+                "header",
+                "hr",
+                "main",
+                "nav",
+                "ol",
+                "p",
+                "pre",
+                "section",
+                "table",
+                "ul",
+            ],
+        )
+    }
+
+    fn starts_optional_end_tag_scope(tag: &str) -> bool {
+        Self::tag_in(tag, &["li", "dt", "dd", "option", "optgroup"])
     }
 
     /// Determine element type (element, component, slot, template)

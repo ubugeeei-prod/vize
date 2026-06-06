@@ -777,7 +777,7 @@ defineProps<{ configs: AliasConfig[] }>();
 </script>
 
 <template>
-  <div />
+  <div></div>
 </template>
 "#,
             ),
@@ -1316,7 +1316,7 @@ defineProps<{ kind?: FilterType }>()
 </script>
 
 <template>
-  <div />
+  <div></div>
 </template>
 "#,
             ),

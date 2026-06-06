@@ -92,8 +92,8 @@ mod element {
     }
 
     #[test]
-    fn self_closing_div() {
-        insta::assert_snapshot!(get_compiled_string("<div/>"));
+    fn empty_div() {
+        insta::assert_snapshot!(get_compiled_string("<div></div>"));
     }
 
     #[test]
@@ -147,7 +147,7 @@ mod element {
 
     #[test]
     fn should_ignore_v_on() {
-        insta::assert_snapshot!(get_compiled_string(r#"<div id="foo" @click="bar"/>"#));
+        insta::assert_snapshot!(get_compiled_string(r#"<div id="foo" @click="bar"></div>"#));
     }
 }
 

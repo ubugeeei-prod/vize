@@ -206,37 +206,35 @@ fn test_parse_self_closing() {
 }
 
 #[test]
-fn test_parse_self_closing_textarea_keeps_following_elements() {
+fn test_parse_self_closing_textarea_uses_raw_text_recovery() {
     let allocator = Bump::new();
     let source = r#"<Primitive :class="ui.root({ class: [uiProp?.root, props.class] })"><textarea :class="ui.base({ class: uiProp?.base })" /><slot :ui="ui" /><span v-if="isLeading || !!avatar || !!slots.leading"><slot><UIcon v-if="isLeading && leadingIconName" /><UAvatar v-else-if="!!avatar" /></slot></span></Primitive>"#;
     let (root, errors) = parse(&allocator, source);
 
-    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+    assert!(
+        errors.iter().any(|e| e.code == ErrorCode::ExtendPoint
+            && e.message.contains("Self-closing flag is ignored")),
+        "unexpected errors: {errors:?}"
+    );
+    assert!(errors.iter().any(|e| e.code == ErrorCode::MissingEndTag));
     assert_eq!(root.children.len(), 1);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.tag.as_str(), "Primitive");
-        assert_eq!(el.children.len(), 3);
+        assert_eq!(el.children.len(), 1);
 
         if let TemplateChildNode::Element(textarea) = &el.children[0] {
             assert_eq!(textarea.tag.as_str(), "textarea");
-            assert!(textarea.is_self_closing);
+            assert!(!textarea.is_self_closing);
+            assert_eq!(textarea.children.len(), 1);
+            if let TemplateChildNode::Text(text) = &textarea.children[0] {
+                assert!(text.content.contains("<slot"));
+                assert!(text.content.contains("</Primitive>"));
+            } else {
+                panic!("Expected textarea raw text");
+            }
         } else {
             panic!("Expected textarea element");
-        }
-
-        if let TemplateChildNode::Element(slot) = &el.children[1] {
-            assert_eq!(slot.tag.as_str(), "slot");
-            assert!(slot.is_self_closing);
-        } else {
-            panic!("Expected slot element");
-        }
-
-        if let TemplateChildNode::Element(span) = &el.children[2] {
-            assert_eq!(span.tag.as_str(), "span");
-            assert_eq!(span.children.len(), 1);
-        } else {
-            panic!("Expected span element");
         }
     } else {
         panic!("Expected Primitive element");
@@ -490,7 +488,7 @@ fn test_parse_v_for() {
 #[test]
 fn test_no_value_directive_loc_excludes_trailing_whitespace() {
     let allocator = Bump::new();
-    let (root, errors) = parse(&allocator, "<div v-if />");
+    let (root, errors) = parse(&allocator, "<input v-if />");
     assert!(errors.is_empty());
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -505,7 +503,7 @@ fn test_no_value_directive_loc_excludes_trailing_whitespace() {
 #[test]
 fn test_quoted_attribute_loc_includes_closing_quote_with_spaced_equals() {
     let allocator = Bump::new();
-    let (root, errors) = parse(&allocator, r#"<div class ="w-100" />"#);
+    let (root, errors) = parse(&allocator, r#"<input class ="w-100" />"#);
     assert!(errors.is_empty());
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -522,7 +520,7 @@ fn test_quoted_attribute_loc_includes_closing_quote_with_spaced_equals() {
 #[test]
 fn test_quoted_directive_loc_includes_closing_quote_with_spaced_equals() {
     let allocator = Bump::new();
-    let (root, errors) = parse(&allocator, r#"<div v-if ="ok" />"#);
+    let (root, errors) = parse(&allocator, r#"<input v-if ="ok" />"#);
     assert!(errors.is_empty());
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -572,7 +570,7 @@ fn test_parse_whitespace_condense_skips_comment_gaps_when_comments_disabled() {
     let allocator = Bump::new();
     let (root, errors) = parse_with_options(
         &allocator,
-        "<div><Foo />\n<!-- gap -->\n<div /></div>",
+        "<div><Foo />\n<!-- gap -->\n<input /></div>",
         ParserOptions {
             comments: false,
             ..ParserOptions::default()
@@ -629,6 +627,21 @@ fn test_parse_error_duplicate_attribute() {
     // non-fatal and emits valid render code for the first occurrence.
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, r#"<div id="a" id="b"></div>"#);
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::DuplicateAttribute)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.props.len(), 2);
+    }
+}
+
+#[test]
+fn test_parse_error_duplicate_attribute_is_ascii_case_insensitive() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div id="a" ID="b"></div>"#);
+
     assert!(
         errors
             .iter()
@@ -834,7 +847,7 @@ fn test_parse_recovers_missing_attribute_value() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Attribute(attr) = &el.props[0] {
             assert_eq!(attr.name.as_str(), "id");
-            assert!(attr.value.is_none());
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "");
         } else {
             panic!("Expected recovered attribute");
         }
@@ -1051,6 +1064,289 @@ fn test_parse_abrupt_empty_comment_reports_error_and_continues() {
         }
         assert!(matches!(&root.children[1], TemplateChildNode::Element(_)));
     }
+}
+
+#[test]
+fn test_parse_nested_comment_reports_error_and_closes_at_first_end() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<!-- <!-- nested --> -->");
+
+    assert!(errors.iter().any(|e| e.code == ErrorCode::NestedComment));
+    assert_eq!(root.children.len(), 2);
+    if let TemplateChildNode::Comment(comment) = &root.children[0] {
+        assert_eq!(comment.content.as_str(), " <!-- nested ");
+    } else {
+        panic!("Expected first node to be the recovered comment");
+    }
+    if let TemplateChildNode::Text(text) = &root.children[1] {
+        assert_eq!(text.content.as_str(), " -->");
+    } else {
+        panic!("Expected trailing close marker text");
+    }
+}
+
+#[test]
+fn test_parse_processing_instruction_reports_error_and_continues() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<?xml version="1.0"?><div></div>"#);
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::UnexpectedQuestionMarkInsteadOfTagName)
+    );
+    assert!(
+        root.children.iter().any(
+            |child| matches!(child, TemplateChildNode::Element(el) if el.tag.as_str() == "div")
+        )
+    );
+}
+
+#[test]
+fn test_parse_unexpected_solidus_before_attribute_reports_error_and_continues() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div / id=foo></div>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::UnexpectedSolidusInTag)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert!(!el.is_self_closing);
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.name.as_str(), "id");
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "foo");
+        } else {
+            panic!("Expected recovered attribute");
+        }
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_self_closing_non_void_html_element_ignores_flag() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div /><span></span>");
+
+    assert!(
+        errors.iter().any(|e| e.code == ErrorCode::ExtendPoint
+            && e.message.contains("Self-closing flag is ignored"))
+    );
+    assert!(errors.iter().any(|e| e.code == ErrorCode::MissingEndTag));
+    assert_eq!(root.children.len(), 1);
+    if let TemplateChildNode::Element(div) = &root.children[0] {
+        assert_eq!(div.tag.as_str(), "div");
+        assert!(!div.is_self_closing);
+        assert_eq!(div.children.len(), 1);
+        assert!(
+            matches!(&div.children[0], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
+        );
+    } else {
+        panic!("Expected div");
+    }
+}
+
+#[test]
+fn test_parse_custom_renderer_non_html_element_keeps_self_closing_flag() {
+    let allocator = Bump::new();
+    let (root, errors) = parse_with_options(
+        &allocator,
+        "<primitive />",
+        ParserOptions {
+            custom_renderer: true,
+            ..ParserOptions::default()
+        },
+    );
+
+    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+    assert_eq!(root.children.len(), 1);
+    if let TemplateChildNode::Element(primitive) = &root.children[0] {
+        assert_eq!(primitive.tag.as_str(), "primitive");
+        assert_eq!(primitive.tag_type, ElementType::Element);
+        assert!(primitive.is_self_closing);
+    } else {
+        panic!("Expected primitive");
+    }
+}
+
+#[test]
+fn test_parse_table_inserts_implicit_tbody() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<table><tr><td>x</td></tr></table>");
+
+    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+    let TemplateChildNode::Element(table) = &root.children[0] else {
+        panic!("Expected table");
+    };
+    assert_eq!(table.children.len(), 1);
+    let TemplateChildNode::Element(tbody) = &table.children[0] else {
+        panic!("Expected implicit tbody");
+    };
+    assert_eq!(tbody.tag.as_str(), "tbody");
+    let TemplateChildNode::Element(tr) = &tbody.children[0] else {
+        panic!("Expected tr");
+    };
+    let TemplateChildNode::Element(td) = &tr.children[0] else {
+        panic!("Expected td");
+    };
+    assert!(
+        matches!(&td.children[0], TemplateChildNode::Text(text) if text.content.as_str() == "x")
+    );
+}
+
+#[test]
+fn test_parse_table_foster_parents_unexpected_element() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<table><div>hello</div></table>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::ExtendPoint && e.message.contains("Foster parenting"))
+    );
+    assert_eq!(root.children.len(), 2);
+    assert!(
+        matches!(&root.children[0], TemplateChildNode::Element(div) if div.tag.as_str() == "div")
+    );
+    assert!(
+        matches!(&root.children[1], TemplateChildNode::Element(table) if table.tag.as_str() == "table")
+    );
+}
+
+#[test]
+fn test_parse_table_cell_keeps_normal_body_content() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<table><tr><td><div>ok</div></td></tr></table>");
+
+    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+    let TemplateChildNode::Element(table) = &root.children[0] else {
+        panic!("Expected table");
+    };
+    let TemplateChildNode::Element(tbody) = &table.children[0] else {
+        panic!("Expected tbody");
+    };
+    let TemplateChildNode::Element(tr) = &tbody.children[0] else {
+        panic!("Expected tr");
+    };
+    let TemplateChildNode::Element(td) = &tr.children[0] else {
+        panic!("Expected td");
+    };
+    assert!(
+        matches!(&td.children[0], TemplateChildNode::Element(div) if div.tag.as_str() == "div")
+    );
+}
+
+#[test]
+fn test_parse_adoption_agency_repairs_misnested_formatting() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<b>aaa<i>bbb</b>ccc</i>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::ExtendPoint && e.message.contains("adoption agency"))
+    );
+    assert_eq!(root.children.len(), 2);
+    let TemplateChildNode::Element(b) = &root.children[0] else {
+        panic!("Expected b");
+    };
+    assert_eq!(b.tag.as_str(), "b");
+    assert!(
+        matches!(&b.children[0], TemplateChildNode::Text(text) if text.content.as_str() == "aaa")
+    );
+    let TemplateChildNode::Element(inner_i) = &b.children[1] else {
+        panic!("Expected nested i");
+    };
+    assert_eq!(inner_i.tag.as_str(), "i");
+    assert!(
+        matches!(&inner_i.children[0], TemplateChildNode::Text(text) if text.content.as_str() == "bbb")
+    );
+
+    let TemplateChildNode::Element(reopened_i) = &root.children[1] else {
+        panic!("Expected reopened i");
+    };
+    assert_eq!(reopened_i.tag.as_str(), "i");
+    assert!(
+        matches!(&reopened_i.children[0], TemplateChildNode::Text(text) if text.content.as_str() == "ccc")
+    );
+}
+
+#[test]
+fn test_parse_in_body_omits_p_and_li_end_tags() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<p>a<p>b<ul><li>c<li>d</ul>");
+
+    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+    assert_eq!(root.children.len(), 3);
+    assert!(matches!(&root.children[0], TemplateChildNode::Element(p) if p.tag.as_str() == "p"));
+    assert!(matches!(&root.children[1], TemplateChildNode::Element(p) if p.tag.as_str() == "p"));
+    let TemplateChildNode::Element(ul) = &root.children[2] else {
+        panic!("Expected ul");
+    };
+    assert_eq!(ul.children.len(), 2);
+    assert!(matches!(&ul.children[0], TemplateChildNode::Element(li) if li.tag.as_str() == "li"));
+    assert!(matches!(&ul.children[1], TemplateChildNode::Element(li) if li.tag.as_str() == "li"));
+}
+
+#[test]
+fn test_parse_nested_anchor_and_button_are_split() {
+    let allocator = Bump::new();
+    let (anchor_root, anchor_errors) = parse(
+        &allocator,
+        r#"<a href="/">outer<a href="/foo">inner</a></a>"#,
+    );
+
+    assert!(
+        anchor_errors
+            .iter()
+            .any(|e| e.code == ErrorCode::ExtendPoint && e.message.contains("Nested anchor"))
+    );
+    assert_eq!(anchor_root.children.len(), 2);
+    assert!(
+        matches!(&anchor_root.children[0], TemplateChildNode::Element(a) if a.tag.as_str() == "a")
+    );
+    assert!(
+        matches!(&anchor_root.children[1], TemplateChildNode::Element(a) if a.tag.as_str() == "a")
+    );
+
+    let (button_root, button_errors) =
+        parse(&allocator, "<button>aaa<button>bbb</button></button>");
+    assert!(
+        button_errors
+            .iter()
+            .any(|e| e.code == ErrorCode::ExtendPoint && e.message.contains("Nested button"))
+    );
+    assert_eq!(button_root.children.len(), 2);
+    assert!(
+        matches!(&button_root.children[0], TemplateChildNode::Element(button) if button.tag.as_str() == "button")
+    );
+    assert!(
+        matches!(&button_root.children[1], TemplateChildNode::Element(button) if button.tag.as_str() == "button")
+    );
+}
+
+#[test]
+fn test_parse_nested_form_start_tag_is_ignored() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<form><input><form><input></form></form>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::ExtendPoint
+                && e.message.contains("ignored this start tag"))
+    );
+    assert_eq!(root.children.len(), 1);
+    let TemplateChildNode::Element(form) = &root.children[0] else {
+        panic!("Expected form");
+    };
+    assert_eq!(form.tag.as_str(), "form");
+    assert_eq!(form.children.len(), 2);
+    assert!(form.children.iter().all(
+        |child| matches!(child, TemplateChildNode::Element(input) if input.tag.as_str() == "input")
+    ));
 }
 
 #[test]

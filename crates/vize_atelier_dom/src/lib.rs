@@ -322,7 +322,7 @@ mod tests {
         let allocator = Bump::new();
         let (_, errors, result) = compile_template(
             &allocator,
-            r#"<span v-for="item in items" ref="itemEls" />"#,
+            r#"<span v-for="item in items" ref="itemEls"></span>"#,
         );
         assert!(errors.is_empty());
         let code = result.code.as_str();
@@ -355,7 +355,7 @@ mod tests {
 
         let (_, errors, result) = compile_template_with_options(
             &allocator,
-            r#"<button v-for="button in buttons" ref="buttons" :key="button" />"#,
+            r#"<button v-for="button in buttons" ref="buttons" :key="button"></button>"#,
             options,
         );
 
@@ -794,7 +794,7 @@ mod tests {
 
         let (_, errors, result) = compile_template_with_options(
             &allocator,
-            r#"<section><h2 sr-only font-bold flex="~ gap-1"><span block /></h2></section>"#,
+            r#"<section><h2 sr-only font-bold flex="~ gap-1"><span block></span></h2></section>"#,
             options,
         );
 

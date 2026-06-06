@@ -170,7 +170,11 @@ impl<'a> Parser<'a> {
     fn has_duplicate_attribute(&self, name: &str) -> bool {
         self.current_element.as_ref().is_some_and(|current| {
             current.props.iter().any(|prop| {
-                matches!(prop, PropNode::Attribute(existing) if existing.name.as_str() == name)
+                matches!(
+                    prop,
+                    PropNode::Attribute(existing)
+                        if existing.name.as_str().eq_ignore_ascii_case(name)
+                )
             })
         })
     }
@@ -212,8 +216,12 @@ impl<'a> Parser<'a> {
         {
             let value_loc = self.create_loc(v_start, v_end);
             attr_node.value = Some(TextNode::new(v_content, value_loc));
-        } else if matches!(quote, QuoteType::Double | QuoteType::Single) {
-            // alt="" or alt='' → empty string value (not boolean "true")
+        } else if matches!(
+            quote,
+            QuoteType::Double | QuoteType::Single | QuoteType::Unquoted
+        ) {
+            // alt="", alt='', or parse-recovered id= before `>` all produce
+            // empty string values (not boolean "true").
             let empty_loc: vize_relief::SourceLocation = self.create_loc(end, end);
             attr_node.value = Some(TextNode::new("", empty_loc));
         }

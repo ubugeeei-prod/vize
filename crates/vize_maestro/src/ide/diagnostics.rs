@@ -726,7 +726,7 @@ const { msg = "ok" } = defineProps<{ msg?: string }>();
         let uri = Url::parse("file:///OutOfOrder.vue").unwrap();
         state.documents.open(
             uri.clone(),
-            "<template><div /></template>\n<script setup>const count = 1</script>".to_string(),
+            "<template><div></div></template>\n<script setup>const count = 1</script>".to_string(),
             1,
             "vue".to_string(),
         );
@@ -1039,7 +1039,7 @@ const title = t("auth.missing")
         let uri = Url::parse("file:///OutOfOrder.vue").unwrap();
         state.documents.open(
             uri.clone(),
-            "<template><div /></template>\n<script setup>const count = 1</script>".to_string(),
+            "<template><div></div></template>\n<script setup>const count = 1</script>".to_string(),
             1,
             "vue".to_string(),
         );

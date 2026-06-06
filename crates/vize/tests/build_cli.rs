@@ -60,7 +60,7 @@ withDefaults(defineProps<AppProps>(), {
     :data-as="as"
     :data-as-child="asChild"
     :data-feature="feature"
-  />
+  ></div>
 </template>
 "#,
     );
@@ -131,7 +131,7 @@ export interface ContentProps extends PrimitiveProps {
 defineProps<ContentProps>()
 </script>
 
-<template><div /></template>
+<template><div></div></template>
 "#,
     );
     write_project_file(

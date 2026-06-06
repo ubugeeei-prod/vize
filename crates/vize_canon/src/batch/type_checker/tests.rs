@@ -928,7 +928,7 @@ export interface BaseProps {
 }
 </script>
 
-<template><div /></template>
+<template><div></div></template>
 "#,
             ),
             (
@@ -944,7 +944,7 @@ defineProps<{
 }>()
 </script>
 
-<template><div /></template>
+<template><div></div></template>
 "#,
             ),
             (
@@ -1017,7 +1017,7 @@ export interface ContentProps extends PrimitiveProps {
 defineProps<ContentProps>()
 </script>
 
-<template><div /></template>
+<template><div></div></template>
 "#,
             ),
             (

@@ -332,10 +332,10 @@ mod tests {
     // ===== Invalid: Block in inline =====
 
     #[test]
-    fn test_invalid_div_in_p() {
+    fn test_repaired_div_after_p() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<p><div>block</div></p>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
@@ -346,10 +346,10 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_h1_in_p() {
+    fn test_repaired_h1_after_p() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<p><h1>heading</h1></p>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
@@ -362,29 +362,29 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_flow_content_in_anchor_when_outer_context_is_phrasing() {
+    fn test_repaired_flow_content_in_anchor_when_outer_context_is_phrasing() {
         let linter = create_linter();
         let result =
             linter.lint_template(r##"<p><a href="#"><div>block</div></a></p>"##, "test.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     // ===== Invalid: Interactive nesting =====
 
     #[test]
-    fn test_invalid_a_in_a() {
+    fn test_repaired_a_in_a() {
         let linter = create_linter();
         let result =
             linter.lint_template(r##"<a href="#"><a href="#">nested</a></a>"##, "test.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
-    fn test_invalid_button_in_button() {
+    fn test_repaired_button_in_button() {
         let linter = create_linter();
         let result =
             linter.lint_template(r#"<button><button>nested</button></button>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
@@ -435,20 +435,20 @@ mod tests {
     // ===== Invalid: Table content model =====
 
     #[test]
-    fn test_invalid_div_in_table() {
+    fn test_repaired_div_in_table() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<table><div>not valid</div></table>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
-    fn test_invalid_span_in_tr() {
+    fn test_repaired_span_in_tr() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<table><tr><span>not td/th</span></tr></table>"#,
             "test.vue",
         );
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     // ===== Invalid: Select content model =====

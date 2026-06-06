@@ -219,6 +219,6 @@ const cb = defineModel<() => void>()
 </script>
 
 <template>
-  <div />
+  <div></div>
 </template>
 """

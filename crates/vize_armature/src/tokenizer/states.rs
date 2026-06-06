@@ -23,6 +23,9 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             State::Text if has_section => {
                 self.callbacks.on_text(self.section_start, self.index);
             }
+            State::InRCDATA if has_section => {
+                self.callbacks.on_text(self.section_start, self.index);
+            }
             State::Interpolation | State::InterpolationClose if has_section => {
                 self.callbacks
                     .on_error(ErrorCode::MissingInterpolationEnd, self.index);
@@ -248,6 +251,10 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.state = State::BeforeDeclaration;
             self.section_start = self.index + 1;
         } else if c == QUESTION_MARK {
+            self.callbacks.on_error(
+                ErrorCode::UnexpectedQuestionMarkInsteadOfTagName,
+                self.index,
+            );
             self.state = State::InProcessingInstruction;
             self.section_start = self.index + 1;
         } else if is_tag_start_char(c) {
@@ -282,12 +289,17 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     pub(super) fn state_in_self_closing_tag(&mut self, c: u8) {
         if c == GT {
             self.callbacks.on_self_closing_tag(self.index);
-            self.in_rcdata = false;
-            self.current_sequence = None;
-            self.sequence_index = 0;
-            self.state = State::Text;
+            if self.in_rcdata {
+                self.state = State::InRCDATA;
+            } else {
+                self.current_sequence = None;
+                self.sequence_index = 0;
+                self.state = State::Text;
+            }
             self.section_start = self.index + 1;
         } else if !is_whitespace(c) {
+            self.callbacks
+                .on_error(ErrorCode::UnexpectedSolidusInTag, self.section_start);
             self.state = State::BeforeAttrName;
             self.state_before_attr_name(c);
         }
@@ -520,7 +532,8 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         } else if c == GT {
             self.callbacks
                 .on_error(ErrorCode::MissingAttributeValue, self.index);
-            self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+            self.callbacks
+                .on_attrib_end(QuoteType::Unquoted, self.index);
             self.state = State::BeforeAttrName;
             self.state_before_attr_name(c);
         } else if !is_whitespace(c) {
@@ -692,8 +705,12 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 self.finish_comment_like(sequence);
             }
         } else if self.sequence_index == 0 {
-            // Fast-forward to the first character of the sequence
-            if self.fast_forward_to(sequence_bytes[0]) {
+            if sequence == Sequence::CommentEnd
+                && self.input.get(self.index..self.index + 4) == Some(b"<!--")
+            {
+                self.callbacks
+                    .on_error(ErrorCode::NestedComment, self.index);
+            } else if sequence != Sequence::CommentEnd && self.fast_forward_to(sequence_bytes[0]) {
                 self.sequence_index = 1;
             }
         } else if sequence == Sequence::CommentEnd

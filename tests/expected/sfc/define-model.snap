@@ -597,7 +597,7 @@ const cb = defineModel<() => void>()
 </script>
 
 <template>
-  <div />
+  <div></div>
 </template>
 --- OUTPUT ---
 import { useModel as _useModel, defineComponent as _defineComponent } from 'vue'
