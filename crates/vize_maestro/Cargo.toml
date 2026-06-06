@@ -12,6 +12,9 @@ publish = false
 default = ["native", "glyph"]
 glyph = ["dep:vize_glyph"]
 native = ["vize_canon/native"]
+# Opt-in legacy Vue (v0 / v1 / v2) editor / LSP surface. Not enabled by the
+# default Vue 3 build; turns on the type-checker-side legacy feature too.
+legacy = ["vize_canon/legacy"]
 
 [dependencies]
 # LSP Framework

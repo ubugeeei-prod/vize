@@ -19,6 +19,11 @@
 pub mod parser;
 pub mod tokenizer;
 
+/// Legacy Vue (v0 / v1 / v2) support. Gated behind the `legacy` feature and
+/// dropped from the default Vue 3 build; opt-in only.
+#[cfg(feature = "legacy")]
+pub mod legacy;
+
 pub use parser::*;
 pub use tokenizer::*;
 
