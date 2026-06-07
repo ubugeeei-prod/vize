@@ -11,6 +11,11 @@ tooling, and ecosystem experiments. In particular, thank you to:
 - [Blacksmith](https://www.blacksmith.sh/) for sponsoring high-performance CI/CD runners and
   Testbox infrastructure, giving Vize the compute needed to run frequent benchmarks and
   compatibility checks across real projects.
+- [Mates Inc.](https://eng.mates.education/) for allowing ubugeeei, its employee, to dedicate
+  discretionary work time to OSS and for adopting Vize in the build for the company's engineering
+  website.
+- [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/) for supporting
+  open-source maintainers through a program that helps keep critical OSS development moving.
 - [かっこかり](https://github.com/kakkokari-gtyih) for continuously testing Vize's compiler and
   Vite Plugin on [Misskey](https://github.com/misskey-dev/misskey) — a Vue application with
   ~103k lines of Vue across 586 SFCs — and sending timely reports as the implementation changed
@@ -39,3 +44,7 @@ tooling, and ecosystem experiments. In particular, thank you to:
 Thanks also to everyone who has mentioned, shared, tested, or amplified Vize in the community, and
 to everyone connected to that work. Those signals make it easier to see where the toolchain is
 useful, where it breaks, and what it should become next.
+
+Vize is a personal project by ubugeeei, licensed under the MIT License and maintained as a
+non-commercial OSS effort. It is not owned by any specific company, is intended to remain open, and
+is not being built with a buyout in mind.
