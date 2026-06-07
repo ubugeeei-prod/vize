@@ -107,7 +107,7 @@ This is still an alpha, and a few limitations are important to call out clearly:
 
 - Oxlint JS plugins currently rely on the extracted Vue script program, so files without `<script>` or `<script setup>` do not invoke the plugin yet.
 - Diagnostic anchors still point at the script program when Oxlint cannot accept the original template range directly.
-- The current package targets Node 24+.
+- The initial alpha package targeted Node 24+; current releases support Node 22 and Node 24+.
 - Oxlint's JS plugin support is itself still evolving, so some rough edges here are upstream constraints rather than Vize-only behavior.
 
 ## Why Alpha Now

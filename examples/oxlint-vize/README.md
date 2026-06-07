@@ -5,7 +5,7 @@ The local scripts use the temporary `oxlint-vize` wrapper workflow so scriptless
 
 ## Prerequisites
 
-This example uses the locally built Vize Oxlint plugin bundle and `@vizejs/native`. It assumes Node 24+ and the repository's `.node-version`, and the example scripts rebuild dependencies automatically. If you want to build them up front from the repository root:
+This example uses the locally built Vize Oxlint plugin bundle and `@vizejs/native`. It supports Node 22 and Node 24+, while the repository's `.node-version` remains the default local runtime. The example scripts rebuild dependencies automatically. If you want to build them up front from the repository root:
 
 ```bash
 vp install

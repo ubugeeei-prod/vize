@@ -52,7 +52,7 @@ test("current and pinned Node runtimes are represented in the support matrix", (
   assert.ok(supportedNodeMajors.includes(pinnedMajor as (typeof supportedNodeMajors)[number]));
 });
 
-test("Node 22 is the default public package floor and Node 24 is explicit opt-in", () => {
+test("Node 22 is the public package floor", () => {
   const floors = new Map<string, number>();
   for (const { packageJson } of readNpmPackages()) {
     if (packageJson.private === true || packageJson.engines?.vscode != null) {
@@ -65,9 +65,7 @@ test("Node 22 is the default public package floor and Node 24 is explicit opt-in
     floors.set(name, parseNodeEngineFloor(engine) ?? 0);
   }
 
-  assert.equal(floors.get("oxlint-plugin-vize"), 24);
   for (const [name, floor] of floors) {
-    if (name === "oxlint-plugin-vize") continue;
     assert.equal(floor, 22, `${name} should stay on the Node 22 floor`);
   }
 });
@@ -87,9 +85,25 @@ function readNpmPackages(): Array<{ packageDir: string; packageJson: PackageJson
 }
 
 function parseNodeEngineFloor(engine: string): number | null {
-  const match = engine.match(/^>=(\d+)$/);
-  if (match == null) {
+  const floors = engine.split("||").map((part) => parseSimpleNodeEngineRange(part.trim()));
+
+  if (floors.length === 0 || floors.some((floor) => floor == null)) {
     return null;
   }
-  return Number.parseInt(match[1], 10);
+
+  return Math.min(...(floors as number[]));
+}
+
+function parseSimpleNodeEngineRange(range: string): number | null {
+  const gteMatch = range.match(/^>=\s*(\d+)$/);
+  if (gteMatch != null) {
+    return Number.parseInt(gteMatch[1], 10);
+  }
+
+  const caretMatch = range.match(/^\^(\d+)$/);
+  if (caretMatch != null) {
+    return Number.parseInt(caretMatch[1], 10);
+  }
+
+  return null;
 }

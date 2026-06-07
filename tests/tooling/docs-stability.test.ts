@@ -12,7 +12,7 @@ test("stability page documents v1 alpha support tiers", () => {
   assert.match(stability, /# Stability/);
   assert.match(stability, /v1 alpha/);
   assert.match(stability, /Node 22/);
-  assert.match(stability, /`oxlint-plugin-vize`[\s\S]*Node 24/);
+  assert.match(stability, /`oxlint-plugin-vize`[\s\S]*`\^22 \|\| >= 24`/);
   assert.match(stability, /linux-arm64-gnu/);
   assert.match(stability, /win32-arm64-msvc/);
   assert.match(stability, /linux-x64-musl/);

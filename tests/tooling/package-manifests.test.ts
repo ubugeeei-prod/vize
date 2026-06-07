@@ -551,8 +551,10 @@ test("workspace TypeScript package builds use vp pack", () => {
   const oxlintPackage = JSON.parse(
     fs.readFileSync(path.join(root, "npm/oxlint-plugin-vize/package.json"), "utf-8"),
   ) as {
+    engines?: Record<string, string>;
     scripts?: Record<string, string>;
   };
+  assert.equal(oxlintPackage.engines?.node, "^22 || >= 24");
   assert.equal(oxlintPackage.scripts?.test, "vp pack && node src/test.ts");
 
   const rootTasks = fs.readFileSync(path.join(root, "tools/vite-plus/tasks/build.ts"), "utf-8");

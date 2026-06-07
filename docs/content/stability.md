@@ -32,8 +32,9 @@ The v1 alpha line uses these rules:
 
 ## Runtime Support
 
-The default Node.js floor for public npm runtime packages is Node 22. `oxlint-plugin-vize` is the
-exception and requires Node 24 because it follows Oxlint's JavaScript plugin runtime.
+The default Node.js floor for public npm runtime packages is Node 22, including
+`oxlint-plugin-vize`. The Oxlint plugin declares `^22 || >= 24` so Node 22 and Node 24 or newer are
+allowed while Node 23 stays outside the tested compatibility matrix.
 
 The release workflow builds native packages for macOS, Linux, and Windows across x64 and arm64
 where the package declares support. CI compatibility jobs cover the declared Node floor and the
