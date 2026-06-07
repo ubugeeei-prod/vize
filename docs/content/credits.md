@@ -18,8 +18,9 @@ tooling, and ecosystem experiments. In particular, thank you to:
 - [ushironoko](https://github.com/ushironoko) for bug reports from the compiler, linter, and CLI
   sides of the project, along with reference implementations for fixes and reproduction
   repositories for difficult issues.
-- [dannote](https://github.com/dannote) for feedback and pull requests from the Elixier ecosystem,
-  especially for CSS-facing APIs and bug fixes.
+- [dannote](https://github.com/dannote) for bringing Vize into the Elixir community through
+  [Volt](https://hexdocs.pm/volt/readme.html), an Elixir-native frontend toolchain built on Vize,
+  and for reporting missing pieces and sending PRs as Volt adopted Vize as a foundation.
 - [umbrella22](https://github.com/umbrella22) for shaping the Rspack Plugin integration through
   real-project validation, reports about native CSS handling, compatibility feedback across Rspack
   1.x and 2.x, and guidance on defaults that keep newer native CSS behavior usable without

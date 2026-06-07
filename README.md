@@ -90,7 +90,9 @@ Special thanks to:
   ([report](https://github.com/ubugeeei-prod/vize/discussions/71)).
 - [ushironoko](https://github.com/ushironoko) for compiler, linter, and CLI bug reports,
   reference implementations, and reproduction repositories.
-- [dannote](https://github.com/dannote) for Elixier feedback, PRs, and CSS-facing fixes.
+- [dannote](https://github.com/dannote) for bringing Vize into the Elixir community through
+  [Volt](https://hexdocs.pm/volt/readme.html), an Elixir-native frontend toolchain built on Vize,
+  and for reporting missing pieces and sending PRs as Volt adopted Vize as a foundation.
 - [n13u](https://x.com/%5Fn13u%5F) and `#frontend_phpcon_do` for persistently reporting bugs while
   building a Nuxt-based conference website with Vize, then carrying that validation all the way to
   production adoption
