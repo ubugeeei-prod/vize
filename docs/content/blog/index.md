@@ -37,6 +37,10 @@ The Vize docs now have two writing lanes:
 ## Latest Posts
 
 <div class="blog-post-list">
+  <a class="blog-post-list-item" href="./notes/2026-06-07-real-world-testing/">
+    <strong>Real World Testing</strong>
+    <span>Vize enters the Real World Testing phase — real projects are the test suite now, with a clear roadmap to v1.0.0.</span>
+  </a>
   <a class="blog-post-list-item" href="./notes/2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint/">
     <strong>Tooling Compare</strong>
     <span>A practical comparison of Vize and nearby projects across official Vue tooling, Oxc, Golar, Verter, Flint, and TSSLint.</span>

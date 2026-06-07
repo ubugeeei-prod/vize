@@ -17,6 +17,10 @@ Use this section for writing that does not fit a release announcement: architect
 ## Posts
 
 <div class="blog-post-list">
+  <a class="blog-post-list-item" href="./2026-06-07-real-world-testing/">
+    <strong>Real World Testing</strong>
+    <span>Vize enters the Real World Testing phase — real projects are the test suite now, with a clear roadmap to v1.0.0.</span>
+  </a>
   <a class="blog-post-list-item" href="./2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint/">
     <strong>Tooling Compare</strong>
     <span>A practical comparison of Vize and nearby projects across official Vue tooling, Oxc, Golar, Verter, Flint, and TSSLint.</span>
