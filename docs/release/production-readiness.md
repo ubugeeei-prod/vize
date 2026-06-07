@@ -21,9 +21,9 @@ These surfaces are on the roadmap as production-ready targets. They are **not ye
 implemented** and must not be described as production-ready until they are built and
 clear every required gate below for their scope:
 
-| Surface                                | Target tier   | Status                                                                                              |
-| -------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------- |
-| Zero-JavaScript prerenderer (Island)   | Alpha-supported | Planned. Island-architecture prerendering that emits zero client JavaScript for static islands. |
+| Surface                              | Target tier     | Status                                                                                          |
+| ------------------------------------ | --------------- | ----------------------------------------------------------------------------------------------- |
+| Zero-JavaScript prerenderer (Island) | Alpha-supported | Planned. Island-architecture prerendering that emits zero client JavaScript for static islands. |
 
 Experimental opt-in surfaces tracked alongside this work (Vapor compiler mode, Vapor
 mode Options API, and the standalone CDN build) are listed in the
