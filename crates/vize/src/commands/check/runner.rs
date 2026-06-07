@@ -76,6 +76,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     } else {
         crate::config::load_config_with_features_and_source(args.config.as_deref())
     };
+    // Vue 3 Options API binding resolution is officially supported and is a
+    // standard-build opt-in (not the `legacy` feature).
+    let options_api = loaded_config.features.type_checker_options_api;
     // Legacy Vue 2.7 / Nuxt 2 Options-API type checking is opt-in and compiled out
     // of the default Vue 3 binary. Without the `legacy` feature, honor the config
     // flag by warning instead of silently ignoring it.
@@ -245,6 +248,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             std::process::exit(1);
         }
     };
+    if options_api {
+        checker.enable_options_api();
+    }
     #[cfg(feature = "legacy")]
     if legacy_vue2 {
         checker.enable_legacy_vue2();

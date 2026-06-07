@@ -142,7 +142,13 @@ impl BatchTypeChecker {
         })
     }
 
-    /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for generated virtual files.
+    /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
+    pub fn enable_options_api(&mut self) {
+        self.project.set_options_api(true);
+    }
+
+    /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for generated virtual
+    /// files (implies Options API binding resolution plus Nuxt 2 globals).
     pub fn enable_legacy_vue2(&mut self) {
         self.project.set_legacy_vue2(true);
     }

@@ -107,6 +107,9 @@ impl Default for VirtualTsCheckOptions {
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct VirtualTsGenerationOptions {
     pub(crate) check_options: VirtualTsCheckOptions,
+    /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
+    pub(crate) options_api: bool,
+    /// Legacy Vue 2.7 / Nuxt 2 (implies `options_api` plus Nuxt 2 globals).
     pub(crate) legacy_vue2: bool,
 }
 

@@ -46,14 +46,17 @@ mod virtual_ts;
 pub use analysis::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity,
 };
-pub use runner::{type_check_sfc, type_check_sfc_with_legacy_vue2};
+pub use runner::{
+    type_check_sfc, type_check_sfc_with_legacy_vue2, type_check_sfc_with_options_api,
+};
 
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "legacy")]
     use super::type_check_sfc_with_legacy_vue2;
     use super::{
-        SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity, type_check_sfc,
+        SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity,
+        type_check_sfc, type_check_sfc_with_options_api,
     };
 
     fn stable_snapshot_result(mut result: SfcTypeCheckResult) -> SfcTypeCheckResult {
@@ -410,6 +413,77 @@ export const buttonId =
                 .any(|d| d.code.as_deref() == Some("undefined-binding")),
             "unexpected diagnostics: {:#?}",
             result.diagnostics
+        );
+    }
+
+    #[test]
+    fn test_type_check_options_api_opt_in_standard_build() {
+        // Vue 3 Options API in a normal <script> — officially supported, opt-in,
+        // and resolvable in the standard build (no `legacy` feature).
+        let source = r#"<script lang="ts">
+export default {
+  props: ['message'],
+  data() {
+    return { count: 1 }
+  },
+  computed: {
+    doubled() {
+      return this.count * 2
+    }
+  },
+  methods: {
+    save() {}
+  }
+}
+</script>
+<template>
+  <div>{{ message }} {{ count }} {{ doubled }}<button @click="save">go</button></div>
+</template>"#;
+
+        // Without the opt-in, the Options API members are unknown in the template.
+        let default_result = type_check_sfc(source, &SfcTypeCheckOptions::new("Options.vue"));
+        let _oa = type_check_sfc_with_options_api(source, &SfcTypeCheckOptions::new("Options.vue"));
+        eprintln!(
+            "OPTIONS_API codes: {:?}",
+            _oa.diagnostics
+                .iter()
+                .map(|d| (d.code.clone(), d.message.clone()))
+                .collect::<Vec<_>>()
+        );
+        assert!(
+            default_result
+                .diagnostics
+                .iter()
+                .any(|d| d.code.as_deref() == Some("undefined-binding")),
+            "expected default mode to leave Options API bindings unresolved"
+        );
+
+        // With the opt-in, the Options API bindings resolve — no undefined-binding.
+        let options_api_result =
+            type_check_sfc_with_options_api(source, &SfcTypeCheckOptions::new("Options.vue"));
+        assert!(
+            !options_api_result
+                .diagnostics
+                .iter()
+                .any(|d| d.code.as_deref() == Some("undefined-binding")),
+            "unexpected diagnostics: {:#?}",
+            options_api_result.diagnostics
+        );
+
+        // Nuxt 2 globals stay legacy-only: `$route` is NOT resolved by the
+        // standard Options API opt-in.
+        let nuxt_source = r#"<script lang="ts">
+export default { data() { return { count: 1 } } }
+</script>
+<template><div>{{ count }}{{ $route.path }}</div></template>"#;
+        let nuxt_result =
+            type_check_sfc_with_options_api(nuxt_source, &SfcTypeCheckOptions::new("Nuxt.vue"));
+        assert!(
+            nuxt_result
+                .diagnostics
+                .iter()
+                .any(|d| d.code.as_deref() == Some("undefined-binding")),
+            "expected $route to remain unresolved without legacy mode"
         );
     }
 

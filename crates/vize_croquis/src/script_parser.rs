@@ -125,7 +125,13 @@ pub struct ScriptParseResult {
 /// Options for plain script parsing.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ScriptParserOptions {
-    /// Extract Vue 2.7 / Nuxt 2 Options API template bindings.
+    /// Resolve Options API template bindings (`data`/`computed`/`methods`/
+    /// `inject`/`setup`/`props`). This is officially supported in Vue 3 and is
+    /// an opt-in for the standard build — it does **not** require the `legacy`
+    /// feature.
+    pub options_api: bool,
+    /// Additionally treat the component as legacy Vue 2.7 / Nuxt 2: implies
+    /// `options_api` binding resolution and adds Nuxt 2 template globals.
     pub legacy_vue2: bool,
 }
 
@@ -468,7 +474,12 @@ pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> 
         source_len,
     );
 
-    process::collect_options_api_component_metadata(&mut result, &ret.program, options.legacy_vue2);
+    process::collect_options_api_component_metadata(
+        &mut result,
+        &ret.program,
+        options.options_api,
+        options.legacy_vue2,
+    );
 
     // Process all statements
     profile!("croquis.script_plain.walk_statements", {
@@ -865,7 +876,13 @@ export default {
   }
 }
 "#;
-        let result = parse_script_with_options(source, ScriptParserOptions { legacy_vue2: true });
+        let result = parse_script_with_options(
+            source,
+            ScriptParserOptions {
+                options_api: false,
+                legacy_vue2: true,
+            },
+        );
 
         for name in [
             "message",

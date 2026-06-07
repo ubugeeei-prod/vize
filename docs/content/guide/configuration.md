@@ -274,9 +274,21 @@ export default defineConfig({
     checkProps: true,
     checkEmits: true,
     checkTemplateBindings: true,
+    // Resolve Vue 3 Options API template bindings (data/computed/methods/
+    // inject/setup/props). Officially supported in Vue 3, opt-in, default off.
+    optionsApi: false,
   },
 });
 ```
+
+`typeChecker.optionsApi` opts the type checker into resolving Vue 3 Options API
+template bindings (`data`/`computed`/`methods`/`inject`/`setup`/`props` declared
+on a normal `<script> export default { ... }`). Options API is officially
+supported in Vue 3, so this lives in the standard build (it is **not** the
+`legacy` feature). It is off by default because most Vize projects use
+`<script setup>`. Legacy Vue 2.7 / Nuxt 2 support — `typeChecker.legacyVue2`,
+which additionally adds the Nuxt 2 template globals — remains a separate opt-in
+that requires a `legacy` build.
 
 `typeChecker.tsconfig` and `typeChecker.corsaPath` are part of the shared schema, but the
 project-backed Corsa path is the Rust CLI surface today. `typeChecker.corsaPath` is shared by

@@ -19,7 +19,7 @@ mod types;
 pub(crate) use generator::generate_virtual_ts_with_offsets_and_checks;
 pub use generator::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
-    generate_virtual_ts_with_offsets_legacy_vue2,
+    generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
 };
 pub(crate) use props::extract_interface_fields;
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping};

@@ -71,6 +71,30 @@ pub fn generate_virtual_ts_with_offsets(
     )
 }
 
+/// Generate virtual TypeScript with Vue 3 Options API binding resolution
+/// enabled (opt-in, standard build — no `legacy` feature required).
+pub fn generate_virtual_ts_with_offsets_options_api(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::ast::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+) -> VirtualTsOutput {
+    generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsGenerationOptions {
+            options_api: true,
+            ..Default::default()
+        },
+    )
+}
+
 /// Generate virtual TypeScript with Vue 2.7 / Nuxt 2 compatibility enabled.
 pub fn generate_virtual_ts_with_offsets_legacy_vue2(
     summary: &Croquis,
@@ -105,6 +129,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 ) -> VirtualTsOutput {
     let check_options = generation_options.check_options;
     let legacy_vue2 = generation_options.legacy_vue2;
+    let options_api = generation_options.options_api || legacy_vue2;
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
 
@@ -518,10 +543,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 "canon.virtual_ts.generate_props_variables",
                 generate_props_variables(&mut ts, summary, script_content, generic_param)
             );
-            if legacy_vue2 {
+            if options_api {
                 profile!(
-                    "canon.virtual_ts.generate_legacy_vue2_variables",
-                    generate_legacy_vue2_variables(&mut ts, summary, options)
+                    "canon.virtual_ts.generate_options_api_variables",
+                    generate_options_api_variables(&mut ts, summary, options)
                 );
             }
             let template_prop_names = profile!(
@@ -929,8 +954,12 @@ fn is_local_setup_binding(summary: &Croquis, name: &str) -> bool {
         .any(|import| start >= import.start && end <= import.end)
 }
 
-#[cfg(feature = "legacy")]
-fn generate_legacy_vue2_variables(
+// Emit `const <name>: any` declarations for Options API template bindings
+// (`data`/`computed`/`methods`/`inject`/`setup`/`props`, plus any Nuxt 2 globals
+// the legacy path collected). Options API is officially supported in Vue 3, so
+// this is part of the standard build and driven by a runtime opt-in — it costs
+// nothing unless the caller enables Options API / legacy checking.
+fn generate_options_api_variables(
     mut ts: &mut String,
     summary: &Croquis,
     options: &VirtualTsOptions,
@@ -968,7 +997,7 @@ fn generate_legacy_vue2_variables(
         return;
     }
 
-    ts.push_str("  // Vue 2.7 / Nuxt 2 Options API template bindings\n");
+    ts.push_str("  // Options API template bindings\n");
     for name in &names {
         append!(ts, "  const {name}: any = undefined as any;\n");
     }
@@ -979,17 +1008,6 @@ fn generate_legacy_vue2_variables(
     ts.push('\n');
 }
 
-// No-op stub: legacy Vue (v0/v1/v2) Options-API variable generation is compiled
-// out without the `legacy` feature, so the default Vue 3 build carries none of it.
-#[cfg(not(feature = "legacy"))]
-fn generate_legacy_vue2_variables(
-    _ts: &mut String,
-    _summary: &Croquis,
-    _options: &VirtualTsOptions,
-) {
-}
-
-#[cfg(feature = "legacy")]
 fn is_safe_value_identifier(name: &str) -> bool {
     let mut chars = name.chars();
     let Some(first) = chars.next() else {

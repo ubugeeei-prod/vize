@@ -29,6 +29,7 @@ use vize_atelier_sfc::{
     croquis::{
         SfcCroquisOptions, analyze_sfc_descriptor_with_context,
         analyze_sfc_descriptor_with_context_legacy_vue2,
+        analyze_sfc_descriptor_with_context_options_api,
     },
     parse_sfc,
     script::ScriptCompileContext,
@@ -95,6 +96,7 @@ pub struct VirtualProject {
     virtual_ts_check_options: VirtualTsCheckOptions,
 
     /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for virtual files.
+    options_api: bool,
     legacy_vue2: bool,
 
     /// Virtual files keyed by materialized path.
@@ -142,6 +144,7 @@ impl VirtualProject {
             tsconfig_path: None,
             virtual_ts_options: VirtualTsOptions::default(),
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
+            options_api: false,
             legacy_vue2: false,
             virtual_files: FxHashMap::default(),
             passthrough_files: FxHashMap::default(),
@@ -164,6 +167,10 @@ impl VirtualProject {
 
     pub(crate) fn set_virtual_ts_check_options(&mut self, options: VirtualTsCheckOptions) {
         self.virtual_ts_check_options = options;
+    }
+
+    pub(crate) fn set_options_api(&mut self, enabled: bool) {
+        self.options_api = enabled;
     }
 
     pub(crate) fn set_legacy_vue2(&mut self, enabled: bool) {
@@ -196,6 +203,7 @@ impl VirtualProject {
                 virtual_root: &self.virtual_root,
                 virtual_ts_options: &self.virtual_ts_options,
                 virtual_ts_check_options: self.virtual_ts_check_options,
+                options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
                 rewriter: &self.rewriter,
             },
@@ -237,6 +245,7 @@ impl VirtualProject {
             virtual_root: self.virtual_root.as_path(),
             virtual_ts_options: &self.virtual_ts_options,
             virtual_ts_check_options: self.virtual_ts_check_options,
+            options_api: self.options_api,
             legacy_vue2: self.legacy_vue2,
             rewriter: &self.rewriter,
         };
@@ -266,6 +275,7 @@ impl VirtualProject {
                 virtual_root: &self.virtual_root,
                 virtual_ts_options: &self.virtual_ts_options,
                 virtual_ts_check_options: self.virtual_ts_check_options,
+                options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
                 rewriter: &self.rewriter,
             },
@@ -855,6 +865,7 @@ fn generate_vue_virtual_ts(
     descriptor: &SfcDescriptor,
     options: &VirtualTsOptions,
     check_options: VirtualTsCheckOptions,
+    options_api: bool,
     legacy_vue2: bool,
 ) -> CorsaResult<GeneratedVueFile> {
     let allocator = Bump::new();
@@ -940,6 +951,12 @@ fn generate_vue_virtual_ts(
                 template_ast.as_ref(),
                 croquis_options,
             )
+        } else if options_api {
+            analyze_sfc_descriptor_with_context_options_api(
+                descriptor,
+                template_ast.as_ref(),
+                croquis_options,
+            )
         } else {
             analyze_sfc_descriptor_with_context(descriptor, template_ast.as_ref(), croquis_options)
         }
@@ -965,6 +982,7 @@ fn generate_vue_virtual_ts(
             options,
             VirtualTsGenerationOptions {
                 check_options,
+                options_api,
                 legacy_vue2,
             },
         )
@@ -1278,6 +1296,7 @@ struct VirtualBuildContext<'a> {
     virtual_root: &'a Path,
     virtual_ts_options: &'a VirtualTsOptions,
     virtual_ts_check_options: VirtualTsCheckOptions,
+    options_api: bool,
     legacy_vue2: bool,
     rewriter: &'a ImportRewriter,
 }
@@ -1346,6 +1365,7 @@ fn build_vue_registered_file(
             &descriptor,
             &effective_options,
             context.virtual_ts_check_options,
+            context.options_api,
             context.legacy_vue2,
         )
     )?;

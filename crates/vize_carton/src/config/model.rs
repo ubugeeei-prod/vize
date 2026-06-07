@@ -53,6 +53,9 @@ pub struct VizeConfig {
 /// model fields.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct ConfigFeatureFlags {
+    /// Resolve Vue 3 Options API template bindings during type checking. Opt-in
+    /// and available in the standard build (not a legacy feature).
+    pub type_checker_options_api: bool,
     pub type_checker_legacy_vue2: bool,
     pub language_server_legacy_vue2: Option<bool>,
 }
@@ -84,6 +87,7 @@ pub(crate) struct RawVizeConfig {
 struct RawTypeCheckerConfig {
     #[serde(flatten)]
     config: TypeCheckerConfig,
+    options_api: bool,
     legacy_vue2: bool,
 }
 
@@ -121,6 +125,7 @@ impl RawVizeConfig {
             legacy_lsp,
         } = self;
 
+        let type_checker_options_api = raw_type_checker.options_api;
         let type_checker_legacy_vue2 = raw_type_checker.legacy_vue2;
         let mut type_checker = raw_type_checker.config;
         if let Some(legacy_check) = legacy_check {
@@ -145,6 +150,7 @@ impl RawVizeConfig {
         };
         let language_server = language_server_raw.config;
         let features = ConfigFeatureFlags {
+            type_checker_options_api,
             type_checker_legacy_vue2,
             language_server_legacy_vue2: language_server_raw.legacy_vue2,
         };

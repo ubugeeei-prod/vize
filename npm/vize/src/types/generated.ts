@@ -236,6 +236,10 @@ export interface TypeCheckerConfig {
    */
   checkFallthroughAttrs?: boolean;
   /**
+   * Resolve Vue 3 Options API template bindings (data/computed/methods/inject/setup/props) during type checking. Opt-in; available in the standard build (not a legacy feature).
+   */
+  optionsApi?: boolean;
+  /**
    * Enable Vue 2.7 / Nuxt 2 Options API template binding support
    */
   legacyVue2?: boolean;

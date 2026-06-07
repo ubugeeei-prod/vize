@@ -28,7 +28,16 @@ use super::{
 ///
 /// For full TypeScript type checking with Corsa, use `TypeCheckService`.
 pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeCheckResult {
-    type_check_sfc_impl(source, options, false)
+    type_check_sfc_impl(source, options, false, false)
+}
+
+/// Perform type checking on a Vue SFC with Vue 3 Options API binding resolution
+/// enabled (opt-in, standard build — no `legacy` feature required).
+pub fn type_check_sfc_with_options_api(
+    source: &str,
+    options: &SfcTypeCheckOptions,
+) -> SfcTypeCheckResult {
+    type_check_sfc_impl(source, options, true, false)
 }
 
 /// Perform type checking on a Vue SFC with Vue 2.7 / Nuxt 2 compatibility enabled.
@@ -36,12 +45,13 @@ pub fn type_check_sfc_with_legacy_vue2(
     source: &str,
     options: &SfcTypeCheckOptions,
 ) -> SfcTypeCheckResult {
-    type_check_sfc_impl(source, options, true)
+    type_check_sfc_impl(source, options, false, true)
 }
 
 fn type_check_sfc_impl(
     source: &str,
     options: &SfcTypeCheckOptions,
+    options_api: bool,
     legacy_vue2: bool,
 ) -> SfcTypeCheckResult {
     use vize_atelier_core::parser::parse;
@@ -50,6 +60,7 @@ fn type_check_sfc_impl(
         croquis::{
             SfcCroquisOptions, analyze_sfc_descriptor_with_context,
             analyze_sfc_descriptor_with_context_legacy_vue2,
+            analyze_sfc_descriptor_with_context_options_api,
         },
         parse_sfc,
     };
@@ -147,6 +158,12 @@ fn type_check_sfc_impl(
             template_ast.as_ref(),
             croquis_options,
         )
+    } else if options_api {
+        analyze_sfc_descriptor_with_context_options_api(
+            &descriptor,
+            template_ast.as_ref(),
+            croquis_options,
+        )
     } else {
         analyze_sfc_descriptor_with_context(&descriptor, template_ast.as_ref(), croquis_options)
     };
@@ -193,6 +210,16 @@ fn type_check_sfc_impl(
     if options.include_virtual_ts && !has_template_parse_errors && !has_script_parse_errors {
         result.virtual_ts = Some(if legacy_vue2 {
             generate_virtual_ts_with_offsets_legacy_vue2(
+                &summary,
+                script_content.as_deref(),
+                template_ast.as_ref(),
+                script_offset,
+                template_offset,
+                &crate::virtual_ts::VirtualTsOptions::default(),
+            )
+            .code
+        } else if options_api {
+            crate::virtual_ts::generate_virtual_ts_with_offsets_options_api(
                 &summary,
                 script_content.as_deref(),
                 template_ast.as_ref(),

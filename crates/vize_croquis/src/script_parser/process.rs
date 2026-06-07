@@ -342,6 +342,7 @@ struct ComponentOptionsRef<'a> {
 pub(in crate::script_parser) fn collect_options_api_component_metadata(
     result: &mut ScriptParseResult,
     program: &Program<'_>,
+    options_api: bool,
     legacy_vue2: bool,
 ) {
     let mut object_bindings = FxHashMap::default();
@@ -361,8 +362,10 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
             continue;
         };
         collect_component_registrations_from_options(result, options.object, &object_bindings);
-        if legacy_vue2 {
-            collect_legacy_vue2_template_bindings_from_options(
+        // Options API template bindings are valid in Vue 3 too; legacy Vue 2.7
+        // implies them and additionally pulls in the Nuxt 2 globals below.
+        if options_api || legacy_vue2 {
+            collect_options_api_template_bindings_from_options(
                 result,
                 options.object,
                 &object_bindings,
@@ -453,7 +456,7 @@ fn collect_component_registrations_from_options<'a>(
     );
 }
 
-fn collect_legacy_vue2_template_bindings_from_options<'a>(
+fn collect_options_api_template_bindings_from_options<'a>(
     result: &mut ScriptParseResult,
     options: &'a ObjectExpression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,

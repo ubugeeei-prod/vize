@@ -102,6 +102,9 @@ impl AnalyzerOptions {
 /// Uses lazy evaluation and efficient data structures to minimize overhead.
 pub struct Analyzer {
     pub(crate) options: AnalyzerOptions,
+    /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
+    pub(crate) options_api: bool,
+    /// Legacy Vue 2.7 / Nuxt 2: implies `options_api` plus Nuxt 2 globals.
     pub(crate) legacy_vue2: bool,
     pub(crate) summary: Croquis,
     /// Track if script was analyzed (for undefined detection)
@@ -145,6 +148,7 @@ impl Analyzer {
     pub fn with_options(options: AnalyzerOptions) -> Self {
         Self {
             options,
+            options_api: false,
             legacy_vue2: false,
             summary: Croquis::new(),
             script_analyzed: false,
@@ -164,6 +168,7 @@ impl Analyzer {
     pub fn with_summary(options: AnalyzerOptions, summary: Croquis, script_analyzed: bool) -> Self {
         Self {
             options,
+            options_api: false,
             legacy_vue2: false,
             summary,
             script_analyzed,
@@ -175,7 +180,14 @@ impl Analyzer {
         }
     }
 
-    /// Enable Vue 2.7 / Nuxt 2 compatibility helpers.
+    /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
+    #[inline]
+    pub fn with_options_api(mut self) -> Self {
+        self.options_api = true;
+        self
+    }
+
+    /// Enable Vue 2.7 / Nuxt 2 compatibility helpers (implies Options API).
     #[inline]
     pub fn with_legacy_vue2(mut self) -> Self {
         self.legacy_vue2 = true;
@@ -270,6 +282,7 @@ impl Analyzer {
             crate::script_parser::parse_script_with_options(
                 source,
                 crate::script_parser::ScriptParserOptions {
+                    options_api: self.options_api,
                     legacy_vue2: self.legacy_vue2,
                 }
             )

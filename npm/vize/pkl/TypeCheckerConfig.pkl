@@ -29,6 +29,11 @@ class TypeCheckerConfig {
   /// Check fallthrough attrs on multi-root templates.
   checkFallthroughAttrs: Boolean = true
 
+  /// Resolve Vue 3 Options API template bindings (`data`/`computed`/`methods`/
+  /// `inject`/`setup`/`props`) during type checking. Officially supported in
+  /// Vue 3; opt-in and available in the standard build (not a legacy feature).
+  optionsApi: Boolean = false
+
   /// Enable Vue 2.7 / Nuxt 2 Options API template binding support.
   legacyVue2: Boolean = false
 
