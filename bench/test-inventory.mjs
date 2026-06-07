@@ -253,7 +253,10 @@ export function collectInventory(root = process.cwd()) {
     const extension = path.extname(relativePath);
     let group = null;
 
-    if (relativePath.startsWith("tests/fixtures/") && (extension === ".toml" || extension === ".pkl")) {
+    if (
+      relativePath.startsWith("tests/fixtures/") &&
+      (extension === ".toml" || extension === ".pkl")
+    ) {
       group = collectFixtureCases(root, absolute);
     } else if (extension === ".rs") {
       group = collectRustTests(root, absolute);
