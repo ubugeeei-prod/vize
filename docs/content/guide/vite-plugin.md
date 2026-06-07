@@ -21,7 +21,7 @@ vp install -D @vizejs/vite-plugin
 ```
 
 Add `vize` as a direct dependency only if your project imports shared config helpers from `"vize"`
-or runs the npm CLI through `vp exec vize`.
+or exposes package scripts such as `vize:lint` and `vize:check`.
 
 ## Basic Usage
 
@@ -67,7 +67,8 @@ For most projects, keep direct plugin options small and put stable compiler sett
 
 ## Shared Config
 
-The recommended shared entry point is `vize`. A single `vize.config.*` file is read by both the npm CLI and `@vizejs/vite-plugin`.
+The recommended shared entry point is `vize`. A single `vize.config.*` file is read by both the npm
+package commands and `@vizejs/vite-plugin`.
 
 ```bash
 vp install -D vize

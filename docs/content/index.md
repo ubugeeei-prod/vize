@@ -33,10 +33,10 @@ features:
     details: Configure compiler options, Vite scanning, lint presets, type checking, formatting, LSP features, and Musea from `vize.config.*`.
     link: guide/configuration.md
   - title: Native Type Checking
-    details: "`vize check` runs through `vize_canon` and Corsa project sessions backed by `corsa-bind`, keeping Vue-aware diagnostics on a native path."
+    details: "`vize:check` package scripts run through `vize_canon` and Corsa project sessions backed by `corsa-bind`, keeping Vue-aware diagnostics on a native path."
     link: guide/static-analysis.md
-  - title: CLI Reference
-    details: Compile, format, lint, and type-check Vue SFC files from native commands when scripts or terminal workflows are the right entry point.
+  - title: Package Scripts and CLI Reference
+    details: Use the npm package from project scripts for app workflows, with the Rust CLI documented for LSP, profiling, and direct binary use.
     link: guide/cli.md
   - title: Compiler Inspector
     details: Inspect Vue output, Vize output, Virtual TS, VIR, and cross-file graphs, then share permalinked repros or agent reports.
@@ -72,7 +72,10 @@ features:
 
 ## Current Direction
 
-One of the biggest recent shifts in Vize is native type checking. `vize check` and the editor-facing type-check pipeline are moving onto `vize_canon` plus [`corsa-bind`](https://github.com/ubugeeei/corsa-bind), which lets Vize keep Vue virtual files and TypeScript project diagnostics on a native path for longer.
+One of the biggest recent shifts in Vize is native type checking. The `vize check` command used by
+npm package scripts and the editor-facing type-check pipeline are moving onto `vize_canon` plus
+[`corsa-bind`](https://github.com/ubugeeei/corsa-bind), which lets Vize keep Vue virtual files and
+TypeScript project diagnostics on a native path for longer.
 
 That matters for more than raw speed. It gives Vize a tighter loop between template analysis, diagnostics, navigation, and future editor features, while reducing the amount of work that has to bounce back through a JavaScript-hosted compiler process. The fidelity story is still catching up, but this is the direction the toolchain is clearly heading.
 
