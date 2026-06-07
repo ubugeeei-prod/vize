@@ -970,7 +970,15 @@ fn generate_legacy_vue2_variables(
 
     ts.push_str("  // Vue 2.7 / Nuxt 2 Options API template bindings\n");
     for name in &names {
-        append!(ts, "  const {name}: any = undefined as any;\n");
+        // Prefer a type inferred from a literal `data()` initializer when one
+        // was recorded during analysis; otherwise fall back to the permissive
+        // `any` that keeps templates type-checking loosely.
+        let ty = summary
+            .bindings
+            .legacy_template_binding_types
+            .get(*name)
+            .map_or("any", |ts_type| ts_type.as_str());
+        append!(ts, "  const {name}: {ty} = undefined as any;\n");
     }
     ts.push_str("  ");
     for name in &names {

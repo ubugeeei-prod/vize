@@ -463,6 +463,38 @@ export default {
         );
     }
 
+    #[cfg(feature = "legacy")]
+    #[test]
+    fn test_legacy_vue2_data_literal_types_in_virtual_ts() {
+        let source = r#"<script lang="ts">
+export default {
+  data() {
+    return { count: 1, label: 'x', flag: true, other: window.foo }
+  }
+}
+</script>
+<template>
+  <div>{{ count }} {{ label }} {{ flag }} {{ other }}</div>
+</template>"#;
+
+        let mut options = SfcTypeCheckOptions::new("Legacy.vue");
+        options.include_virtual_ts = true;
+        let result = type_check_sfc_with_legacy_vue2(source, &options);
+        let ts = result
+            .virtual_ts
+            .expect("virtual TypeScript should be generated");
+
+        // Literal `data()` initializers now carry precise types instead of `any`,
+        // so the type checker can flag misuse (e.g. `count.toUpperCase()`).
+        assert!(ts.contains("const count: number"), "virtual ts:\n{ts}");
+        assert!(ts.contains("const label: string"), "virtual ts:\n{ts}");
+        assert!(ts.contains("const flag: boolean"), "virtual ts:\n{ts}");
+
+        // A non-literal initializer keeps the permissive `any` fallback, so the
+        // deepened typing never introduces a false template type error.
+        assert!(ts.contains("const other: any"), "virtual ts:\n{ts}");
+    }
+
     #[test]
     fn test_type_check_template_undefined_binding_uses_expression_offset() {
         let source = r#"<script lang="ts"></script>

@@ -650,6 +650,40 @@ fn collect_object_property_bindings(
         };
         let span = property.key.span();
         add_template_binding(result, name.as_str(), binding_type, span.start, span.end);
+
+        // Legacy Vue 2: when a `data()` property is initialized with a literal,
+        // record its precise TS type so the virtual TS can declare
+        // `const x: number` instead of `const x: any`. Gated behind `legacy`, so
+        // this — and the side-table it writes to — is compiled out of the
+        // default Vue 3 build and adds no cost to the standard pipeline.
+        #[cfg(feature = "legacy")]
+        if matches!(binding_type, BindingType::Data)
+            && let Some(ts_type) = infer_legacy_literal_ts_type(&property.value)
+        {
+            result
+                .bindings
+                .set_legacy_template_binding_type(name.as_str(), ts_type);
+        }
+    }
+}
+
+/// Infer a precise TypeScript type for a literal-initialized legacy Vue 2
+/// `data()` property.
+///
+/// Returns `None` — keeping the permissive `any` fallback — for anything whose
+/// type cannot be derived soundly from a literal initializer, so deepening the
+/// types can never introduce a false template type error (a strict superset of
+/// the previous `any` behavior).
+#[cfg(feature = "legacy")]
+fn infer_legacy_literal_ts_type(value: &Expression<'_>) -> Option<&'static str> {
+    match value {
+        Expression::NumericLiteral(_) => Some("number"),
+        Expression::StringLiteral(_) => Some("string"),
+        Expression::BooleanLiteral(_) => Some("boolean"),
+        Expression::BigIntLiteral(_) => Some("bigint"),
+        // A template literal with no `${...}` substitutions is always a string.
+        Expression::TemplateLiteral(template) if template.expressions.is_empty() => Some("string"),
+        _ => None,
     }
 }
 

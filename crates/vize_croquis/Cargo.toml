@@ -7,6 +7,11 @@ license.workspace = true
 repository.workspace = true
 description = "Croquis - Semantic analysis layer for Vize. Quick sketches of meaning from Vue templates"
 
+[features]
+# Opt-in legacy Vue (v0 / v1 / v2) analysis surface. Compiled out of the default
+# Vue 3 build, so legacy support adds zero cost to the standard pipeline.
+legacy = []
+
 [dependencies]
 vize_carton.workspace = true
 vize_relief.workspace = true

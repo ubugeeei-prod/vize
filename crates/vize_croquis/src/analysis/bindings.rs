@@ -30,7 +30,7 @@ use vize_relief::BindingType;
 ///
 /// This is compatible with the existing BindingMetadata in atelier_core
 /// but uses CompactString for efficiency.
-#[derive(Debug, Default, Clone)]
+#[derive(Default, Clone)]
 pub struct BindingMetadata {
     /// Binding name to type mapping
     pub bindings: FxHashMap<CompactString, BindingType>,
@@ -40,6 +40,32 @@ pub struct BindingMetadata {
 
     /// Props aliases (local name -> prop key)
     pub props_aliases: FxHashMap<CompactString, CompactString>,
+
+    /// Inferred TypeScript types for legacy Vue 2.7 / Nuxt 2 Options API
+    /// template bindings (currently `data()` properties), keyed by binding name.
+    ///
+    /// Lets the virtual-TS generator emit a precise declaration
+    /// (`const count: number`) instead of `const count: any` for the common
+    /// case of literal-initialized data. Gated behind the `legacy` feature, so
+    /// the field — and every write to it — is compiled out of the default Vue 3
+    /// build and never touches the standard pipeline.
+    #[cfg(feature = "legacy")]
+    pub legacy_template_binding_types: FxHashMap<CompactString, CompactString>,
+}
+
+// `Debug` is hand-written (rather than derived) so the optional, legacy-only
+// `legacy_template_binding_types` side-table never leaks into Debug output or
+// snapshots. It is an internal type-inference cache, not part of a binding
+// set's identity, and the default Vue 3 build does not compile the field at all
+// — keeping the derived-equivalent output stable across both feature configs.
+impl core::fmt::Debug for BindingMetadata {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("BindingMetadata")
+            .field("bindings", &self.bindings)
+            .field("is_script_setup", &self.is_script_setup)
+            .field("props_aliases", &self.props_aliases)
+            .finish()
+    }
 }
 
 impl BindingMetadata {
@@ -63,6 +89,16 @@ impl BindingMetadata {
     pub fn add(&mut self, name: impl AsRef<str>, binding_type: BindingType) {
         self.bindings
             .insert(CompactString::new(name.as_ref()), binding_type);
+    }
+
+    /// Record an inferred TypeScript type for a legacy Vue 2 template binding.
+    ///
+    /// Legacy-only: compiled out of the default Vue 3 build.
+    #[cfg(feature = "legacy")]
+    #[inline]
+    pub fn set_legacy_template_binding_type(&mut self, name: &str, ts_type: &str) {
+        self.legacy_template_binding_types
+            .insert(CompactString::new(name), CompactString::new(ts_type));
     }
 
     /// Get binding type for a name

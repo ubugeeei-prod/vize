@@ -882,6 +882,48 @@ export default {
         }
     }
 
+    #[cfg(feature = "legacy")]
+    #[test]
+    fn test_legacy_vue2_data_literal_types_are_inferred() {
+        let source = r#"
+export default {
+  data() {
+    return {
+      count: 0,
+      label: 'hello',
+      flag: true,
+      big: 10n,
+      tpl: `plain`,
+      computedish: this.count,
+      arr: [],
+      obj: {}
+    }
+  }
+}
+"#;
+        let result = parse_script_with_options(source, ScriptParserOptions { legacy_vue2: true });
+        let types = &result.bindings.legacy_template_binding_types;
+
+        // Literal initializers get a precise TS type instead of `any`.
+        assert_eq!(types.get("count").map(|t| t.as_str()), Some("number"));
+        assert_eq!(types.get("label").map(|t| t.as_str()), Some("string"));
+        assert_eq!(types.get("flag").map(|t| t.as_str()), Some("boolean"));
+        assert_eq!(types.get("big").map(|t| t.as_str()), Some("bigint"));
+        assert_eq!(types.get("tpl").map(|t| t.as_str()), Some("string"));
+
+        // Non-literal / structural initializers are intentionally left untyped,
+        // so the virtual TS keeps emitting the permissive `any` fallback and
+        // deepening the types can never introduce a false template type error.
+        assert_eq!(types.get("computedish"), None);
+        assert_eq!(types.get("arr"), None);
+        assert_eq!(types.get("obj"), None);
+
+        // The bindings themselves are still collected for template resolution.
+        for name in ["count", "computedish", "arr", "obj"] {
+            assert!(result.bindings.contains(name), "missing binding {name}");
+        }
+    }
+
     #[test]
     fn test_deeply_nested_callbacks() {
         let result = parse_script_setup(
