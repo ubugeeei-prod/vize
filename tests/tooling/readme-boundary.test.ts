@@ -27,17 +27,10 @@ test("README stays a compact project entry point", () => {
 test("README funnels readers to the documentation", () => {
   const readme = readRepoFile("README.md");
 
-  // The README is a thin entry point: it must point to the live docs site and to
-  // the in-repo Getting Started guide rather than inlining usage detail.
+  // The README is a thin entry point: it links to the live docs site, not to raw
+  // repo files.
   assert.match(readme, /https:\/\/vizejs\.dev/);
-
-  for (const link of [
-    "./docs/content/getting-started.md",
-    "./docs/release/production-readiness.md",
-  ]) {
-    assert.match(readme, new RegExp(escapeRegExp(link)), link);
-    assert.ok(fs.existsSync(path.join(root, link)), `${link} should exist`);
-  }
+  assert.match(readme, /https:\/\/vizejs\.dev\/getting-started/);
 });
 
 function readRepoFile(...segments: string[]): string {

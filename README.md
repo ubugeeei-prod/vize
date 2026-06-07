@@ -19,8 +19,9 @@
 > [!WARNING]
 > Vize is experimental and in its **Real World Testing** phase — not a completely
 > production-ready toolchain yet. Breaking changes and behavior that diverges from Vue are
-> expected. Review the [production-readiness checklist](./docs/release/production-readiness.md),
-> [support policy](./docs/release/support-policy.md), and [stability guide](./docs/content/stability.md)
+> expected. Review the [stability guide](https://vizejs.dev/stability),
+> [production-readiness checklist](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/production-readiness.md),
+> and [support policy](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/support-policy.md)
 > before adopting it.
 
 ## What Is Vize?
@@ -35,7 +36,7 @@ It plugs into where you already work: `@vizejs/vite-plugin` (Vite), `vize` (npm 
 `oxlint-plugin-vize` (Oxlint).
 
 **Everything lives in the [documentation](https://vizejs.dev)** — start with
-[Getting Started](./docs/content/getting-started.md).
+[Getting Started](https://vizejs.dev/getting-started).
 
 Vize is in its Real World Testing phase: issues and PRs are very welcome, and we are looking for
 reasonably large Vue projects to use as test beds.
