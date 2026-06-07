@@ -16,6 +16,14 @@
   <a href="https://github.com/sponsors/ubugeeei"><strong>Sponsor</strong></a>
 </p>
 
+<p align="center">
+  <strong>Real World Testing — Wanted</strong>
+</p>
+
+<p align="center">
+  <video src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/docs/public/blog/vize-real-world-testing.mp4" controls muted width="600"></video>
+</p>
+
 > [!WARNING]
 > Vize is experimental and in its **Real World Testing** phase — not a completely
 > production-ready toolchain yet. Breaking changes and behavior that diverges from Vue are

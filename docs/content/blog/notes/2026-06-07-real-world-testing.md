@@ -21,6 +21,11 @@ description: Vize enters the Real World Testing phase — real projects are the 
   </a>
 </div>
 
+<video controls muted playsinline loop width="100%" src="/blog/vize-real-world-testing.mp4">
+  Your browser does not support the video tag. Watch the Real World Testing PV at
+  <a href="/blog/vize-real-world-testing.mp4">vize-real-world-testing.mp4</a>.
+</video>
+
 Vize is entering a new phase.
 
 Until now, development has focused on implementing features, building infrastructure,
