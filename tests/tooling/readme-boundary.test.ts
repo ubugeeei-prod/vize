@@ -9,15 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 test("README stays a compact project entry point", () => {
   const readme = readRepoFile("README.md");
 
-  for (const section of [
-    "## What Is Vize?",
-    "## Quick Start",
-    "## Documentation Map",
-    "## Local Development",
-    "## Community",
-    "## Credits",
-    "## License",
-  ]) {
+  for (const section of ["## What Is Vize?", "## Credits", "## License"]) {
     assert.match(readme, new RegExp(`^${escapeRegExp(section)}$`, "m"), section);
   }
 
@@ -32,22 +24,14 @@ test("README stays a compact project entry point", () => {
   }
 });
 
-test("README documentation map points to the detailed docs", () => {
+test("README funnels readers to the documentation", () => {
   const readme = readRepoFile("README.md");
 
-  for (const link of [
-    "./docs/content/getting-started.md",
-    "./docs/content/guide/vite-plugin.md",
-    "./docs/content/guide/cli.md",
-    "./docs/content/guide/static-analysis.md",
-    "./docs/content/guide/configuration.md",
-    "./docs/content/rules/index.md",
-    "./docs/content/guide/musea.md",
-    "./docs/content/integrations/vscode.md",
-    "./docs/content/architecture/overview.md",
-    "./docs/content/architecture/language-engineering-practices.md",
-    "./docs/release/production-readiness.md",
-  ]) {
+  // The README is a thin entry point: it must point to the live docs site and to
+  // the in-repo Getting Started guide rather than inlining usage detail.
+  assert.match(readme, /https:\/\/vizejs\.dev/);
+
+  for (const link of ["./docs/content/getting-started.md", "./docs/release/production-readiness.md"]) {
     assert.match(readme, new RegExp(escapeRegExp(link)), link);
     assert.ok(fs.existsSync(path.join(root, link)), `${link} should exist`);
   }

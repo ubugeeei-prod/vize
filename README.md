@@ -23,78 +23,22 @@
 > [support policy](./docs/release/support-policy.md), and [stability guide](./docs/content/stability.md)
 > before adopting it.
 
-> [!IMPORTANT]
-> For day-to-day editor support, keep using the official Vue language tools
-> (`vuejs/language-tools`) for now. Vize's editor extensions and `vize lsp` stay opt-in while the
-> editor surface matures.
-
 ## What Is Vize?
 
-Vize is an unofficial, Rust-native Vue toolchain: a shared parser, semantic analysis, compiler,
-lint, type-checking, formatting, and editor pipeline for Vue single-file components. The main
-entry points are `@vizejs/vite-plugin` (Vite), `vize` (npm CLI), the native `vize` binary
-(full CLI / LSP / profiling), `@vizejs/vite-plugin-musea` (Musea), and `oxlint-plugin-vize`
-(Oxlint).
+Vize is an unofficial, Rust-native toolchain for Vue — one fast, vertically integrated pipeline
+for single-file components. A single shared parser powers compilation, linting, type-checking,
+formatting, and editor tooling, so your whole Vue workflow runs on the same high-performance core
+instead of a patchwork of disconnected tools.
 
-For everything beyond the quick start below, see the
-[documentation](https://vizejs.dev) — starting with [Getting Started](./docs/content/getting-started.md).
+It plugs into where you already work: `@vizejs/vite-plugin` (Vite), `vize` (npm CLI), the native
+`vize` binary (full CLI / LSP / profiling), `@vizejs/vite-plugin-musea` (Musea), and
+`oxlint-plugin-vize` (Oxlint).
 
-## Quick Start
+**Everything lives in the [documentation](https://vizejs.dev)** — start with
+[Getting Started](./docs/content/getting-started.md).
 
-```bash
-vp install -D @vizejs/vite-plugin
-```
-
-```ts
-// vite.config.ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({ plugins: [vize()] });
-```
-
-That covers the Vite path. For the npm CLI, the native binary, and everything else, follow
-[Getting Started](./docs/content/getting-started.md). (Need `vp` first? See the
-[Vite+ install guide](https://viteplus.dev/guide/install).)
-
-## Documentation Map
-
-| Need                                    | Read                                                                                            |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| First setup and package choices         | [Getting Started](./docs/content/getting-started.md)                                            |
-| Vite integration                        | [Vite Plugin](./docs/content/guide/vite-plugin.md)                                              |
-| CLI commands                            | [CLI Reference](./docs/content/guide/cli.md)                                                    |
-| Linting, type checking, and diagnostics | [Static Analysis](./docs/content/guide/static-analysis.md)                                      |
-| Shared config files                     | [Configuration](./docs/content/guide/configuration.md)                                          |
-| Rule catalog                            | [Rules](./docs/content/rules/index.md)                                                          |
-| Musea component gallery                 | [Musea](./docs/content/guide/musea.md)                                                          |
-| Editor integration                      | [VS Code Integration](./docs/content/integrations/vscode.md)                                    |
-| Architecture                            | [Architecture Overview](./docs/content/architecture/overview.md)                                |
-| Language-engineering workflow           | [Language Engineering Practices](./docs/content/architecture/language-engineering-practices.md) |
-| Production posture                      | [Production Readiness](./docs/release/production-readiness.md)                                  |
-
-## Local Development
-
-```bash
-nix develop
-vp install --frozen-lockfile
-vp check && vp fmt && vp dev
-```
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for repository setup, pull-request expectations, and
-language-facing change-class guidance.
-
-## Community
-
-Vize is in its **Real World Testing** phase, and the most useful contributions right now are
-real-world signal. We are waiting for plenty of issues and PRs, and we are actively looking for
-reasonably large Vue projects to use as test beds — bug reports, reproductions, benchmarks, and
-compatibility findings all help move the project toward its first stable release.
-
-- [Governance](./GOVERNANCE.md)
-- [Support](./SUPPORT.md)
-- [Contributing](./CONTRIBUTING.md)
-- [Sponsor](https://github.com/sponsors/ubugeeei)
+Vize is in its Real World Testing phase: issues and PRs are very welcome, and we are looking for
+reasonably large Vue projects to use as test beds.
 
 ## Credits
 
