@@ -37,11 +37,59 @@ const VUE_PEER_RUNTIME_ESM_ENTRIES = new Map<string, string[]>([
 ]);
 
 interface ResolveContext {
+  environment?: { name?: string };
   resolve(
     id: string,
     importer?: string,
     options?: { skipSelf: boolean },
   ): Promise<{ id: string; external?: boolean } | null>;
+}
+
+type ViteResolveOptions = { skipSelf: boolean };
+type ViteResolveResult = { id: string; external?: boolean } | null;
+
+function getViteResolveCache(state: VizePluginState): Map<string, Promise<ViteResolveResult>> {
+  return (state.viteResolveCache ??= new Map());
+}
+
+function createViteResolveCacheKey(
+  id: string,
+  importer: string | undefined,
+  options: ViteResolveOptions | undefined,
+  environmentName: string | undefined,
+): string {
+  return JSON.stringify([
+    environmentName ?? null,
+    id,
+    importer ?? null,
+    options?.skipSelf ?? false,
+  ]);
+}
+
+function resolveWithVite(
+  ctx: ResolveContext,
+  state: VizePluginState,
+  id: string,
+  importer?: string,
+  options?: ViteResolveOptions,
+): Promise<ViteResolveResult> {
+  if (state.server !== null) {
+    return ctx.resolve(id, importer, options);
+  }
+
+  const cache = getViteResolveCache(state);
+  const key = createViteResolveCacheKey(id, importer, options, ctx.environment?.name);
+  const cached = cache.get(key);
+  if (cached) {
+    return cached;
+  }
+
+  const pending = ctx.resolve(id, importer, options).catch((error: unknown) => {
+    cache.delete(key);
+    throw error;
+  });
+  cache.set(key, pending);
+  return pending;
 }
 
 function resolveAliasRequest(
@@ -617,7 +665,7 @@ async function resolveProjectVueRuntime(
   }
 
   try {
-    const resolved = await ctx.resolve(id, viteImporter, { skipSelf: true });
+    const resolved = await resolveWithVite(ctx, state, id, viteImporter, { skipSelf: true });
     if (resolved && !isOptimizedVueDependency(resolved.id)) {
       const projectLocalEntry = resolveProjectLocalPnpmVueRuntime(state, resolved.id);
       if (projectLocalEntry) {
@@ -757,7 +805,7 @@ async function resolveAliasedVueImport(
   }
 
   const viteImporter = normalizeViteRequireBase(importer) ?? importer;
-  const viteResolved = await ctx.resolve(id, viteImporter, { skipSelf: true });
+  const viteResolved = await resolveWithVite(ctx, state, id, viteImporter, { skipSelf: true });
   const realPath = viteResolved ? normalizeResolvedVuePath(viteResolved.id) : null;
   if (!realPath) {
     return null;
@@ -879,7 +927,7 @@ export async function resolveIdHook(
       realPath = realPath.slice(0, -3);
     }
     state.logger.log(`resolveId: redirecting stale vize: ID to ${realPath}`);
-    const resolved = await ctx.resolve(realPath, importer, { skipSelf: true });
+    const resolved = await resolveWithVite(ctx, state, realPath, importer, { skipSelf: true });
     const normalizedFsId = resolved ? classifyVitePluginRequest(resolved.id).normalizedFsId : null;
     if (resolved && isBuild && normalizedFsId) {
       return { ...resolved, id: normalizedFsId };
@@ -941,7 +989,7 @@ export async function resolveIdHook(
     // Subpath imports (e.g., #imports/entry from Nuxt)
     if (id.startsWith("#")) {
       try {
-        return await ctx.resolve(id, cleanImporter, { skipSelf: true });
+        return await resolveWithVite(ctx, state, id, cleanImporter, { skipSelf: true });
       } catch {
         return null;
       }
@@ -989,7 +1037,9 @@ export async function resolveIdHook(
         }
 
         try {
-          const resolved = await ctx.resolve(id, cleanImporter, { skipSelf: true });
+          const resolved = await resolveWithVite(ctx, state, id, cleanImporter, {
+            skipSelf: true,
+          });
           if (resolved) {
             state.logger.log(`resolveId: resolved bare ${id} to ${resolved.id} via Vite resolver`);
             const normalizedFsId = classifyVitePluginRequest(resolved.id).normalizedFsId;
@@ -1105,7 +1155,9 @@ export async function resolveIdHook(
 
         if (aliasRequest && aliasRequest !== id && !isViteBareSpecifier(aliasRequest)) {
           try {
-            const resolved = await ctx.resolve(aliasRequest, cleanImporter, { skipSelf: true });
+            const resolved = await resolveWithVite(ctx, state, aliasRequest, cleanImporter, {
+              skipSelf: true,
+            });
             if (resolved) {
               state.logger.log(
                 `resolveId: resolved aliased bare ${id} to ${resolved.id} via Vite resolver`,
@@ -1154,7 +1206,7 @@ export async function resolveIdHook(
 
       // Delegate to Vite's full resolver pipeline with the real importer
       try {
-        const resolved = await ctx.resolve(id, cleanImporter, { skipSelf: true });
+        const resolved = await resolveWithVite(ctx, state, id, cleanImporter, { skipSelf: true });
         if (resolved) {
           state.logger.log(`resolveId: resolved ${id} to ${resolved.id} via Vite resolver`);
           const normalizedFsId = classifyVitePluginRequest(resolved.id).normalizedFsId;

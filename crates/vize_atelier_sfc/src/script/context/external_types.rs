@@ -196,6 +196,10 @@ fn resolve_candidate_path(candidate: PathBuf) -> Option<PathBuf> {
         return canonicalize_or_original(candidate);
     }
 
+    if let Some(ts_source_path) = resolve_ts_source_path_for_js_specifier(&candidate) {
+        return Some(ts_source_path);
+    }
+
     for ext in RESOLVE_EXTENSIONS {
         let mut with_ext = candidate.clone().into_os_string();
         with_ext.push(ext);
@@ -211,6 +215,26 @@ fn resolve_candidate_path(candidate: PathBuf) -> Option<PathBuf> {
             if path.is_file() {
                 return canonicalize_or_original(path);
             }
+        }
+    }
+
+    None
+}
+
+fn resolve_ts_source_path_for_js_specifier(candidate: &Path) -> Option<PathBuf> {
+    let extension = candidate.extension()?.to_str()?;
+    let source_extensions: &[&str] = match extension {
+        "js" => &["ts", "tsx"],
+        "jsx" => &["tsx", "ts"],
+        "mjs" => &["mts", "ts"],
+        "cjs" => &["cts", "ts"],
+        _ => return None,
+    };
+
+    for source_extension in source_extensions {
+        let source_candidate = candidate.with_extension(source_extension);
+        if source_candidate.is_file() {
+            return canonicalize_or_original(source_candidate);
         }
     }
 
@@ -316,6 +340,29 @@ mod tests {
         let current = Path::new("/repo/src/components/Child.vue");
 
         assert!(resolve_import_path(current, "vue").is_none());
+    }
+
+    #[test]
+    fn resolves_js_type_specifiers_to_ts_sources() {
+        let project = temp_project_dir("js-to-ts-type-import");
+        let utility = project.join("src/utility");
+        let components = project.join("src/components");
+        std::fs::create_dir_all(&utility).unwrap();
+        std::fs::create_dir_all(&components).unwrap();
+        let target = utility.join("paginator.ts");
+        std::fs::write(
+            &target,
+            "export type ExtractorFunction<T> = (item: T) => T;",
+        )
+        .unwrap();
+
+        let current = components.join("UserList.vue");
+        let resolved = resolve_import_path(&current, "@/utility/paginator.js");
+        let target = target.canonicalize().unwrap();
+
+        assert_eq!(resolved.as_deref(), Some(target.as_path()));
+
+        let _ = std::fs::remove_dir_all(project);
     }
 
     #[test]

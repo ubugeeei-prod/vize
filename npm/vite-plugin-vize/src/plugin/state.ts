@@ -38,6 +38,7 @@ export interface VizePluginState {
   collectedCss: Map<string, string>;
   precompileMetadata: Map<string, PrecompileFileMetadata>;
   pendingHmrUpdateTypes: Map<string, HmrUpdateType>;
+  viteResolveCache?: Map<string, Promise<{ id: string; external?: boolean } | null>>;
   isProduction: boolean;
   root: string;
   clientViteBase: string;
@@ -140,7 +141,12 @@ export function shouldExtractCssForRequest(
 export function clearBuildCaches(
   state: Pick<
     VizePluginState,
-    "cache" | "collectedCss" | "pendingHmrUpdateTypes" | "precompileMetadata" | "ssrCache"
+    | "cache"
+    | "collectedCss"
+    | "pendingHmrUpdateTypes"
+    | "precompileMetadata"
+    | "ssrCache"
+    | "viteResolveCache"
   >,
 ): void {
   state.cache.clear();
@@ -148,6 +154,7 @@ export function clearBuildCaches(
   state.collectedCss.clear();
   state.precompileMetadata.clear();
   state.pendingHmrUpdateTypes.clear();
+  state.viteResolveCache?.clear();
 }
 
 /**

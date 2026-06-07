@@ -827,6 +827,52 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("build-vite-resolve-cache");
+  const importer = path.join(projectRoot, "app", "pages", "index.vue");
+  const dependencyEntry = path.join(projectRoot, "node_modules", "vize-cache-fixture", "index.js");
+  writeFixtureFile(dependencyEntry, "export default {};");
+
+  const state = createState(projectRoot);
+  state.server = null;
+  let resolverCalls = 0;
+  let resolverImporter: string | undefined;
+  const ctx = {
+    resolve: async (id: string, importerArg?: string) => {
+      resolverCalls++;
+      resolverImporter = importerArg;
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      return id === "vize-cache-fixture" ? { id: dependencyEntry } : null;
+    },
+  };
+
+  const [first, second] = await Promise.all([
+    resolveIdHook(ctx, state, "vize-cache-fixture", toVirtualId(importer), undefined),
+    resolveIdHook(ctx, state, "vize-cache-fixture", toVirtualId(importer), undefined),
+  ]);
+  const third = await resolveIdHook(
+    ctx,
+    state,
+    "vize-cache-fixture",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    resolverImporter,
+    importer,
+    "Build fallback resolution from virtual SFC modules should use the real importer path",
+  );
+  assert.equal(
+    resolverCalls,
+    1,
+    "Build fallback resolution should cache duplicate Vite resolver calls",
+  );
+  assert.equal(expectResolvedId(first), dependencyEntry);
+  assert.equal(expectResolvedId(second), dependencyEntry);
+  assert.equal(expectResolvedId(third), dependencyEntry);
+}
+
+{
   const projectRoot = createTempProject("preserve-vite-vue");
   const importer = path.join(projectRoot, "app", "pages", "index.vue");
   const optimizedVueEntry = path.join(projectRoot, "node_modules", ".vite", "deps", "vue.js");

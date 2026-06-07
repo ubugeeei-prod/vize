@@ -136,6 +136,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     collectedCss: new Map(),
     precompileMetadata: new Map(),
     pendingHmrUpdateTypes: new Map(),
+    viteResolveCache: new Map(),
     isProduction: false,
     root: "",
     clientViteBase: "/",
@@ -353,6 +354,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     },
 
     async buildStart() {
+      state.viteResolveCache?.clear();
       if (!state.scanPatterns || state.scanPatterns.length === 0) {
         // Running in standalone rolldown context (e.g., ox-content OG image)
         // where configResolved is not called, or a framework integration has

@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 import { compileBatch, compileFile } from "./compiler.ts";
 
@@ -85,6 +88,46 @@ assert.match(
   readonlyInterfacePropsCompiled.code,
   /__props\.minScale/,
   "readonly type props should compile as props access in inline render",
+);
+
+const importedFunctionTypeRoot = fs.mkdtempSync(
+  path.join(os.tmpdir(), "vize-imported-function-type-"),
+);
+const importedFunctionTypeSource = path.join(
+  importedFunctionTypeRoot,
+  "src",
+  "components",
+  "UserList.vue",
+);
+fs.mkdirSync(path.join(importedFunctionTypeRoot, "src", "utility"), { recursive: true });
+fs.mkdirSync(path.dirname(importedFunctionTypeSource), { recursive: true });
+fs.writeFileSync(
+  path.join(importedFunctionTypeRoot, "src", "utility", "paginator.ts"),
+  "export type ExtractorFunction<P, T> = (item: P) => T;\n",
+);
+const importedFunctionTypeCompiled = compileFile(
+  importedFunctionTypeSource,
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  `<script setup lang="ts" generic="P">
+import type { ExtractorFunction } from "@/utility/paginator.js";
+
+const props = withDefaults(defineProps<{
+  extractor?: ExtractorFunction<P, string>;
+}>(), {
+  extractor: (item: any) => item,
+});
+</script>
+
+<template>
+  <span>{{ props.extractor("value") }}</span>
+</template>`,
+);
+
+assert.match(
+  importedFunctionTypeCompiled.code,
+  /extractor: \{\s*type: Function,\s*required: false,\s*default: \(item\) => item\s*\}/,
+  "Function props imported through .js TypeScript specifiers should keep Function runtime type so defaults are not invoked as factories",
 );
 
 const hoistedScopedSource = `<script setup>

@@ -279,6 +279,7 @@ const retainedBuildState = {
   collectedCss: new Map([["/src/App.vue", ".app{}"]]),
   precompileMetadata: new Map([["/src/App.vue", { mtimeMs: 1, size: 100 }]]),
   pendingHmrUpdateTypes: new Map([["/src/App.vue", "template-only" as const]]),
+  viteResolveCache: new Map([["vue\u0000/src/App.vue\u00001", Promise.resolve({ id: "vue" })]]),
 };
 
 clearBuildCaches(retainedBuildState);
@@ -302,6 +303,11 @@ assert.equal(
   retainedBuildState.pendingHmrUpdateTypes.size,
   0,
   "build-only HMR bookkeeping should be released after build",
+);
+assert.equal(
+  retainedBuildState.viteResolveCache.size,
+  0,
+  "build fallback resolver cache should be released after bundling",
 );
 
 console.log("✅ vite-plugin-vize state tests passed!");
