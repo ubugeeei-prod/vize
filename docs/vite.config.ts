@@ -93,7 +93,7 @@ export default defineConfig({
               // Progressive enhancement: the markdown pipeline sanitizes raw <video>
               // tags, so author videos as plain `.mp4` links in markdown and upgrade
               // them to inline players client-side. The link stays as a no-JS fallback.
-              // Upstream: https://github.com/ubugeeei/ox-content/issues (allow <video>).
+              // Upstream: https://github.com/ubugeeei-prod/ox-content/issues/340 (allow <video>).
               `<script>
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll('a[href$=".mp4"]').forEach(function (a) {
