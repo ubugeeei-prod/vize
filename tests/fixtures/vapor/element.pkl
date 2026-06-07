@@ -1,0 +1,72 @@
+// Vapor: Element compilation tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vapor"
+
+cases {
+  new {
+    name = "empty div"
+    input = "<div></div>"
+  }
+  new {
+    name = "element with text"
+    input = "<div>hello</div>"
+  }
+  new {
+    name = "element with interpolation"
+    input = "<div>{{ msg }}</div>"
+  }
+  new {
+    name = "nested elements"
+    input = "<div><span>text</span></div>"
+  }
+  new {
+    name = "multiple children"
+    input = "<div><span></span><p></p></div>"
+  }
+  new {
+    name = "static class"
+    input = #"<div class="container"></div>"#
+  }
+  new {
+    name = "static id"
+    input = #"<div id="app"></div>"#
+  }
+  new {
+    name = "multiple attributes"
+    input = #"<div id="app" class="container"></div>"#
+  }
+  new {
+    name = "dynamic class"
+    input = #"<div :class="cls"></div>"#
+  }
+  new {
+    name = "dynamic id"
+    input = #"<div :id="id"></div>"#
+  }
+  new {
+    name = "click handler"
+    input = #"<button @click="handler">click</button>"#
+  }
+  new {
+    name = "inline handler"
+    input = #"<button @click="count++">click</button>"#
+  }
+  new {
+    name = "handler with event"
+    input = #"<button @click="handler($event)">click</button>"#
+  }
+  new {
+    name = "text and interpolation"
+    input = "<div>Hello {{ name }}!</div>"
+  }
+  new {
+    name = "static and dynamic"
+    input = #"<div class="static" :id="dynamic">content</div>"#
+  }
+  new {
+    name = "element with dynamic children"
+    input = "<div><span>{{ a }}</span><span>{{ b }}</span></div>"
+  }
+}

@@ -1,0 +1,271 @@
+// VDom: v-on tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "v-on handler"
+    input = #"<button v-on:click="handler"></button>"#
+  }
+  new {
+    name = "v-on shorthand"
+    input = #"<button @click="handler"></button>"#
+  }
+  new {
+    name = "inline handler"
+    input = #"<button @click="count++"></button>"#
+  }
+  new {
+    name = "inline with statement"
+    input = #"<button @click="count = count + 1"></button>"#
+  }
+  new {
+    name = "method call"
+    input = #"<button @click="handler()"></button>"#
+  }
+  new {
+    name = "method with args"
+    input = #"<button @click="handler(1, 2)"></button>"#
+  }
+  new {
+    name = "sequence expression handler"
+    input = #"<button @click="foo(), bar()"></button>"#
+  }
+  new {
+    name = "inline with $event"
+    input = #"<button @click="handler($event)"></button>"#
+  }
+  new {
+    name = "inline $event property"
+    input = #"<button @click="handler($event.target.value)"></button>"#
+  }
+  new {
+    name = "arrow function with event"
+    input = #"<button @click="e => handler(e)"></button>"#
+  }
+  new {
+    name = "arrow function with multiple params"
+    input = #"<div @custom="(a, b) => handler(a, b)"></div>"#
+  }
+  new {
+    name = "optional chaining call"
+    input = #"<button @click="props.onClick?.($event)"></button>"#
+  }
+  new {
+    name = "stop modifier"
+    input = #"<button @click.stop="handler"></button>"#
+  }
+  new {
+    name = "prevent modifier"
+    input = #"<form @submit.prevent="onSubmit"></form>"#
+  }
+  new {
+    name = "stop and prevent"
+    input = #"<button @click.stop.prevent="handler"></button>"#
+  }
+  new {
+    name = "capture modifier"
+    input = #"<div @click.capture="handler"></div>"#
+  }
+  new {
+    name = "once modifier"
+    input = #"<button @click.once="handler"></button>"#
+  }
+  new {
+    name = "passive modifier"
+    input = #"<div @scroll.passive="onScroll"></div>"#
+  }
+  new {
+    name = "self modifier"
+    input = #"<div @click.self="handler"></div>"#
+  }
+  new {
+    name = "enter key"
+    input = #"<input @keyup.enter="submit">"#
+  }
+  new {
+    name = "escape key"
+    input = #"<input @keyup.esc="cancel">"#
+  }
+  new {
+    name = "page down key"
+    input = #"<input @keyup.page-down="next">"#
+  }
+  new {
+    name = "tab key"
+    input = #"<input @keyup.tab="next">"#
+  }
+  new {
+    name = "delete key"
+    input = #"<input @keyup.delete="remove">"#
+  }
+  new {
+    name = "arrow keys"
+    input = #"<input @keyup.up="up" @keyup.down="down" @keyup.left="left" @keyup.right="right">"#
+  }
+  new {
+    name = "key code"
+    input = #"<input @keyup.13="submit">"#
+  }
+  new {
+    name = "ctrl modifier"
+    input = #"<input @keyup.ctrl.enter="submit">"#
+  }
+  new {
+    name = "alt modifier"
+    input = #"<button @click.alt="handler"></button>"#
+  }
+  new {
+    name = "shift modifier"
+    input = #"<button @click.shift="handler"></button>"#
+  }
+  new {
+    name = "meta modifier"
+    input = #"<button @click.meta="handler"></button>"#
+  }
+  new {
+    name = "exact modifier"
+    input = #"<button @click.ctrl.exact="handler"></button>"#
+  }
+  new {
+    name = "left click"
+    input = #"<button @click.left="handler"></button>"#
+  }
+  new {
+    name = "right click"
+    input = #"<button @click.right="handler"></button>"#
+  }
+  new {
+    name = "middle click"
+    input = #"<button @click.middle="handler"></button>"#
+  }
+  new {
+    name = "multiple events"
+    input = #"<input @focus="onFocus" @blur="onBlur">"#
+  }
+  new {
+    name = "same event different modifiers"
+    input = #"<button @click="a" @click.ctrl="b"></button>"#
+  }
+  new {
+    name = "dynamic event name"
+    input = #"<button @[event]="handler"></button>"#
+  }
+  new {
+    name = "dynamic event with modifier"
+    input = #"<button @[event].stop="handler"></button>"#
+  }
+  new {
+    name = "v-on object"
+    input = #"<button v-on="handlers"></button>"#
+  }
+  new {
+    name = "v-on object with other events"
+    input = #"<button v-on="handlers" @click="extra"></button>"#
+  }
+  new {
+    name = "component event"
+    input = #"<MyComponent @update="onUpdate" />"#
+  }
+  new {
+    name = "component native event"
+    input = #"<MyComponent @click.native="onClick" />"#
+  }
+  new {
+    name = "inline handler (cacheHandlers)"
+    input = #"<button @click="count++"></button>"#
+    options = new {
+      cacheHandlers = true
+    }
+  }
+  new {
+    name = "inline statement (cacheHandlers)"
+    input = #"<button @click="count = count + 1"></button>"#
+    options = new {
+      cacheHandlers = true
+    }
+  }
+  new {
+    name = "method call (cacheHandlers)"
+    input = #"<button @click="handler()"></button>"#
+    options = new {
+      cacheHandlers = true
+    }
+  }
+  new {
+    name = "handler reference (cacheHandlers)"
+    input = #"<button @click="handler"></button>"#
+    options = new {
+      cacheHandlers = true
+    }
+  }
+  new {
+    name = "multiple cached handlers"
+    input = #"<button @click="count++" @mouseenter="hover = true"></button>"#
+    options = new {
+      cacheHandlers = true
+    }
+  }
+  new {
+    name = "vue: vnode lifecycle hook"
+    input = #"<div @vue:mounted="fn"></div>"#
+  }
+  new {
+    name = "vue: vnode hook kebab"
+    input = #"<div @vue:before-update="fn"></div>"#
+  }
+  new {
+    name = "vue: vnode hook on component"
+    input = #"<MyComp @vue:updated="fn" />"#
+  }
+  new {
+    name = "camelCase event on plain element preserves case"
+    input = #"<div @fooBar="fn"></div>"#
+  }
+  new {
+    name = "PascalCase event on plain element preserves case"
+    input = #"<div @FooBar="fn"></div>"#
+  }
+  new {
+    name = "kebab event on plain element camelizes"
+    input = #"<div @foo-bar="fn"></div>"#
+  }
+  new {
+    name = "camelCase event on component camelizes"
+    input = #"<MyComp @fooBar="fn" />"#
+  }
+  new {
+    name = "colon event with uppercase on element"
+    input = #"<div @update:modelValue="fn"></div>"#
+  }
+  new {
+    name = "colon event lowercase on element"
+    input = #"<div @update:foo="fn"></div>"#
+  }
+  new {
+    name = "camelCase event with option modifier"
+    input = #"<div @fooBar.once="fn"></div>"#
+  }
+  new {
+    name = "dblclick needs hydration"
+    input = #"<div @dblclick="fn"></div>"#
+  }
+  new {
+    name = "click no hydration"
+    input = #"<div @click="fn"></div>"#
+  }
+  new {
+    name = "mouseover needs hydration"
+    input = #"<div @mouseover="fn"></div>"#
+  }
+  new {
+    name = "inline multi-statement handler"
+    input = #"<a @click="foo();bar()"></a>"#
+  }
+  new {
+    name = "inline single-statement handler"
+    input = #"<a @click="foo()"></a>"#
+  }
+}

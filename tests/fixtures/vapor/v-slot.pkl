@@ -1,0 +1,40 @@
+// Vapor: v-slot tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vapor"
+
+cases {
+  new {
+    name = "default slot content"
+    input = "<MyComponent>content</MyComponent>"
+  }
+  new {
+    name = "default slot with element"
+    input = "<MyComponent><div>content</div></MyComponent>"
+  }
+  new {
+    name = "named slot"
+    input = "<MyComponent><template #header>Header</template></MyComponent>"
+  }
+  new {
+    name = "multiple named slots"
+    input = "<MyComponent><template #header>H</template><template #footer>F</template></MyComponent>"
+  }
+  new {
+    name = "scoped slot"
+    input = #"<MyComponent v-slot="{ item }">{{ item }}</MyComponent>"#
+  }
+  new {
+    name = "named scoped slot"
+    input = #"<MyComponent><template #item="{ data }">{{ data }}</template></MyComponent>"#
+  }
+  new {
+    name = "scoped slot destructure"
+    input = #"<MyComponent v-slot="{ item, index }">{{ index }}: {{ item }}</MyComponent>"#
+  }
+  new {
+    name = "dynamic slot name"
+    input = "<MyComponent><template #[slotName]>content</template></MyComponent>"
+  }
+}

@@ -1,0 +1,232 @@
+// VDom: v-bind tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "v-bind attribute"
+    input = #"<div v-bind:id="id"></div>"#
+  }
+  new {
+    name = "v-bind shorthand"
+    input = #"<div :id="id"></div>"#
+  }
+  new {
+    name = "v-bind class"
+    input = #"<div :class="cls"></div>"#
+  }
+  new {
+    name = "v-bind style"
+    input = #"<div :style="styles"></div>"#
+  }
+  new {
+    name = "class object syntax"
+    input = #"<div :class="{ active: isActive }"></div>"#
+  }
+  new {
+    name = "class multiple objects"
+    input = #"<div :class="{ active: isActive, error: hasError }"></div>"#
+  }
+  new {
+    name = "class array syntax"
+    input = #"<div :class="[activeClass, errorClass]"></div>"#
+  }
+  new {
+    name = "class array with object"
+    input = #"<div :class="[{ active: isActive }, errorClass]"></div>"#
+  }
+  new {
+    name = "class with static"
+    input = #"<div class="static" :class="dynamic"></div>"#
+  }
+  new {
+    name = "class ternary"
+    input = #"<div :class="isActive ? 'active' : 'inactive'"></div>"#
+  }
+  new {
+    name = "class array with conditional"
+    input = #"<div :class="[base, isActive && active]"></div>"#
+  }
+  new {
+    name = "style object syntax"
+    input = #"<div :style="{ color: textColor }"></div>"#
+  }
+  new {
+    name = "style multiple properties"
+    input = #"<div :style="{ color: textColor, fontSize: size + 'px' }"></div>"#
+  }
+  new {
+    name = "style array syntax"
+    input = #"<div :style="[baseStyles, overrideStyles]"></div>"#
+  }
+  new {
+    name = "style with static"
+    input = #"<div style="color: red" :style="{ fontSize: size }"></div>"#
+  }
+  new {
+    name = "style camelCase"
+    input = #"<div :style="{ backgroundColor: bg }"></div>"#
+  }
+  new {
+    name = "style kebab-case"
+    input = #"<div :style="{ 'background-color': bg }"></div>"#
+  }
+  new {
+    name = "v-bind object"
+    input = #"<div v-bind="attrs"></div>"#
+  }
+  new {
+    name = "v-bind object with other attrs"
+    input = #"<div v-bind="attrs" id="static"></div>"#
+  }
+  new {
+    name = "v-bind object with dynamic"
+    input = #"<div v-bind="attrs" :class="cls"></div>"#
+  }
+  new {
+    name = "v-bind $attrs"
+    input = #"<div v-bind="$attrs"></div>"#
+  }
+  new {
+    name = "v-bind $props"
+    input = #"<MyComponent v-bind="$props" />"#
+  }
+  new {
+    name = "aria attribute binding"
+    input = #"<button :aria-expanded="isOpen"></button>"#
+  }
+  new {
+    name = "data attribute expression"
+    input = #"<div :data-count="items.length"></div>"#
+  }
+  new {
+    name = "optional chaining binding"
+    input = #"<div :title="user?.name"></div>"#
+  }
+  new {
+    name = "dynamic attribute name"
+    input = #"<div :[attr]="value"></div>"#
+  }
+  new {
+    name = "dynamic attribute with prefix"
+    input = #"<div :[`data-${key}`]="value"></div>"#
+  }
+  new {
+    name = "v-bind.camel"
+    input = #"<svg :view-box.camel="viewBox"></svg>"#
+  }
+  new {
+    name = "svg child constant binding"
+    input = #"<svg xmlns="http://www.w3.org/2000/svg"><rect :x="1" /><rect x="1" /></svg>"#
+  }
+  new {
+    name = "v-bind.prop"
+    input = #"<div :text-content.prop="text"></div>"#
+  }
+  new {
+    name = "v-bind.attr"
+    input = #"<div :foo.attr="bar"></div>"#
+  }
+  new {
+    name = "v-bind key"
+    input = #"<div :key="id"></div>"#
+  }
+  new {
+    name = "nested v-bind key"
+    input = #"<section><div :key="id">content</div></section>"#
+  }
+  new {
+    name = "nested component v-bind key"
+    input = #"<section><MyComponent :key="id" /></section>"#
+  }
+  new {
+    name = "v-bind ref"
+    input = #"<div :ref="refName"></div>"#
+  }
+  new {
+    name = "v-bind is"
+    input = #"<component :is="comp"></component>"#
+  }
+  new {
+    name = "boolean attribute binding"
+    input = #"<input :disabled="isDisabled">"#
+  }
+  new {
+    name = "boolean attribute expression"
+    input = #"<input :disabled="count > 0">"#
+  }
+  new {
+    name = "boolean readonly"
+    input = #"<input :readonly="isReadonly">"#
+  }
+  new {
+    name = "dot-prop shorthand"
+    input = #"<div .foo="val"></div>"#
+  }
+  new {
+    name = "dot-prop shorthand with valid identifier key"
+    input = #"<div .fooBar="val"></div>"#
+  }
+  new {
+    name = "v-bind dynamic arg with .prop"
+    input = #"<div :[key].prop="val"></div>"#
+  }
+  new {
+    name = "v-bind dynamic arg with .camel"
+    input = #"<div :[key].camel="val"></div>"#
+  }
+  new {
+    name = "v-bind dynamic arg with .attr"
+    input = #"<div :[key].attr="val"></div>"#
+  }
+  new {
+    name = "v-bind dynamic arg plain"
+    input = #"<div :[key]="val"></div>"#
+  }
+  new {
+    name = "dynamic class before static class"
+    input = #"<div :class="a" class="b"></div>"#
+  }
+  new {
+    name = "static class before dynamic class"
+    input = #"<div class="b" :class="a"></div>"#
+  }
+  new {
+    name = "dynamic style before static style"
+    input = #"<div :style="s" style="color:red"></div>"#
+  }
+  new {
+    name = "static style before dynamic style"
+    input = #"<div style="color:red" :style="s"></div>"#
+  }
+  new {
+    name = "mixed class and style merge order"
+    input = #"<div class="b" :class="a" :style="s" style="x:1"></div>"#
+  }
+  new {
+    name = "static class after v-bind spread"
+    input = #"<div v-bind="obj" class="a"></div>"#
+  }
+  new {
+    name = "static class before v-bind spread"
+    input = #"<div class="a" v-bind="obj"></div>"#
+  }
+  new {
+    name = "static and dynamic props around v-bind spread"
+    input = #"<div id="x" v-bind="obj" :title="t"></div>"#
+  }
+  new {
+    name = "static props before and after v-bind spread"
+    input = #"<div id="x" :title="t" v-bind="obj"></div>"#
+  }
+  new {
+    name = "v-on spread before handler"
+    input = #"<div v-on="handlers" @click="fn"></div>"#
+  }
+  new {
+    name = "handler before v-on spread"
+    input = #"<div @click="fn" v-on="handlers"></div>"#
+  }
+}

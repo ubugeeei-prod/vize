@@ -1,0 +1,124 @@
+// VDom: v-slot tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "default slot content"
+    input = "<MyComponent>content</MyComponent>"
+  }
+  new {
+    name = "default slot with element"
+    input = "<MyComponent><div>content</div></MyComponent>"
+  }
+  new {
+    name = "default slot with interpolation"
+    input = "<MyComponent>{{ msg }}</MyComponent>"
+  }
+  new {
+    name = "default slot multiple children"
+    input = "<MyComponent><div>A</div><div>B</div></MyComponent>"
+  }
+  new {
+    name = "named slot"
+    input = "<MyComponent><template #header>Header</template></MyComponent>"
+  }
+  new {
+    name = "named slot v-slot syntax"
+    input = "<MyComponent><template v-slot:header>Header</template></MyComponent>"
+  }
+  new {
+    name = "multiple named slots"
+    input = "<MyComponent><template #header>H</template><template #footer>F</template></MyComponent>"
+  }
+  new {
+    name = "named slot with default"
+    input = "<MyComponent><template #header>Header</template>Default content</MyComponent>"
+  }
+  new {
+    name = "default slot explicit"
+    input = "<MyComponent><template #default>Default</template></MyComponent>"
+  }
+  new {
+    name = "scoped slot"
+    input = #"<MyComponent v-slot="{ item }">{{ item }}</MyComponent>"#
+  }
+  new {
+    name = "scoped slot with props"
+    input = #"<MyComponent v-slot="slotProps">{{ slotProps.item }}</MyComponent>"#
+  }
+  new {
+    name = "named scoped slot"
+    input = #"<MyComponent><template #item="{ data }">{{ data }}</template></MyComponent>"#
+  }
+  new {
+    name = "scoped slot destructure"
+    input = #"<MyComponent v-slot="{ item, index }">{{ index }}: {{ item }}</MyComponent>"#
+  }
+  new {
+    name = "scoped slot default value"
+    input = #"<MyComponent v-slot="{ item = defaultItem }">{{ item }}</MyComponent>"#
+  }
+  new {
+    name = "scoped slot nested destructure"
+    input = #"<MyComponent v-slot="{ user: { name } }">{{ name }}</MyComponent>"#
+  }
+  new {
+    name = "dynamic slot name"
+    input = "<MyComponent><template #[slotName]>content</template></MyComponent>"
+  }
+  new {
+    name = "dynamic slot name with scoped"
+    input = #"<MyComponent><template #[slotName]="props">{{ props }}</template></MyComponent>"#
+  }
+  new {
+    name = "v-slot on component"
+    input = "<MyComponent v-slot>Default</MyComponent>"
+  }
+  new {
+    name = "v-slot with props on component"
+    input = #"<MyComponent v-slot="{ item }">{{ item }}</MyComponent>"#
+  }
+  new {
+    name = "slot with v-if"
+    input = #"<MyComponent><template #header v-if="show">Header</template></MyComponent>"#
+  }
+  new {
+    name = "conditional named slot with default"
+    input = #"<MyComponent>Default content<template #header v-if="show">Header</template></MyComponent>"#
+  }
+  new {
+    name = "slot with v-for"
+    input = #"<MyComponent><template #item v-for="item in items" :key="item.id">{{ item }}</template></MyComponent>"#
+  }
+  new {
+    name = "nested components with slots"
+    input = "<Outer><template #default><Inner><template #content>Nested</template></Inner></template></Outer>"
+  }
+  new {
+    name = "Transition slot"
+    input = #"<Transition><div v-if="show">Content</div></Transition>"#
+  }
+  new {
+    name = "KeepAlive slot"
+    input = #"<KeepAlive><component :is="current" /></KeepAlive>"#
+  }
+  new {
+    name = "nested KeepAlive block"
+    input = #"<div><KeepAlive><component :is="current" /></KeepAlive></div>"#
+  }
+  new {
+    name = "nested Teleport block"
+    input = #"<div><Teleport to="body"><span /></Teleport></div>"#
+  }
+  new {
+    name = "nested Suspense block"
+    input = "<div><Suspense><AsyncComponent /></Suspense></div>"
+  }
+  new {
+    name = "Suspense slots"
+    input = "<Suspense><template #default><AsyncComponent /></template><template #fallback>Loading...</template></Suspense>"
+  }
+}

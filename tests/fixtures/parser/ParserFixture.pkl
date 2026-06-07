@@ -1,0 +1,4 @@
+module vize.fixtures.ParserFixture
+class Case { name: String; input: String }
+test_type: String?
+cases: Listing<Case>

@@ -1,0 +1,46 @@
+// VDom: HTML entity decoding tests
+// Verifies the parser decodes named/numeric character references in both text and
+// attribute positions identically to @vue/compiler-dom.
+
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "named entity amp"
+    input = "<div>&amp;</div>"
+  }
+  new {
+    name = "named entities lt gt"
+    input = "<div>&lt;tag&gt;</div>"
+  }
+  new {
+    name = "named entity nbsp"
+    input = "<div>a&nbsp;b</div>"
+  }
+  new {
+    name = "named entity copy"
+    input = "<div>&copy; 2026</div>"
+  }
+  new {
+    name = "decimal numeric entity"
+    input = "<div>&#65;&#66;&#67;</div>"
+  }
+  new {
+    name = "hex numeric entity"
+    input = "<div>&#x41;&#x42;</div>"
+  }
+  new {
+    name = "entities mixed with text"
+    input = "<div>Tom &amp; Jerry &lt;3</div>"
+  }
+  new {
+    name = "entity in attribute value"
+    input = #"<div title="a &amp; b &quot;q&quot;"></div>"#
+  }
+  new {
+    name = "entity adjacent to interpolation"
+    input = "<div>&amp;{{ x }}&amp;</div>"
+  }
+}

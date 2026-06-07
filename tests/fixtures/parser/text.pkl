@@ -1,0 +1,301 @@
+// Parser tests: Text nodes
+// Based on Vue.js core compiler-core/__tests__/parse.spec.ts
+
+amends "ParserFixture.pkl"
+
+test_type = "parser"
+
+cases {
+  new {
+    name = "simple text"
+    input = "some text"
+  }
+  new {
+    name = "single word"
+    input = "hello"
+  }
+  new {
+    name = "single character"
+    input = "a"
+  }
+  new {
+    name = "empty string between elements"
+    input = "<div></div><span></span>"
+  }
+  new {
+    name = "text with leading whitespace"
+    input = "  hello"
+  }
+  new {
+    name = "text with trailing whitespace"
+    input = "hello  "
+  }
+  new {
+    name = "text with whitespace"
+    input = "  hello world  "
+  }
+  new {
+    name = "text with multiple spaces"
+    input = "hello    world"
+  }
+  new {
+    name = "text with newlines"
+    input = """
+    line1
+    line2
+    """
+  }
+  new {
+    name = "text with multiple newlines"
+    input = """
+    line1
+
+    line2
+    """
+  }
+  new {
+    name = "text with tabs"
+    input = "hello	world"
+  }
+  new {
+    name = "text with mixed whitespace"
+    input = """
+      hello 
+    	 world  
+    """
+  }
+  new {
+    name = "only whitespace"
+    input = "   "
+  }
+  new {
+    name = "only newline"
+    input = """
+
+
+    """
+  }
+  new {
+    name = "only tabs"
+    input = "		"
+  }
+  new {
+    name = "text with interpolation"
+    input = "some {{ foo }} text"
+  }
+  new {
+    name = "text before interpolation"
+    input = "prefix {{ value }}"
+  }
+  new {
+    name = "text after interpolation"
+    input = "{{ value }} suffix"
+  }
+  new {
+    name = "text between interpolations"
+    input = "{{ a }} middle {{ b }}"
+  }
+  new {
+    name = "text with multiple interpolations"
+    input = "Hello {{ firstName }} {{ lastName }}!"
+  }
+  new {
+    name = "mixed text and interpolation complex"
+    input = "The {{ item }} costs ${{ price }} ({{ quantity }} available)"
+  }
+  new {
+    name = "text in element"
+    input = "<div>hello</div>"
+  }
+  new {
+    name = "text in nested element"
+    input = "<div><span>hello</span></div>"
+  }
+  new {
+    name = "text in deeply nested element"
+    input = "<div><p><span>hello</span></p></div>"
+  }
+  new {
+    name = "text in sibling elements"
+    input = "<div>a</div><span>b</span>"
+  }
+  new {
+    name = "text with sibling element"
+    input = "<div>hello<span>world</span></div>"
+  }
+  new {
+    name = "text between sibling elements"
+    input = "<div><span>a</span> and <span>b</span></div>"
+  }
+  new {
+    name = "multiple text nodes"
+    input = "text1<div></div>text2"
+  }
+  new {
+    name = "text nodes around void element"
+    input = "before<br>after"
+  }
+  new {
+    name = "text nodes around multiple elements"
+    input = "a<div></div>b<span></span>c"
+  }
+  new {
+    name = "text around self-closing"
+    input = "before<input/>after"
+  }
+  new {
+    name = "text with entities"
+    input = "&lt;hello&gt;"
+  }
+  new {
+    name = "text with nbsp"
+    input = "hello&nbsp;world"
+  }
+  new {
+    name = "text with amp"
+    input = "Tom &amp; Jerry"
+  }
+  new {
+    name = "text with quot"
+    input = "He said &quot;hello&quot;"
+  }
+  new {
+    name = "text with apos"
+    input = "It&apos;s working"
+  }
+  new {
+    name = "text with numeric entity"
+    input = "&#65;&#66;&#67;"
+  }
+  new {
+    name = "text with hex entity"
+    input = "&#x41;&#x42;&#x43;"
+  }
+  new {
+    name = "text with copyright symbol"
+    input = "&copy; 2024"
+  }
+  new {
+    name = "text with registered symbol"
+    input = "Vue&reg;"
+  }
+  new {
+    name = "text with euro symbol"
+    input = "&euro;100"
+  }
+  new {
+    name = "text with multiple entities"
+    input = "&lt;div&gt;&amp;&lt;/div&gt;"
+  }
+  new {
+    name = "text with mixed entities and text"
+    input = "Price: &euro;100 &amp; &pound;80"
+  }
+  new {
+    name = "text with special characters"
+    input = "hello!@#$%^*()_+-=[]{}|;':,./"
+  }
+  new {
+    name = "text with unicode"
+    input = "Hello 世界"
+  }
+  new {
+    name = "text with emoji"
+    input = "Hello 👋 World 🌍"
+  }
+  new {
+    name = "text with accented characters"
+    input = "café résumé naïve"
+  }
+  new {
+    name = "text with cyrillic"
+    input = "Привет мир"
+  }
+  new {
+    name = "text with arabic"
+    input = "مرحبا بالعالم"
+  }
+  new {
+    name = "text with japanese"
+    input = "こんにちは世界"
+  }
+  new {
+    name = "text with korean"
+    input = "안녕하세요"
+  }
+  new {
+    name = "text with angle bracket followed by space"
+    input = "a < b and c > d"
+  }
+  new {
+    name = "text with lonely less than"
+    input = "a < b"
+  }
+  new {
+    name = "text that looks like tag"
+    input = "< not a tag"
+  }
+  new {
+    name = "text with curly braces not interpolation"
+    input = "{ not interpolation }"
+  }
+  new {
+    name = "text with single curly"
+    input = "a { b } c"
+  }
+  new {
+    name = "text with triple curly"
+    input = "{{{ not interpolation }}}"
+  }
+  new {
+    name = "very long text"
+    input = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris."
+  }
+  new {
+    name = "text with url"
+    input = "Visit https://vuejs.org for more info"
+  }
+  new {
+    name = "text with email"
+    input = "Contact us at support@example.com"
+  }
+  new {
+    name = "text with code-like content"
+    input = "Use const x = 1; to declare"
+  }
+  new {
+    name = "text with html-like but invalid"
+    input = "<123>invalid</123>"
+  }
+  new {
+    name = "text in pre element"
+    input = "<pre>  preserved  </pre>"
+  }
+  new {
+    name = "multiline text in pre"
+    input = """
+    <pre>line 1
+      line 2
+        line 3</pre>
+    """
+  }
+  new {
+    name = "text with code in pre"
+    input = "<pre><code>function() { return 1; }</code></pre>"
+  }
+  new {
+    name = "text in textarea"
+    input = "<textarea>content here</textarea>"
+  }
+  new {
+    name = "multiline text in textarea"
+    input = """
+    <textarea>line 1
+    line 2</textarea>
+    """
+  }
+  new {
+    name = "html-like text in textarea"
+    input = "<textarea><div>not an element</div></textarea>"
+  }
+}

@@ -1,0 +1,72 @@
+// Vapor: Component compilation tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vapor"
+
+cases {
+  new {
+    name = "simple component"
+    input = "<MyComponent />"
+  }
+  new {
+    name = "component with props"
+    input = #"<MyComponent :msg="message" />"#
+  }
+  new {
+    name = "component with static prop"
+    input = #"<MyComponent msg="hello" />"#
+  }
+  new {
+    name = "component with event"
+    input = #"<MyComponent @update="onUpdate" />"#
+  }
+  new {
+    name = "component merges static and dynamic class"
+    input = #"<MyComponent class="a" :class="cls" />"#
+  }
+  new {
+    name = "component spread props keep override order"
+    input = #"<MyComponent v-bind="props" class="a" :class="cls" :to="to" />"#
+  }
+  new {
+    name = "component with content"
+    input = "<MyComponent>content</MyComponent>"
+  }
+  new {
+    name = "named slot"
+    input = "<MyComponent><template #header>Header</template></MyComponent>"
+  }
+  new {
+    name = "scoped slot"
+    input = #"<MyComponent v-slot="{ item }">{{ item }}</MyComponent>"#
+  }
+  new {
+    name = "Teleport"
+    input = #"<Teleport to="body"><div>content</div></Teleport>"#
+  }
+  new {
+    name = "Suspense"
+    input = "<Suspense><Component /></Suspense>"
+  }
+  new {
+    name = "KeepAlive"
+    input = "<KeepAlive><Component /></KeepAlive>"
+  }
+  new {
+    name = "dynamic component"
+    input = #"<component :is="currentComponent" />"#
+  }
+  new {
+    name = "dynamic with props"
+    input = #"<component :is="current" :msg="message" />"#
+  }
+  new {
+    name = "component v-model"
+    input = #"<MyComponent v-model="value" />"#
+  }
+  new {
+    name = "named v-model"
+    input = #"<MyComponent v-model:title="pageTitle" />"#
+  }
+}

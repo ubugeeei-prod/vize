@@ -1,0 +1,76 @@
+// Parser tests: Attribute nodes
+// Based on Vue.js core compiler-core/__tests__/parse.spec.ts
+
+amends "ParserFixture.pkl"
+
+test_type = "parser"
+
+cases {
+  new {
+    name = "attribute with no value"
+    input = "<div id></div>"
+  }
+  new {
+    name = "attribute with empty value, double quote"
+    input = #"<div id=""></div>"#
+  }
+  new {
+    name = "attribute with empty value, single quote"
+    input = "<div id=''></div>"
+  }
+  new {
+    name = "attribute with value, double quote"
+    input = #"<div id="foo"></div>"#
+  }
+  new {
+    name = "attribute with value, single quote"
+    input = "<div id='foo'></div>"
+  }
+  new {
+    name = "attribute with value, unquoted"
+    input = "<div id=foo></div>"
+  }
+  new {
+    name = "multiple attributes"
+    input = #"<div id="a" class="b"></div>"#
+  }
+  new {
+    name = "attribute with spaces"
+    input = #"<div id = "foo" ></div>"#
+  }
+  new {
+    name = "attribute with equals in value"
+    input = #"<div id="a=b"></div>"#
+  }
+  new {
+    name = "attribute with special characters"
+    input = #"<div data-value="test"></div>"#
+  }
+  new {
+    name = "class attribute"
+    input = #"<div class="foo bar"></div>"#
+  }
+  new {
+    name = "style attribute"
+    input = #"<div style="color: red;"></div>"#
+  }
+  new {
+    name = "boolean attribute disabled"
+    input = "<input disabled>"
+  }
+  new {
+    name = "boolean attribute readonly"
+    input = "<input readonly>"
+  }
+  new {
+    name = "boolean attribute checked"
+    input = "<input checked>"
+  }
+  new {
+    name = "attribute with newline in value"
+    input = """
+    <div title="line1
+    line2"></div>
+    """
+  }
+}

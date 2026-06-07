@@ -1,0 +1,60 @@
+// Vapor: v-on tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vapor"
+
+cases {
+  new {
+    name = "click handler"
+    input = #"<button @click="handler"></button>"#
+  }
+  new {
+    name = "inline handler"
+    input = #"<button @click="count++"></button>"#
+  }
+  new {
+    name = "method call"
+    input = #"<button @click="handler()"></button>"#
+  }
+  new {
+    name = "handler with $event"
+    input = #"<button @click="handler($event)"></button>"#
+  }
+  new {
+    name = "stop modifier"
+    input = #"<button @click.stop="handler"></button>"#
+  }
+  new {
+    name = "prevent modifier"
+    input = #"<form @submit.prevent="onSubmit"></form>"#
+  }
+  new {
+    name = "once modifier"
+    input = #"<button @click.once="handler"></button>"#
+  }
+  new {
+    name = "multiple modifiers"
+    input = #"<button @click.stop.prevent="handler"></button>"#
+  }
+  new {
+    name = "enter key"
+    input = #"<input @keyup.enter="submit">"#
+  }
+  new {
+    name = "escape key"
+    input = #"<input @keyup.esc="cancel">"#
+  }
+  new {
+    name = "multiple events"
+    input = #"<input @focus="onFocus" @blur="onBlur">"#
+  }
+  new {
+    name = "dynamic event name"
+    input = #"<button @[event]="handler"></button>"#
+  }
+  new {
+    name = "v-on object"
+    input = #"<button v-on="handlers"></button>"#
+  }
+}

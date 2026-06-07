@@ -1,0 +1,266 @@
+// Parser tests: Comment nodes
+// Based on Vue.js core compiler-core/__tests__/parse.spec.ts
+
+amends "ParserFixture.pkl"
+
+test_type = "parser"
+
+cases {
+  new {
+    name = "empty comment"
+    input = "<!---->"
+  }
+  new {
+    name = "simple comment"
+    input = "<!--abc-->"
+  }
+  new {
+    name = "comment with single word"
+    input = "<!-- comment -->"
+  }
+  new {
+    name = "comment with whitespace"
+    input = "<!--  hello world  -->"
+  }
+  new {
+    name = "comment with leading whitespace"
+    input = "<!--  comment-->"
+  }
+  new {
+    name = "comment with trailing whitespace"
+    input = "<!--comment  -->"
+  }
+  new {
+    name = "comment with no spaces"
+    input = "<!--no spaces-->"
+  }
+  new {
+    name = "two comments"
+    input = "<!--abc--><!--def-->"
+  }
+  new {
+    name = "three comments"
+    input = "<!--a--><!--b--><!--c-->"
+  }
+  new {
+    name = "comments with space between"
+    input = "<!--a--> <!--b-->"
+  }
+  new {
+    name = "comments with text between"
+    input = "<!--a-->text<!--b-->"
+  }
+  new {
+    name = "comments with newline between"
+    input = """
+    <!--a-->
+    <!--b-->
+    """
+  }
+  new {
+    name = "comment in element"
+    input = "<div><!-- comment --></div>"
+  }
+  new {
+    name = "comment at start of element"
+    input = "<div><!-- comment -->text</div>"
+  }
+  new {
+    name = "comment at end of element"
+    input = "<div>text<!-- comment --></div>"
+  }
+  new {
+    name = "comment between elements"
+    input = "<div></div><!-- comment --><span></span>"
+  }
+  new {
+    name = "comment before element"
+    input = "<!-- comment --><div></div>"
+  }
+  new {
+    name = "comment after element"
+    input = "<div></div><!-- comment -->"
+  }
+  new {
+    name = "comment between text"
+    input = "before<!-- comment -->after"
+  }
+  new {
+    name = "comment in nested element"
+    input = "<div><span><!-- comment --></span></div>"
+  }
+  new {
+    name = "comment between v-if branches"
+    input = #"<div v-if="ok"/><!-- comment --><div v-else/>"#
+  }
+  new {
+    name = "comment in sibling elements"
+    input = "<ul><li>1</li><!-- comment --><li>2</li></ul>"
+  }
+  new {
+    name = "comment with special characters"
+    input = "<!-- <div> test & stuff -->"
+  }
+  new {
+    name = "comment with HTML-like content"
+    input = "<!-- <div class='foo'>bar</div> -->"
+  }
+  new {
+    name = "comment with interpolation-like content"
+    input = "<!-- {{ message }} -->"
+  }
+  new {
+    name = "comment with directive-like content"
+    input = "<!-- v-if='show' -->"
+  }
+  new {
+    name = "comment with angle brackets"
+    input = "<!-- < and > -->"
+  }
+  new {
+    name = "comment with ampersand"
+    input = "<!-- & and &amp; -->"
+  }
+  new {
+    name = "comment with quotes"
+    input = "<!-- quoted and single -->"
+  }
+  new {
+    name = "comment with equals"
+    input = "<!-- foo=bar -->"
+  }
+  new {
+    name = "comment with dashes"
+    input = "<!-- hello - world -->"
+  }
+  new {
+    name = "comment with newlines"
+    input = """
+    <!--
+    multi
+    line
+    -->
+    """
+  }
+  new {
+    name = "comment with newline at start"
+    input = """
+    <!--
+    comment-->
+    """
+  }
+  new {
+    name = "comment with newline at end"
+    input = """
+    <!--comment
+    -->
+    """
+  }
+  new {
+    name = "comment with indentation"
+    input = """
+    <!--
+      indented
+        content
+    -->
+    """
+  }
+  new {
+    name = "comment with many lines"
+    input = """
+    <!--
+    line 1
+    line 2
+    line 3
+    line 4
+    line 5
+    -->
+    """
+  }
+  new {
+    name = "todo comment"
+    input = "<!-- TODO: fix this -->"
+  }
+  new {
+    name = "fixme comment"
+    input = "<!-- FIXME: broken -->"
+  }
+  new {
+    name = "note comment"
+    input = "<!-- NOTE: important -->"
+  }
+  new {
+    name = "comment with url"
+    input = "<!-- See: https://vuejs.org -->"
+  }
+  new {
+    name = "comment with code"
+    input = "<!-- const x = 1; -->"
+  }
+  new {
+    name = "jsdoc-like comment"
+    input = "<!-- @param {string} name -->"
+  }
+  new {
+    name = "comment with emoji"
+    input = "<!-- TODO: fix bug 🐛 -->"
+  }
+  new {
+    name = "comment with unicode"
+    input = "<!-- 日本語コメント -->"
+  }
+  new {
+    name = "comment that looks like closing"
+    input = "<!-- -- -->"
+  }
+  new {
+    name = "comment with multiple dashes"
+    input = "<!-- ---- -->"
+  }
+  new {
+    name = "very long comment"
+    input = "<!-- This is a very long comment that contains a lot of text to test how the parser handles longer comment content in the template -->"
+  }
+  new {
+    name = "comment only template"
+    input = "<!-- only comment -->"
+  }
+  new {
+    name = "nested comment markers (invalid but handled)"
+    input = "<!-- outer <!-- inner --> outer -->"
+  }
+  new {
+    name = "comment in script-like context"
+    input = "<script><!-- not parsed --></script>"
+  }
+  new {
+    name = "comment in style-like context"
+    input = "<style><!-- not parsed --></style>"
+  }
+  new {
+    name = "IE conditional comment start"
+    input = "<!--[if IE]><p>IE only</p><![endif]-->"
+  }
+  new {
+    name = "comment with brackets"
+    input = "<!-- [condition] -->"
+  }
+  new {
+    name = "comment between v-if and v-else"
+    input = """
+    <div v-if="a"/>
+    <!--comment-->
+    <div v-else/>
+    """
+  }
+  new {
+    name = "comment between v-else-if branches"
+    input = """
+    <div v-if="a">A</div>
+    <!--comment-->
+    <div v-else-if="b">B</div>
+    <!--another-->
+    <div v-else>C</div>
+    """
+  }
+}

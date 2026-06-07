@@ -1,0 +1,6 @@
+module vize.fixtures.CompilerFixture
+class Options { mode: String?; prefixIdentifiers: Boolean?; hoistStatic: Boolean?; cacheHandlers: Boolean?; ssr: Boolean? }
+class Case { name: String; input: String; options: Options = new Options {} }
+mode: String?
+test_type: String?
+cases: Listing<Case>

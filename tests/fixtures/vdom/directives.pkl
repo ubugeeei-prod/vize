@@ -1,0 +1,104 @@
+// VDom: Custom directives tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "custom directive"
+    input = "<div v-focus></div>"
+  }
+  new {
+    name = "custom directive with value"
+    input = #"<div v-highlight="color"></div>"#
+  }
+  new {
+    name = "custom directive with literal"
+    input = #"<div v-highlight="'yellow'"></div>"#
+  }
+  new {
+    name = "custom directive with object"
+    input = #"<div v-pin="{ top: 10, left: 20 }"></div>"#
+  }
+  new {
+    name = "custom directive with array"
+    input = #"<div v-list="[one, two]"></div>"#
+  }
+  new {
+    name = "custom directive with function call"
+    input = #"<div v-observe="createObserver(item)"></div>"#
+  }
+  new {
+    name = "directive with argument"
+    input = #"<div v-scroll:top="value"></div>"#
+  }
+  new {
+    name = "directive with dynamic argument"
+    input = #"<div v-scroll:[direction]="value"></div>"#
+  }
+  new {
+    name = "directive with modifier"
+    input = "<div v-focus.lazy></div>"
+  }
+  new {
+    name = "directive with multiple modifiers"
+    input = "<div v-custom.a.b.c></div>"
+  }
+  new {
+    name = "directive with arg and modifiers"
+    input = #"<div v-dir:arg.mod1.mod2="value"></div>"#
+  }
+  new {
+    name = "multiple custom directives"
+    input = "<div v-focus v-highlight></div>"
+  }
+  new {
+    name = "custom with built-in"
+    input = #"<div v-focus v-show="visible"></div>"#
+  }
+  new {
+    name = "directive on component"
+    input = "<MyComponent v-focus />"
+  }
+  new {
+    name = "directive on component with props"
+    input = #"<MyComponent v-focus :prop="value" />"#
+  }
+  new {
+    name = "v-html"
+    input = #"<div v-html="rawHtml"></div>"#
+  }
+  new {
+    name = "v-text"
+    input = #"<div v-text="msg"></div>"#
+  }
+  new {
+    name = "v-html with static"
+    input = #"<div class="content" v-html="html"></div>"#
+  }
+  new {
+    name = "v-cloak"
+    input = "<div v-cloak>{{ msg }}</div>"
+  }
+  new {
+    name = "v-pre"
+    input = "<div v-pre>{{ this will not compile }}</div>"
+  }
+  new {
+    name = "v-pre with children"
+    input = "<div v-pre><span>{{ raw }}</span></div>"
+  }
+  new {
+    name = "v-pre with on-prefixed attribute"
+    input = "<div v-pre test on-test is-on-test>content</div>"
+  }
+  new {
+    name = "v-pre should not process shorthand directives"
+    input = #"<div v-pre :id="dynamic" @click="handler">{{ raw }}</div>"#
+  }
+  new {
+    name = "v-pre nested elements preserve attributes"
+    input = #"<div v-pre><span :class="cls" @click="fn">{{ raw }}</span></div>"#
+  }
+}

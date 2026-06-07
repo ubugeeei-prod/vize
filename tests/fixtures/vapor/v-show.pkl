@@ -1,0 +1,32 @@
+// Vapor: v-show tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vapor"
+
+cases {
+  new {
+    name = "simple v-show"
+    input = #"<div v-show="visible"></div>"#
+  }
+  new {
+    name = "v-show with content"
+    input = #"<div v-show="visible">content</div>"#
+  }
+  new {
+    name = "v-show with comparison"
+    input = #"<div v-show="count > 0">positive</div>"#
+  }
+  new {
+    name = "v-show with negation"
+    input = #"<div v-show="!hidden">visible</div>"#
+  }
+  new {
+    name = "v-show with v-for"
+    input = #"<div v-for="item in items" :key="item.id" v-show="item.visible">{{ item }}</div>"#
+  }
+  new {
+    name = "v-show on component"
+    input = #"<MyComponent v-show="visible" />"#
+  }
+}

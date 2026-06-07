@@ -1,0 +1,56 @@
+// Vapor: v-bind tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vapor"
+
+cases {
+  new {
+    name = "v-bind id"
+    input = #"<div :id="id"></div>"#
+  }
+  new {
+    name = "v-bind class"
+    input = #"<div :class="cls"></div>"#
+  }
+  new {
+    name = "v-bind style"
+    input = #"<div :style="styles"></div>"#
+  }
+  new {
+    name = "class object"
+    input = #"<div :class="{ active: isActive }"></div>"#
+  }
+  new {
+    name = "class array"
+    input = #"<div :class="[a, b]"></div>"#
+  }
+  new {
+    name = "class with static"
+    input = #"<div class="static" :class="dynamic"></div>"#
+  }
+  new {
+    name = "style object"
+    input = #"<div :style="{ color: textColor }"></div>"#
+  }
+  new {
+    name = "style array"
+    input = #"<div :style="[a, b]"></div>"#
+  }
+  new {
+    name = "v-bind object"
+    input = #"<div v-bind="attrs"></div>"#
+  }
+  new {
+    name = "dynamic attribute"
+    input = #"<div :[attr]="value"></div>"#
+  }
+  new {
+    name = "v-bind.camel"
+    input = #"<svg :view-box.camel="viewBox"></svg>"#
+  }
+  new {
+    name = "v-bind.prop"
+    input = #"<div :text-content.prop="text"></div>"#
+  }
+}

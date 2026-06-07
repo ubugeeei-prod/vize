@@ -1,0 +1,84 @@
+// VDom: v-show tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "simple v-show"
+    input = #"<div v-show="visible"></div>"#
+  }
+  new {
+    name = "v-show with content"
+    input = #"<div v-show="visible">content</div>"#
+  }
+  new {
+    name = "v-show false"
+    input = #"<div v-show="false">hidden</div>"#
+  }
+  new {
+    name = "v-show true"
+    input = #"<div v-show="true">visible</div>"#
+  }
+  new {
+    name = "v-show on span"
+    input = #"<span v-show="visible">text</span>"#
+  }
+  new {
+    name = "v-show on input"
+    input = #"<input v-show="visible">"#
+  }
+  new {
+    name = "v-show on component"
+    input = #"<MyComponent v-show="visible" />"#
+  }
+  new {
+    name = "v-show with comparison"
+    input = #"<div v-show="count > 0">positive</div>"#
+  }
+  new {
+    name = "v-show with logical and"
+    input = #"<div v-show="a && b">both</div>"#
+  }
+  new {
+    name = "v-show with logical or"
+    input = #"<div v-show="a || b">either</div>"#
+  }
+  new {
+    name = "v-show with negation"
+    input = #"<div v-show="!hidden">visible</div>"#
+  }
+  new {
+    name = "v-show with method call"
+    input = #"<div v-show="isVisible()">content</div>"#
+  }
+  new {
+    name = "v-show with optional chaining"
+    input = #"<div v-show="user?.active">active</div>"#
+  }
+  new {
+    name = "v-show with v-for"
+    input = #"<div v-for="item in items" :key="item.id" v-show="item.visible">{{ item.name }}</div>"#
+  }
+  new {
+    name = "v-show with v-bind"
+    input = #"<div v-show="visible" :class="cls">content</div>"#
+  }
+  new {
+    name = "v-show with v-on"
+    input = #"<button v-show="visible" @click="handler">Click</button>"#
+  }
+  new {
+    name = "nested v-show"
+    input = #"<div v-show="outer"><span v-show="inner">nested</span></div>"#
+  }
+  new {
+    name = "v-show with v-if sibling"
+    input = #"<div v-show="a">A</div><div v-if="b">B</div>"#
+  }
+  new {
+    name = "v-show nested under v-if"
+    input = #"<section v-if="ready"><div v-show="visible">content</div></section>"#
+  }
+}

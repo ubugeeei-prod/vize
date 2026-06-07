@@ -1,0 +1,36 @@
+// Vapor: v-if tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vapor"
+
+cases {
+  new {
+    name = "simple v-if"
+    input = #"<div v-if="show"></div>"#
+  }
+  new {
+    name = "v-if with content"
+    input = #"<div v-if="show">content</div>"#
+  }
+  new {
+    name = "v-if with interpolation"
+    input = #"<div v-if="show">{{ msg }}</div>"#
+  }
+  new {
+    name = "v-if with v-else"
+    input = #"<div v-if="show">yes</div><div v-else>no</div>"#
+  }
+  new {
+    name = "v-if/v-else-if/v-else"
+    input = #"<div v-if="a">A</div><div v-else-if="b">B</div><div v-else>C</div>"#
+  }
+  new {
+    name = "v-if on template"
+    input = #"<template v-if="show"><div>A</div><div>B</div></template>"#
+  }
+  new {
+    name = "nested v-if"
+    input = #"<div v-if="a"><span v-if="b">nested</span></div>"#
+  }
+}

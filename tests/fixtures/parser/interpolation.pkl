@@ -1,0 +1,353 @@
+// Parser tests: Interpolation nodes
+// Based on Vue.js core compiler-core/__tests__/parse.spec.ts
+
+amends "ParserFixture.pkl"
+
+test_type = "parser"
+
+cases {
+  new {
+    name = "simple interpolation"
+    input = "{{message}}"
+  }
+  new {
+    name = "simple interpolation with spaces"
+    input = "{{ message }}"
+  }
+  new {
+    name = "interpolation with extra whitespace"
+    input = "{{   message   }}"
+  }
+  new {
+    name = "interpolation with newlines"
+    input = """
+    {{
+      message
+    }}
+    """
+  }
+  new {
+    name = "interpolation with tabs"
+    input = "{{	message	}}"
+  }
+  new {
+    name = "interpolation with expression"
+    input = "{{ foo + bar }}"
+  }
+  new {
+    name = "interpolation with subtraction"
+    input = "{{ a - b }}"
+  }
+  new {
+    name = "interpolation with multiplication"
+    input = "{{ a * b }}"
+  }
+  new {
+    name = "interpolation with division"
+    input = "{{ a / b }}"
+  }
+  new {
+    name = "interpolation with modulo"
+    input = "{{ a % b }}"
+  }
+  new {
+    name = "interpolation with method call"
+    input = "{{ format(value) }}"
+  }
+  new {
+    name = "interpolation with chained method calls"
+    input = "{{ str.trim().toLowerCase() }}"
+  }
+  new {
+    name = "interpolation with method call multiple args"
+    input = "{{ formatDate(date, 'YYYY-MM-DD', locale) }}"
+  }
+  new {
+    name = "interpolation with ternary"
+    input = "{{ show ? 'yes' : 'no' }}"
+  }
+  new {
+    name = "interpolation with nested ternary"
+    input = "{{ a ? b : c ? d : e }}"
+  }
+  new {
+    name = "interpolation with logical and"
+    input = "{{ a && b }}"
+  }
+  new {
+    name = "interpolation with logical or"
+    input = "{{ a || b }}"
+  }
+  new {
+    name = "interpolation with nullish coalescing"
+    input = "{{ a ?? b }}"
+  }
+  new {
+    name = "interpolation with optional chaining"
+    input = "{{ obj?.prop }}"
+  }
+  new {
+    name = "interpolation with optional method call"
+    input = "{{ obj?.method?.() }}"
+  }
+  new {
+    name = "interpolation with comparison"
+    input = "{{ a > b }}"
+  }
+  new {
+    name = "interpolation with less than (tag-like)"
+    input = "{{ a < b }}"
+  }
+  new {
+    name = "interpolation with equality"
+    input = "{{ a === b }}"
+  }
+  new {
+    name = "interpolation with inequality"
+    input = "{{ a !== b }}"
+  }
+  new {
+    name = "interpolation with negation"
+    input = "{{ !show }}"
+  }
+  new {
+    name = "interpolation with double negation"
+    input = "{{ !!value }}"
+  }
+  new {
+    name = "interpolation with typeof"
+    input = "{{ typeof value }}"
+  }
+  new {
+    name = "interpolation with object literal"
+    input = "{{ { foo: bar } }}"
+  }
+  new {
+    name = "interpolation with nested object"
+    input = "{{ { a: { b: c } } }}"
+  }
+  new {
+    name = "interpolation with object shorthand"
+    input = "{{ { foo, bar } }}"
+  }
+  new {
+    name = "interpolation with computed property"
+    input = "{{ { [key]: value } }}"
+  }
+  new {
+    name = "interpolation with array literal"
+    input = "{{ [a, b, c] }}"
+  }
+  new {
+    name = "interpolation with nested array"
+    input = "{{ [[1, 2], [3, 4]] }}"
+  }
+  new {
+    name = "interpolation with spread operator"
+    input = "{{ [...items] }}"
+  }
+  new {
+    name = "interpolation with object spread"
+    input = "{{ { ...obj } }}"
+  }
+  new {
+    name = "interpolation with dot notation"
+    input = "{{ obj.prop }}"
+  }
+  new {
+    name = "interpolation with deep dot notation"
+    input = "{{ obj.a.b.c }}"
+  }
+  new {
+    name = "interpolation with bracket notation"
+    input = "{{ obj[key] }}"
+  }
+  new {
+    name = "interpolation with bracket string literal"
+    input = "{{ obj['prop'] }}"
+  }
+  new {
+    name = "interpolation with mixed notation"
+    input = "{{ obj.a[b].c }}"
+  }
+  new {
+    name = "interpolation with array index"
+    input = "{{ items[0] }}"
+  }
+  new {
+    name = "interpolation with array slice"
+    input = "{{ items.slice(0, 5) }}"
+  }
+  new {
+    name = "interpolation with template literal"
+    input = "{{ `Hello ${name}` }}"
+  }
+  new {
+    name = "interpolation with tagged template"
+    input = "{{ tag`string` }}"
+  }
+  new {
+    name = "multiple interpolations"
+    input = "{{ a }} and {{ b }}"
+  }
+  new {
+    name = "three interpolations"
+    input = "{{ a }} {{ b }} {{ c }}"
+  }
+  new {
+    name = "adjacent interpolations"
+    input = "{{ a }}{{ b }}"
+  }
+  new {
+    name = "interpolations with same variable"
+    input = "{{ msg }} is {{ msg }}"
+  }
+  new {
+    name = "interpolation in element"
+    input = "<div>{{ message }}</div>"
+  }
+  new {
+    name = "interpolation with text before"
+    input = "text {{ message }}"
+  }
+  new {
+    name = "interpolation with text after"
+    input = "{{ message }} text"
+  }
+  new {
+    name = "interpolation with text around"
+    input = "before {{ message }} after"
+  }
+  new {
+    name = "interpolation in nested element"
+    input = "<div><span>{{ message }}</span></div>"
+  }
+  new {
+    name = "interpolation with sibling text"
+    input = "<div>Hello, {{ name }}! Welcome.</div>"
+  }
+  new {
+    name = "interpolation in multiple elements"
+    input = "<div>{{ a }}</div><span>{{ b }}</span>"
+  }
+  new {
+    name = "interpolation with element between"
+    input = "{{ a }}<br>{{ b }}"
+  }
+  new {
+    name = "interpolation with closing tag like content"
+    input = #"<div>{{ "</div>" }}</div>"#
+  }
+  new {
+    name = "interpolation with less than and greater than"
+    input = "{{ a<b && c>d }}"
+  }
+  new {
+    name = "interpolation with arrow function"
+    input = "{{ items.map(x => x * 2) }}"
+  }
+  new {
+    name = "interpolation with object destructuring"
+    input = "{{ ({ a, b }) => a + b }}"
+  }
+  new {
+    name = "interpolation with regex"
+    input = "{{ /test/.test(str) }}"
+  }
+  new {
+    name = "interpolation with string quotes"
+    input = #"{{ 'single' + "double" }}"#
+  }
+  new {
+    name = "interpolation with escape"
+    input = #"{{ '\n' }}"#
+  }
+  new {
+    name = "interpolation with unicode"
+    input = #"{{ '\u0041' }}"#
+  }
+  new {
+    name = "interpolation with integer"
+    input = "{{ 42 }}"
+  }
+  new {
+    name = "interpolation with float"
+    input = "{{ 3.14 }}"
+  }
+  new {
+    name = "interpolation with negative number"
+    input = "{{ -42 }}"
+  }
+  new {
+    name = "interpolation with scientific notation"
+    input = "{{ 1e10 }}"
+  }
+  new {
+    name = "interpolation with hex"
+    input = "{{ 0xFF }}"
+  }
+  new {
+    name = "interpolation with binary"
+    input = "{{ 0b1010 }}"
+  }
+  new {
+    name = "interpolation with octal"
+    input = "{{ 0o777 }}"
+  }
+  new {
+    name = "interpolation with bigint"
+    input = "{{ 9007199254740991n }}"
+  }
+  new {
+    name = "interpolation with true"
+    input = "{{ true }}"
+  }
+  new {
+    name = "interpolation with false"
+    input = "{{ false }}"
+  }
+  new {
+    name = "interpolation with null"
+    input = "{{ null }}"
+  }
+  new {
+    name = "interpolation with undefined"
+    input = "{{ undefined }}"
+  }
+  new {
+    name = "interpolation with NaN"
+    input = "{{ NaN }}"
+  }
+  new {
+    name = "interpolation with Infinity"
+    input = "{{ Infinity }}"
+  }
+  new {
+    name = "interpolation with complex expression"
+    input = "{{ items.filter(x => x.active).map(x => x.name).join(', ') }}"
+  }
+  new {
+    name = "interpolation with conditional chain"
+    input = "{{ a && b && c || d }}"
+  }
+  new {
+    name = "interpolation with parentheses"
+    input = "{{ (a + b) * c }}"
+  }
+  new {
+    name = "interpolation with nested parentheses"
+    input = "{{ ((a + b) * (c - d)) / e }}"
+  }
+  new {
+    name = "interpolation with function in expression"
+    input = "{{ Math.max(a, b, c) }}"
+  }
+  new {
+    name = "interpolation with Date"
+    input = "{{ new Date().getFullYear() }}"
+  }
+  new {
+    name = "interpolation with JSON"
+    input = "{{ JSON.stringify(obj) }}"
+  }
+}

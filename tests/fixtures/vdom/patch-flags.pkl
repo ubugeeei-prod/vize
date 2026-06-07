@@ -1,0 +1,136 @@
+// VDom: Patch flags tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "text patch flag"
+    input = "<div>{{ msg }}</div>"
+  }
+  new {
+    name = "text in span"
+    input = "<span>{{ text }}</span>"
+  }
+  new {
+    name = "multiple interpolations"
+    input = "<div>{{ a }} {{ b }}</div>"
+  }
+  new {
+    name = "class patch flag"
+    input = #"<div :class="cls"></div>"#
+  }
+  new {
+    name = "class object"
+    input = #"<div :class="{ active: isActive }"></div>"#
+  }
+  new {
+    name = "class array"
+    input = #"<div :class="[a, b]"></div>"#
+  }
+  new {
+    name = "style patch flag"
+    input = #"<div :style="styles"></div>"#
+  }
+  new {
+    name = "style object"
+    input = #"<div :style="{ color: textColor }"></div>"#
+  }
+  new {
+    name = "style array"
+    input = #"<div :style="[a, b]"></div>"#
+  }
+  new {
+    name = "props patch flag"
+    input = #"<div :id="id"></div>"#
+  }
+  new {
+    name = "multiple dynamic props"
+    input = #"<div :id="id" :title="title"></div>"#
+  }
+  new {
+    name = "dynamic data attribute"
+    input = #"<div :data-id="id"></div>"#
+  }
+  new {
+    name = "v-bind object"
+    input = #"<div v-bind="props"></div>"#
+  }
+  new {
+    name = "dynamic key"
+    input = #"<div :[key]="value"></div>"#
+  }
+  new {
+    name = "event handler"
+    input = #"<button @click="handler">click</button>"#
+  }
+  new {
+    name = "event handler with dynamic text"
+    input = #"<button @click="handler">{{ label }}</button>"#
+  }
+  new {
+    name = "event handler with dynamic class"
+    input = #"<button :class="cls" @click="handler">click</button>"#
+  }
+  new {
+    name = "ref"
+    input = #"<div ref="el"></div>"#
+  }
+  new {
+    name = "text and class"
+    input = #"<div :class="cls">{{ msg }}</div>"#
+  }
+  new {
+    name = "class and style"
+    input = #"<div :class="cls" :style="style"></div>"#
+  }
+  new {
+    name = "text and props"
+    input = #"<div :id="id">{{ msg }}</div>"#
+  }
+  new {
+    name = "all dynamic"
+    input = #"<div :id="id" :class="cls" :style="style">{{ msg }}</div>"#
+  }
+  new {
+    name = "v-for with key"
+    input = #"<div v-for="item in items" :key="item.id">{{ item }}</div>"#
+  }
+  new {
+    name = "v-for without key"
+    input = #"<div v-for="item in items">{{ item }}</div>"#
+  }
+  new {
+    name = "ref on element"
+    input = #"<div ref="el">content</div>"#
+  }
+  new {
+    name = "directive on static"
+    input = "<div v-focus>content</div>"
+  }
+  new {
+    name = "dynamic slot name"
+    input = "<MyComponent><template #[name]>content</template></MyComponent>"
+  }
+  new {
+    name = "slot with v-if"
+    input = #"<MyComponent><template #header v-if="show">Header</template></MyComponent>"#
+  }
+  new {
+    name = "slot with v-for"
+    input = #"<MyComponent><template #item v-for="item in items" :key="item">{{ item }}</template></MyComponent>"#
+  }
+  new {
+    name = "component static props"
+    input = #"<MyComponent msg="hello" />"#
+  }
+  new {
+    name = "component dynamic props"
+    input = #"<MyComponent :msg="message" />"#
+  }
+  new {
+    name = "component mixed props"
+    input = #"<MyComponent static="value" :dynamic="value" />"#
+  }
+}

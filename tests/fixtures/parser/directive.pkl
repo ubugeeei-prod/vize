@@ -1,0 +1,590 @@
+// Parser tests: Directive nodes
+// Based on Vue.js core compiler-core/__tests__/parse.spec.ts
+
+amends "ParserFixture.pkl"
+
+test_type = "parser"
+
+cases {
+  new {
+    name = "v-if directive"
+    input = #"<div v-if="show"></div>"#
+  }
+  new {
+    name = "v-if with no value"
+    input = "<div v-if/>"
+  }
+  new {
+    name = "v-if with complex expression"
+    input = #"<div v-if="a && b || c"></div>"#
+  }
+  new {
+    name = "v-if with method call"
+    input = #"<div v-if="shouldShow()"></div>"#
+  }
+  new {
+    name = "v-if with negation"
+    input = #"<div v-if="!hidden"></div>"#
+  }
+  new {
+    name = "v-if with comparison"
+    input = #"<div v-if="count > 0"></div>"#
+  }
+  new {
+    name = "v-if with ternary"
+    input = #"<div v-if="ok ? yes : no"></div>"#
+  }
+  new {
+    name = "v-if with member expression"
+    input = #"<div v-if="item.visible"></div>"#
+  }
+  new {
+    name = "v-else directive"
+    input = "<div v-else></div>"
+  }
+  new {
+    name = "v-else-if directive"
+    input = #"<div v-else-if="condition"></div>"#
+  }
+  new {
+    name = "v-else-if with complex condition"
+    input = #"<div v-else-if="type === 2 && enabled"></div>"#
+  }
+  new {
+    name = "v-if with v-else chain"
+    input = #"<div v-if="a">A</div><div v-else>B</div>"#
+  }
+  new {
+    name = "v-if with v-else-if chain"
+    input = #"<div v-if="a">A</div><div v-else-if="b">B</div><div v-else>C</div>"#
+  }
+  new {
+    name = "v-if on template"
+    input = #"<template v-if="show"><div>a</div><div>b</div></template>"#
+  }
+  new {
+    name = "v-for directive"
+    input = #"<div v-for="item in items"></div>"#
+  }
+  new {
+    name = "v-for with index"
+    input = #"<div v-for="(item, index) in items"></div>"#
+  }
+  new {
+    name = "v-for with key and index"
+    input = #"<div v-for="(value, key, index) in object"></div>"#
+  }
+  new {
+    name = "v-for with of keyword"
+    input = #"<div v-for="item of items"></div>"#
+  }
+  new {
+    name = "v-for with destructuring"
+    input = #"<div v-for="{ id, name } in items"></div>"#
+  }
+  new {
+    name = "v-for with array destructuring"
+    input = #"<div v-for="[a, b] in items"></div>"#
+  }
+  new {
+    name = "v-for with nested destructuring"
+    input = #"<div v-for="{ nested: { value } } in items"></div>"#
+  }
+  new {
+    name = "v-for with default value"
+    input = #"<div v-for="{ id = 0 } in items"></div>"#
+  }
+  new {
+    name = "v-for with rest operator"
+    input = #"<div v-for="{ id, ...rest } in items"></div>"#
+  }
+  new {
+    name = "v-for with range"
+    input = #"<div v-for="n in 10"></div>"#
+  }
+  new {
+    name = "v-for with method call"
+    input = #"<div v-for="item in getItems()"></div>"#
+  }
+  new {
+    name = "v-for with computed source"
+    input = #"<div v-for="item in filteredItems"></div>"#
+  }
+  new {
+    name = "v-for with chained methods"
+    input = #"<div v-for="item in items.filter(x => x.active)"></div>"#
+  }
+  new {
+    name = "v-for with inline array"
+    input = #"<div v-for="item in [1, 2, 3]"></div>"#
+  }
+  new {
+    name = "v-for with inline object"
+    input = #"<div v-for="(value, key) in { a: 1, b: 2 }"></div>"#
+  }
+  new {
+    name = "v-for on template"
+    input = #"<template v-for="item in items"><div>{{ item }}</div></template>"#
+  }
+  new {
+    name = "v-for with key attribute"
+    input = #"<div v-for="item in items" :key="item.id"></div>"#
+  }
+  new {
+    name = "v-for with static key"
+    input = #"<div v-for="item in items" key="static"></div>"#
+  }
+  new {
+    name = "v-bind directive"
+    input = #"<div v-bind:id="id"></div>"#
+  }
+  new {
+    name = "v-bind shorthand"
+    input = #"<div :id="id"></div>"#
+  }
+  new {
+    name = "v-bind with no expression"
+    input = "<div v-bind:id />"
+  }
+  new {
+    name = "v-bind shorthand with no expression"
+    input = "<div :id />"
+  }
+  new {
+    name = "v-bind with dynamic arg"
+    input = #"<div v-bind:[key]="value"></div>"#
+  }
+  new {
+    name = "v-bind shorthand with dynamic arg"
+    input = #"<div :[key]="value"></div>"#
+  }
+  new {
+    name = "v-bind with complex dynamic arg"
+    input = #"<div :[foo + bar]="value"></div>"#
+  }
+  new {
+    name = "v-bind with modifiers"
+    input = #"<div :id.camel="id"></div>"#
+  }
+  new {
+    name = "v-bind with .prop modifier"
+    input = #"<div :inner-html.prop="html"></div>"#
+  }
+  new {
+    name = "v-bind with .attr modifier"
+    input = #"<div :id.attr="id"></div>"#
+  }
+  new {
+    name = "v-bind with .sync modifier (v2 compat)"
+    input = #"<div :value.sync="val"></div>"#
+  }
+  new {
+    name = "v-bind with multiple modifiers"
+    input = #"<div :foo-bar.camel.prop="value"></div>"#
+  }
+  new {
+    name = "v-bind object"
+    input = #"<div v-bind="attrs"></div>"#
+  }
+  new {
+    name = "v-bind object with other props"
+    input = #"<div v-bind="attrs" :id="id"></div>"#
+  }
+  new {
+    name = "v-bind class"
+    input = #"<div :class="{ active: isActive }"></div>"#
+  }
+  new {
+    name = "v-bind class array"
+    input = #"<div :class="[a, b]"></div>"#
+  }
+  new {
+    name = "v-bind class mixed"
+    input = #"<div :class="[{ active: isActive }, errorClass]"></div>"#
+  }
+  new {
+    name = "v-bind style object"
+    input = #"<div :style="{ color: activeColor }"></div>"#
+  }
+  new {
+    name = "v-bind style array"
+    input = #"<div :style="[baseStyles, overridingStyles]"></div>"#
+  }
+  new {
+    name = "v-bind with expression"
+    input = #"<div :id="a + b"></div>"#
+  }
+  new {
+    name = "v-bind with ternary"
+    input = #"<div :class="isActive ? activeClass : inactiveClass"></div>"#
+  }
+  new {
+    name = "v-on directive"
+    input = #"<div v-on:click="handler"></div>"#
+  }
+  new {
+    name = "v-on shorthand"
+    input = #"<div @click="handler"></div>"#
+  }
+  new {
+    name = "v-on with dynamic arg"
+    input = #"<div v-on:[event]="handler"></div>"#
+  }
+  new {
+    name = "v-on shorthand with dynamic arg"
+    input = #"<div @[event]="handler"></div>"#
+  }
+  new {
+    name = "v-on with complex dynamic arg"
+    input = #"<div @[getEvent()]="handler"></div>"#
+  }
+  new {
+    name = "v-on with modifiers"
+    input = #"<div @click.stop.prevent="handler"></div>"#
+  }
+  new {
+    name = "v-on with multiple modifiers"
+    input = #"<div @click.stop.prevent.capture="handler"></div>"#
+  }
+  new {
+    name = "v-on with .once modifier"
+    input = #"<div @click.once="handler"></div>"#
+  }
+  new {
+    name = "v-on with .passive modifier"
+    input = #"<div @scroll.passive="handler"></div>"#
+  }
+  new {
+    name = "v-on with .self modifier"
+    input = #"<div @click.self="handler"></div>"#
+  }
+  new {
+    name = "v-on with key modifier"
+    input = #"<input @keyup.enter="submit">"#
+  }
+  new {
+    name = "v-on with multiple key modifiers"
+    input = #"<input @keyup.ctrl.enter="submit">"#
+  }
+  new {
+    name = "v-on with mouse button modifier"
+    input = #"<div @click.left="handler"></div>"#
+  }
+  new {
+    name = "v-on with .exact modifier"
+    input = #"<button @click.exact="onClick"></button>"#
+  }
+  new {
+    name = "v-on inline expression"
+    input = #"<button @click="count++"></button>"#
+  }
+  new {
+    name = "v-on multiple statements"
+    input = #"<button @click="foo(); bar()"></button>"#
+  }
+  new {
+    name = "v-on arrow function"
+    input = #"<button @click="e => handler(e)"></button>"#
+  }
+  new {
+    name = "v-on arrow function with event"
+    input = #"<button @click="(e) => handler(e)"></button>"#
+  }
+  new {
+    name = "v-on with $event"
+    input = #"<button @click="handler($event)"></button>"#
+  }
+  new {
+    name = "v-on object"
+    input = #"<div v-on="handlers"></div>"#
+  }
+  new {
+    name = "v-on with no handler"
+    input = "<button @click></button>"
+  }
+  new {
+    name = "multiple v-on directives"
+    input = #"<div @click="onClick" @mouseover="onHover" @mouseleave="onLeave"></div>"#
+  }
+  new {
+    name = "v-model directive"
+    input = #"<input v-model="text">"#
+  }
+  new {
+    name = "v-model with modifiers"
+    input = #"<input v-model.lazy.trim="text">"#
+  }
+  new {
+    name = "v-model with .number modifier"
+    input = #"<input v-model.number="age">"#
+  }
+  new {
+    name = "v-model with .lazy modifier"
+    input = #"<input v-model.lazy="text">"#
+  }
+  new {
+    name = "v-model with .trim modifier"
+    input = #"<input v-model.trim="text">"#
+  }
+  new {
+    name = "v-model on textarea"
+    input = #"<textarea v-model="content"></textarea>"#
+  }
+  new {
+    name = "v-model on select"
+    input = #"<select v-model="selected"></select>"#
+  }
+  new {
+    name = "v-model on checkbox"
+    input = #"<input type="checkbox" v-model="checked">"#
+  }
+  new {
+    name = "v-model on radio"
+    input = #"<input type="radio" v-model="picked">"#
+  }
+  new {
+    name = "v-model with expression"
+    input = #"<input v-model="form.name">"#
+  }
+  new {
+    name = "v-model with bracket notation"
+    input = #"<input v-model="items[index]">"#
+  }
+  new {
+    name = "v-model with multiline"
+    input = """
+    <input v-model="
+      model.foo
+    ">
+    """
+  }
+  new {
+    name = "v-model with custom arg"
+    input = #"<MyComponent v-model:title="pageTitle" />"#
+  }
+  new {
+    name = "v-model with custom arg and modifiers"
+    input = #"<MyComponent v-model:title.trim="pageTitle" />"#
+  }
+  new {
+    name = "multiple v-model"
+    input = #"<MyComponent v-model:first="firstName" v-model:last="lastName" />"#
+  }
+  new {
+    name = "v-slot directive"
+    input = "<template v-slot:header></template>"
+  }
+  new {
+    name = "v-slot shorthand"
+    input = "<template #header></template>"
+  }
+  new {
+    name = "v-slot default"
+    input = "<template v-slot></template>"
+  }
+  new {
+    name = "v-slot default shorthand"
+    input = "<template #default></template>"
+  }
+  new {
+    name = "v-slot with scope"
+    input = #"<template v-slot:default="slotProps"></template>"#
+  }
+  new {
+    name = "v-slot shorthand with scope"
+    input = #"<template #default="{ item }"></template>"#
+  }
+  new {
+    name = "v-slot with destructuring"
+    input = #"<template #default="{ item, index }"></template>"#
+  }
+  new {
+    name = "v-slot with nested destructuring"
+    input = #"<template #default="{ user: { name } }"></template>"#
+  }
+  new {
+    name = "v-slot with default value"
+    input = #"<template #default="{ item = {} }"></template>"#
+  }
+  new {
+    name = "v-slot with rest"
+    input = #"<template #default="{ item, ...rest }"></template>"#
+  }
+  new {
+    name = "v-slot with dynamic name"
+    input = #"<template v-slot:[slotName]="props"></template>"#
+  }
+  new {
+    name = "v-slot shorthand with dynamic name"
+    input = #"<template #[slotName]="props"></template>"#
+  }
+  new {
+    name = "v-slot on component"
+    input = #"<MyComponent v-slot="{ item }">{{ item }}</MyComponent>"#
+  }
+  new {
+    name = "v-slot named on component"
+    input = #"<MyComponent v-slot:header="{ title }">{{ title }}</MyComponent>"#
+  }
+  new {
+    name = "multiple slots"
+    input = """
+    <MyComponent>
+      <template #header>Header</template>
+      <template #footer>Footer</template>
+    </MyComponent>
+    """
+  }
+  new {
+    name = "v-show directive"
+    input = #"<div v-show="visible"></div>"#
+  }
+  new {
+    name = "v-show with expression"
+    input = #"<div v-show="count > 0"></div>"#
+  }
+  new {
+    name = "v-show with method"
+    input = #"<div v-show="isVisible()"></div>"#
+  }
+  new {
+    name = "v-show with negation"
+    input = #"<div v-show="!hidden"></div>"#
+  }
+  new {
+    name = "v-pre directive"
+    input = "<div v-pre>{{ raw }}</div>"
+  }
+  new {
+    name = "v-pre with nested elements"
+    input = "<div v-pre><span>{{ not interpolated }}</span></div>"
+  }
+  new {
+    name = "v-pre with directives"
+    input = #"<div v-pre v-if="ignored">content</div>"#
+  }
+  new {
+    name = "v-cloak directive"
+    input = "<div v-cloak></div>"
+  }
+  new {
+    name = "v-cloak with content"
+    input = "<div v-cloak>{{ message }}</div>"
+  }
+  new {
+    name = "v-once directive"
+    input = "<div v-once></div>"
+  }
+  new {
+    name = "v-once with content"
+    input = "<div v-once>{{ staticContent }}</div>"
+  }
+  new {
+    name = "v-once with children"
+    input = "<div v-once><span>{{ value }}</span></div>"
+  }
+  new {
+    name = "v-once on component"
+    input = "<MyComponent v-once />"
+  }
+  new {
+    name = "v-memo directive"
+    input = #"<div v-memo="[value]"></div>"#
+  }
+  new {
+    name = "v-memo with multiple dependencies"
+    input = #"<div v-memo="[a, b, c]"></div>"#
+  }
+  new {
+    name = "v-memo empty array"
+    input = #"<div v-memo="[]"></div>"#
+  }
+  new {
+    name = "v-memo with v-for"
+    input = #"<div v-for="item in items" :key="item.id" v-memo="[item.selected]"></div>"#
+  }
+  new {
+    name = "v-html directive"
+    input = #"<div v-html="html"></div>"#
+  }
+  new {
+    name = "v-html with expression"
+    input = #"<div v-html="sanitize(content)"></div>"#
+  }
+  new {
+    name = "v-text directive"
+    input = #"<div v-text="text"></div>"#
+  }
+  new {
+    name = "v-text with expression"
+    input = #"<div v-text="message.toUpperCase()"></div>"#
+  }
+  new {
+    name = "custom directive"
+    input = "<div v-focus></div>"
+  }
+  new {
+    name = "custom directive with value"
+    input = #"<div v-custom="value"></div>"#
+  }
+  new {
+    name = "custom directive with arg"
+    input = #"<div v-custom:arg="value"></div>"#
+  }
+  new {
+    name = "custom directive with dynamic arg"
+    input = #"<div v-custom:[arg]="value"></div>"#
+  }
+  new {
+    name = "custom directive with modifiers"
+    input = #"<div v-custom.mod1.mod2="value"></div>"#
+  }
+  new {
+    name = "custom directive with arg and modifiers"
+    input = #"<div v-custom:arg.mod1.mod2="value"></div>"#
+  }
+  new {
+    name = "custom directive with dynamic arg and modifiers"
+    input = #"<div v-custom:[arg].mod="value"></div>"#
+  }
+  new {
+    name = "custom directive without value"
+    input = "<input v-focus>"
+  }
+  new {
+    name = "custom directive with object value"
+    input = #"<div v-tooltip="{ text: msg, position: pos }"></div>"#
+  }
+  new {
+    name = "custom directive with array value"
+    input = #"<div v-custom="[a, b]"></div>"#
+  }
+  new {
+    name = "v-if with v-for warning case"
+    input = #"<div v-if="show" v-for="item in items"></div>"#
+  }
+  new {
+    name = "v-bind with v-on"
+    input = #"<button :disabled="loading" @click="submit"></button>"#
+  }
+  new {
+    name = "v-model with v-bind"
+    input = #"<input v-model="text" :placeholder="placeholder">"#
+  }
+  new {
+    name = "v-show with v-bind"
+    input = #"<div v-show="visible" :class="{ active: isActive }"></div>"#
+  }
+  new {
+    name = "multiple custom directives"
+    input = #"<div v-tooltip="tip" v-click-outside="close"></div>"#
+  }
+  new {
+    name = "v-once with v-show"
+    input = #"<div v-once v-show="visible">static</div>"#
+  }
+  new {
+    name = "all directive types"
+    input = #"<input v-model="text" v-focus :id="inputId" @input="onInput" v-show="visible">"#
+  }
+}

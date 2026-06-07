@@ -1,0 +1,44 @@
+// Vapor: v-for tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vapor"
+
+cases {
+  new {
+    name = "v-for array"
+    input = #"<div v-for="item in items">{{ item }}</div>"#
+  }
+  new {
+    name = "v-for with key"
+    input = #"<div v-for="item in items" :key="item.id">{{ item.name }}</div>"#
+  }
+  new {
+    name = "v-for with index"
+    input = #"<div v-for="(item, index) in items" :key="index">{{ index }}: {{ item }}</div>"#
+  }
+  new {
+    name = "v-for object"
+    input = #"<div v-for="(value, key) in obj" :key="key">{{ key }}: {{ value }}</div>"#
+  }
+  new {
+    name = "v-for range"
+    input = #"<div v-for="n in 10" :key="n">{{ n }}</div>"#
+  }
+  new {
+    name = "v-for on template"
+    input = #"<template v-for="item in items" :key="item.id"><div>{{ item }}</div></template>"#
+  }
+  new {
+    name = "v-for destructure"
+    input = #"<div v-for="{ id, name } in items" :key="id">{{ name }}</div>"#
+  }
+  new {
+    name = "nested v-for"
+    input = #"<div v-for="row in rows" :key="row.id"><span v-for="cell in row.cells" :key="cell.id">{{ cell }}</span></div>"#
+  }
+  new {
+    name = "v-for with v-if"
+    input = #"<template v-for="item in items" :key="item.id"><div v-if="item.show">{{ item }}</div></template>"#
+  }
+}

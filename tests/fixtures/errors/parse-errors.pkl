@@ -1,0 +1,290 @@
+// Error handling tests: Parse errors
+// Based on Vue.js core compiler-core/__tests__/parse.spec.ts errors section
+
+amends "ErrorFixture.pkl"
+
+cases {
+  new {
+    name = "missing end tag"
+    input = "<div>"
+    expected = new {
+      error = "MISSING_END_TAG"
+      error_message_contains = new Listing {
+        "end tag"
+      }
+    }
+  }
+  new {
+    name = "missing nested end tag"
+    input = "<div><span></div>"
+    expected = new {
+      error = "MISSING_END_TAG"
+      error_message_contains = new Listing {
+        "span"
+      }
+    }
+  }
+  new {
+    name = "missing multiple end tags"
+    input = "<div><span><p>"
+    expected = new {
+      error = "MISSING_END_TAG"
+    }
+  }
+  new {
+    name = "wrong end tag"
+    input = "<div></span>"
+    expected = new {
+      error = "X_MISSING_END_TAG"
+    }
+  }
+  new {
+    name = "invalid tag name starting with digit"
+    input = "<1div></1div>"
+    expected = new {
+      error = "INVALID_FIRST_CHARACTER_OF_TAG_NAME"
+    }
+  }
+  new {
+    name = "invalid tag name starting with slash"
+    input = "</>"
+    expected = new {
+      error = "INVALID_FIRST_CHARACTER_OF_TAG_NAME"
+    }
+  }
+  new {
+    name = "missing attribute value"
+    input = "<div id=></div>"
+    expected = new {
+      error = "MISSING_ATTRIBUTE_VALUE"
+    }
+  }
+  new {
+    name = "unexpected equals in attribute"
+    input = #"<div id==""></div>"#
+    expected = new {
+      error = "UNEXPECTED_EQUALS_SIGN_BEFORE_ATTRIBUTE_NAME"
+    }
+  }
+  new {
+    name = "duplicate attribute"
+    input = #"<div id="a" id="b"></div>"#
+    expected = new {
+      error = "DUPLICATE_ATTRIBUTE"
+      error_message_contains = new Listing {
+        "id"
+      }
+    }
+  }
+  new {
+    name = "missing whitespace between attributes"
+    input = #"<div id="a"class="b"></div>"#
+    expected = new {
+      error = "MISSING_WHITESPACE_BETWEEN_ATTRIBUTES"
+    }
+  }
+  new {
+    name = "unexpected character in attribute name"
+    input = #"<div id"foo"></div>"#
+    expected = new {
+      error = "UNEXPECTED_CHARACTER_IN_ATTRIBUTE_NAME"
+    }
+  }
+  new {
+    name = "v-else without adjacent v-if"
+    input = "<div v-else></div>"
+    expected = new {
+      error = "X_V_ELSE_NO_ADJACENT_IF"
+      error_message_contains = new Listing {
+        "v-else"
+        "v-if"
+      }
+    }
+  }
+  new {
+    name = "v-else-if without adjacent v-if"
+    input = #"<div v-else-if="a"></div>"#
+    expected = new {
+      error = "X_V_ELSE_NO_ADJACENT_IF"
+    }
+  }
+  new {
+    name = "v-else with text between"
+    input = #"<div v-if="a"></div>text<div v-else></div>"#
+    expected = new {
+      error = "X_V_ELSE_NO_ADJACENT_IF"
+    }
+  }
+  new {
+    name = "v-for missing expression"
+    input = "<div v-for></div>"
+    expected = new {
+      error = "X_V_FOR_NO_EXPRESSION"
+    }
+  }
+  new {
+    name = "v-for malformed expression"
+    input = #"<div v-for="item"></div>"#
+    expected = new {
+      error = "X_V_FOR_MALFORMED_EXPRESSION"
+      error_message_contains = new Listing {
+        "in"
+        "of"
+      }
+    }
+  }
+  new {
+    name = "v-for template key placement"
+    input = #"<template v-for="item in items" :key="item.id"><div></div></template>"#
+    expected = new {
+      error = "X_V_FOR_TEMPLATE_KEY_PLACEMENT"
+    }
+  }
+  new {
+    name = "v-bind no expression"
+    input = #"<div v-bind:id=""></div>"#
+    expected = new {
+      error = "X_V_BIND_NO_EXPRESSION"
+    }
+  }
+  new {
+    name = "v-bind invalid same-name shorthand"
+    input = "<div v-bind:[arg]></div>"
+    expected = new {
+      error = "X_V_BIND_INVALID_SAME_NAME_ARGUMENT"
+    }
+  }
+  new {
+    name = "v-on no expression"
+    input = #"<div v-on:click=""></div>"#
+    expected = new {
+      error = "X_V_ON_NO_EXPRESSION"
+    }
+  }
+  new {
+    name = "v-model no expression"
+    input = "<input v-model />"
+    expected = new {
+      error = "X_V_MODEL_NO_EXPRESSION"
+    }
+  }
+  new {
+    name = "v-model malformed expression"
+    input = #"<input v-model="a + b" />"#
+    expected = new {
+      error = "X_V_MODEL_MALFORMED_EXPRESSION"
+    }
+  }
+  new {
+    name = "v-model on props element"
+    input = #"<div v-model:foo="bar"></div>"#
+    expected = new {
+      error = "X_V_MODEL_ON_SCOPE_VARIABLE"
+    }
+  }
+  new {
+    name = "v-model argument on native element"
+    input = #"<input v-model:value="bar" />"#
+    expected = new {
+      error = "X_V_MODEL_ARG_ON_ELEMENT"
+    }
+  }
+  new {
+    name = "v-show no expression"
+    input = #"<div v-show=""></div>"#
+    expected = new {
+      error = "X_V_SHOW_NO_EXPRESSION"
+    }
+  }
+  new {
+    name = "v-slot wrong placement"
+    input = "<div v-slot:header></div>"
+    expected = new {
+      error = "X_V_SLOT_MISPLACED"
+    }
+  }
+  new {
+    name = "v-slot on component with children"
+    input = "<Comp v-slot:header><template #default></template></Comp>"
+    expected = new {
+      error = "X_V_SLOT_MIXED_SLOT_USAGE"
+    }
+  }
+  new {
+    name = "v-slot duplicate slot names"
+    input = "<Comp><template #header></template><template #header></template></Comp>"
+    expected = new {
+      error = "X_V_SLOT_DUPLICATE_SLOT_NAMES"
+    }
+  }
+  new {
+    name = "v-slot extraneous default slot children"
+    input = "<Comp v-slot>text<template #header></template></Comp>"
+    expected = new {
+      error = "X_V_SLOT_EXTRANEOUS_DEFAULT_SLOT_CHILDREN"
+    }
+  }
+  new {
+    name = "incorrectly opened comment"
+    input = "<! comment >"
+    expected = new {
+      error = "INCORRECTLY_OPENED_COMMENT"
+    }
+  }
+  new {
+    name = "abrupt closing of empty comment"
+    input = "<!---->"
+    expected = new {
+      type = "ROOT"
+    }
+  }
+  new {
+    name = "DOCTYPE in component"
+    input = "<!DOCTYPE html><div></div>"
+    expected = new {
+      error = "DOCTYPE_IN_COMPONENT"
+    }
+  }
+  new {
+    name = "eof in interpolation"
+    input = "{{ unfinished"
+    expected = new {
+      error = "X_MISSING_INTERPOLATION_END"
+    }
+  }
+  new {
+    name = "empty interpolation"
+    input = "{{ }}"
+    expected = new {
+      error = "X_MISSING_EXPRESSION"
+    }
+  }
+  new {
+    name = "unexpected end tag void element"
+    input = "<input></input>"
+    expected = new {
+      error = "X_INVALID_END_TAG"
+    }
+  }
+  new {
+    name = "element with invalid directive syntax"
+    input = "<div v-></div>"
+    expected = new {
+      error = "X_MISSING_DIRECTIVE_NAME"
+    }
+  }
+  new {
+    name = "prefix if without expression"
+    input = "<div v-if></div>"
+    expected = new {
+      error = "X_V_IF_NO_EXPRESSION"
+    }
+  }
+  new {
+    name = "v-if on root with v-for"
+    input = #"<div v-if="a" v-for="i in list"></div>"#
+    expected = new {
+      error = "X_V_IF_SAME_KEY"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+module vize.fixtures.ErrorFixture
+class Expected {
+  error: String?
+  error_message_contains: Listing<String>?
+  type: String?
+}
+class Case { name: String; input: String; expected: Expected? }
+cases: Listing<Case>

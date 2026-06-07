@@ -1,0 +1,60 @@
+// Vapor: v-model tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vapor"
+
+cases {
+  new {
+    name = "input text"
+    input = #"<input v-model="msg">"#
+  }
+  new {
+    name = "input number"
+    input = #"<input type="number" v-model="count">"#
+  }
+  new {
+    name = "input checkbox"
+    input = #"<input type="checkbox" v-model="checked">"#
+  }
+  new {
+    name = "input radio"
+    input = #"<input type="radio" v-model="picked" value="a">"#
+  }
+  new {
+    name = "textarea"
+    input = #"<textarea v-model="content"></textarea>"#
+  }
+  new {
+    name = "select"
+    input = #"<select v-model="selected"><option>A</option><option>B</option></select>"#
+  }
+  new {
+    name = "v-model.lazy"
+    input = #"<input v-model.lazy="msg">"#
+  }
+  new {
+    name = "v-model.number"
+    input = #"<input v-model.number="age">"#
+  }
+  new {
+    name = "v-model.trim"
+    input = #"<input v-model.trim="msg">"#
+  }
+  new {
+    name = "multiple modifiers"
+    input = #"<input v-model.trim.lazy="msg">"#
+  }
+  new {
+    name = "component v-model"
+    input = #"<MyComponent v-model="value" />"#
+  }
+  new {
+    name = "named v-model"
+    input = #"<MyComponent v-model:title="pageTitle" />"#
+  }
+  new {
+    name = "v-model with modifier"
+    input = #"<MyComponent v-model.trim="value" />"#
+  }
+}

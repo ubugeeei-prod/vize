@@ -1,0 +1,120 @@
+// VDom: v-for tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "v-for array"
+    input = #"<div v-for="item in items">{{ item }}</div>"#
+  }
+  new {
+    name = "v-for with key"
+    input = #"<div v-for="item in items" :key="item.id">{{ item.name }}</div>"#
+  }
+  new {
+    name = "v-for with index"
+    input = #"<div v-for="(item, index) in items" :key="index">{{ index }}: {{ item }}</div>"#
+  }
+  new {
+    name = "v-for with dynamic prop and no children"
+    input = #"<div v-for="(_, i) in ary" :prop="val" />"#
+  }
+  new {
+    name = "v-for object"
+    input = #"<div v-for="(value, key) in obj" :key="key">{{ key }}: {{ value }}</div>"#
+  }
+  new {
+    name = "v-for object with index"
+    input = #"<div v-for="(value, key, index) in obj" :key="index">{{ index }}. {{ key }}: {{ value }}</div>"#
+  }
+  new {
+    name = "v-for range"
+    input = #"<div v-for="n in 10" :key="n">{{ n }}</div>"#
+  }
+  new {
+    name = "v-for range with dynamic prop and no children"
+    input = #"<div v-for="n in 10" :prop="val" />"#
+  }
+  new {
+    name = "v-for of array"
+    input = #"<div v-for="item of items" :key="item">{{ item }}</div>"#
+  }
+  new {
+    name = "v-for of with index"
+    input = #"<div v-for="(item, i) of items" :key="i">{{ item }}</div>"#
+  }
+  new {
+    name = "v-for on template"
+    input = #"<template v-for="item in items" :key="item.id"><div>{{ item.a }}</div><div>{{ item.b }}</div></template>"#
+  }
+  new {
+    name = "v-for on template with nested"
+    input = #"<template v-for="item in items" :key="item.id"><span>{{ item }}</span></template>"#
+  }
+  new {
+    name = "v-for on template with index"
+    input = #"<template v-for="(item, index) in items" :key="item.id"><div>{{ index }}</div><span>{{ item.name }}</span></template>"#
+  }
+  new {
+    name = "v-for on component"
+    input = #"<MyComponent v-for="item in items" :key="item.id" :item="item" />"#
+  }
+  new {
+    name = "v-for on component with content"
+    input = #"<MyComponent v-for="item in items" :key="item.id">{{ item.name }}</MyComponent>"#
+  }
+  new {
+    name = "nested v-for"
+    input = #"<div v-for="row in rows" :key="row.id"><span v-for="cell in row.cells" :key="cell.id">{{ cell }}</span></div>"#
+  }
+  new {
+    name = "v-for with v-if"
+    input = #"<div v-for="item in items" :key="item.id" v-if="item.active">{{ item.name }}</div>"#
+  }
+  new {
+    name = "template v-for with v-if inside"
+    input = #"<template v-for="item in items" :key="item.id"><div v-if="item.show">{{ item.name }}</div></template>"#
+  }
+  new {
+    name = "v-for with destructure"
+    input = #"<div v-for="{ id, name } in items" :key="id">{{ name }}</div>"#
+  }
+  new {
+    name = "v-for with nested destructure"
+    input = #"<div v-for="{ user: { name } } in items" :key="name">{{ name }}</div>"#
+  }
+  new {
+    name = "v-for with default value"
+    input = #"<div v-for="{ id, name = "default" } in items" :key="id">{{ name }}</div>"#
+  }
+  new {
+    name = "v-for with rest"
+    input = #"<div v-for="{ id, ...rest } in items" :key="id">{{ rest }}</div>"#
+  }
+  new {
+    name = "v-for with method call"
+    input = #"<div v-for="item in getItems()" :key="item.id">{{ item }}</div>"#
+  }
+  new {
+    name = "v-for with computed"
+    input = #"<div v-for="item in filteredItems" :key="item.id">{{ item }}</div>"#
+  }
+  new {
+    name = "v-for with filter"
+    input = #"<div v-for="item in items.filter(i => i.active)" :key="item.id">{{ item }}</div>"#
+  }
+  new {
+    name = "v-for with nested property"
+    input = #"<div v-for="item in state.list.items" :key="item.id">{{ item }}</div>"#
+  }
+  new {
+    name = "v-for over object keys"
+    input = #"<div v-for="key in Object.keys(obj)" :key="key">{{ key }}</div>"#
+  }
+  new {
+    name = "v-for with optional chaining source"
+    input = #"<div v-for="item in state.items?.list" :key="item.id">{{ item.name }}</div>"#
+  }
+}

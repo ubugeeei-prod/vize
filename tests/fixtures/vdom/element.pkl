@@ -1,0 +1,184 @@
+// VDom: Element compilation tests
+
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "empty div"
+    input = "<div></div>"
+  }
+  new {
+    name = "self-closing div"
+    input = "<div />"
+  }
+  new {
+    name = "element with text"
+    input = "<div>hello</div>"
+  }
+  new {
+    name = "element with interpolation"
+    input = "<div>{{ msg }}</div>"
+  }
+  new {
+    name = "element with mixed content"
+    input = "<div>Hello {{ name }}!</div>"
+  }
+  new {
+    name = "multiple interpolations"
+    input = "<div>{{ a }} and {{ b }}</div>"
+  }
+  new {
+    name = "input element"
+    input = "<input>"
+  }
+  new {
+    name = "br element"
+    input = "<br>"
+  }
+  new {
+    name = "img element"
+    input = #"<img src="test.png">"#
+  }
+  new {
+    name = "hr element"
+    input = "<hr>"
+  }
+  new {
+    name = "nested elements"
+    input = "<div><span>text</span></div>"
+  }
+  new {
+    name = "deeply nested"
+    input = "<div><p><span>deep</span></p></div>"
+  }
+  new {
+    name = "multiple children"
+    input = "<div><span></span><p></p></div>"
+  }
+  new {
+    name = "mixed children types"
+    input = "<div>text<span>element</span>{{ interp }}</div>"
+  }
+  new {
+    name = "text around interpolation"
+    input = "<div>Hello {{ name }}, count is {{ count }}</div>"
+  }
+  new {
+    name = "textarea with text"
+    input = "<textarea>hello</textarea>"
+  }
+  new {
+    name = "template with text and element"
+    input = "<template>hello<span>world</span></template>"
+  }
+  new {
+    name = "static id"
+    input = #"<div id="app"></div>"#
+  }
+  new {
+    name = "static class"
+    input = #"<div class="container"></div>"#
+  }
+  new {
+    name = "multiple static attributes"
+    input = #"<div id="app" class="container"></div>"#
+  }
+  new {
+    name = "static title attribute"
+    input = #"<div title="hello world"></div>"#
+  }
+  new {
+    name = "data attribute"
+    input = #"<div data-id="123"></div>"#
+  }
+  new {
+    name = "boolean attribute"
+    input = "<input disabled>"
+  }
+  new {
+    name = "aria attribute"
+    input = #"<div aria-label="test"></div>"#
+  }
+  new {
+    name = "dynamic id"
+    input = #"<div :id="dynamicId"></div>"#
+  }
+  new {
+    name = "dynamic class"
+    input = #"<div :class="dynamicClass"></div>"#
+  }
+  new {
+    name = "dynamic style"
+    input = #"<div :style="dynamicStyle"></div>"#
+  }
+  new {
+    name = "dynamic attribute"
+    input = #"<div :data-id="id"></div>"#
+  }
+  new {
+    name = "mixed static and dynamic"
+    input = #"<div class="static" :class="dynamic"></div>"#
+  }
+  new {
+    name = "template element"
+    input = "<template><div>content</div></template>"
+  }
+  new {
+    name = "slot element"
+    input = "<slot></slot>"
+  }
+  new {
+    name = "slot with name"
+    input = #"<slot name="header"></slot>"#
+  }
+  new {
+    name = "slot with fallback"
+    input = "<slot>fallback content</slot>"
+  }
+  new {
+    name = "slot with camelized prop"
+    input = #"<slot :slot-key="slotValue"></slot>"#
+  }
+  new {
+    name = "svg element"
+    input = #"<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/></svg>"#
+  }
+  new {
+    name = "svg with namespace"
+    input = #"<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>"#
+  }
+  new {
+    name = "svg path element"
+    input = #"<svg viewBox="0 0 10 10"><path d="M0 0h10v10z"></path></svg>"#
+  }
+  new {
+    name = "math element"
+    input = "<math><mi>x</mi></math>"
+  }
+  new {
+    name = "html comment"
+    input = "<div><!-- comment --></div>"
+  }
+  new {
+    name = "comment between elements"
+    input = "<div><span></span><!-- between --><p></p></div>"
+  }
+  new {
+    name = "root comment between elements"
+    input = "<span>one</span><!-- between --><span>two</span>"
+  }
+  new {
+    name = "single element with trailing root comment"
+    input = "<div></div><!-- trailing -->"
+  }
+  new {
+    name = "single element with leading and trailing root comments"
+    input = "<!-- lead --><div>x</div><!-- trail -->"
+  }
+  new {
+    name = "two elements with root comment is stable fragment"
+    input = "<div>a</div><!-- c --><div>b</div>"
+  }
+}
