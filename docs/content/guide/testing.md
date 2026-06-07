@@ -39,9 +39,9 @@ If a case is missing or a result looks wrong, that is exactly the kind of feedba
   is already valuable.
 - **If you can, attach a minimal reproduction** to a GitHub Issue — the smallest `.vue` file (or
   small project) that still shows the problem. A playground inspector link works great.
-- Bug reports, reproductions, benchmark results, and compatibility findings all help. See
-  [Support](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md) and
-  [Contributing](https://github.com/ubugeeei-prod/vize/blob/main/CONTRIBUTING.md).
+- Bug reports, reproductions, benchmark results, and compatibility findings all help. See the
+  [Contributing](../contributing.md) guide and
+  [Support](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md).
 
 ## Measure Performance
 
