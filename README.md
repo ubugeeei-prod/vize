@@ -17,33 +17,29 @@
 </p>
 
 > [!WARNING]
-> Vize is under active development. It is not a completely production-ready toolchain yet; see the
-> [production-readiness checklist](./docs/release/production-readiness.md),
+> Vize is experimental and in its **Real World Testing** phase — not a completely
+> production-ready toolchain yet. Breaking changes and behavior that diverges from Vue are
+> expected. Review the [production-readiness checklist](./docs/release/production-readiness.md),
 > [support policy](./docs/release/support-policy.md), and [stability guide](./docs/content/stability.md)
-> before adopting it in production.
+> before adopting it.
 
 > [!IMPORTANT]
-> For day-to-day editor support, keep using the official Vue language tools (`vuejs/language-tools`)
-> for now. Vize's VS Code extension, Zed extension, and `vize lsp` remain opt-in while the editor
-> surface matures.
+> For day-to-day editor support, keep using the official Vue language tools
+> (`vuejs/language-tools`) for now. Vize's editor extensions and `vize lsp` stay opt-in while the
+> editor surface matures.
 
 ## What Is Vize?
 
-Vize is an unofficial Rust-native Vue toolchain. It experiments with a shared parser, semantic
-analysis, compiler, lint, type-checking, formatting, and editor pipeline for Vue single-file
-components.
+Vize is an unofficial, Rust-native Vue toolchain: a shared parser, semantic analysis, compiler,
+lint, type-checking, formatting, and editor pipeline for Vue single-file components. The main
+entry points are `@vizejs/vite-plugin` (Vite), `vize` (npm CLI), the native `vize` binary
+(full CLI / LSP / profiling), `@vizejs/vite-plugin-musea` (Musea), and `oxlint-plugin-vize`
+(Oxlint).
 
-The main entry points today are:
-
-- `@vizejs/vite-plugin` for Rust-native Vue SFC compilation in Vite.
-- `vize` on npm for package scripts such as `build`, `fmt`, `lint`, `check`, and `ready`.
-- the Rust `vize` binary for the full native CLI, LSP, profiling, and project-backed checking.
-- `@vizejs/vite-plugin-musea` for Musea component gallery workflows.
-- `oxlint-plugin-vize` for running Vize diagnostics inside Oxlint.
+For everything beyond the quick start below, see the
+[documentation](https://vizejs.dev) — starting with [Getting Started](./docs/content/getting-started.md).
 
 ## Quick Start
-
-Need `vp` first? Install Vite+ once from the [Vite+ install guide](https://viteplus.dev/guide/install).
 
 ```bash
 vp install -D @vizejs/vite-plugin
@@ -54,25 +50,12 @@ vp install -D @vizejs/vite-plugin
 import { defineConfig } from "vite";
 import vize from "@vizejs/vite-plugin";
 
-export default defineConfig({
-  plugins: [vize()],
-});
+export default defineConfig({ plugins: [vize()] });
 ```
 
-Add the npm CLI when you want package scripts:
-
-```bash
-vp install -D vize
-vp exec vize lint src
-vp exec vize check src
-vp exec vize fmt --check src
-```
-
-Use the native binary when you need the full CLI:
-
-```bash
-nix run github:ubugeeei-prod/vize#vize -- --help
-```
+That covers the Vite path. For the npm CLI, the native binary, and everything else, follow
+[Getting Started](./docs/content/getting-started.md). (Need `vp` first? See the
+[Vite+ install guide](https://viteplus.dev/guide/install).)
 
 ## Documentation Map
 
@@ -92,20 +75,21 @@ nix run github:ubugeeei-prod/vize#vize -- --help
 
 ## Local Development
 
-The primary local setup is `Nix + vp`:
-
 ```bash
 nix develop
 vp install --frozen-lockfile
-vp check
-vp fmt
-vp dev
+vp check && vp fmt && vp dev
 ```
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for repository setup, pull-request expectations, and
 language-facing change-class guidance.
 
 ## Community
+
+Vize is in its **Real World Testing** phase, and the most useful contributions right now are
+real-world signal. We are waiting for plenty of issues and PRs, and we are actively looking for
+reasonably large Vue projects to use as test beds — bug reports, reproductions, benchmarks, and
+compatibility findings all help move the project toward its first stable release.
 
 - [Governance](./GOVERNANCE.md)
 - [Support](./SUPPORT.md)
