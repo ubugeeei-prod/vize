@@ -176,6 +176,11 @@
           "default": true,
           "description": "Enable Vue ecosystem diagnostics and editor helpers for Vue Router route names and file-route params, Vue I18n catalogs, Nuxt, and Void Vue."
         },
+        "vize.optionsApi.enable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Resolve Vue 3 Options API template bindings (data, computed, methods, props, inject) in typecheck and hover. Opt-in; officially supported on Vue 3 and zero cost when off."
+        },
         "vize.legacyVue2.enable": {
           "type": "boolean",
           "default": false,

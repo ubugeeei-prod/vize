@@ -152,6 +152,7 @@ for (const [key, property] of Object.entries(configurationProperties)) {
   const expectedDefault =
     key === "vize.diagnostics.enable" ||
     key === "vize.formatting.enable" ||
+    key === "vize.optionsApi.enable" ||
     key === "vize.legacyVue2.enable"
       ? false
       : true;

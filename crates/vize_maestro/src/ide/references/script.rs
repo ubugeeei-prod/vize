@@ -14,9 +14,9 @@ impl ReferencesService {
         let options = vize_atelier_sfc::SfcParseOptions::default();
         let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
 
-        if ctx.state.lsp_features().legacy_vue2
+        if ctx.state.options_api_enabled()
             && let Some(location) =
-                crate::ide::definition::script::find_analyzed_binding_location(ctx, word, true)
+                crate::ide::definition::script::find_analyzed_binding_location(ctx, word)
         {
             return Some(location);
         }

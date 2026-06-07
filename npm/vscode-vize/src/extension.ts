@@ -89,6 +89,7 @@ const FEATURE_SETTING_KEYS = [
   "typecheck.enable",
   "editor.enable",
   "ecosystem.enable",
+  "optionsApi.enable",
   "legacyVue2.enable",
   "completion.enable",
   "hover.enable",
@@ -110,6 +111,7 @@ const CAPABILITY_LABELS: Record<string, string> = {
   lint: "lint",
   typecheck: "type check",
   editor: "editor bundle",
+  optionsApi: "Vue 3 Options API",
   legacyVue2: "Vue 2.7 / Nuxt 2",
   completion: "completion",
   hover: "hover",
@@ -709,6 +711,7 @@ function getInitializationOptions(
   setFeatureOption(options, config, "typecheck.enable", "typecheck", true);
   setFeatureOption(options, config, "editor.enable", "editor", true);
   setFeatureOption(options, config, "ecosystem.enable", "ecosystem", true);
+  setFeatureOption(options, config, "optionsApi.enable", "optionsApi", false);
   setFeatureOption(options, config, "legacyVue2.enable", "legacyVue2", false);
   setFeatureOption(options, config, "completion.enable", "completion", true);
   setFeatureOption(options, config, "hover.enable", "hover", true);

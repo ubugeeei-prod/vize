@@ -77,6 +77,10 @@ Use this only when you are ready to let Vize overlap with the existing Vue langu
 for `useRoute()`, Vue I18n key completions, workspace key validation and inlay previews, Void Vue
 route completions, and ecosystem lint diagnostics.
 
+`optionsApi` resolves Vue 3 Options API template bindings (`data`, `computed`, `methods`, `props`,
+`inject`) during typecheck and hover. It is opt-in and officially supported on Vue 3; leave it off
+(the default) for `<script setup>`-only projects to keep analysis zero cost.
+
 To make Vize the only Vue language server, replace the existing Vue server entry in your `language_servers` list with its disabled form, such as `"!server-id"`.
 
 If you only want Vize on `*.art.vue`, keep your existing `Vue` language servers unchanged and

@@ -38,6 +38,7 @@ struct LspConfigSection {
     typecheck: Option<bool>,
     editor: Option<bool>,
     ecosystem: Option<bool>,
+    options_api: Option<bool>,
     legacy_vue2: Option<bool>,
     completion: Option<bool>,
     hover: Option<bool>,
@@ -90,6 +91,10 @@ impl LspConfigSection {
 
         if let Some(enabled) = self.ecosystem {
             features.ecosystem = enabled;
+        }
+
+        if let Some(enabled) = self.options_api {
+            features.options_api = enabled;
         }
 
         if let Some(enabled) = self.legacy_vue2 {
@@ -156,6 +161,7 @@ impl From<LanguageServerConfig> for LspConfigSection {
             typecheck: config.typecheck,
             editor: config.editor,
             ecosystem: config.ecosystem,
+            options_api: None,
             legacy_vue2: None,
             completion: config.completion,
             hover: config.hover,
@@ -188,6 +194,7 @@ pub struct LspFeatureConfig {
     pub(crate) lint: bool,
     pub(crate) typecheck: bool,
     pub(crate) ecosystem: bool,
+    pub(crate) options_api: bool,
     pub(crate) legacy_vue2: bool,
     pub(crate) completion: bool,
     pub(crate) hover: bool,
@@ -213,6 +220,7 @@ impl LspFeatureConfig {
             lint: false,
             typecheck: false,
             ecosystem: false,
+            options_api: false,
             legacy_vue2: false,
             completion: false,
             hover: false,
@@ -261,6 +269,7 @@ impl Default for LspFeatureConfig {
             lint: true,
             typecheck: true,
             ecosystem: true,
+            options_api: false,
             legacy_vue2: false,
             completion: true,
             hover: true,
@@ -362,6 +371,8 @@ pub struct ServerState {
     lsp_typecheck_enabled: AtomicBool,
     /// Type checker options shared by LSP diagnostics.
     type_checker_config: RwLock<TypeCheckerConfig>,
+    /// Vue 3 Options API binding-resolution opt-in from config.
+    type_checker_options_api: RwLock<bool>,
     /// Vue 2.7 / Nuxt 2 type checker compatibility flag from config.
     type_checker_legacy_vue2: RwLock<bool>,
     /// Linter options shared by LSP diagnostics.
@@ -417,6 +428,7 @@ impl ServerState {
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new(TypeCheckerConfig::default()),
+            type_checker_options_api: RwLock::new(false),
             type_checker_legacy_vue2: RwLock::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
             #[cfg(feature = "glyph")]
@@ -476,6 +488,14 @@ impl ServerState {
         *self.type_checker_legacy_vue2.read() || self.lsp_features().legacy_vue2
     }
 
+    /// Resolve Vue 3 Options API template bindings. Implied by legacy mode.
+    #[inline]
+    pub(crate) fn options_api_enabled(&self) -> bool {
+        *self.type_checker_options_api.read()
+            || self.lsp_features().options_api
+            || self.legacy_vue2_enabled()
+    }
+
     /// Check whether LSP lint diagnostics are enabled.
     #[inline]
     pub fn is_lsp_lint_enabled(&self) -> bool {
@@ -517,6 +537,7 @@ impl ServerState {
     }
 
     fn apply_config_features(&self, features: vize_carton::config::ConfigFeatureFlags) {
+        *self.type_checker_options_api.write() = features.type_checker_options_api;
         *self.type_checker_legacy_vue2.write() = features.type_checker_legacy_vue2;
         if let Some(enabled) = features.language_server_legacy_vue2 {
             let mut lsp_features = self.lsp_features.write();
@@ -603,6 +624,9 @@ impl ServerState {
             corsa_path.as_deref(),
         ) {
             Ok(mut checker) => {
+                if self.options_api_enabled() {
+                    checker.enable_options_api();
+                }
                 if self.legacy_vue2_enabled() {
                     checker.enable_legacy_vue2();
                 }
@@ -1247,6 +1271,53 @@ mod tests {
         assert!(!config.check_emits);
         assert_eq!(config.tsconfig.as_deref(), Some("tsconfig.app.json"));
         assert_eq!(config.runtime_path(), Some("./node_modules/.bin/corsa"));
+    }
+
+    #[test]
+    fn options_api_disabled_by_default() {
+        let state = ServerState::new();
+        assert!(
+            !state.options_api_enabled(),
+            "Options API resolution must be opt-in: zero cost on the default Vue 3 path"
+        );
+    }
+
+    #[test]
+    fn type_checker_options_api_opt_in_from_config() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{ "typeChecker": { "optionsApi": true } }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_workspace_config(dir.path());
+        assert!(
+            state.options_api_enabled(),
+            "typeChecker.optionsApi should enable Options API binding resolution in the LSP"
+        );
+    }
+
+    #[test]
+    fn legacy_vue2_config_implies_options_api() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{ "typeChecker": { "legacyVue2": true } }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_workspace_config(dir.path());
+        assert!(
+            state.legacy_vue2_enabled(),
+            "typeChecker.legacyVue2 should enable Vue 2 compatibility"
+        );
+        assert!(
+            state.options_api_enabled(),
+            "legacy Vue 2 mode is a superset of Options API binding resolution"
+        );
     }
 
     #[test]

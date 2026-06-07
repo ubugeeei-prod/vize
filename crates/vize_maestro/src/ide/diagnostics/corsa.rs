@@ -51,6 +51,7 @@ async fn overlay_sibling_vue_mirrors(
     bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
     host_uri: &Url,
     initial_specifiers: &[std::string::String],
+    options_api: bool,
     legacy_vue2: bool,
 ) {
     use std::collections::HashSet;
@@ -105,7 +106,12 @@ async fn overlay_sibling_vue_mirrors(
             let sibling_virtual = if canonical.to_string_lossy().ends_with(".art.vue") {
                 DiagnosticService::generate_virtual_ts_for_art(&sibling_uri, &sibling_content)
             } else {
-                DiagnosticService::generate_virtual_ts(&sibling_uri, &sibling_content, legacy_vue2)
+                DiagnosticService::generate_virtual_ts(
+                    &sibling_uri,
+                    &sibling_content,
+                    options_api,
+                    legacy_vue2,
+                )
             };
             let Some(sibling_virtual) = sibling_virtual else {
                 continue;
@@ -164,11 +170,12 @@ impl DiagnosticService {
 
         // Generate virtual TypeScript
         let is_art_file = uri.path().ends_with(".art.vue");
+        let options_api = state.options_api_enabled();
         let legacy_vue2 = state.legacy_vue2_enabled();
         let virtual_result = if is_art_file {
             Self::generate_virtual_ts_for_art(uri, &content)
         } else {
-            Self::generate_virtual_ts(uri, &content, legacy_vue2)
+            Self::generate_virtual_ts(uri, &content, options_api, legacy_vue2)
         };
         let Some(virtual_result) = virtual_result else {
             tracing::warn!("failed to generate virtual ts for {}", uri);
@@ -201,6 +208,7 @@ impl DiagnosticService {
             &bridge,
             uri,
             &virtual_result.relative_vue_imports,
+            options_api,
             legacy_vue2,
         )
         .await;
@@ -401,6 +409,7 @@ impl DiagnosticService {
     pub(super) fn generate_virtual_ts(
         uri: &Url,
         content: &str,
+        options_api: bool,
         legacy_vue2: bool,
     ) -> Option<VirtualTsResult> {
         use vize_atelier_sfc::{
@@ -408,12 +417,14 @@ impl DiagnosticService {
             croquis::{
                 SfcCroquisOptions, analyze_sfc_descriptor_with_context,
                 analyze_sfc_descriptor_with_context_legacy_vue2,
+                analyze_sfc_descriptor_with_context_options_api,
             },
             parse_sfc,
         };
         use vize_canon::virtual_ts::{
             VirtualTsOptions, generate_virtual_ts_with_offsets,
             generate_virtual_ts_with_offsets_legacy_vue2,
+            generate_virtual_ts_with_offsets_options_api,
         };
 
         let options = SfcParseOptions {
@@ -436,6 +447,12 @@ impl DiagnosticService {
                 Some(&template_ast),
                 croquis_options,
             )
+        } else if options_api {
+            analyze_sfc_descriptor_with_context_options_api(
+                &descriptor,
+                Some(&template_ast),
+                croquis_options,
+            )
         } else {
             analyze_sfc_descriptor_with_context(&descriptor, Some(&template_ast), croquis_options)
         };
@@ -447,6 +464,8 @@ impl DiagnosticService {
         let virtual_ts_options = VirtualTsOptions::default();
         let generate_virtual_ts = if legacy_vue2 {
             generate_virtual_ts_with_offsets_legacy_vue2
+        } else if options_api {
+            generate_virtual_ts_with_offsets_options_api
         } else {
             generate_virtual_ts_with_offsets
         };
@@ -1003,7 +1022,7 @@ mod tests {
                        </script>\n\
                        <template><div></div></template>";
 
-        let result = DiagnosticService::generate_virtual_ts(&uri, content, false)
+        let result = DiagnosticService::generate_virtual_ts(&uri, content, false, false)
             .expect("virtual ts generated");
 
         assert!(

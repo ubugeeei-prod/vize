@@ -89,6 +89,10 @@ individual switches, make sure to include `vize.completion.enable`, `vize.hover.
 diagnostics for `useRoute()`, Vue I18n key completions, workspace key validation, inlay previews,
 Void Vue route completions, and ecosystem lint diagnostics.
 
+Vue 3 Options API support is opt-in. Set `vize.optionsApi.enable: true` to resolve `data`,
+`computed`, `methods`, `props`, and `inject` template bindings in type checking and hover. It is
+officially supported on Vue 3 and stays zero cost when left off for `<script setup>`-only projects.
+
 Vue 2.7 / Nuxt 2 support is opt-in. Set `vize.legacyVue2.enable: true` to include Options API
 template bindings and Nuxt 2 globals in type checking, completion, hover, definition, and references.
 

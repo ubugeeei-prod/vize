@@ -11,7 +11,7 @@ use tower_lsp::lsp_types::{
 };
 use vize_canon::{
     SfcTypeCheckOptions as TypeCheckOptions, SfcTypeSeverity as TypeSeverity, type_check_sfc,
-    type_check_sfc_with_legacy_vue2,
+    type_check_sfc_with_legacy_vue2, type_check_sfc_with_options_api,
 };
 
 use super::{LspTypeCheckOptions, TypeService};
@@ -33,6 +33,7 @@ impl TypeService {
                 check_setup_context: cfg.check_setup_context,
                 check_invalid_exports: cfg.check_invalid_exports,
                 check_fallthrough_attrs: cfg.check_fallthrough_attrs,
+                options_api: state.options_api_enabled(),
                 legacy_vue2: state.legacy_vue2_enabled(),
             },
         )
@@ -66,6 +67,8 @@ impl TypeService {
 
         let result = if lsp_options.legacy_vue2 {
             type_check_sfc_with_legacy_vue2(&content, &options)
+        } else if lsp_options.options_api {
+            type_check_sfc_with_options_api(&content, &options)
         } else {
             type_check_sfc(&content, &options)
         };

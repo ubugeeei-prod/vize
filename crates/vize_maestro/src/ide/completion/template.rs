@@ -16,6 +16,7 @@ use tower_lsp::lsp_types::{
 };
 use vize_atelier_sfc::croquis::{
     SfcCroquisOptions, analyze_sfc_descriptor, analyze_sfc_descriptor_with_context_legacy_vue2,
+    analyze_sfc_descriptor_with_context_options_api,
 };
 use vize_croquis::{Analyzer, AnalyzerOptions, ScopeKind};
 use vize_relief::BindingType;
@@ -146,6 +147,15 @@ fn is_class_ident_byte(b: u8) -> bool {
     b.is_ascii_alphanumeric() || b == b'-' || b == b'_'
 }
 
+/// Corsa-path supplement for Vue 2.7 / Nuxt 2 constructs that the TypeScript
+/// virtual document cannot express: Nuxt 2 built-in components (`<nuxt-link>`,
+/// `<client-only>`, …) and the legacy-filtered Options API bindings. This stays
+/// gated on `legacy_vue2` deliberately — it has no Vue 3 Options API counterpart
+/// because Options API `data`/`computed`/`methods`/`props` ARE emitted into the
+/// virtual TS as accessible bindings (see `generate_options_api_variables`), so
+/// Corsa already surfaces them; the synchronous fallback covers them via
+/// [`analyzed_template_binding_completions`]. Options API is standard Vue 3 and
+/// is treated like the default path here, not like legacy.
 pub(crate) fn legacy_vue2_template_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
     if !ctx.state.lsp_features().legacy_vue2 {
         return Vec::new();
@@ -433,8 +443,15 @@ fn analyzed_template_binding_completions(
         template_block.map(|tb| (vize_armature::parse(&allocator, &tb.content), tb.loc.start));
 
     let croquis_options = SfcCroquisOptions::full();
-    let croquis = if ctx.state.lsp_features().legacy_vue2 {
+    let croquis = if ctx.state.legacy_vue2_enabled() {
         analyze_sfc_descriptor_with_context_legacy_vue2(
+            &descriptor,
+            template_parse.as_ref().map(|((ast, _), _)| ast),
+            croquis_options,
+        )
+        .croquis
+    } else if ctx.state.options_api_enabled() {
+        analyze_sfc_descriptor_with_context_options_api(
             &descriptor,
             template_parse.as_ref().map(|((ast, _), _)| ast),
             croquis_options,
@@ -882,7 +899,8 @@ fn cached_component_metadata(
     let metadata = std::sync::Arc::new(extract_component_metadata(
         &component_content,
         &resolved.to_string_lossy(),
-        ctx.state.lsp_features().legacy_vue2,
+        ctx.state.options_api_enabled(),
+        ctx.state.legacy_vue2_enabled(),
     ));
     cache.insert(
         resolved.to_path_buf(),
@@ -933,6 +951,7 @@ fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<Stri
 fn extract_component_metadata(
     content: &str,
     filename: &str,
+    options_api: bool,
     legacy_vue2: bool,
 ) -> ComponentMetadata {
     let options = vize_atelier_sfc::SfcParseOptions {
@@ -969,6 +988,8 @@ fn extract_component_metadata(
         let mut analyzer = Analyzer::with_options(analyzer_options);
         if legacy_vue2 {
             analyzer = analyzer.with_legacy_vue2();
+        } else if options_api {
+            analyzer = analyzer.with_options_api();
         }
         if descriptor.script_setup.is_some() {
             analyzer.analyze_script_setup(script_content);
@@ -1755,6 +1776,62 @@ mod cache_tests {
             "recomputed metadata should reflect the added prop ({} -> {})",
             first_prop_count,
             third.props.len(),
+        );
+    }
+}
+
+#[cfg(test)]
+mod options_api_tests {
+    use super::analyzed_template_binding_completions;
+    use crate::ide::IdeContext;
+    use crate::server::ServerState;
+    use tower_lsp::lsp_types::Url;
+
+    const OPTIONS_API_SFC: &str = "<script>\nexport default {\n  data() {\n    return { greeting: 'hello' }\n  },\n}\n</script>\n<template>\n  <p>{{ greeting }}</p>\n</template>\n";
+
+    fn binding_labels(options_api: bool) -> Vec<String> {
+        let state = ServerState::new();
+        if options_api {
+            let dir = tempfile::tempdir().unwrap();
+            std::fs::write(
+                dir.path().join("vize.config.json"),
+                r#"{ "typeChecker": { "optionsApi": true } }"#,
+            )
+            .unwrap();
+            state.load_workspace_config(dir.path());
+        }
+        let uri = Url::parse("file:///comp.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            OPTIONS_API_SFC.to_string(),
+            1,
+            "vue".to_string(),
+        );
+        let offset = OPTIONS_API_SFC.find("greeting }}").unwrap();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        analyzed_template_binding_completions(&ctx, true)
+            .into_iter()
+            .map(|item| item.label)
+            .collect()
+    }
+
+    #[test]
+    fn options_api_data_binding_completed_when_enabled() {
+        let labels = binding_labels(true);
+        assert!(
+            labels.iter().any(|label| label == "greeting"),
+            "the Options API data() binding should be offered as a template completion \
+             when optionsApi is enabled; got {labels:?}"
+        );
+    }
+
+    #[test]
+    fn options_api_data_binding_absent_by_default() {
+        let labels = binding_labels(false);
+        assert!(
+            !labels.iter().any(|label| label == "greeting"),
+            "without optionsApi the Options API data() binding must not resolve \
+             (opt-in keeps the default <script setup> path zero cost); got {labels:?}"
         );
     }
 }

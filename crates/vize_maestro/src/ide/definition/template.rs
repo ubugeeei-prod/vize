@@ -46,8 +46,8 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
         return Some(def);
     }
 
-    if ctx.state.lsp_features().legacy_vue2
-        && let Some(location) = super::script::find_analyzed_binding_location(ctx, &word, true)
+    if ctx.state.options_api_enabled()
+        && let Some(location) = super::script::find_analyzed_binding_location(ctx, &word)
     {
         return Some(GotoDefinitionResponse::Scalar(location));
     }
@@ -458,16 +458,25 @@ pub(crate) fn find_component_prop_definition(
         }
     }
 
-    if ctx.state.lsp_features().legacy_vue2 {
+    if ctx.state.options_api_enabled() {
         use vize_atelier_sfc::croquis::{
             SfcCroquisOptions, analyze_sfc_descriptor_with_context_legacy_vue2,
+            analyze_sfc_descriptor_with_context_options_api,
         };
 
-        let analysis = analyze_sfc_descriptor_with_context_legacy_vue2(
-            &descriptor,
-            None,
-            SfcCroquisOptions::full(),
-        );
+        let analysis = if ctx.state.legacy_vue2_enabled() {
+            analyze_sfc_descriptor_with_context_legacy_vue2(
+                &descriptor,
+                None,
+                SfcCroquisOptions::full(),
+            )
+        } else {
+            analyze_sfc_descriptor_with_context_options_api(
+                &descriptor,
+                None,
+                SfcCroquisOptions::full(),
+            )
+        };
         if let Some(&(start, end)) = analysis.croquis.binding_spans.get(prop_name.as_str())
             && end > start
         {

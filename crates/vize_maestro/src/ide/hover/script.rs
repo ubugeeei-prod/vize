@@ -138,6 +138,8 @@ impl HoverService {
         let mut analyzer = Analyzer::with_options(analyzer_options);
         if ctx.state.lsp_features().legacy_vue2 {
             analyzer = analyzer.with_legacy_vue2();
+        } else if ctx.state.options_api_enabled() {
+            analyzer = analyzer.with_options_api();
         }
 
         if let Some(ref script) = descriptor.script {

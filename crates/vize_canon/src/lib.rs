@@ -95,6 +95,7 @@ pub use intelligence::{
 pub use sfc_typecheck::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic,
     SfcTypeSeverity, type_check_sfc, type_check_sfc_with_legacy_vue2,
+    type_check_sfc_with_options_api,
 };
 pub use source_map::{
     Mapping, MappingFlags, MappingKind, Position, SourceMap, Span, offset_to_position,

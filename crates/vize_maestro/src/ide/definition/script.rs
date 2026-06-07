@@ -76,8 +76,8 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
         }
     }
 
-    if ctx.state.lsp_features().legacy_vue2
-        && let Some(location) = find_analyzed_binding_location(ctx, &word, true)
+    if ctx.state.options_api_enabled()
+        && let Some(location) = find_analyzed_binding_location(ctx, &word)
     {
         return Some(GotoDefinitionResponse::Scalar(location));
     }
@@ -86,16 +86,13 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
 }
 
 /// Find a binding location from Croquis analysis, including opt-in Options API spans.
-pub(crate) fn find_analyzed_binding_location(
-    ctx: &IdeContext,
-    word: &str,
-    legacy_vue2: bool,
-) -> Option<Location> {
+pub(crate) fn find_analyzed_binding_location(ctx: &IdeContext, word: &str) -> Option<Location> {
     use vize_atelier_sfc::{
         SfcParseOptions,
         croquis::{
             SfcCroquisOptions, analyze_sfc_descriptor_with_context,
             analyze_sfc_descriptor_with_context_legacy_vue2,
+            analyze_sfc_descriptor_with_context_options_api,
         },
         parse_sfc,
     };
@@ -110,8 +107,10 @@ pub(crate) fn find_analyzed_binding_location(
     .ok()?;
 
     let croquis_options = SfcCroquisOptions::full();
-    let analysis = if legacy_vue2 {
+    let analysis = if ctx.state.legacy_vue2_enabled() {
         analyze_sfc_descriptor_with_context_legacy_vue2(&descriptor, None, croquis_options)
+    } else if ctx.state.options_api_enabled() {
+        analyze_sfc_descriptor_with_context_options_api(&descriptor, None, croquis_options)
     } else {
         analyze_sfc_descriptor_with_context(&descriptor, None, croquis_options)
     };
