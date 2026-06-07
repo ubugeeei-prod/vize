@@ -8,10 +8,13 @@ description: People and community feedback that have shaped Vize.
 Vize is shaped by practical feedback from people using it against real applications, adjacent
 tooling, and ecosystem experiments. In particular, thank you to:
 
-- [Blacksmith](https://www.blacksmith.sh/) for sponsoring the CI/CD runner infrastructure that
-  keeps the full workflow matrix practical to run.
-- [かっこかり](https://github.com/kakkokari-gtyih) for regular debugging and monitoring around
-  [Misskey](https://github.com/misskey-dev/misskey) — a large Vue codebase with ~103k lines of Vue across 586 SFCs — with many reports around compiler behavior and edge cases.
+- [Blacksmith](https://www.blacksmith.sh/) for sponsoring high-performance CI/CD runners and
+  Testbox infrastructure, giving Vize the compute needed to run frequent benchmarks and
+  compatibility checks across real projects.
+- [かっこかり](https://github.com/kakkokari-gtyih) for continuously testing Vize's compiler and
+  Vite Plugin on [Misskey](https://github.com/misskey-dev/misskey) — a Vue application with
+  ~103k lines of Vue across 586 SFCs — and sending timely reports as the implementation changed
+  ([report](https://github.com/ubugeeei-prod/vize/discussions/71)).
 - [ushironoko](https://github.com/ushironoko) for bug reports from the compiler, linter, and CLI
   sides of the project, along with reference implementations for fixes and reproduction
   repositories for difficult issues.
@@ -21,14 +24,16 @@ tooling, and ecosystem experiments. In particular, thank you to:
   real-project validation, reports about native CSS handling, compatibility feedback across Rspack
   1.x and 2.x, and guidance on defaults that keep newer native CSS behavior usable without
   regressing older Rspack setups.
-- [n13u](https://x.com/%5Fn13u%5F) and the `#frontend_phpcon_do` team for debugging and reporting Vize
-  compiler and Nuxt project build pipeline issues on a conference website, and for validating Vize
-  in a production conference site deployment
-  ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)).
-- [sevenc-nanashi](https://github.com/sevenc-nanashi) for building the
+- [n13u](https://x.com/%5Fn13u%5F) and the `#frontend_phpcon_do` team for persistently reporting
+  bugs while building a Nuxt-based conference website with Vize, then carrying that validation all
+  the way to production adoption
+  ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20),
+  [write-up](https://www.n13u.dev/ja/blog/detail/nYZKQ3UmslmWfXaP)).
+- [sevenc-nanashi](https://github.com/sevenc-nanashi) for using the
   [VOICEVOX](https://github.com/VOICEVOX/voicevox) editor — an Electron-based Vue application with
-  ~26k lines of Vue across 128 SFCs — against Vize as a real-world milestone and example, surfacing
-  valuable compatibility feedback from a large production codebase.
+  ~26k lines of Vue across 128 SFCs — as a real-world target for improving compiler precision and
+  turning production-app gaps into concrete feedback
+  ([report](https://github.com/ubugeeei-prod/vize/discussions/955)).
 
 Thanks also to everyone who has mentioned, shared, tested, or amplified Vize in the community, and
 to everyone connected to that work. Those signals make it easier to see where the toolchain is

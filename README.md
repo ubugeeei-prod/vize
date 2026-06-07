@@ -82,18 +82,24 @@ This project draws inspiration from [Volar.js](https://github.com/volarjs/volar.
 
 Special thanks to:
 
-- [Blacksmith](https://www.blacksmith.sh/) for sponsoring CI/CD runner infrastructure.
-- [かっこかり](https://github.com/kakkokari-gtyih) for regular debugging and monitoring around
-  [Misskey](https://github.com/misskey-dev/misskey) (~103k lines of Vue across 586 SFCs), including many compiler-focused bug reports.
+- [Blacksmith](https://www.blacksmith.sh/) for sponsoring high-performance CI/CD runners and
+  Testbox infrastructure for frequent benchmarks and real-project compatibility checks.
+- [かっこかり](https://github.com/kakkokari-gtyih) for continuously testing Vize's compiler and
+  Vite Plugin on [Misskey](https://github.com/misskey-dev/misskey) (~103k lines of Vue across 586
+  SFCs), with timely reports as the implementation changed
+  ([report](https://github.com/ubugeeei-prod/vize/discussions/71)).
 - [ushironoko](https://github.com/ushironoko) for compiler, linter, and CLI bug reports,
   reference implementations, and reproduction repositories.
 - [dannote](https://github.com/dannote) for Elixier feedback, PRs, and CSS-facing fixes.
-- [n13u](https://x.com/%5Fn13u%5F) and `#frontend_phpcon_do` for Nuxt build debugging, reports,
-  and production validation
-  ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20)).
-- [sevenc-nanashi](https://github.com/sevenc-nanashi) for building the
-  [VOICEVOX](https://github.com/VOICEVOX/voicevox) editor (~26k lines of Vue across 128 SFCs)
-  against Vize as a real-world milestone and compatibility feedback.
+- [n13u](https://x.com/%5Fn13u%5F) and `#frontend_phpcon_do` for persistently reporting bugs while
+  building a Nuxt-based conference website with Vize, then carrying that validation all the way to
+  production adoption
+  ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20),
+  [write-up](https://www.n13u.dev/ja/blog/detail/nYZKQ3UmslmWfXaP)).
+- [sevenc-nanashi](https://github.com/sevenc-nanashi) for using the
+  [VOICEVOX](https://github.com/VOICEVOX/voicevox) editor (~26k lines of Vue across 128 SFCs) as a
+  real-world target for improving compiler precision
+  ([report](https://github.com/ubugeeei-prod/vize/discussions/955)).
 - Everyone who has mentioned, shared, tested, or amplified Vize across the community.
 
 ## License
