@@ -24,6 +24,10 @@
   <video src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/docs/public/blog/vize-real-world-testing.mp4" controls muted width="600"></video>
 </p>
 
+<p align="center">
+  <a href="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/docs/public/blog/vize-real-world-testing.mp4"><strong>▶ Watch the Real World Testing PV</strong></a>
+</p>
+
 > [!WARNING]
 > Vize is experimental and in its **Real World Testing** phase — not a completely
 > production-ready toolchain yet. Breaking changes and behavior that diverges from Vue are
