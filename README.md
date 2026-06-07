@@ -41,6 +41,22 @@ It plugs into where you already work: `@vizejs/vite-plugin` (Vite), `vize` (npm 
 Vize is in its Real World Testing phase: issues and PRs are very welcome, and we are looking for
 reasonably large Vue projects to use as test beds.
 
+## Benchmarks
+
+Measured on Blacksmith `blacksmith-32vcpu-ubuntu-2404`, 15,000 generated Vue SFCs, median of 5 runs
+([latest run](https://github.com/ubugeeei-prod/vize/actions/runs/27081731245)):
+
+| Surface     | Existing tool      | Existing |    Vize |    Speedup |
+| ----------- | ------------------ | -------: | ------: | ---------: |
+| SFC compile | @vue/compiler-sfc  |    9.94s | 272.7ms |  **36.4×** |
+| Lint        | eslint-plugin-vue  |   42.14s | 218.0ms | **193.3×** |
+| Format      | Prettier           |   85.16s |   1.62s |  **52.6×** |
+| Type check  | vue-tsc            |    3.86s | 629.6ms |   **6.1×** |
+| Vite build  | @vitejs/plugin-vue |    1.07s | 487.0ms |   **2.2×** |
+
+See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for
+methodology and per-variant numbers.
+
 ## Credits
 
 This project draws inspiration from [Volar.js](https://github.com/volarjs/volar.js),
