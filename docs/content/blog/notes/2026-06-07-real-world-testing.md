@@ -51,6 +51,14 @@ Real-world applications are the test suite now. If you encounter an issue, pleas
 report it — every report helps improve the compiler, the language specification, and
 the overall ecosystem.
 
+## How to Help
+
+We are waiting for plenty of issues and PRs. We are also actively recruiting reasonably
+large Vue projects to use as test beds — the bigger and more real the codebase, the more
+valuable the signal. If you maintain (or know of) a substantial Vue application, library,
+framework, or tool, please open an issue or reach out so we can run Vize against it. Bug
+reports, reproductions, and benchmark results are all welcome.
+
 ## Roadmap to v1.0.0
 
 The current phase is **Real World Testing**.
