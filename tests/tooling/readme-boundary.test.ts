@@ -31,7 +31,10 @@ test("README funnels readers to the documentation", () => {
   // the in-repo Getting Started guide rather than inlining usage detail.
   assert.match(readme, /https:\/\/vizejs\.dev/);
 
-  for (const link of ["./docs/content/getting-started.md", "./docs/release/production-readiness.md"]) {
+  for (const link of [
+    "./docs/content/getting-started.md",
+    "./docs/release/production-readiness.md",
+  ]) {
     assert.match(readme, new RegExp(escapeRegExp(link)), link);
     assert.ok(fs.existsSync(path.join(root, link)), `${link} should exist`);
   }
