@@ -1,8 +1,10 @@
 // SFC tests: Basic SFC parsing and compilation
 
+amends "SfcFixture.pkl"
+
 mode = "sfc"
 
-cases = new Listing {
+cases {
   new {
     name = "script setup with template"
     input = """

@@ -1,0 +1,90 @@
+// SFC tests: advanced <script setup> features
+// Extends the parity corpus into defineOptions, <script setup generic>, top-level
+// await, and mixed <script> + <script setup> blocks.
+
+amends "SfcFixture.pkl"
+
+mode = "sfc"
+
+cases {
+  new {
+    name = "defineOptions inheritAttrs"
+    input = """
+    <script setup lang="ts">
+    defineOptions({ inheritAttrs: false })
+    const x = 1
+    </script>
+
+    <template>
+      <div>{{ x }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "defineOptions name and custom option"
+    input = """
+    <script setup>
+    defineOptions({ name: 'MyWidget', customOption: true })
+    </script>
+
+    <template>
+      <div>widget</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "script setup generic"
+    input = """
+    <script setup lang="ts" generic="T extends string | number">
+    defineProps<{ value: T; list: T[] }>()
+    </script>
+
+    <template>
+      <div>{{ value }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "script setup generic multiple params"
+    input = """
+    <script setup lang="ts" generic="T, U extends keyof T">
+    defineProps<{ obj: T; key: U }>()
+    </script>
+
+    <template>
+      <div>{{ key }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "top level await"
+    input = """
+    <script setup lang="ts">
+    const data = await fetch('/api').then((r) => r.json())
+    </script>
+
+    <template>
+      <div>{{ data }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "defineExpose"
+    input = """
+    <script setup lang="ts">
+    const count = 0
+    defineExpose({ count })
+    </script>
+
+    <template>
+      <div>{{ count }}</div>
+    </template>
+
+    """
+  }
+}

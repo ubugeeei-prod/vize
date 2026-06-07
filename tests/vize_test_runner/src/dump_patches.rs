@@ -7,7 +7,7 @@ use vize_test_runner::{CompilerMode, compile, load_fixture};
 fn main() {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let fixtures_dir = manifest_dir.parent().unwrap().join("fixtures");
-    let fixture_path = fixtures_dir.join("sfc/patches.toml");
+    let fixture_path = fixtures_dir.join("sfc/patches.pkl");
 
     let fixture = load_fixture(&fixture_path).expect("Failed to load fixture");
 

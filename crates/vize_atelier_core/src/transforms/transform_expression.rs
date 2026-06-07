@@ -448,4 +448,4 @@ mod tests {
 }
 
 // Note: Multiline arrow function handling and ES6 shorthand expansion
-// are tested via SFC snapshot tests in tests/fixtures/sfc/patches.toml.
+// are tested via SFC snapshot tests in tests/fixtures/sfc/patches.pkl.

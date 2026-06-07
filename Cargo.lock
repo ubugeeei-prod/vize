@@ -3753,6 +3753,7 @@ dependencies = [
 name = "vize_test_runner"
 version = "0.185.0"
 dependencies = [
+ "pklrust",
  "serde",
  "toml",
  "vize_atelier_core",

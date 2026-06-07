@@ -1,0 +1,851 @@
+// SFC tests: Options API coverage
+//
+// Exercises non-`<script setup>` components and how the template compiler resolves
+// bindings to Options API members (data / computed / methods / props / emits / etc.).
+// Each case is compiled in both JS and TS output modes by the snapshot harness.
+//
+// The official Vue baseline is `@vue/compiler-sfc`; when Vize output here disagrees
+// with the official compiler for one of these inputs, treat it as a parity bug to file.
+
+amends "SfcFixture.pkl"
+
+mode = "sfc"
+
+cases {
+  new {
+    name = "data with multiple properties"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { firstName: 'Ada', lastName: 'Lovelace', count: 0 }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ firstName }} {{ lastName }} ({{ count }})</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "computed object form"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { first: 'Ada', last: 'Lovelace' }
+      },
+      computed: {
+        fullName() {
+          return this.first + ' ' + this.last
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ fullName }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "computed get set with v-model"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { firstName: 'Ada', lastName: 'Lovelace' }
+      },
+      computed: {
+        fullName: {
+          get() {
+            return this.firstName + ' ' + this.lastName
+          },
+          set(value) {
+            const parts = value.split(' ')
+            this.firstName = parts[0]
+            this.lastName = parts[1]
+          }
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <input v-model="fullName" />
+    </template>
+
+    """
+  }
+  new {
+    name = "methods with event handler"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { count: 0 }
+      },
+      methods: {
+        increment() {
+          this.count++
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <button @click="increment">{{ count }}</button>
+    </template>
+
+    """
+  }
+  new {
+    name = "method called in interpolation"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { name: 'world' }
+      },
+      methods: {
+        greet(who) {
+          return 'Hello, ' + who
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ greet(name) }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "watch handlers object and deep"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { question: '', answer: '', list: [] }
+      },
+      watch: {
+        question(newValue, oldValue) {
+          this.answer = newValue
+        },
+        list: {
+          handler(value) {
+            this.answer = String(value.length)
+          },
+          deep: true,
+          immediate: true
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <input v-model="question" />
+    </template>
+
+    """
+  }
+  new {
+    name = "lifecycle hooks"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { ready: false }
+      },
+      created() {
+        this.ready = false
+      },
+      mounted() {
+        this.ready = true
+      },
+      beforeUnmount() {
+        this.ready = false
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ ready }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "props array form"
+    input = """
+    <script>
+    export default {
+      props: ['title', 'count']
+    }
+    </script>
+
+    <template>
+      <div>{{ title }}: {{ count }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "props object form with defaults"
+    input = """
+    <script>
+    export default {
+      props: {
+        title: String,
+        count: {
+          type: Number,
+          default: 0,
+          required: false
+        },
+        items: {
+          type: Array,
+          default() {
+            return []
+          }
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ title }}: {{ count }} ({{ items.length }})</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "emits with template emit"
+    input = """
+    <script>
+    export default {
+      emits: ['submit', 'cancel'],
+      data() {
+        return { value: '' }
+      }
+    }
+    </script>
+
+    <template>
+      <form @submit.prevent="$emit('submit', value)">
+        <button type="button" @click="$emit('cancel')">Cancel</button>
+      </form>
+    </template>
+
+    """
+  }
+  new {
+    name = "local component registration"
+    input = """
+    <script>
+    import ChildComp from './Child.vue'
+
+    export default {
+      components: { ChildComp }
+    }
+    </script>
+
+    <template>
+      <ChildComp />
+    </template>
+
+    """
+  }
+  new {
+    name = "local custom directive"
+    input = """
+    <script>
+    export default {
+      directives: {
+        focus: {
+          mounted(el) {
+            el.focus()
+          }
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <input v-focus />
+    </template>
+
+    """
+  }
+  new {
+    name = "mixins"
+    input = """
+    <script>
+    import { loggerMixin } from './mixins.js'
+
+    export default {
+      mixins: [loggerMixin],
+      data() {
+        return { local: 1 }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ local }} {{ sharedValue }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "extends base component"
+    input = """
+    <script>
+    import Base from './Base.vue'
+
+    export default {
+      extends: Base,
+      data() {
+        return { extra: true }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ extra }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "provide and inject"
+    input = """
+    <script>
+    export default {
+      provide() {
+        return { theme: this.theme }
+      },
+      inject: {
+        parentTheme: { from: 'theme', default: 'light' }
+      },
+      data() {
+        return { theme: 'dark' }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ parentTheme }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "setup function with options api"
+    input = """
+    <script>
+    import { ref } from 'vue'
+
+    export default {
+      data() {
+        return { fromData: 'data' }
+      },
+      setup() {
+        const fromSetup = ref('setup')
+        return { fromSetup }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ fromSetup }} {{ fromData }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "render function no template"
+    input = """
+    <script>
+    import { h } from 'vue'
+
+    export default {
+      data() {
+        return { msg: 'hello' }
+      },
+      render() {
+        return h('div', this.msg)
+      }
+    }
+    </script>
+
+    """
+  }
+  new {
+    name = "name and inherit attrs"
+    input = """
+    <script>
+    export default {
+      name: 'MyWidget',
+      inheritAttrs: false,
+      props: ['label']
+    }
+    </script>
+
+    <template>
+      <div v-bind="$attrs">{{ label }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "expose option"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { count: 0 }
+      },
+      expose: ['count'],
+      methods: {
+        reset() {
+          this.count = 0
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ count }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "dynamic class and style from data"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { active: true, color: 'red' }
+      }
+    }
+    </script>
+
+    <template>
+      <div :class="{ active: active }" :style="{ color: color }">content</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "v-for over data array"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { items: ['a', 'b', 'c'] }
+      }
+    }
+    </script>
+
+    <template>
+      <ul>
+        <li v-for="(item, index) in items" :key="index">{{ item }}</li>
+      </ul>
+    </template>
+
+    """
+  }
+  new {
+    name = "v-if with computed condition"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { count: 0 }
+      },
+      computed: {
+        isEmpty() {
+          return this.count === 0
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <div>
+        <p v-if="isEmpty">empty</p>
+        <p v-else>{{ count }}</p>
+      </div>
+    </template>
+
+    """
+  }
+  new {
+    name = "define component options api ts"
+    input = """
+    <script lang="ts">
+    import { defineComponent } from 'vue'
+
+    export default defineComponent({
+      data() {
+        return { count: 0 as number }
+      },
+      computed: {
+        doubled(): number {
+          return this.count * 2
+        }
+      }
+    })
+    </script>
+
+    <template>
+      <div>{{ doubled }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "props with prop type typescript"
+    input = """
+    <script lang="ts">
+    import { defineComponent, PropType } from 'vue'
+
+    interface Item {
+      id: number
+      label: string
+    }
+
+    export default defineComponent({
+      props: {
+        items: {
+          type: Array as PropType<Item[]>,
+          default: () => []
+        }
+      }
+    })
+    </script>
+
+    <template>
+      <div>{{ items.length }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "script and script setup combined"
+    input = """
+    <script>
+    export default {
+      inheritAttrs: false,
+      name: 'Combined'
+    }
+    </script>
+
+    <script setup>
+    import { ref } from 'vue'
+    const count = ref(0)
+    </script>
+
+    <template>
+      <div>{{ count }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "named and scoped slots in child"
+    input = """
+    <script>
+    import Layout from './Layout.vue'
+
+    export default {
+      components: { Layout },
+      data() {
+        return { items: ['a', 'b'] }
+      }
+    }
+    </script>
+
+    <template>
+      <Layout>
+        <template #header>
+          <h1>Title</h1>
+        </template>
+        <template #default="{ item }">
+          <span>{{ item }}</span>
+        </template>
+      </Layout>
+    </template>
+
+    """
+  }
+  new {
+    name = "dynamic component is binding"
+    input = """
+    <script>
+    import Foo from './Foo.vue'
+    import Bar from './Bar.vue'
+
+    export default {
+      components: { Foo, Bar },
+      data() {
+        return { current: 'Foo' }
+      }
+    }
+    </script>
+
+    <template>
+      <component :is="current" />
+    </template>
+
+    """
+  }
+  new {
+    name = "keep alive wrapping dynamic component"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { view: 'home' }
+      }
+    }
+    </script>
+
+    <template>
+      <KeepAlive>
+        <component :is="view" />
+      </KeepAlive>
+    </template>
+
+    """
+  }
+  new {
+    name = "async setup in options api"
+    input = """
+    <script>
+    export default {
+      async setup() {
+        const data = await Promise.resolve({ title: 'Hello' })
+        return { data }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ data.title }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "inject array form"
+    input = """
+    <script>
+    export default {
+      inject: ['theme', 'locale']
+    }
+    </script>
+
+    <template>
+      <div>{{ theme }} {{ locale }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "emits object form with validator"
+    input = """
+    <script>
+    export default {
+      emits: {
+        submit: (payload) => typeof payload === 'string',
+        cancel: null
+      },
+      data() {
+        return { value: '' }
+      }
+    }
+    </script>
+
+    <template>
+      <button @click="$emit('submit', value)">go</button>
+    </template>
+
+    """
+  }
+  new {
+    name = "v-model on component"
+    input = """
+    <script>
+    import TextField from './TextField.vue'
+
+    export default {
+      components: { TextField },
+      data() {
+        return { name: '' }
+      }
+    }
+    </script>
+
+    <template>
+      <TextField v-model="name" />
+    </template>
+
+    """
+  }
+  new {
+    name = "fragment multiple root nodes"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { a: 1, b: 2 }
+      }
+    }
+    </script>
+
+    <template>
+      <header>{{ a }}</header>
+      <main>{{ b }}</main>
+    </template>
+
+    """
+  }
+  new {
+    name = "template ref usage"
+    input = """
+    <script>
+    export default {
+      mounted() {
+        this.$refs.input.focus()
+      }
+    }
+    </script>
+
+    <template>
+      <input ref="input" />
+    </template>
+
+    """
+  }
+  new {
+    name = "recursive self component"
+    input = """
+    <script>
+    export default {
+      name: 'TreeNode',
+      props: ['node']
+    }
+    </script>
+
+    <template>
+      <li>
+        {{ node.label }}
+        <ul v-if="node.children">
+          <TreeNode v-for="child in node.children" :key="child.id" :node="child" />
+        </ul>
+      </li>
+    </template>
+
+    """
+  }
+  new {
+    name = "directive with full hooks"
+    input = """
+    <script>
+    export default {
+      directives: {
+        color: {
+          mounted(el, binding) {
+            el.style.color = binding.value
+          },
+          updated(el, binding) {
+            el.style.color = binding.value
+          }
+        }
+      },
+      data() {
+        return { tint: 'red' }
+      }
+    }
+    </script>
+
+    <template>
+      <p v-color="tint">text</p>
+    </template>
+
+    """
+  }
+  new {
+    name = "mixins and extends combined"
+    input = """
+    <script>
+    import Base from './Base.vue'
+    import { sharedMixin } from './mixins.js'
+
+    export default {
+      extends: Base,
+      mixins: [sharedMixin],
+      data() {
+        return { own: true }
+      }
+    }
+    </script>
+
+    <template>
+      <div>{{ own }}</div>
+    </template>
+
+    """
+  }
+  new {
+    name = "watch nested path string key"
+    input = """
+    <script>
+    export default {
+      emits: ['changed'],
+      data() {
+        return { form: { name: '' } }
+      },
+      watch: {
+        'form.name'(value) {
+          this.$emit('changed', value)
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <input v-model="form.name" />
+    </template>
+
+    """
+  }
+  new {
+    name = "computed used in class binding"
+    input = """
+    <script>
+    export default {
+      data() {
+        return { active: true }
+      },
+      computed: {
+        classes() {
+          return { 'is-active': this.active }
+        }
+      }
+    }
+    </script>
+
+    <template>
+      <div :class="classes">content</div>
+    </template>
+
+    """
+  }
+}

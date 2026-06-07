@@ -20,3 +20,4 @@ vize_atelier_sfc.workspace = true
 vize_carton.workspace = true
 serde.workspace = true
 toml.workspace = true
+pklrust.workspace = true

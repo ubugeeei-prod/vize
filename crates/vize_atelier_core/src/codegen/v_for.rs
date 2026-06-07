@@ -255,4 +255,4 @@ fn generate_for_inner(
 }
 
 // Note: Directive skipping behavior (v-for with custom directives, :key handling)
-// is tested via SFC snapshot tests in tests/fixtures/sfc/patches.toml.
+// is tested via SFC snapshot tests in tests/fixtures/sfc/patches.pkl.

@@ -1,0 +1,27 @@
+/// Typed schema for Vize SFC compile snapshot fixtures.
+///
+/// Every fixture in this directory `amends` this module, so Pkl statically
+/// checks each case's field names and types — a typo like `inputt` or a
+/// non-`String` value is a Pkl evaluation error rather than a silently ignored
+/// or mis-deserialized field. The Rust loader (`vize_atelier_sfc`'s
+/// `snapshot_tests`) deserializes the evaluated module into the same shape.
+module vize.fixtures.SfcFixture
+
+/// A single SFC compile snapshot case.
+class Case {
+  /// Human-readable name; also used to derive the snapshot file name.
+  name: String
+
+  /// The `.vue` single-file-component source to compile.
+  input: String
+
+  /// Optional expected output. Informational only — the committed insta
+  /// snapshots under `tests/snapshots/sfc/` are the source of truth.
+  expected: String?
+}
+
+/// Snapshot output mode for this fixture group (e.g. `"sfc"`).
+mode: String?
+
+/// The SFC compile cases in this fixture file.
+cases: Listing<Case>
