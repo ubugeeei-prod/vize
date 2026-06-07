@@ -29,57 +29,57 @@ Every ecosystem package is expected to follow the same principles as the toolcha
 
 ### Routing & navigation
 
-| Package              | Inspiration                | One-line intent                                                                 |
-| -------------------- | -------------------------- | ------------------------------------------------------------------------------- |
-| **Vize Router**      | Vue Router + Navigation API | Transition-first SPA router built on the browser Navigation API.               |
-| **FileSystem Router**| Nuxt / file-based routing   | Filesystem-driven routes on top of Vue Router / Vize Router.                    |
+| Package               | Inspiration                 | One-line intent                                                  |
+| --------------------- | --------------------------- | ---------------------------------------------------------------- |
+| **Vize Router**       | Vue Router + Navigation API | Transition-first SPA router built on the browser Navigation API. |
+| **FileSystem Router** | Nuxt / file-based routing   | Filesystem-driven routes on top of Vue Router / Vize Router.     |
 
 ### State, data, and effects
 
-| Package          | Inspiration            | One-line intent                                                       |
-| ---------------- | ---------------------- | -------------------------------------------------------------------- |
-| **Vize Store**   | Recoil / Jotai         | Atomic, composable state management.                                  |
-| **Vize Query**   | TanStack Query         | Async data loader with caching, invalidation, and suspense.          |
-| **Vize Saga**    | Redux Saga (next-gen)  | Declarative, typesafe side-effect / async-flow orchestration.        |
+| Package        | Inspiration           | One-line intent                                               |
+| -------------- | --------------------- | ------------------------------------------------------------- |
+| **Vize Store** | Recoil / Jotai        | Atomic, composable state management.                          |
+| **Vize Query** | TanStack Query        | Async data loader with caching, invalidation, and suspense.   |
+| **Vize Saga**  | Redux Saga (next-gen) | Declarative, typesafe side-effect / async-flow orchestration. |
 
 ### Full-stack framework
 
-| Package / Surface          | Inspiration            | One-line intent                                                                            |
-| -------------------------- | ---------------------- | ----------------------------------------------------------------------------------------- |
-| **Vize (framework)**       | Nuxt / Next            | App framework on the Vite Environment API + UnJS, Rust engine, end-to-end typesafe.        |
-| **Server Components**      | RSC                    | Server-rendered components with a clear server/client boundary.                            |
-| **Server Actions**         | RSC actions            | Typesafe server mutations callable from the client.                                        |
-| **SEO framework**          | —                      | Metadata, structured data, sitemap, and crawlability primitives.                          |
-| **Zero-JS prerenderer (Island)** | Astro islands    | Island-architecture prerendering that emits zero client JS for static islands. *(also tracked as a production-ready target in [production-readiness](./production-readiness.md))* |
+| Package / Surface                | Inspiration   | One-line intent                                                                                                                                                                   |
+| -------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Vize (framework)**             | Nuxt / Next   | App framework on the Vite Environment API + UnJS, Rust engine, end-to-end typesafe.                                                                                               |
+| **Server Components**            | RSC           | Server-rendered components with a clear server/client boundary.                                                                                                                   |
+| **Server Actions**               | RSC actions   | Typesafe server mutations callable from the client.                                                                                                                               |
+| **SEO framework**                | —             | Metadata, structured data, sitemap, and crawlability primitives.                                                                                                                  |
+| **Zero-JS prerenderer (Island)** | Astro islands | Island-architecture prerendering that emits zero client JS for static islands. _(also tracked as a production-ready target in [production-readiness](./production-readiness.md))_ |
 
 ### API & transport
 
-| Package          | Inspiration | One-line intent                                          |
-| ---------------- | ----------- | ------------------------------------------------------- |
-| **Vize RPC**     | tRPC        | End-to-end typesafe RPC with no schema duplication.     |
-| **Vize GraphQL** | —           | Typed GraphQL client/server integration.               |
-| **void sdk bridge** | VoidZero SDK | Bridge to the VoidZero / Vite+ SDK surface.          |
+| Package             | Inspiration  | One-line intent                                     |
+| ------------------- | ------------ | --------------------------------------------------- |
+| **Vize RPC**        | tRPC         | End-to-end typesafe RPC with no schema duplication. |
+| **Vize GraphQL**    | —            | Typed GraphQL client/server integration.            |
+| **void sdk bridge** | VoidZero SDK | Bridge to the VoidZero / Vite+ SDK surface.         |
 
 ### Native & cross-platform
 
-| Package          | Inspiration   | One-line intent                                            |
-| ---------------- | ------------- | --------------------------------------------------------- |
-| **Vize Native**  | React Native  | Build native apps from Vue components with a Rust runtime. |
+| Package         | Inspiration  | One-line intent                                            |
+| --------------- | ------------ | ---------------------------------------------------------- |
+| **Vize Native** | React Native | Build native apps from Vue components with a Rust runtime. |
 
 ### UI
 
-| Package                       | Inspiration        | One-line intent                                        |
-| ----------------------------- | ------------------ | ------------------------------------------------------ |
-| **Headless Accessible UI**    | Radix / Headless UI | Unstyled, fully accessible (a11y) component primitives. |
+| Package                    | Inspiration         | One-line intent                                         |
+| -------------------------- | ------------------- | ------------------------------------------------------- |
+| **Headless Accessible UI** | Radix / Headless UI | Unstyled, fully accessible (a11y) component primitives. |
 
 ### Tooling, testing & observability
 
-| Package / Surface       | Inspiration   | One-line intent                                                                  |
-| ----------------------- | ------------- | ------------------------------------------------------------------------------- |
-| **Vize DevTools**       | Vue DevTools  | Inspector for components, state, router, query, and performance.                |
-| **Observability**       | OpenTelemetry | Tracing / metrics / logging framework for Vize apps.                            |
-| **Musea VRT**           | Storybook + VRT | Visual regression testing with local or remote storage backends.              |
-| **Vue Markdown (Ox Content)** | —       | Markdown authoring/components for Vue, powered by Oxc-based content tooling.     |
+| Package / Surface             | Inspiration     | One-line intent                                                              |
+| ----------------------------- | --------------- | ---------------------------------------------------------------------------- |
+| **Vize DevTools**             | Vue DevTools    | Inspector for components, state, router, query, and performance.             |
+| **Observability**             | OpenTelemetry   | Tracing / metrics / logging framework for Vize apps.                         |
+| **Musea VRT**                 | Storybook + VRT | Visual regression testing with local or remote storage backends.             |
+| **Vue Markdown (Ox Content)** | —               | Markdown authoring/components for Vue, powered by Oxc-based content tooling. |
 
 ## Near-term, actionable work
 
