@@ -186,22 +186,18 @@ function collectRustTests(root, absolute) {
 
 function collectFixtureCases(root, absolute) {
   const relativePath = normalizePath(root, absolute);
-  if (!relativePath.startsWith("tests/fixtures/") || !relativePath.endsWith(".toml")) {
+  if (!relativePath.startsWith("tests/fixtures/")) {
     return null;
   }
 
   const content = fs.readFileSync(absolute, "utf8");
-  const tests = [];
-  const casePattern = /^\[\[cases\]\]/gm;
-  for (const match of content.matchAll(casePattern)) {
-    const blockStart = match.index;
-    const blockEnd = content.indexOf("\n[[cases]]", blockStart + 1);
-    const block = content.slice(blockStart, blockEnd === -1 ? undefined : blockEnd);
-    const nameMatch = /^\s*name\s*=\s*(["'])(.*?)\1/m.exec(block);
-    tests.push({
-      name: nameMatch ? unescapeName(nameMatch[2]) : `case ${tests.length + 1}`,
-      line: lineNumberForIndex(content, blockStart),
-    });
+  let tests;
+  if (relativePath.endsWith(".toml")) {
+    tests = collectTomlFixtureCases(content);
+  } else if (relativePath.endsWith(".pkl")) {
+    tests = collectPklFixtureCases(content);
+  } else {
+    return null;
   }
 
   if (tests.length === 0) {
@@ -217,6 +213,37 @@ function collectFixtureCases(root, absolute) {
   };
 }
 
+function collectTomlFixtureCases(content) {
+  const tests = [];
+  const casePattern = /^\[\[cases\]\]/gm;
+  for (const match of content.matchAll(casePattern)) {
+    const blockStart = match.index;
+    const blockEnd = content.indexOf("\n[[cases]]", blockStart + 1);
+    const block = content.slice(blockStart, blockEnd === -1 ? undefined : blockEnd);
+    const nameMatch = /^\s*name\s*=\s*(["'])(.*?)\1/m.exec(block);
+    tests.push({
+      name: nameMatch ? unescapeName(nameMatch[2]) : `case ${tests.length + 1}`,
+      line: lineNumberForIndex(content, blockStart),
+    });
+  }
+  return tests;
+}
+
+// Typed Pkl fixtures emit each case as `new { name = "..." ... }`. A schema
+// module declares `name: String` (a colon, not `=`), so a `name = <string>`
+// assignment uniquely identifies a case and skips the schema files.
+function collectPklFixtureCases(content) {
+  const tests = [];
+  const casePattern = /^[ \t]*name\s*=\s*(#*)(["'])(.*?)\2\1/gm;
+  for (const match of content.matchAll(casePattern)) {
+    tests.push({
+      name: unescapeName(match[3]),
+      line: lineNumberForIndex(content, match.index),
+    });
+  }
+  return tests;
+}
+
 export function collectInventory(root = process.cwd()) {
   const files = walkFiles(root);
   const groups = [];
@@ -226,7 +253,7 @@ export function collectInventory(root = process.cwd()) {
     const extension = path.extname(relativePath);
     let group = null;
 
-    if (relativePath.startsWith("tests/fixtures/") && extension === ".toml") {
+    if (relativePath.startsWith("tests/fixtures/") && (extension === ".toml" || extension === ".pkl")) {
       group = collectFixtureCases(root, absolute);
     } else if (extension === ".rs") {
       group = collectRustTests(root, absolute);

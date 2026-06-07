@@ -602,7 +602,7 @@ test("test inventory script counts JS, Rust, e2e, VRT, and fixture cases", () =>
     assert.ok(
       inventory.groups.some((group) => group.file === "tests/tooling/github-workflows.test.ts"),
     );
-    assert.ok(inventory.groups.some((group) => group.file === "tests/fixtures/vdom/element.toml"));
+    assert.ok(inventory.groups.some((group) => group.file === "tests/fixtures/vdom/element.pkl"));
     assert.ok(
       inventory.groups.some((group) => group.file === "playground/e2e/vrt/cross-file-ui.spec.ts"),
     );
