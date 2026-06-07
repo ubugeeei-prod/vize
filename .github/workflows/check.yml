@@ -395,6 +395,15 @@ jobs:
           shared-key: "native"
           cache-workspace-crates: "true"
 
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          run-install: false
+
+      # The fixture-coverage runner evaluates the SFC Pkl fixtures.
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+
       - name: Coverage report
         run: moon run --target native - -- < tools/moon/scripts/github/write_coverage_summary.mbtx
 
