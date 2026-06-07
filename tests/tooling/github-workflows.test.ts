@@ -461,6 +461,8 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   assert.match(workflow, /\n  workflow_dispatch:\n/);
   assert.match(workflow, /commit_results:[\s\S]*type:\s*boolean[\s\S]*default:\s*false/);
   assert.match(workflow, /VIZE_TOOL_BENCH_FILE_COUNT:/);
+  assert.match(workflow, /VIZE_TOOL_BENCH_NUXT_FILE_COUNT:/);
+  assert.match(workflow, /VIZE_TOOL_BENCH_LARGE_BLOCKS:/);
   assert.match(benchmarkJob, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
   assert.match(benchmarkJob, /contents:\s*read/);
   assert.doesNotMatch(benchmarkJob, /contents:\s*write/);
@@ -468,8 +470,11 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   assert.match(benchmarkJob, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
   assert.match(benchmarkJob, /vp run --workspace-root build:native/);
   assert.match(benchmarkJob, /vp run --workspace-root build:vite-plugin/);
+  assert.match(benchmarkJob, /vp run --workspace-root build:nuxt-stack/);
   assert.match(benchmarkJob, /node bench\/generate\.mjs "\$VIZE_TOOL_BENCH_FILE_COUNT"/);
   assert.match(benchmarkJob, /node bench\/compare-tools\.mjs/);
+  assert.match(benchmarkJob, /--nuxt-file-count "\$VIZE_TOOL_BENCH_NUXT_FILE_COUNT"/);
+  assert.match(benchmarkJob, /--large-blocks "\$VIZE_TOOL_BENCH_LARGE_BLOCKS"/);
   assert.match(benchmarkJob, /--runner-label "blacksmith-32vcpu-ubuntu-2404"/);
   assert.match(benchmarkJob, /--doc performance-blacksmith\.md/);
   assert.match(benchmarkJob, /name:\s*tool-benchmark/);

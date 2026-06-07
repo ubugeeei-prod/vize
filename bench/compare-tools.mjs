@@ -15,6 +15,7 @@ import {
   readFileSync,
   rmSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { basename, delimiter, dirname, join, parse, relative, resolve, sep } from "node:path";
@@ -32,7 +33,9 @@ const DEFAULT_RUNS = 5;
 const DEFAULT_WARMUPS = 1;
 const DEFAULT_CHECK_FILE_COUNT = 500;
 const DEFAULT_VITE_FILE_COUNT = 1000;
-const DEFAULT_TASKS = ["compile", "lint", "fmt", "check", "vite"];
+const DEFAULT_NUXT_FILE_COUNT = 500;
+const DEFAULT_LARGE_BLOCKS = 900;
+const DEFAULT_TASKS = ["compile", "large", "lint", "fmt", "check", "vite", "nuxt"];
 const BLACKSMITH_MAX_LABEL = "blacksmith-32vcpu-ubuntu-2404";
 const BLACKSMITH_MAX_SPEC = "32 vCPU / 128 GB RAM / 1.5 TB storage";
 
@@ -194,6 +197,7 @@ function resolveWorkspaceBin(name) {
   const candidates = [
     join(rootDir, "node_modules", ".bin", name),
     join(benchDir, "node_modules", ".bin", name),
+    join(rootDir, "npm", "nuxt", "node_modules", ".bin", name),
   ];
   for (const candidate of candidates) {
     for (const suffix of suffixes) {
@@ -293,6 +297,242 @@ app.mount('#app')
   );
 
   return { workDir: outputDir, entryFile };
+}
+
+function createLargeSfcSource(blockCount) {
+  const blocks = [];
+  for (let i = 0; i < blockCount; i++) {
+    const metricIndex = i % 64;
+    blocks.push(`    <article class="metric-card metric-card-${i}" :class="{ active: selectedId === ${metricIndex} }" :data-index="${i}">
+      <header>
+        <p>{{ labels[${metricIndex}] }}</p>
+        <h2>{{ formatMetric(metrics[${metricIndex}], ${i}) }}</h2>
+      </header>
+      <dl>
+        <div>
+          <dt>Score</dt>
+          <dd>{{ metrics[${metricIndex}].score }}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>{{ metrics[${metricIndex}].active ? "active" : "idle" }}</dd>
+        </div>
+      </dl>
+      <ul>
+        <li v-for="point in metrics[${metricIndex}].points" :key="'${i}-' + point.id">
+          <span>{{ point.label }}</span>
+          <strong>{{ point.value + ${i} }}</strong>
+        </li>
+      </ul>
+      <button type="button" @click="selectMetric(${metricIndex})">Select {{ labels[${metricIndex}] }}</button>
+    </article>`);
+  }
+
+  return `<template>
+  <main class="large-dashboard">
+    <section class="summary">
+      <h1>{{ title }}</h1>
+      <p>{{ activeCount }} active metrics across {{ metrics.length }} tracked rows.</p>
+    </section>
+${blocks.join("\n")}
+  </main>
+</template>
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+
+type Point = {
+  id: string
+  label: string
+  value: number
+}
+
+type Metric = {
+  id: number
+  title: string
+  score: number
+  active: boolean
+  points: Point[]
+}
+
+const title = ref('Large synthetic dashboard')
+const selectedId = ref(0)
+const metrics = ref<Metric[]>(Array.from({ length: 64 }, (_, index) => ({
+  id: index,
+  title: 'Metric ' + index,
+  score: (index * 13) % 100,
+  active: index % 3 === 0,
+  points: Array.from({ length: 4 }, (__, pointIndex) => ({
+    id: index + '-' + pointIndex,
+    label: 'Point ' + pointIndex,
+    value: index * pointIndex,
+  })),
+})))
+
+const labels = computed(() => metrics.value.map((metric) => metric.title + ' / ' + metric.score))
+const activeCount = computed(() => metrics.value.filter((metric) => metric.active).length)
+
+function formatMetric(metric: Metric, offset: number): string {
+  return metric.title + ' #' + offset + ' (' + metric.score + ')'
+}
+
+function selectMetric(index: number): void {
+  selectedId.value = index
+}
+</script>
+
+<style scoped>
+.large-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.summary {
+  grid-column: 1 / -1;
+}
+.metric-card {
+  border: 1px solid #d4d4d8;
+  padding: 12px;
+}
+.metric-card.active {
+  border-color: #2563eb;
+}
+</style>
+`;
+}
+
+function prepareLargeSfcDir(blockCount) {
+  const outputDir = join(workRoot, "large-sfc");
+  rmSync(outputDir, { recursive: true, force: true });
+  mkdirSync(outputDir, { recursive: true });
+
+  const filename = "LargeDashboard.vue";
+  writeFileSync(join(outputDir, filename), createLargeSfcSource(blockCount));
+  writeFileSync(
+    join(outputDir, "tsconfig.json"),
+    `${JSON.stringify(
+      {
+        compilerOptions: {
+          target: "ESNext",
+          module: "ESNext",
+          moduleResolution: "bundler",
+          strict: true,
+          jsx: "preserve",
+          noEmit: true,
+          skipLibCheck: true,
+          paths: {
+            vue: [
+              relative(outputDir, join(rootDir, "node_modules", "vue"))
+                .split(sep)
+                .join("/"),
+            ],
+          },
+        },
+        include: [filename],
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  writeFileSync(
+    join(outputDir, "vize.config.json"),
+    `${JSON.stringify({ typeChecker: {} }, null, 2)}\n`,
+  );
+
+  return {
+    dir: outputDir,
+    files: [filename],
+    bytes: totalFileBytes(outputDir, [filename]),
+  };
+}
+
+function prepareNuxtDir(inputDir, files, label, invocation, useVize) {
+  const outputDir = join(workRoot, "nuxt", `${label}-${String(invocation).padStart(4, "0")}`);
+  rmSync(outputDir, { recursive: true, force: true });
+  mkdirSync(join(outputDir, "components"), { recursive: true });
+
+  for (const file of files) {
+    copyFileSync(join(inputDir, file), join(outputDir, "components", file));
+  }
+  const nuxtNodeModules = join(rootDir, "npm", "nuxt", "node_modules");
+  symlinkSync(
+    existsSync(nuxtNodeModules) ? nuxtNodeModules : join(benchDir, "node_modules"),
+    join(outputDir, "node_modules"),
+    "dir",
+  );
+
+  const imports = [];
+  const componentNames = [];
+  for (let i = 0; i < files.length; i++) {
+    const name = `BenchComponent${i}`;
+    imports.push(`import ${name} from './components/${files[i]}'`);
+    componentNames.push(name);
+  }
+
+  writeFileSync(
+    join(outputDir, "app.vue"),
+    `<template>
+  <main>
+    <component
+      v-for="(BenchComponent, index) in benchComponents"
+      :key="index"
+      :is="BenchComponent"
+    />
+  </main>
+</template>
+
+<script setup lang="ts">
+${imports.join("\n")}
+
+const benchComponents = [${componentNames.join(", ")}]
+</script>
+`,
+  );
+
+  const vizeModuleUrl = pathToFileURL(join(rootDir, "npm", "nuxt", "dist", "index.mjs")).href;
+  const moduleImport = useVize ? `import vizeNuxt from '${vizeModuleUrl}'\n` : "";
+  const modules = useVize ? "modules: [vizeNuxt]," : "modules: [],";
+  const vizeOptions = useVize
+    ? `  vize: {
+    compiler: {
+      scanPatterns: ['app.vue', 'components/*.vue'],
+      precompileBatchSize: ${files.length + 1},
+    },
+  },`
+    : "";
+
+  writeFileSync(
+    join(outputDir, "nuxt.config.mjs"),
+    `import { defineNuxtConfig } from 'nuxt/config'
+${moduleImport}export default defineNuxtConfig({
+  devtools: { enabled: false },
+  telemetry: false,
+  ssr: false,
+  typescript: {
+    typeCheck: false,
+  },
+  ${modules}
+${vizeOptions}
+})
+`,
+  );
+  writeFileSync(
+    join(outputDir, "package.json"),
+    `${JSON.stringify(
+      {
+        private: true,
+        type: "module",
+        dependencies: {
+          nuxt: "4.4.6",
+          vue: "3.5.34",
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
+
+  return outputDir;
 }
 
 async function measureVariants(variants, options) {
@@ -614,6 +854,24 @@ async function measureCompile(inputDir, files, options) {
   });
 }
 
+async function measureLargeSfc(largeSfc, options) {
+  const compile = await measureCompile(largeSfc.dir, largeSfc.files, options);
+  const check = await measureCheck(largeSfc.dir, largeSfc.files, options);
+
+  return [
+    {
+      ...compile,
+      id: "large-compile",
+      label: "Large SFC compile",
+    },
+    {
+      ...check,
+      id: "large-check",
+      label: "Large SFC type check",
+    },
+  ];
+}
+
 async function measureLint(inputDir, files, options) {
   const { ESLint } = await import("eslint");
   const eslintPath = require.resolve("eslint");
@@ -857,6 +1115,56 @@ async function measureVite(inputDir, files, options) {
   });
 }
 
+async function measureNuxt(inputDir, files, options) {
+  const nuxtBin = resolveWorkspaceBin("nuxt");
+  const vizeNuxtPath = join(rootDir, "npm", "nuxt", "dist", "index.mjs");
+  if (!existsSync(vizeNuxtPath)) {
+    throw new Error(
+      `Nuxt module build not found: ${vizeNuxtPath}. Run vp run --workspace-root build:nuxt-stack first.`,
+    );
+  }
+
+  let invocation = 0;
+  const runNuxtBuild = (label, useVize) => {
+    const workDir = prepareNuxtDir(inputDir, files, label, ++invocation, useVize);
+    return runCommand(nuxtBin, ["build"], {
+      cwd: workDir,
+      allowNonZeroExit: false,
+      env: {
+        CI: "1",
+        NITRO_PRESET: "node-server",
+        NUXT_TELEMETRY_DISABLED: "1",
+      },
+    });
+  };
+
+  const variants = [
+    {
+      id: "nuxt-default",
+      label: "Nuxt default compiler",
+      files: files.length,
+      measure: () => runNuxtBuild("default", false),
+    },
+    {
+      id: "vize-nuxt",
+      label: "@vizejs/nuxt",
+      files: files.length,
+      measure: () => runNuxtBuild("vize", true),
+    },
+  ];
+
+  return createSurface({
+    id: "nuxt",
+    label: "Nuxt SPA build (end-to-end)",
+    files: files.length,
+    bytes: totalFileBytes(inputDir, files),
+    variants: await measureVariants(variants, options),
+    baselineId: "nuxt-default",
+    vizeSingleId: null,
+    vizeMaxId: "vize-nuxt",
+  });
+}
+
 function getVariant(surface, id) {
   if (!id) {
     return null;
@@ -884,6 +1192,39 @@ function githubRunUrl() {
     return "";
   }
   return `${server}/${repo}/actions/runs/${runId}`;
+}
+
+function buildCommands(inputFileCount, options) {
+  const workflowFlags = [
+    `-f file_count=${inputFileCount}`,
+    `-f check_file_count=${options.checkFileCount}`,
+    `-f vite_file_count=${options.viteFileCount}`,
+    `-f nuxt_file_count=${options.nuxtFileCount}`,
+    `-f large_blocks=${options.largeBlocks}`,
+    `-f runs=${options.runs}`,
+    `-f warmups=${options.warmups}`,
+    "-f commit_results=true",
+  ];
+  const compareFlags = [
+    "--input bench/__in__",
+    "--vize-bin target/release/vize",
+    `--runs ${options.runs}`,
+    `--warmups ${options.warmups}`,
+    `--check-file-count ${options.checkFileCount}`,
+    `--vite-file-count ${options.viteFileCount}`,
+    `--nuxt-file-count ${options.nuxtFileCount}`,
+    `--large-blocks ${options.largeBlocks}`,
+    `--runner-label "${BLACKSMITH_MAX_LABEL}"`,
+    "--out tool-benchmark-summary.md",
+    "--json tool-benchmark-results.json",
+    "--doc performance-blacksmith.md",
+  ];
+
+  return {
+    workflowDispatch: `gh workflow run tool-benchmark.yml --ref <branch> ${workflowFlags.join(" ")}`,
+    generate: `node bench/generate.mjs ${inputFileCount}`,
+    benchmark: `node bench/compare-tools.mjs ${compareFlags.join(" ")}`,
+  };
 }
 
 function buildMetadata(args, inputDir, files, taskList, options) {
@@ -915,18 +1256,24 @@ function buildMetadata(args, inputDir, files, taskList, options) {
       totalBytes: totalFileBytes(inputDir, files),
       checkFileCount: options.checkFileCount,
       viteFileCount: options.viteFileCount,
+      nuxtFileCount: options.nuxtFileCount,
+      largeBlocks: options.largeBlocks,
+      largeSfcBytes: 0,
     },
     settings: {
       runs: options.runs,
       warmups: options.warmups,
       tasks: taskList,
     },
+    commands: buildCommands(files.length, options),
     fairness: [
       "All tools run on the same generated Vue SFC corpus from the same checkout and lockfile.",
+      "The 15,000-SFC rows are the many-file workload; the large-SFC rows isolate one large component.",
       "Reported times are medians; measured runs alternate variant order after warmup runs.",
       "Destructive formatter runs receive a fresh copy of the same input before each invocation.",
       "SFC compile Vize max uses `compileSfcBatchWithResults` wall time so the primary number includes generated output crossing the JS/native boundary; the stats-only native `timeMs` is shown only in variant details.",
       "Vite build timings exclude fixture copy/setup; the Vize max lane sets `precompileBatchSize` to the benchmark file count so Blacksmith max runs one native precompile batch instead of the memory-safe default chunks.",
+      "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed.",
       "Single-thread lanes are shown where useful, and the primary speedup compares the incumbent default/single-thread lane with Vize's max runner lane.",
     ],
   };
@@ -940,6 +1287,7 @@ export function renderMarkdown(data) {
   const commit = data.commit.sha ? `\`${data.commit.sha.slice(0, 12)}\`` : "`unknown`";
   const run = data.commit.runUrl ? ` ([run](${data.commit.runUrl}))` : "";
   const runnerSpec = data.runner.blacksmithMaxSpec ? `, ${data.runner.blacksmithMaxSpec}` : "";
+  lines.push(`Measured: ${data.generatedAt}`);
   lines.push(`Commit: ${commit}${run}`);
   lines.push(
     `Runner: \`${data.runner.label}\` (${data.runner.cpuCount} logical CPU, ${data.runner.cpuModel}${runnerSpec})`,
@@ -947,6 +1295,11 @@ export function renderMarkdown(data) {
   lines.push(
     `Input: ${data.input.fileCount.toLocaleString()} generated SFC files (${formatBytes(data.input.totalBytes)}). Median of ${data.settings.runs} measured run(s) after ${data.settings.warmups} warmup run(s).`,
   );
+  if (data.input.largeSfcBytes > 0) {
+    lines.push(
+      `Large SFC: ${data.input.largeBlocks.toLocaleString()} repeated template blocks (${formatBytes(data.input.largeSfcBytes)}). Nuxt import set: ${data.input.nuxtFileCount.toLocaleString()} SFC files.`,
+    );
+  }
   lines.push("");
   lines.push(
     "| Surface | Files | Existing tool | Existing median | Vize 1T | Vize max | Speedup |",
@@ -965,6 +1318,14 @@ export function renderMarkdown(data) {
   for (const note of data.fairness) {
     lines.push(`- ${note}`);
   }
+  lines.push("");
+  lines.push("Commands:");
+  lines.push("");
+  lines.push("```sh");
+  lines.push(data.commands.workflowDispatch);
+  lines.push(data.commands.generate);
+  lines.push(data.commands.benchmark);
+  lines.push("```");
   lines.push("");
   lines.push("<details>");
   lines.push("<summary>Variant details and raw run times</summary>");
@@ -1017,6 +1378,8 @@ async function runBenchmarks(args) {
   const warmups = parseNonNegativeInt(args.warmups, DEFAULT_WARMUPS);
   const checkFileCount = parsePositiveInt(args["check-file-count"], DEFAULT_CHECK_FILE_COUNT);
   const viteFileCount = parsePositiveInt(args["vite-file-count"], DEFAULT_VITE_FILE_COUNT);
+  const nuxtFileCount = parsePositiveInt(args["nuxt-file-count"], DEFAULT_NUXT_FILE_COUNT);
+  const largeBlocks = parsePositiveInt(args["large-blocks"], DEFAULT_LARGE_BLOCKS);
   const taskList = selectedTasks(args.tasks);
 
   if (!existsSync(inputDir)) {
@@ -1040,6 +1403,8 @@ async function runBenchmarks(args) {
     vizeBin: args["vize-bin"] ?? join(rootDir, "target", "release", "vize"),
     checkFileCount: Math.min(checkFileCount, allFiles.length),
     viteFileCount: Math.min(viteFileCount, allFiles.length),
+    nuxtFileCount: Math.min(nuxtFileCount, allFiles.length),
+    largeBlocks,
   };
   const data = {
     ...buildMetadata(args, inputDir, allFiles, taskList, options),
@@ -1048,6 +1413,11 @@ async function runBenchmarks(args) {
 
   if (taskList.includes("compile")) {
     data.surfaces.push(await measureCompile(inputDir, allFiles, options));
+  }
+  if (taskList.includes("large")) {
+    const largeSfc = prepareLargeSfcDir(options.largeBlocks);
+    data.input.largeSfcBytes = largeSfc.bytes;
+    data.surfaces.push(...(await measureLargeSfc(largeSfc, options)));
   }
   if (taskList.includes("lint")) {
     data.surfaces.push(await measureLint(inputDir, allFiles, options));
@@ -1063,6 +1433,11 @@ async function runBenchmarks(args) {
   if (taskList.includes("vite")) {
     data.surfaces.push(
       await measureVite(inputDir, allFiles.slice(0, options.viteFileCount), options),
+    );
+  }
+  if (taskList.includes("nuxt")) {
+    data.surfaces.push(
+      await measureNuxt(inputDir, allFiles.slice(0, options.nuxtFileCount), options),
     );
   }
 

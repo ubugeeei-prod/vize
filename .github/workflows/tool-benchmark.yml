@@ -15,6 +15,14 @@ on:
         description: Generated SFC files imported by the Vite benchmark entry
         required: true
         default: "1000"
+      nuxt_file_count:
+        description: Generated SFC files imported by the Nuxt benchmark app
+        required: true
+        default: "500"
+      large_blocks:
+        description: Repeated template blocks in the large single-SFC benchmark
+        required: true
+        default: "900"
       runs:
         description: Measured runs per variant
         required: true
@@ -42,6 +50,8 @@ env:
   VIZE_TOOL_BENCH_FILE_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.file_count || '3000' }}
   VIZE_TOOL_BENCH_CHECK_FILE_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.check_file_count || '500' }}
   VIZE_TOOL_BENCH_VITE_FILE_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.vite_file_count || '1000' }}
+  VIZE_TOOL_BENCH_NUXT_FILE_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.nuxt_file_count || '250' }}
+  VIZE_TOOL_BENCH_LARGE_BLOCKS: ${{ github.event_name == 'workflow_dispatch' && inputs.large_blocks || '300' }}
   VIZE_TOOL_BENCH_RUNS: ${{ github.event_name == 'workflow_dispatch' && inputs.runs || '3' }}
   VIZE_TOOL_BENCH_WARMUPS: ${{ github.event_name == 'workflow_dispatch' && inputs.warmups || '1' }}
 
@@ -85,6 +95,9 @@ jobs:
       - name: Build Vite plugin package
         run: vp run --workspace-root build:vite-plugin
 
+      - name: Build Nuxt package stack
+        run: vp run --workspace-root build:nuxt-stack
+
       - name: Generate benchmark input
         run: node bench/generate.mjs "$VIZE_TOOL_BENCH_FILE_COUNT"
 
@@ -97,6 +110,8 @@ jobs:
             --warmups "$VIZE_TOOL_BENCH_WARMUPS" \
             --check-file-count "$VIZE_TOOL_BENCH_CHECK_FILE_COUNT" \
             --vite-file-count "$VIZE_TOOL_BENCH_VITE_FILE_COUNT" \
+            --nuxt-file-count "$VIZE_TOOL_BENCH_NUXT_FILE_COUNT" \
+            --large-blocks "$VIZE_TOOL_BENCH_LARGE_BLOCKS" \
             --runner-label "blacksmith-32vcpu-ubuntu-2404" \
             --commit "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" \
             --ref "${{ github.ref_name }}" \

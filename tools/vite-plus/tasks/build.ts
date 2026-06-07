@@ -44,6 +44,9 @@ export const buildTasks = defineTasks({
   "build:vite-plugin": noCacheTask(
     `${runInPackages("build", ["./npm/vize"])} && ${runInPackages("build", ["./npm/vite-plugin-vize"])}`,
   ),
+  "build:nuxt-stack": noCacheTask(
+    runInPackages("build", ["./npm/vite-plugin-musea", "./npm/musea-nuxt", "./npm/nuxt"]),
+  ),
   "build:plugin": noCacheTask(runTask("build:vite-plugin")),
   "build:cli": task("cargo build --release -p vize"),
   "build:vscode-extension": noCacheTask(runInVscodeExtension("pnpm exec vp pack")),
