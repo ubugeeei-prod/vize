@@ -4,12 +4,12 @@ title: Configuration
 
 # Configuration
 
-Vize uses `vize.config.*` for shared npm CLI, Vite plugin, and Rust CLI settings.
+Vize uses `vize.config.*` for shared npm package commands, Vite plugin, and Rust CLI settings.
 
 ## Config Files
 
-The npm CLI and `@vizejs/vite-plugin` load these files from the project root in this priority
-order:
+The npm package commands and `@vizejs/vite-plugin` load these files from the project root in this
+priority order:
 
 - `vize.config.pkl`
 - `vize.config.ts`
@@ -281,13 +281,13 @@ export default defineConfig({
 `typeChecker.tsconfig` and `typeChecker.corsaPath` are part of the shared schema, but the
 project-backed Corsa path is the Rust CLI surface today. `typeChecker.corsaPath` is shared by
 `vize check`, type-aware `vize lint`, and `vize lsp`; `typeChecker.tsgoPath` is a deprecated alias
-for older configs. Use `vize check --tsconfig ...` and `vize check --corsa-path ...` when you need
-command-line overrides.
+for older configs. Use package scripts such as `vize:check:app` or `vize:check:corsa` when you need
+command-line overrides for `--tsconfig` or `--corsa-path`.
 
 The runtime stack is `@typescript/native-preview`, the Corsa/corsa-bind API layer, and the installed
 `tsgo` executable name. Keep ambient declarations, generated auto-import files, path aliases, and
-Vue `ComponentCustomProperties` declarations in your project `tsconfig.json`; use
-`vize check --tsconfig ...` to select that project file.
+Vue `ComponentCustomProperties` declarations in your project `tsconfig.json`; use a package script
+that runs `vize check --tsconfig ...` to select that project file.
 
 ```json
 {

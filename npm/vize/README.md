@@ -1,14 +1,12 @@
 # Vize
 
-The `vize` npm package provides:
+The `vize` npm package is the default application-facing entry point for package scripts and shared
+configuration. It provides:
 
 - shared config utilities (`defineConfig`, `loadConfig`)
-- the native `vize build` command
-- the native `vize fmt` command
-- the native `vize lint` command
-- the native `vize check` command for package scripts
-- `vize ready` for `fmt --write -> lint -> check -> build`
-- `vize upgrade` for updating the npm package
+- package-script commands backed by the native binding: `build`, `fmt`, `lint`, and `check`
+- `ready` for `fmt --write -> lint -> check -> build`
+- `upgrade` for updating the npm package
 
 For Vite integration, pair it with `@vizejs/vite-plugin`.
 For the full Rust-native CLI (`lsp`, `ide`, project-backed `check`, and `check-server`), use the
@@ -27,34 +25,41 @@ The package declares the `@typescript/native-preview` Corsa runtime as an option
 standard installs include the runtime needed by `vize check`. The `--corsa-path` CLI option remains
 available for custom native TypeScript builds.
 
-## CLI
+## Package Scripts
 
-The npm CLI exposes the common package-script commands:
-
-```bash
-vp exec vize build src
-vp exec vize fmt --write src
-vp exec vize lint --preset happy-path src
-vp exec vize check src
-vp exec vize ready src
-vp exec vize upgrade
-```
-
-Recommended scripts:
+Add scripts to your project and run Vize through your package manager:
 
 ```json
 {
   "scripts": {
-    "vue:build": "vize build src",
-    "vue:fmt": "vize fmt --write src",
-    "vue:lint": "vize lint --preset happy-path src",
-    "vue:check": "vize check src",
-    "vue:ready": "vize ready src"
+    "vize:build": "vize build src",
+    "vize:fmt": "vize fmt --write src",
+    "vize:lint": "vize lint --preset happy-path src",
+    "vize:check": "vize check src",
+    "vize:ready": "vize ready src",
+    "vize:upgrade": "vize upgrade"
   }
 }
 ```
 
-Shared config discovery is supported for the npm CLI:
+Then run:
+
+```bash
+vp run vize:build
+vp run vize:fmt
+vp run vize:lint
+vp run vize:check
+vp run vize:ready
+vp run vize:upgrade
+```
+
+For one-off local debugging, the installed binary is also available through npm exec:
+
+```bash
+vp exec vize lint --preset essential src
+```
+
+Shared config discovery is supported for the npm package commands:
 
 - `vize.config.pkl`
 - `vize.config.ts`
@@ -93,15 +98,29 @@ Override config discovery with `--config`, or disable it with `--no-config`.
 
 ## Static Analysis
 
-`vize lint` runs Vue-aware Patina diagnostics through the native binding:
+`vize lint` runs Vue-aware Patina diagnostics through the native binding. Prefer named package
+scripts for the presets your project uses:
+
+```json
+{
+  "scripts": {
+    "vize:lint:ci": "vize lint --preset essential --max-warnings 0 src",
+    "vize:lint:ecosystem": "vize lint --preset ecosystem src",
+    "vize:lint:opinionated": "vize lint --preset opinionated --help-level short src",
+    "vize:lint:json": "vize lint --format json src",
+    "vize:lint:plain": "vize lint --format plain src",
+    "vize:lint:agent": "vize lint --format agent src"
+  }
+}
+```
 
 ```bash
-vp exec vize lint --preset essential --max-warnings 0 src
-vp exec vize lint --preset ecosystem src
-vp exec vize lint --preset opinionated --help-level short src
-vp exec vize lint --format json src
-vp exec vize lint --format plain src
-vp exec vize lint --format agent src
+vp run vize:lint:ci
+vp run vize:lint:ecosystem
+vp run vize:lint:opinionated
+vp run vize:lint:json
+vp run vize:lint:plain
+vp run vize:lint:agent
 ```
 
 Lint output supports `text`, `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`, and `agent`.
@@ -111,10 +130,20 @@ The human and agent-friendly formats include local rule documentation paths such
 `vize check` in the npm package uses the packaged NAPI checker and the `@typescript/native-preview`
 Corsa runtime, so it can run from `package.json` scripts after installing `vize`:
 
+```json
+{
+  "scripts": {
+    "vize:check:strict": "vize check src --strict",
+    "vize:check:virtual-ts": "vize check src --show-virtual-ts",
+    "vize:check:declarations": "vize check src --declaration --declaration-dir dist/types"
+  }
+}
+```
+
 ```bash
-vp exec vize check src --strict
-vp exec vize check src --show-virtual-ts
-vp exec vize check src --declaration --declaration-dir dist/types
+vp run vize:check:strict
+vp run vize:check:virtual-ts
+vp run vize:check:declarations
 ```
 
 Use the Rust CLI when you need Corsa project diagnostics across Vue, TS, TSX, and `.d.ts` inputs.

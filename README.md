@@ -43,9 +43,10 @@ for single-file components. A single shared parser powers compilation, linting, 
 formatting, and editor tooling, so your whole Vue workflow runs on the same high-performance core
 instead of a patchwork of disconnected tools.
 
-It plugs into where you already work: `@vizejs/vite-plugin` (Vite), `vize` (npm CLI), the native
-`vize` binary (full CLI / LSP / profiling), `@vizejs/vite-plugin-musea` (Musea), and
-`oxlint-plugin-vize` (Oxlint).
+It plugs into where you already work: `@vizejs/vite-plugin` (Vite), the `vize` npm package
+(project scripts and shared config helpers), the native `vize` binary (LSP / profiling /
+specialized CLI workflows), `@vizejs/vite-plugin-musea` (Musea), and `oxlint-plugin-vize`
+(Oxlint).
 
 **Everything lives in the [documentation](https://vizejs.dev)** — start with
 [Getting Started](https://vizejs.dev/getting-started).

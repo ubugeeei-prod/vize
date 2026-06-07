@@ -10,7 +10,8 @@ Run the following from the project root before using the examples:
 nix develop
 vp env install
 vp install
-vp run --workspace-root cli  # Enable the vize CLI command
+vp run --workspace-root build:native
+vp run --filter './npm/vize' build
 ```
 
 Or build directly with Cargo:
@@ -21,9 +22,11 @@ cargo build --release
 
 ---
 
-## CLI Examples
+## npm Package Command Examples
 
-The `examples/cli/` directory contains sample Vue files for trying the CLI tools.
+The `examples/cli/` directory contains sample Vue files for trying the `vize` npm package commands.
+In application projects, prefer package scripts. In this workspace, use `vp exec vize ...` after
+building the local package.
 
 ### File Structure
 
@@ -37,16 +40,16 @@ The `examples/cli/` directory contains sample Vue files for trying the CLI tools
 
 ```bash
 # Check whether formatting is needed
-vize fmt examples/cli/src/*.vue --check
+vp exec vize fmt examples/cli/src/*.vue --check
 
 # Print the formatted result without changing files
-vize fmt examples/cli/src/Unformatted.vue
+vp exec vize fmt examples/cli/src/Unformatted.vue
 
 # Write changes to the file
-vize fmt examples/cli/src/Unformatted.vue --write
+vp exec vize fmt examples/cli/src/Unformatted.vue --write
 
 # With options
-vize fmt examples/cli/src/*.vue --single-quote --no-semi --print-width 80
+vp exec vize fmt examples/cli/src/*.vue --single-quote --no-semi --print-width 80
 ```
 
 **Options:**
@@ -65,22 +68,22 @@ vize fmt examples/cli/src/*.vue --single-quote --no-semi --print-width 80
 
 ```bash
 # Show lint errors
-vize lint examples/cli/src/*.vue
+vp exec vize lint examples/cli/src/*.vue
 
 # Output as JSON
-vize lint examples/cli/src/HasErrors.vue --format json
+vp exec vize lint examples/cli/src/HasErrors.vue --format json
 
 # Output as plain text for hooks and agents
-vize lint examples/cli/src/HasErrors.vue --format plain
+vp exec vize lint examples/cli/src/HasErrors.vue --format plain
 
 # Set a warning limit
-vize lint examples/cli/src/*.vue --max-warnings 5
+vp exec vize lint examples/cli/src/*.vue --max-warnings 5
 
 # Show only the summary
-vize lint examples/cli/src/*.vue --quiet
+vp exec vize lint examples/cli/src/*.vue --quiet
 
 # Print rule and file timing
-vize lint examples/cli/src/*.vue --profile
+vp exec vize lint examples/cli/src/*.vue --profile
 ```
 
 `src/HasErrors.vue` intentionally includes missing `v-for` keys, a `v-if`/`v-for` conflict, a
@@ -97,7 +100,10 @@ The SSR rule docs include extra boundary examples for `typeof window`, comments,
 | `--quiet`, `-q`  | Show only the summary                                                            | false   |
 | `--fix`          | Auto-fix (not implemented yet)                                                   | false   |
 
-### LSP Server (`vize lsp`)
+### Rust LSP Server (`vize lsp`)
+
+The npm package does not provide the LSP server. Use the Rust binary when you need editor protocol
+experiments from the command line.
 
 ```bash
 # Start with stdio (for editor integration)
@@ -256,13 +262,14 @@ Current observed behavior in this repository: that probe reports `0` findings on
 
 ## Troubleshooting
 
-### `vize` Command Not Found
+### `vp exec vize` Command Not Found
 
 ```bash
-# Enable the CLI from vp run
-vp run --workspace-root cli
+# Build the local native binding and npm package
+vp run --workspace-root build:native
+vp run --filter './npm/vize' build
 
-# Or use cargo run directly
+# Or use the Rust CLI directly for CLI-only debugging
 cargo run --release -- fmt examples/cli/src/*.vue
 ```
 

@@ -8,6 +8,9 @@ Vize's analysis stack is shared by the compiler, linter, type checker, editor se
 tooling. The goal is to parse a Vue SFC once, keep rich semantic information around, and reuse it
 for diagnostics and code generation instead of treating each command as a separate tool.
 
+The examples below assume the `vize` npm package is installed and called from project scripts, which
+is the recommended workflow for applications.
+
 ## Pipeline
 
 | Layer    | What it does                                                              | Used by                                        |
@@ -29,26 +32,54 @@ For the concrete rule names, defaults, and cross-file diagnostic codes that can 
 
 Start with the default preset:
 
+```json
+{
+  "scripts": {
+    "vize:lint": "vize lint src"
+  }
+}
+```
+
 ```bash
-vize lint src
+vp run vize:lint
 ```
 
 Use `essential` for correctness-only CI, `happy-path` for the default recommended bundle,
 `opinionated` when you want stronger conventions, `nuxt` for Nuxt-aware assumptions, and
 `incremental` when you only want explicitly configured rules to run.
 
+```json
+{
+  "scripts": {
+    "vize:lint:ci": "vize lint --preset essential --max-warnings 0 src",
+    "vize:lint:opinionated": "vize lint --preset opinionated --help-level short src",
+    "vize:lint:json": "vize lint --format json src"
+  }
+}
+```
+
 ```bash
-vize lint --preset essential src
-vize lint --preset opinionated --help-level short src
-vize lint --format json --max-warnings 0 src
+vp run vize:lint:ci
+vp run vize:lint:opinionated
+vp run vize:lint:json
 ```
 
 Opt into cross-file and type-aware checks only after the basic lint path is stable:
 
+```json
+{
+  "scripts": {
+    "vize:lint:cross-file": "vize lint --cross-file src",
+    "vize:lint:cross-file-tree": "vize lint --cross-file --cross-file-tree src",
+    "vize:lint:strict-reactivity": "vize lint --strict-reactivity src"
+  }
+}
+```
+
 ```bash
-vize lint --cross-file src
-vize lint --cross-file --cross-file-tree src
-vize lint --strict-reactivity src
+vp run vize:lint:cross-file
+vp run vize:lint:cross-file-tree
+vp run vize:lint:strict-reactivity
 ```
 
 Cross-file linting analyzes relationships such as provide/inject and reactivity flow across a set of
@@ -97,8 +128,8 @@ reactivity tracking, and async race-condition analysis. `--cross-file-tree` prin
 provide/inject tree on top of those diagnostics.
 
 ```bash
-vize lint --cross-file src
-vize lint --cross-file --cross-file-tree src
+vp run vize:lint:cross-file
+vp run vize:lint:cross-file-tree
 ```
 
 The lower-level analyzer is broader than the current CLI surface:
@@ -128,11 +159,26 @@ CLI, Oxlint bridge, and editor server.
 diagnostics. It checks `.vue`, `.ts`, `.tsx`, and `.d.ts` inputs and maps diagnostics back to the
 original source files.
 
+```json
+{
+  "scripts": {
+    "vize:check": "vize check",
+    "vize:check:src": "vize check src",
+    "vize:check:app": "vize check --tsconfig tsconfig.app.json",
+    "vize:check:json": "vize check --format json --quiet",
+    "vize:check:virtual-ts": "vize check --show-virtual-ts src/components/App.vue",
+    "vize:check:profile": "vize check --profile src",
+    "vize:check:single-server": "vize check --servers 1 src",
+    "vize:check:declarations": "vize check --declaration --declaration-dir dist/types"
+  }
+}
+```
+
 ```bash
-vize check
-vize check src
-vize check --tsconfig tsconfig.app.json
-vize check --format json --quiet
+vp run vize:check
+vp run vize:check:src
+vp run vize:check:app
+vp run vize:check:json
 ```
 
 When no paths are provided, `vize check` reads `tsconfig.json` `files`, `include`, and `exclude`
@@ -140,15 +186,15 @@ fields if a project config is available. Use `--show-virtual-ts` when debugging 
 `--profile` when you need timing and virtual-file artifacts under `node_modules/.vize`.
 
 ```bash
-vize check --show-virtual-ts src/components/App.vue
-vize check --profile src
-vize check --servers 1 src
+vp run vize:check:virtual-ts
+vp run vize:check:profile
+vp run vize:check:single-server
 ```
 
 Declaration output is available from the materialized checker project:
 
 ```bash
-vize check --declaration --declaration-dir dist/types
+vp run vize:check:declarations
 ```
 
 Project-wide template values and generated declaration files should be visible through TypeScript
@@ -172,17 +218,27 @@ declare module "vue" {
 ```
 
 ```bash
-vize check --tsconfig tsconfig.app.json
+vp run vize:check:app
 ```
 
-## npm CLI vs Rust CLI
+## npm Package Scripts vs Rust CLI
 
 The npm `vize` package is intended for package scripts and uses the packaged NAPI binding:
 
+```json
+{
+  "scripts": {
+    "vize:lint": "vize lint src",
+    "vize:check": "vize check src --strict",
+    "vize:ready": "vize ready src"
+  }
+}
+```
+
 ```bash
-vp exec vize lint src
-vp exec vize check src --strict
-vp exec vize ready src
+vp run vize:lint
+vp run vize:check
+vp run vize:ready
 ```
 
 The Rust CLI currently has the fuller project-backed type-checking surface:
@@ -193,9 +249,9 @@ vize check --tsconfig tsconfig.app.json --profile src
 vize lsp
 ```
 
-Use the npm CLI when you want installable scripts in an application. Use the Rust CLI when you need
-`check-server`, LSP, IDE management, or the Corsa-backed project diagnostics path across Vue and
-TypeScript files.
+Use npm package scripts when you want installable workflows in an application. Use the Rust CLI when
+you need `check-server`, LSP, IDE management, or the Corsa-backed project diagnostics path across
+Vue and TypeScript files.
 
 ## Oxlint
 
@@ -227,11 +283,11 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 
 ## Adoption Path
 
-1. Add `vize lint --preset essential src` to CI.
+1. Add a `vize:lint:ci` package script such as `vize lint --preset essential src` to CI.
 2. Switch to `happy-path` or `opinionated` after correctness diagnostics are clean.
-3. Add `vize check` with your project `tsconfig.json`.
+3. Add a `vize:check` package script with your project `tsconfig.json`.
 4. Enable editor linting first, then type checking once CI output is stable.
 5. Add cross-file and strict reactivity checks for projects that benefit from deeper analysis.
 
-For a single quality gate, `vize ready src` runs `fmt --write`, `lint`, `check`, and `build` in
-order and stops at the first failing step.
+For a single quality gate, a `vize:ready` package script running `vize ready src` runs `fmt
+--write`, `lint`, `check`, and `build` in order and stops at the first failing step.

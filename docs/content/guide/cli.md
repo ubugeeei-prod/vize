@@ -6,14 +6,43 @@ title: CLI
 
 > **⚠️ Work in Progress:** Vize is under active development and the CLI surface is still evolving.
 
-This page describes the Rust-native `vize` binary.
-The npm `vize` package exposes shared config helpers plus NAPI-backed `build`, `fmt`, `lint`,
-`check`, `clean`, `ready`, and `upgrade` commands. Install the Rust binary when you need LSP, IDE,
-`check-server`, or Corsa project diagnostics.
+Most application workflows should install the `vize` npm package and run it through `package.json`
+scripts. This page describes the lower-level Rust-native `vize` binary for LSP, IDE management,
+`check-server`, profiling, and other direct CLI workflows. The npm package exposes shared config
+helpers plus NAPI-backed `build`, `fmt`, `lint`, `check`, `clean`, `ready`, and `upgrade` commands.
 
 For a higher-level explanation of the analysis pipeline, see [Static Analysis](./static-analysis.md).
 
-## Installation
+## Application Package Scripts
+
+For apps, install from npm and wire stable commands into project scripts:
+
+```bash
+vp install -D vize
+```
+
+```json
+{
+  "scripts": {
+    "vize:build": "vize build src",
+    "vize:fmt": "vize fmt --write src",
+    "vize:lint": "vize lint --preset happy-path src",
+    "vize:check": "vize check src",
+    "vize:ready": "vize ready src"
+  }
+}
+```
+
+```bash
+vp run vize:lint
+vp run vize:check
+vp run vize:ready
+```
+
+Use `vp exec vize ...` for one-off local debugging, but prefer named scripts for documented
+workflows and CI.
+
+## Rust Binary Installation
 
 For v1 alpha, use the prebuilt GitHub release binaries or the Nix entry point. The Rust CLI is not a
 supported crates.io install channel yet.
@@ -31,14 +60,14 @@ For local development inside this repository, install the workspace build:
 cargo install --path crates/vize --force --locked
 ```
 
-## Rust CLI vs npm CLI
+## npm Package Scripts vs Rust CLI
 
-| Need                                                                   | Recommended entry point                 |
-| ---------------------------------------------------------------------- | --------------------------------------- |
-| Package scripts for build, format, lint, check, ready, and upgrade     | `vp exec vize ...` from the npm package |
-| Project-backed type checking across `.vue`, `.ts`, `.tsx`, and `.d.ts` | Rust `vize check`                       |
-| LSP, IDE setup, `check-server`, and profiling artifacts                | Rust `vize` binary                      |
-| Shared Vite plugin, npm CLI, and Rust CLI settings                     | `vize.config.*`                         |
+| Need                                                                   | Recommended entry point              |
+| ---------------------------------------------------------------------- | ------------------------------------ |
+| Package scripts for build, format, lint, check, ready, and upgrade     | `vp run vize:*` from the npm package |
+| Project-backed type checking across `.vue`, `.ts`, `.tsx`, and `.d.ts` | Rust `vize check`                    |
+| LSP, IDE setup, `check-server`, and profiling artifacts                | Rust `vize` binary                   |
+| Shared Vite plugin, npm package command, and Rust CLI settings         | `vize.config.*`                      |
 
 ## Commands
 
@@ -320,8 +349,8 @@ The `musea` subcommand currently focuses on scaffolding and experimental entry p
 For day-to-day gallery development, the recommended workflow today is
 `@vizejs/vite-plugin-musea`.
 
-The npm CLI also exposes a convenience `vize musea` command that runs Vite with the Musea plugin
-installed in your project:
+The npm package also exposes a convenience `vize musea` command that runs Vite with the Musea
+plugin installed in your project:
 
 ```bash
 vp exec vize musea
