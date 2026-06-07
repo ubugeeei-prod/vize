@@ -59,6 +59,10 @@ valuable the signal. If you maintain (or know of) a substantial Vue application,
 framework, or tool, please open an issue or reach out so we can run Vize against it. Bug
 reports, reproductions, and benchmark results are all welcome.
 
+See the [Testing & Feedback](../../guide/testing.md) guide for how to inspect output in the
+playground, read the existing test cases, profile with `vize check --profile`, and offer a project
+as an E2E / VRT test bed.
+
 ## Roadmap to v1.0.0
 
 The current phase is **Real World Testing**.
