@@ -728,21 +728,44 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .macros
         .define_emits()
         .and_then(|call| call.type_args.as_ref());
+    let models = summary.macros.models();
+    let has_model_emits = !models.is_empty();
     let has_emits_for_props = emits_already_defined
         || define_emits_type_args.is_some()
-        || !summary.macros.emits().is_empty();
+        || !summary.macros.emits().is_empty()
+        || has_model_emits;
     if !emits_already_defined {
         if let Some(type_args) = define_emits_type_args {
             let inner_type = type_args
                 .strip_prefix('<')
                 .and_then(|s| s.strip_suffix('>'))
                 .unwrap_or(type_args.as_str());
-            append!(ts, "export type Emits = {inner_type};\n");
-        } else if !summary.macros.emits().is_empty() {
+            if has_model_emits {
+                append!(ts, "export type Emits = {inner_type} & {{\n");
+                for model in models {
+                    let name = model.name.as_str();
+                    let payload = model.model_type.as_deref().unwrap_or("unknown");
+                    append!(ts, "  \"update:{name}\": [value: {payload}];\n");
+                }
+                ts.push_str("};\n");
+            } else {
+                append!(ts, "export type Emits = {inner_type};\n");
+            }
+        } else if !summary.macros.emits().is_empty() || has_model_emits {
             ts.push_str("export type Emits = {\n");
+            let mut emitted_names: FxHashSet<String> = FxHashSet::default();
             for emit in summary.macros.emits() {
                 let payload = emit.payload_type.as_deref().unwrap_or("any[]");
                 append!(ts, "  \"{}\": {payload};\n", emit.name);
+                emitted_names.insert(emit.name.as_str().into());
+            }
+            for model in models {
+                let event_name = cstr!("update:{}", model.name);
+                if emitted_names.contains(event_name.as_str()) {
+                    continue;
+                }
+                let payload = model.model_type.as_deref().unwrap_or("unknown");
+                append!(ts, "  \"{event_name}\": [value: {payload}];\n");
             }
             ts.push_str("};\n");
         } else {

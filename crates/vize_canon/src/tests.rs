@@ -288,6 +288,22 @@ const selected = ref('option1')
     }
 
     #[test]
+    fn snapshot_virtual_ts_with_define_model() {
+        let source = r#"<script setup lang="ts">
+const model = defineModel<string>({ required: true })
+const count = defineModel<number>('count', { default: 0 })
+</script>
+
+<template>
+  <input v-model="model" />
+  <button @click="$emit('update:count', count + 1)">{{ count }}</button>
+</template>"#;
+
+        let virtual_ts = generate_virtual_ts_from_sfc(source);
+        insta::assert_snapshot!("virtual_ts_with_define_model", virtual_ts);
+    }
+
+    #[test]
     fn snapshot_virtual_ts_template_refs() {
         let source = r#"<script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
