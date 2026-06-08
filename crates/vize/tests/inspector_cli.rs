@@ -104,6 +104,42 @@ fn inspector_url_supports_batch_payloads() {
 }
 
 #[test]
+fn inspector_json_supports_vapor_target_payloads() {
+    let project = tempfile::tempdir().unwrap();
+    let src = project.path().join("src");
+    fs::create_dir_all(&src).unwrap();
+    fs::write(
+        src.join("App.vue"),
+        "<template><div>vapor</div></template>\n",
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args([
+            "inspector",
+            "src/App.vue",
+            "--format",
+            "json",
+            "--target",
+            "vapor",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["target"], "vapor");
+    assert_eq!(json["selectedFile"], "src/App.vue");
+}
+
+#[test]
 fn inspector_default_glob_respects_gitignore() {
     let project = tempfile::tempdir().unwrap();
     let src = project.path().join("src");

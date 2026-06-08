@@ -46,6 +46,10 @@ function descriptorUsesTypeScript(descriptor: SFCDescriptor): boolean {
   return langs.some((lang) => lang === "ts" || lang === "tsx");
 }
 
+function officialTargetFor(target: InspectorTarget): "dom" | "ssr" {
+  return target === "ssr" ? "ssr" : "dom";
+}
+
 function outputText(run: CompilerRun): string {
   return run.error ?? run.formattedCode ?? run.code;
 }
@@ -72,6 +76,7 @@ async function compileOfficialVue(
   const start = performance.now();
 
   try {
+    const officialTarget = officialTargetFor(target);
     const parsed = parse(file.source, { filename: file.path });
     const descriptor = parsed.descriptor;
     const isTypeScript = descriptorUsesTypeScript(descriptor);
@@ -81,7 +86,7 @@ async function compileOfficialVue(
     let scriptCode = "";
     const scoped = descriptor.styles.some((style) => style.scoped);
     const inlineTemplate = Boolean(
-      descriptor.scriptSetup && descriptor.template && target === "dom",
+      descriptor.scriptSetup && descriptor.template && officialTarget === "dom",
     );
 
     if (descriptor.script || descriptor.scriptSetup) {
@@ -113,7 +118,7 @@ async function compileOfficialVue(
         id: file.path,
         scoped,
         isProd: true,
-        ssr: target === "ssr",
+        ssr: officialTarget === "ssr",
         compilerOptions: {
           bindingMetadata,
           expressionPlugins: isTypeScript ? ["typescript"] : undefined,
@@ -162,12 +167,15 @@ async function compileVize(
       filename: file.path,
       ssr: target === "ssr",
       scriptExt: "preserve",
-      outputMode: "vdom",
+      outputMode: target === "vapor" ? "vapor" : "vdom",
       customRenderer: options.customRenderer,
       templateSyntax: options.templateSyntax,
     };
     const result = compiler.compileSfc(file.source, compileOptions);
-    const code = result.script?.code || result.template?.code || "";
+    const code =
+      target === "vapor"
+        ? result.template?.code || result.script?.code || ""
+        : result.script?.code || result.template?.code || "";
     const parser = descriptorUsesTypeScript(result.descriptor as SFCDescriptor)
       ? "typescript"
       : "babel";

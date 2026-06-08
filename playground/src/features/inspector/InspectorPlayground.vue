@@ -55,6 +55,7 @@ const activeOutputTab = ref<
 const diffViewMode = ref<"merged" | "split">("merged");
 const highlightedDiffLines = ref<HighlightedDiffLine[]>([]);
 let latestDiffHighlightId = 0;
+const inspectorTargets = ["dom", "ssr", "vapor"] as const satisfies readonly InspectorTarget[];
 
 const selectedFile = computed(() => files.value[selectedFileIndex.value] ?? files.value[0]!);
 const source = computed({
@@ -136,12 +137,16 @@ function graphEdgesFor(path: string): InspectorGraphEdge[] {
   return graphEdgesBySource.value[path] ?? [];
 }
 
+function normalizeInspectorTarget(value: unknown): InspectorTarget {
+  return inspectorTargets.includes(value as InspectorTarget) ? (value as InspectorTarget) : "dom";
+}
+
 function applyPayload(nextPayload: InspectorPayload) {
   files.value = nextPayload.files.map((file, index) => ({
     path: file.path || `repro-${index + 1}.vue`,
     source: file.source,
   }));
-  target.value = nextPayload.target === "ssr" ? "ssr" : "dom";
+  target.value = normalizeInspectorTarget(nextPayload.target);
   options.value = {
     customRenderer: nextPayload.options?.customRenderer ?? false,
     templateSyntax: nextPayload.options?.templateSyntax ?? "standard",
@@ -315,6 +320,12 @@ onUnmounted(() => {
             @click="target = 'ssr'"
           >
             SSR
+          </button>
+          <button
+            :class="['inspector-target', { active: target === 'vapor' }]"
+            @click="target = 'vapor'"
+          >
+            Vapor
           </button>
         </div>
         <label class="inspector-option">

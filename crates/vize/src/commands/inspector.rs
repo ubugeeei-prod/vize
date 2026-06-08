@@ -44,6 +44,8 @@ pub enum InspectorTarget {
     Dom,
     /// Compare SSR compiler output
     Ssr,
+    /// Compare Vapor compiler output
+    Vapor,
 }
 
 impl From<InspectorTarget> for curator_inspector::InspectorTarget {
@@ -51,6 +53,7 @@ impl From<InspectorTarget> for curator_inspector::InspectorTarget {
         match target {
             InspectorTarget::Dom => Self::Dom,
             InspectorTarget::Ssr => Self::Ssr,
+            InspectorTarget::Vapor => Self::Vapor,
         }
     }
 }
@@ -60,6 +63,7 @@ impl InspectorTarget {
         match self {
             Self::Dom => "dom",
             Self::Ssr => "ssr",
+            Self::Vapor => "vapor",
         }
     }
 }
@@ -415,6 +419,8 @@ fn compile_vize_for_compare(
 
     let has_scoped = descriptor.styles.iter().any(|style| style.scoped);
     let is_ts = descriptor_uses_type_script(&descriptor);
+    let is_ssr = matches!(args.target, InspectorTarget::Ssr);
+    let is_vapor = matches!(args.target, InspectorTarget::Vapor);
     let compile_options = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),
@@ -428,7 +434,7 @@ fn compile_vize_for_compare(
         template: TemplateCompileOptions {
             id: Some(filename.clone()),
             scoped: has_scoped,
-            ssr: matches!(args.target, InspectorTarget::Ssr),
+            ssr: is_ssr,
             is_prod: true,
             is_ts,
             custom_renderer: args.custom_renderer,
@@ -439,6 +445,7 @@ fn compile_vize_for_compare(
             scoped: has_scoped,
             ..Default::default()
         },
+        vapor: is_vapor,
         ..Default::default()
     };
 
@@ -667,6 +674,7 @@ async function formatCode(source, parser, formatter) {
 async function compileOfficialVue(file, target, compiler, formatter) {
   const start = performance.now();
   try {
+    const officialTarget = target === "ssr" ? "ssr" : "dom";
     const parsed = compiler.parse(file.source, { filename: file.path });
     const descriptor = parsed.descriptor;
     const isTypeScript = descriptorUsesTypeScript(descriptor);
@@ -676,7 +684,7 @@ async function compileOfficialVue(file, target, compiler, formatter) {
     let scriptCode = "";
     const scoped = descriptor.styles.some((style) => style.scoped);
     const inlineTemplate = Boolean(
-      descriptor.scriptSetup && descriptor.template && target === "dom",
+      descriptor.scriptSetup && descriptor.template && officialTarget === "dom",
     );
 
     if (descriptor.script || descriptor.scriptSetup) {
@@ -708,7 +716,7 @@ async function compileOfficialVue(file, target, compiler, formatter) {
         id: file.path,
         scoped,
         isProd: true,
-        ssr: target === "ssr",
+        ssr: officialTarget === "ssr",
         compilerOptions: {
           bindingMetadata,
           expressionPlugins: isTypeScript ? ["typescript"] : undefined,

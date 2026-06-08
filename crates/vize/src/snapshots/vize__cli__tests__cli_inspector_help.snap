@@ -33,8 +33,9 @@ Options:
           Compiler target to compare
 
           Possible values:
-          - dom: Compare DOM compiler output
-          - ssr: Compare SSR compiler output
+          - dom:   Compare DOM compiler output
+          - ssr:   Compare SSR compiler output
+          - vapor: Compare Vapor compiler output
 
           [default: dom]
 

@@ -47,7 +47,7 @@ export function createPullRequestBody({
   stats: DiffStats;
 }): string {
   const files = payload.files.map((file) => `- \`${file.path}\``).join("\n");
-  const target = payload.target === "ssr" ? "SSR" : "DOM";
+  const target = payload.target === "ssr" ? "SSR" : payload.target === "vapor" ? "Vapor" : "DOM";
 
   return [
     "## Compiler inspector",

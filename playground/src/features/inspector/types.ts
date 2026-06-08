@@ -1,6 +1,6 @@
 import type { CrossFileDiagnostic, CrossFileStats } from "../../wasm/index";
 
-export type InspectorTarget = "dom" | "ssr";
+export type InspectorTarget = "dom" | "ssr" | "vapor";
 
 export interface InspectorOptions {
   customRenderer: boolean;

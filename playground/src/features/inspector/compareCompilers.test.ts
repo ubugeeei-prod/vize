@@ -193,6 +193,24 @@ describe("compileInspectorReport", () => {
       },
     ]);
     expect(buildInspectorDiff).toHaveBeenCalled();
+
+    compileSfc.mockClear();
+    await compileInspectorReport({
+      compiler,
+      file: {
+        path: "src/App.vue",
+        source: "<template><div>{{ msg }}</div></template>",
+      },
+      target: "vapor",
+    });
+
+    expect(compileSfc).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        ssr: false,
+        outputMode: "vapor",
+      }),
+    );
   });
 
   it("compares script setup DOM output with Vue's inline production render shape", async () => {

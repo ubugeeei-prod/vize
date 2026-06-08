@@ -66,4 +66,18 @@ Playground permalink: https://vizejs.dev/play/?tab=inspector#inspector=abc
 
 Generated from the Vize playground compiler inspector. Please add the minimized fixture or full snapshot that explains the parity change.`);
   });
+
+  it("labels vapor PR bodies", () => {
+    const body = createPullRequestBody({
+      permalink: "https://vizejs.dev/play/?tab=inspector#inspector=abc",
+      payload: { ...payload, target: "vapor" },
+      stats: {
+        additions: 0,
+        removals: 0,
+        unchanged: 1,
+      },
+    });
+
+    expect(body).toContain("- Target: Vapor");
+  });
 });
