@@ -2278,6 +2278,13 @@ export {};
             (
                 "tsconfig.json",
                 r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
   "include": ["src/**/*"]
 }
 "#,
@@ -2288,12 +2295,15 @@ export {};
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
-        .args(["check", ".", "--format", "json"])
+        .args(["check", ".", "--format", "json", "--no-config"])
         .output()
         .unwrap();
 
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
     let diagnostics = json["files"]
         .as_array()
         .unwrap()
@@ -2302,7 +2312,11 @@ export {};
         .filter_map(|diagnostic| diagnostic.as_str())
         .collect::<Vec<_>>();
 
-    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
     assert!(
         diagnostics
             .iter()
