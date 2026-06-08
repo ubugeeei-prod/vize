@@ -14,7 +14,7 @@ use vize_carton::cstr;
 use vize_carton::profile;
 use vize_croquis::BindingType;
 use vize_croquis::Croquis;
-use vize_croquis::macros::MacroKind;
+use vize_croquis::macros::{MacroKind, ModelDefinition};
 
 use super::helpers::{is_reserved_identifier, to_safe_identifier};
 
@@ -258,12 +258,33 @@ fn template_props_type_ref(
     cstr!("__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>>")
 }
 
+fn model_prop_type(model: &ModelDefinition) -> &str {
+    model.model_type.as_deref().unwrap_or("unknown")
+}
+
+fn emit_model_prop_member(ts: &mut String, model: &ModelDefinition) {
+    let optional = if model.required { "" } else { "?" };
+    let name = model.name.as_str();
+    let prop_type = model_prop_type(model);
+    append!(*ts, "  \"{name}\"{optional}: {prop_type};\n");
+}
+
+fn append_model_props_type_literal(ts: &mut String, models: &[ModelDefinition]) {
+    ts.push_str("{\n");
+    for model in models {
+        emit_model_prop_member(ts, model);
+    }
+    ts.push('}');
+}
+
 /// Generate Props type definition at module level.
 /// When `generic_param` is present (e.g., `"T extends Foo, P extends Bar"`),
 /// the Props type is emitted with generic parameters: `export type Props<T, P> = ...;`
 pub(crate) fn generate_props_type(ts: &mut String, summary: &Croquis, generic_param: Option<&str>) {
     let props = summary.macros.props();
     let has_props = !props.is_empty();
+    let models = summary.macros.models();
+    let has_models = !models.is_empty();
     let define_props_type_args = summary
         .macros
         .define_props()
@@ -291,13 +312,27 @@ pub(crate) fn generate_props_type(ts: &mut String, summary: &Croquis, generic_pa
             .and_then(|s| s.strip_suffix('>'))
             .unwrap_or(type_args.as_str());
         // Always emit Props alias so it's available in template and default export.
-        append!(*ts, "export type Props{generic_decl} = {inner_type};\n");
-    } else if has_props {
+        if has_models {
+            append!(*ts, "export type Props{generic_decl} = {inner_type} & ");
+            append_model_props_type_literal(ts, models);
+            ts.push_str(";\n");
+        } else {
+            append!(*ts, "export type Props{generic_decl} = {inner_type};\n");
+        }
+    } else if has_props || has_models {
         append!(*ts, "export type Props{generic_decl} = {{\n");
+        let mut emitted_names: FxHashSet<String> = FxHashSet::default();
         for prop in props {
             let prop_type = prop.prop_type.as_deref().unwrap_or("unknown");
             let optional = if prop.required { "" } else { "?" };
             append!(*ts, "  {}{optional}: {prop_type};\n", prop.name);
+            emitted_names.insert(prop.name.as_str().into());
+        }
+        for model in models {
+            if emitted_names.contains(model.name.as_str()) {
+                continue;
+            }
+            emit_model_prop_member(ts, model);
         }
         ts.push_str("};\n");
     } else {
@@ -317,6 +352,8 @@ pub(crate) fn generate_props_variables(
 ) {
     let props = summary.macros.props();
     let has_props = !props.is_empty();
+    let models = summary.macros.models();
+    let has_models = !models.is_empty();
     let define_props_type_args = summary
         .macros
         .define_props()
@@ -329,11 +366,16 @@ pub(crate) fn generate_props_variables(
             cstr!("Props<{names}>")
         })
         .unwrap_or_else(|| "Props".into());
-    let defaulted_prop_names = collect_with_defaults_default_names(summary);
+    let mut defaulted_prop_names = collect_with_defaults_default_names(summary);
+    for model in models {
+        if model.default_value.is_some() {
+            defaulted_prop_names.insert(model.name.as_str().into());
+        }
+    }
     let template_props_type_ref =
         template_props_type_ref(props_type_ref.as_str(), &defaulted_prop_names);
 
-    if has_props || define_props_type_args.is_some() {
+    if has_props || define_props_type_args.is_some() || has_models {
         ts.push_str("  // Props are available in template as variables\n");
         ts.push_str("  // Access via `propName` or `props.propName`\n");
         append!(
@@ -408,6 +450,20 @@ pub(crate) fn generate_props_variables(
                 }
             }
         }
+        for model in models {
+            if emitted_names.contains(model.name.as_str())
+                || should_skip_template_prop_binding(summary, model.name.as_str())
+            {
+                continue;
+            }
+            emit_template_prop_binding(
+                ts,
+                template_props_type_ref.as_str(),
+                model.name.as_str(),
+                model.default_value.is_some(),
+            );
+            emitted_names.insert(model.name.as_str().into());
+        }
         ts.push('\n');
     }
 }
@@ -429,6 +485,16 @@ pub(crate) fn collect_template_prop_names(
             names.insert(prop.name.as_str().into());
         }
         return names;
+    }
+
+    for model in summary.macros.models() {
+        if should_skip_template_prop_binding(summary, model.name.as_str()) {
+            continue;
+        }
+        if !is_reserved_identifier(model.name.as_str()) {
+            continue;
+        }
+        names.insert(model.name.as_str().into());
     }
 
     let Some(type_args) = summary

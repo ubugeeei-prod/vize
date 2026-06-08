@@ -31,6 +31,25 @@ export function render(_ctx) {
 }
 
 ===
+name: multi-line inline handler
+options: vapor
+--- INPUT ---
+<button @click="hoge();
+fuga();
+">Hoge</button>
+--- OUTPUT ---
+import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<button>Hoge</button>", true)
+_delegateEvents("click")
+
+export function render(_ctx) {
+  const n0 = t0()
+  n0.$evtclick = _createInvoker(() => { _ctx.hoge();
+_ctx.fuga(); })
+  return n0
+}
+
+===
 name: method call
 options: vapor
 --- INPUT ---

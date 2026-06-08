@@ -146,7 +146,7 @@ function loadCompiledSfcModule(
   realPath: string,
   isSsr: boolean,
   currentBase: string,
-  loadOptions?: { ssr?: boolean },
+  loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
 ): { code: string; map: null } | string | null {
   const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
   if (placeholderCode) {
@@ -170,6 +170,10 @@ function loadCompiledSfcModule(
 
   if (!compiled) {
     return null;
+  }
+
+  for (const dependency of compiled.dependencies ?? []) {
+    loadOptions?.addWatchFile?.(dependency);
   }
 
   const hasDelegated = hasDelegatedStyles(compiled);
@@ -237,7 +241,7 @@ function loadDefinePageMetaArtifact(
 export function loadHook(
   state: VizePluginState,
   id: string,
-  loadOptions?: { ssr?: boolean },
+  loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
 ): string | { code: string; map: null } | null {
   const request = classifyVitePluginRequest(id);
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);

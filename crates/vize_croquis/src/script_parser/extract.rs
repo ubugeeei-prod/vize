@@ -128,13 +128,39 @@ pub fn process_call_expression(
                     }
                 })
                 .unwrap_or("modelValue");
+            let model_type = call
+                .type_arguments
+                .as_ref()
+                .and_then(|type_params| type_params.params.first())
+                .and_then(|ty| {
+                    source
+                        .get(ty.span().start as usize..ty.span().end as usize)
+                        .map(str::trim)
+                        .filter(|text| !text.is_empty())
+                        .map(CompactString::new)
+                });
+            let options_arg = if matches!(call.arguments.first(), Some(Argument::StringLiteral(_)))
+            {
+                call.arguments.get(1)
+            } else {
+                call.arguments.first()
+            };
+            let (required, default_value) = options_arg
+                .and_then(argument_object)
+                .map(|options| {
+                    (
+                        object_bool_property(options, "required").unwrap_or(false),
+                        object_expression_source_property(options, "default", source),
+                    )
+                })
+                .unwrap_or((false, None));
 
             result.macros.add_model(ModelDefinition {
                 name: CompactString::new(model_name),
                 local_name: CompactString::new(model_name),
-                model_type: None,
-                required: false,
-                default_value: None,
+                model_type,
+                required,
+                default_value,
             });
         }
 
@@ -322,6 +348,25 @@ fn object_u32_property(object: &ObjectExpression<'_>, name: &str) -> Option<u32>
         }
         _ => None,
     }
+}
+
+fn object_bool_property(object: &ObjectExpression<'_>, name: &str) -> Option<bool> {
+    let value = object_property(object, name)?;
+    match value {
+        Expression::BooleanLiteral(literal) => Some(literal.value),
+        _ => None,
+    }
+}
+
+fn object_expression_source_property(
+    object: &ObjectExpression<'_>,
+    name: &str,
+    source: &str,
+) -> Option<CompactString> {
+    let value = object_property(object, name)?;
+    source
+        .get(value.span().start as usize..value.span().end as usize)
+        .map(CompactString::new)
 }
 
 fn fill_define_art_tags(object: &ObjectExpression<'_>, tags: &mut Vec<CompactString>) {

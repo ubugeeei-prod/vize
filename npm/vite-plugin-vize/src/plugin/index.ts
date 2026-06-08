@@ -370,7 +370,10 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     },
 
     load(id, loadOptions) {
-      return loadHook(state, id, loadOptions);
+      return loadHook(state, id, {
+        ...loadOptions,
+        addWatchFile: this.addWatchFile.bind(this),
+      });
     },
 
     async transform(code, id, transformOptions) {

@@ -236,6 +236,8 @@ export interface VizeOptions {
 export interface StyleBlockInfo {
   /** Raw style content (uncompiled for preprocessor langs) */
   content: string;
+  /** External source path from `<style src>`, when present */
+  src?: string | null;
   /** Language of the style block (e.g., "css", "scss", "less", "sass", "stylus") */
   lang: string | null;
   /** Whether the style block has the scoped attribute */
@@ -249,6 +251,8 @@ export interface StyleBlockInfo {
 export interface NativeStyleBlockInfo {
   /** Raw style content (uncompiled for preprocessor langs) */
   content: string;
+  /** External source path from `<style src>`, when present */
+  src?: string | null;
   /** Language of the style block (e.g., "css", "scss", "less", "sass", "stylus") */
   lang?: string | null;
   /** Whether the style block has the scoped attribute */
@@ -273,6 +277,8 @@ export interface CompiledModule {
   macroArtifacts?: MacroArtifact[];
   /** Per-block style metadata extracted from the source SFC */
   styles?: StyleBlockInfo[];
+  /** Files loaded through SFC `src` imports */
+  dependencies?: string[];
 }
 
 export interface BatchFileInput {
