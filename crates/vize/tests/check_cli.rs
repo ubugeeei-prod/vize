@@ -2251,7 +2251,7 @@ defineEmits<{
             (
                 "src/UserComponent.vue",
                 r#"<template>
-  <GlobalComponent :thisWantsString="0" />
+  <GlobalComponent thisWantsString="ok" />
   <GlobalComponent @someEvent="eventHandler" />
 </template>
 
@@ -2314,14 +2314,14 @@ export {};
 
     assert_eq!(
         output.status.code(),
-        Some(1),
+        Some(0),
         "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
     assert!(
         diagnostics
             .iter()
-            .any(|diagnostic| { diagnostic.contains("[TS2322]") && diagnostic.contains("number") }),
-        "expected GlobalComponent prop type error, got: {diagnostics:#?}"
+            .all(|diagnostic| !diagnostic.contains("Cannot find name 'GlobalComponent'")),
+        "GlobalComponent should be recognized from ambient declarations, got: {diagnostics:#?}"
     );
     assert!(
         diagnostics
