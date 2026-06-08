@@ -10,6 +10,7 @@ struct Cli {
     /// Print version
     #[arg(short = 'v', short_alias = 'V', long, action = clap::ArgAction::Version)]
     version: (),
+
     #[command(subcommand)]
     command: Option<Commands>,
 }
@@ -34,6 +35,9 @@ enum Commands {
 
     /// Create playground compiler inspector payloads and agent reports
     Inspector(crate::commands::inspector::InspectorArgs),
+
+    /// Curator utilities for diagnostics and reports
+    Curator(crate::commands::curator::CuratorArgs),
 
     /// Remove Vize-generated cache artifacts
     Clean(crate::commands::clean::CleanArgs),
@@ -81,6 +85,7 @@ fn run(cli: Cli) {
         Some(Commands::Lint(args)) => crate::commands::lint::run(args),
         Some(Commands::Check(args)) => crate::commands::check::run(args),
         Some(Commands::Inspector(args)) => crate::commands::inspector::run(args),
+        Some(Commands::Curator(args)) => crate::commands::curator::run(args),
         Some(Commands::Clean(args)) => crate::commands::clean::run(args),
         #[cfg(unix)]
         Some(Commands::CheckServer(args)) => crate::commands::check_server::run(args),
@@ -134,6 +139,11 @@ mod tests {
     #[test]
     fn inspector_help_snapshot() {
         insta::assert_snapshot!("cli_inspector_help", command_help("inspector"));
+    }
+
+    #[test]
+    fn curator_help_snapshot() {
+        insta::assert_snapshot!("cli_curator_help", command_help("curator"));
     }
 
     fn command_help(command_name: &str) -> String {

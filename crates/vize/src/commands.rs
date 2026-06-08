@@ -3,6 +3,8 @@ pub mod check;
 #[cfg(unix)]
 pub mod check_server;
 pub mod clean;
+pub mod curator;
+pub mod env_info;
 #[cfg(feature = "glyph")]
 pub mod fmt;
 #[cfg(feature = "maestro")]

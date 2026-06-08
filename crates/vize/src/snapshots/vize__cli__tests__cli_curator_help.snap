@@ -1,0 +1,15 @@
+---
+source: crates/vize/src/cli.rs
+expression: "command_help(\"curator\")"
+---
+Curator utilities for diagnostics and reports
+
+Usage: curator <COMMAND>
+
+Commands:
+  env   Print environment information for bug reports
+  help  Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help
+          Print help
