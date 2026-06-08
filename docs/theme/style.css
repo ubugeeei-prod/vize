@@ -1095,6 +1095,17 @@ body.entry-page .entry-content .content > h2 + p > img {
   max-width: 760px;
 }
 
+.content video[src^="/blog/"] {
+  display: block;
+  width: 100%;
+  max-width: 760px;
+  margin: 1.5rem auto 1.8rem;
+  border: 1px solid color-mix(in srgb, var(--octc-color-border) 82%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--octc-color-bg-alt) 52%, var(--octc-color-bg));
+  box-shadow: 0 14px 42px color-mix(in srgb, var(--octc-color-text) 8%, transparent);
+}
+
 .blog-post-meta {
   display: flex;
   flex-wrap: wrap;

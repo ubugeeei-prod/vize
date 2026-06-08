@@ -21,7 +21,7 @@ description: Vize enters the Real World Testing phase — real projects are the 
   </a>
 </div>
 
-[▶ Watch the Real World Testing PV](/blog/vize-real-world-testing.mp4)
+<video class="blog-post-video" src="/blog/vize-real-world-testing.mp4" controls muted playsinline loop preload="metadata" aria-label="Real World Testing PV"></video>
 
 Vize is entering a new phase.
 

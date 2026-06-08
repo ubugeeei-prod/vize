@@ -90,26 +90,6 @@ export default defineConfig({
               '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">',
               '<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>',
               "<script>if(!localStorage.getItem('theme')){localStorage.setItem('theme','light')}</script>",
-              // Progressive enhancement: the markdown pipeline sanitizes raw <video>
-              // tags, so author videos as plain `.mp4` links in markdown and upgrade
-              // them to inline players client-side. The link stays as a no-JS fallback.
-              // Upstream: https://github.com/ubugeeei-prod/ox-content/issues/340 (allow <video>).
-              `<script>
-document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll('a[href$=".mp4"]').forEach(function (a) {
-    var video = document.createElement("video");
-    video.src = a.getAttribute("href");
-    video.controls = true;
-    video.muted = true;
-    video.playsInline = true;
-    video.loop = true;
-    video.preload = "metadata";
-    video.style.cssText = "width:100%;max-width:760px;display:block;margin:1.5rem auto;border-radius:8px";
-    var block = a.closest("p");
-    (block && block.textContent.trim() === a.textContent.trim() ? block : a).replaceWith(video);
-  });
-});
-</script>`,
             ].join("\n"),
             headerAfter: createDocsBackgroundHtml(),
           },
