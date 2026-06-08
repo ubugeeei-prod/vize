@@ -102,9 +102,10 @@ function __setup() {
   // Component props type declarations
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
   type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;
+  type __VizePropValue<P, K extends PropertyKey> = K extends keyof P ? P[K] : unknown;
   // @vize-map: component -> 0:40
   type __LinkComp_Props_0 = typeof LinkComp extends { new (): { $props: infer __P } } ? __P : (typeof LinkComp extends (props: infer __P) => any ? __P : {});
-  type __LinkComp_0_prop_to = 'to' extends keyof __LinkComp_Props_0 ? __LinkComp_Props_0['to'] : unknown;
+  type __LinkComp_0_prop_to = __VizePropValue<__LinkComp_Props_0, 'to'>;
   type __LinkComp_Check_0 = __VizePropChecker<typeof LinkComp>;
 
   // Component props value checks (template scope)

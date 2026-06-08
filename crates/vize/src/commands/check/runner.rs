@@ -210,6 +210,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
 
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
     let nuxt_path_aliases = nuxt::detect_nuxt_auto_imports(&mut virtual_ts_options, &project_root);
+    collect_project_global_component_stubs(&mut virtual_ts_options, &files, &project_root);
     let checker_tsconfig_path = match resolve_checker_tsconfig_path(
         program_tsconfig_path.as_deref(),
         &project_root,
@@ -979,6 +980,168 @@ fn build_virtual_ts_options(
     }
 }
 
+fn collect_project_global_component_stubs(
+    options: &mut vize_canon::virtual_ts::VirtualTsOptions,
+    files: &[PathBuf],
+    project_root: &Path,
+) {
+    let mut seen_names = options
+        .auto_import_stubs
+        .iter()
+        .filter_map(|stub| declared_stub_name(stub))
+        .map(String::from)
+        .collect::<FxHashSet<_>>();
+    let mut external_template_bindings = options
+        .external_template_bindings
+        .iter()
+        .cloned()
+        .collect::<FxHashSet<_>>();
+    let mut collected = Vec::new();
+
+    for path in files {
+        if !is_declaration_path(path) {
+            continue;
+        }
+        let Ok(components) = super::dts::parse_interface_members_with_rewritten_imports(
+            path,
+            "interface GlobalComponents",
+        ) else {
+            continue;
+        };
+
+        for (name, type_annotation) in components {
+            let Some(name) = normalize_global_component_binding_name(name.as_str()) else {
+                continue;
+            };
+            external_template_bindings.insert(name.clone());
+            if !seen_names.insert(name.clone()) {
+                continue;
+            }
+
+            let type_annotation = rewrite_global_component_imports_for_virtual_project(
+                type_annotation.as_str(),
+                project_root,
+            );
+            collected.push(cstr!("declare const {name}: {type_annotation};"));
+        }
+    }
+
+    if !collected.is_empty() {
+        options.auto_import_stubs.extend(collected);
+    }
+    let mut external_template_bindings = external_template_bindings.into_iter().collect::<Vec<_>>();
+    external_template_bindings.sort();
+    options.external_template_bindings = external_template_bindings;
+}
+
+fn is_declaration_path(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".d.ts"))
+}
+
+fn declared_stub_name(stub: &str) -> Option<&str> {
+    for prefix in [
+        "declare function ",
+        "declare const ",
+        "declare let ",
+        "declare var ",
+    ] {
+        let Some(rest) = stub.strip_prefix(prefix) else {
+            continue;
+        };
+        let end = rest
+            .find(['<', '(', ':', '=', ';', ' '])
+            .unwrap_or(rest.len());
+        let name = rest[..end].trim();
+        if !name.is_empty() {
+            return Some(name);
+        }
+    }
+    None
+}
+
+fn normalize_global_component_binding_name(name: &str) -> Option<String> {
+    let name = name.trim().trim_matches('"').trim_matches('\'');
+    if name.is_empty() {
+        return None;
+    }
+    if name.chars().enumerate().all(|(index, ch)| {
+        ch == '_'
+            || ch == '$'
+            || (ch.is_ascii_alphanumeric() && (index > 0 || !ch.is_ascii_digit()))
+    }) {
+        return Some(name.into());
+    }
+    None
+}
+
+fn rewrite_global_component_imports_for_virtual_project(
+    type_annotation: &str,
+    project_root: &Path,
+) -> String {
+    let bytes = type_annotation.as_bytes();
+    let mut out = String::with_capacity(type_annotation.len());
+    let mut i = 0usize;
+
+    while i < bytes.len() {
+        let quote = if type_annotation[i..].starts_with("import('") {
+            Some('\'')
+        } else if type_annotation[i..].starts_with("import(\"") {
+            Some('"')
+        } else {
+            None
+        };
+
+        let Some(quote) = quote else {
+            out.push(bytes[i] as char);
+            i += 1;
+            continue;
+        };
+
+        out.push_str("import(");
+        out.push(quote);
+        i += 8;
+
+        let start = i;
+        while i < bytes.len() && bytes[i] != quote as u8 {
+            i += 1;
+        }
+
+        let specifier = &type_annotation[start..i];
+        out.push_str(&virtual_project_global_component_specifier(
+            specifier,
+            project_root,
+        ));
+
+        if i < bytes.len() {
+            out.push(quote);
+            i += 1;
+        }
+    }
+
+    out
+}
+
+fn virtual_project_global_component_specifier(specifier: &str, project_root: &Path) -> String {
+    if !specifier.ends_with(".vue") {
+        return specifier.into();
+    }
+
+    let specifier_path = Path::new(specifier);
+    if let Some(relative) = specifier_path
+        .is_absolute()
+        .then(|| specifier_path.strip_prefix(project_root).ok())
+        .flatten()
+    {
+        let mut rendered = cstr!("./{}", relative.display());
+        rendered.push_str(".ts");
+        return rendered;
+    }
+
+    cstr!("{specifier}.ts")
+}
+
 fn resolve_declaration_emit_options(
     declaration_dir: Option<&Path>,
     tsconfig_path: Option<&Path>,
@@ -1184,9 +1347,10 @@ fn parse_dts_globals(
 #[cfg(test)]
 mod tests {
     use super::{
-        find_nearest_tsconfig_dir, is_suppressed_false_positive, resolve_declaration_dir,
-        resolve_declaration_emit_options, resolve_project_root, resolve_tsconfig_path,
-        validate_corsa_server_count, write_nuxt_fallback_tsconfig,
+        collect_project_global_component_stubs, find_nearest_tsconfig_dir,
+        is_suppressed_false_positive, resolve_declaration_dir, resolve_declaration_emit_options,
+        resolve_project_root, resolve_tsconfig_path, validate_corsa_server_count,
+        write_nuxt_fallback_tsconfig,
     };
     use crate::commands::check::nuxt::NuxtPathAlias;
     use crate::commands::check::tsconfig_inputs::TsconfigDeclarationOptions;
@@ -1225,6 +1389,46 @@ mod tests {
         let mut unrelated = diagnostic.clone();
         unrelated.message = "Interface 'Other' cannot simultaneously extend types".into();
         assert!(!is_suppressed_false_positive(&unrelated));
+    }
+
+    #[test]
+    fn collects_project_global_component_stubs_from_ambient_dts() {
+        let project_root = unique_case_dir("global-components");
+        let _ = std::fs::remove_dir_all(&project_root);
+        let src_dir = project_root.join("src");
+        std::fs::create_dir_all(&src_dir).unwrap();
+        let dts_path = src_dir.join("components.d.ts");
+        std::fs::write(
+            &dts_path,
+            r#"import "vue";
+declare module "vue" {
+  export interface GlobalComponents {
+    GlobalComponent: typeof import("./GlobalComponent.vue")["default"]
+  }
+}
+export {};
+"#,
+        )
+        .unwrap();
+
+        let mut options = vize_canon::virtual_ts::VirtualTsOptions::default();
+        collect_project_global_component_stubs(
+            &mut options,
+            std::slice::from_ref(&dts_path),
+            &project_root,
+        );
+
+        assert_eq!(options.external_template_bindings, ["GlobalComponent"]);
+        assert!(
+            options.auto_import_stubs.iter().any(|stub| {
+                stub.contains("declare const GlobalComponent:")
+                    && stub.contains("./src/GlobalComponent.vue.ts")
+            }),
+            "missing GlobalComponent stub: {:?}",
+            options.auto_import_stubs
+        );
+
+        let _ = std::fs::remove_dir_all(&project_root);
     }
 
     #[test]

@@ -2224,6 +2224,102 @@ export {}
 }
 
 #[test]
+fn check_project_global_components_are_typed_from_ambient_dts() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "global-components-ambient-dts",
+        &[
+            (
+                "src/GlobalComponent.vue",
+                r#"<template>
+  <div></div>
+</template>
+
+<script setup lang="ts">
+defineProps<{
+  thisWantsString?: string
+}>()
+
+defineEmits<{
+  someEvent: [eventArg: string]
+}>()
+</script>
+"#,
+            ),
+            (
+                "src/UserComponent.vue",
+                r#"<template>
+  <GlobalComponent :thisWantsString="0" />
+  <GlobalComponent @someEvent="eventHandler" />
+</template>
+
+<script setup lang="ts">
+function eventHandler(eventArg: string) {
+  console.log(eventArg)
+}
+</script>
+"#,
+            ),
+            (
+                "src/components.d.ts",
+                r#"import "vue";
+
+declare module "vue" {
+  export interface GlobalComponents {
+    GlobalComponent: typeof import("./GlobalComponent.vue")["default"]
+  }
+}
+
+export {};
+"#,
+            ),
+            (
+                "tsconfig.json",
+                r#"{
+  "include": ["src/**/*"]
+}
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", ".", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let diagnostics = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(|diagnostic| diagnostic.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(output.status.code(), Some(1));
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| { diagnostic.contains("[TS2322]") && diagnostic.contains("number") }),
+        "expected GlobalComponent prop type error, got: {diagnostics:#?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .all(|diagnostic| !diagnostic.contains("unknown")),
+        "global component event payload should be typed, got: {diagnostics:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_nuxt_import_meta_augmentations_do_not_conflict() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

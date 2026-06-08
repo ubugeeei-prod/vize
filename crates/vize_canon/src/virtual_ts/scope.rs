@@ -503,6 +503,9 @@ fn generate_component_props(
         ts.push_str(
             "  type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;\n",
         );
+        ts.push_str(
+            "  type __VizePropValue<P, K extends PropertyKey> = K extends keyof P ? P[K] : unknown;\n",
+        );
     }
 
     for &(idx, usage) in &checkable_usages {
@@ -538,7 +541,7 @@ fn generate_component_props(
                 let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
                 append!(
                     *ts,
-                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = '{camel_prop_name}' extends keyof __{component_type_name}_Props_{idx} ? __{component_type_name}_Props_{idx}['{camel_prop_name}'] : unknown;\n",
+                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __VizePropValue<__{component_type_name}_Props_{idx}, '{camel_prop_name}'>;\n",
                 );
             }
         }
