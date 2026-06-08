@@ -27,7 +27,7 @@ That comparison is useful, but only if the axis is clear. "Faster" is not enough
 
 The real question is: **which layer does each project want to own?**
 
-![Vize toolchain map showing one Vue-aware Rust core feeding compile, lint, type check, Musea, playground, and CI](/blog/vize-toolchain-map.svg)
+![Relationship map showing Vize in the nearby tooling landscape, with reference-only, adjacent platform, used-by-Vize, and compare-only groups](/blog/vize-toolchain-map.svg)
 
 ## Quick Map
 

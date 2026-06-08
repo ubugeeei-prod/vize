@@ -1,58 +1,74 @@
 <svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc" viewBox="0 0 960 420">
-  <title id="title">Vize toolchain map</title>
-  <desc id="desc">Vize keeps Vue-specific analysis in a Rust core and shares it with compile, lint, type checking, Musea, playground, and CI workflows.</desc>
+  <title id="title">Vize tooling landscape</title>
+  <desc id="desc">A relationship map for the tooling comparison. Vize is shown as the Vue-specific toolchain. Official Vue tooling, vue-tsc, and eslint-plugin-vue are reference-only context. Vite+ and Oxc/Oxlint are adjacent platform context. Vize uses corsa-bind and Corsa for the native type-check path. Verter, Golar, Flint, and TSSLint are comparison-only projects.</desc>
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3f5568" />
+    <marker id="arrow-use" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4f6257" />
     </marker>
     <style>
-      .bg { fill: #f7f5ef; }
-      .panel { fill: #ffffff; stroke: #d9d0c3; stroke-width: 1.5; }
-      .core { fill: #e8f2ed; stroke: #6a8f7a; stroke-width: 2; }
-      .accent { fill: #edf1f8; stroke: #6e7f9b; stroke-width: 1.5; }
-      .warm { fill: #f6eee8; stroke: #b08066; stroke-width: 1.5; }
-      .text { fill: #211f1c; font: 600 22px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-      .small { fill: #625b53; font: 500 15px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-      .mono { fill: #5a625c; font: 600 13px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 0.06em; }
-      .line { fill: none; stroke: #3f5568; stroke-width: 2.2; marker-end: url(#arrow); }
+      .bg { fill: #f8f6f0; }
+      .panel { fill: #ede9df; stroke: #d8d0c6; stroke-width: 1.5; }
+      .tile { fill: #fbfaf7; stroke: #d8d0c6; stroke-width: 1.4; }
+      .core { fill: #e7f1ea; stroke: #698d73; stroke-width: 1.6; }
+      .use { fill: #edf1f8; stroke: #6f7e98; stroke-width: 1.5; }
+      .titleText { fill: #24211d; font: 600 22px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .nodeText { fill: #24211d; font: 600 14px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .small { fill: #655d55; font: 500 11px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .mono { fill: #5e665f; font: 600 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 0; }
+      .eyebrow { dominant-baseline: central; alignment-baseline: central; }
+      .label { text-anchor: middle; dominant-baseline: central; alignment-baseline: central; }
+      .lineUse { fill: none; stroke: #4f6257; stroke-width: 2.4; marker-end: url(#arrow-use); }
     </style>
   </defs>
-  <rect class="bg" width="960" height="420" rx="0" />
-  <text x="56" y="58" class="mono">VIZE TOOLCHAIN</text>
-  <text x="56" y="88" class="text">One Vue-aware core, many consumers</text>
 
-  <rect x="70" y="150" width="170" height="82" rx="6" class="panel" />
-  <text x="98" y="184" class="text">Vue SFC</text>
-  <text x="98" y="210" class="small">template + script + style</text>
+  <rect class="bg" width="960" height="420" />
 
-  <rect x="330" y="130" width="260" height="122" rx="8" class="core" />
-  <text x="378" y="178" class="text">Rust Core</text>
-  <text x="378" y="204" class="small">parse, map, analyze, diagnose</text>
-  <text x="378" y="226" class="small">shared semantic model</text>
+  <text x="56" y="58" class="mono">TOOLING COMPARE</text>
+  <text x="56" y="88" class="titleText">Vize and the nearby tooling landscape</text>
+  <text x="56" y="112" class="small">Blue line means used by Vize. Other areas are reference, platform, or comparison context.</text>
 
-  <rect x="690" y="70" width="180" height="66" rx="6" class="accent" />
-  <text x="724" y="108" class="text">Compile</text>
+  <rect x="56" y="138" width="848" height="64" class="panel" />
+  <text x="80" y="170" class="mono eyebrow">REFERENCE ONLY</text>
+  <rect x="244" y="154" width="156" height="32" class="tile" />
+  <text x="322" y="170" class="nodeText label">Official Vue</text>
+  <rect x="420" y="154" width="116" height="32" class="tile" />
+  <text x="478" y="170" class="nodeText label">vue-tsc</text>
+  <rect x="556" y="154" width="196" height="32" class="tile" />
+  <text x="654" y="170" class="nodeText label">eslint-plugin-vue</text>
 
-  <rect x="690" y="154" width="180" height="66" rx="6" class="warm" />
-  <text x="730" y="192" class="text">Lint</text>
+  <rect x="56" y="218" width="264" height="112" class="panel" />
+  <text x="80" y="246" class="mono eyebrow">ADJACENT PLATFORM</text>
+  <rect x="80" y="270" width="88" height="34" class="tile" />
+  <text x="124" y="287" class="nodeText label">Vite+</text>
+  <rect x="184" y="270" width="122" height="34" class="tile" />
+  <text x="245" y="287" class="nodeText label">Oxc/Oxlint</text>
 
-  <rect x="690" y="238" width="180" height="66" rx="6" class="accent" />
-  <text x="718" y="276" class="text">Type Check</text>
+  <rect x="354" y="218" width="240" height="112" class="core" />
+  <text x="394" y="250" class="titleText">Vize</text>
+  <text x="394" y="276" class="small">Vue-specific toolchain</text>
+  <text x="394" y="296" class="small">compile / lint / check / LSP</text>
+  <text x="394" y="314" class="small">Musea / diagnostics</text>
 
-  <rect x="248" y="318" width="164" height="54" rx="6" class="panel" />
-  <text x="284" y="351" class="small">Musea</text>
+  <rect x="640" y="218" width="264" height="112" class="panel" />
+  <text x="664" y="246" class="mono eyebrow">USED BY VIZE</text>
+  <rect x="664" y="260" width="138" height="30" class="use" />
+  <text x="733" y="275" class="nodeText label">corsa-bind</text>
+  <text x="822" y="275" class="small">sessions</text>
+  <rect x="664" y="296" width="138" height="30" class="use" />
+  <text x="733" y="311" class="nodeText label">Corsa (tsgo)</text>
+  <text x="822" y="311" class="small">TS runtime</text>
+  <path d="M 594 274 L 654 275" class="lineUse" />
 
-  <rect x="442" y="318" width="164" height="54" rx="6" class="panel" />
-  <text x="478" y="351" class="small">Playground</text>
+  <rect x="56" y="346" width="848" height="56" class="panel" />
+  <text x="80" y="374" class="mono eyebrow">COMPARE ONLY</text>
+  <rect x="244" y="361" width="108" height="30" class="tile" />
+  <text x="298" y="376" class="nodeText label">Verter</text>
+  <rect x="368" y="361" width="108" height="30" class="tile" />
+  <text x="422" y="376" class="nodeText label">Golar</text>
+  <rect x="492" y="361" width="108" height="30" class="tile" />
+  <text x="546" y="376" class="nodeText label">Flint</text>
+  <rect x="616" y="361" width="108" height="30" class="tile" />
+  <text x="670" y="376" class="nodeText label">TSSLint</text>
 
-  <rect x="636" y="318" width="164" height="54" rx="6" class="panel" />
-  <text x="681" y="351" class="small">CI</text>
-
-  <path d="M 240 191 L 320 191" class="line" />
-  <path d="M 590 170 C 640 150 647 112 680 103" class="line" />
-  <path d="M 590 191 L 680 187" class="line" />
-  <path d="M 590 212 C 640 232 647 264 680 271" class="line" />
-  <path d="M 420 252 L 344 312" class="line" />
-  <path d="M 488 252 L 520 310" class="line" />
-  <path d="M 552 252 L 690 312" class="line" />
+  <text x="56" y="414" class="small">Reference and compare-only areas do not imply dependency.</text>
 </svg>
