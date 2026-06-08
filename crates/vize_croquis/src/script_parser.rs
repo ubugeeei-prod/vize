@@ -25,8 +25,8 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
-use crate::analysis::{BindingMetadata, ComponentRegistration, Croquis};
-use crate::analysis::{ImportStatementInfo, InvalidExport, ReExportInfo, TypeExport};
+use crate::croquis::{BindingMetadata, ComponentRegistration, Croquis};
+use crate::croquis::{ImportStatementInfo, InvalidExport, ReExportInfo, TypeExport};
 use crate::macros::MacroTracker;
 use crate::provide::ProvideInjectTracker;
 use crate::race::RaceConditionTracker;

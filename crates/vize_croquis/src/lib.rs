@@ -37,14 +37,16 @@
 mod scope;
 mod symbol;
 
-// Analysis modules
+// Croquis modules
 pub mod analysis;
 pub mod analyzer;
 pub mod builtins;
 pub mod call_graph;
+pub mod croquis;
 pub mod css;
 pub mod declaration_ts;
 pub mod display;
+pub mod drawer;
 pub mod effect_graph;
 pub mod hoist;
 pub mod import_resolver;
@@ -78,12 +80,14 @@ pub use scope::{
 pub use symbol::{Symbol, SymbolFlags, SymbolId, SymbolTable};
 
 // Re-export analysis types
-pub use analysis::{
-    AnalysisStats, BindingMetadata, COMPILER_MACRO_NAMES, Croquis, ImportStatementInfo,
-    InvalidExport, InvalidExportKind, ReExportInfo, TemplateExpression, TemplateExpressionKind,
-    TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar, UnusedVarContext,
-};
 pub use analyzer::{Analyzer, AnalyzerOptions};
+pub use croquis::{
+    AnalysisStats, BindingMetadata, COMPILER_MACRO_NAMES, Croquis, CroquisStats,
+    ImportStatementInfo, InvalidExport, InvalidExportKind, ReExportInfo, TemplateExpression,
+    TemplateExpressionKind, TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar,
+    UnusedVarContext,
+};
+pub use drawer::{Drawer, DrawerOptions};
 
 // Re-export common types
 pub use vize_relief::BindingType;

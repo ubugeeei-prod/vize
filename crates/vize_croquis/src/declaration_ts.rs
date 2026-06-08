@@ -385,7 +385,7 @@ fn append_param_with_default(result: &mut String, param: &str) {
 #[cfg(test)]
 mod tests {
     use super::generate_declaration_ts;
-    use crate::{Analyzer, AnalyzerOptions};
+    use crate::{Drawer, DrawerOptions};
 
     #[test]
     fn generates_type_macro_declaration() {
@@ -405,9 +405,9 @@ const slots = defineSlots<{
 }>()
 "#;
 
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-        analyzer.analyze_script_setup(script);
-        let summary = analyzer.finish();
+        let mut drawer = Drawer::with_options(DrawerOptions::full());
+        drawer.draw_script_setup(script);
+        let summary = drawer.finish();
         let output = generate_declaration_ts(&summary, Some(script));
 
         assert!(
@@ -436,9 +436,9 @@ const slots = defineSlots<{
 const emit = defineEmits(['save'])
 "#;
 
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-        analyzer.analyze_script_setup(script);
-        let summary = analyzer.finish();
+        let mut drawer = Drawer::with_options(DrawerOptions::full());
+        drawer.draw_script_setup(script);
+        let summary = drawer.finish();
         let output = generate_declaration_ts(&summary, Some(script));
 
         assert!(output.content.contains("title?: string;"));

@@ -21,7 +21,7 @@ use oxc_ast::ast::{
 use oxc_span::GetSpan;
 
 use crate::ScopeBinding;
-use crate::analysis::{
+use crate::croquis::{
     ComponentRegistration, ImportStatementInfo, InvalidExport, InvalidExportKind, ReExportInfo,
     TypeExport, TypeExportKind,
 };

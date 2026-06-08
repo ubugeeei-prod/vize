@@ -49,7 +49,7 @@ use std::path::Path;
 use vize_carton::profile;
 use vize_relief::ast::RootNode;
 
-use crate::analysis::BindingMetadata;
+use crate::croquis::BindingMetadata;
 use crate::import_resolver::ImportResolver;
 use crate::script_parser::ScriptParseResult;
 
@@ -147,7 +147,7 @@ pub fn generate_virtual_ts_with_croquis(
 #[cfg(test)]
 mod tests {
     use super::{VirtualTsConfig, VirtualTsGenerator};
-    use crate::analysis::BindingMetadata;
+    use crate::croquis::BindingMetadata;
     use crate::script_parser::parse_script_setup;
     use vize_carton::CompactString;
     use vize_relief::BindingType;

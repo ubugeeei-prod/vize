@@ -19,7 +19,7 @@ use vize_relief::ast::{
     RootNode, TemplateChildNode,
 };
 
-use crate::analysis::BindingMetadata;
+use crate::croquis::BindingMetadata;
 use crate::import_resolver::ImportResolver;
 use crate::macros::MacroTracker;
 use crate::scope::{ScopeChain, ScopeData, ScopeKind};

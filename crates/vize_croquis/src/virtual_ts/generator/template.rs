@@ -9,7 +9,7 @@ use super::{
     InterpolationNode, MappingData, PropNode, RootNode, SourceMapping, SourceRange,
     TemplateChildNode, VirtualTsGenerator, VirtualTsOutput,
 };
-use crate::analyzer::{VForScopeAliases, parse_v_for_scope_expression};
+use crate::drawer::{VForScopeAliases, parse_v_for_scope_expression};
 use vize_carton::{String, ToCompactString, append, profile};
 
 impl VirtualTsGenerator {
