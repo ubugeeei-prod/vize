@@ -421,6 +421,33 @@ mod tests {
     }
 
     #[test]
+    fn test_compile_component_multiline_event_handler_parses() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"
+            <AnotherComponent
+              @click.stop="
+                hoge();
+                hoge();
+              "
+            />
+            "#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+        assert_parses_as_module(&result.code);
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
     fn test_compile_branch_component_under_existing_parent() {
         let allocator = Bump::new();
         let result = compile_vapor(

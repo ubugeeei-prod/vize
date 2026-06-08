@@ -1,7 +1,10 @@
 use crate::ir::{CreateComponentIRNode, IRProp};
 use vize_carton::{String, ToCompactString, cstr};
 
-use super::{super::context::GenerateContext, events::is_inline_statement};
+use super::{
+    super::context::GenerateContext,
+    events::{is_inline_statement, is_inline_statement_block},
+};
 
 /// Generate props object string for a component
 pub(super) fn generate_component_props_str(
@@ -186,7 +189,9 @@ fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> Stri
         }
         let resolved = ctx.resolve_expression(first.content.as_str());
         if is_event {
-            if is_inline_statement(first.content.as_str()) {
+            if is_inline_statement_block(first.content.as_str()) {
+                cstr!("() => ($event => {{ {} }})", resolved)
+            } else if is_inline_statement(first.content.as_str()) {
                 cstr!("() => ($event => ({}))", resolved)
             } else {
                 cstr!("() => {}", resolved)

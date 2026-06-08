@@ -131,7 +131,7 @@ pub(super) fn is_inline_statement(handler: &str) -> bool {
         || (handler.contains('=') && !handler.contains("==") && !handler.contains("=>"))
 }
 
-fn is_inline_statement_block(handler: &str) -> bool {
+pub(super) fn is_inline_statement_block(handler: &str) -> bool {
     let trimmed = handler.trim();
     !trimmed.contains("=>")
         && !trimmed.starts_with("function")

@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+assertion_line: 447
+expression: code.as_str()
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+export function render(_ctx) {
+const _component_AnotherComponent = _resolveComponent("AnotherComponent")
+const n0 = _createComponentWithFallback(_component_AnotherComponent, { onClick: () => ($event => { _ctx.hoge();
+_ctx.hoge(); }) }, null, true)
+return n0
+}

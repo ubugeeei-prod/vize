@@ -22,6 +22,17 @@ cases {
     input = #"<MyComponent @update="onUpdate" />"#
   }
   new {
+    name = "component with multi-line event handler"
+    input = """
+    <MyComponent
+      @click.stop="
+        hoge();
+        hoge();
+      "
+    />
+    """
+  }
+  new {
     name = "component merges static and dynamic class"
     input = #"<MyComponent class="a" :class="cls" />"#
   }
