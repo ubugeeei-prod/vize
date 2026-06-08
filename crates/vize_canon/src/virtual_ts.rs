@@ -235,6 +235,39 @@ const count = 1
     }
 
     #[test]
+    fn test_template_instance_globals_skip_setup_bindings() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"function functionCall(): any {}
+const $q = functionCall()
+"#;
+        let template = r#"<div v-if="$q">None</div>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert!(
+            !output
+                .code
+                .contains("const $q: __VizeInstanceGlobal<'$q'> = undefined as any;"),
+            "setup binding named like an instance global must not be redeclared:\n{}",
+            output.code
+        );
+        assert!(
+            output.code.contains("if (($q))"),
+            "template expression should still resolve the setup binding:\n{}",
+            output.code
+        );
+    }
+
+    #[test]
     fn test_kebab_case_component_names_are_sanitized_in_type_helpers() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 

@@ -257,6 +257,46 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
 }
 
 #[test]
+fn batch_type_checker_accepts_setup_binding_named_like_instance_global() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "setup-binding-instance-global",
+        &[(
+            "src/App.vue",
+            r#"<template>
+  <div v-if="$q">
+    None
+  </div>
+</template>
+
+<script setup lang="ts">
+function functionCall(): any {}
+
+const $q = functionCall()
+</script>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot
+            .iter()
+            .all(|(file, code, _)| { file != "src/App.vue" || *code != Some(2300) }),
+        "unexpected duplicate identifier diagnostic for setup $ binding: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_accepts_nested_ref_value_component_props() {
     if resolve_test_tsgo_binary().is_none() {
         return;

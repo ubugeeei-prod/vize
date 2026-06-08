@@ -10,8 +10,8 @@ use vize_carton::String;
 use vize_carton::profile;
 
 use vize_croquis::{
-    Croquis, EventHandlerScopeData, Scope, ScopeData, ScopeId, ScopeKind, analysis::ComponentUsage,
-    analyzer::extract_identifiers_oxc, naming::to_pascal_case,
+    BindingMetadata, Croquis, EventHandlerScopeData, Scope, ScopeData, ScopeId, ScopeKind,
+    analysis::ComponentUsage, analyzer::extract_identifiers_oxc, naming::to_pascal_case,
 };
 
 use super::{
@@ -289,6 +289,7 @@ struct InstanceGlobalRefsEmitter<'a> {
     ts: &'a mut String,
     mappings: &'a mut Vec<VizeMapping>,
     options: &'a VirtualTsOptions,
+    bindings: &'a BindingMetadata,
     type_export_names: FxHashSet<&'a str>,
     seen_names: FxHashSet<String>,
     emitted_header: bool,
@@ -305,6 +306,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             ts,
             mappings,
             options,
+            bindings: &summary.bindings,
             type_export_names: summary
                 .type_exports
                 .iter()
@@ -317,6 +319,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
 
     fn emit(&mut self, name: &str, src_start: usize, src_end: usize) {
         if !is_template_instance_global_name(name)
+            || self.bindings.contains(name)
             || self.type_export_names.contains(name)
             || is_declared_template_context_name(name, self.options)
             || !self.seen_names.insert(name.into())
