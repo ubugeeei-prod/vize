@@ -656,6 +656,37 @@ const val = 0 as unknown as UnionType;
     }
 
     #[test]
+    fn test_inline_arrow_event_handler_is_called_with_event() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let template = r#"<button @click="(payload) => console.log(payload)">Click</button>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, None, Some(&root), 0);
+
+        assert!(
+            output
+                .code
+                .contains("((payload) => console.log(payload))($event);"),
+            "inline arrow handler should be invoked with the event:\n{}",
+            output.code
+        );
+        assert!(
+            !output
+                .code
+                .contains("(payload) => console.log(payload);  // handler expression"),
+            "inline arrow handler must not be emitted as a void expression:\n{}",
+            output.code
+        );
+    }
+
+    #[test]
     fn test_multiline_statement_event_handler_uses_handler_scope() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 

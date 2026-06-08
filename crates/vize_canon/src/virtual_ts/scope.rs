@@ -848,6 +848,7 @@ fn generate_event_handler_expressions(
             let content = expr.content.as_str();
             let is_implicit_reference =
                 ctx.data.has_implicit_event && is_callable_handler_reference(content);
+            let inline_callback_event_arg = inline_callback_event_argument(content);
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
             let guard = expr.vif_guard.as_ref().map(|guard| {
@@ -878,6 +879,12 @@ fn generate_event_handler_expressions(
                     "{indent}{handler_name}($event);  // handler expression\n",
                     indent = handler_indent,
                 );
+            } else if let Some(event_arg) = inline_callback_event_arg {
+                append!(
+                    *ts,
+                    "{indent}({content})({event_arg});  // handler expression\n",
+                    indent = ctx.indent,
+                );
             } else {
                 append!(
                     *ts,
@@ -905,6 +912,81 @@ fn generate_event_handler_expressions(
             }
         }
     }
+}
+
+fn inline_callback_event_argument(content: &str) -> Option<&'static str> {
+    let trimmed = content.trim_start();
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    if let Some(arrow_idx) = trimmed.find("=>") {
+        let before_arrow = strip_async_prefix(trimmed[..arrow_idx].trim_end()).trim();
+        if before_arrow.is_empty() {
+            return None;
+        }
+
+        if let Some(is_empty) = parenthesized_params_are_empty(before_arrow) {
+            return Some(if is_empty { "" } else { "$event" });
+        }
+
+        return is_identifier_segment(before_arrow).then_some("$event");
+    }
+
+    let rest = trimmed.strip_prefix("function")?;
+    let paren_start = trimmed.len() - rest.len() + rest.find('(')?;
+    let paren_end = matching_paren_index(trimmed, paren_start)?;
+    let inner = &trimmed[paren_start + 1..paren_end];
+    Some(if inner.trim().is_empty() {
+        ""
+    } else {
+        "$event"
+    })
+}
+
+fn strip_async_prefix(input: &str) -> &str {
+    let Some(rest) = input.strip_prefix("async") else {
+        return input;
+    };
+    if rest.chars().next().is_some_and(char::is_whitespace) {
+        rest.trim_start()
+    } else {
+        input
+    }
+}
+
+fn parenthesized_params_are_empty(input: &str) -> Option<bool> {
+    if !input.starts_with('(') {
+        return None;
+    }
+    let close = matching_paren_index(input, 0)?;
+    if !input[close + 1..].trim().is_empty() {
+        return None;
+    }
+    Some(input[1..close].trim().is_empty())
+}
+
+fn matching_paren_index(input: &str, open_index: usize) -> Option<usize> {
+    let bytes = input.as_bytes();
+    if bytes.get(open_index) != Some(&b'(') {
+        return None;
+    }
+
+    let mut depth = 0u32;
+    for (idx, byte) in bytes.iter().enumerate().skip(open_index) {
+        match byte {
+            b'(' => depth += 1,
+            b')' => {
+                depth = depth.checked_sub(1)?;
+                if depth == 0 {
+                    return Some(idx);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    None
 }
 
 fn is_callable_handler_reference(content: &str) -> bool {

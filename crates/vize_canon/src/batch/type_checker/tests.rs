@@ -384,6 +384,16 @@ const emit = defineEmits<{
 "#,
             ),
             (
+                "src/InlineArrowHandler.vue",
+                r#"<script setup lang="ts">
+</script>
+
+<template>
+  <button @click="(payload) => payload.preventDefault()">Click</button>
+</template>
+"#,
+            ),
+            (
                 "src/ComponentZeroArgHandler.vue",
                 r#"<script setup lang="ts">
 import ZeroArgButton from './ZeroArgButton.vue'
@@ -425,6 +435,12 @@ function toggle(open = false): void {
             .iter()
             .all(|(file, code, _)| { file != "src/ClickPointerEvent.vue" || *code != Some(2740) }),
         "unexpected PointerEvent payload mismatch: {snapshot:#?}"
+    );
+    assert!(
+        snapshot
+            .iter()
+            .all(|(file, code, _)| { file != "src/InlineArrowHandler.vue" || *code != Some(7006) }),
+        "unexpected implicit any in inline arrow event handler: {snapshot:#?}"
     );
     assert!(
         snapshot.iter().all(|(file, code, _)| {
