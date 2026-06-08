@@ -214,7 +214,7 @@ fn generate_expression_statement(
     append!(*ts, "{indent}// @vize-map: expr -> {src_start}:{src_end}\n",);
 }
 
-fn rewrite_reserved_template_prop(
+pub(crate) fn rewrite_reserved_template_prop(
     expression: &str,
     template_prop_names: &FxHashSet<String>,
 ) -> Option<String> {

@@ -628,6 +628,34 @@ function handleHover() {}
     }
 
     #[test]
+    fn test_v_if_guard_wraps_same_element_event_handler() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"type UnionType = { type: "a" } | { type: "b", bSpecific: () => void }
+const val = 0 as unknown as UnionType;
+"#;
+        let template = r#"<div v-if="val.type === 'b'" @click="val.bSpecific"></div>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert!(
+            output
+                .code
+                .contains("if ((val.type === 'b')) {\n      const __vize_handler"),
+            "same-element event handler should preserve the v-if guard while type-checking the handler:\n{}",
+            output.code
+        );
+    }
+
+    #[test]
     fn test_multiline_statement_event_handler_uses_handler_scope() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 

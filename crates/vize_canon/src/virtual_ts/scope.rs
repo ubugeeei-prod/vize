@@ -15,7 +15,9 @@ use vize_croquis::{
 };
 
 use super::{
-    expressions::{generate_component_prop_checks, generate_expressions},
+    expressions::{
+        generate_component_prop_checks, generate_expressions, rewrite_reserved_template_prop,
+    },
     helpers::{
         generated_text_range, get_dom_event_type, to_camel_case, to_safe_identifier,
         to_safe_identifier_fragment,
@@ -48,6 +50,7 @@ struct EventHandlerExprContext<'a> {
     expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
     data: &'a EventHandlerScopeData,
     event_type: &'a str,
+    template_prop_names: &'a FxHashSet<String>,
     template_offset: u32,
     indent: &'a str,
 }
@@ -784,6 +787,7 @@ fn generate_scope_node(
                             expressions_by_scope: ctx.expressions_by_scope,
                             data,
                             event_type: event_type.as_str(),
+                            template_prop_names: ctx.template_prop_names,
                             template_offset: ctx.template_offset,
                             indent: &inner_indent,
                         },
@@ -805,6 +809,7 @@ fn generate_scope_node(
                             expressions_by_scope: ctx.expressions_by_scope,
                             data,
                             event_type,
+                            template_prop_names: ctx.template_prop_names,
                             template_offset: ctx.template_offset,
                             indent: &inner_indent,
                         },
@@ -845,6 +850,19 @@ fn generate_event_handler_expressions(
                 ctx.data.has_implicit_event && is_callable_handler_reference(content);
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
+            let guard = expr.vif_guard.as_ref().map(|guard| {
+                let trimmed_guard = guard.as_str().trim();
+                rewrite_reserved_template_prop(trimmed_guard, ctx.template_prop_names)
+                    .unwrap_or_else(|| String::from(guard.as_str()))
+            });
+            if let Some(ref guard) = guard {
+                append!(*ts, "{indent}if ({guard}) {{\n", indent = ctx.indent);
+            }
+            let handler_indent = if guard.is_some() {
+                cstr!("{}  ", ctx.indent)
+            } else {
+                String::from(ctx.indent)
+            };
 
             let gen_stmt_start = ts.len();
             if is_implicit_reference {
@@ -852,19 +870,19 @@ fn generate_event_handler_expressions(
                 append!(
                     *ts,
                     "{indent}const {handler_name} = ((handler: ($event: {event_type}) => unknown) => handler)(({content}));\n",
-                    indent = ctx.indent,
+                    indent = handler_indent,
                     event_type = ctx.event_type,
                 );
                 append!(
                     *ts,
                     "{indent}{handler_name}($event);  // handler expression\n",
-                    indent = ctx.indent,
+                    indent = handler_indent,
                 );
             } else {
                 append!(
                     *ts,
                     "{indent}{content};  // handler expression\n",
-                    indent = ctx.indent
+                    indent = handler_indent
                 );
             }
             let gen_stmt_end = ts.len();
@@ -880,8 +898,11 @@ fn generate_event_handler_expressions(
             append!(
                 *ts,
                 "{indent}// @vize-map: handler -> {src_start}:{src_end}\n",
-                indent = ctx.indent,
+                indent = handler_indent,
             );
+            if guard.is_some() {
+                append!(*ts, "{indent}}}\n", indent = ctx.indent);
+            }
         }
     }
 }

@@ -542,6 +542,44 @@ function editWord() {}
 }
 
 #[test]
+fn batch_type_checker_narrows_same_element_event_handler_with_v_if() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "same-element-vif-handler-narrowing",
+        &[(
+            "src/SameElementVifHandler.vue",
+            r#"<script setup lang="ts">
+type UnionType = { type: "a" } | { type: "b", bSpecific: () => void }
+
+const val = 0 as unknown as UnionType
+</script>
+
+<template>
+  <div v-if="val.type === 'b'" @click="val.bSpecific"></div>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(|(file, code, _)| {
+            file != "src/SameElementVifHandler.vue" || *code != Some(2339)
+        }),
+        "unexpected union member diagnostic for v-if narrowed event handler: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_uses_workspace_vue_runtime_without_node_modules() {
     if resolve_test_tsgo_binary().is_none() {
         return;
