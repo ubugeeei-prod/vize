@@ -703,13 +703,34 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ts.push('\n');
     }
 
-    // Return exposed object from __setup() so its type can be extracted at module level.
-    // This keeps the runtime args expression in scope (where the bindings are defined).
+    let define_emits_runtime_args = summary.macros.define_emits().and_then(|call| {
+        if call.type_args.is_none() {
+            call.runtime_args.as_ref()
+        } else {
+            None
+        }
+    });
+
+    // Return runtime-derived type artifacts from __setup() so their types can be
+    // extracted at module level while keeping each runtime expression in setup
+    // scope, where script-setup bindings are defined.
+    let mut setup_return_fields = Vec::new();
     if let Some(expose) = summary.macros.define_expose()
         && expose.type_args.is_none()
         && let Some(runtime_args) = expose.runtime_args.as_ref()
     {
-        append!(ts, "\n  return ({runtime_args});\n");
+        append!(ts, "\n  const __vize_exposed = ({runtime_args});\n");
+        setup_return_fields.push("__vize_exposed");
+    }
+    if let Some(runtime_args) = define_emits_runtime_args {
+        append!(
+            ts,
+            "\n  const __vize_emits = defineEmits({runtime_args});\n"
+        );
+        setup_return_fields.push("__vize_emits");
+    }
+    if !setup_return_fields.is_empty() {
+        append!(ts, "\n  return {{ {} }};\n", setup_return_fields.join(", "));
     }
 
     // Close setup function
@@ -732,6 +753,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let has_model_emits = !models.is_empty();
     let has_emits_for_props = emits_already_defined
         || define_emits_type_args.is_some()
+        || define_emits_runtime_args.is_some()
         || !summary.macros.emits().is_empty()
         || has_model_emits;
     if !emits_already_defined {
@@ -751,6 +773,19 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             } else {
                 append!(ts, "export type Emits = {inner_type};\n");
             }
+        } else if define_emits_runtime_args.is_some() {
+            ts.push_str(
+                "export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]",
+            );
+            for model in models {
+                let name = model.name.as_str();
+                let payload = model.model_type.as_deref().unwrap_or("unknown");
+                append!(
+                    ts,
+                    " & ((event: \"update:{name}\", value: {payload}) => void)"
+                );
+            }
+            ts.push_str(";\n");
         } else if !summary.macros.emits().is_empty() || has_model_emits {
             ts.push_str("export type Emits = {\n");
             let mut emitted_names: FxHashSet<String> = FxHashSet::default();
@@ -799,7 +834,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         } else if expose.runtime_args.is_some() {
             // Runtime args are returned from __setup() to keep them in scope.
             // Use Awaited<ReturnType<...>> to handle both sync and async setup.
-            ts.push_str("export type Exposed = Awaited<ReturnType<typeof __setup>>;\n");
+            ts.push_str(
+                "export type Exposed = Awaited<ReturnType<typeof __setup>>[\"__vize_exposed\"];\n",
+            );
         }
     }
     ts.push('\n');

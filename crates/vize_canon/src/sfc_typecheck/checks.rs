@@ -110,8 +110,20 @@ pub fn check_emits_typing(
 
     let emits = summary.macros.emits();
 
-    // defineEmits() called without type argument and without runtime emits
+    // defineEmits() called without type argument and without runtime emits.
+    // Dynamic runtime declarations such as `defineEmits({ ...emitsObject })`
+    // or `defineEmits([...emits])` are not statically enumerable here, but the
+    // generated virtual TS can still infer their event contract from the
+    // runtime expression.
     if emits.is_empty() {
+        if define_emits
+            .runtime_args
+            .as_deref()
+            .is_some_and(has_inferable_runtime_emits)
+        {
+            return;
+        }
+
         let (start, end) = (
             define_emits.start + script_offset,
             define_emits.end + script_offset,
@@ -157,6 +169,11 @@ pub fn check_emits_typing(
             break; // Only report once per defineEmits
         }
     }
+}
+
+fn has_inferable_runtime_emits(runtime_args: &str) -> bool {
+    let args = runtime_args.trim();
+    !matches!(args, "" | "[]" | "{}")
 }
 
 /// Check template bindings for undefined references.

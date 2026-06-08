@@ -60,16 +60,8 @@ pub fn process_call_expression(
 
     // Extract runtime arguments
     let runtime_args = if !call.arguments.is_empty() {
-        let args_start = call.arguments.first().map(|a| match a {
-            Argument::SpreadElement(s) => s.span.start,
-            Argument::Identifier(id) => id.span.start,
-            _ => span.start,
-        });
-        let args_end = call.arguments.last().map(|a| match a {
-            Argument::SpreadElement(s) => s.span.end,
-            Argument::Identifier(id) => id.span.end,
-            _ => span.end,
-        });
+        let args_start = call.arguments.first().map(|a| a.span().start);
+        let args_end = call.arguments.last().map(|a| a.span().end);
         if let (Some(start), Some(end)) = (args_start, args_end) {
             Some(CompactString::new(&source[start as usize..end as usize]))
         } else {

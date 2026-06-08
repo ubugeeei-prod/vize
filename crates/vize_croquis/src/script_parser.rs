@@ -551,6 +551,26 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_define_emits_runtime_args_with_spread() {
+        let result = parse_script_setup(
+            r#"
+            const emit = defineEmits({
+                ...emitObject,
+            })
+            defineEmits([...dialogEmits])
+        "#,
+        );
+
+        let calls = result.macros.all_calls();
+        assert_eq!(calls.len(), 2);
+        assert_eq!(
+            calls[0].runtime_args.as_deref(),
+            Some("{\n                ...emitObject,\n            }")
+        );
+        assert_eq!(calls[1].runtime_args.as_deref(), Some("[...dialogEmits]"));
+    }
+
+    #[test]
     fn test_parse_define_art() {
         let result = parse_script_setup(
             r#"

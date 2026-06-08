@@ -912,6 +912,90 @@ void props;
 }
 
 #[test]
+fn batch_type_checker_accepts_dynamic_runtime_emits() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "dynamic-runtime-emits",
+        &[
+            (
+                "src/emits.ts",
+                r#"export const dialogEmits = ['ok', 'hide'] as const;
+
+export const emitObject = {
+  ok: (payload: string) => payload.length > 0,
+  hide: () => true,
+} as const;
+"#,
+            ),
+            (
+                "src/DynamicArrayDialog.vue",
+                r#"<script setup lang="ts">
+import { dialogEmits } from './emits';
+
+const emit = defineEmits([...dialogEmits]);
+</script>
+
+<template>
+  <button type="button" @click="emit('ok')">OK</button>
+  <button type="button" @click="emit('hide')">Hide</button>
+</template>
+"#,
+            ),
+            (
+                "src/DynamicObjectDialog.vue",
+                r#"<script setup lang="ts">
+import { emitObject } from './emits';
+
+const emit = defineEmits({ ...emitObject });
+
+function submit() {
+  emit('ok', 'saved');
+}
+</script>
+
+<template>
+  <button type="button" @click="submit">OK</button>
+</template>
+"#,
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import DynamicArrayDialog from './DynamicArrayDialog.vue';
+import DynamicObjectDialog from './DynamicObjectDialog.vue';
+
+function handleOk() {}
+function handleHide() {}
+function handlePayload(payload: string) {
+  payload.toUpperCase();
+}
+</script>
+
+<template>
+  <DynamicArrayDialog @ok="handleOk" @hide="handleHide" />
+  <DynamicObjectDialog @ok="handlePayload" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "dynamic runtime emits should be inferred without diagnostics, got: {snapshot:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_accepts_reexported_vue_interface_template_props() {
     if resolve_test_tsgo_binary().is_none() {
         return;

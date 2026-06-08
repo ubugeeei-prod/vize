@@ -320,6 +320,82 @@ const emit = defineEmits({
     }
 
     #[test]
+    fn test_type_check_with_dynamic_runtime_emits_object() {
+        let source = r#"<script setup lang="ts">
+import { emitObject } from './emits';
+
+const emit = defineEmits({
+    ...emitObject,
+});
+</script>
+<template>
+    <button @click="emit('ok')">OK</button>
+</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+        assert!(
+            !result
+                .diagnostics
+                .iter()
+                .any(|d| matches!(d.code.as_deref(), Some("untyped-emits" | "untyped-emit"))),
+            "{:?}",
+            result.diagnostics
+        );
+
+        let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+        assert!(
+            virtual_ts.contains("const __vize_emits = defineEmits({"),
+            "{virtual_ts}"
+        );
+        assert!(virtual_ts.contains("...emitObject"), "{virtual_ts}");
+        assert!(
+            virtual_ts.contains(
+                "export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"];"
+            ),
+            "{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("$props: Props & __EmitProps<Emits>;"),
+            "{virtual_ts}"
+        );
+    }
+
+    #[test]
+    fn test_type_check_with_dynamic_runtime_emits_array() {
+        let source = r#"<script setup lang="ts">
+import { useDialogPluginComponent } from 'quasar';
+
+const emit = defineEmits([...useDialogPluginComponent.emits]);
+</script>
+<template>
+    <button @click="emit('ok')">OK</button>
+</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+        assert!(
+            !result
+                .diagnostics
+                .iter()
+                .any(|d| matches!(d.code.as_deref(), Some("untyped-emits" | "untyped-emit"))),
+            "{:?}",
+            result.diagnostics
+        );
+
+        let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+        assert!(
+            virtual_ts
+                .contains("const __vize_emits = defineEmits([...useDialogPluginComponent.emits]);"),
+            "{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains(
+                "export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"];"
+            ),
+            "{virtual_ts}"
+        );
+    }
+
+    #[test]
     fn test_type_check_with_untyped_runtime_emits_object_value() {
         let source = r#"<script setup lang="ts">
 const emit = defineEmits({

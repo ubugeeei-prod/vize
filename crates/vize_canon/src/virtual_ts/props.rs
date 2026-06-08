@@ -194,10 +194,17 @@ fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
 }
 
 fn collect_with_defaults_default_names_from_source(source: &str, names: &mut FxHashSet<String>) {
+    let source = source.trim();
+    let expression_source = if source.starts_with("withDefaults") {
+        String::from(source)
+    } else {
+        cstr!("withDefaults({source})")
+    };
+
     let allocator = Allocator::default();
     let source_type = SourceType::ts();
     let Ok(Expression::CallExpression(call)) =
-        Parser::new(&allocator, source, source_type).parse_expression()
+        Parser::new(&allocator, expression_source.as_str(), source_type).parse_expression()
     else {
         return;
     };
@@ -786,6 +793,19 @@ mod tests {
         assert!(names.contains("label"));
         assert!(!names.contains("dynamicKey"));
         assert_eq!(names.len(), 2);
+
+        let mut arg_names = FxHashSet::default();
+        collect_with_defaults_default_names_from_source(
+            r#"defineProps<Props>(), {
+  count: 0,
+  "title": "Counter",
+}"#,
+            &mut arg_names,
+        );
+
+        assert!(arg_names.contains("count"));
+        assert!(arg_names.contains("title"));
+        assert_eq!(arg_names.len(), 2);
     }
 
     #[test]
