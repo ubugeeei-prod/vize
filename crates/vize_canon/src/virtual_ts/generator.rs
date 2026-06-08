@@ -824,6 +824,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     }
 
     // Exposed type (for InstanceType and useTemplateRef)
+    let has_exposed_type = summary
+        .macros
+        .define_expose()
+        .is_some_and(|expose| expose.type_args.is_some() || expose.runtime_args.is_some());
     if let Some(expose) = summary.macros.define_expose() {
         if let Some(ref type_args) = expose.type_args {
             let inner_type = type_args
@@ -862,7 +866,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     }
     ts.push_str("  $emit: __EmitFn<Emits>;\n");
     ts.push_str("  $slots: Slots;\n");
-    ts.push_str("};\n");
+    if has_exposed_type {
+        ts.push_str("} & Exposed;\n");
+    } else {
+        ts.push_str("};\n");
+    }
     // For a `<script setup generic="...">` component the construct signature's
     // `$props` collapses `Props<T>` to its constraint, so a parent that extracts
     // props via `typeof Comp extends { new (): { $props } }` cannot infer `T`

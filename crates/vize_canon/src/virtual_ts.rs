@@ -268,6 +268,37 @@ const $q = functionCall()
     }
 
     #[test]
+    fn test_define_expose_is_part_of_component_instance() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"defineExpose({
+  hide: () => {
+    console.log()
+  },
+})
+"#;
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), None, 0);
+
+        assert!(
+            output.code.contains(
+                "export type Exposed = Awaited<ReturnType<typeof __setup>>[\"__vize_exposed\"];"
+            ),
+            "runtime defineExpose should emit an Exposed type:\n{}",
+            output.code
+        );
+        assert!(
+            output.code.contains("type __VizeComponentInstance = {\n  $props: Props;\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n} & Exposed;"),
+            "component instance should include exposed bindings:\n{}",
+            output.code
+        );
+    }
+
+    #[test]
     fn test_kebab_case_component_names_are_sanitized_in_type_helpers() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 
