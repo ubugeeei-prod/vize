@@ -14,6 +14,14 @@ cases {
     input = #"<button @click="count++"></button>"#
   }
   new {
+    name = "multi-line inline handler"
+    input = """
+    <button @click="hoge();
+    fuga();
+    ">Hoge</button>
+    """
+  }
+  new {
     name = "method call"
     input = #"<button @click="handler()"></button>"#
   }

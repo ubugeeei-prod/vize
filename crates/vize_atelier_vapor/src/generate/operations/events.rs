@@ -18,7 +18,13 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
 
     let resolved_handler = ctx.resolve_expression(&handler);
     // Determine handler format based on content
-    let invoker_body: String = if handler.contains("$event") {
+    let invoker_body: String = if is_inline_statement_block(&handler) {
+        if handler.contains("$event") {
+            cstr!("$event => {{ {} }}", resolved_handler)
+        } else {
+            cstr!("() => {{ {} }}", resolved_handler)
+        }
+    } else if handler.contains("$event") {
         cstr!("$event => ({})", resolved_handler)
     } else if handler.contains("?.") {
         cstr!("(...args) => ({})", resolved_handler)
@@ -123,4 +129,11 @@ pub(super) fn is_inline_statement(handler: &str) -> bool {
         || handler.contains("+=")
         || handler.contains("-=")
         || (handler.contains('=') && !handler.contains("==") && !handler.contains("=>"))
+}
+
+fn is_inline_statement_block(handler: &str) -> bool {
+    let trimmed = handler.trim();
+    !trimmed.contains("=>")
+        && !trimmed.starts_with("function")
+        && (trimmed.contains(';') || trimmed.contains('\n'))
 }
