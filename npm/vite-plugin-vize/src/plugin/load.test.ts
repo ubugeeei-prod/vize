@@ -373,6 +373,39 @@ assert.match(
   "Consumed pending updates must fall back to the default HMR mode",
 );
 
+const watchedDependency = "/src/external.css";
+const watchedPath = "/src/Watched.vue";
+const watchedState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      watchedPath,
+      {
+        code: `export function render() { return null }
+const _sfc_main = {}
+_sfc_main.render = render
+export default _sfc_main`,
+        scopeId: "watch1234",
+        hasScoped: false,
+        styles: [],
+        dependencies: [watchedDependency],
+      },
+    ],
+  ]),
+  pendingHmrUpdateTypes: new Map(),
+};
+const watchedFiles: string[] = [];
+const watchedLoad = loadHook(watchedState, toVirtualId(watchedPath), {
+  ssr: false,
+  addWatchFile: (id) => watchedFiles.push(id),
+});
+assert.ok(watchedLoad && typeof watchedLoad === "object", "Watched SFC should load");
+assert.deepEqual(
+  watchedFiles,
+  [watchedDependency],
+  "SFC src dependencies should be registered with Vite's watcher",
+);
+
 const inlinePath = "/src/InlineHmr.vue";
 const inlineState: VizePluginState = {
   ...hmrState,

@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
+import type { HmrContext } from "vite";
 
 import type { VizePluginState } from "./state.ts";
 import {
+  handleHotUpdateHook,
   handleGenerateBundleHook,
   resolveComponentsCssFileName,
   VIZE_COMPONENTS_CSS_BASENAME,
   VIZE_COMPONENTS_CSS_FILE,
 } from "./hmr.ts";
+import { toVirtualId } from "../virtual.ts";
 
 function createState(): VizePluginState {
   return {
@@ -37,6 +40,70 @@ assert.equal(
   VIZE_COMPONENTS_CSS_BASENAME,
   "assetless builds should place component CSS beside chunks",
 );
+
+{
+  const vueFile = "/src/App.vue";
+  const dependencyFile = "/src/imported.css";
+  const module = { url: toVirtualId(vueFile) };
+  let invalidatedModule: unknown;
+  const state = {
+    cache: new Map([
+      [
+        vueFile,
+        {
+          code: "export default {}",
+          scopeId: "app12345",
+          hasScoped: false,
+          dependencies: [dependencyFile],
+        },
+      ],
+    ]),
+    ssrCache: new Map(),
+    collectedCss: new Map([[vueFile, ".app { color: red; }"]]),
+    precompileMetadata: new Map([[vueFile, { mtimeMs: 1, size: 1 }]]),
+    pendingHmrUpdateTypes: new Map(),
+    root: "/src",
+    logger: {
+      log() {},
+    },
+  } as unknown as VizePluginState;
+  const ctx = {
+    file: dependencyFile,
+    server: {
+      moduleGraph: {
+        getModulesByFile(id: string) {
+          return id === toVirtualId(vueFile) ? new Set([module]) : undefined;
+        },
+        invalidateModule(receivedModule: unknown) {
+          invalidatedModule = receivedModule;
+        },
+      },
+    },
+    read: async () => "",
+  } as unknown as HmrContext;
+
+  const modules = await handleHotUpdateHook(state, ctx);
+
+  assert.deepEqual(modules, [module], "SFC src dependency updates should reload the owner module");
+  assert.equal(state.cache.has(vueFile), false, "Dependency updates should clear the client cache");
+  assert.equal(state.ssrCache.has(vueFile), false, "Dependency updates should clear the SSR cache");
+  assert.equal(
+    state.collectedCss.has(vueFile),
+    false,
+    "Dependency updates should clear collected CSS",
+  );
+  assert.equal(
+    state.precompileMetadata.has(vueFile),
+    false,
+    "Dependency updates should clear precompile metadata",
+  );
+  assert.equal(
+    state.pendingHmrUpdateTypes.get(vueFile),
+    "full-reload",
+    "Dependency updates should force full reload HMR for the owner SFC",
+  );
+  assert.equal(invalidatedModule, module, "Dependency updates should invalidate the owner module");
+}
 
 {
   const emitted: Array<{ type: "asset"; fileName: string; source: string }> = [];

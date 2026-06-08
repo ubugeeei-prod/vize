@@ -372,6 +372,87 @@ assert.deepEqual(
   "Batch compilation should cache style metadata emitted by native SFC parsing",
 );
 
+const srcImportRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-src-imports-"));
+const srcImportDir = path.join(srcImportRoot, "src");
+fs.mkdirSync(srcImportDir, { recursive: true });
+
+const srcImportFile = path.join(srcImportDir, "App.vue");
+const scriptSrc = path.join(srcImportDir, "setup.ts");
+const templateSrc = path.join(srcImportDir, "template.html");
+const styleSrc = path.join(srcImportDir, "styles.css");
+
+fs.writeFileSync(
+  scriptSrc,
+  `export default {
+  setup() {
+    const label = "src import works";
+    return { label };
+  },
+};
+`,
+);
+fs.writeFileSync(templateSrc, `<p class="root">{{ label }}</p>`);
+fs.writeFileSync(styleSrc, `.root { color: seagreen; }\n`);
+
+const srcImportSource = `<script lang="ts" src="./setup.ts"></script>
+<template src="./template.html"></template>
+<style scoped src="./styles.css"></style>`;
+
+const srcImportCompiled = compileFile(
+  srcImportFile,
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  srcImportSource,
+);
+
+assert.match(
+  srcImportCompiled.code,
+  /src import works/,
+  "Single-file compilation should inline script src content",
+);
+assert.match(
+  srcImportCompiled.code,
+  /label/,
+  "Single-file compilation should inline template src content",
+);
+assert.match(
+  srcImportCompiled.css ?? "",
+  /color:\s*seagreen/,
+  "Single-file compilation should inline style src content",
+);
+assert.deepEqual(
+  srcImportCompiled.dependencies?.map((dependency) => path.basename(dependency)).sort(),
+  ["setup.ts", "styles.css", "template.html"],
+  "Single-file compilation should expose SFC src dependencies",
+);
+
+const srcImportBatchCache = new Map();
+const srcImportBatchResult = compileBatch(
+  [{ path: srcImportFile, source: srcImportSource }],
+  srcImportBatchCache,
+  { ssr: false, vapor: false },
+);
+
+assert.equal(srcImportBatchResult.failedCount, 0, "Batch src import compilation should succeed");
+assert.match(
+  srcImportBatchCache.get(srcImportFile)?.code ?? "",
+  /src import works/,
+  "Batch compilation should inline script src content",
+);
+assert.match(
+  srcImportBatchCache.get(srcImportFile)?.css ?? "",
+  /color:\s*seagreen/,
+  "Batch compilation should inline style src content",
+);
+assert.deepEqual(
+  srcImportBatchCache
+    .get(srcImportFile)
+    ?.dependencies?.map((dependency) => path.basename(dependency))
+    .sort(),
+  ["setup.ts", "styles.css", "template.html"],
+  "Batch compilation should cache SFC src dependencies",
+);
+
 const definePageSource = `<script setup lang="ts">
 definePage({
   name: "home",

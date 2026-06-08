@@ -28,11 +28,64 @@ type GenerateBundleItem =
 
 type GenerateBundle = Record<string, GenerateBundleItem>;
 
+function getVueFilesDependingOn(state: VizePluginState, dependencyFile: string): string[] {
+  const normalizedDependency = path.resolve(dependencyFile);
+  const owners = new Set<string>();
+
+  for (const cache of [state.cache, state.ssrCache]) {
+    for (const [vueFile, compiled] of cache) {
+      if (
+        compiled.dependencies?.some(
+          (dependency) => path.resolve(dependency) === normalizedDependency,
+        )
+      ) {
+        owners.add(vueFile);
+      }
+    }
+  }
+
+  return [...owners];
+}
+
 export async function handleHotUpdateHook(
   state: VizePluginState,
   ctx: HmrContext,
 ): Promise<import("vite").ModuleNode[] | void> {
   const { file, server, read } = ctx;
+
+  const dependencyOwners = getVueFilesDependingOn(state, file);
+  if (dependencyOwners.length > 0) {
+    const affectedModules: Set<import("vite").ModuleNode> = new Set();
+
+    for (const vueFile of dependencyOwners) {
+      state.cache.delete(vueFile);
+      state.ssrCache.delete(vueFile);
+      state.collectedCss.delete(vueFile);
+      state.precompileMetadata.delete(vueFile);
+      state.pendingHmrUpdateTypes.set(vueFile, "full-reload");
+
+      const virtualId = toVirtualId(vueFile);
+      const modules =
+        server.moduleGraph.getModulesByFile(virtualId) ??
+        server.moduleGraph.getModulesByFile(vueFile);
+
+      if (modules) {
+        for (const module of modules) {
+          server.moduleGraph.invalidateModule(module);
+          affectedModules.add(module);
+        }
+      }
+
+      state.logger.log(
+        `Invalidated ${path.relative(state.root, vueFile)} because ${path.relative(
+          state.root,
+          file,
+        )} changed`,
+      );
+    }
+
+    return [...affectedModules];
+  }
 
   if (file.endsWith(".vue") && state.filter(file)) {
     try {

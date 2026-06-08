@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import * as native from "@vizejs/native";
 import type {
   CompiledModule,
@@ -44,11 +45,108 @@ function normalizeStyleBlocks(styles: NativeStyleBlockInfo[] | undefined): Style
 
   return styles.map((block) => ({
     content: block.content,
+    src: block.src ?? null,
     lang: block.lang ?? null,
     scoped: block.scoped,
     module: block.module ? (block.moduleName ?? true) : false,
     index: block.index,
   }));
+}
+
+export interface ResolvedSfcSrcImports {
+  source: string;
+  dependencies: string[];
+}
+
+function resolveRelativeSrc(filePath: string, src: string): string {
+  return path.isAbsolute(src) ? src : path.resolve(path.dirname(filePath), src);
+}
+
+function readSrcImport(
+  filePath: string,
+  tag: string,
+  src: string,
+): { path: string; content: string } {
+  const resolvedPath = resolveRelativeSrc(filePath, src);
+  try {
+    return {
+      path: resolvedPath,
+      content: fs.readFileSync(resolvedPath, "utf-8"),
+    };
+  } catch {
+    throw new Error(
+      `[vize] <${tag} src="${src}"> not found (resolved: ${resolvedPath}) in ${filePath}`,
+    );
+  }
+}
+
+function stripSrcAttribute(attrs: string): string {
+  return attrs.replace(/\s*\bsrc\s*=\s*(?:"[^"]*"|'[^']*')/i, "");
+}
+
+function inlineSingleSrcBlock(
+  source: string,
+  filePath: string,
+  tag: "script" | "template",
+  src: string | undefined,
+  dependencies: string[],
+): string {
+  if (!src) {
+    return source;
+  }
+
+  const imported = readSrcImport(filePath, tag, src);
+  dependencies.push(imported.path);
+  const pattern = new RegExp(
+    `<${tag}\\b([^>]*)\\bsrc\\s*=\\s*(['"])[^'"]+\\2([^>]*)>[\\s\\S]*?<\\/${tag}>`,
+    "i",
+  );
+
+  return source.replace(pattern, (_match, beforeSrc: string, _quote: string, afterSrc: string) => {
+    const attrs = stripSrcAttribute(`${beforeSrc}${afterSrc}`);
+    return `<${tag}${attrs}>\n${imported.content}\n</${tag}>`;
+  });
+}
+
+function inlineStyleSrcBlocks(source: string, filePath: string, dependencies: string[]): string {
+  const pattern = /<style\b([^>]*)\bsrc\s*=\s*(['"])([^'"]+)\2([^>]*)>[\s\S]*?<\/style>/gi;
+
+  return source.replace(
+    pattern,
+    (_match, beforeSrc: string, _quote: string, src: string, afterSrc: string) => {
+      const imported = readSrcImport(filePath, "style", src);
+      dependencies.push(imported.path);
+      const attrs = stripSrcAttribute(`${beforeSrc}${afterSrc}`);
+      return `<style${attrs}>\n${imported.content}\n</style>`;
+    },
+  );
+}
+
+export function resolveSfcSrcImports(filePath: string, source: string): ResolvedSfcSrcImports {
+  const dependencies: string[] = [];
+  const srcInfo = native.extractSfcSrcInfo(source, filePath);
+  let resolvedSource = source;
+
+  resolvedSource = inlineSingleSrcBlock(
+    resolvedSource,
+    filePath,
+    "script",
+    srcInfo.scriptSrc,
+    dependencies,
+  );
+  resolvedSource = inlineSingleSrcBlock(
+    resolvedSource,
+    filePath,
+    "template",
+    srcInfo.templateSrc,
+    dependencies,
+  );
+  resolvedSource = inlineStyleSrcBlocks(resolvedSource, filePath, dependencies);
+
+  return {
+    source: resolvedSource,
+    dependencies,
+  };
 }
 
 export function compileFile(
@@ -58,9 +156,10 @@ export function compileFile(
   source?: string,
 ): CompiledModule {
   const content = source ?? fs.readFileSync(filePath, "utf-8");
+  const resolved = resolveSfcSrcImports(filePath, content);
   const scopeId = generateScopeId(filePath);
 
-  const result = compileSfc(content, buildCompileFileOptions(filePath, options));
+  const result = compileSfc(resolved.source, buildCompileFileOptions(filePath, options));
 
   if (result.errors.length > 0) {
     throw new VizeSfcCompileError(filePath, result.errors);
@@ -82,6 +181,7 @@ export function compileFile(
     scriptHash: result.scriptHash,
     macroArtifacts: result.macroArtifacts ?? [],
     styles: normalizeStyleBlocks(result.styles),
+    dependencies: resolved.dependencies,
   };
 
   cache.set(filePath, compiled);
@@ -97,8 +197,18 @@ export function compileBatch(
   cache: Map<string, CompiledModule>,
   options: CompileBatchOptions,
 ): BatchCompileResultWithFiles {
+  const dependenciesByPath = new Map<string, string[]>();
+  const resolvedFiles = files.map((file) => {
+    const resolved = resolveSfcSrcImports(file.path, file.source);
+    dependenciesByPath.set(file.path, resolved.dependencies);
+    return {
+      path: file.path,
+      source: resolved.source,
+    };
+  });
+
   const result = compileSfcBatchWithResults(
-    files satisfies BatchFileInput[],
+    resolvedFiles satisfies BatchFileInput[],
     buildCompileBatchOptions(options),
   );
 
@@ -115,6 +225,7 @@ export function compileBatch(
         scriptHash: fileResult.scriptHash,
         macroArtifacts: fileResult.macroArtifacts ?? [],
         styles: normalizeStyleBlocks(fileResult.styles),
+        dependencies: dependenciesByPath.get(fileResult.path) ?? [],
       });
     }
 
