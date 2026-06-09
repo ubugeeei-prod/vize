@@ -10,6 +10,10 @@ cases {
     input = "<slot></slot>"
   }
   new {
+    name = "nested slot outlet"
+    input = #"<div><slot :row="item" :index="i"></slot></div>"#
+  }
+  new {
     name = "default slot content"
     input = "<MyComponent>content</MyComponent>"
   }

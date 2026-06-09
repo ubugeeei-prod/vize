@@ -1,6 +1,6 @@
 //! Deferred child ID allocation for dynamic and control-flow descendants.
 
-use crate::ir::{ForIRNode, IfIRNode, NegativeBranch};
+use crate::ir::{ForIRNode, IfIRNode, InsertNodeIRNode, NegativeBranch};
 
 use super::component::transform_component;
 use super::template::*;
@@ -221,6 +221,8 @@ fn transform_dynamic_children_with_ids<'a>(
 
             prev_template_backed_child = Some((child_id, child_index));
             transform_existing_element(ctx, child_el, child_id, block);
+        } else if child_el.tag_type == ElementType::Slot {
+            transform_slot_outlet_child(ctx, child_el, child_id, parent_id, block);
         } else {
             transform_component(
                 ctx,
@@ -233,6 +235,33 @@ fn transform_dynamic_children_with_ids<'a>(
             );
         }
     }
+}
+
+fn transform_slot_outlet_child<'a>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+    element_id: usize,
+    parent_id: usize,
+    block: &mut BlockIRNode<'a>,
+) {
+    let name = get_slot_outlet_name(ctx, el);
+    let props = get_slot_outlet_props(ctx, el);
+    let fallback = (!el.children.is_empty()).then(|| transform_children(ctx, &el.children));
+    block
+        .operation
+        .push(OperationNode::SlotOutlet(SlotOutletIRNode {
+            id: element_id,
+            name,
+            props,
+            fallback,
+        }));
+    block
+        .operation
+        .push(OperationNode::InsertNode(InsertNodeIRNode {
+            elements: std::vec![element_id],
+            parent: parent_id,
+            anchor: None,
+        }));
 }
 
 fn transform_existing_element<'a>(

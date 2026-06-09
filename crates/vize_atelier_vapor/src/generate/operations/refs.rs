@@ -31,6 +31,7 @@ pub(super) fn generate_set_template_ref(
 
 /// Generate InsertNode
 pub(super) fn generate_insert_node(ctx: &mut GenerateContext, insert: &InsertNodeIRNode) {
+    ctx.use_helper("insert");
     let parent = cstr!("n{}", insert.parent);
     let elements = insert
         .elements

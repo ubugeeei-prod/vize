@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { renderSlot as _renderSlot, insert as _insert, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+export function render(_ctx) {
+const n1 = t0()
+const n0 = _renderSlot($slots, "default", { "row": _ctx.item, "index": _ctx.i })
+_insert(n1, [n0])
+return n1
+}

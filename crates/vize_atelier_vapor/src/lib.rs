@@ -383,6 +383,26 @@ mod tests {
     }
 
     #[test]
+    fn test_compile_nested_slot_outlet_child() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<div><slot :row="item" :index="i"></slot></div>"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+
+        let code = normalize_code(&result.code);
+        assert_parses_as_module(&code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
     fn test_compile_component_v_model_uses_update_listener_getter() {
         let allocator = Bump::new();
         let result = compile_vapor(
