@@ -228,14 +228,16 @@ mod tests {
     #[test]
     fn test_valid_unique_attributes() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<div id="foo" class="bar"></div>"#, "test.vue");
+        let result =
+            linter.lint_template_rules_only(r#"<div id="foo" class="bar"></div>"#, "test.vue");
         assert_eq!(result.error_count, 0);
     }
 
     #[test]
     fn test_invalid_duplicate_id() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<div id="foo" id="bar"></div>"#, "test.vue");
+        let result =
+            linter.lint_template_rules_only(r#"<div id="foo" id="bar"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
     }
@@ -243,7 +245,8 @@ mod tests {
     #[test]
     fn test_valid_class_coexist() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<div :class="foo" class="bar"></div>"#, "test.vue");
+        let result =
+            linter.lint_template_rules_only(r#"<div :class="foo" class="bar"></div>"#, "test.vue");
         // Default allows coexistence
         assert_eq!(result.error_count, 0);
     }
@@ -251,14 +254,15 @@ mod tests {
     #[test]
     fn test_invalid_duplicate_v_bind() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<div :id="foo" :id="bar"></div>"#, "test.vue");
+        let result =
+            linter.lint_template_rules_only(r#"<div :id="foo" :id="bar"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 
     #[test]
     fn test_valid_different_event_modifiers() {
         let linter = create_linter();
-        let result = linter.lint_template(
+        let result = linter.lint_template_rules_only(
             r#"<div @keydown.left="goLeft" @keydown.right="goRight"></div>"#,
             "test.vue",
         );
@@ -268,7 +272,7 @@ mod tests {
     #[test]
     fn test_valid_different_event_modifiers_multiple() {
         let linter = create_linter();
-        let result = linter.lint_template(
+        let result = linter.lint_template_rules_only(
             r#"<div @click.stop="a" @click.prevent="b" @click.stop.prevent="c"></div>"#,
             "test.vue",
         );
@@ -278,8 +282,8 @@ mod tests {
     #[test]
     fn test_invalid_duplicate_event_same_modifiers() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<div @click.stop="a" @click.stop="b"></div>"#, "test.vue");
+        let result = linter
+            .lint_template_rules_only(r#"<div @click.stop="a" @click.stop="b"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
     }
@@ -287,7 +291,8 @@ mod tests {
     #[test]
     fn test_invalid_duplicate_event_no_modifiers() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<div @click="a" @click="b"></div>"#, "test.vue");
+        let result =
+            linter.lint_template_rules_only(r#"<div @click="a" @click="b"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 }

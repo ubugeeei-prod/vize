@@ -408,6 +408,14 @@ impl Linter {
         self.lint_template_with_allocator_config(allocator, source, filename, true, true)
     }
 
+    #[cfg(test)]
+    pub(crate) fn lint_template_rules_only(&self, source: &str, filename: &str) -> LintResult {
+        let capacity = (source.len() * 4).max(self.initial_capacity);
+        let allocator = Allocator::with_capacity(capacity);
+
+        self.lint_template_with_allocator_config(&allocator, source, filename, false, true)
+    }
+
     fn lint_template_with_allocator_config(
         &self,
         allocator: &Allocator,
