@@ -1,4 +1,4 @@
-use super::{CrossFileAnalyzer, CrossFileOptions};
+use super::{CrossFileAnalyzer, CrossFileOptions, CrossFileResult};
 use crate::CrossFileDiagnosticKind;
 use std::path::Path;
 use vize_carton::{CompactString, smallvec};
@@ -43,19 +43,33 @@ fn test_analyzer_basic() {
 }
 
 #[test]
-fn test_component_resolution_error() {
+fn test_component_resolution_reports_unregistered_pascal_case_component() {
     let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::strict());
 
-    // Add a file that uses an unregistered component
-    analyzer.add_file(
+    analyzer.add_file_with_analysis(
         Path::new("Parent.vue"),
-        r#"<script setup>
-// No import of ChildComponent
-</script>"#,
+        "",
+        script_analysis_with_used_component("// No import of ChildWidget", "ChildWidget"),
     );
 
-    // When template analysis is added, this test will verify
-    // that unregistered components produce errors
+    let result = analyzer.analyze();
+
+    assert_eq!(unregistered_components(&result), vec!["ChildWidget"]);
+}
+
+#[test]
+fn test_component_resolution_ignores_custom_element_tag() {
+    let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::strict());
+
+    analyzer.add_file_with_analysis(
+        Path::new("Parent.vue"),
+        "",
+        script_analysis_with_used_component("", "my-widget"),
+    );
+
+    let result = analyzer.analyze();
+
+    assert!(unregistered_components(&result).is_empty());
 }
 
 #[test]
@@ -110,6 +124,27 @@ fn script_analysis_with_component_usage(
     analysis.used_components.insert(usage.name.clone());
     analysis.component_usages.push(usage);
     analysis
+}
+
+fn script_analysis_with_used_component(script: &str, component: &str) -> vize_croquis::Croquis {
+    let mut analysis = script_analysis(script);
+    analysis
+        .used_components
+        .insert(CompactString::new(component));
+    analysis
+}
+
+fn unregistered_components(result: &CrossFileResult) -> Vec<&str> {
+    result
+        .diagnostics
+        .iter()
+        .filter_map(|diagnostic| match &diagnostic.kind {
+            CrossFileDiagnosticKind::UnregisteredComponent { component_name, .. } => {
+                Some(component_name.as_str())
+            }
+            _ => None,
+        })
+        .collect()
 }
 
 fn component_usage_with_on_prefixed_prop(component: &str) -> ComponentUsage {

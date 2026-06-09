@@ -60,6 +60,12 @@ pub fn analyze_component_resolution(
                 continue;
             }
 
+            // Lowercase hyphenated tags can be native custom elements configured
+            // through Vue's compilerOptions.isCustomElement.
+            if is_custom_element_tag(component_name.as_str()) {
+                continue;
+            }
+
             // Check if component is imported as a binding. Vue templates can
             // use either PascalCase (`UserCard`) or kebab-case (`user-card`).
             let is_imported = imported_identifiers
@@ -201,6 +207,29 @@ fn is_builtin_component(name: &str) -> bool {
     )
 }
 
+fn is_custom_element_tag(name: &str) -> bool {
+    name.contains('-')
+        && name.chars().next().is_some_and(|c| c.is_ascii_lowercase())
+        && !is_reserved_custom_element_name(name)
+        && name
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '-' | '_' | '.'))
+}
+
+fn is_reserved_custom_element_name(name: &str) -> bool {
+    matches!(
+        name,
+        "annotation-xml"
+            | "color-profile"
+            | "font-face"
+            | "font-face-src"
+            | "font-face-uri"
+            | "font-face-format"
+            | "font-face-name"
+            | "missing-glyph"
+    )
+}
+
 fn component_names_match(left: &str, right: &str) -> bool {
     left == right || to_pascal_case(left) == to_pascal_case(right)
 }
@@ -294,7 +323,7 @@ fn resolve_import(
 
 #[cfg(test)]
 mod tests {
-    use super::is_builtin_component;
+    use super::{is_builtin_component, is_custom_element_tag};
 
     #[test]
     fn test_is_builtin_component() {
@@ -312,5 +341,18 @@ mod tests {
         assert!(is_builtin_component("slot"));
         assert!(!is_builtin_component("MyComponent"));
         assert!(!is_builtin_component("UserCard"));
+    }
+
+    #[test]
+    fn test_is_custom_element_tag() {
+        assert!(is_custom_element_tag("my-widget"));
+        assert!(is_custom_element_tag("ion-button"));
+        assert!(is_custom_element_tag("sl-icon2"));
+        assert!(is_custom_element_tag("my_widget-button"));
+        assert!(!is_custom_element_tag("MyWidget"));
+        assert!(!is_custom_element_tag("myWidget"));
+        assert!(!is_custom_element_tag("ChildWidget"));
+        assert!(!is_custom_element_tag("font-face"));
+        assert!(!is_custom_element_tag("div"));
     }
 }
