@@ -564,31 +564,145 @@ pub(crate) fn extract_interface_fields(script: &str, type_name: &str) -> Vec<Str
             body
         };
 
-        for line in inner.lines() {
-            let trimmed = line.trim();
-            if trimmed.is_empty()
-                || trimmed.starts_with("//")
-                || trimmed.starts_with("/*")
-                || trimmed == "}"
-                || trimmed == "};"
-            {
-                continue;
-            }
-            let trimmed = trimmed.strip_prefix("readonly ").unwrap_or(trimmed);
-            if let Some(colon_pos) = trimmed.find(':') {
-                let field_name = trimmed[..colon_pos].trim().trim_end_matches('?');
-                if !field_name.is_empty()
-                    && field_name
-                        .chars()
-                        .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
-                {
-                    fields.push(field_name.into());
+        fields.extend(extract_top_level_type_fields(inner));
+    }
+
+    fields
+}
+
+fn extract_top_level_type_fields(inner: &str) -> Vec<String> {
+    let mut fields = Vec::new();
+    let mut member_start = 0usize;
+    let mut collecting_name = true;
+    let mut brace_depth = 0u32;
+    let mut bracket_depth = 0u32;
+    let mut paren_depth = 0u32;
+    let mut angle_depth = 0u32;
+    let mut quote = None;
+    let mut escaped = false;
+    let mut line_comment = false;
+    let mut block_comment = false;
+    let mut chars = inner.char_indices().peekable();
+
+    while let Some((idx, ch)) = chars.next() {
+        if line_comment {
+            if ch == '\n' {
+                line_comment = false;
+                if brace_depth == 0 && bracket_depth == 0 && paren_depth == 0 && angle_depth == 0 {
+                    collecting_name = true;
+                    member_start = idx + ch.len_utf8();
                 }
             }
+            continue;
+        }
+
+        if block_comment {
+            if ch == '*'
+                && let Some(&(slash_idx, '/')) = chars.peek()
+            {
+                chars.next();
+                block_comment = false;
+                if collecting_name
+                    && brace_depth == 0
+                    && bracket_depth == 0
+                    && paren_depth == 0
+                    && angle_depth == 0
+                    && inner[member_start..idx].trim().is_empty()
+                {
+                    member_start = slash_idx + 1;
+                }
+            }
+            continue;
+        }
+
+        if let Some(quote_ch) = quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == quote_ch {
+                quote = None;
+            }
+            continue;
+        }
+
+        if ch == '/'
+            && let Some(&(_, next)) = chars.peek()
+        {
+            match next {
+                '/' => {
+                    chars.next();
+                    line_comment = true;
+                    continue;
+                }
+                '*' => {
+                    chars.next();
+                    block_comment = true;
+                    continue;
+                }
+                _ => {}
+            }
+        }
+
+        match ch {
+            '\'' | '"' | '`' => {
+                quote = Some(ch);
+                escaped = false;
+                continue;
+            }
+            '{' => brace_depth += 1,
+            '}' => brace_depth = brace_depth.saturating_sub(1),
+            '[' => bracket_depth += 1,
+            ']' => bracket_depth = bracket_depth.saturating_sub(1),
+            '(' => paren_depth += 1,
+            ')' => paren_depth = paren_depth.saturating_sub(1),
+            '<' => angle_depth += 1,
+            '>' if angle_depth > 0 => angle_depth -= 1,
+            _ => {}
+        }
+
+        if brace_depth != 0 || bracket_depth != 0 || paren_depth != 0 || angle_depth != 0 {
+            continue;
+        }
+
+        match ch {
+            ':' if collecting_name => {
+                if let Some(field_name) = parse_top_level_field_name(&inner[member_start..idx]) {
+                    fields.push(field_name);
+                }
+                collecting_name = false;
+            }
+            ';' | ',' => {
+                collecting_name = true;
+                member_start = idx + ch.len_utf8();
+            }
+            '\n' if !collecting_name => {
+                collecting_name = true;
+                member_start = idx + ch.len_utf8();
+            }
+            '\n' if inner[member_start..idx].trim().is_empty() => {
+                member_start = idx + ch.len_utf8();
+            }
+            _ => {}
         }
     }
 
     fields
+}
+
+fn parse_top_level_field_name(candidate: &str) -> Option<String> {
+    let candidate = candidate.trim();
+    let candidate = candidate.strip_prefix("readonly ").unwrap_or(candidate);
+    let field_name = candidate.trim().trim_end_matches('?').trim();
+    if !field_name.is_empty()
+        && field_name
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
+    {
+        Some(field_name.into())
+    } else {
+        None
+    }
 }
 
 /// Strip the outermost `<...>` pair from a type_args string, handling nested generics.
@@ -773,7 +887,10 @@ fn append_param_with_default(result: &mut String, param: &str) {
 
 #[cfg(test)]
 mod tests {
-    use super::{collect_with_defaults_default_names_from_source, template_props_type_ref};
+    use super::{
+        collect_with_defaults_default_names_from_source, extract_interface_fields,
+        template_props_type_ref,
+    };
     use vize_carton::{FxHashSet, String};
 
     #[test]
@@ -817,6 +934,28 @@ mod tests {
         assert_eq!(
             template_props_type_ref("Props", &names),
             r#"__WithDefaultsResult<Props, Pick<Props, "label" | "thickness">>"#
+        );
+    }
+
+    #[test]
+    fn extracts_only_top_level_interface_fields() {
+        let script = r#"
+interface Props {
+  config: {
+    inner: string
+    nested: { value: number }
+  }
+  readonly name?: string
+  handler: (event: { inner: string }) => void
+  items: Array<{ id: string }>
+  method(): void
+  [key: string]: unknown
+}
+"#;
+
+        assert_eq!(
+            extract_interface_fields(script, "Props"),
+            vec!["config", "name", "handler", "items"]
         );
     }
 }

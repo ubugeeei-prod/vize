@@ -332,6 +332,47 @@ void bar
 }
 
 #[test]
+fn batch_type_checker_reports_nested_interface_member_as_unknown_template_name() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "nested-interface-member-template-name",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+interface Props {
+  config: {
+    inner: string
+  }
+  name: string
+}
+
+defineProps<Props>()
+</script>
+
+<template>{{ config.inner }} {{ inner }} {{ name }}</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/App.vue" && *code == Some(2304) && message.contains("inner")
+        }),
+        "expected nested object member to report TS2304, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_reports_user_ts6133_with_no_unused_locals() {
     if resolve_test_tsgo_binary().is_none() {
         return;

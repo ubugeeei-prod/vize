@@ -225,6 +225,44 @@ void bar
     }
 
     #[test]
+    fn test_type_check_nested_interface_members_are_not_template_props() {
+        let source = r#"<script setup lang="ts">
+interface Props {
+  config: {
+    inner: string
+  }
+  name: string
+}
+
+defineProps<Props>()
+</script>
+
+<template>
+  {{ config.inner }} {{ inner }} {{ name }}
+</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+        let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+
+        assert!(
+            virtual_ts.contains(r#"const config = props["config"];"#),
+            "{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains(r#"const name = props["name"];"#),
+            "{virtual_ts}"
+        );
+        assert!(
+            !virtual_ts.contains(r#"const inner = props["inner"];"#),
+            "nested object members must not be emitted as top-level props:\n{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("void (inner);"),
+            "nested member shorthand should remain unresolved in virtual TS:\n{virtual_ts}"
+        );
+    }
+
+    #[test]
     fn test_type_check_with_defaults_narrows_direct_template_prop_identifiers() {
         let source = r#"<script setup lang="ts">
 const props = withDefaults(
