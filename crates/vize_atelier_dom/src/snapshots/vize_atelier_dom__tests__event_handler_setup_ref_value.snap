@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_dom/src/lib.rs
+source: crates/vize_atelier_dom/src/tests.rs
 assertion_line: 272
 expression: full.as_str()
 ---

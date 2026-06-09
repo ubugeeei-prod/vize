@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_dom/src/lib.rs
+source: crates/vize_atelier_dom/src/tests.rs
 expression: full.as_str()
 ---
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"

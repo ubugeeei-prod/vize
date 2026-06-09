@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_dom/src/lib.rs
+source: crates/vize_atelier_dom/src/tests.rs
 expression: full.as_str()
 ---
 const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
