@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_core/src/codegen/tests.rs
+expression: output.as_str()
+---
+const { withModifiers: _withModifiers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", {
+    onClick: [_cache[0] || (_cache[0] = () => _ctx.x++), _cache[1] || (_cache[1] = _withModifiers(() => _ctx.y++, ["stop"]))]
+  }))
+}
