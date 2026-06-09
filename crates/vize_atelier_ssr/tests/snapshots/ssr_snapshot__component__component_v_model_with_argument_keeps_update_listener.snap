@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<Foo v-model:sort-option=\"sort\" />\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Foo"), _mergeProps({ "sort-option": _ctx.sort, "onUpdate:sortOption": $event => ((_ctx.sort) = $event) }, _attrs), null, _parent))
+}

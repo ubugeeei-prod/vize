@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<Foo v-model=\"value\" />\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Foo"), _mergeProps({ modelValue: _ctx.value, "onUpdate:modelValue": $event => ((_ctx.value) = $event) }, _attrs), null, _parent))
+}

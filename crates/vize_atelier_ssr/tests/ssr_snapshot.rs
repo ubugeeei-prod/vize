@@ -348,6 +348,31 @@ mod component {
     }
 
     #[test]
+    fn component_event_listeners_are_kept() {
+        // Components receive `onXxx` listeners as props during SSR (unlike plain
+        // elements where listeners do not affect the rendered HTML). Inline
+        // statements wrap in `$event => (...)`; DOM-only modifiers are ignored.
+        insta::assert_snapshot!(compile_full(
+            r#"<Foo @click="onClick" @custom-event="onClick" @bump="count++" @key-up.enter="onKey" />"#
+        ));
+    }
+
+    #[test]
+    fn component_v_model_keeps_update_listener() {
+        insta::assert_snapshot!(compile_full(r#"<Foo v-model="value" />"#));
+    }
+
+    #[test]
+    fn component_v_model_with_argument_keeps_update_listener() {
+        insta::assert_snapshot!(compile_full(r#"<Foo v-model:sort-option="sort" />"#));
+    }
+
+    #[test]
+    fn component_v_on_object_syntax_merges_handlers() {
+        insta::assert_snapshot!(compile_full(r#"<Foo v-on="handlers" :id="id" />"#));
+    }
+
+    #[test]
     fn component_with_slot_content() {
         insta::assert_snapshot!(compile_full(r#"<Foo><div>slot content</div></Foo>"#));
     }

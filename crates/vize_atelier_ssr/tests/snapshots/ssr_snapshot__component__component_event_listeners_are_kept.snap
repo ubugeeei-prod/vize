@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<Foo @click=\"onClick\" @custom-event=\"onClick\" @bump=\"count++\" @key-up.enter=\"onKey\" />\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Foo"), _mergeProps({ onClick: _ctx.onClick, onCustomEvent: _ctx.onClick, onBump: $event => (_ctx.count++), onKeyUp: _ctx.onKey }, _attrs), null, _parent))
+}

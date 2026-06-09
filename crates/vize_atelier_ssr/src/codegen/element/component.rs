@@ -421,31 +421,52 @@ impl<'a> SsrCodegenContext<'a> {
                 }
             }
             "model" => {
-                let Some(arg) = &dir.arg else {
-                    return;
-                };
-                let arg_is_static =
-                    matches!(arg, ExpressionNode::Simple(simple) if simple.is_static);
-                if arg_is_static {
-                    return;
-                }
-
-                *needs_normalize = true;
-                let key = self.dynamic_arg_to_string(arg);
                 let value = dir
                     .exp
                     .as_ref()
                     .map(|exp| self.expression_to_string(exp))
                     .unwrap_or_else(|| "undefined".to_compact_string());
 
-                entries.push(component_prop_entry(&key, &value, true));
+                match &dir.arg {
+                    // Static argument: `v-model:foo="x"` emits `foo` plus its
+                    // matching `onUpdate:foo` listener, mirroring Vue's SSR
+                    // compiler so components receive the update handler.
+                    Some(ExpressionNode::Simple(arg)) if arg.is_static => {
+                        let prop_key = vize_carton::camelize(&arg.content);
+                        entries.push(component_prop_entry(&prop_key, &value, false));
 
-                let mut update_key = String::from("\"onUpdate:\" + ");
-                update_key.push_str(&key);
-                let mut handler = String::from("$event => ((");
-                handler.push_str(&value);
-                handler.push_str(") = $event)");
-                entries.push(component_prop_entry(&update_key, &handler, true));
+                        let mut update_key = String::from("onUpdate:");
+                        update_key.push_str(&prop_key);
+                        let mut handler = String::from("$event => ((");
+                        handler.push_str(&value);
+                        handler.push_str(") = $event)");
+                        entries.push(component_prop_entry(&update_key, &handler, false));
+                    }
+                    // No argument: `v-model="x"` maps to `modelValue` plus
+                    // `onUpdate:modelValue`.
+                    None => {
+                        entries.push(component_prop_entry("modelValue", &value, false));
+
+                        let mut handler = String::from("$event => ((");
+                        handler.push_str(&value);
+                        handler.push_str(") = $event)");
+                        entries.push(component_prop_entry("onUpdate:modelValue", &handler, false));
+                    }
+                    // Dynamic argument: `v-model:[name]="x"`.
+                    Some(arg) => {
+                        *needs_normalize = true;
+                        let key = self.dynamic_arg_to_string(arg);
+
+                        entries.push(component_prop_entry(&key, &value, true));
+
+                        let mut update_key = String::from("\"onUpdate:\" + ");
+                        update_key.push_str(&key);
+                        let mut handler = String::from("$event => ((");
+                        handler.push_str(&value);
+                        handler.push_str(") = $event)");
+                        entries.push(component_prop_entry(&update_key, &handler, true));
+                    }
+                }
             }
             "show" => {
                 let Some(exp) = dir.exp.as_ref().map(|exp| self.expression_to_string(exp)) else {
@@ -457,12 +478,86 @@ impl<'a> SsrCodegenContext<'a> {
                     false,
                 ));
             }
-            // Server-rendered HTML does not need event listener props, and slot/
-            // DOM-only/custom directives are handled elsewhere or ignored by Vue's
-            // SSR compiler for component prop bags.
-            "on" | "slot" | "html" | "text" => {}
+            // Components receive event listeners as props during SSR (Vue's SSR
+            // compiler keeps `onXxx` handlers on component vnodes, unlike plain
+            // elements where listeners never affect server-rendered HTML). This
+            // also covers desugared `v-model` update handlers (`onUpdate:foo`).
+            "on" => self.collect_component_event_handler(dir, entries, spreads, needs_normalize),
+            // Slot/DOM-only/custom directives are handled elsewhere or ignored by
+            // Vue's SSR compiler for component prop bags.
+            "slot" | "html" | "text" => {}
             _ => {}
         }
+    }
+
+    /// Emit a `v-on` listener as a component prop (`onXxx: handler`).
+    ///
+    /// Mirrors Vue's base `transformOn` as used by the SSR compiler: the event
+    /// name is converted to a handler key, and inline statements are wrapped in
+    /// an `$event => (...)` arrow while function/member references pass through.
+    /// DOM-only event modifiers (`.stop`, `.enter`, ...) do not apply to
+    /// component listeners and are intentionally ignored.
+    fn collect_component_event_handler(
+        &mut self,
+        dir: &DirectiveNode,
+        entries: &mut std::vec::Vec<VNodePropEntry>,
+        spreads: &mut std::vec::Vec<String>,
+        needs_normalize: &mut bool,
+    ) {
+        // `v-on="obj"` object syntax: merge the listener object via `_toHandlers`.
+        let Some(arg) = &dir.arg else {
+            let obj = dir
+                .exp
+                .as_ref()
+                .map(|exp| self.expression_to_string(exp))
+                .unwrap_or_else(|| "{}".to_compact_string());
+            self.use_core_helper(RuntimeHelper::ToHandlers);
+            spreads.push(wrap_call("_toHandlers", &obj));
+            return;
+        };
+
+        let handler = dir
+            .exp
+            .as_ref()
+            .map(|exp| self.event_handler_to_string(exp))
+            .unwrap_or_else(|| "() => {}".to_compact_string());
+
+        match arg {
+            // `@click`, `@custom-event`, desugared `onUpdate:foo` (`Update:foo`).
+            ExpressionNode::Simple(arg) if arg.is_static => {
+                let key = vize_atelier_core::transforms::create_on_name(&arg.content);
+                entries.push(component_prop_entry(&key, &handler, false));
+            }
+            // Dynamic event name: `@[name]="handler"`.
+            _ => {
+                *needs_normalize = true;
+                self.use_core_helper(RuntimeHelper::ToHandlerKey);
+                let name = self.dynamic_arg_to_string(arg);
+                let key = cstr!("_toHandlerKey({name})");
+                entries.push(component_prop_entry(&key, &handler, true));
+            }
+        }
+    }
+
+    /// Render a `v-on` handler expression, wrapping inline statements in an
+    /// arrow function the way Vue's compiler does for component listeners.
+    fn event_handler_to_string(&mut self, exp: &ExpressionNode) -> String {
+        let rendered = self.expression_to_string(exp);
+
+        if matches!(exp, ExpressionNode::Simple(simple) if simple.is_static) {
+            return rendered;
+        }
+
+        if vize_atelier_core::transforms::transform_expression::is_function_expression(&rendered)
+            || vize_atelier_core::transforms::is_event_handler_reference_expression(&rendered)
+        {
+            return rendered;
+        }
+
+        let mut out = String::from("$event => (");
+        out.push_str(&rendered);
+        out.push(')');
+        out
     }
 
     /// Render a dynamic directive argument while preserving scoped slot locals.
