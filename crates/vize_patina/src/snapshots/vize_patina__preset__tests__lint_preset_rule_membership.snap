@@ -436,6 +436,23 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "ecosystem/void-link-valid-method",
     "ecosystem/pinia-prefer-store-to-refs",
     "ecosystem/vue-router-prefer-named-push",
-    "ecosystem/vue-test-utils-no-html-snapshot"
+    "ecosystem/vue-test-utils-no-html-snapshot",
+    "script/prefer-computed",
+    "script/no-async-in-computed",
+    "script/no-reactive-destructure",
+    "script/no-top-level-ref-in-script",
+    "script/prefer-ref-over-reactive",
+    "script/prefer-use-template-ref",
+    "script/prefer-use-slots",
+    "script/prefer-use-attrs",
+    "script/prefer-use-id",
+    "script/prefer-import-from-vue",
+    "script/no-with-defaults",
+    "script/no-deep-destructure-in-props",
+    "script/no-internal-imports",
+    "script/no-import-compiler-macros",
+    "script/no-reserved-identifiers",
+    "script/require-symbol-provide",
+    "script/require-function-return-type"
   ]
 }

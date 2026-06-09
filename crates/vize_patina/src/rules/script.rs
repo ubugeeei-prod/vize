@@ -200,11 +200,29 @@ impl ScriptLinter {
     pub fn with_all_rules() -> Self {
         Self {
             rules: vec![
-                Box::new(PreferImportFromVue),
-                Box::new(NoInternalImports),
                 Box::new(NoOptionsApi),
                 Box::new(NoGetCurrentInstance),
                 Box::new(NoNextTick),
+                Box::new(PiniaPreferStoreToRefs),
+                Box::new(VueRouterPreferNamedPush),
+                Box::new(VueTestUtilsNoHtmlSnapshot),
+                Box::new(PreferComputed),
+                Box::new(NoAsyncInComputed),
+                Box::new(NoReactiveDestructure),
+                Box::new(NoTopLevelRefInScript),
+                Box::new(PreferRefOverReactive),
+                Box::new(PreferUseTemplateRef),
+                Box::new(PreferUseSlots),
+                Box::new(PreferUseAttrs),
+                Box::new(PreferUseId),
+                Box::new(PreferImportFromVue),
+                Box::new(NoWithDefaults),
+                Box::new(NoDeepDestructureInProps::default()),
+                Box::new(NoInternalImports),
+                Box::new(NoImportCompilerMacros),
+                Box::new(NoReservedIdentifiers),
+                Box::new(RequireSymbolProvide),
+                Box::new(RequireFunctionReturnType),
             ],
         }
     }

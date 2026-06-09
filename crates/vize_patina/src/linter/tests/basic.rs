@@ -418,6 +418,46 @@ export default {
 }
 
 #[test]
+fn test_lint_sfc_explicit_opt_in_script_rule_enablement_works() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["script/no-async-in-computed".into()]));
+    let sfc = r#"<script setup>
+const data = computed(async () => await fetch('/api'))
+</script>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+    assert_eq!(result.error_count, 1);
+    assert_eq!(
+        result.diagnostics[0].rule_name,
+        "script/no-async-in-computed"
+    );
+}
+
+#[test]
+fn test_lint_sfc_additional_opt_in_script_rule_preserves_preset_rules() {
+    let linter = Linter::new().with_additional_rules(vec!["script/no-async-in-computed".into()]);
+    let sfc = r#"<script setup>
+router.push('/settings')
+const data = computed(async () => await fetch('/api'))
+</script>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+    assert_eq!(result.error_count, 1);
+    assert_eq!(result.warning_count, 1);
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "ecosystem/vue-router-prefer-named-push")
+    );
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "script/no-async-in-computed")
+    );
+}
+
+#[test]
 fn test_lint_standalone_html_reports_cdn_options_api() {
     let linter = Linter::with_preset(LintPreset::Opinionated)
         .with_enabled_rules(Some(vec!["script/no-options-api".into()]));
