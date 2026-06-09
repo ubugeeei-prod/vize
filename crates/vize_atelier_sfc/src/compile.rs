@@ -13,6 +13,7 @@ mod tests;
 
 use crate::compile_script::artifacts::{erase_artifact_macro_statements, extract_macro_artifacts};
 use crate::compile_script::lazy_hydration::transform_lazy_hydration_macros;
+use crate::compile_script::props::is_valid_identifier;
 use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
@@ -22,6 +23,7 @@ use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
 use crate::types::{
     BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError, SfcMacroArtifact,
+    css_modules_object_literal,
 };
 use vize_atelier_core::TemplateSyntaxMode;
 
@@ -76,6 +78,21 @@ fn create_standalone_import_warning() -> SfcError {
 
 fn is_ts_lang(lang: Option<&str>) -> bool {
     matches!(lang, Some("ts" | "tsx"))
+}
+
+fn append_css_modules_assignment(
+    code: &mut String,
+    target: &str,
+    css_modules: &[crate::types::CssModuleMapping],
+) {
+    if css_modules.is_empty() {
+        return;
+    }
+
+    code.push_str(target);
+    code.push_str(".__cssModules = ");
+    code.push_str(&css_modules_object_literal(css_modules, ""));
+    code.push('\n');
 }
 
 fn rewrite_client_render_for_sfc_main(template_code: &str) -> String {
@@ -291,6 +308,14 @@ fn compile_sfc_inner(
         String::default()
     };
 
+    let compiled_styles = profile!(
+        "atelier.sfc.styles",
+        compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)
+    );
+    if !compiled_styles.css.is_empty() {
+        css = Some(compiled_styles.css.clone());
+    }
+
     let vapor_requested = options.vapor
         || descriptor
             .script_setup
@@ -384,10 +409,29 @@ fn compile_sfc_inner(
                 if is_vapor {
                     code.push_str("const _sfc_main = { __vapor: true }\n");
                     code.push_str("_sfc_main.render = render\n");
+                    append_css_modules_assignment(
+                        &mut code,
+                        "_sfc_main",
+                        &compiled_styles.css_modules,
+                    );
                     code.push_str("export default _sfc_main\n");
                 } else if options.template.ssr {
                     code.push_str("const _sfc_main = {}\n");
                     code.push_str("_sfc_main.ssrRender = ssrRender\n");
+                    append_css_modules_assignment(
+                        &mut code,
+                        "_sfc_main",
+                        &compiled_styles.css_modules,
+                    );
+                    code.push_str("export default _sfc_main\n");
+                } else if !compiled_styles.css_modules.is_empty() {
+                    code.push_str("const _sfc_main = {}\n");
+                    code.push_str("_sfc_main.render = render\n");
+                    append_css_modules_assignment(
+                        &mut code,
+                        "_sfc_main",
+                        &compiled_styles.css_modules,
+                    );
                     code.push_str("export default _sfc_main\n");
                 }
             }
@@ -396,15 +440,6 @@ fn compile_sfc_inner(
             // wrote a 0-byte module and exited 0 (#958). Propagate the
             // template error up so the build/CLI surfaces it.
             Err(e) => return Err(e),
-        }
-
-        // Compile styles
-        let all_css = profile!(
-            "atelier.sfc.styles",
-            compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)
-        );
-        if !all_css.is_empty() {
-            css = Some(all_css);
         }
 
         finalize_output_mode(&mut code, &mut warnings, &options);
@@ -543,6 +578,11 @@ fn compile_sfc_inner(
                     } else {
                         code.push_str("_sfc_main.render = _sfc_render\n");
                     }
+                    append_css_modules_assignment(
+                        &mut code,
+                        "_sfc_main",
+                        &compiled_styles.css_modules,
+                    );
                     code.push_str("export default _sfc_main\n");
                 }
                 Err(e) => {
@@ -558,16 +598,11 @@ fn compile_sfc_inner(
             if is_vapor {
                 code.push_str("\n_sfc_main.__vapor = true");
             }
+            if !compiled_styles.css_modules.is_empty() {
+                code.push('\n');
+                append_css_modules_assignment(&mut code, "_sfc_main", &compiled_styles.css_modules);
+            }
             code.push_str("\nexport default _sfc_main\n");
-        }
-
-        // Compile styles
-        let all_css = profile!(
-            "atelier.sfc.styles",
-            compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)
-        );
-        if !all_css.is_empty() {
-            css = Some(all_css);
         }
 
         finalize_output_mode(&mut code, &mut warnings, &options);
@@ -704,6 +739,25 @@ fn compile_sfc_inner(
         );
         merge_normal_script_bindings(&mut script_bindings, &normal_script_bindings);
         merge_normal_script_bindings(&mut ctx.bindings, &normal_script_bindings);
+    }
+
+    let setup_css_module_names = compiled_styles
+        .css_modules
+        .iter()
+        .filter(|module| {
+            is_valid_identifier(&module.name) && !ctx.bindings.bindings.contains_key(&module.name)
+        })
+        .map(|module| module.name.clone())
+        .collect::<Vec<_>>();
+    for module_name in &setup_css_module_names {
+        script_bindings
+            .bindings
+            .entry(module_name.clone())
+            .or_insert(BindingType::SetupConst);
+        ctx.bindings
+            .bindings
+            .entry(module_name.clone())
+            .or_insert(BindingType::SetupConst);
     }
 
     if let Some(template) = &descriptor.template {
@@ -862,6 +916,8 @@ fn compile_sfc_inner(
             },
             normal_script_content.as_deref(),
             &descriptor.css_vars,
+            &compiled_styles.css_modules,
+            &setup_css_module_names,
             &scope_id,
             filename,
             options.template.is_prod,
@@ -874,15 +930,6 @@ fn compile_sfc_inner(
         code.push_str(&transform.preamble);
     }
     code.push_str(&script_result.code);
-
-    // Compile styles
-    let all_css = profile!(
-        "atelier.sfc.styles",
-        compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)
-    );
-    if !all_css.is_empty() {
-        css = Some(all_css);
-    }
 
     finalize_output_mode(&mut code, &mut warnings, &options);
     trim_trailing_newlines(&mut code);

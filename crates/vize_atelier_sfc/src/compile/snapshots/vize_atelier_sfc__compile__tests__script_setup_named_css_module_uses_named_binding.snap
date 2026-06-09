@@ -1,0 +1,44 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: "sfc_compile_snapshot(&descriptor.css_vars, &result)"
+---
+css vars:
+
+
+css:
+.tE8jqW_red {
+  color: red;
+}
+
+.tE8jqW_active {
+  font-weight: bold;
+}
+
+
+code:
+import { useCssModule as _useCssModule } from 'vue'
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+const active = true
+
+export default {
+  __name: 'Named',
+  __cssModules: {
+    "tokens": {
+      "active": "tE8jqW_active",
+      "red": "tE8jqW_red"
+    }
+  },
+  setup(__props) {
+
+const tokens = _useCssModule("tokens")
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", {
+    class: _normalizeClass([tokens.red, { [tokens.active]: active }])
+  }, "x", 2 /* CLASS */))
+}
+}
+
+}

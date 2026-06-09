@@ -22,6 +22,7 @@ pub(super) fn emit_preamble(
     needs_merge_models: bool,
     has_define_slots: bool,
     has_css_vars: bool,
+    has_css_modules: bool,
     needs_vapor_setup_context: bool,
     vapor_render_alias: Option<&str>,
     is_vapor: bool,
@@ -70,6 +71,10 @@ pub(super) fn emit_preamble(
                 b"import { useCssVars as _useCssVars, unref as _unref } from 'vue'\n",
             );
         }
+    }
+
+    if has_css_modules {
+        output.extend_from_slice(b"import { useCssModule as _useCssModule } from 'vue'\n");
     }
 
     // Component helper import (skip if already emitted with withAsyncContext)

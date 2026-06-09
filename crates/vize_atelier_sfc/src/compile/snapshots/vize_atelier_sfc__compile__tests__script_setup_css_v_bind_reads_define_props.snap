@@ -1,6 +1,5 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
-assertion_line: 336
 expression: "sfc_compile_snapshot(&descriptor.css_vars, &result)"
 ---
 css vars:
@@ -8,22 +7,21 @@ css vars:
 - offset + 'px'
 
 css:
-
-.root {
-  background: linear-gradient(
-    180deg,
-    color(from var(--test-color) srgb r g b / 0.1),
-    color(from var(--test-color) srgb r g b / 0)
-  );
+.FHLIPa_root {
+  background: linear-gradient(180deg,
+    color(from var(--test-color) srgb r g b / .1),
+    color(from var(--test-color) srgb r g b / 0));
   padding-top: var(--test-offset\ \+\ \'px\');
 }
 
 
 code:
 import { useCssVars as _useCssVars } from "vue";
+import { useCssModule as _useCssModule } from "vue";
 import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
 export default {
   __name: "MkFeatureBanner",
+  __cssModules: { "$style": { "root": "FHLIPa_root" } },
   props: {
     icon: {
       type: String,
@@ -43,11 +41,12 @@ export default {
       "test-color": __props.color,
       "test-offset + 'px'": __props.offset + "px"
     }));
+    const $style = _useCssModule();
     return (_ctx, _cache) => {
       const _directive_panel = _resolveDirective("panel");
       return _withDirectives((_openBlock(), _createElementBlock(
         "div",
-        { class: _normalizeClass(_ctx.$style.root) },
+        { class: _normalizeClass($style.root) },
         [_createElementVNode("img", { src: __props.icon }, null, 8, ["src"])],
         2
         /* CLASS */

@@ -193,7 +193,7 @@ const channel = ref({});
 
 assert.match(
   componentClassCompiled.code,
-  /_createBlock\(Child, \{\s*channel: channel\.value,\s*full: true,\s*class: _normalizeClass\(_ctx\.\$style\.subscribe\)\s*\}, null, 8[\s\S]*\["channel", "class"\]/,
+  /_createBlock\(Child, \{\s*channel: channel\.value,\s*full: true,\s*class: _normalizeClass\(\$style\.subscribe\)\s*\}, null, 8[\s\S]*\["channel", "class"\]/,
   "dynamic component class bindings should be tracked as component props so fallthrough classes apply",
 );
 assert.doesNotMatch(

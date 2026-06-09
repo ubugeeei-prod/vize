@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use vize_carton::{String, profile};
 
 use crate::script::{ScriptCompileContext, transform_destructured_props};
-use crate::types::SfcError;
+use crate::types::{CssModuleMapping, SfcError};
 
 use super::super::super::{
     ScriptCompileResult, TemplateParts, import_utils::import_block_has_local_from,
@@ -28,6 +28,8 @@ pub(super) fn compile_script_setup_inline_body(
     is_vapor: bool,
     template: TemplateParts<'_>,
     css_vars: &[Cow<'_, str>],
+    css_modules: &[CssModuleMapping],
+    setup_css_module_names: &[String],
     scope_id: &str,
     css_vars_id: &str,
     is_prod: bool,
@@ -45,6 +47,7 @@ pub(super) fn compile_script_setup_inline_body(
     is_async: bool,
 ) -> Result<ScriptCompileResult, SfcError> {
     let has_css_vars = !css_vars.is_empty();
+    let has_css_modules = !setup_css_module_names.is_empty();
     let needs_prop_type = false;
     let preamble = emit_preamble(
         &mut output,
@@ -57,6 +60,7 @@ pub(super) fn compile_script_setup_inline_body(
         needs_merge_models,
         has_define_slots,
         has_css_vars,
+        has_css_modules,
         needs_vapor_setup_context,
         vapor_render_alias.as_deref(),
         is_vapor,
@@ -128,6 +132,7 @@ pub(super) fn compile_script_setup_inline_body(
         &model_props_emits_buf,
         &template,
         vapor_render_alias.as_deref(),
+        css_modules,
     );
 
     emit_setup_body(
@@ -143,6 +148,7 @@ pub(super) fn compile_script_setup_inline_body(
         css_vars_id,
         is_prod,
         has_css_vars,
+        setup_css_module_names,
     );
 
     output.push(b'\n');

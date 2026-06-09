@@ -1,0 +1,29 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: "sfc_compile_snapshot(&descriptor.css_vars, &result)"
+---
+css vars:
+
+
+css:
+._2AIs9G_red {
+  color: red;
+}
+
+
+code:
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    class: _normalizeClass(_ctx.$style.red)
+  }, "x", 2 /* CLASS */))
+}
+const _sfc_main = {}
+_sfc_main.render = render
+_sfc_main.__cssModules = {
+  "$style": {
+    "red": "_2AIs9G_red"
+  }
+}
+export default _sfc_main

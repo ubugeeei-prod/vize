@@ -19,7 +19,7 @@ use std::borrow::Cow;
 use vize_carton::{String, ToCompactString, profile};
 
 use crate::script::ScriptCompileContext;
-use crate::types::SfcError;
+use crate::types::{CssModuleMapping, SfcError};
 
 use super::super::function_mode::contains_top_level_await;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
@@ -59,6 +59,8 @@ pub fn compile_script_setup_inline(
         template,
         normal_script_content,
         css_vars,
+        &[],
+        &[],
         scope_id,
         scope_id,
         false,
@@ -82,6 +84,8 @@ pub(crate) fn compile_script_setup_inline_with_context(
     template: TemplateParts<'_>,
     normal_script_content: Option<&str>,
     css_vars: &[Cow<'_, str>],
+    css_modules: &[CssModuleMapping],
+    setup_css_module_names: &[String],
     scope_id: &str,
     css_vars_id: &str,
     is_prod: bool,
@@ -166,6 +170,8 @@ pub(crate) fn compile_script_setup_inline_with_context(
         is_vapor,
         template,
         css_vars,
+        css_modules,
+        setup_css_module_names,
         scope_id,
         css_vars_id,
         is_prod,

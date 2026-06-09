@@ -1,4 +1,5 @@
 use crate::script::ScriptCompileContext;
+use crate::types::{CssModuleMapping, css_modules_object_literal};
 
 use super::super::super::TemplateParts;
 
@@ -21,6 +22,7 @@ pub(super) fn emit_component_definition(
     model_props_emits_buf: &[u8],
     template: &TemplateParts<'_>,
     vapor_render_alias: Option<&str>,
+    css_modules: &[CssModuleMapping],
 ) -> ComponentState {
     // Start export default
     output.push(b'\n');
@@ -82,6 +84,11 @@ pub(super) fn emit_component_definition(
     output.extend_from_slice(b"  __name: '");
     output.extend_from_slice(component_name.as_bytes());
     output.extend_from_slice(b"',\n");
+    if !css_modules.is_empty() {
+        output.extend_from_slice(b"  __cssModules: ");
+        output.extend_from_slice(css_modules_object_literal(css_modules, "  ").as_bytes());
+        output.extend_from_slice(b",\n");
+    }
 
     // Output props and emits definitions
     output.extend_from_slice(props_emits_buf);

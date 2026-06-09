@@ -2,13 +2,64 @@
 
 use vize_carton::{String, ToCompactString};
 
-use crate::types::{SfcError, SfcStyleBlock, StyleCompileOptions};
+use crate::types::{CssModuleMapping, SfcError, SfcStyleBlock, StyleCompileOptions};
+
+pub(crate) struct StyleCompileResult {
+    pub(crate) code: String,
+    pub(crate) css_module: Option<CssModuleMapping>,
+}
 
 /// Compile a style block
 pub fn compile_style(
     style: &SfcStyleBlock,
     options: &StyleCompileOptions,
 ) -> Result<String, SfcError> {
+    compile_style_with_modules(style, options).map(|result| result.code)
+}
+
+pub(crate) fn compile_style_with_modules(
+    style: &SfcStyleBlock,
+    options: &StyleCompileOptions,
+) -> Result<StyleCompileResult, SfcError> {
+    if let Some(module_name) = style.module.as_ref() {
+        let css_options = crate::css::CssCompileOptions {
+            scope_id: Some(options.id.clone()),
+            scoped: style.scoped || options.scoped,
+            source_map: options.source_map,
+            filename: Some(css_module_filename(style, options)),
+            css_modules: true,
+            ..Default::default()
+        };
+        let result = crate::css::compile_css(&style.content, &css_options);
+        let mut output = result.code;
+        if options.trim {
+            output = output.trim().to_compact_string();
+        }
+
+        if let Some(error) = result.errors.into_iter().next() {
+            return Err(SfcError {
+                message: error,
+                code: Some("CSS_MODULE_COMPILE_ERROR".into()),
+                loc: Some(style.loc.clone()),
+            });
+        }
+
+        let exports = result
+            .exports
+            .unwrap_or_default()
+            .into_iter()
+            .map(|(original, export)| (original, export.name))
+            .collect();
+
+        return Ok(StyleCompileResult {
+            code: output,
+            css_module: Some(CssModuleMapping {
+                name: module_name.as_ref().into(),
+                exports,
+            }),
+        });
+    }
+
     let (mut output, _) = crate::css::transform_css_v_bind(&style.content, Some(&options.id));
 
     // Apply scoped transformation if needed
@@ -21,7 +72,25 @@ pub fn compile_style(
         output = output.trim().to_compact_string();
     }
 
-    Ok(output)
+    Ok(StyleCompileResult {
+        code: output,
+        css_module: None,
+    })
+}
+
+fn css_module_filename(style: &SfcStyleBlock<'_>, options: &StyleCompileOptions) -> String {
+    if let Some(src) = style.src.as_deref() {
+        return src.into();
+    }
+
+    let lang = style.lang.as_deref().unwrap_or("css");
+    let mut filename = String::with_capacity(options.id.len() + lang.len() + 24);
+    use std::fmt::Write as _;
+    filename.push_str(&options.id);
+    let _ = write!(&mut filename, "-{}", style.loc.start);
+    filename.push('.');
+    filename.push_str(lang);
+    filename
 }
 
 /// Apply scoped CSS transformation

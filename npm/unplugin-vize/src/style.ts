@@ -119,7 +119,7 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
         .join("\n");
 
       output = output.replace(
-        /^export default _sfc_main;/m,
+        /^export default _sfc_main;?$/m,
         `${cssModuleSetup}\nexport default _sfc_main;`,
       );
     }

@@ -501,6 +501,65 @@ withDefaults(defineProps<{
 }
 
 #[test]
+fn test_template_only_css_module_exposes_style_map() {
+    let source = r#"<template>
+  <div :class="$style.red">x</div>
+</template>
+
+<style module>
+.red {
+  color: red;
+}
+</style>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions {
+        scope_id: Some("test".into()),
+        ..Default::default()
+    };
+    opts.script.id = Some("src/Red.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(
+        "template_only_css_module_exposes_style_map",
+        sfc_compile_snapshot(&descriptor.css_vars, &result)
+    );
+}
+
+#[test]
+fn test_script_setup_named_css_module_uses_named_binding() {
+    let source = r#"<script setup>
+const active = true
+</script>
+
+<template>
+  <div :class="[tokens.red, { [tokens.active]: active }]">x</div>
+</template>
+
+<style module="tokens">
+.red {
+  color: red;
+}
+.active {
+  font-weight: bold;
+}
+</style>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions {
+        scope_id: Some("test".into()),
+        ..Default::default()
+    };
+    opts.script.id = Some("src/Named.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(
+        "script_setup_named_css_module_uses_named_binding",
+        sfc_compile_snapshot(&descriptor.css_vars, &result)
+    );
+}
+
+#[test]
 fn test_script_setup_css_v_bind_reads_destructured_prop_aliases() {
     let source = r#"<script setup lang="ts">
 const { color: bannerColor } = defineProps<{

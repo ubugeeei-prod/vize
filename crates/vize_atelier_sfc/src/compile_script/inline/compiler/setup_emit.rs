@@ -112,6 +112,7 @@ pub(super) fn emit_setup_body(
     css_vars_id: &str,
     is_prod: bool,
     has_css_vars: bool,
+    setup_css_module_names: &[String],
 ) {
     // Emit binding: const emit = __emit
     if let Some(ref emits_macro) = ctx.macros.define_emits
@@ -200,6 +201,19 @@ pub(super) fn emit_setup_body(
         output.extend_from_slice(b"}))\n\n");
     }
 
+    for module_name in setup_css_module_names {
+        output.extend_from_slice(b"const ");
+        output.extend_from_slice(module_name.as_bytes());
+        output.extend_from_slice(b" = _useCssModule(");
+        if module_name != "$style" {
+            output.extend_from_slice(json_string(module_name).as_bytes());
+        }
+        output.extend_from_slice(b")\n");
+    }
+    if !setup_css_module_names.is_empty() {
+        output.push(b'\n');
+    }
+
     // Output setup code lines (non-hoisted), transforming await expressions for async setup
     if is_async {
         let transformed_async = profile!(
@@ -224,6 +238,18 @@ pub(super) fn emit_setup_body(
         output.extend_from_slice(args.as_bytes());
         output.extend_from_slice(b")\n");
     }
+}
+
+fn json_string(value: &str) -> String {
+    serde_json::to_string(value)
+        .map(|value| String::from(value.as_str()))
+        .unwrap_or_else(|_| {
+            let mut escaped = String::with_capacity(value.len() + 2);
+            escaped.push('"');
+            escaped.push_str(value);
+            escaped.push('"');
+            escaped
+        })
 }
 
 fn has_blank_line_after_macro(source: &str, macro_end: usize) -> bool {

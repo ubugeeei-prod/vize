@@ -259,6 +259,70 @@ pub struct SfcStyleBlock<'a> {
     pub attrs: FxHashMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
+#[derive(Debug, Clone, Default)]
+pub(crate) struct CssModuleMapping {
+    pub name: String,
+    pub exports: FxHashMap<String, String>,
+}
+
+pub(crate) fn css_modules_object_literal(
+    css_modules: &[CssModuleMapping],
+    base_indent: &str,
+) -> String {
+    let mut modules = css_modules.iter().collect::<Vec<_>>();
+    modules.sort_by(|left, right| left.name.as_str().cmp(right.name.as_str()));
+
+    let mut out = String::from("{\n");
+    for (module_index, module) in modules.iter().enumerate() {
+        out.push_str(base_indent);
+        out.push_str("  ");
+        out.push_str(&json_string(&module.name));
+        out.push_str(": ");
+
+        if module.exports.is_empty() {
+            out.push_str("{}");
+        } else {
+            let mut exports = module.exports.iter().collect::<Vec<_>>();
+            exports.sort_by(|(left, _), (right, _)| left.as_str().cmp(right.as_str()));
+
+            out.push_str("{\n");
+            for (export_index, (original, compiled)) in exports.iter().enumerate() {
+                out.push_str(base_indent);
+                out.push_str("    ");
+                out.push_str(&json_string(original));
+                out.push_str(": ");
+                out.push_str(&json_string(compiled));
+                if export_index + 1 < exports.len() {
+                    out.push(',');
+                }
+                out.push('\n');
+            }
+            out.push_str(base_indent);
+            out.push_str("  }");
+        }
+
+        if module_index + 1 < modules.len() {
+            out.push(',');
+        }
+        out.push('\n');
+    }
+    out.push_str(base_indent);
+    out.push('}');
+    out
+}
+
+fn json_string(value: &str) -> String {
+    serde_json::to_string(value)
+        .map(|value| String::from(value.as_str()))
+        .unwrap_or_else(|_| {
+            let mut escaped = String::with_capacity(value.len() + 2);
+            escaped.push('"');
+            escaped.push_str(value);
+            escaped.push('"');
+            escaped
+        })
+}
+
 impl<'a> SfcStyleBlock<'a> {
     /// Convert to owned version
     pub fn into_owned(self) -> SfcStyleBlock<'static> {
