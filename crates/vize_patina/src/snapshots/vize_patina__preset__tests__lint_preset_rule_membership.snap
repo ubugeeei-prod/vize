@@ -313,7 +313,17 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "type/no-unsafe-template-binding",
     "script/no-options-api",
     "script/no-get-current-instance",
-    "script/no-next-tick"
+    "script/no-next-tick",
+    "css/no-important",
+    "css/no-id-selectors",
+    "css/prefer-logical-properties",
+    "css/require-font-display",
+    "css/prefer-nested-selectors",
+    "css/no-display-none",
+    "css/no-v-bind-performance",
+    "css/no-hardcoded-values",
+    "css/no-utility-classes",
+    "css/prefer-slotted"
   ],
   "opinionated": [
     "vue/require-v-for-key",
@@ -425,7 +435,17 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "type/no-unsafe-template-binding",
     "script/no-options-api",
     "script/no-get-current-instance",
-    "script/no-next-tick"
+    "script/no-next-tick",
+    "css/no-important",
+    "css/no-id-selectors",
+    "css/prefer-logical-properties",
+    "css/require-font-display",
+    "css/prefer-nested-selectors",
+    "css/no-display-none",
+    "css/no-v-bind-performance",
+    "css/no-hardcoded-values",
+    "css/no-utility-classes",
+    "css/prefer-slotted"
   ],
   "opt_in": [
     "ecosystem/router-link-require-to",

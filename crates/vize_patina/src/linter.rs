@@ -8,6 +8,7 @@
 mod config;
 #[cfg(not(target_arch = "wasm32"))]
 mod corsa_session;
+pub(crate) mod css_rules;
 mod engine;
 #[cfg(not(target_arch = "wasm32"))]
 mod native_type_aware;

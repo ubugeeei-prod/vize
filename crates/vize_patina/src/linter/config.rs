@@ -7,7 +7,10 @@
 use super::corsa_session::CorsaTypeAwareSession;
 use crate::{
     diagnostic::{HelpLevel, LintDiagnostic},
-    preset::{LintPreset, builtin_script_rule_names, ecosystem_builtin_script_rule_names},
+    preset::{
+        LintPreset, builtin_css_rule_names, builtin_script_rule_names,
+        ecosystem_builtin_script_rule_names,
+    },
     rule::RuleRegistry,
 };
 #[cfg(not(target_arch = "wasm32"))]
@@ -65,6 +68,8 @@ pub struct Linter {
     pub(crate) help_level: HelpLevel,
     /// Built-in script rules enabled for this linter.
     pub(crate) script_rules: &'static [&'static str],
+    /// Built-in `css/*` rules enabled for this linter.
+    pub(crate) css_rules: &'static [&'static str],
     /// Lazily initialized native corsa session for type-aware lint.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) native_corsa: Mutex<Option<CorsaTypeAwareSession>>,
@@ -90,6 +95,7 @@ impl Linter {
             disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
+            css_rules: builtin_css_rule_names(preset),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -109,6 +115,7 @@ impl Linter {
             disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
+            css_rules: builtin_css_rule_names(preset),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -128,6 +135,7 @@ impl Linter {
             disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: ecosystem_builtin_script_rule_names(),
+            css_rules: builtin_css_rule_names(LintPreset::Ecosystem),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -147,6 +155,7 @@ impl Linter {
             disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: &[],
+            css_rules: &[],
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -180,6 +189,7 @@ impl Linter {
             }
             self.registry.register_opt_in_rules();
             self.script_rules = super::script_rules::all_builtin_script_rule_names();
+            self.css_rules = super::css_rules::all_builtin_css_rule_names();
         }
         self.enabled_rules = rules.map(|r| r.into_iter().collect());
         self
@@ -200,6 +210,7 @@ impl Linter {
                 .map(|name| String::from(*name))
                 .collect::<FxHashSet<_>>();
             names.extend(self.script_rules.iter().map(|name| String::from(*name)));
+            names.extend(self.css_rules.iter().map(|name| String::from(*name)));
             names
         });
 
@@ -208,6 +219,7 @@ impl Linter {
         }
         self.registry.register_opt_in_rules();
         self.script_rules = super::script_rules::all_builtin_script_rule_names();
+        self.css_rules = super::css_rules::all_builtin_css_rule_names();
         enabled_rules.extend(rules);
         self.enabled_rules = Some(enabled_rules);
         self

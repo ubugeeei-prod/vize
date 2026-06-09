@@ -319,6 +319,7 @@ impl Linter {
         // reintroduce per-rule work on large files.
         self.has_active_shared_sfc_descriptor_rules()
             || super::script_rules::has_active_builtin_script_rules(self)
+            || super::css_rules::has_active_builtin_css_rules(self)
             || self.has_active_semantic_template_rules()
             || {
                 #[cfg(not(target_arch = "wasm32"))]
@@ -605,7 +606,7 @@ impl Linter {
 
         #[cfg(not(target_arch = "wasm32"))]
         if super::native_type_aware::has_active_type_aware_rules(self) {
-            let template_result = profile!(
+            let mut template_result = profile!(
                 "patina.type_aware.lint_sfc_with_corsa",
                 super::native_type_aware::lint_sfc_with_corsa_descriptor(
                     self,
@@ -614,17 +615,36 @@ impl Linter {
                     shared_descriptor,
                 )
             );
+            if super::css_rules::has_active_builtin_css_rules(self)
+                && let Some(descriptor) = shared_descriptor
+            {
+                super::css_rules::append_builtin_css_diagnostics(
+                    self,
+                    descriptor,
+                    &mut template_result,
+                );
+            }
             return Self::merge_lint_results(template_result, sfc_result);
         }
 
         if super::script_rules::has_active_builtin_script_rules(self)
+            || super::css_rules::has_active_builtin_css_rules(self)
             || self.has_active_semantic_template_rules()
             || self.has_active_shared_sfc_descriptor_rules()
         {
             let template_result = match shared_descriptor {
                 Some(descriptor) => {
                     profile!("patina.sfc.descriptor_rules", {
-                        super::script_rules::lint_with_descriptor(self, filename, descriptor)
+                        let mut result =
+                            super::script_rules::lint_with_descriptor(self, filename, descriptor);
+                        if super::css_rules::has_active_builtin_css_rules(self) {
+                            super::css_rules::append_builtin_css_diagnostics(
+                                self,
+                                descriptor,
+                                &mut result,
+                            );
+                        }
+                        result
                     })
                 }
                 None => {

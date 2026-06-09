@@ -2,6 +2,101 @@ use super::{LintPreset, Linter};
 use crate::telegraph::LspEmitter;
 
 #[test]
+fn test_lint_sfc_enabled_css_no_important_reports() {
+    // Reproduction from issue #1216: enabling a `css/*` rule by name must run it
+    // against the SFC `<style>` block end-to-end.
+    let linter = Linter::new().with_enabled_rules(Some(vec!["css/no-important".into()]));
+    let sfc = r#"<template><div/></template>
+<style>
+.a { color: red !important; }
+</style>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "css/no-important"),
+        "expected css/no-important diagnostic, got {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_lint_sfc_opinionated_reports_css_rules() {
+    // The opinionated preset turns the css rule set on.
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let sfc = r#"<template><div/></template>
+<style>
+.a { color: red !important; }
+#id { color: blue; }
+</style>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "css/no-important"),
+        "expected css/no-important diagnostic, got {:?}",
+        result.diagnostics
+    );
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "css/no-id-selectors"),
+        "expected css/no-id-selectors diagnostic, got {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_lint_sfc_default_preset_keeps_css_rules_opt_in() {
+    // The default (ecosystem) preset must not enable css rules.
+    let linter = Linter::new();
+    let sfc = r#"<template><div/></template>
+<style>
+.a { color: red !important; }
+#id { color: blue; }
+</style>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+    assert!(
+        !result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name.starts_with("css/")),
+        "css rules should stay opt-in by default, got {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_lint_sfc_css_diagnostic_uses_file_offsets() {
+    // The css diagnostic must be reported in original-file coordinates, not
+    // style-block-local coordinates.
+    let linter = Linter::new().with_enabled_rules(Some(vec!["css/no-important".into()]));
+    let sfc = r#"<template><div/></template>
+<style>
+.a { color: red !important; }
+</style>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+    let diag = result
+        .diagnostics
+        .iter()
+        .find(|d| d.rule_name == "css/no-important")
+        .expect("css/no-important diagnostic");
+    let important_byte = sfc.find("!important").expect("!important present") as u32;
+    assert!(
+        diag.start >= sfc.find("<style>").unwrap() as u32 && diag.start <= important_byte + 10,
+        "diagnostic byte offset {} should fall within the style block",
+        diag.start
+    );
+}
+
+#[test]
 fn test_lint_sfc_opinionated_reports_no_next_tick() {
     let linter = Linter::with_preset(LintPreset::Opinionated);
     let sfc = r#"<script setup lang="ts">
