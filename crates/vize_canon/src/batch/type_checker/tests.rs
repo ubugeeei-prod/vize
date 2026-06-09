@@ -462,6 +462,17 @@ function handleName(name: string): void {
 "#,
             ),
             (
+                "src/ComputedMemberHandler.vue",
+                r#"<script setup lang="ts">
+const handlers = { x: 42 } as const
+</script>
+
+<template>
+  <button @click="handlers['x']">Click me</button>
+</template>
+"#,
+            ),
+            (
                 "src/ZeroArgButton.vue",
                 r#"<script setup lang="ts">
 const emit = defineEmits<{
@@ -533,6 +544,12 @@ function toggle(open = false): void {
                 && message.contains("PointerEvent")
         }),
         "expected WrongEventHandler.vue to report PointerEvent mismatch, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, _)| {
+            file == "src/ComputedMemberHandler.vue" && *code == Some(2345)
+        }),
+        "expected ComputedMemberHandler.vue to report TS2345, got: {snapshot:#?}"
     );
     assert!(
         snapshot

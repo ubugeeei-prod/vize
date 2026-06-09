@@ -1045,7 +1045,42 @@ fn is_callable_handler_reference(content: &str) -> bool {
         return false;
     }
 
-    trimmed.split('.').all(is_identifier_segment)
+    let Some(mut idx) = parse_identifier_segment(trimmed, 0) else {
+        return false;
+    };
+
+    loop {
+        idx = skip_ascii_whitespace(trimmed, idx);
+        if idx == trimmed.len() {
+            return true;
+        }
+
+        let rest = &trimmed[idx..];
+        if rest.starts_with("?.[") {
+            idx += 2;
+            let Some(next_idx) = parse_bracket_member(trimmed, idx) else {
+                return false;
+            };
+            idx = next_idx;
+        } else if rest.starts_with("?.") {
+            let Some(next_idx) = parse_identifier_segment(trimmed, idx + 2) else {
+                return false;
+            };
+            idx = next_idx;
+        } else if rest.starts_with('.') {
+            let Some(next_idx) = parse_identifier_segment(trimmed, idx + 1) else {
+                return false;
+            };
+            idx = next_idx;
+        } else if rest.starts_with('[') {
+            let Some(next_idx) = parse_bracket_member(trimmed, idx) else {
+                return false;
+            };
+            idx = next_idx;
+        } else {
+            return false;
+        }
+    }
 }
 
 fn is_identifier_segment(segment: &str) -> bool {
@@ -1059,6 +1094,81 @@ fn is_identifier_segment(segment: &str) -> bool {
     }
 
     chars.all(|ch| ch == '_' || ch == '$' || ch.is_alphanumeric())
+}
+
+fn parse_identifier_segment(input: &str, start: usize) -> Option<usize> {
+    let mut chars = input.get(start..)?.char_indices();
+    let (_, first) = chars.next()?;
+    if !is_identifier_start(first) {
+        return None;
+    }
+
+    let mut end = start + first.len_utf8();
+    for (offset, ch) in chars {
+        if !is_identifier_continue(ch) {
+            break;
+        }
+        end = start + offset + ch.len_utf8();
+    }
+    Some(end)
+}
+
+fn is_identifier_start(ch: char) -> bool {
+    ch == '_' || ch == '$' || ch.is_alphabetic()
+}
+
+fn is_identifier_continue(ch: char) -> bool {
+    ch == '_' || ch == '$' || ch.is_alphanumeric()
+}
+
+fn skip_ascii_whitespace(input: &str, mut idx: usize) -> usize {
+    while input
+        .as_bytes()
+        .get(idx)
+        .is_some_and(|byte| byte.is_ascii_whitespace())
+    {
+        idx += 1;
+    }
+    idx
+}
+
+fn parse_bracket_member(input: &str, open_index: usize) -> Option<usize> {
+    if input.as_bytes().get(open_index) != Some(&b'[') {
+        return None;
+    }
+
+    let mut depth = 0u32;
+    let mut quote = None;
+    let mut escaped = false;
+    for (idx, ch) in input
+        .char_indices()
+        .skip_while(|(idx, _)| *idx < open_index)
+    {
+        if let Some(quote_ch) = quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == quote_ch {
+                quote = None;
+            }
+            continue;
+        }
+
+        match ch {
+            '\'' | '"' | '`' => quote = Some(ch),
+            '[' => depth += 1,
+            ']' => {
+                depth = depth.checked_sub(1)?;
+                if depth == 0 {
+                    return Some(idx + ch.len_utf8());
+                }
+            }
+            _ => {}
+        }
+    }
+
+    None
 }
 
 /// Recursively generate child scopes that are VFor/VSlot/EventHandler.

@@ -751,6 +751,49 @@ const val = 0 as unknown as UnionType;
     }
 
     #[test]
+    fn test_computed_member_event_handler_reference_is_called_with_event() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"const handlers = { x: 42 } as const
+const arr = [(event: PointerEvent) => event.preventDefault()]
+"#;
+        let template =
+            r#"<button @click="handlers['x']">Bad</button><button @click="arr[0]">Good</button>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert!(
+            output.code.contains(
+                "((handler: ($event: PointerEvent) => unknown) => handler)((handlers['x']));"
+            ),
+            "computed-member handler references should be checked as callable:\n{}",
+            output.code
+        );
+        assert!(
+            output
+                .code
+                .contains("((handler: ($event: PointerEvent) => unknown) => handler)((arr[0]));"),
+            "index handler references should be checked as callable:\n{}",
+            output.code
+        );
+        assert!(
+            !output
+                .code
+                .contains("handlers['x'];  // handler expression"),
+            "computed-member handler must not be emitted as a bare statement:\n{}",
+            output.code
+        );
+    }
+
+    #[test]
     fn test_multiline_statement_event_handler_uses_handler_scope() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 
