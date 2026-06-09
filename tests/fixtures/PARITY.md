@@ -17,17 +17,17 @@ All three are run by the existing compiler test suite / CI: VDOM and Vapor via
 the `coverage` runner (`cargo run -p vize_test_runner --bin coverage`), SSR via
 `cargo test -p vize_atelier_ssr`.
 
-| Input                                            | VDOM | Vapor                | SSR  |
-| ------------------------------------------------ | ---- | -------------------- | ---- |
-| `<div v-pre :id="raw" @click="raw">{{ raw }}</div>` | yes  | yes                  | n/a* |
-| `<div v-cloak>{{ msg }}</div>`                   | yes  | yes                  | n/a* |
-| `<div v-focus:top.lazy="value" />` (element)     | yes  | yes                  | n/a* |
-| `<MyComp v-focus:top.lazy="value" />` (component) | yes  | KNOWN FAILURE (#1161)| n/a* |
-| `<div v-once>{{ msg }}</div>`                    | yes  | yes                  | n/a* |
-| `<div v-memo="[id]">{{ msg }}</div>`             | yes  | not applicable**     | n/a* |
-| `<Teleport to="body"><span /></Teleport>`        | yes  | yes (VaporTeleport)  | yes  |
-| `<KeepAlive><component :is="current" /></KeepAlive>` | yes  | yes (VaporKeepAlive) | n/a* |
-| `<Suspense><AsyncComponent /></Suspense>`        | yes  | yes (fallback)       | yes  |
+| Input                                                | VDOM | Vapor                 | SSR   |
+| ---------------------------------------------------- | ---- | --------------------- | ----- |
+| `<div v-pre :id="raw" @click="raw">{{ raw }}</div>`  | yes  | yes                   | n/a\* |
+| `<div v-cloak>{{ msg }}</div>`                       | yes  | yes                   | n/a\* |
+| `<div v-focus:top.lazy="value" />` (element)         | yes  | yes                   | n/a\* |
+| `<MyComp v-focus:top.lazy="value" />` (component)    | yes  | KNOWN FAILURE (#1161) | n/a\* |
+| `<div v-once>{{ msg }}</div>`                        | yes  | yes                   | n/a\* |
+| `<div v-memo="[id]">{{ msg }}</div>`                 | yes  | not applicable\*\*    | n/a\* |
+| `<Teleport to="body"><span /></Teleport>`            | yes  | yes (VaporTeleport)   | yes   |
+| `<KeepAlive><component :is="current" /></KeepAlive>` | yes  | yes (VaporKeepAlive)  | n/a\* |
+| `<Suspense><AsyncComponent /></Suspense>`            | yes  | yes (fallback)        | yes   |
 
 `yes` = a parity snapshot asserts the compiled output.
 
