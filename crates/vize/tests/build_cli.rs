@@ -202,3 +202,55 @@ const props = defineProps<WrapperProps>()
 
     let _ = fs::remove_dir_all(project_root);
 }
+
+#[test]
+fn build_respects_configured_template_syntax_quirks() {
+    let project_root = temp_project_dir("configured-template-syntax-quirks");
+    write_project_file(
+        &project_root,
+        "vize.config.ts",
+        r#"export default {
+  compiler: {
+    templateSyntax: "quirks",
+  },
+}
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "src/App.vue",
+        r#"<template><div /></template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "build",
+            "--format",
+            "json",
+            "src/App.vue",
+            "--output",
+            "dist",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let json: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(project_root.join("dist/App.json")).unwrap())
+            .unwrap();
+    assert_eq!(
+        json["warnings"].as_array().unwrap().len(),
+        0,
+        "quirks syntax should not warn for invalid self-closing HTML: {json:#}"
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}

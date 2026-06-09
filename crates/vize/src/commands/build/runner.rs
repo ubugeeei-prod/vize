@@ -38,13 +38,18 @@ use super::{
 pub(crate) fn run(args: BuildArgs) {
     let start = Instant::now();
     let slow_threshold = Duration::from_millis(args.slow_threshold);
-    if let Some(config) = args.config.as_ref()
+    if let Some(path) = args.config.as_deref()
         && !args.no_config
-        && !config.exists()
+        && let Err(error) = crate::config::validate_explicit_config_path(path)
     {
-        eprintln!("Could not find config file: {}", config.display());
+        eprintln!("\x1b[31mError:\x1b[0m {}", error);
         std::process::exit(1);
     }
+    let compiler_template_syntax = if args.no_config {
+        None
+    } else {
+        crate::config::load_compiler_template_syntax(args.config.as_deref())
+    };
 
     if let Some(threads) = args.threads
         && let Err(error) = rayon::ThreadPoolBuilder::new()
@@ -88,7 +93,10 @@ pub(crate) fn run(args: BuildArgs) {
         ssr: args.ssr,
         vapor: args.vapor,
         custom_renderer: args.custom_renderer,
-        template_syntax: args.template_syntax.map(Into::into).unwrap_or_default(),
+        template_syntax: args
+            .template_syntax
+            .map(Into::into)
+            .unwrap_or_else(|| template_syntax_mode(compiler_template_syntax)),
         script_ext: args.script_ext,
         record_profile_totals: args.profile,
     };
@@ -611,6 +619,15 @@ fn template_syntax_bits(template_syntax: TemplateSyntaxMode) -> u8 {
         TemplateSyntaxMode::Strict => 1,
         TemplateSyntaxMode::Quirks => 2,
         _ => 3,
+    }
+}
+
+fn template_syntax_mode(template_syntax: Option<&str>) -> TemplateSyntaxMode {
+    match template_syntax {
+        Some("strict") => TemplateSyntaxMode::Strict,
+        Some("quirks") => TemplateSyntaxMode::Quirks,
+        Some("standard") | None => TemplateSyntaxMode::Standard,
+        Some(_) => TemplateSyntaxMode::Standard,
     }
 }
 

@@ -162,6 +162,18 @@ assert.deepEqual(
   "Client requests should keep Vapor enabled when the plugin is configured for it",
 );
 
+assert.equal(
+  getCompileOptionsForRequest(
+    {
+      isProduction: true,
+      mergedOptions: { templateSyntax: "quirks" },
+    },
+    false,
+  ).templateSyntax,
+  "quirks",
+  "Request compile options should preserve configured template syntax",
+);
+
 assert.deepEqual(
   getCompileOptionsForRequest(
     {
