@@ -364,13 +364,7 @@ pub(crate) fn transform_directive<'a>(
         }
         "show" => {
             // v-show - builtin directive
-            let mut new_dir = DirectiveNode::new(ctx.allocator, dir.name.clone(), dir.loc.clone());
-            if let Some(ref exp) = dir.exp
-                && let ExpressionNode::Simple(s) = exp
-            {
-                let node = SimpleExpressionNode::new(s.content.clone(), s.is_static, s.loc.clone());
-                new_dir.exp = Some(ExpressionNode::Simple(Box::new_in(node, ctx.allocator)));
-            }
+            let new_dir = clone_directive(ctx, dir);
 
             let dir_node = DirectiveIRNode {
                 element: element_id,
@@ -383,28 +377,23 @@ pub(crate) fn transform_directive<'a>(
 
             block.operation.push(OperationNode::Directive(dir_node));
         }
+        "cloak" => {
+            let new_dir = clone_directive(ctx, dir);
+
+            let dir_node = DirectiveIRNode {
+                element: element_id,
+                dir: Box::new_in(new_dir, ctx.allocator),
+                name: vize_carton::String::from("vCloak"),
+                builtin: true,
+                tag: el.tag.clone(),
+                input_type: get_static_attr(el, "type"),
+            };
+
+            block.operation.push(OperationNode::Directive(dir_node));
+        }
         "model" => {
             // v-model - builtin directive
-            let mut new_dir = DirectiveNode::new(ctx.allocator, dir.name.clone(), dir.loc.clone());
-            if let Some(ref exp) = dir.exp
-                && let ExpressionNode::Simple(s) = exp
-            {
-                let node = SimpleExpressionNode::new(s.content.clone(), s.is_static, s.loc.clone());
-                new_dir.exp = Some(ExpressionNode::Simple(Box::new_in(node, ctx.allocator)));
-            }
-            if let Some(ref arg) = dir.arg
-                && let ExpressionNode::Simple(s) = arg
-            {
-                let node = SimpleExpressionNode::new(s.content.clone(), s.is_static, s.loc.clone());
-                new_dir.arg = Some(ExpressionNode::Simple(Box::new_in(node, ctx.allocator)));
-            }
-            for m in dir.modifiers.iter() {
-                new_dir.modifiers.push(SimpleExpressionNode::new(
-                    m.content.clone(),
-                    m.is_static,
-                    m.loc.clone(),
-                ));
-            }
+            let new_dir = clone_directive(ctx, dir);
 
             let dir_node = DirectiveIRNode {
                 element: element_id,
@@ -418,8 +407,8 @@ pub(crate) fn transform_directive<'a>(
             block.operation.push(OperationNode::Directive(dir_node));
         }
         _ => {
-            // Custom directive - create a copy of the directive
-            let new_dir = DirectiveNode::new(ctx.allocator, dir.name.clone(), dir.loc.clone());
+            // Custom directive - preserve the original payload for codegen parity.
+            let new_dir = clone_directive(ctx, dir);
 
             let dir_node = DirectiveIRNode {
                 element: element_id,
@@ -433,6 +422,47 @@ pub(crate) fn transform_directive<'a>(
             block.operation.push(OperationNode::Directive(dir_node));
         }
     }
+}
+
+fn clone_directive<'a>(ctx: &TransformContext<'a>, dir: &DirectiveNode<'a>) -> DirectiveNode<'a> {
+    let mut new_dir = DirectiveNode::new(ctx.allocator, dir.name.clone(), dir.loc.clone());
+    new_dir.raw_name = dir.raw_name.clone();
+    new_dir.shorthand = dir.shorthand;
+    new_dir.exp = clone_expression(ctx, dir.exp.as_ref());
+    new_dir.arg = clone_expression(ctx, dir.arg.as_ref());
+
+    for modifier in dir.modifiers.iter() {
+        new_dir.modifiers.push(SimpleExpressionNode::new(
+            modifier.content.clone(),
+            modifier.is_static,
+            modifier.loc.clone(),
+        ));
+    }
+
+    new_dir
+}
+
+fn clone_expression<'a>(
+    ctx: &TransformContext<'a>,
+    expr: Option<&ExpressionNode<'a>>,
+) -> Option<ExpressionNode<'a>> {
+    let expr = expr?;
+
+    Some(match expr {
+        ExpressionNode::Simple(simple) => {
+            let cloned = SimpleExpressionNode::new(
+                simple.content.clone(),
+                simple.is_static,
+                simple.loc.clone(),
+            );
+            ExpressionNode::Simple(Box::new_in(cloned, ctx.allocator))
+        }
+        ExpressionNode::Compound(compound) => {
+            let cloned =
+                SimpleExpressionNode::new(compound.loc.source.clone(), false, compound.loc.clone());
+            ExpressionNode::Simple(Box::new_in(cloned, ctx.allocator))
+        }
+    })
 }
 
 /// Check if an event can use delegation

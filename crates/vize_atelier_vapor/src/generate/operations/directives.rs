@@ -4,6 +4,73 @@ use vize_carton::{String, cstr};
 
 use super::super::context::GenerateContext;
 
+fn directive_resolution_var(name: &str) -> String {
+    let mut ident = String::with_capacity(name.len() + 11);
+    ident.push_str("_directive_");
+    for ch in name.chars() {
+        if ch.is_ascii_alphanumeric() || ch == '_' {
+            ident.push(ch);
+        } else {
+            ident.push('_');
+        }
+    }
+    ident
+}
+
+fn directive_arg(ctx: &GenerateContext, directive: &DirectiveIRNode<'_>) -> String {
+    if let Some(ref arg) = directive.dir.arg {
+        match arg {
+            ExpressionNode::Simple(exp) => {
+                if exp.is_static {
+                    cstr!("\"{}\"", exp.content)
+                } else {
+                    ctx.resolve_expression(exp.content.as_str())
+                }
+            }
+            ExpressionNode::Compound(compound) => {
+                ctx.resolve_expression(compound.loc.source.as_str())
+            }
+        }
+    } else {
+        vize_carton::CompactString::from("undefined")
+    }
+}
+
+fn directive_value(ctx: &GenerateContext, directive: &DirectiveIRNode<'_>) -> String {
+    if let Some(ref exp) = directive.dir.exp {
+        match exp {
+            ExpressionNode::Simple(e) => {
+                if e.is_static {
+                    cstr!("\"{}\"", e.content)
+                } else {
+                    ctx.resolve_expression(e.content.as_str())
+                }
+            }
+            ExpressionNode::Compound(compound) => {
+                ctx.resolve_expression(compound.loc.source.as_str())
+            }
+        }
+    } else {
+        vize_carton::CompactString::from("undefined")
+    }
+}
+
+fn directive_modifiers(directive: &DirectiveIRNode<'_>) -> Option<String> {
+    if directive.dir.modifiers.is_empty() {
+        return None;
+    }
+
+    let modifiers = directive
+        .dir
+        .modifiers
+        .iter()
+        .map(|modifier| cstr!("{}: true", modifier.content))
+        .collect::<std::vec::Vec<_>>()
+        .join(", ");
+
+    Some(cstr!("{{ {} }}", modifiers))
+}
+
 /// Generate Directive
 pub(super) fn generate_directive(ctx: &mut GenerateContext, directive: &DirectiveIRNode<'_>) {
     let element = cstr!("n{}", directive.element);
@@ -29,48 +96,48 @@ pub(super) fn generate_directive(ctx: &mut GenerateContext, directive: &Directiv
         return;
     }
 
+    if directive.name.as_str() == "vCloak" {
+        ctx.push_line_fmt(format_args!("{element}.removeAttribute(\"v-cloak\")"));
+        return;
+    }
+
     // Handle v-model on elements
     if directive.name.as_str() == "model" {
         generate_v_model(ctx, directive);
         return;
     }
 
-    let name = &directive.name;
+    let value = directive_value(ctx, directive);
+    let arg = directive_arg(ctx, directive);
+    let modifiers = directive_modifiers(directive);
 
-    let arg = if let Some(ref arg) = directive.dir.arg {
-        match arg {
-            ExpressionNode::Simple(exp) => {
-                if exp.is_static {
-                    cstr!("\"{}\"", exp.content)
-                } else {
-                    vize_carton::CompactString::from(exp.content.as_str())
-                }
-            }
-            _ => vize_carton::CompactString::from("undefined"),
+    if directive.builtin {
+        let name = &directive.name;
+        match modifiers {
+            Some(modifiers) => ctx.push_line_fmt(format_args!(
+                "_withDirectives({}, [[_{}, {}, {}, {}]])",
+                element, name, value, arg, modifiers
+            )),
+            None => ctx.push_line_fmt(format_args!(
+                "_withDirectives({}, [[_{}, {}, {}]])",
+                element, name, value, arg
+            )),
         }
-    } else {
-        vize_carton::CompactString::from("undefined")
-    };
+        return;
+    }
 
-    let value = if let Some(ref exp) = directive.dir.exp {
-        match exp {
-            ExpressionNode::Simple(e) => {
-                if e.is_static {
-                    cstr!("\"{}\"", e.content)
-                } else {
-                    vize_carton::CompactString::from(e.content.as_str())
-                }
-            }
-            _ => vize_carton::CompactString::from("undefined"),
-        }
-    } else {
-        vize_carton::CompactString::from("undefined")
-    };
-
-    ctx.push_line_fmt(format_args!(
-        "_withDirectives({}, [[_{}, {}, {}]])",
-        element, name, value, arg
-    ));
+    ctx.use_helper("withDirectives");
+    let resolved = directive_resolution_var(directive.name.as_str());
+    match modifiers {
+        Some(modifiers) => ctx.push_line_fmt(format_args!(
+            "_withDirectives({}, [[{}, {}, {}, {}]])",
+            element, resolved, value, arg, modifiers
+        )),
+        None => ctx.push_line_fmt(format_args!(
+            "_withDirectives({}, [[{}, {}, {}]])",
+            element, resolved, value, arg
+        )),
+    }
 }
 
 /// Generate v-model for element

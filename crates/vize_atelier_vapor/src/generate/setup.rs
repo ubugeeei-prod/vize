@@ -24,6 +24,7 @@ pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
     // Define priority order for helpers (lower = earlier in import)
     fn helper_priority(name: &str) -> u32 {
         match name {
+            "resolveDirective" => 8,
             "resolveComponent" => 1,
             "createComponentWithFallback" => 2,
             "createComponent" => 3,
@@ -31,6 +32,7 @@ pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
             "VaporTeleport" => 5,
             "VaporKeepAlive" => 6,
             "withVaporCtx" => 7,
+            "withDirectives" => 46,
             "child" => 10,
             "next" => 11,
             "txt" => 20,

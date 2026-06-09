@@ -948,6 +948,46 @@ selected</pre>"#,
     }
 
     #[test]
+    fn test_compile_custom_directive_preserves_payloads() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<div v-focus:[placement].lazy="handler" />"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+        assert_parses_as_module(&result.code);
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_v_cloak_uses_builtin_lowering() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<div v-cloak>{{ msg }}</div>"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+        assert_parses_as_module(&result.code);
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
     fn test_compile_custom_renderer_intrinsics_with_bound_lowercase_component() {
         let allocator = Bump::new();
         let mut bindings = FxHashMap::default();

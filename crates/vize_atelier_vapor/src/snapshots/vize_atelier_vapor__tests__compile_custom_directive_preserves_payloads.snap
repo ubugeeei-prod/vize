@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+export function render(_ctx) {
+const _directive_focus = _resolveDirective("focus")
+const n0 = t0()
+_withDirectives(n0, [[_directive_focus, _ctx.handler, _ctx.placement, { lazy: true }]])
+return n0
+}

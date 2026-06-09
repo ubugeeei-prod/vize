@@ -11,7 +11,7 @@ mod setup;
 
 use std::fmt::Write;
 
-use crate::ir::{BlockIRNode, OperationNode, RootIRNode};
+use crate::ir::{BlockIRNode, CreateComponentIRNode, NegativeBranch, OperationNode, RootIRNode};
 use vize_atelier_core::options::BindingMetadata;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 
@@ -111,6 +111,18 @@ pub fn generate_vapor(
         ctx.push_line("const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()");
     }
 
+    let custom_directives = collect_custom_directives(&ir.block);
+    if !custom_directives.is_empty() {
+        ctx.use_helper("resolveDirective");
+        for directive in custom_directives {
+            ctx.push_line(&vize_carton::cstr!(
+                "const _directive_{} = _resolveDirective(\"{}\")",
+                directive_resolution_ident(directive.as_str()),
+                directive
+            ));
+        }
+    }
+
     // Generate block content (includes template instantiation, text nodes, operations, effects, return)
     generate_block(&mut ctx, &ir.block, &ir.element_template_map);
 
@@ -189,6 +201,90 @@ fn negative_branch_has_template_refs(branch: &crate::ir::NegativeBranch<'_>) -> 
                     .is_some_and(negative_branch_has_template_refs)
         }
     }
+}
+
+fn collect_custom_directives(block: &BlockIRNode<'_>) -> std::vec::Vec<String> {
+    let mut directives = FxHashSet::default();
+    collect_custom_directives_from_block(block, &mut directives);
+
+    let mut directives: std::vec::Vec<_> = directives.into_iter().collect();
+    directives.sort();
+    directives
+}
+
+fn collect_custom_directives_from_block(
+    block: &BlockIRNode<'_>,
+    directives: &mut FxHashSet<String>,
+) {
+    for operation in block.operation.iter() {
+        collect_custom_directives_from_operation(operation, directives);
+    }
+
+    for effect in block.effect.iter() {
+        for operation in effect.operations.iter() {
+            collect_custom_directives_from_operation(operation, directives);
+        }
+    }
+}
+
+fn collect_custom_directives_from_component(
+    component: &CreateComponentIRNode<'_>,
+    directives: &mut FxHashSet<String>,
+) {
+    for slot in component.slots.iter() {
+        collect_custom_directives_from_block(&slot.block, directives);
+    }
+}
+
+fn collect_custom_directives_from_negative_branch(
+    branch: &NegativeBranch<'_>,
+    directives: &mut FxHashSet<String>,
+) {
+    match branch {
+        NegativeBranch::Block(block) => collect_custom_directives_from_block(block, directives),
+        NegativeBranch::If(if_node) => {
+            collect_custom_directives_from_block(&if_node.positive, directives);
+            if let Some(negative) = &if_node.negative {
+                collect_custom_directives_from_negative_branch(negative, directives);
+            }
+        }
+    }
+}
+
+fn collect_custom_directives_from_operation(
+    operation: &OperationNode<'_>,
+    directives: &mut FxHashSet<String>,
+) {
+    match operation {
+        OperationNode::Directive(directive) if !directive.builtin => {
+            directives.insert(directive.name.clone());
+        }
+        OperationNode::If(if_node) => {
+            collect_custom_directives_from_block(&if_node.positive, directives);
+            if let Some(negative) = &if_node.negative {
+                collect_custom_directives_from_negative_branch(negative, directives);
+            }
+        }
+        OperationNode::For(for_node) => {
+            collect_custom_directives_from_block(&for_node.render, directives);
+        }
+        OperationNode::CreateComponent(component) => {
+            collect_custom_directives_from_component(component, directives);
+        }
+        _ => {}
+    }
+}
+
+fn directive_resolution_ident(name: &str) -> String {
+    let mut ident = String::with_capacity(name.len());
+    for ch in name.chars() {
+        if ch.is_ascii_alphanumeric() || ch == '_' {
+            ident.push(ch);
+        } else {
+            ident.push('_');
+        }
+    }
+    ident
 }
 
 /// Generate block
