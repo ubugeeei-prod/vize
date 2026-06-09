@@ -49,6 +49,11 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use oxc_allocator::Allocator as OxcAllocator;
+use oxc_ast::ast::{ChainElement, Expression};
+use oxc_ast_visit::{Visit, walk::walk_expression};
+use oxc_parser::Parser as OxcParser;
+use oxc_span::SourceType;
 use vize_relief::ast::{ElementNode, ExpressionNode, InterpolationNode};
 
 /// Non-deterministic function/value patterns that cause hydration mismatch
@@ -132,13 +137,166 @@ pub struct NoHydrationMismatch;
 impl NoHydrationMismatch {
     /// Check if expression contains any mismatch-prone patterns
     fn check_expression(content: &str) -> Option<(&'static str, &'static str)> {
-        for (pattern, help) in HYDRATION_MISMATCH_PATTERNS {
-            if content.contains(pattern) {
-                return Some((pattern, help));
+        let allocator = OxcAllocator::default();
+        let source_type = SourceType::from_path("template.ts").unwrap_or_default();
+        let Ok(expression) = OxcParser::new(&allocator, content, source_type).parse_expression()
+        else {
+            return None;
+        };
+
+        let mut visitor = HydrationMismatchVisitor::default();
+        visitor.visit_expression(&expression);
+        visitor.found
+    }
+}
+
+#[derive(Default)]
+struct HydrationMismatchVisitor {
+    found: Option<(&'static str, &'static str)>,
+}
+
+impl<'a> Visit<'a> for HydrationMismatchVisitor {
+    fn visit_expression(&mut self, expression: &Expression<'a>) {
+        if self.found.is_none() {
+            self.found = detect_hydration_mismatch(expression);
+        }
+        if self.found.is_some() {
+            return;
+        }
+        walk_expression(self, expression);
+    }
+}
+
+fn detect_hydration_mismatch(expression: &Expression<'_>) -> Option<(&'static str, &'static str)> {
+    if matches_static_member_chain(expression, &["Math", "random"]) {
+        return pattern_match("Math.random");
+    }
+    if matches_static_member_chain(expression, &["crypto", "randomUUID"]) {
+        return pattern_match("crypto.randomUUID");
+    }
+    if matches_static_member_chain(expression, &["crypto", "getRandomValues"]) {
+        return pattern_match("crypto.getRandomValues");
+    }
+    if matches_static_member_chain(expression, &["Date", "now"]) {
+        return pattern_match("Date.now");
+    }
+    if matches_static_member_chain(expression, &["performance", "now"]) {
+        return pattern_match("performance.now");
+    }
+    if matches_static_member_chain(expression, &["process", "env"]) {
+        return pattern_match("process.env");
+    }
+    if is_import_meta_env(expression) {
+        return pattern_match("import.meta.env");
+    }
+
+    match unwrap_expression(expression) {
+        Expression::CallExpression(call) => {
+            if let Expression::Identifier(identifier) = unwrap_expression(&call.callee) {
+                match identifier.name.as_str() {
+                    "uuid" => return pattern_match("uuid()"),
+                    "nanoid" => return pattern_match("nanoid()"),
+                    _ => {}
+                }
+            }
+
+            let member = unwrap_expression(&call.callee).as_member_expression()?;
+
+            match member.static_property_name() {
+                Some("getTime") => pattern_match(".getTime()"),
+                Some("toLocaleString") => pattern_match(".toLocaleString()"),
+                Some("toLocaleDateString") => pattern_match(".toLocaleDateString()"),
+                Some("toLocaleTimeString") => pattern_match(".toLocaleTimeString()"),
+                _ => None,
             }
         }
-        None
+        Expression::NewExpression(new_expression) => {
+            if new_expression.arguments.is_empty()
+                && let Expression::Identifier(identifier) =
+                    unwrap_expression(&new_expression.callee)
+                && identifier.name.as_str() == "Date"
+            {
+                return pattern_match("new Date()");
+            }
+            None
+        }
+        _ => None,
     }
+}
+
+fn unwrap_expression<'a>(expression: &'a Expression<'a>) -> &'a Expression<'a> {
+    match expression {
+        Expression::ParenthesizedExpression(paren) => unwrap_expression(&paren.expression),
+        Expression::TSAsExpression(ts_as) => unwrap_expression(&ts_as.expression),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            unwrap_expression(&ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => unwrap_expression(&ts_non_null.expression),
+        _ => expression,
+    }
+}
+
+fn matches_static_member_chain(expression: &Expression<'_>, expected: &[&str]) -> bool {
+    let mut parts = Vec::with_capacity(expected.len());
+    if !collect_static_member_chain(unwrap_expression(expression), &mut parts) {
+        return false;
+    }
+    parts == expected
+}
+
+fn collect_static_member_chain<'a>(
+    expression: &'a Expression<'a>,
+    parts: &mut Vec<&'a str>,
+) -> bool {
+    match unwrap_expression(expression) {
+        Expression::Identifier(identifier) => {
+            parts.push(identifier.name.as_str());
+            true
+        }
+        member if member.is_member_expression() => {
+            let Some(member) = member.as_member_expression() else {
+                return false;
+            };
+            if !collect_static_member_chain(member.object(), parts) {
+                return false;
+            }
+            let Some(property) = member.static_property_name() else {
+                return false;
+            };
+            parts.push(property);
+            true
+        }
+        Expression::ChainExpression(chain) => match &chain.expression {
+            ChainElement::StaticMemberExpression(member) => {
+                if !collect_static_member_chain(&member.object, parts) {
+                    return false;
+                }
+                parts.push(member.property.name.as_str());
+                true
+            }
+            ChainElement::TSNonNullExpression(non_null) => {
+                collect_static_member_chain(&non_null.expression, parts)
+            }
+            _ => false,
+        },
+        Expression::MetaProperty(meta) => {
+            parts.push(meta.meta.name.as_str());
+            parts.push(meta.property.name.as_str());
+            true
+        }
+        _ => false,
+    }
+}
+
+fn is_import_meta_env(expression: &Expression<'_>) -> bool {
+    matches_static_member_chain(expression, &["import", "meta", "env"])
+}
+
+fn pattern_match(pattern: &'static str) -> Option<(&'static str, &'static str)> {
+    HYDRATION_MISMATCH_PATTERNS
+        .iter()
+        .find(|(candidate, _)| *candidate == pattern)
+        .copied()
 }
 
 impl Rule for NoHydrationMismatch {
@@ -234,5 +392,41 @@ mod tests {
     fn test_allows_safe_code() {
         let content = "items.map(item => item.name)";
         assert!(NoHydrationMismatch::check_expression(content).is_none());
+    }
+
+    #[test]
+    fn test_ignores_string_literal_false_positive() {
+        let content = r#"'Date.now and Math.random are just text'"#;
+        assert!(NoHydrationMismatch::check_expression(content).is_none());
+    }
+
+    #[test]
+    fn test_ignores_template_literal_raw_text_false_positive() {
+        let content = r#"`Date.now and import.meta.env are just text`"#;
+        assert!(NoHydrationMismatch::check_expression(content).is_none());
+    }
+
+    #[test]
+    fn test_detects_template_literal_embedded_expression() {
+        let content = r#"`item-${Date.now()}`"#;
+        assert_eq!(
+            NoHydrationMismatch::check_expression(content).map(|(pattern, _)| pattern),
+            Some("Date.now")
+        );
+    }
+
+    #[test]
+    fn test_ignores_unrelated_member_chain() {
+        let content = "globals.Date.now";
+        assert!(NoHydrationMismatch::check_expression(content).is_none());
+    }
+
+    #[test]
+    fn test_detects_import_meta_env() {
+        let content = "import.meta.env.MODE";
+        assert_eq!(
+            NoHydrationMismatch::check_expression(content).map(|(pattern, _)| pattern),
+            Some("import.meta.env")
+        );
     }
 }
