@@ -327,24 +327,29 @@ fn generate_vbind_prop(
             if let Some(static_val) = static_style {
                 let emit_static_style = |ctx: &mut CodegenContext| {
                     ctx.push("{");
-                    for (i, part) in static_val
-                        .split(';')
-                        .filter(|s| !s.trim().is_empty())
-                        .enumerate()
-                    {
-                        if i > 0 {
+                    // Mirror Vue's `parseStringStyle` (regex `/;(?![^(]*\))/`): a `;`
+                    // inside parentheses (e.g. `url(a;b)`) is not a declaration
+                    // separator, and only the first `:` separates key from value.
+                    let mut emitted = 0;
+                    for declaration in split_style_declarations(static_val) {
+                        let declaration = declaration.trim();
+                        if declaration.is_empty() {
+                            continue;
+                        }
+                        // Skip orphan parts with no `:`; only push the separating
+                        // comma once a valid key/value pair is confirmed.
+                        let Some((key, value)) = declaration.split_once(':') else {
+                            continue;
+                        };
+                        if emitted > 0 {
                             ctx.push(",");
                         }
-                        let parts: Vec<&str> = part.splitn(2, ':').collect();
-                        if parts.len() == 2 {
-                            let key = parts[0].trim();
-                            let value = parts[1].trim();
-                            ctx.push("\"");
-                            ctx.push(key);
-                            ctx.push("\":\"");
-                            ctx.push(value);
-                            ctx.push("\"");
-                        }
+                        emitted += 1;
+                        ctx.push("\"");
+                        ctx.push(&escape_js_string(key.trim()));
+                        ctx.push("\":\"");
+                        ctx.push(&escape_js_string(value.trim()));
+                        ctx.push("\"");
                     }
                     ctx.push("}");
                 };
@@ -371,6 +376,29 @@ fn generate_vbind_prop(
     } else {
         ctx.push("undefined");
     }
+}
+
+/// Split a static `style` attribute value into declarations on each `;` that is
+/// not inside parentheses, mirroring Vue's `parseStringStyle` regex
+/// `/;(?![^(]*\))/`. A `;` inside `url(a;b)` therefore stays within one
+/// declaration instead of being treated as a separator.
+fn split_style_declarations(value: &str) -> Vec<&str> {
+    let mut declarations = Vec::new();
+    let mut depth: i32 = 0;
+    let mut start = 0;
+    for (i, ch) in value.char_indices() {
+        match ch {
+            '(' => depth += 1,
+            ')' if depth > 0 => depth -= 1,
+            ';' if depth == 0 => {
+                declarations.push(&value[start..i]);
+                start = i + ch.len_utf8();
+            }
+            _ => {}
+        }
+    }
+    declarations.push(&value[start..]);
+    declarations
 }
 
 /// Generate v-on directive as a prop

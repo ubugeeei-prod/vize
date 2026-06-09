@@ -1135,4 +1135,35 @@ mod tests {
             output
         );
     }
+
+    #[test]
+    fn test_codegen_static_style_merged_with_dynamic_escapes_values() {
+        // Issue #1171: a static `style` merged with `:style` must JSON-escape
+        // key/value so a `"` does not terminate the JS string early.
+        let output = result_output(&compile!(r#"<div style='content:"x"' :style="s"></div>"#));
+        assert!(
+            output.contains(r#"_normalizeStyle([{"content":"\"x\""}, s])"#),
+            "static style values must be escaped. Got:\n{}",
+            output
+        );
+    }
+
+    #[test]
+    fn test_codegen_static_style_merged_with_dynamic_does_not_split_inside_parens() {
+        // Issue #1171: a `;` inside `url(...)` must not be treated as a
+        // declaration separator, and no orphan double comma must appear.
+        let output = result_output(&compile!(
+            r#"<div style="background:url(a;b);color:red" :style="s"></div>"#
+        ));
+        assert!(
+            output.contains(r#"_normalizeStyle([{"background":"url(a;b)","color":"red"}, s])"#),
+            "`;` inside parens must not split the declaration. Got:\n{}",
+            output
+        );
+        assert!(
+            !output.contains(",,"),
+            "orphan parts must not produce a double comma. Got:\n{}",
+            output
+        );
+    }
 }
