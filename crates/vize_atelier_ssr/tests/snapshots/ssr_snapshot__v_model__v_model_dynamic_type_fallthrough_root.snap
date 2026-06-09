@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<input :type=\"t\" v-model=\"val\">\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<input${_ssrRenderAttrs(_mergeProps({ type: _ctx.t }, _attrs, _ssrGetDynamicModelProps(_mergeProps({ type: _ctx.t }, _attrs), _ctx.val)))}>`)
+}

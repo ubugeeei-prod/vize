@@ -238,7 +238,7 @@ mod v_for {
 // =============================================================================
 
 mod v_model {
-    use super::get_compiled_string;
+    use super::{compile_full, get_compiled_string};
 
     #[test]
     fn v_model_text_input() {
@@ -257,6 +257,11 @@ mod v_model {
         insta::assert_snapshot!(get_compiled_string(
             r#"<input type="radio" v-model="picked" value="a">"#
         ));
+    }
+
+    #[test]
+    fn v_model_dynamic_type_fallthrough_root() {
+        insta::assert_snapshot!(compile_full(r#"<input :type="t" v-model="val">"#));
     }
 
     #[test]

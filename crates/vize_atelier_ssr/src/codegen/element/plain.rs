@@ -140,6 +140,7 @@ impl<'a> SsrCodegenContext<'a> {
         let mut entries: std::vec::Vec<VNodePropEntry> = std::vec::Vec::new();
         let mut spreads: std::vec::Vec<String> = std::vec::Vec::new();
         let mut needs_normalize = false;
+        let mut dynamic_model_exp = None;
 
         for prop in &el.props {
             match prop {
@@ -158,6 +159,7 @@ impl<'a> SsrCodegenContext<'a> {
                         &mut entries,
                         &mut spreads,
                         &mut needs_normalize,
+                        &mut dynamic_model_exp,
                     );
                 }
             }
@@ -191,6 +193,14 @@ impl<'a> SsrCodegenContext<'a> {
             args.push("_attrs".to_compact_string());
         }
 
+        if let Some(model_exp) = dynamic_model_exp {
+            self.use_ssr_helper(RuntimeHelper::SsrGetDynamicModelProps);
+            let existing_props = self.merge_props_args_expression(&args);
+            args.push(cstr!(
+                "_ssrGetDynamicModelProps({existing_props}, {model_exp})"
+            ));
+        }
+
         if args.is_empty() {
             return "null".to_compact_string();
         }
@@ -212,6 +222,25 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
+    fn merge_props_args_expression(&mut self, args: &[String]) -> String {
+        match args {
+            [] => "{}".to_compact_string(),
+            [arg] => arg.clone(),
+            _ => {
+                self.use_core_helper(RuntimeHelper::MergeProps);
+                let mut out = String::from("_mergeProps(");
+                for (index, arg) in args.iter().enumerate() {
+                    if index > 0 {
+                        out.push_str(", ");
+                    }
+                    out.push_str(arg);
+                }
+                out.push(')');
+                out
+            }
+        }
+    }
+
     fn collect_element_directive_attr(
         &mut self,
         el: &ElementNode,
@@ -219,6 +248,7 @@ impl<'a> SsrCodegenContext<'a> {
         entries: &mut std::vec::Vec<VNodePropEntry>,
         spreads: &mut std::vec::Vec<String>,
         needs_normalize: &mut bool,
+        dynamic_model_exp: &mut Option<String>,
     ) {
         match dir.name.as_str() {
             "bind" => {
@@ -245,7 +275,7 @@ impl<'a> SsrCodegenContext<'a> {
                 }
             }
             "model" => {
-                self.collect_v_model_element_attr(el, dir, entries);
+                self.collect_v_model_element_attr(el, dir, entries, dynamic_model_exp);
             }
             "show" => {
                 let Some(exp) = dir.exp.as_ref().map(|exp| self.expression_to_string(exp)) else {
@@ -273,18 +303,18 @@ impl<'a> SsrCodegenContext<'a> {
         el: &ElementNode,
         dir: &DirectiveNode,
         entries: &mut std::vec::Vec<VNodePropEntry>,
+        dynamic_model_exp: &mut Option<String>,
     ) {
         let Some(exp) = dir.exp.as_ref().map(|exp| self.expression_to_string(exp)) else {
             return;
         };
 
         if el.tag == "input" {
-            // Dynamic `:type` — fall back to `value` for now, but flag the
-            // direct-process path (called when inherit_attrs=false) so
-            // checkbox/radio at runtime render `checked`. The merged-attrs
-            // path here still emits `value=...` rather than Vue's `_temp0`
-            // trick because the surrounding merge expression isn't shaped
-            // for the dynamic helper yet. (#962)
+            if self.get_dynamic_bind_exp(el, "type").is_some() {
+                *dynamic_model_exp = Some(exp);
+                return;
+            }
+
             let input_type = self.get_element_attr_value(el, "type");
             match input_type.as_deref() {
                 Some("checkbox") => {
