@@ -571,6 +571,7 @@ fn push_indented_lines(output: &mut String, text: &str, indent: &str) {
 
 struct SourceLineIndex<'source> {
     source: &'source str,
+    is_ascii: bool,
     source_len: usize,
     line_starts: SmallVec<[usize; 64]>,
 }
@@ -589,6 +590,7 @@ impl<'source> SourceLineIndex<'source> {
 
         Self {
             source,
+            is_ascii: source.is_ascii(),
             source_len: bytes.len(),
             line_starts,
         }
@@ -602,6 +604,9 @@ impl<'source> SourceLineIndex<'source> {
             .saturating_sub(1);
         let line_start = self.line_starts.get(line_index).copied().unwrap_or(0);
         let line = line_index as u32 + 1;
+        if self.is_ascii {
+            return (line, offset.saturating_sub(line_start) as u32 + 1);
+        }
         let column = self.source[line_start..]
             .char_indices()
             .take_while(|(relative_offset, _)| line_start + *relative_offset < offset)
