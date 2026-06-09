@@ -52,6 +52,12 @@ fn directive_expression_to_content(exp: ExpressionNode<'_>) -> SimpleExpressionC
 /// This removes the selected directive from the element in the same pass we discover it.
 pub fn take_structural_directive<'a>(
     el: &mut Box<'a, ElementNode<'a>>,
+) -> Option<(StructuralDirectiveKind, Option<SimpleExpressionContent>)> {
+    take_structural_directive_with_location(el).map(|(kind, exp, _)| (kind, exp))
+}
+
+pub(crate) fn take_structural_directive_with_location<'a>(
+    el: &mut Box<'a, ElementNode<'a>>,
 ) -> Option<(
     StructuralDirectiveKind,
     Option<SimpleExpressionContent>,
@@ -128,9 +134,17 @@ pub fn extract_key_prop<'a>(el: &mut ElementNode<'a>) -> Option<PropNode<'a>> {
 /// Transform v-if directive
 pub fn transform_v_if<'a>(
     ctx: &mut TransformContext<'a>,
+    exp: Option<&SimpleExpressionContent>,
+    is_root: bool,
+) -> Option<ExitFns<'a>> {
+    transform_v_if_with_directive(ctx, StructuralDirectiveKind::If, exp, None, is_root)
+}
+
+pub(crate) fn transform_v_if_with_directive<'a>(
+    ctx: &mut TransformContext<'a>,
     directive_kind: StructuralDirectiveKind,
     exp: Option<&SimpleExpressionContent>,
-    directive_loc: &SourceLocation,
+    directive_loc: Option<&SourceLocation>,
     is_root: bool,
 ) -> Option<ExitFns<'a>> {
     let allocator = ctx.allocator;
@@ -140,7 +154,7 @@ pub fn transform_v_if<'a>(
         StructuralDirectiveKind::If | StructuralDirectiveKind::ElseIf
     ) && exp.is_none()
     {
-        ctx.on_error(ErrorCode::VIfNoExpression, Some(directive_loc.clone()));
+        ctx.on_error(ErrorCode::VIfNoExpression, directive_loc.cloned());
         return None;
     }
 
