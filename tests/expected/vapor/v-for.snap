@@ -75,6 +75,25 @@ export function render(_ctx) {
 }
 
 ===
+name: v-for object with index
+options: vapor
+--- INPUT ---
+<div v-for="(value, key, idx) in obj" :key="idx">{{ key }}: {{ value }}: {{ idx }}</div>
+--- OUTPUT ---
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+const t0 = _template("<div> </div>")
+
+export function render(_ctx) {
+  const n0 = _createFor(() => (_ctx.obj), (_for_item0, _for_key0, _for_index0) => {
+    const n2 = t0()
+    const x2 = _txt(n2)
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_key0.value) + ": " + _toDisplayString(_for_item0.value) + ": " + _toDisplayString(_for_index0.value)))
+    return n2
+  }, (value, key, idx) => (idx))
+  return n0
+}
+
+===
 name: v-for range
 options: vapor
 --- INPUT ---

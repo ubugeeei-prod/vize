@@ -15,8 +15,7 @@ pub(crate) struct ForScope {
     pub(crate) value_alias: Option<String>,
     /// Key alias (e.g., "index" or "key") -> "_for_key{depth}"
     pub(crate) key_alias: Option<String>,
-    /// Index alias -> unused in current vapor
-    #[allow(dead_code)]
+    /// Index alias -> "_for_index{depth}"
     pub(crate) index_alias: Option<String>,
     /// Depth of for nesting (0-based)
     pub(crate) depth: usize,
@@ -223,6 +222,12 @@ impl<'a> GenerateContext<'a> {
                 && name == key_alias.as_str()
             {
                 return Some(cstr!("_for_key{}.value", scope.depth));
+            }
+
+            if let Some(ref index_alias) = scope.index_alias
+                && name == index_alias.as_str()
+            {
+                return Some(cstr!("_for_index{}.value", scope.depth));
             }
         }
 

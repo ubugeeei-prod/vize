@@ -29,24 +29,28 @@ pub(super) fn generate_for(
 
     let value_alias = for_node.value.as_ref().map(|v| v.content.clone());
     let key_alias = for_node.key.as_ref().map(|k| k.content.clone());
+    let index_alias = for_node.index.as_ref().map(|i| i.content.clone());
 
     // Build parameter list using _for_item0, _for_key0 naming
     let for_item_var = cstr!("_for_item{}", depth);
     let for_key_var = cstr!("_for_key{}", depth);
+    let for_index_var = cstr!("_for_index{}", depth);
 
-    let params: String = if key_alias.is_some() {
-        [for_item_var.as_str(), ", ", for_key_var.as_str()]
-            .concat()
-            .into()
-    } else {
-        for_item_var.clone()
-    };
+    let mut params = for_item_var.clone();
+    if key_alias.is_some() || index_alias.is_some() {
+        params.push_str(", ");
+        params.push_str(&for_key_var);
+    }
+    if index_alias.is_some() {
+        params.push_str(", ");
+        params.push_str(&for_index_var);
+    }
 
     // Push for scope before generating body
     let scope = ForScope {
         value_alias: value_alias.clone(),
         key_alias: key_alias.clone(),
-        index_alias: for_node.index.as_ref().map(|i| i.content.clone()),
+        index_alias: index_alias.clone(),
         depth,
     };
     ctx.for_scopes.push(scope);
@@ -120,12 +124,17 @@ fn generate_for_key_function(
             .map(|v| v.content.as_str())
             .unwrap_or("_item");
         let key_name = for_node.key.as_ref().map(|k| k.content.as_str());
+        let index_name = for_node.index.as_ref().map(|i| i.content.as_str());
 
-        let params = if let Some(k) = key_name {
-            [value_name, ", ", k].concat()
-        } else {
-            value_name.to_compact_string().into()
-        };
+        let mut params = value_name.to_compact_string();
+        if key_name.is_some() || index_name.is_some() {
+            params.push_str(", ");
+            params.push_str(key_name.unwrap_or("_key"));
+        }
+        if let Some(index) = index_name {
+            params.push_str(", ");
+            params.push_str(index);
+        }
 
         Some(cstr!("({params}) => ({key_expr})"))
     } else {
@@ -155,6 +164,13 @@ fn resolve_key_expression(
             &mut resolved,
             &cstr!("_for_key{}.value", current_scope.depth),
             key.content.as_str(),
+        );
+    }
+    if let Some(index) = for_node.index.as_ref() {
+        restore_current_alias_reference(
+            &mut resolved,
+            &cstr!("_for_index{}.value", current_scope.depth),
+            index.content.as_str(),
         );
     }
 

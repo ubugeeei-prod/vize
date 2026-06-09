@@ -22,6 +22,10 @@ cases {
     input = #"<div v-for="(value, key) in obj" :key="key">{{ key }}: {{ value }}</div>"#
   }
   new {
+    name = "v-for object with index"
+    input = #"<div v-for="(value, key, idx) in obj" :key="idx">{{ key }}: {{ value }}: {{ idx }}</div>"#
+  }
+  new {
     name = "v-for range"
     input = #"<div v-for="n in 10" :key="n">{{ n }}</div>"#
   }
