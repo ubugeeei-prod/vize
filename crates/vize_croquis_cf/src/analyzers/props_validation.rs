@@ -114,95 +114,100 @@ pub fn analyze_props_validation(
         // This requires parsing the template to find the actual props passed
         // For now, we focus on checking required props from the child's perspective
         let aliases = imported_aliases_for_child(parent_entry, child_entry);
-        let passed_props = extract_passed_props_for_component(
+        let passed_usages = extract_passed_props_for_component(
             &parent_entry.analysis,
             child_component_name.as_str(),
             &aliases,
         );
 
-        // Check for missing required props
-        for (prop_name, prop_info) in &child_props_info.props {
-            if prop_info.required && !passed_props.contains(prop_name.as_str()) {
-                let issue = PropsValidationIssue {
-                    parent_file: parent_id,
-                    child_file: child_id,
-                    component_name: child_component_name.clone(),
-                    kind: PropsValidationIssueKind::MissingRequiredProp {
-                        prop_name: prop_name.clone(),
-                    },
-                    offset: 0,
-                };
-                issues.push(issue);
+        for passed_usage in passed_usages {
+            // Check for missing required props. A spread v-bind can provide any
+            // required prop, so only validate required props for non-spread usages.
+            if !passed_usage.has_spread_attrs {
+                for (prop_name, prop_info) in &child_props_info.props {
+                    if prop_info.required && !passed_usage.props.contains(prop_name.as_str()) {
+                        let issue = PropsValidationIssue {
+                            parent_file: parent_id,
+                            child_file: child_id,
+                            component_name: child_component_name.clone(),
+                            kind: PropsValidationIssueKind::MissingRequiredProp {
+                                prop_name: prop_name.clone(),
+                            },
+                            offset: passed_usage.offset,
+                        };
+                        issues.push(issue);
 
-                let diagnostic = CrossFileDiagnostic::new(
-                    CrossFileDiagnosticKind::MissingRequiredProp {
-                        prop_name: prop_name.clone(),
-                        component_name: child_component_name.clone(),
-                    },
-                    DiagnosticSeverity::Error,
-                    parent_id,
-                    0,
-                    cstr!(
-                        "**Missing Required Prop**: `{}` must be passed to `<{}>`\n\n\
-                        This prop is declared as required in the component's `defineProps`.",
-                        prop_name,
-                        child_component_name
-                    ),
-                )
-                .with_related(
-                    child_id,
-                    0,
-                    cstr!("Prop `{prop_name}` is declared as required here"),
-                );
+                        let diagnostic = CrossFileDiagnostic::new(
+                            CrossFileDiagnosticKind::MissingRequiredProp {
+                                prop_name: prop_name.clone(),
+                                component_name: child_component_name.clone(),
+                            },
+                            DiagnosticSeverity::Error,
+                            parent_id,
+                            passed_usage.offset,
+                            cstr!(
+                                "**Missing Required Prop**: `{}` must be passed to `<{}>`\n\n\
+                                This prop is declared as required in the component's `defineProps`.",
+                                prop_name,
+                                child_component_name
+                            ),
+                        )
+                        .with_related(
+                            child_id,
+                            0,
+                            cstr!("Prop `{prop_name}` is declared as required here"),
+                        );
 
-                diagnostics.push(diagnostic);
-            }
-        }
-
-        // Check for undeclared props (props passed but not in defineProps)
-        for passed_prop in &passed_props {
-            // Skip built-in attributes
-            if is_builtin_attr(passed_prop) {
-                continue;
+                        diagnostics.push(diagnostic);
+                    }
+                }
             }
 
-            // Check if this prop is declared
-            let is_declared = child_props_info.props.contains_key(*passed_prop);
+            // Check for undeclared props (explicit props passed but not in defineProps)
+            for passed_prop in &passed_usage.props {
+                // Skip built-in attributes
+                if is_builtin_attr(passed_prop) {
+                    continue;
+                }
 
-            if !is_declared {
-                let issue = PropsValidationIssue {
-                    parent_file: parent_id,
-                    child_file: child_id,
-                    component_name: child_component_name.clone(),
-                    kind: PropsValidationIssueKind::UndeclaredProp {
-                        prop_name: CompactString::new(*passed_prop),
-                    },
-                    offset: 0,
-                };
-                issues.push(issue);
+                // Check if this prop is declared
+                let is_declared = child_props_info.props.contains_key(*passed_prop);
 
-                let diagnostic = CrossFileDiagnostic::new(
-                    CrossFileDiagnosticKind::UndeclaredProp {
-                        prop_name: CompactString::new(*passed_prop),
+                if !is_declared {
+                    let issue = PropsValidationIssue {
+                        parent_file: parent_id,
+                        child_file: child_id,
                         component_name: child_component_name.clone(),
-                    },
-                    DiagnosticSeverity::Warning, // Warning since it might be intentional $attrs
-                    parent_id,
-                    0,
-                    cstr!(
-                        "**Undeclared Prop**: `{}` is passed to `<{}>` but not declared\n\n\
-                        The prop is not defined in the component's `defineProps`.\n\
-                        If intentional, it will fall through to the root element via `$attrs`.",
-                        passed_prop, child_component_name
-                    ),
-                )
-                .with_suggestion(cstr!(
-                    "Add to defineProps:\n```typescript\ndefineProps<{{\n  {}: unknown\n}}>()\n```\n\n\
-                    Or use `v-bind=\"$attrs\"` in the child component for fallthrough.",
-                    passed_prop
-                ));
+                        kind: PropsValidationIssueKind::UndeclaredProp {
+                            prop_name: CompactString::new(*passed_prop),
+                        },
+                        offset: passed_usage.offset,
+                    };
+                    issues.push(issue);
 
-                diagnostics.push(diagnostic);
+                    let diagnostic = CrossFileDiagnostic::new(
+                        CrossFileDiagnosticKind::UndeclaredProp {
+                            prop_name: CompactString::new(*passed_prop),
+                            component_name: child_component_name.clone(),
+                        },
+                        DiagnosticSeverity::Warning, // Warning since it might be intentional $attrs
+                        parent_id,
+                        passed_usage.offset,
+                        cstr!(
+                            "**Undeclared Prop**: `{}` is passed to `<{}>` but not declared\n\n\
+                            The prop is not defined in the component's `defineProps`.\n\
+                            If intentional, it will fall through to the root element via `$attrs`.",
+                            passed_prop, child_component_name
+                        ),
+                    )
+                    .with_suggestion(cstr!(
+                        "Add to defineProps:\n```typescript\ndefineProps<{{\n  {}: unknown\n}}>()\n```\n\n\
+                        Or use `v-bind=\"$attrs\"` in the child component for fallthrough.",
+                        passed_prop
+                    ));
+
+                    diagnostics.push(diagnostic);
+                }
             }
         }
     }
@@ -210,15 +215,21 @@ pub fn analyze_props_validation(
     (issues, diagnostics)
 }
 
-/// Extract props passed to a specific component from the analysis.
+struct PassedComponentUsage<'a> {
+    props: FxHashSet<&'a str>,
+    has_spread_attrs: bool,
+    offset: u32,
+}
+
+/// Extract matched usages and explicit props passed to a specific component from the analysis.
 ///
 /// Uses component_usages to find props passed to the component.
 fn extract_passed_props_for_component<'a>(
     analysis: &'a vize_croquis::Croquis,
     component_name: &str,
     aliases: &[CompactString],
-) -> FxHashSet<&'a str> {
-    let mut props = FxHashSet::default();
+) -> Vec<PassedComponentUsage<'a>> {
+    let mut usages = Vec::new();
 
     for usage in &analysis.component_usages {
         // Match component name (case-insensitive for kebab-case vs PascalCase)
@@ -227,13 +238,28 @@ fn extract_passed_props_for_component<'a>(
                 .iter()
                 .any(|alias| component_names_match(usage.name.as_str(), alias.as_str()))
         {
+            let mut props = FxHashSet::default();
             for prop in &usage.props {
                 props.insert(prop.name.as_str());
             }
+
+            usages.push(PassedComponentUsage {
+                props,
+                has_spread_attrs: usage.has_spread_attrs,
+                offset: usage.start,
+            });
         }
     }
 
-    props
+    if usages.is_empty() {
+        usages.push(PassedComponentUsage {
+            props: FxHashSet::default(),
+            has_spread_attrs: false,
+            offset: 0,
+        });
+    }
+
+    usages
 }
 
 fn imported_aliases_for_child(

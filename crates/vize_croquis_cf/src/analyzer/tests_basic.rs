@@ -110,6 +110,46 @@ fn test_undeclared_on_prefixed_prop_is_reported() {
     assert_eq!(undeclared_props, vec!["online"]);
 }
 
+#[test]
+fn test_spread_attrs_suppress_missing_required_prop_without_hiding_explicit_props() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_props_validation(true));
+
+    let child_analysis = script_analysis("const props = defineProps<{ id: number }>()");
+    let parent_analysis = script_analysis_with_component_usage(
+        r#"import Child from './Child.vue'
+const formData = { id: 1 }"#,
+        component_usage_with_spread_and_extra_prop("Child"),
+    );
+
+    analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analysis);
+    analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analysis);
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    let missing_required_props = result
+        .diagnostics
+        .iter()
+        .filter_map(|diagnostic| match &diagnostic.kind {
+            CrossFileDiagnosticKind::MissingRequiredProp { prop_name, .. } => {
+                Some(prop_name.as_str())
+            }
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    let undeclared_props = result
+        .diagnostics
+        .iter()
+        .filter_map(|diagnostic| match &diagnostic.kind {
+            CrossFileDiagnosticKind::UndeclaredProp { prop_name, .. } => Some(prop_name.as_str()),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    assert!(missing_required_props.is_empty());
+    assert_eq!(undeclared_props, vec!["extra"]);
+}
+
 fn script_analysis(script: &str) -> vize_croquis::Croquis {
     let mut analyzer = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -159,6 +199,20 @@ fn component_usage_with_on_prefixed_prop(component: &str) -> ComponentUsage {
         events: smallvec![event_listener("click")],
         slots: smallvec![],
         has_spread_attrs: false,
+        scope_id: ScopeId::ROOT,
+        vif_guard: None,
+    }
+}
+
+fn component_usage_with_spread_and_extra_prop(component: &str) -> ComponentUsage {
+    ComponentUsage {
+        name: CompactString::new(component),
+        start: 0,
+        end: 0,
+        props: smallvec![passed_prop("extra", Some("true"), false)],
+        events: smallvec![],
+        slots: smallvec![],
+        has_spread_attrs: true,
         scope_id: ScopeId::ROOT,
         vif_guard: None,
     }
