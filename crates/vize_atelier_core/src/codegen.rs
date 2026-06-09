@@ -987,4 +987,65 @@ mod tests {
         );
         assert_codegen_snapshot!(result);
     }
+
+    fn compile_prefixed(source: &str) -> vize_carton::String {
+        let allocator = bumpalo::Bump::new();
+        let (mut root, errors) = crate::parse(&allocator, source);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+        crate::transform::transform(
+            &allocator,
+            &mut root,
+            crate::TransformOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+            None,
+        );
+        result_output(&super::generate(
+            &root,
+            crate::CodegenOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        ))
+    }
+
+    #[test]
+    fn test_codegen_looped_slot_index_alias_is_slot_param_for_dynamic_arg() {
+        // Issue #1173: the index alias of a v-for on a slot template must be
+        // registered as a slot param so a dynamic arg derived from it is not
+        // wrongly _ctx-prefixed.
+        let output = compile_prefixed(
+            r#"<Comp><template v-for="(item, idx) in list" #default><div :[idx]="item"></div></template></Comp>"#,
+        );
+        assert!(
+            output.contains("[idx || \"\"]"),
+            "index alias should be a local slot param, not _ctx-prefixed. Got:\n{}",
+            output
+        );
+        assert!(
+            !output.contains("_ctx.idx"),
+            "index alias must not be _ctx-prefixed. Got:\n{}",
+            output
+        );
+    }
+
+    #[test]
+    fn test_codegen_looped_slot_key_alias_is_slot_param_for_dynamic_arg() {
+        // Issue #1173: the key alias (object iteration) of a v-for on a slot
+        // template must be registered as a slot param.
+        let output = compile_prefixed(
+            r#"<Comp><template v-for="(val, key) in obj" #default><div :[key]="val"></div></template></Comp>"#,
+        );
+        assert!(
+            output.contains("[key || \"\"]"),
+            "key alias should be a local slot param, not _ctx-prefixed. Got:\n{}",
+            output
+        );
+        assert!(
+            !output.contains("_ctx.key"),
+            "key alias must not be _ctx-prefixed. Got:\n{}",
+            output
+        );
+    }
 }
