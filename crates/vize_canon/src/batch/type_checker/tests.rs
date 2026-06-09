@@ -695,6 +695,74 @@ onMounted(() => {
 }
 
 #[test]
+fn batch_type_checker_expands_vue_runtime_stubs_without_node_modules() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    with_workspace_node_modules_override(Some("__none__"), || {
+        let project_root = create_project_case_without_node_modules(
+            "vue-runtime-stub-expanded",
+            &[(
+                "src/FallbackVueRuntime.vue",
+                r#"<script setup lang="ts">
+import {
+  computed,
+  defineAsyncComponent,
+  inject,
+  markRaw,
+  provide,
+  reactive,
+  type InjectionKey,
+} from 'vue'
+
+const countKey: InjectionKey<number> = Symbol('count')
+provide(countKey, 1)
+
+const count = inject(countKey, 0)
+const state = reactive({ count })
+const doubled = computed(() => state.count * 2)
+const LazyPanel = markRaw(defineAsyncComponent(() => Promise.resolve({})))
+
+const badCount: string = count
+const badDoubled: string = doubled.value
+
+void LazyPanel
+</script>
+
+<template>{{ doubled }}</template>
+"#,
+            )],
+        );
+
+        let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        };
+
+        assert!(
+            snapshot
+                .iter()
+                .all(|(_, code, message)| *code != Some(2305)
+                    && !message.contains("no exported member")),
+            "unexpected bundled vue runtime export diagnostic: {snapshot:#?}"
+        );
+        assert!(
+            snapshot
+                .iter()
+                .filter(|(file, code, _)| {
+                    file == "src/FallbackVueRuntime.vue" && *code == Some(2322)
+                })
+                .count()
+                >= 2,
+            "expected typed fallback mismatches to remain reported, got: {snapshot:#?}"
+        );
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    });
+}
+
+#[test]
 fn batch_type_checker_snapshots_cross_file_vue_prop_error() {
     if resolve_test_tsgo_binary().is_none() {
         return;
@@ -1811,6 +1879,33 @@ fn resolve_workspace_node_modules(workspace_root: &Path) -> Option<PathBuf> {
         .then_some(workspace_node_modules)
 }
 
+fn with_workspace_node_modules_override<T>(value: Option<&str>, run: impl FnOnce() -> T) -> T {
+    static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    struct EnvOverrideGuard {
+        previous: Option<std::ffi::OsString>,
+    }
+
+    impl Drop for EnvOverrideGuard {
+        fn drop(&mut self) {
+            if let Some(previous) = self.previous.take() {
+                unsafe { std::env::set_var("VIZE_TEST_WORKSPACE_NODE_MODULES", previous) };
+            } else {
+                unsafe { std::env::remove_var("VIZE_TEST_WORKSPACE_NODE_MODULES") };
+            }
+        }
+    }
+
+    let _lock = ENV_LOCK.lock().unwrap();
+    let previous = std::env::var_os("VIZE_TEST_WORKSPACE_NODE_MODULES");
+    match value {
+        Some(value) => unsafe { std::env::set_var("VIZE_TEST_WORKSPACE_NODE_MODULES", value) },
+        None => unsafe { std::env::remove_var("VIZE_TEST_WORKSPACE_NODE_MODULES") },
+    }
+    let _guard = EnvOverrideGuard { previous };
+    run()
+}
+
 fn write_test_vue_stub(target: &Path) -> std::io::Result<()> {
     let vue_dir = target.join("vue");
     std::fs::create_dir_all(&vue_dir)?;
@@ -1873,22 +1968,41 @@ export interface Ref<T = unknown, _Raw = T> {
   value: T;
 }
 
+export interface ComputedRef<T = unknown> extends Ref<T> {
+  readonly value: T;
+}
+
+export interface WritableComputedRef<T = unknown> extends Ref<T> {
+  value: T;
+}
+
 export interface ShallowRef<T = unknown, _Raw = T> extends Ref<T, _Raw> {
   readonly __v_isShallow?: true;
 }
 
+export type InjectionKey<T> = symbol & { readonly __v_vlsInjection?: T };
 export type PropType<T> = { new (...args: any[]): T & {} } | { (): T } | null;
 
 export declare const Transition: DefineComponent;
 export declare function defineComponent(options: any): DefineComponent;
+export declare function defineAsyncComponent(source: any): DefineComponent;
 export declare function defineProps<T = {}>(): T;
+export declare function computed<T>(getter: () => T): ComputedRef<T>;
+export declare function computed<T>(options: { get: () => T; set: (value: T) => void }): WritableComputedRef<T>;
 export declare function ref<T>(value: T): Ref<T>;
+export declare function reactive<T extends object>(target: T): T;
 export declare function shallowRef<T>(value: T): ShallowRef<T>;
+export declare function toRef<T extends object, K extends keyof T>(object: T, key: K): Ref<T[K]>;
 export declare function useTemplateRef<T = unknown>(key: string): ShallowRef<T | null>;
 export declare function useId(): string;
 export declare function watch<T>(source: T, callback: (...args: any[]) => void, options?: any): void;
 export declare function watchEffect(effect: (onCleanup: (cleanupFn: () => void) => void) => void): void;
 export declare function onMounted(callback: () => void): void;
+export declare function customRef<T>(factory: any): Ref<T>;
+export declare function provide<T>(key: InjectionKey<T> | string | symbol, value: T): void;
+export declare function inject<T>(key: InjectionKey<T> | string | symbol): T | undefined;
+export declare function inject<T>(key: InjectionKey<T> | string | symbol, defaultValue: T): T;
+export declare function markRaw<T extends object>(value: T): T;
 export declare function createApp(root: any): {
   config: {
     globalProperties: { [key: string]: any };
