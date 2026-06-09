@@ -270,6 +270,16 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 invalid_model_indices.push(idx);
                 continue;
             }
+
+            // v-model with an argument (static or dynamic) is a component-only
+            // feature. On a plain element Vue raises a hard compile error and
+            // generates no binding, so reject it here before emitting anything.
+            if !is_component && dir.arg.is_some() {
+                ctx.on_error(ErrorCode::VModelArgOnElement, Some(dir.loc.clone()));
+                invalid_model_indices.push(idx);
+                continue;
+            }
+
             let value_exp = String::new(value_exp);
 
             // Check if arg is dynamic
@@ -717,5 +727,57 @@ mod tests {
             transform_errors(r#"<div v-for="item in items"><input v-model="item.value" /></div>"#);
 
         assert!(errors.is_empty(), "Unexpected errors: {:?}", errors);
+    }
+
+    fn assert_v_model_arg_on_element_rejected(source: &str) {
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, source);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        let mut ctx =
+            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        match &mut root.children[0] {
+            TemplateChildNode::Element(el) => {
+                transform_element(&mut ctx, el);
+
+                // No v-model binding is generated: the directive itself is
+                // dropped and no `onUpdate:*` handler is emitted.
+                assert!(
+                    !el.props.iter().any(|prop| matches!(
+                        prop,
+                        PropNode::Directive(dir) if dir.name == "model"
+                    )),
+                    "v-model directive should be removed for {source}"
+                );
+                assert!(
+                    !el.props.iter().any(|prop| matches!(
+                        prop,
+                        PropNode::Directive(dir) if dir.name == "on"
+                    )),
+                    "no update handler should be emitted for {source}"
+                );
+            }
+            other => panic!(
+                "Expected ElementNode, got {:?}",
+                std::mem::discriminant(other)
+            ),
+        }
+
+        assert_eq!(ctx.errors.len(), 1, "expected one error for {source}");
+        assert_eq!(ctx.errors[0].code, ErrorCode::VModelArgOnElement);
+    }
+
+    #[test]
+    fn test_transform_v_model_static_arg_on_element_reports_error() {
+        // Issue #1169: v-model with an argument is component-only; on a plain
+        // element it must be a hard error with no binding generated.
+        assert_v_model_arg_on_element_rejected(r#"<input v-model:foo="bar" />"#);
+    }
+
+    #[test]
+    fn test_transform_v_model_dynamic_arg_on_element_reports_error() {
+        // Issue #1169: a dynamic arg on a plain element is rejected too, so the
+        // three competing update mechanisms never fire.
+        assert_v_model_arg_on_element_rejected(r#"<input v-model:[dynKey]="value" />"#);
     }
 }
