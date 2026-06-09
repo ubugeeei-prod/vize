@@ -275,9 +275,7 @@ fn diagnostic_location(
         })
 }
 
-fn source_indices<'source>(
-    sources: &'source [(String, String)],
-) -> FxHashMap<&'source str, SourceLineIndex<'source>> {
+fn source_indices(sources: &[(String, String)]) -> FxHashMap<&str, SourceLineIndex> {
     sources
         .iter()
         .map(|(filename, source)| (filename.as_str(), SourceLineIndex::new(source.as_str())))
@@ -569,15 +567,15 @@ fn push_indented_lines(output: &mut String, text: &str, indent: &str) {
     }
 }
 
-struct SourceLineIndex<'source> {
-    source: &'source str,
+struct SourceLineIndex {
     is_ascii: bool,
     source_len: usize,
     line_starts: SmallVec<[usize; 64]>,
+    multibyte_adjustments: SmallVec<[(usize, u32); 16]>,
 }
 
-impl<'source> SourceLineIndex<'source> {
-    fn new(source: &'source str) -> Self {
+impl SourceLineIndex {
+    fn new(source: &str) -> Self {
         let bytes = source.as_bytes();
         let mut line_starts = SmallVec::new();
         line_starts.push(0);
@@ -588,11 +586,24 @@ impl<'source> SourceLineIndex<'source> {
             }
         }
 
+        let is_ascii = source.is_ascii();
+        let mut multibyte_adjustments = SmallVec::new();
+        if !is_ascii {
+            let mut extra_bytes = 0u32;
+            for (index, ch) in source.char_indices() {
+                let width = ch.len_utf8();
+                if width > 1 {
+                    extra_bytes += (width - 1) as u32;
+                    multibyte_adjustments.push((index + width, extra_bytes));
+                }
+            }
+        }
+
         Self {
-            source,
-            is_ascii: source.is_ascii(),
+            is_ascii,
             source_len: bytes.len(),
             line_starts,
+            multibyte_adjustments,
         }
     }
 
@@ -607,13 +618,23 @@ impl<'source> SourceLineIndex<'source> {
         if self.is_ascii {
             return (line, offset.saturating_sub(line_start) as u32 + 1);
         }
-        let column = self.source[line_start..]
-            .char_indices()
-            .take_while(|(relative_offset, _)| line_start + *relative_offset < offset)
-            .count() as u32
-            + 1;
+        let byte_column = offset.saturating_sub(line_start) as u32 + 1;
+        let extra_bytes_before_column = self
+            .extra_bytes_before(offset)
+            .saturating_sub(self.extra_bytes_before(line_start));
+        let column = byte_column.saturating_sub(extra_bytes_before_column);
 
         (line, column)
+    }
+
+    fn extra_bytes_before(&self, offset: usize) -> u32 {
+        let adjustment_index = self
+            .multibyte_adjustments
+            .partition_point(|&(byte_offset, _)| byte_offset <= offset);
+        adjustment_index
+            .checked_sub(1)
+            .map(|index| self.multibyte_adjustments[index].1)
+            .unwrap_or(0)
     }
 }
 
