@@ -78,22 +78,24 @@ pub fn analyze_component_resolution(
             let is_available = is_imported || analysis.bindings.contains(component_name.as_str());
 
             if !is_available {
+                let template_offset =
+                    component_usage_offset(analysis, component_name.as_str()).unwrap_or(0);
                 let issue = ComponentResolutionIssue {
                     file_id,
                     name: component_name.clone(),
                     kind: ComponentResolutionIssueKind::UnregisteredComponent,
-                    offset: 0, // TODO: Get actual offset from template
+                    offset: template_offset,
                 };
                 issues.push(issue);
 
                 let diagnostic = CrossFileDiagnostic::new(
                     CrossFileDiagnosticKind::UnregisteredComponent {
                         component_name: component_name.clone(),
-                        template_offset: 0,
+                        template_offset,
                     },
                     DiagnosticSeverity::Error,
                     file_id,
-                    0,
+                    template_offset,
                     cstr!(
                         "**Unregistered Component**: `<{}>` is used in template but not imported\n\n\
                         The component must be imported in `<script setup>` or registered globally.",
@@ -163,6 +165,14 @@ pub fn analyze_component_resolution(
     }
 
     (issues, diagnostics)
+}
+
+fn component_usage_offset(analysis: &vize_croquis::Croquis, component_name: &str) -> Option<u32> {
+    analysis
+        .component_usages
+        .iter()
+        .find(|usage| component_names_match(usage.name.as_str(), component_name))
+        .map(|usage| usage.start)
 }
 
 /// Check if a component name is a Vue built-in component.
@@ -323,7 +333,16 @@ fn resolve_import(
 
 #[cfg(test)]
 mod tests {
-    use super::{is_builtin_component, is_custom_element_tag};
+    use super::{
+        ComponentResolutionIssueKind, analyze_component_resolution, is_builtin_component,
+        is_custom_element_tag,
+    };
+    use crate::CrossFileDiagnosticKind;
+    use crate::graph::DependencyGraph;
+    use crate::registry::ModuleRegistry;
+    use vize_carton::{CompactString, smallvec};
+    use vize_croquis::analysis::ComponentUsage;
+    use vize_croquis::{Croquis, ScopeId};
 
     #[test]
     fn test_is_builtin_component() {
@@ -354,5 +373,49 @@ mod tests {
         assert!(!is_custom_element_tag("ChildWidget"));
         assert!(!is_custom_element_tag("font-face"));
         assert!(!is_custom_element_tag("div"));
+    }
+
+    #[test]
+    fn unregistered_component_uses_template_usage_offset() {
+        let mut registry = ModuleRegistry::new();
+        let graph = DependencyGraph::new();
+        let mut analysis = Croquis::new();
+
+        analysis
+            .used_components
+            .insert(CompactString::new("UnknownThing"));
+        analysis.component_usages.push(ComponentUsage {
+            name: CompactString::new("UnknownThing"),
+            start: 12,
+            end: 27,
+            props: smallvec![],
+            events: smallvec![],
+            slots: smallvec![],
+            has_spread_attrs: false,
+            scope_id: ScopeId::ROOT,
+            vif_guard: None,
+        });
+
+        let (file_id, _) = registry.register("Parent.vue", "", analysis);
+        let (issues, diagnostics) = analyze_component_resolution(&registry, &graph);
+
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].file_id, file_id);
+        assert_eq!(
+            issues[0].kind,
+            ComponentResolutionIssueKind::UnregisteredComponent
+        );
+        assert_eq!(issues[0].offset, 12);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].primary_file, file_id);
+        assert_eq!(diagnostics[0].primary_offset, 12);
+        assert_eq!(
+            diagnostics[0].kind,
+            CrossFileDiagnosticKind::UnregisteredComponent {
+                component_name: CompactString::new("UnknownThing"),
+                template_offset: 12,
+            }
+        );
     }
 }
