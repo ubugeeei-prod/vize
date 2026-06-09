@@ -1,0 +1,128 @@
+===
+name: parity v-pre
+options: vapor
+--- INPUT ---
+<div v-pre :id="raw" @click="raw">{{ raw }}</div>
+--- OUTPUT ---
+import { template as _template } from 'vue';
+const t0 = _template("<div :id=\"raw\" @click=\"raw\">{{ raw }}</div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}
+===
+name: parity v-cloak
+options: vapor
+--- INPUT ---
+<div v-cloak>{{ msg }}</div>
+--- OUTPUT ---
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div> </div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  n0.removeAttribute("v-cloak")
+  _renderEffect(() => _setText(x0, _toDisplayString(_ctx.msg)))
+  return n0
+}
+===
+name: parity custom directive with arg and modifiers
+options: vapor
+--- INPUT ---
+<div v-focus:top.lazy="value" />
+--- OUTPUT ---
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const _directive_focus = _resolveDirective("focus")
+  const n0 = t0()
+  _withDirectives(n0, [[_directive_focus, _ctx.value, "top", { lazy: true }]])
+  return n0
+}
+===
+name: parity custom directive on component (payload loss)
+options: vapor
+--- INPUT ---
+<MyComp v-focus:top.lazy="value" />
+--- OUTPUT ---
+import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+
+export function render(_ctx) {
+  const _component_MyComp = _resolveComponent("MyComp")
+  const _directive_focus = _resolveDirective("focus")
+  const n0 = _createComponentWithFallback(_component_MyComp, null, null, true)
+  _withDirectives(n0, [[_directive_focus, _ctx.value, "top", { lazy: true }]])
+  return n0
+}
+===
+name: parity v-once
+options: vapor
+--- INPUT ---
+<div v-once>{{ msg }}</div>
+--- OUTPUT ---
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';
+const t0 = _template("<div> </div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _setText(x0, _toDisplayString(_ctx.msg))
+  return n0
+}
+===
+name: parity Teleport
+options: vapor
+--- INPUT ---
+<Teleport to="body"><span /></Teleport>
+--- OUTPUT ---
+import { createComponent as _createComponent, VaporTeleport as _VaporTeleport, template as _template } from 'vue';
+const t0 = _template("<span></span>")
+
+export function render(_ctx) {
+  const n1 = _createComponent(_VaporTeleport, { to: () => ("body") }, {
+    "default": () => {
+      const n0 = t0()
+      return n0
+    }
+  }, true)
+  return n1
+}
+===
+name: parity KeepAlive
+options: vapor
+--- INPUT ---
+<KeepAlive><component :is="current" /></KeepAlive>
+--- OUTPUT ---
+import { createComponent as _createComponent, createDynamicComponent as _createDynamicComponent, VaporKeepAlive as _VaporKeepAlive, withVaporCtx as _withVaporCtx } from 'vue';
+
+export function render(_ctx) {
+  const n1 = _createComponent(_VaporKeepAlive, null, {
+    "default": _withVaporCtx(() => {
+      const n0 = _createDynamicComponent(() => (_ctx.current), null, null, true)
+      return n0
+    })
+  }, true)
+  return n1
+}
+===
+name: parity Suspense
+options: vapor
+--- INPUT ---
+<Suspense><AsyncComponent /></Suspense>
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, withVaporCtx as _withVaporCtx } from 'vue';
+
+export function render(_ctx) {
+  const _component_AsyncComponent = _resolveComponent("AsyncComponent")
+  const _component_Suspense = _resolveComponent("Suspense")
+  const n1 = _createComponentWithFallback(_component_Suspense, null, {
+    "default": _withVaporCtx(() => {
+      const n0 = _createComponentWithFallback(_component_AsyncComponent)
+      return n0
+    })
+  }, true)
+  return n1
+}

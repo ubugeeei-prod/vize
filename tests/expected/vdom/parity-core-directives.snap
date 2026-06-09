@@ -1,0 +1,115 @@
+===
+name: parity v-pre
+options: vdom
+--- INPUT ---
+<div v-pre :id="raw" @click="raw">{{ raw }}</div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    ":id": "raw",
+    "@click": "raw"
+  }, "{{ raw }}"))
+}
+===
+name: parity v-cloak
+options: vdom
+--- INPUT ---
+<div v-cloak>{{ msg }}</div>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg), 1 /* TEXT */))
+}
+===
+name: parity custom directive with arg and modifiers
+options: vdom
+--- INPUT ---
+<div v-focus:top.lazy="value" />
+--- OUTPUT ---
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _directive_focus = _resolveDirective("focus")
+
+  return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512 /* NEED_PATCH */)), [
+    [_directive_focus, _ctx.value, "top", { lazy: true }]
+  ])
+}
+===
+name: parity v-once
+options: vdom
+--- INPUT ---
+<div v-once>{{ msg }}</div>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, setBlockTracking as _setBlockTracking } from "vue"
+
+export function render(_ctx, _cache) {
+  return _cache[0] || (
+    _setBlockTracking(-1, true),
+    (_cache[0] = _createElementVNode("div", null, [
+      _createTextVNode(_toDisplayString(_ctx.msg), 1 /* TEXT */)
+    ])).cacheIndex = 0,
+    _setBlockTracking(1),
+    _cache[0]
+  )
+}
+===
+name: parity v-memo
+options: vdom
+--- INPUT ---
+<div v-memo="[id]">{{ msg }}</div>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode, withMemo as _withMemo } from "vue"
+
+export function render(_ctx, _cache) {
+  return _withMemo([_ctx.id], () => (_openBlock(), _createElementBlock("div", null, [
+    _createTextVNode(_toDisplayString(_ctx.msg), 1 /* TEXT */)
+  ])), _cache, 0)
+}
+===
+name: parity Teleport
+options: vdom
+--- INPUT ---
+<Teleport to="body"><span /></Teleport>
+--- OUTPUT ---
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, Teleport as _Teleport } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_Teleport, { to: "body" }, [
+    _createElementVNode("span")
+  ]))
+}
+===
+name: parity KeepAlive
+options: vdom
+--- INPUT ---
+<KeepAlive><component :is="current" /></KeepAlive>
+--- OUTPUT ---
+import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock, KeepAlive as _KeepAlive } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_KeepAlive, null, [
+    (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.current)))
+  ], 1024 /* DYNAMIC_SLOTS */))
+}
+===
+name: parity Suspense
+options: vdom
+--- INPUT ---
+<Suspense><AsyncComponent /></Suspense>
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, Suspense as _Suspense, withCtx as _withCtx } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_AsyncComponent = _resolveComponent("AsyncComponent")
+
+  return (_openBlock(), _createBlock(_Suspense, null, {
+    default: _withCtx(() => [
+      _createVNode(_component_AsyncComponent)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}

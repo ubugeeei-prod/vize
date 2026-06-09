@@ -1,0 +1,44 @@
+// VDom: core-directive backend-parity matrix (issue #1161)
+//
+// Mirrors the shared parity matrix in tests/fixtures/PARITY.md so that the same
+// core-directive surface is exercised against the VDOM backend that Vapor and
+// SSR are also measured against.
+
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "parity v-pre"
+    input = #"<div v-pre :id="raw" @click="raw">{{ raw }}</div>"#
+  }
+  new {
+    name = "parity v-cloak"
+    input = "<div v-cloak>{{ msg }}</div>"
+  }
+  new {
+    name = "parity custom directive with arg and modifiers"
+    input = #"<div v-focus:top.lazy="value" />"#
+  }
+  new {
+    name = "parity v-once"
+    input = "<div v-once>{{ msg }}</div>"
+  }
+  new {
+    name = "parity v-memo"
+    input = #"<div v-memo="[id]">{{ msg }}</div>"#
+  }
+  new {
+    name = "parity Teleport"
+    input = #"<Teleport to="body"><span /></Teleport>"#
+  }
+  new {
+    name = "parity KeepAlive"
+    input = #"<KeepAlive><component :is="current" /></KeepAlive>"#
+  }
+  new {
+    name = "parity Suspense"
+    input = "<Suspense><AsyncComponent /></Suspense>"
+  }
+}

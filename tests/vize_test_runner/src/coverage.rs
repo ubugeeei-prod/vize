@@ -10,15 +10,25 @@ use std::path::PathBuf;
 use vize_carton::String;
 use vize_test_runner::{CompilerMode, run_fixture_tests};
 
-const MIN_VDOM_PASSED: usize = 439;
-const MIN_VAPOR_PASSED: usize = 104;
-const MIN_SFC_PASSED: usize = 166;
-const MIN_TOTAL_PASSED: usize = 709;
+const MIN_VDOM_PASSED: usize = 457;
+const MIN_VAPOR_PASSED: usize = 116;
+const MIN_SFC_PASSED: usize = 167;
+const MIN_TOTAL_PASSED: usize = 740;
 
 // Known v1 alpha fixture debt. CI allows these exact failures so existing gaps
 // do not block unrelated work, but any new failure or pass-count regression
 // fails the coverage job.
-const KNOWN_FAILURES: &[(&str, &str)] = &[];
+//
+// Core-directive backend-parity matrix (#1161): the Vapor backend drops the
+// entire directive when a custom directive is applied to a *component*
+// (no _resolveDirective / _withDirectives is emitted), losing the binding value,
+// argument and modifiers. The matching expected snapshot encodes the desired
+// payload-preserving output (mirroring the VDOM backend), so it intentionally
+// FAILS until the compiler bug is fixed. See tests/fixtures/PARITY.md.
+const KNOWN_FAILURES: &[(&str, &str)] = &[(
+    "vapor/parity-core-directives",
+    "parity custom directive on component (payload loss)",
+)];
 
 fn is_known_failure(path: &str, name: &str) -> bool {
     KNOWN_FAILURES
@@ -51,6 +61,7 @@ fn main() {
         ("vdom/v-once", CompilerMode::Vdom),
         ("vdom/dynamic-component", CompilerMode::Vdom),
         ("vdom/html-entities", CompilerMode::Vdom),
+        ("vdom/parity-core-directives", CompilerMode::Vdom),
         ("vapor/element", CompilerMode::Vapor),
         ("vapor/component", CompilerMode::Vapor),
         ("vapor/v-if", CompilerMode::Vapor),
@@ -61,6 +72,7 @@ fn main() {
         ("vapor/v-slot", CompilerMode::Vapor),
         ("vapor/v-show", CompilerMode::Vapor),
         ("vapor/edge-cases", CompilerMode::Vapor),
+        ("vapor/parity-core-directives", CompilerMode::Vapor),
         ("sfc/basic", CompilerMode::Sfc),
         ("sfc/script-setup", CompilerMode::Sfc),
         ("sfc/script-setup-advanced", CompilerMode::Sfc),
@@ -264,9 +276,15 @@ mod tests {
 
     #[test]
     fn tracks_the_current_known_failure_budget() {
-        assert_eq!(KNOWN_FAILURES.len(), 0);
+        // Exactly one tracked failure: the #1161 Vapor custom-directive
+        // payload-loss case on components. See tests/fixtures/PARITY.md.
+        assert_eq!(KNOWN_FAILURES.len(), 1);
         let unique_failures: FxHashSet<_> = KNOWN_FAILURES.iter().collect();
         assert_eq!(unique_failures.len(), KNOWN_FAILURES.len());
+        assert!(is_known_failure(
+            "vapor/parity-core-directives",
+            "parity custom directive on component (payload loss)"
+        ));
         assert!(!is_known_failure(
             "sfc/script-setup",
             "generic component with extends"

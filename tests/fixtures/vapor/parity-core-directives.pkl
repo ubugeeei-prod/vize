@@ -1,0 +1,55 @@
+// Vapor: core-directive backend-parity matrix (issue #1161)
+//
+// Mirrors the shared parity matrix in tests/fixtures/PARITY.md. These cases
+// capture what the Vapor backend currently emits for the core-directive surface
+// so backend-specific regressions are caught alongside VDOM and SSR.
+//
+// NOTE: "parity custom directive on component (payload loss)" intentionally
+// exposes the Vapor custom-directive payload-loss gap tracked in #1161: when a
+// custom directive is applied to a component the Vapor backend currently drops
+// the whole directive (no _resolveDirective / _withDirectives is emitted),
+// losing the binding value, argument and modifiers. The matching expected
+// snapshot encodes the desired payload-preserving output (mirroring the VDOM
+// backend), so it FAILS against today's compiler. It is registered as a
+// documented KNOWN_FAILURE in tests/vize_test_runner/src/coverage.rs so CI stays
+// green while the gap stays visible. Do NOT rewrite the expected snapshot to
+// match current output; it must keep failing until the compiler bug is fixed.
+
+amends "CompilerFixture.pkl"
+
+mode = "vapor"
+
+cases {
+  new {
+    name = "parity v-pre"
+    input = #"<div v-pre :id="raw" @click="raw">{{ raw }}</div>"#
+  }
+  new {
+    name = "parity v-cloak"
+    input = "<div v-cloak>{{ msg }}</div>"
+  }
+  new {
+    name = "parity custom directive with arg and modifiers"
+    input = #"<div v-focus:top.lazy="value" />"#
+  }
+  new {
+    name = "parity custom directive on component (payload loss)"
+    input = #"<MyComp v-focus:top.lazy="value" />"#
+  }
+  new {
+    name = "parity v-once"
+    input = "<div v-once>{{ msg }}</div>"
+  }
+  new {
+    name = "parity Teleport"
+    input = #"<Teleport to="body"><span /></Teleport>"#
+  }
+  new {
+    name = "parity KeepAlive"
+    input = #"<KeepAlive><component :is="current" /></KeepAlive>"#
+  }
+  new {
+    name = "parity Suspense"
+    input = "<Suspense><AsyncComponent /></Suspense>"
+  }
+}
