@@ -130,7 +130,7 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
                 }
             }
             '}' => {
-                brace_depth -= 1;
+                brace_depth = brace_depth.saturating_sub(1);
                 output.push(c);
                 // Check @keyframes block end — restore parent at_rule_depth
                 if keyframes_brace_depth.is_some_and(|d| brace_depth < d) {
@@ -684,6 +684,17 @@ mod tests {
         assert_eq!(
             result,
             "@media (min-width: 1px){ /* A <span>, not a <p>; ignore :deep(p). */\n.conferences__venue[data-v-abc]{ display: block; }}"
+        );
+    }
+
+    #[test]
+    fn test_apply_scoped_css_stray_closing_brace_keeps_scoping() {
+        let css = "}.foo { color: red; }.bar { color: blue; }";
+        let result = apply_scoped_css(css, "data-v-123");
+
+        assert_eq!(
+            result,
+            "}.foo[data-v-123]{ color: red; }.bar[data-v-123]{ color: blue; }"
         );
     }
 
