@@ -727,6 +727,15 @@ test("setup-moonbit smoke test validates the native async process runtime", () =
   assert.match(installer, /@process\.run/);
 });
 
+test("setup-moonbit patches Darwin secure memcpy macros before smoke testing", () => {
+  const installer = readRepoFile(".github", "actions", "setup-moonbit", "install-moonbit.mjs");
+
+  assert.match(installer, /function patchDarwinMoonbitHeader\(\)/);
+  assert.match(installer, /os\.type\(\) !== "Darwin"/);
+  assert.match(installer, /#undef memcpy/);
+  assert.match(installer, /patchDarwinMoonbitHeader\(\);\nsmokeTestMoon\(\);/);
+});
+
 test("setup-moonbit writes both command and shell shims on Windows so bash steps can resolve moon", () => {
   const installer = readRepoFile(".github", "actions", "setup-moonbit", "install-moonbit.mjs");
 

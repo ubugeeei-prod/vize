@@ -82,6 +82,36 @@ export MOON_HOME="${moonHome}"
   fs.chmodSync(shimMoonShell, 0o755);
 }
 
+function patchDarwinMoonbitHeader() {
+  if (os.type() !== "Darwin") {
+    return;
+  }
+
+  const moonbitHeader = path.join(moonHome, "include", "moonbit.h");
+  const memcpyDeclaration = "void *memcpy(void *dst, const void *src, size_t n);";
+  const patchedMemcpyDeclaration = `#ifdef memcpy
+#undef memcpy
+#endif
+${memcpyDeclaration}`;
+
+  if (!fs.existsSync(moonbitHeader)) {
+    console.warn(`MoonBit header not found at ${moonbitHeader}; skipping Darwin memcpy patch`);
+    return;
+  }
+
+  const header = fs.readFileSync(moonbitHeader, "utf8");
+  if (header.includes(patchedMemcpyDeclaration)) {
+    return;
+  }
+
+  if (!header.includes(memcpyDeclaration)) {
+    console.warn("MoonBit header memcpy declaration not found; skipping Darwin memcpy patch");
+    return;
+  }
+
+  fs.writeFileSync(moonbitHeader, header.replace(memcpyDeclaration, patchedMemcpyDeclaration));
+}
+
 function smokeTestMoon() {
   const smokeTestCommand =
     os.type() === "Windows_NT"
@@ -171,6 +201,7 @@ if (!hasExistingMoonInstall()) {
 }
 
 ensureMoonShim();
+patchDarwinMoonbitHeader();
 smokeTestMoon();
 
 fs.appendFileSync(githubPath, `${shimDir}\n`);
