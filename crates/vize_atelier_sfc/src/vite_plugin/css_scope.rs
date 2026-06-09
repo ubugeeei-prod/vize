@@ -8,7 +8,15 @@ pub(super) fn scope_css_for_pipeline(css: &str, scope_id: &str) -> String {
 pub(super) fn unwrap_deep_selectors(css: &str) -> String {
     unwrap_pseudo_functions(
         css,
-        &["::v-deep(", "::deep(", ":deep(", "::v-global(", ":global("],
+        &[
+            "::v-deep(",
+            "::deep(",
+            ":deep(",
+            "::v-slotted(",
+            ":slotted(",
+            "::v-global(",
+            ":global(",
+        ],
     )
 }
 
@@ -367,7 +375,16 @@ fn scope_selector(selector: &str, scope_id: &str) -> String {
         &["::v-global(", ":global("],
     );
 
-    if let Some(deep) = find_pseudo_function_any(body.as_str(), &["::v-deep(", "::deep(", ":deep("])
+    if let Some(slotted) = find_pseudo_function_any(body.as_str(), &["::v-slotted(", ":slotted("]) {
+        let inner = &body[slotted.inner_start..slotted.inner_end];
+        let after = &body[slotted.end..];
+        let mut scoped = String::with_capacity(inner.len() + scope_id.len() + after.len() + 4);
+        scoped.push_str(inner);
+        push_slotted_scope_attr(&mut scoped, scope_id);
+        scoped.push_str(after);
+        body = scoped;
+    } else if let Some(deep) =
+        find_pseudo_function_any(body.as_str(), &["::v-deep(", "::deep(", ":deep("])
     {
         let before = body[..deep.start].trim_end();
         let inner = &body[deep.inner_start..deep.inner_end];
@@ -638,6 +655,12 @@ fn push_scope_attr(output: &mut String, scope_id: &str) {
     output.push(']');
 }
 
+fn push_slotted_scope_attr(output: &mut String, scope_id: &str) {
+    output.push('[');
+    output.push_str(scope_id);
+    output.push_str("-s]");
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -676,11 +699,43 @@ mod tests {
 
     #[test]
     fn unwraps_preprocessor_special_selectors() {
-        let css = "[data-v-x] .parent > ::v-deep(.child), [data-v-x] .foo:global(.bar) {}";
+        let css = "[data-v-x] .parent > ::v-deep(.child), [data-v-x] :slotted(.slot), [data-v-x] .foo:global(.bar) {}";
 
         assert_eq!(
             unwrap_deep_selectors(css).as_str(),
-            "[data-v-x] .parent > .child, [data-v-x] .foo.bar {}"
+            "[data-v-x] .parent > .child, [data-v-x] .slot, [data-v-x] .foo.bar {}"
+        );
+    }
+
+    #[test]
+    fn scopes_slotted_selector_with_slotted_scope_id() {
+        assert_eq!(
+            scope_css_for_pipeline(":slotted(.foo) { color: red; }", "data-v-x").as_str(),
+            ".foo[data-v-x-s]{color: red;}"
+        );
+    }
+
+    #[test]
+    fn scopes_legacy_v_slotted_selector_with_slotted_scope_id() {
+        assert_eq!(
+            scope_css_for_pipeline("::v-slotted(.foo) { color: red; }", "data-v-x").as_str(),
+            ".foo[data-v-x-s]{color: red;}"
+        );
+    }
+
+    #[test]
+    fn scopes_slotted_selector_with_pseudo_suffix() {
+        assert_eq!(
+            scope_css_for_pipeline(":slotted(.foo):hover { color: red; }", "data-v-x").as_str(),
+            ".foo[data-v-x-s]:hover{color: red;}"
+        );
+    }
+
+    #[test]
+    fn scopes_nested_slotted_selector_with_slotted_scope_id() {
+        assert_eq!(
+            scope_css_for_pipeline(".host { :slotted(.foo) { color: red; } }", "data-v-x").as_str(),
+            " .foo[data-v-x-s]{color: red;}"
         );
     }
 
