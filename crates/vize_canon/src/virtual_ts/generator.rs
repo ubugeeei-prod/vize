@@ -502,22 +502,33 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
 
             // Collect ref bindings for auto-unwrapping in template
-            let mut ref_bindings: Vec<&str> = summary
-                .bindings
-                .bindings
-                .iter()
-                .filter(|(name, _)| {
-                    template_referenced_names
-                        .as_ref()
-                        .is_none_or(|names| names.contains(name.as_str()))
-                })
-                .filter(|(name, binding_type)| {
-                    summary.reactivity.needs_value_access(name.as_str())
-                        || matches!(binding_type, BindingType::SetupMaybeRef)
-                            && is_local_setup_binding(summary, name.as_str())
-                })
-                .map(|(name, _)| name.as_str())
-                .collect();
+            let mut ref_bindings: Vec<&str> =
+                if let Some(template_referenced_names) = template_referenced_names.as_ref() {
+                    summary
+                        .bindings
+                        .bindings
+                        .iter()
+                        .filter(|(name, _)| template_referenced_names.contains(name.as_str()))
+                        .filter(|(name, binding_type)| {
+                            summary.reactivity.needs_value_access(name.as_str())
+                                || matches!(binding_type, BindingType::SetupMaybeRef)
+                                    && is_local_setup_binding(summary, name.as_str())
+                        })
+                        .map(|(name, _)| name.as_str())
+                        .collect()
+                } else {
+                    summary
+                        .bindings
+                        .bindings
+                        .iter()
+                        .filter(|(name, binding_type)| {
+                            summary.reactivity.needs_value_access(name.as_str())
+                                || matches!(binding_type, BindingType::SetupMaybeRef)
+                                    && is_local_setup_binding(summary, name.as_str())
+                        })
+                        .map(|(name, _)| name.as_str())
+                        .collect()
+                };
             ref_bindings.sort_unstable();
 
             // Capture ref types BEFORE template scope to avoid circular references.
@@ -628,17 +639,23 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // narrowed to template-referenced names so user TS6133 can surface.
             if !summary.bindings.bindings.is_empty() {
                 let mut first = true;
-                let mut binding_names: Vec<&str> = summary
-                    .bindings
-                    .bindings
-                    .keys()
-                    .map(|name| name.as_str())
-                    .filter(|name| {
-                        template_referenced_names
-                            .as_ref()
-                            .is_none_or(|names| names.contains(*name))
-                    })
-                    .collect();
+                let mut binding_names: Vec<&str> =
+                    if let Some(template_referenced_names) = template_referenced_names.as_ref() {
+                        summary
+                            .bindings
+                            .bindings
+                            .keys()
+                            .map(|name| name.as_str())
+                            .filter(|name| template_referenced_names.contains(*name))
+                            .collect()
+                    } else {
+                        summary
+                            .bindings
+                            .bindings
+                            .keys()
+                            .map(|name| name.as_str())
+                            .collect()
+                    };
                 binding_names.sort_unstable();
                 if !binding_names.is_empty() {
                     append!(ts, "\n  // {reference_setup_bindings_comment}\n  ");
