@@ -2,29 +2,36 @@
 //!
 //! Contains the core linting methods: single-file template linting,
 //! full SFC linting with template extraction, and batch file processing.
+//!
+//! Split into:
+//! - [`parse_diagnostics`]: parser-error to lint-diagnostic translation
+//! - [`template_extract`]: ultra-fast `<template>` block extraction
+//! - [`ecosystem_hint`]: source heuristics for ecosystem template rules
+//! - [`tag_scan`]: shared byte-oriented tag scanning primitives
+
+mod ecosystem_hint;
+mod parse_diagnostics;
+mod tag_scan;
+mod template_extract;
+
+pub(crate) use template_extract::extract_template_fast;
 
 use crate::{
-    context::LintContext,
-    diagnostic::{LintDiagnostic, LintSummary, Severity},
-    preset::LintPreset,
-    visitor::LintVisitor,
+    context::LintContext, diagnostic::LintSummary, preset::LintPreset, visitor::LintVisitor,
 };
 use vize_armature::Parser;
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
-use vize_atelier_sfc::{SfcError, SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::Allocator;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_carton::profile;
 use vize_croquis::{Analyzer, Croquis};
-use vize_relief::{CompilerError, ErrorCode, ast::RootNode};
+use vize_relief::ast::RootNode;
 
 use super::config::{LintResult, Linter};
 
-const TEMPLATE_PARSE_RULE: &str = "parser/template";
-const SFC_PARSE_RULE: &str = "parser/sfc";
-const INVALID_SELF_CLOSING_HTML_MESSAGE: &str =
-    "Invalid self-closing syntax on non-void HTML element";
+use ecosystem_hint::source_may_contain_ecosystem_template_rule;
 
 pub(crate) enum TemplateAnalysis<'a> {
     Disabled,
@@ -39,65 +46,6 @@ pub(crate) struct SfcTemplateLintInput<'a> {
     pub root: &'a RootNode<'a>,
     pub descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
     pub analysis: TemplateAnalysis<'a>,
-}
-
-fn template_parse_diagnostic(parse_error: &CompilerError, source_len: usize) -> LintDiagnostic {
-    let (start, end) = template_parse_span(parse_error, source_len);
-    if parse_error.is_recoverable() {
-        LintDiagnostic::warn(TEMPLATE_PARSE_RULE, parse_error.message.clone(), start, end)
-    } else {
-        LintDiagnostic::error(TEMPLATE_PARSE_RULE, parse_error.message.clone(), start, end)
-    }
-}
-
-fn should_report_template_parse_diagnostic(parse_error: &CompilerError) -> bool {
-    // Standard mode rewrites invalid HTML self-closing syntax as a compatibility
-    // warning. Lint surfaces parser errors, but should not turn this rewrite
-    // notice into a project warning budget failure.
-    !(parse_error.code == ErrorCode::ExtendPoint
-        && parse_error
-            .message
-            .starts_with(INVALID_SELF_CLOSING_HTML_MESSAGE))
-}
-
-fn template_parse_span(parse_error: &CompilerError, source_len: usize) -> (u32, u32) {
-    if source_len == 0 {
-        return (0, 0);
-    }
-
-    let source_len = source_len as u32;
-    let (raw_start, raw_end) = parse_error
-        .loc
-        .as_ref()
-        .map(|loc| (loc.start.offset, loc.end.offset))
-        .unwrap_or((0, 0));
-    let start = raw_start.min(source_len.saturating_sub(1));
-    let end = raw_end
-        .max(raw_start.saturating_add(1))
-        .max(start.saturating_add(1))
-        .min(source_len);
-
-    (start, end)
-}
-
-fn sfc_parse_span(parse_error: &SfcError, source_len: usize) -> (u32, u32) {
-    if source_len == 0 {
-        return (0, 0);
-    }
-
-    let source_len = source_len as u32;
-    let (raw_start, raw_end) = parse_error
-        .loc
-        .as_ref()
-        .map(|loc| (loc.start as u32, loc.end as u32))
-        .unwrap_or((0, 0));
-    let start = raw_start.min(source_len.saturating_sub(1));
-    let end = raw_end
-        .max(raw_start.saturating_add(1))
-        .max(start.saturating_add(1))
-        .min(source_len);
-
-    (start, end)
 }
 
 const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
@@ -243,58 +191,6 @@ impl Linter {
                 label.start += byte_offset;
                 label.end += byte_offset;
             }
-        }
-    }
-
-    pub(crate) fn template_parse_lint_result(
-        filename: &str,
-        source_len: usize,
-        parse_errors: &[CompilerError],
-    ) -> LintResult {
-        let mut diagnostics = Vec::with_capacity(parse_errors.len());
-        let mut error_count = 0;
-        let mut warning_count = 0;
-
-        for parse_error in parse_errors {
-            if !should_report_template_parse_diagnostic(parse_error) {
-                continue;
-            }
-            let diagnostic = template_parse_diagnostic(parse_error, source_len);
-            match diagnostic.severity {
-                Severity::Error => error_count += 1,
-                Severity::Warning => warning_count += 1,
-            }
-            diagnostics.push(diagnostic);
-        }
-
-        LintResult {
-            filename: filename.to_compact_string(),
-            diagnostics,
-            error_count,
-            warning_count,
-        }
-    }
-
-    pub(crate) fn has_fatal_template_parse_errors(parse_errors: &[CompilerError]) -> bool {
-        parse_errors.iter().any(|error| !error.is_recoverable())
-    }
-
-    fn sfc_parse_lint_result(
-        filename: &str,
-        source_len: usize,
-        parse_error: &SfcError,
-    ) -> LintResult {
-        let (start, end) = sfc_parse_span(parse_error, source_len);
-        LintResult {
-            filename: filename.to_compact_string(),
-            diagnostics: vec![LintDiagnostic::error(
-                SFC_PARSE_RULE,
-                parse_error.message.clone(),
-                start,
-                end,
-            )],
-            error_count: 1,
-            warning_count: 0,
         }
     }
 
@@ -715,329 +611,5 @@ impl Linter {
         }
 
         result
-    }
-}
-
-fn source_may_contain_ecosystem_template_rule(
-    template_source: &str,
-    sfc_source: Option<&str>,
-) -> bool {
-    let template_bytes = template_source.as_bytes();
-    if template_may_contain_ecosystem_element(template_bytes, sfc_source) {
-        return true;
-    }
-
-    sfc_source.is_some_and(|source| source.contains("<i18n"))
-        && template_may_call_i18n(template_bytes)
-}
-
-fn template_may_contain_ecosystem_element(bytes: &[u8], sfc_source: Option<&str>) -> bool {
-    let imports_void_vue = sfc_source.is_some_and(|source| source.contains("@void/vue"));
-    let mut cursor = 0;
-    while let Some(relative) = memchr::memchr(b'<', &bytes[cursor..]) {
-        let tag_start = cursor + relative;
-        let Some((tag_name, name_end)) = tag_name_at(bytes, tag_start) else {
-            cursor = tag_start + 1;
-            continue;
-        };
-
-        if matches!(
-            tag_name,
-            b"RouterLink" | b"router-link" | b"NuxtLink" | b"nuxt-link"
-        ) {
-            return true;
-        }
-        if tag_name == b"Link" && imports_void_vue {
-            return true;
-        }
-
-        let Some(tag_end) = find_tag_end(bytes, name_end) else {
-            return false;
-        };
-        if tag_name.eq_ignore_ascii_case(b"a")
-            && static_internal_href_may_exist(&bytes[name_end..tag_end])
-        {
-            return true;
-        }
-
-        cursor = tag_end + 1;
-    }
-    false
-}
-
-fn template_may_call_i18n(bytes: &[u8]) -> bool {
-    memchr::memmem::find(bytes, b"$t(").is_some()
-        || memchr::memmem::find(bytes, b"$te(").is_some()
-        || memchr::memmem::find(bytes, b"$tm(").is_some()
-        || memchr::memmem::find(bytes, b"t(").is_some()
-        || memchr::memmem::find(bytes, b"te(").is_some()
-        || memchr::memmem::find(bytes, b"tm(").is_some()
-}
-
-fn static_internal_href_may_exist(bytes: &[u8]) -> bool {
-    let mut search_start = 0;
-    while let Some(relative) = memchr::memmem::find(&bytes[search_start..], b"href") {
-        let href_start = search_start + relative;
-        search_start = href_start + "href".len();
-
-        if href_start > 0 && is_identifier_byte(bytes[href_start - 1]) {
-            continue;
-        }
-        if previous_non_whitespace(bytes, href_start)
-            .is_some_and(|byte| matches!(byte, b':' | b'-' | b'.' | b'@'))
-        {
-            continue;
-        }
-
-        let mut cursor = skip_ascii_whitespace(bytes, search_start);
-        if bytes.get(cursor) != Some(&b'=') {
-            continue;
-        }
-        cursor = skip_ascii_whitespace(bytes, cursor + 1);
-        if !matches!(bytes.get(cursor), Some(b'\'' | b'"')) {
-            continue;
-        }
-        if bytes.get(cursor + 1) == Some(&b'/') && bytes.get(cursor + 2) != Some(&b'/') {
-            return true;
-        }
-    }
-    false
-}
-
-fn previous_non_whitespace(bytes: &[u8], before: usize) -> Option<u8> {
-    bytes[..before]
-        .iter()
-        .rev()
-        .copied()
-        .find(|byte| !byte.is_ascii_whitespace())
-}
-
-fn skip_ascii_whitespace(bytes: &[u8], mut cursor: usize) -> usize {
-    while bytes
-        .get(cursor)
-        .is_some_and(|byte| byte.is_ascii_whitespace())
-    {
-        cursor += 1;
-    }
-    cursor
-}
-
-fn is_identifier_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')
-}
-
-/// Ultra-fast template extraction using memchr for SIMD-accelerated search.
-#[inline]
-pub(crate) fn extract_template_fast(source: &str) -> Option<(String, u32)> {
-    let bytes = source.as_bytes();
-
-    let (_, content_start) = find_template_block_start(bytes)?;
-
-    // Find matching </template> - handle nesting with simple depth tracking
-    let mut depth = 1u32;
-    let mut pos = content_start;
-
-    while pos < bytes.len() && depth > 0 {
-        // Find next < character
-        let next_lt = match memchr::memchr(b'<', &bytes[pos..]) {
-            Some(p) => pos + p,
-            None => break,
-        };
-
-        // Check if it's <template or </template
-        if tag_name_at(bytes, next_lt)
-            .is_some_and(|(name, _)| name.eq_ignore_ascii_case(b"template"))
-        {
-            // Check if self-closing
-            if let Some(gt) = memchr::memchr(b'>', &bytes[next_lt..]) {
-                let tag_end_pos = next_lt + gt;
-                if tag_end_pos > 0 && bytes[tag_end_pos - 1] != b'/' {
-                    depth += 1;
-                }
-                pos = tag_end_pos + 1;
-            } else {
-                pos = next_lt + 9;
-            }
-        } else if closing_tag_name_at(bytes, next_lt)
-            .is_some_and(|(name, _)| name.eq_ignore_ascii_case(b"template"))
-        {
-            depth -= 1;
-            if depth == 0 {
-                let content = std::str::from_utf8(&bytes[content_start..next_lt]).ok()?;
-                return Some((content.to_compact_string(), content_start as u32));
-            }
-            pos = find_tag_end(bytes, next_lt).map_or(next_lt + 11, |gt| gt + 1);
-        } else {
-            pos = next_lt + 1;
-        }
-    }
-
-    None
-}
-
-fn find_template_block_start(bytes: &[u8]) -> Option<(usize, usize)> {
-    let mut pos = 0;
-
-    while pos < bytes.len() {
-        let next_lt = match memchr::memchr(b'<', &bytes[pos..]) {
-            Some(offset) => pos + offset,
-            None => return None,
-        };
-
-        if bytes[next_lt..].starts_with(b"<!--") {
-            pos = memchr::memmem::find(&bytes[next_lt + 4..], b"-->")
-                .map_or(next_lt + 4, |offset| next_lt + 4 + offset + 3);
-            continue;
-        }
-
-        let Some((tag_name, _)) = tag_name_at(bytes, next_lt) else {
-            pos = next_lt + 1;
-            continue;
-        };
-
-        let tag_end = find_tag_end(bytes, next_lt)?;
-        if tag_name.eq_ignore_ascii_case(b"template") {
-            return Some((next_lt, tag_end + 1));
-        }
-
-        if tag_end > next_lt && bytes[tag_end - 1] == b'/' {
-            pos = tag_end + 1;
-            continue;
-        }
-
-        pos = find_closing_tag(bytes, tag_name, tag_end + 1)
-            .and_then(|close_idx| find_tag_end(bytes, close_idx))
-            .map_or(tag_end + 1, |close_end| close_end + 1);
-    }
-
-    None
-}
-
-fn find_tag_end(bytes: &[u8], start: usize) -> Option<usize> {
-    memchr::memchr(b'>', &bytes[start..]).map(|offset| start + offset)
-}
-
-fn find_closing_tag(bytes: &[u8], tag_name: &[u8], from: usize) -> Option<usize> {
-    let mut pos = from;
-
-    while pos < bytes.len() {
-        let next_lt = match memchr::memmem::find(&bytes[pos..], b"</") {
-            Some(offset) => pos + offset,
-            None => return None,
-        };
-
-        if closing_tag_name_at(bytes, next_lt)
-            .is_some_and(|(name, _)| name.eq_ignore_ascii_case(tag_name))
-        {
-            return Some(next_lt);
-        }
-
-        pos = next_lt + 2;
-    }
-
-    None
-}
-
-fn tag_name_at(bytes: &[u8], lt_idx: usize) -> Option<(&[u8], usize)> {
-    if bytes.get(lt_idx) != Some(&b'<') {
-        return None;
-    }
-
-    let name_start = lt_idx + 1;
-    match bytes.get(name_start) {
-        Some(b'!' | b'/' | b'?') | None => return None,
-        _ => {}
-    }
-
-    read_tag_name(bytes, name_start)
-}
-
-fn closing_tag_name_at(bytes: &[u8], lt_idx: usize) -> Option<(&[u8], usize)> {
-    if bytes.get(lt_idx) != Some(&b'<') || bytes.get(lt_idx + 1) != Some(&b'/') {
-        return None;
-    }
-
-    read_tag_name(bytes, lt_idx + 2)
-}
-
-fn read_tag_name(bytes: &[u8], name_start: usize) -> Option<(&[u8], usize)> {
-    let mut name_end = name_start;
-    while bytes
-        .get(name_end)
-        .is_some_and(|byte| is_tag_name_byte(*byte))
-    {
-        name_end += 1;
-    }
-
-    if name_end == name_start || !is_tag_boundary(bytes, name_end) {
-        return None;
-    }
-
-    Some((&bytes[name_start..name_end], name_end))
-}
-
-fn is_tag_name_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b':' | b'.')
-}
-
-fn is_tag_boundary(bytes: &[u8], idx: usize) -> bool {
-    matches!(
-        bytes.get(idx),
-        None | Some(b'>' | b'/' | b' ' | b'\n' | b'\r' | b'\t' | b'\x0c')
-    )
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{extract_template_fast, source_may_contain_ecosystem_template_rule};
-
-    fn extract(source: &str) -> Option<vize_carton::String> {
-        extract_template_fast(source).map(|(content, _)| content)
-    }
-
-    #[test]
-    fn extract_template_fast_skips_template_prefix_custom_blocks() {
-        let source = "<template-card></template-card><template><div /></template>";
-
-        assert_eq!(extract(source).as_deref(), Some("<div />"));
-    }
-
-    #[test]
-    fn extract_template_fast_skips_template_strings_in_script_blocks() {
-        let source =
-            "<script>const tag = '<template></template>';</script><template><span /></template>";
-
-        assert_eq!(extract(source).as_deref(), Some("<span />"));
-    }
-
-    #[test]
-    fn extract_template_fast_handles_nested_template_tags() {
-        let source = "<template><template #default><slot /></template></template>";
-
-        assert_eq!(
-            extract(source).as_deref(),
-            Some("<template #default><slot /></template>")
-        );
-    }
-
-    #[test]
-    fn ecosystem_template_hint_detects_static_internal_href() {
-        assert!(source_may_contain_ecosystem_template_rule(
-            r#"<a href = "/docs">Docs</a>"#,
-            None
-        ));
-    }
-
-    #[test]
-    fn ecosystem_template_hint_ignores_bound_href_with_script_path_strings() {
-        let template = r#"<a :href="link.url">Docs</a>"#;
-        let sfc = r#"<template><a :href="link.url">Docs</a></template>
-<script setup>
-const links = [{ url: '/docs' }]
-</script>"#;
-        assert!(!source_may_contain_ecosystem_template_rule(
-            template,
-            Some(sfc)
-        ));
     }
 }
