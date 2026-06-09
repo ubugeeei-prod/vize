@@ -23,7 +23,7 @@ use super::super::extract::{
     check_reactive_property_extraction, check_ref_value_extraction, detect_reactivity_call,
     detect_setup_context_violation, extract_argument_source, extract_call_expression,
     extract_provide_key, get_binding_type_from_kind, process_call_expression,
-    record_getter_context_from_call,
+    record_getter_context_from_call, record_static_runtime_object_literal,
 };
 use super::super::walk::{walk_call_arguments, walk_expression};
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
@@ -150,6 +150,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
             } else {
                 false
             };
+
+            if let Some(init) = &declarator.init {
+                record_static_runtime_object_literal(result, name, init, source);
+            }
 
             // Walk other expression types for nested scopes
             // Skip if we already extracted and processed a call expression to avoid double processing

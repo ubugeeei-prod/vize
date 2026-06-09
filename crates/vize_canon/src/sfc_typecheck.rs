@@ -155,6 +155,25 @@ const props = defineProps<Props>();
     }
 
     #[test]
+    fn test_type_check_runtime_props_object_spread_template_binding() {
+        let source = r#"<script setup lang="ts">
+const common = { bar: String } as const;
+const props = defineProps({ ...common, foo: String });
+</script>
+<template>{{ bar }} {{ foo }} {{ props.bar }}</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+        assert!(
+            !result
+                .diagnostics
+                .iter()
+                .any(|d| d.message.as_str().contains("Cannot find name 'bar'")),
+            "{:#?}",
+            result.diagnostics
+        );
+    }
+
+    #[test]
     fn test_type_check_with_defaults_template_props_are_default_resolved() {
         let source = r#"<template>
   <svg>

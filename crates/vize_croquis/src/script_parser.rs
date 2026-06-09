@@ -27,7 +27,7 @@ use oxc_span::SourceType;
 
 use crate::croquis::{BindingMetadata, ComponentRegistration, Croquis};
 use crate::croquis::{ImportStatementInfo, InvalidExport, ReExportInfo, TypeExport};
-use crate::macros::MacroTracker;
+use crate::macros::{EmitDefinition, MacroTracker, PropDefinition};
 use crate::provide::ProvideInjectTracker;
 use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
@@ -72,6 +72,13 @@ pub(crate) enum ReactiveValueOrigin {
 pub(crate) struct ReactiveGetterContext {
     pub callee_name: CompactString,
     pub getters: FxHashMap<CompactString, CompactString>,
+}
+
+/// Static metadata extracted from a top-level runtime object literal.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct RuntimeObjectLiteral {
+    pub props: Vec<PropDefinition>,
+    pub emits: Vec<EmitDefinition>,
 }
 
 /// Result of parsing a script setup block
@@ -120,6 +127,8 @@ pub struct ScriptParseResult {
     /// setup-scope values they depend on. Pushed to in lockstep with
     /// `type_exports` via `record_type_export`.
     pub(crate) type_export_typeof_refs: Vec<FxHashSet<CompactString>>,
+    /// Static runtime object literal metadata available to macro spread args.
+    pub(crate) runtime_object_literals: FxHashMap<CompactString, RuntimeObjectLiteral>,
 }
 
 /// Options for plain script parsing.
@@ -539,6 +548,35 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_define_props_runtime_object_spread_local_literal() {
+        let result = parse_script_setup(
+            r#"
+            const common = {
+                bar: String,
+                count: { type: Number, required: true, default: 1 },
+            } as const
+            const props = defineProps({ ...common, foo: Boolean })
+        "#,
+        );
+
+        let props = result.macros.props();
+        assert_eq!(props.len(), 3);
+        assert!(props.iter().any(|prop| prop.name == "bar"));
+        assert!(props.iter().any(|prop| prop.name == "foo"));
+
+        let count = props
+            .iter()
+            .find(|prop| prop.name == "count")
+            .expect("spread prop should be extracted");
+        assert!(count.required);
+        assert_eq!(count.prop_type.as_deref(), Some("number"));
+        assert_eq!(count.default_value.as_deref(), Some("1"));
+
+        assert!(result.bindings.contains("bar"));
+        assert!(result.bindings.contains("count"));
+    }
+
+    #[test]
     fn test_parse_define_emits() {
         let result = parse_script_setup(
             r#"
@@ -681,6 +719,46 @@ defineSlots<{
             .find(|emit| emit.name == "cancel")
             .expect("cancel emit should be extracted");
         assert_eq!(cancel.payload_type, None);
+    }
+
+    #[test]
+    fn test_parse_define_emits_runtime_object_spread_local_literal() {
+        let result = parse_script_setup(
+            r#"
+            type SavePayload = { id: number }
+            const commonEmits = {
+                save: (payload: SavePayload) => payload.id > 0,
+                close() { return true },
+            } as const
+            const emit = defineEmits({ ...commonEmits, cancel: null })
+        "#,
+        );
+
+        assert_eq!(result.macros.emits().len(), 3);
+
+        let save = result
+            .macros
+            .emits()
+            .iter()
+            .find(|emit| emit.name == "save")
+            .expect("spread emit should be extracted");
+        assert_eq!(save.payload_type.as_deref(), Some("[payload: SavePayload]"));
+
+        let close = result
+            .macros
+            .emits()
+            .iter()
+            .find(|emit| emit.name == "close")
+            .expect("method spread emit should be extracted");
+        assert_eq!(close.payload_type.as_deref(), Some("[]"));
+
+        assert!(
+            result
+                .macros
+                .emits()
+                .iter()
+                .any(|emit| emit.name == "cancel")
+        );
     }
 
     #[test]

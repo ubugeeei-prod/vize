@@ -9,6 +9,7 @@ mod props;
 mod provide;
 mod race;
 mod reactivity;
+mod runtime_objects;
 mod slots;
 
 pub use common::{extract_call_expression, get_binding_type_from_kind};
@@ -23,3 +24,4 @@ pub use plain_values::{
 pub use provide::{detect_provide_inject_call, extract_argument_source, extract_provide_key};
 pub use race::detect_race_condition_call;
 pub use reactivity::{detect_reactivity_call, detect_setup_context_violation};
+pub(in crate::script_parser) use runtime_objects::record_static_runtime_object_literal;

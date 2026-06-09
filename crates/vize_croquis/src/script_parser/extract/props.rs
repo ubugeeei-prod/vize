@@ -1,4 +1,6 @@
-use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey, TSType};
+use oxc_ast::ast::{
+    Argument, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey, TSType,
+};
 use oxc_span::{GetSpan, Span};
 
 use crate::macros::PropDefinition;
@@ -57,32 +59,120 @@ pub fn extract_props_from_runtime(
 
         // Object syntax: { prop1: Type, prop2: { type: Type, required: true } }
         Argument::ObjectExpression(obj) => {
-            for prop in obj.properties.iter() {
-                if let ObjectPropertyKind::ObjectProperty(p) = prop {
-                    let name = match &p.key {
-                        PropertyKey::StaticIdentifier(id) => id.name.as_str(),
-                        PropertyKey::StringLiteral(s) => s.value.as_str(),
-                        _ => continue,
-                    };
-                    let required = detect_required_prop(&p.value);
-                    let prop_type = extract_runtime_prop_type(&p.value, source);
-                    let default_value = extract_runtime_prop_default(&p.value, source);
-                    result.macros.add_prop(PropDefinition {
-                        name: CompactString::new(name),
-                        required,
-                        prop_type,
-                        default_value,
-                    });
-                    result.bindings.add(name, BindingType::Props);
-                }
-            }
+            extract_props_from_object(result, obj, source);
+        }
+
+        Argument::TSAsExpression(ts_as) => {
+            extract_props_from_runtime_expression(result, &ts_as.expression, source);
+        }
+        Argument::TSSatisfiesExpression(ts_satisfies) => {
+            extract_props_from_runtime_expression(result, &ts_satisfies.expression, source);
+        }
+        Argument::TSNonNullExpression(ts_non_null) => {
+            extract_props_from_runtime_expression(result, &ts_non_null.expression, source);
+        }
+        Argument::ParenthesizedExpression(paren) => {
+            extract_props_from_runtime_expression(result, &paren.expression, source);
         }
 
         _ => {}
     }
 }
 
-fn extract_runtime_prop_type(value: &Expression<'_>, source: &str) -> Option<CompactString> {
+fn extract_props_from_runtime_expression(
+    result: &mut ScriptParseResult,
+    expr: &Expression<'_>,
+    source: &str,
+) {
+    match expr {
+        Expression::ArrayExpression(arr) => {
+            for elem in arr.elements.iter() {
+                if let oxc_ast::ast::ArrayExpressionElement::StringLiteral(s) = elem {
+                    let name = s.value.as_str();
+                    result.macros.add_prop(PropDefinition {
+                        name: CompactString::new(name),
+                        required: false,
+                        prop_type: None,
+                        default_value: None,
+                    });
+                    result.bindings.add(name, BindingType::Props);
+                }
+            }
+        }
+        Expression::ObjectExpression(obj) => extract_props_from_object(result, obj, source),
+        Expression::TSAsExpression(ts_as) => {
+            extract_props_from_runtime_expression(result, &ts_as.expression, source);
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            extract_props_from_runtime_expression(result, &ts_satisfies.expression, source);
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            extract_props_from_runtime_expression(result, &ts_non_null.expression, source);
+        }
+        Expression::ParenthesizedExpression(paren) => {
+            extract_props_from_runtime_expression(result, &paren.expression, source);
+        }
+        _ => {}
+    }
+}
+
+fn extract_props_from_object(
+    result: &mut ScriptParseResult,
+    obj: &ObjectExpression<'_>,
+    source: &str,
+) {
+    for prop in obj.properties.iter() {
+        match prop {
+            ObjectPropertyKind::ObjectProperty(p) => {
+                let Some(name) = runtime_object_property_name(&p.key) else {
+                    continue;
+                };
+                add_runtime_prop(
+                    result,
+                    PropDefinition {
+                        name: CompactString::new(name),
+                        required: detect_required_prop(&p.value),
+                        prop_type: extract_runtime_prop_type(&p.value, source),
+                        default_value: extract_runtime_prop_default(&p.value, source),
+                    },
+                );
+            }
+            ObjectPropertyKind::SpreadProperty(spread) => {
+                let Expression::Identifier(identifier) = &spread.argument else {
+                    continue;
+                };
+                let Some(props) = result
+                    .runtime_object_literals
+                    .get(identifier.name.as_str())
+                    .map(|literal| literal.props.clone())
+                else {
+                    continue;
+                };
+                for prop in props {
+                    add_runtime_prop(result, prop);
+                }
+            }
+        }
+    }
+}
+
+fn add_runtime_prop(result: &mut ScriptParseResult, prop: PropDefinition) {
+    result.bindings.add(prop.name.as_str(), BindingType::Props);
+    result.macros.add_prop(prop);
+}
+
+pub(super) fn runtime_object_property_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(id) => Some(id.name.as_str()),
+        PropertyKey::StringLiteral(s) => Some(s.value.as_str()),
+        _ => None,
+    }
+}
+
+pub(super) fn extract_runtime_prop_type(
+    value: &Expression<'_>,
+    source: &str,
+) -> Option<CompactString> {
     match value {
         Expression::Identifier(id) => runtime_ctor_type(id.name.as_str()).map(CompactString::new),
         Expression::ArrayExpression(arr) => {
@@ -201,7 +291,10 @@ fn extract_prop_type_generic(annotation: &str, type_name: &str) -> Option<Compac
     None
 }
 
-fn extract_runtime_prop_default(value: &Expression<'_>, source: &str) -> Option<CompactString> {
+pub(super) fn extract_runtime_prop_default(
+    value: &Expression<'_>,
+    source: &str,
+) -> Option<CompactString> {
     let Expression::ObjectExpression(obj) = value else {
         return None;
     };
@@ -237,7 +330,7 @@ fn runtime_ctor_type(name: &str) -> Option<&'static str> {
 }
 
 /// Detect if a prop has required: true
-fn detect_required_prop(value: &Expression<'_>) -> bool {
+pub(super) fn detect_required_prop(value: &Expression<'_>) -> bool {
     if let Expression::ObjectExpression(obj) = value {
         for prop in obj.properties.iter() {
             if let ObjectPropertyKind::ObjectProperty(p) = prop

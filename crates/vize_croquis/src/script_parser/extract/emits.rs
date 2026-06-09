@@ -104,23 +104,39 @@ fn extract_emits_from_object(
     source: &str,
 ) {
     for prop in obj.properties.iter() {
-        let ObjectPropertyKind::ObjectProperty(prop) = prop else {
-            continue;
-        };
-        let name = match &prop.key {
-            PropertyKey::StaticIdentifier(id) => id.name.as_str(),
-            PropertyKey::StringLiteral(s) => s.value.as_str(),
-            _ => continue,
-        };
+        match prop {
+            ObjectPropertyKind::ObjectProperty(prop) => {
+                let name = match &prop.key {
+                    PropertyKey::StaticIdentifier(id) => id.name.as_str(),
+                    PropertyKey::StringLiteral(s) => s.value.as_str(),
+                    _ => continue,
+                };
 
-        result.macros.add_emit(EmitDefinition {
-            name: CompactString::new(name),
-            payload_type: extract_runtime_emit_payload_type(&prop.value, source),
-        });
+                result.macros.add_emit(EmitDefinition {
+                    name: CompactString::new(name),
+                    payload_type: extract_runtime_emit_payload_type(&prop.value, source),
+                });
+            }
+            ObjectPropertyKind::SpreadProperty(spread) => {
+                let Expression::Identifier(identifier) = &spread.argument else {
+                    continue;
+                };
+                let Some(emits) = result
+                    .runtime_object_literals
+                    .get(identifier.name.as_str())
+                    .map(|literal| literal.emits.clone())
+                else {
+                    continue;
+                };
+                for emit in emits {
+                    result.macros.add_emit(emit);
+                }
+            }
+        }
     }
 }
 
-fn extract_runtime_emit_payload_type(
+pub(super) fn extract_runtime_emit_payload_type(
     value: &Expression<'_>,
     source: &str,
 ) -> Option<CompactString> {
