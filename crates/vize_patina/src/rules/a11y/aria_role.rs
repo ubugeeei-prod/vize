@@ -16,6 +16,8 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ast::{ElementNode, PropNode, SourceLocation};
 
+use super::helpers::string_literal_value;
+
 static META: RuleMeta = RuleMeta {
     name: "a11y/aria-role",
     description: "Elements with ARIA roles must use a valid, non-abstract ARIA role",
@@ -256,16 +258,12 @@ impl Rule for AriaRole {
                         && let Some(vize_relief::ast::ExpressionNode::Simple(arg)) = &dir.arg
                         && arg.content.as_str() == "role"
                     {
-                        // For dynamic roles, we can only check if it's a static string
-                        if let Some(vize_relief::ast::ExpressionNode::Simple(expr)) = &dir.exp {
-                            let content = expr.content.as_str().trim();
-                            // Check if it's a string literal like "'button'" or "\"button\""
-                            if (content.starts_with('\'') && content.ends_with('\''))
-                                || (content.starts_with('"') && content.ends_with('"'))
-                            {
-                                let role = &content[1..content.len() - 1];
-                                self.check_role(ctx, role, &dir.loc);
-                            }
+                        // For dynamic roles, we can only check if the entire
+                        // expression is a single string/template literal.
+                        if let Some(vize_relief::ast::ExpressionNode::Simple(expr)) = &dir.exp
+                            && let Some(role) = string_literal_value(expr.content.as_str())
+                        {
+                            self.check_role(ctx, role, &dir.loc);
                         }
                     }
                 }
@@ -351,6 +349,20 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :role="role"></div>"#, "test.vue");
         // Dynamic roles with variable values are not checked
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_bound_template_literal_role() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div :role="`buton`"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_bound_compound_expression_role_is_dynamic() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div :role="'a' + 'b'"></div>"#, "test.vue");
         assert_eq!(result.error_count, 0);
     }
 

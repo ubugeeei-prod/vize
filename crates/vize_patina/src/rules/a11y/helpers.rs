@@ -150,17 +150,45 @@ pub fn get_static_or_bound_literal_attribute_value<'a>(
     None
 }
 
-fn string_literal_value(content: &str) -> Option<&str> {
+pub fn string_literal_value(content: &str) -> Option<&str> {
     let content = content.trim();
     let quote = content.as_bytes().first()?;
     if content.len() < 2
-        || !matches!(quote, b'\'' | b'"')
+        || !matches!(quote, b'\'' | b'"' | b'`')
         || content.as_bytes().last() != Some(quote)
     {
         return None;
     }
 
+    let inner = &content[1..content.len() - 1];
+    if !is_single_literal_body(inner, *quote) {
+        return None;
+    }
+
     Some(&content[1..content.len() - 1])
+}
+
+fn is_single_literal_body(inner: &str, quote: u8) -> bool {
+    let mut escaped = false;
+    let mut bytes = inner.as_bytes().iter().copied().peekable();
+    while let Some(byte) = bytes.next() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if byte == b'\\' {
+            escaped = true;
+            continue;
+        }
+        if byte == quote {
+            return false;
+        }
+        if quote == b'`' && byte == b'$' && bytes.peek() == Some(&b'{') {
+            return false;
+        }
+    }
+
+    true
 }
 
 /// Check if an element has a specific event handler (v-on directive)
