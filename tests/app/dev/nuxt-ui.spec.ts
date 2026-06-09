@@ -19,11 +19,83 @@ import {
 
 const app = nuxtUiApp;
 
+// Routes the suite navigates to. We pre-warm these once before the tests so Vite
+// finishes optimize-deps pre-bundling for the (very heavy) nuxt-ui playground
+// before the timed `toBeVisible` assertions run.
+const WARMUP_PATHS = ["/", "/components/button"] as const;
+
+// Signatures of the transient Vite optimize-deps churn that produces a broken
+// initial load (504 Outdated Optimize Dep -> failed dynamic import -> SSR 500).
+// These are dev-server infra hiccups, not vize render bugs, and resolve on reload
+// once pre-bundling settles.
+const OPTIMIZE_DEP_ERROR =
+  /Outdated Optimize Dep|Failed to fetch dynamically imported module|504|new dependencies optimized/i;
+
+/**
+ * Hit the dev server for each warmup path until it returns a healthy SSR page
+ * (no optimize-dep error markup), so Vite has finished pre-bundling before the
+ * browser-driven assertions start.
+ */
+async function warmUpNuxtUi(): Promise<void> {
+  const deadline = Date.now() + 120_000;
+  for (const pathname of WARMUP_PATHS) {
+    const target = new URL(pathname, app.url).toString();
+    let settled = false;
+    while (Date.now() < deadline) {
+      try {
+        const res = await fetch(target, { signal: AbortSignal.timeout(20_000) });
+        const body = await res.text();
+        const churning = res.status >= 500 || res.status === 504 || OPTIMIZE_DEP_ERROR.test(body);
+        if (!churning && body.includes("__nuxt")) {
+          settled = true;
+          break;
+        }
+      } catch {
+        // Server still pre-bundling / restarting; retry.
+      }
+      await new Promise((r) => setTimeout(r, 2_000));
+    }
+    if (!settled) {
+      console.log(`[${app.name}] warmup for ${pathname} did not fully settle; continuing`);
+    }
+  }
+}
+
+/**
+ * Navigate to a nuxt-ui route, reloading if the dev server serves a transient
+ * optimize-deps error (504 / failed dynamic import / SSR 500) instead of the
+ * playground. Bounded retries keep this from masking real failures.
+ */
 async function gotoNuxtUi(page: Page, pathname = "/") {
-  return page.goto(new URL(pathname, app.url).toString(), {
-    waitUntil: app.waitUntil ?? "networkidle",
-    timeout: 30_000,
-  });
+  const target = new URL(pathname, app.url).toString();
+  const maxAttempts = 4;
+  let response: Awaited<ReturnType<Page["goto"]>> = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    response = await page.goto(target, {
+      waitUntil: app.waitUntil ?? "networkidle",
+      timeout: 30_000,
+    });
+
+    const status = response?.status() ?? 0;
+    const html = await page.content().catch(() => "");
+    const churning = status === 504 || status >= 500 || OPTIMIZE_DEP_ERROR.test(html);
+
+    if (!churning) {
+      return response;
+    }
+
+    if (attempt < maxAttempts) {
+      console.log(
+        `[${app.name}] transient optimize-deps error on ${pathname} ` +
+          `(status ${status}, attempt ${attempt}); reloading...`,
+      );
+      // Give Vite a moment to finish re-bundling before retrying.
+      await page.waitForTimeout(2_000);
+    }
+  }
+
+  return response;
 }
 
 function normalizeNuxtUiSnapshotHtml(html: string): string {
@@ -42,6 +114,9 @@ test.describe("nuxt-ui dev", () => {
   let devServer: ChildProcess;
 
   test.beforeAll(async () => {
+    // setup + install + dev:prepare + server start + route warmup can exceed the
+    // default hook timeout for this heavy playground.
+    test.setTimeout(600_000);
     if (app.setup) app.setup();
     await ensurePortFree(app.port);
 
@@ -61,6 +136,13 @@ test.describe("nuxt-ui dev", () => {
     );
     await waitForHttpReady(app.url, app.port);
     console.log(`${app.name} server is ready`);
+
+    // Pre-bundle the routes the suite visits so Vite finishes optimize-deps churn
+    // (504 Outdated Optimize Dep / failed dynamic import / SSR 500) before the
+    // timed browser assertions run.
+    console.log(`Warming up ${app.name} routes...`);
+    await warmUpNuxtUi();
+    console.log(`${app.name} warmup complete`);
   });
 
   test.afterAll(async () => {

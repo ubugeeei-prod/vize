@@ -584,6 +584,203 @@ export async function setupMisskeyMocks(page: Page): Promise<void> {
   }, MISSKEY_API_FIXTURES);
 }
 
+// --- npmx.dev VRT mocks ---
+//
+// The `/org/[org]` route renders LIVE data fetched from external services: the
+// npm registry org endpoint (proxied through `/api/registry/org/<org>/packages`)
+// and the Algolia `npm-search` index (`getObjects` via
+// `https://<appId>-dsn.algolia.net/1/indexes/*/objects`). Two independent dev
+// servers (reference Vue vs candidate vize) issue these requests separately, and
+// under CI/sandbox rate-limiting they receive different payloads (one shows
+// packages, the other empty/loading), so the screenshots diverge. That is a test
+// nondeterminism, not a render bug.
+//
+// To make the route deterministic we intercept both endpoints (mirroring the
+// misskey `/api/**` approach) and return a fixed fixture payload for BOTH the
+// reference and candidate pages so they render an identical package-list state.
+
+interface NpmxAlgoliaHit {
+  objectID: string;
+  name: string;
+  version: string;
+  description: string | null;
+  modified: number;
+  homepage: string | null;
+  repository: {
+    url: string;
+    host: string;
+    user: string;
+    project: string;
+    path: string;
+  } | null;
+  owners: { name: string; email?: string; avatar?: string; link?: string }[] | null;
+  downloadsLast30Days: number;
+  downloadsRatio: number;
+  popular: boolean;
+  keywords: string[];
+  deprecated: boolean | string;
+  isDeprecated: boolean;
+  license: string | null;
+}
+
+// A fixed point in time so `modified`-derived dates render identically.
+const NPMX_FIXTURE_MODIFIED = Date.parse("2026-01-01T00:00:00.000Z");
+
+function npmxAlgoliaHit(name: string, overrides: Partial<NpmxAlgoliaHit> = {}): NpmxAlgoliaHit {
+  return {
+    objectID: name,
+    name,
+    version: "3.5.29",
+    description: `Fixture package ${name} for the npmx VRT.`,
+    modified: NPMX_FIXTURE_MODIFIED,
+    homepage: "https://github.com/vuejs/core",
+    repository: {
+      url: "https://github.com/vuejs/core",
+      host: "github.com",
+      user: "vuejs",
+      project: "core",
+      path: "",
+    },
+    owners: [{ name: "vuejs", email: "fixture@example.com" }],
+    downloadsLast30Days: 43_000_000,
+    downloadsRatio: 1,
+    popular: true,
+    keywords: ["vue", "framework"],
+    deprecated: false,
+    isDeprecated: false,
+    license: "MIT",
+    ...overrides,
+  };
+}
+
+// Deterministic package roster for `@vue` (sorted so list ordering is stable).
+const NPMX_ORG_FIXTURES: Record<string, NpmxAlgoliaHit[]> = {
+  vue: [
+    npmxAlgoliaHit("@vue/compiler-core", { downloadsLast30Days: 41_000_000 }),
+    npmxAlgoliaHit("@vue/compiler-dom", { downloadsLast30Days: 40_000_000 }),
+    npmxAlgoliaHit("@vue/compiler-sfc", { downloadsLast30Days: 39_000_000 }),
+    npmxAlgoliaHit("@vue/reactivity", { downloadsLast30Days: 42_000_000 }),
+    npmxAlgoliaHit("@vue/runtime-core", { downloadsLast30Days: 41_500_000 }),
+    npmxAlgoliaHit("@vue/runtime-dom", { downloadsLast30Days: 41_200_000 }),
+    npmxAlgoliaHit("@vue/server-renderer", { downloadsLast30Days: 30_000_000 }),
+    npmxAlgoliaHit("@vue/shared", { downloadsLast30Days: 43_500_000 }),
+  ],
+};
+
+function npmxOrgHits(org: string): NpmxAlgoliaHit[] {
+  return NPMX_ORG_FIXTURES[org.toLowerCase()] ?? NPMX_ORG_FIXTURES.vue;
+}
+
+/**
+ * Make the npmx `/org/[org]` route deterministic for visual parity by returning
+ * fixed package data for both the npm-registry org proxy and the Algolia
+ * `getObjects` lookup. Wire this into BOTH the reference and candidate pages.
+ */
+export async function setupNpmxOrgMocks(page: Page): Promise<void> {
+  // 1) npm-registry org package list (server proxy, hit client-side after
+  //    hydration because the page uses `useLazyAsyncData`).
+  await page.context().route("**/api/registry/org/**/packages", async (route) => {
+    const match = /\/api\/registry\/org\/([^/]+)\/packages/.exec(
+      new URL(route.request().url()).pathname,
+    );
+    const org = match ? decodeURIComponent(match[1]) : "vue";
+    const hits = npmxOrgHits(org);
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ packages: hits.map((hit) => hit.name), count: hits.length }),
+    });
+  });
+
+  // 2) All Algolia traffic (matched by a host regex to avoid URL-glob quirks).
+  //    There are two shapes used by npmx:
+  //      - `getObjects` multi-get by objectID  -> `{ results: (Hit|null)[] }`
+  //        (used by `getPackagesByName`, the algolia provider path for orgs)
+  //      - the lite client multi-query `search` -> `{ results: [{ hits, ... }] }`
+  //        (used by the npm-search box / suggestion checks)
+  //    Return the fixed org roster in whichever shape the request expects.
+  await page.context().route(/\.algolia(net\.com|\.net)\//, async (route) => {
+    const request = route.request();
+    const pathname = new URL(request.url()).pathname;
+
+    if (pathname.includes("/objects")) {
+      let requested: string[] = [];
+      try {
+        const payload = request.postDataJSON() as
+          | { requests?: { objectID?: string }[] }
+          | undefined;
+        requested = (payload?.requests ?? [])
+          .map((entry) => entry.objectID)
+          .filter((id): id is string => typeof id === "string");
+      } catch {
+        requested = [];
+      }
+
+      const byName = new Map<string, NpmxAlgoliaHit>();
+      for (const hits of Object.values(NPMX_ORG_FIXTURES)) {
+        for (const hit of hits) byName.set(hit.name, hit);
+      }
+
+      const results =
+        requested.length > 0
+          ? requested.map((name) => byName.get(name) ?? null)
+          : npmxOrgHits("vue");
+
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ results }),
+      });
+      return;
+    }
+
+    const hits = npmxOrgHits("vue");
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        results: [
+          {
+            hits,
+            nbHits: hits.length,
+            page: 0,
+            nbPages: 1,
+            hitsPerPage: hits.length,
+            query: "",
+            params: "",
+            index: "npm-search",
+          },
+        ],
+      }),
+    });
+  });
+
+  // 3) npm-provider fallback path (`?p=npm`) hits the lightweight package-meta
+  //    proxy; keep it deterministic as well.
+  await page.context().route("**/api/registry/package-meta/**", async (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    const name = decodeURIComponent(
+      pathname.slice(pathname.indexOf("/package-meta/") + "/package-meta/".length),
+    );
+    const hit = npmxOrgHits("vue").find((entry) => entry.name === name) ?? npmxAlgoliaHit(name);
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        name: hit.name,
+        version: hit.version,
+        description: hit.description ?? "",
+        keywords: hit.keywords,
+        license: hit.license,
+        date: new Date(hit.modified).toISOString(),
+        links: { npm: `https://www.npmjs.com/package/${hit.name}` },
+        maintainers: hit.owners?.map((owner) => ({ name: owner.name, email: owner.email })) ?? [],
+        weeklyDownloads: Math.round(hit.downloadsLast30Days / 4.3),
+      }),
+    });
+  });
+}
+
 export async function mockRoute(
   page: Page,
   pattern: string | RegExp,

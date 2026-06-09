@@ -16,10 +16,14 @@ import {
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
 import { waitForMountedAppContent } from "../../_helpers/assertions";
+import { setupNpmxOrgMocks } from "../../_helpers/mocking";
 
 interface VisualRoute {
   action?: (page: Page) => Promise<void>;
   maxDiffRatio?: number;
+  // Per-route request mocking applied identically to reference and candidate
+  // pages, so routes that render LIVE external data stay deterministic.
+  mocks?: (page: Page) => Promise<void>;
   name: string;
   path: string;
   storage?: Record<string, string>;
@@ -62,7 +66,14 @@ const routes: VisualRoute[] = [
     path: "/package/@vue/compiler-sfc",
     maxDiffRatio: 0.004,
   },
-  { name: "org-vue", path: "/org/vue", maxDiffRatio: 0.004 },
+  {
+    name: "org-vue",
+    path: "/org/vue",
+    maxDiffRatio: 0.004,
+    // `/org/vue` fetches live npm-registry + Algolia data; mock both endpoints so
+    // the reference and candidate servers render an identical package list.
+    mocks: setupNpmxOrgMocks,
+  },
   { name: "user-sindresorhus", path: "/~sindresorhus?p=npm", maxDiffRatio: 0.004 },
   { name: "user-orgs-disconnected", path: "/~sindresorhus/orgs", maxDiffRatio: 0.004 },
   { name: "profile-sindresorhus", path: "/profile/sindresorhus.com", maxDiffRatio: 0.004 },
@@ -153,6 +164,12 @@ async function compareRoute(
 
     await Promise.all([setupPage(referencePage), setupPage(candidatePage)]);
     await Promise.all([setupRoute(referencePage, route), setupRoute(candidatePage, route)]);
+    if (route.mocks) {
+      // Mocks are registered at the (shared) browser-context level via
+      // `page.context().route(...)`, so they apply to both the reference and
+      // candidate pages; registering once is enough.
+      await route.mocks(referencePage);
+    }
     await Promise.all([
       openRoute(referencePage, apps.reference.url, route),
       openRoute(candidatePage, apps.candidate.url, route),
