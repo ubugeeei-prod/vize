@@ -7,7 +7,9 @@ use std::path::Path;
 
 use vize_carton::{Bump, FxHashSet, String as CompactString, cstr, profile};
 
-use vize_atelier_core::parser::parse;
+use vize_atelier_core::{
+    ParserOptions, TemplateSyntaxMode, parser::parse_with_options_and_template_syntax,
+};
 use vize_atelier_sfc::{
     SfcDescriptor,
     croquis::{
@@ -36,14 +38,20 @@ pub(super) struct GeneratedVueFile {
     pub(super) diagnostics: Vec<Diagnostic>,
 }
 
+#[derive(Clone, Copy)]
+pub(super) struct VueCodegenOptions {
+    pub(super) check_options: VirtualTsCheckOptions,
+    pub(super) options_api: bool,
+    pub(super) legacy_vue2: bool,
+    pub(super) template_syntax: TemplateSyntaxMode,
+}
+
 pub(super) fn generate_vue_virtual_ts(
     path: &Path,
     source: &str,
     descriptor: &SfcDescriptor,
     options: &VirtualTsOptions,
-    check_options: VirtualTsCheckOptions,
-    options_api: bool,
-    legacy_vue2: bool,
+    codegen_options: VueCodegenOptions,
 ) -> CorsaResult<GeneratedVueFile> {
     let allocator = Bump::new();
     let mut diagnostics = Vec::new();
@@ -87,7 +95,12 @@ pub(super) fn generate_vue_virtual_ts(
         .unwrap_or(0);
     let template_ast = descriptor.template.as_ref().and_then(|template| {
         profile!("canon.template.parse", {
-            let (root, errors) = parse(&allocator, &template.content);
+            let (root, errors) = parse_with_options_and_template_syntax(
+                &allocator,
+                &template.content,
+                ParserOptions::default(),
+                codegen_options.template_syntax,
+            );
             if errors.is_empty() {
                 Some(root)
             } else {
@@ -122,13 +135,13 @@ pub(super) fn generate_vue_virtual_ts(
 
     let analysis = profile!(
         "canon.croquis.analyze_sfc",
-        if legacy_vue2 {
+        if codegen_options.legacy_vue2 {
             analyze_sfc_descriptor_with_context_legacy_vue2(
                 descriptor,
                 template_ast.as_ref(),
                 croquis_options,
             )
-        } else if options_api {
+        } else if codegen_options.options_api {
             analyze_sfc_descriptor_with_context_options_api(
                 descriptor,
                 template_ast.as_ref(),
@@ -158,9 +171,9 @@ pub(super) fn generate_vue_virtual_ts(
             template_offset,
             options,
             VirtualTsGenerationOptions {
-                check_options,
-                options_api,
-                legacy_vue2,
+                check_options: codegen_options.check_options,
+                options_api: codegen_options.options_api,
+                legacy_vue2: codegen_options.legacy_vue2,
             },
         )
     );

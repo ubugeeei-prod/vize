@@ -16,6 +16,7 @@
 
 use std::path::PathBuf;
 
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{FxHashMap, String as CompactString};
 
 use super::import_rewriter::ImportRewriter;
@@ -85,6 +86,9 @@ pub struct VirtualProject {
     /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for virtual files.
     options_api: bool,
     legacy_vue2: bool,
+
+    /// Template syntax compatibility used when parsing SFC templates.
+    template_syntax: TemplateSyntaxMode,
 
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,

@@ -77,11 +77,12 @@ pub fn is_interactive_role(role: &str) -> bool {
 pub fn is_focusable_element(element: &ElementNode) -> bool {
     let tag = element.tag.as_str();
 
+    if matches!(tag, "a" | "area") && has_named_prop(element, "href") {
+        return true;
+    }
+
     // Natively focusable elements
-    if matches!(
-        tag,
-        "a" | "button" | "input" | "select" | "textarea" | "summary"
-    ) {
+    if matches!(tag, "button" | "input" | "select" | "textarea" | "summary") {
         return true;
     }
 
@@ -102,6 +103,19 @@ pub fn is_focusable_element(element: &ElementNode) -> bool {
     }
 
     false
+}
+
+fn has_named_prop(element: &ElementNode, name: &str) -> bool {
+    element.props.iter().any(|prop| match prop {
+        PropNode::Attribute(attr) => attr.name == name,
+        PropNode::Directive(dir) if dir.name == "bind" => {
+            matches!(
+                dir.arg.as_ref(),
+                Some(ExpressionNode::Simple(arg)) if arg.content == name
+            )
+        }
+        _ => false,
+    })
 }
 
 /// Get the static (non-dynamic) value of an attribute on an element.

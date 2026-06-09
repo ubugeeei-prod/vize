@@ -383,10 +383,14 @@ fn collapse_excess_blank_lines(input: &str) -> String {
     let mut changed = false;
 
     while cursor < bytes.len() {
-        if bytes[cursor] != b'\n' {
-            output.push(bytes[cursor] as char);
+        let text_start = cursor;
+        while cursor < bytes.len() && bytes[cursor] != b'\n' {
             cursor += 1;
-            continue;
+        }
+        output.push_str(&input[text_start..cursor]);
+
+        if cursor == bytes.len() {
+            break;
         }
 
         let start = cursor;
@@ -416,6 +420,17 @@ mod tests {
         assert!(!result.contains("@custom-media"));
         assert!(result.contains("@media (max-width: 768px)"));
         assert!(result.contains(".foo .bar"));
+    }
+
+    #[test]
+    fn resolves_css_imports_preserves_utf8_when_collapsing_blank_lines() {
+        let css = ".icon::before { content: \"→\"; }\n\n\n.日本語 { color: red; }";
+        let result = resolve_css_imports(css, "/project/Component.vue", &[], false, None);
+
+        assert_eq!(
+            result,
+            ".icon::before { content: \"→\"; }\n\n.日本語 { color: red; }"
+        );
     }
 
     #[test]

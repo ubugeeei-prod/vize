@@ -76,6 +76,10 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     } else {
         crate::config::load_config_with_features_and_source(args.config.as_deref())
     };
+    let compiler_template_syntax = loaded_config
+        .source_path
+        .as_deref()
+        .and_then(|path| crate::config::load_compiler_template_syntax(Some(path)));
     // Vue 3 Options API binding resolution is officially supported and is a
     // standard-build opt-in (not the `legacy` feature).
     let options_api = loaded_config.features.type_checker_options_api;
@@ -261,6 +265,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     if legacy_vue2 {
         checker.enable_legacy_vue2();
     }
+    checker.set_template_syntax(template_syntax_mode(compiler_template_syntax));
     checker.set_virtual_ts_checks(
         config.type_checker.check_props && !args.no_check_props,
         config.type_checker.check_template_bindings && !args.no_check_template_bindings,
@@ -982,6 +987,15 @@ fn build_virtual_ts_options(
     vize_canon::virtual_ts::VirtualTsOptions {
         template_globals,
         ..Default::default()
+    }
+}
+
+fn template_syntax_mode(template_syntax: Option<&str>) -> vize_atelier_core::TemplateSyntaxMode {
+    match template_syntax {
+        Some("strict") => vize_atelier_core::TemplateSyntaxMode::Strict,
+        Some("quirks") => vize_atelier_core::TemplateSyntaxMode::Quirks,
+        Some("standard") | None => vize_atelier_core::TemplateSyntaxMode::Standard,
+        Some(_) => vize_atelier_core::TemplateSyntaxMode::Standard,
     }
 }
 

@@ -6,6 +6,7 @@
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{String as CompactString, ToCompactString, cstr, profile};
 
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
@@ -19,7 +20,7 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
 use super::passthrough::collect_passthrough_json_modules;
-use super::vue_codegen::{GeneratedVueFile, generate_vue_virtual_ts};
+use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
 /// Result of building a virtual file for a registered path, owned and
 /// independent of any `&mut VirtualProject` so it can be produced in parallel.
@@ -41,6 +42,7 @@ pub(super) struct VirtualBuildContext<'a> {
     pub(super) virtual_ts_check_options: VirtualTsCheckOptions,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
+    pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) rewriter: &'a ImportRewriter,
 }
 
@@ -107,9 +109,12 @@ pub(super) fn build_vue_registered_file(
             content,
             &descriptor,
             &effective_options,
-            context.virtual_ts_check_options,
-            context.options_api,
-            context.legacy_vue2,
+            VueCodegenOptions {
+                check_options: context.virtual_ts_check_options,
+                options_api: context.options_api,
+                legacy_vue2: context.legacy_vue2,
+                template_syntax: context.template_syntax,
+            },
         )
     )?;
     let GeneratedVueFile {

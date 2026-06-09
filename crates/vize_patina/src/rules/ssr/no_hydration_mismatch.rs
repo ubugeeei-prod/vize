@@ -49,11 +49,6 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use oxc_allocator::Allocator as OxcAllocator;
-use oxc_ast::ast::{ChainElement, Expression};
-use oxc_ast_visit::{Visit, walk::walk_expression};
-use oxc_parser::Parser as OxcParser;
-use oxc_span::SourceType;
 use vize_relief::ast::{ElementNode, ExpressionNode, InterpolationNode};
 
 /// Non-deterministic function/value patterns that cause hydration mismatch
@@ -137,159 +132,8 @@ pub struct NoHydrationMismatch;
 impl NoHydrationMismatch {
     /// Check if expression contains any mismatch-prone patterns
     fn check_expression(content: &str) -> Option<(&'static str, &'static str)> {
-        let allocator = OxcAllocator::default();
-        let source_type = SourceType::from_path("template.ts").unwrap_or_default();
-        let Ok(expression) = OxcParser::new(&allocator, content, source_type).parse_expression()
-        else {
-            return None;
-        };
-
-        let mut visitor = HydrationMismatchVisitor::default();
-        visitor.visit_expression(&expression);
-        visitor.found
+        scan_expression_code(content)
     }
-}
-
-#[derive(Default)]
-struct HydrationMismatchVisitor {
-    found: Option<(&'static str, &'static str)>,
-}
-
-impl<'a> Visit<'a> for HydrationMismatchVisitor {
-    fn visit_expression(&mut self, expression: &Expression<'a>) {
-        if self.found.is_none() {
-            self.found = detect_hydration_mismatch(expression);
-        }
-        if self.found.is_some() {
-            return;
-        }
-        walk_expression(self, expression);
-    }
-}
-
-fn detect_hydration_mismatch(expression: &Expression<'_>) -> Option<(&'static str, &'static str)> {
-    if matches_static_member_chain(expression, &["Math", "random"]) {
-        return pattern_match("Math.random");
-    }
-    if matches_static_member_chain(expression, &["crypto", "randomUUID"]) {
-        return pattern_match("crypto.randomUUID");
-    }
-    if matches_static_member_chain(expression, &["crypto", "getRandomValues"]) {
-        return pattern_match("crypto.getRandomValues");
-    }
-    if matches_static_member_chain(expression, &["Date", "now"]) {
-        return pattern_match("Date.now");
-    }
-    if matches_static_member_chain(expression, &["performance", "now"]) {
-        return pattern_match("performance.now");
-    }
-    if matches_static_member_chain(expression, &["process", "env"]) {
-        return pattern_match("process.env");
-    }
-    if is_import_meta_env(expression) {
-        return pattern_match("import.meta.env");
-    }
-
-    match unwrap_expression(expression) {
-        Expression::CallExpression(call) => {
-            if let Expression::Identifier(identifier) = unwrap_expression(&call.callee) {
-                match identifier.name.as_str() {
-                    "uuid" => return pattern_match("uuid()"),
-                    "nanoid" => return pattern_match("nanoid()"),
-                    _ => {}
-                }
-            }
-
-            let member = unwrap_expression(&call.callee).as_member_expression()?;
-
-            match member.static_property_name() {
-                Some("getTime") => pattern_match(".getTime()"),
-                Some("toLocaleString") => pattern_match(".toLocaleString()"),
-                Some("toLocaleDateString") => pattern_match(".toLocaleDateString()"),
-                Some("toLocaleTimeString") => pattern_match(".toLocaleTimeString()"),
-                _ => None,
-            }
-        }
-        Expression::NewExpression(new_expression) => {
-            if new_expression.arguments.is_empty()
-                && let Expression::Identifier(identifier) =
-                    unwrap_expression(&new_expression.callee)
-                && identifier.name.as_str() == "Date"
-            {
-                return pattern_match("new Date()");
-            }
-            None
-        }
-        _ => None,
-    }
-}
-
-fn unwrap_expression<'a>(expression: &'a Expression<'a>) -> &'a Expression<'a> {
-    match expression {
-        Expression::ParenthesizedExpression(paren) => unwrap_expression(&paren.expression),
-        Expression::TSAsExpression(ts_as) => unwrap_expression(&ts_as.expression),
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            unwrap_expression(&ts_satisfies.expression)
-        }
-        Expression::TSNonNullExpression(ts_non_null) => unwrap_expression(&ts_non_null.expression),
-        _ => expression,
-    }
-}
-
-fn matches_static_member_chain(expression: &Expression<'_>, expected: &[&str]) -> bool {
-    let mut parts = Vec::with_capacity(expected.len());
-    if !collect_static_member_chain(unwrap_expression(expression), &mut parts) {
-        return false;
-    }
-    parts == expected
-}
-
-fn collect_static_member_chain<'a>(
-    expression: &'a Expression<'a>,
-    parts: &mut Vec<&'a str>,
-) -> bool {
-    match unwrap_expression(expression) {
-        Expression::Identifier(identifier) => {
-            parts.push(identifier.name.as_str());
-            true
-        }
-        member if member.is_member_expression() => {
-            let Some(member) = member.as_member_expression() else {
-                return false;
-            };
-            if !collect_static_member_chain(member.object(), parts) {
-                return false;
-            }
-            let Some(property) = member.static_property_name() else {
-                return false;
-            };
-            parts.push(property);
-            true
-        }
-        Expression::ChainExpression(chain) => match &chain.expression {
-            ChainElement::StaticMemberExpression(member) => {
-                if !collect_static_member_chain(&member.object, parts) {
-                    return false;
-                }
-                parts.push(member.property.name.as_str());
-                true
-            }
-            ChainElement::TSNonNullExpression(non_null) => {
-                collect_static_member_chain(&non_null.expression, parts)
-            }
-            _ => false,
-        },
-        Expression::MetaProperty(meta) => {
-            parts.push(meta.meta.name.as_str());
-            parts.push(meta.property.name.as_str());
-            true
-        }
-        _ => false,
-    }
-}
-
-fn is_import_meta_env(expression: &Expression<'_>) -> bool {
-    matches_static_member_chain(expression, &["import", "meta", "env"])
 }
 
 fn pattern_match(pattern: &'static str) -> Option<(&'static str, &'static str)> {
@@ -297,6 +141,195 @@ fn pattern_match(pattern: &'static str) -> Option<(&'static str, &'static str)> 
         .iter()
         .find(|(candidate, _)| *candidate == pattern)
         .copied()
+}
+
+fn scan_expression_code(content: &str) -> Option<(&'static str, &'static str)> {
+    let bytes = content.as_bytes();
+    let mut index = 0;
+
+    while index < bytes.len() {
+        match bytes[index] {
+            b'\'' | b'"' => index = skip_quoted_string(bytes, index),
+            b'`' => {
+                let (next, found) = scan_template_literal(content, index);
+                if found.is_some() {
+                    return found;
+                }
+                index = next;
+            }
+            _ => {
+                if let Some(found) = match_pattern_at(content, index) {
+                    return Some(found);
+                }
+                index += 1;
+            }
+        }
+    }
+
+    None
+}
+
+fn match_pattern_at(content: &str, index: usize) -> Option<(&'static str, &'static str)> {
+    for pattern in [
+        "Math.random",
+        "crypto.randomUUID",
+        "crypto.getRandomValues",
+        "Date.now",
+        "performance.now",
+        "process.env",
+        "import.meta.env",
+    ] {
+        if content[index..].starts_with(pattern)
+            && has_member_left_boundary(content.as_bytes(), index)
+            && has_member_right_boundary(content.as_bytes(), index + pattern.len())
+        {
+            return pattern_match(pattern);
+        }
+    }
+
+    for pattern in ["uuid()", "nanoid()", "new Date()"] {
+        if content[index..].starts_with(pattern)
+            && has_identifier_left_boundary(content.as_bytes(), index)
+            && has_identifier_right_boundary(content.as_bytes(), index + pattern.len())
+        {
+            return pattern_match(pattern);
+        }
+    }
+
+    for pattern in [
+        ".getTime()",
+        ".toLocaleString()",
+        ".toLocaleDateString()",
+        ".toLocaleTimeString()",
+    ] {
+        if content[index..].starts_with(pattern) {
+            return pattern_match(pattern);
+        }
+    }
+
+    None
+}
+
+fn skip_quoted_string(bytes: &[u8], start: usize) -> usize {
+    let quote = bytes[start];
+    let mut escaped = false;
+    let mut index = start + 1;
+
+    while index < bytes.len() {
+        let byte = bytes[index];
+        if escaped {
+            escaped = false;
+        } else if byte == b'\\' {
+            escaped = true;
+        } else if byte == quote {
+            return index + 1;
+        }
+        index += 1;
+    }
+
+    bytes.len()
+}
+
+fn scan_template_literal(
+    content: &str,
+    start: usize,
+) -> (usize, Option<(&'static str, &'static str)>) {
+    let bytes = content.as_bytes();
+    let mut escaped = false;
+    let mut index = start + 1;
+
+    while index < bytes.len() {
+        let byte = bytes[index];
+        if escaped {
+            escaped = false;
+        } else if byte == b'\\' {
+            escaped = true;
+        } else if byte == b'`' {
+            return (index + 1, None);
+        } else if byte == b'$' && bytes.get(index + 1) == Some(&b'{') {
+            let expression_start = index + 2;
+            let expression_end = find_template_expression_end(bytes, expression_start);
+            if let Some(found) = scan_expression_code(&content[expression_start..expression_end]) {
+                return (expression_end.saturating_add(1), Some(found));
+            }
+            index = expression_end;
+        }
+        index += 1;
+    }
+
+    (bytes.len(), None)
+}
+
+fn find_template_expression_end(bytes: &[u8], start: usize) -> usize {
+    let mut depth = 1;
+    let mut index = start;
+
+    while index < bytes.len() {
+        match bytes[index] {
+            b'\'' | b'"' => index = skip_quoted_string(bytes, index),
+            b'`' => {
+                let (next, _) = scan_template_literal_bytes(bytes, index);
+                index = next;
+            }
+            b'{' => {
+                depth += 1;
+                index += 1;
+            }
+            b'}' => {
+                depth -= 1;
+                if depth == 0 {
+                    return index;
+                }
+                index += 1;
+            }
+            _ => index += 1,
+        }
+    }
+
+    bytes.len()
+}
+
+fn scan_template_literal_bytes(bytes: &[u8], start: usize) -> (usize, ()) {
+    let mut escaped = false;
+    let mut index = start + 1;
+
+    while index < bytes.len() {
+        let byte = bytes[index];
+        if escaped {
+            escaped = false;
+        } else if byte == b'\\' {
+            escaped = true;
+        } else if byte == b'`' {
+            return (index + 1, ());
+        }
+        index += 1;
+    }
+
+    (bytes.len(), ())
+}
+
+fn has_member_left_boundary(bytes: &[u8], index: usize) -> bool {
+    index == 0 || (!is_identifier_byte(bytes[index - 1]) && bytes[index - 1] != b'.')
+}
+
+fn has_member_right_boundary(bytes: &[u8], index: usize) -> bool {
+    bytes
+        .get(index)
+        .is_none_or(|byte| !is_identifier_byte(*byte))
+}
+
+fn has_identifier_left_boundary(bytes: &[u8], index: usize) -> bool {
+    index == 0 || !is_identifier_byte(bytes[index - 1])
+}
+
+fn has_identifier_right_boundary(bytes: &[u8], index: usize) -> bool {
+    bytes
+        .get(index)
+        .is_none_or(|byte| !is_identifier_byte(*byte))
+}
+
+fn is_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')
 }
 
 impl Rule for NoHydrationMismatch {

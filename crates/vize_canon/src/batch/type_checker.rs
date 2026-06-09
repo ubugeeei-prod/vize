@@ -168,6 +168,11 @@ impl BatchTypeChecker {
             });
     }
 
+    /// Configure template syntax compatibility for Vue template parsing.
+    pub fn set_template_syntax(&mut self, template_syntax: vize_atelier_core::TemplateSyntaxMode) {
+        self.project.set_template_syntax(template_syntax);
+    }
+
     /// Scan an explicit set of project files.
     ///
     /// The underlying virtual project parallelizes registration for multi-file

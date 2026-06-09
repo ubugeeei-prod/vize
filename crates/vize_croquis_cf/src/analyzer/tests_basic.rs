@@ -1,5 +1,9 @@
 use super::{CrossFileAnalyzer, CrossFileOptions};
+use crate::CrossFileDiagnosticKind;
 use std::path::Path;
+use vize_carton::{CompactString, smallvec};
+use vize_croquis::analysis::{ComponentUsage, EventListener, PassedProp};
+use vize_croquis::{AnalyzerOptions, ScopeId};
 
 #[test]
 fn test_cross_file_options() {
@@ -62,4 +66,85 @@ fn test_circular_dependency_detection() {
     // For now, just verify the analysis runs without crashing
     let result = analyzer.analyze();
     assert!(result.circular_deps.is_empty());
+}
+
+#[test]
+fn test_undeclared_on_prefixed_prop_is_reported() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_props_validation(true));
+
+    let child_analysis = script_analysis("const props = defineProps<{ title: string }>()");
+    let parent_analysis = script_analysis_with_component_usage(
+        r#"import Child from './Child.vue'"#,
+        component_usage_with_on_prefixed_prop("Child"),
+    );
+
+    analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analysis);
+    analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analysis);
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    let undeclared_props = result
+        .diagnostics
+        .iter()
+        .filter_map(|diagnostic| match &diagnostic.kind {
+            CrossFileDiagnosticKind::UndeclaredProp { prop_name, .. } => Some(prop_name.as_str()),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(undeclared_props, vec!["online"]);
+}
+
+fn script_analysis(script: &str) -> vize_croquis::Croquis {
+    let mut analyzer = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.finish()
+}
+
+fn script_analysis_with_component_usage(
+    script: &str,
+    usage: ComponentUsage,
+) -> vize_croquis::Croquis {
+    let mut analysis = script_analysis(script);
+    analysis.used_components.insert(usage.name.clone());
+    analysis.component_usages.push(usage);
+    analysis
+}
+
+fn component_usage_with_on_prefixed_prop(component: &str) -> ComponentUsage {
+    ComponentUsage {
+        name: CompactString::new(component),
+        start: 0,
+        end: 0,
+        props: smallvec![
+            passed_prop("title", Some("x"), false),
+            passed_prop("online", Some("true"), false),
+        ],
+        events: smallvec![event_listener("click")],
+        slots: smallvec![],
+        has_spread_attrs: false,
+        scope_id: ScopeId::ROOT,
+        vif_guard: None,
+    }
+}
+
+fn passed_prop(name: &str, value: Option<&str>, is_dynamic: bool) -> PassedProp {
+    PassedProp {
+        name: CompactString::new(name),
+        value: value.map(CompactString::new),
+        start: 0,
+        end: 0,
+        is_dynamic,
+    }
+}
+
+fn event_listener(name: &str) -> EventListener {
+    EventListener {
+        name: CompactString::new(name),
+        handler: None,
+        modifiers: smallvec![],
+        start: 0,
+        end: 0,
+    }
 }

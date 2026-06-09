@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
 use rayon::prelude::*;
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{FxHashMap, profile};
 
 use crate::batch::error::{CorsaError, CorsaResult};
@@ -38,6 +39,7 @@ impl VirtualProject {
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             options_api: false,
             legacy_vue2: false,
+            template_syntax: TemplateSyntaxMode::default(),
             virtual_files: FxHashMap::default(),
             passthrough_files: FxHashMap::default(),
             original_index: FxHashMap::default(),
@@ -69,6 +71,10 @@ impl VirtualProject {
         self.legacy_vue2 = enabled;
     }
 
+    pub(crate) fn set_template_syntax(&mut self, template_syntax: TemplateSyntaxMode) {
+        self.template_syntax = template_syntax;
+    }
+
     /// Get the project root.
     pub fn project_root(&self) -> &Path {
         &self.project_root
@@ -97,6 +103,7 @@ impl VirtualProject {
                 virtual_ts_check_options: self.virtual_ts_check_options,
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
+                template_syntax: self.template_syntax,
                 rewriter: &self.rewriter,
             },
         )?;
@@ -139,6 +146,7 @@ impl VirtualProject {
             virtual_ts_check_options: self.virtual_ts_check_options,
             options_api: self.options_api,
             legacy_vue2: self.legacy_vue2,
+            template_syntax: self.template_syntax,
             rewriter: &self.rewriter,
         };
 
@@ -169,6 +177,7 @@ impl VirtualProject {
                 virtual_ts_check_options: self.virtual_ts_check_options,
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
+                template_syntax: self.template_syntax,
                 rewriter: &self.rewriter,
             },
         )?;
