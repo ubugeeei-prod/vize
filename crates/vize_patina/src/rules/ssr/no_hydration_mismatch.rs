@@ -202,7 +202,9 @@ fn match_pattern_at(content: &str, index: usize) -> Option<(&'static str, &'stat
         ".toLocaleDateString()",
         ".toLocaleTimeString()",
     ] {
-        if content[index..].starts_with(pattern) {
+        if content[index..].starts_with(pattern)
+            && has_identifier_right_boundary(content.as_bytes(), index + pattern.len())
+        {
             return pattern_match(pattern);
         }
     }
@@ -434,6 +436,12 @@ mod tests {
     }
 
     #[test]
+    fn test_ignores_double_quoted_raw_interpolation_text() {
+        let content = r#""see the Date.now() docs for details""#;
+        assert!(NoHydrationMismatch::check_expression(content).is_none());
+    }
+
+    #[test]
     fn test_ignores_template_literal_raw_text_false_positive() {
         let content = r#"`Date.now and import.meta.env are just text`"#;
         assert!(NoHydrationMismatch::check_expression(content).is_none());
@@ -452,6 +460,27 @@ mod tests {
     fn test_ignores_unrelated_member_chain() {
         let content = "globals.Date.now";
         assert!(NoHydrationMismatch::check_expression(content).is_none());
+    }
+
+    #[test]
+    fn test_ignores_process_env_substring_in_member_chain() {
+        let content = "config.process.envName";
+        assert!(NoHydrationMismatch::check_expression(content).is_none());
+    }
+
+    #[test]
+    fn test_ignores_method_call_substring_in_longer_member_name() {
+        let content = "clock.getTime()zone";
+        assert!(NoHydrationMismatch::check_expression(content).is_none());
+    }
+
+    #[test]
+    fn test_detects_member_method_call() {
+        let content = "createdAt.getTime()";
+        assert_eq!(
+            NoHydrationMismatch::check_expression(content).map(|(pattern, _)| pattern),
+            Some(".getTime()")
+        );
     }
 
     #[test]
