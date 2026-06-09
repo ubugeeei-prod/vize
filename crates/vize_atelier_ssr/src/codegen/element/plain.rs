@@ -106,6 +106,7 @@ impl<'a> SsrCodegenContext<'a> {
 
         let has_dynamic_class = self.has_dynamic_bind(el, "class");
         let has_dynamic_style = self.has_dynamic_bind(el, "style");
+        let has_v_show = crate::get_v_show_exp(el).is_some();
 
         for prop in &el.props {
             match prop {
@@ -113,6 +114,10 @@ impl<'a> SsrCodegenContext<'a> {
                     if (attr.name == "class" && has_dynamic_class)
                         || (attr.name == "style" && has_dynamic_style)
                     {
+                        continue;
+                    }
+                    if attr.name == "style" && has_v_show {
+                        self.process_static_style_attr_with_v_show(el, attr);
                         continue;
                     }
                     self.push_string_part_static(" ");
@@ -342,7 +347,7 @@ impl<'a> SsrCodegenContext<'a> {
     /// Process v-bind directive
     fn process_v_bind_on_element(
         &mut self,
-        _el: &ElementNode,
+        el: &ElementNode,
         dir: &vize_atelier_core::ast::DirectiveNode,
     ) {
         use vize_atelier_core::ast::ExpressionNode;
@@ -365,26 +370,29 @@ impl<'a> SsrCodegenContext<'a> {
             Some("class") => {
                 self.use_ssr_helper(RuntimeHelper::SsrRenderClass);
                 self.push_string_part_static(" class=\"");
-                let class_exp =
-                    if let Some(static_class) = self.get_element_attr_value(_el, "class") {
-                        let quoted = quoted_js_string(&static_class);
-                        cstr!("_ssrRenderClass([{quoted}, {exp}])")
-                    } else {
-                        cstr!("_ssrRenderClass({exp})")
-                    };
+                let class_exp = if let Some(static_class) = self.get_element_attr_value(el, "class")
+                {
+                    let quoted = quoted_js_string(&static_class);
+                    cstr!("_ssrRenderClass([{quoted}, {exp}])")
+                } else {
+                    cstr!("_ssrRenderClass({exp})")
+                };
                 self.push_string_part_dynamic(&class_exp);
                 self.push_string_part_static("\"");
             }
             Some("style") => {
                 self.use_ssr_helper(RuntimeHelper::SsrRenderStyle);
                 self.push_string_part_static(" style=\"");
-                let style_exp =
-                    if let Some(static_style) = self.get_element_attr_value(_el, "style") {
-                        let quoted = quoted_js_string(&static_style);
-                        cstr!("_ssrRenderStyle([{quoted}, {exp}])")
-                    } else {
-                        cstr!("_ssrRenderStyle({exp})")
-                    };
+                let mut style_values = std::vec::Vec::new();
+                if let Some(static_style) = self.get_element_attr_value(el, "style") {
+                    style_values.push(quoted_js_string(&static_style));
+                }
+                style_values.push(exp);
+                if let Some(v_show_style) = self.v_show_style_expression(el) {
+                    style_values.push(v_show_style);
+                }
+                let style_exp = merge_prop_values(style_values);
+                let style_exp = cstr!("_ssrRenderStyle({style_exp})");
                 self.push_string_part_dynamic(&style_exp);
                 self.push_string_part_static("\"");
             }
@@ -478,9 +486,13 @@ impl<'a> SsrCodegenContext<'a> {
     /// Process v-show directive
     fn process_v_show_on_element(
         &mut self,
-        _el: &ElementNode,
+        el: &ElementNode,
         dir: &vize_atelier_core::ast::DirectiveNode,
     ) {
+        if self.has_explicit_style_prop(el) {
+            return;
+        }
+
         let exp = match &dir.exp {
             Some(exp) => self.expression_to_string(exp),
             None => return,
@@ -490,6 +502,39 @@ impl<'a> SsrCodegenContext<'a> {
         self.push_string_part_dynamic(&cstr!(
             "(({exp}) ? \"\" : \" style=\\\"display: none;\\\"\")"
         ));
+    }
+
+    fn process_static_style_attr_with_v_show(
+        &mut self,
+        el: &ElementNode,
+        attr: &vize_atelier_core::ast::AttributeNode,
+    ) {
+        let Some(v_show_style) = self.v_show_style_expression(el) else {
+            return;
+        };
+
+        let static_style = attr
+            .value
+            .as_ref()
+            .map(|value| quoted_js_string(&value.content))
+            .unwrap_or_else(|| "\"\"".to_compact_string());
+        let style_exp = merge_prop_values(vec![static_style, v_show_style]);
+
+        self.use_ssr_helper(RuntimeHelper::SsrRenderStyle);
+        self.push_string_part_static(" style=\"");
+        self.push_string_part_dynamic(&cstr!("_ssrRenderStyle({style_exp})"));
+        self.push_string_part_static("\"");
+    }
+
+    fn v_show_style_expression(&mut self, el: &ElementNode) -> Option<String> {
+        let exp = crate::get_v_show_exp(el).map(|exp| self.expression_to_string(exp))?;
+        Some(cstr!("(({exp}) ? null : {{ display: \"none\" }})"))
+    }
+
+    fn has_explicit_style_prop(&self, el: &ElementNode) -> bool {
+        el.props
+            .iter()
+            .any(|prop| is_static_named_prop(prop, "style"))
     }
 
     /// Process a custom directive

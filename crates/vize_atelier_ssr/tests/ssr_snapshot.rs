@@ -285,6 +285,20 @@ mod v_show {
             r#"<div id="foo" v-show="bar">hello</div>"#
         ));
     }
+
+    #[test]
+    fn v_show_merges_static_style() {
+        insta::assert_snapshot!(get_compiled_string(
+            r#"<span style="color:red" v-show="ok">x</span>"#
+        ));
+    }
+
+    #[test]
+    fn v_show_merges_dynamic_style() {
+        insta::assert_snapshot!(get_compiled_string(
+            r#"<span v-show="ok" :style="{ color }">x</span>"#
+        ));
+    }
 }
 
 // =============================================================================
