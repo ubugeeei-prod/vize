@@ -136,7 +136,10 @@ const accountRoutes: VisualRoute[] = [
   { name: "scratchpad", path: "/scratchpad", account: true },
   { name: "pages-new", path: "/pages/new", account: true },
   { name: "pages-edit", path: "/pages/edit/9testpage000001", account: true },
-  { name: "play-new", path: "/play/new", account: true },
+  // Content-heavy editor page: sub-1% antialiasing/font-rendering noise
+  // (~0.32%, 2925/921600 px) exceeds the strict 0.002 default and survives
+  // CI retries, so allow a slightly higher pixel-diff ratio for this route.
+  { name: "play-new", path: "/play/new", account: true, maxDiffRatio: 0.005 },
   { name: "play-edit", path: "/play/9testflash0001/edit", account: true },
   { name: "gallery-new", path: "/gallery/new", account: true },
   { name: "gallery-edit", path: "/gallery/9testgallery001/edit", account: true },
