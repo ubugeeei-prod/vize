@@ -70,6 +70,28 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_aria_hidden_on_anchor_without_href() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<a aria-hidden="true">decorative</a>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_aria_hidden_on_anchor_with_href() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<a href="/" aria-hidden="true">Home</a>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_aria_hidden_on_anchor_with_bound_href() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r#"<a :href="url" aria-hidden="true">Home</a>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
     fn test_invalid_aria_hidden_on_button() {
         let linter = create_linter();
         let result =
