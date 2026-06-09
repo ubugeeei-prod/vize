@@ -52,6 +52,8 @@ function withWorkspace<T>(run: (dir: string) => T): T {
 // these fixtures isolate the rule under test.
 const MULTI_SPACE = '<template>\n  <div  id="x"></div>\n</template>\n';
 const CLEAN = '<template>\n  <div id="x" />\n</template>\n';
+const MULTIBYTE_BEFORE_DIRECTIVE =
+  '<template><div title="café" v-html="x"></div></template>\n';
 
 test("vize lint --help documents the fix/config/max-warnings surface", () => {
   const result = spawnSync(VIZE.command, [...VIZE.prefix, "lint", "--help"], {
@@ -117,6 +119,31 @@ test("vize lint --format json emits a stable per-file message envelope", () => {
     assert.equal(message.line, 2);
     assert.equal(typeof message.column, "number");
     assert.ok(message.endColumn > message.column);
+  });
+});
+
+test("vize lint --format json reports character columns after multibyte text", () => {
+  withWorkspace((dir) => {
+    fs.writeFileSync(path.join(dir, "Cafe.vue"), MULTIBYTE_BEFORE_DIRECTIVE, "utf8");
+    const result = runLint(["Cafe.vue", "--format", "json"], dir);
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+
+    const parsed = JSON.parse(result.stdout) as Array<{
+      messages: Array<{
+        ruleId: string;
+        line: number;
+        column: number;
+        endLine: number;
+        endColumn: number;
+      }>;
+    }>;
+    const message = parsed[0]?.messages.find((item) => item.ruleId === "vue/no-v-html");
+
+    assert.ok(message, result.stdout);
+    assert.equal(message.line, 1);
+    assert.equal(message.column, 29);
+    assert.equal(message.endLine, 1);
+    assert.equal(message.endColumn, 39);
   });
 });
 

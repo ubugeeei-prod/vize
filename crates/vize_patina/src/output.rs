@@ -275,7 +275,9 @@ fn diagnostic_location(
         })
 }
 
-fn source_indices(sources: &[(String, String)]) -> FxHashMap<&str, SourceLineIndex> {
+fn source_indices<'source>(
+    sources: &'source [(String, String)],
+) -> FxHashMap<&'source str, SourceLineIndex<'source>> {
     sources
         .iter()
         .map(|(filename, source)| (filename.as_str(), SourceLineIndex::new(source.as_str())))
@@ -567,13 +569,14 @@ fn push_indented_lines(output: &mut String, text: &str, indent: &str) {
     }
 }
 
-struct SourceLineIndex {
+struct SourceLineIndex<'source> {
+    source: &'source str,
     source_len: usize,
     line_starts: SmallVec<[usize; 64]>,
 }
 
-impl SourceLineIndex {
-    fn new(source: &str) -> Self {
+impl<'source> SourceLineIndex<'source> {
+    fn new(source: &'source str) -> Self {
         let bytes = source.as_bytes();
         let mut line_starts = SmallVec::new();
         line_starts.push(0);
@@ -585,6 +588,7 @@ impl SourceLineIndex {
         }
 
         Self {
+            source,
             source_len: bytes.len(),
             line_starts,
         }
@@ -598,7 +602,11 @@ impl SourceLineIndex {
             .saturating_sub(1);
         let line_start = self.line_starts.get(line_index).copied().unwrap_or(0);
         let line = line_index as u32 + 1;
-        let column = offset.saturating_sub(line_start) as u32 + 1;
+        let column = self.source[line_start..]
+            .char_indices()
+            .take_while(|(relative_offset, _)| line_start + *relative_offset < offset)
+            .count() as u32
+            + 1;
 
         (line, column)
     }
@@ -636,6 +644,37 @@ const items = [1]
             output.contains(r#""ruleDocsPath": "docs/content/rules/vue.md""#),
             "{output}"
         );
+    }
+
+    #[test]
+    fn json_output_uses_character_columns_after_multibyte_text() {
+        let source = r#"<template><div title="café" v-html="x"></div></template>"#;
+        let filename = vize_carton::String::from("Component.vue");
+        let start = source.find("v-html").unwrap() as u32;
+        let end = start + "v-html".len() as u32;
+        let result = LintResult {
+            filename: filename.clone(),
+            diagnostics: vec![LintDiagnostic::warn(
+                "vue/no-v-html",
+                "Avoid raw HTML",
+                start,
+                end,
+            )],
+            error_count: 0,
+            warning_count: 1,
+        };
+        let output = format_results(
+            &[result],
+            &[(filename, vize_carton::String::from(source))],
+            OutputFormat::Json,
+        );
+        let json: serde_json::Value = serde_json::from_str(&output).unwrap();
+        let diagnostic = &json[0]["messages"][0];
+
+        assert_eq!(diagnostic["line"], 1);
+        assert_eq!(diagnostic["column"], 29);
+        assert_eq!(diagnostic["endLine"], 1);
+        assert_eq!(diagnostic["endColumn"], 35);
     }
 
     #[test]
