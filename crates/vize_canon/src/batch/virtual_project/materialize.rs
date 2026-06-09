@@ -133,16 +133,7 @@ impl VirtualProject {
     }
 
     fn write_vue_module_stubs(&self) -> CorsaResult<()> {
-        let content = r#"declare module "*.vue" {
-  const component: import("vue").DefineComponent<any, any, any>;
-  export default component;
-}
-
-declare module "*.vue.ts" {
-  const component: import("vue").DefineComponent<any, any, any>;
-  export default component;
-}
-"#;
+        let content = "// Vue SFC modules resolve through materialized .vue.ts files.\n";
         write_if_changed(
             &self.virtual_root.join(VUE_MODULE_STUBS_FILE),
             content.as_bytes(),

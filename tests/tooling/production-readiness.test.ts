@@ -28,6 +28,45 @@ test("CLI typechecker reports mapped TypeScript diagnostics", () => {
   assert.match(parsed.files[0]?.diagnostics.join("\n") ?? "", /TS2322/);
 });
 
+test("CLI typechecker reports missing Vue imports in JSON and text output", () => {
+  const checker = resolveCheckerPath();
+  const fixtureDir = path.join(root, "tests/_fixtures/_projects/typecheck-vue-imports");
+  const jsonResult = runVize(
+    [
+      "check",
+      "src/MissingImport.vue",
+      "src/ExistingImport.vue",
+      "--format",
+      "json",
+      "--quiet",
+      "--corsa-path",
+      checker,
+    ],
+    fixtureDir,
+  );
+
+  assert.equal(jsonResult.status, 1, jsonResult.stderr);
+  const parsed = JSON.parse(jsonResult.stdout) as {
+    errorCount: number;
+    files: Array<{ file: string; diagnostics: string[] }>;
+  };
+  const missing = parsed.files.find((file) => file.file === "src/MissingImport.vue");
+  const existing = parsed.files.find((file) => file.file === "src/ExistingImport.vue");
+
+  assert.equal(parsed.errorCount, 1);
+  assert.match(missing?.diagnostics.join("\n") ?? "", /TS2307.*MissingPanel\.vue/);
+  assert.doesNotMatch(existing?.diagnostics.join("\n") ?? "", /TS2307/);
+
+  const textResult = runVize(
+    ["check", "src/MissingImport.vue", "--corsa-path", checker],
+    fixtureDir,
+  );
+  assert.equal(textResult.status, 1, textResult.stderr);
+  const textOutput = stripAnsi(textResult.stdout);
+  assert.match(textOutput, /MissingImport\.vue/);
+  assert.match(textOutput, /error:\d+:\d+ \[TS2307\].*MissingPanel\.vue/);
+});
+
 test("CLI linter reports production JSON diagnostics", () => {
   const smokeDir = path.join(root, "target", "vize-tests", "production-readiness");
   const fixturePath = path.join(smokeDir, "Lint.vue");
@@ -93,6 +132,10 @@ function runVize(
   };
 }
 
+function stripAnsi(value: string): string {
+  return value.replace(new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g"), "");
+}
+
 function resolveVizeCommand(): string[] {
   const candidates = [
     [path.join(root, "target/ci/vize")],
@@ -118,6 +161,7 @@ function resolveCheckerPath(): string {
   const candidates = [
     path.join(root, "node_modules/.bin/corsa"),
     path.join(root, "node_modules/.bin/tsgo"),
+    path.join(root, "..", "corsa-bind/.cache/tsgo"),
   ];
 
   for (const candidate of candidates) {

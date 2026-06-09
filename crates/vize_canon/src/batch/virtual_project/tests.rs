@@ -43,7 +43,7 @@ fn test_virtual_project_new() {
 }
 
 #[test]
-fn test_materialize_writes_vue_module_stubs() {
+fn test_materialize_writes_inert_vue_module_stub_file() {
     let case_dir = unique_case_dir("vue-module-stubs");
     let _ = fs::remove_dir_all(&case_dir);
     let src_dir = case_dir.join("src");
@@ -56,7 +56,7 @@ fn test_materialize_writes_vue_module_stubs() {
     project.materialize().unwrap();
 
     let stubs = fs::read_to_string(project.virtual_root().join("__vize_vue_modules.d.ts")).unwrap();
-    assert!(stubs.contains(r#"declare module "*.vue.ts""#));
+    assert!(!stubs.contains(r#"declare module "*.vue.ts""#));
 
     let _ = fs::remove_dir_all(&case_dir);
 }

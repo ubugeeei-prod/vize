@@ -248,9 +248,8 @@ fn parse_severity(severity: Option<i32>) -> u8 {
     }
 }
 
-pub(super) fn should_skip_diagnostic(code: Option<u32>, message: &str) -> bool {
+pub(super) fn should_skip_diagnostic(code: Option<u32>, _message: &str) -> bool {
     match code {
-        Some(2307) => is_vue_module_not_found(message),
         // TS2666: virtual-TS generation injects helper bindings that can trip
         // this code outside the user's source — suppress to match vue-tsc.
         // TS6133 ("declared but never read"): virtual-TS shadows __setup
@@ -263,35 +262,6 @@ pub(super) fn should_skip_diagnostic(code: Option<u32>, message: &str) -> bool {
         // `noImplicitAny`/`strict`. They were previously suppressed (#966).
         _ => false,
     }
-}
-
-fn is_vue_module_not_found(message: &str) -> bool {
-    let mut rest = message;
-    while let Some(idx) = rest.find("Cannot find module ") {
-        rest = &rest[idx + "Cannot find module ".len()..];
-        let Some(open) = rest.chars().next() else {
-            return false;
-        };
-        let close = match open {
-            '\'' => '\'',
-            '"' => '"',
-            '\u{2018}' => '\u{2019}',
-            _ => {
-                rest = &rest[open.len_utf8()..];
-                continue;
-            }
-        };
-        let after_open = &rest[open.len_utf8()..];
-        let Some(end) = after_open.find(close) else {
-            return false;
-        };
-        let spec = &after_open[..end];
-        if spec.ends_with(".vue") || spec.ends_with(".vue.ts") {
-            return true;
-        }
-        rest = &after_open[end + close.len_utf8()..];
-    }
-    false
 }
 
 /// Extract the specifier from the first `Cannot find module "<spec>"` in
@@ -335,6 +305,11 @@ const SOURCE_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "mts", "cts", "vue"];
 /// stem, a `.js`->`.ts` rewrite, or an `index` directory module.
 fn relative_specifier_resolves(dir: &Path, specifier: &str) -> bool {
     if specifier_has_source_extension(specifier) && dir.join(specifier).is_file() {
+        return true;
+    }
+    if let Some(stem) = specifier.strip_suffix(".vue.ts")
+        && dir.join(cstr!("{stem}.vue").as_str()).is_file()
+    {
         return true;
     }
     for (js, ts) in [(".js", ".ts"), (".mjs", ".mts"), (".cjs", ".cts")] {
@@ -448,21 +423,15 @@ mod tests {
     }
 
     #[test]
-    fn ts2307_suppression_is_narrowed_to_vue_modules() {
+    fn ts2307_module_not_found_diagnostics_are_not_skipped_globally() {
         let vue_msg = "Cannot find module './app.vue' or its corresponding type declarations.";
         let vue_ts_msg =
             "Cannot find module './app.vue.ts' or its corresponding type declarations.";
         let non_vue_msg = "Cannot find module 'lodash-es' or its corresponding type declarations.";
-        let double_quoted =
-            "Cannot find module \"./Sib.vue\" or its corresponding type declarations.";
-        let smart_quoted =
-            "Cannot find module \u{2018}./Sib.vue\u{2019} or its corresponding type declarations.";
 
-        assert!(should_skip_diagnostic(Some(2307), vue_msg));
-        assert!(should_skip_diagnostic(Some(2307), vue_ts_msg));
+        assert!(!should_skip_diagnostic(Some(2307), vue_msg));
+        assert!(!should_skip_diagnostic(Some(2307), vue_ts_msg));
         assert!(!should_skip_diagnostic(Some(2307), non_vue_msg));
-        assert!(should_skip_diagnostic(Some(2307), double_quoted));
-        assert!(should_skip_diagnostic(Some(2307), smart_quoted));
 
         // TS6133 / TS2666 are virtual-TS-driven and still suppressed.
         assert!(should_skip_diagnostic(Some(6133), "any message"));
@@ -484,10 +453,13 @@ mod tests {
         let importer = dir.path().join("App.vue");
         std::fs::write(&importer, "").unwrap();
         std::fs::write(dir.path().join("types.ts"), "").unwrap();
+        std::fs::write(dir.path().join("Panel.vue"), "<template />").unwrap();
         std::fs::create_dir_all(dir.path().join("util")).unwrap();
         std::fs::write(dir.path().join("util").join("index.ts"), "").unwrap();
 
         let resolvable_ts = "Cannot find module './types' or its corresponding type declarations.";
+        let resolvable_vue_ts =
+            "Cannot find module './Panel.vue.ts' or its corresponding type declarations.";
         let resolvable_index =
             "Cannot find module './util' or its corresponding type declarations.";
         let resolvable_js_to_ts =
@@ -497,6 +469,10 @@ mod tests {
         let bare_package = "Cannot find module 'lodash-es' or its corresponding type declarations.";
 
         assert!(relative_module_resolves_on_disk(resolvable_ts, &importer));
+        assert!(relative_module_resolves_on_disk(
+            resolvable_vue_ts,
+            &importer
+        ));
         assert!(relative_module_resolves_on_disk(
             resolvable_index,
             &importer
@@ -510,6 +486,97 @@ mod tests {
             &importer
         ));
         assert!(!relative_module_resolves_on_disk(bare_package, &importer));
+    }
+
+    #[test]
+    fn maps_missing_vue_ts2307_back_to_source_file() {
+        let temp_dir = TempDir::new().unwrap();
+        let project_root = temp_dir.path().canonicalize().unwrap();
+        let src_dir = project_root.join("src");
+        std::fs::create_dir_all(&src_dir).unwrap();
+        let app_path = src_dir.join("App.vue");
+        std::fs::write(
+            &app_path,
+            r#"<script setup lang="ts">
+import MissingPanel from './MissingPanel.vue'
+</script>
+
+<template>
+  <MissingPanel />
+</template>
+"#,
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&project_root).unwrap();
+        project.register_path(&app_path).unwrap();
+        let virtual_file = project.find_by_original(&app_path).unwrap();
+        let diagnostic = ts2307_diagnostic_at(
+            virtual_file.content.as_str(),
+            "MissingPanel.vue.ts",
+            "Cannot find module './MissingPanel.vue.ts' or its corresponding type declarations.",
+        );
+
+        let diagnostics = map_batch_diagnostics(
+            vec![(file_uri_for(&virtual_file.virtual_path), vec![diagnostic])],
+            &project,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        let diagnostic = &diagnostics[0];
+        assert_eq!(diagnostic.file, app_path);
+        assert_eq!(diagnostic.code, Some(2307));
+        assert_eq!(diagnostic.line, 1);
+        assert!(
+            diagnostic.message.contains("MissingPanel.vue.ts"),
+            "{diagnostic:?}"
+        );
+    }
+
+    #[test]
+    fn suppresses_vue_ts2307_when_vue_sibling_exists_on_disk() {
+        let temp_dir = TempDir::new().unwrap();
+        let project_root = temp_dir.path().canonicalize().unwrap();
+        let src_dir = project_root.join("src");
+        std::fs::create_dir_all(&src_dir).unwrap();
+        let app_path = src_dir.join("App.vue");
+        std::fs::write(
+            &app_path,
+            r#"<script setup lang="ts">
+import ExistingPanel from './ExistingPanel.vue'
+</script>
+
+<template>
+  <ExistingPanel />
+</template>
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            src_dir.join("ExistingPanel.vue"),
+            r#"<template><section /></template>
+"#,
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&project_root).unwrap();
+        project.register_path(&app_path).unwrap();
+        let virtual_file = project.find_by_original(&app_path).unwrap();
+        let diagnostic = ts2307_diagnostic_at(
+            virtual_file.content.as_str(),
+            "ExistingPanel.vue.ts",
+            "Cannot find module './ExistingPanel.vue.ts' or its corresponding type declarations.",
+        );
+
+        let diagnostics = map_batch_diagnostics(
+            vec![(file_uri_for(&virtual_file.virtual_path), vec![diagnostic])],
+            &project,
+        );
+
+        assert!(
+            diagnostics.is_empty(),
+            "existing Vue sibling false positive should stay suppressed: {diagnostics:#?}"
+        );
     }
 
     #[test]
@@ -540,5 +607,39 @@ mod tests {
         );
 
         insta::assert_debug_snapshot!("maps_unmapped_diagnostics_snapshot", diagnostics);
+    }
+
+    fn ts2307_diagnostic_at(
+        virtual_source: &str,
+        needle: &str,
+        message: &str,
+    ) -> crate::corsa_client::LspDiagnostic {
+        let (line, character) = virtual_position_for(virtual_source, needle);
+        crate::corsa_client::LspDiagnostic {
+            range: crate::corsa_client::LspRange {
+                start: crate::corsa_client::LspPosition { line, character },
+                end: crate::corsa_client::LspPosition {
+                    line,
+                    character: character + 1,
+                },
+            },
+            severity: Some(1),
+            code: Some(json!("TS2307")),
+            source: Some("ts".into()),
+            message: message.into(),
+        }
+    }
+
+    fn virtual_position_for(virtual_source: &str, needle: &str) -> (u32, u32) {
+        let offset = virtual_source
+            .find(needle)
+            .unwrap_or_else(|| panic!("expected virtual source to contain {needle:?}"));
+        LineIndex::new(virtual_source)
+            .offset_to_line_col(virtual_source, offset as u32)
+            .expect("virtual offset should map to LSP position")
+    }
+
+    fn file_uri_for(path: &std::path::Path) -> vize_carton::String {
+        cstr!("file://{}", path.display())
     }
 }
