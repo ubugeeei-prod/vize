@@ -1,6 +1,6 @@
 ---
-source: crates/vize_canon/src/sfc_typecheck.rs
-expression: virtual_ts.as_str()
+source: crates/vize_canon/src/sfc_typecheck/tests.rs
+expression: vts.as_str()
 ---
 /// <reference lib="es2022" />
 /// <reference lib="dom" />
@@ -41,9 +41,16 @@ declare function __vForList(source: number | undefined | null): readonly [item: 
 declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
 declare function __vForList<T>(source: Iterable<T> | undefined | null): readonly [item: T, key: number, index: number][];
 declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];
+interface Props {
+  title: string
+  disabled?: boolean
+}
+interface Emits {
+  (e: 'update:title', value: string): void
+  (e: 'submit'): void
+}
 
 // ========== Exported Types ==========
-export type Props = { count: number };
 
 // ========== Setup Scope ==========
 function __setup() {
@@ -69,18 +76,13 @@ function __setup() {
 
   // User setup code
   
-  const props = defineProps<{ count: number }>();
-  const message = ref('Hello');
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
   
-  // @vize-map: 4781:4869 -> 0:79
+  // @vize-map: 4884:4963 -> 0:212
 
   // ========== Template Scope (inherits from setup) ==========
-  // Ref type captures (before template scope shadows them)
-  type __R_message = typeof message;
   ;(function __template() {
-    // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;
-    var message: __U<__R_message> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = undefined as unknown as __Ctx;
@@ -94,28 +96,40 @@ function __setup() {
   // Access via `propName` or `props.propName`
   const props: Props = {} as Props;
   void props; // Mark as used to avoid TS6133
-  const count = props["count"];
-  void count;
+  const title = props["title"];
+  void title;
+  const disabled = props["disabled"];
+  void disabled;
 
-  void (props.count); // Interpolation
-  // @vize-map: expr -> 136:147
-  void (message); // Interpolation
-  // @vize-map: expr -> 156:163
+  void (props.title); // Interpolation
+  // @vize-map: expr -> 276:287
+  void (props.disabled); // VBind
+  // @vize-map: expr -> 319:333
+  void (emit('submit')); // VOn
+  // @vize-map: expr -> 343:357
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void count; void message; void props;
+  void emit; void props;
   })();
 }
 
 // Invoke setup to verify types
 __setup();
 
-export type Emits = {};
 export type Slots = {};
+
+type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
+type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown> = TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>> | ((...args: TArgs) => TReturn) : never;
+type __VizeOverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<__VizeOverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;
+type __VizeOverloadParameters<T extends (...args: any[]) => any> = Parameters<__VizeOverloadUnion<T>>;
+type __VizeIsStringLiteral<T> = T extends string ? string extends T ? false : true : false;
+type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };
+type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});
+type __EmitProps<T> = import('vue').EmitsToProps<__EmitOptions<T>>;
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
-  $props: Props;
+  $props: Props & __EmitProps<Emits>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };

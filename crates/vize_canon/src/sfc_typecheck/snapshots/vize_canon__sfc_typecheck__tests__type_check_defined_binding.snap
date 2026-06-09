@@ -1,5 +1,5 @@
 ---
-source: crates/vize_canon/src/sfc_typecheck.rs
+source: crates/vize_canon/src/sfc_typecheck/tests.rs
 expression: stable_snapshot_result(result)
 ---
 SfcTypeCheckResult {
