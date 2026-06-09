@@ -1,6 +1,10 @@
 use super::{LintResult, Linter};
 use crate::rules::script::{
-    NoGetCurrentInstance, NoNextTick, NoOptionsApi, PiniaPreferStoreToRefs, ScriptRule,
+    NoAsyncInComputed, NoDeepDestructureInProps, NoGetCurrentInstance, NoImportCompilerMacros,
+    NoInternalImports, NoNextTick, NoOptionsApi, NoReactiveDestructure, NoReservedIdentifiers,
+    NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed,
+    PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots,
+    PreferUseTemplateRef, RequireFunctionReturnType, RequireSymbolProvide, ScriptRule,
     VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot, script_source_type,
 };
 use memchr::memmem;
@@ -18,6 +22,12 @@ struct BuiltinScriptRuleEntry {
     profile_name: &'static str,
     rule: &'static (dyn ScriptRule + 'static),
 }
+
+/// `NoDeepDestructureInProps` carries configuration (`max_depth`), so it needs a
+/// concrete `'static` instance to be referenced as a `&'static dyn ScriptRule`.
+/// This uses the same default depth (`1`) as [`Default`].
+static NO_DEEP_DESTRUCTURE_IN_PROPS: NoDeepDestructureInProps =
+    NoDeepDestructureInProps { max_depth: 1 };
 
 /// The full ordered set of built-in script rules.
 ///
@@ -54,6 +64,91 @@ static BUILTIN_SCRIPT_RULES: &[BuiltinScriptRuleEntry] = &[
         profile_name: "patina.script_rule.vue_test_utils_no_html_snapshot",
         rule: &VueTestUtilsNoHtmlSnapshot,
     },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_COMPUTED,
+        profile_name: "patina.script_rule.prefer_computed",
+        rule: &PreferComputed,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_ASYNC_IN_COMPUTED,
+        profile_name: "patina.script_rule.no_async_in_computed",
+        rule: &NoAsyncInComputed,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_REACTIVE_DESTRUCTURE,
+        profile_name: "patina.script_rule.no_reactive_destructure",
+        rule: &NoReactiveDestructure,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,
+        profile_name: "patina.script_rule.no_top_level_ref_in_script",
+        rule: &NoTopLevelRefInScript,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_REF_OVER_REACTIVE,
+        profile_name: "patina.script_rule.prefer_ref_over_reactive",
+        rule: &PreferRefOverReactive,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_USE_TEMPLATE_REF,
+        profile_name: "patina.script_rule.prefer_use_template_ref",
+        rule: &PreferUseTemplateRef,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_USE_SLOTS,
+        profile_name: "patina.script_rule.prefer_use_slots",
+        rule: &PreferUseSlots,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_USE_ATTRS,
+        profile_name: "patina.script_rule.prefer_use_attrs",
+        rule: &PreferUseAttrs,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_USE_ID,
+        profile_name: "patina.script_rule.prefer_use_id",
+        rule: &PreferUseId,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_IMPORT_FROM_VUE,
+        profile_name: "patina.script_rule.prefer_import_from_vue",
+        rule: &PreferImportFromVue,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_WITH_DEFAULTS,
+        profile_name: "patina.script_rule.no_with_defaults",
+        rule: &NoWithDefaults,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
+        profile_name: "patina.script_rule.no_deep_destructure_in_props",
+        rule: &NO_DEEP_DESTRUCTURE_IN_PROPS,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_INTERNAL_IMPORTS,
+        profile_name: "patina.script_rule.no_internal_imports",
+        rule: &NoInternalImports,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_IMPORT_COMPILER_MACROS,
+        profile_name: "patina.script_rule.no_import_compiler_macros",
+        rule: &NoImportCompilerMacros,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_RESERVED_IDENTIFIERS,
+        profile_name: "patina.script_rule.no_reserved_identifiers",
+        rule: &NoReservedIdentifiers,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_REQUIRE_SYMBOL_PROVIDE,
+        profile_name: "patina.script_rule.require_symbol_provide",
+        rule: &RequireSymbolProvide,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_REQUIRE_FUNCTION_RETURN_TYPE,
+        profile_name: "patina.script_rule.require_function_return_type",
+        rule: &RequireFunctionReturnType,
+    },
 ];
 
 pub(crate) const RULE_NO_OPTIONS_API: &str = "script/no-options-api";
@@ -63,6 +158,23 @@ pub(crate) const RULE_PINIA_PREFER_STORE_TO_REFS: &str = "ecosystem/pinia-prefer
 pub(crate) const RULE_VUE_ROUTER_PREFER_NAMED_PUSH: &str = "ecosystem/vue-router-prefer-named-push";
 pub(crate) const RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT: &str =
     "ecosystem/vue-test-utils-no-html-snapshot";
+pub(crate) const RULE_PREFER_COMPUTED: &str = "script/prefer-computed";
+pub(crate) const RULE_NO_ASYNC_IN_COMPUTED: &str = "script/no-async-in-computed";
+pub(crate) const RULE_NO_REACTIVE_DESTRUCTURE: &str = "script/no-reactive-destructure";
+pub(crate) const RULE_NO_TOP_LEVEL_REF_IN_SCRIPT: &str = "script/no-top-level-ref-in-script";
+pub(crate) const RULE_PREFER_REF_OVER_REACTIVE: &str = "script/prefer-ref-over-reactive";
+pub(crate) const RULE_PREFER_USE_TEMPLATE_REF: &str = "script/prefer-use-template-ref";
+pub(crate) const RULE_PREFER_USE_SLOTS: &str = "script/prefer-use-slots";
+pub(crate) const RULE_PREFER_USE_ATTRS: &str = "script/prefer-use-attrs";
+pub(crate) const RULE_PREFER_USE_ID: &str = "script/prefer-use-id";
+pub(crate) const RULE_PREFER_IMPORT_FROM_VUE: &str = "script/prefer-import-from-vue";
+pub(crate) const RULE_NO_WITH_DEFAULTS: &str = "script/no-with-defaults";
+pub(crate) const RULE_NO_DEEP_DESTRUCTURE_IN_PROPS: &str = "script/no-deep-destructure-in-props";
+pub(crate) const RULE_NO_INTERNAL_IMPORTS: &str = "script/no-internal-imports";
+pub(crate) const RULE_NO_IMPORT_COMPILER_MACROS: &str = "script/no-import-compiler-macros";
+pub(crate) const RULE_NO_RESERVED_IDENTIFIERS: &str = "script/no-reserved-identifiers";
+pub(crate) const RULE_REQUIRE_SYMBOL_PROVIDE: &str = "script/require-symbol-provide";
+pub(crate) const RULE_REQUIRE_FUNCTION_RETURN_TYPE: &str = "script/require-function-return-type";
 const OPINIONATED_SCRIPT_PRESETS: &[&str] = &["opinionated", "nuxt"];
 const ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &["ecosystem"];
 const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
@@ -72,6 +184,23 @@ const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_PINIA_PREFER_STORE_TO_REFS,
     RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
     RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_PREFER_COMPUTED,
+    RULE_NO_ASYNC_IN_COMPUTED,
+    RULE_NO_REACTIVE_DESTRUCTURE,
+    RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,
+    RULE_PREFER_REF_OVER_REACTIVE,
+    RULE_PREFER_USE_TEMPLATE_REF,
+    RULE_PREFER_USE_SLOTS,
+    RULE_PREFER_USE_ATTRS,
+    RULE_PREFER_USE_ID,
+    RULE_PREFER_IMPORT_FROM_VUE,
+    RULE_NO_WITH_DEFAULTS,
+    RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
+    RULE_NO_INTERNAL_IMPORTS,
+    RULE_NO_IMPORT_COMPILER_MACROS,
+    RULE_NO_RESERVED_IDENTIFIERS,
+    RULE_REQUIRE_SYMBOL_PROVIDE,
+    RULE_REQUIRE_FUNCTION_RETURN_TYPE,
 ];
 #[cfg(test)]
 const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
@@ -89,7 +218,29 @@ pub struct BuiltinScriptRuleMeta {
     pub presets: &'static [&'static str],
 }
 
-pub fn builtin_script_rules() -> [BuiltinScriptRuleMeta; 6] {
+/// The 17 general script rules that are not part of any preset. They are
+/// fully opt-in: a host must enable them by name (`presets` is empty).
+static OPT_IN_GENERAL_SCRIPT_RULES: &[&(dyn ScriptRule + 'static)] = &[
+    &PreferComputed,
+    &NoAsyncInComputed,
+    &NoReactiveDestructure,
+    &NoTopLevelRefInScript,
+    &PreferRefOverReactive,
+    &PreferUseTemplateRef,
+    &PreferUseSlots,
+    &PreferUseAttrs,
+    &PreferUseId,
+    &PreferImportFromVue,
+    &NoWithDefaults,
+    &NO_DEEP_DESTRUCTURE_IN_PROPS,
+    &NoInternalImports,
+    &NoImportCompilerMacros,
+    &NoReservedIdentifiers,
+    &RequireSymbolProvide,
+    &RequireFunctionReturnType,
+];
+
+pub fn builtin_script_rules() -> Vec<BuiltinScriptRuleMeta> {
     let no_options_api = NoOptionsApi;
     let no_options_api_meta = no_options_api.meta();
     let no_get_current_instance = NoGetCurrentInstance;
@@ -103,7 +254,7 @@ pub fn builtin_script_rules() -> [BuiltinScriptRuleMeta; 6] {
     let vue_test_utils_no_html_snapshot = VueTestUtilsNoHtmlSnapshot;
     let vue_test_utils_no_html_snapshot_meta = vue_test_utils_no_html_snapshot.meta();
 
-    [
+    let mut rules = vec![
         BuiltinScriptRuleMeta {
             name: no_options_api_meta.name,
             description: no_options_api_meta.description,
@@ -152,7 +303,22 @@ pub fn builtin_script_rules() -> [BuiltinScriptRuleMeta; 6] {
             default_severity: vue_test_utils_no_html_snapshot_meta.default_severity,
             presets: ECOSYSTEM_SCRIPT_PRESETS,
         },
-    ]
+    ];
+
+    // The remaining general script rules are fully opt-in (no preset).
+    rules.extend(OPT_IN_GENERAL_SCRIPT_RULES.iter().map(|rule| {
+        let meta = rule.meta();
+        BuiltinScriptRuleMeta {
+            name: meta.name,
+            description: meta.description,
+            category: "Script",
+            fixable: false,
+            default_severity: meta.default_severity,
+            presets: &[],
+        }
+    }));
+
+    rules
 }
 
 #[inline]
@@ -283,8 +449,9 @@ fn block_has_active_rule(linter: &Linter, source: &str) -> bool {
 /// Run a single built-in script rule against a pre-parsed script block.
 ///
 /// Applies the same `script_rule_may_match` byte prefilter and parse-failure
-/// guard the per-rule `check` used to apply, then dispatches to `check_program`
-/// with the shared program.
+/// guard the per-rule `check` used to apply. AST-based rules (`uses_ast`)
+/// consume the shared program via `check_program`; byte-only rules run their
+/// own `check` against the raw source.
 fn run_builtin_script_rule_on_parsed(
     entry: &BuiltinScriptRuleEntry,
     source: &str,
@@ -292,19 +459,26 @@ fn run_builtin_script_rule_on_parsed(
     parsed: &oxc_parser::ParserReturn<'_>,
     result: &mut LintResult,
 ) {
-    if parsed.panicked || !parsed.errors.is_empty() {
-        return;
-    }
     if !script_rule_may_match(entry.rule_name, source) {
         return;
     }
     let mut lint = crate::rules::script::ScriptLintResult::default();
-    profile!(
-        entry.profile_name,
-        entry
-            .rule
-            .check_program(&parsed.program, source, offset, &mut lint)
-    );
+    let parse_ok = !parsed.panicked && parsed.errors.is_empty();
+    profile!(entry.profile_name, {
+        if entry.rule.uses_ast() {
+            // AST rules require a successful parse (matching the previous
+            // per-rule `parsed.panicked || !errors.is_empty()` early-return).
+            if parse_ok {
+                entry
+                    .rule
+                    .check_program(&parsed.program, source, offset, &mut lint);
+            }
+        } else {
+            // Byte-only rules scan the raw source and run regardless of parse
+            // outcome, matching their standalone `check` behavior.
+            entry.rule.check(source, offset, &mut lint);
+        }
+    });
     merge_script_result(result, lint);
 }
 

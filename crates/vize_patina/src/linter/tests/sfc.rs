@@ -38,6 +38,67 @@ const instance = getCurrentInstance()
 }
 
 #[test]
+fn test_lint_sfc_enabled_no_async_in_computed_reports() {
+    // Reproduction from issue #1215: enabling an opt-in `script/*` rule by name
+    // must execute it through the engine end-to-end.
+    let linter = Linter::new().with_enabled_rules(Some(vec!["script/no-async-in-computed".into()]));
+    let sfc = r#"<script setup>
+const data = computed(async () => await fetch('/api'))
+</script>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "script/no-async-in-computed"),
+        "expected script/no-async-in-computed diagnostic, got {:?}",
+        result.diagnostics
+    );
+    assert_eq!(result.error_count, 1);
+}
+
+#[test]
+fn test_lint_sfc_enabled_script_rule_does_not_enable_siblings() {
+    // Enabling one opt-in script rule must not implicitly run the others.
+    let linter = Linter::new().with_enabled_rules(Some(vec!["script/no-async-in-computed".into()]));
+    let sfc = r#"<script setup>
+const state = reactive({ count: 0 })
+const { count } = state
+</script>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+    assert!(
+        !result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "script/no-reactive-destructure"),
+        "no-reactive-destructure should stay opt-in, got {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_lint_sfc_additional_script_rule_reports() {
+    // The `with_additional_rules` path must also honor requested script rules.
+    let linter = Linter::new().with_additional_rules(vec!["script/no-reactive-destructure".into()]);
+    let sfc = r#"<script setup>
+const state = reactive({ count: 0, name: 'foo' })
+const { count, name } = state
+</script>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "script/no-reactive-destructure"),
+        "expected script/no-reactive-destructure diagnostic, got {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn test_lint_sfc_byte_offset() {
     let linter = Linter::new();
     let sfc = r#"<script setup lang="ts">
