@@ -11,7 +11,7 @@ use crate::{
 };
 use vize_armature::Parser;
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
-use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::{SfcError, SfcParseOptions, parse_sfc};
 use vize_carton::Allocator;
 use vize_carton::String;
 use vize_carton::ToCompactString;
@@ -22,6 +22,7 @@ use vize_relief::{CompilerError, ErrorCode, ast::RootNode};
 use super::config::{LintResult, Linter};
 
 const TEMPLATE_PARSE_RULE: &str = "parser/template";
+const SFC_PARSE_RULE: &str = "parser/sfc";
 const INVALID_SELF_CLOSING_HTML_MESSAGE: &str =
     "Invalid self-closing syntax on non-void HTML element";
 
@@ -69,6 +70,26 @@ fn template_parse_span(parse_error: &CompilerError, source_len: usize) -> (u32, 
         .loc
         .as_ref()
         .map(|loc| (loc.start.offset, loc.end.offset))
+        .unwrap_or((0, 0));
+    let start = raw_start.min(source_len.saturating_sub(1));
+    let end = raw_end
+        .max(raw_start.saturating_add(1))
+        .max(start.saturating_add(1))
+        .min(source_len);
+
+    (start, end)
+}
+
+fn sfc_parse_span(parse_error: &SfcError, source_len: usize) -> (u32, u32) {
+    if source_len == 0 {
+        return (0, 0);
+    }
+
+    let source_len = source_len as u32;
+    let (raw_start, raw_end) = parse_error
+        .loc
+        .as_ref()
+        .map(|loc| (loc.start as u32, loc.end as u32))
         .unwrap_or((0, 0));
     let start = raw_start.min(source_len.saturating_sub(1));
     let end = raw_end
@@ -256,6 +277,25 @@ impl Linter {
 
     pub(crate) fn has_fatal_template_parse_errors(parse_errors: &[CompilerError]) -> bool {
         parse_errors.iter().any(|error| !error.is_recoverable())
+    }
+
+    fn sfc_parse_lint_result(
+        filename: &str,
+        source_len: usize,
+        parse_error: &SfcError,
+    ) -> LintResult {
+        let (start, end) = sfc_parse_span(parse_error, source_len);
+        LintResult {
+            filename: filename.to_compact_string(),
+            diagnostics: vec![LintDiagnostic::error(
+                SFC_PARSE_RULE,
+                parse_error.message.clone(),
+                start,
+                end,
+            )],
+            error_count: 1,
+            warning_count: 0,
+        }
     }
 
     fn has_active_semantic_template_rules(&self) -> bool {
@@ -540,19 +580,28 @@ impl Linter {
     /// Uses ultra-fast template extraction optimized for linting.
     #[inline]
     pub fn lint_sfc(&self, source: &str, filename: &str) -> LintResult {
-        let shared_descriptor = if self.needs_sfc_descriptor_for_lint() {
+        let shared_descriptor_result = if self.needs_sfc_descriptor_for_lint() {
             profile!(
                 "patina.sfc.shared_parse_sfc",
-                super::script_rules::parse_sfc_for_lint(source, filename).ok()
+                Some(super::script_rules::parse_sfc_for_lint(source, filename))
             )
         } else {
             None
         };
+        let sfc_parse_result = shared_descriptor_result
+            .as_ref()
+            .and_then(|result| result.as_ref().err())
+            .map(|parse_error| Self::sfc_parse_lint_result(filename, source.len(), parse_error));
+        let shared_descriptor = shared_descriptor_result
+            .as_ref()
+            .and_then(|result| result.as_ref().ok());
 
-        let sfc_result = profile!(
-            "patina.sfc.level_rules",
-            self.lint_sfc_level(source, filename, shared_descriptor.as_ref())
-        );
+        let sfc_result = sfc_parse_result.unwrap_or_else(|| {
+            profile!(
+                "patina.sfc.level_rules",
+                self.lint_sfc_level(source, filename, shared_descriptor)
+            )
+        });
 
         #[cfg(not(target_arch = "wasm32"))]
         if super::native_type_aware::has_active_type_aware_rules(self) {
@@ -562,7 +611,7 @@ impl Linter {
                     self,
                     source,
                     filename,
-                    shared_descriptor.as_ref(),
+                    shared_descriptor,
                 )
             );
             return Self::merge_lint_results(template_result, sfc_result);
@@ -572,7 +621,7 @@ impl Linter {
             || self.has_active_semantic_template_rules()
             || self.has_active_shared_sfc_descriptor_rules()
         {
-            let template_result = match shared_descriptor.as_ref() {
+            let template_result = match shared_descriptor {
                 Some(descriptor) => {
                     profile!("patina.sfc.descriptor_rules", {
                         super::script_rules::lint_with_descriptor(self, filename, descriptor)

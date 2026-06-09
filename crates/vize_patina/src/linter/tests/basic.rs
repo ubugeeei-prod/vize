@@ -338,6 +338,25 @@ const msg = "hello";
 }
 
 #[test]
+fn test_lint_sfc_reports_sfc_parser_errors() {
+    let linter = Linter::new();
+    let source = r#"<template>
+  <div v-html="userInput"></div>
+"#;
+    let result = linter.lint_sfc(source, "test.vue");
+    let parser_diagnostic = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.rule_name == "parser/sfc")
+        .expect("SFC parser error should be reported");
+
+    assert_eq!(parser_diagnostic.severity, Severity::Error);
+    assert!(parser_diagnostic.message.contains("closing tag is missing"));
+    assert!(parser_diagnostic.end > parser_diagnostic.start);
+    assert!(result.has_errors());
+}
+
+#[test]
 fn test_lint_sfc_no_template() {
     let linter = Linter::new();
     let sfc = r#"<script setup lang="ts">
