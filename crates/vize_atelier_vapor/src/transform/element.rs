@@ -401,13 +401,14 @@ pub(crate) fn transform_element<'a>(
                 .push(OperationNode::CreateComponent(create_component));
         }
         ElementType::Slot => {
-            // Slot outlet handling
-            let name_exp = SimpleExpressionNode::new("default", true, SourceLocation::STUB);
+            let name = get_slot_outlet_name(ctx, el);
+            let props = get_slot_outlet_props(ctx, el);
+            let fallback = (!el.children.is_empty()).then(|| transform_children(ctx, &el.children));
             let slot_outlet = SlotOutletIRNode {
                 id: element_id,
-                name: Box::new_in(name_exp, ctx.allocator),
-                props: Vec::new_in(ctx.allocator),
-                fallback: None,
+                name,
+                props,
+                fallback,
             };
 
             block.operation.push(OperationNode::SlotOutlet(slot_outlet));
@@ -422,4 +423,149 @@ pub(crate) fn transform_element<'a>(
     }
 
     block.returns.push(element_id);
+}
+
+fn get_slot_outlet_name<'a>(
+    ctx: &TransformContext<'a>,
+    el: &ElementNode<'a>,
+) -> Box<'a, SimpleExpressionNode<'a>> {
+    for prop in el.props.iter() {
+        match prop {
+            PropNode::Attribute(attr) => {
+                if attr.name == "name"
+                    && let Some(ref value) = attr.value
+                {
+                    return Box::new_in(
+                        SimpleExpressionNode::new(
+                            value.content.clone(),
+                            true,
+                            SourceLocation::STUB,
+                        ),
+                        ctx.allocator,
+                    );
+                }
+            }
+            PropNode::Directive(dir) => {
+                if dir.name == "bind"
+                    && let Some(ExpressionNode::Simple(arg)) = dir.arg.as_ref()
+                    && arg.content == "name"
+                    && let Some(ExpressionNode::Simple(exp)) = dir.exp.as_ref()
+                {
+                    return Box::new_in(
+                        SimpleExpressionNode::new(
+                            exp.content.clone(),
+                            exp.is_static,
+                            exp.loc.clone(),
+                        ),
+                        ctx.allocator,
+                    );
+                }
+            }
+        }
+    }
+
+    Box::new_in(
+        SimpleExpressionNode::new("default", true, SourceLocation::STUB),
+        ctx.allocator,
+    )
+}
+
+fn get_slot_outlet_props<'a>(
+    ctx: &TransformContext<'a>,
+    el: &ElementNode<'a>,
+) -> Vec<'a, IRProp<'a>> {
+    let mut props = Vec::new_in(ctx.allocator);
+
+    for prop in el.props.iter() {
+        match prop {
+            PropNode::Attribute(attr) => {
+                if attr.name == "name" {
+                    continue;
+                }
+
+                let key = Box::new_in(
+                    SimpleExpressionNode::new(attr.name.clone(), true, SourceLocation::STUB),
+                    ctx.allocator,
+                );
+                let mut values = Vec::new_in(ctx.allocator);
+                if let Some(ref value) = attr.value {
+                    values.push(Box::new_in(
+                        SimpleExpressionNode::new(
+                            value.content.clone(),
+                            true,
+                            SourceLocation::STUB,
+                        ),
+                        ctx.allocator,
+                    ));
+                }
+
+                props.push(IRProp {
+                    key,
+                    values,
+                    is_component: false,
+                });
+            }
+            PropNode::Directive(dir) => {
+                if dir.name != "bind" {
+                    continue;
+                }
+
+                match (dir.arg.as_ref(), dir.exp.as_ref()) {
+                    (Some(ExpressionNode::Simple(arg)), Some(ExpressionNode::Simple(exp))) => {
+                        if arg.content == "name" {
+                            continue;
+                        }
+
+                        let key = Box::new_in(
+                            SimpleExpressionNode::new(
+                                arg.content.clone(),
+                                arg.is_static,
+                                arg.loc.clone(),
+                            ),
+                            ctx.allocator,
+                        );
+                        let mut values = Vec::new_in(ctx.allocator);
+                        values.push(Box::new_in(
+                            SimpleExpressionNode::new(
+                                exp.content.clone(),
+                                exp.is_static,
+                                exp.loc.clone(),
+                            ),
+                            ctx.allocator,
+                        ));
+
+                        props.push(IRProp {
+                            key,
+                            values,
+                            is_component: false,
+                        });
+                    }
+                    (None, Some(ExpressionNode::Simple(exp))) => {
+                        let key = Box::new_in(
+                            SimpleExpressionNode::new("$", true, SourceLocation::STUB),
+                            ctx.allocator,
+                        );
+                        let mut values = Vec::new_in(ctx.allocator);
+                        values.push(Box::new_in(
+                            SimpleExpressionNode::new(
+                                exp.content.clone(),
+                                exp.is_static,
+                                exp.loc.clone(),
+                            ),
+                            ctx.allocator,
+                        ));
+
+                        props.push(IRProp {
+                            key,
+                            values,
+                            is_component: false,
+                        });
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    props
 }

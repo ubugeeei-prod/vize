@@ -24,6 +24,7 @@ pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
     // Define priority order for helpers (lower = earlier in import)
     fn helper_priority(name: &str) -> u32 {
         match name {
+            "renderSlot" => 1,
             "resolveComponent" => 1,
             "createComponentWithFallback" => 2,
             "createComponent" => 3,
