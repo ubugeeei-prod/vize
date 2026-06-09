@@ -1,5 +1,5 @@
 ---
-source: crates/vize_canon/src/virtual_ts.rs
+source: crates/vize_canon/src/virtual_ts/tests.rs
 expression: value
 ---
   // Compiler macros (only valid in setup scope, not global)
