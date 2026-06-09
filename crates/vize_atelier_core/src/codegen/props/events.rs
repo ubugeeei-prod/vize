@@ -78,20 +78,27 @@ pub fn von_event_key_for(
     name
 }
 
-/// Get the event key for a v-on directive (e.g., "onClick", "onKeyupEnter")
-pub(super) fn get_von_event_key(dir: &DirectiveNode<'_>) -> Option<String> {
+/// Get the event key for a v-on directive (e.g., "onClick", "onClickOnce").
+///
+/// Delegates to [`von_event_key_for`] so the merge key includes the
+/// capitalized option modifiers (`capture`/`once`/`passive`). This keeps the
+/// scan/merge path consistent with the single-handler emission path, so events
+/// differing only by an option modifier (`@click` vs `@click.once`) get
+/// distinct keys and are never merged into one prop.
+pub(super) fn get_von_event_key(dir: &DirectiveNode<'_>, is_plain_element: bool) -> Option<String> {
     if dir.name != "on" {
         return None;
     }
     if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
         if exp.is_static {
-            let camelized = camelize(exp.content.as_str());
-            let mut key = String::from("on");
-            if let Some(first) = camelized.chars().next() {
-                key.push(first.to_uppercase().next().unwrap_or(first));
-                key.push_str(&camelized[first.len_utf8()..]);
-            }
-            Some(key)
+            // The `on:` case-preserving form only applies to user-authored v-on
+            // directives (those carry a `raw_name`).
+            let on_plain_element = is_plain_element && dir.raw_name.is_some();
+            Some(von_event_key_for(
+                exp.content.as_str(),
+                on_plain_element,
+                dir.modifiers.iter().map(|m| m.content.as_str()),
+            ))
         } else {
             None // Dynamic events can't be merged
         }
@@ -124,7 +131,7 @@ pub(super) fn generate_merged_event_handlers(
     let mut handler_idx = 0;
     for p in props {
         if let PropNode::Directive(dir) = p
-            && let Some(key) = get_von_event_key(dir)
+            && let Some(key) = get_von_event_key(dir, ctx.props_is_plain_element)
             && key == target_event_key
         {
             if handler_idx > 0 {

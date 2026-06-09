@@ -490,7 +490,7 @@ fn generate_props_object_inner(
                 if is_supported_directive(dir) {
                     // Check for duplicate v-on events that should be merged into arrays
                     if dir.name == "on"
-                        && let Some(event_key) = get_von_event_key(dir)
+                        && let Some(event_key) = get_von_event_key(dir, ctx.props_is_plain_element)
                     {
                         let count = scan.event_counts.count(&event_key);
                         if count > 1 {

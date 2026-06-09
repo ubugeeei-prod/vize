@@ -260,7 +260,7 @@ impl<'props> PropsScan<'props> {
                 if !self.has_inline_handler && has_inline_handler(ctx, dir) {
                     self.has_inline_handler = true;
                 }
-                if let Some(event_key) = get_von_event_key(dir) {
+                if let Some(event_key) = get_von_event_key(dir, ctx.props_is_plain_element) {
                     self.event_counts.observe(event_key);
                 }
             }

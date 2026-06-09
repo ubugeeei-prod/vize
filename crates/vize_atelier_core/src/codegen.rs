@@ -918,6 +918,36 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_v_on_option_modifier_events_are_not_merged() {
+        // Issue #1172: events differing only by an option modifier
+        // (.once/.capture/.passive) must compile to distinct props and never
+        // be merged under one key.
+        let once = result_output(&compile!(r#"<div @click="a" @click.once="b"></div>"#));
+        assert!(
+            once.contains("onClick: a") && once.contains("onClickOnce: b"),
+            "@click and @click.once should be distinct props. Got:\n{}",
+            once
+        );
+        assert!(
+            !once.contains("onClick: ["),
+            "@click and @click.once must not be merged into an array. Got:\n{}",
+            once
+        );
+
+        let capture = result_output(&compile!(r#"<div @click.capture="a" @click="b"></div>"#));
+        assert!(
+            capture.contains("onClickCapture: a") && capture.contains("onClick: b"),
+            "@click.capture and @click should be distinct props. Got:\n{}",
+            capture
+        );
+        assert!(
+            !capture.contains("onClick: ["),
+            "@click.capture and @click must not be merged into an array. Got:\n{}",
+            capture
+        );
+    }
+
+    #[test]
     fn test_codegen_scoped_slot_params_stay_local_in_handlers() {
         use crate::options::{CodegenOptions, TransformOptions};
         use crate::parser::parse;
