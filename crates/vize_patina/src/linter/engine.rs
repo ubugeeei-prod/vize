@@ -4,7 +4,10 @@
 //! full SFC linting with template extraction, and batch file processing.
 
 use crate::{
-    context::LintContext, diagnostic::LintSummary, preset::LintPreset, visitor::LintVisitor,
+    context::LintContext,
+    diagnostic::{LintDiagnostic, LintSummary, Severity},
+    preset::LintPreset,
+    visitor::LintVisitor,
 };
 use vize_armature::Parser;
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
@@ -14,9 +17,67 @@ use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_carton::profile;
 use vize_croquis::{Analyzer, Croquis};
-use vize_relief::ast::RootNode;
+use vize_relief::{CompilerError, ErrorCode, ast::RootNode};
 
 use super::config::{LintResult, Linter};
+
+const TEMPLATE_PARSE_RULE: &str = "parser/template";
+const INVALID_SELF_CLOSING_HTML_MESSAGE: &str =
+    "Invalid self-closing syntax on non-void HTML element";
+
+pub(crate) enum TemplateAnalysis<'a> {
+    Disabled,
+    Precomputed(&'a Croquis),
+    Lazy,
+}
+
+pub(crate) struct SfcTemplateLintInput<'a> {
+    pub filename: &'a str,
+    pub template: &'a vize_atelier_sfc::SfcTemplateBlock<'a>,
+    pub allocator: &'a Allocator,
+    pub root: &'a RootNode<'a>,
+    pub descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
+    pub analysis: TemplateAnalysis<'a>,
+}
+
+fn template_parse_diagnostic(parse_error: &CompilerError, source_len: usize) -> LintDiagnostic {
+    let (start, end) = template_parse_span(parse_error, source_len);
+    if parse_error.is_recoverable() {
+        LintDiagnostic::warn(TEMPLATE_PARSE_RULE, parse_error.message.clone(), start, end)
+    } else {
+        LintDiagnostic::error(TEMPLATE_PARSE_RULE, parse_error.message.clone(), start, end)
+    }
+}
+
+fn should_report_template_parse_diagnostic(parse_error: &CompilerError) -> bool {
+    // Standard mode rewrites invalid HTML self-closing syntax as a compatibility
+    // warning. Lint surfaces parser errors, but should not turn this rewrite
+    // notice into a project warning budget failure.
+    !(parse_error.code == ErrorCode::ExtendPoint
+        && parse_error
+            .message
+            .starts_with(INVALID_SELF_CLOSING_HTML_MESSAGE))
+}
+
+fn template_parse_span(parse_error: &CompilerError, source_len: usize) -> (u32, u32) {
+    if source_len == 0 {
+        return (0, 0);
+    }
+
+    let source_len = source_len as u32;
+    let (raw_start, raw_end) = parse_error
+        .loc
+        .as_ref()
+        .map(|loc| (loc.start.offset, loc.end.offset))
+        .unwrap_or((0, 0));
+    let start = raw_start.min(source_len.saturating_sub(1));
+    let end = raw_end
+        .max(raw_start.saturating_add(1))
+        .max(start.saturating_add(1))
+        .min(source_len);
+
+    (start, end)
+}
 
 const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
     "vue/no-unused-vars",
@@ -126,7 +187,7 @@ impl Linter {
         }
     }
 
-    fn merge_lint_results(
+    pub(crate) fn merge_lint_results(
         mut template_result: LintResult,
         mut sfc_result: LintResult,
     ) -> LintResult {
@@ -149,7 +210,7 @@ impl Linter {
         template_result
     }
 
-    fn offset_result(result: &mut LintResult, byte_offset: u32) {
+    pub(crate) fn offset_result(result: &mut LintResult, byte_offset: u32) {
         if byte_offset == 0 {
             return;
         }
@@ -162,6 +223,39 @@ impl Linter {
                 label.end += byte_offset;
             }
         }
+    }
+
+    pub(crate) fn template_parse_lint_result(
+        filename: &str,
+        source_len: usize,
+        parse_errors: &[CompilerError],
+    ) -> LintResult {
+        let mut diagnostics = Vec::with_capacity(parse_errors.len());
+        let mut error_count = 0;
+        let mut warning_count = 0;
+
+        for parse_error in parse_errors {
+            if !should_report_template_parse_diagnostic(parse_error) {
+                continue;
+            }
+            let diagnostic = template_parse_diagnostic(parse_error, source_len);
+            match diagnostic.severity {
+                Severity::Error => error_count += 1,
+                Severity::Warning => warning_count += 1,
+            }
+            diagnostics.push(diagnostic);
+        }
+
+        LintResult {
+            filename: filename.to_compact_string(),
+            diagnostics,
+            error_count,
+            warning_count,
+        }
+    }
+
+    pub(crate) fn has_fatal_template_parse_errors(parse_errors: &[CompilerError]) -> bool {
+        parse_errors.iter().any(|error| !error.is_recoverable())
     }
 
     fn has_active_semantic_template_rules(&self) -> bool {
@@ -256,9 +350,11 @@ impl Linter {
         filename: &'a str,
         root: &RootNode<'a>,
         sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
-        analysis: Option<&'a Croquis>,
+        analysis: TemplateAnalysis<'a>,
     ) -> LintResult {
-        if !self.has_active_semantic_template_rules() {
+        if matches!(analysis, TemplateAnalysis::Disabled)
+            || !self.has_active_semantic_template_rules()
+        {
             return self.run_template_rules(
                 allocator,
                 source,
@@ -269,15 +365,17 @@ impl Linter {
             );
         }
         let owned_analysis;
-        let analysis = if let Some(analysis) = analysis {
-            analysis
-        } else {
-            owned_analysis = profile!("patina.template.croquis", {
-                let mut analyzer = Analyzer::for_lint();
-                analyzer.analyze_template(root);
-                analyzer.finish()
-            });
-            &owned_analysis
+        let analysis = match analysis {
+            TemplateAnalysis::Disabled => unreachable!(),
+            TemplateAnalysis::Precomputed(analysis) => analysis,
+            TemplateAnalysis::Lazy => {
+                owned_analysis = profile!("patina.template.croquis", {
+                    let mut analyzer = Analyzer::for_lint();
+                    analyzer.analyze_template(root);
+                    analyzer.finish()
+                });
+                &owned_analysis
+            }
         };
 
         self.run_template_rules(
@@ -307,11 +405,41 @@ impl Linter {
         source: &str,
         filename: &str,
     ) -> LintResult {
+        self.lint_template_with_allocator_config(allocator, source, filename, true, true)
+    }
+
+    fn lint_template_with_allocator_config(
+        &self,
+        allocator: &Allocator,
+        source: &str,
+        filename: &str,
+        report_parse_errors: bool,
+        gate_semantic_on_fatal_parse: bool,
+    ) -> LintResult {
         // Parse the template
         let parser = Parser::new(allocator.as_bump(), source);
-        let (root, _parse_errors) = profile!("patina.template.parse", parser.parse());
+        let (root, parse_errors) = profile!("patina.template.parse", parser.parse());
+        let has_fatal_parse_errors = Self::has_fatal_template_parse_errors(&parse_errors);
 
-        self.lint_template_root(allocator, source, filename, &root, None, None)
+        let parse_result = Self::template_parse_lint_result(filename, source.len(), &parse_errors);
+        let lint_result = self.lint_template_root(
+            allocator,
+            source,
+            filename,
+            &root,
+            None,
+            if gate_semantic_on_fatal_parse && has_fatal_parse_errors {
+                TemplateAnalysis::Disabled
+            } else {
+                TemplateAnalysis::Lazy
+            },
+        );
+
+        if report_parse_errors {
+            Self::merge_lint_results(parse_result, lint_result)
+        } else {
+            lint_result
+        }
     }
 
     /// Lint multiple files and aggregate results.
@@ -336,24 +464,16 @@ impl Linter {
         (results, summary)
     }
 
-    pub(crate) fn lint_sfc_template_root<'a>(
-        &self,
-        filename: &str,
-        template: &'a vize_atelier_sfc::SfcTemplateBlock<'a>,
-        allocator: &'a Allocator,
-        root: &RootNode<'a>,
-        descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
-        analysis: Option<&'a Croquis>,
-    ) -> LintResult {
+    pub(crate) fn lint_sfc_template_root<'a>(&self, input: SfcTemplateLintInput<'a>) -> LintResult {
         let mut result = self.lint_template_root(
-            allocator,
-            &template.content,
-            filename,
-            root,
-            descriptor,
-            analysis,
+            input.allocator,
+            &input.template.content,
+            input.filename,
+            input.root,
+            input.descriptor,
+            input.analysis,
         );
-        Self::offset_result(&mut result, template.loc.start as u32);
+        Self::offset_result(&mut result, input.template.loc.start as u32);
         result
     }
 
@@ -374,10 +494,10 @@ impl Linter {
         let allocator =
             Allocator::with_capacity((template.content.len() * 4).max(self.initial_capacity));
         let parser = Parser::new(allocator.as_bump(), &template.content);
-        let (root, _parse_errors) =
-            profile!("patina.sfc.descriptor.template_parse", parser.parse());
+        let (root, parse_errors) = profile!("patina.sfc.descriptor.template_parse", parser.parse());
+        let has_fatal_parse_errors = Self::has_fatal_template_parse_errors(&parse_errors);
 
-        let analysis = if self.has_active_semantic_template_rules() {
+        let analysis = if !has_fatal_parse_errors && self.has_active_semantic_template_rules() {
             Some(profile!(
                 "patina.sfc.descriptor.croquis",
                 analyze_descriptor_for_lint(descriptor, Some(&root))
@@ -386,14 +506,25 @@ impl Linter {
             None
         };
 
-        self.lint_sfc_template_root(
+        let mut parse_result =
+            Self::template_parse_lint_result(filename, template.content.len(), &parse_errors);
+        Self::offset_result(&mut parse_result, template.loc.start as u32);
+        let lint_result = self.lint_sfc_template_root(SfcTemplateLintInput {
             filename,
             template,
-            &allocator,
-            &root,
-            Some(descriptor),
-            analysis.as_ref(),
-        )
+            allocator: &allocator,
+            root: &root,
+            descriptor: Some(descriptor),
+            analysis: if has_fatal_parse_errors {
+                TemplateAnalysis::Disabled
+            } else if let Some(analysis) = analysis.as_ref() {
+                TemplateAnalysis::Precomputed(analysis)
+            } else {
+                TemplateAnalysis::Lazy
+            },
+        });
+
+        Self::merge_lint_results(parse_result, lint_result)
     }
 
     /// Lint a full Vue SFC file.
@@ -490,7 +621,10 @@ impl Linter {
     /// Lint a standalone HTML document that may use Vue from a CDN.
     #[inline]
     pub fn lint_standalone_html(&self, source: &str, filename: &str) -> LintResult {
-        let mut result = self.lint_template(source, filename);
+        let capacity = (source.len() * 4).max(self.initial_capacity);
+        let allocator = Allocator::with_capacity(capacity);
+        let mut result =
+            self.lint_template_with_allocator_config(&allocator, source, filename, false, false);
 
         if super::script_rules::has_active_builtin_script_rules(self) {
             super::script_rules::append_builtin_script_diagnostics_from_html(

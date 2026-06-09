@@ -1,4 +1,5 @@
 use super::{Allocator, LintPreset, Linter, ToCompactString};
+use crate::Severity;
 
 #[test]
 fn test_lint_empty_template() {
@@ -13,6 +14,70 @@ fn test_lint_simple_template() {
     let linter = Linter::new();
     let result = linter.lint_template("<div>Hello</div>", "test.vue");
     assert!(!result.has_errors());
+}
+
+#[test]
+fn test_lint_template_reports_fatal_parser_errors_and_gates_semantic_rules() {
+    let linter =
+        Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-vars".to_compact_string()]));
+    let source = r#"<ul>
+  <li v-for="(item, index) in items" :key="item">{{ item }}</li>
+"#;
+    let result = linter.lint_template(source, "test.vue");
+
+    let parser_diagnostic = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.rule_name == "parser/template")
+        .expect("template parser error should be reported");
+    assert_eq!(parser_diagnostic.severity, Severity::Error);
+    assert!(parser_diagnostic.message.contains("missing end tag"));
+    assert!(parser_diagnostic.end > parser_diagnostic.start);
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/no-unused-vars"),
+        "semantic diagnostics should be gated by fatal template parse errors: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_lint_template_reports_recoverable_parser_errors_without_gating_rules() {
+    let linter = Linter::new();
+    let result = linter.lint_template(r#"<div id="a" id="b"></div>"#, "test.vue");
+
+    let parser_diagnostic = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.rule_name == "parser/template")
+        .expect("recoverable template parser diagnostic should be reported");
+    assert_eq!(parser_diagnostic.severity, Severity::Warning);
+    assert!(parser_diagnostic.message.contains("Duplicate attribute"));
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "vue/no-duplicate-attributes"),
+        "ordinary lint rules should still run after recoverable parser diagnostics"
+    );
+}
+
+#[test]
+fn test_lint_template_ignores_compat_self_closing_rewrite_warning() {
+    let linter = Linter::new();
+    let result = linter.lint_template(r#"<div />"#, "test.vue");
+
+    assert_eq!(result.warning_count, 0);
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "parser/template"),
+        "compatibility rewrite warnings should not consume lint warning budget: {:?}",
+        result.diagnostics
+    );
 }
 
 #[test]
@@ -244,6 +309,32 @@ interface Props {
     let result = linter.lint_sfc(sfc, "test.vue");
     assert_eq!(result.error_count, 0);
     assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_lint_sfc_reports_template_parser_errors_at_sfc_offsets() {
+    let linter = Linter::new();
+    let source = r#"<script setup lang="ts">
+const msg = "hello";
+</script>
+
+<template>
+  <div>
+    <span>{{ msg }}
+  </div>
+</template>
+"#;
+    let result = linter.lint_sfc(source, "test.vue");
+    let parser_diagnostic = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.rule_name == "parser/template")
+        .expect("template parser error should be reported for SFC templates");
+
+    let template_start = source.find("<template>").unwrap() as u32;
+    assert_eq!(parser_diagnostic.severity, Severity::Error);
+    assert!(parser_diagnostic.start > template_start);
+    assert!(parser_diagnostic.end > parser_diagnostic.start);
 }
 
 #[test]

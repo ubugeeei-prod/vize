@@ -639,6 +639,45 @@ const items = [1]
     }
 
     #[test]
+    fn json_output_includes_template_parser_diagnostic_locations() {
+        let source = r#"<script setup lang="ts">
+const msg = "hello";
+</script>
+
+<template>
+  <div>
+    <span>{{ msg }}
+  </div>
+</template>
+"#;
+        let filename = vize_carton::String::from("Component.vue");
+        let result = Linter::new().lint_sfc(source, &filename);
+        let output = format_results(
+            &[result],
+            &[(filename, vize_carton::String::from(source))],
+            OutputFormat::Json,
+        );
+        let json: serde_json::Value = serde_json::from_str(&output).unwrap();
+        let messages = json[0]["messages"].as_array().unwrap();
+        let diagnostic = messages
+            .iter()
+            .find(|message| message["ruleId"] == "parser/template")
+            .expect("parser/template diagnostic should be present");
+
+        assert_eq!(diagnostic["severity"], 2);
+        assert_eq!(diagnostic["line"], 7);
+        assert!(diagnostic["column"].as_u64().unwrap() > 1);
+        assert!(
+            diagnostic["endLine"].as_u64().unwrap() >= diagnostic["line"].as_u64().unwrap(),
+            "{output}"
+        );
+        assert!(
+            diagnostic["endColumn"].as_u64().unwrap() > diagnostic["column"].as_u64().unwrap(),
+            "{output}"
+        );
+    }
+
+    #[test]
     fn output_format_parses_report_formats() {
         assert_eq!(OutputFormat::parse("stylish"), Some(OutputFormat::Stylish));
         assert_eq!(OutputFormat::parse("ansi"), Some(OutputFormat::Ansi));

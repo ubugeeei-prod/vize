@@ -752,8 +752,13 @@ fn analyze_sfc_for_cross_file(
         offsets.template = template.loc.start as u32;
         let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
         let parser = Parser::new(allocator.as_bump(), template.content.as_ref());
-        let (root, _parse_errors) = parser.parse();
-        analyze_sfc_descriptor(&descriptor, Some(&root), SfcCroquisOptions::full())
+        let (root, parse_errors) = parser.parse();
+        let template_ast = if parse_errors.iter().any(|error| !error.is_recoverable()) {
+            None
+        } else {
+            Some(&root)
+        };
+        analyze_sfc_descriptor(&descriptor, template_ast, SfcCroquisOptions::full())
     } else {
         analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full())
     };
@@ -1047,6 +1052,49 @@ const ready = true
         let expected_start = first_source.find("id=\"email\"").unwrap() as u32;
         assert_eq!(diagnostic.start, expected_start);
         assert!(diagnostic.end > diagnostic.start);
+    }
+
+    #[test]
+    fn cross_file_opt_in_skips_template_ast_after_fatal_parse_error() {
+        let dir = tempfile::tempdir().unwrap();
+        let malformed = dir.path().join("Malformed.vue");
+        let valid = dir.path().join("Valid.vue");
+
+        fs::write(
+            &malformed,
+            r#"<template>
+  <div>
+    <input id="email">
+</template>
+"#,
+        )
+        .unwrap();
+        fs::write(
+            &valid,
+            r#"<template>
+  <input id="email" />
+</template>
+"#,
+        )
+        .unwrap();
+
+        let files = [&malformed, &valid]
+            .into_iter()
+            .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
+            .collect::<Vec<_>>();
+        let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
+
+        let diagnostics = output
+            .results
+            .iter()
+            .flat_map(|result| result.diagnostics.iter())
+            .collect::<Vec<_>>();
+        assert!(
+            diagnostics
+                .iter()
+                .all(|diagnostic| !diagnostic.message.contains("duplicate-id")),
+            "malformed templates should not contribute cross-file template facts: {diagnostics:?}"
+        );
     }
 
     #[test]

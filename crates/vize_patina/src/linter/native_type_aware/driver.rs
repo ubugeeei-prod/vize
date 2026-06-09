@@ -14,6 +14,7 @@ use vize_croquis::{
     virtual_ts::{VirtualTsConfig, generate_virtual_ts_with_croquis},
 };
 
+use super::super::engine::{SfcTemplateLintInput, TemplateAnalysis};
 use super::{
     markers::{QueryKind, push_promise_marker},
     parsing::{collect_floating_candidates, is_runtime_array_macro},
@@ -32,31 +33,50 @@ pub(super) fn lint_with_descriptor<'a>(
         vize_carton::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
     let template_ast = descriptor.template.as_ref().map(|template| {
         let parser = TemplateParser::new(allocator.as_bump(), &template.content);
-        let (root, _) = profile!("patina.type_aware.template_parse", parser.parse());
-        (root, template.loc.start as u32)
+        let (root, parse_errors) = profile!("patina.type_aware.template_parse", parser.parse());
+        let has_fatal_parse_errors = Linter::has_fatal_template_parse_errors(&parse_errors);
+        (
+            root,
+            template.loc.start as u32,
+            parse_errors,
+            has_fatal_parse_errors,
+        )
     });
+    let template_has_fatal_parse_errors = template_ast
+        .as_ref()
+        .is_some_and(|(_, _, _, has_fatal)| *has_fatal);
 
     let analysis = profile!("patina.type_aware.croquis", {
         super::super::engine::analyze_descriptor_for_lint(
             descriptor,
-            template_ast.as_ref().map(|(root, _)| root),
+            template_ast
+                .as_ref()
+                .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
         )
     });
 
-    let mut result = if let (Some((root, _)), Some(template)) =
+    let mut result = if let (Some((root, _, parse_errors, has_fatal)), Some(template)) =
         (template_ast.as_ref(), descriptor.template.as_ref())
     {
-        profile!(
+        let lint_result = profile!(
             "patina.type_aware.template_rules",
-            linter.lint_sfc_template_root(
+            linter.lint_sfc_template_root(SfcTemplateLintInput {
                 filename,
                 template,
-                &allocator,
+                allocator: &allocator,
                 root,
-                Some(descriptor),
-                Some(&analysis),
-            )
-        )
+                descriptor: Some(descriptor),
+                analysis: if *has_fatal {
+                    TemplateAnalysis::Disabled
+                } else {
+                    TemplateAnalysis::Precomputed(&analysis)
+                },
+            })
+        );
+        let mut parse_result =
+            Linter::template_parse_lint_result(filename, template.content.len(), parse_errors);
+        Linter::offset_result(&mut parse_result, template.loc.start as u32);
+        Linter::merge_lint_results(parse_result, lint_result)
     } else {
         LintResult {
             filename: filename.into(),
@@ -90,8 +110,10 @@ pub(super) fn lint_with_descriptor<'a>(
     let needs_emit_probe = profile!("patina.type_aware.plan_emit_queries", {
         collect_emit_static_warning_or_probe_need(linter, &analysis, &mut result, script_block)
     });
-    let include_template_queries = is_type_rule_active(linter, RULE_NO_UNSAFE_TEMPLATE_BINDING);
-    let include_template_promise_queries = is_type_rule_active(linter, RULE_NO_FLOATING_PROMISES);
+    let include_template_queries = !template_has_fatal_parse_errors
+        && is_type_rule_active(linter, RULE_NO_UNSAFE_TEMPLATE_BINDING);
+    let include_template_promise_queries =
+        !template_has_fatal_parse_errors && is_type_rule_active(linter, RULE_NO_FLOATING_PROMISES);
     let include_reactivity_queries = is_type_rule_active(linter, RULE_NO_REACTIVITY_LOSS);
     if !needs_prop_probe
         && !needs_emit_probe
@@ -104,7 +126,7 @@ pub(super) fn lint_with_descriptor<'a>(
 
     let template_offset = template_ast
         .as_ref()
-        .map(|(_, offset)| *offset)
+        .map(|(_, offset, _, _)| *offset)
         .unwrap_or(0);
     let from_file = Path::new(filename).parent();
     let parse_result = profile!("patina.type_aware.script_parse", {
@@ -128,7 +150,9 @@ pub(super) fn lint_with_descriptor<'a>(
         generate_virtual_ts_with_croquis(
             script_content,
             &parse_result,
-            template_ast.as_ref().map(|(root, _)| root),
+            template_ast
+                .as_ref()
+                .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
             &config,
             None,
             from_file,
@@ -198,14 +222,18 @@ pub(super) fn lint_with_descriptor<'a>(
             if include_template_queries || include_template_promise_queries {
                 template_ast.as_ref().map_or_else(
                     || (Vec::new(), Vec::new()),
-                    |(root, _)| {
-                        collect_template_query_sets(
-                            &virtual_ts,
-                            root,
-                            template_offset,
-                            include_template_queries,
-                            include_template_promise_queries,
-                        )
+                    |(root, _, _, has_fatal)| {
+                        if *has_fatal {
+                            (Vec::new(), Vec::new())
+                        } else {
+                            collect_template_query_sets(
+                                &virtual_ts,
+                                root,
+                                template_offset,
+                                include_template_queries,
+                                include_template_promise_queries,
+                            )
+                        }
                     },
                 )
             } else {
