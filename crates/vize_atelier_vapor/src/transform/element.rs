@@ -44,6 +44,15 @@ pub(crate) fn transform_element<'a>(
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
+    let non_reactive = classify_non_reactive_directive(el);
+    if let Some(ref memo_error) = non_reactive.memo_error {
+        ctx.push_diagnostic(memo_error.clone());
+    }
+    let entered_non_reactive = non_reactive.should_lower_as_once;
+    if entered_non_reactive {
+        ctx.enter_non_reactive_scope();
+    }
+
     // Template elements don't consume an ID - they just wrap children
     if el.tag_type == ElementType::Template {
         for child in el.children.iter() {
@@ -66,6 +75,9 @@ pub(crate) fn transform_element<'a>(
                 _ => {}
             }
         }
+        if entered_non_reactive {
+            ctx.exit_non_reactive_scope();
+        }
         return;
     }
 
@@ -86,6 +98,9 @@ pub(crate) fn transform_element<'a>(
         // Dynamic element children: allocate child IDs first, then parent ID.
         // Use child/next navigation instead of separate templates.
         transform_element_with_dynamic_children(ctx, el, block);
+        if entered_non_reactive {
+            ctx.exit_non_reactive_scope();
+        }
         return;
     }
 
@@ -93,6 +108,9 @@ pub(crate) fn transform_element<'a>(
         // Control flow children (v-if/v-for): defer parent ID and template
         // allocation until after children, so inner IDs/templates come first.
         transform_element_with_control_flow_children(ctx, el, block);
+        if entered_non_reactive {
+            ctx.exit_non_reactive_scope();
+        }
         return;
     }
 
@@ -100,6 +118,9 @@ pub(crate) fn transform_element<'a>(
     // Also handle <component :is="..."> (dynamic component) which the parser classifies as Element
     if el.tag_type == ElementType::Component || el.tag.as_str() == "component" {
         transform_component(ctx, el, block, None, None, None, true);
+        if entered_non_reactive {
+            ctx.exit_non_reactive_scope();
+        }
         return;
     }
 
@@ -422,4 +443,63 @@ pub(crate) fn transform_element<'a>(
     }
 
     block.returns.push(element_id);
+
+    if entered_non_reactive {
+        ctx.exit_non_reactive_scope();
+    }
+}
+
+struct NonReactiveDirective {
+    should_lower_as_once: bool,
+    memo_error: Option<String>,
+}
+
+fn classify_non_reactive_directive(el: &ElementNode<'_>) -> NonReactiveDirective {
+    let has_once = el
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name.as_str() == "once"));
+    if has_once {
+        return NonReactiveDirective {
+            should_lower_as_once: true,
+            memo_error: None,
+        };
+    }
+
+    for prop in el.props.iter() {
+        let PropNode::Directive(dir) = prop else {
+            continue;
+        };
+        if dir.name.as_str() != "memo" {
+            continue;
+        }
+
+        let Some(ExpressionNode::Simple(exp)) = dir.exp.as_ref() else {
+            return NonReactiveDirective {
+                should_lower_as_once: false,
+                memo_error: Some(vize_carton::String::from(
+                    "v-memo is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
+                )),
+            };
+        };
+
+        if exp.content.trim() == "[]" {
+            return NonReactiveDirective {
+                should_lower_as_once: true,
+                memo_error: None,
+            };
+        }
+
+        return NonReactiveDirective {
+            should_lower_as_once: false,
+            memo_error: Some(vize_carton::String::from(
+                "v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
+            )),
+        };
+    }
+
+    NonReactiveDirective {
+        should_lower_as_once: false,
+        memo_error: None,
+    }
 }

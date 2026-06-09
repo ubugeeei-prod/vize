@@ -5,8 +5,8 @@
 use vize_carton::{Box, Vec};
 
 use crate::ir::{
-    BlockIRNode, DirectiveIRNode, ForIRNode, IREffect, IRProp, IfIRNode, OperationNode,
-    SetEventIRNode, SetHtmlIRNode, SetPropIRNode, SetTextIRNode,
+    BlockIRNode, DirectiveIRNode, ForIRNode, IRProp, IfIRNode, OperationNode, SetEventIRNode,
+    SetHtmlIRNode, SetPropIRNode, SetTextIRNode,
 };
 use vize_atelier_core::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode,
@@ -69,11 +69,10 @@ pub(crate) fn transform_directive<'a>(
                                 props,
                                 is_event: false,
                             };
-                            let mut effect_ops = Vec::new_in(ctx.allocator);
-                            effect_ops.push(OperationNode::SetDynamicProps(set_dynamic));
-                            block.effect.push(IREffect {
-                                operations: effect_ops,
-                            });
+                            ctx.push_dynamic_operation(
+                                block,
+                                OperationNode::SetDynamicProps(set_dynamic),
+                            );
                         }
                         return;
                     }
@@ -129,11 +128,7 @@ pub(crate) fn transform_directive<'a>(
                     };
 
                     // Reactive prop - add to effects
-                    let mut effect_ops = Vec::new_in(ctx.allocator);
-                    effect_ops.push(OperationNode::SetProp(set_prop));
-                    block.effect.push(IREffect {
-                        operations: effect_ops,
-                    });
+                    ctx.push_dynamic_operation(block, OperationNode::SetProp(set_prop));
                 }
             } else {
                 // v-bind without arg = v-bind object (v-bind="attrs")
@@ -153,11 +148,7 @@ pub(crate) fn transform_directive<'a>(
                         props,
                         is_event: false,
                     };
-                    let mut effect_ops = Vec::new_in(ctx.allocator);
-                    effect_ops.push(OperationNode::SetDynamicProps(set_dynamic));
-                    block.effect.push(IREffect {
-                        operations: effect_ops,
-                    });
+                    ctx.push_dynamic_operation(block, OperationNode::SetDynamicProps(set_dynamic));
                 }
             }
         }
@@ -245,11 +236,7 @@ pub(crate) fn transform_directive<'a>(
                         props: values,
                         is_event: true,
                     };
-                    let mut effect_ops = Vec::new_in(ctx.allocator);
-                    effect_ops.push(OperationNode::SetDynamicProps(set_dynamic));
-                    block.effect.push(IREffect {
-                        operations: effect_ops,
-                    });
+                    ctx.push_dynamic_operation(block, OperationNode::SetDynamicProps(set_dynamic));
                 }
             }
         }
@@ -330,11 +317,7 @@ pub(crate) fn transform_directive<'a>(
                     value,
                 };
 
-                let mut effect_ops = Vec::new_in(ctx.allocator);
-                effect_ops.push(OperationNode::SetHtml(set_html));
-                block.effect.push(IREffect {
-                    operations: effect_ops,
-                });
+                ctx.push_dynamic_operation(block, OperationNode::SetHtml(set_html));
             }
         }
         "text" => {
@@ -355,13 +338,11 @@ pub(crate) fn transform_directive<'a>(
                     values,
                 };
 
-                let mut effect_ops = Vec::new_in(ctx.allocator);
-                effect_ops.push(OperationNode::SetText(set_text));
-                block.effect.push(IREffect {
-                    operations: effect_ops,
-                });
+                ctx.push_dynamic_operation(block, OperationNode::SetText(set_text));
             }
         }
+        "once" => {}
+        "memo" => {}
         "show" => {
             // v-show - builtin directive
             let mut new_dir = DirectiveNode::new(ctx.allocator, dir.name.clone(), dir.loc.clone());

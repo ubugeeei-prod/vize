@@ -160,7 +160,7 @@ fn compile_vapor_inner<'a>(
     };
     let (mut root, errors) =
         parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax);
-    let diagnostics = errors.to_vec();
+    let parser_diagnostics = errors.to_vec();
 
     let fatal: std::vec::Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
     if !fatal.is_empty() {
@@ -170,7 +170,7 @@ fn compile_vapor_inner<'a>(
                 templates: Vec::new(),
                 error_messages: fatal.iter().map(|e| e.message.clone()).collect(),
             },
-            diagnostics,
+            parser_diagnostics,
         );
     }
 
@@ -192,7 +192,7 @@ fn compile_vapor_inner<'a>(
     }
 
     // Transform to Vapor IR
-    let ir = transform_to_ir(allocator, &root);
+    let (ir, transform_diagnostics) = transform::transform_to_ir_with_diagnostics(allocator, &root);
 
     // Generate Vapor code
     let result = generate_vapor(&ir, binding_metadata.as_ref());
@@ -201,9 +201,9 @@ fn compile_vapor_inner<'a>(
         VaporCompileResult {
             code: result.code,
             templates: result.templates,
-            error_messages: Vec::new(),
+            error_messages: transform_diagnostics,
         },
-        diagnostics,
+        parser_diagnostics,
     )
 }
 
@@ -976,5 +976,69 @@ selected</pre>"#,
         assert!(code.contains("const _component_primitive = _ctx.Primitive"));
         assert!(!code.contains(r#"_resolveComponent("group")"#));
         assert!(!code.contains(r#"_resolveComponent("primitive")"#));
+    }
+
+    #[test]
+    fn test_compile_v_once_lowers_without_runtime_directives() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<div v-once>{{ msg }}</div>"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+        assert_parses_as_module(&result.code);
+
+        let code = normalize_code(&result.code);
+        assert!(!code.contains("_withDirectives"), "{code}");
+        assert!(!code.contains("_renderEffect"), "{code}");
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_v_memo_empty_array_lowers_without_runtime_directives() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<div v-memo="[]">{{ msg }}</div>"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+        assert_parses_as_module(&result.code);
+
+        let code = normalize_code(&result.code);
+        assert!(!code.contains("_withDirectives"), "{code}");
+        assert!(!code.contains("_renderEffect"), "{code}");
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_v_memo_with_dependencies_reports_diagnostic() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<div v-memo="[msg]">{{ msg }}</div>"#,
+            Default::default(),
+        );
+
+        assert_eq!(
+            result.error_messages,
+            vec![String::from(
+                "v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
+            )]
+        );
+        assert_parses_as_module(&result.code);
+        assert!(!result.code.contains("_withDirectives"), "{}", result.code);
+        assert!(!result.code.contains("_memo"), "{}", result.code);
     }
 }
