@@ -9,7 +9,8 @@ use vize_croquis::macros::runtime_erased_macro_names;
 
 use crate::script::{
     PropsDestructuredBindings, ScriptCompileContext, TemplateUsedIdentifiers,
-    resolve_template_used_identifiers, resolve_type_args, transform_destructured_props,
+    model_modifiers_binding_name, resolve_template_used_identifiers, resolve_type_args,
+    transform_destructured_props,
 };
 use crate::types::{BindingType, SfcError};
 
@@ -588,7 +589,17 @@ fn emit_model_bindings(
             };
 
             output.extend_from_slice(b"  const ");
-            output.extend_from_slice(binding_name.as_bytes());
+            if let Some(ref modifiers_binding_name) =
+                model_modifiers_binding_name(ctx.source.as_str(), model_call)
+            {
+                output.push(b'[');
+                output.extend_from_slice(binding_name.as_bytes());
+                output.extend_from_slice(b", ");
+                output.extend_from_slice(modifiers_binding_name.as_bytes());
+                output.extend_from_slice(b"]");
+            } else {
+                output.extend_from_slice(binding_name.as_bytes());
+            }
             output.extend_from_slice(b" = _useModel(__props, \"");
             output.extend_from_slice(model_name.as_bytes());
             output.extend_from_slice(b"\")\n");

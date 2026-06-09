@@ -44,6 +44,101 @@ pub struct MacroCall {
     pub binding_name: Option<String>,
 }
 
+pub(crate) fn model_modifiers_binding_name(source: &str, call: &MacroCall) -> Option<String> {
+    let before_call = source.get(..call.start)?;
+    let eq_index = before_call.rfind('=')?;
+    let statement = &before_call[..eq_index];
+    let statement_start = statement
+        .rfind(|c| ['\n', ';'].contains(&c))
+        .map_or(0, |index| index + 1);
+    let mut lhs = statement[statement_start..].trim();
+
+    for keyword in ["const ", "let ", "var "] {
+        if let Some(rest) = lhs.strip_prefix(keyword) {
+            lhs = rest.trim_start();
+            break;
+        }
+    }
+
+    if let Some(index) = last_top_level_comma(lhs) {
+        lhs = lhs[index + 1..].trim_start();
+    }
+
+    let inner = lhs.strip_prefix('[')?.trim_end().strip_suffix(']')?.trim();
+    let second = nth_top_level_item(inner, 1)?.trim();
+    simple_binding_name(second).map(String::from)
+}
+
+fn nth_top_level_item(input: &str, target_index: usize) -> Option<&str> {
+    let mut index = 0;
+    let mut start = 0;
+    for (comma, _) in top_level_commas(input) {
+        if index == target_index {
+            return Some(&input[start..comma]);
+        }
+        index += 1;
+        start = comma + 1;
+    }
+    if index == target_index {
+        Some(&input[start..])
+    } else {
+        None
+    }
+}
+
+fn last_top_level_comma(input: &str) -> Option<usize> {
+    top_level_commas(input).map(|(index, _)| index).last()
+}
+
+fn top_level_commas(input: &str) -> impl Iterator<Item = (usize, char)> + '_ {
+    let mut depth = 0usize;
+    let mut in_string = None;
+    let mut escaped = false;
+
+    input.char_indices().filter(move |(_, ch)| {
+        if let Some(quote) = in_string {
+            if escaped {
+                escaped = false;
+                return false;
+            }
+            if *ch == '\\' {
+                escaped = true;
+                return false;
+            }
+            if *ch == quote {
+                in_string = None;
+            }
+            return false;
+        }
+
+        match *ch {
+            '\'' | '"' | '`' => in_string = Some(*ch),
+            '[' | '(' | '{' => depth += 1,
+            ']' | ')' | '}' => depth = depth.saturating_sub(1),
+            ',' if depth == 0 => return true,
+            _ => {}
+        }
+        false
+    })
+}
+
+fn simple_binding_name(input: &str) -> Option<&str> {
+    let input = input.trim();
+    if input.starts_with(['[', '{']) {
+        return None;
+    }
+
+    let name_end = input
+        .find(|c: char| !(c.is_alphanumeric() || c == '_' || c == '$'))
+        .unwrap_or(input.len());
+    let name = &input[..name_end];
+    if is_valid_identifier(name) {
+        Some(name)
+    } else {
+        None
+    }
+}
+
 /// Find matching closing parenthesis
 #[allow(dead_code)]
 pub fn find_matching_paren(s: &str) -> Option<usize> {

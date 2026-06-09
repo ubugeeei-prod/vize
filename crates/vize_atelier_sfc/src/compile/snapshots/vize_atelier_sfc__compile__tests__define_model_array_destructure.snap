@@ -1,0 +1,38 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { useModel as _useModel } from "vue";
+import { vModelText as _vModelText, withDirectives as _withDirectives, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, unref as _unref } from "vue";
+export default {
+  __name: "anonymous",
+  props: {
+    "modelValue": { type: String },
+    "modelModifiers": {}
+  },
+  emits: ["update:modelValue"],
+  setup(__props) {
+    const [model, modifiers] = _useModel(__props, "modelValue");
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        _Fragment,
+        null,
+        [_withDirectives(_createElementVNode(
+          "input",
+          { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => model.value = $event) },
+          null,
+          512
+          /* NEED_PATCH */
+        ), [[_vModelText, _unref(model)]]), _createElementVNode(
+          "span",
+          null,
+          _toDisplayString(_unref(modifiers).trim),
+          1
+          /* TEXT */
+        )],
+        64
+        /* STABLE_FRAGMENT */
+      );
+    };
+  }
+};

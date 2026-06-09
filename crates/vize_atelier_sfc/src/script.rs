@@ -36,6 +36,7 @@ pub use import_usage_check::{
 pub(crate) use type_resolution::{
     build_interface_type_source, resolve_type_args, resolve_type_to_object_body,
 };
+pub(crate) use utils::model_modifiers_binding_name;
 pub use utils::{
     MacroCall, ScriptSetupMacros, get_escaped_prop_name, is_compiler_macro_line,
     is_valid_identifier,

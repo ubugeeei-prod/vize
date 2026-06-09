@@ -110,6 +110,24 @@ const count = ref(0)
     }
 
     #[test]
+    fn test_compile_script_setup_with_define_model_array_destructure() {
+        let content = r#"
+const [model, modifiers] = defineModel<string>()
+"#;
+        let result = compile_script_setup(content, "Test", false, true, None).unwrap();
+
+        assert!(
+            result
+                .code
+                .contains(r#"const [model, modifiers] = _useModel(__props, "modelValue")"#),
+            "{}",
+            result.code
+        );
+        assert!(!result.code.contains("const modelValue = _useModel"));
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
     fn test_type_only_imports_not_in_bindings() {
         let content = r#"
 import type { AnalysisResult } from './wasm'

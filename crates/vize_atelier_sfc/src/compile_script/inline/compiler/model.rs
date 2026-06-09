@@ -1,6 +1,6 @@
 use vize_carton::{String, ToCompactString, cstr};
 
-use crate::script::ScriptCompileContext;
+use crate::script::{ScriptCompileContext, model_modifiers_binding_name};
 
 use super::super::super::props::{
     extract_emit_names_from_type, resolve_prop_js_type, ts_type_to_js_type,
@@ -203,7 +203,13 @@ fn strip_runtime_accessors(opts: &str) -> Option<String> {
 /// Build model props (and combine props/emits) when defineModel is used.
 pub(super) fn build_model_props_emits(
     ctx: &ScriptCompileContext,
-    model_infos: &[(String, String, Option<String>, Option<String>)],
+    model_infos: &[(
+        String,
+        String,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+    )],
     is_ts: bool,
     needs_prop_type: bool,
     needs_merge_defaults: bool,
@@ -216,7 +222,7 @@ pub(super) fn build_model_props_emits(
         // model props declaration: `{\n    "name": <opts>,\n    "nameModifiers": {},\n  }`
         let mut model_decl: Vec<u8> = Vec::new();
         model_decl.push(b'{');
-        for (model_name, _binding_name, options, type_arg) in model_infos {
+        for (model_name, _binding_name, _modifiers_binding_name, options, type_arg) in model_infos {
             model_decl.extend_from_slice(b"\n    \"");
             model_decl.extend_from_slice(model_name.as_bytes());
             model_decl.extend_from_slice(b"\": ");
@@ -281,7 +287,7 @@ pub(super) fn build_model_props_emits(
     let model_emits: Vec<u8> = {
         let mut v = Vec::new();
         v.push(b'[');
-        for (i, (name, _, _, _)) in model_infos.iter().enumerate() {
+        for (i, (name, _, _, _, _)) in model_infos.iter().enumerate() {
             if i > 0 {
                 v.extend_from_slice(b", ");
             }
@@ -321,10 +327,16 @@ pub(super) fn build_model_props_emits(
 
 /// Collect model info from defineModel calls.
 ///
-/// Returns Vec of (model_name, binding_name, prop_options).
+/// Returns Vec of (model_name, binding_name, modifiers_binding_name, prop_options).
 pub(super) fn collect_model_infos(
     ctx: &ScriptCompileContext,
-) -> Vec<(String, String, Option<String>, Option<String>)> {
+) -> Vec<(
+    String,
+    String,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+)> {
     ctx.macros
         .define_models
         .iter()
@@ -345,6 +357,7 @@ pub(super) fn collect_model_infos(
                 .as_deref()
                 .map(String::from)
                 .unwrap_or_else(|| model_name.clone());
+            let modifiers_binding_name = model_modifiers_binding_name(ctx.source.as_str(), m);
 
             // Locate the options argument (second arg if named, first arg otherwise).
             let raw_options: Option<&str> = if args.is_empty() {
@@ -363,7 +376,13 @@ pub(super) fn collect_model_infos(
                     None
                 }
             });
-            (model_name, binding_name, options, m.type_args.clone())
+            (
+                model_name,
+                binding_name,
+                modifiers_binding_name,
+                options,
+                m.type_args.clone(),
+            )
         })
         .collect()
 }

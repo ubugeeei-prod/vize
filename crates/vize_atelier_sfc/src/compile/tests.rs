@@ -1671,6 +1671,32 @@ const model = defineModel()
 }
 
 #[test]
+fn test_define_model_array_destructure() {
+    let source = r#"<script setup lang="ts">
+const [model, modifiers] = defineModel<string>()
+</script>
+
+<template>
+  <input v-model="model">
+  <span>{{ modifiers.trim }}</span>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains(r#"const [model, modifiers] = _useModel(__props, "modelValue")"#),
+        "{}",
+        result.code
+    );
+    assert!(!result.code.contains("const modelValue = _useModel"));
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
 fn test_define_model_with_name() {
     let source = r#"<script setup>
 const title = defineModel('title')

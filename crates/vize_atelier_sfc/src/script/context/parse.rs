@@ -210,17 +210,13 @@ impl ScriptCompileContext {
             }
             Statement::VariableDeclaration(var_decl) => {
                 for decl in var_decl.declarations.iter() {
-                    // Extract binding name if this is a simple identifier binding
-                    let binding_name = match &decl.id {
-                        BindingPattern::BindingIdentifier(id) => Some(id.name.to_compact_string()),
-                        _ => None,
-                    };
+                    let binding_name = macro_binding_name(&decl.id);
 
                     // Check if init is a macro call
                     if let Some(init) = &decl.init {
                         if let Some(mut macro_call) = extract_macro_from_expr(init, source) {
                             // Attach binding name to macro call
-                            macro_call.1.binding_name = binding_name.as_deref().map(Into::into);
+                            macro_call.1.binding_name = binding_name.clone();
                             self.register_macro(&macro_call.0, macro_call.1);
                         }
 
@@ -344,11 +340,26 @@ impl ScriptCompileContext {
                                     _ => BindingType::SetupLet,
                                 }
                             };
-                            for elem in arr_pat.elements.iter().flatten() {
-                                if let BindingPattern::BindingIdentifier(id) = &elem {
-                                    self.bindings
-                                        .bindings
-                                        .insert(id.name.to_compact_string(), destructure_type);
+                            let is_define_model = decl
+                                .init
+                                .as_ref()
+                                .and_then(|init| extract_macro_from_expr(init, source))
+                                .is_some_and(|(name, _)| name == "defineModel");
+                            for (index, elem) in arr_pat.elements.iter().enumerate() {
+                                let Some(elem) = elem else {
+                                    continue;
+                                };
+                                if let Some(name) = simple_binding_name(elem) {
+                                    let binding_type = if is_define_model {
+                                        if index == 0 {
+                                            BindingType::SetupRef
+                                        } else {
+                                            BindingType::SetupConst
+                                        }
+                                    } else {
+                                        destructure_type
+                                    };
+                                    self.bindings.bindings.insert(name, binding_type);
                                 }
                             }
                         }
@@ -438,5 +449,25 @@ impl ScriptCompileContext {
             }
             _ => {}
         }
+    }
+}
+
+fn macro_binding_name(id: &BindingPattern<'_>) -> Option<String> {
+    match id {
+        BindingPattern::BindingIdentifier(id) => Some(id.name.to_compact_string()),
+        BindingPattern::ArrayPattern(pattern) => pattern
+            .elements
+            .first()
+            .and_then(|elem| elem.as_ref())
+            .and_then(simple_binding_name),
+        _ => None,
+    }
+}
+
+fn simple_binding_name(id: &BindingPattern<'_>) -> Option<String> {
+    match id {
+        BindingPattern::BindingIdentifier(id) => Some(id.name.to_compact_string()),
+        BindingPattern::AssignmentPattern(pattern) => simple_binding_name(&pattern.left),
+        _ => None,
     }
 }
