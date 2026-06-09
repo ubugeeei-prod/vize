@@ -535,6 +535,79 @@ defineProps<{ [K in Keys]: number } & { [K in Keys as `prop-${K}`]?: boolean }>(
     }
 
     #[test]
+    fn test_define_props_type_only_builtin_utility_types() {
+        // Regression for #1176: built-in TS utility types over a referenced
+        // interface/alias must resolve to a runtime props declaration instead
+        // of silently emitting nothing.
+        let cases: &[(&str, &[&str])] = &[
+            (
+                "interface Props { a: string; b: number }\ndefineProps<Partial<Props>>()",
+                &[
+                    "a: { type: String, required: false }",
+                    "b: { type: Number, required: false }",
+                ],
+            ),
+            (
+                "interface Props { a?: string; b?: number }\ndefineProps<Required<Props>>()",
+                &[
+                    "a: { type: String, required: true }",
+                    "b: { type: Number, required: true }",
+                ],
+            ),
+            (
+                "interface Props { a: string; b: number }\ndefineProps<Readonly<Props>>()",
+                &[
+                    "a: { type: String, required: true }",
+                    "b: { type: Number, required: true }",
+                ],
+            ),
+            (
+                "interface Props { a: string; b: number }\ndefineProps<Pick<Props, 'a'>>()",
+                &["a: { type: String, required: true }"],
+            ),
+            (
+                "interface Props { a: string; b: number }\ndefineProps<Omit<Props, 'a'>>()",
+                &["b: { type: Number, required: true }"],
+            ),
+            (
+                "defineProps<Record<'a' | 'b', string>>()",
+                &[
+                    "a: { type: String, required: true }",
+                    "b: { type: String, required: true }",
+                ],
+            ),
+        ];
+
+        for (content, expected) in cases {
+            let output = compile_setup(content);
+            let normalized: String = output
+                .split_whitespace()
+                .collect::<Vec<_>>()
+                .join(" ")
+                .into();
+            assert!(
+                normalized.contains("props:"),
+                "expected a props declaration for `{content}`, got:\n{output}"
+            );
+            for needle in *expected {
+                assert!(
+                    normalized.contains(needle),
+                    "expected `{needle}` for `{content}`, got:\n{output}"
+                );
+            }
+        }
+
+        // `Pick`/`Omit` must drop the filtered-out keys entirely.
+        let pick = compile_setup(
+            "interface Props { a: string; b: number }\ndefineProps<Pick<Props, 'a'>>()",
+        );
+        assert!(
+            !pick.contains("b:"),
+            "expected `b` to be dropped by Pick, got:\n{pick}"
+        );
+    }
+
+    #[test]
     fn test_define_props_type_only_conditional_indexed_and_template_key_types() {
         let content = r#"
 defineProps<{
