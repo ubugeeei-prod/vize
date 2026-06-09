@@ -1,8 +1,21 @@
+use super::IdentifierRef;
 use vize_carton::CompactString;
 
 /// Fast string-based identifier extraction for simple expressions.
 #[inline]
 pub(super) fn extract_identifiers_fast(expr: &str) -> Vec<CompactString> {
+    extract_identifier_refs_fast(expr)
+        .into_iter()
+        .map(|identifier| identifier.name)
+        .collect()
+}
+
+#[inline]
+pub(super) fn extract_identifier_refs_fast(expr: &str) -> Vec<IdentifierRef> {
+    extract_identifier_refs_fast_with_base(expr, 0)
+}
+
+fn extract_identifier_refs_fast_with_base(expr: &str, base_offset: u32) -> Vec<IdentifierRef> {
     let mut identifiers = Vec::with_capacity(4);
     let bytes = expr.as_bytes();
     let len = bytes.len();
@@ -71,7 +84,10 @@ pub(super) fn extract_identifiers_fast(expr: &str) -> Vec<CompactString> {
                     }
                     if interp_start < i {
                         let interp_content = &expr[interp_start..i];
-                        for ident in extract_identifiers_fast(interp_content) {
+                        for ident in extract_identifier_refs_fast_with_base(
+                            interp_content,
+                            base_offset + interp_start as u32,
+                        ) {
                             identifiers.push(ident);
                         }
                     }
@@ -83,6 +99,27 @@ pub(super) fn extract_identifiers_fast(expr: &str) -> Vec<CompactString> {
                 i += 1;
             }
             continue;
+        }
+
+        if c == b'/' && i + 1 < len {
+            match bytes[i + 1] {
+                b'/' => {
+                    i += 2;
+                    while i < len && bytes[i] != b'\n' {
+                        i += 1;
+                    }
+                    continue;
+                }
+                b'*' => {
+                    i += 2;
+                    while i + 1 < len && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
+                        i += 1;
+                    }
+                    i = (i + 2).min(len);
+                    continue;
+                }
+                _ => {}
+            }
         }
 
         // Start of identifier
@@ -114,7 +151,10 @@ pub(super) fn extract_identifiers_fast(expr: &str) -> Vec<CompactString> {
             };
 
             if !is_property_access {
-                identifiers.push(CompactString::new(&expr[start..i]));
+                identifiers.push(IdentifierRef::new(
+                    &expr[start..i],
+                    base_offset + start as u32,
+                ));
             }
         } else {
             i += 1;

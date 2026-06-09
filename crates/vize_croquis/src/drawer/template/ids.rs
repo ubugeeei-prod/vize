@@ -10,7 +10,7 @@ use vize_carton::{CompactString, profile};
 use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
 
 use super::super::Drawer;
-use super::super::helpers::{extract_identifiers_oxc, is_keyword};
+use super::super::helpers::{extract_identifier_refs_oxc, is_keyword};
 
 /// Attributes that take ID references (not the ID itself).
 const ID_REFERENCE_ATTRIBUTES: &[&str] = &[
@@ -167,7 +167,7 @@ impl Drawer {
         if !self.ident_cache.contains_key(content) {
             let computed = profile!(
                 "croquis.template.expression.extract_identifiers",
-                extract_identifiers_oxc(content)
+                extract_identifier_refs_oxc(content)
             );
             self.ident_cache
                 .insert(CompactString::new(content), computed);
@@ -175,7 +175,7 @@ impl Drawer {
         let idents = &self.ident_cache[content];
 
         for ident in idents {
-            let ident_str = ident.as_str();
+            let ident_str = ident.name.as_str();
 
             let in_scope_vars = scope_vars.iter().any(|v| v.as_str() == ident_str);
             let in_bindings = self.croquis.bindings.contains(ident_str);
@@ -191,10 +191,9 @@ impl Drawer {
             if is_defined && !is_builtin {
                 self.croquis.scopes.mark_used(ident_str);
             } else if !is_defined {
-                let ident_offset_in_content = content.find(ident_str).unwrap_or(0) as u32;
                 self.croquis.undefined_refs.push(UndefinedRef {
-                    name: ident.clone(),
-                    offset: base_offset + ident_offset_in_content,
+                    name: ident.name.clone(),
+                    offset: base_offset + ident.offset,
                     context: CompactString::new("template expression"),
                 });
             }

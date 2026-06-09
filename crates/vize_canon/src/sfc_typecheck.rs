@@ -699,6 +699,31 @@ export default {
     }
 
     #[test]
+    fn test_type_check_template_undefined_binding_skips_member_property_offsets() {
+        let source = r#"<script setup>
+const user = {}
+</script>
+<template>{{ user.name + name }}</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue");
+        let result = type_check_sfc(source, &options);
+
+        let diagnostic = result
+            .diagnostics
+            .iter()
+            .find(|d| {
+                d.code.as_deref() == Some("undefined-binding")
+                    && d.message.contains("Undefined reference 'name'")
+            })
+            .expect("expected an undefined-binding diagnostic for trailing name");
+
+        let expected_start = source.rfind("name").unwrap() as u32;
+        let expected_end = expected_start + "name".len() as u32;
+
+        assert_eq!(diagnostic.start, expected_start);
+        assert_eq!(diagnostic.end, expected_end);
+    }
+
+    #[test]
     fn test_type_check_typeof_setup_const_stays_in_setup_scope() {
         // Regression: vize check used to lift `type Name = ...` to module
         // scope while the `const names` it referenced via `typeof` stayed

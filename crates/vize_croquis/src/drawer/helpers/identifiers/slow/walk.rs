@@ -1,12 +1,13 @@
 use oxc_ast::ast::{
     ArrayExpressionElement, BindingPattern, Expression, ObjectPropertyKind, PropertyKey,
 };
-use vize_carton::CompactString;
 
-pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<CompactString>) {
+use super::super::IdentifierRef;
+
+pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierRef>) {
     match expr {
         Expression::Identifier(id) => {
-            identifiers.push(CompactString::new(id.name.as_str()));
+            identifiers.push(IdentifierRef::new(id.name.as_str(), id.span.start));
         }
         Expression::StaticMemberExpression(member) => {
             walk_expr(&member.object, identifiers);
@@ -29,7 +30,8 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<CompactStri
                         }
                         if p.shorthand {
                             if let PropertyKey::StaticIdentifier(id) = &p.key {
-                                identifiers.push(CompactString::new(id.name.as_str()));
+                                identifiers
+                                    .push(IdentifierRef::new(id.name.as_str(), id.span.start));
                             }
                         } else {
                             walk_expr(&p.value, identifiers);
@@ -74,7 +76,7 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<CompactStri
         }
         Expression::UpdateExpression(update) => match &update.argument {
             oxc_ast::ast::SimpleAssignmentTarget::AssignmentTargetIdentifier(id) => {
-                identifiers.push(CompactString::new(id.name.as_str()));
+                identifiers.push(IdentifierRef::new(id.name.as_str(), id.span.start));
             }
             oxc_ast::ast::SimpleAssignmentTarget::StaticMemberExpression(member) => {
                 walk_expr(&member.object, identifiers);
@@ -117,7 +119,7 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<CompactStri
                 let mut body_idents = Vec::new();
                 walk_expr(&expr_stmt.expression, &mut body_idents);
                 for ident in body_idents {
-                    if !param_names.contains(&ident.as_str()) {
+                    if !param_names.contains(&ident.name.as_str()) {
                         identifiers.push(ident);
                     }
                 }

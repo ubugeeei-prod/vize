@@ -5,9 +5,19 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, profile};
 
+use super::IdentifierRef;
+
 /// OXC-based identifier extraction for expressions with object literals.
 #[inline]
 pub(super) fn extract_identifiers_oxc_slow(expr: &str) -> Vec<CompactString> {
+    extract_identifier_refs_oxc_slow(expr)
+        .into_iter()
+        .map(|identifier| identifier.name)
+        .collect()
+}
+
+#[inline]
+pub(super) fn extract_identifier_refs_oxc_slow(expr: &str) -> Vec<IdentifierRef> {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("expr.ts").unwrap_or_default();
 

@@ -11,7 +11,7 @@ use vize_carton::profile;
 
 use vize_croquis::{
     BindingMetadata, Croquis, EventHandlerScopeData, Scope, ScopeData, ScopeId, ScopeKind,
-    analysis::ComponentUsage, analyzer::extract_identifiers_oxc, naming::to_pascal_case,
+    analysis::ComponentUsage, analyzer::extract_identifier_refs_oxc, naming::to_pascal_case,
 };
 
 use super::{
@@ -299,12 +299,9 @@ fn generate_instance_global_refs(
     }
 
     for expr in &summary.template_expressions {
-        for ident in extract_identifiers_oxc(expr.content.as_str()) {
-            let name = ident.as_str();
-            let Some(relative_offset) = expr.content.find(name) else {
-                continue;
-            };
-            let src_start = (template_offset + expr.start) as usize + relative_offset;
+        for ident in extract_identifier_refs_oxc(expr.content.as_str()) {
+            let name = ident.name.as_str();
+            let src_start = (template_offset + expr.start + ident.offset) as usize;
             let src_end = src_start + name.len();
             emitter.emit(name, src_start, src_end);
         }
