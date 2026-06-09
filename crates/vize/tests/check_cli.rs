@@ -2334,6 +2334,115 @@ export {};
 }
 
 #[test]
+fn check_node_modules_global_components_are_typed_from_reference_types() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "global-components-node-modules-types",
+        &[(
+            "src/UserComponent.vue",
+            r#"<template>
+  <QBtn :disable="'string'" />
+  <QBtn @click="clickHandler" />
+</template>
+
+<script setup lang="ts">
+/// <reference types="quasar" />
+
+function clickHandler(event: Event) {
+  console.log(event)
+}
+</script>
+"#,
+        )],
+    );
+    let quasar_dir = project_root.join("node_modules/quasar");
+    std::fs::create_dir_all(quasar_dir.join("dist/types")).unwrap();
+    std::fs::write(
+        quasar_dir.join("package.json"),
+        r#"{
+  "name": "quasar",
+  "version": "0.0.0-test",
+  "typings": "dist/types/index.d.ts"
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        quasar_dir.join("dist/types/index.d.ts"),
+        r#"export interface QBtnProps {
+  disable?: boolean | undefined;
+  onClick?: (event: Event) => void;
+}
+
+export type GlobalComponentConstructor<Props> = {
+  new (): { $props: Props };
+};
+
+interface _GlobalComponents {
+  QBtn: GlobalComponentConstructor<QBtnProps>;
+}
+
+declare module "vue" {
+  interface GlobalComponents extends _GlobalComponents {}
+}
+
+export const QBtn: GlobalComponentConstructor<QBtnProps>;
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/UserComponent.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+            "--no-config",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+    let diagnostics = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(|diagnostic| diagnostic.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.contains("[TS2322]") && diagnostic.contains("boolean")),
+        "expected QBtn prop type error, got: {diagnostics:#?}"
+    );
+    assert!(
+        diagnostics.iter().all(|diagnostic| {
+            !diagnostic.contains("Cannot find name 'QBtn'") && !diagnostic.contains("unknown")
+        }),
+        "QBtn should be typed from node_modules GlobalComponents, got: {diagnostics:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_nuxt_import_meta_augmentations_do_not_conflict() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

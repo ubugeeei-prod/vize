@@ -49,6 +49,31 @@ pub(super) fn parse_interface_members_with_rewritten_imports(
         .collect())
 }
 
+pub(super) fn parse_global_component_members_with_rewritten_imports(
+    path: &Path,
+) -> Result<Vec<(String, String)>, std::io::Error> {
+    let content = match profile!("cli.check.dts.read", fs::read_to_string(path)) {
+        Ok(content) => {
+            global_profiler().record_fs_read_to_string(content.len());
+            content
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(error);
+        }
+    };
+    let source_dir = path.parent().unwrap_or_else(|| Path::new("."));
+    Ok(parse_global_component_members_content(&content)
+        .into_iter()
+        .map(|(name, type_annotation)| {
+            (
+                name,
+                normalize_rewritten_type(type_annotation.as_str(), source_dir),
+            )
+        })
+        .collect())
+}
+
 pub(super) fn parse_interface_members_content(
     content: &str,
     interface_name: &str,
@@ -64,8 +89,12 @@ pub(super) fn parse_interface_members_content(
 
         if !in_interface {
             if trimmed.contains(interface_name) {
+                let delta = brace_delta(trimmed);
+                if delta <= 0 && trimmed.contains('{') {
+                    continue;
+                }
                 in_interface = true;
-                brace_depth += brace_delta(trimmed);
+                brace_depth = delta;
             }
             continue;
         }
@@ -100,6 +129,82 @@ pub(super) fn parse_interface_members_content(
 
     flush_pending_member(&mut members, &mut current_name, &mut current_type);
     members
+}
+
+fn parse_global_component_members_content(content: &str) -> Vec<(String, String)> {
+    let mut members = parse_interface_members_content(content, "interface GlobalComponents");
+
+    for extended in extended_interface_names(content, "GlobalComponents") {
+        let interface_name = format!("interface {extended}");
+        for member in parse_interface_members_content(content, &interface_name) {
+            if !members
+                .iter()
+                .any(|(name, _)| name.as_str() == member.0.as_str())
+            {
+                members.push(member);
+            }
+        }
+    }
+
+    members
+}
+
+fn extended_interface_names(content: &str, interface_name: &str) -> Vec<String> {
+    let needle = format!("interface {interface_name}");
+    let mut names = Vec::new();
+
+    for line in content.lines() {
+        let trimmed = line.trim();
+        let Some(index) = trimmed.find(&needle) else {
+            continue;
+        };
+        if !interface_needle_has_boundary(trimmed, index, needle.len()) {
+            continue;
+        }
+
+        let after_name = &trimmed[index + needle.len()..];
+        let Some((_, after_extends)) = after_name.split_once("extends") else {
+            continue;
+        };
+        let extends_clause = after_extends.split('{').next().unwrap_or(after_extends);
+        for raw_name in extends_clause.split(',') {
+            let name = raw_name
+                .trim()
+                .split(|ch: char| ch.is_whitespace() || ch == '<')
+                .next()
+                .unwrap_or_default()
+                .trim();
+            if is_interface_reference_name(name) && !names.iter().any(|existing| existing == name) {
+                names.push(name.to_compact_string());
+            }
+        }
+    }
+
+    names
+}
+
+fn interface_needle_has_boundary(line: &str, index: usize, needle_len: usize) -> bool {
+    let before = line[..index]
+        .chars()
+        .next_back()
+        .is_none_or(|ch| !is_identifier_char(ch));
+    let after = line[index + needle_len..]
+        .chars()
+        .next()
+        .is_none_or(|ch| !is_identifier_char(ch));
+    before && after
+}
+
+fn is_interface_reference_name(name: &str) -> bool {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    (first == '_' || first == '$' || first.is_ascii_alphabetic()) && chars.all(is_identifier_char)
+}
+
+fn is_identifier_char(ch: char) -> bool {
+    ch == '_' || ch == '$' || ch.is_ascii_alphanumeric()
 }
 
 pub(super) fn parse_declared_global_values(
@@ -401,7 +506,10 @@ fn normalize_path(path: &Path) -> String {
 mod tests {
     use std::path::Path;
 
-    use super::{parse_declared_global_values_content, parse_interface_members_content};
+    use super::{
+        parse_declared_global_values_content, parse_global_component_members_content,
+        parse_interface_members_content,
+    };
 
     #[test]
     fn parses_interface_members_with_multiline_types() {
@@ -444,6 +552,35 @@ declare module 'vue' {
         assert_eq!(members[0].1.as_str(), "typeof import('./config').config");
         assert_eq!(members[1].0.as_str(), "quoted-key");
         assert_eq!(members[1].1.as_str(), "string");
+    }
+
+    #[test]
+    fn parses_global_components_from_extended_interface() {
+        let content = r#"
+interface _GlobalComponents {
+  GlobalButton: GlobalComponentConstructor<GlobalButtonProps>
+  GlobalInput:
+    GlobalComponentConstructor<GlobalInputProps>
+}
+
+declare module "vue" {
+  interface GlobalComponents extends _GlobalComponents {}
+}
+"#;
+
+        let members = parse_global_component_members_content(content);
+
+        assert_eq!(members.len(), 2);
+        assert_eq!(members[0].0.as_str(), "GlobalButton");
+        assert_eq!(
+            members[0].1.as_str(),
+            "GlobalComponentConstructor<GlobalButtonProps>"
+        );
+        assert_eq!(members[1].0.as_str(), "GlobalInput");
+        assert_eq!(
+            members[1].1.as_str(),
+            "GlobalComponentConstructor<GlobalInputProps>"
+        );
     }
 
     #[test]
