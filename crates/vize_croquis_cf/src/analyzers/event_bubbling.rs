@@ -62,63 +62,65 @@ pub fn analyze_event_bubbling(
     // Trace event propagation for each emitted event
     for (&source_id, events) in &emitted_events {
         for (event_name, offset) in events {
-            let (bubble, handled) =
+            let traced_bubbles =
                 trace_event_propagation(source_id, event_name, graph, &event_handlers);
 
-            bubbles.push(bubble.clone());
+            for bubble in traced_bubbles {
+                let handled = bubble.handler.is_some();
 
-            // Check for unhandled events (depth > 2 means it's propagating without being caught)
-            if !handled && bubble.depth > 2 {
-                diagnostics.push(
-                    CrossFileDiagnostic::new(
-                        CrossFileDiagnosticKind::UnhandledEvent {
-                            event_name: event_name.clone(),
-                            depth: bubble.depth,
-                        },
-                        DiagnosticSeverity::Info,
-                        source_id,
-                        *offset,
-                        cstr!(
-                            "Event '{}' propagates {} levels without being handled",
-                            event_name,
-                            bubble.depth
+                // Check for unhandled events (depth > 2 means it's propagating without being caught)
+                if !handled && bubble.depth > 2 {
+                    diagnostics.push(
+                        CrossFileDiagnostic::new(
+                            CrossFileDiagnosticKind::UnhandledEvent {
+                                event_name: event_name.clone(),
+                                depth: bubble.depth,
+                            },
+                            DiagnosticSeverity::Info,
+                            source_id,
+                            *offset,
+                            cstr!(
+                                "Event '{}' propagates {} levels without being handled",
+                                event_name,
+                                bubble.depth
+                            ),
+                        )
+                        .with_suggestion(
+                            "Add an event handler or consider if this event is needed",
                         ),
-                    )
-                    .with_suggestion("Add an event handler or consider if this event is needed"),
-                );
-            }
+                    );
+                }
 
-            // Check for event modifier issues
-            for file_id in &bubble.propagation_path {
-                if let Some(modifiers) = event_modifiers.get(file_id)
-                    && let Some(mods) = modifiers.get(event_name)
-                {
-                    for modifier in mods {
-                        if modifier == "stop" || modifier == "prevent" {
-                            diagnostics.push(
-                                CrossFileDiagnostic::new(
-                                    CrossFileDiagnosticKind::EventModifierIssue {
-                                        event_name: event_name.clone(),
-                                        modifier: modifier.clone(),
-                                    },
-                                    DiagnosticSeverity::Info,
-                                    *file_id,
-                                    0,
-                                    cstr!(
-                                        "Event '{}' has .{} modifier which may prevent handling",
-                                        event_name,
-                                        modifier
-                                    ),
-                                )
-                                .with_related(
-                                    source_id,
-                                    *offset,
-                                    "Event is emitted here",
-                                ),
-                            );
+                // Check for event modifier issues
+                for file_id in &bubble.propagation_path {
+                    if let Some(modifiers) = event_modifiers.get(file_id)
+                        && let Some(mods) = modifiers.get(event_name)
+                    {
+                        for modifier in mods {
+                            if modifier == "stop" || modifier == "prevent" {
+                                diagnostics.push(
+                                    CrossFileDiagnostic::new(
+                                        CrossFileDiagnosticKind::EventModifierIssue {
+                                            event_name: event_name.clone(),
+                                            modifier: modifier.clone(),
+                                        },
+                                        DiagnosticSeverity::Info,
+                                        *file_id,
+                                        0,
+                                        cstr!(
+                                            "Event '{}' has .{} modifier which may prevent handling",
+                                            event_name,
+                                            modifier
+                                        ),
+                                    )
+                                    .with_related(source_id, *offset, "Event is emitted here"),
+                                );
+                            }
                         }
                     }
                 }
+
+                bubbles.push(bubble);
             }
         }
     }
@@ -132,54 +134,124 @@ fn trace_event_propagation(
     event_name: &str,
     graph: &DependencyGraph,
     event_handlers: &FxHashMap<FileId, FxHashSet<CompactString>>,
-) -> (EventBubble, bool) {
+) -> Vec<EventBubble> {
+    let mut bubbles = Vec::new();
     let mut path = vec![source];
-    let mut handler = None;
-    let mut current = source;
-    let mut depth = 0;
+    let mut visited = FxHashSet::default();
+    visited.insert(source);
+
+    trace_event_propagation_paths(
+        source,
+        source,
+        event_name,
+        graph,
+        event_handlers,
+        &mut path,
+        &mut visited,
+        0,
+        &mut bubbles,
+    );
+
+    bubbles
+}
+
+#[allow(clippy::too_many_arguments)]
+fn trace_event_propagation_paths(
+    source: FileId,
+    current: FileId,
+    event_name: &str,
+    graph: &DependencyGraph,
+    event_handlers: &FxHashMap<FileId, FxHashSet<CompactString>>,
+    path: &mut Vec<FileId>,
+    visited: &mut FxHashSet<FileId>,
+    depth: usize,
+    bubbles: &mut Vec<EventBubble>,
+) {
     const MAX_DEPTH: usize = 50; // Prevent infinite loops
 
-    // Walk up the tree via importers
-    while depth < MAX_DEPTH {
-        depth += 1;
+    if depth >= MAX_DEPTH {
+        bubbles.push(make_event_bubble(source, event_name, path, None, depth));
+        return;
+    }
 
-        // Find parent components (those that use this component)
-        let parents: Vec<_> = graph
-            .dependents(current)
-            .filter(|(_, edge)| *edge == DependencyEdge::ComponentUsage)
-            .map(|(id, _)| id)
-            .collect();
+    let next_depth = depth + 1;
+    let mut parents: Vec<_> = graph
+        .dependents(current)
+        .filter(|(_, edge)| *edge == DependencyEdge::ComponentUsage)
+        .map(|(id, _)| id)
+        .collect();
+    parents.sort_by_key(|id| id.as_u32());
+    parents.dedup();
 
-        if parents.is_empty() {
-            break;
+    if parents.is_empty() {
+        bubbles.push(make_event_bubble(
+            source, event_name, path, None, next_depth,
+        ));
+        return;
+    }
+
+    let mut explored_parent = false;
+
+    for parent in parents {
+        if visited.contains(&parent) {
+            continue;
         }
 
-        // Take the first parent (simplified - real implementation might track all paths)
-        let parent = parents[0];
+        explored_parent = true;
         path.push(parent);
+        visited.insert(parent);
 
-        // Check if parent handles this event
         if let Some(handlers) = event_handlers.get(&parent)
             && handlers.contains(event_name)
         {
-            handler = Some(parent);
-            break;
+            bubbles.push(make_event_bubble(
+                source,
+                event_name,
+                path,
+                Some(parent),
+                next_depth,
+            ));
+        } else {
+            trace_event_propagation_paths(
+                source,
+                parent,
+                event_name,
+                graph,
+                event_handlers,
+                path,
+                visited,
+                next_depth,
+                bubbles,
+            );
         }
 
-        current = parent;
+        visited.remove(&parent);
+        path.pop();
     }
 
-    let bubble = EventBubble {
+    if !explored_parent {
+        bubbles.push(make_event_bubble(
+            source, event_name, path, None, next_depth,
+        ));
+    }
+}
+
+fn make_event_bubble(
+    source: FileId,
+    event_name: &str,
+    path: &[FileId],
+    handler: Option<FileId>,
+    depth: usize,
+) -> EventBubble {
+    EventBubble {
         source,
         event_name: CompactString::new(event_name),
-        propagation_path: path,
+        propagation_path: path.to_vec(),
         handler,
         is_stopped: false,
         is_prevented: false,
         depth,
-    };
-
-    (bubble, handler.is_some())
+    }
 }
 
 /// Extract event handlers and their modifiers from a component.
@@ -238,13 +310,126 @@ fn extract_modifiers(expr: &str) -> Vec<CompactString> {
 
 #[cfg(test)]
 mod tests {
-    use super::extract_modifiers;
-    use vize_carton::CompactString;
+    use super::{analyze_event_bubbling, extract_modifiers, trace_event_propagation};
+    use crate::diagnostics::CrossFileDiagnosticKind;
+    use crate::graph::{DependencyEdge, DependencyGraph, ModuleNode};
+    use crate::registry::{FileId, ModuleRegistry};
+    use vize_carton::{CompactString, FxHashMap};
+    use vize_croquis::{Analyzer, AnalyzerOptions, Croquis, EventHandlerScopeData};
 
     #[test]
     fn test_extract_modifiers() {
         let modifiers = extract_modifiers("@click.stop.prevent");
         assert!(modifiers.contains(&CompactString::new("stop")));
         assert!(modifiers.contains(&CompactString::new("prevent")));
+    }
+
+    #[test]
+    fn test_multi_parent_propagation_reports_unhandled_branch() {
+        let mut registry = ModuleRegistry::new();
+        let mut graph = DependencyGraph::new();
+
+        let child = add_vue_component(
+            &mut registry,
+            &mut graph,
+            "Child.vue",
+            script_analysis("const emit = defineEmits(['save'])"),
+        );
+        let parent_a = add_vue_component(
+            &mut registry,
+            &mut graph,
+            "ParentA.vue",
+            analysis_with_handler("save"),
+        );
+        let parent_b =
+            add_vue_component(&mut registry, &mut graph, "ParentB.vue", Croquis::default());
+        let grand_b =
+            add_vue_component(&mut registry, &mut graph, "GrandB.vue", Croquis::default());
+        let great_b =
+            add_vue_component(&mut registry, &mut graph, "GreatB.vue", Croquis::default());
+
+        graph.add_edge(parent_a, child, DependencyEdge::ComponentUsage);
+        graph.add_edge(parent_b, child, DependencyEdge::ComponentUsage);
+        graph.add_edge(grand_b, parent_b, DependencyEdge::ComponentUsage);
+        graph.add_edge(great_b, grand_b, DependencyEdge::ComponentUsage);
+
+        let (bubbles, diagnostics) = analyze_event_bubbling(&registry, &graph);
+
+        assert_eq!(bubbles.len(), 2);
+        assert_eq!(
+            bubbles
+                .iter()
+                .map(|bubble| bubble.propagation_path.clone())
+                .collect::<Vec<_>>(),
+            vec![
+                vec![child, parent_a],
+                vec![child, parent_b, grand_b, great_b]
+            ]
+        );
+        assert_eq!(bubbles[0].handler, Some(parent_a));
+        assert_eq!(bubbles[1].handler, None);
+
+        let unhandled = diagnostics
+            .iter()
+            .filter_map(|diagnostic| match &diagnostic.kind {
+                CrossFileDiagnosticKind::UnhandledEvent { event_name, depth } => {
+                    Some((event_name.as_str(), *depth))
+                }
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(unhandled, vec![("save", 4)]);
+    }
+
+    #[test]
+    fn test_trace_event_propagation_skips_cycles() {
+        let child = FileId::new(0);
+        let parent = FileId::new(1);
+        let mut graph = DependencyGraph::new();
+        graph.add_node(ModuleNode::new(child, "Child.vue"));
+        graph.add_node(ModuleNode::new(parent, "Parent.vue"));
+        graph.add_edge(parent, child, DependencyEdge::ComponentUsage);
+        graph.add_edge(child, parent, DependencyEdge::ComponentUsage);
+
+        let bubbles = trace_event_propagation(child, "save", &graph, &FxHashMap::default());
+
+        assert_eq!(bubbles.len(), 1);
+        assert_eq!(bubbles[0].propagation_path, vec![child, parent]);
+        assert_eq!(bubbles[0].handler, None);
+    }
+
+    fn add_vue_component(
+        registry: &mut ModuleRegistry,
+        graph: &mut DependencyGraph,
+        path: &str,
+        analysis: Croquis,
+    ) -> FileId {
+        let (id, is_new) = registry.register(path, "", analysis);
+        assert!(is_new);
+        graph.add_node(ModuleNode::new(id, path));
+        id
+    }
+
+    fn script_analysis(script: &str) -> Croquis {
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.finish()
+    }
+
+    fn analysis_with_handler(event_name: &str) -> Croquis {
+        let mut analysis = Croquis::default();
+        analysis.scopes.enter_event_handler_scope(
+            EventHandlerScopeData {
+                event_name: CompactString::new(event_name),
+                has_implicit_event: false,
+                param_names: Default::default(),
+                handler_expression: Some(CompactString::new("onSave")),
+                target_component: None,
+            },
+            0,
+            0,
+        );
+        analysis.scopes.exit_scope();
+        analysis
     }
 }
