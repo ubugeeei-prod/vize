@@ -37,6 +37,12 @@ pub(crate) struct ScopeGenContext<'a> {
     pub(crate) check_options: VirtualTsCheckOptions,
 }
 
+pub(crate) struct ScopeGenerationOptions<'a> {
+    pub(crate) check_options: VirtualTsCheckOptions,
+    pub(crate) virtual_ts_options: &'a VirtualTsOptions,
+    pub(crate) check_unresolved_global_components: bool,
+}
+
 /// Context for recursive component prop checks inside v-for scopes.
 pub(crate) struct VForPropsContext<'a> {
     pub(crate) summary: &'a Croquis,
@@ -55,6 +61,15 @@ struct EventHandlerExprContext<'a> {
     indent: &'a str,
 }
 
+struct ComponentPropsContext<'a> {
+    summary: &'a Croquis,
+    children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
+    template_prop_names: &'a FxHashSet<String>,
+    template_offset: u32,
+    options: &'a VirtualTsOptions,
+    check_unresolved_global_components: bool,
+}
+
 /// Generate scope closures from Croquis scope chain.
 /// Uses recursive tree-based generation so nested v-for/v-slot scopes
 /// are properly contained within their parent closures.
@@ -64,9 +79,11 @@ pub(crate) fn generate_scope_closures(
     summary: &Croquis,
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
-    check_options: VirtualTsCheckOptions,
-    options: &VirtualTsOptions,
+    options: ScopeGenerationOptions<'_>,
 ) {
+    let check_options = options.check_options;
+    let virtual_ts_options = options.virtual_ts_options;
+
     // Group expressions by scope_id
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
         profile!("canon.virtual_ts.group_template_expressions", {
@@ -119,7 +136,13 @@ pub(crate) fn generate_scope_closures(
     if check_options.check_template_bindings {
         profile!(
             "canon.virtual_ts.instance_global_refs",
-            generate_instance_global_refs(ts, mappings, summary, template_offset, options)
+            generate_instance_global_refs(
+                ts,
+                mappings,
+                summary,
+                template_offset,
+                virtual_ts_options
+            )
         );
     }
 
@@ -184,11 +207,14 @@ pub(crate) fn generate_scope_closures(
             generate_component_props(
                 ts,
                 mappings,
-                summary,
-                &children_map,
-                template_prop_names,
-                template_offset,
-                options,
+                &ComponentPropsContext {
+                    summary,
+                    children_map: &children_map,
+                    template_prop_names,
+                    template_offset,
+                    options: virtual_ts_options,
+                    check_unresolved_global_components: options.check_unresolved_global_components,
+                },
             )
         );
     }
@@ -441,17 +467,15 @@ fn emit_v_for_loop_open(
 fn generate_component_props(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    summary: &Croquis,
-    children_map: &FxHashMap<u32, Vec<ScopeId>>,
-    template_prop_names: &FxHashSet<String>,
-    template_offset: u32,
-    options: &VirtualTsOptions,
+    ctx: &ComponentPropsContext<'_>,
 ) {
+    let summary = ctx.summary;
     if summary.component_usages.is_empty() {
         return;
     }
 
-    let external_template_bindings: FxHashSet<&str> = options
+    let external_template_bindings: FxHashSet<&str> = ctx
+        .options
         .external_template_bindings
         .iter()
         .map(|name| name.as_str())
@@ -461,7 +485,12 @@ fn generate_component_props(
         .iter()
         .enumerate()
         .filter(|(_, usage)| {
-            component_usage_has_checkable_binding(summary, usage, &external_template_bindings)
+            component_usage_has_checkable_binding(
+                summary,
+                usage,
+                &external_template_bindings,
+                ctx.check_unresolved_global_components,
+            )
         })
         .collect();
     if checkable_usages.is_empty() {
@@ -523,8 +552,8 @@ fn generate_component_props(
             continue;
         }
 
-        let src_start = (template_offset + usage.start) as usize;
-        let src_end = (template_offset + usage.end) as usize;
+        let src_start = (ctx.template_offset + usage.start) as usize;
+        let src_end = (ctx.template_offset + usage.end) as usize;
 
         append!(*ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
         append!(
@@ -592,8 +621,8 @@ fn generate_component_props(
                 mappings,
                 usage,
                 idx,
-                template_prop_names,
-                template_offset,
+                ctx.template_prop_names,
+                ctx.template_offset,
                 "  "
             )
         );
@@ -611,9 +640,9 @@ fn generate_component_props(
         let props_ctx = VForPropsContext {
             summary,
             components_by_scope: &components_by_scope,
-            children_map,
-            template_prop_names,
-            template_offset,
+            children_map: ctx.children_map,
+            template_prop_names: ctx.template_prop_names,
+            template_offset: ctx.template_offset,
         };
         profile!(
             "canon.virtual_ts.closure_component_props",
@@ -626,9 +655,12 @@ fn component_usage_has_checkable_binding(
     summary: &Croquis,
     usage: &ComponentUsage,
     external_template_bindings: &FxHashSet<&str>,
+    check_unresolved_global_components: bool,
 ) -> bool {
     let name = usage.name.as_str();
-    summary.bindings.bindings.contains_key(name) || external_template_bindings.contains(name)
+    summary.bindings.bindings.contains_key(name)
+        || external_template_bindings.contains(name)
+        || (check_unresolved_global_components && !name.is_empty())
 }
 
 /// Recursively generate a scope node (VFor/VSlot/EventHandler) and its nested children.

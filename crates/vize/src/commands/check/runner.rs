@@ -1095,7 +1095,7 @@ fn collect_global_component_type_packages(
         push_unique_type_package(&mut packages, &mut seen, package);
     }
 
-    for path in files {
+    for path in files.iter().filter(|path| is_declaration_path(path)) {
         let Ok(content) = fs::read_to_string(path) else {
             continue;
         };
