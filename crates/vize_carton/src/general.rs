@@ -67,14 +67,16 @@ pub fn is_model_listener(key: &str) -> bool {
 #[inline]
 pub fn camelize(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
-    let mut capitalize_next = false;
+    let mut chars = s.chars().peekable();
 
-    for c in s.chars() {
+    while let Some(c) = chars.next() {
         if c == '-' {
-            capitalize_next = true;
-        } else if capitalize_next {
-            result.push(c.to_ascii_uppercase());
-            capitalize_next = false;
+            match chars.peek() {
+                Some(next) if next.is_ascii_alphanumeric() || *next == '_' => {
+                    result.push(chars.next().unwrap().to_ascii_uppercase());
+                }
+                _ => result.push(c),
+            }
         } else {
             result.push(c);
         }
@@ -235,6 +237,10 @@ mod tests {
         assert_eq!(camelize("foo-bar"), "fooBar");
         assert_eq!(camelize("foo-bar-baz"), "fooBarBaz");
         assert_eq!(camelize("foo"), "foo");
+        assert_eq!(camelize("foo-"), "foo-");
+        assert_eq!(camelize("a--b"), "a-B");
+        assert_eq!(camelize("foo-.bar"), "foo-.bar");
+        assert_eq!(camelize("-foo"), "Foo");
     }
 
     #[test]
