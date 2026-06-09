@@ -1,5 +1,6 @@
 //! Shared config model.
 
+mod compiler;
 mod formatter;
 mod global_types;
 mod language_server;
@@ -8,8 +9,9 @@ mod type_checker;
 
 use serde::{Deserialize, Serialize};
 
-use crate::String;
+use compiler::RawCompilerConfig;
 
+use crate::String;
 pub use formatter::{
     ArrowParens, AttributeSortOrder, EndOfLine, FormatterConfig, QuoteProps, TrailingComma,
 };
@@ -67,6 +69,7 @@ pub(crate) struct RawVizeConfig {
     #[serde(rename = "$schema")]
     pub schema: Option<String>,
     pub formatter: FormatterConfig,
+    pub(crate) compiler: RawCompilerConfig,
     pub linter: LinterConfig,
     #[serde(rename = "typeChecker")]
     type_checker: RawTypeCheckerConfig,
@@ -116,6 +119,7 @@ impl RawVizeConfig {
         let RawVizeConfig {
             schema,
             formatter,
+            compiler: _,
             linter: _,
             type_checker: raw_type_checker,
             language_server: raw_language_server,

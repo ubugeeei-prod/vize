@@ -5,7 +5,7 @@ mod model;
 mod normalize;
 
 pub use loader::{
-    LoadedConfig, LoadedConfigWithFeatures, load_config,
+    LoadedConfig, LoadedConfigWithFeatures, load_compiler_template_syntax, load_config,
     load_config_and_linter_with_features_and_source, load_config_and_linter_with_source,
     load_config_with_features_and_source, load_config_with_source, load_linter_config,
     validate_explicit_config_path,

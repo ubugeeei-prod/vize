@@ -118,6 +118,15 @@ pub fn load_config_with_features_and_source(path: Option<&Path>) -> LoadedConfig
     }
 }
 
+/// Load the configured `compiler.templateSyntax` value from a directory or file path.
+pub fn load_compiler_template_syntax(path: Option<&Path>) -> Option<&'static str> {
+    load_raw_config_with_source(path)
+        .config
+        .compiler
+        .template_syntax
+        .map(|template_syntax| template_syntax.as_str())
+}
+
 /// Load configuration and linter settings from a directory or file path in one pass.
 ///
 /// The lint/check CLIs call this on every invocation. Keeping the raw config

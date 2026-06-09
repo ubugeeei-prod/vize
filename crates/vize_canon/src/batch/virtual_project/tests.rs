@@ -5,6 +5,7 @@ use crate::batch::SfcBlockType;
 use crate::virtual_ts::VirtualTsOptions;
 use std::fs;
 use std::path::{Path, PathBuf};
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::cstr;
 
 fn unique_case_dir(name: &str) -> PathBuf {
@@ -114,6 +115,39 @@ export default defineComponent({
     let virtual_file = project.find_by_original(&vue_path).unwrap();
     insta::assert_snapshot!(virtual_file.content.as_str());
     assert_ts_parses(virtual_file.content.as_str());
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn test_register_vue_file_respects_template_syntax_quirks() {
+    let case_dir = unique_case_dir("template-syntax-quirks");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+    let vue_path = src_dir.join("App.vue");
+    let vue_content = r#"<script setup lang="ts">
+defineProps<{
+  test: string
+}>()
+</script>
+
+<template>
+  <div />
+</template>
+"#;
+    fs::write(&vue_path, vue_content).unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.set_template_syntax(TemplateSyntaxMode::Quirks);
+    project.register_path(&vue_path).unwrap();
+
+    assert!(
+        project.diagnostics().is_empty(),
+        "{:#?}",
+        project.diagnostics()
+    );
+    assert!(project.find_by_original(&vue_path).is_some());
 
     let _ = fs::remove_dir_all(&case_dir);
 }

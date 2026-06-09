@@ -1,6 +1,6 @@
 use super::{
-    load_config_and_linter_with_source, load_config_with_source, load_linter_config,
-    validate_explicit_config_path,
+    load_compiler_template_syntax, load_config_and_linter_with_source, load_config_with_source,
+    load_linter_config, validate_explicit_config_path,
 };
 
 #[test]
@@ -62,6 +62,22 @@ fn load_config_uses_explicit_file_path() {
     let loaded = load_config_with_source(Some(&config_path));
     assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
     assert!(loaded.config.formatter.single_quote);
+}
+
+#[test]
+fn load_config_reads_compiler_template_syntax() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{ "compiler": { "templateSyntax": "quirks" } }"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        load_compiler_template_syntax(Some(&config_path)),
+        Some("quirks")
+    );
 }
 
 #[test]
