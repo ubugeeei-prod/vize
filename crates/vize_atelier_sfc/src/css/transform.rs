@@ -370,10 +370,22 @@ fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
                 in_line_comment = true;
                 pos += 2;
             }
-            b'v' if bytes[pos..].starts_with(b"v-bind(") => return Some(pos),
+            b'v' if bytes[pos..].starts_with(b"v-bind(")
+                && has_v_bind_left_boundary(bytes, pos) =>
+            {
+                return Some(pos);
+            }
             _ => pos += 1,
         }
     }
 
     None
+}
+
+fn has_v_bind_left_boundary(bytes: &[u8], pos: usize) -> bool {
+    pos == 0 || !is_css_identifier_byte(bytes[pos - 1])
+}
+
+fn is_css_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-')
 }

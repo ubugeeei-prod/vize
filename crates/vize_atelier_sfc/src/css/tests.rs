@@ -230,6 +230,25 @@ fn test_v_bind_extraction_ignores_strings_and_comments() {
 }
 
 #[test]
+fn test_v_bind_extraction_requires_left_boundary() {
+    let bump = Bump::new();
+    let css =
+        ".foo { transition: my-v-bind(x); animation: -webkit-v-bind(y); color: v-bind(color); }";
+
+    let (transformed, vars) =
+        extract_and_transform_v_bind_with_scope(&bump, css, Some("data-v-test"));
+
+    assert_eq!(
+        transformed,
+        ".foo { transition: my-v-bind(x); animation: -webkit-v-bind(y); color: var(--test-color); }"
+    );
+    assert_eq!(
+        vars.iter().map(|var| var.as_str()).collect::<Vec<_>>(),
+        vec!["color"]
+    );
+}
+
+#[test]
 fn test_scope_deep() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
