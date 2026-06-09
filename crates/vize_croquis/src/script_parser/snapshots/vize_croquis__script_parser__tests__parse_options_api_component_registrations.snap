@@ -1,5 +1,5 @@
 ---
-source: crates/vize_croquis/src/script_parser.rs
+source: crates/vize_croquis/src/script_parser/tests.rs
 expression: output
 ---
 === Component Registrations ===
