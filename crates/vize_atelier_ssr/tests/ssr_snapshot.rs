@@ -381,6 +381,16 @@ mod component {
     }
 
     #[test]
+    fn component_v_show_adds_style_prop() {
+        insta::assert_snapshot!(compile_full(r#"<MyComp v-show="ok" />"#));
+    }
+
+    #[test]
+    fn component_v_show_merges_with_style_prop() {
+        insta::assert_snapshot!(compile_full(r#"<MyComp :style="{ color }" v-show="ok" />"#));
+    }
+
+    #[test]
     fn dynamic_component_uses_vnode_renderer() {
         insta::assert_snapshot!(compile_full(
             r#"<component :is="headingLevel" class="title">node</component>"#
