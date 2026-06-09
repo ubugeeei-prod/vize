@@ -10,7 +10,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::a11y::helpers::is_slot_element;
-use vize_relief::ast::{ElementNode, PropNode, TemplateChildNode};
+use vize_relief::ast::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/heading-has-content",
@@ -30,10 +30,17 @@ impl HeadingHasContent {
     }
 
     fn has_accessible_content(element: &ElementNode) -> bool {
-        // Check for aria-label
+        // Check for aria-label or aria-labelledby
         for prop in &element.props {
             if let PropNode::Attribute(attr) = prop
-                && attr.name == "aria-label"
+                && (attr.name == "aria-label" || attr.name == "aria-labelledby")
+            {
+                return true;
+            }
+            if let PropNode::Directive(dir) = prop
+                && dir.name == "bind"
+                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                && (arg.content == "aria-label" || arg.content == "aria-labelledby")
             {
                 return true;
             }
@@ -126,6 +133,27 @@ mod tests {
     fn test_valid_aria_hidden() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<h1 aria-hidden="true"></h1>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_static_aria_label() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<h1 aria-label="Dashboard"></h1>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_bound_aria_label() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<h1 :aria-label="title"></h1>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_bound_aria_labelledby() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<h1 :aria-labelledby="labelId"></h1>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
 
