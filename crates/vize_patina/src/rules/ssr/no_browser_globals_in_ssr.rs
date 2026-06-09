@@ -52,8 +52,6 @@ use vize_relief::ast::{ElementNode, ExpressionNode, InterpolationNode, RootNode}
 const BROWSER_GLOBALS: &[&str] = &[
     // Window object and related
     "window",
-    "self",
-    "globalThis", // In browsers only (also exists in Node.js 12+, but with different behavior)
     // Document object
     "document",
     // Navigator
@@ -147,6 +145,9 @@ const BROWSER_GLOBALS: &[&str] = &[
     "matchMedia",
 ];
 
+/// Globals that are available in both browser and SSR runtimes.
+const UNIVERSAL_GLOBALS: &[&str] = &["globalThis", "self"];
+
 static META: RuleMeta = RuleMeta {
     name: "ssr/no-browser-globals-in-ssr",
     description: "Disallow browser-only globals in SSR context",
@@ -161,12 +162,16 @@ impl NoBrowserGlobalsInSsr {
     /// Check if a name is a browser-only global (using static list)
     #[inline]
     fn is_browser_global_static(name: &str) -> bool {
-        BROWSER_GLOBALS.contains(&name)
+        !UNIVERSAL_GLOBALS.contains(&name) && BROWSER_GLOBALS.contains(&name)
     }
 
     /// Check if a name is a browser-only global using croquis analysis
     #[inline]
     fn is_browser_global_binding(ctx: &LintContext<'_>, name: &str) -> bool {
+        if UNIVERSAL_GLOBALS.contains(&name) {
+            return false;
+        }
+
         if let Some(binding_type) = ctx.get_binding_type(name) {
             matches!(binding_type, BindingType::JsGlobalBrowser)
         } else {
@@ -534,6 +539,26 @@ mod tests {
     fn test_detects_localstorage() {
         let result = lint_with_ssr("<div>{{ localStorage.getItem('key') }}</div>");
         insta::assert_debug_snapshot!(result);
+    }
+
+    #[test]
+    fn test_allows_globalthis_in_interpolation() {
+        let result = lint_with_ssr("<div>{{ globalThis }}</div>");
+        assert!(
+            result.is_empty(),
+            "Should not flag globalThis in SSR, got: {:?}",
+            result
+        );
+    }
+
+    #[test]
+    fn test_allows_self_in_directive() {
+        let result = lint_with_ssr(r#"<div :data-target="self"></div>"#);
+        assert!(
+            result.is_empty(),
+            "Should not flag self in SSR, got: {:?}",
+            result
+        );
     }
 
     #[test]
