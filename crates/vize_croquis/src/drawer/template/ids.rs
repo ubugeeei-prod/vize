@@ -10,7 +10,7 @@ use vize_carton::{CompactString, profile};
 use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
 
 use super::super::Drawer;
-use super::super::helpers::{extract_identifier_refs_oxc, is_keyword};
+use super::super::helpers::{extract_identifiers_oxc, is_keyword};
 
 /// Attributes that take ID references (not the ID itself).
 const ID_REFERENCE_ATTRIBUTES: &[&str] = &[
@@ -167,7 +167,7 @@ impl Drawer {
         if !self.ident_cache.contains_key(content) {
             let computed = profile!(
                 "croquis.template.expression.extract_identifiers",
-                extract_identifier_refs_oxc(content)
+                extract_identifiers_oxc(content)
             );
             self.ident_cache
                 .insert(CompactString::new(content), computed);
@@ -175,7 +175,7 @@ impl Drawer {
         let idents = &self.ident_cache[content];
 
         for ident in idents {
-            let ident_str = ident.name.as_str();
+            let ident_str = ident.as_str();
 
             let in_scope_vars = scope_vars.iter().any(|v| v.as_str() == ident_str);
             let in_bindings = self.croquis.bindings.contains(ident_str);
@@ -191,12 +191,57 @@ impl Drawer {
             if is_defined && !is_builtin {
                 self.croquis.scopes.mark_used(ident_str);
             } else if !is_defined {
+                let ident_offset_in_content = find_identifier_offset(content, ident_str, 0)
+                    .or_else(|| content.find(ident_str))
+                    .unwrap_or(0);
                 self.croquis.undefined_refs.push(UndefinedRef {
-                    name: ident.name.clone(),
-                    offset: base_offset + ident.offset,
+                    name: ident.clone(),
+                    offset: base_offset + ident_offset_in_content as u32,
                     context: CompactString::new("template expression"),
                 });
             }
         }
     }
+}
+
+fn find_identifier_offset(content: &str, ident: &str, start: usize) -> Option<usize> {
+    let bytes = content.as_bytes();
+    let ident_bytes = ident.as_bytes();
+    let mut search_start = start.min(content.len());
+
+    while search_start <= content.len() {
+        let found = content[search_start..].find(ident)?;
+        let offset = search_start + found;
+        if is_identifier_match(bytes, offset, ident_bytes.len()) {
+            return Some(offset);
+        }
+        search_start = offset + ident.len();
+    }
+
+    None
+}
+
+fn is_identifier_match(bytes: &[u8], offset: usize, len: usize) -> bool {
+    let before_is_ident = offset > 0 && is_ident_byte(bytes[offset - 1]);
+    let after = offset + len;
+    let after_is_ident = after < bytes.len() && is_ident_byte(bytes[after]);
+    if before_is_ident || after_is_ident {
+        return false;
+    }
+
+    let mut idx = offset;
+    while idx > 0 {
+        idx -= 1;
+        match bytes[idx] {
+            b' ' | b'\t' | b'\n' | b'\r' => continue,
+            b'.' => return false,
+            _ => break,
+        }
+    }
+
+    true
+}
+
+fn is_ident_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }

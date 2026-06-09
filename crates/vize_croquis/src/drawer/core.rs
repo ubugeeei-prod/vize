@@ -1,7 +1,7 @@
 use crate::croquis::Croquis;
 use vize_carton::{CompactString, FxHashMap, profile};
 
-use super::{DrawerOptions, helpers::IdentifierRef};
+use super::DrawerOptions;
 
 /// High-performance Vue SFC drawer.
 ///
@@ -34,12 +34,12 @@ pub struct Drawer {
     pub(crate) vfor_depth: u32,
     /// Memoized identifier extraction keyed by expression text. Template
     /// expressions repeat heavily (e.g. the same `:to`/`@click`/`{{ }}` across
-    /// every `v-for` iteration's rendered element), and identifier extraction
+    /// every `v-for` iteration's rendered element), and `extract_identifiers_oxc`
     /// is a pure function of the expression string, so the parse+walk is done
     /// once per distinct expression instead of once per occurrence. The cached
     /// `Vec` is read by reference (disjoint field borrow), so cache hits avoid
     /// both the parse and any clone.
-    pub(crate) ident_cache: FxHashMap<CompactString, Vec<IdentifierRef>>,
+    pub(crate) ident_cache: FxHashMap<CompactString, Vec<CompactString>>,
 }
 
 impl Drawer {
