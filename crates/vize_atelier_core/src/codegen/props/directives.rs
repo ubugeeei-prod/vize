@@ -190,7 +190,12 @@ fn generate_vbind_prop(
             let emit_key_expr = |ctx: &mut CodegenContext| {
                 // If the expression doesn't already have a prefix, add _ctx.
                 let content = exp.content.as_str();
-                if content.contains('.')
+                if let Some(local) = content
+                    .strip_prefix("_ctx.")
+                    .filter(|local| ctx.is_slot_param(local))
+                {
+                    ctx.push(local);
+                } else if content.contains('.')
                     || content.starts_with('_')
                     || content.starts_with('$')
                     || content.contains('`')
@@ -384,8 +389,16 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
             ctx.push(ctx.helper(RuntimeHelper::ToHandlerKey));
             ctx.push("(");
             let content = exp.content.as_str();
-            if content.contains('.') || content.starts_with('_') || content.starts_with('$') {
+            if let Some(local) = content
+                .strip_prefix("_ctx.")
+                .filter(|local| ctx.is_slot_param(local))
+            {
+                ctx.push(local);
+            } else if content.contains('.') || content.starts_with('_') || content.starts_with('$')
+            {
                 generate_simple_expression(ctx, exp);
+            } else if ctx.is_slot_param(content) {
+                ctx.push(content);
             } else {
                 ctx.push("_ctx.");
                 ctx.push(content);

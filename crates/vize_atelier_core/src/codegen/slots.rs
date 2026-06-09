@@ -881,10 +881,12 @@ fn generate_looped_slot(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
     if let Some(key) = &for_node.key_alias {
         ctx.push(", ");
         generate_expression(ctx, key);
+        super::v_for::helpers::extract_for_params(key, &mut callback_params);
     }
     if let Some(index) = &for_node.object_index_alias {
         ctx.push(", ");
         generate_expression(ctx, index);
+        super::v_for::helpers::extract_for_params(index, &mut callback_params);
     }
 
     ctx.add_slot_params(&callback_params);

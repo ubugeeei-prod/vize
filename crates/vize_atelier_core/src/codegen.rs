@@ -730,6 +730,63 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_looped_slot_key_and_index_aliases_stay_local_in_dynamic_args() {
+        use crate::options::{CodegenOptions, TransformOptions};
+        use crate::parser::parse;
+        use crate::transform::transform;
+        use bumpalo::Bump;
+
+        let allocator = Bump::new();
+        let (mut root, _) = parse(
+            &allocator,
+            r#"<Comp>
+  <template v-for="(item, idx) in list" #default>
+    <div :[idx]="item"></div>
+  </template>
+  <template v-for="(val, key) in obj" #item>
+    <button @[key]="val"></button>
+  </template>
+</Comp>"#,
+        );
+
+        transform(
+            &allocator,
+            &mut root,
+            TransformOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+            None,
+        );
+
+        let result = super::generate(
+            &root,
+            CodegenOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+        let output = result_output(&result);
+
+        assert!(
+            output.contains("[idx || \"\"]"),
+            "looped slot index alias should remain local in dynamic prop args:\n{}",
+            output
+        );
+        assert!(
+            output.contains("_toHandlerKey(key)"),
+            "looped slot key alias should remain local in dynamic event args:\n{}",
+            output
+        );
+        assert!(
+            !output.contains("_ctx.idx") && !output.contains("_ctx.key"),
+            "looped slot key/index aliases must not be prefixed as outer scope refs:\n{}",
+            output
+        );
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
     fn test_codegen_default_slot_with_v_if_is_stable() {
         let result = compile!(
             r#"<PageWithHeader>
