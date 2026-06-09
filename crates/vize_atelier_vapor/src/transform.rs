@@ -20,26 +20,36 @@ use text::{transform_interpolation, transform_text};
 
 /// Transform AST to Vapor IR
 pub fn transform_to_ir<'a>(allocator: &'a Bump, root: &RootNode<'a>) -> RootIRNode<'a> {
+    transform_to_ir_with_diagnostics(allocator, root).0
+}
+
+pub(crate) fn transform_to_ir_with_diagnostics<'a>(
+    allocator: &'a Bump,
+    root: &RootNode<'a>,
+) -> (RootIRNode<'a>, std::vec::Vec<String>) {
     let mut ctx = TransformContext::new(allocator);
 
     // Create block for root
     let block = transform_children(&mut ctx, &root.children);
 
-    RootIRNode {
-        node: RootNode::new(allocator, ""),
-        source: String::from(""),
-        template: Default::default(),
-        template_index_map: Default::default(),
-        root_template_indexes: Vec::new_in(allocator),
-        component: Vec::new_in(allocator),
-        directive: Vec::new_in(allocator),
-        block,
-        has_template_ref: false,
-        has_deferred_v_show: false,
-        templates: ctx.templates,
-        element_template_map: ctx.element_template_map,
-        standalone_text_elements: ctx.standalone_text_elements,
-    }
+    (
+        RootIRNode {
+            node: RootNode::new(allocator, ""),
+            source: String::from(""),
+            template: Default::default(),
+            template_index_map: Default::default(),
+            root_template_indexes: Vec::new_in(allocator),
+            component: Vec::new_in(allocator),
+            directive: Vec::new_in(allocator),
+            block,
+            has_template_ref: false,
+            has_deferred_v_show: false,
+            templates: ctx.templates,
+            element_template_map: ctx.element_template_map,
+            standalone_text_elements: ctx.standalone_text_elements,
+        },
+        ctx.diagnostics,
+    )
 }
 
 /// Transform children nodes
@@ -103,7 +113,7 @@ fn transform_combined_block_text<'a>(
     children: &[TemplateChildNode<'a>],
     block: &mut BlockIRNode<'a>,
 ) {
-    use crate::ir::{IREffect, OperationNode, SetTextIRNode};
+    use crate::ir::{OperationNode, SetTextIRNode};
     use vize_atelier_core::{ExpressionNode, SimpleExpressionNode, SourceLocation};
     use vize_carton::{Box, Vec};
 
@@ -146,11 +156,7 @@ fn transform_combined_block_text<'a>(
         element: element_id,
         values,
     };
-    let mut effect_ops = Vec::new_in(ctx.allocator);
-    effect_ops.push(OperationNode::SetText(set_text));
-    block.effect.push(IREffect {
-        operations: effect_ops,
-    });
+    ctx.push_dynamic_operation(block, OperationNode::SetText(set_text));
     block.returns.push(element_id);
 }
 

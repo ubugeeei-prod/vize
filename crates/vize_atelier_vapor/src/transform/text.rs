@@ -4,7 +4,7 @@
 
 use vize_carton::{Box, Vec};
 
-use crate::ir::{BlockIRNode, IREffect, OperationNode, SetTextIRNode};
+use crate::ir::{BlockIRNode, OperationNode, SetTextIRNode};
 use vize_atelier_core::{
     ExpressionNode, InterpolationNode, SimpleExpressionNode, SourceLocation, TemplateChildNode,
     TextNode,
@@ -57,13 +57,7 @@ pub(crate) fn transform_interpolation<'a>(
         values,
     };
 
-    // Add to effects (reactive)
-    let mut effect_ops = Vec::new_in(ctx.allocator);
-    effect_ops.push(OperationNode::SetText(set_text));
-
-    block.effect.push(IREffect {
-        operations: effect_ops,
-    });
+    ctx.push_dynamic_operation(block, OperationNode::SetText(set_text));
 
     block.returns.push(element_id);
 }
@@ -110,11 +104,6 @@ pub(crate) fn transform_text_children<'a>(
             values,
         };
 
-        let mut effect_ops = Vec::new_in(ctx.allocator);
-        effect_ops.push(OperationNode::SetText(set_text));
-
-        block.effect.push(IREffect {
-            operations: effect_ops,
-        });
+        ctx.push_dynamic_operation(block, OperationNode::SetText(set_text));
     }
 }
