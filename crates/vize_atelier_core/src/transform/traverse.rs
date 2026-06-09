@@ -81,13 +81,13 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
                 take_structural_directive(el)
             );
 
-            if let Some((directive_kind, exp)) = structural_result {
+            if let Some((directive_kind, exp, directive_loc)) = structural_result {
                 // Handle the structural directive
                 match directive_kind {
                     StructuralDirectiveKind::If => {
                         if let Some(exits) = profile!(
                             "atelier.transform.v_if",
-                            transform_v_if(ctx, exp.as_ref(), true)
+                            transform_v_if(ctx, directive_kind, exp.as_ref(), &directive_loc, true)
                         ) {
                             exit_fns.extend(exits);
                         }
@@ -95,7 +95,13 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
                     StructuralDirectiveKind::ElseIf | StructuralDirectiveKind::Else => {
                         if let Some(exits) = profile!(
                             "atelier.transform.v_if",
-                            transform_v_if(ctx, exp.as_ref(), false)
+                            transform_v_if(
+                                ctx,
+                                directive_kind,
+                                exp.as_ref(),
+                                &directive_loc,
+                                false
+                            )
                         ) {
                             exit_fns.extend(exits);
                         }

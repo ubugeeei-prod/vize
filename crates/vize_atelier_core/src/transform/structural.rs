@@ -52,7 +52,11 @@ fn directive_expression_to_content(exp: ExpressionNode<'_>) -> SimpleExpressionC
 /// This removes the selected directive from the element in the same pass we discover it.
 pub fn take_structural_directive<'a>(
     el: &mut Box<'a, ElementNode<'a>>,
-) -> Option<(StructuralDirectiveKind, Option<SimpleExpressionContent>)> {
+) -> Option<(
+    StructuralDirectiveKind,
+    Option<SimpleExpressionContent>,
+    SourceLocation,
+)> {
     let mut selected_if = None;
     let mut selected_for = None;
 
@@ -94,6 +98,7 @@ pub fn take_structural_directive<'a>(
     Some((
         directive_kind,
         directive.exp.map(directive_expression_to_content),
+        directive.loc,
     ))
 }
 
@@ -123,10 +128,21 @@ pub fn extract_key_prop<'a>(el: &mut ElementNode<'a>) -> Option<PropNode<'a>> {
 /// Transform v-if directive
 pub fn transform_v_if<'a>(
     ctx: &mut TransformContext<'a>,
+    directive_kind: StructuralDirectiveKind,
     exp: Option<&SimpleExpressionContent>,
+    directive_loc: &SourceLocation,
     is_root: bool,
 ) -> Option<ExitFns<'a>> {
     let allocator = ctx.allocator;
+
+    if matches!(
+        directive_kind,
+        StructuralDirectiveKind::If | StructuralDirectiveKind::ElseIf
+    ) && exp.is_none()
+    {
+        ctx.on_error(ErrorCode::VIfNoExpression, Some(directive_loc.clone()));
+        return None;
+    }
 
     if is_root {
         // Take the current element from parent
@@ -474,6 +490,53 @@ pub fn transform_v_for<'a>(
     ctx.helper(RuntimeHelper::Fragment);
 
     None
+}
+
+#[cfg(test)]
+#[allow(clippy::disallowed_macros)]
+mod tests {
+    use bumpalo::Bump;
+
+    use super::super::traverse::traverse_children;
+    use super::*;
+    use crate::errors::CompilerError;
+    use crate::options::TransformOptions;
+    use crate::parser::parse;
+    use crate::transform::{ParentNode, TransformContext};
+
+    fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, source);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        let mut ctx =
+            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
+        ctx.errors
+    }
+
+    #[test]
+    fn test_v_if_without_expression_reports_error() {
+        let errors = transform_errors(r#"<div v-if>always</div>"#);
+
+        assert_eq!(errors.len(), 1);
+        assert_eq!(errors[0].code, ErrorCode::VIfNoExpression);
+    }
+
+    #[test]
+    fn test_v_else_if_without_expression_reports_error() {
+        let errors = transform_errors(r#"<div v-if="ok">yes</div><div v-else-if>maybe</div>"#);
+
+        assert_eq!(errors.len(), 1);
+        assert_eq!(errors[0].code, ErrorCode::VIfNoExpression);
+    }
+
+    #[test]
+    fn test_v_else_without_expression_stays_valid() {
+        let errors = transform_errors(r#"<div v-if="ok">yes</div><div v-else>no</div>"#);
+
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors);
+    }
 }
 
 /// Extract key value string from a PropNode for comparison
