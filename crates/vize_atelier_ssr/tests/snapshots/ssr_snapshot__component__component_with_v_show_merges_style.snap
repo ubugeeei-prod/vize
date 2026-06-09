@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<MyComp style=\"color: red;\" v-show=\"ok\" />\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("MyComp"), _mergeProps({ style: ["color: red;", ((_ctx.ok) ? null : { display: "none" })] }, _attrs), null, _parent))
+}

@@ -447,10 +447,20 @@ impl<'a> SsrCodegenContext<'a> {
                 handler.push_str(") = $event)");
                 entries.push(component_prop_entry(&update_key, &handler, true));
             }
+            "show" => {
+                let Some(exp) = dir.exp.as_ref().map(|exp| self.expression_to_string(exp)) else {
+                    return;
+                };
+                entries.push(component_prop_entry(
+                    "style",
+                    &cstr!("(({exp}) ? null : {{ display: \"none\" }})"),
+                    false,
+                ));
+            }
             // Server-rendered HTML does not need event listener props, and slot/
             // DOM-only/custom directives are handled elsewhere or ignored by Vue's
             // SSR compiler for component prop bags.
-            "on" | "slot" | "show" | "html" | "text" => {}
+            "on" | "slot" | "html" | "text" => {}
             _ => {}
         }
     }
