@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
+assertion_line: 1813
 expression: result.code.as_str()
 ---
 import { renderSlot as _renderSlot, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
@@ -11,7 +12,7 @@ export default {
       required: false
     },
     size: {
-      type: null,
+      type: String,
       required: false,
       default: "md"
     }

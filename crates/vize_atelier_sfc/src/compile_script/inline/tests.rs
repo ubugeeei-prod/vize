@@ -483,6 +483,66 @@ defineProps<{
     }
 
     #[test]
+    fn test_define_props_type_only_mapped_type_literal_union() {
+        let content = r#"
+type Keys = 'a' | 'b'
+
+defineProps<{ [K in Keys]: number } & { [K in Keys as `prop-${K}`]?: boolean }>()
+"#;
+        let output = compile_setup(content);
+        let normalized: String = output
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .into();
+        assert!(
+            normalized.contains("a: { type: Number, required: true }"),
+            "expected mapped key `a` to become a runtime prop, got:\n{output}"
+        );
+        assert!(
+            normalized.contains("b: { type: Number, required: true }"),
+            "expected mapped key `b` to become a runtime prop, got:\n{output}"
+        );
+        assert!(
+            normalized.contains("\"prop-a\": { type: Boolean, required: false }"),
+            "expected template-literal remapped key `prop-a` to be quoted and emitted, got:\n{output}"
+        );
+        assert!(
+            normalized.contains("\"prop-b\": { type: Boolean, required: false }"),
+            "expected template-literal remapped key `prop-b` to be quoted and emitted, got:\n{output}"
+        );
+    }
+
+    #[test]
+    fn test_define_props_type_only_conditional_indexed_and_template_key_types() {
+        let content = r#"
+defineProps<{
+  value: 'x' extends string ? string : number
+  indexed: Record<string, number>['a']
+  "templateKey"?: boolean
+}>()
+"#;
+        let output = compile_setup(content);
+        let normalized: String = output
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .into();
+        assert!(
+            normalized.contains("value: { type: [String, Number], required: true }"),
+            "expected conditional prop type to stay attached to `value`, got:\n{output}"
+        );
+        assert!(
+            normalized.contains("indexed: { type: null, required: true }"),
+            "expected indexed-access prop to be preserved instead of split away, got:\n{output}"
+        );
+        assert!(
+            normalized.contains("templateKey: { type: Boolean, required: false }"),
+            "expected template-literal key prop to be preserved, got:\n{output}"
+        );
+    }
+
+    #[test]
     fn test_non_props_destructure_value_on_next_line() {
         // Ensure regular (non-defineProps) destructures with value on next line
         // still work correctly

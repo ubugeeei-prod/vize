@@ -3,8 +3,9 @@ use vize_carton::String;
 use crate::script::{PropsDestructuredBindings, ScriptCompileContext};
 
 use super::super::super::props::{
-    add_null_to_runtime_type, extract_prop_types_from_type, extract_with_defaults_defaults,
-    normalize_destructure_default_value, resolve_prop_js_type,
+    add_null_to_runtime_type, extract_prop_types_from_type_with_context,
+    extract_with_defaults_defaults, normalize_destructure_default_value, resolve_prop_js_type,
+    runtime_prop_key,
 };
 use super::super::type_handling::resolve_type_args;
 
@@ -65,7 +66,11 @@ pub(super) fn build_user_props_decl(
     if let Some(ref type_args) = props_macro.type_args {
         // Resolve type references (interface/type alias names) to their definitions
         let resolved_type_args = resolve_type_args(type_args, &ctx.interfaces, &ctx.type_aliases);
-        let prop_types = extract_prop_types_from_type(&resolved_type_args);
+        let prop_types = extract_prop_types_from_type_with_context(
+            &resolved_type_args,
+            Some(&ctx.interfaces),
+            Some(&ctx.type_aliases),
+        );
         if prop_types.is_empty() {
             if let Some(ref destructure) = ctx.macros.props_destructure {
                 build_unknown_type_destructured_props_decl(&mut decl, destructure);
@@ -92,7 +97,8 @@ pub(super) fn build_user_props_decl(
                 let runtime_js_type =
                     add_null_to_runtime_type(&resolved_js_type, prop_type.nullable);
                 decl.extend_from_slice(b"    ");
-                decl.extend_from_slice(name.as_bytes());
+                let key = runtime_prop_key(name);
+                decl.extend_from_slice(key.as_bytes());
                 let mut has_option = false;
                 if is_prod && runtime_js_type != "Boolean" {
                     decl.extend_from_slice(b": {");

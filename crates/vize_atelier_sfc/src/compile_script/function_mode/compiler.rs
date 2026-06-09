@@ -18,7 +18,8 @@ use super::super::import_utils::extract_import_identifiers;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
 use super::super::props::{
     add_null_to_runtime_type, extract_emit_names_from_type, extract_prop_types_from_type,
-    normalize_destructure_default_value, validate_props_destructure_default_types,
+    normalize_destructure_default_value, runtime_prop_key,
+    validate_props_destructure_default_types,
 };
 use super::super::statement_sections::extract_script_sections;
 use super::super::typescript::transform_typescript_to_js;
@@ -341,7 +342,8 @@ fn emit_props_definition(
                             if i > 0 {
                                 s.push_str(", ");
                             }
-                            s.push_str(name);
+                            let key = runtime_prop_key(name);
+                            s.push_str(key.as_str());
                             s.push_str(": {}");
                         }
                         s.push_str(" }");
@@ -399,7 +401,8 @@ fn emit_props_definition(
                     names.sort();
                     for name in names {
                         output.extend_from_slice(b"    ");
-                        output.extend_from_slice(name.as_bytes());
+                        let key = runtime_prop_key(name);
+                        output.extend_from_slice(key.as_bytes());
                         output.extend_from_slice(b": {},\n");
                     }
                     output.extend_from_slice(b"  },\n");
@@ -419,7 +422,8 @@ fn emit_props_definition(
                     let runtime_js_type =
                         add_null_to_runtime_type(&prop_type.js_type, prop_type.nullable);
                     output.extend_from_slice(b"    ");
-                    output.extend_from_slice(name.as_bytes());
+                    let key = runtime_prop_key(name);
+                    output.extend_from_slice(key.as_bytes());
                     output.extend_from_slice(b": { type: ");
                     output.extend_from_slice(runtime_js_type.as_bytes());
                     if needs_prop_type && let Some(ref ts_type) = prop_type.ts_type {
