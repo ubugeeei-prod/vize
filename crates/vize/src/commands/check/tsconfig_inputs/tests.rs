@@ -1,0 +1,1084 @@
+//! Tests for tsconfig-driven default input collection.
+
+#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+
+use super::{
+    collect_ambient_declaration_files, collect_default_check_files,
+    load_tsconfig_declaration_options, resolve_extended_tsconfig, resolve_tsconfig_for_files,
+};
+use std::fs;
+use std::path::{Path, PathBuf};
+use vize_carton::cstr;
+
+fn unique_case_dir(name: &str) -> PathBuf {
+    static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("target")
+        .join("vize-tests")
+        .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
+}
+
+#[test]
+fn default_collection_respects_include_and_exclude() {
+    let case_dir = unique_case_dir("tsconfig-default");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src/generated")).unwrap();
+    fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+    fs::write(case_dir.join("src/main.ts"), "export const ok = true").unwrap();
+    fs::write(
+        case_dir.join("src/generated/skip.ts"),
+        "export const skip = true",
+    )
+    .unwrap();
+    fs::write(case_dir.join("vite.config.ts"), "export default {}").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "include": ["src/**/*.ts", "src/**/*.vue"],
+  "exclude": ["src/generated"]
+}"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert_eq!(files.len(), 2);
+    assert!(files.iter().any(|path| path.ends_with("src/App.vue")));
+    assert!(files.iter().any(|path| path.ends_with("src/main.ts")));
+    assert!(!files.iter().any(|path| path.ends_with("vite.config.ts")));
+    assert!(
+        !files
+            .iter()
+            .any(|path| path.ends_with("src/generated/skip.ts"))
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn default_collection_inherits_extended_include() {
+    let case_dir = unique_case_dir("tsconfig-extends");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+    fs::write(case_dir.join("vite.config.ts"), "export default {}").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.base.json"),
+        r#"{
+  "include": ["src/**/*.vue"]
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "extends": "./tsconfig.base.json"
+}"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert_eq!(files, vec![case_dir.join("src/App.vue")]);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn default_collection_matches_parent_relative_extended_include() {
+    let case_dir = unique_case_dir("tsconfig-extends-parent-relative");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join(".nuxt")).unwrap();
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::create_dir_all(case_dir.join("dist")).unwrap();
+    fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+    fs::write(case_dir.join("src/main.ts"), "export const ok = true").unwrap();
+    fs::write(
+        case_dir.join("dist/generated.ts"),
+        "export const skip = true",
+    )
+    .unwrap();
+    fs::write(case_dir.join(".nuxt/nuxt.d.ts"), "declare const nuxt: true").unwrap();
+    fs::write(
+        case_dir.join(".nuxt/tsconfig.json"),
+        r#"{
+  "include": ["./nuxt.d.ts", "../src/**/*", "../dist/**/*.ts"],
+  "exclude": ["../dist"]
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "extends": "./.nuxt/tsconfig.json"
+}"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/App.vue")));
+    assert!(files.iter().any(|path| path.ends_with("src/main.ts")));
+    assert!(!files.iter().any(|path| path.ends_with("dist/generated.ts")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn declaration_options_inherit_extends_and_use_config_relative_paths() {
+    let case_dir = unique_case_dir("tsconfig-declaration-options");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("configs")).unwrap();
+    fs::write(
+        case_dir.join("configs/base.json"),
+        r#"{
+  "compilerOptions": {
+"declarationDir": "base-types",
+"outDir": "base-dist",
+"declarationMap": true
+  }
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "extends": "./configs/base.json",
+  "compilerOptions": {
+"outDir": "dist",
+"declarationMap": false
+  }
+}"#,
+    )
+    .unwrap();
+
+    let options = load_tsconfig_declaration_options(&case_dir.join("tsconfig.json"));
+
+    assert_eq!(
+        options.declaration_dir,
+        Some(case_dir.join("configs/base-types"))
+    );
+    assert_eq!(options.out_dir, Some(case_dir.join("dist")));
+    assert_eq!(options.declaration_map, Some(false));
+    assert_eq!(
+        options.output_dir(),
+        Some(case_dir.join("configs/base-types").as_path())
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn default_collection_applies_extends_array_in_order() {
+    let case_dir = unique_case_dir("tsconfig-extends-array");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src/one")).unwrap();
+    fs::create_dir_all(case_dir.join("src/two")).unwrap();
+    fs::write(case_dir.join("src/one/One.vue"), "<template />").unwrap();
+    fs::write(case_dir.join("src/two/App.vue"), "<template />").unwrap();
+    fs::write(case_dir.join("src/two/Skip.vue"), "<template />").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.one.json"),
+        r#"{
+  "include": ["src/one/**/*.vue"],
+  "exclude": ["src/two/Skip.vue"]
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.two.json"),
+        r#"{
+  "include": ["src/two/**/*.vue"]
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "extends": ["./tsconfig.one.json", "./tsconfig.two.json"]
+}"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert_eq!(files, vec![case_dir.join("src/two/App.vue")]);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn extended_config_resolution_finds_ancestor_node_modules() {
+    let case_dir = unique_case_dir("tsconfig-package-extends");
+    let _ = fs::remove_dir_all(&case_dir);
+    let app_dir = case_dir.join("packages/app");
+    let package_dir = case_dir.join("node_modules/@scope/tsconfig");
+    fs::create_dir_all(&app_dir).unwrap();
+    fs::create_dir_all(&package_dir).unwrap();
+    fs::write(app_dir.join("tsconfig.json"), "{}").unwrap();
+    fs::write(
+        package_dir.join("tsconfig.vue.json"),
+        r#"{
+  "compilerOptions": {
+"strict": true
+  }
+}"#,
+    )
+    .unwrap();
+
+    let resolved = resolve_extended_tsconfig(
+        &app_dir.join("tsconfig.json"),
+        "@scope/tsconfig/tsconfig.vue.json",
+    );
+
+    assert_eq!(resolved, Some(package_dir.join("tsconfig.vue.json")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn extended_config_resolution_uses_package_json_tsconfig_field() {
+    let case_dir = unique_case_dir("tsconfig-package-json-field");
+    let _ = fs::remove_dir_all(&case_dir);
+    let app_dir = case_dir.join("packages/app");
+    let package_dir = case_dir.join("node_modules/@scope/tsconfig");
+    fs::create_dir_all(app_dir.join("src")).unwrap();
+    fs::create_dir_all(package_dir.join("configs")).unwrap();
+    fs::write(app_dir.join("tsconfig.json"), "{}").unwrap();
+    fs::write(
+        package_dir.join("package.json"),
+        r#"{
+  "name": "@scope/tsconfig",
+  "tsconfig": "configs/vue.json"
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        package_dir.join("configs/vue.json"),
+        r#"{
+  "compilerOptions": {
+"strict": true
+  }
+}"#,
+    )
+    .unwrap();
+    fs::write(package_dir.join("tsconfig.json"), "{}").unwrap();
+
+    let resolved = resolve_extended_tsconfig(&app_dir.join("tsconfig.json"), "@scope/tsconfig");
+
+    assert_eq!(resolved, Some(package_dir.join("configs/vue.json")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn ambient_declaration_collection_keeps_only_dts_within_include() {
+    let case_dir = unique_case_dir("tsconfig-ambient-dts");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src/@types")).unwrap();
+    fs::write(
+        case_dir.join("src/@types/globals.d.ts"),
+        "export {};\ndeclare global { type GlobalTabType = 'a' | 'b'; }\n",
+    )
+    .unwrap();
+    fs::write(case_dir.join("src/env.d.ts"), "declare const X: string;").unwrap();
+    fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+    fs::write(case_dir.join("src/main.ts"), "export const ok = true").unwrap();
+    fs::write(case_dir.join("outside.d.ts"), "declare const Y: string;").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+
+    let files = collect_ambient_declaration_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert_eq!(files.len(), 2, "{files:?}");
+    assert!(
+        files
+            .iter()
+            .any(|path| path.ends_with("src/@types/globals.d.ts"))
+    );
+    assert!(files.iter().any(|path| path.ends_with("src/env.d.ts")));
+    assert!(!files.iter().any(|path| path.ends_with("src/App.vue")));
+    assert!(!files.iter().any(|path| path.ends_with("src/main.ts")));
+    assert!(!files.iter().any(|path| path.ends_with("outside.d.ts")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn ambient_declaration_collection_keeps_project_shims_but_skips_vue_shadows() {
+    let case_dir = unique_case_dir("tsconfig-module-shim-dts");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::create_dir_all(case_dir.join(".nuxt/types")).unwrap();
+    // This file would shadow the real `vue` package if force-loaded as a
+    // program root, so it must remain excluded.
+    fs::write(
+        case_dir.join("src/vue-shadow.d.ts"),
+        "declare module \"vue\" {\n  export interface GlobalComponents {}\n}\n",
+    )
+    .unwrap();
+    // Project shims are needed for explicit checks: no source import can
+    // discover these declarations otherwise.
+    fs::write(
+        case_dir.join("src/project-shims.d.ts"),
+        "declare module \"*.css\";\ndeclare module \"~icons/foo\";\n",
+    )
+    .unwrap();
+    // Nuxt/Vue package augmentations are safe when the declaration file is
+    // an external module.
+    fs::write(
+        case_dir.join("src/vue-augmentation.d.ts"),
+        "import \"vue\";\ndeclare module \"vue\" {\n  export interface GlobalComponents {}\n}\nexport {};\n",
+    )
+    .unwrap();
+    // Genuine ambient-global file: must still be collected.
+    fs::write(
+        case_dir.join("src/globals.d.ts"),
+        "export {};\ndeclare global { type GlobalTabType = 'a' | 'b'; }\n",
+    )
+    .unwrap();
+    // Namespace-style `declare module Foo` is a plain global, not a shim.
+    fs::write(
+        case_dir.join("src/namespace.d.ts"),
+        "declare module Foo { const bar: string; }\n",
+    )
+    .unwrap();
+    // Hidden tsconfig roots such as `.nuxt` are excluded by the normal
+    // default scanner but must still be loaded as ambient roots.
+    fs::write(
+        case_dir.join(".nuxt/nuxt.d.ts"),
+        "/// <reference path=\"types/feature-flags.d.ts\" />\nexport {};\n",
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join(".nuxt/types/feature-flags.d.ts"),
+        "export {};\ndeclare global { interface ImportMeta { vfFeatures: { enabled: boolean }; } }\n",
+    )
+    .unwrap();
+    fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "include": ["src/**/*", ".nuxt/nuxt.d.ts"]
+}"#,
+    )
+    .unwrap();
+
+    let files = collect_ambient_declaration_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(
+        files.iter().any(|path| path.ends_with("src/globals.d.ts")),
+        "declare-global file should be collected: {files:?}"
+    );
+    assert!(
+        files
+            .iter()
+            .any(|path| path.ends_with("src/namespace.d.ts")),
+        "namespace-style declaration should be collected: {files:?}"
+    );
+    assert!(
+        files
+            .iter()
+            .any(|path| path.ends_with("src/project-shims.d.ts")),
+        "project module shims should be collected: {files:?}"
+    );
+    assert!(
+        files
+            .iter()
+            .any(|path| path.ends_with("src/vue-augmentation.d.ts")),
+        "external-module Vue augmentations should be collected: {files:?}"
+    );
+    assert!(
+        !files.iter().any(|path| path.ends_with(".nuxt/nuxt.d.ts")),
+        "reference-only Nuxt declaration manifest should be expanded but not collected: {files:?}"
+    );
+    assert!(
+        files
+            .iter()
+            .any(|path| path.ends_with(".nuxt/types/feature-flags.d.ts")),
+        "hidden Nuxt referenced declaration should be collected: {files:?}"
+    );
+    assert!(
+        !files
+            .iter()
+            .any(|path| path.ends_with("src/vue-shadow.d.ts")),
+        "ambient Vue shadow declaration file should be skipped: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn default_collection_uses_files_entries() {
+    let case_dir = unique_case_dir("tsconfig-files");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/entry.ts"), "export const ok = true").unwrap();
+    fs::write(case_dir.join("src/extra.ts"), "export const extra = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "files": ["src/entry.ts"]
+}"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert_eq!(files, vec![case_dir.join("src/entry.ts")]);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn default_collection_follows_referenced_tsconfigs() {
+    let case_dir = unique_case_dir("tsconfig-references");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join(".generated")).unwrap();
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+    fs::write(
+        case_dir.join(".generated/types.d.ts"),
+        "declare const X: true",
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "files": [],
+  "references": [{ "path": "./.generated/tsconfig.app.json" }]
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join(".generated/tsconfig.app.json"),
+        r#"{
+  "include": ["./types.d.ts", "../src/**/*.vue"]
+}"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/App.vue")));
+    assert!(
+        !files
+            .iter()
+            .any(|path| path.ends_with(".generated/types.d.ts")),
+        "normal default scan keeps hidden generated roots ignored: {files:?}"
+    );
+
+    let ambient =
+        collect_ambient_declaration_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+    assert!(
+        ambient
+            .iter()
+            .any(|path| path.ends_with(".generated/types.d.ts")),
+        "ambient scan should include hidden referenced declaration roots: {ambient:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn tsconfig_for_files_uses_referenced_owner() {
+    let case_dir = unique_case_dir("tsconfig-reference-owner");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join(".generated")).unwrap();
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    let app = case_dir.join("src/App.vue");
+    fs::write(&app, "<template />").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "files": [],
+  "references": [{ "path": "./.generated/tsconfig.app.json" }]
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join(".generated/tsconfig.app.json"),
+        r#"{
+  "include": ["../src/**/*.vue"]
+}"#,
+    )
+    .unwrap();
+
+    let owner = resolve_tsconfig_for_files(Some(&case_dir.join("tsconfig.json")), &[app]);
+
+    assert_eq!(owner, Some(case_dir.join(".generated/tsconfig.app.json")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn jsonc_comments_and_trailing_commas_are_stripped_before_parsing() {
+    // If the JSONC stripping failed, the tsconfig would parse as null, fall
+    // back to an implicit `**/*` scan, and `src/skip.ts` would be collected.
+    // Asserting it is excluded proves the comment/trailing-comma stripping ran.
+    let case_dir = unique_case_dir("tsconfig-jsonc-comments");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/keep.ts"), "export const keep = true").unwrap();
+    fs::write(case_dir.join("src/skip.ts"), "export const skip = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        "{\n  // leading line comment\n  \"include\": [\"src/**/*.ts\"], /* trailing block\n  comment spanning lines */\n  \"exclude\": [\n    \"src/skip.ts\",\n  ],\n}\n",
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/keep.ts")));
+    assert!(
+        !files.iter().any(|path| path.ends_with("src/skip.ts")),
+        "JSONC parsing should have applied the exclude: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn jsonc_does_not_strip_comment_like_sequences_inside_strings() {
+    // The exclude value literally contains `//`; if the comment stripper
+    // ignored string boundaries it would truncate the pattern and stop
+    // excluding the file.
+    let case_dir = unique_case_dir("tsconfig-jsonc-string");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+    fs::write(case_dir.join("src/skip.ts"), "export const skip = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/skip.ts"]
+}"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+    assert!(!files.iter().any(|path| path.ends_with("src/skip.ts")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn single_star_include_does_not_cross_directory_separator() {
+    let case_dir = unique_case_dir("tsconfig-glob-single-star");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src/nested")).unwrap();
+    fs::write(case_dir.join("src/top.ts"), "export const top = true").unwrap();
+    fs::write(
+        case_dir.join("src/nested/deep.ts"),
+        "export const deep = true",
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "include": ["src/*.ts"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/top.ts")));
+    assert!(
+        !files
+            .iter()
+            .any(|path| path.ends_with("src/nested/deep.ts")),
+        "a single * must not match across a directory separator: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn bare_directory_include_expands_to_recursive_glob() {
+    let case_dir = unique_case_dir("tsconfig-glob-bare-dir");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src/nested")).unwrap();
+    fs::write(case_dir.join("src/top.ts"), "export const top = true").unwrap();
+    fs::write(
+        case_dir.join("src/nested/deep.ts"),
+        "export const deep = true",
+    )
+    .unwrap();
+    fs::write(case_dir.join("tsconfig.json"), r#"{ "include": ["src"] }"#).unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/top.ts")));
+    assert!(
+        files
+            .iter()
+            .any(|path| path.ends_with("src/nested/deep.ts")),
+        "a bare directory include should expand to a recursive glob: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn dot_include_matches_every_supported_file() {
+    let case_dir = unique_case_dir("tsconfig-glob-dot");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("nested")).unwrap();
+    fs::write(case_dir.join("root.ts"), "export const root = true").unwrap();
+    fs::write(case_dir.join("nested/leaf.ts"), "export const leaf = true").unwrap();
+    fs::write(case_dir.join("tsconfig.json"), r#"{ "include": ["."] }"#).unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("root.ts")));
+    assert!(files.iter().any(|path| path.ends_with("nested/leaf.ts")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn leading_dot_slash_include_is_normalized() {
+    let case_dir = unique_case_dir("tsconfig-glob-dot-slash");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "include": ["./src/**/*.ts"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[cfg(not(windows))]
+#[test]
+fn include_glob_matching_is_case_sensitive_on_unix() {
+    let case_dir = unique_case_dir("tsconfig-glob-case");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "include": ["SRC/**/*.ts"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(
+        files.is_empty(),
+        "an upper-case include must not match a lower-case directory on Unix: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn declaration_files_are_always_supported() {
+    let case_dir = unique_case_dir("tsconfig-ext-dts");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/env.d.ts"), "declare const X: string;").unwrap();
+    fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+    fs::write(case_dir.join("src/ignore.js"), "module.exports = {}").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "include": ["src/**/*"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/env.d.ts")));
+    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+    assert!(
+        !files.iter().any(|path| path.ends_with("src/ignore.js")),
+        ".js is not a supported check extension: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn supported_extensions_cover_ts_family_and_reject_js_family() {
+    let case_dir = unique_case_dir("tsconfig-ext-family");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    let supported = ["App.vue", "a.ts", "b.tsx", "c.mts", "d.cts"];
+    let unsupported = ["e.js", "f.jsx", "g.cjs", "h.mjs", "data.json"];
+    for name in supported.iter().chain(unsupported.iter()) {
+        fs::write(case_dir.join("src").join(name), "x").unwrap();
+    }
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "include": ["src/**/*"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    for name in supported {
+        assert!(
+            files
+                .iter()
+                .any(|path| path.ends_with(&format!("src/{name}"))),
+            "{name} should be collected: {files:?}"
+        );
+    }
+    for name in unsupported {
+        assert!(
+            !files
+                .iter()
+                .any(|path| path.ends_with(&format!("src/{name}"))),
+            "{name} should be rejected: {files:?}"
+        );
+    }
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn malformed_tsconfig_falls_back_to_full_default_scan() {
+    // Unparseable JSON degrades to an implicit `**/*` include with the
+    // default excludes (node_modules), so source is still collected while
+    // dependencies are not.
+    let case_dir = unique_case_dir("tsconfig-malformed");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::create_dir_all(case_dir.join("node_modules/dep")).unwrap();
+    fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+    fs::write(
+        case_dir.join("node_modules/dep/index.ts"),
+        "export const dep = true",
+    )
+    .unwrap();
+    fs::write(case_dir.join("tsconfig.json"), "{ this is not valid json").unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+    assert!(
+        !files
+            .iter()
+            .any(|path| path.ends_with("node_modules/dep/index.ts")),
+        "default excludes should still drop node_modules: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn custom_exclude_glob_drops_a_matching_subtree() {
+    // An explicit exclude is honored for a non-ignored subtree, independent
+    // of the default node_modules/bower_components excludes.
+    let case_dir = unique_case_dir("tsconfig-custom-exclude");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src/keep")).unwrap();
+    fs::create_dir_all(case_dir.join("src/skip")).unwrap();
+    fs::write(case_dir.join("src/keep/a.ts"), "export const a = true").unwrap();
+    fs::write(case_dir.join("src/skip/b.ts"), "export const b = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "include": ["src/**/*.ts"], "exclude": ["src/skip"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/keep/a.ts")));
+    assert!(
+        !files.iter().any(|path| path.ends_with("src/skip/b.ts")),
+        "a custom exclude should drop the matching subtree: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn exclude_takes_precedence_over_include_for_the_same_file() {
+    let case_dir = unique_case_dir("tsconfig-exclude-precedence");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "include": ["src/**/*.ts"], "exclude": ["src/**/*.ts"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(
+        files.is_empty(),
+        "exclude should win over include for the same file: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn files_entries_bypass_exclude_filtering() {
+    let case_dir = unique_case_dir("tsconfig-files-bypass-exclude");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "files": ["src/a.ts"], "exclude": ["src/**/*"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert_eq!(files, vec![case_dir.join("src/a.ts")]);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn files_present_suppresses_the_implicit_wildcard_scan() {
+    let case_dir = unique_case_dir("tsconfig-files-suppress-scan");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+    fs::write(case_dir.join("src/b.ts"), "export const b = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "files": ["src/a.ts"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert_eq!(files, vec![case_dir.join("src/a.ts")]);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn files_entry_with_unsupported_extension_is_dropped() {
+    let case_dir = unique_case_dir("tsconfig-files-bad-ext");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/x.js"), "module.exports = {}").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "files": ["src/x.js"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(
+        files.is_empty(),
+        "unsupported files entry should drop: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn files_entry_outside_project_root_is_dropped() {
+    let case_dir = unique_case_dir("tsconfig-files-outside-root");
+    let _ = fs::remove_dir_all(&case_dir);
+    let app_dir = case_dir.join("app");
+    fs::create_dir_all(&app_dir).unwrap();
+    fs::write(case_dir.join("sibling.ts"), "export const s = true").unwrap();
+    fs::write(
+        app_dir.join("tsconfig.json"),
+        r#"{ "files": ["../sibling.ts"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&app_dir, Some(&app_dir.join("tsconfig.json")));
+
+    assert!(
+        !files.iter().any(|path| path.ends_with("sibling.ts")),
+        "a files entry resolving outside the project root should drop: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn circular_extends_chain_terminates_and_applies_host_include() {
+    let case_dir = unique_case_dir("tsconfig-circular-extends");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "extends": "./other.json", "include": ["src/**/*.ts"] }"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("other.json"),
+        r#"{ "extends": "./tsconfig.json" }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn missing_extends_target_is_skipped() {
+    let case_dir = unique_case_dir("tsconfig-missing-extends");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/a.ts"), "export const a = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "extends": "./does-not-exist.json", "include": ["src/**/*.ts"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn circular_references_chain_terminates_and_each_project_contributes() {
+    let case_dir = unique_case_dir("tsconfig-circular-references");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("a")).unwrap();
+    fs::create_dir_all(case_dir.join("b")).unwrap();
+    fs::write(case_dir.join("a/x.ts"), "export const x = true").unwrap();
+    fs::write(case_dir.join("b/y.ts"), "export const y = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "files": [], "include": ["a/**/*.ts"], "references": [{ "path": "./b.json" }] }"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("b.json"),
+        r#"{ "include": ["b/**/*.ts"], "references": [{ "path": "./tsconfig.json" }] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(files.iter().any(|path| path.ends_with("a/x.ts")));
+    assert!(files.iter().any(|path| path.ends_with("b/y.ts")));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn reference_path_to_directory_resolves_to_tsconfig_json() {
+    let case_dir = unique_case_dir("tsconfig-reference-dir");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("sub")).unwrap();
+    fs::write(case_dir.join("sub/z.ts"), "export const z = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "files": [], "references": [{ "path": "./sub" }] }"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("sub/tsconfig.json"),
+        r#"{ "include": ["*.ts"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert!(
+        files.iter().any(|path| path.ends_with("sub/z.ts")),
+        "a references path to a directory should resolve to its tsconfig.json: {files:?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn owner_resolution_returns_root_for_no_supported_files() {
+    let case_dir = unique_case_dir("tsconfig-owner-no-files");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    let root = case_dir.join("tsconfig.json");
+    fs::write(&root, r#"{ "include": ["src/**/*.ts"] }"#).unwrap();
+
+    let normalized_root = root.canonicalize().unwrap_or(root.clone());
+
+    // Empty file list -> root.
+    assert_eq!(
+        resolve_tsconfig_for_files(Some(&root), &[]),
+        Some(normalized_root.clone())
+    );
+
+    // Unsupported-only file list -> root (the .js is filtered out first).
+    assert_eq!(
+        resolve_tsconfig_for_files(Some(&root), &[case_dir.join("src/app.js")]),
+        Some(normalized_root)
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn owner_resolution_falls_back_to_root_when_files_span_projects() {
+    let case_dir = unique_case_dir("tsconfig-owner-split");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("a")).unwrap();
+    fs::create_dir_all(case_dir.join("b")).unwrap();
+    let a_file = case_dir.join("a/x.ts");
+    let b_file = case_dir.join("b/y.ts");
+    fs::write(&a_file, "export const x = true").unwrap();
+    fs::write(&b_file, "export const y = true").unwrap();
+    let root = case_dir.join("tsconfig.json");
+    fs::write(
+        &root,
+        r#"{ "include": ["root-only/**/*.ts"], "references": [{ "path": "./a.json" }, { "path": "./b.json" }] }"#,
+    )
+    .unwrap();
+    fs::write(case_dir.join("a.json"), r#"{ "include": ["a/**/*.ts"] }"#).unwrap();
+    fs::write(case_dir.join("b.json"), r#"{ "include": ["b/**/*.ts"] }"#).unwrap();
+
+    let owner = resolve_tsconfig_for_files(Some(&root), &[a_file, b_file]);
+
+    assert_eq!(owner, Some(root.canonicalize().unwrap_or(root.clone())));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn owner_resolution_falls_back_to_root_for_an_unowned_file() {
+    let case_dir = unique_case_dir("tsconfig-owner-unowned");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("c")).unwrap();
+    let unowned = case_dir.join("c/z.ts");
+    fs::write(&unowned, "export const z = true").unwrap();
+    let root = case_dir.join("tsconfig.json");
+    fs::write(
+        &root,
+        r#"{ "include": ["root-only/**/*.ts"], "references": [{ "path": "./a.json" }] }"#,
+    )
+    .unwrap();
+    fs::write(case_dir.join("a.json"), r#"{ "include": ["a/**/*.ts"] }"#).unwrap();
+
+    let owner = resolve_tsconfig_for_files(Some(&root), &[unowned]);
+
+    assert_eq!(owner, Some(root.canonicalize().unwrap_or(root.clone())));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
