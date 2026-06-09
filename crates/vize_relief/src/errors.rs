@@ -205,6 +205,18 @@ impl ErrorCode {
         let code = *self as u16;
         code >= (Self::VIfNoExpression as u16) && code < (Self::PrefixIdNotSupported as u16)
     }
+
+    /// Returns true when this code is a recovery-level diagnostic (a warning)
+    /// rather than a hard error. `ExtendPoint` is the code the parser uses for
+    /// HTML tree-construction recovery notes (e.g. self-closing rewrites,
+    /// fostered elements, auto-closed `<p>`). These describe spec-compliant
+    /// repairs the parser already applied, so downstream consumers — notably
+    /// the `vize_canon` virtual-TS codegen — must NOT treat them as a reason to
+    /// abort and fall back to a stub component.
+    #[must_use]
+    pub fn is_recovery(&self) -> bool {
+        matches!(self, Self::ExtendPoint)
+    }
 }
 
 /// Result type for compiler operations
@@ -256,6 +268,15 @@ mod tests {
         for code in &codes {
             assert!(!code.message().is_empty(), "{:?} has empty message", code);
         }
+    }
+
+    #[test]
+    fn is_recovery_only_for_extend_point() {
+        assert!(ErrorCode::ExtendPoint.is_recovery());
+        assert!(!ErrorCode::InvalidEndTag.is_recovery());
+        assert!(!ErrorCode::UnexpectedSolidusInTag.is_recovery());
+        assert!(!ErrorCode::DuplicateAttribute.is_recovery());
+        assert!(!ErrorCode::UnhandledCodePath.is_recovery());
     }
 
     #[test]

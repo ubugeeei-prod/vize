@@ -147,10 +147,24 @@ impl<'a> Parser<'a> {
     /// Process open tag name
     pub(super) fn on_open_tag_name_impl(&mut self, start: usize, end: usize) {
         let tag = self.get_source(start, end);
+        let parent = self.stack.last().map(|e| e.element.tag.as_str());
         let ns = if self.should_force_html_namespace(tag) {
             Namespace::Html
         } else {
-            (self.options.get_namespace)(tag, self.stack.last().map(|e| e.element.tag.as_str()))
+            let resolved = (self.options.get_namespace)(tag, parent);
+            // Resolve the foreign (SVG/MathML) namespace even when the
+            // configured `get_namespace` callback is namespace-unaware (the
+            // default callback always returns HTML). Without this, the
+            // `vize_canon` virtual-TS path — which parses with
+            // `ParserOptions::default()` — leaves `<svg>`/`<math>` and their
+            // self-closing children such as `<path d="…" />` in the HTML
+            // namespace and then flags them as invalid self-closing non-void
+            // HTML elements.
+            if resolved == Namespace::Html {
+                self.foreign_namespace_for(tag).unwrap_or(Namespace::Html)
+            } else {
+                resolved
+            }
         };
 
         self.current_element = Some(CurrentElement {
@@ -631,16 +645,17 @@ impl<'a> Parser<'a> {
             self.close_stack_element_at(index, false);
         }
 
-        if self.open_p_count > 0 {
-            if tag.eq_ignore_ascii_case("p") {
-                if let Some(index) = self.find_open_element_index("p") {
-                    self.close_stack_element_at(index, false);
-                }
-            } else if Self::closes_open_p_before_start(tag)
-                && let Some(index) = self.find_open_element_index("p")
-            {
-                self.close_stack_element_at(index, false);
-            }
+        if self.open_p_count > 0
+            && (tag.eq_ignore_ascii_case("p") || Self::closes_open_p_before_start(tag))
+            && let Some(index) = self.find_open_p_element_in_button_scope()
+        {
+            // Only auto-close a `<p>` that is in button scope of the current
+            // insertion point. A `<template>` (or other scope-terminating
+            // element) between the open `<p>` and the new start tag is a scope
+            // boundary, so the `<p>` must NOT be auto-closed across it —
+            // otherwise valid markup like `<p><template>…<p>…</p></template></p>`
+            // wrongly reports an `InvalidEndTag` for the outer `</p>`.
+            self.close_stack_element_at(index, false);
         }
 
         let _ = offset;
@@ -664,6 +679,38 @@ impl<'a> Parser<'a> {
         }
 
         None
+    }
+
+    fn find_open_p_element_in_button_scope(&self) -> Option<usize> {
+        for i in (0..self.stack.len()).rev() {
+            let tag = self.stack[i].element.tag.as_str();
+            if tag.eq_ignore_ascii_case("p") {
+                return Some(i);
+            }
+            // Components and structural `<template>` blocks (the latter is also
+            // a button-scope boundary in the HTML spec) confine `<p>`
+            // auto-closing, so stop the search rather than reaching across them.
+            if self.stack[i].element.tag_type != ElementType::Element
+                || Self::is_button_scope_boundary(tag)
+            {
+                return None;
+            }
+        }
+
+        None
+    }
+
+    /// HTML "button scope" terminating elements (the default scope set plus
+    /// `<button>`). A `<p>` start tag (or a `<p>`-closing block start tag) only
+    /// auto-closes an open `<p>` that sits within this scope.
+    fn is_button_scope_boundary(tag: &str) -> bool {
+        Self::tag_in(
+            tag,
+            &[
+                "applet", "button", "caption", "html", "table", "td", "th", "marquee", "object",
+                "template",
+            ],
+        )
     }
 
     fn is_list_item_scope_boundary(tag: &str) -> bool {
@@ -899,6 +946,41 @@ impl<'a> Parser<'a> {
         }
 
         false
+    }
+
+    /// Resolve the foreign (SVG/MathML) namespace for a start tag whose
+    /// configured `get_namespace` callback returned HTML. An `<svg>`/`<math>`
+    /// root (or any SVG/MathML tag) seeds the namespace; otherwise descendants
+    /// inherit the nearest open ancestor's foreign namespace unless that
+    /// ancestor is an HTML integration point (`<foreignObject>`/`<desc>`/
+    /// `<title>` for SVG, `<annotation-xml>` and the MathML text containers for
+    /// MathML), which switch their subtree back to HTML. Mirrors the boundary
+    /// handling in the DOM compiler's `get_namespace` so namespace-unaware
+    /// callbacks still classify foreign elements correctly.
+    fn foreign_namespace_for(&self, tag: &str) -> Option<Namespace> {
+        if vize_carton::is_svg_tag(tag) {
+            return Some(Namespace::Svg);
+        }
+        if vize_carton::is_math_ml_tag(tag) {
+            return Some(Namespace::MathMl);
+        }
+
+        let parent = self.stack.last()?;
+        let parent_tag = parent.element.tag.as_str();
+        match parent.element.ns {
+            Namespace::Svg => {
+                let svg_to_html = matches!(parent_tag, "foreignObject" | "desc" | "title");
+                (!svg_to_html).then_some(Namespace::Svg)
+            }
+            Namespace::MathMl => {
+                let mathml_to_html = matches!(
+                    parent_tag,
+                    "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
+                );
+                (!mathml_to_html).then_some(Namespace::MathMl)
+            }
+            Namespace::Html => None,
+        }
     }
 
     fn should_force_html_namespace(&self, tag: &str) -> bool {

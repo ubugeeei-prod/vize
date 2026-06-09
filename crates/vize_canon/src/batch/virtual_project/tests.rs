@@ -292,6 +292,59 @@ const count = 1
 }
 
 #[test]
+fn test_register_vue_file_recovery_diagnostic_does_not_collapse_to_fallback() {
+    // Regression (#1065/#1090): the template here triggers only recovery-level
+    // parser diagnostics — a self-closing non-void HTML element (`<div />`,
+    // rewritten as an empty element) and a self-closing SVG `<path/>` inside
+    // `<svg>` (which must not be flagged at all). Neither is a hard error, so
+    // the virtual TS must remain real codegen, NOT the
+    // `declare const __vize_component: any` stub.
+    let case_dir = unique_case_dir("template-recovery-no-fallback");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+    let vue_path = src_dir.join("Recoverable.vue");
+    let vue_content = r#"<script setup lang="ts">
+const count = 1
+</script>
+
+<template>
+  <div />
+  <svg viewBox="0 0 24 24"><path d="M0 0h24v24H0z" /></svg>
+  <span>{{ count }}</span>
+</template>
+"#;
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_vue_file(&vue_path, vue_content).unwrap();
+
+    assert!(
+        project.diagnostics().is_empty(),
+        "recovery-level template diagnostics must not surface, got: {:?}",
+        project.diagnostics()
+    );
+
+    let virtual_file = project.find_by_original(&vue_path).unwrap();
+    // The exact fallback stub is `declare const __vize_component: any;` — real
+    // codegen instead emits a typed `__vize_component__` instance constructor.
+    assert!(
+        !virtual_file
+            .content
+            .contains("declare const __vize_component: any"),
+        "file must not collapse to the fallback stub: {}",
+        virtual_file.content
+    );
+    // Real codegen ran: the template-check binding for `count` is present.
+    assert!(
+        virtual_file.content.contains("count"),
+        "expected real virtual TS referencing `count`: {}",
+        virtual_file.content
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn test_virtual_ts_exposes_props_from_reexported_vue_interface() {
     let case_dir = unique_case_dir("reexported-vue-interface-props");
     let _ = fs::remove_dir_all(&case_dir);

@@ -1646,3 +1646,114 @@ fn test_parse_directive_value_entity_is_decoded() {
         }
     }
 }
+
+/// Regression (#1065/#1090): a self-closing SVG child such as `<path d="…" />`
+/// inside `<svg>` must NOT be flagged as an invalid self-closing non-void HTML
+/// element. This holds even with the default, namespace-unaware
+/// `get_namespace` callback used by the `vize_canon` virtual-TS path — the
+/// parser inherits the foreign (SVG) namespace from the open `<svg>` ancestor.
+#[test]
+fn test_parse_self_closing_svg_path_inside_svg_is_not_flagged() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(
+        &allocator,
+        r#"<svg viewBox="0 0 24 24"><path d="M0 0h24v24H0z" /></svg>"#,
+    );
+
+    assert!(
+        errors.is_empty(),
+        "self-closing SVG child should not error: {errors:?}"
+    );
+
+    let TemplateChildNode::Element(svg) = &root.children[0] else {
+        panic!("expected svg element");
+    };
+    assert_eq!(svg.tag.as_str(), "svg");
+    assert_eq!(svg.ns, Namespace::Svg);
+    let TemplateChildNode::Element(path) = &svg.children[0] else {
+        panic!("expected path child");
+    };
+    assert_eq!(path.tag.as_str(), "path");
+    assert_eq!(path.ns, Namespace::Svg);
+    // The element stays self-closing; it was never rewritten as an invalid
+    // non-void HTML element.
+    assert!(path.is_self_closing);
+}
+
+/// A `<div>` inside `<foreignObject>` (an HTML integration point) must switch
+/// back to the HTML namespace, so a self-closing non-void HTML element there is
+/// still rewritten (recovery), confirming the inheritance honours boundaries.
+#[test]
+fn test_parse_foreign_object_resets_namespace_for_self_closing_check() {
+    let allocator = Bump::new();
+    let (_root, errors) = parse(
+        &allocator,
+        "<svg><foreignObject><div /></foreignObject></svg>",
+    );
+
+    assert!(
+        errors.iter().any(|e| {
+            e.code == ErrorCode::ExtendPoint
+                && e.message
+                    .contains("Invalid self-closing syntax on non-void HTML element")
+        }),
+        "div inside foreignObject is HTML and must be rewritten: {errors:?}"
+    );
+    assert!(errors.iter().all(CompilerError::is_recoverable));
+}
+
+/// Regression (#1065/#1090): HTML `<p>` auto-closing must not leak across an
+/// intervening `<template>` block. `<p><template>…<p>…</p></template></p>` is
+/// accepted by `@vue/compiler-sfc`; vize must not emit a false `InvalidEndTag`
+/// for the outer `</p>`.
+#[test]
+fn test_parse_p_auto_close_does_not_cross_template_boundary() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<p><template><p>inner</p></template>outer</p>");
+
+    assert!(
+        !errors.iter().any(|e| e.code == ErrorCode::InvalidEndTag),
+        "outer </p> must not be reported as an invalid end tag: {errors:?}"
+    );
+    // The inner `<p>` did not auto-close the outer one across `<template>`, so
+    // the outer `<p>` remains the single root element and still contains the
+    // `<template>` (the inner `<p>` lives inside it).
+    assert_eq!(root.children.len(), 1);
+    let TemplateChildNode::Element(outer_p) = &root.children[0] else {
+        panic!("expected outer <p>");
+    };
+    assert_eq!(outer_p.tag.as_str(), "p");
+    assert!(
+        outer_p
+            .children
+            .iter()
+            .any(|c| matches!(c, TemplateChildNode::Element(t) if t.tag.as_str() == "template")),
+        "outer <p> should still contain the <template>: {:?}",
+        outer_p.children
+    );
+}
+
+/// A nested `<p>` directly inside another `<p>` (no scope boundary between
+/// them) still auto-closes the outer `<p>` — the button-scope guard must not
+/// suppress the legitimate recovery.
+#[test]
+fn test_parse_nested_p_without_boundary_still_auto_closes() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<p>first<p>second</p>");
+
+    assert!(
+        !errors.iter().any(|e| e.code == ErrorCode::InvalidEndTag),
+        "well-formed nested <p> should not produce an invalid end tag: {errors:?}"
+    );
+    // The two paragraphs are siblings: the first <p> was implicitly closed
+    // before the second one opened.
+    assert_eq!(root.children.len(), 2);
+    assert!(matches!(
+        &root.children[0],
+        TemplateChildNode::Element(p) if p.tag.as_str() == "p"
+    ));
+    assert!(matches!(
+        &root.children[1],
+        TemplateChildNode::Element(p) if p.tag.as_str() == "p"
+    ));
+}

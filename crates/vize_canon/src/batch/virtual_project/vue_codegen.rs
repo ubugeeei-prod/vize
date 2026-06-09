@@ -94,6 +94,13 @@ pub(super) fn generate_vue_virtual_ts(
         .as_ref()
         .map(|template| template.loc.start as u32)
         .unwrap_or(0);
+    // Track whether the template produced any *hard* parse error. Only hard
+    // errors abort codegen and collapse the file to the fallback stub;
+    // recovery-level diagnostics (`ErrorCode::ExtendPoint`, pushed by the HTML
+    // tree-construction recovery path for self-closing rewrites, fostered
+    // elements, auto-closed `<p>`, etc.) describe repairs the parser already
+    // applied and must keep the real virtual TS (#1065/#1090 regression).
+    let mut template_hard_error = false;
     let template_ast = descriptor.template.as_ref().and_then(|template| {
         profile!("canon.template.parse", {
             let (root, errors) = parse_with_options_and_template_syntax(
@@ -102,28 +109,32 @@ pub(super) fn generate_vue_virtual_ts(
                 ParserOptions::default(),
                 codegen_options.template_syntax,
             );
-            if errors.is_empty() {
-                Some(root)
-            } else {
-                diagnostics.extend(errors.into_iter().map(|error| {
-                    let start = error
-                        .loc
-                        .as_ref()
-                        .map(|loc| template_offset + loc.start.offset)
-                        .unwrap_or(template_offset);
-                    diagnostic_for_offset(
-                        path,
-                        source,
-                        start,
-                        cstr!("Template parse error: {}", error.message),
-                        SfcBlockType::Template,
-                    )
-                }));
-                None
+            for error in errors {
+                if error.code.is_recovery() {
+                    continue;
+                }
+                template_hard_error = true;
+                let start = error
+                    .loc
+                    .as_ref()
+                    .map(|loc| template_offset + loc.start.offset)
+                    .unwrap_or(template_offset);
+                diagnostics.push(diagnostic_for_offset(
+                    path,
+                    source,
+                    start,
+                    cstr!("Template parse error: {}", error.message),
+                    SfcBlockType::Template,
+                ));
             }
+            // Drop the AST only when a hard error occurred; recovery-level
+            // diagnostics leave a fully usable tree.
+            (!template_hard_error).then_some(root)
         })
     });
 
+    // Abort to the fallback stub only on hard errors — from any block. Pure
+    // recovery-level template diagnostics must not suppress real codegen.
     if !diagnostics.is_empty() {
         return Ok(GeneratedVueFile {
             code: invalid_sfc_fallback_virtual_ts(),
