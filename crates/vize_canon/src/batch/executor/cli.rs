@@ -7,6 +7,7 @@ use super::super::{Diagnostic, TypeCheckResult, VirtualProject};
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::executor::diagnostics::{
     DiagnosticMapper, relative_module_resolves_on_disk, should_skip_diagnostic,
+    should_skip_original_diagnostic,
 };
 use vize_carton::profile;
 use vize_carton::{String, cstr};
@@ -115,9 +116,15 @@ fn parse_cli_diagnostic_line(
     if should_skip_diagnostic(code, message) {
         return None;
     }
+    if code == Some(6133) && !mapper.preserves_unused_diagnostics() {
+        return None;
+    }
 
     let virtual_path = normalize_cli_path(path, project.virtual_root());
     let original = mapper.map_to_original(&virtual_path, line, column)?;
+    if should_skip_original_diagnostic(code, &original) {
+        return None;
+    }
 
     // Suppress the false `TS2307` raised for a relative import of a sibling that
     // exists on disk but sits outside an explicit file subset. See the matching

@@ -132,6 +132,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let options_api = generation_options.options_api || legacy_vue2;
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
+    let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
+    let template_referenced_names =
+        preserve_unused_diagnostics.then(|| collect_template_referenced_names(summary));
+    let reference_setup_bindings_comment = if preserve_unused_diagnostics {
+        "Reference setup bindings used by template generation"
+    } else {
+        "Reference setup bindings (used in template/CSS v-bind)"
+    };
 
     // Header with ES target library references.
     // These ensure import.meta, Promise, Array.includes(), etc. are available.
@@ -498,6 +506,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 .bindings
                 .bindings
                 .iter()
+                .filter(|(name, _)| {
+                    template_referenced_names
+                        .as_ref()
+                        .is_none_or(|names| names.contains(name.as_str()))
+                })
                 .filter(|(name, binding_type)| {
                     summary.reactivity.needs_value_access(name.as_str())
                         || matches!(binding_type, BindingType::SetupMaybeRef)
@@ -611,18 +624,25 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 }
             }
 
-            // Reference all setup bindings to prevent TS6133 for variables
-            // used only in CSS v-bind() or other non-template contexts
+            // In projects that opt into unused-local diagnostics, this list is
+            // narrowed to template-referenced names so user TS6133 can surface.
             if !summary.bindings.bindings.is_empty() {
-                ts.push_str("\n  // Reference setup bindings (used in template/CSS v-bind)\n  ");
                 let mut first = true;
                 let mut binding_names: Vec<&str> = summary
                     .bindings
                     .bindings
                     .keys()
                     .map(|name| name.as_str())
+                    .filter(|name| {
+                        template_referenced_names
+                            .as_ref()
+                            .is_none_or(|names| names.contains(*name))
+                    })
                     .collect();
                 binding_names.sort_unstable();
+                if !binding_names.is_empty() {
+                    append!(ts, "\n  // {reference_setup_bindings_comment}\n  ");
+                }
                 for name in binding_names {
                     // Skip bindings that are JS keywords or would cause syntax errors
                     if matches!(
@@ -678,7 +698,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     append!(ts, "void {name};");
                     first = false;
                 }
-                ts.push('\n');
+                if !first {
+                    ts.push('\n');
+                }
             }
 
             ts.push_str("  })();\n");
@@ -899,6 +921,65 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str("export default __vize_component__;\n");
 
     VirtualTsOutput { code: ts, mappings }
+}
+
+fn collect_template_referenced_names(summary: &Croquis) -> FxHashSet<String> {
+    let mut names = FxHashSet::default();
+
+    for expression in &summary.template_expressions {
+        collect_expression_identifiers(&mut names, expression.content.as_str());
+        if let Some(guard) = expression.vif_guard.as_ref() {
+            collect_expression_identifiers(&mut names, guard.as_str());
+        }
+    }
+
+    for usage in &summary.component_usages {
+        names.insert(usage.name.as_str().into());
+        if let Some(guard) = usage.vif_guard.as_ref() {
+            collect_expression_identifiers(&mut names, guard.as_str());
+        }
+        for prop in &usage.props {
+            if prop.is_dynamic
+                && let Some(value) = prop.value.as_ref()
+            {
+                collect_expression_identifiers(&mut names, value.as_str());
+            }
+        }
+        for event in &usage.events {
+            if let Some(handler) = event.handler.as_ref() {
+                collect_expression_identifiers(&mut names, handler.as_str());
+            }
+        }
+    }
+
+    for component in &summary.used_components {
+        names.insert(component.as_str().into());
+    }
+
+    for scope in summary.scopes.iter() {
+        match scope.data() {
+            ScopeData::VFor(data) => {
+                collect_expression_identifiers(&mut names, data.source.as_str());
+                if let Some(key_expression) = data.key_expression.as_ref() {
+                    collect_expression_identifiers(&mut names, key_expression.as_str());
+                }
+            }
+            ScopeData::EventHandler(data) => {
+                if let Some(handler) = data.handler_expression.as_ref() {
+                    collect_expression_identifiers(&mut names, handler.as_str());
+                }
+            }
+            _ => {}
+        }
+    }
+
+    names
+}
+
+fn collect_expression_identifiers(names: &mut FxHashSet<String>, expression: &str) {
+    for identifier in vize_croquis::analyzer::extract_identifiers_oxc(expression) {
+        names.insert(identifier.as_str().into());
+    }
 }
 
 fn merge_overlapping_spans(mut spans: Vec<(u32, u32)>) -> Vec<(u32, u32)> {

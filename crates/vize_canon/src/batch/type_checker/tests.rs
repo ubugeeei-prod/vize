@@ -297,6 +297,70 @@ const $q = functionCall()
 }
 
 #[test]
+fn batch_type_checker_reports_user_ts6133_with_no_unused_locals() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "user-ts6133-no-unused-locals",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const used = 1
+const unusedLocal = 2
+</script>
+
+<template>{{ used }}</template>
+"#,
+        )],
+    );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noUnusedLocals": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    let ts6133: Vec<_> = snapshot
+        .iter()
+        .filter(|(file, code, _)| file == "src/App.vue" && *code == Some(6133))
+        .collect();
+
+    assert_eq!(
+        ts6133.len(),
+        1,
+        "expected one user TS6133, got: {snapshot:#?}"
+    );
+    assert!(
+        ts6133[0].2.contains("unusedLocal"),
+        "expected unusedLocal diagnostic, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot
+            .iter()
+            .all(|(_, _, message)| !message.contains("defineProps")),
+        "generated helper diagnostics should stay suppressed: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_accepts_nested_ref_value_component_props() {
     if resolve_test_tsgo_binary().is_none() {
         return;

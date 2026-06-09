@@ -111,6 +111,9 @@ pub(crate) struct VirtualTsGenerationOptions {
     pub(crate) options_api: bool,
     /// Legacy Vue 2.7 / Nuxt 2 (implies `options_api` plus Nuxt 2 globals).
     pub(crate) legacy_vue2: bool,
+    /// Preserve TypeScript's user-authored unused local/import diagnostics by
+    /// avoiding broad synthetic setup-binding references.
+    pub(crate) preserve_unused_diagnostics: bool,
 }
 
 /// Default plugin globals.

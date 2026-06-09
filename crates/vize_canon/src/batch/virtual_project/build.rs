@@ -40,6 +40,7 @@ pub(super) struct VirtualBuildContext<'a> {
     pub(super) virtual_root: &'a Path,
     pub(super) virtual_ts_options: &'a VirtualTsOptions,
     pub(super) virtual_ts_check_options: VirtualTsCheckOptions,
+    pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
     pub(super) template_syntax: TemplateSyntaxMode,
@@ -111,6 +112,7 @@ pub(super) fn build_vue_registered_file(
             &effective_options,
             VueCodegenOptions {
                 check_options: context.virtual_ts_check_options,
+                preserve_unused_diagnostics: context.preserve_unused_diagnostics,
                 options_api: context.options_api,
                 legacy_vue2: context.legacy_vue2,
                 template_syntax: context.template_syntax,

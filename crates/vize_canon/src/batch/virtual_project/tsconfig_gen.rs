@@ -28,6 +28,22 @@ const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
 ];
 
 impl VirtualProject {
+    pub(crate) fn tsconfig_preserves_unused_diagnostics(&self) -> bool {
+        self.preserve_unused_diagnostics
+    }
+
+    pub(super) fn resolve_tsconfig_preserves_unused_diagnostics(&self) -> bool {
+        let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
+            return false;
+        };
+        let Ok(compiler_options) = self.load_compiler_options(Some(tsconfig_path.as_path())) else {
+            return false;
+        };
+
+        compiler_option_enabled(&compiler_options, "noUnusedLocals")
+            || compiler_option_enabled(&compiler_options, "noUnusedParameters")
+    }
+
     pub(super) fn write_tsconfig_file(
         &self,
         path: &Path,
@@ -270,4 +286,9 @@ impl VirtualProject {
         }
         prefix
     }
+}
+
+#[allow(clippy::disallowed_types)]
+fn compiler_option_enabled(options: &Map<std::string::String, Value>, name: &str) -> bool {
+    options.get(name).and_then(Value::as_bool).unwrap_or(false)
 }

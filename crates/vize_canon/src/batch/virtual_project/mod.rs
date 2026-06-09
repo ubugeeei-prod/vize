@@ -77,6 +77,9 @@ pub struct VirtualProject {
     /// Explicit tsconfig path, if one was provided by the caller.
     tsconfig_path: Option<PathBuf>,
 
+    /// Whether the effective tsconfig asks TypeScript to report unused symbols.
+    preserve_unused_diagnostics: bool,
+
     /// Global virtual TS options applied to every Vue file.
     virtual_ts_options: VirtualTsOptions,
 

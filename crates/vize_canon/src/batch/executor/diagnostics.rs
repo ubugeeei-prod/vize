@@ -31,6 +31,7 @@ pub(super) fn map_batch_diagnostics(
 
 pub(super) struct DiagnosticMapper<'a> {
     project: &'a VirtualProject,
+    preserve_unused_diagnostics: bool,
     original_sources: FxHashMap<PathBuf, CachedSource>,
     virtual_line_indexes: FxHashMap<PathBuf, LineIndex>,
 }
@@ -39,9 +40,14 @@ impl<'a> DiagnosticMapper<'a> {
     pub(super) fn new(project: &'a VirtualProject) -> Self {
         Self {
             project,
+            preserve_unused_diagnostics: project.tsconfig_preserves_unused_diagnostics(),
             original_sources: FxHashMap::default(),
             virtual_line_indexes: FxHashMap::default(),
         }
+    }
+
+    pub(super) fn preserves_unused_diagnostics(&self) -> bool {
+        self.preserve_unused_diagnostics
     }
 
     fn map_lsp_diagnostic(
@@ -53,12 +59,21 @@ impl<'a> DiagnosticMapper<'a> {
         if should_skip_diagnostic(code, &diagnostic.message) {
             return None;
         }
+        if code == Some(6133) && !self.preserve_unused_diagnostics {
+            return None;
+        }
 
         let original = self.map_to_original(
             virtual_path,
             diagnostic.range.start.line,
             diagnostic.range.start.character,
         );
+        if original
+            .as_ref()
+            .is_some_and(|original| should_skip_original_diagnostic(code, original))
+        {
+            return None;
+        }
 
         // A `vize check src/App.vue` subset registers only the named files, so a
         // relative import of a sibling that exists on disk but sits outside the
@@ -252,16 +267,23 @@ pub(super) fn should_skip_diagnostic(code: Option<u32>, _message: &str) -> bool 
     match code {
         // TS2666: virtual-TS generation injects helper bindings that can trip
         // this code outside the user's source — suppress to match vue-tsc.
-        // TS6133 ("declared but never read"): virtual-TS shadows __setup
-        // imports with macros, which generates spurious TS6133 at module
-        // level; the virtual-TS generator emits `void` markers but the rest
-        // is suppressed here. See virtual_ts/generator.rs.
-        Some(2666) | Some(6133) => true,
+        Some(2666) => true,
         // TS7006/TS7043/TS7044 (noImplicitAny family) are user-facing errors
         // and must surface so `vize check` matches vue-tsc under
         // `noImplicitAny`/`strict`. They were previously suppressed (#966).
         _ => false,
     }
+}
+
+pub(super) fn should_skip_original_diagnostic(
+    code: Option<u32>,
+    original: &OriginalPosition,
+) -> bool {
+    code == Some(6133) && original.block_type.is_none() && is_vue_source(&original.path)
+}
+
+fn is_vue_source(path: &Path) -> bool {
+    path.extension().is_some_and(|extension| extension == "vue")
 }
 
 /// Extract the specifier from the first `Cannot find module "<spec>"` in
@@ -349,9 +371,9 @@ fn specifier_has_source_extension(specifier: &str) -> bool {
 mod tests {
     use super::{
         LineIndex, map_batch_diagnostics, parse_diagnostic_code, parse_severity,
-        should_skip_diagnostic, uri_to_path,
+        should_skip_diagnostic, should_skip_original_diagnostic, uri_to_path,
     };
-    use crate::batch::VirtualProject;
+    use crate::batch::{OriginalPosition, SfcBlockType, VirtualProject};
     use serde_json::json;
     use std::path::PathBuf;
     use tempfile::TempDir;
@@ -433,8 +455,10 @@ mod tests {
         assert!(!should_skip_diagnostic(Some(2307), vue_ts_msg));
         assert!(!should_skip_diagnostic(Some(2307), non_vue_msg));
 
-        // TS6133 / TS2666 are virtual-TS-driven and still suppressed.
-        assert!(should_skip_diagnostic(Some(6133), "any message"));
+        // TS6133 is location-sensitive: user-mapped diagnostics must survive,
+        // while generated virtual-SFC helper diagnostics are handled after
+        // source mapping by should_skip_original_diagnostic().
+        assert!(!should_skip_diagnostic(Some(6133), "any message"));
         assert!(should_skip_diagnostic(Some(2666), "any message"));
         // TS7006/7043/7044 (noImplicitAny family) must surface to match
         // vue-tsc — #966.
@@ -443,6 +467,33 @@ mod tests {
         assert!(!should_skip_diagnostic(Some(7044), "any message"));
         assert!(!should_skip_diagnostic(Some(2322), "any message"));
         assert!(!should_skip_diagnostic(None, "any message"));
+    }
+
+    #[test]
+    fn ts6133_suppression_is_limited_to_unmapped_vue_generated_code() {
+        let unmapped_vue = OriginalPosition {
+            path: PathBuf::from("App.vue"),
+            line: 0,
+            column: 0,
+            block_type: None,
+        };
+        let mapped_vue = OriginalPosition {
+            path: PathBuf::from("App.vue"),
+            line: 1,
+            column: 6,
+            block_type: Some(SfcBlockType::ScriptSetup),
+        };
+        let plain_ts = OriginalPosition {
+            path: PathBuf::from("main.ts"),
+            line: 0,
+            column: 6,
+            block_type: None,
+        };
+
+        assert!(should_skip_original_diagnostic(Some(6133), &unmapped_vue));
+        assert!(!should_skip_original_diagnostic(Some(6133), &mapped_vue));
+        assert!(!should_skip_original_diagnostic(Some(6133), &plain_ts));
+        assert!(!should_skip_original_diagnostic(Some(2322), &unmapped_vue));
     }
 
     #[test]
@@ -609,6 +660,67 @@ import ExistingPanel from './ExistingPanel.vue'
         insta::assert_debug_snapshot!("maps_unmapped_diagnostics_snapshot", diagnostics);
     }
 
+    #[test]
+    fn maps_user_ts6133_but_suppresses_generated_vue_ts6133() {
+        let temp_dir = TempDir::new().unwrap();
+        let source = temp_dir.path().join("src").join("App.vue");
+        std::fs::create_dir_all(source.parent().unwrap()).unwrap();
+        std::fs::write(
+            temp_dir.path().join("tsconfig.json"),
+            r#"{
+  "compilerOptions": {
+    "noUnusedLocals": true
+  },
+  "include": ["src/**/*"]
+}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            &source,
+            r#"<script setup lang="ts">
+const used = 1
+const unusedLocal = 2
+</script>
+
+<template>{{ used }}</template>
+"#,
+        )
+        .unwrap();
+
+        let source = source.canonicalize().unwrap();
+        let mut project = VirtualProject::new(temp_dir.path()).unwrap();
+        project.register_path(&source).unwrap();
+        let virtual_file = project.find_by_original(&source).unwrap();
+        let virtual_uri = file_uri_for(&virtual_file.virtual_path);
+
+        let diagnostics = map_batch_diagnostics(
+            vec![(
+                virtual_uri,
+                vec![
+                    ts6133_diagnostic_at(
+                        virtual_file.content.as_str(),
+                        "unusedLocal",
+                        "'unusedLocal' is declared but its value is never read.",
+                    ),
+                    ts6133_diagnostic_at(
+                        virtual_file.content.as_str(),
+                        "function defineProps",
+                        "'defineProps' is declared but its value is never read.",
+                    ),
+                ],
+            )],
+            &project,
+        );
+
+        assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}");
+        assert_eq!(diagnostics[0].file, source);
+        assert_eq!(diagnostics[0].line, 2);
+        assert_eq!(diagnostics[0].column, 6);
+        assert_eq!(diagnostics[0].code, Some(6133));
+        assert!(diagnostics[0].message.contains("unusedLocal"));
+        assert_eq!(diagnostics[0].block_type, Some(SfcBlockType::ScriptSetup));
+    }
+
     fn ts2307_diagnostic_at(
         virtual_source: &str,
         needle: &str,
@@ -625,6 +737,24 @@ import ExistingPanel from './ExistingPanel.vue'
             },
             severity: Some(1),
             code: Some(json!("TS2307")),
+            source: Some("ts".into()),
+            message: message.into(),
+        }
+    }
+
+    fn ts6133_diagnostic_at(
+        virtual_source: &str,
+        needle: &str,
+        message: &str,
+    ) -> crate::corsa_client::LspDiagnostic {
+        let (line, character) = virtual_position_for(virtual_source, needle);
+        crate::corsa_client::LspDiagnostic {
+            range: crate::corsa_client::LspRange {
+                start: crate::corsa_client::LspPosition { line, character },
+                end: crate::corsa_client::LspPosition { line, character },
+            },
+            severity: Some(1),
+            code: Some(json!("TS6133")),
             source: Some("ts".into()),
             message: message.into(),
         }

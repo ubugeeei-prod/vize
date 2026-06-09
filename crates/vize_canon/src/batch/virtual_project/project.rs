@@ -31,10 +31,11 @@ impl VirtualProject {
             .join(".vize")
             .join("canon");
 
-        Ok(Self {
+        let mut project = Self {
             project_root,
             virtual_root,
             tsconfig_path: None,
+            preserve_unused_diagnostics: false,
             virtual_ts_options: VirtualTsOptions::default(),
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             options_api: false,
@@ -46,12 +47,16 @@ impl VirtualProject {
             original_contents: FxHashMap::default(),
             diagnostics: Vec::new(),
             rewriter: ImportRewriter::new(),
-        })
+        };
+        project.preserve_unused_diagnostics =
+            project.resolve_tsconfig_preserves_unused_diagnostics();
+        Ok(project)
     }
 
     /// Set the tsconfig path to extend.
     pub fn set_tsconfig_path(&mut self, tsconfig_path: Option<PathBuf>) {
         self.tsconfig_path = tsconfig_path;
+        self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
     }
 
     /// Set the shared virtual TS options.
@@ -101,6 +106,7 @@ impl VirtualProject {
                 virtual_root: &self.virtual_root,
                 virtual_ts_options: &self.virtual_ts_options,
                 virtual_ts_check_options: self.virtual_ts_check_options,
+                preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
                 template_syntax: self.template_syntax,
@@ -139,11 +145,13 @@ impl VirtualProject {
             return Ok(());
         }
 
+        let preserve_unused_diagnostics = self.tsconfig_preserves_unused_diagnostics();
         let build_context = VirtualBuildContext {
             project_root: self.project_root.as_path(),
             virtual_root: self.virtual_root.as_path(),
             virtual_ts_options: &self.virtual_ts_options,
             virtual_ts_check_options: self.virtual_ts_check_options,
+            preserve_unused_diagnostics,
             options_api: self.options_api,
             legacy_vue2: self.legacy_vue2,
             template_syntax: self.template_syntax,
@@ -175,6 +183,7 @@ impl VirtualProject {
                 virtual_root: &self.virtual_root,
                 virtual_ts_options: &self.virtual_ts_options,
                 virtual_ts_check_options: self.virtual_ts_check_options,
+                preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
                 template_syntax: self.template_syntax,

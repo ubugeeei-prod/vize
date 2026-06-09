@@ -41,6 +41,7 @@ pub(super) struct GeneratedVueFile {
 #[derive(Clone, Copy)]
 pub(super) struct VueCodegenOptions {
     pub(super) check_options: VirtualTsCheckOptions,
+    pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
     pub(super) template_syntax: TemplateSyntaxMode,
@@ -172,6 +173,7 @@ pub(super) fn generate_vue_virtual_ts(
             options,
             VirtualTsGenerationOptions {
                 check_options: codegen_options.check_options,
+                preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
                 options_api: codegen_options.options_api,
                 legacy_vue2: codegen_options.legacy_vue2,
             },
