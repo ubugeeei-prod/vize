@@ -73,6 +73,14 @@ impl Drawer {
                         .as_ref()
                         .map(|arg| CompactString::new(expression_content(arg)))
                         .unwrap_or_else(|| CompactString::const_new("default"));
+                    let slot_name_is_static = dir
+                        .arg
+                        .as_ref()
+                        .and_then(|arg| match arg {
+                            ExpressionNode::Simple(simple) => Some(simple.is_static),
+                            ExpressionNode::Compound(_) => None,
+                        })
+                        .unwrap_or(true);
 
                     let (prop_names, props_pattern) = if let Some(ref exp) = dir.exp {
                         let content = expression_content(exp);
@@ -87,8 +95,13 @@ impl Drawer {
                         (smallvec![], None)
                     };
 
-                    state.slot_scope =
-                        Some((slot_name, prop_names, props_pattern, dir.loc.start.offset));
+                    state.slot_scope = Some((
+                        slot_name,
+                        slot_name_is_static,
+                        prop_names,
+                        props_pattern,
+                        dir.loc.start.offset,
+                    ));
                 }
             }
         });

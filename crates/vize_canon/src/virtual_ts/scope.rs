@@ -405,16 +405,24 @@ fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> 
 /// Type annotation for a `v-slot` scope's props. When the slot is on a child
 /// component (`component` is `Some`), the props are inferred from that child's
 /// `$slots[name]` parameter (its `defineSlots`), so misuse raises a real
-/// diagnostic (#764). Otherwise — and whenever the child has no typed slot —
-/// it falls back to `any` so untyped or built-in slot hosts never produce a
-/// false positive.
-fn slot_props_type(component: Option<&str>, slot_name: &str) -> String {
+/// diagnostic (#764). Dynamic slot names are matched against the union of all
+/// declared slot function props, matching Vue's runtime lookup without
+/// treating the expression text as a static slot key. Otherwise — and whenever
+/// the child has no typed slot — it falls back to `any` so untyped or built-in
+/// slot hosts never produce a false positive.
+fn slot_props_type(component: Option<&str>, slot_name: &str, slot_name_is_static: bool) -> String {
     match component {
         Some(component) => {
             let component_ref = to_safe_identifier(component);
-            cstr!(
-                "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (__S extends {{ \"{slot_name}\"?: (props: infer __P, ...args: any[]) => any }} ? __P : any) : any"
-            )
+            if slot_name_is_static {
+                cstr!(
+                    "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (__S extends {{ \"{slot_name}\"?: (props: infer __P, ...args: any[]) => any }} ? __P : any) : any"
+                )
+            } else {
+                cstr!(
+                    "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? ({{ [__K in keyof __S]: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }}[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any) : any"
+                )
+            }
         }
         None => "any".into(),
     }
@@ -732,7 +740,11 @@ fn generate_scope_node(
 
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
             let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
-            let props_type = slot_props_type(data.component.as_deref(), data.name.as_str());
+            let props_type = slot_props_type(
+                data.component.as_deref(),
+                data.name.as_str(),
+                data.name_is_static,
+            );
             append!(
                 *ts,
                 "{indent}void function _slot_{safe_slot_name}({props_pattern}: {props_type}) {{\n",
@@ -1158,7 +1170,11 @@ fn generate_closure_component_props_recursive(
         ScopeData::VSlot(data) => {
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
             let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
-            let props_type = slot_props_type(data.component.as_deref(), data.name.as_str());
+            let props_type = slot_props_type(
+                data.component.as_deref(),
+                data.name.as_str(),
+                data.name_is_static,
+            );
             append!(
                 *ts,
                 "\n{indent}// Component props in v-slot scope: #{}\n",

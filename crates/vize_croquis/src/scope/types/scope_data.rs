@@ -122,6 +122,9 @@ pub struct VForScopeData {
 pub struct VSlotScopeData {
     /// Slot name
     pub name: CompactString,
+    /// Whether `name` came from a static directive argument (`v-slot:name`) or
+    /// a dynamic one (`v-slot:[name]`).
+    pub name_is_static: bool,
     /// Props pattern (e.g., "{ item, index }" in v-slot="{ item, index }")
     pub props_pattern: Option<CompactString>,
     /// Extracted prop names (stack-allocated for typical cases)
