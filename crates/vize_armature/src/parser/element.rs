@@ -49,9 +49,16 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let merge_start_off = match self.stack.last().and_then(|e| e.element.children.last()) {
-            Some(TemplateChildNode::Text(t)) => Some(t.loc.start.offset as usize),
-            _ => None,
+        let merge_start_off = if let Some(entry) = self.stack.last() {
+            match entry.element.children.last() {
+                Some(TemplateChildNode::Text(t)) => Some(t.loc.start.offset as usize),
+                _ => None,
+            }
+        } else {
+            match self.root.as_ref().and_then(|root| root.children.last()) {
+                Some(TemplateChildNode::Text(t)) => Some(t.loc.start.offset as usize),
+                _ => None,
+            }
         };
 
         if let Some(merge_start) = merge_start_off {
@@ -59,6 +66,12 @@ impl<'a> Parser<'a> {
             let source_span = self.get_source(merge_start, end).into();
             if let Some(entry) = self.stack.last_mut()
                 && let Some(TemplateChildNode::Text(text_node)) = entry.element.children.last_mut()
+            {
+                text_node.content.push_str(content);
+                text_node.loc.end = end_pos;
+                text_node.loc.source = source_span;
+            } else if let Some(root) = self.root.as_mut()
+                && let Some(TemplateChildNode::Text(text_node)) = root.children.last_mut()
             {
                 text_node.content.push_str(content);
                 text_node.loc.end = end_pos;

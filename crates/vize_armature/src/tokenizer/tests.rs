@@ -183,6 +183,23 @@ fn test_text() {
     assert!(cb.events.contains(&TokenEvent::End));
 }
 
+#[test]
+fn test_less_than_before_non_tag_start_is_literal_text() {
+    let cb = tokenize("a < b");
+
+    assert!(cb.errors.is_empty(), "{:?}", cb.errors);
+    assert!(cb.events.contains(&TokenEvent::Text(0, 2)));
+    assert!(cb.events.contains(&TokenEvent::Text(2, 5)));
+}
+
+#[test]
+fn test_less_than_digit_is_literal_text() {
+    let cb = tokenize("<1div>");
+
+    assert!(cb.errors.is_empty(), "{:?}", cb.errors);
+    assert!(cb.events.contains(&TokenEvent::Text(0, 6)));
+}
+
 // ========================================================================
 // Element tests
 // ========================================================================

@@ -54,6 +54,40 @@ fn test_parse_text() {
 }
 
 #[test]
+fn test_parse_less_than_before_non_tag_start_keeps_root_text_merged() {
+    for source in ["a < b", "< b", "5 < 3 && 3 > 1", "<1div>"] {
+        let allocator = Bump::new();
+        let (root, errors) = parse(&allocator, source);
+
+        assert!(errors.is_empty(), "{source}: {errors:?}");
+        assert_eq!(root.children.len(), 1, "{source}");
+        if let TemplateChildNode::Text(text) = &root.children[0] {
+            assert_eq!(text.content.as_str(), source);
+        } else {
+            panic!("{source}: expected text node");
+        }
+    }
+}
+
+#[test]
+fn test_parse_less_than_before_non_tag_start_inside_element_has_no_error() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div>price < 100</div>");
+
+    assert!(errors.is_empty(), "{errors:?}");
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.children.len(), 1);
+        if let TemplateChildNode::Text(text) = &el.children[0] {
+            assert_eq!(text.content.as_str(), "price < 100");
+        } else {
+            panic!("expected text child, got {:?}", el.children[0]);
+        }
+    } else {
+        panic!("expected element root");
+    }
+}
+
+#[test]
 fn test_parse_condense_whitespace_collapses_runs_inside_text_nodes() {
     // Regression for #960: `whitespace: 'condense'` (the default) must
     // collapse runs of `[ \t\n\f\r]` to a single U+0020 inside text
@@ -966,9 +1000,9 @@ fn test_parse_unfinished_interpolation_reports_error_but_keeps_text() {
 }
 
 #[test]
-fn test_parse_invalid_tag_name_reports_error_and_continues() {
+fn test_parse_invalid_closing_tag_name_reports_error_and_continues() {
     let allocator = Bump::new();
-    let (root, errors) = parse(&allocator, "<1div></1div><span></span>");
+    let (root, errors) = parse(&allocator, "</1div><span></span>");
 
     assert!(
         errors
@@ -994,11 +1028,6 @@ fn test_parse_mixed_broken_input_keeps_later_nodes() {
             MissingDirectiveName,
             "Directive `v-` is missing a name. Ignoring it so the rest of the tag can be parsed.",
             "v-",
-        ),
-        (
-            InvalidFirstCharacterOfTagName,
-            "Tag name starts with an invalid character; treating the malformed tag as text.",
-            "1",
         ),
         (
             InvalidFirstCharacterOfTagName,

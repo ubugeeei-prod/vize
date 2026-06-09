@@ -269,8 +269,6 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         } else if c == SLASH {
             self.state = State::BeforeClosingTagName;
         } else {
-            self.callbacks
-                .on_error(ErrorCode::InvalidFirstCharacterOfTagName, self.index);
             self.state = State::Text;
             self.state_text(c);
         }
