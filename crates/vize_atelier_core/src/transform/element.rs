@@ -3,6 +3,7 @@
 use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
 
 use crate::ast::*;
+use crate::errors::ErrorCode;
 use crate::transforms::transform_expression::process_inline_handler;
 
 use super::{ExitFns, TransformContext};
@@ -242,19 +243,23 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
     }
 
     let mut vmodel_data: std::vec::Vec<VModelData> = std::vec::Vec::new();
+    let mut invalid_model_indices: std::vec::Vec<usize> = std::vec::Vec::new();
 
     for &idx in model_indices.iter() {
         if let Some(PropNode::Directive(dir)) = el.props.get(idx) {
             // Get value expression
-            let value_exp = match &dir.exp {
-                Some(ExpressionNode::Simple(s)) => s.content.clone(),
-                Some(ExpressionNode::Compound(c)) => c.loc.source.clone(),
-                None => continue,
-            };
-            let raw_value_exp = match &dir.exp {
-                Some(ExpressionNode::Simple(s)) => s.loc.source.clone(),
-                Some(ExpressionNode::Compound(c)) => c.loc.source.clone(),
-                None => continue,
+            let (value_exp, raw_value_exp) = match &dir.exp {
+                Some(ExpressionNode::Simple(s)) if !s.content.trim().is_empty() => {
+                    (s.content.clone(), s.loc.source.clone())
+                }
+                Some(ExpressionNode::Compound(c)) if !c.loc.source.trim().is_empty() => {
+                    (c.loc.source.clone(), c.loc.source.clone())
+                }
+                _ => {
+                    ctx.on_error(ErrorCode::VModelNoExpression, Some(dir.loc.clone()));
+                    invalid_model_indices.push(idx);
+                    continue;
+                }
             };
 
             // Check if arg is dynamic
@@ -374,6 +379,19 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 modifiers_key,
                 is_dynamic,
             });
+        }
+    }
+
+    if !invalid_model_indices.is_empty() {
+        for data in vmodel_data.iter_mut() {
+            let removed_before = invalid_model_indices
+                .iter()
+                .filter(|&&invalid_idx| invalid_idx < data.idx)
+                .count();
+            data.idx -= removed_before;
+        }
+        for &idx in invalid_model_indices.iter().rev() {
+            el.props.remove(idx);
         }
     }
 
@@ -544,5 +562,74 @@ pub fn transform_interpolation<'a>(
         use crate::transforms::transform_expression::process_expression;
         let processed = process_expression(ctx, &interp.content, false);
         interp.content = processed;
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::disallowed_macros)]
+mod tests {
+    use bumpalo::Bump;
+
+    use super::transform_element;
+    use crate::{
+        ast::{PropNode, TemplateChildNode},
+        errors::ErrorCode,
+        options::TransformOptions,
+        parser::parse,
+        transform::TransformContext,
+    };
+
+    #[test]
+    fn test_transform_v_model_without_expression_reports_error() {
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, r#"<input v-model />"#);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        let mut ctx =
+            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        match &mut root.children[0] {
+            TemplateChildNode::Element(el) => {
+                transform_element(&mut ctx, el);
+
+                assert!(!el.props.iter().any(|prop| matches!(
+                    prop,
+                    PropNode::Directive(dir) if dir.name == "model"
+                )));
+            }
+            other => panic!(
+                "Expected ElementNode, got {:?}",
+                std::mem::discriminant(other)
+            ),
+        }
+
+        assert_eq!(ctx.errors.len(), 1);
+        assert_eq!(ctx.errors[0].code, ErrorCode::VModelNoExpression);
+    }
+
+    #[test]
+    fn test_transform_component_v_model_without_expression_reports_error() {
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, r#"<MyComponent v-model />"#);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        let mut ctx =
+            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        match &mut root.children[0] {
+            TemplateChildNode::Element(el) => {
+                transform_element(&mut ctx, el);
+
+                assert!(!el.props.iter().any(|prop| matches!(
+                    prop,
+                    PropNode::Directive(dir) if dir.name == "model"
+                )));
+            }
+            other => panic!(
+                "Expected ElementNode, got {:?}",
+                std::mem::discriminant(other)
+            ),
+        }
+
+        assert_eq!(ctx.errors.len(), 1);
+        assert_eq!(ctx.errors[0].code, ErrorCode::VModelNoExpression);
     }
 }

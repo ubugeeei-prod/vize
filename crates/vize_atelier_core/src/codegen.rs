@@ -592,6 +592,24 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_v_model_without_expression_omits_empty_directive_binding() {
+        let result = compile!(r#"<input v-model />"#);
+        let output = result_output(&result);
+
+        assert!(
+            !output.contains("_vModelText, ]"),
+            "value-less v-model must not emit malformed directive bindings:\n{}",
+            output
+        );
+        assert!(
+            !output.contains("_withDirectives"),
+            "value-less native v-model should be removed before directive codegen:\n{}",
+            output
+        );
+        assert!(output.contains(r#"_createElementBlock("input")"#));
+    }
+
+    #[test]
     fn test_codegen_v_model_on_input_with_custom_directive() {
         let result = compile!(r#"<input v-model="inputValue" v-example />"#);
         assert_codegen_snapshot!(result);
