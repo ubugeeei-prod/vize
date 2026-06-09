@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Browser, type Page } from "@playwright/test";
 import type { ChildProcess } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -62,13 +62,58 @@ async function warmUpNuxtUi(): Promise<void> {
 }
 
 /**
+ * Browser-side warmup. The `fetch()` warmup above only settles the SSR transform;
+ * the FIRST real browser navigation still triggers a fresh client-side
+ * optimize-deps pass (the `/_nuxt/...` module graph), which is what produces the
+ * 504 -> failed dynamic import -> SSR 500 cascade on this very heavy playground.
+ * Drive each route through an actual browser page (retrying past the churn) so
+ * Vite finishes the client-side pre-bundle BEFORE the timed assertions run.
+ */
+async function warmUpNuxtUiInBrowser(browser: Browser): Promise<void> {
+  const context = await browser.newContext();
+  try {
+    const page = await context.newPage();
+    for (const pathname of WARMUP_PATHS) {
+      const target = new URL(pathname, app.url).toString();
+      const deadline = Date.now() + 120_000;
+      let settled = false;
+      while (Date.now() < deadline) {
+        try {
+          const res = await page.goto(target, {
+            waitUntil: "domcontentloaded",
+            timeout: 30_000,
+          });
+          const status = res?.status() ?? 0;
+          const html = await page.content().catch(() => "");
+          const churning = status === 504 || status >= 500 || OPTIMIZE_DEP_ERROR.test(html);
+          if (!churning && html.includes("__nuxt")) {
+            settled = true;
+            break;
+          }
+        } catch {
+          // Navigation aborted mid-rebundle (e.g. failed dynamic import); retry.
+        }
+        await page.waitForTimeout(2_000);
+      }
+      if (!settled) {
+        console.log(
+          `[${app.name}] browser warmup for ${pathname} did not fully settle; continuing`,
+        );
+      }
+    }
+  } finally {
+    await context.close();
+  }
+}
+
+/**
  * Navigate to a nuxt-ui route, reloading if the dev server serves a transient
  * optimize-deps error (504 / failed dynamic import / SSR 500) instead of the
  * playground. Bounded retries keep this from masking real failures.
  */
 async function gotoNuxtUi(page: Page, pathname = "/") {
   const target = new URL(pathname, app.url).toString();
-  const maxAttempts = 4;
+  const maxAttempts = 6;
   let response: Awaited<ReturnType<Page["goto"]>> = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -113,7 +158,7 @@ function normalizeNuxtUiSnapshotHtml(html: string): string {
 test.describe("nuxt-ui dev", () => {
   let devServer: ChildProcess;
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({ browser }) => {
     // setup + install + dev:prepare + server start + route warmup can exceed the
     // default hook timeout for this heavy playground.
     test.setTimeout(600_000);
@@ -140,8 +185,10 @@ test.describe("nuxt-ui dev", () => {
     // Pre-bundle the routes the suite visits so Vite finishes optimize-deps churn
     // (504 Outdated Optimize Dep / failed dynamic import / SSR 500) before the
     // timed browser assertions run.
-    console.log(`Warming up ${app.name} routes...`);
+    console.log(`Warming up ${app.name} routes (SSR)...`);
     await warmUpNuxtUi();
+    console.log(`Warming up ${app.name} routes (browser / client optimize-deps)...`);
+    await warmUpNuxtUiInBrowser(browser);
     console.log(`${app.name} warmup complete`);
   });
 
