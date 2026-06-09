@@ -1322,29 +1322,184 @@ pub fn extract_emit_names_from_type(type_args: &str) -> Vec<String> {
         }
     }
 
-    // Fall back to call signature format:
-    //   (e: 'eventName'): void; (e: 'otherEvent', value: string): void
-    // Match quoted string literals in (e: 'name') patterns
-    let mut in_string = false;
-    let mut quote_char = ' ';
-    let mut current_string = String::default();
+    extract_call_signature_emit_names(type_args, &mut emits);
+    emits
+}
 
-    for c in type_args.chars() {
-        if !in_string && (c == '\'' || c == '"') {
-            in_string = true;
-            quote_char = c;
-            current_string.clear();
-        } else if in_string && c == quote_char {
-            in_string = false;
-            if !current_string.is_empty() {
-                emits.push(current_string.clone());
+fn extract_call_signature_emit_names(type_args: &str, emits: &mut Vec<String>) {
+    let bytes = type_args.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] != b'(' {
+            i += 1;
+            continue;
+        }
+
+        let Some(close) = find_matching_paren(type_args, i) else {
+            i += 1;
+            continue;
+        };
+
+        if is_emit_call_signature(type_args, i, close) {
+            let params = &type_args[i + 1..close];
+            if let Some(first_param) = first_parameter(params)
+                && let Some(type_annotation) = parameter_type_annotation(first_param)
+            {
+                extract_string_literals(type_annotation, emits);
             }
-        } else if in_string {
-            current_string.push(c);
+        }
+
+        i = close + 1;
+    }
+}
+
+fn find_matching_paren(input: &str, open: usize) -> Option<usize> {
+    let bytes = input.as_bytes();
+    let mut depth = 0;
+    let mut i = open;
+    let mut quote: Option<u8> = None;
+
+    while i < bytes.len() {
+        let byte = bytes[i];
+        if let Some(quote_byte) = quote {
+            if byte == b'\\' {
+                i += 2;
+                continue;
+            }
+            if byte == quote_byte {
+                quote = None;
+            }
+            i += 1;
+            continue;
+        }
+
+        match byte {
+            b'\'' | b'"' => quote = Some(byte),
+            b'(' => depth += 1,
+            b')' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(i);
+                }
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+
+    None
+}
+
+fn is_emit_call_signature(input: &str, open: usize, close: usize) -> bool {
+    let after = input[close + 1..].trim_start();
+    if after.starts_with(':') {
+        return true;
+    }
+
+    // Direct function type form: defineEmits<(e: 'change') => void>().
+    after.starts_with("=>") && input[..open].trim().is_empty()
+}
+
+fn first_parameter(params: &str) -> Option<&str> {
+    let mut depth = 0;
+    let mut quote: Option<char> = None;
+    let mut prev_escape = false;
+
+    for (idx, ch) in params.char_indices() {
+        if let Some(quote_char) = quote {
+            if prev_escape {
+                prev_escape = false;
+                continue;
+            }
+            if ch == '\\' {
+                prev_escape = true;
+                continue;
+            }
+            if ch == quote_char {
+                quote = None;
+            }
+            continue;
+        }
+
+        match ch {
+            '\'' | '"' => quote = Some(ch),
+            '(' | '[' | '{' | '<' => depth += 1,
+            ')' | ']' | '}' | '>' if depth > 0 => depth -= 1,
+            ',' if depth == 0 => return Some(params[..idx].trim()),
+            _ => {}
         }
     }
 
-    emits
+    let first = params.trim();
+    (!first.is_empty()).then_some(first)
+}
+
+fn parameter_type_annotation(param: &str) -> Option<&str> {
+    let mut depth = 0;
+    let mut quote: Option<char> = None;
+    let mut prev_escape = false;
+
+    for (idx, ch) in param.char_indices() {
+        if let Some(quote_char) = quote {
+            if prev_escape {
+                prev_escape = false;
+                continue;
+            }
+            if ch == '\\' {
+                prev_escape = true;
+                continue;
+            }
+            if ch == quote_char {
+                quote = None;
+            }
+            continue;
+        }
+
+        match ch {
+            '\'' | '"' => quote = Some(ch),
+            '(' | '[' | '{' | '<' => depth += 1,
+            ')' | ']' | '}' | '>' if depth > 0 => depth -= 1,
+            ':' if depth == 0 => return Some(param[idx + 1..].trim()),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn extract_string_literals(input: &str, output: &mut Vec<String>) {
+    let bytes = input.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        let quote = bytes[i];
+        if !matches!(quote, b'\'' | b'"') {
+            i += 1;
+            continue;
+        }
+
+        let mut literal = String::default();
+        i += 1;
+        while i < bytes.len() {
+            let byte = bytes[i];
+            if byte == b'\\' {
+                if i + 1 < bytes.len() {
+                    literal.push(bytes[i + 1] as char);
+                    i += 2;
+                    continue;
+                }
+                break;
+            }
+            if byte == quote {
+                if !literal.is_empty() {
+                    output.push(literal);
+                }
+                i += 1;
+                break;
+            }
+            literal.push(byte as char);
+            i += 1;
+        }
+    }
 }
 
 fn extract_emit_shorthand_key(segment: &str) -> Option<String> {
@@ -1842,6 +1997,39 @@ mod tests {
         );
 
         assert_eq!(names, vec!["update:open", "select:item", "close"]);
+    }
+
+    #[test]
+    fn extract_emit_names_ignores_payload_literal_union_in_call_signature() {
+        let names = extract_emit_names_from_type("{ (e: 'change', mode: 'x' | 'y'): void }");
+
+        assert_eq!(names, vec!["change"]);
+    }
+
+    #[test]
+    fn extract_emit_names_ignores_payload_literal_union_in_function_type() {
+        let names = extract_emit_names_from_type("(e: 'change', mode: 'x' | 'y') => void");
+
+        assert_eq!(names, vec!["change"]);
+    }
+
+    #[test]
+    fn extract_emit_names_supports_custom_first_parameter_name() {
+        let names = extract_emit_names_from_type("{ (evt: 'change', val: 'a' | 'b'): void }");
+
+        assert_eq!(names, vec!["change"]);
+    }
+
+    #[test]
+    fn extract_emit_names_ignores_payload_literals_across_multiple_call_signatures() {
+        let names = extract_emit_names_from_type(
+            r#"{
+              (e: 'change', mode: 'x' | 'y'): void
+              (evt: 'submit', val: 'a' | 'b'): void
+            }"#,
+        );
+
+        assert_eq!(names, vec!["change", "submit"]);
     }
 
     #[test]

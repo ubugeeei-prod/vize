@@ -520,6 +520,43 @@ const emit = defineEmits<(e: 'click') => void>()
     }
 
     #[test]
+    fn test_compile_script_setup_with_define_emits_literal_union_payload() {
+        let content = r#"
+const emit = defineEmits<{
+  (e: 'change', mode: 'x' | 'y'): void
+}>()
+"#;
+        let result = compile_script_setup(content, "Test", false, false, None).unwrap();
+
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_compile_script_setup_with_define_emits_custom_event_parameter() {
+        let content = r#"
+const emit = defineEmits<{
+  (evt: 'change', val: 'a' | 'b'): void
+}>()
+"#;
+        let result = compile_script_setup(content, "Test", false, false, None).unwrap();
+
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_compile_script_setup_with_define_emits_multiple_literal_payloads() {
+        let content = r#"
+const emit = defineEmits<{
+  (e: 'change', mode: 'x' | 'y'): void
+  (evt: 'submit', val: 'a' | 'b'): void
+}>()
+"#;
+        let result = compile_script_setup(content, "Test", false, false, None).unwrap();
+
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
     fn test_compile_script_setup_with_define_emits_named_type() {
         for content in [
             r#"
