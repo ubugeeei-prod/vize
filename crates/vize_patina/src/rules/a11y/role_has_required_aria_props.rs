@@ -24,7 +24,7 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode};
 
-use super::helpers::{get_required_aria_props, get_static_attribute_value};
+use super::helpers::{get_required_aria_props, get_static_or_bound_literal_attribute_value};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/role-has-required-aria-props",
@@ -64,7 +64,7 @@ impl Rule for RoleHasRequiredAriaProps {
             return;
         }
 
-        let role = match get_static_attribute_value(element, "role") {
+        let role = match get_static_or_bound_literal_attribute_value(element, "role") {
             Some(r) => r,
             None => return,
         };
@@ -128,6 +128,13 @@ mod tests {
     fn test_invalid_checkbox_missing_checked() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div role="checkbox">Check</div>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_bound_literal_checkbox_missing_checked() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div :role="'checkbox'">Check</div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
     }
 
