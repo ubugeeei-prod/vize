@@ -166,11 +166,6 @@ pub fn analyze_props_validation(
                 continue;
             }
 
-            // Skip event handlers (@xxx or v-on:xxx)
-            if passed_prop.starts_with('@') || passed_prop.starts_with("on") {
-                continue;
-            }
-
             // Check if this prop is declared
             let is_declared = child_props_info.props.contains_key(*passed_prop);
 
