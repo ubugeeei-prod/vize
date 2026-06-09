@@ -6,7 +6,12 @@
 use crate::types::{SfcError, SfcStyleBlock, StyleCompileOptions};
 
 use vize_carton::{String, profile};
-/// Helper to compile all style blocks
+
+/// Helper to compile all style blocks.
+///
+/// Returns the concatenated CSS. `<style module>` blocks have their class names
+/// localized (hashed) here; the matching `$style` setup binding is injected by
+/// the script-setup compiler from `SfcStyleBlock.module`.
 pub(super) fn compile_styles(
     styles: &[SfcStyleBlock],
     scope_id: &str,

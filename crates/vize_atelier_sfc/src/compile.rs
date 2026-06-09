@@ -691,6 +691,26 @@ fn compile_sfc_inner(
         }
     }
 
+    // CSS Modules: every `<style module>` / `<style module="name">` block
+    // contributes a setup binding (`$style` by default) bound to
+    // `_useCssModule()`. Register it so the template compiler emits the bare
+    // binding (`$style.root`) instead of `_ctx.$style.root`, then thread the
+    // names into the inline compiler for the import + setup injection. Names are
+    // de-duplicated in source order.
+    let mut css_module_names: Vec<String> = Vec::new();
+    for style in &descriptor.styles {
+        if let Some(name) = style.module.as_ref() {
+            let name: String = name.as_ref().into();
+            if !css_module_names.contains(&name) {
+                script_bindings
+                    .bindings
+                    .entry(name.clone())
+                    .or_insert(BindingType::SetupConst);
+                css_module_names.push(name);
+            }
+        }
+    }
+
     // Register bindings from normal <script> block.
     // When both <script> and <script setup> exist, top-level imports and
     // declarations from the normal script are accessible in the template.
@@ -865,6 +885,7 @@ fn compile_sfc_inner(
             &scope_id,
             filename,
             options.template.is_prod,
+            &css_module_names,
         )
     )?;
 

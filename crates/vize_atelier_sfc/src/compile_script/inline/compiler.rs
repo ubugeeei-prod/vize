@@ -62,6 +62,7 @@ pub fn compile_script_setup_inline(
         scope_id,
         scope_id,
         false,
+        &[],
     )?;
     if let Some(transformed) = transformed {
         let mut code = transformed.preamble;
@@ -85,6 +86,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
     scope_id: &str,
     css_vars_id: &str,
     is_prod: bool,
+    css_modules: &[String],
 ) -> Result<ScriptCompileResult, SfcError> {
     // Extract user imports and setup lines from script content once; await detection
     // and output assembly share the same split.
@@ -181,6 +183,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
         needs_vapor_setup_context,
         vapor_render_alias,
         is_async,
+        css_modules,
     )
 }
 

@@ -4,7 +4,11 @@ use vize_carton::{String, ToCompactString};
 
 use crate::types::{SfcError, SfcStyleBlock, StyleCompileOptions};
 
-/// Compile a style block
+/// Compile a style block.
+///
+/// `<style module>` blocks (when `style.module` / `options.module` is set) have
+/// their class names localized (hashed) via LightningCSS so the resulting CSS
+/// matches the `$style` map exposed in setup.
 pub fn compile_style(
     style: &SfcStyleBlock,
     options: &StyleCompileOptions,
@@ -14,6 +18,23 @@ pub fn compile_style(
     // Apply scoped transformation if needed
     if style.scoped || options.scoped {
         output = apply_scoped_css(&output, &options.id);
+    }
+
+    // CSS Modules: localize (hash) class names by running LightningCSS over the
+    // already v-bind/scoped-transformed CSS. The `$style` setup binding is
+    // injected separately by the script-setup compiler.
+    if style.module.is_some() {
+        let result = crate::css::compile_css(
+            &output,
+            &crate::css::CssCompileOptions {
+                css_modules: true,
+                filename: Some(options.id.clone()),
+                ..Default::default()
+            },
+        );
+        if result.errors.is_empty() {
+            output = result.code;
+        }
     }
 
     // Trim if requested

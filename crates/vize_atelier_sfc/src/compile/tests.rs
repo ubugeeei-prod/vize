@@ -501,6 +501,80 @@ withDefaults(defineProps<{
 }
 
 #[test]
+fn test_style_module_injects_use_css_module_and_hashes_classes() {
+    // #1179: `<style module>` must inject `const $style = _useCssModule()`,
+    // import useCssModule, hash class names, and let the template reference
+    // `$style.red` as a setup binding (not `_ctx.$style.red`).
+    let source = r#"<script setup></script>
+<template><div :class="$style.red">x</div></template>
+<style module>.red { color: red }</style>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions {
+        scope_id: Some("test".into()),
+        ..Default::default()
+    };
+    opts.script.id = Some("src/Demo.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains("import { useCssModule as _useCssModule } from"),
+        "expected useCssModule import, got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("const $style = _useCssModule()"),
+        "expected `const $style = _useCssModule()` injection, got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("$style.red") && !result.code.contains("_ctx.$style.red"),
+        "expected `$style.red` to be a bare setup binding, got:\n{}",
+        result.code
+    );
+    let css = result.css.expect("expected compiled CSS");
+    assert!(
+        !css.contains(".red {") && !css.contains(".red{"),
+        "expected `.red` class name to be hashed, got:\n{css}"
+    );
+    assert!(
+        css.contains("_red") && css.contains("color"),
+        "expected hashed `_red` class with declarations preserved, got:\n{css}"
+    );
+}
+
+#[test]
+fn test_style_module_named_uses_named_binding() {
+    // `<style module="classes">` must inject `const classes = _useCssModule("classes")`.
+    let source = r#"<script setup></script>
+<template><div :class="classes.red">x</div></template>
+<style module="classes">.red { color: red }</style>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions {
+        scope_id: Some("test".into()),
+        ..Default::default()
+    };
+    opts.script.id = Some("src/Demo.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains("const classes = _useCssModule(\"classes\")"),
+        "expected named module binding, got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("classes.red") && !result.code.contains("_ctx.classes.red"),
+        "expected `classes.red` to be a bare setup binding, got:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_script_setup_css_v_bind_reads_destructured_prop_aliases() {
     let source = r#"<script setup lang="ts">
 const { color: bannerColor } = defineProps<{

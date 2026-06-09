@@ -112,6 +112,7 @@ pub(super) fn emit_setup_body(
     css_vars_id: &str,
     is_prod: bool,
     has_css_vars: bool,
+    css_modules: &[String],
 ) {
     // Emit binding: const emit = __emit
     if let Some(ref emits_macro) = ctx.macros.define_emits
@@ -175,6 +176,20 @@ pub(super) fn emit_setup_body(
         output.extend_from_slice(b"const ");
         output.extend_from_slice(binding_name.as_bytes());
         output.extend_from_slice(b" = _useSlots()\n");
+    }
+
+    // CSS Modules injection: `const $style = _useCssModule()` for `<style
+    // module>` (default name) or `_useCssModule("name")` for a custom name.
+    for module_name in css_modules {
+        output.extend_from_slice(b"const ");
+        output.extend_from_slice(module_name.as_bytes());
+        output.extend_from_slice(b" = _useCssModule(");
+        if module_name != "$style" {
+            output.push(b'"');
+            output.extend_from_slice(module_name.as_bytes());
+            output.push(b'"');
+        }
+        output.extend_from_slice(b")\n");
     }
 
     // useCssVars injection for v-bind() in <style>

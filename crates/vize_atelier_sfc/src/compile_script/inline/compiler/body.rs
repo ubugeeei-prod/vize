@@ -43,6 +43,7 @@ pub(super) fn compile_script_setup_inline_body(
     needs_vapor_setup_context: bool,
     vapor_render_alias: Option<String>,
     is_async: bool,
+    css_modules: &[String],
 ) -> Result<ScriptCompileResult, SfcError> {
     let has_css_vars = !css_vars.is_empty();
     let needs_prop_type = false;
@@ -57,6 +58,7 @@ pub(super) fn compile_script_setup_inline_body(
         needs_merge_models,
         has_define_slots,
         has_css_vars,
+        !css_modules.is_empty(),
         needs_vapor_setup_context,
         vapor_render_alias.as_deref(),
         is_vapor,
@@ -143,6 +145,7 @@ pub(super) fn compile_script_setup_inline_body(
         css_vars_id,
         is_prod,
         has_css_vars,
+        css_modules,
     );
 
     output.push(b'\n');
