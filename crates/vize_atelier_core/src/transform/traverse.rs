@@ -6,7 +6,8 @@ use vize_carton::profile;
 
 use super::element::{transform_element, transform_interpolation};
 use super::structural::{
-    StructuralDirectiveKind, take_structural_directive, transform_v_for, transform_v_if,
+    StructuralDirectiveKind, take_structural_directive, transform_v_for,
+    transform_v_if_with_directive,
 };
 use super::{ExitFns, ParentNode, TransformContext};
 
@@ -87,7 +88,13 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
                     StructuralDirectiveKind::If => {
                         if let Some(exits) = profile!(
                             "atelier.transform.v_if",
-                            transform_v_if(ctx, directive_kind, exp.as_ref(), &directive_loc, true)
+                            transform_v_if_with_directive(
+                                ctx,
+                                directive_kind,
+                                exp.as_ref(),
+                                &directive_loc,
+                                true
+                            )
                         ) {
                             exit_fns.extend(exits);
                         }
@@ -95,7 +102,7 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
                     StructuralDirectiveKind::ElseIf | StructuralDirectiveKind::Else => {
                         if let Some(exits) = profile!(
                             "atelier.transform.v_if",
-                            transform_v_if(
+                            transform_v_if_with_directive(
                                 ctx,
                                 directive_kind,
                                 exp.as_ref(),
