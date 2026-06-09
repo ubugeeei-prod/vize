@@ -3,6 +3,7 @@
 use super::extraction::{extract_template_parts, extract_template_parts_full};
 use super::string_tracking::{
     StringTrackState, count_braces_outside_strings, count_braces_with_state,
+    count_delims_with_state,
 };
 use super::vapor::{add_scope_id_to_template, transform_vapor_template_output};
 use crate::types::{BlockLocation, SfcTemplateBlock};
@@ -414,4 +415,85 @@ export function render(_ctx, _cache) {
         render_fn
     );
     insta::assert_snapshot!(render_fn.as_str());
+}
+
+/// Net delimiter depth must equal zero for a balanced object literal that spans lines,
+/// treating `{} [] ()` uniformly and ignoring delimiters inside strings.
+#[test]
+fn test_count_delims_with_state_multiline_object() {
+    let mut state = StringTrackState::default();
+    let mut depth = 0;
+    depth += count_delims_with_state("const _hoisted_1 = { style: {", &mut state);
+    assert_eq!(depth, 2);
+    depth += count_delims_with_state("  position: 'absolute',", &mut state);
+    assert_eq!(depth, 2);
+    depth += count_delims_with_state("  content: '({[',", &mut state);
+    assert_eq!(depth, 2, "delimiters inside strings must not affect depth");
+    depth += count_delims_with_state("} }", &mut state);
+    assert_eq!(depth, 0, "declaration is balanced after the closing line");
+}
+
+/// Regression for the `<script setup>` inline path truncating a multi-line hoisted
+/// object literal at its first newline (producing invalid JS). The whole declaration
+/// must be collected into `hoisted` intact, with balanced braces.
+#[test]
+fn test_extract_template_parts_multiline_hoisted_object() {
+    let template_code = r#"import { createElementVNode as _createElementVNode } from "vue"
+
+const _hoisted_1 = { style: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  objectFit: 'cover',
+} }
+
+export function render(_ctx, _cache) {
+  return _createElementVNode("img", _hoisted_1)
+}"#;
+
+    let (_imports, hoisted, _preamble, render_body, render_fn_name) =
+        extract_template_parts(template_code);
+
+    assert_eq!(render_fn_name, "render");
+    assert!(
+        hoisted.contains("objectFit: 'cover'"),
+        "continuation lines of the hoisted const must be preserved, got:\n{hoisted}"
+    );
+    let opens = hoisted.matches('{').count();
+    let closes = hoisted.matches('}').count();
+    assert_eq!(opens, closes, "hoisted braces must be balanced:\n{hoisted}");
+    assert!(
+        render_body.contains("_hoisted_1"),
+        "render body should still reference the hoist"
+    );
+}
+
+/// Same regression for the vapor/ssr extraction path.
+#[test]
+fn test_extract_template_parts_full_multiline_hoisted_object() {
+    let template_code = r#"import { createElementVNode as _createElementVNode } from "vue"
+
+const _hoisted_1 = { style: {
+  position: 'absolute',
+  objectFit: 'cover',
+} }
+
+export function render(_ctx, _cache) {
+  return _createElementVNode("img", _hoisted_1)
+}"#;
+
+    let (_imports, hoisted, render_fn, render_fn_name) = extract_template_parts_full(template_code);
+
+    assert_eq!(render_fn_name, "render");
+    assert!(
+        hoisted.contains("objectFit: 'cover'"),
+        "continuation lines of the hoisted const must be preserved, got:\n{hoisted}"
+    );
+    let opens = hoisted.matches('{').count();
+    let closes = hoisted.matches('}').count();
+    assert_eq!(opens, closes, "hoisted braces must be balanced:\n{hoisted}");
+    assert!(
+        render_fn.trim().ends_with('}'),
+        "render function should remain intact:\n{render_fn}"
+    );
 }

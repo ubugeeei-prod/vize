@@ -163,6 +163,116 @@ pub(super) fn count_braces_outside_strings(line: &str) -> i32 {
     count_braces_with_state(line, &mut state)
 }
 
+/// Count net delimiter depth change for ALL of `{ [ (` (each +1) and `} ] )` (each -1)
+/// in a line, properly tracking string literals, block comments, and template literal
+/// `${...}` expressions. State is carried across lines so a declaration whose value spans
+/// multiple lines (e.g. a hoisted object/array literal) can be detected as balanced.
+///
+/// This complements [`count_braces_with_state`] (which only counts `{}`). Hoisted consts
+/// can wrap their value in any of object/array/paren delimiters, so the extractor needs
+/// the combined depth to know where a multi-line declaration actually ends.
+pub(super) fn count_delims_with_state(line: &str, state: &mut StringTrackState) -> i32 {
+    let mut count: i32 = 0;
+    let bytes = line.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+
+    while i < len {
+        let ch = bytes[i];
+
+        if state.escape {
+            state.escape = false;
+            i += 1;
+            continue;
+        }
+
+        if state.in_block_comment {
+            if ch == b'*' && i + 1 < len && bytes[i + 1] == b'/' {
+                state.in_block_comment = false;
+                i += 2;
+                continue;
+            }
+            i += 1;
+            continue;
+        }
+
+        if state.in_string {
+            if ch == b'\\' {
+                state.escape = true;
+                i += 1;
+                continue;
+            }
+
+            if state.string_char == b'`' {
+                if ch == b'`' {
+                    state.in_string = false;
+                } else if ch == b'$' && i + 1 < len && bytes[i + 1] == b'{' {
+                    state.in_string = false;
+                    state.template_expr_brace_stack.push(0);
+                    // The `${` opens a code-mode region; the `{` counts as an open delimiter.
+                    count += 1;
+                    i += 2;
+                    continue;
+                }
+            } else if ch == state.string_char {
+                state.in_string = false;
+            }
+        } else {
+            match ch {
+                b'/' if i + 1 < len && bytes[i + 1] == b'*' => {
+                    state.in_block_comment = true;
+                    i += 2;
+                    continue;
+                }
+                b'/' if i + 1 < len && bytes[i + 1] == b'/' => {
+                    break;
+                }
+                b'\'' | b'"' => {
+                    state.in_string = true;
+                    state.string_char = ch;
+                }
+                b'`' => {
+                    state.in_string = true;
+                    state.string_char = b'`';
+                }
+                b'{' => {
+                    if let Some(depth) = state.template_expr_brace_stack.last_mut() {
+                        *depth += 1;
+                    }
+                    count += 1;
+                }
+                b'}' => {
+                    if let Some(&depth) = state.template_expr_brace_stack.last() {
+                        if depth == 0 {
+                            // This `}` closes a `${...}` expression: balance the `{` from `${`.
+                            state.template_expr_brace_stack.pop();
+                            state.in_string = true;
+                            state.string_char = b'`';
+                            count -= 1;
+                            i += 1;
+                            continue;
+                        } else if let Some(depth) = state.template_expr_brace_stack.last_mut() {
+                            *depth -= 1;
+                        }
+                    }
+                    count -= 1;
+                }
+                b'[' | b'(' => {
+                    count += 1;
+                }
+                b']' | b')' => {
+                    count -= 1;
+                }
+                _ => {}
+            }
+        }
+
+        i += 1;
+    }
+
+    count
+}
+
 /// Count net paren depth change (( minus )) in a line, properly tracking
 /// string literals, block comments, and template literal `${...}` expressions.
 /// State is carried across lines to handle multiline template literals and comments.

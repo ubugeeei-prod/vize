@@ -2,10 +2,28 @@
 
 use vize_carton::{String, ToCompactString};
 
-use super::string_tracking::{StringTrackState, count_braces_with_state, count_parens_with_state};
+use super::string_tracking::{
+    StringTrackState, count_braces_with_state, count_delims_with_state, count_parens_with_state,
+};
 
 fn is_vapor_template_declaration(line: &str) -> bool {
     line.starts_with("const t") && line.contains("_template(")
+}
+
+/// A hoisted const declaration may span multiple lines when its value is a multi-line
+/// object/array/paren literal, e.g.
+///
+/// ```text
+/// const _hoisted_1 = { style: {
+///   position: 'absolute',
+/// } }
+/// ```
+///
+/// Returns the net delimiter depth opened by `line` (over all of `{} [] ()`), so the caller
+/// can keep appending continuation lines to `hoisted` until the depth returns to zero. Without
+/// this the continuation lines were dropped, truncating the declaration into invalid JS.
+fn hoisted_line_open_depth(line: &str, state: &mut StringTrackState) -> i32 {
+    count_delims_with_state(line, state)
 }
 
 fn detect_render_export_name(trimmed: &str) -> Option<&'static str> {
@@ -49,9 +67,21 @@ pub(crate) fn extract_template_parts_full(
     let mut in_render = false;
     let mut brace_depth = 0;
     let mut brace_state = StringTrackState::default();
+    // Depth/state for a hoisted declaration whose value spans multiple lines.
+    let mut hoisted_depth = 0;
+    let mut hoisted_state = StringTrackState::default();
 
     for line in template_code.lines() {
         let trimmed = line.trim();
+
+        // Continuation lines of a multi-line hoisted declaration: keep collecting until the
+        // value's delimiters are balanced so the declaration is emitted intact.
+        if hoisted_depth > 0 {
+            hoisted_depth += hoisted_line_open_depth(line, &mut hoisted_state);
+            hoisted.push_str(line);
+            hoisted.push('\n');
+            continue;
+        }
 
         if trimmed.starts_with("import ") {
             imports.push_str(line);
@@ -68,6 +98,8 @@ pub(crate) fn extract_template_parts_full(
             || is_vapor_template_declaration(trimmed)
             || (!trimmed.is_empty() && !in_render)
         {
+            hoisted_state = StringTrackState::default();
+            hoisted_depth = hoisted_line_open_depth(line, &mut hoisted_state);
             hoisted.push_str(line);
             hoisted.push('\n');
         } else if in_render {
@@ -104,15 +136,30 @@ pub(crate) fn extract_template_parts(
     let mut paren_state = StringTrackState::default();
     let mut return_paren_depth = 0;
     let mut pending_ternary_continuation = false;
+    // Depth/state for a hoisted declaration whose value spans multiple lines.
+    let mut hoisted_depth = 0;
+    let mut hoisted_state = StringTrackState::default();
 
     for line in template_code.lines() {
         let trimmed = line.trim();
+
+        // Continuation lines of a multi-line hoisted declaration: keep collecting until the
+        // value's delimiters are balanced so the declaration is emitted intact. Previously
+        // these lines fell through and were dropped, truncating the const into invalid JS.
+        if hoisted_depth > 0 {
+            hoisted_depth += hoisted_line_open_depth(line, &mut hoisted_state);
+            hoisted.push_str(line);
+            hoisted.push('\n');
+            continue;
+        }
 
         if trimmed.starts_with("import ") {
             imports.push_str(line);
             imports.push('\n');
         } else if trimmed.starts_with("const _hoisted_") || is_vapor_template_declaration(trimmed) {
-            // Hoisted template variables
+            // Hoisted template variables (value may span multiple lines).
+            hoisted_state = StringTrackState::default();
+            hoisted_depth = hoisted_line_open_depth(line, &mut hoisted_state);
             hoisted.push_str(line);
             hoisted.push('\n');
         } else if let Some(name) = detect_render_export_name(trimmed) {
