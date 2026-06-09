@@ -30,7 +30,9 @@ pub use element_id::{UniqueIdIssue, analyze_element_ids};
 pub use emit::{EmitFlow, analyze_emits};
 pub use event_bubbling::{EventBubble, analyze_event_bubbling};
 pub use fallthrough::{FallthroughInfo, analyze_fallthrough};
-pub use props_validation::{PropsValidationIssue, analyze_props_validation};
+pub use props_validation::{
+    PropsValidationIssue, PropsValidationIssueKind, analyze_props_validation,
+};
 pub(crate) use provide_inject::{
     ProvideInjectIndex, analyze_provide_inject_with_index, build_provide_inject_tree_with_index,
 };

@@ -6,7 +6,8 @@ use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, Diagnosti
 use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleEntry, ModuleRegistry};
 use std::path::{Component, Path, PathBuf};
-use vize_carton::{CompactString, FxHashMap, FxHashSet, String, cstr};
+use vize_carton::{CompactString, FxHashMap, String, cstr};
+use vize_croquis::macros::MacroKind;
 
 /// Information about a props validation issue.
 #[derive(Debug, Clone)]
@@ -48,7 +49,6 @@ struct ComponentPropsInfo {
 #[derive(Debug, Clone)]
 struct PropInfo {
     required: bool,
-    #[allow(dead_code)] // Will be used for type checking in future
     prop_type: Option<CompactString>,
 }
 
@@ -125,7 +125,7 @@ pub fn analyze_props_validation(
             // required prop, so only validate required props for non-spread usages.
             if !passed_usage.has_spread_attrs {
                 for (prop_name, prop_info) in &child_props_info.props {
-                    if prop_info.required && !passed_usage.props.contains(prop_name.as_str()) {
+                    if prop_info.required && !has_passed_prop(&passed_usage, prop_name.as_str()) {
                         let issue = PropsValidationIssue {
                             parent_file: parent_id,
                             child_file: child_id,
@@ -133,18 +133,19 @@ pub fn analyze_props_validation(
                             kind: PropsValidationIssueKind::MissingRequiredProp {
                                 prop_name: prop_name.clone(),
                             },
-                            offset: passed_usage.offset,
+                            offset: passed_usage.start,
                         };
                         issues.push(issue);
 
-                        let diagnostic = CrossFileDiagnostic::new(
+                        let diagnostic = CrossFileDiagnostic::with_span(
                             CrossFileDiagnosticKind::MissingRequiredProp {
                                 prop_name: prop_name.clone(),
                                 component_name: child_component_name.clone(),
                             },
                             DiagnosticSeverity::Error,
                             parent_id,
-                            passed_usage.offset,
+                            passed_usage.start,
+                            passed_usage.end,
                             cstr!(
                                 "**Missing Required Prop**: `{}` must be passed to `<{}>`\n\n\
                                 This prop is declared as required in the component's `defineProps`.",
@@ -154,7 +155,7 @@ pub fn analyze_props_validation(
                         )
                         .with_related(
                             child_id,
-                            0,
+                            define_props_offset(child_entry),
                             cstr!("Prop `{prop_name}` is declared as required here"),
                         );
 
@@ -166,45 +167,88 @@ pub fn analyze_props_validation(
             // Check for undeclared props (explicit props passed but not in defineProps)
             for passed_prop in &passed_usage.props {
                 // Skip built-in attributes
-                if is_builtin_attr(passed_prop) {
+                if is_builtin_attr(passed_prop.name) {
                     continue;
                 }
 
                 // Check if this prop is declared
-                let is_declared = child_props_info.props.contains_key(*passed_prop);
-
-                if !is_declared {
+                let Some(prop_info) = child_props_info.props.get(passed_prop.name) else {
                     let issue = PropsValidationIssue {
                         parent_file: parent_id,
                         child_file: child_id,
                         component_name: child_component_name.clone(),
                         kind: PropsValidationIssueKind::UndeclaredProp {
-                            prop_name: CompactString::new(*passed_prop),
+                            prop_name: CompactString::new(passed_prop.name),
                         },
-                        offset: passed_usage.offset,
+                        offset: passed_prop.start,
                     };
                     issues.push(issue);
 
-                    let diagnostic = CrossFileDiagnostic::new(
+                    let diagnostic = CrossFileDiagnostic::with_span(
                         CrossFileDiagnosticKind::UndeclaredProp {
-                            prop_name: CompactString::new(*passed_prop),
+                            prop_name: CompactString::new(passed_prop.name),
                             component_name: child_component_name.clone(),
                         },
                         DiagnosticSeverity::Warning, // Warning since it might be intentional $attrs
                         parent_id,
-                        passed_usage.offset,
+                        passed_prop.start,
+                        passed_prop.end,
                         cstr!(
                             "**Undeclared Prop**: `{}` is passed to `<{}>` but not declared\n\n\
                             The prop is not defined in the component's `defineProps`.\n\
                             If intentional, it will fall through to the root element via `$attrs`.",
-                            passed_prop, child_component_name
+                            passed_prop.name, child_component_name
                         ),
                     )
                     .with_suggestion(cstr!(
                         "Add to defineProps:\n```typescript\ndefineProps<{{\n  {}: unknown\n}}>()\n```\n\n\
                         Or use `v-bind=\"$attrs\"` in the child component for fallthrough.",
-                        passed_prop
+                        passed_prop.name
                     ));
+
+                    diagnostics.push(diagnostic);
+                    continue;
+                };
+
+                if let (Some(expected), Some(actual)) = (
+                    prop_info.prop_type.as_ref(),
+                    actual_literal_type(passed_prop),
+                ) && !prop_type_accepts_actual(expected.as_str(), actual.as_str())
+                {
+                    let issue = PropsValidationIssue {
+                        parent_file: parent_id,
+                        child_file: child_id,
+                        component_name: child_component_name.clone(),
+                        kind: PropsValidationIssueKind::TypeMismatch {
+                            prop_name: CompactString::new(passed_prop.name),
+                            expected: expected.clone(),
+                            actual: actual.clone(),
+                        },
+                        offset: passed_prop.start,
+                    };
+                    issues.push(issue);
+
+                    let diagnostic = CrossFileDiagnostic::with_span(
+                        CrossFileDiagnosticKind::PropTypeMismatch {
+                            prop_name: CompactString::new(passed_prop.name),
+                            expected_type: expected.clone(),
+                            actual_type: actual.clone(),
+                        },
+                        DiagnosticSeverity::Error,
+                        parent_id,
+                        passed_prop.start,
+                        passed_prop.end,
+                        cstr!(
+                            "**Prop Type Mismatch**: `{}` expects `{}` but received `{}`\n\n\
+                            The static prop value does not match the child component's declared runtime prop type.",
+                            passed_prop.name, expected, actual
+                        ),
+                    )
+                    .with_related(
+                        child_id,
+                        define_props_offset(child_entry),
+                        cstr!("Prop `{}` is declared with type `{}` here", passed_prop.name, expected),
+                    );
 
                     diagnostics.push(diagnostic);
                 }
@@ -216,9 +260,18 @@ pub fn analyze_props_validation(
 }
 
 struct PassedComponentUsage<'a> {
-    props: FxHashSet<&'a str>,
+    props: Vec<PassedPropInfo<'a>>,
     has_spread_attrs: bool,
-    offset: u32,
+    start: u32,
+    end: u32,
+}
+
+struct PassedPropInfo<'a> {
+    name: &'a str,
+    value: Option<&'a str>,
+    start: u32,
+    end: u32,
+    is_dynamic: bool,
 }
 
 /// Extract matched usages and explicit props passed to a specific component from the analysis.
@@ -238,28 +291,95 @@ fn extract_passed_props_for_component<'a>(
                 .iter()
                 .any(|alias| component_names_match(usage.name.as_str(), alias.as_str()))
         {
-            let mut props = FxHashSet::default();
-            for prop in &usage.props {
-                props.insert(prop.name.as_str());
-            }
+            let props = usage
+                .props
+                .iter()
+                .map(|prop| PassedPropInfo {
+                    name: prop.name.as_str(),
+                    value: prop.value.as_deref(),
+                    start: prop.start,
+                    end: prop.end,
+                    is_dynamic: prop.is_dynamic,
+                })
+                .collect();
 
             usages.push(PassedComponentUsage {
                 props,
                 has_spread_attrs: usage.has_spread_attrs,
-                offset: usage.start,
+                start: usage.start,
+                end: usage.end,
             });
         }
     }
 
     if usages.is_empty() {
         usages.push(PassedComponentUsage {
-            props: FxHashSet::default(),
+            props: Vec::new(),
             has_spread_attrs: false,
-            offset: 0,
+            start: 0,
+            end: 0,
         });
     }
 
     usages
+}
+
+fn define_props_offset(entry: &ModuleEntry) -> u32 {
+    entry
+        .analysis
+        .macros
+        .all_calls()
+        .iter()
+        .find(|call| call.kind == MacroKind::DefineProps)
+        .map_or(0, |call| call.start)
+}
+
+fn has_passed_prop(usage: &PassedComponentUsage<'_>, name: &str) -> bool {
+    usage.props.iter().any(|prop| prop.name == name)
+}
+
+fn actual_literal_type(prop: &PassedPropInfo<'_>) -> Option<CompactString> {
+    if !prop.is_dynamic {
+        return Some(if prop.value.is_some() {
+            CompactString::const_new("string")
+        } else {
+            CompactString::const_new("boolean")
+        });
+    }
+
+    let value = prop.value?.trim();
+    if is_string_literal(value) {
+        Some(CompactString::const_new("string"))
+    } else if is_boolean_literal(value) {
+        Some(CompactString::const_new("boolean"))
+    } else if is_numeric_literal(value) {
+        Some(CompactString::const_new("number"))
+    } else {
+        None
+    }
+}
+
+fn prop_type_accepts_actual(expected: &str, actual: &str) -> bool {
+    expected
+        .split('|')
+        .map(str::trim)
+        .any(|variant| variant == actual || variant == "unknown" || variant == "any")
+}
+
+fn is_string_literal(value: &str) -> bool {
+    let bytes = value.as_bytes();
+    matches!(
+        (bytes.first(), bytes.last()),
+        (Some(b'\''), Some(b'\'')) | (Some(b'"'), Some(b'"'))
+    )
+}
+
+fn is_boolean_literal(value: &str) -> bool {
+    matches!(value, "true" | "false")
+}
+
+fn is_numeric_literal(value: &str) -> bool {
+    value.parse::<f64>().is_ok()
 }
 
 fn imported_aliases_for_child(

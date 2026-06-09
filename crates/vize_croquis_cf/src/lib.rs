@@ -64,6 +64,7 @@ pub use suppression::{SuppressionDirective, SuppressionError, SuppressionMap};
 
 // Re-export analyzer types
 pub use analyzers::{
-    BoundaryInfo, BoundaryKind, EmitFlow, EventBubble, FallthroughInfo, ProvideInjectMatch,
-    ReactivityIssue, ReactivityIssueKind, UniqueIdIssue,
+    BoundaryInfo, BoundaryKind, EmitFlow, EventBubble, FallthroughInfo, PropsValidationIssue,
+    PropsValidationIssueKind, ProvideInjectMatch, ReactivityIssue, ReactivityIssueKind,
+    UniqueIdIssue,
 };

@@ -1,5 +1,5 @@
 use super::{CrossFileAnalyzer, CrossFileOptions, CrossFileResult};
-use crate::CrossFileDiagnosticKind;
+use crate::{CrossFileDiagnosticKind, PropsValidationIssueKind};
 use std::path::Path;
 use vize_carton::{CompactString, smallvec};
 use vize_croquis::analysis::{ComponentUsage, EventListener, PassedProp};
@@ -150,6 +150,114 @@ const formData = { id: 1 }"#,
     assert_eq!(undeclared_props, vec!["extra"]);
 }
 
+#[test]
+fn test_props_validation_uses_component_and_prop_offsets() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_props_validation(true));
+
+    let child_analysis = script_analysis("const props = defineProps<{ id: number }>()");
+    let parent_analysis = script_analysis_with_component_usage(
+        r#"import Child from './Child.vue'"#,
+        component_usage_with_extra_prop_at("Child", 80, 89, 96),
+    );
+
+    analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analysis);
+    analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analysis);
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+
+    let missing_required = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| {
+            matches!(
+                diagnostic.kind,
+                CrossFileDiagnosticKind::MissingRequiredProp { .. }
+            )
+        })
+        .expect("missing required prop diagnostic");
+    assert_eq!(missing_required.primary_offset, 80);
+    assert_eq!(missing_required.primary_end_offset, 96);
+    assert_eq!(missing_required.related_files.len(), 1);
+    assert!(
+        missing_required.related_files[0].1 > 0,
+        "related defineProps offset should not be hardcoded to zero"
+    );
+
+    let undeclared = result
+        .diagnostics
+        .iter()
+        .find(|diagnostic| {
+            matches!(
+                diagnostic.kind,
+                CrossFileDiagnosticKind::UndeclaredProp { .. }
+            )
+        })
+        .expect("undeclared prop diagnostic");
+    assert_eq!(undeclared.primary_offset, 89);
+    assert_eq!(undeclared.primary_end_offset, 96);
+}
+
+#[test]
+fn test_props_validation_emits_type_mismatch_for_static_literal() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_props_validation(true));
+
+    let child_analysis =
+        script_analysis("const props = defineProps({ count: { type: Number, required: true } })");
+    let parent_analysis = script_analysis_with_component_usage(
+        r#"import Child from './Child.vue'"#,
+        component_usage_with_count_string_at("Child", 20, 27, 42),
+    );
+
+    analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analysis);
+    analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analysis);
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+
+    let issue = result
+        .props_validation_issues
+        .iter()
+        .find_map(|issue| match &issue.kind {
+            PropsValidationIssueKind::TypeMismatch {
+                prop_name,
+                expected,
+                actual,
+            } => Some((
+                prop_name.as_str(),
+                expected.as_str(),
+                actual.as_str(),
+                issue.offset,
+            )),
+            _ => None,
+        })
+        .expect("type mismatch issue");
+    assert_eq!(issue, ("count", "number", "string", 27));
+
+    let diagnostic = result
+        .diagnostics
+        .iter()
+        .find_map(|diagnostic| match &diagnostic.kind {
+            CrossFileDiagnosticKind::PropTypeMismatch {
+                prop_name,
+                expected_type,
+                actual_type,
+            } => Some((
+                prop_name.as_str(),
+                expected_type.as_str(),
+                actual_type.as_str(),
+                diagnostic.primary_offset,
+                diagnostic.primary_end_offset,
+            )),
+            _ => None,
+        })
+        .expect("type mismatch diagnostic");
+
+    assert_eq!(diagnostic, ("count", "number", "string", 27, 42));
+}
+
 fn script_analysis(script: &str) -> vize_croquis::Croquis {
     let mut analyzer = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -218,12 +326,72 @@ fn component_usage_with_spread_and_extra_prop(component: &str) -> ComponentUsage
     }
 }
 
+fn component_usage_with_extra_prop_at(
+    component: &str,
+    usage_start: u32,
+    prop_start: u32,
+    prop_end: u32,
+) -> ComponentUsage {
+    ComponentUsage {
+        name: CompactString::new(component),
+        start: usage_start,
+        end: prop_end,
+        props: smallvec![passed_prop_at(
+            "extra",
+            Some("true"),
+            false,
+            prop_start,
+            prop_end
+        )],
+        events: smallvec![],
+        slots: smallvec![],
+        has_spread_attrs: false,
+        scope_id: ScopeId::ROOT,
+        vif_guard: None,
+    }
+}
+
+fn component_usage_with_count_string_at(
+    component: &str,
+    usage_start: u32,
+    prop_start: u32,
+    prop_end: u32,
+) -> ComponentUsage {
+    ComponentUsage {
+        name: CompactString::new(component),
+        start: usage_start,
+        end: prop_end,
+        props: smallvec![passed_prop_at(
+            "count",
+            Some("'not a number'"),
+            true,
+            prop_start,
+            prop_end,
+        )],
+        events: smallvec![],
+        slots: smallvec![],
+        has_spread_attrs: false,
+        scope_id: ScopeId::ROOT,
+        vif_guard: None,
+    }
+}
+
 fn passed_prop(name: &str, value: Option<&str>, is_dynamic: bool) -> PassedProp {
+    passed_prop_at(name, value, is_dynamic, 0, 0)
+}
+
+fn passed_prop_at(
+    name: &str,
+    value: Option<&str>,
+    is_dynamic: bool,
+    start: u32,
+    end: u32,
+) -> PassedProp {
     PassedProp {
         name: CompactString::new(name),
         value: value.map(CompactString::new),
-        start: 0,
-        end: 0,
+        start,
+        end,
         is_dynamic,
     }
 }
