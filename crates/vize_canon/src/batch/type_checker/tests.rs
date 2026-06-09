@@ -297,6 +297,41 @@ const $q = functionCall()
 }
 
 #[test]
+fn batch_type_checker_reports_original_key_for_renamed_props_destructure() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "renamed-props-destructure-original-key",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const { foo: bar } = defineProps<{ foo: string }>()
+void bar
+</script>
+
+<template>{{ foo }} {{ bar }}</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/App.vue" && *code == Some(2304) && message.contains("foo")
+        }),
+        "expected original prop key to report TS2304, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_reports_user_ts6133_with_no_unused_locals() {
     if resolve_test_tsgo_binary().is_none() {
         return;

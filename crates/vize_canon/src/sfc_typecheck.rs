@@ -200,6 +200,31 @@ const { thickness, label } = props;
     }
 
     #[test]
+    fn test_type_check_renamed_props_destructure_does_not_emit_original_prop_binding() {
+        let source = r#"<script setup lang="ts">
+const { foo: bar } = defineProps<{ foo: string }>()
+void bar
+</script>
+<template><div>{{ foo }} {{ bar }}</div></template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+        let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+
+        assert!(
+            !virtual_ts.contains(r#"const foo = props["foo"];"#),
+            "renamed props destructure must not emit a phantom original-key binding:\n{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("void bar;"),
+            "renamed props destructure local should still be referenced:\n{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("void (foo);"),
+            "template reference to original key should remain unresolved in virtual TS:\n{virtual_ts}"
+        );
+    }
+
+    #[test]
     fn test_type_check_with_defaults_narrows_direct_template_prop_identifiers() {
         let source = r#"<script setup lang="ts">
 const props = withDefaults(

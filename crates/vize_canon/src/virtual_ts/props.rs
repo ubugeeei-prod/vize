@@ -24,7 +24,7 @@ fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool
         .macros
         .props_destructure()
         .and_then(|destructure| destructure.get(prop_name))
-        .is_some_and(|binding| binding.local.as_str() == prop_name)
+        .is_some()
     {
         return true;
     }
