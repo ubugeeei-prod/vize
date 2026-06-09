@@ -520,6 +520,34 @@ const emit = defineEmits<(e: 'click') => void>()
     }
 
     #[test]
+    fn test_compile_script_setup_with_define_emits_named_type() {
+        for content in [
+            r#"
+type Emits = {
+  (e: 'change', id: number): void
+  (e: 'submit'): void
+}
+const emit = defineEmits<Emits>()
+"#,
+            r#"
+interface Emits {
+  (e: 'change', id: number): void
+  (e: 'submit'): void
+}
+const emit = defineEmits<Emits>()
+"#,
+        ] {
+            let result = compile_script_setup(content, "Test", false, false, None).unwrap();
+
+            assert!(
+                result.code.contains(r#"emits: ["change", "submit"]"#),
+                "named defineEmits type should emit runtime declaration:\n{}",
+                result.code
+            );
+        }
+    }
+
+    #[test]
     fn test_compile_script_setup_with_next_line_define_props_assignment() {
         let content = r#"
 import { computed } from 'vue'

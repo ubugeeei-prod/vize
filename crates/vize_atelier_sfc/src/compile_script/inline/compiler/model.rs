@@ -5,6 +5,7 @@ use crate::script::ScriptCompileContext;
 use super::super::super::props::{
     extract_emit_names_from_type, resolve_prop_js_type, ts_type_to_js_type,
 };
+use super::super::type_handling::resolve_type_args;
 use super::props::build_user_props_decl;
 
 /// Resolve a defineModel `<T>` type argument to its runtime constructor,
@@ -252,7 +253,9 @@ pub(super) fn build_model_props_emits(
         if !m.args.is_empty() {
             Some(m.args.trim().as_bytes().to_vec())
         } else if let Some(ref type_args) = m.type_args {
-            let names = extract_emit_names_from_type(type_args);
+            let resolved_type_args =
+                resolve_type_args(type_args, &ctx.interfaces, &ctx.type_aliases);
+            let names = extract_emit_names_from_type(&resolved_type_args);
             if names.is_empty() {
                 None
             } else {

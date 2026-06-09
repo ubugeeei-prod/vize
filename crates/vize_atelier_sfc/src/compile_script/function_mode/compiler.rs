@@ -9,7 +9,7 @@ use vize_croquis::macros::runtime_erased_macro_names;
 
 use crate::script::{
     PropsDestructuredBindings, ScriptCompileContext, TemplateUsedIdentifiers,
-    resolve_template_used_identifiers, transform_destructured_props,
+    resolve_template_used_identifiers, resolve_type_args, transform_destructured_props,
 };
 use crate::types::{BindingType, SfcError};
 
@@ -504,7 +504,9 @@ fn emit_emits_definition(
     // Add emits from defineEmits
     if let Some(ref emits_macro) = ctx.macros.define_emits {
         if let Some(ref type_args) = emits_macro.type_args {
-            let emit_names = extract_emit_names_from_type(type_args);
+            let resolved_type_args =
+                resolve_type_args(type_args, &ctx.interfaces, &ctx.type_aliases);
+            let emit_names = extract_emit_names_from_type(&resolved_type_args);
             all_emits.extend(emit_names);
         } else if !emits_macro.args.is_empty() {
             // Runtime args - we'll output separately

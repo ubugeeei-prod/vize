@@ -313,6 +313,27 @@ const doubled = computed(() => count.value * 2)
     }
 
     #[test]
+    fn test_define_emits_named_type_merges_with_define_model() {
+        let content = r#"
+type Emits = {
+  (e: 'change', id: number): void
+  (e: 'submit'): void
+}
+const emit = defineEmits<Emits>()
+const model = defineModel<string>()
+"#;
+
+        let output = compile_setup(content);
+
+        assert!(
+            output.contains(
+                r#"emits: /* @__PURE__ */ _mergeModels(["change", "submit"], ["update:modelValue"])"#
+            ),
+            "named defineEmits type should merge with model emits:\n{output}"
+        );
+    }
+
+    #[test]
     fn test_no_template_returns_imported_bindings() {
         // Imported bindings should also be returned for runtime template compilation
         let content = r#"
