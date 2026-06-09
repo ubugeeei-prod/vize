@@ -510,6 +510,31 @@ function handleClick(e: MouseEvent) {
     }
 
     #[test]
+    fn test_compile_script_setup_define_emits_ignores_payload_literal_unions() {
+        let content = r#"
+const emit = defineEmits<{
+  (e: 'change', mode: 'x' | 'y'): void
+  (evt: 'submit', value: 'draft' | 'published'): void
+}>()
+"#;
+        let result = compile_script_setup(content, "Test", false, false, None).unwrap();
+
+        assert!(
+            result.code.contains(r#"emits: ["change", "submit"]"#),
+            "call-signature emits should only include event names:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains(r#""x""#)
+                && !result.code.contains(r#""y""#)
+                && !result.code.contains(r#""draft""#)
+                && !result.code.contains(r#""published""#),
+            "payload literals must not become runtime emit names:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_compile_script_setup_with_typed_define_emits_single_line() {
         let content = r#"
 const emit = defineEmits<(e: 'click') => void>()

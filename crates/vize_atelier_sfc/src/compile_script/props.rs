@@ -4,7 +4,10 @@
 //! and processing withDefaults defaults.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey, Statement};
+use oxc_ast::ast::{
+    Argument, Expression, ObjectPropertyKind, PropertyKey, Statement, TSSignature, TSType,
+    TSTypeLiteral,
+};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::FxHashMap;
@@ -588,6 +591,12 @@ pub fn strip_readonly_prefix(ts_type: &str) -> &str {
 
 /// Extract emit names from TypeScript type definition
 pub fn extract_emit_names_from_type(type_args: &str) -> Vec<String> {
+    if let Some(emits) = extract_emit_names_from_type_ast(type_args)
+        && !emits.is_empty()
+    {
+        return emits;
+    }
+
     let mut emits = Vec::new();
 
     // First, try Vue 3.3+ shorthand format:
@@ -642,6 +651,118 @@ pub fn extract_emit_names_from_type(type_args: &str) -> Vec<String> {
     }
 
     emits
+}
+
+fn extract_emit_names_from_type_ast(type_args: &str) -> Option<Vec<String>> {
+    const WRAP_PREFIX: &str = "type __VizeEmits = ";
+
+    let mut wrapped = String::with_capacity(WRAP_PREFIX.len() + type_args.len() + 1);
+    wrapped.push_str(WRAP_PREFIX);
+    wrapped.push_str(type_args.trim());
+    wrapped.push(';');
+
+    let allocator = Allocator::default();
+    let parse_result = Parser::new(&allocator, &wrapped, SourceType::ts()).parse();
+    if !parse_result.errors.is_empty() {
+        return None;
+    }
+
+    let Some(Statement::TSTypeAliasDeclaration(type_alias)) = parse_result.program.body.first()
+    else {
+        return None;
+    };
+
+    let mut emits = Vec::new();
+    collect_emit_names_from_ts_type(&type_alias.type_annotation, &mut emits);
+    Some(emits)
+}
+
+fn collect_emit_names_from_ts_type(ts_type: &TSType<'_>, emits: &mut Vec<String>) {
+    match ts_type {
+        TSType::TSFunctionType(func_type) => {
+            if let Some(first_param) = func_type.params.items.first()
+                && let Some(type_ann) = &first_param.type_annotation
+            {
+                collect_literal_values_from_ts_type(&type_ann.type_annotation, emits);
+            }
+        }
+        TSType::TSTypeLiteral(type_lit) => {
+            collect_emit_names_from_ts_type_literal(type_lit, emits);
+        }
+        TSType::TSUnionType(union) => {
+            for member in union.types.iter() {
+                collect_emit_names_from_ts_type(member, emits);
+            }
+        }
+        TSType::TSIntersectionType(intersection) => {
+            for member in intersection.types.iter() {
+                collect_emit_names_from_ts_type(member, emits);
+            }
+        }
+        TSType::TSParenthesizedType(paren) => {
+            collect_emit_names_from_ts_type(&paren.type_annotation, emits);
+        }
+        _ => {}
+    }
+}
+
+fn collect_emit_names_from_ts_type_literal(type_lit: &TSTypeLiteral<'_>, emits: &mut Vec<String>) {
+    let has_property = type_lit
+        .members
+        .iter()
+        .any(|member| matches!(member, TSSignature::TSPropertySignature(_)));
+
+    if has_property {
+        for member in type_lit.members.iter() {
+            if let TSSignature::TSPropertySignature(prop) = member
+                && let Some(name) = property_key_name(&prop.key)
+            {
+                emits.push(name);
+            }
+        }
+        return;
+    }
+
+    for member in type_lit.members.iter() {
+        if let TSSignature::TSCallSignatureDeclaration(call) = member
+            && let Some(first_param) = call.params.items.first()
+            && let Some(type_ann) = &first_param.type_annotation
+        {
+            collect_literal_values_from_ts_type(&type_ann.type_annotation, emits);
+        }
+    }
+}
+
+fn collect_literal_values_from_ts_type(ts_type: &TSType<'_>, emits: &mut Vec<String>) {
+    match ts_type {
+        TSType::TSLiteralType(lit_type) => match &lit_type.literal {
+            oxc_ast::ast::TSLiteral::StringLiteral(lit) => {
+                emits.push(lit.value.to_compact_string());
+            }
+            oxc_ast::ast::TSLiteral::NumericLiteral(lit) => {
+                emits.push(lit.value.to_compact_string());
+            }
+            _ => {}
+        },
+        TSType::TSUnionType(union) => {
+            for member in union.types.iter() {
+                collect_literal_values_from_ts_type(member, emits);
+            }
+        }
+        TSType::TSParenthesizedType(paren) => {
+            collect_literal_values_from_ts_type(&paren.type_annotation, emits);
+        }
+        _ => {}
+    }
+}
+
+fn property_key_name(key: &PropertyKey<'_>) -> Option<String> {
+    match key {
+        PropertyKey::StaticIdentifier(id) => Some(id.name.to_compact_string()),
+        PropertyKey::StringLiteral(lit) => Some(lit.value.to_compact_string()),
+        PropertyKey::NumericLiteral(lit) => Some(lit.value.to_compact_string()),
+        _ => None,
+    }
 }
 
 fn extract_emit_shorthand_key(segment: &str) -> Option<String> {
@@ -1135,6 +1256,18 @@ mod tests {
         );
 
         assert_eq!(names, vec!["update:open", "select:item", "close"]);
+    }
+
+    #[test]
+    fn extract_emit_names_ignores_call_signature_payload_literals() {
+        let names = extract_emit_names_from_type(
+            r#"{
+              (e: 'change', mode: 'x' | 'y'): void
+              (evt: 'submit', value: 'draft' | 'published'): void
+            }"#,
+        );
+
+        assert_eq!(names, vec!["change", "submit"]);
     }
 
     #[test]
