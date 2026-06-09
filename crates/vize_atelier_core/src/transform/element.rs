@@ -5,6 +5,7 @@ use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_
 use crate::ast::*;
 use crate::errors::ErrorCode;
 use crate::transforms::transform_expression::process_inline_handler;
+use crate::transforms::v_slot::validate_v_slot_usage;
 
 use super::{ExitFns, TransformContext};
 
@@ -18,6 +19,7 @@ pub fn transform_element<'a>(
     el: &mut Box<'a, ElementNode<'a>>,
 ) -> Option<ExitFns<'a>> {
     maybe_promote_element_to_component(ctx, el);
+    validate_v_slot_usage(ctx, el);
 
     // Process props and directives
     process_element_props(ctx, el);
