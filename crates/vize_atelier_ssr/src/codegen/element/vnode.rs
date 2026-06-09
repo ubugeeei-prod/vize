@@ -1,11 +1,17 @@
 //! VNode fallback expression generation used by slot fallback paths.
 
+use super::super::helpers::collect_for_scoped_params;
 use super::props::*;
 use super::*;
+use vize_atelier_core::ast::ForNode;
 
 impl<'a> SsrCodegenContext<'a> {
     fn vnode_children_expression(&mut self, children: &[TemplateChildNode]) -> String {
         let expressions = self.vnode_child_expressions(children);
+        let has_array_child = has_vnode_array_child(children);
+        if has_array_child && expressions.len() == 1 {
+            return expressions.into_iter().next().unwrap_or_default();
+        }
 
         let mut out = String::from("[");
         for (index, expr) in expressions.iter().enumerate() {
@@ -15,6 +21,9 @@ impl<'a> SsrCodegenContext<'a> {
             out.push_str(expr);
         }
         out.push(']');
+        if has_array_child {
+            out.push_str(".flat()");
+        }
         out
     }
 
@@ -32,6 +41,10 @@ impl<'a> SsrCodegenContext<'a> {
 
     fn vnode_children_expression_from_refs(&mut self, children: &[&TemplateChildNode]) -> String {
         let expressions = self.vnode_child_expressions_from_refs(children);
+        let has_array_child = has_vnode_array_child_ref(children);
+        if has_array_child && expressions.len() == 1 {
+            return expressions.into_iter().next().unwrap_or_default();
+        }
 
         let mut out = String::from("[");
         for (index, expr) in expressions.iter().enumerate() {
@@ -41,6 +54,9 @@ impl<'a> SsrCodegenContext<'a> {
             out.push_str(expr);
         }
         out.push(']');
+        if has_array_child {
+            out.push_str(".flat()");
+        }
         out
     }
 
@@ -97,7 +113,7 @@ impl<'a> SsrCodegenContext<'a> {
                 Some(out)
             }
             TemplateChildNode::If(if_node) => Some(self.vnode_if_expression(if_node)),
-            TemplateChildNode::For(_) => None,
+            TemplateChildNode::For(for_node) => Some(self.vnode_for_expression(for_node)),
             TemplateChildNode::IfBranch(_)
             | TemplateChildNode::TextCall(_)
             | TemplateChildNode::CompoundExpression(_)
@@ -255,8 +271,27 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
+    fn vnode_for_expression(&mut self, for_node: &ForNode) -> String {
+        self.use_core_helper(RuntimeHelper::RenderList);
+
+        let mut out = String::from("_renderList(");
+        out.push_str(&self.expression_to_string(&for_node.source));
+        out.push_str(", (");
+        append_for_aliases(self, &mut out, for_node);
+        out.push_str(") => ");
+
+        self.push_scoped_params(collect_for_scoped_params(for_node));
+        let body = self.vnode_branch_expression(&for_node.children);
+        self.pop_scoped_params();
+
+        out.push_str(&body);
+        out.push_str(").flat()");
+        out
+    }
+
     fn vnode_branch_expression(&mut self, children: &[TemplateChildNode]) -> String {
         let expressions = self.vnode_child_expressions(children);
+        let has_array_child = has_vnode_array_child(children);
         if expressions.is_empty() {
             return "_createCommentVNode(\"\")".to_compact_string();
         }
@@ -272,6 +307,9 @@ impl<'a> SsrCodegenContext<'a> {
             out.push_str(expr);
         }
         out.push(']');
+        if has_array_child {
+            out.push_str(".flat()");
+        }
         out
     }
 
@@ -360,4 +398,34 @@ impl<'a> SsrCodegenContext<'a> {
         out.push(')');
         out
     }
+}
+
+fn append_for_aliases(ctx: &mut SsrCodegenContext<'_>, out: &mut String, for_node: &ForNode) {
+    let mut has_alias = false;
+    for alias in [
+        for_node.value_alias.as_ref(),
+        for_node.key_alias.as_ref(),
+        for_node.object_index_alias.as_ref(),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        if has_alias {
+            out.push_str(", ");
+        }
+        out.push_str(&ctx.expression_to_string(alias));
+        has_alias = true;
+    }
+}
+
+fn has_vnode_array_child(children: &[TemplateChildNode]) -> bool {
+    children
+        .iter()
+        .any(|child| matches!(child, TemplateChildNode::For(_)))
+}
+
+fn has_vnode_array_child_ref(children: &[&TemplateChildNode]) -> bool {
+    children
+        .iter()
+        .any(|child| matches!(**child, TemplateChildNode::For(_)))
 }

@@ -12,7 +12,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         })
         _push(`<!--]-->`)
       } else {
-        return []
+        return _renderList(_ctx.deps, ([dep, version]) => _createElementVNode("div", { key: dep }, [_createTextVNode(_toDisplayString(dep)), _createTextVNode(" "), _createTextVNode(_toDisplayString(version))])).flat()
       }
     }),
     _: 1

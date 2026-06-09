@@ -374,6 +374,13 @@ mod component {
     }
 
     #[test]
+    fn dynamic_component_slot_v_for_returns_vnodes() {
+        insta::assert_snapshot!(compile_full(
+            r#"<component :is="tag"><li v-for="item in items">{{ item }}</li></component>"#
+        ));
+    }
+
+    #[test]
     fn component_scoped_slot_props_are_local() {
         insta::assert_snapshot!(compile_full(
             r#"<Carousel><template #item="{ data: speaker }"><div :style="{ backgroundImage: `url(${speaker.avatarUrl})` }">{{ speaker.name }}</div></template></Carousel>"#

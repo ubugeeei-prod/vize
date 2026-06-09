@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<component :is=\"tag\"><li v-for=\"item in items\">{{ item }}</li></component>\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _ssrRenderVNode(_push, _createVNode(_resolveDynamicComponent(_ctx.tag), _attrs, { default: _withCtx(() => _renderList(_ctx.items, (item) => _createElementVNode("li", null, [_createTextVNode(_toDisplayString(item))])).flat()), _: 1 }), _parent)
+}

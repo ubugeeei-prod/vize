@@ -305,7 +305,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 }
 
-fn collect_for_scoped_params(for_node: &ForNode) -> FxHashSet<String> {
+pub(crate) fn collect_for_scoped_params(for_node: &ForNode) -> FxHashSet<String> {
     let mut params = FxHashSet::default();
 
     if let Some(value) = &for_node.value_alias {
