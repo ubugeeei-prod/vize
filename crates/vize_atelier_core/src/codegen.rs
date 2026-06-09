@@ -877,6 +877,47 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_merged_v_on_handlers_are_cached() {
+        use crate::options::{CodegenOptions, TransformOptions};
+        use crate::parser::parse;
+        use crate::transform::transform;
+        use bumpalo::Bump;
+
+        let allocator = Bump::new();
+        let (mut root, _) = parse(
+            &allocator,
+            r#"<div @click="() => x++" @click.stop="() => y++"></div>"#,
+        );
+
+        transform(
+            &allocator,
+            &mut root,
+            TransformOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+            None,
+        );
+
+        let result = super::generate(
+            &root,
+            CodegenOptions {
+                prefix_identifiers: true,
+                cache_handlers: true,
+                ..Default::default()
+            },
+        );
+        let output = result_output(&result);
+
+        assert!(
+            output.contains("onClick: [_cache[0] || (_cache[0] = () => _ctx.x++), _cache[1] || (_cache[1] = _withModifiers(() => _ctx.y++, [\"stop\"]))]"),
+            "merged same-event handlers should each be cached. Got:\n{}",
+            output
+        );
+        insta::assert_snapshot!(output.as_str());
+    }
+
+    #[test]
     fn test_codegen_scoped_slot_params_stay_local_in_handlers() {
         use crate::options::{CodegenOptions, TransformOptions};
         use crate::parser::parse;

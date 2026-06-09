@@ -1,6 +1,7 @@
 //! Event-related props generation (v-on merging and handler generation).
 
 use crate::ast::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper};
+use crate::options::BindingType;
 
 use super::super::{
     context::CodegenContext,
@@ -8,6 +9,7 @@ use super::super::{
     helpers::{camelize, capitalize_first},
 };
 use vize_carton::String;
+use vize_carton::ToCompactString;
 
 /// Compute the prop key for a static v-on event, mirroring Vue's
 /// `transforms/vOn.ts` casing rules.
@@ -137,7 +139,7 @@ pub(super) fn generate_merged_event_handlers(
 }
 
 /// Generate just the handler value part of a v-on directive (without the key name)
-fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
+pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
     // Classify modifiers (same logic as in generate_directive_prop_with_static)
     let event_name = if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
         exp.content.as_str()
@@ -175,6 +177,16 @@ fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>)
 
     let has_system_mods = !system_modifiers.is_empty();
     let has_key_mods = !key_modifiers.is_empty();
+    let needs_cache = needs_von_handler_cache(ctx, dir);
+
+    if needs_cache {
+        let cache_index = ctx.next_cache_index();
+        ctx.push("_cache[");
+        ctx.push(&cache_index.to_compact_string());
+        ctx.push("] || (_cache[");
+        ctx.push(&cache_index.to_compact_string());
+        ctx.push("] = ");
+    }
 
     if has_key_mods {
         ctx.use_helper(RuntimeHelper::WithKeys);
@@ -187,7 +199,7 @@ fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>)
     }
 
     if let Some(exp) = &dir.exp {
-        generate_event_handler(ctx, exp, false);
+        generate_event_handler(ctx, exp, needs_cache);
     } else {
         ctx.push("() => {}");
     }
@@ -217,4 +229,31 @@ fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>)
         }
         ctx.push("])");
     }
+
+    if needs_cache {
+        ctx.push(")");
+    }
+}
+
+fn needs_von_handler_cache(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
+    ctx.cache_handlers_in_current_scope() && dir.exp.is_some() && !is_setup_const_handler(ctx, dir)
+}
+
+fn is_setup_const_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
+    dir.exp.as_ref().is_some_and(|exp| {
+        if let ExpressionNode::Simple(simple) = exp
+            && !simple.is_static
+        {
+            let content = simple.content.trim();
+            if crate::transforms::is_simple_identifier(content) {
+                return ctx
+                    .options
+                    .binding_metadata
+                    .as_ref()
+                    .and_then(|metadata| metadata.bindings.get(content))
+                    .is_some_and(|binding| *binding == BindingType::SetupConst);
+            }
+        }
+        false
+    })
 }

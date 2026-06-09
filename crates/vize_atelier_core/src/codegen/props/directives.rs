@@ -4,7 +4,7 @@ use crate::ast::{DirectiveNode, ExpressionNode, RuntimeHelper};
 
 use super::super::{
     context::CodegenContext,
-    expression::{generate_event_handler, generate_expression, generate_simple_expression},
+    expression::{generate_expression, generate_simple_expression},
     helpers::{camelize, escape_js_string, is_constant_simple_expression, is_valid_js_identifier},
 };
 use vize_carton::String;
@@ -370,54 +370,11 @@ fn generate_vbind_prop(
 
 /// Generate v-on directive as a prop
 fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
-    // Get event name first to determine context for modifiers
-    let (event_name, is_dynamic_event) = if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
-        (exp.content.as_str(), !exp.is_static)
+    let is_dynamic_event = if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
+        !exp.is_static
     } else {
-        ("", false)
+        false
     };
-
-    // Check if this is a keyboard event (for context-dependent modifiers)
-    let is_keyboard_event = matches!(event_name, "keydown" | "keyup" | "keypress");
-
-    // Collect modifiers into categories
-    let mut event_option_modifiers: Vec<&str> = Vec::new();
-    let mut system_modifiers: Vec<&str> = Vec::new();
-    let mut key_modifiers: Vec<&str> = Vec::new();
-
-    for modifier in dir.modifiers.iter() {
-        let mod_name = modifier.content.as_str();
-        match mod_name {
-            // Event option modifiers - appended to event name
-            "capture" | "once" | "passive" => {
-                event_option_modifiers.push(mod_name);
-            }
-            // "native" modifier is a no-op in Vue 3 (removed)
-            "native" => {}
-            // Context-dependent: left/right are arrow keys on keyboard events,
-            // mouse buttons on click events
-            "left" | "right" => {
-                if is_keyboard_event {
-                    key_modifiers.push(mod_name);
-                } else {
-                    system_modifiers.push(mod_name);
-                }
-            }
-            // System modifiers - wrapped with withModifiers
-            "stop" | "prevent" | "self" | "ctrl" | "shift" | "alt" | "meta" | "middle"
-            | "exact" => {
-                system_modifiers.push(mod_name);
-            }
-            // Key modifiers - wrapped with withKeys
-            "enter" | "tab" | "delete" | "esc" | "space" | "up" | "down" => {
-                key_modifiers.push(mod_name);
-            }
-            _ => {
-                // Unknown modifiers (including numeric keycodes) are treated as key modifiers
-                key_modifiers.push(mod_name);
-            }
-        }
-    }
 
     if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
         if is_dynamic_event {
@@ -460,96 +417,7 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
         }
     }
 
-    // Generate handler with optional withModifiers/withKeys wrappers
-    // Order: _withKeys(_withModifiers(handler, [system_mods]), [key_mods])
-    let has_system_mods = !system_modifiers.is_empty();
-    let has_key_mods = !key_modifiers.is_empty();
-
-    // Check if this handler needs caching.
-    // Scoped params from v-for / slots must disable caching, otherwise the
-    // cached closure captures the first scoped value and gets reused.
-    // Setup-const bindings are already stable references and also skip caching.
-    // Pattern: _cache[n] || (_cache[n] = handler)
-    // Simple identifiers get safety wrapper: (...args) => (_ctx.handler && _ctx.handler(...args))
-    // Inline expressions get: $event => (expression)
-    let is_const_handler = dir.exp.as_ref().is_some_and(|exp| {
-        if let ExpressionNode::Simple(simple) = exp
-            && !simple.is_static
-        {
-            let content = simple.content.trim();
-            // Check if content is a simple identifier that's a setup-const binding
-            if crate::transforms::is_simple_identifier(content)
-                && let Some(ref metadata) = ctx.options.binding_metadata
-            {
-                return matches!(
-                    metadata.bindings.get(content),
-                    Some(crate::options::BindingType::SetupConst)
-                );
-            }
-        }
-        false
-    });
-    let needs_cache =
-        ctx.cache_handlers_in_current_scope() && dir.exp.is_some() && !is_const_handler;
-
-    if needs_cache {
-        let cache_index = ctx.next_cache_index();
-        ctx.push("_cache[");
-        ctx.push(&cache_index.to_compact_string());
-        ctx.push("] || (_cache[");
-        ctx.push(&cache_index.to_compact_string());
-        ctx.push("] = ");
-    }
-
-    if has_key_mods {
-        ctx.use_helper(RuntimeHelper::WithKeys);
-        ctx.push("_withKeys(");
-    }
-
-    if has_system_mods {
-        ctx.use_helper(RuntimeHelper::WithModifiers);
-        ctx.push("_withModifiers(");
-    }
-
-    // Generate the actual handler
-    if let Some(exp) = &dir.exp {
-        generate_event_handler(ctx, exp, needs_cache);
-    } else {
-        ctx.push("() => {}");
-    }
-
-    // Close withModifiers wrapper
-    if has_system_mods {
-        ctx.push(", [");
-        for (i, mod_name) in system_modifiers.iter().enumerate() {
-            if i > 0 {
-                ctx.push(",");
-            }
-            ctx.push("\"");
-            ctx.push(mod_name);
-            ctx.push("\"");
-        }
-        ctx.push("])");
-    }
-
-    // Close withKeys wrapper
-    if has_key_mods {
-        ctx.push(", [");
-        for (i, mod_name) in key_modifiers.iter().enumerate() {
-            if i > 0 {
-                ctx.push(",");
-            }
-            ctx.push("\"");
-            ctx.push(mod_name);
-            ctx.push("\"");
-        }
-        ctx.push("])");
-    }
-
-    // Close cache wrapper
-    if needs_cache {
-        ctx.push(")");
-    }
+    super::events::generate_von_handler_value(ctx, dir);
 }
 
 /// Generate dynamic v-model on component as props
