@@ -123,6 +123,51 @@ fn test_vize_ignore_start_end_region() {
 }
 
 #[test]
+fn test_vize_ignore_start_end_suppresses_run_on_template_diagnostic() {
+    // Regression for #1196: `@vize:ignore-start` / `@vize:ignore-end`
+    // regions must already be known before `run_on_template` rules report.
+    let linter = Linter::new();
+    let result = linter.lint_template(
+        r#"<!-- @vize:ignore-start -->
+<div v-if="a"></div>
+<div v-else-if="a"></div>
+<!-- @vize:ignore-end -->"#,
+        "test.vue",
+    );
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|d| d.rule_name == "vue/no-dupe-v-else-if")
+            .count(),
+        0,
+        "run_on_template-phase rule must be suppressed by @vize:ignore-start/end"
+    );
+}
+
+#[test]
+fn test_vize_forget_suppresses_run_on_template_diagnostic() {
+    // Regression for #1196: `@vize:forget` suppresses the next template
+    // child, including the branches in its v-if / v-else-if chain.
+    let linter = Linter::new();
+    let result = linter.lint_template(
+        r#"<!-- @vize:forget duplicate condition is intentional -->
+<div v-if="a"></div>
+<div v-else-if="a"></div>"#,
+        "test.vue",
+    );
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|d| d.rule_name == "vue/no-dupe-v-else-if")
+            .count(),
+        0,
+        "run_on_template-phase rule must be suppressed by @vize:forget"
+    );
+}
+
+#[test]
 fn test_vize_docs_no_lint_effect() {
     let linter = Linter::new();
     let result = linter.lint_template(
