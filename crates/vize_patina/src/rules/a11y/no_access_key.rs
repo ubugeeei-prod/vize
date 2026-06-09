@@ -11,7 +11,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, ElementType, PropNode};
+use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/no-access-key",
@@ -36,14 +36,28 @@ impl Rule for NoAccessKey {
         }
 
         for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name == "accesskey"
-            {
-                ctx.warn_with_help(
-                    ctx.t("a11y/no-access-key.message"),
-                    &attr.loc,
-                    ctx.t("a11y/no-access-key.help"),
-                );
+            match prop {
+                PropNode::Attribute(attr) if attr.name == "accesskey" => {
+                    ctx.warn_with_help(
+                        ctx.t("a11y/no-access-key.message"),
+                        &attr.loc,
+                        ctx.t("a11y/no-access-key.help"),
+                    );
+                }
+                PropNode::Directive(dir)
+                    if dir.name == "bind"
+                        && matches!(
+                            &dir.arg,
+                            Some(ExpressionNode::Simple(arg)) if arg.content == "accesskey"
+                        ) =>
+                {
+                    ctx.warn_with_help(
+                        ctx.t("a11y/no-access-key.message"),
+                        &dir.loc,
+                        ctx.t("a11y/no-access-key.help"),
+                    );
+                }
+                _ => {}
             }
         }
     }
@@ -72,6 +86,13 @@ mod tests {
     fn test_invalid_has_accesskey() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div accesskey="h">Content</div>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_has_bound_accesskey() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div :accesskey="'h'">Content</div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
     }
 }
