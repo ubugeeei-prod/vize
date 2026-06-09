@@ -99,7 +99,7 @@ function __setup() {
   // @vize-map: expr -> 20:25
 
   // v-slot scope: #area-gradient
-  void function _slot_area_gradient({ id }: any) {
+  void function _slot_area_gradient({ id }: typeof TrendChart extends { new (): { $slots: infer __S } } ? (__S extends { "area-gradient"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
     void id;
     void (id); // Interpolation
     // @vize-map: expr -> 72:74
@@ -123,7 +123,7 @@ function __setup() {
   });
 
   // Component props in v-slot scope: #area-gradient
-  void function _slot_props_area_gradient({ id }: any) {
+  void function _slot_props_area_gradient({ id }: typeof TrendChart extends { new (): { $slots: infer __S } } ? (__S extends { "area-gradient"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
     void id;
   };
 

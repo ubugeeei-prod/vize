@@ -128,7 +128,8 @@ pub struct VSlotScopeData {
     pub prop_names: ParamNames,
     /// Owning component tag when the slot is on a child component (e.g.
     /// `"TodoItem"`), used to type the slot props from the child's `defineSlots`.
-    /// `None` for slots on a plain element or a `<template>` host.
+    /// For `<template #name>` hosts this is the parent component. `None` for
+    /// slots on a plain element.
     pub component: Option<CompactString>,
 }
 

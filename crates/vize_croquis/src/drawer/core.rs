@@ -32,6 +32,9 @@ pub struct Drawer {
     /// instead of walking the parent scope chain. Incremented on v-for scope
     /// enter, decremented on exit (paired with `vif_guard_stack` discipline).
     pub(crate) vfor_depth: u32,
+    /// Component tag stack for the current element ancestry. Used by
+    /// `<template #name>` slot hosts to recover the owning child component.
+    pub(crate) parent_component_stack: Vec<CompactString>,
     /// Memoized identifier extraction keyed by expression text. Template
     /// expressions repeat heavily (e.g. the same `:to`/`@click`/`{{ }}` across
     /// every `v-for` iteration's rendered element), and `extract_identifiers_oxc`
@@ -62,6 +65,7 @@ impl Drawer {
             vif_guard_cache: None,
             vif_branch_conditions: Vec::new(),
             vfor_depth: 0,
+            parent_component_stack: Vec::new(),
             ident_cache: FxHashMap::default(),
         }
     }
@@ -82,6 +86,7 @@ impl Drawer {
             vif_guard_cache: None,
             vif_branch_conditions: Vec::new(),
             vfor_depth: 0,
+            parent_component_stack: Vec::new(),
             ident_cache: FxHashMap::default(),
         }
     }

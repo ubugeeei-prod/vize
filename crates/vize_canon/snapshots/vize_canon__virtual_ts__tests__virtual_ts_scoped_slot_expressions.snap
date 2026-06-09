@@ -88,7 +88,7 @@ function __setup() {
   // @vize-map: expr -> 16:21
 
   // v-slot scope: #default
-  void function _slot_default({ item }: any) {
+  void function _slot_default({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
     void item;
     void (item); // Interpolation
     // @vize-map: expr -> 64:68
@@ -112,7 +112,7 @@ function __setup() {
   });
 
   // Component props in v-slot scope: #default
-  void function _slot_props_default({ item }: any) {
+  void function _slot_props_default({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
     void item;
   };
 

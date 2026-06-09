@@ -65,7 +65,14 @@ impl Drawer {
 
         self.process_element_directives(el, scope_vars, is_component, tag);
         self.check_element_directive_refs(el, scope_vars);
+
+        if is_component {
+            self.parent_component_stack.push(CompactString::new(tag));
+        }
         self.visit_element_children(el, scope_vars);
+        if is_component {
+            self.parent_component_stack.pop();
+        }
 
         if vif_guard_pushed {
             self.pop_element_vif_guard();

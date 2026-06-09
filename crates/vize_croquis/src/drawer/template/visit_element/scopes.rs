@@ -47,12 +47,20 @@ impl Drawer {
 
         let count = prop_names.len();
         if count > 0 || self.options.analyze_template_scopes {
+            let component = if is_component {
+                Some(CompactString::new(tag))
+            } else if tag == "template" {
+                self.parent_component_stack.last().cloned()
+            } else {
+                None
+            };
+
             self.croquis.scopes.enter_v_slot_scope_with_name_kind(
                 VSlotScopeData {
                     name: slot_name,
                     props_pattern,
                     prop_names: prop_names.iter().cloned().collect(),
-                    component: is_component.then(|| CompactString::new(tag)),
+                    component,
                 },
                 name_is_static,
                 offset,
