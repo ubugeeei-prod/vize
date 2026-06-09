@@ -422,7 +422,7 @@ fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
             line += 1;
             col = 0;
         } else {
-            col += 1;
+            col += ch.len_utf16() as u32;
         }
         current_offset += ch.len_utf8();
     }
@@ -583,5 +583,19 @@ mod tests {
         assert_eq!(offset_to_line_col(source, 3), (0, 3)); // '\n'
         assert_eq!(offset_to_line_col(source, 4), (1, 0)); // 'd'
         assert_eq!(offset_to_line_col(source, 8), (2, 0)); // 'g'
+    }
+
+    #[test]
+    fn test_offset_to_line_col_counts_utf16_code_units() {
+        let source = "a🦀b\nc";
+        let crab_offset = "a".len();
+        let b_offset = "a🦀".len();
+        let newline_offset = "a🦀b".len();
+        let c_offset = "a🦀b\n".len();
+
+        assert_eq!(offset_to_line_col(source, crab_offset), (0, 1));
+        assert_eq!(offset_to_line_col(source, b_offset), (0, 3));
+        assert_eq!(offset_to_line_col(source, newline_offset), (0, 4));
+        assert_eq!(offset_to_line_col(source, c_offset), (1, 0));
     }
 }
