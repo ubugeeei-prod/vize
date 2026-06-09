@@ -172,7 +172,9 @@ pub fn analyze_props_validation(
                 }
 
                 // Check if this prop is declared
-                let Some(prop_info) = child_props_info.props.get(passed_prop.name) else {
+                let Some(prop_info) =
+                    lookup_declared_prop(&child_props_info.props, passed_prop.name)
+                else {
                     let issue = PropsValidationIssue {
                         parent_file: parent_id,
                         child_file: child_id,
@@ -335,7 +337,23 @@ fn define_props_offset(entry: &ModuleEntry) -> u32 {
 }
 
 fn has_passed_prop(usage: &PassedComponentUsage<'_>, name: &str) -> bool {
-    usage.props.iter().any(|prop| prop.name == name)
+    // Vue normalizes kebab-case attribute names to camelCase props, so compare
+    // the camelized written name against the declared (camelCase) key.
+    usage
+        .props
+        .iter()
+        .any(|prop| prop.name == name || to_camel_case(prop.name) == name)
+}
+
+/// Look up a declared prop by name, normalizing the written attribute name
+/// from kebab-case to camelCase (Vue's attribute-to-prop convention).
+fn lookup_declared_prop<'a>(
+    props: &'a FxHashMap<CompactString, PropInfo>,
+    written_name: &str,
+) -> Option<&'a PropInfo> {
+    props
+        .get(written_name)
+        .or_else(|| props.get(to_camel_case(written_name).as_str()))
 }
 
 fn actual_literal_type(prop: &PassedPropInfo<'_>) -> Option<CompactString> {
@@ -498,6 +516,21 @@ fn to_pascal_case(s: &str) -> String {
             }
         })
         .collect()
+}
+
+/// Convert kebab-case to camelCase (Vue's attribute-name-to-prop convention).
+#[inline]
+fn to_camel_case(s: &str) -> String {
+    let mut parts = s.split('-');
+    let mut result = String::from(parts.next().unwrap_or_default());
+    for part in parts {
+        let mut chars = part.chars();
+        if let Some(c) = chars.next() {
+            result.extend(c.to_uppercase());
+            result.extend(chars);
+        }
+    }
+    result
 }
 
 /// Check if an attribute name is a built-in HTML/Vue attribute.

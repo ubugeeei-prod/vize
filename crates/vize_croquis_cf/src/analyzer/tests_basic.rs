@@ -258,6 +258,107 @@ fn test_props_validation_emits_type_mismatch_for_static_literal() {
     assert_eq!(diagnostic, ("count", "number", "string", 27, 42));
 }
 
+#[test]
+fn test_kebab_case_prop_binding_matches_camel_case_declared_prop() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_props_validation(true));
+
+    let child_analysis = script_analysis("const props = defineProps<{ userName: string }>()");
+    let parent_analysis = script_analysis_with_component_usage(
+        r#"import Child from './Child.vue'"#,
+        component_usage_with_kebab_prop("Child", true),
+    );
+
+    analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analysis);
+    analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analysis);
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+
+    let missing_required = result.diagnostics.iter().any(|diagnostic| {
+        matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::MissingRequiredProp { .. }
+        )
+    });
+    let undeclared = result.diagnostics.iter().any(|diagnostic| {
+        matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::UndeclaredProp { .. }
+        )
+    });
+
+    assert!(
+        !missing_required,
+        "kebab :user-name should satisfy required camelCase userName"
+    );
+    assert!(
+        !undeclared,
+        "kebab :user-name should match declared userName (not undeclared)"
+    );
+
+    // Same for a static kebab attribute (user-name="x").
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_props_validation(true));
+    let child_analysis = script_analysis("const props = defineProps<{ userName: string }>()");
+    let parent_analysis = script_analysis_with_component_usage(
+        r#"import Child from './Child.vue'"#,
+        component_usage_with_kebab_prop("Child", false),
+    );
+    analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analysis);
+    analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analysis);
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    assert!(
+        !result.diagnostics.iter().any(|diagnostic| matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::MissingRequiredProp { .. }
+                | CrossFileDiagnosticKind::UndeclaredProp { .. }
+        )),
+        "static kebab user-name should match declared camelCase userName"
+    );
+}
+
+#[test]
+fn test_genuinely_missing_required_prop_still_reported() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_props_validation(true));
+
+    let child_analysis = script_analysis("const props = defineProps<{ userName: string }>()");
+    let parent_analysis = script_analysis_with_component_usage(
+        r#"import Child from './Child.vue'"#,
+        ComponentUsage {
+            name: CompactString::new("Child"),
+            start: 0,
+            end: 0,
+            props: smallvec![],
+            events: smallvec![],
+            slots: smallvec![],
+            has_spread_attrs: false,
+            scope_id: ScopeId::ROOT,
+            vif_guard: None,
+        },
+    );
+
+    analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analysis);
+    analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analysis);
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    let missing = result
+        .diagnostics
+        .iter()
+        .filter_map(|diagnostic| match &diagnostic.kind {
+            CrossFileDiagnosticKind::MissingRequiredProp { prop_name, .. } => {
+                Some(prop_name.as_str())
+            }
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(missing, vec!["userName"]);
+}
+
 fn script_analysis(script: &str) -> vize_croquis::Croquis {
     let mut analyzer = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -368,6 +469,20 @@ fn component_usage_with_count_string_at(
             prop_start,
             prop_end,
         )],
+        events: smallvec![],
+        slots: smallvec![],
+        has_spread_attrs: false,
+        scope_id: ScopeId::ROOT,
+        vif_guard: None,
+    }
+}
+
+fn component_usage_with_kebab_prop(component: &str, is_dynamic: bool) -> ComponentUsage {
+    ComponentUsage {
+        name: CompactString::new(component),
+        start: 0,
+        end: 0,
+        props: smallvec![passed_prop("user-name", Some("'x'"), is_dynamic)],
         events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: false,
