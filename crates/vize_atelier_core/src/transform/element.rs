@@ -264,6 +264,14 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 }
             };
 
+            let value_exp = value_exp.trim();
+            if ctx.is_in_scope(value_exp) {
+                ctx.on_error(ErrorCode::VModelOnScope, Some(dir.loc.clone()));
+                invalid_model_indices.push(idx);
+                continue;
+            }
+            let value_exp = String::new(value_exp);
+
             // Check if arg is dynamic
             let is_dynamic = dir.arg.as_ref().is_some_and(|arg| match arg {
                 ExpressionNode::Simple(exp) => !exp.is_static,
@@ -575,11 +583,35 @@ mod tests {
     use super::transform_element;
     use crate::{
         ast::{PropNode, TemplateChildNode},
-        errors::ErrorCode,
+        errors::{CompilerError, ErrorCode},
         options::TransformOptions,
         parser::parse,
-        transform::TransformContext,
+        transform::{ParentNode, TransformContext, traverse::traverse_children},
     };
+
+    fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, source);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        let mut ctx =
+            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
+        ctx.errors
+    }
+
+    fn assert_no_model_update_handler(props: &[PropNode<'_>]) {
+        assert!(!props.iter().any(|prop| matches!(
+            prop,
+            PropNode::Directive(dir)
+                if dir.name == "on"
+                    && matches!(
+                        &dir.arg,
+                        Some(crate::ast::ExpressionNode::Simple(arg))
+                            if arg.content == "update:modelValue"
+                    )
+        )));
+    }
 
     #[test]
     fn test_transform_v_model_without_expression_reports_error() {
@@ -633,5 +665,57 @@ mod tests {
 
         assert_eq!(ctx.errors.len(), 1);
         assert_eq!(ctx.errors[0].code, ErrorCode::VModelNoExpression);
+    }
+
+    #[test]
+    fn test_transform_v_model_on_v_for_scope_reports_error() {
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(
+            &allocator,
+            r#"<div v-for="item in items"><input v-model="item" /></div>"#,
+        );
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        let mut ctx =
+            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
+
+        assert_eq!(ctx.errors.len(), 1);
+        assert_eq!(ctx.errors[0].code, ErrorCode::VModelOnScope);
+
+        match &root.children[0] {
+            TemplateChildNode::For(for_node) => match &for_node.children[0] {
+                TemplateChildNode::Element(el) => match &el.children[0] {
+                    TemplateChildNode::Element(input) => {
+                        assert!(!input.props.iter().any(|prop| matches!(
+                            prop,
+                            PropNode::Directive(dir) if dir.name == "model"
+                        )));
+                        assert_no_model_update_handler(input.props.as_slice());
+                    }
+                    other => panic!("Expected input element, got {:?}", other.node_type()),
+                },
+                other => panic!("Expected v-for child element, got {:?}", other.node_type()),
+            },
+            other => panic!("Expected ForNode, got {:?}", other.node_type()),
+        }
+    }
+
+    #[test]
+    fn test_transform_v_model_on_v_slot_scope_reports_error() {
+        let errors = transform_errors(
+            r#"<MyComponent v-slot="{ item }"><input v-model="item" /></MyComponent>"#,
+        );
+
+        assert_eq!(errors.len(), 1);
+        assert_eq!(errors[0].code, ErrorCode::VModelOnScope);
+    }
+
+    #[test]
+    fn test_transform_v_model_on_scope_property_stays_valid() {
+        let errors =
+            transform_errors(r#"<div v-for="item in items"><input v-model="item.value" /></div>"#);
+
+        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors);
     }
 }
