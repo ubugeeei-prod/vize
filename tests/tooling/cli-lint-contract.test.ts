@@ -52,8 +52,7 @@ function withWorkspace<T>(run: (dir: string) => T): T {
 // these fixtures isolate the rule under test.
 const MULTI_SPACE = '<template>\n  <div  id="x"></div>\n</template>\n';
 const CLEAN = '<template>\n  <div id="x" />\n</template>\n';
-const MULTIBYTE_BEFORE_DIRECTIVE =
-  '<template><div title="café" v-html="x"></div></template>\n';
+const MULTIBYTE_BEFORE_DIRECTIVE = '<template><div title="café" v-html="x"></div></template>\n';
 
 test("vize lint --help documents the fix/config/max-warnings surface", () => {
   const result = spawnSync(VIZE.command, [...VIZE.prefix, "lint", "--help"], {
