@@ -13,7 +13,9 @@ use super::scoped::{
 use super::transform::{
     extract_and_transform_v_bind, extract_and_transform_v_bind_with_scope, prod_scoped_v_bind_name,
 };
-use super::{CssCompileOptions, bundle_css, compile_css, parse_css_ast, print_css_ast};
+use super::{CssCompileOptions, bundle_css, compile_css};
+#[cfg(feature = "native")]
+use super::{parse_css_ast, print_css_ast};
 
 fn test_utf8(bytes: &[u8]) -> &str {
     match std::str::from_utf8(bytes) {
@@ -29,6 +31,29 @@ fn v_bind_snapshot<T: AsRef<str>>(transformed: &str, vars: &[T]) -> String {
         .collect::<Vec<_>>()
         .join("\n");
     format!("vars:\n{vars}\n\ncss:\n{transformed}")
+}
+
+fn css_without_ascii_whitespace(css: &str) -> String {
+    css.chars()
+        .filter(|char| !char.is_ascii_whitespace())
+        .collect()
+}
+
+fn compile_scoped_css_without_whitespace(css: &str) -> String {
+    let result = compile_css(
+        css,
+        &CssCompileOptions {
+            scoped: true,
+            scope_id: Some("data-v-123".to_compact_string()),
+            ..Default::default()
+        },
+    );
+    assert!(
+        result.errors.is_empty(),
+        "Unexpected errors: {:?}",
+        result.errors
+    );
+    css_without_ascii_whitespace(&result.code)
 }
 
 #[test]
@@ -52,6 +77,27 @@ fn test_compile_scoped_css() {
     );
     assert!(result.errors.is_empty());
     insta::assert_debug_snapshot!(result);
+}
+
+#[test]
+fn test_compile_scoped_css_keeps_functional_pseudo_selector_list_intact() {
+    let code = compile_scoped_css_without_whitespace(".btn:is(.a, .b) { color: red; }");
+
+    assert_eq!(code, ".btn[data-v-123]:is(.a,.b){color:red;}");
+}
+
+#[test]
+fn test_compile_scoped_css_scopes_before_functional_pseudo() {
+    let code = compile_scoped_css_without_whitespace(".foo:not(:hover) { color: red; }");
+
+    assert_eq!(code, ".foo[data-v-123]:not(:hover){color:red;}");
+}
+
+#[test]
+fn test_compile_scoped_css_keeps_functional_pseudo_whitespace_intact() {
+    let code = compile_scoped_css_without_whitespace(".card:has(.icon + .label) { color: red; }");
+
+    assert_eq!(code, ".card[data-v-123]:has(.icon+.label){color:red;}");
 }
 
 #[cfg(feature = "native")]

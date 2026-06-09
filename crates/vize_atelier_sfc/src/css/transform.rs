@@ -228,18 +228,6 @@ fn write_hex_u32(out: &mut BumpVec<u8>, val: u32) {
     out.push(HEX[(val & 0xF) as usize]);
 }
 
-/// Find byte sequence in slice
-#[inline]
-pub(crate) fn find_bytes(haystack: &[u8], needle: &[u8]) -> Option<usize> {
-    haystack.windows(needle.len()).position(|w| w == needle)
-}
-
-/// Reverse find single byte in slice
-#[inline]
-pub(crate) fn rfind_byte(haystack: &[u8], needle: u8) -> Option<usize> {
-    haystack.iter().rposition(|&b| b == needle)
-}
-
 /// Find the matching closing parenthesis
 pub(crate) fn find_matching_paren(s: &str) -> Option<usize> {
     let mut depth = 1u32;

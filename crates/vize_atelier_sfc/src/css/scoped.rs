@@ -5,7 +5,7 @@
 
 use vize_carton::{Bump, BumpVec};
 
-use super::transform::{find_bytes, find_matching_paren, rfind_byte};
+use super::transform::find_matching_paren;
 
 /// Apply scoped CSS transformation
 pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) -> &'a str {
@@ -241,15 +241,40 @@ fn scope_selector(out: &mut BumpVec<u8>, selector: &str, attr_selector: &[u8]) {
         return;
     }
 
-    // Handle multiple selectors separated by comma
+    // Handle multiple selectors separated by top-level commas. Commas inside
+    // functional pseudo-class arguments belong to the same selector.
     let mut first = true;
-    for part in selector.split(',') {
+    for part in split_top_level_commas(selector) {
         if !first {
             out.extend_from_slice(b", ");
         }
         first = false;
         scope_single_selector(out, part.trim(), attr_selector);
     }
+}
+
+fn split_top_level_commas(s: &str) -> Vec<&str> {
+    let bytes = s.as_bytes();
+    let mut out = Vec::new();
+    let mut depth: i32 = 0;
+    let mut last = 0;
+    let mut i = 0;
+
+    while i < bytes.len() {
+        match bytes[i] {
+            b'(' | b'[' => depth += 1,
+            b')' | b']' => depth -= 1,
+            b',' if depth == 0 => {
+                out.push(&s[last..i]);
+                last = i + 1;
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+
+    out.push(&s[last..]);
+    out
 }
 
 /// Add scope attribute to a single selector
@@ -274,8 +299,8 @@ fn scope_single_selector(out: &mut BumpVec<u8>, selector: &str, attr_selector: &
         return;
     }
 
-    // Find the last simple selector to append the attribute
-    let parts: Vec<&str> = selector.split_whitespace().collect();
+    // Find the last top-level compound selector to append the attribute.
+    let parts: Vec<&str> = split_top_level_whitespace(selector);
     if parts.is_empty() {
         out.extend_from_slice(selector.as_bytes());
         return;
@@ -296,31 +321,80 @@ fn scope_single_selector(out: &mut BumpVec<u8>, selector: &str, attr_selector: &
     }
 }
 
+fn split_top_level_whitespace(s: &str) -> Vec<&str> {
+    let bytes = s.as_bytes();
+    let mut out = Vec::new();
+    let mut depth: i32 = 0;
+    let mut start: Option<usize> = None;
+    let mut i = 0;
+
+    while i < bytes.len() {
+        let byte = bytes[i];
+        match byte {
+            b'(' | b'[' => {
+                if start.is_none() {
+                    start = Some(i);
+                }
+                depth += 1;
+            }
+            b')' | b']' => {
+                depth -= 1;
+            }
+            b' ' | b'\t' | b'\n' | b'\r' if depth == 0 => {
+                if let Some(start_pos) = start.take() {
+                    out.push(&s[start_pos..i]);
+                }
+            }
+            _ => {
+                if start.is_none() {
+                    start = Some(i);
+                }
+            }
+        }
+        i += 1;
+    }
+
+    if let Some(start_pos) = start {
+        out.push(&s[start_pos..]);
+    }
+
+    out
+}
+
 /// Add scope attribute to an element selector
 pub(super) fn add_scope_to_element(out: &mut BumpVec<u8>, selector: &str, attr_selector: &[u8]) {
-    let bytes = selector.as_bytes();
-
-    // Handle pseudo-elements (::before, ::after, etc.)
-    if let Some(pseudo_pos) = find_bytes(bytes, b"::") {
-        out.extend_from_slice(&bytes[..pseudo_pos]);
-        out.extend_from_slice(attr_selector);
-        out.extend_from_slice(&bytes[pseudo_pos..]);
-        return;
-    }
-
-    // Handle pseudo-classes (:hover, :focus, etc.)
-    if let Some(pseudo_pos) = rfind_byte(bytes, b':')
-        && pseudo_pos > 0
-        && bytes[pseudo_pos - 1] != b'\\'
+    // Find the first top-level pseudo-element or pseudo-class so the scope
+    // attribute lands on the compound selector, not inside a functional
+    // pseudo-class argument.
+    if let Some(pseudo_pos) = find_top_level_pseudo(selector)
+        && !selector[..pseudo_pos].ends_with('\\')
     {
-        out.extend_from_slice(&bytes[..pseudo_pos]);
+        out.extend_from_slice(&selector.as_bytes()[..pseudo_pos]);
         out.extend_from_slice(attr_selector);
-        out.extend_from_slice(&bytes[pseudo_pos..]);
+        out.extend_from_slice(&selector.as_bytes()[pseudo_pos..]);
         return;
     }
 
-    out.extend_from_slice(bytes);
+    out.extend_from_slice(selector.as_bytes());
     out.extend_from_slice(attr_selector);
+}
+
+fn find_top_level_pseudo(selector: &str) -> Option<usize> {
+    let bytes = selector.as_bytes();
+    let mut depth: i32 = 0;
+    let mut i = 0;
+
+    while i < bytes.len() {
+        match bytes[i] {
+            b'(' | b'[' => depth += 1,
+            b')' | b']' => depth -= 1,
+            b':' if depth == 0 => return Some(i),
+            _ => {}
+        }
+        i += 1;
+    }
+
+    None
 }
 
 /// Transform :deep() to descendant selector
