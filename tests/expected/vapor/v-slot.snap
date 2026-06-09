@@ -1,4 +1,17 @@
 ===
+name: slot outlet
+options: vapor
+--- INPUT ---
+<slot></slot>
+--- OUTPUT ---
+import { renderSlot as _renderSlot } from 'vue';
+
+export function render(_ctx) {
+  const n0 = _renderSlot($slots, "default")
+  return n0
+}
+
+===
 name: default slot content
 options: vapor
 --- INPUT ---

@@ -6,6 +6,10 @@ mode = "vapor"
 
 cases {
   new {
+    name = "slot outlet"
+    input = "<slot></slot>"
+  }
+  new {
     name = "default slot content"
     input = "<MyComponent>content</MyComponent>"
   }

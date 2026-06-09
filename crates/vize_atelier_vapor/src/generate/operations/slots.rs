@@ -5,7 +5,8 @@ use super::super::context::GenerateContext;
 
 /// Generate SlotOutlet
 pub(super) fn generate_slot_outlet(ctx: &mut GenerateContext, slot: &SlotOutletIRNode<'_>) {
-    let name = ctx.next_temp();
+    ctx.use_helper("renderSlot");
+    let name = cstr!("n{}", slot.id);
     let slot_name = if slot.name.is_static {
         cstr!("\"{}\"", slot.name.content)
     } else {
