@@ -151,6 +151,45 @@ const formData = { id: 1 }"#,
 }
 
 #[test]
+fn test_props_validation_normalizes_kebab_case_prop_bindings() {
+    for (case, value, is_dynamic) in [
+        ("static attr", Some("x"), false),
+        ("dynamic bind", Some("'x'"), true),
+    ] {
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_props_validation(true));
+
+        let child_analysis = script_analysis("const props = defineProps<{ userName: string }>()");
+        let parent_analysis = script_analysis_with_component_usage(
+            r#"import Child from './Child.vue'"#,
+            component_usage_with_prop("Child", "user-name", value, is_dynamic),
+        );
+
+        analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analysis);
+        analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analysis);
+        analyzer.rebuild_component_edges();
+
+        let result = analyzer.analyze();
+        let prop_validation_diagnostics = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| {
+                matches!(
+                    diagnostic.kind,
+                    CrossFileDiagnosticKind::MissingRequiredProp { .. }
+                        | CrossFileDiagnosticKind::UndeclaredProp { .. }
+                )
+            })
+            .collect::<Vec<_>>();
+
+        assert!(
+            prop_validation_diagnostics.is_empty(),
+            "{case} should match camelCase defineProps without missing/undeclared diagnostics"
+        );
+    }
+}
+
+#[test]
 fn test_props_validation_uses_component_and_prop_offsets() {
     let mut analyzer =
         CrossFileAnalyzer::new(CrossFileOptions::default().with_props_validation(true));
@@ -368,6 +407,25 @@ fn component_usage_with_count_string_at(
             prop_start,
             prop_end,
         )],
+        events: smallvec![],
+        slots: smallvec![],
+        has_spread_attrs: false,
+        scope_id: ScopeId::ROOT,
+        vif_guard: None,
+    }
+}
+
+fn component_usage_with_prop(
+    component: &str,
+    prop_name: &str,
+    value: Option<&str>,
+    is_dynamic: bool,
+) -> ComponentUsage {
+    ComponentUsage {
+        name: CompactString::new(component),
+        start: 0,
+        end: 0,
+        props: smallvec![passed_prop(prop_name, value, is_dynamic)],
         events: smallvec![],
         slots: smallvec![],
         has_spread_attrs: false,

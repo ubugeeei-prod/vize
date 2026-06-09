@@ -6,7 +6,7 @@ use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, Diagnosti
 use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleEntry, ModuleRegistry};
 use std::path::{Component, Path, PathBuf};
-use vize_carton::{CompactString, FxHashMap, String, cstr};
+use vize_carton::{CompactString, FxHashMap, String, camelize, cstr};
 use vize_croquis::macros::MacroKind;
 
 /// Information about a props validation issue.
@@ -172,7 +172,9 @@ pub fn analyze_props_validation(
                 }
 
                 // Check if this prop is declared
-                let Some(prop_info) = child_props_info.props.get(passed_prop.name) else {
+                let Some((declared_prop_name, prop_info)) =
+                    declared_prop(&child_props_info.props, passed_prop.name)
+                else {
                     let issue = PropsValidationIssue {
                         parent_file: parent_id,
                         child_file: child_id,
@@ -241,13 +243,13 @@ pub fn analyze_props_validation(
                         cstr!(
                             "**Prop Type Mismatch**: `{}` expects `{}` but received `{}`\n\n\
                             The static prop value does not match the child component's declared runtime prop type.",
-                            passed_prop.name, expected, actual
+                            declared_prop_name, expected, actual
                         ),
                     )
                     .with_related(
                         child_id,
                         define_props_offset(child_entry),
-                        cstr!("Prop `{}` is declared with type `{}` here", passed_prop.name, expected),
+                        cstr!("Prop `{declared_prop_name}` is declared with type `{expected}` here"),
                     );
 
                     diagnostics.push(diagnostic);
@@ -335,7 +337,25 @@ fn define_props_offset(entry: &ModuleEntry) -> u32 {
 }
 
 fn has_passed_prop(usage: &PassedComponentUsage<'_>, name: &str) -> bool {
-    usage.props.iter().any(|prop| prop.name == name)
+    usage
+        .props
+        .iter()
+        .any(|prop| prop_names_match(prop.name, name))
+}
+
+fn declared_prop<'a>(
+    props: &'a FxHashMap<CompactString, PropInfo>,
+    name: &str,
+) -> Option<(&'a CompactString, &'a PropInfo)> {
+    props.get_key_value(name).or_else(|| {
+        props
+            .iter()
+            .find(|(prop_name, _)| prop_names_match(name, prop_name.as_str()))
+    })
+}
+
+fn prop_names_match(left: &str, right: &str) -> bool {
+    left == right || camelize(left) == camelize(right)
 }
 
 fn actual_literal_type(prop: &PassedPropInfo<'_>) -> Option<CompactString> {
