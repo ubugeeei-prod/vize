@@ -47,14 +47,14 @@ impl Drawer {
 
         let count = prop_names.len();
         if count > 0 || self.options.analyze_template_scopes {
-            self.croquis.scopes.enter_v_slot_scope(
+            self.croquis.scopes.enter_v_slot_scope_with_name_kind(
                 VSlotScopeData {
                     name: slot_name,
-                    name_is_static,
                     props_pattern,
                     prop_names: prop_names.iter().cloned().collect(),
                     component: is_component.then(|| CompactString::new(tag)),
                 },
+                name_is_static,
                 offset,
                 *subtree_end.get_or_insert_with(|| element_subtree_end(el)),
             );

@@ -93,7 +93,6 @@ fn test_v_slot_scope() {
     chain.enter_v_slot_scope(
         VSlotScopeData {
             name: CompactString::new("default"),
-            name_is_static: true,
             props_pattern: Some(CompactString::new("{ item, index }")),
             prop_names: vize_carton::smallvec![
                 CompactString::new("item"),
@@ -742,7 +741,6 @@ fn test_snapshot_complex_nested_scopes() {
     chain.enter_v_slot_scope(
         VSlotScopeData {
             name: CompactString::new("default"),
-            name_is_static: true,
             props_pattern: Some(CompactString::new("{ row, col }")),
             prop_names: vize_carton::smallvec![
                 CompactString::new("row"),
@@ -858,7 +856,6 @@ fn test_snapshot_scope_transitions() {
     chain.enter_v_slot_scope(
         VSlotScopeData {
             name: CompactString::new("default"),
-            name_is_static: true,
             props_pattern: None,
             prop_names: vize_carton::smallvec![],
             component: None,

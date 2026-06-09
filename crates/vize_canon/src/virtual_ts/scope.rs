@@ -743,7 +743,7 @@ fn generate_scope_node(
             let props_type = slot_props_type(
                 data.component.as_deref(),
                 data.name.as_str(),
-                data.name_is_static,
+                ctx.summary.scopes.is_v_slot_name_static(scope.id),
             );
             append!(
                 *ts,
@@ -1173,7 +1173,7 @@ fn generate_closure_component_props_recursive(
             let props_type = slot_props_type(
                 data.component.as_deref(),
                 data.name.as_str(),
-                data.name_is_static,
+                ctx.summary.scopes.is_v_slot_name_static(scope.id),
             );
             append!(
                 *ts,

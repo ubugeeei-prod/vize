@@ -88,6 +88,17 @@ impl ScopeChain {
 
     /// Enter a v-slot scope with the given data
     pub fn enter_v_slot_scope(&mut self, data: VSlotScopeData, start: u32, end: u32) -> ScopeId {
+        self.enter_v_slot_scope_with_name_kind(data, true, start, end)
+    }
+
+    /// Enter a v-slot scope and preserve whether the slot name is static.
+    pub fn enter_v_slot_scope_with_name_kind(
+        &mut self,
+        data: VSlotScopeData,
+        name_is_static: bool,
+        start: u32,
+        end: u32,
+    ) -> ScopeId {
         let id = ScopeId::new(self.scopes.len() as u32);
         let parents = self.build_template_parents();
         let mut scope = Scope::with_span_parents(id, parents, ScopeKind::VSlot, start, end);
@@ -101,6 +112,9 @@ impl ScopeChain {
         }
 
         scope.set_data(ScopeData::VSlot(data));
+        if !name_is_static {
+            self.dynamic_v_slot_scopes.insert(id);
+        }
         self.scopes.push(scope);
         self.current = id;
         id

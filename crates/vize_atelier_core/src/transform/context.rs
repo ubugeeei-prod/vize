@@ -345,7 +345,6 @@ impl<'a> TransformContext<'a> {
         self.scope_chain.enter_v_slot_scope(
             VSlotScopeData {
                 name: CompactString::new(name),
-                name_is_static: true,
                 props_pattern: props_pattern.map(CompactString::new),
                 prop_names: prop_names
                     .iter()

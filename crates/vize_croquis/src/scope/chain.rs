@@ -216,12 +216,22 @@ impl Scope {
 }
 
 /// Manages the scope chain during analysis
-#[derive(Debug)]
 pub struct ScopeChain {
     /// All scopes (indexed by ScopeId)
     pub(crate) scopes: Vec<Scope>,
     /// Current scope ID
     pub(crate) current: ScopeId,
+    /// v-slot scopes whose directive argument was dynamic (`v-slot:[name]`).
+    dynamic_v_slot_scopes: FxHashSet<ScopeId>,
+}
+
+impl fmt::Debug for ScopeChain {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ScopeChain")
+            .field("scopes", &self.scopes)
+            .field("current", &self.current)
+            .finish()
+    }
 }
 
 impl Default for ScopeChain {
@@ -315,6 +325,7 @@ impl ScopeChain {
         Self {
             scopes: vec![root],
             current: ScopeId::ROOT,
+            dynamic_v_slot_scopes: FxHashSet::default(),
         }
     }
 
@@ -333,6 +344,7 @@ impl ScopeChain {
         Self {
             scopes,
             current: ScopeId::ROOT,
+            dynamic_v_slot_scopes: FxHashSet::default(),
         }
     }
 
@@ -380,6 +392,12 @@ impl ScopeChain {
     #[inline]
     pub const fn current_id(&self) -> ScopeId {
         self.current
+    }
+
+    /// Whether a v-slot scope name came from a static directive argument.
+    #[inline]
+    pub fn is_v_slot_name_static(&self, id: ScopeId) -> bool {
+        !self.dynamic_v_slot_scopes.contains(&id)
     }
 
     /// Number of scopes
