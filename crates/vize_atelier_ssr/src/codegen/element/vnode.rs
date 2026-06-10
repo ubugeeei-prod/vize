@@ -1,12 +1,13 @@
 //! VNode fallback expression generation used by slot fallback paths.
 
 use super::super::helpers::collect_for_scoped_params;
+use super::component::{has_slot_directive, slot_template_in_children, template_slot_is_dynamic};
 use super::props::*;
 use super::*;
 use vize_atelier_core::ast::ForNode;
 
 impl<'a> SsrCodegenContext<'a> {
-    fn vnode_children_expression(&mut self, children: &[TemplateChildNode]) -> String {
+    fn vnode_children_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
         let expressions = self.vnode_child_expressions(children);
         let has_array_child = has_vnode_array_child(children);
         if has_array_child && expressions.len() == 1 {
@@ -39,7 +40,10 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    fn vnode_children_expression_from_refs(&mut self, children: &[&TemplateChildNode]) -> String {
+    fn vnode_children_expression_from_refs(
+        &mut self,
+        children: &[&TemplateChildNode<'a>],
+    ) -> String {
         let expressions = self.vnode_child_expressions_from_refs(children);
         let has_array_child = has_vnode_array_child_ref(children);
         if has_array_child && expressions.len() == 1 {
@@ -60,7 +64,10 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_child_expressions(&mut self, children: &[TemplateChildNode]) -> std::vec::Vec<String> {
+    fn vnode_child_expressions(
+        &mut self,
+        children: &[TemplateChildNode<'a>],
+    ) -> std::vec::Vec<String> {
         let mut expressions = std::vec::Vec::new();
         for child in children {
             if let Some(expr) = self.vnode_child_expression(child) {
@@ -72,7 +79,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     fn vnode_child_expressions_from_refs(
         &mut self,
-        children: &[&TemplateChildNode],
+        children: &[&TemplateChildNode<'a>],
     ) -> std::vec::Vec<String> {
         let mut expressions = std::vec::Vec::new();
         for child in children {
@@ -83,7 +90,7 @@ impl<'a> SsrCodegenContext<'a> {
         expressions
     }
 
-    fn vnode_child_expression(&mut self, child: &TemplateChildNode) -> Option<String> {
+    fn vnode_child_expression(&mut self, child: &TemplateChildNode<'a>) -> Option<String> {
         match child {
             TemplateChildNode::Element(el) => self.vnode_element_expression(el),
             TemplateChildNode::Text(text) => {
@@ -121,7 +128,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    fn vnode_element_expression(&mut self, el: &ElementNode) -> Option<String> {
+    fn vnode_element_expression(&mut self, el: &ElementNode<'a>) -> Option<String> {
         match el.tag_type {
             ElementType::Element => Some(self.vnode_plain_element_expression(el)),
             ElementType::Component => Some(self.vnode_component_expression(el)),
@@ -130,7 +137,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    fn vnode_plain_element_expression(&mut self, el: &ElementNode) -> String {
+    fn vnode_plain_element_expression(&mut self, el: &ElementNode<'a>) -> String {
         self.use_core_helper(RuntimeHelper::CreateElementVNode);
 
         let props = self.build_plain_vnode_props(el);
@@ -146,7 +153,7 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_component_expression(&mut self, el: &ElementNode) -> String {
+    fn vnode_component_expression(&mut self, el: &ElementNode<'a>) -> String {
         self.use_core_helper(RuntimeHelper::CreateVNode);
 
         let mut out = String::from("_createVNode(");
@@ -192,12 +199,19 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    pub(super) fn vnode_component_slots_expression(
+    pub(super) fn vnode_component_slots_expression<'node>(
         &mut self,
-        children: &[TemplateChildNode],
+        children: &'node [TemplateChildNode<'a>],
     ) -> String {
         if children.is_empty() {
             return "null".to_compact_string();
+        }
+
+        if children
+            .iter()
+            .any(|child| self.is_dynamic_slot_source(child))
+        {
+            return self.vnode_create_slots_expression(children);
         }
 
         self.use_core_helper(RuntimeHelper::WithCtx);
@@ -207,7 +221,228 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_fragment_expression(&mut self, children: &[TemplateChildNode]) -> String {
+    /// `createSlots(base, [entries])` for the vnode (client-render) fallback path
+    /// of a component carrying dynamic/conditional/looped slots. Mirrors the
+    /// push-based SSR slots emission, but emits the vnode form of slot functions
+    /// (`fn: _withCtx((params) => [children])`).
+    fn vnode_create_slots_expression<'node>(
+        &mut self,
+        children: &'node [TemplateChildNode<'a>],
+    ) -> String {
+        self.use_core_helper(RuntimeHelper::CreateSlots);
+        self.use_core_helper(RuntimeHelper::WithCtx);
+
+        // Base object: default children plus static named slots.
+        let mut default_children: std::vec::Vec<&'node TemplateChildNode<'a>> =
+            std::vec::Vec::new();
+        let mut static_slots: std::vec::Vec<&'node ElementNode<'a>> = std::vec::Vec::new();
+        for child in children {
+            if self.is_dynamic_slot_source(child) {
+                continue;
+            }
+            if let TemplateChildNode::Element(el) = child
+                && el.tag_type == ElementType::Template
+                && has_slot_directive(el)
+            {
+                static_slots.push(el.as_ref());
+            } else {
+                default_children.push(child);
+            }
+        }
+
+        let mut out = String::from("_createSlots({ ");
+        let mut wrote = false;
+        if !default_children.is_empty() {
+            out.push_str("default: _withCtx(() => ");
+            out.push_str(&self.vnode_children_expression_from_refs(&default_children));
+            out.push_str("), ");
+            wrote = true;
+        }
+        for el in static_slots {
+            out.push_str(&self.vnode_slot_entry_fn_property(el));
+            out.push_str(", ");
+            wrote = true;
+        }
+        let _ = wrote;
+        out.push_str("_: 2 /* DYNAMIC */ }, [");
+
+        let mut first = true;
+        for child in children {
+            match child {
+                TemplateChildNode::For(for_node)
+                    if slot_template_in_children(&for_node.children).is_some() =>
+                {
+                    if !first {
+                        out.push_str(", ");
+                    }
+                    first = false;
+                    out.push_str(&self.vnode_looped_slot_entry(for_node));
+                }
+                TemplateChildNode::If(if_node)
+                    if if_node
+                        .branches
+                        .iter()
+                        .any(|branch| slot_template_in_children(&branch.children).is_some()) =>
+                {
+                    if !first {
+                        out.push_str(", ");
+                    }
+                    first = false;
+                    out.push_str(&self.vnode_conditional_slot_entry(if_node));
+                }
+                TemplateChildNode::Element(el)
+                    if el.tag_type == ElementType::Template && template_slot_is_dynamic(el) =>
+                {
+                    if !first {
+                        out.push_str(", ");
+                    }
+                    first = false;
+                    out.push_str(&self.vnode_slot_object_entry(el, None));
+                }
+                _ => {}
+            }
+        }
+
+        out.push_str("])");
+        out
+    }
+
+    /// `name: _withCtx((params) => [children])` for a static slot inside the
+    /// vnode `createSlots` base object.
+    fn vnode_slot_entry_fn_property(&mut self, el: &ElementNode<'a>) -> String {
+        let name = self
+            .slot_directive(el)
+            .map(|dir| self.slot_entry_name(dir))
+            .unwrap_or_else(|| quoted_js_string("default"));
+        let mut out = String::default();
+        if name.starts_with('"') {
+            // Unquote when it is a valid identifier for readability/parity.
+            let inner = &name[1..name.len() - 1];
+            if is_valid_js_identifier(inner) {
+                out.push_str(inner);
+            } else {
+                out.push_str(&name);
+            }
+        } else {
+            out.push('[');
+            out.push_str(&name);
+            out.push(']');
+        }
+        out.push_str(": ");
+        out.push_str(&self.vnode_slot_fn(el));
+        out
+    }
+
+    fn vnode_looped_slot_entry(&mut self, for_node: &ForNode<'a>) -> String {
+        let Some(template_el) = slot_template_in_children(&for_node.children) else {
+            return "undefined".to_compact_string();
+        };
+        self.use_core_helper(RuntimeHelper::RenderList);
+
+        let mut out = String::from("_renderList(");
+        out.push_str(&self.expression_to_string(&for_node.source));
+        out.push_str(", (");
+        append_for_aliases(self, &mut out, for_node);
+        out.push_str(") => {");
+
+        self.push_scoped_params(collect_for_scoped_params(for_node));
+        out.push_str(" return ");
+        out.push_str(&self.vnode_slot_object_entry(template_el, None));
+        self.pop_scoped_params();
+
+        out.push_str(" })");
+        out
+    }
+
+    fn vnode_conditional_slot_entry(
+        &mut self,
+        if_node: &vize_atelier_core::ast::IfNode<'a>,
+    ) -> String {
+        let mut out = String::default();
+        for (index, branch) in if_node.branches.iter().enumerate() {
+            if index > 0 {
+                out.push_str(" : ");
+            }
+            if let Some(condition) = &branch.condition {
+                out.push('(');
+                out.push_str(&self.expression_to_string(condition));
+                out.push_str(") ? ");
+            }
+            if let Some(template_el) = slot_template_in_children(&branch.children) {
+                out.push_str(&self.vnode_slot_object_entry(template_el, Some(index)));
+            } else {
+                out.push_str("undefined");
+            }
+        }
+        if if_node
+            .branches
+            .last()
+            .is_none_or(|branch| branch.condition.is_some())
+        {
+            out.push_str(" : undefined");
+        }
+        out
+    }
+
+    /// `{ name: <expr>, fn: _withCtx((params) => [children]), key: "N" }`
+    fn vnode_slot_object_entry(
+        &mut self,
+        template_el: &ElementNode<'a>,
+        key_index: Option<usize>,
+    ) -> String {
+        let Some(dir) = self.slot_directive(template_el) else {
+            return "undefined".to_compact_string();
+        };
+        let name = self.slot_entry_name(dir);
+
+        let mut out = String::from("{ name: ");
+        out.push_str(&name);
+        out.push_str(", fn: ");
+        out.push_str(&self.vnode_slot_fn(template_el));
+        if let Some(key) = key_index {
+            out.push_str(", key: \"");
+            out.push_str(&key.to_compact_string());
+            out.push('"');
+        }
+        out.push_str(" }");
+        out
+    }
+
+    /// `_withCtx((params) => [children])` for a slot template's vnode form.
+    fn vnode_slot_fn(&mut self, template_el: &ElementNode<'a>) -> String {
+        let dir = self.slot_directive(template_el);
+        let props_pattern = dir.and_then(|d| d.exp.as_ref().map(slot_props_pattern_to_string));
+        let mut params = FxHashSet::default();
+        if let Some(pattern) = props_pattern.as_deref() {
+            extract_destructure_params(pattern.trim(), &mut params);
+        }
+
+        let mut out = String::from("_withCtx((");
+        out.push_str(props_pattern.as_deref().unwrap_or("_"));
+        out.push_str(") => ");
+
+        if !params.is_empty() {
+            self.push_scoped_params(params.clone());
+        }
+        out.push_str(&self.vnode_children_expression(&template_el.children));
+        if !params.is_empty() {
+            self.pop_scoped_params();
+        }
+        out.push(')');
+        out
+    }
+
+    fn slot_directive<'node>(
+        &self,
+        el: &'node ElementNode<'a>,
+    ) -> Option<&'node vize_atelier_core::ast::DirectiveNode<'a>> {
+        el.props.iter().find_map(|prop| match prop {
+            PropNode::Directive(dir) if dir.name == "slot" => Some(dir.as_ref()),
+            _ => None,
+        })
+    }
+
+    fn vnode_fragment_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
         self.use_core_helper(RuntimeHelper::CreateVNode);
         self.use_core_helper(RuntimeHelper::Fragment);
 
@@ -228,7 +463,7 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_element_children_expression(&mut self, children: &[TemplateChildNode]) -> String {
+    fn vnode_element_children_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
         if children.is_empty() {
             return "null".to_compact_string();
         }
@@ -242,7 +477,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.vnode_children_expression(children)
     }
 
-    fn vnode_if_expression(&mut self, if_node: &vize_atelier_core::ast::IfNode) -> String {
+    fn vnode_if_expression(&mut self, if_node: &vize_atelier_core::ast::IfNode<'a>) -> String {
         self.use_core_helper(RuntimeHelper::CreateComment);
 
         let mut out = String::default();
@@ -271,7 +506,7 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_for_expression(&mut self, for_node: &ForNode) -> String {
+    fn vnode_for_expression(&mut self, for_node: &ForNode<'a>) -> String {
         self.use_core_helper(RuntimeHelper::RenderList);
 
         let mut out = String::from("_renderList(");
@@ -289,7 +524,7 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_branch_expression(&mut self, children: &[TemplateChildNode]) -> String {
+    fn vnode_branch_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
         let expressions = self.vnode_child_expressions(children);
         let has_array_child = has_vnode_array_child(children);
         if expressions.is_empty() {

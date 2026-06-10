@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_ssr/src/lib.rs
+expression: result.code.as_str()
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Child"), _attrs, _createSlots({
+    _: 2 /* DYNAMIC */
+  }, [
+    (_ctx.ok) ? {
+      name: "header",
+      fn: _withCtx((_, _push, _parent, _scopeId) => {
+        if (_push) {
+          _push(`<span>head</span>`)
+        } else {
+          return [_createElementVNode("span", null, "head")]
+        }
+      }),
+      key: "0"
+    } : undefined
+  ]), _parent))
+}

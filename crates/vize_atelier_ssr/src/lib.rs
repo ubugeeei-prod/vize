@@ -460,4 +460,104 @@ mod tests {
         assert!(errors.is_empty());
         insta::assert_snapshot!(result.code.as_str());
     }
+
+    // Regression: `<template v-for #[name]>` (dynamically-named looped slots, as
+    // used by `@nuxt/ui`'s DashboardSearchButton) must compile to
+    // `createSlots(base, [renderList(...)])`. Previously these slots were
+    // collapsed into the component's `default` slot, dropping the named-slot
+    // routing and leaking the scoped slot param as `_ctx.slotData`, which made
+    // the SSR renderer read `.type` off an undefined vnode and return a 500.
+    #[test]
+    fn test_ssr_dynamic_v_for_slot_uses_create_slots() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<Child>
+  <template v-for="(_, name) in slots" #[name]="slotData">
+    <slot :name="name" v-bind="slotData" />
+  </template>
+  <template #trailing="{ ui }">
+    <div>{{ ui }}</div>
+  </template>
+</Child>"#,
+        );
+        assert!(errors.is_empty());
+        // Must route the dynamic slots through createSlots, not `default`.
+        assert!(
+            result.code.contains("_createSlots("),
+            "expected createSlots for dynamic v-for slot:\n{}",
+            result.code
+        );
+        // The looped entry exposes `{ name, fn }` with the local `name` alias
+        // (no `_ctx.` prefix) and the in-scope `slotData` param.
+        assert!(
+            result.code.contains("name,") || result.code.contains("name: name"),
+            "expected local `name` alias in looped slot entry:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("_ctx.slotData"),
+            "scoped slot param `slotData` must not leak as `_ctx.slotData`:\n{}",
+            result.code
+        );
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    // Regression: `<template v-if #name>` conditional slots must also flow
+    // through createSlots rather than collapse into the default slot.
+    #[test]
+    fn test_ssr_conditional_slot_uses_create_slots() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<Child>
+  <template v-if="ok" #header>
+    <span>head</span>
+  </template>
+</Child>"#,
+        );
+        assert!(errors.is_empty());
+        assert!(
+            result.code.contains("_createSlots("),
+            "expected createSlots for conditional slot:\n{}",
+            result.code
+        );
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    // Regression: when a component with dynamic slots is nested inside another
+    // component's slot, its vnode (client-render) fallback branch must also emit
+    // `createSlots` rather than collapse the dynamic slots into `default`. This
+    // mirrors `@nuxt/ui`'s `<DefineButtonTemplate><UButton><template v-for #[name]
+    // />>` shape where both the push and fallback branches are generated.
+    #[test]
+    fn test_ssr_dynamic_slot_vnode_fallback_uses_create_slots() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<Outer>
+  <Inner>
+    <template v-for="(_, name) in slots" #[name]="slotData">
+      <slot :name="name" v-bind="slotData" />
+    </template>
+    <template #trailing>x</template>
+  </Inner>
+</Outer>"#,
+        );
+        assert!(errors.is_empty());
+        // The nested Inner component is emitted both in the push branch and in
+        // the vnode fallback (`else { return [...] }`) of Outer's default slot;
+        // both must use createSlots, never `_ctx.slotData`.
+        assert!(
+            result.code.matches("_createSlots(").count() >= 2,
+            "expected createSlots in both push and vnode fallback branches:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("_ctx.slotData"),
+            "scoped slot param must not leak as `_ctx.slotData`:\n{}",
+            result.code
+        );
+        insta::assert_snapshot!(result.code.as_str());
+    }
 }

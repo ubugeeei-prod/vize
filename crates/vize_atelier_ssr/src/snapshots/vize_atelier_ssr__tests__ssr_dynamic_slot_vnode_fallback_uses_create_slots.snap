@@ -1,0 +1,38 @@
+---
+source: crates/vize_atelier_ssr/src/lib.rs
+expression: result.code.as_str()
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Outer"), _attrs, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(_ssrRenderComponent(_resolveComponent("Inner"), null, _createSlots({
+          trailing: _withCtx((_, _push, _parent, _scopeId) => {
+            if (_push) {
+              _push(`x`)
+            } else {
+              return [_createTextVNode("x")]
+            }
+          }),
+          _: 2 /* DYNAMIC */
+        }, [
+          _renderList(_ctx.slots, (_, name) => {
+            return {
+              name: name,
+              fn: _withCtx((slotData, _push, _parent, _scopeId) => {
+                if (_push) {
+                  _ssrRenderSlot(_ctx.$slots, name, _mergeProps(slotData), null, _push, _parent)
+                } else {
+                  return [_renderSlot(_ctx.$slots, name, _mergeProps(slotData))]
+                }
+              })
+            }
+          })
+        ]), _parent))
+      } else {
+        return [_createVNode(_resolveComponent("Inner"), null, _createSlots({ trailing: _withCtx((_) => [_createTextVNode("x")]), _: 2 /* DYNAMIC */ }, [_renderList(_ctx.slots, (_, name) => { return { name: name, fn: _withCtx((slotData) => [_renderSlot(_ctx.$slots, name, _mergeProps(slotData))]) } })]))]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

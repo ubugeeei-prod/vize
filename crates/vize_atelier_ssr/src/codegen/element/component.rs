@@ -107,6 +107,20 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     fn process_component_slots<'node>(&mut self, children: &'node [TemplateChildNode<'a>]) {
+        // Dynamically-named (`#[name]`) or conditional/looped (`v-if`/`v-for`)
+        // slot templates cannot be expressed as a static slots object. Vue's SSR
+        // compiler wraps them in `createSlots(staticBase, [dynamicEntries])`, so
+        // detect them up front and switch to that form to avoid collapsing them
+        // into the `default` slot (which drops the component reference and yields
+        // an undefined vnode `.type` at render time).
+        if children
+            .iter()
+            .any(|child| self.is_dynamic_slot_source(child))
+        {
+            self.process_dynamic_component_slots(children);
+            return;
+        }
+
         let mut default_children: std::vec::Vec<&'node TemplateChildNode<'a>> =
             std::vec::Vec::new();
         let mut named_slots: std::vec::Vec<ComponentTemplateSlot<'node, 'a>> = std::vec::Vec::new();
@@ -147,6 +161,243 @@ impl<'a> SsrCodegenContext<'a> {
         self.push("}");
     }
 
+    /// True when a component child must be rendered through `createSlots`:
+    /// a `<template v-for #...>` / `<template v-if #...>` slot, or a
+    /// `<template #[name]>` whose slot name is a dynamic expression.
+    pub(super) fn is_dynamic_slot_source(&self, child: &TemplateChildNode<'a>) -> bool {
+        match child {
+            TemplateChildNode::For(for_node) => {
+                slot_template_in_children(&for_node.children).is_some()
+            }
+            TemplateChildNode::If(if_node) => if_node
+                .branches
+                .iter()
+                .any(|branch| slot_template_in_children(&branch.children).is_some()),
+            TemplateChildNode::Element(el) => {
+                el.tag_type == ElementType::Template && template_slot_is_dynamic(el)
+            }
+            _ => false,
+        }
+    }
+
+    /// Emit a `createSlots(base, [entries])` call for components that carry
+    /// dynamic, conditional, or looped slots.
+    fn process_dynamic_component_slots<'node>(&mut self, children: &'node [TemplateChildNode<'a>]) {
+        self.use_core_helper(RuntimeHelper::CreateSlots);
+        self.use_core_helper(RuntimeHelper::WithCtx);
+
+        // Static slots and default children form the `createSlots` base object.
+        let mut default_children: std::vec::Vec<&'node TemplateChildNode<'a>> =
+            std::vec::Vec::new();
+        let mut static_slots: std::vec::Vec<ComponentTemplateSlot<'node, 'a>> =
+            std::vec::Vec::new();
+        for child in children {
+            if self.is_dynamic_slot_source(child) {
+                continue;
+            }
+            if let Some(slot) = self.component_template_slot(child) {
+                static_slots.push(slot);
+            } else {
+                default_children.push(child);
+            }
+        }
+
+        self.push("_createSlots({\n");
+        self.indent_level += 1;
+        if !default_children.is_empty() {
+            self.process_component_slot_property(
+                "default",
+                None,
+                &FxHashSet::default(),
+                ComponentSlotChildren::Refs(default_children),
+            );
+        }
+        for slot in static_slots {
+            self.process_component_slot_property(
+                &slot.name,
+                slot.props_pattern.as_deref(),
+                &slot.params,
+                ComponentSlotChildren::Slice(slot.children),
+            );
+        }
+        self.push_indent();
+        self.push("_: 2 /* DYNAMIC */\n");
+        self.indent_level -= 1;
+        self.push_indent();
+        self.push("}, [\n");
+        self.indent_level += 1;
+
+        let mut first = true;
+        for child in children {
+            match child {
+                TemplateChildNode::For(for_node)
+                    if slot_template_in_children(&for_node.children).is_some() =>
+                {
+                    self.push_dynamic_slot_separator(&mut first);
+                    self.process_looped_slot_entry(for_node);
+                }
+                TemplateChildNode::If(if_node)
+                    if if_node
+                        .branches
+                        .iter()
+                        .any(|branch| slot_template_in_children(&branch.children).is_some()) =>
+                {
+                    self.push_dynamic_slot_separator(&mut first);
+                    self.process_conditional_slot_entry(if_node);
+                }
+                TemplateChildNode::Element(el)
+                    if el.tag_type == ElementType::Template && template_slot_is_dynamic(el) =>
+                {
+                    self.push_dynamic_slot_separator(&mut first);
+                    self.process_dynamic_slot_entry(el);
+                }
+                _ => {}
+            }
+        }
+
+        self.indent_level -= 1;
+        if !first {
+            self.push("\n");
+            self.push_indent();
+        }
+        self.push("])");
+    }
+
+    fn push_dynamic_slot_separator(&mut self, first: &mut bool) {
+        if !*first {
+            self.push(",\n");
+        }
+        *first = false;
+        self.push_indent();
+    }
+
+    /// `_renderList(source, (alias...) => { return { name, fn } })`
+    fn process_looped_slot_entry(&mut self, for_node: &ForNode<'a>) {
+        let Some(template_el) = slot_template_in_children(&for_node.children) else {
+            return;
+        };
+
+        self.use_ssr_helper(RuntimeHelper::SsrRenderList);
+        self.push("_renderList(");
+        self.push_expression(&for_node.source);
+        self.push(", (");
+        if let Some(value) = &for_node.value_alias {
+            self.push_expression(value);
+        }
+        if let Some(key) = &for_node.key_alias {
+            self.push(", ");
+            self.push_expression(key);
+        }
+        if let Some(index) = &for_node.object_index_alias {
+            self.push(", ");
+            self.push_expression(index);
+        }
+        self.push(") => {\n");
+        self.indent_level += 1;
+
+        let params = super::super::helpers::collect_for_scoped_params(for_node);
+        self.push_scoped_params(params);
+        self.push_indent();
+        self.push("return ");
+        self.push_slot_object_entry(template_el, None);
+        self.push("\n");
+        self.pop_scoped_params();
+
+        self.indent_level -= 1;
+        self.push_indent();
+        self.push("})");
+    }
+
+    /// `(cond) ? { name, fn, key } : undefined`
+    fn process_conditional_slot_entry(&mut self, if_node: &IfNode<'a>) {
+        for (index, branch) in if_node.branches.iter().enumerate() {
+            if index > 0 {
+                self.push(" : ");
+            }
+            if let Some(condition) = &branch.condition {
+                let cond = self.expression_to_string(condition);
+                self.push("(");
+                self.push(&cond);
+                self.push(") ? ");
+            }
+            if let Some(template_el) = slot_template_in_children(&branch.children) {
+                self.push_slot_object_entry(template_el, Some(index));
+            } else {
+                self.push("undefined");
+            }
+        }
+        if if_node
+            .branches
+            .last()
+            .is_none_or(|branch| branch.condition.is_some())
+        {
+            self.push(" : undefined");
+        }
+    }
+
+    fn process_dynamic_slot_entry(&mut self, template_el: &ElementNode<'a>) {
+        self.push_slot_object_entry(template_el, None);
+    }
+
+    /// `{ name: <expr>, fn: _withCtx(...), key: "N" }`
+    fn push_slot_object_entry(&mut self, template_el: &ElementNode<'a>, key_index: Option<usize>) {
+        let Some(dir) = template_el.props.iter().find_map(|p| match p {
+            PropNode::Directive(dir) if dir.name == "slot" => Some(dir),
+            _ => None,
+        }) else {
+            self.push("undefined");
+            return;
+        };
+
+        let name = self.slot_entry_name(dir);
+        let props_pattern = dir.exp.as_ref().map(slot_props_pattern_to_string);
+        let mut params = FxHashSet::default();
+        if let Some(pattern) = props_pattern.as_deref() {
+            extract_destructure_params(pattern.trim(), &mut params);
+        }
+
+        self.push("{\n");
+        self.indent_level += 1;
+        self.push_indent();
+        self.push("name: ");
+        self.push(&name);
+        self.push(",\n");
+        self.push_indent();
+        self.push("fn: ");
+        self.emit_slot_fn(
+            props_pattern.as_deref(),
+            &params,
+            ComponentSlotChildren::Slice(&template_el.children),
+        );
+        if let Some(key) = key_index {
+            self.push(",\n");
+            self.push_indent();
+            self.push("key: \"");
+            self.push(&key.to_compact_string());
+            self.push("\"");
+        }
+        self.push("\n");
+        self.indent_level -= 1;
+        self.push_indent();
+        self.push("}");
+    }
+
+    /// The slot-name expression for a `createSlots` entry: a quoted literal for
+    /// static names, or the raw bound expression for dynamic `#[name]` slots.
+    pub(super) fn slot_entry_name(&mut self, dir: &DirectiveNode<'a>) -> String {
+        match &dir.arg {
+            Some(ExpressionNode::Simple(arg)) if arg.is_static => quoted_js_string(&arg.content),
+            Some(arg) => {
+                // The dynamic slot name often references a `v-for` callback alias
+                // (`#[name]`), which is a local binding rather than a `_ctx.`
+                // member, so strip the prefix for any in-scope scoped param.
+                let raw = self.dynamic_arg_to_string(arg);
+                self.strip_ctx_for_scoped_params(&raw)
+            }
+            None => quoted_js_string("default"),
+        }
+    }
+
     fn process_component_slot_property<'node>(
         &mut self,
         name: &str,
@@ -160,7 +411,22 @@ impl<'a> SsrCodegenContext<'a> {
         } else {
             self.push(&quoted_js_string(name));
         }
-        self.push(": _withCtx((");
+        self.push(": ");
+        self.emit_slot_fn(props_pattern, params, children);
+        self.push(",\n");
+    }
+
+    /// Emit a `_withCtx((params, _push, _parent, _scopeId) => { if (_push) {...}
+    /// else { return [...] } })` slot function, shared by static slot properties
+    /// and `createSlots` entries.
+    fn emit_slot_fn<'node>(
+        &mut self,
+        props_pattern: Option<&str>,
+        params: &FxHashSet<String>,
+        children: ComponentSlotChildren<'node, 'a>,
+    ) {
+        self.use_core_helper(RuntimeHelper::WithCtx);
+        self.push("_withCtx((");
         self.push(props_pattern.unwrap_or("_"));
         self.push(", _push, _parent, _scopeId) => {\n");
         self.indent_level += 1;
@@ -202,7 +468,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.push("}\n");
         self.indent_level -= 1;
         self.push_indent();
-        self.push("}),\n");
+        self.push("})");
     }
 
     fn process_component_slot_children<'node>(
@@ -694,4 +960,38 @@ impl<'a> SsrCodegenContext<'a> {
     fn process_transition(&mut self, el: &ElementNode<'a>) {
         self.process_children(&el.children, false, false, false);
     }
+}
+
+/// Locate the `<template v-slot>` element among a `v-for`/`v-if` branch body.
+pub(super) fn slot_template_in_children<'node, 'a>(
+    children: &'node [TemplateChildNode<'a>],
+) -> Option<&'node ElementNode<'a>> {
+    children.iter().find_map(|child| match child {
+        TemplateChildNode::Element(el)
+            if el.tag_type == ElementType::Template && has_slot_directive(el) =>
+        {
+            Some(el.as_ref())
+        }
+        _ => None,
+    })
+}
+
+/// True when a `<template>` carries a `v-slot` directive.
+pub(super) fn has_slot_directive(el: &ElementNode) -> bool {
+    el.props.iter().any(|prop| match prop {
+        PropNode::Directive(dir) => dir.name == "slot",
+        _ => false,
+    })
+}
+
+/// True when a `<template #[name]>` slot name is a dynamic expression.
+pub(super) fn template_slot_is_dynamic(el: &ElementNode) -> bool {
+    el.props.iter().any(|prop| match prop {
+        PropNode::Directive(dir) if dir.name == "slot" => match &dir.arg {
+            Some(ExpressionNode::Simple(arg)) => !arg.is_static,
+            Some(ExpressionNode::Compound(_)) => true,
+            None => false,
+        },
+        _ => false,
+    })
 }

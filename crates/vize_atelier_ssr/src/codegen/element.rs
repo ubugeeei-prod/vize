@@ -10,8 +10,8 @@ mod slot;
 mod vnode;
 
 use vize_atelier_core::ast::{
-    DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
-    TemplateChildNode,
+    DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode, PropNode,
+    RuntimeHelper, TemplateChildNode,
 };
 use vize_carton::{FxHashSet, String, ToCompactString};
 

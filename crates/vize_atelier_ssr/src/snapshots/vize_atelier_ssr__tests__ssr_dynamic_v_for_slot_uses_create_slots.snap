@@ -1,0 +1,29 @@
+---
+source: crates/vize_atelier_ssr/src/lib.rs
+expression: result.code.as_str()
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Child"), _attrs, _createSlots({
+    trailing: _withCtx(({ ui }, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<div>${_ssrInterpolate(ui)}</div>`)
+      } else {
+        return [_createElementVNode("div", null, [_createTextVNode(_toDisplayString(ui))])]
+      }
+    }),
+    _: 2 /* DYNAMIC */
+  }, [
+    _renderList(_ctx.slots, (_, name) => {
+      return {
+        name: name,
+        fn: _withCtx((slotData, _push, _parent, _scopeId) => {
+          if (_push) {
+            _ssrRenderSlot(_ctx.$slots, name, _mergeProps(slotData), null, _push, _parent)
+          } else {
+            return [_renderSlot(_ctx.$slots, name, _mergeProps(slotData))]
+          }
+        })
+      }
+    })
+  ]), _parent))
+}
