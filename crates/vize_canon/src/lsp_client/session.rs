@@ -283,7 +283,9 @@ pub(super) fn build_session_document_uri(uri: &str, project_root: &Path) -> Stri
         return uri.into();
     };
 
-    if external_path.starts_with(project_root) && external_path.exists() {
+    if external_path.starts_with(project_root)
+        && (external_path.exists() || virtual_overlay_target_exists(&external_path))
+    {
         return path_to_file_uri(&external_path);
     }
 
@@ -298,6 +300,26 @@ pub(super) fn build_session_document_uri(uri: &str, project_root: &Path) -> Stri
     }
 
     path_to_file_uri(&session_path)
+}
+
+/// A virtual document like `Button.vue.ts` has no on-disk counterpart, but
+/// its underlying source (`Button.vue`) does. Keeping such overlays at their
+/// real path lets the session resolve their relative imports against the
+/// real project tree (in-memory, via `refresh_with_overlay_changes` —
+/// nothing is written next to the user's sources). Remapping them into the
+/// overlay mirror instead made every relative `<script>` import report
+/// "Cannot find module" in the editor while `vize check` was clean.
+fn virtual_overlay_target_exists(external_path: &Path) -> bool {
+    let Some(name) = external_path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    let Some(real_name) = name.strip_suffix(".ts") else {
+        return false;
+    };
+    if !real_name.ends_with(".vue") && !real_name.ends_with(".html") {
+        return false;
+    }
+    external_path.with_file_name(real_name).is_file()
 }
 
 fn overlay_root_for_project(project_root: &Path) -> PathBuf {
@@ -410,11 +432,45 @@ pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u
 #[cfg(test)]
 mod tests {
     use super::{
-        api_mode_for_executable, line_character_to_utf16_offset, should_retry_json_rpc,
-        uri_document_identifier,
+        api_mode_for_executable, build_session_document_uri, line_character_to_utf16_offset,
+        path_to_file_uri, should_retry_json_rpc, uri_document_identifier,
     };
     use corsa::CorsaError;
     use corsa::api::{ApiMode, DocumentIdentifier};
+
+    // Regression: a `.vue.ts` virtual overlay has no on-disk counterpart, but
+    // remapping it into the overlay mirror broke relative `<script>` import
+    // resolution in the editor ("Cannot find module" while `vize check` was
+    // clean). When the underlying `.vue` exists inside the project, the
+    // overlay must keep its real path.
+    #[test]
+    fn keeps_vue_virtual_overlay_at_real_path_inside_project() {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let project = std::env::temp_dir().join(format!(
+            "vize-canon-session-uri-{}-{nonce}",
+            std::process::id()
+        ));
+        let components = project.join("src/components");
+        std::fs::create_dir_all(&components).unwrap();
+        let real = components.join("Button.vue");
+        std::fs::write(&real, "<template><div /></template>").unwrap();
+
+        let virtual_path = components.join("Button.vue.ts");
+        let uri = path_to_file_uri(&virtual_path);
+        let mapped = build_session_document_uri(&uri, &project);
+        assert_eq!(mapped, uri, "in-project .vue.ts overlay must keep its path");
+
+        // A path outside the project is still remapped into the overlay tree.
+        let outside = std::env::temp_dir().join(format!("vize-outside-{nonce}/Other.vue.ts"));
+        let outside_uri = path_to_file_uri(&outside);
+        let mapped_outside = build_session_document_uri(&outside_uri, &project);
+        assert_ne!(mapped_outside, outside_uri);
+
+        let _ = std::fs::remove_dir_all(project);
+    }
 
     #[test]
     fn uses_async_json_rpc_for_node_modules_bin_wrappers() {
