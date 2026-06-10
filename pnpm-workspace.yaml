@@ -16,37 +16,37 @@ catalogs:
   # Shared repo and file-system utilities.
   repo-tooling:
     "@iarna/toml": "2.2.5"
-    "@pkl-community/pkl": "0.27.2"
+    "@pkl-community/pkl": "0.30.2"
     glob: "13.0.6"
     json-schema-to-typescript: "15.0.4"
     pkg-pr-new: "0.0.73"
-    prettier: "3.8.3"
+    prettier: "3.8.4"
     tinyglobby: "0.2.16"
 
   # TypeScript toolchain shared across workspace packages.
   typescript:
-    "@types/node": "25.7.0"
-    "@typescript/native-preview": "7.0.0-dev.20260602.1"
-    tsx: "4.21.0"
+    "@types/node": "25.9.2"
+    "@typescript/native-preview": "7.0.0-dev.20260610.1"
+    tsx: "4.22.4"
     typescript: "6.0.3"
-    vue-tsc: "3.2.9"
+    vue-tsc: "3.3.4"
 
   # Vite / Vite Plus stack and adjacent build-time plugins.
   vite-stack:
-    vite: "npm:@voidzero-dev/vite-plus-core@0.1.21"
-    vitest: "npm:@voidzero-dev/vite-plus-test@0.1.21"
-    vite-plus: "0.1.21"
-    tsdown: "0.22.0"
-    "@vitejs/plugin-vue": "6.0.6"
+    vite: "npm:@voidzero-dev/vite-plus-core@0.1.24"
+    vitest: "npm:@voidzero-dev/vite-plus-test@0.1.24"
+    vite-plus: "0.1.24"
+    tsdown: "0.22.2"
+    "@vitejs/plugin-vue": "6.0.7"
     vite-node: "6.0.0"
-    vite-plugin-inspect: "11.3.3"
+    vite-plugin-inspect: "11.4.1"
     unplugin: "3.0.0"
 
   # Stable Vue ecosystem packages used by shipping examples and integrations.
   vue-stable:
-    vue: "3.5.34"
-    "@vue/runtime-core": "3.5.34"
-    "@vue/test-utils": "2.4.10"
+    vue: "3.5.35"
+    "@vue/runtime-core": "3.5.35"
+    "@vue/test-utils": "2.4.11"
     vue-router: "4.5.1"
 
   # Vue beta track used by the playground and benchmark harnesses.
@@ -63,35 +63,35 @@ catalogs:
   # Lint and formatting toolchain.
   linting:
     oxfmt: "0.49.0"
-    oxlint: "1.64.0"
-    "@oxlint/plugins": "1.64.0"
+    oxlint: "1.69.0"
+    "@oxlint/plugins": "1.69.0"
 
   # Bundlers beyond the Vite stack.
   bundlers:
-    "@rspack/cli": "2.0.3"
-    "@rspack/core": "2.0.3"
+    "@rspack/cli": "2.0.8"
+    "@rspack/core": "2.0.8"
     esbuild: "0.28.0"
-    rollup: "4.60.3"
-    webpack: "5.106.2"
+    rollup: "4.61.1"
+    webpack: "5.107.2"
 
   # External framework integrations and native build helpers.
   integrations:
     "@modelcontextprotocol/sdk": "1.29.0"
-    "@napi-rs/cli": "3.6.2"
-    "@nuxt/kit": "4.4.6"
-    "@ox-content/vite-plugin": "2.62.0"
+    "@napi-rs/cli": "3.7.1"
+    "@nuxt/kit": "4.4.8"
+    "@ox-content/vite-plugin": "2.68.0"
 
   # Rendering / content tooling used by docs, playgrounds, and galleries.
   content:
     "@mdi/js": "7.4.47"
-    "@tsdown/css": "0.22.0"
+    "@tsdown/css": "0.22.2"
     "@types/pngjs": "6.0.5"
     highlight.js: "11.11.1"
-    marked: "18.0.3"
+    marked: "18.0.5"
     marked-highlight: "2.2.4"
     monaco-editor: "0.55.1"
     pngjs: "7.0.0"
-    shiki: "4.0.2"
+    shiki: "4.2.0"
     three: "0.184.0"
 
   # JS-side OXC transform bridge.
