@@ -36,11 +36,27 @@ pub(super) fn check_with_cli(
             .iter()
             .all(|diagnostic| diagnostic.severity != 1);
 
+    // A non-zero exit is a runner failure only when the output carries no
+    // diagnostic-shaped lines at all (bad invocation, crash, missing CLI
+    // support). Recognizable diagnostics whose every entry was suppressed or
+    // failed source mapping still prove the CLI ran the project; falling back
+    // to the per-file project-session API there costs orders of magnitude
+    // more wall time for the same answer.
     if !output.status.success() && diagnostics.is_empty() {
-        return Err(CorsaError::CorsaExecution {
-            exit_code: output.status.code().unwrap_or(-1),
-            message: output_message(&output),
-        });
+        if !output_contains_diagnostic_lines(&output) {
+            return Err(CorsaError::CorsaExecution {
+                exit_code: output.status.code().unwrap_or(-1),
+                message: output_message(&output),
+            });
+        }
+        // Project-level diagnostics (e.g. `error TS2688: Cannot find type
+        // definition file for 'x'.`) abort the runtime's semantic pass, so an
+        // otherwise clean report may be incomplete. Surface them on stderr so
+        // a green run is never silently built on a broken project config.
+        eprintln!(
+            "\x1b[33mwarning:\x1b[0m corsa reported project-level errors; type checking may be incomplete:\n{}",
+            output_message(&output)
+        );
     }
 
     Ok(TypeCheckResult {
@@ -144,6 +160,32 @@ fn parse_cli_diagnostic_line(
     })
 }
 
+fn output_contains_diagnostic_lines(output: &Output) -> bool {
+    [&output.stdout, &output.stderr].into_iter().any(|stream| {
+        #[allow(clippy::disallowed_types)]
+        let text = std::string::String::from_utf8_lossy(stream);
+        text.lines()
+            .any(|line| is_cli_diagnostic_line(line) || is_global_diagnostic_line(line))
+    })
+}
+
+/// Whether `line` is a file-less project-level diagnostic such as
+/// `error TS2688: Cannot find type definition file for 'vite/client'.`
+fn is_global_diagnostic_line(line: &str) -> bool {
+    let Some(rest) = line
+        .strip_prefix("error ")
+        .or_else(|| line.strip_prefix("warning "))
+        .or_else(|| line.strip_prefix("info "))
+    else {
+        return false;
+    };
+    let Some(code) = rest.strip_prefix("TS") else {
+        return false;
+    };
+    let digits = code.bytes().take_while(u8::is_ascii_digit).count();
+    digits > 0 && code[digits..].starts_with(':')
+}
+
 fn is_cli_diagnostic_line(line: &str) -> bool {
     let Some((prefix, suffix)) = line.split_once("): ") else {
         return false;
@@ -192,7 +234,7 @@ fn output_message(output: &Output) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_cli_diagnostics;
+    use super::{is_cli_diagnostic_line, is_global_diagnostic_line, parse_cli_diagnostics};
     use crate::batch::VirtualProject;
     use crate::batch::executor::diagnostics::DiagnosticMapper;
     use std::{
@@ -214,6 +256,26 @@ mod tests {
                 "cli-fallback-{name}-{}-{case_id}",
                 std::process::id()
             ))
+    }
+
+    #[test]
+    fn recognizes_global_and_positioned_diagnostic_lines() {
+        assert!(is_global_diagnostic_line(
+            "error TS2688: Cannot find type definition file for 'vite/client'."
+        ));
+        assert!(is_global_diagnostic_line("warning TS1: w"));
+        assert!(!is_global_diagnostic_line(
+            "  The file is in the program because:"
+        ));
+        assert!(!is_global_diagnostic_line("error: missing argument"));
+        assert!(!is_global_diagnostic_line("error TSX: nope"));
+
+        assert!(is_cli_diagnostic_line(
+            "src/App.vue.ts(3,7): error TS2322: Type 'string' is not assignable to type 'number'."
+        ));
+        assert!(!is_cli_diagnostic_line(
+            "error TS2688: Cannot find type definition file for 'vite/client'."
+        ));
     }
 
     #[test]

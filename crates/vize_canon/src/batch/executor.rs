@@ -535,6 +535,44 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
+    fn cli_global_diagnostics_do_not_trigger_session_fallback() {
+        use crate::batch::VirtualProject;
+        use std::os::unix::fs::PermissionsExt;
+
+        let case_dir = unique_case_dir("global-diagnostics");
+        let _ = fs::remove_dir_all(&case_dir);
+        let cache_dir = case_dir.join(".cache");
+        let source = case_dir.join("src").join("main.ts");
+        fs::create_dir_all(&cache_dir).unwrap();
+        fs::create_dir_all(source.parent().unwrap()).unwrap();
+        fs::write(&source, "const value: number = 1;\n").unwrap();
+
+        // A runtime whose project check exits non-zero with only file-less
+        // config diagnostics (e.g. TS2688) ran fine; treating that as a CLI
+        // failure would fall back to the far slower project-session API
+        // (`--api` here would hang the test forever).
+        let tsgo = cache_dir.join("tsgo");
+        fs::write(
+            &tsgo,
+            "#!/bin/sh\nif [ \"$1\" = \"--api\" ]; then exec sleep 600; fi\necho \"error TS2688: Cannot find type definition file for 'vite/client'.\"\nexit 2\n",
+        )
+        .unwrap();
+        fs::set_permissions(&tsgo, fs::Permissions::from_mode(0o755)).unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&source).unwrap();
+        let executor = CorsaExecutor::new(&case_dir).unwrap();
+        let result = executor.check(&project).unwrap();
+
+        assert!(!result.success);
+        assert_eq!(result.exit_code, 2);
+        assert!(result.diagnostics.is_empty());
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[cfg(unix)]
+    #[test]
     fn checks_with_cli_when_project_session_api_is_unavailable() {
         use crate::batch::VirtualProject;
         use std::os::unix::fs::PermissionsExt;
