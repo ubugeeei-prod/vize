@@ -503,6 +503,35 @@ mod tests {
         insta::assert_snapshot!(result.code.as_str());
     }
 
+    // Regression: a slot outlet's children are its fallback content; the
+    // vnode branch emitted `_renderSlot(slots, name, props)` without the
+    // fallback argument, so e.g. nuxt-ui Button's `<slot>{{ label }}</slot>`
+    // label vanished whenever Button rendered through a parent's vnode
+    // branch.
+    #[test]
+    fn test_ssr_slot_outlet_fallback_survives_vnode_branch() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<Outer>
+  <button>
+    <slot :ui="ui">
+      <span v-if="label">{{ label }}</span>
+    </slot>
+  </button>
+</Outer>"#,
+        );
+        assert!(errors.is_empty());
+        assert!(
+            result
+                .code
+                .contains("_renderSlot(_ctx.$slots, \"default\", { ui: _ctx.ui }, () => ["),
+            "vnode branch must pass the slot fallback:\n{}",
+            result.code
+        );
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
     // Regression: `<template v-if #name>` conditional slots must also flow
     // through createSlots rather than collapse into the default slot.
     #[test]

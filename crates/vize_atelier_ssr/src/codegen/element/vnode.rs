@@ -479,13 +479,20 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_slot_outlet_expression(&mut self, el: &ElementNode) -> String {
+    fn vnode_slot_outlet_expression(&mut self, el: &ElementNode<'a>) -> String {
         self.use_core_helper(RuntimeHelper::RenderSlot);
 
         let mut out = String::from("_renderSlot(_ctx.$slots, ");
         out.push_str(&self.slot_outlet_name_expression(el));
         out.push_str(", ");
         out.push_str(&self.build_slot_outlet_props(el));
+        // Slot outlet children are the fallback content rendered when the
+        // parent provides no slot — dropping them loses e.g. nuxt-ui Button's
+        // `<slot>{{ label }}</slot>` label in the vnode branch.
+        if !el.children.is_empty() {
+            out.push_str(", () => ");
+            out.push_str(&self.vnode_children_expression(&el.children));
+        }
         out.push(')');
         out
     }
