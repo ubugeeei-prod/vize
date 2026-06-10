@@ -172,11 +172,6 @@ impl CorsaProjectClient {
 
     pub(super) fn sync_overlay_document(&mut self, uri: &str, content: &str) -> Result<(), String> {
         let previous = self.document_texts.insert(uri.into(), content.into());
-        if !self.supports_overlay_api() {
-            return Err(
-                "Corsa overlay changes are unavailable for this project-session runtime".into(),
-            );
-        }
 
         let document_uri = self.session_document_uri(uri);
         if previous.as_deref() == Some(content) {
@@ -189,8 +184,12 @@ impl CorsaProjectClient {
                 .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
         }
 
+        if !self.supports_overlay_api() {
+            return self.sync_materialized_overlay_document(uri, content);
+        }
+
         let version = next_overlay_version(&mut self.overlay_versions, uri);
-        block_on(self.session.refresh_with_overlay_changes(
+        match block_on(self.session.refresh_with_overlay_changes(
             file_changes,
             Some(OverlayChanges {
                 upsert: vec![OverlayUpdate {
@@ -201,8 +200,26 @@ impl CorsaProjectClient {
                 }],
                 delete: Vec::new(),
             }),
-        ))
-        .map_err(|error| cstr!("Failed to sync Corsa overlay: {error}"))
+        )) {
+            Ok(()) => Ok(()),
+            Err(error) if overlay_changes_error_is_unsupported(&error) => {
+                self.sync_materialized_overlay_document(uri, content)
+            }
+            Err(error) => Err(cstr!("Failed to sync Corsa overlay: {error}")),
+        }
+    }
+
+    fn sync_materialized_overlay_document(
+        &mut self,
+        uri: &str,
+        content: &str,
+    ) -> Result<(), String> {
+        let document_uri = self
+            .materialized_session_document_uri(uri)
+            .ok_or_else(|| cstr!("Failed to derive materialized Corsa overlay path for {uri}"))?;
+        let file_changes = materialize_session_document(uri, document_uri.as_str(), content);
+        block_on(self.session.refresh(file_changes))
+            .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"))
     }
 
     pub(super) fn delete_overlay_document(&mut self, uri: &str) -> Result<(), String> {
@@ -250,8 +267,21 @@ impl CorsaProjectClient {
         }
 
         let mapped = build_session_document_uri(uri, &self.project_root);
-        self.session_document_uris
-            .insert(uri.into(), mapped.clone());
+        self.remember_session_document_uri(uri, mapped)
+    }
+
+    fn materialized_session_document_uri(&mut self, uri: &str) -> Option<String> {
+        let mapped = build_materialized_session_document_uri(uri, &self.project_root)?;
+        Some(self.remember_session_document_uri(uri, mapped))
+    }
+
+    fn remember_session_document_uri(&mut self, uri: &str, mapped: String) -> String {
+        if let Some(previous) = self
+            .session_document_uris
+            .insert(uri.into(), mapped.clone())
+        {
+            self.external_document_uris.remove(previous.as_str());
+        }
         self.external_document_uris
             .insert(mapped.clone(), uri.into());
         mapped
@@ -289,6 +319,18 @@ pub(super) fn build_session_document_uri(uri: &str, project_root: &Path) -> Stri
         return path_to_file_uri(&external_path);
     }
 
+    path_to_file_uri(&materialized_session_path(&external_path, project_root))
+}
+
+fn build_materialized_session_document_uri(uri: &str, project_root: &Path) -> Option<String> {
+    let external_path = external_document_path(uri)?;
+    Some(path_to_file_uri(&materialized_session_path(
+        &external_path,
+        project_root,
+    )))
+}
+
+fn materialized_session_path(external_path: &Path, project_root: &Path) -> PathBuf {
     let mut session_path = overlay_root_for_project(project_root);
     for component in external_path.components() {
         match component {
@@ -299,7 +341,7 @@ pub(super) fn build_session_document_uri(uri: &str, project_root: &Path) -> Stri
         }
     }
 
-    path_to_file_uri(&session_path)
+    session_path
 }
 
 /// A virtual document like `Button.vue.ts` has no on-disk counterpart, but
@@ -358,6 +400,12 @@ fn external_document_path(uri: &str) -> Option<PathBuf> {
     session_path.push(scheme);
     session_path.push(path.trim_start_matches('/'));
     Some(session_path)
+}
+
+fn overlay_changes_error_is_unsupported(error: &impl std::fmt::Display) -> bool {
+    let message = cstr!("{error}");
+    message.contains("overlayChanges")
+        && (message.contains("unsupported") || message.contains("not supported"))
 }
 
 pub(super) fn materialize_session_document(
