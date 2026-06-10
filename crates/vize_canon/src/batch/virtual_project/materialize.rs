@@ -4,6 +4,7 @@
 
 use std::path::{Path, PathBuf};
 
+use rayon::prelude::*;
 use vize_carton::{FxHashSet, String as CompactString, profile};
 
 use crate::batch::error::CorsaResult;
@@ -48,31 +49,47 @@ impl VirtualProject {
         profile!(
             "canon.project.write_files",
             (|| -> CorsaResult<()> {
+                // Directory creation stays sequential and de-duplicated; the file
+                // writes themselves fan out across rayon workers because each
+                // write is an independent syscall-bound operation and large
+                // projects pay hundreds of milliseconds when they run serially.
                 let mut created_dirs: FxHashSet<&Path> = FxHashSet::default();
-                let mut write_calls = 0u64;
-                let mut written_bytes = 0u64;
                 for file in self.virtual_files.values() {
                     if let Some(parent) = file.virtual_path.parent()
                         && created_dirs.insert(parent)
                     {
                         ensure_dir(parent)?;
                     }
-                    write_file_untracked(&file.virtual_path, file.content.as_bytes())?;
-                    write_calls += 1;
-                    written_bytes += file.content.len() as u64;
                 }
-                for (virtual_path, original_path) in &self.passthrough_files {
+                for virtual_path in self.passthrough_files.keys() {
                     if let Some(parent) = virtual_path.parent()
                         && created_dirs.insert(parent)
                     {
                         ensure_dir(parent)?;
                     }
-                    let content = std::fs::read(original_path)?;
-                    write_file_untracked(virtual_path, &content)?;
-                    write_calls += 1;
-                    written_bytes += content.len() as u64;
                 }
-                record_write_batch(write_calls, written_bytes);
+
+                let virtual_written = self
+                    .virtual_files
+                    .par_iter()
+                    .map(|(_, file)| -> CorsaResult<u64> {
+                        write_file_untracked(&file.virtual_path, file.content.as_bytes())?;
+                        Ok(file.content.len() as u64)
+                    })
+                    .try_reduce(|| 0u64, |acc, bytes| Ok(acc + bytes))?;
+                let passthrough_written = self
+                    .passthrough_files
+                    .par_iter()
+                    .map(|(virtual_path, original_path)| -> CorsaResult<u64> {
+                        let content = std::fs::read(original_path)?;
+                        write_file_untracked(virtual_path, &content)?;
+                        Ok(content.len() as u64)
+                    })
+                    .try_reduce(|| 0u64, |acc, bytes| Ok(acc + bytes))?;
+                record_write_batch(
+                    (self.virtual_files.len() + self.passthrough_files.len()) as u64,
+                    virtual_written + passthrough_written,
+                );
                 Ok(())
             })()
         )?;
