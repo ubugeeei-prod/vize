@@ -46,31 +46,22 @@ pub(crate) fn generate_element_template(el: &ElementNode<'_>) -> String {
     } else {
         template.push('>');
 
-        // Check if there are any interpolations - if so, use a space placeholder
-        let has_interpolation = el
-            .children
-            .iter()
-            .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
-
-        if has_interpolation {
-            // Use single space as placeholder for interpolation text content
-            template.push(' ');
-        } else {
-            // Recursively add static children (text and static elements)
-            for child in el.children.iter() {
-                match child {
-                    TemplateChildNode::Text(text) => {
-                        template.push_str(&escape_html_text(&text.content));
-                    }
-                    TemplateChildNode::Element(child_el) => {
-                        if is_template_backed_element(child_el) {
-                            template.push_str(&generate_element_template(child_el));
-                        }
-                    }
-                    _ => {
-                        // Other dynamic content is handled elsewhere
+        // Recursively add template-backed children. Interpolations contribute a
+        // text placeholder while control-flow nodes are inserted at runtime.
+        for child in el.children.iter() {
+            match child {
+                TemplateChildNode::Text(text) => {
+                    template.push_str(&escape_html_text(&text.content));
+                }
+                TemplateChildNode::Interpolation(_) => {
+                    template.push(' ');
+                }
+                TemplateChildNode::Element(child_el) => {
+                    if is_template_backed_element(child_el) {
+                        template.push_str(&generate_element_template(child_el));
                     }
                 }
+                _ => {}
             }
         }
 

@@ -399,28 +399,37 @@ fn count_rendered_child_nodes(
     end: usize,
 ) -> usize {
     let mut count = 0usize;
+    let mut in_text_run = false;
     for child in &children[start..=end] {
-        count += count_rendered_nodes_for_child(child);
+        count += count_rendered_nodes_for_child(child, &mut in_text_run);
     }
     count
 }
 
-fn count_rendered_nodes_for_child(child: &TemplateChildNode<'_>) -> usize {
+fn count_rendered_nodes_for_child(child: &TemplateChildNode<'_>, in_text_run: &mut bool) -> usize {
     match child {
         TemplateChildNode::Element(child_el) => {
             if child_el.tag_type == ElementType::Template {
                 child_el
                     .children
                     .iter()
-                    .map(count_rendered_nodes_for_child)
+                    .map(|child| count_rendered_nodes_for_child(child, in_text_run))
                     .sum()
             } else if is_template_backed_element(child_el) {
+                *in_text_run = false;
                 1
             } else {
                 0
             }
         }
-        TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => 1,
+        TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => {
+            if *in_text_run {
+                0
+            } else {
+                *in_text_run = true;
+                1
+            }
+        }
         _ => 0,
     }
 }

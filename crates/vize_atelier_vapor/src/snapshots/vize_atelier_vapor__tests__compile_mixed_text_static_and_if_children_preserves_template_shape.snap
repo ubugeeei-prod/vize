@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_vapor/src/tests.rs
+expression: code.as_str()
+---
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<em class=\"weekend-label\">Weekend</em>", true)
+const t1 = _template("<span>  <em class=\"day-offset\">same day</em></span>", true)
+export function render(_ctx) {
+const n3 = t1()
+const x3 = _txt(n3)
+_setInsertionState(n3, null, true)
+const n0 = _createIf(() => (_ctx.isWeekend), () => {
+const n2 = t0()
+return n2
+})
+_renderEffect(() => {
+_setClass(n3, ["date-line", { weekend: _ctx.isWeekend }])
+_setText(x3, _toDisplayString(_ctx.dateLabel) + " ")
+})
+return n3
+}

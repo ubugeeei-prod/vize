@@ -414,17 +414,39 @@ pub(crate) fn collect_from_expression<'a>(
             collect_from_expression(&bin.left, source, local_to_key, local_bindings, rewrites);
             collect_from_expression(&bin.right, source, local_to_key, local_bindings, rewrites);
         }
-        _ if expr.is_member_expression() => {
-            // Handle MemberExpression via helper method
-            if let Some(member) = expr.as_member_expression() {
-                collect_from_expression(
-                    member.object(),
-                    source,
-                    local_to_key,
-                    local_bindings,
-                    rewrites,
-                );
-            }
+        Expression::ComputedMemberExpression(member) => {
+            collect_from_expression(
+                &member.object,
+                source,
+                local_to_key,
+                local_bindings,
+                rewrites,
+            );
+            collect_from_expression(
+                &member.expression,
+                source,
+                local_to_key,
+                local_bindings,
+                rewrites,
+            );
+        }
+        Expression::StaticMemberExpression(member) => {
+            collect_from_expression(
+                &member.object,
+                source,
+                local_to_key,
+                local_bindings,
+                rewrites,
+            );
+        }
+        Expression::PrivateFieldExpression(member) => {
+            collect_from_expression(
+                &member.object,
+                source,
+                local_to_key,
+                local_bindings,
+                rewrites,
+            );
         }
         Expression::ObjectExpression(obj) => {
             for prop in obj.properties.iter() {
