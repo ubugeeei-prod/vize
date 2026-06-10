@@ -20,7 +20,9 @@ use super::component_props::generate_component_props;
 use super::context::{
     ComponentPropsContext, EventHandlerExprContext, ScopeGenContext, ScopeGenerationOptions,
 };
-use super::emit::{append_v_for_comment, emit_v_for_loop_open, slot_props_type};
+use super::emit::{
+    append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
+};
 use super::event_handler::generate_event_handler_expressions;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 
@@ -249,9 +251,12 @@ fn generate_scope_node(
                 data.name.as_str(),
                 ctx.summary.scopes.is_v_slot_name_static(scope.id),
             );
-            append!(
-                *ts,
-                "{indent}void function _slot_{safe_slot_name}({props_pattern}: {props_type}) {{\n",
+            emit_slot_function_open(
+                ts,
+                indent,
+                cstr!("_slot_{safe_slot_name}").as_str(),
+                props_pattern,
+                &props_type,
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {

@@ -36,6 +36,74 @@ pub(super) fn slot_props_type(
     }
 }
 
+/// Split a `v-slot` props expression that carries its own TypeScript
+/// annotation (`#item="{ element }: { element: Tag }"`) into the binding
+/// pattern and the annotation. Vue allows the annotation, so emitting the
+/// inferred slot type after the full expression would produce `pattern: A: B`
+/// — a syntax error that aborts Corsa's semantic pass for the whole project.
+/// A `:` separates the annotation only at the top nesting level.
+pub(super) fn split_slot_pattern_annotation(pattern: &str) -> Option<(&str, &str)> {
+    let mut depth = 0i32;
+    let mut quote: Option<char> = None;
+    let mut escaped = false;
+
+    for (at, ch) in pattern.char_indices() {
+        if let Some(open) = quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == open {
+                quote = None;
+            }
+            continue;
+        }
+        match ch {
+            '\'' | '"' | '`' => quote = Some(ch),
+            '{' | '[' | '(' | '<' => depth += 1,
+            '}' | ']' | ')' | '>' => depth -= 1,
+            ':' if depth == 0 => {
+                let annotation = pattern[at + 1..].trim();
+                if annotation.is_empty() {
+                    return None;
+                }
+                return Some((pattern[..at].trim_end(), annotation));
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+/// Emit the opening of a v-slot scope function. The parameter is annotated
+/// with the slot type inferred from the child's `$slots`; when the user wrote
+/// their own annotation, that annotation is kept for the bindings and a
+/// separate assignment asserts the child's actual slot props are assignable
+/// to it, mirroring how vue-tsc validates annotated slot props.
+pub(super) fn emit_slot_function_open(
+    ts: &mut String,
+    indent: &str,
+    function_name: &str,
+    props_pattern: &str,
+    props_type: &String,
+) {
+    if let Some((pattern, annotation)) = split_slot_pattern_annotation(props_pattern) {
+        append!(
+            *ts,
+            "{indent}void function {function_name}({pattern}: {annotation}) {{\n"
+        );
+        append!(
+            *ts,
+            "{indent}  const __slot_annotation_check: {annotation} = undefined as unknown as ({props_type});\n{indent}  void __slot_annotation_check;\n"
+        );
+    } else {
+        append!(
+            *ts,
+            "{indent}void function {function_name}({props_pattern}: {props_type}) {{\n"
+        );
+    }
+}
+
 pub(super) fn append_v_for_comment(
     ts: &mut String,
     indent: &str,

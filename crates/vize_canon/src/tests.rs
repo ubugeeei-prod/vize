@@ -388,6 +388,42 @@ const activeItem = ref<T | null>(null)
     }
 
     #[test]
+    fn virtual_ts_annotated_slot_props_keep_user_annotation_and_check_it() {
+        // `#item="{ element }: { element: Tag }"` (a typed slot scope, used by
+        // e.g. voicevox) must not get the inferred slot type appended after
+        // the user's own annotation — `pattern: A: B` is a syntax error that
+        // aborts Corsa's semantic pass for the whole project. The user
+        // annotation types the bindings, and a separate assignment asserts the
+        // child's actual slot props are assignable to it.
+        let source = r#"<script setup lang="ts">
+import Draggable from './Draggable.vue'
+type Tag = { id: string }
+</script>
+
+<template>
+  <Draggable>
+    <template #item="{ element }: { element: Tag }">
+      <div>{{ element.id }}</div>
+    </template>
+  </Draggable>
+</template>"#;
+
+        let virtual_ts = generate_virtual_ts_from_sfc(source);
+        assert!(
+            virtual_ts.contains("({ element }: { element: Tag })"),
+            "slot bindings must use the user's own annotation:\n{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("const __slot_annotation_check: { element: Tag } ="),
+            "the child's actual slot props must be checked against the annotation:\n{virtual_ts}"
+        );
+        assert!(
+            !virtual_ts.contains("{ element: Tag }: typeof"),
+            "the inferred slot type must not be appended after the annotation:\n{virtual_ts}"
+        );
+    }
+
+    #[test]
     fn virtual_ts_const_generic_component_strips_const_from_type_positions() {
         // `generic="const T extends ..."` (TS 5.0 const type parameter, used by
         // e.g. misskey's MkTabs) — the parameter NAME is `T`, and the `const`

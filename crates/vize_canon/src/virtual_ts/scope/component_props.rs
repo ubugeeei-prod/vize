@@ -5,6 +5,7 @@ use vize_carton::FxHashMap;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
+use vize_carton::cstr;
 use vize_carton::profile;
 
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind, analysis::ComponentUsage};
@@ -14,7 +15,9 @@ use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_iden
 use crate::virtual_ts::types::VizeMapping;
 
 use super::context::{ComponentPropsContext, VForPropsContext};
-use super::emit::{append_v_for_comment, emit_v_for_loop_open, slot_props_type};
+use super::emit::{
+    append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
+};
 
 /// Generate component props type checks (scope-aware).
 /// Type declarations are at template level, value checks are in their scope.
@@ -301,19 +304,22 @@ fn generate_closure_component_props_recursive(
         ScopeData::VSlot(data) => {
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
             let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
-            let props_type = slot_props_type(
-                data.component.as_deref(),
-                data.name.as_str(),
-                ctx.summary.scopes.is_v_slot_name_static(scope.id),
-            );
             append!(
                 *ts,
                 "\n{indent}// Component props in v-slot scope: #{}\n",
                 data.name
             );
-            append!(
-                *ts,
-                "{indent}void function _slot_props_{safe_slot_name}({props_pattern}: {props_type}) {{\n",
+            let props_type = slot_props_type(
+                data.component.as_deref(),
+                data.name.as_str(),
+                ctx.summary.scopes.is_v_slot_name_static(scope.id),
+            );
+            emit_slot_function_open(
+                ts,
+                indent,
+                cstr!("_slot_props_{safe_slot_name}").as_str(),
+                props_pattern,
+                &props_type,
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
