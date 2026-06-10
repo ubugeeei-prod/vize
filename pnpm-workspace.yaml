@@ -26,7 +26,7 @@ catalogs:
   # TypeScript toolchain shared across workspace packages.
   typescript:
     "@types/node": "25.9.2"
-    "@typescript/native-preview": "7.0.0-dev.20260610.1"
+    "@typescript/native-preview": "7.0.0-dev.20260602.1"
     tsx: "4.22.4"
     typescript: "6.0.3"
     vue-tsc: "3.3.4"
@@ -77,7 +77,7 @@ catalogs:
   # External framework integrations and native build helpers.
   integrations:
     "@modelcontextprotocol/sdk": "1.29.0"
-    "@napi-rs/cli": "3.7.1"
+    "@napi-rs/cli": "3.6.2"
     "@nuxt/kit": "4.4.8"
     "@ox-content/vite-plugin": "2.68.0"
 
