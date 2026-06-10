@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_ssr/src/lib.rs
+assertion_line: 561
+expression: result.code.as_str()
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Outer"), _attrs, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(_ssrRenderComponent(_resolveComponent("Inner"), null, {
+          header: _withCtx(({ collapsed }, _push, _parent, _scopeId) => {
+            if (_push) {
+              _push(`<span>${_ssrInterpolate(collapsed)}</span>`)
+            } else {
+              return [_createElementVNode("span", null, [_createTextVNode(_toDisplayString(collapsed))])]
+            }
+          }),
+          default: _withCtx(({ collapsed }, _push, _parent, _scopeId) => {
+            if (_push) {
+              _push(_ssrRenderComponent(_resolveComponent("Leaf"), { collapsed: collapsed }, null, _parent))
+            } else {
+              return [_createVNode(_resolveComponent("Leaf"), { collapsed: collapsed }, null)]
+            }
+          }),
+          _: 1
+        }, _parent))
+      } else {
+        return [_createVNode(_resolveComponent("Inner"), null, { header: _withCtx(({ collapsed }) => [_createElementVNode("span", null, [_createTextVNode(_toDisplayString(collapsed))])]), default: _withCtx(({ collapsed }) => [_createVNode(_resolveComponent("Leaf"), { collapsed: collapsed }, null)]), _: 1 })]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

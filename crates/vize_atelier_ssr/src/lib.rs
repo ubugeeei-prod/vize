@@ -525,6 +525,42 @@ mod tests {
         insta::assert_snapshot!(result.code.as_str());
     }
 
+    // Regression: static named slots with slot props must keep their own slot
+    // entry (with the props pattern bound) in the vnode fallback branch of a
+    // nested component. Collapsing them into `default: _withCtx(() => ...)`
+    // compiles the body against the instance, so `collapsed` resolves to
+    // undefined at runtime (nuxt-ui `<UDashboardSidebar>` inside
+    // `<UDashboardGroup>`: `#header="{ collapsed }"`).
+    #[test]
+    fn test_ssr_named_scoped_slot_keeps_props_in_vnode_fallback() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<Outer>
+  <Inner>
+    <template #header="{ collapsed }">
+      <span>{{ collapsed }}</span>
+    </template>
+    <template #default="{ collapsed }">
+      <Leaf :collapsed="collapsed" />
+    </template>
+  </Inner>
+</Outer>"#,
+        );
+        assert!(errors.is_empty());
+        assert!(
+            result.code.contains("header: _withCtx(({ collapsed })"),
+            "vnode fallback must bind the header slot props:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("_ctx.collapsed"),
+            "scoped slot param `collapsed` must not leak as `_ctx.collapsed`:\n{}",
+            result.code
+        );
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
     // Regression: when a component with dynamic slots is nested inside another
     // component's slot, its vnode (client-render) fallback branch must also emit
     // `createSlots` rather than collapse the dynamic slots into `default`. This

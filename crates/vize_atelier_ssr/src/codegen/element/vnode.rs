@@ -215,9 +215,36 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         self.use_core_helper(RuntimeHelper::WithCtx);
-        let mut out = String::from("{ default: _withCtx(() => ");
-        out.push_str(&self.vnode_children_expression(children));
-        out.push_str("), _: 1 }");
+
+        // Named `<template #...>` slots must keep their own entry so their
+        // slot-props pattern (e.g. `#header="{ collapsed }"`) stays bound;
+        // collapsing them into `default:` compiles the body against the
+        // instance and breaks scoped slots at runtime.
+        let mut default_children: std::vec::Vec<&'node TemplateChildNode<'a>> =
+            std::vec::Vec::new();
+        let mut named_slots: std::vec::Vec<&'node ElementNode<'a>> = std::vec::Vec::new();
+        for child in children {
+            if let TemplateChildNode::Element(el) = child
+                && el.tag_type == ElementType::Template
+                && has_slot_directive(el)
+            {
+                named_slots.push(el.as_ref());
+            } else {
+                default_children.push(child);
+            }
+        }
+
+        let mut out = String::from("{ ");
+        for el in named_slots {
+            out.push_str(&self.vnode_slot_entry_fn_property(el));
+            out.push_str(", ");
+        }
+        if !default_children.is_empty() {
+            out.push_str("default: _withCtx(() => ");
+            out.push_str(&self.vnode_children_expression_from_refs(&default_children));
+            out.push_str("), ");
+        }
+        out.push_str("_: 1 }");
         out
     }
 
