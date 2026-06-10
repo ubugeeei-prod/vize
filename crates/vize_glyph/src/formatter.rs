@@ -388,12 +388,19 @@ fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
     // lines and mark every line that starts inside an open attribute quote.
     let mut in_tag = false;
     let mut open_quote: Option<u8> = None;
+    // A `<pre`/`<textarea` whose opening tag wraps across lines (multi-line
+    // attribute layout) only becomes a raw region once its `>` is consumed;
+    // the attribute lines themselves are normal formatter output.
+    let mut pending_raw_tag: Option<&'static str> = None;
+    // Multi-line HTML comments are also emitted verbatim by the template
+    // formatter, so their inner lines must skip the SFC indent as well.
+    let mut in_comment = false;
     const TAGS: [(&str, &str, &str); 2] = [
         ("pre", "<pre", "</pre>"),
         ("textarea", "<textarea", "</textarea>"),
     ];
     for (i, line) in lines.iter().enumerate() {
-        if !depth_stack.is_empty() || open_quote.is_some() {
+        if !depth_stack.is_empty() || open_quote.is_some() || in_comment {
             mask[i] = true;
         }
         // Walk the line bytes and bump the depth stack on every open/close
@@ -403,6 +410,15 @@ fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
         let bytes = line;
         let mut cursor = 0;
         while cursor < bytes.len() {
+            if in_comment {
+                if bytes[cursor..].starts_with(b"-->") {
+                    in_comment = false;
+                    cursor += 3;
+                } else {
+                    cursor += 1;
+                }
+                continue;
+            }
             if let Some(quote) = open_quote {
                 if bytes[cursor] == quote {
                     open_quote = None;
@@ -413,7 +429,12 @@ fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
             if in_tag {
                 match bytes[cursor] {
                     b'"' | b'\'' => open_quote = Some(bytes[cursor]),
-                    b'>' => in_tag = false,
+                    b'>' => {
+                        in_tag = false;
+                        if let Some(tag) = pending_raw_tag.take() {
+                            depth_stack.push(tag);
+                        }
+                    }
                     _ => {}
                 }
                 cursor += 1;
@@ -421,6 +442,11 @@ fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
             }
             if bytes[cursor] != b'<' {
                 cursor += 1;
+                continue;
+            }
+            if bytes[cursor..].starts_with(b"<!--") {
+                in_comment = true;
+                cursor += 4;
                 continue;
             }
             let mut matched = false;
@@ -434,13 +460,17 @@ fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
                     break;
                 }
                 if starts_with_ascii_ci(&bytes[cursor..], open_needle.as_bytes())
-                    && let Some(after) = bytes.get(cursor + open_needle.len()).copied()
-                    && matches!(after, b'>' | b' ' | b'\t' | b'\n' | b'\r' | b'/')
+                    && bytes
+                        .get(cursor + open_needle.len())
+                        .copied()
+                        // End of line means the opening tag wraps its
+                        // attributes onto the following lines.
+                        .is_none_or(|after| matches!(after, b'>' | b' ' | b'\t' | b'\r' | b'/'))
                 {
-                    depth_stack.push(tag);
-                    // The rest of the `<pre ...>` opening tag may carry quoted
-                    // attributes; scan it as a tag so a multi-line value there
-                    // is tracked too.
+                    // The raw region starts after the opening tag's `>`;
+                    // scan the rest of the tag (possibly multi-line) as a
+                    // normal tag so quoted attributes are tracked too.
+                    pending_raw_tag = Some(tag);
                     in_tag = true;
                     cursor += open_needle.len();
                     matched = true;

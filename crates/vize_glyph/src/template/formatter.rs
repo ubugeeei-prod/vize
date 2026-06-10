@@ -368,18 +368,25 @@ impl<'a> TemplateFormatter<'a> {
             while next + 1 < bytes.len() && !(bytes[next] == b'{' && bytes[next + 1] == b'{') {
                 next += 1;
             }
-            if next >= bytes.len() {
-                let leading = &text[cursor..];
-                if !leading.is_empty() {
+            // No further interpolation: everything left is trailing text.
+            // (`next` stops at `len - 1` when the scan runs off the end, so
+            // checking `next >= len` alone would misread trailing text as
+            // another interpolation and bail out of the rewrap.)
+            if next + 1 >= bytes.len() || !(bytes[next] == b'{' && bytes[next + 1] == b'{') {
+                let trailing = text[cursor..].trim();
+                if !trailing.is_empty() {
                     self.write_indent_string(&mut out, depth);
-                    out.push_str(leading);
+                    out.push_str(trailing);
                     out.push_str(self.newline_str());
                 }
                 break;
             }
-            // Emit any text before the interpolation as its own line.
+            // Emit any text before the interpolation as its own line. Trim
+            // both ends: the segment carries the spacing that separated it
+            // from the surrounding `}}`/`{{`, and keeping a leading space
+            // would shift the line one column off its indent on every pass.
             if next > cursor {
-                let leading = text[cursor..next].trim_end_matches([' ', '\t']);
+                let leading = text[cursor..next].trim();
                 if !leading.is_empty() {
                     self.write_indent_string(&mut out, depth);
                     out.push_str(leading);

@@ -220,6 +220,56 @@ const message = 'hello';
     }
 
     #[test]
+    fn test_format_sfc_multiline_comment_is_idempotent() {
+        // Regression: inner lines of a multi-line HTML comment are emitted
+        // verbatim by the template formatter, but the SFC layer stacked one
+        // extra indent level on them per pass.
+        let source = "<template>\n  <div>\n    <!-- <div v-if=\"result.action\">\n      {{ result.action!.label }}\n    </div> -->\n    <span>hi</span>\n  </div>\n</template>\n";
+        let options = FormatOptions::default();
+        let first = format_sfc(source, &options).unwrap();
+        let second = format_sfc(&first.code, &options).unwrap();
+        let third = format_sfc(&second.code, &options).unwrap();
+        assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+        assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+    }
+
+    #[test]
+    fn test_format_sfc_multiline_interpolation_with_trailing_text_is_idempotent() {
+        let source = "<template>\n  <div>\n    <span>\n      {{ $t(\"compose.drafts\", nonEmptyDrafts.length, { named: { v: formatNumber(nonEmptyDrafts.length) } }) }}&#160;\n    </span>\n  </div>\n</template>\n";
+        let options = FormatOptions::default();
+        let first = format_sfc(source, &options).unwrap();
+        let second = format_sfc(&first.code, &options).unwrap();
+        assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+    }
+
+    #[test]
+    fn test_format_sfc_text_between_interpolations_is_idempotent() {
+        // Regression: a text segment between two block-form interpolations
+        // kept its leading space, shifting the line one column per pass.
+        let source = "<template>\n  <span>\n    {{ tsx.compressedToX({ x: bytes(item.compressedSize), yyyyyyyyyyyyyyyy: zzzzzzzzzzzzzz }) }} = {{ tsx.savedXPercent({ x: Math.round((1 - item.compressedSize / item.file.size) * 100) }) }}\n  </span>\n</template>\n";
+        let options = FormatOptions::default();
+        let first = format_sfc(source, &options).unwrap();
+        let second = format_sfc(&first.code, &options).unwrap();
+        let third = format_sfc(&second.code, &options).unwrap();
+        assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+        assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+    }
+
+    #[test]
+    fn test_format_sfc_multiline_pre_open_tag_is_idempotent() {
+        // Regression: a `<pre>` whose opening tag wraps attributes across
+        // lines was not recognized as a raw region by the SFC layer, so the
+        // verbatim content and closing tag gained one indent per pass.
+        let source = "<template>\n  <div>\n    <pre\n      v-else-if=\"parsedJSON\"\n      class=\"overflow-auto max-h-96\"\n    >{{ formattedJSONString }}\n      </pre>\n  </div>\n</template>\n";
+        let options = FormatOptions::default();
+        let first = format_sfc(source, &options).unwrap();
+        let second = format_sfc(&first.code, &options).unwrap();
+        let third = format_sfc(&second.code, &options).unwrap();
+        assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+        assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+    }
+
+    #[test]
     fn test_allocator_reuse() {
         let allocator = Allocator::with_capacity(4096);
         let options = FormatOptions::default();
