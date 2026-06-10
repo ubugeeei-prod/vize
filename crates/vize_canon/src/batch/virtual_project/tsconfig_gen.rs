@@ -73,11 +73,17 @@ impl VirtualProject {
         // virtual program anyway.
         let mut compiler_options = self.load_compiler_options(original_tsconfig.as_deref())?;
 
-        // Capture the original path-alias map before stripping path-sensitive
-        // options, so it can be re-anchored into the virtual mirror below.
+        // Capture the original path-alias map and type roots before stripping
+        // path-sensitive options, so they can be re-anchored into the virtual
+        // mirror below.
         let original_paths = compiler_options
             .get("paths")
             .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        let original_type_roots = compiler_options
+            .get("typeRoots")
+            .and_then(Value::as_array)
             .cloned()
             .unwrap_or_default();
 
@@ -97,6 +103,18 @@ impl VirtualProject {
             compiler_options.insert(
                 "paths".into(),
                 Value::Object(self.remap_paths(&original_paths)),
+            );
+        }
+
+        // Re-anchor custom `typeRoots` the same way: list the mirror copy and
+        // the real-tree directory. TypeScript scans every listed root and
+        // skips missing directories, so `types: [...]` entries served by a
+        // custom root keep resolving instead of raising a false TS2688 that
+        // only exists inside the mirror.
+        if !original_type_roots.is_empty() {
+            compiler_options.insert(
+                "typeRoots".into(),
+                Value::Array(self.remap_dir_entries(&original_type_roots)),
             );
         }
 
@@ -225,6 +243,26 @@ impl VirtualProject {
         compiler_options: &mut Map<std::string::String, Value>,
         base_dir: &Path,
     ) {
+        // Relative path-ish options resolve against the tsconfig that declares
+        // them; rebase them onto the project root so the flattened option set
+        // keeps the declaring config's meaning.
+        if let Some(type_roots) = compiler_options
+            .get_mut("typeRoots")
+            .and_then(Value::as_array_mut)
+        {
+            for entry in type_roots {
+                let Some(raw_entry) = entry.as_str() else {
+                    continue;
+                };
+                if Path::new(raw_entry).is_absolute() {
+                    continue;
+                }
+                *entry = Value::String(
+                    normalize_tsconfig_path_target(base_dir, &self.project_root, raw_entry).into(),
+                );
+            }
+        }
+
         let Some(paths) = compiler_options
             .get_mut("paths")
             .and_then(Value::as_object_mut)
@@ -282,6 +320,29 @@ impl VirtualProject {
                 candidates.push(Value::String(cstr!("{up}{core}").into()));
             }
             remapped.insert(alias.clone(), Value::Array(candidates));
+        }
+        remapped
+    }
+
+    /// Re-anchor a list of project-root-relative directories (e.g. `typeRoots`)
+    /// into the virtual mirror: each relative entry yields the mirror copy
+    /// followed by the real source-tree directory. Absolute and non-string
+    /// entries pass through unchanged.
+    fn remap_dir_entries(&self, entries: &[Value]) -> Vec<Value> {
+        let up = self.virtual_root_to_project_prefix();
+        let mut remapped = Vec::with_capacity(entries.len() * 2);
+        for entry in entries {
+            let Some(entry_str) = entry.as_str() else {
+                remapped.push(entry.clone());
+                continue;
+            };
+            if Path::new(entry_str).is_absolute() {
+                remapped.push(Value::String(entry_str.to_owned()));
+                continue;
+            }
+            let core = entry_str.strip_prefix("./").unwrap_or(entry_str);
+            remapped.push(Value::String(cstr!("./{core}").into()));
+            remapped.push(Value::String(cstr!("{up}{core}").into()));
         }
         remapped
     }

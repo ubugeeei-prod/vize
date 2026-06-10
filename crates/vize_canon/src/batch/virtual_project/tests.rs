@@ -701,12 +701,18 @@ fn materialized_tsconfig_preserves_original_path_option_bases() {
         compiler_options["allowImportingTsExtensions"],
         serde_json::Value::Bool(true)
     );
-    for option in ["baseUrl", "rootDir", "rootDirs", "typeRoots"] {
+    for option in ["baseUrl", "rootDir", "rootDirs"] {
         assert!(
             !compiler_options.contains_key(option),
-            "{option} should remain owned by the extended tsconfig"
+            "{option} is path-sensitive and must not leak into the mirror"
         );
     }
+    // Custom type roots are re-anchored like `paths`: mirror copy first, real
+    // source tree as fallback, so `types: [...]` entries keep resolving.
+    assert_eq!(
+        compiler_options["typeRoots"],
+        serde_json::json!(["./types", "../../../types"])
+    );
 
     let _ = fs::remove_dir_all(&case_dir);
 }

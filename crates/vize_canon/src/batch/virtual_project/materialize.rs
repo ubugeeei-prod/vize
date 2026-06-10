@@ -182,4 +182,11 @@ impl VirtualProject {
         let tsconfig = self.project_root.join("tsconfig.json");
         tsconfig.exists().then_some(tsconfig)
     }
+
+    /// File that project-level (file-less) diagnostics are attributed to:
+    /// the effective tsconfig when one exists, otherwise the project root.
+    pub(crate) fn project_diagnostics_anchor(&self) -> PathBuf {
+        self.resolved_tsconfig_path()
+            .unwrap_or_else(|| self.project_root.clone())
+    }
 }
