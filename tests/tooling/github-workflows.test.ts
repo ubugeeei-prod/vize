@@ -127,7 +127,7 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
 
   const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
   const nativeWorkflow = readRepoFile(".github", "workflows", "native-smoke.yml");
-  const releaseWorkflow = readRepoFile(".github", "workflows", "release.yml");
+  const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
 
   // check.yml runs every job on the same Linux runner — we accept either the
   // GitHub-hosted label or any Blacksmith Ubuntu SKU so changing vCPU size
@@ -136,9 +136,12 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
   assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("ubuntu-24.04-arm")}`));
   assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("macos-15")}`));
   assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("windows-2025")}`));
-  assert.match(releaseWorkflow, new RegExp(`host:\\s*${hostedOrBlacksmith("ubuntu-24.04-arm")}`));
-  assert.match(releaseWorkflow, new RegExp(`host:\\s*${hostedOrBlacksmith("macos-15")}`));
-  assert.match(releaseWorkflow, new RegExp(`host:\\s*${hostedOrBlacksmith("windows-2025")}`));
+  assert.match(
+    releasePlatforms,
+    new RegExp(`host:\\s*"${hostedOrBlacksmith("ubuntu-24.04-arm")}"`),
+  );
+  assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("macos-15")}"`));
+  assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("windows-2025")}"`));
 });
 
 test("GitHub workflows use Node 24-compatible artifact downloads", () => {
@@ -291,10 +294,51 @@ test("release workflow explicitly installs matrix Rust targets", () => {
   }
 });
 
+test("release workflow plans slow platform cadence before building", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const planJob = workflowJobBody(workflow, "plan-release-platforms");
+  const buildCliJob = workflowJobBody(workflow, "build-cli");
+  const buildNativeJob = workflowJobBody(workflow, "build-native-all");
+
+  assert.match(planJob, /node tools\/github\/release-platforms\.mjs github-output/);
+  assert.match(buildCliJob, /needs:\s*plan-release-platforms/);
+  assert.match(
+    buildCliJob,
+    /settings:\s*\$\{\{\s*fromJSON\(needs\.plan-release-platforms\.outputs\.cli_matrix\)\s*\}\}/,
+  );
+  assert.match(buildNativeJob, /needs:\s*plan-release-platforms/);
+  assert.match(
+    buildNativeJob,
+    /settings:\s*\$\{\{\s*fromJSON\(needs\.plan-release-platforms\.outputs\.native_matrix\)\s*\}\}/,
+  );
+  assert.match(workflow, /release-platforms\.mjs apply-cadence/);
+});
+
+test("Linux Rust CI installs Wild linker before cargo builds", () => {
+  for (const workflowName of [
+    "benchmark.yml",
+    "check.yml",
+    "deploy-docs.yml",
+    "e2e.yml",
+    "native-smoke.yml",
+    "release.yml",
+    "tool-benchmark.yml",
+  ]) {
+    const workflow = readRepoFile(".github", "workflows", workflowName);
+    assert.match(
+      workflow,
+      /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/,
+      `${workflowName} should install the pinned Wild linker action`,
+    );
+    assert.match(workflow, /wild-version:\s*"0\.9\.0"/);
+  }
+});
+
 test("release workflow jobs cap runtime with explicit timeouts", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
 
   for (const [jobName, minutes] of [
+    ["plan-release-platforms", 5],
     ["build-cli", 90],
     ["build-editor-extensions", 30],
     ["release-vscode-extension", 15],
@@ -330,8 +374,12 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const smokeJob = workflowJobBody(workflow, "smoke-release-packages");
 
-  assert.match(smokeJob, /needs:\s*\[build-release-packages, build-native-all\]/);
+  assert.match(
+    smokeJob,
+    /needs:\s*\[plan-release-platforms, build-release-packages, build-native-all\]/,
+  );
   assert.match(smokeJob, /name:\s*Smoke release npm package installs/);
+  assert.match(smokeJob, /name:\s*Apply slow platform release cadence/);
   assert.match(smokeJob, /name:\s*Prepare native package tarballs/);
   assert.match(smokeJob, /name:\s*Prepare Fresco native package tarball/);
   assert.match(
@@ -993,12 +1041,11 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
 });
 
 test("release workflow builds native targets on MoonBit-supported runners", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const job = workflowJobBody(workflow, "build-native-all");
+  const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
 
   assert.doesNotMatch(
-    job,
-    /host:\s*macos-15-intel[\s\S]*target:\s*x86_64-apple-darwin/,
+    releasePlatforms,
+    /host:\s*"macos-15-intel"[\s\S]*target:\s*"x86_64-apple-darwin"/,
     "MoonBit native scripts cannot run on macOS Intel runners",
   );
 
@@ -1010,22 +1057,21 @@ test("release workflow builds native targets on MoonBit-supported runners", () =
     [hostedOrBlacksmith("windows-2025"), "x86_64-pc-windows-msvc"],
     ["windows-11-arm", "aarch64-pc-windows-msvc"],
   ] as const) {
-    assert.match(job, new RegExp(`host:\\s*${host}[\\s\\S]*target:\\s*${target}`));
+    assert.match(releasePlatforms, new RegExp(`host:\\s*"${host}"[\\s\\S]*target:\\s*"${target}"`));
   }
 });
 
 test("release workflow keeps the Windows ARM64 CLI cross build on a compatible hosted runner", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const job = workflowJobBody(workflow, "build-cli");
+  const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
 
   assert.match(
-    job,
-    /host:\s*windows-2025\s*\n\s*target:\s*aarch64-pc-windows-msvc/,
+    releasePlatforms,
+    /host:\s*"windows-2025",\n\s*target:\s*"aarch64-pc-windows-msvc"/,
     "Blacksmith Windows x64 images expose x64 MSVC SDK libs after setup-moonbit, which breaks ARM64 linking",
   );
   assert.doesNotMatch(
-    job,
-    /host:\s*blacksmith-\d+vcpu-windows-2025\s*\n\s*target:\s*aarch64-pc-windows-msvc/,
+    releasePlatforms,
+    /host:\s*"blacksmith-\d+vcpu-windows-2025",\n\s*target:\s*"aarch64-pc-windows-msvc"/,
   );
 });
 

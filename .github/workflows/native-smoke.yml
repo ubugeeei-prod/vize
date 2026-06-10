@@ -63,6 +63,10 @@ jobs:
           arch: ${{ matrix.msvc_arch }}
       - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: runner.os == 'Linux'
+        with:
+          wild-version: "0.9.0"
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: native-smoke-${{ matrix.target }}
@@ -143,6 +147,10 @@ jobs:
           arch: ${{ matrix.platform.msvc_arch }}
       - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: runner.os == 'Linux'
+        with:
+          wild-version: "0.9.0"
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: fresh-install-smoke-${{ matrix.platform.target }}

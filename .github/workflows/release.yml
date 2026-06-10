@@ -22,37 +22,32 @@ env:
   NPM_TAG: ${{ contains(github.ref_name, '-alpha') && 'alpha' || contains(github.ref_name, '-beta') && 'beta' || contains(github.ref_name, '-rc') && 'rc' || 'latest' }}
 
 jobs:
+  plan-release-platforms:
+    name: Plan release platforms
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    outputs:
+      include_slow_platforms: ${{ steps.platforms.outputs.include_slow_platforms }}
+      release_minor: ${{ steps.platforms.outputs.release_minor }}
+      cli_matrix: ${{ steps.platforms.outputs.cli_matrix }}
+      native_matrix: ${{ steps.platforms.outputs.native_matrix }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Select release platforms
+        id: platforms
+        run: node tools/github/release-platforms.mjs github-output "${{ github.ref_name }}"
+
   # Build CLI binaries for all platforms
   build-cli:
     name: Build CLI - ${{ matrix.settings.target }}
+    needs: plan-release-platforms
     runs-on: ${{ matrix.settings.host }}
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        settings:
-          - host: blacksmith-12vcpu-macos-15
-            target: x86_64-apple-darwin
-            archive: vize-x86_64-apple-darwin.tar.gz
-          - host: blacksmith-12vcpu-macos-15
-            target: aarch64-apple-darwin
-            archive: vize-aarch64-apple-darwin.tar.gz
-          - host: blacksmith-32vcpu-windows-2025
-            target: x86_64-pc-windows-msvc
-            archive: vize-x86_64-pc-windows-msvc.zip
-          # Blacksmith Windows x64 images currently expose x64 MSVC SDK libs
-          # after setup-moonbit's amd64 toolchain setup, which breaks ARM64
-          # linking with rust-lld. Keep this cross build on the known-good
-          # GitHub-hosted image until setup can select amd64_arm64 per target.
-          - host: windows-2025
-            target: aarch64-pc-windows-msvc
-            archive: vize-aarch64-pc-windows-msvc.zip
-          - host: blacksmith-32vcpu-ubuntu-2404
-            target: x86_64-unknown-linux-gnu
-            archive: vize-x86_64-unknown-linux-gnu.tar.gz
-          - host: blacksmith-32vcpu-ubuntu-2404
-            target: aarch64-unknown-linux-gnu
-            archive: vize-aarch64-unknown-linux-gnu.tar.gz
+        settings: ${{ fromJSON(needs.plan-release-platforms.outputs.cli_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
@@ -68,6 +63,12 @@ jobs:
 
       - name: Install Rust target
         run: rustup target add ${{ matrix.settings.target }}
+
+      - name: Setup Wild linker (Linux)
+        if: runner.os == 'Linux'
+        uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
 
       - name: Install cross-compilation tools (Linux ARM64)
         if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
@@ -365,39 +366,13 @@ jobs:
   # Build native bindings (vize-native + fresco-native) for all platforms
   build-native-all:
     name: Build Native - ${{ matrix.settings.target }}
+    needs: plan-release-platforms
     runs-on: ${{ matrix.settings.host }}
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        settings:
-          # MoonBit's native installer does not publish a Darwin x64 toolchain.
-          # Build the darwin-x64 native package from the macOS ARM runner,
-          # matching the CLI release job.
-          - host: blacksmith-12vcpu-macos-15
-            target: x86_64-apple-darwin
-            cross_compile: false
-          - host: blacksmith-12vcpu-macos-15
-            target: aarch64-apple-darwin
-            cross_compile: false
-          - host: blacksmith-32vcpu-windows-2025
-            target: x86_64-pc-windows-msvc
-            cross_compile: false
-          - host: windows-11-arm
-            target: aarch64-pc-windows-msvc
-            cross_compile: false
-          - host: blacksmith-32vcpu-ubuntu-2404
-            target: x86_64-unknown-linux-gnu
-            cross_compile: false
-          - host: blacksmith-32vcpu-ubuntu-2404
-            target: x86_64-unknown-linux-musl
-            cross_compile: true
-          - host: blacksmith-32vcpu-ubuntu-2404-arm
-            target: aarch64-unknown-linux-gnu
-            cross_compile: false
-          - host: blacksmith-32vcpu-ubuntu-2404-arm
-            target: aarch64-unknown-linux-musl
-            cross_compile: true
+        settings: ${{ fromJSON(needs.plan-release-platforms.outputs.native_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -423,6 +398,12 @@ jobs:
 
       - name: Install Rust target
         run: rustup target add ${{ matrix.settings.target }}
+
+      - name: Setup Wild linker (Linux)
+        if: runner.os == 'Linux'
+        uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -481,7 +462,7 @@ jobs:
   smoke-release-packages:
     name: Smoke release npm package installs
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    needs: [build-release-packages, build-native-all]
+    needs: [plan-release-platforms, build-release-packages, build-native-all]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -569,6 +550,9 @@ jobs:
           pattern: fresco-bindings-*
           path: npm/fresco-native/artifacts
 
+      - name: Apply slow platform release cadence
+        run: node tools/github/release-platforms.mjs apply-cadence "${{ github.ref_name }}" npm/vize-native/package.json npm/oxlint-plugin-vize/package.json
+
       - name: Prepare native package tarballs
         working-directory: npm/vize-native
         run: |
@@ -603,7 +587,7 @@ jobs:
   release-npm-native:
     name: Release @vizejs/native to npm
     runs-on: ubuntu-24.04
-    needs: build-native-all
+    needs: [plan-release-platforms, build-native-all]
     timeout-minutes: 30
     environment: npm
     permissions:
@@ -628,6 +612,9 @@ jobs:
         with:
           pattern: bindings-*
           path: npm/vize-native/artifacts
+
+      - name: Apply slow platform release cadence
+        run: node tools/github/release-platforms.mjs apply-cadence "${{ github.ref_name }}" npm/vize-native/package.json
 
       - name: Create npm platform directories
         working-directory: npm/vize-native
@@ -763,7 +750,8 @@ jobs:
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    needs:
+      [plan-release-platforms, build-release-packages, release-npm-native, smoke-release-packages]
     timeout-minutes: 15
     environment: npm
     permissions:
@@ -787,6 +775,9 @@ jobs:
 
       - name: Inject native binding package versions
         run: moon run --target native - -- npm/oxlint-plugin-vize/package.json npm/vize-native/package.json --print < tools/moon/scripts/inject_native_optional_deps.mbtx
+
+      - name: Apply slow platform release cadence
+        run: node tools/github/release-platforms.mjs apply-cadence "${{ github.ref_name }}" npm/oxlint-plugin-vize/package.json
 
       - name: Publish oxlint-plugin-vize
         run: moon run --target native - -- npm/oxlint-plugin-vize --provenance < tools/moon/scripts/publish_npm_package.mbtx
