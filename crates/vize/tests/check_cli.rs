@@ -1886,17 +1886,18 @@ const count: number = 'oops'
             }
         }),
     );
-    let diagnostics = recv_lsp_notification(&messages_rx, "textDocument/publishDiagnostics");
-    assert!(
-        diagnostics["params"]["diagnostics"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|diagnostic| diagnostic["message"]
-                .as_str()
-                .is_some_and(|message| message.contains("number") || message.contains("TS2322"))),
-        "{diagnostics}"
-    );
+    recv_lsp_matching(&messages_rx, |message| {
+        message["method"].as_str() == Some("textDocument/publishDiagnostics")
+            && message["params"]["diagnostics"]
+                .as_array()
+                .is_some_and(|diagnostics| {
+                    diagnostics.iter().any(|diagnostic| {
+                        diagnostic["message"].as_str().is_some_and(|message| {
+                            message.contains("number") || message.contains("TS2322")
+                        })
+                    })
+                })
+    });
 
     write_lsp_message(
         &mut stdin,
@@ -3184,15 +3185,6 @@ fn recv_lsp_response(
     recv_lsp_matching(receiver, |message| message["id"].as_i64() == Some(id))
 }
 
-fn recv_lsp_notification(
-    receiver: &std::sync::mpsc::Receiver<serde_json::Value>,
-    method: &str,
-) -> serde_json::Value {
-    recv_lsp_matching(receiver, |message| {
-        message["method"].as_str() == Some(method)
-    })
-}
-
 fn recv_lsp_matching(
     receiver: &std::sync::mpsc::Receiver<serde_json::Value>,
     mut matches: impl FnMut(&serde_json::Value) -> bool,
@@ -3206,7 +3198,9 @@ fn recv_lsp_matching(
             "timed out waiting for LSP message; seen: {seen:#?}"
         );
         let remaining = deadline.saturating_duration_since(now);
-        let message = receiver.recv_timeout(remaining).unwrap();
+        let message = receiver.recv_timeout(remaining).unwrap_or_else(|error| {
+            panic!("timed out waiting for LSP message: {error}; seen: {seen:#?}")
+        });
         if matches(&message) {
             return message;
         }
