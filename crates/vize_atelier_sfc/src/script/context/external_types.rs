@@ -1,9 +1,9 @@
 use std::path::{Path, PathBuf};
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{ExportNamedDeclaration, ImportDeclarationSpecifier, Statement};
+use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
 use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, ToCompactString};
 
 use crate::parse_sfc;
@@ -82,13 +82,16 @@ impl ScriptCompileContext {
                         visited,
                     );
                 }
+                // Plain (non-`type`) re-exports forward types as well in TS:
+                // `export * from './Link.vue'` in a types barrel re-exports
+                // every interface declared there (nuxt-ui resolves LinkProps
+                // through exactly this shape). Follow them unconditionally —
+                // the `visited` set bounds the traversal and bare specifiers
+                // (node_modules) are filtered by import resolution.
                 Statement::ExportNamedDeclaration(export_decl) => {
                     let Some(ref export_source) = export_decl.source else {
                         continue;
                     };
-                    if !is_type_re_export(export_decl, source) {
-                        continue;
-                    }
 
                     self.collect_types_from_specifier(
                         export_source.value.as_str(),
@@ -97,10 +100,6 @@ impl ScriptCompileContext {
                     );
                 }
                 Statement::ExportAllDeclaration(export_decl) => {
-                    if !is_export_all_type_only(stmt, source) {
-                        continue;
-                    }
-
                     self.collect_types_from_specifier(
                         export_decl.source.value.as_str(),
                         current_file,
@@ -249,53 +248,13 @@ fn canonicalize_or_original(path: PathBuf) -> Option<PathBuf> {
     }
 }
 
-fn is_type_re_export(export_decl: &ExportNamedDeclaration<'_>, source: &str) -> bool {
-    if export_decl.export_kind.is_type() {
-        return true;
-    }
-
-    if export_decl
-        .specifiers
-        .iter()
-        .any(|specifier| specifier.export_kind.is_type())
-    {
-        return true;
-    }
-
-    let span = export_decl.span;
-    let start = span.start as usize;
-    let end = span.end as usize;
-    if start >= end || end > source.len() {
-        return false;
-    }
-
-    let raw = source[start..end].trim_start();
-    raw.starts_with("export type ")
-        || raw.contains("{ type ")
-        || raw.contains("{type ")
-        || raw.contains(", type ")
-}
-
-fn is_export_all_type_only(stmt: &Statement<'_>, source: &str) -> bool {
-    let span = stmt.span();
-    let start = span.start as usize;
-    let end = span.end as usize;
-    start < end
-        && end <= source.len()
-        && source[start..end].trim_start().starts_with("export type ")
-}
-
 fn path_key(path: &Path) -> String {
     path.to_string_lossy().as_ref().to_compact_string()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{is_type_re_export, resolve_at_src_alias, resolve_import_path};
-    use oxc_allocator::Allocator;
-    use oxc_ast::ast::Statement;
-    use oxc_parser::Parser;
-    use oxc_span::SourceType;
+    use super::{resolve_at_src_alias, resolve_import_path};
     use std::path::{Path, PathBuf};
 
     fn temp_project_dir(test_name: &str) -> PathBuf {
@@ -413,22 +372,6 @@ const props = defineProps<ParentProps>();
     }
 
     #[test]
-    fn detects_multiline_mixed_type_reexports() {
-        let source = r#"export {
-  default as Content,
-  type ContentProps,
-} from "./Content.vue";
-"#;
-        let allocator = Allocator::default();
-        let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
-        let Statement::ExportNamedDeclaration(export_decl) = &parsed.program.body[0] else {
-            panic!("expected export declaration");
-        };
-
-        assert!(is_type_re_export(export_decl, source));
-    }
-
-    #[test]
     fn collects_mixed_type_reexports_from_vue_files() {
         let project = temp_project_dir("mixed-vue-type-reexport");
         let components = project.join("src/components");
@@ -475,6 +418,63 @@ const props = defineProps<ParentProps>();
             ctx.bindings.bindings.get("asChild"),
             Some(&crate::types::BindingType::Props)
         );
+
+        let _ = std::fs::remove_dir_all(project);
+    }
+
+    #[test]
+    fn collects_types_through_plain_star_reexport_barrel() {
+        // Regression: a types barrel using plain `export * from './X.vue'`
+        // (not `export type *`) still forwards every interface in TS, but the
+        // collector skipped non-type re-exports entirely — nuxt-ui's Button
+        // lost all `Omit<LinkProps, ...>` props this way.
+        let project = temp_project_dir("plain-star-reexport");
+        let components = project.join("src/components");
+        let types = project.join("src/types");
+        std::fs::create_dir_all(&components).unwrap();
+        std::fs::create_dir_all(&types).unwrap();
+        std::fs::write(
+            components.join("Link.vue"),
+            r#"<script lang="ts">
+export interface LinkProps {
+  disabled?: boolean;
+  type?: string;
+  raw?: boolean;
+}
+</script>"#,
+        )
+        .unwrap();
+        std::fs::write(
+            types.join("index.ts"),
+            "export * from '../components/Link.vue'\n",
+        )
+        .unwrap();
+
+        let parent = components.join("Button.vue");
+        let source = r#"
+import type { LinkProps } from "../types";
+
+interface ButtonProps extends Omit<LinkProps, 'raw'> {
+  label?: string;
+}
+
+const props = defineProps<ButtonProps>();
+"#;
+
+        let mut ctx = super::ScriptCompileContext::new(source);
+        ctx.collect_imported_types_from_path(source, parent.to_string_lossy().as_ref());
+        ctx.analyze();
+
+        assert!(ctx.interfaces.contains_key("LinkProps"));
+        assert_eq!(
+            ctx.bindings.bindings.get("disabled"),
+            Some(&crate::types::BindingType::Props)
+        );
+        assert_eq!(
+            ctx.bindings.bindings.get("type"),
+            Some(&crate::types::BindingType::Props)
+        );
+        assert_eq!(ctx.bindings.bindings.get("raw"), None);
 
         let _ = std::fs::remove_dir_all(project);
     }
