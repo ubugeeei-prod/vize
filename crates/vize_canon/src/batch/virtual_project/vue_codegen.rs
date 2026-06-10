@@ -187,6 +187,10 @@ pub(super) fn generate_vue_virtual_ts(
                 preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
                 options_api: codegen_options.options_api,
                 legacy_vue2: codegen_options.legacy_vue2,
+                template_syntax_quirks: matches!(
+                    codegen_options.template_syntax,
+                    TemplateSyntaxMode::Quirks
+                ),
             },
         )
     );

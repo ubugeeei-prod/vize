@@ -609,6 +609,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             check_options,
                             virtual_ts_options: options,
                             check_unresolved_global_components: has_script_reference_types,
+                            template_syntax_quirks: generation_options.template_syntax_quirks,
                         },
                     )
                 );
@@ -785,8 +786,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     if let Some(runtime_args) = define_emits_runtime_args {
         append!(
             ts,
-            "\n  const __vize_emits = defineEmits({runtime_args});\n"
+            "\n  const __vize_emit_options = ({runtime_args});\n  const __vize_emits = defineEmits(__vize_emit_options);\n"
         );
+        setup_return_fields.push("__vize_emit_options");
         setup_return_fields.push("__vize_emits");
     }
     if !setup_return_fields.is_empty() {
@@ -914,6 +916,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ts.push_str("type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };\n");
         ts.push_str("type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});\n");
         ts.push_str("type __EmitProps<T> = import('vue').EmitsToProps<__EmitOptions<T>>;\n\n");
+        if define_emits_runtime_args.is_some() {
+            ts.push_str("type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emit_options\"]>;\n\n");
+        } else {
+            ts.push_str("type __VizeStaticEmitProps = __EmitProps<Emits>;\n\n");
+        }
     }
 
     // Default export
@@ -938,12 +945,22 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // the default export so the parent can invoke it with the assembled props
     // object and let TypeScript infer `T` from the call (see #775). Non-generic
     // components keep the plain construct signature unchanged.
+    let emit_props_static = if has_emits_for_props {
+        "__vizeEmitProps?: __VizeStaticEmitProps;"
+    } else {
+        ""
+    };
     if let Some(generic) = generic_param {
         let generic_decl = add_generic_defaults(generic);
         let generic_names = extract_generic_names(generic);
         append!(
             ts,
-            "declare const __vize_component__: (new (...args: any[]) => __VizeComponentInstance) & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; }};\n",
+            "declare const __vize_component__: (new (...args: any[]) => __VizeComponentInstance) & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; {emit_props_static} }};\n",
+        );
+    } else if has_emits_for_props {
+        append!(
+            ts,
+            "declare const __vize_component__: (new (...args: any[]) => __VizeComponentInstance) & {{ {emit_props_static} }};\n",
         );
     } else {
         ts.push_str(

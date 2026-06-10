@@ -139,6 +139,7 @@ pub(crate) fn generate_scope_closures(
             template_prop_names,
             template_offset,
             check_options,
+            template_syntax_quirks: options.template_syntax_quirks,
         };
         profile!(
             "canon.virtual_ts.scope_node",
@@ -297,7 +298,7 @@ fn generate_scope_node(
                 let on_handler = cstr!("on{pascal_event}");
 
                 let prop_key = if on_handler.contains(':') {
-                    cstr!("\"{on_handler}\"")
+                    cstr!("\"{}\"", on_handler.as_str())
                 } else {
                     on_handler
                 };
@@ -306,7 +307,7 @@ fn generate_scope_node(
                 // Include scope_id to deduplicate when same component+event appears multiple times
                 append!(
                     *ts,
-                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_args = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }}\n",
+                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_prop_args = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }}\n",
                 );
                 append!(
                     *ts,
@@ -323,8 +324,29 @@ fn generate_scope_node(
                 append!(*ts, "{indent}    : unknown[];\n");
                 append!(
                     *ts,
-                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = __{component_type_name}_{scope_id}_{safe_event_name}_args extends [] ? any : __{component_type_name}_{scope_id}_{safe_event_name}_args[0];\n",
+                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_emit_args = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }}\n",
                 );
+                append!(
+                    *ts,
+                    "{indent}  ? __EP extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
+                );
+                append!(*ts, "{indent}  : unknown[];\n");
+                append!(
+                    *ts,
+                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_args = unknown[] extends __{component_type_name}_{scope_id}_{safe_event_name}_prop_args ? __{component_type_name}_{scope_id}_{safe_event_name}_emit_args : __{component_type_name}_{scope_id}_{safe_event_name}_prop_args;\n",
+                );
+                if ctx.template_syntax_quirks {
+                    let fallback_event = get_dom_event_type(data.event_name.as_str());
+                    append!(
+                        *ts,
+                        "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = __{component_type_name}_{scope_id}_{safe_event_name}_args extends [] ? any : unknown[] extends __{component_type_name}_{scope_id}_{safe_event_name}_args ? {fallback_event} : __{component_type_name}_{scope_id}_{safe_event_name}_args[0];\n",
+                    );
+                } else {
+                    append!(
+                        *ts,
+                        "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = __{component_type_name}_{scope_id}_{safe_event_name}_args extends [] ? any : __{component_type_name}_{scope_id}_{safe_event_name}_args[0];\n",
+                    );
+                }
 
                 let event_type =
                     cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");

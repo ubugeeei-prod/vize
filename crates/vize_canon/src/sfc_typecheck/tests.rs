@@ -377,10 +377,14 @@ const emit = defineEmits({
 
     let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
     assert!(
-        virtual_ts.contains("const __vize_emits = defineEmits({"),
+        virtual_ts.contains("const __vize_emit_options = ({"),
         "{virtual_ts}"
     );
     assert!(virtual_ts.contains("...emitObject"), "{virtual_ts}");
+    assert!(
+        virtual_ts.contains("const __vize_emits = defineEmits(__vize_emit_options);"),
+        "{virtual_ts}"
+    );
     assert!(
         virtual_ts
             .contains("export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"];"),
@@ -415,8 +419,11 @@ const emit = defineEmits([...useDialogPluginComponent.emits]);
 
     let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
     assert!(
-        virtual_ts
-            .contains("const __vize_emits = defineEmits([...useDialogPluginComponent.emits]);"),
+        virtual_ts.contains("const __vize_emit_options = ([...useDialogPluginComponent.emits]);"),
+        "{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains("const __vize_emits = defineEmits(__vize_emit_options);"),
         "{virtual_ts}"
     );
     assert!(

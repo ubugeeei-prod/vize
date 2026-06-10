@@ -144,11 +144,13 @@ type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiter
 type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});
 type __EmitProps<T> = import('vue').EmitsToProps<__EmitOptions<T>>;
 
+type __VizeStaticEmitProps = __EmitProps<Emits>;
+
 // ========== Default Export ==========
 type __VizeComponentInstance = {
   $props: Props & __EmitProps<Emits>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };
-declare const __vize_component__: (new (...args: any[]) => __VizeComponentInstance) & { __vizeCheck: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => void; };
+declare const __vize_component__: (new (...args: any[]) => __VizeComponentInstance) & { __vizeCheck: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => void; __vizeEmitProps?: __VizeStaticEmitProps; };
 export default __vize_component__;

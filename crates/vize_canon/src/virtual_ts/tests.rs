@@ -769,6 +769,64 @@ const arr = [(event: PointerEvent) => event.preventDefault()]
 }
 
 #[test]
+fn test_component_event_fallback_uses_dom_event_type_only_in_quirks() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import Child from './Child.vue'
+function eventHandler(event: Event) {
+  void event
+}
+"#;
+    let template = r#"<Child @keydown="eventHandler" />"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let standard_output = generate_virtual_ts_with_offsets(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions::default(),
+    );
+    assert!(
+        standard_output.code.contains("? __A : unknown[]"),
+        "standard component event fallback should stay unknown:\n{}",
+        standard_output.code
+    );
+    assert!(
+        !standard_output.code.contains("[KeyboardEvent]"),
+        "standard component event fallback must not use DOM event types:\n{}",
+        standard_output.code
+    );
+
+    let quirks_output = generate_virtual_ts_with_offsets_and_checks(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions::default(),
+        VirtualTsGenerationOptions {
+            template_syntax_quirks: true,
+            ..Default::default()
+        },
+    );
+    assert!(
+        quirks_output.code.contains("unknown[] extends __Child_")
+            && quirks_output.code.contains("? KeyboardEvent : __Child_"),
+        "quirks component event fallback should use the DOM event type when args stay unknown:\n{}",
+        quirks_output.code
+    );
+}
+
+#[test]
 fn test_multiline_statement_event_handler_uses_handler_scope() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 

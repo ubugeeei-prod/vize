@@ -16,12 +16,14 @@ pub(crate) struct ScopeGenContext<'a> {
     pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
     pub(crate) check_options: VirtualTsCheckOptions,
+    pub(crate) template_syntax_quirks: bool,
 }
 
 pub(crate) struct ScopeGenerationOptions<'a> {
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) virtual_ts_options: &'a VirtualTsOptions,
     pub(crate) check_unresolved_global_components: bool,
+    pub(crate) template_syntax_quirks: bool,
 }
 
 /// Context for recursive component prop checks inside v-for scopes.

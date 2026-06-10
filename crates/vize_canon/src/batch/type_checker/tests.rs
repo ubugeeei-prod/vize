@@ -649,6 +649,74 @@ function toggle(open = false): void {
 }
 
 #[test]
+fn batch_type_checker_quirks_accepts_fallthrough_component_dom_event_handler() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "component-fallthrough-dom-event-handler",
+        &[
+            (
+                "src/Child.vue",
+                r#"<template>
+  <input />
+</template>
+"#,
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+
+function eventHandler(event: Event) {
+  void event
+}
+</script>
+
+<template>
+  <Child @keydown="eventHandler" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let mut checker = match BatchTypeChecker::new(&project_root) {
+        Ok(checker) => checker,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+    checker.set_template_syntax(vize_atelier_core::TemplateSyntaxMode::Quirks);
+    checker.scan_project().unwrap();
+
+    let result = match checker.check_project() {
+        Ok(result) => result,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+    let relevant: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            relative_path(&project_root, &diagnostic.file) == "src/App.vue"
+                && diagnostic.code == Some(2345)
+        })
+        .map(|diagnostic| diagnostic.message.clone())
+        .collect();
+
+    assert!(
+        relevant.is_empty(),
+        "fallthrough DOM event handlers should not report TS2345 in quirks mode: {relevant:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_multiline_inline_handler_points_into_offending_line() {
     // Regression: the inline-callback @event path used the directive span
     // (covering `@click="..."`) as the source-map src_range while emitting
