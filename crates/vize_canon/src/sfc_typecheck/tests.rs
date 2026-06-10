@@ -601,6 +601,62 @@ export default { data() { return { count: 1 } } }
     );
 }
 
+#[test]
+fn test_type_check_options_api_resolves_this_across_blocks() {
+    let source = r#"<script lang="ts">
+import { defineComponent } from 'vue'
+
+function useFakeStore() {
+  return {
+    ready: false,
+    items: [] as Array<{ id: number; label: string }>,
+  }
+}
+
+export default defineComponent({
+  setup() {
+    const store = useFakeStore()
+    return { store }
+  },
+  data() {
+    return { count: 0 }
+  },
+  computed: {
+    status() {
+      return this.store.ready
+    },
+  },
+  methods: {
+    bump(step: number) {
+      this.count = this.count + step
+      return this.status
+    },
+  },
+})
+</script>
+<template>
+  <button @click="bump(1)">{{ status }} {{ store.ready }} {{ count }}</button>
+</template>"#;
+
+    let result =
+        type_check_sfc_with_options_api(source, &SfcTypeCheckOptions::new("OptionsBridge.vue"));
+    let unexpected: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            matches!(
+                diagnostic.code.as_deref(),
+                Some("2339" | "7023" | "2304" | "undefined-binding")
+            )
+        })
+        .collect();
+
+    assert!(
+        unexpected.is_empty(),
+        "Options API `this` and template bindings should resolve without type gaps: {unexpected:#?}"
+    );
+}
+
 #[cfg(feature = "legacy")]
 #[test]
 fn test_type_check_legacy_vue2_options_api_opt_in() {

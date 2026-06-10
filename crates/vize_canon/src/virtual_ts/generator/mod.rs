@@ -15,7 +15,7 @@ use self::imports::{
     collect_imported_names, emit_global_component_stubs, emit_reference_type_directives,
     extract_declared_name,
 };
-use self::options_api::generate_options_api_variables;
+use self::options_api::{generate_options_api_bridge, generate_options_api_variables};
 use self::spans::{
     collect_template_referenced_names, is_local_setup_binding, merge_overlapping_spans,
     rewrite_export_default_for_module_scope,
@@ -508,6 +508,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 "  // @vize-map: {script_gen_start}:{script_gen_end} -> 0:{}\n\n",
                 script.len()
             );
+
+            if options_api {
+                profile!(
+                    "canon.virtual_ts.generate_options_api_bridge",
+                    generate_options_api_bridge(&mut ts, summary, script)
+                );
+            }
         });
     }
 

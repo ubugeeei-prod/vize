@@ -7,7 +7,7 @@ use super::helpers::{VUE_SETUP_HELPERS, generate_template_context, get_dom_event
 use super::{
     TemplateGlobal, VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions,
     generate_virtual_ts, generate_virtual_ts_with_offsets,
-    generate_virtual_ts_with_offsets_and_checks,
+    generate_virtual_ts_with_offsets_and_checks, generate_virtual_ts_with_offsets_options_api,
 };
 
 fn assert_virtual_ts_snapshot(name: &str, value: &str) {
@@ -50,6 +50,151 @@ fn test_vue_template_context_with_globals() {
     };
     let ctx = generate_template_context(&options);
     assert_virtual_ts_snapshot("virtual_ts_vue_template_context_with_globals", ctx.as_str());
+}
+
+fn analyze_options_api_script(script: &str) -> vize_croquis::Croquis {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.finish()
+}
+
+#[test]
+fn test_options_api_virtual_ts_emits_this_bridge() {
+    let script = r#"import { defineComponent } from 'vue'
+
+function useFakeStore() {
+    return {
+        ready: false,
+        items: [] as Array<{ id: number; label: string }>,
+    }
+}
+
+export default defineComponent({
+    setup() {
+        const store = useFakeStore()
+        return { store }
+    },
+    data() {
+        return { count: 0 }
+    },
+    computed: {
+        status() {
+            return this.store.ready
+        },
+    },
+    methods: {
+        bump(step: number) {
+            this.count = this.count + step
+            return this.status
+        },
+    },
+    props: {
+        initial: { type: Number, default: 0 },
+    },
+})
+"#;
+    let summary = analyze_options_api_script(script);
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        output.code.contains("type __VizeThis ="),
+        "expected typed Options API `this` bridge:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("__vize_method_bump"),
+        "expected method body to be checked through a typed wrapper:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("__vize_computed_status"),
+        "expected computed body to be checked through a typed wrapper:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_options_api_virtual_ts_emits_typed_shape_for_pinia_spread_helpers() {
+    let script = r#"import { defineComponent } from 'vue'
+import { mapState, mapActions } from 'pinia'
+
+function useFakeStore() {
+    return {
+        ready: false,
+        items: [] as Array<{ id: number; label: string }>,
+        setReady(_v: boolean) {},
+    }
+}
+
+export default defineComponent({
+    computed: {
+        ...mapState(useFakeStore, ['items', 'ready']),
+        localComputed() { return 1 },
+    },
+    methods: {
+        ...mapActions(useFakeStore, ['setReady']),
+    },
+})
+"#;
+    let summary = analyze_options_api_script(script);
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        output
+            .code
+            .contains("[K in 'items' | 'ready']: ReturnType<typeof useFakeStore>[K]"),
+        "expected precise mapped type for mapState spread keys:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("[K in 'setReady']: ReturnType<typeof useFakeStore>[K]"),
+        "expected precise mapped type for mapActions spread keys:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_script_setup_output_does_not_emit_options_api_bridge() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import { ref } from 'vue'
+const count = ref(0)
+"#;
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    let summary = analyzer.finish();
+
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+
+    assert!(
+        !output.code.contains("__VizeThis"),
+        "`<script setup>` output must not contain the Options API bridge:\n{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("__vize_method_") && !output.code.contains("__vize_computed_"),
+        "`<script setup>` output must not contain Options API wrappers:\n{}",
+        output.code
+    );
 }
 
 #[test]

@@ -1,8 +1,17 @@
 //! Options API template-binding emission for the virtual TypeScript generator.
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{
+    Argument, ArrayExpressionElement, ArrowFunctionExpression, CallExpression,
+    ExportDefaultDeclarationKind, Expression, Function, ObjectExpression, ObjectPropertyKind,
+    Program, PropertyKey, Statement,
+};
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
 use vize_croquis::{BindingType, Croquis};
 
 use crate::virtual_ts::types::VirtualTsOptions;
+use vize_carton::CompactString;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
@@ -59,6 +68,475 @@ pub(super) fn generate_options_api_variables(
         append!(ts, "void {name};");
     }
     ts.push('\n');
+}
+
+pub(super) fn generate_options_api_bridge(mut ts: &mut String, summary: &Croquis, script: &str) {
+    let Some(bridge) = collect_options_api_bridge(script) else {
+        return;
+    };
+
+    let mut names: Vec<&str> = summary
+        .bindings
+        .bindings
+        .iter()
+        .filter_map(|(name, binding_type)| {
+            let name = name.as_str();
+            match binding_type {
+                BindingType::Data | BindingType::Options | BindingType::Props => {
+                    is_safe_value_identifier(name).then_some(name)
+                }
+                _ => None,
+            }
+        })
+        .collect();
+    names.sort_unstable();
+    names.dedup();
+
+    if names.is_empty()
+        && bridge.computed.is_empty()
+        && bridge.methods.is_empty()
+        && bridge.mapped_types.is_empty()
+    {
+        return;
+    }
+
+    ts.push_str("  // Options API typed instance bridge\n");
+    for (index, mapped_type) in bridge.mapped_types.iter().enumerate() {
+        append!(
+            ts,
+            "  type __VizeOptionsMap{index} = {{ {mapped_type} }};\n"
+        );
+    }
+    ts.push_str("  type __VizeThis = {\n");
+    for name in names {
+        append!(ts, "    {name}: any;\n");
+    }
+    ts.push_str("  }");
+    for index in 0..bridge.mapped_types.len() {
+        append!(ts, " & __VizeOptionsMap{index}");
+    }
+    ts.push_str(";\n");
+
+    for function in &bridge.computed {
+        emit_bridge_function(ts, "computed", function);
+    }
+    for function in &bridge.methods {
+        emit_bridge_function(ts, "method", function);
+    }
+
+    if !bridge.computed.is_empty() || !bridge.methods.is_empty() {
+        ts.push_str("  ");
+        let mut first = true;
+        for function in bridge.computed.iter().chain(bridge.methods.iter()) {
+            if !first {
+                ts.push(' ');
+            }
+            append!(
+                ts,
+                "void __vize_{}_{};",
+                function.kind_prefix(),
+                function.safe_name
+            );
+            first = false;
+        }
+        ts.push('\n');
+    }
+    ts.push('\n');
+}
+
+fn emit_bridge_function(mut ts: &mut String, kind: &str, function: &OptionsFunction) {
+    let params = if function.params.is_empty() {
+        String::from("this: __VizeThis")
+    } else {
+        let mut params = String::from("this: __VizeThis, ");
+        params.push_str(&function.params);
+        params
+    };
+    append!(
+        ts,
+        "  function __vize_{kind}_{}({params}) ",
+        function.safe_name
+    );
+    ts.push_str(&function.body);
+    ts.push('\n');
+}
+
+#[derive(Debug, Default)]
+struct OptionsApiBridge {
+    computed: Vec<OptionsFunction>,
+    methods: Vec<OptionsFunction>,
+    mapped_types: Vec<String>,
+}
+
+#[derive(Debug)]
+struct OptionsFunction {
+    kind: OptionsFunctionKind,
+    safe_name: CompactString,
+    params: String,
+    body: String,
+}
+
+impl OptionsFunction {
+    fn kind_prefix(&self) -> &'static str {
+        match self.kind {
+            OptionsFunctionKind::Computed => "computed",
+            OptionsFunctionKind::Method => "method",
+        }
+    }
+}
+
+#[derive(Debug)]
+enum OptionsFunctionKind {
+    Computed,
+    Method,
+}
+
+fn collect_options_api_bridge(script: &str) -> Option<OptionsApiBridge> {
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+    if parsed.panicked {
+        return None;
+    }
+
+    let options = component_options_from_program(&parsed.program)?;
+    let mut bridge = OptionsApiBridge::default();
+    collect_function_bridge(
+        script,
+        options,
+        "computed",
+        OptionsFunctionKind::Computed,
+        &mut bridge.computed,
+        &mut bridge.mapped_types,
+    );
+    collect_function_bridge(
+        script,
+        options,
+        "methods",
+        OptionsFunctionKind::Method,
+        &mut bridge.methods,
+        &mut bridge.mapped_types,
+    );
+    Some(bridge)
+}
+
+fn collect_function_bridge(
+    script: &str,
+    options: &ObjectExpression<'_>,
+    option_name: &str,
+    kind: OptionsFunctionKind,
+    output: &mut Vec<OptionsFunction>,
+    mapped_types: &mut Vec<String>,
+) {
+    let Some(object) = option_object_property(options, option_name) else {
+        return;
+    };
+
+    for property in &object.properties {
+        match property {
+            ObjectPropertyKind::ObjectProperty(property) => {
+                if property.computed {
+                    continue;
+                }
+                let Some(name) = property_key_name(&property.key) else {
+                    continue;
+                };
+                let Some(function) = options_function_from_expression(
+                    script,
+                    name,
+                    &property.value,
+                    match kind {
+                        OptionsFunctionKind::Computed => OptionsFunctionKind::Computed,
+                        OptionsFunctionKind::Method => OptionsFunctionKind::Method,
+                    },
+                ) else {
+                    continue;
+                };
+                output.push(function);
+            }
+            ObjectPropertyKind::SpreadProperty(spread) => {
+                if let Expression::CallExpression(call) = &spread.argument {
+                    collect_mapped_type(call, mapped_types);
+                }
+            }
+        }
+    }
+}
+
+fn options_function_from_expression(
+    script: &str,
+    name: &str,
+    expression: &Expression<'_>,
+    kind: OptionsFunctionKind,
+) -> Option<OptionsFunction> {
+    let (params, body) = match expression {
+        Expression::FunctionExpression(function) => function_parts(script, function)?,
+        Expression::ArrowFunctionExpression(arrow) => arrow_function_parts(script, arrow)?,
+        Expression::ParenthesizedExpression(parenthesized) => {
+            return options_function_from_expression(script, name, &parenthesized.expression, kind);
+        }
+        Expression::TSAsExpression(ts_as) => {
+            return options_function_from_expression(script, name, &ts_as.expression, kind);
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            return options_function_from_expression(script, name, &ts_satisfies.expression, kind);
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            return options_function_from_expression(script, name, &ts_non_null.expression, kind);
+        }
+        _ => return None,
+    };
+
+    Some(OptionsFunction {
+        kind,
+        safe_name: CompactString::new(safe_identifier(name).as_str()),
+        params,
+        body,
+    })
+}
+
+fn function_parts(script: &str, function: &Function<'_>) -> Option<(String, String)> {
+    let params = params_source(script, &function.params)?;
+    let body = function.body.as_ref()?;
+    let body_source = source_slice(script, body.span())?;
+    Some((params, String::from(body_source.trim())))
+}
+
+fn arrow_function_parts(
+    script: &str,
+    arrow: &ArrowFunctionExpression<'_>,
+) -> Option<(String, String)> {
+    let params = params_source(script, &arrow.params)?;
+    let body_source = source_slice(script, arrow.body.span())?.trim();
+    if arrow.expression {
+        let mut body = String::from("{ return ");
+        body.push_str(body_source.trim_end_matches(';'));
+        body.push_str("; }");
+        Some((params, body))
+    } else {
+        Some((params, String::from(body_source)))
+    }
+}
+
+fn params_source(script: &str, params: &oxc_ast::ast::FormalParameters<'_>) -> Option<String> {
+    let mut result = String::default();
+    let mut first = true;
+    for param in params.items.iter() {
+        if !first {
+            result.push_str(", ");
+        }
+        first = false;
+        result.push_str(source_slice(script, param.span())?.trim());
+    }
+    if let Some(rest) = params.rest.as_ref() {
+        if !first {
+            result.push_str(", ");
+        }
+        result.push_str(source_slice(script, rest.span())?.trim());
+    }
+    Some(result)
+}
+
+fn collect_mapped_type(call: &CallExpression<'_>, mapped_types: &mut Vec<String>) {
+    let Expression::Identifier(callee) = &call.callee else {
+        return;
+    };
+    if !matches!(
+        callee.name.as_str(),
+        "mapState" | "mapGetters" | "mapWritableState" | "mapActions"
+    ) {
+        return;
+    }
+
+    let Some(Argument::Identifier(store)) = call.arguments.first() else {
+        return;
+    };
+    let Some(Argument::ArrayExpression(keys)) = call.arguments.get(1) else {
+        return;
+    };
+    let keys: Vec<&str> = keys
+        .elements
+        .iter()
+        .filter_map(|element| {
+            let ArrayExpressionElement::StringLiteral(literal) = element else {
+                return None;
+            };
+            Some(literal.value.as_str())
+        })
+        .collect();
+    if keys.is_empty() {
+        return;
+    }
+
+    let mut key_union = String::default();
+    for (index, key) in keys.iter().enumerate() {
+        if index > 0 {
+            key_union.push_str(" | ");
+        }
+        append!(key_union, "'{key}'");
+    }
+
+    let mut mapped_type = String::default();
+    append!(
+        mapped_type,
+        "[K in {key_union}]: ReturnType<typeof {}>[K]",
+        store.name.as_str()
+    );
+    mapped_types.push(mapped_type);
+}
+
+fn component_options_from_program<'a>(
+    program: &'a Program<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    program.body.iter().find_map(|statement| {
+        let Statement::ExportDefaultDeclaration(export) = statement else {
+            return None;
+        };
+        component_options_from_export(&export.declaration)
+    })
+}
+
+fn component_options_from_export<'a>(
+    declaration: &'a ExportDefaultDeclarationKind<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match declaration {
+        ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object.as_ref()),
+        ExportDefaultDeclarationKind::CallExpression(call) => component_options_from_call(call),
+        ExportDefaultDeclarationKind::ParenthesizedExpression(parenthesized) => {
+            component_options_from_expression(&parenthesized.expression)
+        }
+        ExportDefaultDeclarationKind::TSAsExpression(ts_as) => {
+            component_options_from_expression(&ts_as.expression)
+        }
+        ExportDefaultDeclarationKind::TSSatisfiesExpression(ts_satisfies) => {
+            component_options_from_expression(&ts_satisfies.expression)
+        }
+        ExportDefaultDeclarationKind::TSNonNullExpression(ts_non_null) => {
+            component_options_from_expression(&ts_non_null.expression)
+        }
+        _ => None,
+    }
+}
+
+fn component_options_from_expression<'a>(
+    expression: &'a Expression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match expression {
+        Expression::ObjectExpression(object) => Some(object.as_ref()),
+        Expression::CallExpression(call) => component_options_from_call(call),
+        Expression::ParenthesizedExpression(parenthesized) => {
+            component_options_from_expression(&parenthesized.expression)
+        }
+        Expression::TSAsExpression(ts_as) => component_options_from_expression(&ts_as.expression),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            component_options_from_expression(&ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            component_options_from_expression(&ts_non_null.expression)
+        }
+        _ => None,
+    }
+}
+
+fn component_options_from_call<'a>(
+    call: &'a CallExpression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    if !is_define_component_callee(&call.callee) {
+        return None;
+    }
+    let first = call.arguments.first()?;
+    match first {
+        Argument::ObjectExpression(object) => Some(object.as_ref()),
+        Argument::CallExpression(call) => component_options_from_call(call),
+        Argument::ParenthesizedExpression(parenthesized) => {
+            component_options_from_expression(&parenthesized.expression)
+        }
+        Argument::TSAsExpression(ts_as) => component_options_from_expression(&ts_as.expression),
+        Argument::TSSatisfiesExpression(ts_satisfies) => {
+            component_options_from_expression(&ts_satisfies.expression)
+        }
+        Argument::TSNonNullExpression(ts_non_null) => {
+            component_options_from_expression(&ts_non_null.expression)
+        }
+        _ => None,
+    }
+}
+
+fn is_define_component_callee(callee: &Expression<'_>) -> bool {
+    match callee {
+        Expression::Identifier(callee) => {
+            matches!(callee.name.as_str(), "defineComponent" | "_defineComponent")
+        }
+        Expression::StaticMemberExpression(member) => {
+            matches!(
+                member.property.name.as_str(),
+                "defineComponent" | "_defineComponent"
+            )
+        }
+        _ => false,
+    }
+}
+
+fn option_object_property<'a>(
+    object: &'a ObjectExpression<'a>,
+    key_name: &str,
+) -> Option<&'a ObjectExpression<'a>> {
+    object.properties.iter().find_map(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return None;
+        };
+        if property.computed || property_key_name(&property.key) != Some(key_name) {
+            return None;
+        }
+        object_expression_from_expression(&property.value)
+    })
+}
+
+fn object_expression_from_expression<'a>(
+    expression: &'a Expression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match expression {
+        Expression::ObjectExpression(object) => Some(object.as_ref()),
+        Expression::ParenthesizedExpression(parenthesized) => {
+            object_expression_from_expression(&parenthesized.expression)
+        }
+        Expression::TSAsExpression(ts_as) => object_expression_from_expression(&ts_as.expression),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            object_expression_from_expression(&ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            object_expression_from_expression(&ts_non_null.expression)
+        }
+        _ => None,
+    }
+}
+
+fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+        PropertyKey::StringLiteral(string) => Some(string.value.as_str()),
+        _ => None,
+    }
+}
+
+fn source_slice(script: &str, span: oxc_span::Span) -> Option<&str> {
+    script.get(span.start as usize..span.end as usize)
+}
+
+fn safe_identifier(name: &str) -> String {
+    let mut result = String::default();
+    for (index, ch) in name.chars().enumerate() {
+        if (index == 0 && (ch.is_ascii_alphabetic() || ch == '_' || ch == '$'))
+            || (index > 0 && (ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'))
+        {
+            result.push(ch);
+        } else {
+            result.push('_');
+        }
+    }
+    if result.is_empty() {
+        result.push('_');
+    }
+    result
 }
 
 fn is_safe_value_identifier(name: &str) -> bool {
