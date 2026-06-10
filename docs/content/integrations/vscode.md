@@ -96,8 +96,8 @@ Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/inst
 git clone https://github.com/ubugeeei-prod/vize.git
 cd vize
 cd npm/vscode-vize
-vp install --ignore-workspace
-vp build
+vp install -- --ignore-workspace
+vp pack
 vp exec vsce package --no-dependencies --out dist/vize.vsix
 code --install-extension dist/vize.vsix
 ```

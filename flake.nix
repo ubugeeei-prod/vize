@@ -359,7 +359,7 @@
               fi
               if [ -n "''${HOME:-}" ]; then
                 PATH=":$PATH:"
-                PATH="''${PATH//:$HOME/.moon/bin:/:}"
+                PATH="''${PATH//:$HOME\/.moon\/bin:/:}"
                 PATH="''${PATH#:}"
                 PATH="''${PATH%:}"
               fi
