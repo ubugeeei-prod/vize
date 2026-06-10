@@ -60,7 +60,7 @@ function withWorkspace<T>(run: (dir: string) => T): T {
 // the binary never reaches the type checker, so the assertions are stable in a
 // clean checkout with no Corsa/tsgo on disk.
 
-test("vize check rejects --servers 0 and --servers 2 with exit 2 before corsa discovery", () => {
+test("vize check rejects --servers 0 and --servers 64 with exit 2 before corsa discovery", () => {
   withWorkspace((dir) => {
     fs.writeFileSync(path.join(dir, "a.vue"), "<template><p /></template>\n", "utf8");
 
@@ -68,9 +68,9 @@ test("vize check rejects --servers 0 and --servers 2 with exit 2 before corsa di
     assert.equal(zero.status, 2, `${zero.stdout}\n${zero.stderr}`);
     assert.match(zero.stderr, /servers must be at least 1/);
 
-    const two = runCheck(["a.vue", "--servers", "2", "--corsa-path", "/nonexistent"], dir);
-    assert.equal(two.status, 2, `${two.stdout}\n${two.stderr}`);
-    assert.match(two.stderr, /servers=2 is not supported/);
+    const tooMany = runCheck(["a.vue", "--servers", "64", "--corsa-path", "/nonexistent"], dir);
+    assert.equal(tooMany.status, 2, `${tooMany.stdout}\n${tooMany.stderr}`);
+    assert.match(tooMany.stderr, /servers=64 exceeds the supported maximum/);
   });
 });
 
