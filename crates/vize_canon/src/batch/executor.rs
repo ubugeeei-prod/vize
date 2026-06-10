@@ -550,7 +550,8 @@ mod tests {
         // A runtime whose project check exits non-zero with only file-less
         // config diagnostics (e.g. TS2688) ran fine; treating that as a CLI
         // failure would fall back to the far slower project-session API
-        // (`--api` here would hang the test forever).
+        // (`--api` here would hang the test forever). The project-level
+        // diagnostic surfaces attributed to the project's tsconfig anchor.
         let tsgo = cache_dir.join("tsgo");
         fs::write(
             &tsgo,
@@ -566,7 +567,10 @@ mod tests {
 
         assert!(!result.success);
         assert_eq!(result.exit_code, 2);
-        assert!(result.diagnostics.is_empty());
+        assert_eq!(result.diagnostics.len(), 1);
+        assert_eq!(result.diagnostics[0].code, Some(2688));
+        assert_eq!(result.diagnostics[0].severity, 1);
+        assert_eq!(result.diagnostics[0].file, case_dir);
 
         let _ = fs::remove_dir_all(&case_dir);
     }

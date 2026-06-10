@@ -20,14 +20,30 @@ pub(super) fn emit_json_output(json_output: JsonOutput) {
 /// Whether a registered file's diagnostics should be reported. For an explicit
 /// subset (`reported` is `Some`), only the requested files are reported; ambient
 /// and transitively-registered files exist only to resolve cross-file types.
+/// Project-level diagnostics (anchored to a tsconfig or the project root, not
+/// a source file) describe the whole check and are always reported.
 pub(super) fn is_reported(reported: &Option<FxHashSet<PathBuf>>, path: &Path) -> bool {
     match reported {
         None => true,
         Some(set) => {
+            if !is_source_path(path) {
+                return true;
+            }
             let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
             set.contains(&canonical)
         }
     }
+}
+
+fn is_source_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| {
+            matches!(
+                extension,
+                "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx"
+            )
+        })
 }
 
 pub(super) fn is_suppressed_false_positive(diagnostic: &vize_canon::BatchDiagnostic) -> bool {

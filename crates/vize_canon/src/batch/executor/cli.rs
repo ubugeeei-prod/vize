@@ -42,21 +42,14 @@ pub(super) fn check_with_cli(
     // failed source mapping still prove the CLI ran the project; falling back
     // to the per-file project-session API there costs orders of magnitude
     // more wall time for the same answer.
-    if !output.status.success() && diagnostics.is_empty() {
-        if !output_contains_diagnostic_lines(&output) {
-            return Err(CorsaError::CorsaExecution {
-                exit_code: output.status.code().unwrap_or(-1),
-                message: output_message(&output),
-            });
-        }
-        // Project-level diagnostics (e.g. `error TS2688: Cannot find type
-        // definition file for 'x'.`) abort the runtime's semantic pass, so an
-        // otherwise clean report may be incomplete. Surface them on stderr so
-        // a green run is never silently built on a broken project config.
-        eprintln!(
-            "\x1b[33mwarning:\x1b[0m corsa reported project-level errors; type checking may be incomplete:\n{}",
-            output_message(&output)
-        );
+    if !output.status.success()
+        && diagnostics.is_empty()
+        && !output_contains_diagnostic_lines(&output)
+    {
+        return Err(CorsaError::CorsaExecution {
+            exit_code: output.status.code().unwrap_or(-1),
+            message: output_message(&output),
+        });
     }
 
     Ok(TypeCheckResult {
@@ -89,6 +82,15 @@ fn parse_cli_diagnostics(
             diagnostics.push(diagnostic);
             continue;
         }
+        // Project-level diagnostics carry no file position (`error TS2688:
+        // Cannot find type definition file for 'x'.`). They are real,
+        // user-actionable problems — tsc and vue-tsc report them and the
+        // runtime may skip the semantic pass because of them — so they are
+        // attributed to the project's tsconfig instead of being dropped.
+        if let Some(diagnostic) = parse_global_diagnostic_line(line, project) {
+            diagnostics.push(diagnostic);
+            continue;
+        }
         if is_cli_diagnostic_line(line) {
             continue;
         }
@@ -103,6 +105,33 @@ fn parse_cli_diagnostics(
         last.message.push('\n');
         last.message.push_str(line);
     }
+}
+
+/// Parse a file-less project-level diagnostic such as
+/// `error TS2688: Cannot find type definition file for 'vite/client'.`
+fn parse_global_diagnostic_line(line: &str, project: &VirtualProject) -> Option<Diagnostic> {
+    let (severity, rest) = line.split_once(' ')?;
+    let severity = match severity {
+        "error" => 1,
+        "warning" => 2,
+        "info" => 3,
+        _ => return None,
+    };
+    let (code, message) = rest.split_once(": ")?;
+    let code = code.strip_prefix("TS")?.parse::<u32>().ok()?;
+    if should_skip_diagnostic(Some(code), message) {
+        return None;
+    }
+
+    Some(Diagnostic {
+        file: project.project_diagnostics_anchor(),
+        line: 0,
+        column: 0,
+        message: message.into(),
+        code: Some(code),
+        severity,
+        block_type: None,
+    })
 }
 
 fn parse_cli_diagnostic_line(
