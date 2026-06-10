@@ -39,15 +39,7 @@ impl DiagnosticService {
         options_api: bool,
         legacy_vue2: bool,
     ) -> Option<VirtualTsResult> {
-        use vize_atelier_sfc::{
-            SfcParseOptions,
-            croquis::{
-                SfcCroquisOptions, analyze_sfc_descriptor_with_context,
-                analyze_sfc_descriptor_with_context_legacy_vue2,
-                analyze_sfc_descriptor_with_context_options_api,
-            },
-            parse_sfc,
-        };
+        use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
         use vize_canon::virtual_ts::{
             VirtualTsOptions, generate_virtual_ts_with_offsets,
             generate_virtual_ts_with_offsets_legacy_vue2,
@@ -68,21 +60,19 @@ impl DiagnosticService {
         let (template_ast, _) = vize_armature::parse(&allocator, &template_block.content);
 
         let croquis_options = SfcCroquisOptions::full();
-        let analysis = if legacy_vue2 {
-            analyze_sfc_descriptor_with_context_legacy_vue2(
-                &descriptor,
-                Some(&template_ast),
-                croquis_options,
-            )
-        } else if options_api {
-            analyze_sfc_descriptor_with_context_options_api(
-                &descriptor,
-                Some(&template_ast),
-                croquis_options,
-            )
-        } else {
-            analyze_sfc_descriptor_with_context(&descriptor, Some(&template_ast), croquis_options)
-        };
+        // Croquis cannot resolve props inherited through imported/heritage
+        // types; the resolved analysis merges the script compile context's
+        // props before the template pass so the virtual TS fed to Corsa sees
+        // the full prop set.
+        let analysis = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
+            &descriptor,
+            Some(&template_ast),
+            croquis_options,
+            options_api,
+            legacy_vue2,
+            uri.path(),
+        );
+
         let script_content = analysis.script_content?;
         let script_offset = analysis.script_offset;
         let sfc_script_start_line =

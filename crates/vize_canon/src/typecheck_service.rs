@@ -129,14 +129,7 @@ impl TypeCheckService {
     ) -> Result<SfcTypeCheckResult, CorsaBridgeError> {
         use std::time::Instant;
         use vize_atelier_core::parser::parse;
-        use vize_atelier_sfc::{
-            SfcParseOptions,
-            croquis::{
-                SfcCroquisOptions, analyze_sfc_descriptor_with_context,
-                analyze_sfc_descriptor_with_context_legacy_vue2,
-            },
-            parse_sfc,
-        };
+        use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
         use vize_carton::Bump;
 
         let start_time = Instant::now();
@@ -225,15 +218,18 @@ impl TypeCheckService {
         };
 
         let croquis_options = SfcCroquisOptions::full();
-        let analysis = if legacy_vue2 {
-            analyze_sfc_descriptor_with_context_legacy_vue2(
-                &descriptor,
-                template_ast.as_ref(),
-                croquis_options,
-            )
-        } else {
-            analyze_sfc_descriptor_with_context(&descriptor, template_ast.as_ref(), croquis_options)
-        };
+        // Croquis cannot resolve props inherited through imported/heritage
+        // types; the resolved analysis merges the script compile context's
+        // props before the template pass so virtual TS generation and
+        // undefined-reference detection see the full prop set.
+        let analysis = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
+            &descriptor,
+            template_ast.as_ref(),
+            croquis_options,
+            false,
+            legacy_vue2,
+            filename,
+        );
 
         if has_template_parse_errors || has_script_parse_errors {
             result.analysis_time_ms = Some(start_time.elapsed().as_secs_f64() * 1000.0);

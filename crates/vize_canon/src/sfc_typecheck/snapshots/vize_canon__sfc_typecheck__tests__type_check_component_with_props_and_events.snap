@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/sfc_typecheck/tests.rs
+assertion_line: 1300
 expression: vts.as_str()
 ---
 /// <reference lib="es2022" />
@@ -109,7 +110,7 @@ function __setup() {
   // @vize-map: expr -> 343:357
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void emit; void props;
+  void disabled; void emit; void props; void title;
   })();
 }
 

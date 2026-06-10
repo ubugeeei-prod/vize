@@ -55,15 +55,7 @@ fn type_check_sfc_impl(
     legacy_vue2: bool,
 ) -> SfcTypeCheckResult {
     use vize_atelier_core::parser::parse;
-    use vize_atelier_sfc::{
-        SfcParseOptions,
-        croquis::{
-            SfcCroquisOptions, analyze_sfc_descriptor_with_context,
-            analyze_sfc_descriptor_with_context_legacy_vue2,
-            analyze_sfc_descriptor_with_context_options_api,
-        },
-        parse_sfc,
-    };
+    use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
 
     // Use Instant for timing on native, skip on WASM
     #[cfg(not(target_arch = "wasm32"))]
@@ -152,21 +144,18 @@ fn type_check_sfc_impl(
 
     let croquis_options = SfcCroquisOptions::full();
 
-    let analysis = if legacy_vue2 {
-        analyze_sfc_descriptor_with_context_legacy_vue2(
-            &descriptor,
-            template_ast.as_ref(),
-            croquis_options,
-        )
-    } else if options_api {
-        analyze_sfc_descriptor_with_context_options_api(
-            &descriptor,
-            template_ast.as_ref(),
-            croquis_options,
-        )
-    } else {
-        analyze_sfc_descriptor_with_context(&descriptor, template_ast.as_ref(), croquis_options)
-    };
+    // Croquis cannot resolve props inherited through imported/heritage types;
+    // the resolved analysis merges the script compile context's props before
+    // the template pass so undefined-reference detection doesn't flag them
+    // (editor-only false positives that `vize check` never reported).
+    let analysis = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
+        &descriptor,
+        template_ast.as_ref(),
+        croquis_options,
+        options_api,
+        legacy_vue2,
+        options.filename.as_str(),
+    );
     let script_content = analysis.script_content;
     let script_offset = analysis.script_offset;
     let summary = analysis.croquis;

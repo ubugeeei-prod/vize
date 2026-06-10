@@ -151,9 +151,58 @@ fn analyze_sfc_descriptor_with_context_impl(
     options_api: bool,
     legacy_vue2: bool,
 ) -> SfcCroquisAnalysis {
+    analyze_sfc_descriptor_resolved_impl(
+        descriptor,
+        template_ast,
+        options,
+        options_api,
+        legacy_vue2,
+        None,
+    )
+}
+
+/// Analyze an SFC descriptor with externally-resolved props merged in before
+/// template analysis.
+///
+/// Croquis alone cannot resolve props inherited through imported or heritage
+/// types (`interface Props extends Omit<ImportedProps, ...>`); the script
+/// compile context can (cross-file and node_modules type resolution), and the
+/// merge must land before the template pass or its undefined-reference
+/// detection flags those props as editor-only false positives that
+/// `vize check` never reported.
+pub fn analyze_sfc_descriptor_resolved(
+    descriptor: &SfcDescriptor<'_>,
+    template_ast: Option<&RootNode<'_>>,
+    options: SfcCroquisOptions,
+    options_api: bool,
+    legacy_vue2: bool,
+    filename: &str,
+) -> SfcCroquisAnalysis {
+    analyze_sfc_descriptor_resolved_impl(
+        descriptor,
+        template_ast,
+        options,
+        options_api,
+        legacy_vue2,
+        Some(filename),
+    )
+}
+
+fn analyze_sfc_descriptor_resolved_impl(
+    descriptor: &SfcDescriptor<'_>,
+    template_ast: Option<&RootNode<'_>>,
+    options: SfcCroquisOptions,
+    options_api: bool,
+    legacy_vue2: bool,
+    resolve_filename: Option<&str>,
+) -> SfcCroquisAnalysis {
     let script_analyzed = options.analyzer_options.analyze_script
         && (descriptor.script.is_some() || descriptor.script_setup.is_some());
-    let summary = analyze_scripts(descriptor, options, options_api, legacy_vue2);
+    let mut summary = analyze_scripts(descriptor, options, options_api, legacy_vue2);
+    if let Some(filename) = resolve_filename {
+        merge_resolved_props_into_croquis(&mut summary, descriptor, filename);
+    }
+    let summary = summary;
     let analyzer = Analyzer::with_summary(options.analyzer_options, summary, script_analyzed);
     let mut analyzer = apply_options_api_mode(analyzer, options_api, legacy_vue2);
 
@@ -257,6 +306,47 @@ fn analyze_scripts(
             analyzer.finish()
         }
         (None, None) => Croquis::new(),
+    }
+}
+
+/// Merge props resolved by the script compile context — which performs
+/// cross-file and node_modules type resolution — into a Croquis summary.
+///
+/// Croquis alone cannot resolve props inherited through imported or heritage
+/// types (`interface Props extends Omit<ImportedProps, ...>`), so
+/// template-binding checks and virtual TS generation would treat those props
+/// as undefined references. This mirrors the merge the compiler performs in
+/// `compile.rs`.
+pub fn merge_resolved_props_into_croquis(
+    croquis: &mut Croquis,
+    descriptor: &SfcDescriptor<'_>,
+    filename: &str,
+) {
+    use crate::script::ScriptCompileContext;
+    use crate::types::BindingType;
+
+    let Some(script_setup) = descriptor.script_setup.as_ref() else {
+        return;
+    };
+
+    let mut ctx = ScriptCompileContext::new(&script_setup.content);
+    if let Some(ref script) = descriptor.script {
+        ctx.collect_types_from(&script.content);
+    }
+    if !filename.is_empty() {
+        ctx.collect_imported_types_from_path(&script_setup.content, filename);
+        if let Some(ref script) = descriptor.script {
+            ctx.collect_imported_types_from_path(&script.content, filename);
+        }
+    }
+    ctx.analyze();
+
+    for (name, binding_type) in &ctx.bindings.bindings {
+        if matches!(binding_type, BindingType::Props | BindingType::PropsAliased)
+            && !croquis.bindings.contains(name.as_str())
+        {
+            croquis.bindings.add(name.as_str(), *binding_type);
+        }
     }
 }
 

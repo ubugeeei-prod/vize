@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/tests.rs
+assertion_line: 59
 expression: virtual_ts
 ---
 /// <reference lib="es2022" />
@@ -108,7 +109,7 @@ function __setup() {
   }
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void props;
+  void count; void props; void title;
   })();
 }
 
