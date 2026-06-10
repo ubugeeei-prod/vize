@@ -134,7 +134,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             .runtime_path()
             .map(|candidate| resolve_from_config_dir(config_dir, candidate))
     });
-    if let Err(error) = validate_corsa_server_count(args.servers.or(config.type_checker.servers)) {
+    let corsa_servers = args.servers.or(config.type_checker.servers);
+    if let Err(error) = validate_corsa_server_count(corsa_servers) {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
         std::process::exit(2);
     }
@@ -276,6 +277,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             std::process::exit(1);
         }
     };
+    checker.set_server_count(corsa_servers);
     if options_api {
         checker.enable_options_api();
     }

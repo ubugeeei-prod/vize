@@ -32,6 +32,13 @@ impl VirtualProject {
         &self.diagnostics
     }
 
+    /// Original source text of a registered file, keyed by its virtual path.
+    pub(crate) fn original_content_for_virtual(&self, virtual_path: &Path) -> Option<&str> {
+        self.original_contents
+            .get(virtual_path)
+            .map(|content| content.as_str())
+    }
+
     /// Map a virtual position to the original position.
     pub fn map_to_original(
         &self,

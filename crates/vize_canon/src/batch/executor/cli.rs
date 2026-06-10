@@ -9,7 +9,7 @@ use crate::batch::executor::diagnostics::{
     DiagnosticMapper, relative_module_resolves_on_disk, should_skip_diagnostic,
     should_skip_original_diagnostic,
 };
-use vize_carton::profile;
+use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
 
 pub(super) fn check_with_cli(
@@ -17,6 +17,411 @@ pub(super) fn check_with_cli(
     project: &VirtualProject,
 ) -> CorsaResult<TypeCheckResult> {
     let config_path = project.virtual_root().join("tsconfig.json");
+    run_cli_for_config(corsa_path, project, &config_path)
+}
+
+/// Run the project check sharded across `servers` concurrent Corsa CLI
+/// processes. Corsa's own checker pool saturates around four cores, so on
+/// wider machines a single process leaves most of the CPU idle; partitioning
+/// the project along the connected components of its import graph restores
+/// the parallelism while keeping each shard's program disjoint.
+///
+/// Ambient `.d.ts` files and sources carrying module/global declarations are
+/// included in every shard so augmentations behave exactly as in the single
+/// program. Each diagnostic is reported by the shard that owns its file, so
+/// the merged result matches an unsharded run.
+pub(super) fn check_with_cli_sharded(
+    corsa_path: &Path,
+    project: &VirtualProject,
+    servers: usize,
+) -> CorsaResult<TypeCheckResult> {
+    let plan = partition_virtual_files(project, servers);
+    if plan.shards.len() <= 1 {
+        return check_with_cli(corsa_path, project);
+    }
+
+    let mut config_paths = Vec::with_capacity(plan.shards.len());
+    for (index, shard) in plan.shards.iter().enumerate() {
+        config_paths.push(profile!(
+            "canon.corsa.cli.write_shard_tsconfig",
+            project.write_shard_tsconfig(index, shard)
+        )?);
+    }
+
+    let owners = &plan.owners;
+    let results = profile!("canon.corsa.cli.sharded", {
+        std::thread::scope(|scope| {
+            let handles: Vec<_> = config_paths
+                .iter()
+                .map(|config_path| {
+                    scope.spawn(move || run_cli_for_config(corsa_path, project, config_path))
+                })
+                .collect();
+            handles
+                .into_iter()
+                .map(|handle| {
+                    handle.join().unwrap_or_else(|_| {
+                        Err(CorsaError::CorsaExecution {
+                            exit_code: -1,
+                            message: "sharded corsa CLI worker panicked".into(),
+                        })
+                    })
+                })
+                .collect::<Vec<_>>()
+        })
+    });
+
+    let mut merged = TypeCheckResult {
+        exit_code: 0,
+        success: true,
+        diagnostics: Vec::new(),
+    };
+    for (index, result) in results.into_iter().enumerate() {
+        let result = result?;
+        merged.exit_code = merged.exit_code.max(result.exit_code);
+        merged.success = merged.success && result.success;
+        merged.diagnostics.extend(
+            result
+                .diagnostics
+                .into_iter()
+                .filter(|diagnostic| owners.get(&diagnostic.file).copied().unwrap_or(0) == index),
+        );
+    }
+    Ok(merged)
+}
+
+/// Pick the shard count for a project when the caller did not request one.
+/// Corsa's checker pool uses ~4 cores per process; sharding only pays off
+/// once there are enough Vue files to amortize each extra program's fixed
+/// parse/bind cost.
+pub(super) fn auto_server_count(project: &VirtualProject) -> usize {
+    let vue_files = project
+        .virtual_files_sorted()
+        .iter()
+        .filter(|file| is_vue_original(&file.original_path))
+        .count();
+    let threads = std::thread::available_parallelism()
+        .map(std::num::NonZero::get)
+        .unwrap_or(1);
+    (threads / 4).min(vue_files / 64).clamp(1, 8)
+}
+
+struct ShardPlan<'a> {
+    /// Virtual paths to include per shard (owned Vue files plus every shared
+    /// file).
+    shards: Vec<Vec<&'a Path>>,
+    /// Original path -> owning shard for partitioned Vue files; files absent
+    /// from the map (shared sources, project-level anchors) belong to shard 0.
+    owners: FxHashMap<PathBuf, usize>,
+}
+
+/// Partition the project's source files into shard programs along the
+/// connected components of their import graph. Files in different components
+/// never load each other, so component-aligned shards check disjoint code and
+/// duplicate no work; interconnected projects collapse into one big component
+/// and degrade to a single, unsharded run instead of paying N near-full
+/// programs. Only ambient `.d.ts` files and sources carrying module/global
+/// declarations stay visible to every shard, since they affect the whole
+/// program without being imported.
+fn partition_virtual_files(project: &VirtualProject, servers: usize) -> ShardPlan<'_> {
+    let files = project.virtual_files_sorted();
+    let mut partitioned: Vec<&super::super::VirtualFile> = Vec::new();
+    let mut shared: Vec<&Path> = Vec::new();
+    for file in files {
+        // The program-wide check reads the original source: the generated Vue
+        // wrapper always contains an identical `declare global` ImportMeta
+        // block of its own.
+        let program_wide = project
+            .original_content_for_virtual(&file.virtual_path)
+            .is_some_and(declares_program_wide_types);
+        if program_wide || is_ambient_declaration(&file.original_path) {
+            shared.push(file.virtual_path.as_path());
+        } else {
+            partitioned.push(file);
+        }
+    }
+
+    let servers = servers.clamp(1, partitioned.len().max(1));
+    let no_sharding = ShardPlan {
+        shards: Vec::new(),
+        owners: FxHashMap::default(),
+    };
+    if servers <= 1 {
+        return no_sharding;
+    }
+
+    // Union files that load each other or the same unresolved modules. The
+    // graph is a cost model, not a correctness requirement — ownership
+    // filtering already deduplicates diagnostics — but files coupled through
+    // shared sources would otherwise be re-checked by every shard whose
+    // program loads them. Relative imports resolve exactly; project path
+    // aliases (`@/…`) and workspace packages symlinked into `node_modules`
+    // couple their importers, while bare npm specifiers are dependency cost
+    // every program pays anyway.
+    let index_by_virtual: FxHashMap<&Path, usize> = partitioned
+        .iter()
+        .enumerate()
+        .map(|(index, file)| (file.virtual_path.as_path(), index))
+        .collect();
+    let alias_prefixes = project.path_alias_prefixes();
+    let mut components = UnionFind::new(partitioned.len());
+    let mut coupling_keys: FxHashMap<String, usize> = FxHashMap::default();
+    let mut workspace_packages: FxHashMap<String, bool> = FxHashMap::default();
+    for (index, file) in partitioned.iter().enumerate() {
+        for specifier in import_specifiers(&file.content) {
+            if specifier.starts_with("./") || specifier.starts_with("../") {
+                let Some(base) = file.virtual_path.parent() else {
+                    continue;
+                };
+                let target = normalize_join(base, specifier);
+                if let Some(target_index) = resolve_virtual_import(&target, &index_by_virtual) {
+                    components.union(index, target_index);
+                } else {
+                    // An unresolved local module: couple its importers.
+                    let key = String::from(target.to_string_lossy());
+                    match coupling_keys.get(key.as_str()) {
+                        Some(&first) => components.union(index, first),
+                        None => {
+                            coupling_keys.insert(key, index);
+                        }
+                    }
+                }
+            } else if let Some(alias) = alias_prefixes
+                .iter()
+                .find(|alias| specifier.starts_with(alias.as_str()))
+            {
+                let key = cstr!("alias:{alias}");
+                match coupling_keys.get(key.as_str()) {
+                    Some(&first) => components.union(index, first),
+                    None => {
+                        coupling_keys.insert(key, index);
+                    }
+                }
+            } else if let Some(package) =
+                workspace_source_package(project.project_root(), specifier, &mut workspace_packages)
+            {
+                let key = cstr!("workspace:{package}");
+                match coupling_keys.get(key.as_str()) {
+                    Some(&first) => components.union(index, first),
+                    None => {
+                        coupling_keys.insert(key, index);
+                    }
+                }
+            }
+        }
+    }
+
+    // Bin-pack components (heaviest first) into the requested shard count and
+    // only keep the plan when it buys real parallelism: a dominant component
+    // means each extra program would mostly re-check the same files. Weights
+    // are generated-content bytes, a usable proxy for parse+check cost.
+    let mut component_files: FxHashMap<usize, Vec<usize>> = FxHashMap::default();
+    for index in 0..partitioned.len() {
+        component_files
+            .entry(components.find(index))
+            .or_default()
+            .push(index);
+    }
+    let weight = |file_indices: &[usize]| -> usize {
+        file_indices
+            .iter()
+            .map(|&index| partitioned[index].content.len())
+            .sum()
+    };
+    let mut component_groups: Vec<Vec<usize>> = component_files.into_values().collect();
+    if component_groups.len() < 2 {
+        return no_sharding;
+    }
+    let total_weight: usize = component_groups.iter().map(|group| weight(group)).sum();
+    component_groups.sort_by(|left, right| {
+        weight(right)
+            .cmp(&weight(left))
+            .then_with(|| left.first().cmp(&right.first()))
+    });
+
+    let servers = servers.min(component_groups.len());
+    let mut bins: Vec<(usize, Vec<usize>)> = vec![(0, Vec::new()); servers];
+    for group in component_groups {
+        let bin = bins
+            .iter_mut()
+            .min_by_key(|(bin_weight, _)| *bin_weight)
+            .expect("at least one shard bin");
+        bin.0 += weight(&group);
+        bin.1.extend(group);
+    }
+    let largest = bins.iter().map(|(bin_weight, _)| *bin_weight).max();
+    // Wall time tracks the heaviest shard; below ~25% savings the duplicated
+    // per-program work on shared and ambient sources outweighs the win.
+    if largest.unwrap_or(0) * 4 >= total_weight * 3 {
+        return no_sharding;
+    }
+
+    let mut shards: Vec<Vec<&Path>> = Vec::with_capacity(bins.len());
+    let mut owners = FxHashMap::default();
+    for (shard_index, (_, file_indices)) in bins.into_iter().enumerate() {
+        let mut include = shared.clone();
+        for file_index in file_indices {
+            let file = partitioned[file_index];
+            include.push(file.virtual_path.as_path());
+            owners.insert(file.original_path.clone(), shard_index);
+        }
+        shards.push(include);
+    }
+
+    ShardPlan { shards, owners }
+}
+
+/// Quoted module specifiers in generated virtual TS: `from '<spec>'`,
+/// `import('<spec>')`, `import '<spec>'`, `require('<spec>')`. A lexical scan
+/// is enough here — the result only feeds the shard cost model.
+fn import_specifiers(content: &str) -> Vec<&str> {
+    let mut specifiers = Vec::new();
+    for token in ["from ", "import(", "import ", "require("] {
+        for (at, _) in content.match_indices(token) {
+            let rest = content[at + token.len()..].trim_start();
+            let Some(quote) = rest.chars().next().filter(|ch| matches!(ch, '\'' | '"')) else {
+                continue;
+            };
+            let rest = &rest[1..];
+            let Some(end) = rest.find(quote) else {
+                continue;
+            };
+            specifiers.push(&rest[..end]);
+        }
+    }
+    specifiers
+}
+
+/// Whether a bare specifier resolves to a workspace package whose source is
+/// symlinked into `node_modules` (pnpm/yarn workspaces): importing it drags
+/// real project source into the program, so its importers are cost-coupled.
+/// Regular npm packages resolve inside `node_modules` and are ambient cost
+/// every program pays anyway. Results are cached per package root.
+fn workspace_source_package<'spec>(
+    project_root: &Path,
+    specifier: &'spec str,
+    cache: &mut FxHashMap<String, bool>,
+) -> Option<&'spec str> {
+    let mut segments = specifier.splitn(3, '/');
+    let first = segments.next()?;
+    let package_end = if first.starts_with('@') {
+        first.len() + 1 + segments.next()?.len()
+    } else {
+        first.len()
+    };
+    let package = &specifier[..package_end];
+
+    if let Some(&is_workspace) = cache.get(package) {
+        return is_workspace.then_some(package);
+    }
+
+    let mut is_workspace = false;
+    let mut dir = Some(project_root);
+    while let Some(current) = dir {
+        let candidate = current.join("node_modules").join(package);
+        if let Ok(metadata) = std::fs::symlink_metadata(&candidate) {
+            if metadata.file_type().is_symlink()
+                && let Ok(target) = std::fs::canonicalize(&candidate)
+            {
+                is_workspace = !target
+                    .components()
+                    .any(|component| component.as_os_str() == "node_modules");
+            }
+            break;
+        }
+        dir = current.parent();
+    }
+
+    cache.insert(String::from(package), is_workspace);
+    is_workspace.then_some(package)
+}
+
+fn normalize_join(base: &Path, specifier: &str) -> PathBuf {
+    let mut normalized = base.to_path_buf();
+    for component in Path::new(specifier).components() {
+        match component {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                normalized.pop();
+            }
+            other => normalized.push(other.as_os_str()),
+        }
+    }
+    normalized
+}
+
+struct UnionFind {
+    parent: Vec<usize>,
+}
+
+impl UnionFind {
+    fn new(size: usize) -> Self {
+        Self {
+            parent: (0..size).collect(),
+        }
+    }
+
+    fn find(&mut self, node: usize) -> usize {
+        let mut root = node;
+        while self.parent[root] != root {
+            root = self.parent[root];
+        }
+        let mut current = node;
+        while self.parent[current] != root {
+            let next = self.parent[current];
+            self.parent[current] = root;
+            current = next;
+        }
+        root
+    }
+
+    fn union(&mut self, left: usize, right: usize) {
+        let left_root = self.find(left);
+        let right_root = self.find(right);
+        if left_root != right_root {
+            self.parent[right_root] = left_root;
+        }
+    }
+}
+
+fn is_vue_original(path: &Path) -> bool {
+    path.extension().is_some_and(|extension| extension == "vue")
+}
+
+fn is_ambient_declaration(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".d.ts"))
+}
+
+fn declares_program_wide_types(content: &str) -> bool {
+    content.contains("declare module") || content.contains("declare global")
+}
+
+/// Resolve a normalized relative import target against the registered virtual
+/// files, trying the extension candidates TypeScript would.
+fn resolve_virtual_import(
+    target: &Path,
+    index_by_virtual: &FxHashMap<&Path, usize>,
+) -> Option<usize> {
+    if let Some(&index) = index_by_virtual.get(target) {
+        return Some(index);
+    }
+    let target_str = target.to_string_lossy();
+    for suffix in [".ts", ".tsx", ".d.ts", "/index.ts", "/index.tsx"] {
+        let candidate = PathBuf::from(cstr!("{target_str}{suffix}").as_str());
+        if let Some(&index) = index_by_virtual.get(candidate.as_path()) {
+            return Some(index);
+        }
+    }
+    None
+}
+
+fn run_cli_for_config(
+    corsa_path: &Path,
+    project: &VirtualProject,
+    config_path: &Path,
+) -> CorsaResult<TypeCheckResult> {
     let output = profile!(
         "canon.corsa.cli.command",
         Command::new(corsa_path)
@@ -24,7 +429,7 @@ pub(super) fn check_with_cli(
             .arg("--pretty")
             .arg("false")
             .arg("--project")
-            .arg(&config_path)
+            .arg(config_path)
             .output()
     )?;
     let diagnostics = profile!(
@@ -285,6 +690,117 @@ mod tests {
                 "cli-fallback-{name}-{}-{case_id}",
                 std::process::id()
             ))
+    }
+
+    #[test]
+    fn partitions_vue_files_and_shares_program_wide_sources() {
+        use super::partition_virtual_files;
+
+        let case_dir = unique_case_dir("shard-partition");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src = case_dir.join("src");
+        fs::create_dir_all(&src).unwrap();
+        for index in 0..4 {
+            fs::write(
+                src.join(cstr!("Comp{index}.vue").as_str()),
+                "<script setup lang=\"ts\">const n = 1</script><template>{{ n }}</template>",
+            )
+            .unwrap();
+        }
+        // A Vue file whose script augments the program must stay shared.
+        fs::write(
+            src.join("Augment.vue"),
+            "<script lang=\"ts\">declare global { interface Window { __x?: number } }\nexport default {}</script>",
+        )
+        .unwrap();
+        fs::write(src.join("util.ts"), "export const util = 1;\n").unwrap();
+
+        let mut project = crate::batch::VirtualProject::new(&case_dir).unwrap();
+        let paths: Vec<_> = fs::read_dir(&src)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .collect();
+        project.register_paths(&paths).unwrap();
+
+        let plan = partition_virtual_files(&project, 2);
+        assert_eq!(plan.shards.len(), 2);
+        // 4 Vue files and the unimported util.ts partition across both shards.
+        assert_eq!(plan.owners.len(), 5);
+        assert!(plan.owners.values().any(|&shard| shard == 0));
+        assert!(plan.owners.values().any(|&shard| shard == 1));
+        let util_owner = plan.owners.get(&src.join("util.ts")).copied();
+        assert!(util_owner.is_some(), "plain sources are partitioned too");
+        // The augmenting .vue is included in every shard.
+        for shard in &plan.shards {
+            assert!(
+                shard
+                    .iter()
+                    .any(|path| path.to_string_lossy().ends_with("Augment.vue.ts")),
+                "program-wide augmentations must be visible to every shard"
+            );
+        }
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn shards_along_import_graph_components() {
+        use super::partition_virtual_files;
+
+        let case_dir = unique_case_dir("shard-components");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src = case_dir.join("src");
+        fs::create_dir_all(&src).unwrap();
+        // A imports B (one component); C and D are isolated.
+        fs::write(
+            src.join("A.vue"),
+            "<script setup lang=\"ts\">import B from './B.vue'\nvoid B</script><template><B /></template>",
+        )
+        .unwrap();
+        for name in ["B", "C", "D"] {
+            fs::write(
+                src.join(cstr!("{name}.vue").as_str()),
+                "<script setup lang=\"ts\">const n = 1</script><template>{{ n }}</template>",
+            )
+            .unwrap();
+        }
+
+        let mut project = crate::batch::VirtualProject::new(&case_dir).unwrap();
+        let paths: Vec<_> = fs::read_dir(&src)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .collect();
+        project.register_paths(&paths).unwrap();
+
+        let plan = partition_virtual_files(&project, 2);
+        assert_eq!(plan.shards.len(), 2);
+        // Import-connected files must land in the same shard so no shard
+        // re-checks another shard's Vue files through transitive loading.
+        let owner_a = plan.owners.get(&src.join("A.vue")).copied();
+        let owner_b = plan.owners.get(&src.join("B.vue")).copied();
+        assert!(owner_a.is_some());
+        assert_eq!(owner_a, owner_b);
+
+        // A dominant connected component degrades to an unsharded run: link
+        // C into the A/B component so only D stays separate (3 vs 1 files).
+        fs::write(
+            src.join("C.vue"),
+            "<script setup lang=\"ts\">import A from './A.vue'\nvoid A</script><template><A /></template>",
+        )
+        .unwrap();
+        let mut project = crate::batch::VirtualProject::new(&case_dir).unwrap();
+        let paths: Vec<_> = fs::read_dir(&src)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .collect();
+        project.register_paths(&paths).unwrap();
+        let plan = partition_virtual_files(&project, 2);
+        assert!(
+            plan.shards.is_empty(),
+            "a dominant component must collapse to a single program"
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
     }
 
     #[test]

@@ -32,6 +32,37 @@ impl VirtualProject {
         self.preserve_unused_diagnostics
     }
 
+    /// Alias prefixes declared in the effective tsconfig `paths` map, with
+    /// wildcard suffixes stripped: `@/*` → `@/`, `@scope/*` → `@scope/`,
+    /// `#imports` → `#imports`. Used as a cost model for shard planning:
+    /// files importing through the same project alias are coupled. Aliases
+    /// whose every target lives under `node_modules` (e.g. a pinned `vue`
+    /// mapping) are dependency cost every program pays anyway and are skipped.
+    pub(crate) fn path_alias_prefixes(&self) -> Vec<CompactString> {
+        let Ok(compiler_options) =
+            self.load_compiler_options(self.resolved_tsconfig_path().as_deref())
+        else {
+            return Vec::new();
+        };
+        let Some(paths) = compiler_options.get("paths").and_then(Value::as_object) else {
+            return Vec::new();
+        };
+        paths
+            .iter()
+            .filter(|(_, targets)| {
+                !targets.as_array().is_some_and(|targets| {
+                    !targets.is_empty()
+                        && targets.iter().all(|target| {
+                            target
+                                .as_str()
+                                .is_some_and(|target| target.contains("node_modules"))
+                        })
+                })
+            })
+            .map(|(alias, _)| alias.trim_end_matches('*').to_compact_string())
+            .collect()
+    }
+
     pub(super) fn resolve_tsconfig_preserves_unused_diagnostics(&self) -> bool {
         let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
             return false;
@@ -50,7 +81,38 @@ impl VirtualProject {
         out_dir: Option<&Path>,
         declaration_map: bool,
     ) -> CorsaResult<()> {
-        let tsconfig = self.generate_tsconfig_value(out_dir, declaration_map)?;
+        self.write_tsconfig_file_with_includes(path, out_dir, declaration_map, None)
+    }
+
+    /// Write a tsconfig whose `include` lists only the given virtual paths
+    /// (plus the shared stub files). Used for shard configs that partition the
+    /// project across parallel Corsa CLI runs.
+    pub(crate) fn write_shard_tsconfig(
+        &self,
+        shard_index: usize,
+        include_virtual_paths: &[&Path],
+    ) -> CorsaResult<PathBuf> {
+        let config_path = self
+            .virtual_root
+            .join(cstr!("tsconfig.shard{shard_index}.json").as_str());
+        self.write_tsconfig_file_with_includes(
+            &config_path,
+            None,
+            false,
+            Some(include_virtual_paths),
+        )?;
+        Ok(config_path)
+    }
+
+    fn write_tsconfig_file_with_includes(
+        &self,
+        path: &Path,
+        out_dir: Option<&Path>,
+        declaration_map: bool,
+        include_virtual_paths: Option<&[&Path]>,
+    ) -> CorsaResult<()> {
+        let tsconfig =
+            self.generate_tsconfig_value(out_dir, declaration_map, include_virtual_paths)?;
         let content = serde_json::to_string_pretty(&tsconfig)?;
         write_if_changed(path, content.as_bytes())?;
         Ok(())
@@ -60,6 +122,7 @@ impl VirtualProject {
         &self,
         out_dir: Option<&Path>,
         declaration_map: bool,
+        include_virtual_paths: Option<&[&Path]>,
     ) -> CorsaResult<Value> {
         let mut config = Map::new();
         let original_tsconfig = self.resolved_tsconfig_path();
@@ -147,7 +210,7 @@ impl VirtualProject {
         config.insert(
             "include".into(),
             Value::Array(
-                self.include_paths()
+                self.include_paths(include_virtual_paths)
                     .into_iter()
                     .map(|path| Value::String(path.into()))
                     .collect(),
@@ -158,13 +221,20 @@ impl VirtualProject {
         Ok(Value::Object(config))
     }
 
-    fn include_paths(&self) -> Vec<CompactString> {
-        let mut includes: Vec<_> = self
-            .virtual_files
-            .keys()
-            .filter_map(|path| path.strip_prefix(&self.virtual_root).ok())
-            .map(|path| path.to_string_lossy().to_compact_string())
-            .collect();
+    fn include_paths(&self, include_virtual_paths: Option<&[&Path]>) -> Vec<CompactString> {
+        let relative = |path: &Path| {
+            path.strip_prefix(&self.virtual_root)
+                .ok()
+                .map(|path| path.to_string_lossy().to_compact_string())
+        };
+        let mut includes: Vec<_> = match include_virtual_paths {
+            Some(paths) => paths.iter().filter_map(|path| relative(path)).collect(),
+            None => self
+                .virtual_files
+                .keys()
+                .filter_map(|path| relative(path))
+                .collect(),
+        };
         if !self.virtual_ts_options.auto_import_stubs.is_empty() {
             includes.push(AUTO_IMPORT_STUBS_FILE.into());
         }

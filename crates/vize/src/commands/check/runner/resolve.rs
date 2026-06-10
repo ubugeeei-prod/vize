@@ -179,6 +179,11 @@ pub(super) fn resolve_from_config_dir(config_dir: &Path, candidate: &str) -> Pat
     config_dir.join(path)
 }
 
+/// Largest accepted `typeChecker.servers` value. Each server is a Corsa CLI
+/// process with its own program; beyond this the duplicated parse/bind work
+/// outweighs any remaining parallelism.
+const MAX_CORSA_SERVERS: usize = 32;
+
 pub(super) fn validate_corsa_server_count(servers: Option<usize>) -> Result<(), String> {
     let Some(servers) = servers else {
         return Ok(());
@@ -186,9 +191,9 @@ pub(super) fn validate_corsa_server_count(servers: Option<usize>) -> Result<(), 
     if servers == 0 {
         return Err("typeChecker.servers must be at least 1.".into());
     }
-    if servers > 1 {
+    if servers > MAX_CORSA_SERVERS {
         return Err(format!(
-            "typeChecker.servers={servers} is not supported by the direct Corsa project-session runner yet; use 1 or omit the option."
+            "typeChecker.servers={servers} exceeds the supported maximum of {MAX_CORSA_SERVERS}."
         )
         .into());
     }

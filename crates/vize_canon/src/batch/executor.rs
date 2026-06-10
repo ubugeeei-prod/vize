@@ -24,7 +24,7 @@ use vize_carton::{String, cstr, profile};
 mod cli;
 mod diagnostics;
 
-use cli::check_with_cli;
+use cli::{auto_server_count, check_with_cli, check_with_cli_sharded};
 use diagnostics::map_batch_diagnostics;
 
 /// Batch executor backed by `corsa`'s project-session diagnostics API.
@@ -96,9 +96,35 @@ impl CorsaExecutor {
         &self.corsa_path
     }
 
-    /// Run type checking on the virtual project.
+    /// Run type checking on the virtual project with an auto-tuned number of
+    /// parallel Corsa CLI processes.
     pub fn check(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {
+        self.check_with_servers(project, None)
+    }
+
+    /// Run type checking on the virtual project. `servers` is the number of
+    /// parallel Corsa CLI processes the project is partitioned across
+    /// (`None` auto-tunes from the machine width and project size).
+    pub fn check_with_servers(
+        &self,
+        project: &VirtualProject,
+        servers: Option<usize>,
+    ) -> CorsaResult<TypeCheckResult> {
         profile!("canon.executor.materialize", project.materialize())?;
+
+        let servers = servers.unwrap_or_else(|| auto_server_count(project));
+        if servers > 1 {
+            match profile!(
+                "canon.corsa.cli",
+                check_with_cli_sharded(&self.corsa_path, project, servers)
+            ) {
+                Ok(result) => return Ok(result),
+                Err(_cli_error) => {
+                    // Degrade to a single CLI program before the session API:
+                    // a shard-specific failure must not cost CLI support.
+                }
+            }
+        }
 
         match profile!("canon.corsa.cli", check_with_cli(&self.corsa_path, project)) {
             Ok(result) => return Ok(result),

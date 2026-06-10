@@ -1753,14 +1753,14 @@ const count = 1;
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .args(["check", "src/App.vue", "--quiet", "--servers", "2"])
+        .args(["check", "src/App.vue", "--quiet", "--servers", "64"])
         .output()
         .unwrap();
 
     let stderr = std::string::String::from_utf8(output.stderr).unwrap();
     assert_eq!(output.status.code(), Some(2));
     assert!(
-        stderr.contains("typeChecker.servers=2 is not supported"),
+        stderr.contains("typeChecker.servers=64 exceeds the supported maximum"),
         "{stderr}"
     );
 

@@ -334,9 +334,11 @@ fn writes_nuxt_fallback_tsconfig_without_overwriting_existing_paths() {
 }
 
 #[test]
-fn validates_unsupported_corsa_server_counts() {
+fn validates_corsa_server_counts() {
     assert!(validate_corsa_server_count(None).is_ok());
     assert!(validate_corsa_server_count(Some(1)).is_ok());
+    assert!(validate_corsa_server_count(Some(2)).is_ok());
+    assert!(validate_corsa_server_count(Some(32)).is_ok());
     assert!(validate_corsa_server_count(Some(0)).is_err());
-    assert!(validate_corsa_server_count(Some(2)).is_err());
+    assert!(validate_corsa_server_count(Some(33)).is_err());
 }

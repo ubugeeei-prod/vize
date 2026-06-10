@@ -107,6 +107,8 @@ pub struct BatchTypeChecker {
     executor: CorsaExecutor,
     /// Whether the project has been scanned.
     scanned: bool,
+    /// Number of parallel Corsa CLI processes; `None` auto-tunes.
+    server_count: Option<usize>,
 }
 
 impl BatchTypeChecker {
@@ -139,7 +141,15 @@ impl BatchTypeChecker {
             project,
             executor,
             scanned: false,
+            server_count: None,
         })
+    }
+
+    /// Set the number of parallel Corsa CLI processes the project check is
+    /// partitioned across. `None` (the default) auto-tunes from the machine
+    /// width and the number of registered Vue files.
+    pub fn set_server_count(&mut self, servers: Option<usize>) {
+        self.server_count = servers;
     }
 
     /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
@@ -251,7 +261,9 @@ impl TypeChecker for BatchTypeChecker {
             return Err(CorsaError::NotInitialized);
         }
 
-        let mut result = self.executor.check(&self.project)?;
+        let mut result = self
+            .executor
+            .check_with_servers(&self.project, self.server_count)?;
         result
             .diagnostics
             .extend(self.project.diagnostics().iter().cloned());
