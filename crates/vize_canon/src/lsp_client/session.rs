@@ -138,6 +138,15 @@ impl CorsaProjectClient {
         !self.trusts_capabilities() || self.capabilities.overlay.update_snapshot_overlay_changes
     }
 
+    /// True only when the runtime has positively advertised in-memory overlay
+    /// support. `supports_overlay_api` is optimistic for runtimes without a
+    /// capability endpoint; routing a document through the overlay path on
+    /// such a runtime fails at request time, so path-keeping decisions must
+    /// use this confirmed variant.
+    fn overlay_api_confirmed(&self) -> bool {
+        self.trusts_capabilities() && self.capabilities.overlay.update_snapshot_overlay_changes
+    }
+
     pub(super) fn supports_project_diagnostics_api(&self) -> bool {
         !self.trusts_capabilities() || self.capabilities.diagnostics.project
     }
@@ -172,12 +181,6 @@ impl CorsaProjectClient {
 
     pub(super) fn sync_overlay_document(&mut self, uri: &str, content: &str) -> Result<(), String> {
         let previous = self.document_texts.insert(uri.into(), content.into());
-        if !self.supports_overlay_api() {
-            return Err(
-                "Corsa overlay changes are unavailable for this project-session runtime".into(),
-            );
-        }
-
         let document_uri = self.session_document_uri(uri);
         if previous.as_deref() == Some(content) {
             return Ok(());
@@ -185,8 +188,16 @@ impl CorsaProjectClient {
 
         let file_changes = materialize_session_document(uri, document_uri.as_str(), content);
         if document_uri != uri {
+            // Remapped documents are materialized to disk; no overlay API is
+            // required, so runtimes without overlay support stay functional.
             return block_on(self.session.refresh(file_changes))
                 .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
+        }
+
+        if !self.supports_overlay_api() {
+            return Err(
+                "Corsa overlay changes are unavailable for this project-session runtime".into(),
+            );
         }
 
         let version = next_overlay_version(&mut self.overlay_versions, uri);
@@ -249,7 +260,8 @@ impl CorsaProjectClient {
             return mapped.clone();
         }
 
-        let mapped = build_session_document_uri(uri, &self.project_root);
+        let mapped =
+            build_session_document_uri(uri, &self.project_root, self.overlay_api_confirmed());
         self.session_document_uris
             .insert(uri.into(), mapped.clone());
         self.external_document_uris
@@ -278,13 +290,22 @@ fn load_file_text(uri: &str) -> Option<String> {
     std::fs::read_to_string(path).ok().map(Into::into)
 }
 
-pub(super) fn build_session_document_uri(uri: &str, project_root: &Path) -> String {
+pub(super) fn build_session_document_uri(
+    uri: &str,
+    project_root: &Path,
+    overlay_confirmed: bool,
+) -> String {
     let Some(external_path) = external_document_path(uri) else {
         return uri.into();
     };
 
+    // A virtual overlay (`.vue.ts`) may only keep its real path when the
+    // runtime positively supports in-memory overlays: the file never exists
+    // on disk, so without overlay support it must be materialized into the
+    // session mirror instead.
     if external_path.starts_with(project_root)
-        && (external_path.exists() || virtual_overlay_target_exists(&external_path))
+        && (external_path.exists()
+            || (overlay_confirmed && virtual_overlay_target_exists(&external_path)))
     {
         return path_to_file_uri(&external_path);
     }
@@ -460,13 +481,18 @@ mod tests {
 
         let virtual_path = components.join("Button.vue.ts");
         let uri = path_to_file_uri(&virtual_path);
-        let mapped = build_session_document_uri(&uri, &project);
+        let mapped = build_session_document_uri(&uri, &project, true);
         assert_eq!(mapped, uri, "in-project .vue.ts overlay must keep its path");
+
+        // Without confirmed overlay support the overlay must be materialized
+        // into the session mirror instead (the file never exists on disk).
+        let mapped_no_overlay = build_session_document_uri(&uri, &project, false);
+        assert_ne!(mapped_no_overlay, uri);
 
         // A path outside the project is still remapped into the overlay tree.
         let outside = std::env::temp_dir().join(format!("vize-outside-{nonce}/Other.vue.ts"));
         let outside_uri = path_to_file_uri(&outside);
-        let mapped_outside = build_session_document_uri(&outside_uri, &project);
+        let mapped_outside = build_session_document_uri(&outside_uri, &project, true);
         assert_ne!(mapped_outside, outside_uri);
 
         let _ = std::fs::remove_dir_all(project);

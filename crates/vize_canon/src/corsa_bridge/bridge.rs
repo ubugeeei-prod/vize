@@ -74,18 +74,22 @@ impl CorsaBridge {
             .as_ref()
             .map(|path| path.to_string_lossy().into_owned());
 
-        // Root the session at the real workspace whenever one is known: the
-        // project's own tsconfig (paths, baseUrl) then drives module
+        // Root the session at the real workspace when it is a TypeScript
+        // project: its own tsconfig (paths, baseUrl) then drives module
         // resolution and virtual `.vue.ts` overlays can live at their real
         // paths, so relative imports in `<script>` resolve exactly like
-        // `vize check`. The isolated scratch session remains the fallback
-        // for rootless (single-file) usage.
-        let client = match working_dir.as_deref() {
-            Some(dir) => CorsaProjectClient::new_for_workspace(
-                corsa_path.as_deref(),
-                std::path::Path::new(dir),
-            ),
-            None => CorsaProjectClient::new(corsa_path.as_deref(), None),
+        // `vize check`. The isolated scratch session — which synthesizes a
+        // tsconfig and `*.vue` stubs — remains the fallback for rootless or
+        // tsconfig-less usage.
+        let workspace_root = working_dir
+            .as_deref()
+            .map(std::path::Path::new)
+            .filter(|dir| {
+                dir.join("tsconfig.json").is_file() || dir.join("jsconfig.json").is_file()
+            });
+        let client = match workspace_root {
+            Some(dir) => CorsaProjectClient::new_for_workspace(corsa_path.as_deref(), dir),
+            None => CorsaProjectClient::new(corsa_path.as_deref(), working_dir.as_deref()),
         }
         .map_err(CorsaBridgeError::SpawnFailed)?;
         *guard = Some(client);
