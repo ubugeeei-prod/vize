@@ -438,7 +438,8 @@ mod tests {
     fn test_multibyte_content_does_not_panic() {
         // Regression: byte-wise scanning used to slice mid-character and panic
         // on non-ASCII expressions (e.g. Japanese comments in misskey).
-        let content = "[\n\t// 行が選択されているときは範囲選択色の適用を行側に任せる\n\tcell.row,\n]";
+        let content =
+            "[\n\t// 行が選択されているときは範囲選択色の適用を行側に任せる\n\tcell.row,\n]";
         assert!(NoHydrationMismatch::check_expression(content).is_none());
     }
 
