@@ -84,10 +84,11 @@ jobs:
           toolchain: nightly
           components: rust-src
 
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: fuzz-${{ matrix.target }}
-          workspaces: "tests/fuzz -> target"
+          key: fuzz-${{ matrix.target }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', 'tests/fuzz/Cargo.toml') }}
+          target-path: tests/fuzz/target
 
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz --locked --version "^0.13"

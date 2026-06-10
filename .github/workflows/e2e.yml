@@ -70,11 +70,10 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "testbox"
-          cache-workspace-crates: "true"
+          key: testbox
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
@@ -118,11 +117,10 @@ jobs:
         with:
           wild-version: "0.9.0"
 
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.9.1
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "native"
-          cache-workspace-crates: "true"
+          key: app-e2e-${{ matrix.suite }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1

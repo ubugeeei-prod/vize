@@ -1,0 +1,54 @@
+name: Setup Rust sticky cache
+description: Mount Blacksmith sticky disks for Cargo and Rust build artifacts
+
+inputs:
+  key:
+    description: Stable cache namespace for this job
+    required: true
+  cache-key-suffix:
+    description: Runner and dependency suffix to separate incompatible disks
+    required: true
+  target-path:
+    description: Rust target directory to mount
+    required: false
+    default: target
+  secondary-key:
+    description: Stable cache namespace for an optional second target directory
+    required: false
+    default: ""
+  secondary-target-path:
+    description: Optional second Rust target directory to mount
+    required: false
+    default: ""
+  secondary-cache-key-suffix:
+    description: Runner and dependency suffix for the optional second target directory
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Mount Cargo registry sticky disk
+      uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+      with:
+        key: ${{ github.repository }}-${{ inputs.key }}-cargo-registry-${{ inputs.cache-key-suffix }}
+        path: ~/.cargo/registry
+
+    - name: Mount Cargo git sticky disk
+      uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+      with:
+        key: ${{ github.repository }}-${{ inputs.key }}-cargo-git-${{ inputs.cache-key-suffix }}
+        path: ~/.cargo/git
+
+    - name: Mount Rust target sticky disk
+      uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+      with:
+        key: ${{ github.repository }}-${{ inputs.key }}-target-${{ inputs.cache-key-suffix }}
+        path: ${{ inputs.target-path }}
+
+    - name: Mount secondary Rust target sticky disk
+      if: ${{ inputs.secondary-target-path != '' }}
+      uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+      with:
+        key: ${{ github.repository }}-${{ inputs.secondary-key }}-target-${{ inputs.secondary-cache-key-suffix }}
+        path: ${{ inputs.secondary-target-path }}

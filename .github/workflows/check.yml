@@ -117,10 +117,10 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "semver-checks"
-          cache-workspace-crates: "true"
+          key: semver-checks
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
       - name: Install cargo-semver-checks
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
@@ -191,10 +191,10 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "native"
-          cache-workspace-crates: "true"
+          key: check-vize-apps
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
@@ -220,10 +220,10 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "vue-parity"
-          cache-workspace-crates: "true"
+          key: vue-parity
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
@@ -255,10 +255,10 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "native"
-          cache-workspace-crates: "true"
+          key: test-scripts
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
@@ -281,10 +281,10 @@ jobs:
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "native"
-          cache-workspace-crates: "true"
+          key: editor-extensions
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check and package editor extensions
@@ -307,10 +307,10 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "native"
-          cache-workspace-crates: "true"
+          key: build-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build native package
@@ -351,10 +351,10 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "native"
-          cache-workspace-crates: "true"
+          key: test-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Test JS packages
@@ -376,23 +376,10 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
 
-      - name: Mount Cargo registry sticky disk
-        uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: ${{ github.repository }}-clippy-test-cargo-registry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
-          path: ~/.cargo/registry
-
-      - name: Mount Cargo git sticky disk
-        uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
-        with:
-          key: ${{ github.repository }}-clippy-test-cargo-git-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
-          path: ~/.cargo/git
-
-      - name: Mount Rust target sticky disk
-        uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
-        with:
-          key: ${{ github.repository }}-clippy-test-target-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
-          path: target
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings
@@ -411,10 +398,10 @@ jobs:
 
       - uses: ./.github/actions/setup-moonbit
 
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "native"
-          cache-workspace-crates: "true"
+          key: coverage
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -457,10 +444,10 @@ jobs:
         with:
           wild-version: "0.9.0"
 
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "coverage-source"
-          cache-workspace-crates: "true"
+          key: coverage-source
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
@@ -512,10 +499,10 @@ jobs:
         with:
           wild-version: "0.9.0"
 
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "coverage-branch"
-          cache-workspace-crates: "true"
+          key: coverage-branch
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
@@ -557,11 +544,10 @@ jobs:
 
       - uses: ./.github/actions/setup-moonbit
 
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "wasm"
-          cache-workspace-crates: "true"
+          key: playground-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Cache WASM build
         id: cache-wasm

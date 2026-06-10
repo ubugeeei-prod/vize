@@ -65,13 +65,14 @@ jobs:
         with:
           wild-version: "0.9.0"
 
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./head/.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: "benchmark"
-          cache-workspace-crates: "true"
-          workspaces: |
-            head -> target
-            base -> target
+          key: benchmark-head
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('head/Cargo.lock') }}
+          target-path: head/target
+          secondary-key: benchmark-base
+          secondary-target-path: base/target
+          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('base/Cargo.lock') }}
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:

@@ -85,6 +85,7 @@ test("GitHub workflows opt JavaScript actions into Node 24", () => {
 
 test("GitHub workflows use the current cache action", () => {
   for (const relativePath of [
+    ".github/actions/setup-rust-sticky-cache/action.yml",
     ".github/actions/setup-moonbit/action.yml",
     ".github/workflows/benchmark.yml",
     ".github/workflows/check.yml",
@@ -331,6 +332,54 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
       `${workflowName} should install the pinned Wild linker action`,
     );
     assert.match(workflow, /wild-version:\s*"0\.9\.0"/);
+  }
+});
+
+test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
+  const action = readRepoFile(".github", "actions", "setup-rust-sticky-cache", "action.yml");
+
+  assert.match(action, /uses:\s*useblacksmith\/stickydisk@[0-9a-f]{40}\s*# v1/);
+  assert.match(action, /path:\s*~\/\.cargo\/registry/);
+  assert.match(action, /path:\s*~\/\.cargo\/git/);
+  assert.match(action, /path:\s*\$\{\{\s*inputs\.target-path\s*\}\}/);
+  assert.match(action, /secondary-target-path/);
+
+  for (const workflowName of [
+    "check.yml",
+    "deploy-docs.yml",
+    "e2e.yml",
+    "fuzz.yml",
+    "tool-benchmark.yml",
+  ]) {
+    const workflow = readRepoFile(".github", "workflows", workflowName);
+    assert.match(
+      workflow,
+      /uses:\s*\.\/\.github\/actions\/setup-rust-sticky-cache/,
+      `${workflowName} should mount Blacksmith sticky disks for Rust work`,
+    );
+    assert.doesNotMatch(
+      workflow,
+      /Swatinem\/rust-cache/,
+      `${workflowName} should avoid network Rust cache on Linux-only Blacksmith jobs`,
+    );
+  }
+
+  const benchmarkWorkflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  assert.match(benchmarkWorkflow, /uses:\s*\.\/head\/\.github\/actions\/setup-rust-sticky-cache/);
+  assert.match(benchmarkWorkflow, /target-path:\s*head\/target/);
+  assert.match(benchmarkWorkflow, /secondary-target-path:\s*base\/target/);
+  assert.doesNotMatch(benchmarkWorkflow, /Swatinem\/rust-cache/);
+
+  for (const workflowName of ["native-smoke.yml", "release.yml"]) {
+    const workflow = readRepoFile(".github", "workflows", workflowName);
+    assert.match(
+      workflow,
+      /(?:if:\s*runner\.os == 'Linux'[\s\S]{0,240}setup-rust-sticky-cache|setup-rust-sticky-cache[\s\S]{0,240}if:\s*runner\.os == 'Linux')/,
+    );
+    assert.match(
+      workflow,
+      /(?:if:\s*runner\.os != 'Linux'[\s\S]{0,240}Swatinem\/rust-cache|Swatinem\/rust-cache[\s\S]{0,240}if:\s*runner\.os != 'Linux')/,
+    );
   }
 });
 
@@ -953,7 +1002,7 @@ test("check workflow runs JS package unit tests and production dependency audit"
   const auditJob = workflowJobBody(workflow, "security-audit");
 
   assert.match(jsPackageJob, /vp run --workspace-root test:js/);
-  assert.match(jsPackageJob, /shared-key:\s*"native"/);
+  assert.match(jsPackageJob, /key:\s*test-js-packages/);
   assert.match(auditJob, /vp exec pnpm audit --prod --audit-level moderate/);
   assert.match(auditJob, /tool:\s*cargo-audit/);
   assert.match(auditJob, /cargo audit --deny warnings/);

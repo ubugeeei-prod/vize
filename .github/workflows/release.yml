@@ -74,7 +74,15 @@ jobs:
         if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
         run: moon run --target native - -- < tools/moon/scripts/github/install_cross_compile_tools.mbtx
 
-      - name: Cache Rust
+      - name: Mount Rust sticky disks (Linux)
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: release-cli-${{ matrix.settings.target }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Cache Rust (non-Linux)
+        if: runner.os != 'Linux'
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: release-cli-${{ matrix.settings.target }}
@@ -133,12 +141,10 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: release-tools
-          cache-workspace-crates: "true"
-          save-if: "false"
+          key: release-tools
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Package VS Code extension
         run: vp run --workspace-root package:vscode-extension
@@ -322,12 +328,10 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: release-wasm
-          cache-workspace-crates: "true"
-          save-if: "false"
+          key: release-wasm
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Cache WASM package build
         id: cache-wasm
@@ -405,7 +409,15 @@ jobs:
         with:
           wild-version: "0.9.0"
 
-      - name: Cache Rust
+      - name: Mount Rust sticky disks (Linux)
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: release-native-${{ matrix.settings.target }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Cache Rust (non-Linux)
+        if: runner.os != 'Linux'
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: release-native-${{ matrix.settings.target }}
@@ -1009,12 +1021,10 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          shared-key: release-crates
-          cache-workspace-crates: "true"
-          save-if: "false"
+          key: release-crates
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Get crates.io token via Trusted Publishing
         id: crates-io-auth
