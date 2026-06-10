@@ -205,6 +205,21 @@ const message = 'hello';
     }
 
     #[test]
+    fn test_format_sfc_multiline_attribute_value_is_idempotent() {
+        // Regression: lines inside a multi-line attribute value (e.g. a
+        // wrapped `class` string) are emitted verbatim by the template
+        // formatter, but the SFC layer stacked one extra indent level on
+        // them per pass, so `fmt` never reached a fixed point.
+        let source = "<template>\n  <button\n    class=\"\n      flex items-center gap-2\n      text-start text-lg\n    \"\n    @click=\"go\"\n  >\n    hi\n  </button>\n</template>\n";
+        let options = FormatOptions::default();
+        let first = format_sfc(source, &options).unwrap();
+        let second = format_sfc(&first.code, &options).unwrap();
+        let third = format_sfc(&second.code, &options).unwrap();
+        assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+        assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+    }
+
+    #[test]
     fn test_allocator_reuse() {
         let allocator = Allocator::with_capacity(4096);
         let options = FormatOptions::default();

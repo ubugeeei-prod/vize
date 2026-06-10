@@ -381,12 +381,19 @@ fn write_remaining_attrs(
 fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
     let mut mask = vec![false; lines.len()];
     let mut depth_stack: Vec<&'static str> = Vec::new();
+    // Attribute values may span lines (e.g. multi-line `class` strings). The
+    // template formatter emits those value lines byte-for-byte, so the SFC
+    // layer must not stack an extra indent on them each pass — otherwise
+    // `fmt` never reaches a fixed point. Track open-tag/quote state across
+    // lines and mark every line that starts inside an open attribute quote.
+    let mut in_tag = false;
+    let mut open_quote: Option<u8> = None;
     const TAGS: [(&str, &str, &str); 2] = [
         ("pre", "<pre", "</pre>"),
         ("textarea", "<textarea", "</textarea>"),
     ];
     for (i, line) in lines.iter().enumerate() {
-        if !depth_stack.is_empty() {
+        if !depth_stack.is_empty() || open_quote.is_some() {
             mask[i] = true;
         }
         // Walk the line bytes and bump the depth stack on every open/close
@@ -396,6 +403,22 @@ fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
         let bytes = line;
         let mut cursor = 0;
         while cursor < bytes.len() {
+            if let Some(quote) = open_quote {
+                if bytes[cursor] == quote {
+                    open_quote = None;
+                }
+                cursor += 1;
+                continue;
+            }
+            if in_tag {
+                match bytes[cursor] {
+                    b'"' | b'\'' => open_quote = Some(bytes[cursor]),
+                    b'>' => in_tag = false,
+                    _ => {}
+                }
+                cursor += 1;
+                continue;
+            }
             if bytes[cursor] != b'<' {
                 cursor += 1;
                 continue;
@@ -415,14 +438,28 @@ fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
                     && matches!(after, b'>' | b' ' | b'\t' | b'\n' | b'\r' | b'/')
                 {
                     depth_stack.push(tag);
+                    // The rest of the `<pre ...>` opening tag may carry quoted
+                    // attributes; scan it as a tag so a multi-line value there
+                    // is tracked too.
+                    in_tag = true;
                     cursor += open_needle.len();
                     matched = true;
                     break;
                 }
             }
-            if !matched {
-                cursor += 1;
+            if matched {
+                continue;
             }
+            // Generic opening/closing tag: only track quote state outside
+            // whitespace-significant regions (their content is arbitrary and
+            // already masked verbatim above).
+            if depth_stack.is_empty()
+                && let Some(after) = bytes.get(cursor + 1).copied()
+                && (after.is_ascii_alphabetic() || after == b'/')
+            {
+                in_tag = true;
+            }
+            cursor += 1;
         }
     }
     mask
