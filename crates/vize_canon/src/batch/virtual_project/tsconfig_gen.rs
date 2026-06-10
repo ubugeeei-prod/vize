@@ -63,15 +63,14 @@ impl VirtualProject {
     ) -> CorsaResult<Value> {
         let mut config = Map::new();
         let original_tsconfig = self.resolved_tsconfig_path();
-        if out_dir.is_none()
-            && let Some(ref tsconfig_path) = original_tsconfig
-        {
-            config.insert(
-                "extends".into(),
-                Value::String(tsconfig_path.to_string_lossy().into_owned()),
-            );
-        }
 
+        // The effective compiler options are flattened into the generated
+        // config instead of `extends`-ing the user's tsconfig. Corsa would
+        // otherwise re-parse the whole original chain and fail the entire CLI
+        // run on config-file diagnostics vize already compensates for (e.g.
+        // TS5102 for the removed `baseUrl` the mirror strips and re-anchors),
+        // and the real tree's `files`/`include` lists must not leak into the
+        // virtual program anyway.
         let mut compiler_options = self.load_compiler_options(original_tsconfig.as_deref())?;
 
         // Capture the original path-alias map before stripping path-sensitive
@@ -192,15 +191,30 @@ impl VirtualProject {
         let base_dir = normalized.parent().unwrap_or(self.project_root.as_path());
         self.normalize_paths_for_project_root(&mut compiler_options, base_dir);
 
-        let Some(parent_path) = config
-            .get("extends")
-            .and_then(Value::as_str)
-            .and_then(|extends| resolve_extended_tsconfig_path(&normalized, extends))
-        else {
+        // `extends` may be a single specifier or an array; array entries are
+        // applied in order, with later entries overriding earlier ones, and
+        // the extending file overriding them all.
+        let mut inherited = Map::new();
+        match config.get("extends") {
+            Some(Value::String(extends)) => {
+                if let Some(parent_path) = resolve_extended_tsconfig_path(&normalized, extends) {
+                    inherited = self.load_compiler_options_inner(&parent_path, seen)?;
+                }
+            }
+            Some(Value::Array(entries)) => {
+                for extends in entries.iter().filter_map(Value::as_str) {
+                    if let Some(parent_path) = resolve_extended_tsconfig_path(&normalized, extends)
+                    {
+                        inherited.extend(self.load_compiler_options_inner(&parent_path, seen)?);
+                    }
+                }
+            }
+            _ => {}
+        }
+        if inherited.is_empty() {
             return Ok(compiler_options);
-        };
+        }
 
-        let mut inherited = self.load_compiler_options_inner(&parent_path, seen)?;
         inherited.extend(compiler_options);
         Ok(inherited)
     }

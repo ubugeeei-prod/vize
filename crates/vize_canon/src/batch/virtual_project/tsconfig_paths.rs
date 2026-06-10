@@ -21,7 +21,10 @@ pub(super) fn resolve_extended_tsconfig_path(
         || extends == "."
         || extends == "..")
     {
-        return None;
+        // Bare specifier (`@vue/tsconfig/tsconfig.dom.json`): resolved like a
+        // Node import, walking ancestor `node_modules` directories from the
+        // extending config.
+        return resolve_package_tsconfig_path(base_dir, extends);
     }
 
     let base = if extends_path.is_absolute() {
@@ -34,6 +37,22 @@ pub(super) fn resolve_extended_tsconfig_path(
         .into_iter()
         .map(|candidate| normalize_path_lexically(&candidate))
         .find(|candidate| candidate.exists())
+}
+
+fn resolve_package_tsconfig_path(base_dir: &Path, extends: &str) -> Option<PathBuf> {
+    let mut current = Some(base_dir);
+    while let Some(dir) = current {
+        let base = dir.join("node_modules").join(extends);
+        if let Some(found) = tsconfig_path_candidates(base)
+            .into_iter()
+            .map(|candidate| normalize_path_lexically(&candidate))
+            .find(|candidate| candidate.is_file())
+        {
+            return Some(found);
+        }
+        current = dir.parent();
+    }
+    None
 }
 
 fn tsconfig_path_candidates(base: PathBuf) -> Vec<PathBuf> {
