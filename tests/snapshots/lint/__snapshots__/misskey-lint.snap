@@ -33945,7 +33945,7 @@
         "line": 23,
         "column": 84,
         "endLine": 23,
-        "endColumn": 134,
+        "endColumn": 133,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -33956,7 +33956,7 @@
         "line": 23,
         "column": 84,
         "endLine": 23,
-        "endColumn": 134,
+        "endColumn": 133,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {

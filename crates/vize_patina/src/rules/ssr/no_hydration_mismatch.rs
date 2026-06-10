@@ -170,6 +170,11 @@ fn scan_expression_code(content: &str) -> Option<(&'static str, &'static str)> {
 }
 
 fn match_pattern_at(content: &str, index: usize) -> Option<(&'static str, &'static str)> {
+    // Match on bytes: `index` advances byte-wise, so it may sit inside a
+    // multibyte character where `content[index..]` would panic. All patterns
+    // are ASCII, so byte comparison is equivalent.
+    let bytes = content.as_bytes();
+
     for pattern in [
         "Math.random",
         "crypto.randomUUID",
@@ -179,18 +184,18 @@ fn match_pattern_at(content: &str, index: usize) -> Option<(&'static str, &'stat
         "process.env",
         "import.meta.env",
     ] {
-        if content[index..].starts_with(pattern)
-            && has_member_left_boundary(content.as_bytes(), index)
-            && has_member_right_boundary(content.as_bytes(), index + pattern.len())
+        if bytes[index..].starts_with(pattern.as_bytes())
+            && has_member_left_boundary(bytes, index)
+            && has_member_right_boundary(bytes, index + pattern.len())
         {
             return pattern_match(pattern);
         }
     }
 
     for pattern in ["uuid()", "nanoid()", "new Date()"] {
-        if content[index..].starts_with(pattern)
-            && has_identifier_left_boundary(content.as_bytes(), index)
-            && has_identifier_right_boundary(content.as_bytes(), index + pattern.len())
+        if bytes[index..].starts_with(pattern.as_bytes())
+            && has_identifier_left_boundary(bytes, index)
+            && has_identifier_right_boundary(bytes, index + pattern.len())
         {
             return pattern_match(pattern);
         }
@@ -202,8 +207,8 @@ fn match_pattern_at(content: &str, index: usize) -> Option<(&'static str, &'stat
         ".toLocaleDateString()",
         ".toLocaleTimeString()",
     ] {
-        if content[index..].starts_with(pattern)
-            && has_identifier_right_boundary(content.as_bytes(), index + pattern.len())
+        if bytes[index..].starts_with(pattern.as_bytes())
+            && has_identifier_right_boundary(bytes, index + pattern.len())
         {
             return pattern_match(pattern);
         }
@@ -427,6 +432,20 @@ mod tests {
     fn test_allows_safe_code() {
         let content = "items.map(item => item.name)";
         assert!(NoHydrationMismatch::check_expression(content).is_none());
+    }
+
+    #[test]
+    fn test_multibyte_content_does_not_panic() {
+        // Regression: byte-wise scanning used to slice mid-character and panic
+        // on non-ASCII expressions (e.g. Japanese comments in misskey).
+        let content = "[\n\t// 行が選択されているときは範囲選択色の適用を行側に任せる\n\tcell.row,\n]";
+        assert!(NoHydrationMismatch::check_expression(content).is_none());
+    }
+
+    #[test]
+    fn test_detects_pattern_after_multibyte_text() {
+        let content = "// 乱数を使う\nMath.random()";
+        assert!(NoHydrationMismatch::check_expression(content).is_some());
     }
 
     #[test]
