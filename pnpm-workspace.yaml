@@ -20,7 +20,7 @@ catalogs:
     glob: "13.0.6"
     json-schema-to-typescript: "15.0.4"
     pkg-pr-new: "0.0.73"
-    prettier: "3.8.4"
+    prettier: "3.8.3"
     tinyglobby: "0.2.16"
 
   # TypeScript toolchain shared across workspace packages.
@@ -46,7 +46,7 @@ catalogs:
   vue-stable:
     vue: "3.5.35"
     "@vue/runtime-core": "3.5.35"
-    "@vue/test-utils": "2.4.11"
+    "@vue/test-utils": "2.4.10"
     vue-router: "4.5.1"
 
   # Vue beta track used by the playground and benchmark harnesses.
@@ -91,7 +91,7 @@ catalogs:
     marked-highlight: "2.2.4"
     monaco-editor: "0.55.1"
     pngjs: "7.0.0"
-    shiki: "4.2.0"
+    shiki: "4.0.2"
     three: "0.184.0"
 
   # JS-side OXC transform bridge.
