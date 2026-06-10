@@ -17,7 +17,13 @@ pub(super) fn check_with_cli(
     project: &VirtualProject,
 ) -> CorsaResult<TypeCheckResult> {
     let config_path = project.virtual_root().join("tsconfig.json");
-    run_cli_for_config(corsa_path, project, &config_path)
+    run_cli_for_config(corsa_path, project, &config_path, Some(available_threads()))
+}
+
+fn available_threads() -> usize {
+    std::thread::available_parallelism()
+        .map(std::num::NonZero::get)
+        .unwrap_or(1)
 }
 
 /// Run the project check sharded across `servers` concurrent Corsa CLI
@@ -49,12 +55,16 @@ pub(super) fn check_with_cli_sharded(
     }
 
     let owners = &plan.owners;
+    // Split the machine's checker budget across the concurrent programs.
+    let checkers = (available_threads() / config_paths.len()).max(4);
     let results = profile!("canon.corsa.cli.sharded", {
         std::thread::scope(|scope| {
             let handles: Vec<_> = config_paths
                 .iter()
                 .map(|config_path| {
-                    scope.spawn(move || run_cli_for_config(corsa_path, project, config_path))
+                    scope.spawn(move || {
+                        run_cli_for_config(corsa_path, project, config_path, Some(checkers))
+                    })
                 })
                 .collect();
             handles
@@ -421,21 +431,39 @@ fn run_cli_for_config(
     corsa_path: &Path,
     project: &VirtualProject,
     config_path: &Path,
+    checkers: Option<usize>,
 ) -> CorsaResult<TypeCheckResult> {
-    let output = profile!(
-        "canon.corsa.cli.command",
-        Command::new(corsa_path)
-            .current_dir(project.virtual_root())
+    let output = profile!("canon.corsa.cli.command", {
+        let mut command = Command::new(corsa_path);
+        command.current_dir(project.virtual_root());
+        // Corsa's checker pool defaults to four workers; size it to the share
+        // of the machine this program gets so wide machines are not idle.
+        if let Some(checkers) = checkers {
+            command.arg("--checkers").arg(cstr!("{checkers}").as_str());
+        }
+        command
             .arg("--pretty")
             .arg("false")
             .arg("--project")
             .arg(config_path)
             .output()
-    )?;
+    })?;
     let diagnostics = profile!(
         "canon.corsa.cli.parse",
         parse_output_diagnostics(&output, project)
     );
+
+    // An older runtime without `--checkers` support rejects the whole
+    // invocation with TS5023; retry once without the option.
+    if checkers.is_some()
+        && !output.status.success()
+        && diagnostics.iter().any(|diagnostic| {
+            diagnostic.code == Some(5023) && diagnostic.message.contains("checkers")
+        })
+    {
+        return run_cli_for_config(corsa_path, project, config_path, None);
+    }
+
     let success = output.status.success()
         && diagnostics
             .iter()
