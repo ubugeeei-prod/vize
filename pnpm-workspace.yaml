@@ -36,7 +36,7 @@ catalogs:
     vite: "npm:@voidzero-dev/vite-plus-core@0.1.21"
     vitest: "npm:@voidzero-dev/vite-plus-test@0.1.21"
     vite-plus: "0.1.21"
-    tsdown: "0.22.2"
+    tsdown: "0.22.0"
     "@vitejs/plugin-vue": "6.0.7"
     vite-node: "6.0.0"
     vite-plugin-inspect: "11.4.1"
@@ -84,7 +84,7 @@ catalogs:
   # Rendering / content tooling used by docs, playgrounds, and galleries.
   content:
     "@mdi/js": "7.4.47"
-    "@tsdown/css": "0.22.2"
+    "@tsdown/css": "0.22.0"
     "@types/pngjs": "6.0.5"
     highlight.js: "11.11.1"
     marked: "18.0.5"
