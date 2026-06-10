@@ -89,6 +89,7 @@ pub fn run(args: ReadyArgs) {
         tsconfig: None,
         format: "text".into(),
         show_virtual_ts: false,
+        save_virtual_ts_for: None,
         max_warnings: None,
         no_check_props: false,
         no_check_emits: false,

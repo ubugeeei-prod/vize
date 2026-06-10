@@ -3,7 +3,7 @@
 
 use std::{fs, path::Path, path::PathBuf};
 
-use vize_carton::{FxHashSet, cstr, profile, profiler::global_profiler};
+use vize_carton::{FxHashSet, String as CompactString, cstr, profile, profiler::global_profiler};
 
 use crate::commands::check::reporting::JsonOutput;
 
@@ -92,6 +92,70 @@ pub(super) fn render_diagnostics(
         .collect()
 }
 
+pub(super) fn save_virtual_ts_for_path<'a>(
+    requested_path: &Path,
+    cwd: &Path,
+    candidates: impl IntoIterator<Item = (&'a Path, &'a str)>,
+) -> Result<PathBuf, CompactString> {
+    let requested_path = normalize_requested_virtual_ts_path(cwd, requested_path);
+    let Some((original_path, content)) = candidates
+        .into_iter()
+        .find(|(candidate_path, _)| paths_refer_to_same_file(candidate_path, &requested_path))
+    else {
+        return Err(cstr!(
+            "Virtual TS for {} was not generated",
+            requested_path.display()
+        ));
+    };
+
+    let target = virtual_ts_save_path(original_path)?;
+    let bytes = content.len();
+    match profile!(
+        "cli.check.save_virtual_ts.write",
+        fs::write(&target, content)
+    ) {
+        Ok(()) => {
+            global_profiler().record_fs_write(bytes);
+            Ok(target)
+        }
+        Err(error) => {
+            global_profiler().record_fs_write_failure(bytes);
+            Err(cstr!("Failed to write {}: {}", target.display(), error))
+        }
+    }
+}
+
+fn virtual_ts_save_path(original_path: &Path) -> Result<PathBuf, CompactString> {
+    let file_name = original_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| {
+            cstr!(
+                "Cannot derive Virtual TS output path for {}",
+                original_path.display()
+            )
+        })?;
+    let mut target = original_path.to_path_buf();
+    target.set_file_name(cstr!("{file_name}.virtual.ts").as_str());
+    Ok(target)
+}
+
+fn normalize_requested_virtual_ts_path(cwd: &Path, path: &Path) -> PathBuf {
+    let absolute = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        cwd.join(path)
+    };
+    absolute.canonicalize().unwrap_or(absolute)
+}
+
+fn paths_refer_to_same_file(candidate_path: &Path, requested_path: &Path) -> bool {
+    let candidate_path = candidate_path
+        .canonicalize()
+        .unwrap_or_else(|_| candidate_path.to_path_buf());
+    candidate_path == requested_path
+}
+
 pub(super) fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
     let profile_dir = PathBuf::from("node_modules/.vize/check-profile");
     if profile_dir.exists() {
@@ -149,4 +213,44 @@ pub(super) fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
         "\x1b[33mProfile:\x1b[0m Virtual TS files written to {}",
         profile_dir.display()
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{save_virtual_ts_for_path, virtual_ts_save_path};
+
+    #[test]
+    fn virtual_ts_save_path_appends_virtual_ts_after_full_file_name() {
+        let path = std::path::Path::new("/workspace/src/Hoge.vue");
+
+        assert_eq!(
+            virtual_ts_save_path(path).unwrap(),
+            std::path::PathBuf::from("/workspace/src/Hoge.vue.virtual.ts")
+        );
+    }
+
+    #[test]
+    fn save_virtual_ts_for_path_writes_matching_canonical_file() {
+        let temp = tempfile::tempdir().unwrap();
+        let source = temp.path().join("src").join("Hoge.vue");
+        std::fs::create_dir_all(source.parent().unwrap()).unwrap();
+        std::fs::write(&source, "<template />").unwrap();
+        let canonical_source = source.canonicalize().unwrap();
+
+        let saved = save_virtual_ts_for_path(
+            std::path::Path::new("src/Hoge.vue"),
+            temp.path(),
+            [(canonical_source.as_path(), "const value = 1;\n")],
+        )
+        .unwrap();
+
+        assert_eq!(
+            saved,
+            canonical_source.with_file_name("Hoge.vue.virtual.ts")
+        );
+        assert_eq!(
+            std::fs::read_to_string(saved).unwrap(),
+            "const value = 1;\n"
+        );
+    }
 }

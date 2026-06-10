@@ -45,6 +45,10 @@ pub struct CheckArgs {
     #[arg(long, alias = "include-virtual-ts")]
     pub show_virtual_ts: bool,
 
+    /// Save generated virtual TypeScript for a file next to that file
+    #[arg(long, value_name = "FILE")]
+    pub save_virtual_ts_for: Option<PathBuf>,
+
     /// Maximum number of warnings before failing
     #[arg(long)]
     pub max_warnings: Option<usize>,

@@ -32,6 +32,9 @@ Options:
       --show-virtual-ts
           Show generated virtual TypeScript
 
+      --save-virtual-ts-for <FILE>
+          Save generated virtual TypeScript for a file next to that file
+
       --max-warnings <MAX_WARNINGS>
           Maximum number of warnings before failing
 
