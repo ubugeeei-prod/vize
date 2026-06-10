@@ -27,7 +27,7 @@ use super::{
     },
     props::{
         add_generic_defaults, collect_template_prop_names, extract_generic_names,
-        generate_props_type, generate_props_variables,
+        generate_props_type, generate_props_variables, strip_const_modifiers,
     },
     scope::{ScopeGenerationOptions, generate_scope_closures},
     types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
@@ -241,7 +241,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // reference resolves at module scope while bare uses (`Option[]`) still
     // work via the `= any` defaults.
     let generic_injection: Option<(String, Vec<String>)> = generic_param.map(|g| {
-        let defaults = add_generic_defaults(g);
+        // `const` modifiers are only legal on function/method/class type
+        // parameters (TS1277); the spliced copies live on `type`/`interface`
+        // declarations and must drop them.
+        let defaults = strip_const_modifiers(&add_generic_defaults(g));
         let names = extract_generic_names(g)
             .split(',')
             .map(|n| String::from(n.trim()))

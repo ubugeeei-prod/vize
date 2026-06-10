@@ -326,13 +326,22 @@ fn append_generic_name(names: &mut String, param: &str) {
     if param.is_empty() {
         return;
     }
-    let name = param.split_whitespace().next().unwrap_or(param);
+    // Skip the TS 5.0 `const` modifier: `const T extends Tab` declares `T`.
+    let mut tokens = param.split_whitespace();
+    let name = match tokens.next() {
+        Some("const") => tokens.next().unwrap_or(param),
+        Some(token) => token,
+        None => param,
+    };
     if !names.is_empty() {
         names.push_str(", ");
     }
     names.push_str(name);
 }
 
+/// Add `= any` defaults to each generic parameter and drop TS 5.0 `const`
+/// modifiers: the result is spliced into emitted `type` declarations, where
+/// the modifier is illegal (TS1277).
 fn add_generic_defaults(generic_param: &str) -> String {
     let mut result = String::default();
     let mut depth = 0i32;
@@ -365,6 +374,11 @@ fn append_param_with_default(result: &mut String, param: &str) {
     if param.is_empty() {
         return;
     }
+    let param = param
+        .strip_prefix("const")
+        .filter(|rest| rest.starts_with(|ch: char| ch.is_ascii_whitespace()))
+        .map(str::trim_start)
+        .unwrap_or(param);
     result.push_str(param);
 
     let mut depth = 0i32;

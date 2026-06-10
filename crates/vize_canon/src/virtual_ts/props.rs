@@ -301,10 +301,11 @@ pub(crate) fn generate_props_type(ts: &mut String, summary: &Croquis, generic_pa
         .iter()
         .any(|te| te.name.as_str() == "Props");
 
-    // Build generic suffix for Props type declaration (with `= any` defaults)
+    // Build generic suffix for Props type declaration (with `= any` defaults).
+    // `const` modifiers are illegal on type-alias parameters (TS1277).
     let generic_decl = generic_param
         .map(|g| {
-            let with_defaults = add_generic_defaults(g);
+            let with_defaults = strip_const_modifiers(&add_generic_defaults(g));
             cstr!("<{with_defaults}>")
         })
         .unwrap_or_default();
@@ -779,10 +780,22 @@ fn find_matching_brace(s: &str, start: usize) -> usize {
     s.len().saturating_sub(1)
 }
 
+/// First identifier of a generic parameter declaration, skipping the TS 5.0
+/// `const` modifier: `const T extends Tab` declares `T`, not `const`.
+fn generic_param_name(param: &str) -> &str {
+    let mut tokens = param.split_whitespace();
+    match tokens.next() {
+        Some("const") => tokens.next().unwrap_or(param),
+        Some(token) => token,
+        None => param,
+    }
+}
+
 /// Extract just the generic parameter names from a full generic declaration.
 /// e.g., `"T extends Foo, P extends Bar"` → `"T, P"`
 /// e.g., `"T"` → `"T"`
 /// e.g., `"T extends Record<string, any>, U"` → `"T, U"`
+/// e.g., `"const T extends Tab"` → `"T"`
 pub(crate) fn extract_generic_names(generic_param: &str) -> String {
     let mut names = String::default();
     let mut depth = 0i32; // track <> nesting
@@ -797,7 +810,7 @@ pub(crate) fn extract_generic_names(generic_param: &str) -> String {
                 let trimmed = current_name.trim();
                 if !trimmed.is_empty() {
                     // Extract just the name (before "extends")
-                    let name = trimmed.split_whitespace().next().unwrap_or(trimmed);
+                    let name = generic_param_name(trimmed);
                     if !names.is_empty() {
                         names.push_str(", ");
                     }
@@ -817,7 +830,7 @@ pub(crate) fn extract_generic_names(generic_param: &str) -> String {
     // Handle the last parameter
     let trimmed = current_name.trim();
     if !trimmed.is_empty() {
-        let name = trimmed.split_whitespace().next().unwrap_or(trimmed);
+        let name = generic_param_name(trimmed);
         if !names.is_empty() {
             names.push_str(", ");
         }
@@ -826,6 +839,49 @@ pub(crate) fn extract_generic_names(generic_param: &str) -> String {
 
     let _ = in_extends;
     names
+}
+
+/// Drop TS 5.0 `const` modifiers from a generic parameter list.
+/// The modifier is only legal on function/method/class type parameters
+/// (TS1277), so callers that splice parameters into `type`/`interface`
+/// declarations must strip it first.
+/// e.g., `"const T extends Tab = any"` → `"T extends Tab = any"`
+pub(crate) fn strip_const_modifiers(generic_param: &str) -> String {
+    let mut result = String::default();
+    let mut depth = 0i32;
+    let mut current_param = String::default();
+
+    for ch in generic_param.chars() {
+        match ch {
+            '<' => depth += 1,
+            '>' => depth -= 1,
+            ',' if depth == 0 => {
+                append_param_without_const(&mut result, current_param.trim());
+                result.push_str(", ");
+                current_param = String::default();
+                continue;
+            }
+            _ => {}
+        }
+        current_param.push(ch);
+    }
+
+    let trimmed = current_param.trim();
+    if !trimmed.is_empty() {
+        append_param_without_const(&mut result, trimmed);
+    }
+
+    result
+}
+
+/// Append a single generic parameter with its leading `const` modifier removed.
+fn append_param_without_const(result: &mut String, param: &str) {
+    let stripped = param
+        .strip_prefix("const")
+        .filter(|rest| rest.starts_with(|ch: char| ch.is_ascii_whitespace()))
+        .map(str::trim_start)
+        .unwrap_or(param);
+    result.push_str(stripped);
 }
 
 /// Add `= any` defaults to each generic parameter that doesn't already have a default.
@@ -888,10 +944,50 @@ fn append_param_with_default(result: &mut String, param: &str) {
 #[cfg(test)]
 mod tests {
     use super::{
-        collect_with_defaults_default_names_from_source, extract_interface_fields,
+        add_generic_defaults, collect_with_defaults_default_names_from_source,
+        extract_generic_names, extract_interface_fields, strip_const_modifiers,
         template_props_type_ref,
     };
     use vize_carton::{FxHashSet, String};
+
+    #[test]
+    fn extracts_generic_names_skipping_const_modifier() {
+        assert_eq!(
+            extract_generic_names("T extends Foo, P extends Bar"),
+            "T, P"
+        );
+        assert_eq!(extract_generic_names("const T extends Tab"), "T");
+        assert_eq!(
+            extract_generic_names("const T extends Record<string, any>, U"),
+            "T, U"
+        );
+        // A prop named `constant` must not lose its prefix.
+        assert_eq!(extract_generic_names("constant extends Foo"), "constant");
+    }
+
+    #[test]
+    fn strips_const_modifiers_for_type_declarations() {
+        assert_eq!(
+            strip_const_modifiers("const T extends Tab = any").as_str(),
+            "T extends Tab = any"
+        );
+        assert_eq!(
+            strip_const_modifiers("const T extends Record<string, any>, const U = any").as_str(),
+            "T extends Record<string, any>, U = any"
+        );
+        assert_eq!(
+            strip_const_modifiers("T extends Tab = any").as_str(),
+            "T extends Tab = any"
+        );
+        assert_eq!(
+            strip_const_modifiers("constant extends Foo").as_str(),
+            "constant extends Foo"
+        );
+        assert_eq!(
+            strip_const_modifiers(add_generic_defaults("const T extends Tab").as_str()).as_str(),
+            "T extends Tab = any"
+        );
+    }
 
     #[test]
     fn collects_with_defaults_object_keys() {

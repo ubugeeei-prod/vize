@@ -388,6 +388,37 @@ const activeItem = ref<T | null>(null)
     }
 
     #[test]
+    fn virtual_ts_const_generic_component_strips_const_from_type_positions() {
+        // `generic="const T extends ..."` (TS 5.0 const type parameter, used by
+        // e.g. misskey's MkTabs) — the parameter NAME is `T`, and the `const`
+        // modifier is only legal on function/method type parameters, never on
+        // the generated `type Props<...>` alias (TS1277).
+        let source = r#"<script setup lang="ts" generic="const T extends string | number">
+const props = defineProps<{
+  items: T[]
+}>()
+</script>
+
+<template>
+  <div>{{ props.items }}</div>
+</template>"#;
+
+        let virtual_ts = generate_virtual_ts_from_sfc(source);
+        assert!(
+            virtual_ts.contains("export type Props<T extends string | number = any>"),
+            "Props alias must declare `T` without the const modifier:\n{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("function __setup<const T extends string | number>()"),
+            "the setup closure keeps the const modifier (legal on functions):\n{virtual_ts}"
+        );
+        assert!(
+            !virtual_ts.contains("Props<const>"),
+            "the const modifier must never be treated as the parameter name:\n{virtual_ts}"
+        );
+    }
+
+    #[test]
     fn snapshot_virtual_ts_dynamic_component() {
         let source = r#"<script setup lang="ts">
 import { ref, markRaw } from 'vue'
