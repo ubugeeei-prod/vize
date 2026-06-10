@@ -244,6 +244,18 @@ mod tests {
     }
 
     #[test]
+    fn test_transform_computed_member_key() {
+        let bindings = make_bindings(&["row"]);
+
+        let source = "const phaseLabel = computed(() => DAY_PHASE_LABELS[row.phaseSnapshot.phase])";
+        let result = transform_destructured_props(source, &bindings);
+        assert_eq!(
+            result,
+            "const phaseLabel = computed(() => DAY_PHASE_LABELS[__props.row.phaseSnapshot.phase])"
+        );
+    }
+
+    #[test]
     fn test_transform_call_argument() {
         let bindings = make_bindings(&["count"]);
 

@@ -351,6 +351,31 @@ fn test_compile_control_flow_uses_parent_specific_insertion_state() {
 }
 
 #[test]
+fn test_compile_mixed_text_static_and_if_children_preserves_template_shape() {
+    let allocator = Bump::new();
+    let result = compile_vapor(
+        &allocator,
+        r#"
+        <span class="date-line" :class="{ weekend: isWeekend }">
+          {{ dateLabel }}
+          <em class="day-offset">same day</em>
+          <em v-if="isWeekend" class="weekend-label">Weekend</em>
+        </span>
+        "#,
+        Default::default(),
+    );
+
+    assert!(
+        result.error_messages.is_empty(),
+        "Expected no errors: {:?}",
+        result.error_messages
+    );
+
+    let code = normalize_code(&result.code);
+    insta::assert_snapshot!(code.as_str());
+}
+
+#[test]
 fn test_compile_nested_control_flow_avoids_unused_root_insertion_state() {
     let allocator = Bump::new();
     let result = compile_vapor(
