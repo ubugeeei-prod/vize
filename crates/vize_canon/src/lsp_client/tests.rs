@@ -85,7 +85,7 @@ fn overlay_documents_materialize_under_node_modules_vize() {
     fs::create_dir_all(&project_root).unwrap();
 
     let external_uri = "file:///external/App.vue.setup.ts";
-    let document_uri = build_session_document_uri(external_uri, &project_root);
+    let document_uri = build_session_document_uri(external_uri, &project_root, false);
     let test_output_fragment = PathBuf::from("target")
         .join("vize-tests")
         .to_string_lossy()
@@ -107,7 +107,7 @@ fn internal_vize_sessions_keep_overlays_inside_session_root() {
     fs::create_dir_all(&project_root).unwrap();
 
     let external_uri = "file:///external/App.vue.setup.ts";
-    let document_uri = build_session_document_uri(external_uri, &project_root);
+    let document_uri = build_session_document_uri(external_uri, &project_root, false);
     let test_output_fragment = PathBuf::from("target")
         .join("vize-tests")
         .to_string_lossy()
