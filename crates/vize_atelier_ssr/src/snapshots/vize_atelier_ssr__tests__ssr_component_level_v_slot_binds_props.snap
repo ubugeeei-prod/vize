@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_ssr/src/lib.rs
+assertion_line: 552
+expression: result.code.as_str()
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Comp"), _attrs, {
+    default: _withCtx(({ item }, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<span>${_ssrInterpolate(item.label)}</span>`)
+      } else {
+        return [_createElementVNode("span", null, [_createTextVNode(_toDisplayString(item.label))])]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

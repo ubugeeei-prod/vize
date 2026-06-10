@@ -161,7 +161,7 @@ impl<'a> SsrCodegenContext<'a> {
         out.push_str(", ");
         out.push_str(&self.build_component_props(el, false, is_dynamic_component_tag(&el.tag)));
         out.push_str(", ");
-        out.push_str(&self.vnode_component_slots_expression(&el.children));
+        out.push_str(&self.vnode_component_slots_expression(el));
         out.push(')');
         out
     }
@@ -201,10 +201,21 @@ impl<'a> SsrCodegenContext<'a> {
 
     pub(super) fn vnode_component_slots_expression<'node>(
         &mut self,
-        children: &'node [TemplateChildNode<'a>],
+        el: &'node ElementNode<'a>,
     ) -> String {
+        let children: &'node [TemplateChildNode<'a>] = &el.children;
         if children.is_empty() {
             return "null".to_compact_string();
+        }
+
+        // `v-slot` on the component itself: every child belongs to that
+        // single slot and its props pattern must stay bound.
+        if has_slot_directive(el) {
+            self.use_core_helper(RuntimeHelper::WithCtx);
+            let mut out = String::from("{ ");
+            out.push_str(&self.vnode_slot_entry_fn_property(el));
+            out.push_str(", _: 1 }");
+            return out;
         }
 
         if children

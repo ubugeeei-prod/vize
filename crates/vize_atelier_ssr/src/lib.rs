@@ -525,6 +525,33 @@ mod tests {
         insta::assert_snapshot!(result.code.as_str());
     }
 
+    // Regression: `v-slot` directly on a component (`<Comp v-slot="{ item }">`)
+    // was dropped entirely, so the slot body compiled its params against the
+    // instance (`_ctx.item`) in both the push and vnode branches (nuxt-ui
+    // `<ULink v-slot="{ active, ...slotProps }">` inside NavigationMenu).
+    #[test]
+    fn test_ssr_component_level_v_slot_binds_props() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr(
+            &allocator,
+            r#"<Comp v-slot="{ item }">
+  <span>{{ item.label }}</span>
+</Comp>"#,
+        );
+        assert!(errors.is_empty());
+        assert!(
+            result.code.contains("default: _withCtx(({ item }"),
+            "component-level v-slot must bind its props pattern:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("_ctx.item"),
+            "scoped slot param `item` must not leak as `_ctx.item`:\n{}",
+            result.code
+        );
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
     // Regression: static named slots with slot props must keep their own slot
     // entry (with the props pattern bound) in the vnode fallback branch of a
     // nested component. Collapsing them into `default: _withCtx(() => ...)`

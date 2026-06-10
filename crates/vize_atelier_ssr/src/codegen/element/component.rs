@@ -71,7 +71,7 @@ impl<'a> SsrCodegenContext<'a> {
         if el.children.is_empty() {
             self.push("null");
         } else {
-            self.process_component_slots(&el.children);
+            self.process_component_slots(el);
         }
 
         self.push(", _parent");
@@ -89,7 +89,7 @@ impl<'a> SsrCodegenContext<'a> {
         let slots = if el.children.is_empty() {
             "null".to_compact_string()
         } else {
-            self.vnode_component_slots_expression(&el.children)
+            self.vnode_component_slots_expression(el)
         };
 
         self.push_indent();
@@ -106,7 +106,30 @@ impl<'a> SsrCodegenContext<'a> {
         self.push(")\n");
     }
 
-    fn process_component_slots<'node>(&mut self, children: &'node [TemplateChildNode<'a>]) {
+    fn process_component_slots<'node>(&mut self, el: &'node ElementNode<'a>) {
+        let children: &'node [TemplateChildNode<'a>] = &el.children;
+
+        // `v-slot` directly on the component (`<Comp v-slot="{ item }">`)
+        // makes every child part of that single slot; dropping the directive
+        // would compile its params against the instance (`_ctx.item`).
+        if let Some(slot) = self.component_self_slot(el) {
+            self.use_core_helper(RuntimeHelper::WithCtx);
+            self.push("{\n");
+            self.indent_level += 1;
+            self.process_component_slot_property(
+                &slot.name,
+                slot.props_pattern.as_deref(),
+                &slot.params,
+                ComponentSlotChildren::Slice(slot.children),
+            );
+            self.push_indent();
+            self.push("_: 1\n");
+            self.indent_level -= 1;
+            self.push_indent();
+            self.push("}");
+            return;
+        }
+
         // Dynamically-named (`#[name]`) or conditional/looped (`v-if`/`v-for`)
         // slot templates cannot be expressed as a static slots object. Vue's SSR
         // compiler wraps them in `createSlots(staticBase, [dynamicEntries])`, so
@@ -497,7 +520,16 @@ impl<'a> SsrCodegenContext<'a> {
         if el.tag_type != ElementType::Template {
             return None;
         }
+        self.component_self_slot(el)
+    }
 
+    /// Build the slot description carried by a `v-slot` directive on `el`
+    /// itself — either a `<template v-slot>` child or a component carrying
+    /// `v-slot` directly (`<Comp v-slot="{ item }">`).
+    pub(super) fn component_self_slot<'node>(
+        &self,
+        el: &'node ElementNode<'a>,
+    ) -> Option<ComponentTemplateSlot<'node, 'a>> {
         for prop in &el.props {
             let PropNode::Directive(dir) = prop else {
                 continue;
