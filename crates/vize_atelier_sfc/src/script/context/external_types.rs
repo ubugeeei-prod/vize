@@ -1,16 +1,165 @@
 use std::path::{Path, PathBuf};
+use std::sync::{LazyLock, RwLock};
+use std::time::SystemTime;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
 use oxc_parser::Parser;
-use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, ToCompactString};
+use oxc_span::{GetSpan, SourceType};
+use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 
 use crate::parse_sfc;
+use crate::script::build_interface_type_source;
 use crate::types::SfcParseOptions;
 
 use super::ScriptCompileContext;
 use super::helpers::is_import_type_only;
+
+/// Type declarations and outgoing type-bearing specifiers extracted from one
+/// file on disk.
+#[derive(Default)]
+struct FileTypeSummary {
+    interfaces: Vec<(String, String)>,
+    type_aliases: Vec<(String, String)>,
+    /// Import/re-export specifiers to follow, in source order.
+    specifiers: Vec<String>,
+}
+
+/// Freshness stamp for a cached summary: modification time plus file size,
+/// so an edit within the same mtime granularity is still detected most of
+/// the time.
+type FileStamp = (Option<SystemTime>, u64);
+
+/// Process-wide summary cache. Batch compiles and long-lived dev servers walk
+/// the same type-barrel closure for every SFC (nuxt-ui re-reads ~200 files per
+/// component without this); entries are revalidated against [`FileStamp`] on
+/// every use so on-disk edits are picked up.
+static FILE_TYPE_CACHE: LazyLock<RwLock<FxHashMap<PathBuf, (FileStamp, FileTypeSummary)>>> =
+    LazyLock::new(|| RwLock::new(FxHashMap::default()));
+
+fn file_stamp(path: &Path) -> FileStamp {
+    match std::fs::metadata(path) {
+        Ok(metadata) => (metadata.modified().ok(), metadata.len()),
+        Err(_) => (None, 0),
+    }
+}
+
+fn build_file_summary(path: &Path) -> Option<FileTypeSummary> {
+    let content = std::fs::read_to_string(path).ok()?;
+    let is_vue = path.extension().is_some_and(|ext| ext == "vue");
+    Some(extract_file_summary(&content, is_vue))
+}
+
+fn extract_file_summary(content: &str, is_vue: bool) -> FileTypeSummary {
+    let mut summary = FileTypeSummary::default();
+    if is_vue {
+        if let Ok(descriptor) = parse_sfc(content, SfcParseOptions::default()) {
+            if let Some(ref script) = descriptor.script {
+                extract_script_summary(&script.content, &mut summary);
+            }
+            if let Some(ref script_setup) = descriptor.script_setup {
+                extract_script_summary(&script_setup.content, &mut summary);
+            }
+        }
+    } else {
+        extract_script_summary(content, &mut summary);
+    }
+    summary
+}
+
+fn extract_script_summary(source: &str, summary: &mut FileTypeSummary) {
+    let allocator = Allocator::default();
+    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
+    let ret = Parser::new(&allocator, source, source_type).parse();
+    if ret.panicked {
+        return;
+    }
+
+    for stmt in ret.program.body.iter() {
+        match stmt {
+            Statement::TSInterfaceDeclaration(iface) => {
+                summary.interfaces.push((
+                    iface.id.name.to_compact_string(),
+                    build_interface_type_source(
+                        source,
+                        iface.id.span.end as usize,
+                        iface.body.span.start as usize,
+                        iface.body.span.end as usize,
+                    ),
+                ));
+            }
+            Statement::TSTypeAliasDeclaration(type_alias) => {
+                let type_start = type_alias.type_annotation.span().start as usize;
+                let type_end = type_alias.type_annotation.span().end as usize;
+                summary.type_aliases.push((
+                    type_alias.id.name.to_compact_string(),
+                    String::from(&source[type_start..type_end]),
+                ));
+            }
+            Statement::ImportDeclaration(import_decl) => {
+                if !import_decl.import_kind.is_type()
+                    && !is_import_type_only(import_decl, source)
+                    && !import_decl.specifiers.as_ref().is_some_and(|specifiers| {
+                        specifiers.iter().any(|specifier| match specifier {
+                            ImportDeclarationSpecifier::ImportSpecifier(spec) => {
+                                spec.import_kind.is_type()
+                            }
+                            _ => false,
+                        })
+                    })
+                {
+                    continue;
+                }
+                summary
+                    .specifiers
+                    .push(import_decl.source.value.to_compact_string());
+            }
+            // Plain (non-`type`) re-exports forward types as well in TS:
+            // `export * from './Link.vue'` in a types barrel re-exports
+            // every interface declared there (nuxt-ui resolves LinkProps
+            // through exactly this shape). Follow them unconditionally —
+            // the `visited` set bounds the traversal and bare specifiers
+            // (node_modules) are filtered by import resolution.
+            Statement::ExportNamedDeclaration(export_decl) => {
+                if let Some(ref decl) = export_decl.declaration {
+                    match decl {
+                        oxc_ast::ast::Declaration::TSInterfaceDeclaration(iface) => {
+                            summary.interfaces.push((
+                                iface.id.name.to_compact_string(),
+                                build_interface_type_source(
+                                    source,
+                                    iface.id.span.end as usize,
+                                    iface.body.span.start as usize,
+                                    iface.body.span.end as usize,
+                                ),
+                            ));
+                        }
+                        oxc_ast::ast::Declaration::TSTypeAliasDeclaration(type_alias) => {
+                            let type_start = type_alias.type_annotation.span().start as usize;
+                            let type_end = type_alias.type_annotation.span().end as usize;
+                            summary.type_aliases.push((
+                                type_alias.id.name.to_compact_string(),
+                                String::from(&source[type_start..type_end]),
+                            ));
+                        }
+                        _ => {}
+                    }
+                }
+                if let Some(ref export_source) = export_decl.source {
+                    summary
+                        .specifiers
+                        .push(export_source.value.to_compact_string());
+                }
+            }
+            Statement::ExportAllDeclaration(export_decl) => {
+                summary
+                    .specifiers
+                    .push(export_decl.source.value.to_compact_string());
+            }
+            _ => {}
+        }
+    }
+}
 
 const RESOLVE_EXTENSIONS: &[&str] = &[
     ".ts", ".tsx", ".d.ts", ".mts", ".cts", ".js", ".jsx", ".vue",
@@ -43,71 +192,12 @@ impl ScriptCompileContext {
         }
 
         let mut visited = FxHashSet::default();
-        self.collect_imported_types_recursive(source, base_file, &mut visited);
-    }
-
-    fn collect_imported_types_recursive(
-        &mut self,
-        source: &str,
-        current_file: &Path,
-        visited: &mut FxHashSet<String>,
-    ) {
-        let allocator = Allocator::default();
-        let source_type = SourceType::from_path("script.ts").unwrap_or_default();
-        let ret = Parser::new(&allocator, source, source_type).parse();
-        if ret.panicked {
-            return;
-        }
-
-        for stmt in ret.program.body.iter() {
-            match stmt {
-                Statement::ImportDeclaration(import_decl) => {
-                    if !import_decl.import_kind.is_type()
-                        && !is_import_type_only(import_decl, source)
-                        && !import_decl.specifiers.as_ref().is_some_and(|specifiers| {
-                            specifiers.iter().any(|specifier| match specifier {
-                                ImportDeclarationSpecifier::ImportSpecifier(spec) => {
-                                    spec.import_kind.is_type()
-                                }
-                                _ => false,
-                            })
-                        })
-                    {
-                        continue;
-                    }
-
-                    self.collect_types_from_specifier(
-                        import_decl.source.value.as_str(),
-                        current_file,
-                        visited,
-                    );
-                }
-                // Plain (non-`type`) re-exports forward types as well in TS:
-                // `export * from './Link.vue'` in a types barrel re-exports
-                // every interface declared there (nuxt-ui resolves LinkProps
-                // through exactly this shape). Follow them unconditionally —
-                // the `visited` set bounds the traversal and bare specifiers
-                // (node_modules) are filtered by import resolution.
-                Statement::ExportNamedDeclaration(export_decl) => {
-                    let Some(ref export_source) = export_decl.source else {
-                        continue;
-                    };
-
-                    self.collect_types_from_specifier(
-                        export_source.value.as_str(),
-                        current_file,
-                        visited,
-                    );
-                }
-                Statement::ExportAllDeclaration(export_decl) => {
-                    self.collect_types_from_specifier(
-                        export_decl.source.value.as_str(),
-                        current_file,
-                        visited,
-                    );
-                }
-                _ => {}
-            }
+        // The root source lives in memory (possibly unsaved editor state), so
+        // parse it directly; only files read from disk go through the cache.
+        let mut root = FileTypeSummary::default();
+        extract_script_summary(source, &mut root);
+        for specifier in &root.specifiers {
+            self.collect_types_from_specifier(specifier, base_file, &mut visited);
         }
     }
 
@@ -126,42 +216,79 @@ impl ScriptCompileContext {
             return;
         }
 
-        let Ok(content) = std::fs::read_to_string(&resolved_path) else {
-            return;
-        };
-
-        if resolved_path.extension().is_some_and(|ext| ext == "vue") {
-            self.collect_types_from_vue_file(&resolved_path, &content, visited);
-            return;
+        // Fast path: merge the declarations under the read guard and only
+        // clone the (small) specifier list for the recursion below — taking
+        // the lock recursively would risk deadlock against writers.
+        let stamp = file_stamp(&resolved_path);
+        let mut specifiers: Option<std::vec::Vec<String>> = None;
+        if let Ok(cache) = FILE_TYPE_CACHE.read()
+            && let Some((cached_stamp, summary)) = cache.get(&resolved_path)
+            && *cached_stamp == stamp
+        {
+            self.merge_file_summary(summary);
+            specifiers = Some(summary.specifiers.clone());
         }
 
-        self.collect_types_from(&content);
-        self.collect_imported_types_recursive(&content, &resolved_path, visited);
+        let specifiers = match specifiers {
+            Some(specifiers) => specifiers,
+            None => {
+                let Some(summary) = build_file_summary(&resolved_path) else {
+                    return;
+                };
+                self.merge_file_summary(&summary);
+                let specifiers = summary.specifiers.clone();
+                if let Ok(mut cache) = FILE_TYPE_CACHE.write() {
+                    cache.insert(resolved_path.clone(), (stamp, summary));
+                }
+                specifiers
+            }
+        };
+
+        for specifier in &specifiers {
+            self.collect_types_from_specifier(specifier, &resolved_path, visited);
+        }
     }
 
-    fn collect_types_from_vue_file(
-        &mut self,
-        path: &Path,
-        content: &str,
-        visited: &mut FxHashSet<String>,
-    ) {
-        let Ok(descriptor) = parse_sfc(content, SfcParseOptions::default()) else {
-            return;
-        };
-
-        if let Some(ref script) = descriptor.script {
-            self.collect_types_from(&script.content);
-            self.collect_imported_types_recursive(&script.content, path, visited);
+    fn merge_file_summary(&mut self, summary: &FileTypeSummary) {
+        for (name, body) in &summary.interfaces {
+            self.interfaces
+                .entry(name.clone())
+                .or_insert_with(|| body.clone());
         }
-
-        if let Some(ref script_setup) = descriptor.script_setup {
-            self.collect_types_from(&script_setup.content);
-            self.collect_imported_types_recursive(&script_setup.content, path, visited);
+        for (name, body) in &summary.type_aliases {
+            self.type_aliases
+                .entry(name.clone())
+                .or_insert_with(|| body.clone());
         }
     }
 }
 
+/// Positive resolution cache: `(importing dir, specifier) -> resolved path`.
+/// Resolution probes many extension/index candidates (each a `stat`); a hit
+/// is revalidated with a single `is_file` check so deleted files fall back
+/// to a full re-resolution, and misses are never cached so newly created
+/// files are picked up.
+static RESOLVE_CACHE: LazyLock<RwLock<FxHashMap<(PathBuf, String), PathBuf>>> =
+    LazyLock::new(|| RwLock::new(FxHashMap::default()));
+
 fn resolve_import_path(current_file: &Path, specifier: &str) -> Option<PathBuf> {
+    let dir = current_file.parent()?.to_path_buf();
+    let key = (dir, specifier.to_compact_string());
+    if let Ok(cache) = RESOLVE_CACHE.read()
+        && let Some(resolved) = cache.get(&key)
+        && resolved.is_file()
+    {
+        return Some(resolved.clone());
+    }
+
+    let resolved = resolve_import_path_uncached(current_file, specifier)?;
+    if let Ok(mut cache) = RESOLVE_CACHE.write() {
+        cache.insert(key, resolved.clone());
+    }
+    Some(resolved)
+}
+
+fn resolve_import_path_uncached(current_file: &Path, specifier: &str) -> Option<PathBuf> {
     if let Some(alias_path) = resolve_at_src_alias(current_file, specifier) {
         return Some(alias_path);
     }
