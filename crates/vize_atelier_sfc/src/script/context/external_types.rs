@@ -294,7 +294,7 @@ fn resolve_import_path_uncached(current_file: &Path, specifier: &str) -> Option<
     }
 
     if !specifier.starts_with('.') && !specifier.starts_with('/') {
-        return None;
+        return resolve_bare_specifier(current_file, specifier);
     }
 
     let base_dir = current_file.parent()?;
@@ -305,6 +305,111 @@ fn resolve_import_path_uncached(current_file: &Path, specifier: &str) -> Option<
     };
 
     resolve_candidate_path(candidate)
+}
+
+/// Resolve a bare specifier (`reka-ui`, `@scope/pkg/sub`) to a package's type
+/// declarations through `node_modules`. Only first-party sources step into
+/// packages: bare imports *between* packages (every library imports `vue`)
+/// would pull huge, mostly `@vue-ignore`d type graphs, so files already
+/// inside `node_modules` only follow their relative imports.
+fn resolve_bare_specifier(current_file: &Path, specifier: &str) -> Option<PathBuf> {
+    if specifier.starts_with('#') || specifier.starts_with("node:") {
+        return None;
+    }
+    if current_file
+        .components()
+        .any(|component| component.as_os_str() == "node_modules")
+    {
+        return None;
+    }
+
+    let (package, subpath) = split_package_specifier(specifier)?;
+    for dir in current_file.ancestors().skip(1) {
+        let package_dir = dir.join("node_modules").join(&package);
+        if package_dir.is_dir() {
+            return resolve_package_types(&package_dir, &subpath);
+        }
+    }
+    None
+}
+
+/// Split `@scope/name/sub/path` / `name/sub/path` into package name and
+/// subpath.
+fn split_package_specifier(specifier: &str) -> Option<(String, String)> {
+    let segment_count = if specifier.starts_with('@') { 2 } else { 1 };
+    let mut split_at = 0;
+    let mut seen = 0;
+    for (index, byte) in specifier.bytes().enumerate() {
+        if byte == b'/' {
+            seen += 1;
+            if seen == segment_count {
+                split_at = index;
+                break;
+            }
+        }
+    }
+    if seen < segment_count {
+        split_at = specifier.len();
+    }
+    let package = &specifier[..split_at];
+    if package.is_empty() {
+        return None;
+    }
+    let subpath = specifier[split_at..].trim_start_matches('/');
+    Some((package.to_compact_string(), subpath.to_compact_string()))
+}
+
+fn resolve_package_types(package_dir: &Path, subpath: &str) -> Option<PathBuf> {
+    let manifest = std::fs::read_to_string(package_dir.join("package.json")).ok();
+    let manifest: Option<serde_json::Value> =
+        manifest.and_then(|raw| serde_json::from_str(&raw).ok());
+
+    if subpath.is_empty() {
+        if let Some(manifest) = &manifest {
+            if let Some(types) = manifest
+                .get("types")
+                .or_else(|| manifest.get("typings"))
+                .and_then(|value| value.as_str())
+                && let Some(path) = resolve_candidate_path(package_dir.join(types))
+            {
+                return Some(path);
+            }
+            if let Some(types) = exports_types_entry(manifest, ".")
+                && let Some(path) = resolve_candidate_path(package_dir.join(types))
+            {
+                return Some(path);
+            }
+        }
+        return resolve_candidate_path(package_dir.join("index.d.ts"));
+    }
+
+    if let Some(manifest) = &manifest {
+        let mut export_key = String::from("./");
+        export_key.push_str(subpath);
+        if let Some(types) = exports_types_entry(manifest, export_key.as_str())
+            && let Some(path) = resolve_candidate_path(package_dir.join(types))
+        {
+            return Some(path);
+        }
+    }
+    resolve_candidate_path(package_dir.join(subpath))
+}
+
+/// Find the `types` condition for an `exports` entry; conditions may nest
+/// (`{ "import": { "types": "./x.d.mts", "default": "./x.mjs" } }`).
+fn exports_types_entry(manifest: &serde_json::Value, key: &str) -> Option<String> {
+    fn find_types(value: &serde_json::Value) -> Option<String> {
+        match value {
+            serde_json::Value::Object(map) => {
+                if let Some(types) = map.get("types").and_then(|value| value.as_str()) {
+                    return Some(types.to_compact_string());
+                }
+                map.values().find_map(find_types)
+            }
+            _ => None,
+        }
+    }
+    find_types(manifest.get("exports")?.get(key)?)
 }
 
 fn resolve_at_src_alias(current_file: &Path, specifier: &str) -> Option<PathBuf> {
@@ -426,6 +531,115 @@ mod tests {
         let current = Path::new("/repo/src/components/Child.vue");
 
         assert!(resolve_import_path(current, "vue").is_none());
+    }
+
+    #[test]
+    fn resolves_bare_specifier_through_node_modules_types_field() {
+        let project = temp_project_dir("bare-types-field");
+        let package = project.join("node_modules/some-ui");
+        std::fs::create_dir_all(package.join("dist")).unwrap();
+        std::fs::write(
+            package.join("package.json"),
+            r#"{ "name": "some-ui", "types": "./dist/index.d.ts" }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            package.join("dist/index.d.ts"),
+            "export interface RootProps { autocomplete?: string }",
+        )
+        .unwrap();
+        let components = project.join("src/components");
+        std::fs::create_dir_all(&components).unwrap();
+
+        let current = components.join("Select.vue");
+        let resolved = resolve_import_path(&current, "some-ui");
+        let target = package.join("dist/index.d.ts").canonicalize().unwrap();
+        assert_eq!(resolved.as_deref(), Some(target.as_path()));
+
+        let _ = std::fs::remove_dir_all(project);
+    }
+
+    #[test]
+    fn resolves_scoped_bare_specifier_through_exports_types() {
+        let project = temp_project_dir("bare-exports-types");
+        let package = project.join("node_modules/@scope/pkg");
+        std::fs::create_dir_all(package.join("dist")).unwrap();
+        std::fs::write(
+            package.join("package.json"),
+            r#"{ "name": "@scope/pkg", "exports": { ".": { "import": { "types": "./dist/main.d.mts", "default": "./dist/main.mjs" } } } }"#,
+        )
+        .unwrap();
+        std::fs::write(package.join("dist/main.d.mts"), "export type T = string").unwrap();
+        let src = project.join("src");
+        std::fs::create_dir_all(&src).unwrap();
+
+        let current = src.join("App.vue");
+        let resolved = resolve_import_path(&current, "@scope/pkg");
+        let target = package.join("dist/main.d.mts").canonicalize().unwrap();
+        assert_eq!(resolved.as_deref(), Some(target.as_path()));
+
+        let _ = std::fs::remove_dir_all(project);
+    }
+
+    #[test]
+    fn does_not_follow_bare_specifiers_from_inside_node_modules() {
+        let project = temp_project_dir("bare-from-node-modules");
+        let nested = project.join("node_modules/vue");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::write(
+            nested.join("package.json"),
+            r#"{ "types": "./index.d.ts" }"#,
+        )
+        .unwrap();
+        std::fs::write(nested.join("index.d.ts"), "export type X = 1").unwrap();
+
+        let current = project.join("node_modules/some-ui/dist/index.d.ts");
+        assert!(resolve_import_path(&current, "vue").is_none());
+
+        let _ = std::fs::remove_dir_all(project);
+    }
+
+    #[test]
+    fn collects_props_from_node_modules_package_types() {
+        let project = temp_project_dir("bare-props-collection");
+        let package = project.join("node_modules/some-ui");
+        std::fs::create_dir_all(&package).unwrap();
+        std::fs::write(
+            package.join("package.json"),
+            r#"{ "name": "some-ui", "types": "./index.d.ts" }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            package.join("index.d.ts"),
+            "interface RootProps { autocomplete?: string; dir?: string }\nexport { RootProps }",
+        )
+        .unwrap();
+        let components = project.join("src/components");
+        std::fs::create_dir_all(&components).unwrap();
+
+        let current = components.join("Select.vue");
+        let source = r#"
+import type { RootProps } from "some-ui";
+
+interface SelectProps extends Omit<RootProps, 'dir'> {
+  label?: string;
+}
+
+const props = defineProps<SelectProps>();
+"#;
+
+        let mut ctx = super::ScriptCompileContext::new(source);
+        ctx.collect_imported_types_from_path(source, current.to_string_lossy().as_ref());
+        ctx.analyze();
+
+        assert!(ctx.interfaces.contains_key("RootProps"));
+        assert_eq!(
+            ctx.bindings.bindings.get("autocomplete"),
+            Some(&crate::types::BindingType::Props)
+        );
+        assert_eq!(ctx.bindings.bindings.get("dir"), None);
+
+        let _ = std::fs::remove_dir_all(project);
     }
 
     #[test]
