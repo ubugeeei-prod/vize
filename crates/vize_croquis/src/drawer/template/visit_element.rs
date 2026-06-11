@@ -50,6 +50,7 @@ impl Drawer {
             directive_state.key_expression,
             scope_vars,
         );
+        let v_scope_vars_count = self.enter_element_v_scope(directive_state.v_scope, scope_vars);
 
         if let Some(ref mut usage) = component_usage {
             usage.scope_id = self.croquis.scopes.current_id();
@@ -78,6 +79,7 @@ impl Drawer {
             self.pop_element_vif_guard();
         }
 
+        self.exit_element_v_scope(v_scope_vars_count, scope_vars);
         self.exit_element_for_scope(for_vars_count, scope_vars);
         self.exit_element_slot_scope(slot_vars_count, scope_vars);
 

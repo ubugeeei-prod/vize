@@ -5,11 +5,13 @@
 //! - Identifier extraction from expressions (`identifiers`)
 //! - v-for expression parsing (`v_for`)
 //! - v-slot and inline callback parameter extraction (`slots`)
+//! - petite-vue `v-scope` object-key extraction (`v_scope`)
 
 mod identifiers;
 mod keywords;
 mod slots;
 mod v_for;
+mod v_scope;
 
 pub use identifiers::{
     IdentifierRef, extract_identifier_refs_oxc, extract_identifiers_oxc, strip_js_comments,
@@ -17,6 +19,7 @@ pub use identifiers::{
 pub use keywords::{is_builtin_directive, is_component_tag, is_keyword};
 pub use slots::{extract_inline_callback_params, extract_slot_props};
 pub use v_for::{VForScopeAliases, parse_v_for_expression, parse_v_for_scope_expression};
+pub use v_scope::extract_v_scope_bindings;
 
 use vize_carton::{CompactString, String};
 

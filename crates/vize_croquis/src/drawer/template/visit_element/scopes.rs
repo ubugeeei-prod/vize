@@ -22,10 +22,15 @@ pub(super) type ForScopeInfo = (
     u32,
 );
 
+/// petite-vue `v-scope` info: introduced (name, key_offset) bindings plus the
+/// element subtree span the bindings are visible across.
+pub(super) type VScopeInfo = (SmallVec<[(CompactString, u32); 4]>, u32, u32);
+
 #[derive(Default)]
 pub(super) struct ElementDirectiveState {
     pub(super) slot_scope: Option<SlotScopeInfo>,
     pub(super) for_scope: Option<ForScopeInfo>,
+    pub(super) v_scope: Option<VScopeInfo>,
     pub(super) key_expression: Option<CompactString>,
     pub(super) conditional: Option<(ConditionalKind, Option<CompactString>)>,
 }
@@ -147,6 +152,74 @@ impl Drawer {
         }
 
         for _ in 0..slot_vars_count {
+            scope_vars.pop();
+        }
+        self.croquis.scopes.exit_scope();
+    }
+
+    /// Enter a petite-vue `v-scope` scope, introducing the object's top-level
+    /// keys as bindings for the element subtree.
+    ///
+    /// Modeled on the existing template-scope mechanism (a `v-slot`-kind scope
+    /// with synthetic data) so it nests and shadows like any other template
+    /// scope without adding new public scope types. `v-scope` is petite-vue
+    /// only: when no element carries it, this is never reached and behavior for
+    /// ordinary Vue SFCs is unchanged.
+    pub(super) fn enter_element_v_scope(
+        &mut self,
+        v_scope: Option<VScopeInfo>,
+        scope_vars: &mut Vec<CompactString>,
+    ) -> usize {
+        let Some((bindings, start, end)) = v_scope else {
+            return 0;
+        };
+
+        let count = bindings.len();
+        if count == 0 {
+            return 0;
+        }
+
+        let prop_names: SmallVec<[CompactString; 4]> =
+            bindings.iter().map(|(name, _)| name.clone()).collect();
+
+        self.croquis.scopes.enter_v_slot_scope_with_name_kind(
+            VSlotScopeData {
+                name: CompactString::const_new("v-scope"),
+                props_pattern: None,
+                prop_names: prop_names.iter().cloned().collect(),
+                component: None,
+            },
+            true,
+            start,
+            end,
+        );
+
+        // Point each binding's declaration offset at its key token so
+        // go-to-definition lands on the `v-scope` key.
+        let scope = self.croquis.scopes.current_scope_mut();
+        for (name, key_offset) in &bindings {
+            if let Some(binding) = scope.get_binding_mut(name.as_str()) {
+                binding.declaration_offset = *key_offset;
+            }
+        }
+
+        for name in prop_names {
+            scope_vars.push(name);
+        }
+
+        count
+    }
+
+    pub(super) fn exit_element_v_scope(
+        &mut self,
+        v_scope_vars_count: usize,
+        scope_vars: &mut Vec<CompactString>,
+    ) {
+        if v_scope_vars_count == 0 {
+            return;
+        }
+
+        for _ in 0..v_scope_vars_count {
             scope_vars.pop();
         }
         self.croquis.scopes.exit_scope();

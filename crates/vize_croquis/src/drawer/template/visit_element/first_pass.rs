@@ -1,8 +1,9 @@
 use crate::drawer::Drawer;
 use crate::drawer::helpers::{
-    ConditionalKind, extract_slot_props, is_builtin_directive, parse_v_for_scope_expression,
+    ConditionalKind, extract_slot_props, extract_v_scope_bindings, is_builtin_directive,
+    parse_v_for_scope_expression,
 };
-use vize_carton::{CompactString, profile, smallvec};
+use vize_carton::{CompactString, SmallVec, profile, smallvec};
 use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
 
 use super::bounds::element_subtree_end;
@@ -102,6 +103,25 @@ impl Drawer {
                         props_pattern,
                         dir.loc.start.offset,
                     ));
+                } else if dir.name == "scope" && self.options.analyze_template_scopes {
+                    // petite-vue `v-scope="{ ... }"`: the object's top-level
+                    // keys become in-scope names for this element's subtree.
+                    if let Some(ref exp) = dir.exp {
+                        let content = expression_content(exp);
+                        let base = exp.loc().start.offset;
+                        let bindings: SmallVec<[(CompactString, u32); 4]> = profile!(
+                            "croquis.template.v_scope.extract_keys",
+                            extract_v_scope_bindings(content)
+                        )
+                        .into_iter()
+                        .map(|(name, key_offset)| (name, base + key_offset))
+                        .collect();
+
+                        if !bindings.is_empty() {
+                            let end = *subtree_end.get_or_insert_with(|| element_subtree_end(el));
+                            state.v_scope = Some((bindings, el.loc.start.offset, end));
+                        }
+                    }
                 }
             }
         });

@@ -32,6 +32,103 @@ fn interpolation_guards(template: &str) -> Vec<(std::string::String, Option<std:
         .collect()
 }
 
+/// Draw an (empty) `<script setup>` then the template so undefined-reference
+/// detection is active, returning the names flagged as undefined.
+fn undefined_refs_with_empty_script(template: &str) -> Vec<vize_carton::CompactString> {
+    use vize_armature::parse;
+    use vize_carton::Bump;
+
+    let allocator = Bump::new();
+    let (root, _errors) = parse(&allocator, template);
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    // Marks the script as drawn so `detect_undefined` runs over the template.
+    drawer.draw_script_setup("");
+    drawer.draw_template(&root);
+    let summary = drawer.finish();
+
+    summary
+        .undefined_refs
+        .iter()
+        .map(|r| r.name.clone())
+        .collect()
+}
+
+#[test]
+fn v_scope_keys_resolve_in_subtree() {
+    // petite-vue: `count` and `msg` are introduced by v-scope and must not be
+    // reported as undefined inside the element's subtree.
+    let undefined = undefined_refs_with_empty_script(
+        r#"<div v-scope="{ count: 0, msg: 'x' }">{{ count }} {{ msg }}</div>"#,
+    );
+    assert!(
+        !undefined.iter().any(|n| n == "count" || n == "msg"),
+        "v-scope keys should resolve, got undefined refs: {undefined:?}"
+    );
+}
+
+#[test]
+fn v_scope_does_not_leak_outside_subtree() {
+    // `count` is only in scope inside the v-scope element; the sibling
+    // interpolation must still flag it as undefined.
+    let undefined = undefined_refs_with_empty_script(
+        r#"<div><span v-scope="{ count: 0 }">{{ count }}</span><p>{{ count }}</p></div>"#,
+    );
+    assert_eq!(
+        undefined.iter().filter(|n| n.as_str() == "count").count(),
+        1,
+        "v-scope binding must not leak to siblings, got: {undefined:?}"
+    );
+}
+
+#[test]
+fn v_effect_references_resolve_against_v_scope() {
+    // `v-effect` expressions reference v-scope keys; they must resolve.
+    let undefined = undefined_refs_with_empty_script(
+        r#"<div v-scope="{ count: 0 }" v-effect="count > 0"></div>"#,
+    );
+    assert!(
+        !undefined.iter().any(|n| n == "count"),
+        "v-effect should see v-scope key, got: {undefined:?}"
+    );
+}
+
+#[test]
+fn nested_v_scope_shadows_outer() {
+    use vize_armature::parse;
+    use vize_carton::Bump;
+
+    let template = r#"<div v-scope="{ count: 0 }"><span v-scope="{ count: 1, msg: 'x' }">{{ count }}{{ msg }}</span></div>"#;
+
+    let allocator = Bump::new();
+    let (root, _errors) = parse(&allocator, template);
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    drawer.draw_script_setup("");
+    drawer.draw_template(&root);
+    let summary = drawer.finish();
+
+    // Offset of the inner `{{ count }}` interpolation.
+    let inner_count_offset = template.find("{{ count }}").unwrap() as u32 + 3;
+    let visible = summary.scopes.bindings_visible_at(inner_count_offset);
+
+    // Inner v-scope's `count` (the first occurrence) shadows the outer one and
+    // its declaration offset points at the inner key, not the outer.
+    let inner_key_offset = template.find("{ count: 1").unwrap() as u32 + "{ ".len() as u32;
+    let count_binding = visible
+        .iter()
+        .find(|(name, _, _)| *name == "count")
+        .expect("count must be visible at inner interpolation");
+    assert_eq!(
+        count_binding.1.declaration_offset, inner_key_offset,
+        "inner v-scope count should shadow outer; visible bindings: {visible:?}"
+    );
+
+    // `msg` from the inner scope is also visible.
+    assert!(
+        visible.iter().any(|(name, _, _)| *name == "msg"),
+        "inner v-scope msg should be visible: {visible:?}"
+    );
+}
+
 #[test]
 fn flat_v_else_branch_gets_negated_guard() {
     // Regression for vuejs/language-tools#5850 / #3787-style narrowing: when the
