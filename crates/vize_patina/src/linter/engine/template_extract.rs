@@ -4,7 +4,9 @@
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
-use super::tag_scan::{closing_tag_name_at, find_closing_tag, find_tag_end, tag_name_at};
+use super::tag_scan::{
+    closing_tag_name_at, find_closing_tag, find_start_tag_end, find_tag_end, tag_name_at,
+};
 
 /// Ultra-fast template extraction using memchr for SIMD-accelerated search.
 #[inline]
@@ -36,18 +38,21 @@ pub(crate) fn extract_template_fast(source: &str) -> Option<(String, u32)> {
         }
 
         // Check if it's <template or </template
-        if tag_name_at(bytes, next_lt)
-            .is_some_and(|(name, _)| name.eq_ignore_ascii_case(b"template"))
-        {
-            // Check if self-closing
-            if let Some(gt) = memchr::memchr(b'>', &bytes[next_lt..]) {
-                let tag_end_pos = next_lt + gt;
-                if tag_end_pos > 0 && bytes[tag_end_pos - 1] != b'/' {
+        if let Some((name, _)) = tag_name_at(bytes, next_lt) {
+            // Any start tag is skipped to its real end. Doing so quote-aware
+            // means a `<` or `</template>` embedded in a quoted attribute value
+            // (e.g. `<div title="</template>">`) is consumed as part of this
+            // tag and never mis-counted as a real tag of its own.
+            let is_template = name.eq_ignore_ascii_case(b"template");
+            if let Some(tag_end_pos) = find_start_tag_end(bytes, next_lt) {
+                if is_template && bytes[tag_end_pos - 1] != b'/' {
                     depth += 1;
                 }
                 pos = tag_end_pos + 1;
-            } else {
+            } else if is_template {
                 pos = next_lt + 9;
+            } else {
+                pos = next_lt + 1;
             }
         } else if closing_tag_name_at(bytes, next_lt)
             .is_some_and(|(name, _)| name.eq_ignore_ascii_case(b"template"))
@@ -157,6 +162,53 @@ mod tests {
         assert_eq!(
             extract(source).as_deref(),
             Some("<!-- <template> --><div />")
+        );
+    }
+
+    #[test]
+    fn extract_template_fast_ignores_closing_tag_in_double_quoted_attr() {
+        // `</template>` inside a double-quoted attribute value must not close
+        // the block early.
+        let source = "<template><div title=\"</template>\"><span /></div></template>";
+
+        assert_eq!(
+            extract(source).as_deref(),
+            Some("<div title=\"</template>\"><span /></div>")
+        );
+    }
+
+    #[test]
+    fn extract_template_fast_ignores_closing_tag_in_single_quoted_attr() {
+        // Same for single-quoted attribute values.
+        let source = "<template><div title='</template>'><span /></div></template>";
+
+        assert_eq!(
+            extract(source).as_deref(),
+            Some("<div title='</template>'><span /></div>")
+        );
+    }
+
+    #[test]
+    fn extract_template_fast_ignores_opening_tag_in_quoted_attr() {
+        // A `<template>` substring in a quoted attribute value must not inflate
+        // the nesting depth and swallow the real closing tag.
+        let source = "<template><div data-x=\"<template>\" /></template><script>x</script>";
+
+        assert_eq!(
+            extract(source).as_deref(),
+            Some("<div data-x=\"<template>\" />")
+        );
+    }
+
+    #[test]
+    fn extract_template_fast_handles_gt_in_quoted_attr() {
+        // A `>` inside a quoted attribute value is not the tag's real end, so
+        // the inner `</template>` substring after it stays scoped to the tag.
+        let source = "<template><div title=\"a > </template>\"><span /></div></template>";
+
+        assert_eq!(
+            extract(source).as_deref(),
+            Some("<div title=\"a > </template>\"><span /></div>")
         );
     }
 
