@@ -115,9 +115,16 @@ jobs:
           path: base/target/ci-opt/vize
           key: ${{ runner.os }}-benchmark-base-cli-ci-opt-${{ github.event.pull_request.base.sha }}
 
+      # The ci-opt profile is also injected via --config so the base checkout
+      # builds even when it predates the profile's Cargo.toml definition, and
+      # both sides are guaranteed to measure under identical settings.
       - name: Build base CLI
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-base-cli.outputs.cache-hit != 'true'
-        run: cargo build --manifest-path base/Cargo.toml --profile ci-opt -p vize
+        run: >-
+          cargo build --manifest-path base/Cargo.toml --profile ci-opt -p vize
+          --config 'profile.ci-opt.inherits="release"'
+          --config 'profile.ci-opt.lto="thin"'
+          --config 'profile.ci-opt.codegen-units=16'
 
       - name: Cache head CLI
         id: cache-head-cli
@@ -129,7 +136,11 @@ jobs:
 
       - name: Build head CLI
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-head-cli.outputs.cache-hit != 'true'
-        run: cargo build --manifest-path head/Cargo.toml --profile ci-opt -p vize
+        run: >-
+          cargo build --manifest-path head/Cargo.toml --profile ci-opt -p vize
+          --config 'profile.ci-opt.inherits="release"'
+          --config 'profile.ci-opt.lto="thin"'
+          --config 'profile.ci-opt.codegen-units=16'
 
       - name: Generate benchmark input
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success'
