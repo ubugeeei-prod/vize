@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/petite_vue/valid_v_effect.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "petite-vue/valid-v-effect",
+        severity: Error,
+        message: "`v-effect` has no expression, so it registers an effect that does nothing",
+        start: 70,
+        end: 78,
+        help: Some(
+            "Give v-effect a statement to run as a reactive side effect, such as v-effect=\"el.textContent = count\", or remove the empty directive.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
