@@ -644,6 +644,91 @@ const color = 'red'
         let _ = DefinitionService::definition(&ctx);
     }
 
+    // A vue-class-component SFC: a decorated class default export whose
+    // members (fields, getters, methods, `@Prop`s) are the template scope.
+    const CLASS_COMPONENT_SFC: &str = r#"<script lang="ts">
+import { Vue, Component, Prop } from 'vue-property-decorator'
+@Component
+export default class Counter extends Vue {
+  count = 0
+  @Prop() readonly title!: string
+  get doubled() { return this.count * 2 }
+  inc() { this.count++ }
+}
+</script>
+<template><p>{{ count }} {{ title }} {{ doubled }} {{ inc }}</p></template>
+"#;
+
+    fn open_doc(state: &ServerState, source: &str, name: &str) -> Url {
+        let dir = tempfile::tempdir().unwrap();
+        // Leak the tempdir so the file outlives the call; tests are short-lived.
+        let path = Box::leak(Box::new(dir)).path().join(name);
+        fs::write(&path, source).unwrap();
+        let uri = Url::from_file_path(&path).unwrap();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+        uri
+    }
+
+    /// Class-component members are auto-detected by AST shape, so go-to-definition
+    /// on a class member used in the template must resolve to its class-body
+    /// declaration with **no** `optionsApi` flag enabled (plain Vue 3 project).
+    #[test]
+    fn definition_resolves_class_component_member_in_template_without_flag() {
+        let state = ServerState::new();
+        let uri = open_doc(&state, CLASS_COMPONENT_SFC, "Counter.vue");
+        assert!(
+            !state.options_api_enabled(),
+            "class-component support must not require the optionsApi flag"
+        );
+
+        for (member, decl) in [
+            ("count", "count = 0"),
+            ("doubled", "doubled()"),
+            ("inc", "inc()"),
+            ("title", "title!"),
+        ] {
+            let needle = format!("{member} }}}}");
+            let offset = CLASS_COMPONENT_SFC.find(&needle).unwrap();
+            let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+            let location = scalar_location(
+                DefinitionService::definition(&ctx)
+                    .unwrap_or_else(|| panic!("no definition for class member `{member}`")),
+            );
+            assert_eq!(location.uri, uri);
+            let decl_offset = CLASS_COMPONENT_SFC.find(decl).unwrap();
+            let (line, _) = crate::ide::offset_to_position(CLASS_COMPONENT_SFC, decl_offset);
+            assert_eq!(
+                location.range.start.line, line,
+                "definition for `{member}` should point at its class-body declaration"
+            );
+        }
+    }
+
+    /// `find_analyzed_binding_location` self-gates: Options API object bindings
+    /// must remain opt-in (flag off => no resolution), so the zero-cost
+    /// `<script setup>` default path is unaffected.
+    #[test]
+    fn definition_options_api_data_requires_flag() {
+        let source = r#"<script>
+export default {
+  data() { return { greeting: 'hello' } },
+}
+</script>
+<template><p>{{ greeting }}</p></template>
+"#;
+        let state = ServerState::new();
+        let uri = open_doc(&state, source, "Greeting.vue");
+        let offset = source.find("greeting }}").unwrap();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        assert!(
+            script::find_analyzed_binding_location(&ctx, "greeting").is_none(),
+            "Options API data() binding must not resolve while optionsApi is disabled"
+        );
+    }
+
     fn scalar_location(response: GotoDefinitionResponse) -> Location {
         match response {
             GotoDefinitionResponse::Scalar(location) => location,

@@ -46,9 +46,9 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
         return Some(def);
     }
 
-    if ctx.state.options_api_enabled()
-        && let Some(location) = super::script::find_analyzed_binding_location(ctx, &word)
-    {
+    // Resolve Options API bindings (when enabled) and class-component members
+    // (auto-detected by AST shape, no flag) to their `<script>` declaration.
+    if let Some(location) = super::script::find_analyzed_binding_location(ctx, &word) {
         return Some(GotoDefinitionResponse::Scalar(location));
     }
 

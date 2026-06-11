@@ -76,16 +76,26 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
         }
     }
 
-    if ctx.state.options_api_enabled()
-        && let Some(location) = find_analyzed_binding_location(ctx, &word)
-    {
+    // Options API object bindings (when enabled) and class-component members
+    // (always, auto-detected by shape) resolve through Croquis analysis.
+    if let Some(location) = find_analyzed_binding_location(ctx, &word) {
         return Some(GotoDefinitionResponse::Scalar(location));
     }
 
     None
 }
 
-/// Find a binding location from Croquis analysis, including opt-in Options API spans.
+/// Find a binding location from Croquis analysis.
+///
+/// Resolves three families of `<script>` template bindings:
+/// - opt-in Options API spans (`data`/`computed`/`methods`/`props`/`inject`),
+///   gated on [`ServerState::options_api_enabled`];
+/// - class-component members (vue-class-component / vue-property-decorator),
+///   which Croquis records shape-based with **no flag** — so they resolve in
+///   plain Vue 3 projects that never enable the Options API mode.
+///
+/// Returns `None` for ordinary `<script setup>` files without either signal,
+/// leaving the raw-text binding lookup untouched.
 pub(crate) fn find_analyzed_binding_location(ctx: &IdeContext, word: &str) -> Option<Location> {
     use vize_atelier_sfc::{
         SfcParseOptions,
@@ -96,6 +106,7 @@ pub(crate) fn find_analyzed_binding_location(ctx: &IdeContext, word: &str) -> Op
         },
         parse_sfc,
     };
+    use vize_croquis::ComponentShape;
 
     let descriptor = parse_sfc(
         &ctx.content,
@@ -107,13 +118,24 @@ pub(crate) fn find_analyzed_binding_location(ctx: &IdeContext, word: &str) -> Op
     .ok()?;
 
     let croquis_options = SfcCroquisOptions::full();
+    let options_api = ctx.state.options_api_enabled();
     let analysis = if ctx.state.legacy_vue2_enabled() {
         analyze_sfc_descriptor_with_context_legacy_vue2(&descriptor, None, croquis_options)
-    } else if ctx.state.options_api_enabled() {
+    } else if options_api {
         analyze_sfc_descriptor_with_context_options_api(&descriptor, None, croquis_options)
     } else {
         analyze_sfc_descriptor_with_context(&descriptor, None, croquis_options)
     };
+
+    // Class-component members are collected unconditionally (auto-detected by
+    // AST shape); Options API object bindings only when the mode is enabled.
+    // Without either signal, defer to the caller's raw-text lookup so plain
+    // `<script setup>` go-to-definition keeps its existing behavior.
+    let is_class = analysis.croquis.component_shape == ComponentShape::ClassApi;
+    if !options_api && !is_class {
+        return None;
+    }
+
     let &(start, end) = analysis.croquis.binding_spans.get(word)?;
     if end <= start {
         return None;

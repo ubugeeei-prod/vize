@@ -396,4 +396,39 @@ mod options_api_tests {
              (opt-in keeps the default <script setup> path zero cost); got {labels:?}"
         );
     }
+
+    // A vue-class-component SFC. Class members are auto-detected by AST shape,
+    // so they populate template completion with NO optionsApi flag.
+    const CLASS_COMPONENT_SFC: &str = "<script lang=\"ts\">\nimport { Vue, Component, Prop } from 'vue-property-decorator'\n@Component\nexport default class Counter extends Vue {\n  count = 0\n  @Prop() readonly title!: string\n  get doubled() { return this.count * 2 }\n  inc() { this.count++ }\n}\n</script>\n<template>\n  <p>{{ count }}</p>\n</template>\n";
+
+    fn class_component_labels() -> Vec<String> {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///counter.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            CLASS_COMPONENT_SFC.to_string(),
+            1,
+            "vue".to_string(),
+        );
+        let offset = CLASS_COMPONENT_SFC.find("count }}").unwrap();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        // optionsApi stays disabled: class components require no flag.
+        assert!(!ctx.state.options_api_enabled());
+        analyzed_template_binding_completions(&ctx, true)
+            .into_iter()
+            .map(|item| item.label)
+            .collect()
+    }
+
+    #[test]
+    fn class_component_members_completed_without_flag() {
+        let labels = class_component_labels();
+        for member in ["count", "title", "doubled", "inc"] {
+            assert!(
+                labels.iter().any(|label| label == member),
+                "class-component member `{member}` should be offered as a template \
+                 completion with no optionsApi flag; got {labels:?}"
+            );
+        }
+    }
 }
