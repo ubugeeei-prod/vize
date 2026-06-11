@@ -84,16 +84,17 @@ jobs:
     # the rest. `fail-fast: false` keeps every crate reported even after one
     # fails.
     #
-    # Each entry flags accidental breaking changes to a published crate's
-    # public API by comparing against the latest baseline on crates.io. Keep
-    # this list in sync with the publishable workspace crates that have at
-    # least one version on crates.io.
+    # Each entry flags accidental breaking changes a change itself introduces:
+    # pull requests are compared against their base commit and pushes to main
+    # against the previous main commit, so a PR is never failed for API
+    # changes that already merged. Whether the accumulated delta needs a
+    # version bump is a release-time concern (release tooling owns it), not a
+    # per-PR gate against the crates.io baseline.
     #
-    # cargo-semver-checks fails with "not found in registry" for crates that
-    # have no baseline yet, so a newly publishable crate must land on
-    # crates.io first, then be added here in a follow-up. `vize_croquis_cf`
-    # is currently in that state and is intentionally omitted until its
-    # first publish.
+    # Keep this list in sync with the publishable workspace crates.
+    # `vize_croquis_cf` is intentionally omitted until its first publish so
+    # the registry fallback (used when no baseline rev is available) cannot
+    # hit "not found in registry".
     strategy:
       fail-fast: false
       matrix:
@@ -113,6 +114,9 @@ jobs:
           - vize_relief
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          # cargo-semver-checks materializes the baseline rev from git history.
+          fetch-depth: 0
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
@@ -126,7 +130,15 @@ jobs:
         with:
           tool: cargo-semver-checks
       - name: Check public API SemVer compatibility
-        run: cargo semver-checks check-release --package ${{ matrix.crate }}
+        env:
+          BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
+        run: |
+          case "$BASELINE_REV" in 0000000000000000000000000000000000000000) BASELINE_REV="";; esac
+          if [ -n "$BASELINE_REV" ]; then
+            cargo semver-checks check-release --package ${{ matrix.crate }} --baseline-rev "$BASELINE_REV"
+          else
+            cargo semver-checks check-release --package ${{ matrix.crate }}
+          fi
 
   security-audit:
     runs-on: blacksmith-32vcpu-ubuntu-2404

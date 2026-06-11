@@ -12,7 +12,11 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  VIZE_BENCH_FILE_COUNT: 300
+  # 1000 files keeps the fastest lane (compile, ~200us/file single-threaded)
+  # above ~200ms so runner thermal drift between interleaved runs stays well
+  # under the 5% threshold; at 300 files the lane ran ~65ms and perf-neutral
+  # PRs tripped the budget on drift alone (#1411: +5.27%).
+  VIZE_BENCH_FILE_COUNT: 1000
   # Optimized (ci-opt) binaries run fast enough that 5 runs / 1 warmup left the
   # gate's noise floor above the 5% threshold: an identical-source PR (#1395)
   # tripped the budget at +5.12% on the compile lane. More samples tighten the
@@ -123,23 +127,44 @@ jobs:
       # builds even when it predates the profile's Cargo.toml definition, and
       # both sides are guaranteed to measure under identical settings.
       - name: Build base CLI
+        id: build-base
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-base-cli.outputs.cache-hit != 'true'
+        continue-on-error: true
         run: >-
           cargo build --manifest-path base/Cargo.toml --profile ci-opt -p vize
           --config 'profile.ci-opt.inherits="release"'
           --config 'profile.ci-opt.lto="thin"'
           --config 'profile.ci-opt.codegen-units=16'
 
+      # A base that does not compile (e.g. a hotfix PR for a broken main) cannot
+      # be benchmarked; skip the comparison instead of hard-failing the gate.
+      - name: Skip benchmark when base CLI cannot be built
+        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome == 'failure'
+        run: |
+          {
+            echo "## PR Benchmark"
+            echo
+            echo "Base CLI could not be built, so the benchmark was skipped for this PR."
+            echo
+            echo "| status | reason |"
+            echo "| --- | --- |"
+            echo "| skipped | base checkout does not compile |"
+          } > benchmark-summary.md
+          printf '{"skipped":true,"reason":"base_not_buildable","base":"%s","head":"%s"}\n' \
+            "${{ github.event.pull_request.base.sha }}" \
+            "${{ github.event.pull_request.head.sha }}" \
+            > benchmark-results.json
+
       - name: Cache head CLI
         id: cache-head-cli
-        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success'
+        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: head/target/ci-opt/vize
           key: ${{ runner.os }}-benchmark-head-cli-ci-opt-${{ github.event.pull_request.head.sha }}
 
       - name: Build head CLI
-        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-head-cli.outputs.cache-hit != 'true'
+        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-head-cli.outputs.cache-hit != 'true' && steps.build-base.outcome != 'failure'
         run: >-
           cargo build --manifest-path head/Cargo.toml --profile ci-opt -p vize
           --config 'profile.ci-opt.inherits="release"'
@@ -147,12 +172,12 @@ jobs:
           --config 'profile.ci-opt.codegen-units=16'
 
       - name: Generate benchmark input
-        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success'
+        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         working-directory: head
         run: node bench/generate.mjs "$VIZE_BENCH_FILE_COUNT"
 
       - name: Compare base and head
-        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success'
+        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         run: |
           node head/bench/compare-pr.mjs \
             --input "$GITHUB_WORKSPACE/head/bench/__in__" \
