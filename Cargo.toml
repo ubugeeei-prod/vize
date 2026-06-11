@@ -122,6 +122,9 @@ sha2 = "=0.11.0"
 htmlize = { version = "=1.1.0", features = ["unescape"] }
 libc = "=0.2.186"
 
+# Allocator
+mimalloc = "=0.1.52"
+
 # CSS
 lightningcss = "=1.0.0-alpha.71"
 

@@ -19,8 +19,9 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use vize_carton::String;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_carton::profiler::{allocation_snapshot, global_profiler};
+use vize_carton::profiler::global_profiler;
 
+use crate::profile_support;
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
@@ -345,7 +346,7 @@ pub(crate) fn run(args: BuildArgs) {
     // Profile breakdown
     if args.profile {
         let profiler = global_profiler();
-        let allocation_summary = allocation_snapshot();
+        let allocation_summary = profile_support::allocation_snapshot();
         let counter_summary = profiler.counter_summary();
         let operation_summary = profiler.summary();
         profiler.disable();
@@ -462,7 +463,7 @@ pub(crate) fn run(args: BuildArgs) {
             throughput_bytes: Some(total_bytes),
             operations: Some(&operation_summary),
             counters: Some(&counter_summary),
-            allocations: Some(allocation_summary),
+            allocations: allocation_summary,
             recommendations: &recommendations,
         };
         print_profile_report(&report);

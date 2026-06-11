@@ -11,13 +11,10 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
-use vize_carton::{
-    cstr, profile,
-    profiler::{allocation_snapshot, global_profiler},
-};
+use vize_carton::{cstr, profile, profiler::global_profiler};
 use vize_glyph::{Allocator, FormatOptions, format_sfc_with_allocator};
 
-use crate::config;
+use crate::{config, profile_support};
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
@@ -296,7 +293,7 @@ pub fn run(args: FmtArgs) {
             errored
         );
         let profiler = global_profiler();
-        let allocation_summary = allocation_snapshot();
+        let allocation_summary = profile_support::allocation_snapshot();
         let counter_summary = profiler.counter_summary();
         let operation_summary = profiler.summary();
         profiler.disable();
@@ -311,7 +308,7 @@ pub fn run(args: FmtArgs) {
             throughput_bytes: Some(total_bytes),
             operations: Some(&operation_summary),
             counters: Some(&counter_summary),
-            allocations: Some(allocation_summary),
+            allocations: allocation_summary,
             recommendations: &recommendations,
         };
         print_profile_report(&report);

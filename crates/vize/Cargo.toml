@@ -20,6 +20,7 @@ path = "src/lib.rs"
 default = ["glyph", "maestro"]
 glyph = ["dep:vize_glyph", "vize_maestro?/glyph"]
 maestro = ["dep:vize_maestro"]
+profiling = []
 # Opt-in legacy Vue (v0 / v1 / v2) support. Off by default so the Vue 3 binary
 # never activates or compiles it; turns on the legacy feature across the stack.
 legacy = ["vize_canon/legacy", "vize_maestro?/legacy"]
@@ -72,6 +73,9 @@ oxc_transformer = { workspace = true }
 
 # Home/config directory detection
 dirs.workspace = true
+
+# Process allocator for native CLI hot paths
+mimalloc.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

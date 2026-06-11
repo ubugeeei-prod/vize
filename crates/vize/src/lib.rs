@@ -21,6 +21,7 @@
 
 mod commands;
 mod config;
+mod profile_support;
 
 /// Shared native CLI entrypoint.
 pub mod cli;

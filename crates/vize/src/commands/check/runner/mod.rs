@@ -15,11 +15,9 @@ use serde_json::{Map, Value};
 use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, batch::TypeChecker as BatchTypeCheckerTrait,
 };
-use vize_carton::{
-    FxHashSet, String, cstr,
-    profiler::{allocation_snapshot, global_profiler},
-};
+use vize_carton::{FxHashSet, String, cstr, profiler::global_profiler};
 
+use crate::profile_support;
 use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
 
 use super::{
@@ -431,7 +429,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
 
     if args.profile {
         let profiler = global_profiler();
-        let allocation_summary = allocation_snapshot();
+        let allocation_summary = profile_support::allocation_snapshot();
         let counter_summary = profiler.counter_summary();
         let operation_summary = profiler.summary();
         profiler.disable();
@@ -515,7 +513,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             throughput_bytes: Some(virtual_bytes),
             operations: Some(&operation_summary),
             counters: Some(&counter_summary),
-            allocations: Some(allocation_summary),
+            allocations: allocation_summary,
             recommendations: &recommendations,
         };
         print_profile_report(&report);

@@ -12,14 +12,14 @@ use std::{
     time::{Duration, Instant},
 };
 
-use vize_carton::{
-    String, cstr, profile,
-    profiler::{allocation_snapshot, global_profiler},
-};
+use vize_carton::{String, cstr, profile, profiler::global_profiler};
 
-use crate::commands::check::{
-    CheckArgs, JsonRpcResponse, ServerCheckResult,
-    reporting::{JsonFileResult, JsonOutput},
+use crate::{
+    commands::check::{
+        CheckArgs, JsonRpcResponse, ServerCheckResult,
+        reporting::{JsonFileResult, JsonOutput},
+    },
+    profile_support,
 };
 
 use super::{collect::collect_vue_files, diagnostics::save_virtual_ts_for_path, display_path};
@@ -273,7 +273,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     );
     if args.profile {
         let profiler = global_profiler();
-        let allocation_summary = allocation_snapshot();
+        let allocation_summary = profile_support::allocation_snapshot();
         let counter_summary = profiler.counter_summary();
         let operation_summary = profiler.summary();
         profiler.disable();
@@ -326,7 +326,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
             throughput_bytes: None,
             operations: Some(&operation_summary),
             counters: Some(&counter_summary),
-            allocations: Some(allocation_summary),
+            allocations: allocation_summary,
             recommendations: &recommendations,
         };
         print_profile_report(&report);

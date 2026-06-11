@@ -20,12 +20,10 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use std::time::Instant;
-use vize_carton::{
-    String, ToCompactString, cstr, profile,
-    profiler::{allocation_snapshot, global_profiler},
-};
+use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_patina::{HelpLevel, LintPreset, Linter, OutputFormat, format_results, format_summary};
 
+use crate::profile_support;
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
@@ -248,11 +246,11 @@ pub fn run(args: LintArgs) {
     let output_time = output_start.elapsed();
     let (operation_summary, counter_summary, allocation_summary) = if args.profile {
         let profiler = global_profiler();
-        let allocation = allocation_snapshot();
+        let allocation = profile_support::allocation_snapshot();
         let counters = profiler.counter_summary();
         let operations = profiler.summary();
         profiler.disable();
-        (Some(operations), Some(counters), Some(allocation))
+        (Some(operations), Some(counters), allocation)
     } else {
         (None, None, None)
     };
