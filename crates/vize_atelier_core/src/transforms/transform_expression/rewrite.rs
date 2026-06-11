@@ -9,6 +9,8 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::String;
 
+use crate::ast::SourceLocation;
+use crate::errors::ErrorCode;
 use crate::transform::TransformContext;
 
 use super::{
@@ -91,6 +93,56 @@ pub(super) fn rewrite_props_aliases(code: String, ctx: &TransformContext<'_>) ->
 pub(crate) struct RewriteResult {
     pub(crate) code: String,
     pub(crate) used_unref: bool,
+    /// Set when the expression could not be parsed at all and the raw
+    /// content was passed through. Holds the parser's error detail so the
+    /// caller can emit a compile diagnostic (mirroring `@vue/compiler-core`'s
+    /// `X_INVALID_EXPRESSION`). `None` on every successful rewrite path.
+    pub(crate) parse_error: Option<String>,
+}
+
+/// Emit an `InvalidExpression` compile diagnostic for an expression that
+/// failed to parse, matching `@vue/compiler-core`'s
+/// `Error parsing JavaScript expression: <detail>` message format.
+pub(super) fn report_invalid_expression(
+    ctx: &mut TransformContext<'_>,
+    detail: &str,
+    loc: &SourceLocation,
+) {
+    const PREFIX: &str = "Error parsing JavaScript expression: ";
+    let mut message = String::with_capacity(PREFIX.len() + detail.len());
+    message.push_str(PREFIX);
+    message.push_str(detail);
+    ctx.on_error_with_message(ErrorCode::InvalidExpression, message, Some(loc.clone()));
+}
+
+/// Returns true when `content` parses as a TypeScript expression or program.
+///
+/// Only consulted on the parse-failure path for `is_ts` templates: when the
+/// TypeScript-stripping pass falls back to the original source, the plain-JS
+/// parse below can fail even though the expression is valid TypeScript that
+/// the official compiler (babel with the `typescript` plugin) accepts. The
+/// parity rule is that vize must not reject what the official compiler
+/// accepts, so such expressions keep the silent passthrough behavior.
+fn parses_as_typescript(content: &str) -> bool {
+    let source_type = SourceType::ts().with_module(true);
+
+    let expr_allocator = OxcAllocator::default();
+    let mut wrapped = String::with_capacity(content.len() + 2);
+    wrapped.push('(');
+    wrapped.push_str(content);
+    wrapped.push(')');
+    if Parser::new(&expr_allocator, &wrapped, source_type)
+        .parse_expression()
+        .is_ok()
+    {
+        return true;
+    }
+
+    let program_allocator = OxcAllocator::default();
+    Parser::new(&program_allocator, content, source_type)
+        .parse()
+        .errors
+        .is_empty()
 }
 
 /// Rewrite an expression string, prefixing identifiers with `_ctx.` where needed
@@ -106,6 +158,7 @@ pub(crate) fn rewrite_expression(
         return RewriteResult {
             code: String::new(content),
             used_unref: false,
+            parse_error: None,
         };
     }
     // First, if this is TypeScript, strip type annotations
@@ -171,9 +224,10 @@ pub(crate) fn rewrite_expression(
             RewriteResult {
                 code: rewrite_props_aliases(result, ctx),
                 used_unref,
+                parse_error: None,
             }
         }
-        Err(_) => {
+        Err(expression_errors) => {
             // Expression parsing failed - try parsing as a program (multi-statement handlers)
             let oxc_allocator2 = OxcAllocator::default();
             let parser2 = Parser::new(&oxc_allocator2, &js_content, source_type);
@@ -214,11 +268,17 @@ pub(crate) fn rewrite_expression(
                 return RewriteResult {
                     code: rewrite_props_aliases(result, ctx),
                     used_unref,
+                    parse_error: None,
                 };
             }
 
             // Program parsing also failed - fallback to simple identifier check
+            let mut parse_error = None;
             let code: String = if is_simple_identifier(&js_content) {
+                // Reserved words (`class`, `default`, …) fail to parse as an
+                // expression but are still rewritable identifiers. Vue treats
+                // them through its simple-identifier fast path without ever
+                // parsing, so no diagnostic is emitted here either.
                 if let Some(prefix) = get_identifier_prefix(&js_content, ctx) {
                     let mut s = String::with_capacity(prefix.len() + js_content.len());
                     s.push_str(prefix);
@@ -234,11 +294,26 @@ pub(crate) fn rewrite_expression(
                     js_content
                 }
             } else {
+                // The raw content is passed through unprefixed. The official
+                // compiler reports `X_INVALID_EXPRESSION` here, so surface the
+                // parser detail for the caller to emit a diagnostic — unless
+                // the original source is valid TypeScript that only vize's
+                // TS-stripping fallback failed to lower (the official compiler
+                // accepts it, so vize must not reject it).
+                if !ctx.options.is_ts || !parses_as_typescript(content) {
+                    parse_error = Some(
+                        expression_errors
+                            .first()
+                            .map(|error| String::new(error.message.as_ref()))
+                            .unwrap_or_else(|| String::new("invalid expression")),
+                    );
+                }
                 js_content
             };
             RewriteResult {
                 code: rewrite_props_aliases(code, ctx),
                 used_unref: false,
+                parse_error,
             }
         }
     }

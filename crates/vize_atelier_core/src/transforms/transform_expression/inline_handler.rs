@@ -14,7 +14,7 @@ use super::{
     clone_expression, is_event_handler_reference_expression, is_function_expression,
     normalize_expression,
     prefix::{get_identifier_prefix, is_simple_identifier},
-    rewrite::{rewrite_expression, rewrite_props_aliases},
+    rewrite::{report_invalid_expression, rewrite_expression, rewrite_props_aliases},
     typescript::strip_typescript_from_expression,
 };
 
@@ -54,6 +54,9 @@ pub fn process_inline_handler<'a>(
             let result = rewrite_expression(content, ctx, false);
             if result.used_unref {
                 ctx.helper(crate::ast::RuntimeHelper::Unref);
+            }
+            if let Some(detail) = &result.parse_error {
+                report_invalid_expression(ctx, detail, &normalized.loc);
             }
             return ExpressionNode::Simple(Box::new_in(
                 SimpleExpressionNode {
@@ -107,6 +110,9 @@ pub fn process_inline_handler<'a>(
                 if result.used_unref {
                     ctx.helper(crate::ast::RuntimeHelper::Unref);
                 }
+                if let Some(detail) = &result.parse_error {
+                    report_invalid_expression(ctx, detail, &normalized.loc);
+                }
                 result.code
             }
         } else if ctx.options.is_ts {
@@ -138,6 +144,9 @@ pub fn process_inline_handler<'a>(
         let result = rewrite_expression(content, ctx, false);
         if result.used_unref {
             ctx.helper(crate::ast::RuntimeHelper::Unref);
+        }
+        if let Some(detail) = &result.parse_error {
+            report_invalid_expression(ctx, detail, &normalized.loc);
         }
         result.code
     } else if ctx.options.is_ts {

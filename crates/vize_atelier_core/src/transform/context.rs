@@ -384,6 +384,18 @@ impl<'a> TransformContext<'a> {
         self.errors.push(CompilerError::new(code, loc));
     }
 
+    /// Report an error with a custom message (e.g. parser details appended
+    /// to the code's default message, mirroring `@vue/compiler-core`).
+    pub fn on_error_with_message(
+        &mut self,
+        code: ErrorCode,
+        message: impl Into<CompactString>,
+        loc: Option<SourceLocation>,
+    ) {
+        self.errors
+            .push(CompilerError::with_message(code, message, loc));
+    }
+
     /// Replace current node with a new node
     pub fn replace_node(&mut self, new_node: TemplateChildNode<'a>) {
         if let Some(parent) = &self.parent {

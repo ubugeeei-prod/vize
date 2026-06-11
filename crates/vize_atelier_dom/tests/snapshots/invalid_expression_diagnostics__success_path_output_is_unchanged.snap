@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_dom/tests/invalid_expression_diagnostics.rs
+expression: result.code.as_str()
+---
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_ctx.show)
+    ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(_ctx.list, (item) => {
+      return (_openBlock(), _createElementBlock("div", { onClick: $event => (_ctx.go(item)) }, _toDisplayString(item.name), 9 /* TEXT, PROPS */, ["onClick"]))
+    }), 256 /* UNKEYED_FRAGMENT */))
+    : _createCommentVNode("v-if", true)
+}

@@ -133,7 +133,7 @@ fn compile_ssr_inner<'a>(
     };
     let analysis = options.croquis.map(|c| &*allocator.alloc(*c));
     let template_syntax_quirks = template_syntax.is_quirks();
-    profile!(
+    let transform_errors = profile!(
         "atelier.ssr.template.transform",
         if template_syntax_quirks {
             transform_with_template_syntax_quirks(allocator, &mut root, transform_opts, analysis)
@@ -142,11 +142,17 @@ fn compile_ssr_inner<'a>(
         }
     );
 
+    // Surface transform diagnostics (e.g. invalid expressions) alongside
+    // parse errors instead of dropping them — same channel as the DOM
+    // compiler.
+    let mut errors = errors.to_vec();
+    errors.extend(transform_errors);
+
     // SSR codegen
     let codegen_ctx = SsrCodegenContext::new(allocator, &codegen_options);
     let codegen_result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
 
-    (root, errors.to_vec(), codegen_result)
+    (root, errors, codegen_result)
 }
 
 /// Get the namespace for an element based on its parent

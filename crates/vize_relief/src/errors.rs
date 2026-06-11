@@ -106,12 +106,15 @@ pub enum ErrorCode {
     VModelOnProps = 46,
     VModelArgOnElement = 47,
     VShowNoExpression = 48,
+    /// A template expression failed to parse as JavaScript/TypeScript.
+    /// Mirrors `@vue/compiler-core`'s `X_INVALID_EXPRESSION`.
+    InvalidExpression = 49,
 
     // Generic errors
-    PrefixIdNotSupported = 49,
-    ModuleModeNotSupported = 50,
-    CacheHandlerNotSupported = 51,
-    ScopeIdNotSupported = 52,
+    PrefixIdNotSupported = 50,
+    ModuleModeNotSupported = 51,
+    CacheHandlerNotSupported = 52,
+    ScopeIdNotSupported = 53,
 
     // Extended errors
     UnhandledCodePath = 100,
@@ -186,6 +189,7 @@ impl ErrorCode {
             Self::VModelOnProps => "v-model cannot be used on props.",
             Self::VModelArgOnElement => "v-model argument is not supported on plain elements.",
             Self::VShowNoExpression => "v-show is missing expression.",
+            Self::InvalidExpression => "Error parsing JavaScript expression.",
 
             Self::PrefixIdNotSupported => "prefixIdentifiers option is not supported in this mode.",
             Self::ModuleModeNotSupported => "ES module mode is not supported in this mode.",
@@ -315,6 +319,7 @@ mod tests {
             ErrorCode::VOnNoExpression,
             ErrorCode::VModelNoExpression,
             ErrorCode::VShowNoExpression,
+            ErrorCode::InvalidExpression,
         ];
         for code in &transform_errors {
             assert!(
@@ -344,11 +349,11 @@ mod tests {
         assert!(!ErrorCode::VIfNoExpression.is_parse_error());
         assert!(ErrorCode::VIfNoExpression.is_transform_error());
 
-        // VShowNoExpression (48) is the last transform error
-        assert!(ErrorCode::VShowNoExpression.is_transform_error());
-        assert!(!ErrorCode::VShowNoExpression.is_parse_error());
+        // InvalidExpression (49) is the last transform error
+        assert!(ErrorCode::InvalidExpression.is_transform_error());
+        assert!(!ErrorCode::InvalidExpression.is_parse_error());
 
-        // PrefixIdNotSupported (49) is neither
+        // PrefixIdNotSupported (50) is neither
         assert!(!ErrorCode::PrefixIdNotSupported.is_parse_error());
         assert!(!ErrorCode::PrefixIdNotSupported.is_transform_error());
     }
@@ -405,6 +410,7 @@ mod tests {
             ErrorCode::VModelOnProps,
             ErrorCode::VModelArgOnElement,
             ErrorCode::VShowNoExpression,
+            ErrorCode::InvalidExpression,
             ErrorCode::PrefixIdNotSupported,
             ErrorCode::ModuleModeNotSupported,
             ErrorCode::CacheHandlerNotSupported,

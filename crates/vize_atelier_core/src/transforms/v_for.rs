@@ -63,7 +63,7 @@ pub fn parse_for_expression<'a>(
 pub fn parse_for_expression_with_options<'a>(
     allocator: &'a Bump,
     content: &str,
-    _loc: &SourceLocation,
+    loc: &SourceLocation,
     template_syntax_quirks: bool,
 ) -> Option<ForParseResult<'a>> {
     let (alias_end, source_start) = find_for_separator(content)?;
@@ -76,8 +76,20 @@ pub fn parse_for_expression_with_options<'a>(
         return None;
     }
 
+    // Give the source expression its real sub-span within the v-for
+    // expression so downstream diagnostics (e.g. an unparseable source)
+    // point at the right characters. `find_for_separator` already skips
+    // whitespace, so `source_start` is the first byte of the source text.
+    let source_loc = if loc.source.is_empty() {
+        SourceLocation::default()
+    } else {
+        let start = advance_position(&loc.start, &content[..source_start]);
+        let end = advance_position(&start, source_str);
+        SourceLocation::new(start, end, source_str)
+    };
+
     let source = ExpressionNode::Simple(Box::new_in(
-        SimpleExpressionNode::new(source_str, false, SourceLocation::default()),
+        SimpleExpressionNode::new(source_str, false, source_loc),
         allocator,
     ));
 
@@ -123,6 +135,21 @@ pub fn parse_for_expression_with_options<'a>(
         index,
         finalized: false,
     })
+}
+
+/// Advance `base` over `text`, tracking byte offset, 1-indexed line and column.
+fn advance_position(base: &Position, text: &str) -> Position {
+    let mut line = base.line;
+    let mut column = base.column;
+    for ch in text.chars() {
+        if ch == '\n' {
+            line += 1;
+            column = 1;
+        } else {
+            column += 1;
+        }
+    }
+    Position::new(base.offset + text.len() as u32, line, column)
 }
 
 fn find_for_separator(content: &str) -> Option<(usize, usize)> {

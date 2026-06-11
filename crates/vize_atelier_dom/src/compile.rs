@@ -172,7 +172,7 @@ fn compile_template_inner<'a>(
     let template_syntax_quirks = template_syntax.is_quirks();
     // Allocate Croquis in the arena so it shares the allocator lifetime
     let analysis: Option<&Croquis> = options.croquis.map(|c| &*allocator.alloc(*c));
-    profile!(
+    let transform_errors = profile!(
         "atelier.dom.template.transform",
         if template_syntax_quirks {
             if hoisted_scope_id.is_some() {
@@ -204,6 +204,12 @@ fn compile_template_inner<'a>(
         }
     );
 
+    // Surface transform diagnostics (e.g. invalid expressions) alongside
+    // parse errors instead of dropping them — the official compiler reports
+    // both through the same `errors` channel.
+    let mut errors = errors.to_vec();
+    errors.extend(transform_errors);
+
     // Codegen
     let codegen_opts = CodegenOptions {
         mode: options.mode,
@@ -222,5 +228,5 @@ fn compile_template_inner<'a>(
         generate(&root, codegen_opts)
     );
 
-    (root, errors.to_vec(), codegen_result)
+    (root, errors, codegen_result)
 }

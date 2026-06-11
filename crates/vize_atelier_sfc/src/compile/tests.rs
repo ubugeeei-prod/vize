@@ -114,6 +114,44 @@ export default {
 }
 
 #[test]
+fn test_invalid_template_expression_fails_compile_with_diagnostic() {
+    // An unparseable template expression must surface as a compile error
+    // (matching @vue/compiler-sfc, where X_INVALID_EXPRESSION fails the
+    // build) instead of silently emitting broken render code. (#1394)
+    let source = r#"<script setup>
+const foo = () => {}
+</script>
+
+<template>
+  <div>{{ foo( }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile_sfc returns Ok");
+    assert_eq!(
+        result.errors.len(),
+        1,
+        "expected one template error, got: {:?}",
+        result.errors
+    );
+    let error = &result.errors[0];
+    assert_eq!(error.code.as_deref(), Some("TEMPLATE_ERROR"));
+    assert!(
+        error
+            .message
+            .contains("Error parsing JavaScript expression"),
+        "unexpected message: {}",
+        error.message
+    );
+    assert!(
+        error.message.contains("InvalidExpression"),
+        "unexpected message: {}",
+        error.message
+    );
+}
+
+#[test]
 fn test_v_model_on_component_in_sfc() {
     let source = r#"<script setup>
 import { ref } from 'vue'

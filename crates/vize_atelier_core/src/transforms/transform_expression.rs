@@ -181,6 +181,12 @@ pub fn process_expression<'a>(
         if result.used_unref {
             ctx.helper(crate::ast::RuntimeHelper::Unref);
         }
+        // The expression failed to parse entirely and was passed through
+        // raw — report it instead of silently emitting broken render code.
+        // Matches `@vue/compiler-core`'s `X_INVALID_EXPRESSION`.
+        if let Some(detail) = &result.parse_error {
+            rewrite::report_invalid_expression(ctx, detail, &normalized.loc);
+        }
         result.code
     } else if ctx.options.is_ts {
         // Only strip TypeScript, no prefixing
@@ -430,6 +436,67 @@ mod tests {
         assert_eq!(prefixed.as_str(), deep.as_str());
         let stripped = strip_typescript_from_expression(&deep);
         assert_eq!(stripped.as_str(), deep.as_str());
+    }
+
+    #[test]
+    fn test_process_expression_reports_invalid_expression() {
+        let allocator = Bump::new();
+        let mut ctx = test_context(&allocator);
+        let expr = compound_expression(&allocator, "foo(");
+
+        let result = process_expression(&mut ctx, &expr, false);
+        let ExpressionNode::Simple(result) = result else {
+            panic!("expected simple expression");
+        };
+
+        // Raw passthrough (matches vue-core, which returns the node
+        // unchanged), but with a compile diagnostic instead of silence.
+        assert_eq!(result.content.as_str(), "foo(");
+        assert_eq!(ctx.errors.len(), 1, "errors: {:?}", ctx.errors);
+        assert_eq!(
+            ctx.errors[0].code,
+            crate::errors::ErrorCode::InvalidExpression
+        );
+        assert!(
+            ctx.errors[0]
+                .message
+                .starts_with("Error parsing JavaScript expression: "),
+            "message: {:?}",
+            ctx.errors[0].message
+        );
+        assert!(ctx.errors[0].loc.is_some(), "diagnostic must carry a span");
+    }
+
+    #[test]
+    fn test_process_expression_keyword_identifier_has_no_diagnostic() {
+        // `class` fails to parse as an expression but is a rewritable simple
+        // identifier; vue-core never parses it (simple-identifier fast path)
+        // and emits no error.
+        let allocator = Bump::new();
+        let mut ctx = test_context(&allocator);
+        let expr = compound_expression(&allocator, "class");
+
+        let result = process_expression(&mut ctx, &expr, false);
+        let ExpressionNode::Simple(result) = result else {
+            panic!("expected simple expression");
+        };
+
+        assert_eq!(result.content.as_str(), "_ctx.class");
+        assert!(ctx.errors.is_empty(), "errors: {:?}", ctx.errors);
+    }
+
+    #[test]
+    fn test_process_expression_valid_ts_fallback_has_no_diagnostic() {
+        // `foo<string>` is a TS instantiation expression. The TS-stripping
+        // heuristic does not lower it, so the JS parse fails — but the
+        // official compiler (babel + typescript plugin) accepts it, and the
+        // parity rule forbids rejecting what the official compiler accepts.
+        let allocator = Bump::new();
+        let mut ctx = test_context(&allocator);
+        let expr = compound_expression(&allocator, "foo<string>");
+
+        let _ = process_expression(&mut ctx, &expr, false);
+        assert!(ctx.errors.is_empty(), "errors: {:?}", ctx.errors);
     }
 
     #[test]
