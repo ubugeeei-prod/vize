@@ -2185,6 +2185,82 @@ const count: string = 0;
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[cfg(unix)]
+#[test]
+fn check_socket_show_virtual_ts_includes_shared_helpers() {
+    use std::os::unix::net::UnixListener;
+
+    let project_root = create_cli_project(
+        "socket-show-virtual-ts-helpers",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count = 0;
+</script>
+"#,
+        )],
+    );
+    let socket_path = std::path::PathBuf::from(
+        cstr!(
+            "/tmp/vize-check-{}-show-virtual-ts-helpers.sock",
+            std::process::id()
+        )
+        .as_str(),
+    );
+    let _ = std::fs::remove_file(&socket_path);
+    let listener = UnixListener::bind(&socket_path).unwrap();
+    let server = std::thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        let mut line = std::string::String::new();
+        std::io::BufReader::new(stream.try_clone().unwrap())
+            .read_line(&mut line)
+            .unwrap();
+        let request: serde_json::Value = serde_json::from_str(&line).unwrap();
+
+        let response = serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": request["id"],
+            "result": {
+                "diagnostics": [],
+                "virtualTs": "const count = 0;",
+                "errorCount": 0
+            }
+        });
+        writeln!(stream, "{response}").unwrap();
+    });
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "check",
+            "src",
+            "--socket",
+            socket_path.to_str().unwrap(),
+            "--show-virtual-ts",
+        ])
+        .output()
+        .unwrap();
+
+    server.join().unwrap();
+    let _ = std::fs::remove_file(&socket_path);
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+
+    assert!(
+        stderr.contains(vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME),
+        "expected shared helpers header in --show-virtual-ts output, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("declare function __vize_defineProps"),
+        "expected shared helpers content in --show-virtual-ts output, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("const count = 0;"),
+        "expected per-file virtual TS in --show-virtual-ts output, got:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 #[test]
 fn check_can_emit_declarations() {
     let Some(corsa_path) = resolve_test_corsa_path() else {

@@ -333,6 +333,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     }
 
     if args.show_virtual_ts {
+        eprintln!(
+            "\n=== {} ===",
+            vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME
+        );
+        eprintln!("{}", vize_canon::virtual_ts::SHARED_PREAMBLE_DTS);
         for file in &virtual_files {
             eprintln!("\n=== {} ===", file.original_path.display());
             eprintln!("{}", file.content);

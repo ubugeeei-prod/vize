@@ -72,6 +72,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
 
     let mut total_errors = 0usize;
     let mut total_warnings = 0usize;
+    let mut shown_shared_helpers = false;
     #[allow(clippy::disallowed_types, clippy::disallowed_methods)]
     let mut results: Vec<(std::string::String, ServerCheckResult)> = Vec::new();
 
@@ -162,6 +163,14 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
                 .iter()
                 .filter(|diagnostic| diagnostic.severity == "warning")
                 .count();
+            if args.show_virtual_ts && !shown_shared_helpers {
+                eprintln!(
+                    "\n=== {} ===",
+                    vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME
+                );
+                eprintln!("{}", vize_canon::virtual_ts::SHARED_PREAMBLE_DTS);
+                shown_shared_helpers = true;
+            }
             if args.show_virtual_ts {
                 eprintln!("\n=== {} ===", filename);
                 eprintln!("{}", result.virtual_ts);
