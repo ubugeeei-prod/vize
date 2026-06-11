@@ -353,15 +353,16 @@ mod options_api_tests {
 
     fn binding_labels(options_api: bool) -> Vec<String> {
         let state = ServerState::new();
-        if options_api {
-            let dir = tempfile::tempdir().unwrap();
-            std::fs::write(
-                dir.path().join("vize.config.json"),
-                r#"{ "typeChecker": { "optionsApi": true } }"#,
-            )
-            .unwrap();
-            state.load_workspace_config(dir.path());
-        }
+        // Options API resolution is default-on; write an explicit config so the
+        // off case exercises the opt-out path.
+        let dir = tempfile::tempdir().unwrap();
+        let config = if options_api {
+            r#"{ "typeChecker": { "optionsApi": true } }"#
+        } else {
+            r#"{ "typeChecker": { "optionsApi": false } }"#
+        };
+        std::fs::write(dir.path().join("vize.config.json"), config).unwrap();
+        state.load_workspace_config(dir.path());
         let uri = Url::parse("file:///comp.vue").unwrap();
         state.documents.open(
             uri.clone(),
@@ -388,12 +389,12 @@ mod options_api_tests {
     }
 
     #[test]
-    fn options_api_data_binding_absent_by_default() {
+    fn options_api_data_binding_absent_when_opted_out() {
         let labels = binding_labels(false);
         assert!(
             !labels.iter().any(|label| label == "greeting"),
-            "without optionsApi the Options API data() binding must not resolve \
-             (opt-in keeps the default <script setup> path zero cost); got {labels:?}"
+            "with `optionsApi: false` the Options API data() binding must not \
+             resolve; got {labels:?}"
         );
     }
 
@@ -412,8 +413,8 @@ mod options_api_tests {
         );
         let offset = CLASS_COMPONENT_SFC.find("count }}").unwrap();
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        // optionsApi stays disabled: class components require no flag.
-        assert!(!ctx.state.options_api_enabled());
+        // Class components are auto-detected by AST shape and resolve regardless
+        // of the optionsApi flag.
         analyzed_template_binding_completions(&ctx, true)
             .into_iter()
             .map(|item| item.label)

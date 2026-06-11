@@ -62,10 +62,13 @@ pub struct VizeConfig {
 
 /// Feature flags parsed from config keys that are not exposed as stable Rust
 /// model fields.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ConfigFeatureFlags {
-    /// Resolve Vue 3 Options API template bindings during type checking. Opt-in
-    /// and available in the standard build (not a legacy feature).
+    /// Resolve Vue 3 Options API template bindings during type checking.
+    /// Default-on (matches vue-tsc): an Options API SFC's template bindings
+    /// (`data`/`computed`/`methods`/`props`) resolve without configuration.
+    /// Set `typeChecker.optionsApi: false` to opt out. Available in the standard
+    /// build (not a legacy feature).
     pub type_checker_options_api: bool,
     pub type_checker_legacy_vue2: bool,
     pub language_server_legacy_vue2: Option<bool>,
@@ -75,6 +78,18 @@ pub struct ConfigFeatureFlags {
     /// legacy Vue support (#1392): consumers thread this into parser and
     /// transform options in follow-ups.
     pub vue_version: Option<VueVersion>,
+}
+
+impl Default for ConfigFeatureFlags {
+    fn default() -> Self {
+        Self {
+            // Options API resolution is default-on (matches vue-tsc).
+            type_checker_options_api: true,
+            type_checker_legacy_vue2: false,
+            language_server_legacy_vue2: None,
+            vue_version: None,
+        }
+    }
 }
 
 /// Raw config representation with legacy aliases preserved for migration.
@@ -107,7 +122,9 @@ pub(crate) struct RawVizeConfig {
 struct RawTypeCheckerConfig {
     #[serde(flatten)]
     config: TypeCheckerConfig,
-    options_api: bool,
+    /// `None` when `typeChecker.optionsApi` is absent — defaults to enabled
+    /// (matches vue-tsc). Set `false` to opt out.
+    options_api: Option<bool>,
     legacy_vue2: bool,
 }
 
@@ -148,7 +165,8 @@ impl RawVizeConfig {
             legacy_lsp,
         } = self;
 
-        let type_checker_options_api = raw_type_checker.options_api;
+        // Default-on (matches vue-tsc); explicit `false` opts out.
+        let type_checker_options_api = raw_type_checker.options_api.unwrap_or(true);
         let type_checker_legacy_vue2 = raw_type_checker.legacy_vue2;
         let mut type_checker = raw_type_checker.config;
         if let Some(legacy_check) = legacy_check {

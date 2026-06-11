@@ -31,8 +31,9 @@ class TypeCheckerConfig {
 
   /// Resolve Vue 3 Options API template bindings (`data`/`computed`/`methods`/
   /// `inject`/`setup`/`props`) during type checking. Officially supported in
-  /// Vue 3; opt-in and available in the standard build (not a legacy feature).
-  optionsApi: Boolean = false
+  /// Vue 3 and default-on (matches `vue-tsc`); set to `false` to opt out.
+  /// Available in the standard build (not a legacy feature).
+  optionsApi: Boolean = true
 
   /// Enable Vue 2.7 / Nuxt 2 Options API template binding support.
   legacyVue2: Boolean = false

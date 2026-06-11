@@ -121,7 +121,9 @@ impl ServerState {
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new(TypeCheckerConfig::default()),
-            type_checker_options_api: RwLock::new(false),
+            // Options API resolution is default-on (matches vue-tsc); config can
+            // opt out with `typeChecker.optionsApi: false`.
+            type_checker_options_api: RwLock::new(true),
             type_checker_legacy_vue2: RwLock::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
             dialect_config: RwLock::new(None),

@@ -296,8 +296,9 @@ export default defineConfig({
     checkEmits: true,
     checkTemplateBindings: true,
     // Resolve Vue 3 Options API template bindings (data/computed/methods/
-    // inject/setup/props). Officially supported in Vue 3, opt-in, default off.
-    optionsApi: false,
+    // inject/setup/props). Officially supported in Vue 3 and default-on
+    // (matches vue-tsc). Set to `false` to opt out.
+    optionsApi: true,
   },
 });
 ```
@@ -306,8 +307,10 @@ export default defineConfig({
 template bindings (`data`/`computed`/`methods`/`inject`/`setup`/`props` declared
 on a normal `<script> export default { ... }`). Options API is officially
 supported in Vue 3, so this lives in the standard build (it is **not** the
-`legacy` feature). It is off by default because most Vize projects use
-`<script setup>`. Legacy Vue 2.7 / Nuxt 2 support — `typeChecker.legacyVue2`,
+`legacy` feature). It is **on by default** (matching `vue-tsc`); set
+`optionsApi: false` to opt out. The bridge only runs for non-`<script setup>`
+components, so the common `<script setup>` path stays zero-cost. Legacy Vue 2.7 /
+Nuxt 2 support — `typeChecker.legacyVue2`,
 which additionally adds the Nuxt 2 template globals — remains a separate opt-in
 that requires a `legacy` build.
 

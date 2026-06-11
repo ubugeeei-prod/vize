@@ -411,6 +411,40 @@ const count = ref(0)
     );
 }
 
+#[test]
+fn test_script_setup_virtual_ts_byte_identical_with_options_api_default_on() {
+    // Zero-cost guarantee for the benchmarked path: now that Options API
+    // resolution is default-on, the `_options_api` generator must produce output
+    // byte-identical to the plain generator for a `<script setup>` component (the
+    // bridge only runs for non-`<script setup>` components).
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import { ref, computed } from 'vue'
+const count = ref(0)
+const doubled = computed(() => count.value * 2)
+function inc() { count.value++ }
+"#;
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    let summary = analyzer.finish();
+
+    let plain =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+    let options_api = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert_eq!(
+        plain.code, options_api.code,
+        "`<script setup>` virtual TS must be byte-identical with Options API default-on"
+    );
+}
+
 fn generate_script_setup_virtual_ts(script: &str) -> String {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 

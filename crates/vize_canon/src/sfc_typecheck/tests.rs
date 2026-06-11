@@ -531,9 +531,11 @@ export const buttonId =
 }
 
 #[test]
-fn test_type_check_options_api_opt_in_standard_build() {
-    // Vue 3 Options API in a normal <script> — officially supported, opt-in,
-    // and resolvable in the standard build (no `legacy` feature).
+fn test_type_check_options_api_default_on_standard_build() {
+    // Vue 3 Options API in a normal <script> — officially supported and
+    // default-on (matches vue-tsc) in the standard build (no `legacy` feature).
+    // The raw `type_check_sfc` here is the opt-out variant; `vize check` and the
+    // LSP drive the default-on `type_check_sfc_with_options_api` path.
     let source = r#"<script lang="ts">
 export default {
   props: ['message'],
@@ -554,25 +556,18 @@ export default {
   <div>{{ message }} {{ count }} {{ doubled }}<button @click="save">go</button></div>
 </template>"#;
 
-    // Without the opt-in, the Options API members are unknown in the template.
-    let default_result = type_check_sfc(source, &SfcTypeCheckOptions::new("Options.vue"));
-    let _oa = type_check_sfc_with_options_api(source, &SfcTypeCheckOptions::new("Options.vue"));
-    eprintln!(
-        "OPTIONS_API codes: {:?}",
-        _oa.diagnostics
-            .iter()
-            .map(|d| (d.code.clone(), d.message.clone()))
-            .collect::<Vec<_>>()
-    );
+    // With Options API resolution off (explicit opt-out), the members are
+    // unknown in the template.
+    let opt_out_result = type_check_sfc(source, &SfcTypeCheckOptions::new("Options.vue"));
     assert!(
-        default_result
+        opt_out_result
             .diagnostics
             .iter()
             .any(|d| d.code.as_deref() == Some("undefined-binding")),
-        "expected default mode to leave Options API bindings unresolved"
+        "expected opt-out mode to leave Options API bindings unresolved"
     );
 
-    // With the opt-in, the Options API bindings resolve — no undefined-binding.
+    // Default-on: the Options API bindings resolve — no undefined-binding.
     let options_api_result =
         type_check_sfc_with_options_api(source, &SfcTypeCheckOptions::new("Options.vue"));
     assert!(
