@@ -99,7 +99,8 @@ fn generate_children_inner(
         return;
     }
 
-    let can_cache_static = ctx.static_cache && !ctx.in_v_for && !ctx.has_slot_params();
+    let can_cache_static =
+        ctx.static_cache && !ctx.in_v_for && !ctx.has_slot_params() && !ctx.in_cached_static;
     if !force_array
         && can_cache_static
         && !effective.is_empty()
@@ -210,6 +211,11 @@ fn generate_children_inner(
                 if let TemplateChildNode::Element(el) = effective[i] {
                     generate_cached_static_element(ctx, el);
                 }
+            } else if ctx.in_cached_static && is_static_cacheable_element(effective[i]) {
+                // Plain descendant inside an already-cached static subtree.
+                if let TemplateChildNode::Element(el) = effective[i] {
+                    generate_cached_static_vnode(ctx, el, false);
+                }
             } else {
                 generate_node(ctx, effective[i]);
             }
@@ -244,7 +250,7 @@ fn generate_cached_static_children_array(
         }
         ctx.newline();
         if let TemplateChildNode::Element(el) = child {
-            generate_cached_static_vnode(ctx, el);
+            generate_cached_static_vnode(ctx, el, true);
         }
     }
 
@@ -260,11 +266,18 @@ fn generate_cached_static_element(ctx: &mut CodegenContext, el: &ElementNode<'_>
     ctx.push("] || (_cache[");
     ctx.push(&cache_index.to_compact_string());
     ctx.push("] = ");
-    generate_cached_static_vnode(ctx, el);
+    generate_cached_static_vnode(ctx, el, true);
     ctx.push(")");
 }
 
-fn generate_cached_static_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+/// Emit one static element as `createElementVNode(...)`.
+///
+/// `cached` controls whether this vnode is the top-most cached node of a static
+/// subtree (gets the `-1 /* CACHED */` patch flag) or a descendant inside an
+/// already-cached subtree (plain vnode, no flag), matching how
+/// @vue/compiler-core serializes a cached static subtree: a single cache entry
+/// whose children are plain recursive `createElementVNode` calls.
+fn generate_cached_static_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>, cached: bool) {
     ctx.use_helper(RuntimeHelper::CreateElementVNode);
     ctx.push(ctx.helper(RuntimeHelper::CreateElementVNode));
     ctx.push("(\"");
@@ -282,14 +295,23 @@ fn generate_cached_static_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) 
 
     if !el.children.is_empty() {
         ctx.push(", ");
+        // Descendants of a cached subtree are emitted as plain vnodes: suppress
+        // the cache wrapper and the per-descendant CACHED flag while recursing.
+        let prev_in_cached = ctx.in_cached_static;
+        ctx.in_cached_static = true;
         ctx.with_parent_namespace(child_namespace(el), |ctx| {
             generate_children(ctx, &el.children);
         });
+        ctx.in_cached_static = prev_in_cached;
     } else {
         ctx.push(", null");
     }
 
-    ctx.push(", -1 /* CACHED */)");
+    if cached {
+        ctx.push(", -1 /* CACHED */)");
+    } else {
+        ctx.push(")");
+    }
 }
 
 /// Generate text node

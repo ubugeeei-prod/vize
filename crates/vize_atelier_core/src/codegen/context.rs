@@ -58,6 +58,12 @@ pub struct CodegenContext {
     pub(super) parent_ns: Namespace,
     /// Whether static child VNodes should be cached in the render function.
     pub(super) static_cache: bool,
+    /// True while emitting the children of an already-cached static VNode.
+    /// Vue caches the top-most static element of a subtree as one entry and
+    /// renders its descendants as plain `createElementVNode(...)` calls inside
+    /// the cached array — no nested `_cache[...]` wrappers and no per-descendant
+    /// `CACHED` patch flag. This flag suppresses re-caching inside that subtree.
+    pub(super) in_cached_static: bool,
     /// Template-wide counter for v-if branch keys. Each branch in any
     /// conditional chain in the template consumes one value, so sibling
     /// `v-if`/`v-else` blocks do not reuse the same `{ key: n }` and a
@@ -141,6 +147,7 @@ impl CodegenContext {
             props_is_plain_element: false,
             parent_ns: Namespace::Html,
             static_cache: false,
+            in_cached_static: false,
             v_if_branch_counter: 0,
         }
     }

@@ -43,16 +43,13 @@ fn is_static_element(el: &ElementNode<'_>) -> bool {
         }
     }
 
-    // Check children recursively
-    // Comments are not hoisted because create_children_expression doesn't handle them
+    // Check children recursively. Nested fully-static element subtrees are
+    // hoistable: `create_children_expression` builds them into a single
+    // recursive VNodeCall, matching @vue/compiler-core's static caching of a
+    // top-most static element with its whole subtree as one cached vnode.
     for child in el.children.iter() {
         // Comments prevent hoisting since they can't be serialized to VNodeCall children
         if matches!(child, TemplateChildNode::Comment(_)) {
-            return false;
-        }
-        // Nested elements cannot be fully hoisted yet because create_children_expression
-        // doesn't recursively create VNodeCalls for them - this would cause children to be omitted
-        if matches!(child, TemplateChildNode::Element(_)) {
             return false;
         }
         if !is_static_node(child) {
@@ -107,11 +104,14 @@ fn get_element_static_type(el: &ElementNode<'_>) -> StaticType {
             TemplateChildNode::Interpolation(_) => {
                 has_dynamic_text = true;
             }
-            // Nested elements cannot be fully hoisted yet because create_children_expression
-            // doesn't recursively create VNodeCalls for them - this would cause children to be omitted
-            TemplateChildNode::Element(_) => {
-                return StaticType::NotStatic;
-            }
+            // A nested element keeps the parent fully static only when the
+            // child subtree is itself fully static (no dynamic text either):
+            // such a subtree is serialized into one recursive VNodeCall by
+            // `create_children_expression`. Any dynamic content disqualifies it.
+            TemplateChildNode::Element(child_el) => match get_element_static_type(child_el) {
+                StaticType::FullyStatic => {}
+                _ => return StaticType::NotStatic,
+            },
             TemplateChildNode::If(_) | TemplateChildNode::For(_) => {
                 return StaticType::NotStatic;
             }
@@ -173,12 +173,15 @@ fn hoist_static_inner<'a>(
                     && has_static_props(el)
                 {
                     hoist_element_props(ctx, el, allocator);
-                } else if hoist_static_vnodes && let TemplateChildNode::Element(el) = &children[i] {
+                } else if hoist_static_vnodes
+                    && let TemplateChildNode::Element(el) = &mut children[i]
+                {
                     let scope_id = ctx
                         .hoisted_scope_id
-                        .as_ref()
-                        .or(ctx.options.scope_id.as_ref());
-                    let vnode_call = create_vnode_call_from_element(allocator, el, scope_id);
+                        .clone()
+                        .or_else(|| ctx.options.scope_id.clone());
+                    let vnode_call =
+                        create_vnode_call_from_element(allocator, el, scope_id.as_ref());
                     let hoist_index = ctx.hoist(vnode_call);
                     children[i] = TemplateChildNode::Hoisted(hoist_index);
                     ctx.helper(RuntimeHelper::CreateElementVNode);
@@ -235,15 +238,20 @@ fn hoist_static_inner<'a>(
     }
 }
 
-/// Create a VNodeCall from an ElementNode for hoisting
+/// Create a VNodeCall from an ElementNode for hoisting.
+///
+/// Takes the element by `&mut` because the caller replaces it with a
+/// `Hoisted` reference immediately afterwards; this lets the nested-children
+/// case move the (already fully-static) child subtree into the VNodeCall
+/// instead of deep-cloning it.
 fn create_vnode_call_from_element<'a>(
     allocator: &'a Bump,
-    el: &ElementNode<'a>,
+    el: &mut ElementNode<'a>,
     scope_id: Option<&vize_carton::String>,
 ) -> JsChildNode<'a> {
     let tag = VNodeTag::String(el.tag.clone());
     let props = create_props_expression(allocator, &el.props, scope_id);
-    let children = create_children_expression(allocator, &el.children);
+    let children = create_children_expression(allocator, &mut el.children, scope_id);
 
     let vnode_call = VNodeCall {
         tag,
@@ -363,10 +371,14 @@ fn create_props_expression<'a>(
     )))
 }
 
-/// Create children expression from template children
+/// Create children expression from template children.
+///
+/// `scope_id` is threaded so nested hoisted elements carry the same scoped-CSS
+/// attribute their parent does.
 fn create_children_expression<'a>(
     allocator: &'a Bump,
-    children: &Vec<'a, TemplateChildNode<'a>>,
+    children: &mut Vec<'a, TemplateChildNode<'a>>,
+    scope_id: Option<&vize_carton::String>,
 ) -> Option<VNodeChildren<'a>> {
     if children.is_empty() {
         return None;
@@ -382,32 +394,73 @@ fn create_children_expression<'a>(
         )));
     }
 
-    // For multiple text children, combine them
-    let mut all_text = true;
-    let mut text_content = String::default();
-
-    for child in children.iter() {
-        match child {
-            TemplateChildNode::Text(text) => {
+    // For all-text children, combine them into one text node.
+    if children
+        .iter()
+        .all(|c| matches!(c, TemplateChildNode::Text(_)))
+    {
+        let mut text_content = String::default();
+        for child in children.iter() {
+            if let TemplateChildNode::Text(text) = child {
                 text_content.push_str(&text.content);
             }
-            _ => {
-                all_text = false;
-                break;
-            }
+        }
+        if !text_content.is_empty() {
+            let text_node = TextNode::new(text_content, SourceLocation::STUB);
+            return Some(VNodeChildren::Single(TemplateTextChildNode::Text(
+                Box::new_in(text_node, allocator),
+            )));
         }
     }
 
-    if all_text && !text_content.is_empty() {
-        let text_node = TextNode::new(text_content, SourceLocation::STUB);
-        return Some(VNodeChildren::Single(TemplateTextChildNode::Text(
-            Box::new_in(text_node, allocator),
-        )));
+    // Nested elements (and mixed element/text) children. Move the child nodes
+    // into a `Multiple` so a fully-static subtree hoists into a single
+    // recursive `createElementVNode(...)`, matching @vue/compiler-core. The
+    // subtree is already known to be fully static (the caller only reaches this
+    // path for `StaticType::FullyStatic` elements), so codegen serializes each
+    // element child recursively as a nested `createElementVNode`. Moving rather
+    // than cloning is sound because the caller replaces this element with a
+    // `Hoisted` reference right after, so the original children are unreachable.
+    let mut moved = std::mem::replace(children, Vec::new_in(allocator));
+
+    // Scoped CSS: every native element in the hoisted subtree needs the
+    // `data-v-xxxxxxxx` attribute, so inject it into each nested element.
+    if let Some(scope_id) = scope_id {
+        for child in moved.iter_mut() {
+            inject_scope_id(allocator, child, scope_id);
+        }
     }
 
-    // For complex children with nested elements, return as Simple expression for now
-    // A full implementation would recursively create VNodeCalls
-    None
+    Some(VNodeChildren::Multiple(moved))
+}
+
+/// Recursively add the scoped-CSS attribute to a static element subtree so
+/// hoisted nested vnodes carry `data-v-xxxxxxxx` like their parent.
+fn inject_scope_id<'a>(
+    allocator: &'a Bump,
+    node: &mut TemplateChildNode<'a>,
+    scope_id: &vize_carton::String,
+) {
+    if let TemplateChildNode::Element(el) = node {
+        let already = el.props.iter().any(|p| match p {
+            PropNode::Attribute(a) => a.name == *scope_id,
+            PropNode::Directive(_) => false,
+        });
+        if !already {
+            el.props.push(PropNode::Attribute(Box::new_in(
+                AttributeNode {
+                    name: scope_id.clone(),
+                    name_loc: SourceLocation::STUB,
+                    value: None,
+                    loc: SourceLocation::STUB,
+                },
+                allocator,
+            )));
+        }
+        for child in el.children.iter_mut() {
+            inject_scope_id(allocator, child, scope_id);
+        }
+    }
 }
 
 /// Check if an element has static props that can be hoisted as an object.
@@ -763,5 +816,87 @@ mod tests {
         }
 
         assert!(!is_static_node(&root.children[0]));
+    }
+
+    #[test]
+    fn test_nested_static_element_is_static() {
+        // A fully-static nested element subtree is hoistable as one recursive
+        // VNodeCall, matching @vue/compiler-core.
+        let allocator = Bump::new();
+        let (root, _) = parse(
+            &allocator,
+            r#"<div class="outer"><span class="a">x</span></div>"#,
+        );
+        assert!(is_static_node(&root.children[0]));
+        assert_eq!(
+            get_static_type(&root.children[0]),
+            super::StaticType::FullyStatic
+        );
+    }
+
+    #[test]
+    fn test_deeply_nested_static_element_is_static() {
+        let allocator = Bump::new();
+        let (root, _) = parse(
+            &allocator,
+            r#"<div class="outer"><div class="inner"><span>deep</span></div></div>"#,
+        );
+        assert!(is_static_node(&root.children[0]));
+    }
+
+    #[test]
+    fn test_nested_with_dynamic_text_not_fully_static() {
+        // Interpolation in a nested child means the subtree is not fully static
+        // (has dynamic text), so it must not be hoisted as a static vnode.
+        let allocator = Bump::new();
+        let (root, _) = parse(
+            &allocator,
+            r#"<div class="outer"><span>{{ msg }}</span></div>"#,
+        );
+        assert_eq!(
+            get_static_type(&root.children[0]),
+            super::StaticType::NotStatic
+        );
+    }
+
+    fn compile_hoisted(src: &str) -> (String, String) {
+        let allocator = Bump::new();
+        let (mut root, _errors) = parse(&allocator, src);
+        let mut opts = crate::options::TransformOptions::default();
+        opts.hoist_static = true;
+        crate::transform::transform(&allocator, &mut root, opts, None);
+        let r = crate::codegen::generate(&root, crate::options::CodegenOptions::default());
+        (r.preamble.to_string(), r.code.to_string())
+    }
+
+    #[test]
+    fn test_codegen_nested_static_subtree_caches_recursively() {
+        // Matches @vue/compiler-core: the inner subtree is cached as ONE vnode
+        // with its descendant rendered as a plain recursive createElementVNode
+        // (no nested _cache, no per-descendant CACHED flag).
+        let (_pre, code) = compile_hoisted(
+            r#"<div class="outer"><div class="inner"><span>deep</span></div></div>"#,
+        );
+        assert!(
+            code.contains(
+                "_createElementVNode(\"div\", { class: \"inner\" }, [\n      _createElementVNode(\"span\", null, \"deep\")\n    ], -1 /* CACHED */)"
+            ),
+            "unexpected codegen:\n{code}"
+        );
+    }
+
+    #[test]
+    fn test_codegen_hoisted_nested_vnode_keeps_descendant() {
+        // Inside a v-if branch the subtree hoists to a `_hoisted_N` const built
+        // as a recursive createElementVNode; the nested <b> must be preserved
+        // (previously dropped by the unimplemented create_children_expression).
+        let (preamble, _code) =
+            compile_hoisted(r#"<div><p v-if="ok"><span class="a"><b>x</b></span></p></div>"#);
+        assert!(
+            preamble.contains(
+                "_createElementVNode(\"span\", { class: \"a\" }, [_createElementVNode(\"b\", null, \"x\")])"
+            ),
+            "nested <b> was dropped from hoisted subtree:\n{preamble}"
+        );
     }
 }

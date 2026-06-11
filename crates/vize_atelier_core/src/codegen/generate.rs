@@ -5,7 +5,7 @@
 
 use crate::ast::{
     DynamicProps, ExpressionNode, JsChildNode, PropsExpression, RootNode, RuntimeHelper,
-    TemplateTextChildNode, VNodeCall, VNodeChildren, VNodeTag,
+    TemplateChildNode, TemplateTextChildNode, VNodeCall, VNodeChildren, VNodeTag,
 };
 
 use super::{context::CodegenContext, helpers::escape_js_string};
@@ -78,6 +78,39 @@ fn collect_helpers_from_vnode_call(vnode: &VNodeCall<'_>, helpers: &mut Vec<Runt
     // Recurse into props (may contain nested VNodeCalls)
     if let Some(props) = &vnode.props {
         collect_helpers_from_props(props, helpers);
+    }
+
+    // Recurse into a hoisted nested-static subtree's children so the helpers
+    // used by descendant `createElementVNode` / `createTextVNode` calls are
+    // declared in the import preamble.
+    if let Some(VNodeChildren::Multiple(children)) = &vnode.children {
+        collect_helpers_from_static_children(children, helpers);
+    }
+}
+
+/// Collect helpers for a hoisted static children list, matching exactly what
+/// [`generate_static_element_to_bytes`] / the `Multiple` codegen branch emit:
+/// element children always need `createElementVNode`; a text child only needs
+/// `createTextVNode` when it is emitted in array form (i.e. siblings include an
+/// element), since a single/all-text run collapses to a string literal.
+fn collect_helpers_from_static_children(
+    children: &[TemplateChildNode<'_>],
+    helpers: &mut Vec<RuntimeHelper>,
+) {
+    let has_element = children
+        .iter()
+        .any(|c| matches!(c, TemplateChildNode::Element(_)));
+    for child in children.iter() {
+        match child {
+            TemplateChildNode::Element(el) => {
+                helpers.push(RuntimeHelper::CreateElementVNode);
+                collect_helpers_from_static_children(&el.children, helpers);
+            }
+            TemplateChildNode::Text(_) if has_element => {
+                helpers.push(RuntimeHelper::CreateText);
+            }
+            _ => {}
+        }
     }
 }
 
@@ -283,7 +316,7 @@ fn generate_props_expression_to_bytes(
 
 /// Generate `VNodeChildren` to bytes.
 fn generate_vnode_children_to_bytes(
-    _ctx: &CodegenContext,
+    ctx: &CodegenContext,
     children: &VNodeChildren<'_>,
     out: &mut String,
 ) {
@@ -307,6 +340,157 @@ fn generate_vnode_children_to_bytes(
                 out.push_str(exp.content.as_str());
             }
         }
+        // A fully-static nested subtree hoisted as one recursive VNodeCall:
+        // render the moved children as `[createElementVNode(...), "text", ...]`.
+        VNodeChildren::Multiple(children) => {
+            out.push('[');
+            let mut emitted = 0usize;
+            for child in children.iter() {
+                match child {
+                    TemplateChildNode::Element(el) => {
+                        if emitted > 0 {
+                            out.push_str(", ");
+                        }
+                        emitted += 1;
+                        generate_static_element_to_bytes(ctx, el, out);
+                    }
+                    TemplateChildNode::Text(text) => {
+                        if emitted > 0 {
+                            out.push_str(", ");
+                        }
+                        emitted += 1;
+                        let helper = ctx.helper(RuntimeHelper::CreateText);
+                        out.push_str(helper);
+                        out.push_str("(\"");
+                        out.push_str(escape_js_string(&text.content).as_str());
+                        out.push_str("\")");
+                    }
+                    _ => {}
+                }
+            }
+            out.push(']');
+        }
         _ => out.push_str("null"),
     }
+}
+
+/// Serialize a fully-static element as a nested `createElementVNode(...)` for a
+/// hoisted subtree. Children recurse the same way; text children collapse to a
+/// string literal, matching @vue/compiler-core's hoisted static output.
+fn generate_static_element_to_bytes(
+    ctx: &CodegenContext,
+    el: &crate::ast::ElementNode<'_>,
+    out: &mut String,
+) {
+    out.push_str(ctx.helper(RuntimeHelper::CreateElementVNode));
+    out.push_str("(\"");
+    out.push_str(el.tag.as_str());
+    out.push('"');
+
+    // Props: static attributes and constant v-bind only (the subtree is static).
+    let props = build_static_props(el);
+    if let Some(props) = &props {
+        out.push_str(", ");
+        out.push_str(props.as_str());
+    } else if !el.children.is_empty() {
+        out.push_str(", null");
+    }
+
+    if !el.children.is_empty() {
+        out.push_str(", ");
+        // Single text child collapses to a string literal.
+        if el.children.len() == 1
+            && let TemplateChildNode::Text(text) = &el.children[0]
+        {
+            out.push('"');
+            out.push_str(escape_js_string(&text.content).as_str());
+            out.push('"');
+        } else if el
+            .children
+            .iter()
+            .all(|c| matches!(c, TemplateChildNode::Text(_)))
+        {
+            let mut combined = String::default();
+            for c in el.children.iter() {
+                if let TemplateChildNode::Text(t) = c {
+                    combined.push_str(t.content.as_str());
+                }
+            }
+            out.push('"');
+            out.push_str(escape_js_string(&combined).as_str());
+            out.push('"');
+        } else {
+            out.push('[');
+            let mut emitted = 0usize;
+            for c in el.children.iter() {
+                match c {
+                    TemplateChildNode::Element(child_el) => {
+                        if emitted > 0 {
+                            out.push_str(", ");
+                        }
+                        emitted += 1;
+                        generate_static_element_to_bytes(ctx, child_el, out);
+                    }
+                    TemplateChildNode::Text(text) => {
+                        if emitted > 0 {
+                            out.push_str(", ");
+                        }
+                        emitted += 1;
+                        out.push_str(ctx.helper(RuntimeHelper::CreateText));
+                        out.push_str("(\"");
+                        out.push_str(escape_js_string(&text.content).as_str());
+                        out.push_str("\")");
+                    }
+                    _ => {}
+                }
+            }
+            out.push(']');
+        }
+    }
+
+    out.push(')');
+}
+
+/// Build the props-object literal for a static element, or `None` when it has
+/// no renderable static props. Mirrors the dedupe and quoting rules used by the
+/// main props codegen.
+fn build_static_props(el: &crate::ast::ElementNode<'_>) -> Option<String> {
+    use crate::ast::PropNode;
+
+    let mut buf = String::default();
+    buf.push_str("{ ");
+    let mut seen: vize_carton::FxHashSet<vize_carton::String> = vize_carton::FxHashSet::default();
+    let mut emitted = 0usize;
+
+    for prop in el.props.iter() {
+        if let PropNode::Attribute(attr) = prop {
+            if attr.name == "ref" || seen.contains(attr.name.as_str()) {
+                continue;
+            }
+            seen.insert(attr.name.clone());
+            if emitted > 0 {
+                buf.push_str(", ");
+            }
+            emitted += 1;
+            let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(&attr.name);
+            if needs_quote {
+                buf.push('"');
+                buf.push_str(attr.name.as_str());
+                buf.push('"');
+            } else {
+                buf.push_str(attr.name.as_str());
+            }
+            buf.push_str(": \"");
+            if let Some(v) = &attr.value {
+                buf.push_str(escape_js_string(&v.content).as_str());
+            }
+            buf.push('"');
+        }
+    }
+
+    if emitted == 0 {
+        return None;
+    }
+    buf.push_str(" }");
+    Some(buf)
 }
