@@ -7,12 +7,14 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use serde_json::Value;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, append, cstr};
 
 use super::NuxtPathAlias;
 use super::parsing::{is_ts_identifier, source_type_for_path, source_type_for_script_lang};
 use super::stubs::tracked_read_to_string;
+use crate::commands::check::tsconfig_inputs::parse_jsonc_value;
 
 pub(super) fn collect_fallback_module_stubs(cwd: &Path, stubs: &mut Vec<String>) {
     let imports = collect_nuxt_virtual_module_imports(cwd);
@@ -30,6 +32,99 @@ pub(super) fn collect_fallback_module_stubs(cwd: &Path, stubs: &mut Vec<String>)
 }
 
 pub(super) fn collect_fallback_path_aliases(cwd: &Path) -> Vec<NuxtPathAlias> {
+    // Nuxt's own `nuxi prepare` writes the project's REAL `compilerOptions.paths`
+    // into `.nuxt/tsconfig.json`. When present, consume those generated aliases
+    // verbatim instead of guessing, so user-configured aliases (e.g. custom
+    // `srcDir`, extra `alias` entries) are honoured.
+    if let Some(aliases) = collect_generated_path_aliases(cwd)
+        && !aliases.is_empty()
+    {
+        return aliases;
+    }
+
+    collect_guessed_path_aliases(cwd)
+}
+
+/// Parse `.nuxt/tsconfig.json` (JSON-with-comments) and lift its
+/// `compilerOptions.paths` into [`NuxtPathAlias`]es. Targets in the generated
+/// config are relative to `.nuxt/`, so they are rebased to be relative to the
+/// project root (`cwd`) to match how downstream `tsconfig` synthesis interprets
+/// alias targets. Returns `None` when the file is absent or unparseable so the
+/// caller can fall back to the hardcoded guesses.
+fn collect_generated_path_aliases(cwd: &Path) -> Option<Vec<NuxtPathAlias>> {
+    let tsconfig_path = cwd.join(".nuxt/tsconfig.json");
+    let content = tracked_read_to_string(&tsconfig_path).ok()?;
+    let value = parse_jsonc_value(content.as_str()).ok()?;
+
+    let paths = value
+        .get("compilerOptions")
+        .and_then(Value::as_object)
+        .and_then(|compiler_options| compiler_options.get("paths"))
+        .and_then(Value::as_object)?;
+
+    let nuxt_dir = tsconfig_path.parent().unwrap_or(cwd);
+    let mut aliases: Vec<NuxtPathAlias> = Vec::new();
+    for (pattern, targets) in paths {
+        let Some(targets) = targets.as_array() else {
+            continue;
+        };
+        let targets: Vec<String> = targets
+            .iter()
+            .filter_map(Value::as_str)
+            .map(|target| rebase_generated_target(nuxt_dir, cwd, target))
+            .collect();
+        if targets.is_empty() {
+            continue;
+        }
+        if aliases
+            .iter()
+            .any(|alias| alias.pattern.as_str() == pattern.as_str())
+        {
+            continue;
+        }
+        aliases.push(NuxtPathAlias {
+            pattern: pattern.as_str().into(),
+            targets,
+        });
+    }
+    Some(aliases)
+}
+
+/// Rebase a `.nuxt/tsconfig.json` path target (relative to `.nuxt/`) to be
+/// relative to the project root, lexically. Absolute targets and non-prefixed
+/// targets that escape the root are returned normalized but unchanged in shape.
+fn rebase_generated_target(nuxt_dir: &Path, project_root: &Path, target: &str) -> String {
+    let target_path = Path::new(target);
+    if target_path.is_absolute() {
+        return target.replace('\\', "/").to_compact_string();
+    }
+
+    let absolute = normalize_path_lexically(&nuxt_dir.join(target_path));
+    let project_root = normalize_path_lexically(project_root);
+    let rebased = match absolute.strip_prefix(&project_root) {
+        Ok(relative) if !relative.as_os_str().is_empty() => relative.to_string_lossy(),
+        _ => absolute.to_string_lossy(),
+    };
+    rebased.replace('\\', "/").to_compact_string()
+}
+
+fn normalize_path_lexically(path: &Path) -> PathBuf {
+    let mut normalized = PathBuf::new();
+    for component in path.components() {
+        match component {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                if !normalized.pop() {
+                    normalized.push(component.as_os_str());
+                }
+            }
+            _ => normalized.push(component.as_os_str()),
+        }
+    }
+    normalized
+}
+
+fn collect_guessed_path_aliases(cwd: &Path) -> Vec<NuxtPathAlias> {
     let source_target = if cwd.join("app").is_dir() {
         "app/*"
     } else {
