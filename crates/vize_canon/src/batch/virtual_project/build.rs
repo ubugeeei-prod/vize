@@ -116,6 +116,7 @@ pub(super) fn build_vue_registered_file(
                 options_api: context.options_api,
                 legacy_vue2: context.legacy_vue2,
                 template_syntax: context.template_syntax,
+                hoist_shared_preamble: true,
             },
         )
     )?;
@@ -149,6 +150,71 @@ pub(super) fn build_vue_registered_file(
             context.virtual_root,
         ),
         diagnostics,
+    })
+}
+
+/// Rewritten virtual TypeScript for a single in-memory `.vue` document,
+/// produced by the same canon batch pipeline (`generate_vue_virtual_ts` +
+/// import rewriting) used by `vize check`. Shared by the Corsa socket server so
+/// the single-document LSP path and the batch path generate identical virtual
+/// TS for the same input (issue #1389).
+pub struct VueDocumentVirtualTs {
+    /// `.vue.ts` source after `.vue -> .vue.ts` import rewriting, i.e. exactly
+    /// what is shipped to Corsa.
+    pub code: CompactString,
+    /// Generated source *before* import rewriting. Used to collect the relative
+    /// `.vue` import specifiers for sibling overlay without re-running codegen.
+    pub pre_rewrite_code: CompactString,
+}
+
+/// Generate the rewritten virtual TypeScript for one in-memory `.vue` document.
+///
+/// This reuses the canon batch generator end-to-end (SFC parse, script/template
+/// parse diagnostics, hard-error fallback stub, Croquis analysis, type-based
+/// prop augmentation, SFC compile diagnostics, and `.vue -> .vue.ts` import
+/// rewriting), so the socket single-document path and `vize check` emit
+/// identical virtual TS for the same input. The document path uses the default
+/// (Composition API) variant and default check options. The only deliberate
+/// single-document difference is `hoist_shared_preamble`: the Corsa socket
+/// session has no program-wide ambient helpers file, so the shared preamble is
+/// kept inline (`hoist_shared_preamble = false`) instead of being hoisted as in
+/// the materialized batch project.
+pub fn generate_vue_document_virtual_ts(
+    path: &Path,
+    content: &str,
+    options: &VirtualTsOptions,
+    rewriter: &ImportRewriter,
+    hoist_shared_preamble: bool,
+) -> CorsaResult<VueDocumentVirtualTs> {
+    let descriptor = parse_sfc(
+        content,
+        SfcParseOptions {
+            filename: path.to_string_lossy().to_compact_string(),
+            ..Default::default()
+        },
+    )
+    .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))?;
+
+    let effective_options = virtual_ts_options_for_descriptor(options, &descriptor);
+    let GeneratedVueFile { code, .. } = generate_vue_virtual_ts(
+        path,
+        content,
+        &descriptor,
+        &effective_options,
+        VueCodegenOptions {
+            check_options: VirtualTsCheckOptions::default(),
+            preserve_unused_diagnostics: false,
+            options_api: false,
+            legacy_vue2: false,
+            template_syntax: TemplateSyntaxMode::default(),
+            hoist_shared_preamble,
+        },
+    )?;
+
+    let rewritten = rewriter.rewrite(&code, SourceType::ts());
+    Ok(VueDocumentVirtualTs {
+        code: rewritten.code,
+        pre_rewrite_code: code,
     })
 }
 

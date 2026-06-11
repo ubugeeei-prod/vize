@@ -23,7 +23,10 @@ pub use type_checker::{
     BatchTypeChecker, BatchTypeCheckerOptions, DeclarationEmitOptions, DeclarationEmitResult,
     DeclarationOutput, TypeCheckResult, TypeChecker,
 };
-pub use virtual_project::{OriginalPosition, VirtualFile, VirtualProject};
+pub use virtual_project::{
+    OriginalPosition, VirtualFile, VirtualProject, VueDocumentVirtualTs,
+    generate_vue_document_virtual_ts,
+};
 pub use virtual_ts::VirtualTsGenerator;
 
 use vize_carton::String;

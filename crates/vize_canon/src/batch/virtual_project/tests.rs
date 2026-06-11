@@ -62,6 +62,49 @@ fn test_materialize_writes_inert_vue_module_stub_file() {
 }
 
 #[test]
+fn shared_document_generator_is_byte_identical_to_batch_pipeline() {
+    // Issue #1389: the Corsa socket single-document path and the `vize check`
+    // batch path must produce identical virtual TS for the same input. With the
+    // shared preamble hoisted (as the batch path materializes it), the shared
+    // single-document generator must match `register_vue_file` byte-for-byte.
+    let case_dir = unique_case_dir("shared-doc-vs-batch");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+    let vue_path = src_dir.join("App.vue");
+    let vue_content = r#"<script setup lang="ts">
+import Child from './Child.vue'
+const count = 1
+const label = 'hi'
+</script>
+
+<template>
+  <Child :count="count" />
+  <span>{{ label }}</span>
+</template>
+"#;
+    fs::write(&vue_path, vue_content).unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_vue_file(&vue_path, vue_content).unwrap();
+    let batch_content = project.find_by_original(&vue_path).unwrap().content.clone();
+
+    let rewriter = super::super::import_rewriter::ImportRewriter::new();
+    let shared = super::generate_vue_document_virtual_ts(
+        &vue_path,
+        vue_content,
+        &VirtualTsOptions::default(),
+        &rewriter,
+        true,
+    )
+    .unwrap();
+
+    assert_eq!(shared.code.as_str(), batch_content.as_str());
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn test_register_vue_file_rewrites_child_imports() {
     let case_dir = unique_case_dir("register-vue");
     let _ = fs::remove_dir_all(&case_dir);

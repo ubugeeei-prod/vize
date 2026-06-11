@@ -200,6 +200,22 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
     let allocator = ctx.allocator;
     let is_component = el.tag_type == ElementType::Component;
 
+    // Vue 2 v-on event-modifier sugar (`@click.native`, numeric keycodes such
+    // as `@keyup.13`). Legacy-only and dialect-gated: a no-op for the default
+    // Vue 3 dialect (and every other legacy line), so the directive modifiers
+    // stay byte-identical there. Runs before any modifier classification so
+    // `.native` is stripped and numeric keycodes are rewritten to key names.
+    #[cfg(feature = "legacy")]
+    if ctx.supports_v2_event_sugar() {
+        for prop in el.props.iter_mut() {
+            if let PropNode::Directive(dir) = prop
+                && dir.name == "on"
+            {
+                crate::transforms::legacy::desugar_v2_v_on_modifiers(dir);
+            }
+        }
+    }
+
     // Process directive expressions with _ctx prefix if needed
     if ctx.options.prefix_identifiers || ctx.options.is_ts {
         process_directive_expressions(ctx, el);
