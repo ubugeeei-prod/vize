@@ -112,24 +112,24 @@ jobs:
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success'
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
-          path: base/target/ci/vize
-          key: ${{ runner.os }}-benchmark-base-cli-${{ github.event.pull_request.base.sha }}
+          path: base/target/ci-opt/vize
+          key: ${{ runner.os }}-benchmark-base-cli-ci-opt-${{ github.event.pull_request.base.sha }}
 
       - name: Build base CLI
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-base-cli.outputs.cache-hit != 'true'
-        run: cargo build --manifest-path base/Cargo.toml --profile ci -p vize
+        run: cargo build --manifest-path base/Cargo.toml --profile ci-opt -p vize
 
       - name: Cache head CLI
         id: cache-head-cli
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success'
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
-          path: head/target/ci/vize
-          key: ${{ runner.os }}-benchmark-head-cli-${{ github.event.pull_request.head.sha }}
+          path: head/target/ci-opt/vize
+          key: ${{ runner.os }}-benchmark-head-cli-ci-opt-${{ github.event.pull_request.head.sha }}
 
       - name: Build head CLI
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-head-cli.outputs.cache-hit != 'true'
-        run: cargo build --manifest-path head/Cargo.toml --profile ci -p vize
+        run: cargo build --manifest-path head/Cargo.toml --profile ci-opt -p vize
 
       - name: Generate benchmark input
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success'
@@ -141,8 +141,8 @@ jobs:
         run: |
           node head/bench/compare-pr.mjs \
             --input "$GITHUB_WORKSPACE/head/bench/__in__" \
-            --base-bin "$GITHUB_WORKSPACE/base/target/ci/vize" \
-            --head-bin "$GITHUB_WORKSPACE/head/target/ci/vize" \
+            --base-bin "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
+            --head-bin "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
             --base-label "${{ github.event.pull_request.base.sha }}" \
             --head-label "${{ github.event.pull_request.head.sha }}" \
             --runs "$VIZE_BENCH_RUNS" \

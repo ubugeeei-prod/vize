@@ -159,3 +159,12 @@ inherits = "dev"
 debug = false
 incremental = false
 codegen-units = 256
+
+# The PR benchmark gate compares base and head CLI performance, so its binaries
+# must be optimized or abstraction-cost regressions stay invisible. Thin LTO
+# with multiple codegen units keeps the gate's per-SHA build cost well below
+# the fat-LTO release profile while staying representative of it.
+[profile.ci-opt]
+inherits = "release"
+lto = "thin"
+codegen-units = 16
