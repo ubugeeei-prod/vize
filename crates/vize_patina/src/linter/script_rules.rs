@@ -1,11 +1,11 @@
 use super::{LintResult, Linter};
 use crate::rules::script::{
-    NoAsyncInComputed, NoDeepDestructureInProps, NoGetCurrentInstance, NoImportCompilerMacros,
-    NoInternalImports, NoNextTick, NoOptionsApi, NoReactiveDestructure, NoReservedIdentifiers,
-    NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed,
-    PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots,
-    PreferUseTemplateRef, RequireFunctionReturnType, RequireSymbolProvide, ScriptRule,
-    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot, script_source_type,
+    NoAsyncInComputed, NoDeepDestructureInProps, NoDupeKeys, NoGetCurrentInstance,
+    NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi, NoReactiveDestructure,
+    NoReservedIdentifiers, NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs,
+    PreferComputed, PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId,
+    PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType, RequireSymbolProvide,
+    ScriptRule, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot, script_source_type,
 };
 use memchr::memmem;
 use oxc_allocator::Allocator;
@@ -41,7 +41,7 @@ impl BuiltinScriptRuleEntry {
     }
 }
 
-const BUILTIN_SCRIPT_RULE_COUNT: usize = 23;
+const BUILTIN_SCRIPT_RULE_COUNT: usize = 24;
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
     NoDeepDestructureInProps { max_depth: 1 };
 
@@ -235,6 +235,14 @@ static BUILTIN_SCRIPT_RULES: [BuiltinScriptRuleEntry; BUILTIN_SCRIPT_RULE_COUNT]
         presets: OPT_IN_SCRIPT_PRESETS,
         rule: &RequireFunctionReturnType,
     },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_DUPE_KEYS,
+        profile_name: "patina.script_rule.no_dupe_keys",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoDupeKeys,
+    },
 ];
 
 pub(crate) const RULE_NO_OPTIONS_API: &str = "script/no-options-api";
@@ -261,6 +269,7 @@ pub(crate) const RULE_NO_IMPORT_COMPILER_MACROS: &str = "script/no-import-compil
 pub(crate) const RULE_NO_RESERVED_IDENTIFIERS: &str = "script/no-reserved-identifiers";
 pub(crate) const RULE_REQUIRE_SYMBOL_PROVIDE: &str = "script/require-symbol-provide";
 pub(crate) const RULE_REQUIRE_FUNCTION_RETURN_TYPE: &str = "script/require-function-return-type";
+pub(crate) const RULE_NO_DUPE_KEYS: &str = "script/no-dupe-keys";
 const OPINIONATED_SCRIPT_PRESETS: &[&str] = &["opinionated", "nuxt"];
 const ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &["ecosystem"];
 const OPT_IN_SCRIPT_PRESETS: &[&str] = &[];
@@ -288,6 +297,7 @@ const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_RESERVED_IDENTIFIERS,
     RULE_REQUIRE_SYMBOL_PROVIDE,
     RULE_REQUIRE_FUNCTION_RETURN_TYPE,
+    RULE_NO_DUPE_KEYS,
 ];
 #[cfg(test)]
 const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
@@ -311,6 +321,7 @@ const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_RESERVED_IDENTIFIERS,
     RULE_REQUIRE_SYMBOL_PROVIDE,
     RULE_REQUIRE_FUNCTION_RETURN_TYPE,
+    RULE_NO_DUPE_KEYS,
 ];
 
 pub struct BuiltinScriptRuleMeta {
@@ -378,6 +389,7 @@ fn builtin_script_rule_entry(rule_name: &str) -> Option<&'static BuiltinScriptRu
         RULE_NO_RESERVED_IDENTIFIERS => 20,
         RULE_REQUIRE_SYMBOL_PROVIDE => 21,
         RULE_REQUIRE_FUNCTION_RETURN_TYPE => 22,
+        RULE_NO_DUPE_KEYS => 23,
         _ => return None,
     };
     Some(&BUILTIN_SCRIPT_RULES[index])

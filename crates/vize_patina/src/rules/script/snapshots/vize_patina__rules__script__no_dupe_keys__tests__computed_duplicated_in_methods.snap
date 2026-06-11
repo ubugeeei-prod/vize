@@ -1,0 +1,29 @@
+---
+source: crates/vize_patina/src/rules/script/no_dupe_keys.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-dupe-keys",
+        severity: Error,
+        message: "Duplicated key 'bar'",
+        start: 77,
+        end: 80,
+        help: Some(
+            "props, data, computed, methods, setup, and inject share the component instance namespace; give each member a unique name.",
+        ),
+        labels: [
+            Label {
+                message: "declared again in methods",
+                start: 77,
+                end: 80,
+            },
+            Label {
+                message: "first declared in computed",
+                start: 36,
+                end: 39,
+            },
+        ],
+        fix: None,
+    },
+]

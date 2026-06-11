@@ -473,6 +473,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-import-compiler-macros",
     "script/no-reserved-identifiers",
     "script/require-symbol-provide",
-    "script/require-function-return-type"
+    "script/require-function-return-type",
+    "script/no-dupe-keys"
   ]
 }

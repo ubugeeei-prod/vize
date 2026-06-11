@@ -23,6 +23,7 @@
 
 mod no_async_in_computed;
 mod no_deep_destructure_in_props;
+mod no_dupe_keys;
 mod no_get_current_instance;
 mod no_import_compiler_macros;
 mod no_internal_imports;
@@ -56,6 +57,7 @@ use vize_carton::profile;
 
 pub use no_async_in_computed::NoAsyncInComputed;
 pub use no_deep_destructure_in_props::NoDeepDestructureInProps;
+pub use no_dupe_keys::NoDupeKeys;
 pub use no_get_current_instance::NoGetCurrentInstance;
 pub use no_import_compiler_macros::NoImportCompilerMacros;
 pub use no_internal_imports::NoInternalImports;
@@ -218,6 +220,7 @@ impl ScriptLinter {
                 Box::new(PreferImportFromVue),
                 Box::new(NoWithDefaults),
                 Box::new(NoDeepDestructureInProps::default()),
+                Box::new(NoDupeKeys),
                 Box::new(NoInternalImports),
                 Box::new(NoImportCompilerMacros),
                 Box::new(NoReservedIdentifiers),
