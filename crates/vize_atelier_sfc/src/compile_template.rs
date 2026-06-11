@@ -11,7 +11,9 @@ mod vapor;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use extraction::{extract_template_parts, extract_template_parts_full};
+pub(crate) use extraction::{
+    extract_template_parts, extract_template_parts_full, slice_template_parts,
+};
 pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::TemplateSyntaxMode;
@@ -22,6 +24,27 @@ use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileO
 pub(crate) struct TemplateBlockCompileResult {
     pub(crate) code: String,
     pub(crate) warnings: std::vec::Vec<SfcError>,
+    /// Section boundaries of `code`, recorded while the render module was
+    /// emitted. `None` for the SSR/Vapor lanes (they re-scan via
+    /// `extract_template_parts_full`) and for codegen error paths.
+    pub(crate) sections: Option<TemplateCodeSections>,
+}
+
+/// Byte ranges into [`TemplateBlockCompileResult::code`] marking the sections
+/// the inline SFC assembly consumes. Mirrors what
+/// [`extraction::extract_template_parts`] reconstructs by line scanning, but
+/// recorded at emission so the hot path can slice instead of re-scan.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct TemplateCodeSections {
+    /// `import { ... } from "vue"` line(s), trailing newline included.
+    pub(crate) imports: (usize, usize),
+    /// Hoisted module-level declarations, one per line.
+    pub(crate) hoisted: (usize, usize),
+    /// Component/directive resolution statements inside the render function
+    /// (raw slice; lines carry codegen indentation).
+    pub(crate) assets: (usize, usize),
+    /// The root `return` expression of the render function.
+    pub(crate) return_expr: (usize, usize),
 }
 
 pub(crate) struct TemplateBlockCompileContext<'a> {
@@ -114,6 +137,7 @@ pub(crate) fn compile_template_block(
         return Ok(TemplateBlockCompileResult {
             code: output,
             warnings: recoverable_template_warnings(&errors),
+            sections: None,
         });
     }
 
@@ -196,9 +220,28 @@ pub(crate) fn compile_template_block(
     output.push_str(&result.code);
     output.push('\n');
 
+    // Translate the emission-recorded section offsets into the concatenated
+    // output: `output = preamble + '\n' + code + '\n'`, where `preamble` is
+    // the import statement followed (when hoists exist) by '\n' + hoists.
+    let sections = result.sections.map(|s| {
+        let preamble_len = result.preamble.len();
+        let fn_base = preamble_len + 1;
+        TemplateCodeSections {
+            imports: (0, s.imports_len),
+            hoisted: if preamble_len > s.imports_len {
+                (s.imports_len + 1, preamble_len)
+            } else {
+                (preamble_len, preamble_len)
+            },
+            assets: (fn_base + s.assets_start, fn_base + s.assets_end),
+            return_expr: (fn_base + s.return_expr_start, fn_base + s.return_expr_end),
+        }
+    });
+
     Ok(TemplateBlockCompileResult {
         code: output,
         warnings: recoverable_template_warnings(&errors),
+        sections,
     })
 }
 

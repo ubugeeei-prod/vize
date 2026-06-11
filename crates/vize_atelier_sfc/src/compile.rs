@@ -17,7 +17,7 @@ use crate::compile_script::props::is_valid_identifier;
 use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
-    extract_template_parts, extract_template_parts_full,
+    extract_template_parts, extract_template_parts_full, slice_template_parts,
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
@@ -887,7 +887,12 @@ fn compile_sfc_inner(
             } else {
                 let (imports, hoisted, preamble, body, render_fn_name) = profile!(
                     "atelier.sfc.template.extract_parts",
-                    extract_template_parts(template_code)
+                    match &template_output.sections {
+                        // Emission-recorded offsets: slice the sections out
+                        // directly instead of re-scanning the module.
+                        Some(sections) => slice_template_parts(template_code, sections),
+                        None => extract_template_parts(template_code),
+                    }
                 );
                 (
                     imports,

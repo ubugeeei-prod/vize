@@ -2,9 +2,52 @@
 
 use vize_carton::{String, ToCompactString};
 
+use super::TemplateCodeSections;
 use super::string_tracking::{
     StringTrackState, count_braces_with_state, count_delims_with_state, count_parens_with_state,
 };
+
+/// Slice the structural sections out of compiled template code using
+/// emission-recorded byte offsets.
+///
+/// Produces the same `(imports, hoisted, preamble, render_body, name)` tuple
+/// as [`extract_template_parts`], but without re-scanning the whole module
+/// line by line: the codegen pipeline already knows where each section
+/// starts and ends, so this is slicing plus a trim pass over the (tiny)
+/// asset-resolution region.
+pub(crate) fn slice_template_parts(
+    template_code: &str,
+    sections: &TemplateCodeSections,
+) -> (String, String, String, String, &'static str) {
+    let slice = |(start, end): (usize, usize)| template_code.get(start..end).unwrap_or_default();
+
+    let imports = String::new(slice(sections.imports));
+    let hoisted = String::new(slice(sections.hoisted));
+
+    // Asset-resolution statements carry the render function's indentation;
+    // the inline assembly expects them trimmed, one per line. The region also
+    // ends with the blank separator line codegen emits before `return`.
+    let assets_raw = slice(sections.assets);
+    let mut preamble = String::with_capacity(assets_raw.len());
+    for line in assets_raw.lines() {
+        let trimmed = line.trim();
+        if !trimmed.is_empty() {
+            preamble.push_str(trimmed);
+            preamble.push('\n');
+        }
+    }
+
+    // Same trailing cleanup as `finalize_render_body`: drop trailing
+    // whitespace, then at most one `;`.
+    let mut body = slice(sections.return_expr);
+    body = body.trim_end_matches([' ', '\t', '\n', '\r']);
+    if let Some(stripped) = body.strip_suffix(';') {
+        body = stripped;
+    }
+    let render_body = String::new(body);
+
+    (imports, hoisted, preamble, render_body, "render")
+}
 
 fn is_vapor_template_declaration(line: &str) -> bool {
     line.starts_with("const t") && line.contains("_template(")

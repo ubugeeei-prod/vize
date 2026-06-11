@@ -10,7 +10,7 @@ use crate::{
 use vize_carton::profile;
 
 use super::children::is_directive_comment;
-use super::context::{CodegenContext, CodegenResult};
+use super::context::{CodegenContext, CodegenResult, CodegenSections};
 use super::element::generate_root_node;
 use super::generate::{collect_hoist_helpers, generate_hoists};
 use super::node::generate_node;
@@ -40,10 +40,13 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     ctx.newline();
 
     // Generate component/directive resolution
+    let assets_start = ctx.code.len();
     profile!("atelier.codegen.assets", generate_assets(&mut ctx, root));
+    let assets_end = ctx.code.len();
 
     // Generate return statement
     ctx.push("return ");
+    let return_expr_start = ctx.code.len();
 
     // Generate root node
     if root_children.is_empty() {
@@ -91,6 +94,7 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
             ctx.push("], 64 /* STABLE_FRAGMENT */))");
         }
     }
+    let return_expr_end = ctx.code.len();
 
     ctx.deindent();
     ctx.newline();
@@ -130,6 +134,7 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         "atelier.codegen.preamble",
         generate_preamble_from_helpers(&ctx, &ordered_helpers)
     );
+    let imports_len = preamble.len();
 
     // Generate hoisted variable declarations (appended to preamble)
     let hoists_code = profile!("atelier.codegen.hoists", generate_hoists(&ctx, root));
@@ -142,6 +147,13 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         code: ctx.into_code(),
         preamble,
         map: None,
+        sections: Some(CodegenSections {
+            imports_len,
+            assets_start,
+            assets_end,
+            return_expr_start,
+            return_expr_end,
+        }),
     }
 }
 

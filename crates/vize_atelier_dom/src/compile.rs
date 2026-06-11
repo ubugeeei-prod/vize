@@ -151,6 +151,7 @@ fn compile_template_inner<'a>(
             code: String::default(),
             preamble: String::default(),
             map: None,
+            sections: None,
         };
         return (root, errors.to_vec(), codegen_result);
     }

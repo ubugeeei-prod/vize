@@ -24,6 +24,6 @@ mod tests;
 #[cfg(test)]
 use crate::options::CodegenOptions;
 
-pub use context::{CodegenContext, CodegenResult};
+pub use context::{CodegenContext, CodegenResult, CodegenSections};
 pub(crate) use helpers::is_constant_simple_expression;
 pub use pipeline::generate;
