@@ -202,7 +202,7 @@ export function createBenchmarkBudget(results) {
   };
 }
 
-function makeTasks(inputDir, taskFilter) {
+export function makeTasks(inputDir, taskFilter) {
   const tsconfig = join(inputDir, "tsconfig.json");
   const pattern = ".";
   const allTasks = [
@@ -219,8 +219,28 @@ function makeTasks(inputDir, taskFilter) {
       allowNonZeroExit: true,
     },
     {
+      id: "fmt",
+      label: "Format",
+      // `*.vue` instead of `.`: fmt expands `.` into a gitignore-aware walk
+      // and bench/__in__ is gitignored, so that walk finds zero files; the
+      // plain glob matches the corpus directly (same invocation as
+      // bench/fmt.ts and compare-tools.mjs). `--check` formats in memory and
+      // never writes, so the corpus stays byte-identical between the
+      // alternating base/head runs. The generated corpus is intentionally
+      // unformatted, so the non-zero "would reformat" exit is expected.
+      // fmt has no --threads flag; the RAYON_NUM_THREADS=1 set by runCommand
+      // pins it to a single thread like the other lanes.
+      args: ["fmt", "*.vue", "--check"],
+      allowNonZeroExit: true,
+    },
+    {
       id: "check",
       label: "Type check",
+      // --servers 1 pins the lane to a single Corsa server so it isolates
+      // single-program performance and stays deterministic on shared CI
+      // runners. The trade-off is that multi-server sharding regressions are
+      // not covered here; a dedicated multi-server lane is tracked in #1386
+      // (PR3) and needs its own noise validation before it can gate PRs.
       args: ["check", pattern, "--quiet", "--servers", "1", "--tsconfig", tsconfig],
       allowNonZeroExit: true,
       enabled: existsSync(tsconfig),

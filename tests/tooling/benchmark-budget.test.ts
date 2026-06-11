@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { createBenchmarkBudget, renderMarkdown } from "../../bench/compare-pr.mjs";
+import { createBenchmarkBudget, makeTasks, renderMarkdown } from "../../bench/compare-pr.mjs";
 import { enforceBenchmarkBudget } from "../../bench/enforce-pr-budget.mjs";
 
 const stableResult = {
@@ -63,6 +63,30 @@ test("benchmark markdown reports the active regression budget", () => {
   assert.match(markdown, /Budget: failed \(1 regression\)\./);
   assert.match(markdown, /Regression budget failures:/);
   assert.match(markdown, /Type check: 1\.150x \(\+15\.00%\)/);
+});
+
+test("benchmark tasks gate the formatter without mutating the corpus", () => {
+  const tasks = makeTasks("/nonexistent-input-dir", "");
+  const ids = tasks.map((task) => task.id);
+
+  assert.ok(ids.includes("fmt"), "default task set must include the fmt lane");
+
+  const fmt = tasks.find((task) => task.id === "fmt");
+  assert.ok(fmt);
+  assert.ok(fmt.args.includes("--check"), "fmt lane must run in non-destructive check mode");
+  assert.ok(!fmt.args.includes("--write"), "fmt lane must never rewrite the shared corpus");
+  assert.equal(
+    fmt.allowNonZeroExit,
+    true,
+    "unformatted corpus exits non-zero in check mode; the lane only measures time",
+  );
+
+  // Filtering still works for the new lane.
+  const onlyFmt = makeTasks("/nonexistent-input-dir", "fmt");
+  assert.deepEqual(
+    onlyFmt.map((task) => task.id),
+    ["fmt"],
+  );
 });
 
 test("benchmark budget allows skipped benchmark runs", () => {
