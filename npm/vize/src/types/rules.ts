@@ -62,6 +62,7 @@ export const LINT_RULE_NAMES = [
   "html/require-datetime",
   "script/no-async-in-computed",
   "script/no-deep-destructure-in-props",
+  "script/no-dupe-keys",
   "script/no-get-current-instance",
   "script/no-import-compiler-macros",
   "script/no-internal-imports",
