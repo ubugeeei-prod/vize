@@ -1,7 +1,7 @@
 //! Diagnostic reporting, JSON serialization, and profile artifacts for the
 //! `check` runner.
 
-use std::{fmt::Write as _, fs, path::Path, path::PathBuf};
+use std::{fs, path::Path, path::PathBuf};
 
 use vize_carton::{FxHashSet, String as CompactString, cstr, profile, profiler::global_profiler};
 
@@ -20,8 +20,8 @@ pub(super) fn emit_json_output(json_output: JsonOutput) {
 
 pub(super) fn render_virtual_ts_output<'a>(
     files: impl IntoIterator<Item = (&'a Path, &'a str)>,
-) -> std::string::String {
-    let mut output = std::string::String::new();
+) -> CompactString {
+    let mut output = CompactString::default();
     append_virtual_ts_section(
         &mut output,
         Path::new(vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME),
@@ -33,10 +33,10 @@ pub(super) fn render_virtual_ts_output<'a>(
     output
 }
 
-fn append_virtual_ts_section(output: &mut std::string::String, path: &Path, content: &str) {
+fn append_virtual_ts_section(output: &mut CompactString, path: &Path, content: &str) {
     output.push('\n');
     output.push_str("=== ");
-    let _ = write!(output, "{}", path.display());
+    output.push_str(cstr!("{}", path.display()).as_str());
     output.push_str(" ===\n");
     output.push_str(content);
     output.push('\n');
