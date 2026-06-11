@@ -10,6 +10,9 @@
 //! - Lazy file metadata loading to avoid unnecessary I/O
 //! - Source hashing for change detection without file I/O
 
+use crate::analyzers::cross_file_reactivity::store_detection::{
+    StoreFactories, collect_store_factories,
+};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
@@ -59,6 +62,11 @@ pub struct ModuleEntry {
     pub is_vue_sfc: bool,
     /// Component name (extracted from filename or defineComponent).
     pub component_name: Option<CompactString>,
+    /// Identifiers bound to `defineStore(...)` calls in this module.
+    ///
+    /// Computed from the AST at registration time so that Pinia store usages
+    /// can be resolved structurally rather than by `use*Store` naming.
+    pub pinia_stores: StoreFactories,
 }
 
 /// Registry for tracking all analyzed files in a project.
@@ -127,6 +135,7 @@ impl ModuleRegistry {
             if let Some(entry) = self.entries.get_mut(&existing_id) {
                 entry.source_hash = source_hash;
                 entry.analysis = analysis;
+                entry.pinia_stores = collect_store_factories(source);
                 entry.mtime = std::fs::metadata(&abs_path)
                     .ok()
                     .and_then(|m| m.modified().ok());
@@ -165,6 +174,7 @@ impl ModuleRegistry {
             source_hash,
             is_vue_sfc,
             component_name,
+            pinia_stores: collect_store_factories(source),
         };
 
         self.path_to_id.insert(abs_path, id);
@@ -368,5 +378,42 @@ mod tests {
         assert!(source_renders_slot("<slot>fallback</slot>"));
         assert!(!source_renders_slot("<template><slotter /></template>"));
         assert!(!source_renders_slot("<template></template>"));
+    }
+
+    #[test]
+    fn test_register_tracks_define_store_factories() {
+        let mut registry = ModuleRegistry::new();
+        let (id, _) = registry.register(
+            "stores/user.ts",
+            "import { defineStore } from 'pinia'\n\
+             export const useUserStore = defineStore('user', {})\n\
+             export function useNotAStore() { return 1 }",
+            Croquis::new(),
+        );
+
+        let entry = registry.get(id).expect("entry");
+        // The `defineStore` factory is recognized structurally...
+        assert!(entry.pinia_stores.contains("useUserStore"));
+        // ...while a plainly-declared function is not, even if it is `use*`.
+        assert!(!entry.pinia_stores.contains("useNotAStore"));
+    }
+
+    #[test]
+    fn test_register_ignores_non_define_store_named_store() {
+        let mut registry = ModuleRegistry::new();
+        let (id, _) = registry.register(
+            "stores/fake.ts",
+            "const useThingStore = () => ({})",
+            Croquis::new(),
+        );
+
+        // Coincidental `use*Store` name, but not a `defineStore` result.
+        assert!(
+            !registry
+                .get(id)
+                .unwrap()
+                .pinia_stores
+                .contains("useThingStore")
+        );
     }
 }

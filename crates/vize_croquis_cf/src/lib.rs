@@ -53,7 +53,7 @@ mod registry;
 mod suppression;
 
 // Analyzer implementations
-mod analyzers;
+pub(crate) mod analyzers;
 
 // Re-exports
 pub use analyzer::{CrossFileAnalyzer, CrossFileOptions, CrossFileResult, CrossFileStats};

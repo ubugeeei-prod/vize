@@ -11,6 +11,10 @@ description = "Cross-file semantic analysis for Vize Croquis"
 vize_carton.workspace = true
 vize_croquis.workspace = true
 rustc-hash.workspace = true
+oxc_allocator.workspace = true
+oxc_ast.workspace = true
+oxc_parser.workspace = true
+oxc_span.workspace = true
 
 [dev-dependencies]
 vize_armature.workspace = true

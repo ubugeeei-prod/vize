@@ -3625,6 +3625,10 @@ version = "0.204.0"
 dependencies = [
  "criterion",
  "insta",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_parser",
+ "oxc_span",
  "rustc-hash",
  "vize_armature",
  "vize_carton",

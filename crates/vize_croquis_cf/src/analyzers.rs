@@ -12,7 +12,7 @@
 
 mod boundary;
 mod component_resolution;
-mod cross_file_reactivity;
+pub(crate) mod cross_file_reactivity;
 mod element_id;
 mod emit;
 mod event_bubbling;

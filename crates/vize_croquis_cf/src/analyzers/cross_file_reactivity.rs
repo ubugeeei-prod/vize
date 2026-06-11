@@ -36,6 +36,7 @@ mod name_helpers;
 mod path_helpers;
 mod prop_helpers;
 mod provide_helpers;
+pub(crate) mod store_detection;
 mod types;
 
 pub use analyzer::CrossFileReactivityAnalyzer;

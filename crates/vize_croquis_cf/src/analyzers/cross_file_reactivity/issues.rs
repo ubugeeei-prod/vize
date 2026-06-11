@@ -38,10 +38,17 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                 let has_store_to_refs = scope.bindings().any(|(name, _)| name == "storeToRefs");
 
                 if !has_store_to_refs {
-                    // Check if there are store calls that might be destructured
-                    // This is a heuristic - stores are usually named `use*Store`
+                    // Resolve store usages against the `defineStore(...)`
+                    // declarations tracked for this module, rather than the old
+                    // `use*Store` naming heuristic. A function coincidentally
+                    // named like a store is not flagged; a `defineStore` factory
+                    // with a non-conforming name still is.
+                    let stores = &self.registry.get(file_id).map(|entry| &entry.pinia_stores);
                     for composable in analysis.provide_inject.composables() {
-                        if composable.name.ends_with("Store") && composable.local_name.is_none() {
+                        let is_store = stores
+                            .map(|s| s.contains(composable.name.as_str()))
+                            .unwrap_or(false);
+                        if is_store && composable.local_name.is_none() {
                             self.issues.push(CrossFileReactivityIssue {
                                 file_id,
                                 kind: CrossFileReactivityIssueKind::StoreDestructured {
