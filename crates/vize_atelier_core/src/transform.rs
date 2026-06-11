@@ -248,6 +248,18 @@ fn transform_inner<'a>(
     ctx.hoisted_scope_id = hoisted_scope_id;
     ctx.root = Some(root as *mut _);
 
+    // Legacy (Vue 2 / 2.7) template-sugar pre-transform. Resolved once per file
+    // from the dialect; a no-op for the default Vue 3 dialect (the resolved
+    // capability set is the all-off `VUE3` set, so this returns before touching
+    // the tree). Compiled only under the `legacy` cargo feature — the default
+    // Vue 3 build never sees it, keeping the hot path byte-identical.
+    #[cfg(feature = "legacy")]
+    {
+        use vize_armature::legacy::LegacyDialectCapabilities;
+        let caps = LegacyDialectCapabilities::for_dialect(ctx.options.dialect);
+        crate::transforms::legacy::desugar_legacy_template(allocator, root, caps);
+    }
+
     // Transform the root children
     profile!(
         "atelier.transform.traverse_children",

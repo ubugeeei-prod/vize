@@ -4,6 +4,10 @@
 //! directives and node types during the transform phase.
 
 pub mod hoist_static;
+/// Legacy Vue (v2 / v2.7) template-sugar pre-transforms. Compiled only with the
+/// `legacy` cargo feature; a no-op for the default Vue 3 dialect.
+#[cfg(feature = "legacy")]
+pub mod legacy;
 pub mod transform_element;
 pub mod transform_expression;
 pub mod transform_text;
