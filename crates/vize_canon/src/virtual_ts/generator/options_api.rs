@@ -467,6 +467,84 @@ pub(super) fn find_default_export_targets(script: &str) -> DefaultExportTargets 
     targets
 }
 
+use crate::virtual_ts::props::OptionsApiPropsSource;
+
+/// Parse a plain `<script>` and extract its Options API `props:` declaration.
+///
+/// Returns `None` when there is no resolvable component options object or no
+/// `props:` option (or it is an unrecognized expression form). Object and array
+/// literals are recognized directly; an identifier whose initializer object can
+/// be resolved is not chased here because the runtime prop ctors would not be in
+/// scope inside the emitted `__RuntimePropShape<...>` reference.
+///
+/// The result feeds canon's real `export type Props` for Options API
+/// components: object form maps through the shared `__RuntimePropShape<...>`
+/// machinery (runtime ctors and `{ type, required }` shapes resolve to TS prop
+/// types with correct optionality), while the array form has no runtime type
+/// info so each prop is emitted as optional `unknown`.
+pub(super) fn find_options_api_props(script: &str) -> Option<OptionsApiPropsSource> {
+    if !script.contains("export default") {
+        return None;
+    }
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+    if parsed.panicked {
+        return None;
+    }
+    let options = component_options_from_program(&parsed.program)?;
+    let props = option_expression_property(options, "props")?;
+    options_api_props_from_expression(script, props)
+}
+
+fn options_api_props_from_expression(
+    script: &str,
+    expression: &Expression<'_>,
+) -> Option<OptionsApiPropsSource> {
+    match expression {
+        Expression::ObjectExpression(object) => {
+            let source = source_slice(script, object.span())?;
+            Some(OptionsApiPropsSource::Object(String::from(source)))
+        }
+        Expression::ArrayExpression(array) => {
+            let mut names = Vec::new();
+            for element in &array.elements {
+                if let ArrayExpressionElement::StringLiteral(literal) = element {
+                    names.push(String::from(literal.value.as_str()));
+                }
+            }
+            (!names.is_empty()).then_some(OptionsApiPropsSource::Names(names))
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            options_api_props_from_expression(script, &parenthesized.expression)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            options_api_props_from_expression(script, &ts_as.expression)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            options_api_props_from_expression(script, &ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            options_api_props_from_expression(script, &ts_non_null.expression)
+        }
+        _ => None,
+    }
+}
+
+fn option_expression_property<'a>(
+    object: &'a ObjectExpression<'a>,
+    key_name: &str,
+) -> Option<&'a Expression<'a>> {
+    object.properties.iter().find_map(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return None;
+        };
+        if property.computed || property_key_name(&property.key) != Some(key_name) {
+            return None;
+        }
+        Some(&property.value)
+    })
+}
+
 fn component_options_from_program<'a>(
     program: &'a Program<'a>,
 ) -> Option<&'a ObjectExpression<'a>> {

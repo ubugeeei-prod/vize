@@ -16,7 +16,8 @@ use self::imports::{
     extract_declared_name,
 };
 use self::options_api::{
-    find_default_export_targets, generate_options_api_bridge, generate_options_api_variables,
+    find_default_export_targets, find_options_api_props, generate_options_api_bridge,
+    generate_options_api_variables,
 };
 use self::spans::{
     DEFINE_COMPONENT_HELPER, DEFINE_COMPONENT_REF, collect_template_referenced_names,
@@ -29,8 +30,9 @@ use super::{
         generate_template_context, to_safe_identifier,
     },
     props::{
-        add_generic_defaults, collect_template_prop_names, extract_generic_names,
-        generate_props_type, generate_props_variables, strip_const_modifiers,
+        OptionsApiPropsSource, add_generic_defaults, collect_template_prop_names,
+        extract_generic_names, generate_props_type, generate_props_variables,
+        strip_const_modifiers,
     },
     scope::{ScopeGenerationOptions, generate_scope_closures},
     types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
@@ -436,10 +438,20 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     ts.push('\n');
 
-    // Props type (defined at module level so it's available inside __setup)
+    // Props type (defined at module level so it's available inside __setup).
+    // For an Options API component with no `defineProps` macro, derive a real
+    // `export type Props` from its runtime `props:` option so cross-file prop
+    // checking is no longer a `{}` no-op. Macro-driven props (script setup) take
+    // precedence and are emitted by `generate_props_type` itself.
+    let options_api_props: Option<OptionsApiPropsSource> =
+        if options_api && summary.macros.props().is_empty() {
+            script_content.and_then(find_options_api_props)
+        } else {
+            None
+        };
     profile!(
         "canon.virtual_ts.generate_props_type",
-        generate_props_type(&mut ts, summary, generic_param)
+        generate_props_type(&mut ts, summary, generic_param, options_api_props.as_ref())
     );
 
     // Setup scope: function that contains setup helpers and script content

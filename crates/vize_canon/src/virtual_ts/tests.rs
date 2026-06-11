@@ -228,6 +228,91 @@ fn test_options_api_template_bindings_use_default_instance_type() {
 }
 
 #[test]
+fn test_options_api_emits_real_props_type_from_object_option() {
+    // A plain `<script>` Options API component with a runtime `props:` object
+    // must produce a real `export type Props` (via the shared
+    // `__RuntimePropShape<...>` machinery) instead of the historical `{}` no-op,
+    // so cross-file prop checking is no longer silently disabled.
+    let script = r#"export default {
+    props: {
+        initial: Number,
+        label: { type: String, required: true },
+    },
+}
+"#;
+    let summary = analyze_options_api_script(script);
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        output.code.contains(
+            "export type Props = __RuntimePropShape<{\n        initial: Number,\n        label: { type: String, required: true },\n    }>;"
+        ),
+        "expected a real Props type derived from the runtime props option:\n{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("export type Props = {};"),
+        "Options API props must not fall back to the `{{}}` no-op:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_options_api_emits_props_type_from_array_option() {
+    // The array form carries no runtime type info, so each prop is emitted as an
+    // optional `unknown` member rather than the `{}` no-op.
+    let script = r#"export default {
+    props: ['initial', 'label'],
+}
+"#;
+    let summary = analyze_options_api_script(script);
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        output.code.contains(
+            "export type Props = {\n  \"initial\"?: unknown;\n  \"label\"?: unknown;\n};"
+        ),
+        "expected array-form props to be emitted as optional unknown members:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_options_api_props_type_skipped_without_options_api_flag() {
+    // Without the Options API opt-in, the historical `{}` no-op is preserved so
+    // existing default behavior (and snapshots) is unchanged.
+    let script = r#"export default {
+    props: {
+        initial: Number,
+    },
+}
+"#;
+    let summary = analyze_options_api_script(script);
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+
+    assert!(
+        output.code.contains("export type Props = {};"),
+        "Props derivation must be gated behind the Options API opt-in:\n{}",
+        output.code
+    );
+}
+
+#[test]
 fn test_class_component_default_export_keeps_decorators_on_class() {
     // vue-class-component / vue-property-decorator: a decorated class default
     // export must become a standalone class declaration plus a

@@ -284,10 +284,30 @@ fn append_model_props_type_literal(ts: &mut String, models: &[ModelDefinition]) 
     ts.push('}');
 }
 
+/// Source of an Options API `props:` option, used to emit a real `export type
+/// Props` for plain `<script>` (Options API) components. `Object` is a raw
+/// runtime props object literal (`{ initial: Number, ... }`) fed to
+/// `__RuntimePropShape<...>`; `Names` is the array form (`['a', 'b']`) which
+/// carries no runtime type info and is emitted as optional `unknown` members.
+pub(crate) enum OptionsApiPropsSource {
+    Object(String),
+    Names(Vec<String>),
+}
+
 /// Generate Props type definition at module level.
 /// When `generic_param` is present (e.g., `"T extends Foo, P extends Bar"`),
 /// the Props type is emitted with generic parameters: `export type Props<T, P> = ...;`
-pub(crate) fn generate_props_type(ts: &mut String, summary: &Croquis, generic_param: Option<&str>) {
+///
+/// `options_api_props` carries the Options API runtime `props:` declaration when
+/// the component is a plain `<script>` Options API component with no
+/// `defineProps` macro. It lets cross-file prop checking see real prop types
+/// instead of the historical `export type Props = {}` no-op.
+pub(crate) fn generate_props_type(
+    ts: &mut String,
+    summary: &Croquis,
+    generic_param: Option<&str>,
+    options_api_props: Option<&OptionsApiPropsSource>,
+) {
     let props = summary.macros.props();
     let has_props = !props.is_empty();
     let models = summary.macros.models();
@@ -343,11 +363,40 @@ pub(crate) fn generate_props_type(ts: &mut String, summary: &Croquis, generic_pa
             emit_model_prop_member(ts, model);
         }
         ts.push_str("};\n");
+    } else if let Some(options_api_props) = options_api_props {
+        emit_options_api_props_type(ts, &generic_decl, options_api_props);
     } else {
         append!(*ts, "export type Props{generic_decl} = {{}};\n");
     }
 
     ts.push('\n');
+}
+
+/// Emit a real `export type Props` for an Options API component, derived from
+/// its runtime `props:` option. The object form reuses the shared
+/// `__RuntimePropShape<...>` mapped type (the same machinery `defineProps`
+/// runtime forms use), so runtime ctors and `{ type, required }` shapes resolve
+/// to real prop types with correct optionality.
+fn emit_options_api_props_type(
+    ts: &mut String,
+    generic_decl: &str,
+    options_api_props: &OptionsApiPropsSource,
+) {
+    match options_api_props {
+        OptionsApiPropsSource::Object(source) => {
+            append!(
+                *ts,
+                "export type Props{generic_decl} = __RuntimePropShape<{source}>;\n"
+            );
+        }
+        OptionsApiPropsSource::Names(names) => {
+            append!(*ts, "export type Props{generic_decl} = {{\n");
+            for name in names {
+                append!(*ts, "  \"{name}\"?: unknown;\n");
+            }
+            ts.push_str("};\n");
+        }
+    }
 }
 
 /// Generate props variables inside template closure.
