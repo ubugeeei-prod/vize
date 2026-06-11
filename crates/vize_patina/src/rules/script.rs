@@ -31,6 +31,7 @@ mod no_next_tick;
 mod no_options_api;
 mod no_reactive_destructure;
 mod no_reserved_identifiers;
+mod no_side_effects_in_computed;
 mod no_top_level_ref_in_script;
 mod no_with_defaults;
 mod pinia_prefer_store_to_refs;
@@ -65,6 +66,7 @@ pub use no_next_tick::NoNextTick;
 pub use no_options_api::NoOptionsApi;
 pub use no_reactive_destructure::NoReactiveDestructure;
 pub use no_reserved_identifiers::NoReservedIdentifiers;
+pub use no_side_effects_in_computed::NoSideEffectsInComputed;
 pub use no_top_level_ref_in_script::NoTopLevelRefInScript;
 pub use no_with_defaults::NoWithDefaults;
 pub use pinia_prefer_store_to_refs::PiniaPreferStoreToRefs;
@@ -221,6 +223,7 @@ impl ScriptLinter {
                 Box::new(NoWithDefaults),
                 Box::new(NoDeepDestructureInProps::default()),
                 Box::new(NoDupeKeys),
+                Box::new(NoSideEffectsInComputed),
                 Box::new(NoInternalImports),
                 Box::new(NoImportCompilerMacros),
                 Box::new(NoReservedIdentifiers),

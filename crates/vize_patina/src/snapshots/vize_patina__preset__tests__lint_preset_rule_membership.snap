@@ -474,6 +474,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-reserved-identifiers",
     "script/require-symbol-provide",
     "script/require-function-return-type",
-    "script/no-dupe-keys"
+    "script/no-dupe-keys",
+    "script/no-side-effects-in-computed-properties"
   ]
 }

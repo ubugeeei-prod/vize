@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-side-effects-in-computed-properties",
+        severity: Error,
+        message: "Unexpected side effect in a computed property: an assignment to `this`.",
+        start: 94,
+        end: 121,
+        help: Some(
+            "A computed getter must be pure: derive and return a value without mutating component state. Move the mutation to a method or a watch handler.",
+        ),
+        labels: [
+            Label {
+                message: "side effect inside computed getter",
+                start: 94,
+                end: 121,
+            },
+        ],
+        fix: None,
+    },
+]
