@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/petite_vue/no_unsupported_directive.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "petite-vue/no-unsupported-directive",
+        severity: Error,
+        message: "`v-memo` is not supported by petite-vue and will have no effect",
+        start: 70,
+        end: 85,
+        help: Some(
+            "petite-vue supports v-scope, v-effect, v-if/v-else/v-else-if, v-for, v-show, v-html, v-text, v-model, v-bind (:), v-on (@), v-once, v-pre, v-cloak, and the ref attribute. Remove the unsupported directive or use a supported alternative.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

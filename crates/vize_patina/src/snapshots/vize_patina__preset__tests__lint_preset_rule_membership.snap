@@ -454,6 +454,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "ecosystem/vue-i18n-no-missing-key",
     "ecosystem/void-link-require-href",
     "ecosystem/void-link-valid-method",
+    "petite-vue/no-unsupported-directive",
     "ecosystem/pinia-prefer-store-to-refs",
     "ecosystem/vue-router-prefer-named-push",
     "ecosystem/vue-test-utils-no-html-snapshot",

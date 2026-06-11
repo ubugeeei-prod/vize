@@ -6,6 +6,7 @@ pub mod ecosystem;
 pub mod html;
 pub mod musea;
 pub mod opinionated;
+pub mod petite_vue;
 pub mod script;
 pub mod ssr;
 pub mod type_aware;

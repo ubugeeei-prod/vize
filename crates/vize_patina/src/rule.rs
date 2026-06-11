@@ -180,12 +180,14 @@ impl RuleRegistry {
     pub fn with_opt_in_rules() -> Self {
         let mut registry = Self::with_capacity(8);
         crate::rules::ecosystem::register_opt_in(&mut registry);
+        crate::rules::petite_vue::register_opt_in(&mut registry);
         registry
     }
 
     /// Register explicit opt-in rules into an existing registry.
     pub fn register_opt_in_rules(&mut self) {
         crate::rules::ecosystem::register_opt_in(self);
+        crate::rules::petite_vue::register_opt_in(self);
     }
 
     /// Create the default happy-path registry.
