@@ -11,10 +11,10 @@ import {
 
 const app = optionsApiApp;
 
-// The Options API template-binding bridge is an opt-in feature, enabled here
-// through the fixture's `vize.config.json` (`typeChecker.optionsApi: true`). The
-// `vize check` invocation below therefore resolves `this`-typed `data` /
-// `computed` / `methods` / `props` bindings in templates exactly like vue-tsc.
+// The Options API template-binding bridge is default-on (matches vue-tsc); the
+// fixture needs no `typeChecker.optionsApi` flag. The `vize check` invocation
+// below therefore resolves `this`-typed `data` / `computed` / `methods` /
+// `props` bindings in templates exactly like vue-tsc out of the box.
 describe(`${app.name} check parity with Vue toolchain`, () => {
   before(requireToolchainParityBinaries);
 

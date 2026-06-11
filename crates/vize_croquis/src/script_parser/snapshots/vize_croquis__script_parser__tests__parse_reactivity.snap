@@ -1305,4 +1305,5 @@ ScriptParseResult {
     import_sources: {},
     type_export_typeof_refs: [],
     runtime_object_literals: {},
+    options_descriptor: None,
 }

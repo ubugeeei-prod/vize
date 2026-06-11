@@ -280,8 +280,8 @@
           "type": "boolean"
         },
         "optionsApi": {
-          "description": "Resolve Vue 3 Options API template bindings (data/computed/methods/inject/setup/props) during type checking. Opt-in; available in the standard build (not a legacy feature).",
-          "default": false,
+          "description": "Resolve Vue 3 Options API template bindings (data/computed/methods/inject/setup/props) during type checking. Default-on (matches vue-tsc); set to false to opt out. Available in the standard build (not a legacy feature).",
+          "default": true,
           "type": "boolean"
         },
         "legacyVue2": {

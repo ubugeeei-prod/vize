@@ -30,6 +30,7 @@
 
 mod bindings;
 mod model;
+mod options_descriptor;
 mod template;
 mod vir;
 
@@ -40,6 +41,7 @@ pub use bindings::{
     UnusedVarContext,
 };
 pub use model::{AnalysisStats, CroquisStats};
+pub use options_descriptor::{OptionGroup, OptionKey, OptionMember, OptionsDescriptor};
 pub use template::{
     ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener, PassedProp,
     SlotUsage, TemplateExpression, TemplateExpressionKind, TemplateInfo,
@@ -139,6 +141,18 @@ pub struct Croquis {
     /// Definition spans for bindings (name -> (start, end) offset in script)
     /// Used for Go-to-Definition support.
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
+
+    /// Authoritative Options API options-object descriptor, when the script
+    /// resolves to an Options API component.
+    ///
+    /// Spans are relative to the script content the component was parsed from;
+    /// add the script block's offset before reporting.
+    ///
+    /// `pub` to match the rest of the struct: every other field on `Croquis`
+    /// is `pub`, so a private field here would break struct-literal
+    /// construction (`cargo-semver-checks`'s
+    /// `constructible_struct_adds_private_field` lint).
+    pub options_descriptor: Option<OptionsDescriptor>,
 }
 
 #[cfg(test)]

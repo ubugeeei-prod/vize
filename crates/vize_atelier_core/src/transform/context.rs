@@ -36,6 +36,8 @@ impl<'a> TransformContext<'a> {
             helpers: crate::runtime_helpers::RuntimeHelpers::default(),
             components: std::vec::Vec::new(),
             directives: std::vec::Vec::new(),
+            #[cfg(feature = "legacy")]
+            filters: std::vec::Vec::new(),
             hoists: vize_carton::Vec::new_in(allocator),
             cached: vize_carton::Vec::new_in(allocator),
             temps: 0,
@@ -291,6 +293,31 @@ impl<'a> TransformContext<'a> {
         if !self.directives.contains(&directive) {
             self.directives.push(directive);
         }
+    }
+
+    /// Register a Vue 2 pipe filter (maintains first-seen order for codegen).
+    ///
+    /// Legacy-only; only ever called from the dialect-gated filter rewrite.
+    #[cfg(feature = "legacy")]
+    pub(crate) fn add_filter(&mut self, filter: impl Into<String>) {
+        let filter = filter.into();
+        if !self.filters.contains(&filter) {
+            self.filters.push(filter);
+        }
+    }
+
+    /// Whether the resolved dialect supports Vue 2 pipe filters
+    /// (`{{ msg | capitalize }}`). Resolved from
+    /// [`vize_armature::legacy::LegacyDialectCapabilities`] for the dialect on
+    /// [`TransformOptions::dialect`](crate::options::TransformOptions::dialect).
+    ///
+    /// Always `false` for the default Vue 3 dialect, so the filter rewrite is
+    /// never entered there. Legacy-only.
+    #[cfg(feature = "legacy")]
+    #[inline]
+    pub(crate) fn supports_filters(&self) -> bool {
+        vize_armature::legacy::LegacyDialectCapabilities::for_dialect(self.options.dialect)
+            .supports_filters
     }
 
     /// Add an identifier to current scope

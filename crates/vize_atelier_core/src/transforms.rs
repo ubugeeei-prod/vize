@@ -8,6 +8,10 @@ pub mod hoist_static;
 /// `legacy` cargo feature; a no-op for the default Vue 3 dialect.
 #[cfg(feature = "legacy")]
 pub mod legacy;
+/// Vue 2 pipe-filter parsing/rewriting. Legacy-only and dialect-gated; see the
+/// module docs. Compiled only behind the `legacy` cargo feature.
+#[cfg(feature = "legacy")]
+pub(crate) mod legacy_filters;
 pub mod transform_element;
 pub mod transform_expression;
 pub mod transform_text;

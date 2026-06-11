@@ -411,6 +411,83 @@ const count = ref(0)
     );
 }
 
+#[test]
+fn test_script_setup_virtual_ts_byte_identical_with_options_api_default_on() {
+    // Zero-cost guarantee for the benchmarked path: now that Options API
+    // resolution is default-on, the `_options_api` generator must produce output
+    // byte-identical to the plain generator for a `<script setup>` component (the
+    // bridge only runs for non-`<script setup>` components).
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import { ref, computed } from 'vue'
+const count = ref(0)
+const doubled = computed(() => count.value * 2)
+function inc() { count.value++ }
+"#;
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    let summary = analyzer.finish();
+
+    let plain =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+    let options_api = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert_eq!(
+        plain.code, options_api.code,
+        "`<script setup>` virtual TS must be byte-identical with Options API default-on"
+    );
+}
+
+#[test]
+fn test_script_setup_with_define_props_type_ref_byte_identical_with_options_api_default_on() {
+    // Regression: `defineProps<Props>()` (where `Props` is a type reference,
+    // not an inline `TSTypeLiteral`) registers destructured names as
+    // `BindingType::Props` without populating `summary.macros.props()`. Before
+    // the `is_script_setup` gate, those names slipped through the Options API
+    // template-binding filter and produced spurious `__VizeOptionsBinding`
+    // declarations on a `<script setup>` SFC, breaking the byte-identical
+    // guarantee.
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"interface Props {
+  title: string;
+  count?: number;
+  tags?: string[];
+}
+
+const { title, count = 0, tags = [] } = defineProps<Props>();
+
+console.log(title.toUpperCase(), count.toFixed(0), tags.join(","));
+"#;
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    let summary = analyzer.finish();
+
+    let plain =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+    let options_api = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert_eq!(
+        plain.code, options_api.code,
+        "`<script setup>` virtual TS must be byte-identical with Options API default-on, \
+         even when defineProps uses a type reference"
+    );
+}
+
 fn generate_script_setup_virtual_ts(script: &str) -> String {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 

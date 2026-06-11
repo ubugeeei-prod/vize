@@ -182,16 +182,34 @@ fn load_lsp_config_updates_type_checker_config() {
 }
 
 #[test]
-fn options_api_disabled_by_default() {
+fn options_api_enabled_by_default() {
     let state = ServerState::new();
     assert!(
-        !state.options_api_enabled(),
-        "Options API resolution must be opt-in: zero cost on the default Vue 3 path"
+        state.options_api_enabled(),
+        "Options API resolution is default-on (matches vue-tsc); template bindings \
+         resolve without configuration"
     );
 }
 
 #[test]
-fn type_checker_options_api_opt_in_from_config() {
+fn type_checker_options_api_opt_out_from_config() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r#"{ "typeChecker": { "optionsApi": false } }"#,
+    )
+    .unwrap();
+
+    let state = ServerState::new();
+    state.load_workspace_config(dir.path());
+    assert!(
+        !state.options_api_enabled(),
+        "typeChecker.optionsApi: false should opt out of Options API binding resolution in the LSP"
+    );
+}
+
+#[test]
+fn type_checker_options_api_explicit_opt_in_from_config() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vize.config.json"),
@@ -203,7 +221,7 @@ fn type_checker_options_api_opt_in_from_config() {
     state.load_workspace_config(dir.path());
     assert!(
         state.options_api_enabled(),
-        "typeChecker.optionsApi should enable Options API binding resolution in the LSP"
+        "typeChecker.optionsApi: true keeps Options API binding resolution enabled in the LSP"
     );
 }
 

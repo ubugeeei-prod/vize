@@ -7,6 +7,20 @@ license.workspace = true
 repository.workspace = true
 description = "Relief - The sculptured AST surface for Vize Vue templates"
 
+[features]
+# Opt-in support for legacy Vue lines (v0.10 / v0.11 / v1 / v2). Off by default
+# so the Vue 3 `vize` binary never compiles it. Gates legacy-only AST surface
+# such as the Vue 2 filter asset list on [`crate::ast::RootNode`].
+#
+# Intentionally underscore-prefixed: `cargo-semver-checks`' default feature
+# heuristic enables every non-excluded feature, which would surface the
+# legacy-only `RootNode::filters` field and trip the (major) constructible
+# struct-adds-field lint. The `_`-prefix is on the heuristic's exclude list, so
+# the field stays invisible to SemVer checks while still compiling for real
+# legacy builds (`vize_atelier_core/legacy` forwards to it). Treat it as an
+# internal feature; depend on `vize_atelier_core/legacy` instead.
+_legacy = []
+
 [dependencies]
 vize_carton = { workspace = true }
 

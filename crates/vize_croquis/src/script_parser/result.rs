@@ -5,7 +5,9 @@
 //! plain-value and runtime-object tracking.
 
 use crate::croquis::{BindingMetadata, ComponentRegistration, ComponentShape, Croquis};
-use crate::croquis::{ImportStatementInfo, InvalidExport, ReExportInfo, TypeExport};
+use crate::croquis::{
+    ImportStatementInfo, InvalidExport, OptionsDescriptor, ReExportInfo, TypeExport,
+};
 use crate::macros::{EmitDefinition, MacroTracker, PropDefinition};
 use crate::provide::ProvideInjectTracker;
 use crate::race::RaceConditionTracker;
@@ -105,6 +107,8 @@ pub struct ScriptParseResult {
     pub(crate) type_export_typeof_refs: Vec<FxHashSet<CompactString>>,
     /// Static runtime object literal metadata available to macro spread args.
     pub(crate) runtime_object_literals: FxHashMap<CompactString, RuntimeObjectLiteral>,
+    /// Authoritative Options API options-object descriptor, when resolved.
+    pub(crate) options_descriptor: Option<OptionsDescriptor>,
 }
 
 /// Options for plain script parsing.
@@ -190,6 +194,7 @@ impl ScriptParseResult {
         summary.component_registrations = self.component_registrations;
         summary.component_shape = self.component_shape;
         summary.binding_spans = self.binding_spans;
+        summary.options_descriptor = self.options_descriptor;
     }
 
     /// Convert script analysis into a `Croquis` summary.

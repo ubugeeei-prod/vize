@@ -679,10 +679,6 @@ export default class Counter extends Vue {
     fn definition_resolves_class_component_member_in_template_without_flag() {
         let state = ServerState::new();
         let uri = open_doc(&state, CLASS_COMPONENT_SFC, "Counter.vue");
-        assert!(
-            !state.options_api_enabled(),
-            "class-component support must not require the optionsApi flag"
-        );
 
         for (member, decl) in [
             ("count", "count = 0"),
@@ -707,11 +703,11 @@ export default class Counter extends Vue {
         }
     }
 
-    /// `find_analyzed_binding_location` self-gates: Options API object bindings
-    /// must remain opt-in (flag off => no resolution), so the zero-cost
-    /// `<script setup>` default path is unaffected.
+    /// `find_analyzed_binding_location` self-gates on the optionsApi flag: with
+    /// `optionsApi: false` (explicit opt-out) Options API object bindings must
+    /// not resolve.
     #[test]
-    fn definition_options_api_data_requires_flag() {
+    fn definition_options_api_data_absent_when_opted_out() {
         let source = r#"<script>
 export default {
   data() { return { greeting: 'hello' } },
@@ -719,13 +715,29 @@ export default {
 </script>
 <template><p>{{ greeting }}</p></template>
 "#;
+        let dir = tempfile::tempdir().unwrap();
+        let dir_path = Box::leak(Box::new(dir)).path();
+        fs::write(
+            dir_path.join("vize.config.json"),
+            r#"{ "typeChecker": { "optionsApi": false } }"#,
+        )
+        .unwrap();
+        let path = dir_path.join("Greeting.vue");
+        fs::write(&path, source).unwrap();
+        let uri = Url::from_file_path(&path).unwrap();
+
         let state = ServerState::new();
-        let uri = open_doc(&state, source, "Greeting.vue");
+        state.load_workspace_config(dir_path);
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+        assert!(!state.options_api_enabled());
         let offset = source.find("greeting }}").unwrap();
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
         assert!(
             script::find_analyzed_binding_location(&ctx, "greeting").is_none(),
-            "Options API data() binding must not resolve while optionsApi is disabled"
+            "Options API data() binding must not resolve while optionsApi is opted out"
         );
     }
 

@@ -27,8 +27,9 @@ const app = classComponentApp;
 // single intentional error) and verify the intentional error is *also* seen by
 // vue-tsc so the fixture stays meaningful. See docs/release/vue-parity-matrix.md.
 //
-// The Options API template-binding bridge (shared by class components) is opt-in
-// and enabled via the fixture's `vize.config.json` (`typeChecker.optionsApi`).
+// Class-component members are auto-detected by AST shape and resolve regardless
+// of the (now default-on) Options API template-binding bridge — the fixture
+// needs no `typeChecker.optionsApi` flag.
 
 interface VizeCheckReport {
   errorCount: number;
