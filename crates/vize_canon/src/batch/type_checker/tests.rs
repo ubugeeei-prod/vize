@@ -987,6 +987,95 @@ void LazyPanel
     });
 }
 
+/// Plain Options API component used by the `defineComponent`-wrap regression
+/// tests: `this.count` (a `data` field) is accessed from a computed. Without
+/// the wrap, `this` binds to the `computed` sub-object literal and TypeScript
+/// reports a TS2339 false positive.
+const OPTIONS_API_THIS_IN_COMPUTED_SFC: &str = r#"<script lang="ts">
+export default {
+  data() {
+    return { count: 0 }
+  },
+  computed: {
+    doubled(): number {
+      return this.count * 2
+    },
+  },
+}
+</script>
+
+<template>
+  <div>static</div>
+</template>
+"#;
+
+#[test]
+fn batch_type_checker_accepts_options_api_this_data_access_in_computed() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "options-api-this-computed",
+        &[("src/App.vue", OPTIONS_API_THIS_IN_COMPUTED_SFC)],
+    );
+
+    // Real instance typing requires the real vue package (full
+    // `defineComponent` overloads with `ThisType`). When the workspace only
+    // provides the erased test stub (`defineComponent(options: any)`), skip —
+    // stub behavior is covered by the facade-fallback test below.
+    if !project_root.join("node_modules/vue/dist").exists() {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    }
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "expected `this.<dataField>` in a computed of a plain options object to check clean: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_options_api_wrap_adds_no_errors_in_facade_fallback() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    // Facade-fallback mode: no resolvable vue package, so the bundled vue
+    // stub is materialized. Its `defineComponent(options: any)` signature
+    // erases `ThisType`, so the pre-existing TS2339 false positive on
+    // `this.count` remains until the stub gains a ThisType-aware signature
+    // (issue #1388 PR6). The wrap must not introduce any NEW diagnostics
+    // beyond that documented one.
+    with_workspace_node_modules_override(Some("__none__"), || {
+        let project_root = create_project_case_without_node_modules(
+            "options-api-wrap-facade-fallback",
+            &[("src/App.vue", OPTIONS_API_THIS_IN_COMPUTED_SFC)],
+        );
+
+        let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        };
+
+        assert!(
+            snapshot
+                .iter()
+                .all(|(file, code, _)| file == "src/App.vue" && *code == Some(2339)),
+            "expected the defineComponent wrap to add no new diagnostics in facade-fallback mode: {snapshot:#?}"
+        );
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    });
+}
+
 #[test]
 fn batch_type_checker_snapshots_cross_file_vue_prop_error() {
     if resolve_test_tsgo_binary().is_none() {

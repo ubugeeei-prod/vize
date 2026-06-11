@@ -1511,3 +1511,85 @@ const props = defineProps<Props>()
 
     let _ = std::fs::remove_dir_all(project);
 }
+
+#[test]
+fn test_plain_script_options_object_is_wrapped_with_define_component() {
+    // A plain <script> options object must be wrapped with defineComponent in
+    // the virtual TS so `this` in computed/methods gets Vue's instance typing
+    // instead of binding to the sub-object literal (TS2339 false positives).
+    let source = r#"<script lang="ts">
+export default {
+  data() {
+    return { count: 0 }
+  },
+  computed: {
+    doubled() {
+      return this.count * 2
+    },
+  },
+}
+</script>
+<template>
+  <div>static</div>
+</template>"#;
+    let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+    let result = type_check_sfc(source, &options);
+    let virtual_ts = result.virtual_ts.expect("virtual TS should be generated");
+
+    assert!(
+        virtual_ts
+            .contains("declare const __vizeDefineComponent: typeof import('vue').defineComponent;"),
+        "expected the defineComponent helper declaration:\n{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains("const __default__ = __vizeDefineComponent({"),
+        "expected the options object to be wrapped with defineComponent:\n{virtual_ts}"
+    );
+}
+
+#[test]
+fn test_dual_block_options_object_is_wrapped_with_define_component() {
+    // The plain <script> block of a dual-block SFC is emitted at module scope
+    // (not inside __setup); its options object must be wrapped there too.
+    let source = r#"<script lang="ts">
+export default {
+  inheritAttrs: false,
+}
+</script>
+<script setup lang="ts">
+const count = 1
+</script>
+<template>
+  <div>{{ count }}</div>
+</template>"#;
+    let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+    let result = type_check_sfc(source, &options);
+    let virtual_ts = result.virtual_ts.expect("virtual TS should be generated");
+
+    assert!(
+        virtual_ts.contains("const __default__ = __vizeDefineComponent({"),
+        "expected the module-scope options object to be wrapped:\n{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains("})"),
+        "expected the wrap to be closed:\n{virtual_ts}"
+    );
+}
+
+#[test]
+fn test_script_setup_only_virtual_ts_has_no_define_component_wrapper() {
+    let source = r#"<script setup lang="ts">
+const count = 1
+</script>
+<template>
+  <div>{{ count }}</div>
+</template>"#;
+    let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+    let result = type_check_sfc(source, &options);
+    let virtual_ts = result.virtual_ts.expect("virtual TS should be generated");
+
+    assert!(
+        !virtual_ts.contains("__vizeDefineComponent"),
+        "script setup virtual TS must stay untouched:\n{virtual_ts}"
+    );
+}
