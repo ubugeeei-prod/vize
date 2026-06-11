@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { createBenchmarkBudget, renderMarkdown } from "../../bench/compare-pr.mjs";
-import { enforceBenchmarkBudget } from "../../bench/enforce-pr-budget.mjs";
+import {
+  DEFAULT_SKIP_OVERRIDE_LABEL,
+  enforceBenchmarkBudget,
+} from "../../bench/enforce-pr-budget.mjs";
 
 const stableResult = {
   id: "compile",
@@ -65,12 +68,29 @@ test("benchmark markdown reports the active regression budget", () => {
   assert.match(markdown, /Type check: 1\.150x \(\+15\.00%\)/);
 });
 
-test("benchmark budget allows skipped benchmark runs", () => {
+test("benchmark budget blocks skipped benchmark runs without an override label", () => {
   const enforcement = enforceBenchmarkBudget({
     skipped: true,
     reason: "base_metadata_invalid",
   });
 
+  assert.equal(enforcement.ok, false);
+  assert.match(enforcement.message, /base_metadata_invalid/);
+  assert.match(enforcement.message, new RegExp(DEFAULT_SKIP_OVERRIDE_LABEL));
+});
+
+test("benchmark budget allows skipped benchmark runs with an override label", () => {
+  const enforcement = enforceBenchmarkBudget(
+    {
+      skipped: true,
+      reason: "base_metadata_invalid",
+    },
+    {
+      labels: [DEFAULT_SKIP_OVERRIDE_LABEL],
+    },
+  );
+
   assert.equal(enforcement.ok, true);
   assert.match(enforcement.message, /base_metadata_invalid/);
+  assert.match(enforcement.message, new RegExp(DEFAULT_SKIP_OVERRIDE_LABEL));
 });

@@ -518,6 +518,7 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
   assert.match(budgetJob, /needs:\n\s+- pr-benchmark\b/);
   assert.match(budgetJob, /actions:\s*read/);
   assert.match(budgetJob, /contents:\s*read/);
+  assert.match(budgetJob, /issues:\s*read/);
   assert.doesNotMatch(budgetJob, /issues:\s*write/);
   assert.doesNotMatch(budgetJob, /pull-requests:\s*write/);
   assert.match(
@@ -526,9 +527,13 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
   );
   assert.match(budgetJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v8\.0\.1/);
   assert.match(budgetJob, /name:\s*pr-benchmark/);
+  assert.match(budgetJob, /name:\s*Read current PR labels/);
+  assert.match(budgetJob, /GITHUB_TOKEN:\s*\$\{\{\s*github\.token\s*\}\}/);
+  assert.match(budgetJob, /process\.env\.GITHUB_API_URL \?\? "https:\/\/api\.github\.com"/);
+  assert.match(budgetJob, /labels\.map\(\(label\) => label\.name\)/);
   assert.match(
     budgetJob,
-    /node head\/bench\/enforce-pr-budget\.mjs --json benchmark-results\.json/,
+    /node head\/bench\/enforce-pr-budget\.mjs[\s\S]*--json benchmark-results\.json[\s\S]*--labels-json "\$PR_LABELS_JSON"/,
   );
 
   assert.match(commentJob, /needs:\n\s+- pr-benchmark\b/);
