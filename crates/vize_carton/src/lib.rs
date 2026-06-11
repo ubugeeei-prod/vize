@@ -40,6 +40,7 @@ mod vec;
 
 // Shared modules
 pub mod config;
+pub mod dialect;
 pub mod directive;
 pub mod dom_tag_config;
 pub mod flags;

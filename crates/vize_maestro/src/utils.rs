@@ -13,12 +13,3 @@ pub fn is_standalone_html_path(path: &str) -> bool {
     let path = path.to_ascii_lowercase();
     path.ends_with(".html") || path.ends_with(".htm")
 }
-
-/// Returns true when a standalone HTML document appears to use petite-vue.
-#[inline]
-pub fn is_petite_vue_document(content: &str) -> bool {
-    content.contains("petite-vue")
-        || content.contains("PetiteVue")
-        || content.contains("v-scope")
-        || content.contains("v-effect")
-}

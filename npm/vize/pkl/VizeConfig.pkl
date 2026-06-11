@@ -25,6 +25,10 @@ import "GlobalTypesConfig.pkl"
 
 typealias ConfigExtends = String | Listing<String>
 
+/// Vue dialect profile for standalone HTML documents.
+/// When absent, the dialect is detected structurally per document.
+typealias VueDialect = "vue" | "petite-vue"
+
 class ConfigEntry {
   /// Human-readable entry name for inspect output and diagnostics.
   name: String? = null
@@ -40,6 +44,10 @@ class ConfigEntry {
 
   /// Base config files or presets amended by this entry.
   `extends`: ConfigExtends? = null
+
+  /// Vue dialect profile for standalone HTML documents (`"vue"` or `"petite-vue"`).
+  /// When absent, the dialect is detected structurally per document.
+  dialect: VueDialect? = null
 
   /// Vue compiler options.
   compiler: CompilerConfig.CompilerConfig = new CompilerConfig.CompilerConfig {}
@@ -87,6 +95,10 @@ ignores: Listing<String>? = null
 
 /// Base config files or presets amended by this config.
 `extends`: ConfigExtends? = null
+
+/// Vue dialect profile for standalone HTML documents (`"vue"` or `"petite-vue"`).
+/// When absent, the dialect is detected structurally per document.
+dialect: VueDialect? = null
 
 /// Vue compiler options.
 compiler: CompilerConfig.CompilerConfig = new CompilerConfig.CompilerConfig {}

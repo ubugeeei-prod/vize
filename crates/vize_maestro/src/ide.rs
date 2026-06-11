@@ -445,6 +445,16 @@ impl<'a> IdeContext<'a> {
         }
     }
 
+    /// Effective Vue dialect for this document.
+    ///
+    /// Delegates to [`ServerState::document_dialect`]: an explicit `dialect`
+    /// config key wins, otherwise the structural petite-vue detection memoized
+    /// on the open document is used (no per-request re-scan).
+    #[inline]
+    pub fn dialect(&self) -> vize_carton::dialect::VueDialect {
+        self.state.document_dialect(self.uri, &self.content)
+    }
+
     /// Check if cursor is in template block.
     #[inline]
     pub fn is_in_template(&self) -> bool {

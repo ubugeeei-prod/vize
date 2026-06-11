@@ -41,6 +41,18 @@ impl ServerState {
         self.linter_config.read().clone()
     }
 
+    /// Get the configured Vue dialect override, if any.
+    #[inline]
+    pub fn get_dialect_config(&self) -> Option<vize_carton::dialect::VueDialect> {
+        *self.dialect_config.read()
+    }
+
+    /// Set the Vue dialect override (`None` re-enables structural detection).
+    #[inline]
+    pub fn set_dialect_config(&self, dialect: Option<vize_carton::dialect::VueDialect>) {
+        *self.dialect_config.write() = dialect;
+    }
+
     fn apply_type_checker_config(&self, config: TypeCheckerConfig, source: &str) {
         *self.type_checker_config.write() = config;
         tracing::info!("Loaded type checker config from {}", source);
@@ -84,6 +96,7 @@ impl ServerState {
             self.apply_type_checker_config(config.type_checker, &source);
             self.apply_lsp_config(config.language_server.into(), &source);
             self.apply_config_features(loaded.features);
+            self.set_dialect_config(config.dialect);
         }
     }
 
@@ -97,6 +110,7 @@ impl ServerState {
             self.apply_type_checker_config(loaded.config.type_checker, &source);
             self.apply_lsp_config(loaded.config.language_server.into(), &source);
             self.apply_config_features(loaded.features);
+            self.set_dialect_config(loaded.config.dialect);
         }
     }
 

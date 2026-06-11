@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use compiler::RawCompilerConfig;
 
 use crate::String;
+use crate::dialect::VueDialect;
 pub use formatter::{
     ArrowParens, AttributeSortOrder, EndOfLine, FormatterConfig, QuoteProps, TrailingComma,
 };
@@ -28,6 +29,11 @@ pub struct VizeConfig {
     /// JSON Schema reference for legacy JSON editor autocompletion.
     #[serde(rename = "$schema", skip_serializing_if = "Option::is_none")]
     pub schema: Option<String>,
+    /// Vue dialect profile for standalone HTML documents (`"vue"` or
+    /// `"petite-vue"`). When absent, the dialect is detected structurally per
+    /// document (see [`crate::dialect::standalone_html_dialect`]).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dialect: Option<VueDialect>,
     /// Formatter settings shared by CLI and IDE formatting.
     #[serde(skip_serializing_if = "FormatterConfig::is_default")]
     pub formatter: FormatterConfig,
@@ -68,6 +74,7 @@ pub struct ConfigFeatureFlags {
 pub(crate) struct RawVizeConfig {
     #[serde(rename = "$schema")]
     pub schema: Option<String>,
+    pub dialect: Option<VueDialect>,
     pub formatter: FormatterConfig,
     pub(crate) compiler: RawCompilerConfig,
     pub linter: LinterConfig,
@@ -118,6 +125,7 @@ impl RawVizeConfig {
     pub(crate) fn into_config_and_features(self) -> (VizeConfig, ConfigFeatureFlags) {
         let RawVizeConfig {
             schema,
+            dialect,
             formatter,
             compiler: _,
             linter: _,
@@ -161,6 +169,7 @@ impl RawVizeConfig {
 
         let config = VizeConfig {
             schema,
+            dialect,
             formatter,
             type_checker,
             language_server,

@@ -20,6 +20,7 @@ use dashmap::DashMap;
 use parking_lot::RwLock;
 use tower_lsp::lsp_types::Url;
 use vize_carton::config::{LinterConfig, TypeCheckerConfig};
+use vize_carton::dialect::VueDialect;
 
 #[cfg(feature = "native")]
 use std::sync::Arc;
@@ -66,6 +67,9 @@ pub struct ServerState {
     type_checker_legacy_vue2: RwLock<bool>,
     /// Linter options shared by LSP diagnostics.
     linter_config: RwLock<LinterConfig>,
+    /// Explicit Vue dialect from config (`dialect` key). `None` means the
+    /// dialect is detected structurally per document.
+    dialect_config: RwLock<Option<VueDialect>>,
     /// Formatting options (loaded from vize.config.json)
     #[cfg(feature = "glyph")]
     format_options: RwLock<vize_glyph::FormatOptions>,
@@ -120,6 +124,7 @@ impl ServerState {
             type_checker_options_api: RwLock::new(false),
             type_checker_legacy_vue2: RwLock::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
+            dialect_config: RwLock::new(None),
             #[cfg(feature = "glyph")]
             format_options: RwLock::new(vize_glyph::FormatOptions::default()),
             #[cfg(feature = "native")]
@@ -153,6 +158,27 @@ impl ServerState {
     #[inline]
     pub fn is_lsp_typecheck_enabled(&self) -> bool {
         self.lsp_typecheck_enabled.load(Ordering::SeqCst)
+    }
+
+    /// Effective Vue dialect for a document, decided once per document version.
+    ///
+    /// Non-HTML documents (SFCs, scripts) always use the standard Vue dialect.
+    /// For standalone HTML documents an explicit `dialect` config key wins;
+    /// otherwise the structural petite-vue detection memoized on the open
+    /// document is used. `content` is only consulted as a fallback when the
+    /// document is not in the store.
+    pub fn document_dialect(&self, uri: &Url, content: &str) -> VueDialect {
+        if !crate::utils::is_standalone_html_path(uri.path()) {
+            return VueDialect::Vue;
+        }
+        if let Some(configured) = *self.dialect_config.read() {
+            return configured;
+        }
+        match self.documents.get(uri) {
+            Some(document) if document.petite_vue_detected() => VueDialect::PetiteVue,
+            Some(_) => VueDialect::Vue,
+            None => vize_carton::dialect::standalone_html_dialect(None, content),
+        }
     }
 
     /// Get the enabled LSP feature set.

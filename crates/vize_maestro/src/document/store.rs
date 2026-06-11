@@ -1,6 +1,8 @@
 //! Document store implementation using Rope for efficient text operations.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
+use std::sync::OnceLock;
+
 use dashmap::DashMap;
 use ropey::Rope;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
@@ -18,6 +20,10 @@ pub struct Document {
     pub content: Rope,
     /// Language ID (e.g., "vue", "typescript")
     pub language_id: String,
+    /// Lazily computed structural petite-vue detection result, memoized per
+    /// document version so per-request consumers (completion, definition, ...)
+    /// never re-scan the content. Reset on every edit.
+    petite_vue_detected: OnceLock<bool>,
 }
 
 impl Document {
@@ -28,7 +34,18 @@ impl Document {
             version,
             content: Rope::from_str(&content),
             language_id,
+            petite_vue_detected: OnceLock::new(),
         }
+    }
+
+    /// Whether the document structurally uses petite-vue (see
+    /// [`vize_carton::dialect::detect_petite_vue_document`]).
+    ///
+    /// Computed at most once per document version; edits invalidate the cache.
+    pub fn petite_vue_detected(&self) -> bool {
+        *self
+            .petite_vue_detected
+            .get_or_init(|| vize_carton::dialect::detect_petite_vue_document(&self.text()))
     }
 
     /// Get the document content as a string.
@@ -52,6 +69,7 @@ impl Document {
     /// Apply an incremental change to the document.
     pub fn apply_change(&mut self, change: &TextDocumentContentChangeEvent, new_version: i32) {
         self.version = new_version;
+        self.petite_vue_detected = OnceLock::new();
 
         if let Some(range) = change.range {
             // Incremental change
@@ -297,6 +315,31 @@ mod tests {
 
         assert_eq!(doc.text(), "a😀b");
         assert_eq!(doc.version, 2);
+    }
+
+    #[test]
+    fn test_petite_vue_detection_is_memoized_and_reset_on_change() {
+        let mut doc = Document::new(
+            test_uri(),
+            "<div id=\"app\">{{ count }}</div>".to_string(),
+            1,
+            "html".to_string(),
+        );
+        assert!(!doc.petite_vue_detected());
+        // Memoized: repeated queries are answered from the cache.
+        assert!(!doc.petite_vue_detected());
+
+        let change = TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: "<script src=\"https://unpkg.com/petite-vue\" defer init></script>\n\
+                   <div v-scope>{{ count }}</div>"
+                .to_string(),
+        };
+        doc.apply_change(&change, 2);
+
+        // Edits invalidate the cached detection result.
+        assert!(doc.petite_vue_detected());
     }
 
     #[test]

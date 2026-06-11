@@ -247,6 +247,27 @@ Vue upstream implementation:
 See [Troubleshooting](./troubleshooting.md) for the HTML strict-mode behavior behind invalid
 self-closing tags.
 
+## Vue Dialect
+
+`dialect` selects the Vue dialect profile for standalone HTML documents (`.html`/`.htm`):
+
+```json
+{
+  "dialect": "petite-vue"
+}
+```
+
+- `"vue"` treats standalone HTML documents as plain Vue-from-CDN documents.
+- `"petite-vue"` opts standalone HTML documents into the
+  [petite-vue](https://github.com/vuejs/petite-vue) dialect (`v-scope`/`v-effect`
+  completions and petite-vue-aware IDE features).
+
+When the key is absent, the dialect is detected structurally per document: a
+`<script src>` resolving to the petite-vue package, an inline ES import of
+`petite-vue`, or a `PetiteVue.createApp` call. Mentions of petite-vue in
+comments or prose never switch the dialect. Single-file components always use
+the standard Vue dialect.
+
 ## Static Analysis Options
 
 Use `linter` for the npm lint path:

@@ -169,6 +169,74 @@ fn test_standalone_html_completion_includes_petite_vue_directives() {
 }
 
 #[test]
+fn test_standalone_html_completion_ignores_petite_vue_mention_in_comment() {
+    let dir = tempfile::tempdir().unwrap();
+    let source_path = dir.path().join("index.html");
+    let source = r#"<!-- TODO: maybe migrate to petite-vue (PetiteVue.createApp, v-scope) -->
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<div id="app" >{{ count }}</div>
+"#;
+    fs::write(&source_path, source).unwrap();
+
+    let uri = Url::from_file_path(&source_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "html".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let offset = source.find("<div ").unwrap() + "<div ".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+    assert!(!has_label(&labels, "v-scope"));
+    assert!(!has_label(&labels, "v-effect"));
+    assert!(has_label(&labels, "v-if"));
+}
+
+#[test]
+fn test_standalone_html_completion_respects_dialect_config() {
+    let dir = tempfile::tempdir().unwrap();
+    let source_path = dir.path().join("index.html");
+    let source = "<div id=\"app\" >{{ count }}</div>\n";
+    fs::write(&source_path, source).unwrap();
+
+    let uri = Url::from_file_path(&source_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "html".to_string());
+    state.update_virtual_docs(&uri, source);
+    state.set_dialect_config(Some(vize_carton::dialect::VueDialect::PetiteVue));
+
+    let offset = source.find("<div ").unwrap() + "<div ".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+    // No petite-vue markers in the document; the config key alone opts in.
+    assert!(has_label(&labels, "v-scope"));
+    assert!(has_label(&labels, "v-effect"));
+
+    // And an explicit `vue` dialect suppresses detection-based opt-in.
+    state.set_dialect_config(Some(vize_carton::dialect::VueDialect::Vue));
+    let petite_source = r#"<script src="https://unpkg.com/petite-vue" defer init></script>
+<div v-scope="{ count: 0 }" >{{ count }}</div>
+"#;
+    state.documents.open(
+        uri.clone(),
+        petite_source.to_string(),
+        2,
+        "html".to_string(),
+    );
+    let offset = petite_source.find("<div ").unwrap() + "<div ".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+    assert!(!has_label(&labels, "v-scope"));
+    assert!(!has_label(&labels, "v-effect"));
+}
+
+#[test]
 fn test_script_ref_member_completion_includes_value() {
     let source = r#"<script setup lang="ts">
 import { ref, computed } from 'vue'

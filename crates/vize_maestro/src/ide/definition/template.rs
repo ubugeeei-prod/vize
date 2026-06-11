@@ -114,7 +114,7 @@ fn find_standalone_html_scope_definition(
     ctx: &IdeContext<'_>,
     word: &str,
 ) -> Option<GotoDefinitionResponse> {
-    if !crate::utils::is_petite_vue_document(&ctx.content) {
+    if !ctx.dialect().is_petite_vue() {
         return None;
     }
 

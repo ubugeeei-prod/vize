@@ -34,9 +34,7 @@ pub(crate) fn directive_completions() -> Vec<CompletionItem> {
 /// Vue directive completions, extended with opt-in document-specific directives.
 pub(crate) fn contextual_directive_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
     let mut completions = directive_completions();
-    if crate::utils::is_standalone_html_path(ctx.uri.path())
-        && crate::utils::is_petite_vue_document(&ctx.content)
-    {
+    if ctx.dialect().is_petite_vue() {
         completions.extend(petite_vue_directive_completions());
     }
     completions

@@ -730,6 +730,11 @@
             }
           ]
         },
+        "dialect": {
+          "description": "Vue dialect profile for standalone HTML documents; when absent the dialect is detected structurally per document",
+          "type": "string",
+          "enum": ["vue", "petite-vue"]
+        },
         "compiler": {
           "$ref": "#/definitions/CompilerConfig"
         },
@@ -804,6 +809,11 @@
           }
         }
       ]
+    },
+    "dialect": {
+      "description": "Vue dialect profile for standalone HTML documents; when absent the dialect is detected structurally per document",
+      "type": "string",
+      "enum": ["vue", "petite-vue"]
     },
     "compiler": {
       "$ref": "#/definitions/CompilerConfig"

@@ -16,3 +16,5 @@ pub use model::{
     LspConfig, QuoteProps, TrailingComma, TypeCheckerConfig, VizeConfig,
 };
 pub use normalize::normalize_public_config_value;
+
+pub use crate::dialect::VueDialect;

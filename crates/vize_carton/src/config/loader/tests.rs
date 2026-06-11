@@ -65,6 +65,29 @@ fn load_config_uses_explicit_file_path() {
 }
 
 #[test]
+fn load_config_reads_dialect_key() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(&config_path, r#"{ "dialect": "petite-vue" }"#).unwrap();
+
+    let loaded = load_config_with_source(Some(&config_path));
+    assert_eq!(
+        loaded.config.dialect,
+        Some(crate::dialect::VueDialect::PetiteVue)
+    );
+}
+
+#[test]
+fn load_config_defaults_dialect_to_unset() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(&config_path, r#"{ "formatter": { "singleQuote": true } }"#).unwrap();
+
+    let loaded = load_config_with_source(Some(&config_path));
+    assert_eq!(loaded.config.dialect, None);
+}
+
+#[test]
 fn load_config_reads_compiler_template_syntax() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("vize.config.json");

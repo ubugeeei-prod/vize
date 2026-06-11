@@ -37,6 +37,7 @@ use oxc_ast::ast::{
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 use oxc_span::GetSpan;
+use vize_carton::dialect::is_petite_vue_module;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -468,10 +469,6 @@ fn is_petite_vue_namespace_expression(
         }
         _ => false,
     }
-}
-
-fn is_petite_vue_module(value: &str) -> bool {
-    value == "petite-vue" || value.starts_with("petite-vue/") || value.contains("/petite-vue")
 }
 
 fn binding_pattern_name<'a>(pattern: &'a BindingPattern<'a>) -> Option<&'a str> {
