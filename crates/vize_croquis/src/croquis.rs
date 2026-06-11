@@ -145,29 +145,14 @@ pub struct Croquis {
     /// Authoritative Options API options-object descriptor, when the script
     /// resolves to an Options API component.
     ///
-    /// Private (with the [`Croquis::options_descriptor`] accessor) so adding it
-    /// does not introduce a new public field on the otherwise all-`pub`
-    /// `Croquis` struct, which `cargo-semver-checks` would flag.
-    options_descriptor: Option<OptionsDescriptor>,
-}
-
-impl Croquis {
-    /// The resolved Options API options-object descriptor, if the script
-    /// defines an Options API component.
-    ///
     /// Spans are relative to the script content the component was parsed from;
     /// add the script block's offset before reporting.
-    #[inline]
-    pub fn options_descriptor(&self) -> Option<&OptionsDescriptor> {
-        self.options_descriptor.as_ref()
-    }
-
-    /// Set the Options API options-object descriptor. Used by the script parser
-    /// when populating a summary.
-    #[inline]
-    pub(crate) fn set_options_descriptor(&mut self, descriptor: Option<OptionsDescriptor>) {
-        self.options_descriptor = descriptor;
-    }
+    ///
+    /// `pub` to match the rest of the struct: every other field on `Croquis`
+    /// is `pub`, so a private field here would break struct-literal
+    /// construction (`cargo-semver-checks`'s
+    /// `constructible_struct_adds_private_field` lint).
+    pub options_descriptor: Option<OptionsDescriptor>,
 }
 
 #[cfg(test)]

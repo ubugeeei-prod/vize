@@ -194,7 +194,7 @@ impl ScriptParseResult {
         summary.component_registrations = self.component_registrations;
         summary.component_shape = self.component_shape;
         summary.binding_spans = self.binding_spans;
-        summary.set_options_descriptor(self.options_descriptor);
+        summary.options_descriptor = self.options_descriptor;
     }
 
     /// Convert script analysis into a `Croquis` summary.
