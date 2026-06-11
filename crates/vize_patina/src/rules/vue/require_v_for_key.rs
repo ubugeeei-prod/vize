@@ -50,6 +50,12 @@ impl Rule for RequireVForKey {
             return;
         }
 
+        // petite-vue does not require a :key on v-for, so this Vue-3-only rule
+        // must not fire on petite-vue documents.
+        if ctx.is_petite_vue() {
+            return;
+        }
+
         // Skip <template> tags - key should be on children instead
         // (though on <template v-for>, the key can be on the template itself)
         if element.tag.as_str() == "template" {
@@ -127,6 +133,45 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_petite_vue_keyless_v_for_allowed() {
+        let linter = create_linter();
+        // Structurally detected petite-vue document (script src resolves to the
+        // petite-vue package). petite-vue allows keyless v-for.
+        let result = linter.lint_standalone_html(
+            r#"<!DOCTYPE html>
+<html>
+  <body>
+    <ul v-scope="{ items: [1, 2, 3] }">
+      <li v-for="item in items">{{ item }}</li>
+    </ul>
+    <script src="https://unpkg.com/petite-vue" init></script>
+  </body>
+</html>"#,
+            "index.html",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_non_petite_html_keyless_v_for_still_reports() {
+        let linter = create_linter();
+        // A plain HTML document (no petite-vue) keeps the Vue-3 requirement.
+        let result = linter.lint_standalone_html(
+            r#"<!DOCTYPE html>
+<html>
+  <body>
+    <ul>
+      <li v-for="item in items">{{ item }}</li>
+    </ul>
+    <script src="https://unpkg.com/vue"></script>
+  </body>
+</html>"#,
+            "index.html",
+        );
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]

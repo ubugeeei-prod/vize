@@ -16,6 +16,7 @@ use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::String;
 use vize_carton::{
     Allocator, CompactString, FxHashMap, FxHashSet,
+    dialect::VueDialect,
     directive::DirectiveSeverity,
     i18n::{Locale, t, t_fmt},
 };
@@ -63,6 +64,8 @@ pub struct LintContext<'a> {
     analysis_excluded_rules: Option<&'static [&'static str]>,
     /// SSR mode for linting.
     ssr_mode: SsrMode,
+    /// Vue dialect of the document being linted (gates dialect-specific rules).
+    dialect: VueDialect,
     /// Help display level.
     pub(crate) help_level: HelpLevel,
     /// Lines where `@vize:expected` expects an error on the next line.
@@ -111,6 +114,7 @@ impl<'a> LintContext<'a> {
             sfc_descriptor: None,
             analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
+            dialect: VueDialect::default(),
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
             severity_overrides: FxHashMap::default(),
@@ -145,6 +149,7 @@ impl<'a> LintContext<'a> {
             sfc_descriptor: None,
             analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
+            dialect: VueDialect::default(),
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
             severity_overrides: FxHashMap::default(),
@@ -209,6 +214,24 @@ impl<'a> LintContext<'a> {
     #[inline]
     pub fn is_ssr_enabled(&self) -> bool {
         self.ssr_mode == SsrMode::Enabled
+    }
+
+    /// Set the Vue dialect of the document being linted.
+    #[inline]
+    pub fn set_dialect(&mut self, dialect: VueDialect) {
+        self.dialect = dialect;
+    }
+
+    /// Get the Vue dialect of the document being linted.
+    #[inline]
+    pub fn dialect(&self) -> VueDialect {
+        self.dialect
+    }
+
+    /// Check if the document being linted uses the petite-vue dialect.
+    #[inline]
+    pub fn is_petite_vue(&self) -> bool {
+        self.dialect.is_petite_vue()
     }
 
     /// Set help display level.

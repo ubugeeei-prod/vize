@@ -25,6 +25,7 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::Allocator;
 use vize_carton::String;
 use vize_carton::ToCompactString;
+use vize_carton::dialect::{VueDialect, standalone_html_dialect};
 use vize_carton::profile;
 use vize_croquis::{Analyzer, Croquis};
 use vize_relief::ast::RootNode;
@@ -46,6 +47,17 @@ pub(crate) struct SfcTemplateLintInput<'a> {
     pub root: &'a RootNode<'a>,
     pub descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
     pub analysis: TemplateAnalysis<'a>,
+}
+
+/// Document-level inputs shared by the template-rule passes.
+///
+/// Bundles the optional SFC descriptor with the resolved [`VueDialect`] so the
+/// rule context can gate dialect-specific rules (e.g. petite-vue keyless
+/// `v-for`) without growing the already-wide pass signatures.
+#[derive(Clone, Copy)]
+pub(crate) struct TemplateRuleEnv<'a> {
+    pub sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
+    pub dialect: VueDialect,
 }
 
 const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
@@ -235,14 +247,15 @@ impl Linter {
         source: &'a str,
         filename: &'a str,
         root: &RootNode<'a>,
-        sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
         analysis: Option<&'a Croquis>,
+        env: TemplateRuleEnv<'a>,
     ) -> LintResult {
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_config_disabled_rules(self.disabled_rules.clone());
         ctx.set_help_level(self.help_level);
-        if let Some(descriptor) = sfc_descriptor {
+        ctx.set_dialect(env.dialect);
+        if let Some(descriptor) = env.sfc_descriptor {
             ctx.set_sfc_descriptor(descriptor);
         }
         #[cfg(not(target_arch = "wasm32"))]
@@ -258,7 +271,8 @@ impl Linter {
 
         let rule_count = self.template_rule_count_for_source(
             source,
-            sfc_descriptor.map(|descriptor| descriptor.source.as_ref()),
+            env.sfc_descriptor
+                .map(|descriptor| descriptor.source.as_ref()),
         );
         let mut visitor = LintVisitor::new(
             &mut ctx,
@@ -286,20 +300,13 @@ impl Linter {
         source: &'a str,
         filename: &'a str,
         root: &RootNode<'a>,
-        sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
         analysis: TemplateAnalysis<'a>,
+        env: TemplateRuleEnv<'a>,
     ) -> LintResult {
         if matches!(analysis, TemplateAnalysis::Disabled)
             || !self.has_active_semantic_template_rules()
         {
-            return self.run_template_rules(
-                allocator,
-                source,
-                filename,
-                root,
-                sfc_descriptor,
-                None,
-            );
+            return self.run_template_rules(allocator, source, filename, root, None, env);
         }
         let owned_analysis;
         let analysis = match analysis {
@@ -315,14 +322,7 @@ impl Linter {
             }
         };
 
-        self.run_template_rules(
-            allocator,
-            source,
-            filename,
-            root,
-            sfc_descriptor,
-            Some(analysis),
-        )
+        self.run_template_rules(allocator, source, filename, root, Some(analysis), env)
     }
 
     /// Lint a Vue template source.
@@ -342,7 +342,14 @@ impl Linter {
         source: &str,
         filename: &str,
     ) -> LintResult {
-        self.lint_template_with_allocator_config(allocator, source, filename, true, true)
+        self.lint_template_with_allocator_config(
+            allocator,
+            source,
+            filename,
+            true,
+            true,
+            VueDialect::Vue,
+        )
     }
 
     #[cfg(test)]
@@ -350,7 +357,14 @@ impl Linter {
         let capacity = (source.len() * 4).max(self.initial_capacity);
         let allocator = Allocator::with_capacity(capacity);
 
-        self.lint_template_with_allocator_config(&allocator, source, filename, false, true)
+        self.lint_template_with_allocator_config(
+            &allocator,
+            source,
+            filename,
+            false,
+            true,
+            VueDialect::Vue,
+        )
     }
 
     fn lint_template_with_allocator_config(
@@ -360,6 +374,7 @@ impl Linter {
         filename: &str,
         report_parse_errors: bool,
         gate_semantic_on_fatal_parse: bool,
+        dialect: VueDialect,
     ) -> LintResult {
         // Parse the template
         let parser = Parser::new(allocator.as_bump(), source);
@@ -372,11 +387,14 @@ impl Linter {
             source,
             filename,
             &root,
-            None,
             if gate_semantic_on_fatal_parse && has_fatal_parse_errors {
                 TemplateAnalysis::Disabled
             } else {
                 TemplateAnalysis::Lazy
+            },
+            TemplateRuleEnv {
+                sfc_descriptor: None,
+                dialect,
             },
         );
 
@@ -415,8 +433,11 @@ impl Linter {
             &input.template.content,
             input.filename,
             input.root,
-            input.descriptor,
             input.analysis,
+            TemplateRuleEnv {
+                sfc_descriptor: input.descriptor,
+                dialect: VueDialect::Vue,
+            },
         );
         Self::offset_result(&mut result, input.template.loc.start as u32);
         result
@@ -596,8 +617,13 @@ impl Linter {
     pub fn lint_standalone_html(&self, source: &str, filename: &str) -> LintResult {
         let capacity = (source.len() * 4).max(self.initial_capacity);
         let allocator = Allocator::with_capacity(capacity);
-        let mut result =
-            self.lint_template_with_allocator_config(&allocator, source, filename, false, false);
+        // Resolve the document dialect so dialect-specific rules (e.g.
+        // require-v-for-key, which petite-vue does not require) can gate
+        // themselves on petite-vue documents.
+        let dialect = standalone_html_dialect(None, source);
+        let mut result = self.lint_template_with_allocator_config(
+            &allocator, source, filename, false, false, dialect,
+        );
 
         if super::script_rules::has_active_builtin_script_rules(self) {
             super::script_rules::append_builtin_script_diagnostics_from_html(
