@@ -20,13 +20,13 @@ use serde::{Deserialize, Deserializer, de};
 /// Accepted config values are the bare version numbers `"3"` (default),
 /// `"2.7"`, `"2"`, `"1"`, `"0.11"`, and `"0.10"`; a leading `v` (as printed in
 /// diagnostics, e.g. `"v0.10"`) is also tolerated. Anything else fails config
-/// parsing — see [`VueDialect::from_config_str`].
+/// parsing — see [`VueVersion::from_config_str`].
 ///
 /// Vue 2.7 is kept distinct from Vue 2 because the lines differ on the script
 /// side (2.7 backports `<script setup>` / composition APIs) even though they
 /// share a template dialect downstream.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
-pub enum VueDialect {
+pub enum VueVersion {
     /// Modern Vue 3 — the default dialect; not a legacy line.
     #[default]
     V3,
@@ -42,9 +42,9 @@ pub enum VueDialect {
     V0_10,
 }
 
-impl VueDialect {
+impl VueVersion {
     /// Every selectable dialect, newest first.
-    pub const ALL: [VueDialect; 6] = [
+    pub const ALL: [VueVersion; 6] = [
         Self::V3,
         Self::V2_7,
         Self::V2,
@@ -77,7 +77,7 @@ impl VueDialect {
     /// line are distinct dialects (the 0.11.0 rewrite changed computed
     /// `$get`/`$set`, instantiation, and scope semantics), so the config must
     /// say which one it means.
-    pub fn from_config_str(raw: &str) -> Result<Self, ParseVueDialectError> {
+    pub fn from_config_str(raw: &str) -> Result<Self, ParseVueVersionError> {
         let trimmed = raw.trim();
         let bare = trimmed.strip_prefix(['v', 'V']).unwrap_or(trimmed);
         match bare {
@@ -87,13 +87,13 @@ impl VueDialect {
             "1" => Ok(Self::V1),
             "0.11" => Ok(Self::V0_11),
             "0.10" => Ok(Self::V0_10),
-            "0" => Err(ParseVueDialectError {
+            "0" => Err(ParseVueVersionError {
                 raw: raw.into(),
-                kind: ParseVueDialectErrorKind::AmbiguousZero,
+                kind: ParseVueVersionErrorKind::AmbiguousZero,
             }),
-            _ => Err(ParseVueDialectError {
+            _ => Err(ParseVueVersionError {
                 raw: raw.into(),
-                kind: ParseVueDialectErrorKind::Unknown,
+                kind: ParseVueVersionErrorKind::Unknown,
             }),
         }
     }
@@ -101,13 +101,13 @@ impl VueDialect {
 
 /// Error produced when a `vue.version` value does not name a dialect.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParseVueDialectError {
+pub struct ParseVueVersionError {
     raw: crate::String,
-    kind: ParseVueDialectErrorKind,
+    kind: ParseVueVersionErrorKind,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum ParseVueDialectErrorKind {
+enum ParseVueVersionErrorKind {
     /// `"0"` / `"v0"`: does not distinguish the 0.10 line from the 0.11-era
     /// line.
     AmbiguousZero,
@@ -115,16 +115,16 @@ enum ParseVueDialectErrorKind {
     Unknown,
 }
 
-impl std::fmt::Display for ParseVueDialectError {
+impl std::fmt::Display for ParseVueVersionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let raw = self.raw.as_str();
         match self.kind {
-            ParseVueDialectErrorKind::AmbiguousZero => write!(
+            ParseVueVersionErrorKind::AmbiguousZero => write!(
                 f,
                 "ambiguous vue.version \"{raw}\": Vue 0.10 and the 0.11-era line are \
                  distinct dialects; use \"0.10\" or \"0.11\""
             ),
-            ParseVueDialectErrorKind::Unknown => write!(
+            ParseVueVersionErrorKind::Unknown => write!(
                 f,
                 "unknown vue.version \"{raw}\": expected \"3\" (default), \"2.7\", \
                  \"2\", \"1\", \"0.11\", or \"0.10\""
@@ -133,17 +133,17 @@ impl std::fmt::Display for ParseVueDialectError {
     }
 }
 
-impl std::error::Error for ParseVueDialectError {}
+impl std::error::Error for ParseVueVersionError {}
 
-impl<'de> Deserialize<'de> for VueDialect {
+impl<'de> Deserialize<'de> for VueVersion {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        struct VueDialectVisitor;
+        struct VueVersionVisitor;
 
-        impl de::Visitor<'_> for VueDialectVisitor {
-            type Value = VueDialect;
+        impl de::Visitor<'_> for VueVersionVisitor {
+            type Value = VueVersion;
 
             fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 // Reached for non-string values, e.g. `"version": 2.7` in
@@ -158,11 +158,11 @@ impl<'de> Deserialize<'de> for VueDialect {
             where
                 E: de::Error,
             {
-                VueDialect::from_config_str(value).map_err(E::custom)
+                VueVersion::from_config_str(value).map_err(E::custom)
             }
         }
 
-        deserializer.deserialize_str(VueDialectVisitor)
+        deserializer.deserialize_str(VueVersionVisitor)
     }
 }
 
@@ -171,7 +171,7 @@ impl<'de> Deserialize<'de> for VueDialect {
 #[serde(default)]
 pub(crate) struct RawVueConfig {
     /// `vue.version` dialect selector; `None` when the key is absent.
-    pub(crate) version: Option<VueDialect>,
+    pub(crate) version: Option<VueVersion>,
 }
 
 #[cfg(test)]
@@ -180,29 +180,29 @@ mod tests {
 
     #[test]
     fn parses_canonical_and_v_prefixed_values() {
-        for dialect in VueDialect::ALL {
-            assert_eq!(VueDialect::from_config_str(dialect.as_str()), Ok(dialect));
+        for dialect in VueVersion::ALL {
+            assert_eq!(VueVersion::from_config_str(dialect.as_str()), Ok(dialect));
             let prefixed = crate::cstr!("v{}", dialect.as_str());
-            assert_eq!(VueDialect::from_config_str(&prefixed), Ok(dialect));
+            assert_eq!(VueVersion::from_config_str(&prefixed), Ok(dialect));
         }
         assert_eq!(
-            VueDialect::from_config_str(" 2.7 "),
-            Ok(VueDialect::V2_7),
+            VueVersion::from_config_str(" 2.7 "),
+            Ok(VueVersion::V2_7),
             "values are trimmed"
         );
     }
 
     #[test]
     fn only_vue3_is_not_legacy() {
-        for dialect in VueDialect::ALL {
-            assert_eq!(dialect.is_legacy(), dialect != VueDialect::V3);
+        for dialect in VueVersion::ALL {
+            assert_eq!(dialect.is_legacy(), dialect != VueVersion::V3);
         }
     }
 
     #[test]
     fn rejects_bare_zero_as_ambiguous() {
         for raw in ["0", "v0", "V0"] {
-            let error = VueDialect::from_config_str(raw).unwrap_err();
+            let error = VueVersion::from_config_str(raw).unwrap_err();
             let message = crate::cstr!("{error}");
             assert!(message.contains("ambiguous"), "{message}");
             assert!(message.contains("\"0.10\""), "{message}");
@@ -213,7 +213,7 @@ mod tests {
     #[test]
     fn rejects_unknown_values_with_expected_list() {
         for raw in ["2.6", "4", "vue2", ""] {
-            let error = VueDialect::from_config_str(raw).unwrap_err();
+            let error = VueVersion::from_config_str(raw).unwrap_err();
             let message = crate::cstr!("{error}");
             assert!(message.contains("unknown vue.version"), "{message}");
             assert!(message.contains("\"2.7\""), "{message}");
@@ -223,14 +223,14 @@ mod tests {
 
     #[test]
     fn deserializes_strings_and_rejects_numbers() {
-        let dialect: VueDialect = serde_json::from_str("\"0.10\"").unwrap();
-        assert_eq!(dialect, VueDialect::V0_10);
+        let dialect: VueVersion = serde_json::from_str("\"0.10\"").unwrap();
+        assert_eq!(dialect, VueVersion::V0_10);
 
-        let error = serde_json::from_str::<VueDialect>("2.7").unwrap_err();
+        let error = serde_json::from_str::<VueVersion>("2.7").unwrap_err();
         let message = crate::cstr!("{error}");
         assert!(message.contains("Vue version string"), "{message}");
 
-        let error = serde_json::from_str::<VueDialect>("\"0\"").unwrap_err();
+        let error = serde_json::from_str::<VueVersion>("\"0\"").unwrap_err();
         let message = crate::cstr!("{error}");
         assert!(message.contains("ambiguous"), "{message}");
     }
