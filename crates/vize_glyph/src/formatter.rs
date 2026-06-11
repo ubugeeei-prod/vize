@@ -176,8 +176,17 @@ impl<'a> GlyphFormatter<'a> {
         output: &mut Vec<u8>,
         block: &vize_atelier_sfc::SfcScriptBlock<'_>,
     ) -> Result<(), FormatError> {
+        // Degrade gracefully on a script parse error: emit the original script
+        // body trimmed but otherwise unchanged, rather than failing the whole
+        // SFC format and dropping the template/style work. The script formatter
+        // delegates to oxc, which round-trips decorated class components
+        // (`@Component`/`@Prop()`/`@Emit()`) fine; this fallback only triggers
+        // on genuinely unparseable TS, mirroring the style block's fallback to
+        // trimmed content. (#1391)
+        let trimmed = block.content.trim();
         let formatted_content =
-            script::format_script_content(block.content.trim(), self.options, self.allocator)?;
+            script::format_script_content(trimmed, self.options, self.allocator)
+                .unwrap_or_else(|_| trimmed.to_compact_string());
 
         // Build the opening tag using byte operations
         output.extend_from_slice(b"<script");

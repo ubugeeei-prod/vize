@@ -270,6 +270,127 @@ const message = 'hello';
     }
 
     #[test]
+    fn test_format_sfc_class_component_preserves_decorators() {
+        // #1391 PR8: a decorated class-component SFC (vue-property-decorator
+        // style) must round-trip through the script formatter without losing
+        // or mangling decorators, the class body, or member decorators. oxc
+        // formats the class verbatim apart from quote/semicolon normalization.
+        let source = r#"<script lang="ts">
+import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
+
+@Component
+export default class MyComponent extends Vue {
+  @Prop({ default: 0 }) readonly value!: number
+  count = 0
+  get doubled(): number {
+    return this.count * 2
+  }
+  increment(): void {
+    this.count++
+  }
+  @Emit('change')
+  onChange(): number {
+    return this.count
+  }
+}
+</script>
+
+<template>
+  <div>{{ doubled }}</div>
+</template>
+"#;
+        let options = FormatOptions::default();
+        let first = format_sfc(source, &options).unwrap();
+        let code = first.code.as_str();
+
+        // Decorators and class structure preserved.
+        assert!(code.contains("@Component"), "@Component decorator dropped");
+        assert!(
+            code.contains("export default class MyComponent extends Vue"),
+            "class declaration mangled"
+        );
+        assert!(
+            code.contains("@Prop({ default: 0 }) readonly value!: number;"),
+            "@Prop member decorator dropped or mangled"
+        );
+        assert!(
+            code.contains("@Emit(\"change\")"),
+            "@Emit member decorator dropped or mangled"
+        );
+        assert!(code.contains("get doubled(): number"), "getter dropped");
+        assert!(code.contains("increment(): void"), "method dropped");
+
+        // Idempotent: a second pass is a no-op.
+        let second = format_sfc(code, &options).unwrap();
+        assert_eq!(
+            first.code, second.code,
+            "fmt; fmt must be a no-op for class components"
+        );
+    }
+
+    #[test]
+    fn test_format_sfc_class_component_options_decorator() {
+        // #1391 PR8: the vue-class-component v8 `@Options({...})` form is also
+        // preserved, including the decorator-argument options object.
+        let source = r#"<script lang="ts">
+import { Vue, Options } from 'vue-class-component'
+
+@Options({
+  components: { Foo },
+})
+export default class MyComponent extends Vue {
+  count = 0
+}
+</script>
+"#;
+        let options = FormatOptions::default();
+        let first = format_sfc(source, &options).unwrap();
+        let code = first.code.as_str();
+        assert!(code.contains("@Options({"), "@Options decorator dropped");
+        assert!(
+            code.contains("components: { Foo },"),
+            "decorator-argument options object mangled"
+        );
+        let second = format_sfc(code, &options).unwrap();
+        assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+    }
+
+    #[test]
+    fn test_format_sfc_script_parse_error_degrades_to_unchanged_script() {
+        // #1391 PR8: an unparseable script body must NOT fail the whole-SFC
+        // format. The script is left unchanged (trimmed) and the template is
+        // still formatted, mirroring the style block's fallback behaviour.
+        let source = r#"<script lang="ts">
+const x = ;
+@@@ not valid typescript
+</script>
+
+<template>
+<div>{{ x }}</div>
+</template>
+"#;
+        let options = FormatOptions::default();
+        let result =
+            format_sfc(source, &options).expect("parse error must not abort the SFC format");
+        let code = result.code.as_str();
+        // Unparseable script preserved verbatim (trimmed).
+        assert!(
+            code.contains("const x = ;"),
+            "unparseable script body should be left unchanged"
+        );
+        assert!(
+            code.contains("@@@ not valid typescript"),
+            "unparseable script body should be left unchanged"
+        );
+        // Template still got formatted/indented (the interpolation expands
+        // onto its own indented line instead of being left untouched).
+        assert!(
+            code.contains("  <div>\n    {{ x }}\n  </div>"),
+            "template should still be formatted when script fails to parse, got:\n{code}"
+        );
+    }
+
+    #[test]
     fn test_allocator_reuse() {
         let allocator = Allocator::with_capacity(4096);
         let options = FormatOptions::default();
