@@ -4,14 +4,92 @@
  * Usage: node generate.mjs [count]
  */
 import { writeFileSync, mkdirSync, readdirSync, rmSync, statSync } from "fs";
-import { join, dirname } from "path";
+import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const FILE_COUNT = parseInt(process.argv[2]) || 2000;
+const DEFAULT_FILE_COUNT = 2000;
+const defaultBenchDir = join(__dirname, "__in__");
+
+function parseFileCount(value) {
+  return Number.parseInt(value ?? "", 10) || DEFAULT_FILE_COUNT;
+}
+
+function createLargeTemplateVariant() {
+  const panels = [];
+  for (let i = 0; i < 18; i++) {
+    const bucket = i % 6;
+    panels.push(`    <article class="template-row template-row-${i}" :data-row="${i}" :class="{ selected: activeRow === ${bucket} }">
+      <header>
+        <p>{{ rows[${bucket}].eyebrow }}</p>
+        <h2>{{ rows[${bucket}].title }}</h2>
+        <button type="button" @click="activate(${bucket})">Open</button>
+      </header>
+      <section class="template-row-body">
+        <dl>
+          <div v-for="stat in rows[${bucket}].stats" :key="'${i}-' + stat.key">
+            <dt>{{ stat.label }}</dt>
+            <dd>{{ formatValue(stat.value, ${i}) }}</dd>
+          </div>
+        </dl>
+        <ul>
+          <li v-for="item in rows[${bucket}].items" :key="'${i}-' + item.id">
+            <span>{{ item.name }}</span>
+            <strong>{{ item.score + ${i} }}</strong>
+            <em v-if="item.score > threshold">above target</em>
+            <em v-else>watch</em>
+          </li>
+        </ul>
+      </section>
+    </article>`);
+  }
+
+  return `<template>
+  <main class="large-template-grid">
+    <section class="large-template-summary">
+      <h1>{{ title }}</h1>
+      <p>{{ selectedRow.title }} / {{ selectedRow.items.length }} items</p>
+      <button type="button" @click="threshold += 1">Raise Threshold</button>
+    </section>
+${panels.join("\n")}
+  </main>
+</template>
+
+<script setup>
+import { computed, ref } from 'vue'
+const title = ref('Large template __BENCH_ID__')
+const activeRow = ref(0)
+const threshold = ref(18)
+const rows = ref(Array.from({ length: 6 }, (_, rowIndex) => ({
+  eyebrow: 'Cluster ' + rowIndex,
+  title: 'Template Group ' + rowIndex,
+  stats: [
+    { key: 'load', label: 'Load', value: rowIndex * 3 + 11 },
+    { key: 'queue', label: 'Queue', value: rowIndex * 5 + 7 },
+  ],
+  items: Array.from({ length: 5 }, (__, itemIndex) => ({
+    id: rowIndex + '-' + itemIndex,
+    name: 'Item ' + itemIndex,
+    score: rowIndex * 10 + itemIndex,
+  })),
+})))
+const selectedRow = computed(() => rows.value[activeRow.value])
+function formatValue(value, offset) { return value + offset }
+function activate(index) { activeRow.value = index }
+</script>
+
+<style scoped>
+.large-template-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.large-template-summary { grid-column: 1 / -1; padding: 16px; border: 1px solid #d4d4d8; }
+.template-row { border: 1px solid #d4d4d8; padding: 12px; }
+.template-row.selected { border-color: #2563eb; }
+.template-row-body { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+</style>
+`;
+}
 
 // SFC templates of varying complexity
-const templates = [
+export const SFC_TEMPLATES = [
   // Simple
   `<template>
   <div>{{ message }}</div>
@@ -338,20 +416,273 @@ function openImage(message) { console.log('Open image', message.imageUrl) }
 .chat-input textarea { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; resize: none; }
 </style>
 `,
-];
+  // Options API with props, data, computed, watchers, and methods
+  `<template>
+  <section class="options-workspace">
+    <header>
+      <p>{{ subtitle }}</p>
+      <h1>{{ title }}</h1>
+      <button type="button" @click="toggleArchived">{{ showArchived ? 'Hide' : 'Show' }} Archived</button>
+    </header>
+    <form class="filters" @submit.prevent="applyFilter">
+      <input v-model.trim="draftQuery" :placeholder="placeholder" />
+      <select v-model="selectedStatus">
+        <option v-for="status in statuses" :key="status" :value="status">{{ status }}</option>
+      </select>
+      <button type="submit">Apply</button>
+    </form>
+    <ul class="ticket-list">
+      <li v-for="ticket in visibleTickets" :key="ticket.id" :class="{ overdue: ticket.due < today }">
+        <span>{{ ticket.code }}</span>
+        <strong>{{ ticket.summary }}</strong>
+        <small>{{ ticket.owner }} / {{ ticket.status }}</small>
+        <button type="button" @click="assign(ticket.id, fallbackOwner)">Assign</button>
+      </li>
+    </ul>
+    <footer>{{ visibleTickets.length }} of {{ tickets.length }} tickets</footer>
+  </section>
+</template>
 
-const benchDir = join(__dirname, "__in__");
+<script>
+export default {
+  name: 'OptionsBenchmark__BENCH_ID__',
+  props: {
+    initialStatus: { type: String, default: 'open' },
+    fallbackOwner: { type: String, default: 'Platform' },
+  },
+  data() {
+    return {
+      title: 'Options API board __BENCH_ID__',
+      subtitle: 'Synthetic workload',
+      placeholder: 'Filter tickets',
+      draftQuery: '',
+      query: '',
+      selectedStatus: this.initialStatus,
+      showArchived: false,
+      today: 20,
+      statuses: ['open', 'blocked', 'review', 'done'],
+      tickets: [
+        { id: 1, code: 'OPS-1', summary: 'Review rollout', owner: 'Aki', status: 'open', archived: false, due: 12 },
+        { id: 2, code: 'OPS-2', summary: 'Trim queue', owner: 'Mika', status: 'blocked', archived: false, due: 25 },
+        { id: 3, code: 'OPS-3', summary: 'Close incident', owner: 'Ren', status: 'done', archived: true, due: 10 },
+      ],
+    }
+  },
+  computed: {
+    normalizedQuery() {
+      return this.query.toLowerCase()
+    },
+    visibleTickets() {
+      return this.tickets.filter((ticket) => {
+        const matchesStatus = ticket.status === this.selectedStatus || this.selectedStatus === 'open'
+        const matchesQuery = !this.normalizedQuery || ticket.summary.toLowerCase().includes(this.normalizedQuery)
+        const matchesArchive = this.showArchived || !ticket.archived
+        return matchesStatus && matchesQuery && matchesArchive
+      })
+    },
+  },
+  watch: {
+    selectedStatus() {
+      this.query = ''
+      this.draftQuery = ''
+    },
+  },
+  methods: {
+    applyFilter() {
+      this.query = this.draftQuery
+    },
+    toggleArchived() {
+      this.showArchived = !this.showArchived
+    },
+    assign(id, owner) {
+      const ticket = this.tickets.find((item) => item.id === id)
+      if (ticket) ticket.owner = owner
+    },
+  },
+}
+</script>
 
-// Ensure directory exists
-mkdirSync(benchDir, { recursive: true });
+<style scoped>
+.options-workspace { display: grid; gap: 16px; padding: 20px; }
+.filters { display: flex; gap: 8px; }
+.ticket-list { display: grid; gap: 8px; padding: 0; list-style: none; }
+.ticket-list li { display: grid; grid-template-columns: 80px 1fr auto auto; gap: 12px; align-items: center; }
+.ticket-list li.overdue { color: #b91c1c; }
+</style>
+`,
+  // TypeScript-heavy script setup with generics, unions, and typed emits
+  `<template>
+  <section class="typed-resource">
+    <header>
+      <h1>{{ headline }}</h1>
+      <p>{{ benchmarkToken }}</p>
+      <button type="button" @click="cycleState">Cycle</button>
+    </header>
+    <article v-for="resource in decoratedResources" :key="resource.id" :data-kind="resource.state.kind">
+      <h2>{{ resource.name }}</h2>
+      <p>{{ resource.summary }}</p>
+      <meter :value="resource.score" min="0" max="100"></meter>
+      <button type="button" @click="select(resource)">Select</button>
+      <template v-if="resource.state.kind === 'failed'">
+        <strong>{{ resource.state.reason }}</strong>
+      </template>
+      <template v-else-if="resource.state.kind === 'ready'">
+        <span>{{ resource.state.deployedAt }}</span>
+      </template>
+      <template v-else>
+        <span>{{ resource.state.percent }}%</span>
+      </template>
+    </article>
+    <footer>{{ selected?.name ?? 'None selected' }} / {{ totals.ready }} ready</footer>
+  </section>
+</template>
 
-console.log(`Generating ${FILE_COUNT} SFC files in ${benchDir}...`);
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 
-for (const file of readdirSync(benchDir)) {
-  if (file.startsWith("Component") && file.endsWith(".vue")) {
-    rmSync(join(benchDir, file), { force: true });
+type ResourceState =
+  | { kind: 'ready'; deployedAt: string }
+  | { kind: 'pending'; percent: number }
+  | { kind: 'failed'; reason: string }
+
+type Resource<TMeta extends Record<string, unknown>> = {
+  id: number
+  name: string
+  weight: number
+  state: ResourceState
+  meta: TMeta
+}
+
+type DecoratedResource<TMeta extends Record<string, unknown>> = Resource<TMeta> & {
+  score: number
+  summary: string
+}
+
+const emit = defineEmits<{
+  selected: [payload: DecoratedResource<{ owner: string; tags: string[] }>]
+}>()
+
+const benchmarkToken = 'ts-heavy-__BENCH_ID__' as const
+const headline = computed(() => 'Typed resources ' + benchmarkToken)
+const selected = ref<DecoratedResource<{ owner: string; tags: string[] }> | null>(null)
+const resources = ref<Resource<{ owner: string; tags: string[] }>[]>([
+  { id: 1, name: 'Compiler', weight: 0.85, state: { kind: 'ready', deployedAt: '2026-01-01' }, meta: { owner: 'Core', tags: ['sfc', 'fast'] } },
+  { id: 2, name: 'Checker', weight: 0.65, state: { kind: 'pending', percent: 42 }, meta: { owner: 'Types', tags: ['ts', 'diagnostics'] } },
+  { id: 3, name: 'Linter', weight: 0.45, state: { kind: 'failed', reason: 'rule mismatch' }, meta: { owner: 'Lint', tags: ['rules'] } },
+])
+
+function scoreFor<TMeta extends Record<string, unknown>>(resource: Resource<TMeta>): number {
+  const stateScore: Record<ResourceState['kind'], number> = { ready: 100, pending: 60, failed: 15 }
+  return Math.round(stateScore[resource.state.kind] * resource.weight)
+}
+
+const decoratedResources = computed(() =>
+  resources.value.map((resource): DecoratedResource<{ owner: string; tags: string[] }> => ({
+    ...resource,
+    score: scoreFor(resource),
+    summary: resource.meta.owner + ' / ' + resource.meta.tags.join(', '),
+  })),
+)
+
+const totals = computed(() => decoratedResources.value.reduce(
+  (acc, resource) => {
+    acc[resource.state.kind] += 1
+    return acc
+  },
+  { ready: 0, pending: 0, failed: 0 } as Record<ResourceState['kind'], number>,
+))
+
+function select(resource: DecoratedResource<{ owner: string; tags: string[] }>): void {
+  selected.value = resource
+  emit('selected', resource)
+}
+
+function cycleState(): void {
+  resources.value = resources.value.map((resource) => ({
+    ...resource,
+    state: resource.state.kind === 'ready'
+      ? { kind: 'pending', percent: 20 }
+      : resource.state.kind === 'pending'
+        ? { kind: 'failed', reason: 'synthetic transition' }
+        : { kind: 'ready', deployedAt: '2026-01-02' },
+  }))
+}
+</script>
+
+<style scoped>
+.typed-resource { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.typed-resource header, .typed-resource footer { grid-column: 1 / -1; }
+.typed-resource article { border: 1px solid #d1d5db; padding: 12px; }
+</style>
+`,
+  // Large template inside the many-file corpus, distinct from compare-tools' single large-SFC lane
+  createLargeTemplateVariant(),
+  // Class-style SFC with a default exported TypeScript class and template bindings
+  `<template>
+  <section class="class-component">
+    <header>
+      <h1>{{ view.label }}</h1>
+      <p>{{ summary }}</p>
+      <button type="button" @click="increment">Increment</button>
+    </header>
+    <ol>
+      <li v-for="step in steps" :key="step.id" :class="{ done: step.done }">
+        <span>{{ step.title }}</span>
+        <button type="button" @click="toggle(step.id)">{{ step.done ? 'Undo' : 'Done' }}</button>
+      </li>
+    </ol>
+    <footer>{{ completedCount }} / {{ steps.length }} complete</footer>
+  </section>
+</template>
+
+<script lang="ts">
+class StepModel {
+  constructor(
+    public id: number,
+    public title: string,
+    public done: boolean,
+  ) {}
+}
+
+class ClassViewModel {
+  label = 'Class component __BENCH_ID__'
+  count = 1
+}
+
+export default class ClassBenchComponent__BENCH_ID__ {
+  view = new ClassViewModel()
+  steps = [
+    new StepModel(1, 'Parse script block', true),
+    new StepModel(2, 'Compile template', false),
+    new StepModel(3, 'Attach render function', false),
+  ]
+
+  get completedCount(): number {
+    return this.steps.filter((step) => step.done).length
+  }
+
+  get summary(): string {
+    return this.view.label + ' #' + this.view.count
+  }
+
+  increment(): void {
+    this.view.count += 1
+  }
+
+  toggle(id: number): void {
+    const step = this.steps.find((item) => item.id === id)
+    if (step) step.done = !step.done
   }
 }
+</script>
+
+<style scoped>
+.class-component { display: grid; gap: 12px; padding: 20px; }
+.class-component li { display: flex; justify-content: space-between; gap: 12px; }
+.class-component li.done { text-decoration: line-through; }
+</style>
+`,
+];
 
 // Every generated body must be unique. Repeating identical bodies lets
 // content-addressed compile caches (e.g. the `vize build --format stats`
@@ -359,54 +690,77 @@ for (const file of readdirSync(benchDir)) {
 // measures cache hits instead of compilation. A per-file token inside an
 // existing string literal keeps each complexity tier intact while forcing a
 // real compile per file.
-function uniquify(template, index) {
+export function uniquify(template, index) {
   const id = String(index).padStart(4, "0");
+  if (template.includes("__BENCH_ID__")) {
+    return template.replaceAll("__BENCH_ID__", id);
+  }
+
   const marked = template.replace(/ref\('([^']*)'\)/, (_, text) => `ref('${text} ${id}')`);
   if (marked === template) {
-    throw new Error("template has no ref('...') anchor to uniquify");
+    throw new Error("template has no __BENCH_ID__ marker or ref('...') anchor to uniquify");
   }
   return marked;
 }
 
-for (let i = 0; i < FILE_COUNT; i++) {
-  const template = uniquify(templates[i % templates.length], i);
-  const filename = `Component${String(i).padStart(4, "0")}.vue`;
-  const filepath = join(benchDir, filename);
-  writeFileSync(filepath, template);
+export function generateCorpus({
+  fileCount = DEFAULT_FILE_COUNT,
+  benchDir = defaultBenchDir,
+  log = console.log,
+} = {}) {
+  const normalizedFileCount = Math.max(0, Math.trunc(Number(fileCount) || 0));
+  const writeLog = typeof log === "function" ? log : () => {};
 
-  if ((i + 1) % 500 === 0) {
-    console.log(`  Generated ${i + 1} files...`);
+  // Ensure directory exists
+  mkdirSync(benchDir, { recursive: true });
+
+  writeLog(`Generating ${normalizedFileCount} SFC files in ${benchDir}...`);
+
+  for (const file of readdirSync(benchDir)) {
+    if (file.startsWith("Component") && file.endsWith(".vue")) {
+      rmSync(join(benchDir, file), { force: true });
+    }
   }
-}
 
-console.log(`Done! Generated ${FILE_COUNT} SFC files.`);
+  for (let i = 0; i < normalizedFileCount; i++) {
+    const template = uniquify(SFC_TEMPLATES[i % SFC_TEMPLATES.length], i);
+    const filename = `Component${String(i).padStart(4, "0")}.vue`;
+    const filepath = join(benchDir, filename);
+    writeFileSync(filepath, template);
 
-// Calculate total size
-const files = readdirSync(benchDir).filter((f) => f.endsWith(".vue"));
-const totalSize = files.reduce((sum, f) => sum + statSync(join(benchDir, f)).size, 0);
-console.log(`Total size: ${(totalSize / 1024 / 1024).toFixed(2)} MB`);
+    if ((i + 1) % 500 === 0) {
+      writeLog(`  Generated ${i + 1} files...`);
+    }
+  }
 
-// Generate tsconfig.json for vue-tsc / vize check
-const tsconfig = {
-  compilerOptions: {
-    target: "ESNext",
-    module: "ESNext",
-    moduleResolution: "bundler",
-    strict: true,
-    jsx: "preserve",
-    noEmit: true,
-    skipLibCheck: true,
-    paths: {
-      vue: ["../node_modules/vue"],
+  writeLog(`Done! Generated ${normalizedFileCount} SFC files.`);
+
+  // Calculate total size
+  const files = readdirSync(benchDir).filter((f) => f.endsWith(".vue"));
+  const totalSize = files.reduce((sum, f) => sum + statSync(join(benchDir, f)).size, 0);
+  writeLog(`Total size: ${(totalSize / 1024 / 1024).toFixed(2)} MB`);
+
+  // Generate tsconfig.json for vue-tsc / vize check
+  const tsconfig = {
+    compilerOptions: {
+      target: "ESNext",
+      module: "ESNext",
+      moduleResolution: "bundler",
+      strict: true,
+      jsx: "preserve",
+      noEmit: true,
+      skipLibCheck: true,
+      paths: {
+        vue: ["../node_modules/vue"],
+      },
     },
-  },
-  include: ["./*.vue"],
-};
-writeFileSync(join(benchDir, "tsconfig.json"), JSON.stringify(tsconfig, null, 2));
-console.log("Generated tsconfig.json");
+    include: ["./*.vue"],
+  };
+  writeFileSync(join(benchDir, "tsconfig.json"), JSON.stringify(tsconfig, null, 2));
+  writeLog("Generated tsconfig.json");
 
-// Generate eslint.config.mjs for eslint-plugin-vue
-const eslintConfig = `import pluginVue from "eslint-plugin-vue";
+  // Generate eslint.config.mjs for eslint-plugin-vue
+  const eslintConfig = `import pluginVue from "eslint-plugin-vue";
 
 export default [
   ...pluginVue.configs["flat/recommended"],
@@ -418,35 +772,35 @@ export default [
   },
 ];
 `;
-writeFileSync(join(benchDir, "eslint.config.mjs"), eslintConfig);
-console.log("Generated eslint.config.mjs");
+  writeFileSync(join(benchDir, "eslint.config.mjs"), eslintConfig);
+  writeLog("Generated eslint.config.mjs");
 
-// Generate vize.config.json so benchmark runs cover shared config loading.
-const vizeConfig = {
-  linter: {
-    rules: {
-      "vue/prop-name-casing": "off",
+  // Generate vize.config.json so benchmark runs cover shared config loading.
+  const vizeConfig = {
+    linter: {
+      rules: {
+        "vue/prop-name-casing": "off",
+      },
     },
-  },
-  typeChecker: {
-    checkProps: true,
-    checkTemplateBindings: true,
-    checkEmits: true,
-  },
-};
-writeFileSync(join(benchDir, "vize.config.json"), `${JSON.stringify(vizeConfig, null, 2)}\n`);
-console.log("Generated vize.config.json");
+    typeChecker: {
+      checkProps: true,
+      checkTemplateBindings: true,
+      checkEmits: true,
+    },
+  };
+  writeFileSync(join(benchDir, "vize.config.json"), `${JSON.stringify(vizeConfig, null, 2)}\n`);
+  writeLog("Generated vize.config.json");
 
-// Generate vite entry file for vite-plugin benchmark
-const viteEntryImports = [];
-const viteEntryComponents = [];
-const entryCount = FILE_COUNT; // import all files for fair vite benchmark
-for (let i = 0; i < entryCount; i++) {
-  const name = `Component${String(i).padStart(4, "0")}`;
-  viteEntryImports.push(`import ${name} from './${name}.vue'`);
-  viteEntryComponents.push(name);
-}
-const viteEntry = `${viteEntryImports.join("\n")}
+  // Generate vite entry file for vite-plugin benchmark
+  const viteEntryImports = [];
+  const viteEntryComponents = [];
+  const entryCount = normalizedFileCount; // import all files for fair vite benchmark
+  for (let i = 0; i < entryCount; i++) {
+    const name = `Component${String(i).padStart(4, "0")}`;
+    viteEntryImports.push(`import ${name} from './${name}.vue'`);
+    viteEntryComponents.push(name);
+  }
+  const viteEntry = `${viteEntryImports.join("\n")}
 import { createApp, h } from 'vue'
 
 const app = createApp({
@@ -456,11 +810,11 @@ const app = createApp({
 })
 app.mount('#app')
 `;
-writeFileSync(join(benchDir, "main.ts"), viteEntry);
-console.log(`Generated main.ts (imports ${entryCount} components)`);
+  writeFileSync(join(benchDir, "main.ts"), viteEntry);
+  writeLog(`Generated main.ts (imports ${entryCount} components)`);
 
-// Generate index.html for vite
-const indexHtml = `<!DOCTYPE html>
+  // Generate index.html for vite
+  const indexHtml = `<!DOCTYPE html>
 <html>
 <head><title>Bench</title></head>
 <body>
@@ -469,5 +823,20 @@ const indexHtml = `<!DOCTYPE html>
 </body>
 </html>
 `;
-writeFileSync(join(benchDir, "index.html"), indexHtml);
-console.log("Generated index.html");
+  writeFileSync(join(benchDir, "index.html"), indexHtml);
+  writeLog("Generated index.html");
+
+  return {
+    dir: benchDir,
+    fileCount: normalizedFileCount,
+    totalSize,
+  };
+}
+
+export function main(argv = process.argv.slice(2)) {
+  return generateCorpus({ fileCount: parseFileCount(argv[0]) });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  main();
+}
