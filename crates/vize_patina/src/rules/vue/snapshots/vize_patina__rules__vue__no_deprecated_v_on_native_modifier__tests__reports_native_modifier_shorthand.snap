@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-deprecated-v-on-native-modifier",
+        severity: Error,
+        message: ".native modifier on v-on is deprecated and was removed in Vue 3",
+        start: 20,
+        end: 26,
+        help: Some(
+            "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
