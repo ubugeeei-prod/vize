@@ -11,7 +11,7 @@
     "test:inspect": "node --test --test-concurrency=1 snapshots/inspect/npmx.ts snapshots/inspect/elk.ts snapshots/inspect/vuefes.ts",
     "test:lint": "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-lint} node --test --test-concurrency=1 snapshots/lint/ant-design-vue.ts snapshots/lint/element-plus.ts snapshots/lint/elk.ts snapshots/lint/hoppscotch.ts snapshots/lint/misskey.ts snapshots/lint/npmx.ts snapshots/lint/nuxt-ui.ts snapshots/lint/reka-ui.ts snapshots/lint/voicevox.ts snapshots/lint/vue-vben-admin.ts snapshots/lint/vuefes.ts",
     "test:build": "node --test snapshots/build/elk.ts snapshots/build/misskey.ts snapshots/build/npmx.ts snapshots/build/vuefes.ts",
-    "test:check:fixtures": "node --test --test-concurrency=1 snapshots/check/typecheck-errors.ts snapshots/check/compiler-macros.ts snapshots/check/style-preprocessors.ts snapshots/check/ecosystem-products.ts snapshots/check/nuxt-parity.ts snapshots/check/toolchain-parity.ts"
+    "test:check:fixtures": "node --test --test-concurrency=1 snapshots/check/typecheck-errors.ts snapshots/check/compiler-macros.ts snapshots/check/style-preprocessors.ts snapshots/check/ecosystem-products.ts snapshots/check/nuxt-parity.ts snapshots/check/toolchain-parity.ts snapshots/check/options-api.ts snapshots/check/class-component.ts"
   },
   "devDependencies": {
     "@apollo/client": "3.14.1",
@@ -44,7 +44,9 @@
     "vee-validate": "4.15.1",
     "vue": "catalog:vue-beta",
     "vue-chartjs": "5.3.3",
+    "vue-class-component": "8.0.0-rc.1",
     "vue-i18n": "11.4.5",
+    "vue-property-decorator": "10.0.0-rc.3",
     "vue-router": "catalog:vue-stable",
     "vue-select": "4.0.0-beta.6",
     "vue-tsc": "catalog:typescript",

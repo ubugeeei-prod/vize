@@ -2122,6 +2122,38 @@ export const nuxtParityApp: AppConfig = {
   },
 };
 
+export const optionsApiApp: AppConfig = {
+  name: "options-api",
+  cwd: path.join(PROJECTS_DIR, "options-api"),
+  command: "",
+  args: [],
+  port: 0,
+  url: "",
+  mountSelector: "",
+  readyPattern: /./,
+  startupTimeout: 0,
+  check: {
+    cwd: path.join(PROJECTS_DIR, "options-api"),
+    patterns: ["src/**/*.vue"],
+  },
+};
+
+export const classComponentApp: AppConfig = {
+  name: "class-component",
+  cwd: path.join(PROJECTS_DIR, "class-component"),
+  command: "",
+  args: [],
+  port: 0,
+  url: "",
+  mountSelector: "",
+  readyPattern: /./,
+  startupTimeout: 0,
+  check: {
+    cwd: path.join(PROJECTS_DIR, "class-component"),
+    patterns: ["src/**/*.vue"],
+  },
+};
+
 export const SCREENSHOT_DIR = path.resolve(TESTS_DIR, "app", "screenshots");
 const BIN_EXT = process.platform === "win32" ? ".exe" : "";
 const VIZE_CI_BIN = path.resolve(TESTS_DIR, `../target/ci/vize${BIN_EXT}`);

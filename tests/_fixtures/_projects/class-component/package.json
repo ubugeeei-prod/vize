@@ -1,0 +1,11 @@
+{
+  "name": "@vize-fixture/class-component",
+  "private": true,
+  "version": "0.0.0",
+  "description": "vue-class-component / vue-property-decorator parity fixture for `vize check`.",
+  "dependencies": {
+    "vue": "3.6.0-beta.10",
+    "vue-class-component": "^8.0.0-rc.1",
+    "vue-property-decorator": "^10.0.0-rc.3"
+  }
+}
