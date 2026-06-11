@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 use vize_atelier_core::options::{BindingMetadata, CodegenMode};
 use vize_carton::String;
+use vize_carton::config::VueVersion;
 use vize_croquis::Croquis;
 
 /// DOM compiler options
@@ -61,6 +62,16 @@ pub struct DomCompilerOptions {
     #[serde(default)]
     pub is_ts: bool,
 
+    /// Vue dialect resolved once per file from `vue.version`. Defaults to
+    /// [`VueVersion::V3`]; threaded into [`ParserOptions`] / [`TransformOptions`]
+    /// so legacy-capable builds can resolve dialect behavior. Internal-only, so
+    /// it is not part of the serialized option surface.
+    ///
+    /// [`ParserOptions`]: vize_atelier_core::options::ParserOptions
+    /// [`TransformOptions`]: vize_atelier_core::options::TransformOptions
+    #[serde(skip)]
+    pub dialect: VueVersion,
+
     /// Semantic analysis data from Croquis (optional, enhances transforms)
     #[serde(skip)]
     pub croquis: Option<Box<Croquis>>,
@@ -82,6 +93,7 @@ impl Clone for DomCompilerOptions {
             custom_renderer: self.custom_renderer,
             binding_metadata: self.binding_metadata.clone(),
             is_ts: self.is_ts,
+            dialect: self.dialect,
             // Croquis is not cloneable; it will be consumed when passed to the compiler
             croquis: None,
         }
@@ -104,6 +116,7 @@ impl Default for DomCompilerOptions {
             custom_renderer: false,
             binding_metadata: None,
             is_ts: false,
+            dialect: VueVersion::V3,
             croquis: None,
         }
     }

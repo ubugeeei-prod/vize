@@ -87,6 +87,40 @@ mod snapshot_tests;
 mod tests {
     use super::{SfcCompileOptions, compile_sfc, compile_sfc_with_template_syntax, parse_sfc};
     use vize_atelier_core::TemplateSyntaxMode;
+    use vize_carton::config::VueVersion;
+
+    #[test]
+    fn template_compile_options_default_dialect_is_vue3() {
+        // The default per-file dialect must be modern Vue 3 — the zero-cost path.
+        let options = SfcCompileOptions::default();
+        assert_eq!(options.template.dialect, VueVersion::V3);
+    }
+
+    #[test]
+    fn dialect_threads_through_compile_without_changing_vue3_output() {
+        // PR2 is plumbing only: a non-Vue-3 dialect must reach the compile
+        // options (and therefore ParserOptions/TransformOptions), but no
+        // dialect-specific behavior is wired yet, so a plain Vue 3 template
+        // compiles byte-identically regardless of the selected dialect.
+        let source = r#"
+<template>
+  <div :class="cls" @click="onClick">{{ msg }}</div>
+</template>
+"#;
+        let descriptor = parse_sfc(source, Default::default()).unwrap();
+
+        let mut v2_options = SfcCompileOptions::default();
+        v2_options.template.dialect = VueVersion::V2;
+        assert_eq!(v2_options.template.dialect, VueVersion::V2);
+
+        let v3 = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+        let v2 = compile_sfc(&descriptor, v2_options).unwrap();
+
+        assert_eq!(
+            v3.code, v2.code,
+            "dialect plumbing must not change Vue 3 codegen output"
+        );
+    }
 
     #[test]
     fn test_parse_simple_sfc() {

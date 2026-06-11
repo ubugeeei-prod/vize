@@ -127,6 +127,18 @@ pub fn load_compiler_template_syntax(path: Option<&Path>) -> Option<&'static str
         .map(|template_syntax| template_syntax.as_str())
 }
 
+/// Load the configured `vue.version` dialect from a directory or file path.
+///
+/// Returns `None` when the key is absent (modern Vue 3). Unknown or ambiguous
+/// values fail config parsing earlier, so a returned value always names a valid
+/// dialect. The build runner threads this into the per-file compile options so
+/// it reaches the parser/transform layer.
+pub fn load_compiler_vue_version(path: Option<&Path>) -> Option<crate::config::VueVersion> {
+    let loaded = load_raw_config_with_source(path);
+    let (_, features) = loaded.config.into_config_and_features();
+    features.vue_version
+}
+
 /// Load configuration and linter settings from a directory or file path in one pass.
 ///
 /// The lint/check CLIs call this on every invocation. Keeping the raw config

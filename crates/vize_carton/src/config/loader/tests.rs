@@ -1,7 +1,8 @@
 use super::{
-    load_compiler_template_syntax, load_config_and_linter_with_source, load_config_with_source,
-    load_linter_config, validate_explicit_config_path,
+    load_compiler_template_syntax, load_compiler_vue_version, load_config_and_linter_with_source,
+    load_config_with_source, load_linter_config, validate_explicit_config_path,
 };
+use crate::config::VueVersion;
 
 #[test]
 fn validate_explicit_config_path_missing_errors() {
@@ -101,6 +102,28 @@ fn load_config_reads_compiler_template_syntax() {
         load_compiler_template_syntax(Some(&config_path)),
         Some("quirks")
     );
+}
+
+#[test]
+fn load_compiler_vue_version_reads_vue_version_key() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(&config_path, r#"{ "vue": { "version": "2" } }"#).unwrap();
+
+    assert_eq!(
+        load_compiler_vue_version(Some(&config_path)),
+        Some(VueVersion::V2)
+    );
+}
+
+#[test]
+fn load_compiler_vue_version_defaults_to_unset_for_vue3() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(&config_path, r#"{ "formatter": { "singleQuote": true } }"#).unwrap();
+
+    // No `vue.version` key → modern Vue 3 (the absent/default dialect).
+    assert_eq!(load_compiler_vue_version(Some(&config_path)), None);
 }
 
 #[test]

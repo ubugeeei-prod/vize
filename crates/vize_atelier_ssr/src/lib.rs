@@ -96,6 +96,7 @@ fn compile_ssr_inner<'a>(
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         comments: options.comments,
+        dialect: options.dialect,
         ..ParserOptions::default()
     };
 
@@ -129,6 +130,7 @@ fn compile_ssr_inner<'a>(
         inline: codegen_options.inline,
         custom_renderer: codegen_options.custom_renderer,
         binding_metadata: codegen_options.binding_metadata.clone(),
+        dialect: codegen_options.dialect,
         ..Default::default()
     };
     let analysis = options.croquis.map(|c| &*allocator.alloc(*c));

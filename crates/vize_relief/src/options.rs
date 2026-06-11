@@ -1,5 +1,6 @@
 //! Compiler options.
 
+use vize_carton::config::VueVersion;
 use vize_carton::{FxHashMap, String};
 
 /// Parse mode for the tokenizer
@@ -81,6 +82,13 @@ pub struct ParserOptions {
     pub on_warn: Option<fn(crate::CompilerError)>,
     /// Enable comment preservation
     pub comments: bool,
+    /// Vue dialect the source is written in, resolved once per file from
+    /// `vue.version`. Defaults to [`VueVersion::V3`]; any legacy line is opt-in
+    /// behind the `legacy` cargo feature. Parsing/tokenizing only consults this
+    /// at cold decision points, and the Vue 3 default keeps the hot path
+    /// byte-identical (see `vize_armature::legacy`). This PR threads the signal;
+    /// it does not yet branch any behavior on it.
+    pub dialect: VueVersion,
 }
 
 impl Default for ParserOptions {
@@ -98,6 +106,7 @@ impl Default for ParserOptions {
             on_error: None,
             on_warn: None,
             comments: true,
+            dialect: VueVersion::V3,
         }
     }
 }
@@ -139,6 +148,13 @@ pub struct TransformOptions {
     pub vapor: bool,
     /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
+    /// Vue dialect the source is written in, resolved once per file from
+    /// `vue.version`. Defaults to [`VueVersion::V3`]; any legacy line is opt-in
+    /// behind the `legacy` cargo feature. Transforms only consult this at cold
+    /// decision points, and the Vue 3 default keeps the hot path byte-identical
+    /// (see `vize_armature::legacy`). This PR threads the signal; it does not
+    /// yet branch any behavior on it.
+    pub dialect: VueVersion,
 }
 
 impl Default for TransformOptions {
@@ -156,6 +172,7 @@ impl Default for TransformOptions {
             is_ts: false,
             vapor: false,
             custom_renderer: false,
+            dialect: VueVersion::V3,
         }
     }
 }
@@ -366,7 +383,7 @@ pub struct CompilerOptions {
 mod tests {
     use super::{
         BindingMetadata, BindingType, CodegenMode, CodegenOptions, ParseMode, ParserOptions,
-        TransformOptions, WhitespaceStrategy,
+        TransformOptions, VueVersion, WhitespaceStrategy,
     };
 
     #[test]
@@ -381,6 +398,8 @@ mod tests {
         assert!(opts.is_custom_element.is_none());
         assert!(opts.on_error.is_none());
         assert!(opts.on_warn.is_none());
+        // Default dialect is modern Vue 3 — the zero-cost path.
+        assert_eq!(opts.dialect, VueVersion::V3);
     }
 
     #[test]
@@ -395,6 +414,8 @@ mod tests {
         assert!(opts.scope_id.is_none());
         assert!(opts.ssr_css_vars.is_none());
         assert!(opts.binding_metadata.is_none());
+        // Default dialect is modern Vue 3 — the zero-cost path.
+        assert_eq!(opts.dialect, VueVersion::V3);
     }
 
     #[test]

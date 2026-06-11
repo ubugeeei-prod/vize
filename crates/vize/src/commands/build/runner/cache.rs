@@ -27,7 +27,7 @@ pub(super) struct StatsCompileCacheKey {
     /// Captures byte-size changes from the filename-derived `__name` field.
     pub(super) component_name_len: usize,
     /// Compact representation of output-affecting CLI compile options.
-    pub(super) settings: u8,
+    pub(super) settings: u16,
 }
 
 /// Cached result of a stats-only compile.

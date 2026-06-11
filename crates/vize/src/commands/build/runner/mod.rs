@@ -52,6 +52,11 @@ pub(crate) fn run(args: BuildArgs) {
     } else {
         crate::config::load_compiler_template_syntax(args.config.as_deref())
     };
+    let configured_dialect = if args.no_config {
+        None
+    } else {
+        crate::config::load_compiler_vue_version(args.config.as_deref())
+    };
 
     if let Some(threads) = args.threads
         && let Err(error) = rayon::ThreadPoolBuilder::new()
@@ -99,6 +104,7 @@ pub(crate) fn run(args: BuildArgs) {
             .template_syntax
             .map(Into::into)
             .unwrap_or_else(|| template_syntax_mode(compiler_template_syntax)),
+        dialect: configured_dialect.unwrap_or_default(),
         script_ext: args.script_ext,
         record_profile_totals: args.profile,
     };

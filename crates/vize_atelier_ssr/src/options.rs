@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 use vize_atelier_core::BindingMetadata;
 use vize_carton::String;
+use vize_carton::config::VueVersion;
 use vize_croquis::Croquis;
 
 /// SSR compiler options
@@ -37,6 +38,13 @@ pub struct SsrCompilerOptions {
     #[serde(default)]
     pub ssr_css_vars: Option<String>,
 
+    /// Vue dialect resolved once per file from `vue.version`. Defaults to
+    /// [`VueVersion::V3`]; threaded into the parser/transform options so
+    /// legacy-capable builds can resolve dialect behavior. Internal-only, so it
+    /// is not part of the serialized option surface.
+    #[serde(skip)]
+    pub dialect: VueVersion,
+
     /// Binding metadata from script setup / script analysis
     #[serde(skip)]
     pub binding_metadata: Option<BindingMetadata>,
@@ -56,6 +64,7 @@ impl Clone for SsrCompilerOptions {
             is_ts: self.is_ts,
             custom_renderer: self.custom_renderer,
             ssr_css_vars: self.ssr_css_vars.clone(),
+            dialect: self.dialect,
             binding_metadata: self.binding_metadata.clone(),
             // Croquis is consumed by the compiler; clones intentionally drop it.
             croquis: None,

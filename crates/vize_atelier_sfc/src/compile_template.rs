@@ -100,6 +100,7 @@ pub(crate) fn compile_template_block(
             is_ts,
             custom_renderer: options.custom_renderer,
             ssr_css_vars: options.ssr_css_vars.clone(),
+            dialect: options.dialect,
             binding_metadata: bindings.cloned(),
             croquis: croquis.map(Box::new),
         };
@@ -163,6 +164,7 @@ pub(crate) fn compile_template_block(
     dom_opts.ssr = options.ssr;
     dom_opts.is_ts = is_ts;
     dom_opts.custom_renderer = options.custom_renderer;
+    dom_opts.dialect = options.dialect;
     dom_opts.component_name = component_name.map(|name| name.to_compact_string());
 
     // For script setup, use inline mode to match Vue's actual compiler behavior

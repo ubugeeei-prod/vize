@@ -178,6 +178,7 @@ pub(super) fn compile_file_stats_with_cache(
             ssr: settings.ssr,
             is_ts,
             custom_renderer: settings.custom_renderer,
+            dialect: settings.dialect,
             ..Default::default()
         },
         style: StyleCompileOptions {
@@ -345,6 +346,7 @@ pub(super) fn compile_file_with_profile(
             ssr: settings.ssr,
             is_ts,
             custom_renderer: settings.custom_renderer,
+            dialect: settings.dialect,
             ..Default::default()
         },
         style: StyleCompileOptions {

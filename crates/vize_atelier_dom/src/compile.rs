@@ -166,6 +166,7 @@ fn compile_template_inner_with_sections<'a>(
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         comments: options.comments,
+        dialect: options.dialect,
         ..ParserOptions::default()
     };
 
@@ -210,6 +211,7 @@ fn compile_template_inner_with_sections<'a>(
         inline: options.inline,
         custom_renderer: options.custom_renderer,
         binding_metadata: options.binding_metadata.clone(),
+        dialect: options.dialect,
         ..Default::default()
     };
     let template_syntax_quirks = template_syntax.is_quirks();
