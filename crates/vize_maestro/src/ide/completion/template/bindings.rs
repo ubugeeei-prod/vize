@@ -102,6 +102,14 @@ pub(crate) fn analyzed_template_binding_completions(
     ctx: &IdeContext,
     include_vue3_details: bool,
 ) -> Vec<CompletionItem> {
+    // petite-vue standalone HTML documents have no SFC `<template>` block, so
+    // `parse_sfc` yields nothing and the scope chain below stays empty. Route
+    // them through the document parser + Croquis so `v-scope` keys resolve as
+    // template-scope completions inside `{{ }}` and directive expressions.
+    if crate::utils::is_standalone_html_path(ctx.uri.path()) && ctx.dialect().is_petite_vue() {
+        return petite_vue_scope_binding_completions(ctx);
+    }
+
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: ctx.uri.path().to_string().into(),
         ..Default::default()
@@ -269,6 +277,39 @@ pub(crate) fn analyzed_template_binding_completions(
         }
     }
 
+    items_vec
+}
+
+/// Template-scope completions for a petite-vue standalone HTML document.
+///
+/// The whole document is the template, so we parse it with the document parser
+/// (`<!DOCTYPE>`-tolerant, raw-text `<script>`/`<style>`) and run Croquis over
+/// the resulting AST. `v-scope` keys are modeled as `v-slot`-kind scopes, so
+/// they surface through the same `bindings_visible_at` walk the SFC path uses.
+/// Offsets are document-absolute here (no `<template>` block offset to
+/// subtract), and there is no `<script setup>` binding set to merge.
+fn petite_vue_scope_binding_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
+    use vize_croquis::{Drawer, DrawerOptions};
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _errors) = vize_armature::parse_document(&allocator, &ctx.content);
+
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    drawer.draw_template(&root);
+    let croquis = drawer.finish();
+
+    let offset = ctx.offset.min(ctx.content.len()) as u32;
+    let mut items_vec = Vec::new();
+    let mut seen = BTreeSet::new();
+    for (name, _binding, scope_kind) in croquis.scopes.bindings_visible_at(offset) {
+        if !is_template_scope_kind(scope_kind) {
+            continue;
+        }
+        if !seen.insert(name.to_string()) {
+            continue;
+        }
+        items_vec.push(template_scope_completion_item(name, scope_kind));
+    }
     items_vec
 }
 
