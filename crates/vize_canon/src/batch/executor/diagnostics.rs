@@ -5,7 +5,7 @@ use serde_json::Value;
 use super::super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 use crate::corsa_client::LspDiagnostic;
 use crate::file_uri::file_uri_to_path;
-use vize_carton::{FxHashMap, String, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 
 pub(super) fn map_batch_diagnostics(
     results: Vec<(String, Vec<LspDiagnostic>)>,
@@ -26,7 +26,43 @@ pub(super) fn map_batch_diagnostics(
         }
     }
 
-    diagnostics
+    dedup_diagnostics(diagnostics)
+}
+
+/// Identity key for deduplicating diagnostics — (file, line, column, code,
+/// message). After source mapping, distinct virtual positions can collapse to
+/// the same original position: a template binding (e.g. an undefined name in an
+/// interpolation) is referenced more than once in the generated virtual TS —
+/// once by the normal template-expression statement and once by the dedicated
+/// "Undefined references from template" check — and every reference maps back
+/// to the same source span. Corsa then reports the same template error at each
+/// virtual position, which would otherwise surface multiple times (#1389).
+/// Severity is part of the key so a genuine error+hint pair on the same span is
+/// preserved.
+type DiagnosticKey = (std::path::PathBuf, u32, u32, Option<u32>, String, u8);
+
+fn diagnostic_key(diagnostic: &Diagnostic) -> DiagnosticKey {
+    (
+        diagnostic.file.clone(),
+        diagnostic.line,
+        diagnostic.column,
+        diagnostic.code,
+        diagnostic.message.clone(),
+        diagnostic.severity,
+    )
+}
+
+/// Drop exact-duplicate diagnostics while preserving first-seen order, keyed on
+/// (file, line, column, code, message, severity).
+pub(super) fn dedup_diagnostics(diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
+    let mut seen: FxHashSet<DiagnosticKey> = FxHashSet::default();
+    let mut deduped = Vec::with_capacity(diagnostics.len());
+    for diagnostic in diagnostics {
+        if seen.insert(diagnostic_key(&diagnostic)) {
+            deduped.push(diagnostic);
+        }
+    }
+    deduped
 }
 
 pub(super) struct DiagnosticMapper<'a> {
@@ -378,6 +414,123 @@ mod tests {
     use std::path::PathBuf;
     use tempfile::TempDir;
     use vize_carton::cstr;
+
+    /// Regression for the #1389 double-emission. An undefined name used in a
+    /// template interpolation (`{{ missingThing }}`) is referenced twice in the
+    /// generated virtual TS — once by the normal template-expression statement
+    /// (`void (missingThing); // Interpolation`) and once by the dedicated
+    /// "Undefined references from template" check (`void (missingThing);`).
+    /// Both spans map back to the identical interpolation in the source, so
+    /// Corsa reports the same `TS2304` at two virtual positions and the error
+    /// surfaced for the user exactly twice. The collection point must collapse
+    /// those exact duplicates to one diagnostic. (Verified empirically against
+    /// the `@typescript/native-preview` CLI.)
+    #[test]
+    fn duplicated_template_diagnostic_is_reported_once() {
+        let temp_dir = TempDir::new().unwrap();
+        let project_root = temp_dir.path().canonicalize().unwrap();
+        let src_dir = project_root.join("src");
+        std::fs::create_dir_all(&src_dir).unwrap();
+
+        let app_path = src_dir.join("App.vue");
+        std::fs::write(
+            &app_path,
+            "<script setup lang=\"ts\">\n</script>\n<template><div>{{ missingThing }}</div></template>\n",
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&project_root).unwrap();
+        project.register_path(&app_path).unwrap();
+        let virtual_file = project.find_by_original(&app_path).unwrap();
+        let virtual_source = virtual_file.content.as_str();
+
+        // `missingThing` is emitted at two distinct virtual positions that both
+        // map to the same source interpolation. Build one LSP diagnostic per
+        // occurrence, mirroring what Corsa returns.
+        let message = "Cannot find name 'missingThing'.";
+        let diagnostics: Vec<_> = virtual_source
+            .match_indices("void (missingThing)")
+            .map(|(at, _)| at + "void (".len())
+            .map(|offset| {
+                let (line, character) = LineIndex::new(virtual_source)
+                    .offset_to_line_col(virtual_source, offset as u32)
+                    .expect("virtual offset should map to LSP position");
+                crate::corsa_client::LspDiagnostic {
+                    range: crate::corsa_client::LspRange {
+                        start: crate::corsa_client::LspPosition { line, character },
+                        end: crate::corsa_client::LspPosition {
+                            line,
+                            character: character + "missingThing".len() as u32,
+                        },
+                    },
+                    severity: Some(1),
+                    code: Some(json!("TS2304")),
+                    source: Some("ts".into()),
+                    message: message.into(),
+                }
+            })
+            .collect();
+
+        assert_eq!(
+            diagnostics.len(),
+            2,
+            "expected `missingThing` to be generated at two virtual positions"
+        );
+
+        let mapped = map_batch_diagnostics(
+            vec![(file_uri_for(&virtual_file.virtual_path), diagnostics)],
+            &project,
+        );
+
+        assert_eq!(
+            mapped.len(),
+            1,
+            "the duplicated template diagnostic must be deduplicated: {mapped:#?}"
+        );
+        assert_eq!(mapped[0].file, app_path);
+        assert_eq!(mapped[0].code, Some(2304));
+    }
+
+    /// Distinct diagnostics on the same span (different code or message, or a
+    /// genuine error+hint pair) must survive deduplication.
+    #[test]
+    fn dedup_preserves_distinct_diagnostics() {
+        use super::dedup_diagnostics;
+        use crate::batch::Diagnostic;
+
+        let base = Diagnostic {
+            file: PathBuf::from("/p/App.vue"),
+            line: 4,
+            column: 6,
+            message: "Cannot find name 'x'.".into(),
+            code: Some(2304),
+            severity: 1,
+            block_type: Some(SfcBlockType::Template),
+        };
+        let duplicate = base.clone();
+        let different_code = Diagnostic {
+            code: Some(2322),
+            ..base.clone()
+        };
+        let different_message = Diagnostic {
+            message: "Cannot find name 'y'.".into(),
+            ..base.clone()
+        };
+        let different_severity = Diagnostic {
+            severity: 4,
+            ..base.clone()
+        };
+
+        let deduped = dedup_diagnostics(vec![
+            base.clone(),
+            duplicate,
+            different_code,
+            different_message,
+            different_severity,
+        ]);
+
+        assert_eq!(deduped.len(), 4, "{deduped:#?}");
+    }
 
     #[test]
     fn parses_numeric_and_string_diagnostic_codes() {

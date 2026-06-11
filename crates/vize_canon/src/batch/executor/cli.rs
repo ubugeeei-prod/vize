@@ -6,7 +6,7 @@ use std::{
 use super::super::{Diagnostic, TypeCheckResult, VirtualProject};
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::executor::diagnostics::{
-    DiagnosticMapper, relative_module_resolves_on_disk, should_skip_diagnostic,
+    DiagnosticMapper, dedup_diagnostics, relative_module_resolves_on_disk, should_skip_diagnostic,
     should_skip_original_diagnostic,
 };
 use vize_carton::{FxHashMap, profile};
@@ -502,7 +502,10 @@ fn parse_output_diagnostics(output: &Output, project: &VirtualProject) -> Vec<Di
     #[allow(clippy::disallowed_types)]
     let stderr = std::string::String::from_utf8_lossy(&output.stderr);
     parse_cli_diagnostics(stderr.as_ref(), project, &mut mapper, &mut diagnostics);
-    diagnostics
+    // A single template error surfaces twice — the dynamic prop binding it sits
+    // on is generated at two virtual positions that map back to the same source
+    // attribute span (#1389). Collapse exact duplicates at the collection point.
+    dedup_diagnostics(diagnostics)
 }
 
 fn parse_cli_diagnostics(
