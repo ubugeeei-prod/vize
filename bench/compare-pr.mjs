@@ -235,13 +235,22 @@ export function makeTasks(inputDir, taskFilter) {
     },
     {
       id: "check",
-      label: "Type check",
+      label: "Type check (1T)",
       // --servers 1 pins the lane to a single Corsa server so it isolates
       // single-program performance and stays deterministic on shared CI
-      // runners. The trade-off is that multi-server sharding regressions are
-      // not covered here; a dedicated multi-server lane is tracked in #1386
-      // (PR3) and needs its own noise validation before it can gate PRs.
+      // runners. Keep this id stable so `--tasks check` still selects the
+      // single-program lane.
       args: ["check", pattern, "--quiet", "--servers", "1", "--tsconfig", tsconfig],
+      allowNonZeroExit: true,
+      enabled: existsSync(tsconfig),
+    },
+    {
+      id: "check-max",
+      label: "Type check (max)",
+      // Omit --servers so vize uses the same auto-tuned Corsa sharding path
+      // measured by the tool benchmark. This catches regressions hidden by the
+      // single-server lane without weakening the single-program signal above.
+      args: ["check", pattern, "--quiet", "--tsconfig", tsconfig],
       allowNonZeroExit: true,
       enabled: existsSync(tsconfig),
     },

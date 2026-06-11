@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
 import { createBenchmarkBudget, makeTasks, renderMarkdown } from "../../bench/compare-pr.mjs";
@@ -90,6 +93,51 @@ test("benchmark tasks gate the formatter without mutating the corpus", () => {
     onlyFmt.map((task) => task.id),
     ["fmt"],
   );
+});
+
+test("benchmark tasks gate both single-server and sharded typecheck paths", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-tasks-"));
+  try {
+    const tsconfig = path.join(tempDir, "tsconfig.json");
+    fs.writeFileSync(tsconfig, "{}\n");
+
+    const tasks = makeTasks(tempDir, "");
+    const checkTasks = tasks.filter((task) => task.id.startsWith("check"));
+
+    assert.deepEqual(
+      checkTasks.map((task) => task.id),
+      ["check", "check-max"],
+    );
+
+    const singleServer = checkTasks.find((task) => task.id === "check");
+    assert.ok(singleServer);
+    assert.deepEqual(singleServer.args, [
+      "check",
+      ".",
+      "--quiet",
+      "--servers",
+      "1",
+      "--tsconfig",
+      tsconfig,
+    ]);
+
+    const sharded = checkTasks.find((task) => task.id === "check-max");
+    assert.ok(sharded);
+    assert.deepEqual(sharded.args, ["check", ".", "--quiet", "--tsconfig", tsconfig]);
+    assert.equal(
+      sharded.allowNonZeroExit,
+      true,
+      "type-check diagnostics are benchmarked even when the corpus reports errors",
+    );
+
+    const onlySharded = makeTasks(tempDir, "check-max");
+    assert.deepEqual(
+      onlySharded.map((task) => task.id),
+      ["check-max"],
+    );
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
 });
 
 test("benchmark budget blocks skipped benchmark runs without an override label", () => {
