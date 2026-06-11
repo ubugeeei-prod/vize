@@ -489,6 +489,183 @@ export default {
 }
 
 #[test]
+fn test_parse_options_api_inject_array_bindings() {
+    let source = r#"
+export default {
+  inject: ['theme', 'apiClient'],
+}
+"#;
+    let result = parse_script_with_options(
+        source,
+        ScriptParserOptions {
+            options_api: true,
+            legacy_vue2: false,
+        },
+    );
+
+    assert!(result.bindings.contains("theme"));
+    assert!(result.bindings.contains("apiClient"));
+}
+
+#[test]
+fn test_parse_options_api_inject_object_bindings() {
+    // Regression: the object form must keep working now that `inject` is
+    // routed through the array-or-object collector.
+    let source = r#"
+export default {
+  inject: {
+    localTheme: { from: 'theme', default: 'light' },
+    api: 'apiKey',
+  },
+}
+"#;
+    let result = parse_script_with_options(
+        source,
+        ScriptParserOptions {
+            options_api: true,
+            legacy_vue2: false,
+        },
+    );
+
+    assert!(result.bindings.contains("localTheme"));
+    assert!(result.bindings.contains("api"));
+}
+
+#[test]
+fn test_parse_options_api_mixins_same_file_bindings() {
+    let source = r#"
+const CounterMixin = {
+  inject: ['injectedFromMixin'],
+  data() {
+    return { count: 0 }
+  },
+  methods: {
+    increment() {},
+  },
+}
+
+export default {
+  mixins: [CounterMixin, { computed: { inlineDoubled() { return 2 } } }],
+  methods: {
+    save() {},
+  },
+}
+"#;
+    let result = parse_script_with_options(
+        source,
+        ScriptParserOptions {
+            options_api: true,
+            legacy_vue2: false,
+        },
+    );
+
+    for name in [
+        "count",
+        "increment",
+        "injectedFromMixin",
+        "inlineDoubled",
+        "save",
+    ] {
+        assert!(result.bindings.contains(name), "missing binding {name}");
+    }
+}
+
+#[test]
+fn test_parse_options_api_extends_same_file_bindings() {
+    let source = r#"
+const BaseComponent = {
+  props: ['baseLabel'],
+  methods: {
+    baseMethod() {},
+  },
+}
+
+export default {
+  extends: BaseComponent,
+  data() {
+    return { own: 1 }
+  },
+}
+"#;
+    let result = parse_script_with_options(
+        source,
+        ScriptParserOptions {
+            options_api: true,
+            legacy_vue2: false,
+        },
+    );
+
+    for name in ["baseLabel", "baseMethod", "own"] {
+        assert!(result.bindings.contains(name), "missing binding {name}");
+    }
+}
+
+#[test]
+fn test_parse_options_api_mixin_cycle_terminates() {
+    // A and B reference each other; the seen-set guard must stop the
+    // recursion while still merging bindings from both sides.
+    let source = r#"
+const MixinA = {
+  mixins: [MixinB],
+  data() {
+    return { fromA: 1 }
+  },
+}
+
+const MixinB = {
+  mixins: [MixinA],
+  data() {
+    return { fromB: 2 }
+  },
+}
+
+export default {
+  mixins: [MixinA],
+}
+"#;
+    let result = parse_script_with_options(
+        source,
+        ScriptParserOptions {
+            options_api: true,
+            legacy_vue2: false,
+        },
+    );
+
+    assert!(result.bindings.contains("fromA"));
+    assert!(result.bindings.contains("fromB"));
+}
+
+#[test]
+fn test_parse_options_api_imported_mixin_ignored() {
+    // Imported mixins require cross-file resolution, which is deferred:
+    // they must not contribute bindings and must not break collection of
+    // the component's own options.
+    let source = r#"
+import SharedMixin from './shared-mixin'
+
+export default {
+  mixins: [SharedMixin],
+  data() {
+    return { own: 1 }
+  },
+}
+"#;
+    let result = parse_script_with_options(
+        source,
+        ScriptParserOptions {
+            options_api: true,
+            legacy_vue2: false,
+        },
+    );
+
+    assert!(result.bindings.contains("own"));
+    // The import identifier itself stays an ordinary script binding (imports
+    // are always template-usable); the mixin pass must simply not resolve
+    // into the imported module.
+    assert!(result.bindings.contains("SharedMixin"));
+}
+
+#[test]
 fn test_parse_class_component_decorated_members() {
     // Class components are auto-detected by shape (default export is a
     // class), independent of the `options_api` flag.

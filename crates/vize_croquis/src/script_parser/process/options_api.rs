@@ -2,7 +2,8 @@
 //!
 //! Walks `export default { ... }` / `defineComponent({ ... })` options objects
 //! to collect component registrations and template bindings (props, data,
-//! computed, methods, inject, setup) for the Options API and legacy Vue 2.7.
+//! computed, methods, inject, setup, same-file mixins/extends) for the
+//! Options API and legacy Vue 2.7.
 
 use oxc_ast::ast::{
     Argument, ArrayExpression, ArrayExpressionElement, BindingPattern, CallExpression,
@@ -158,7 +159,30 @@ pub(super) fn collect_options_api_template_bindings_from_options<'a>(
     options: &'a ObjectExpression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
 ) {
-    collect_props_bindings(result, options, object_bindings);
+    let mut seen_mixins = FxHashSet::default();
+    collect_options_object_template_bindings(result, options, object_bindings, &mut seen_mixins);
+}
+
+/// Collects Options API template bindings from a single options
+/// `ObjectExpression`, recursing into same-file `mixins`/`extends` targets.
+///
+/// Deliberately dialect-agnostic: this helper only requires a plain
+/// `ObjectExpression`, so the upcoming legacy-Vue work (`Vue.extend({...})`
+/// callee recognition, issue #1392) can reuse it by unwrapping the call
+/// expression to its options-object argument before recursing.
+fn collect_options_object_template_bindings<'a>(
+    result: &mut ScriptParseResult,
+    options: &'a ObjectExpression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+    seen_mixins: &mut FxHashSet<&'a str>,
+) {
+    collect_array_or_object_option_bindings(
+        result,
+        options,
+        object_bindings,
+        "props",
+        BindingType::Props,
+    );
     collect_object_option_bindings(
         result,
         options,
@@ -173,7 +197,9 @@ pub(super) fn collect_options_api_template_bindings_from_options<'a>(
         "methods",
         BindingType::Options,
     );
-    collect_object_option_bindings(
+    // `inject` accepts both the array form (`inject: ['foo']`) and the object
+    // form, so it is routed through the array-or-object collector like props.
+    collect_array_or_object_option_bindings(
         result,
         options,
         object_bindings,
@@ -201,6 +227,100 @@ pub(super) fn collect_options_api_template_bindings_from_options<'a>(
         "setup",
         BindingType::Options,
     );
+    collect_mixins_bindings(result, options, object_bindings, seen_mixins);
+    collect_extends_bindings(result, options, object_bindings, seen_mixins);
+}
+
+/// Merges template bindings contributed by same-file `mixins` entries.
+///
+/// Only same-file targets are resolved: inline object literals and
+/// identifiers whose `const` initializer is an object literal in this module.
+/// Imported mixins are deliberately ignored — resolving them requires
+/// cross-file analysis, which is deferred.
+fn collect_mixins_bindings<'a>(
+    result: &mut ScriptParseResult,
+    options: &'a ObjectExpression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+    seen_mixins: &mut FxHashSet<&'a str>,
+) {
+    let Some(Expression::ArrayExpression(array)) = option_expression_property(options, "mixins")
+    else {
+        return;
+    };
+
+    for element in &array.elements {
+        let Some(expression) = element.as_expression() else {
+            continue;
+        };
+        collect_mixin_target_bindings(result, expression, object_bindings, seen_mixins);
+    }
+}
+
+/// Merges template bindings contributed by a same-file `extends` target.
+/// Same resolution rules and deferral as [`collect_mixins_bindings`].
+fn collect_extends_bindings<'a>(
+    result: &mut ScriptParseResult,
+    options: &'a ObjectExpression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+    seen_mixins: &mut FxHashSet<&'a str>,
+) {
+    let Some(expression) = option_expression_property(options, "extends") else {
+        return;
+    };
+    collect_mixin_target_bindings(result, expression, object_bindings, seen_mixins);
+}
+
+/// Resolves a single mixin/extends target expression and merges its option
+/// bindings. The seen-set guards against mixin cycles (A mixes B mixes A);
+/// inline object literals cannot cycle because the AST is a tree.
+fn collect_mixin_target_bindings<'a>(
+    result: &mut ScriptParseResult,
+    expression: &'a Expression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+    seen_mixins: &mut FxHashSet<&'a str>,
+) {
+    match expression {
+        Expression::ObjectExpression(object) => {
+            collect_options_object_template_bindings(result, object, object_bindings, seen_mixins);
+        }
+        Expression::Identifier(identifier) => {
+            let name = identifier.name.as_str();
+            if !seen_mixins.insert(name) {
+                return;
+            }
+            if let Some(object) = object_bindings.get(name).copied() {
+                collect_options_object_template_bindings(
+                    result,
+                    object,
+                    object_bindings,
+                    seen_mixins,
+                );
+            }
+        }
+        Expression::ParenthesizedExpression(parenthesized) => collect_mixin_target_bindings(
+            result,
+            &parenthesized.expression,
+            object_bindings,
+            seen_mixins,
+        ),
+        Expression::TSAsExpression(ts_as) => {
+            collect_mixin_target_bindings(result, &ts_as.expression, object_bindings, seen_mixins)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => collect_mixin_target_bindings(
+            result,
+            &ts_satisfies.expression,
+            object_bindings,
+            seen_mixins,
+        ),
+        Expression::TSNonNullExpression(ts_non_null) => collect_mixin_target_bindings(
+            result,
+            &ts_non_null.expression,
+            object_bindings,
+            seen_mixins,
+        ),
+        // Imported mixins, call expressions, etc. — deferred.
+        _ => {}
+    }
 }
 
 fn add_nuxt2_template_globals(result: &mut ScriptParseResult) {
@@ -216,65 +336,75 @@ fn add_nuxt2_template_globals(result: &mut ScriptParseResult) {
     }
 }
 
-fn collect_props_bindings<'a>(
+/// Collects bindings from an option whose value may be an array of string
+/// literals (`['foo', 'bar']`), an object literal keyed by binding name, or a
+/// same-file identifier resolving to such an object. Used by `props` and
+/// `inject`, which both accept the array and object forms.
+fn collect_array_or_object_option_bindings<'a>(
     result: &mut ScriptParseResult,
     options: &'a ObjectExpression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+    key_name: &str,
+    binding_type: BindingType,
 ) {
-    let Some(props) = option_expression_property(options, "props") else {
+    let Some(expression) = option_expression_property(options, key_name) else {
         return;
     };
-
-    match props {
-        Expression::ArrayExpression(array) => {
-            collect_array_string_bindings(result, array, BindingType::Props);
-        }
-        Expression::ObjectExpression(object) => {
-            collect_object_property_bindings(result, object, BindingType::Props);
-        }
-        Expression::Identifier(identifier) => {
-            if let Some(object) = object_bindings.get(identifier.name.as_str()).copied() {
-                collect_object_property_bindings(result, object, BindingType::Props);
-            }
-        }
-        Expression::ParenthesizedExpression(parenthesized) => {
-            collect_props_bindings_from_expression(
-                result,
-                &parenthesized.expression,
-                object_bindings,
-            )
-        }
-        Expression::TSAsExpression(ts_as) => {
-            collect_props_bindings_from_expression(result, &ts_as.expression, object_bindings)
-        }
-        Expression::TSSatisfiesExpression(ts_satisfies) => collect_props_bindings_from_expression(
-            result,
-            &ts_satisfies.expression,
-            object_bindings,
-        ),
-        Expression::TSNonNullExpression(ts_non_null) => {
-            collect_props_bindings_from_expression(result, &ts_non_null.expression, object_bindings)
-        }
-        _ => {}
-    }
+    collect_array_or_object_bindings_from_expression(
+        result,
+        expression,
+        object_bindings,
+        binding_type,
+    );
 }
 
-fn collect_props_bindings_from_expression<'a>(
+fn collect_array_or_object_bindings_from_expression<'a>(
     result: &mut ScriptParseResult,
     expression: &'a Expression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+    binding_type: BindingType,
 ) {
     match expression {
         Expression::ArrayExpression(array) => {
-            collect_array_string_bindings(result, array, BindingType::Props);
+            collect_array_string_bindings(result, array, binding_type);
         }
         Expression::ObjectExpression(object) => {
-            collect_object_property_bindings(result, object, BindingType::Props);
+            collect_object_property_bindings(result, object, binding_type);
         }
         Expression::Identifier(identifier) => {
             if let Some(object) = object_bindings.get(identifier.name.as_str()).copied() {
-                collect_object_property_bindings(result, object, BindingType::Props);
+                collect_object_property_bindings(result, object, binding_type);
             }
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            collect_array_or_object_bindings_from_expression(
+                result,
+                &parenthesized.expression,
+                object_bindings,
+                binding_type,
+            )
+        }
+        Expression::TSAsExpression(ts_as) => collect_array_or_object_bindings_from_expression(
+            result,
+            &ts_as.expression,
+            object_bindings,
+            binding_type,
+        ),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            collect_array_or_object_bindings_from_expression(
+                result,
+                &ts_satisfies.expression,
+                object_bindings,
+                binding_type,
+            )
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            collect_array_or_object_bindings_from_expression(
+                result,
+                &ts_non_null.expression,
+                object_bindings,
+                binding_type,
+            )
         }
         _ => {}
     }
