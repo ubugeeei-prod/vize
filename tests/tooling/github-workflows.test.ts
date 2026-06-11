@@ -10,8 +10,12 @@ import { buildComment } from "../../bench/comment-test-report.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
+function normalizeRepoText(content: string): string {
+  return content.replace(/\r\n?/g, "\n");
+}
+
 function readRepoFile(...segments: string[]): string {
-  return fs.readFileSync(path.join(root, ...segments), "utf8");
+  return normalizeRepoText(fs.readFileSync(path.join(root, ...segments), "utf8"));
 }
 
 function readGithubYamlFiles(): Array<{ relativePath: string; content: string }> {
@@ -28,7 +32,7 @@ function readGithubYamlFiles(): Array<{ relativePath: string; content: string }>
       }
       files.push({
         relativePath: path.relative(root, fullPath),
-        content: fs.readFileSync(fullPath, "utf8"),
+        content: normalizeRepoText(fs.readFileSync(fullPath, "utf8")),
       });
     }
   };
@@ -68,6 +72,12 @@ function hostedOrBlacksmith(hostedLabel: string): string {
   }
   return escapeRegExp(hostedLabel);
 }
+
+test("repo text helpers normalize line endings before workflow matching", () => {
+  const workflow = normalizeRepoText("jobs:\r\n  check-js:\r\n    runs-on: ubuntu-24.04\r\n");
+
+  assert.equal(workflowJobBody(workflow, "check-js"), "  check-js:\n    runs-on: ubuntu-24.04\n");
+});
 
 test("GitHub workflows opt JavaScript actions into Node 24", () => {
   for (const workflowName of [
