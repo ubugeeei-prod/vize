@@ -535,6 +535,76 @@ export default {
 }
 
 #[test]
+fn test_parse_vue_extend_export_default_template_bindings() {
+    let source = r#"
+import Vue from 'vue'
+export default Vue.extend({
+  props: {
+    title: String
+  },
+  data() {
+    return {
+      count: 0
+    }
+  },
+  computed: {
+    doubled() {
+      return this.count * 2
+    }
+  },
+  methods: {
+    save() {}
+  }
+})
+"#;
+    let result = parse_script_with_options(
+        source,
+        ScriptParserOptions {
+            options_api: false,
+            legacy_vue2: true,
+        },
+    );
+
+    for name in ["title", "count", "doubled", "save"] {
+        assert!(result.bindings.contains(name), "missing binding {name}");
+    }
+}
+
+#[test]
+fn test_parse_vue_extend_identifier_bound_template_bindings() {
+    let source = r#"
+import Vue from 'vue'
+const Component = Vue.extend({
+  data() {
+    return {
+      count: 0
+    }
+  },
+  computed: {
+    doubled() {
+      return this.count * 2
+    }
+  },
+  methods: {
+    save() {}
+  }
+})
+export default Component
+"#;
+    let result = parse_script_with_options(
+        source,
+        ScriptParserOptions {
+            options_api: false,
+            legacy_vue2: true,
+        },
+    );
+
+    for name in ["count", "doubled", "save"] {
+        assert!(result.bindings.contains(name), "missing binding {name}");
+    }
+}
+
+#[test]
 fn test_parse_options_api_inject_array_bindings() {
     let source = r#"
 export default {

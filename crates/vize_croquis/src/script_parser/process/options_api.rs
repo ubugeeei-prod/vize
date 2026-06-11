@@ -669,7 +669,7 @@ fn component_options_from_call<'a>(
     call: &'a CallExpression<'a>,
     bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
 ) -> Option<ComponentOptionsRef<'a>> {
-    if !is_define_component_callee(&call.callee) {
+    if !is_component_options_callee(&call.callee) {
         return None;
     }
 
@@ -811,19 +811,45 @@ fn local_name_from_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a 
     }
 }
 
-fn is_define_component_callee(callee: &Expression<'_>) -> bool {
+/// Whether `callee` is a recognized component-options wrapper whose first
+/// argument is the Options API options object.
+///
+/// Recognizes `defineComponent(...)` (Vue 3) and `Vue.extend(...)` (Vue 2's
+/// component constructor extension). Both wrap a plain options object, so the
+/// data/computed/methods inside are collected exactly like a bare
+/// `export default {...}`. `Vue.extend` is harmless to recognize under any
+/// dialect: it only ever collects additional, otherwise-undefined template
+/// bindings from valid Vue 2 sources.
+fn is_component_options_callee(callee: &Expression<'_>) -> bool {
     match callee {
         Expression::Identifier(callee) => {
-            matches!(callee.name.as_str(), "defineComponent" | "_defineComponent")
+            // `defineComponent({...})` / `_defineComponent({...})` (Vue 3) and
+            // `extend({...})` via a named import `import { extend } from 'vue'`.
+            matches!(
+                callee.name.as_str(),
+                "defineComponent" | "_defineComponent" | "extend"
+            )
         }
         Expression::StaticMemberExpression(member) => {
-            matches!(
-                member.property.name.as_str(),
-                "defineComponent" | "_defineComponent"
-            )
+            // `<obj>.defineComponent({...})` and `Vue.extend({...})`.
+            match member.property.name.as_str() {
+                "defineComponent" | "_defineComponent" => true,
+                "extend" => is_vue_object(&member.object),
+                _ => false,
+            }
         }
         _ => false,
     }
+}
+
+/// Whether `object` references the `Vue` constructor (`Vue.extend(...)` /
+/// `_Vue.extend(...)`), so that an unrelated `<x>.extend(...)` call is not
+/// mistaken for a component-options wrapper.
+fn is_vue_object(object: &Expression<'_>) -> bool {
+    matches!(
+        object,
+        Expression::Identifier(identifier) if matches!(identifier.name.as_str(), "Vue" | "_Vue")
+    )
 }
 
 fn option_object_property<'a>(
