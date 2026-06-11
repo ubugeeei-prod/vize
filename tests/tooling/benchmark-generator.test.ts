@@ -44,13 +44,14 @@ test("benchmark generator writes a diversified unique SFC corpus", () => {
 
     assert.ok(bodies.some((body) => body.includes("<script setup>")));
     assert.ok(
-      bodies.some((body) => body.includes("export default {") && body.includes("Options API board")),
+      bodies.some(
+        (body) => body.includes("export default {") && body.includes("Options API board"),
+      ),
       "corpus must include an Options API SFC",
     );
     assert.ok(
       bodies.some(
-        (body) =>
-          body.includes('<script setup lang="ts">') && body.includes("type ResourceState"),
+        (body) => body.includes('<script setup lang="ts">') && body.includes("type ResourceState"),
       ),
       "corpus must include a TS-heavy SFC",
     );
