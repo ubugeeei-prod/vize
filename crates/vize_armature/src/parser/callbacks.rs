@@ -47,6 +47,11 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_interpolation_impl(start, end);
     }
 
+    #[cfg(feature = "legacy")]
+    fn on_raw_interpolation(&mut self, start: usize, end: usize) {
+        self.parser.on_raw_interpolation_impl(start, end);
+    }
+
     fn on_open_tag_name(&mut self, start: usize, end: usize) {
         self.parser.on_open_tag_name_impl(start, end);
     }

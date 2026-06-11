@@ -9,8 +9,10 @@ description = "Armature - The structural parser framework for Vize Vue templates
 
 [features]
 # Opt-in support for legacy Vue lines (v0.10 / v0.11 / v1 / v2). Off by default so the
-# Vue 3 `vize` binary never compiles it. See the `legacy` module.
-legacy = []
+# Vue 3 `vize` binary never compiles it. See the `legacy` module. Forwards to
+# `vize_relief/_legacy` so legacy-only AST surface (e.g. the Vue 1 raw-HTML
+# `InterpolationNode::raw` flag this parser sets) is available.
+legacy = ["vize_relief/_legacy"]
 
 [dependencies]
 vize_carton = { workspace = true }

@@ -184,6 +184,19 @@ impl CommentNode {
 pub struct InterpolationNode<'a> {
     pub content: ExpressionNode<'a>,
     pub loc: SourceLocation,
+    /// Raw-HTML (unescaped) interpolation produced by Vue 1.x triple-mustache
+    /// syntax (`{{{ html }}}`), the pre-Vue-2 equivalent of `v-html`. When set,
+    /// codegen emits the expression directly instead of escaping it through
+    /// `_toDisplayString`, matching Vue 1's unescaped output.
+    ///
+    /// Legacy-only: triple-mustache was removed in Vue 2, so this field is
+    /// compiled only behind the internal `_legacy` cargo feature (enabled
+    /// transitively by `vize_atelier_core/legacy` / `vize_armature/legacy`). The
+    /// default Vue 3 build never sees it, keeping the public AST surface — and
+    /// `cargo-semver-checks`, whose feature heuristic skips `_`-prefixed
+    /// features — byte-identical.
+    #[cfg(feature = "_legacy")]
+    pub raw: bool,
 }
 
 impl<'a> InterpolationNode<'a> {

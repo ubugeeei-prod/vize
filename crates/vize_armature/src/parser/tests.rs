@@ -1938,3 +1938,103 @@ fn test_document_mode_with_options() {
         "custom delimiters should produce an interpolation node"
     );
 }
+
+// ===== Legacy Vue 1.x triple-mustache (`{{{ raw }}}`) raw-HTML interpolation =====
+
+/// Vue 2/3 (and the default build) treat `{{{ x }}}` as a `{{ … }}` mustache
+/// containing a stray brace, followed by a trailing `}` text node. This is the
+/// zero-cost path: it must stay byte-identical whether or not the `legacy`
+/// feature is compiled, and for any non-Vue-1.x dialect.
+#[test]
+fn triple_mustache_is_a_braced_mustache_outside_legacy_v1() {
+    use vize_carton::config::VueVersion;
+
+    for dialect in [VueVersion::V3, VueVersion::V2] {
+        let allocator = Bump::new();
+        let mut options = ParserOptions::default();
+        options.dialect = dialect;
+        let (root, errors) = parse_with_options(&allocator, "{{{ rawHtml }}}", options);
+
+        assert!(errors.is_empty(), "{dialect:?}: {errors:?}");
+        assert_eq!(
+            root.children.len(),
+            2,
+            "{dialect:?}: interp + trailing text"
+        );
+
+        match &root.children[0] {
+            TemplateChildNode::Interpolation(interp) => {
+                let ExpressionNode::Simple(expr) = &interp.content else {
+                    panic!("expected simple expression");
+                };
+                // The leading brace stays inside the expression, exactly as today.
+                assert_eq!(expr.content.as_str(), "{ rawHtml");
+            }
+            other => panic!(
+                "{dialect:?}: expected interpolation, got {:?}",
+                other.node_type()
+            ),
+        }
+        match &root.children[1] {
+            TemplateChildNode::Text(text) => assert_eq!(text.content.as_str(), "}"),
+            other => panic!(
+                "{dialect:?}: expected trailing text, got {:?}",
+                other.node_type()
+            ),
+        }
+    }
+}
+
+#[cfg(feature = "legacy")]
+#[test]
+fn triple_mustache_under_v1_lowers_to_raw_html_interpolation() {
+    use vize_carton::config::VueVersion;
+
+    let allocator = Bump::new();
+    let mut options = ParserOptions::default();
+    options.dialect = VueVersion::V1;
+    let (root, errors) = parse_with_options(&allocator, "{{{ rawHtml }}}", options);
+
+    assert!(errors.is_empty(), "{errors:?}");
+    assert_eq!(root.children.len(), 1, "single raw-HTML interpolation");
+
+    let TemplateChildNode::Interpolation(interp) = &root.children[0] else {
+        panic!("expected interpolation node");
+    };
+    assert!(
+        interp.raw,
+        "Vue 1.x `{{{{{{ … }}}}}}` is a raw-HTML interpolation"
+    );
+    let ExpressionNode::Simple(expr) = &interp.content else {
+        panic!("expected simple expression");
+    };
+    // The extra braces are stripped from the expression and the node spans the
+    // full triple-mustache.
+    assert_eq!(expr.content.as_str(), "rawHtml");
+    assert_eq!(interp.loc.source.as_str(), "{{{ rawHtml }}}");
+}
+
+#[cfg(feature = "legacy")]
+#[test]
+fn v1_double_mustache_stays_escaped_alongside_triple() {
+    use vize_carton::config::VueVersion;
+
+    let allocator = Bump::new();
+    let mut options = ParserOptions::default();
+    options.dialect = VueVersion::V1;
+    let (root, errors) = parse_with_options(&allocator, "{{ a }} {{{ b }}}", options);
+
+    assert!(errors.is_empty(), "{errors:?}");
+    let interps: std::vec::Vec<_> = root
+        .children
+        .iter()
+        .filter_map(|c| match c {
+            TemplateChildNode::Interpolation(i) => Some(i),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(interps.len(), 2);
+    // Plain `{{ a }}` is escaped; `{{{ b }}}` is raw.
+    assert!(!interps[0].raw);
+    assert!(interps[1].raw);
+}

@@ -8,6 +8,7 @@ use crate::ast::{
 };
 
 use super::super::{
+    children::push_interpolation_value,
     context::CodegenContext,
     expression::generate_expression,
     helpers::{escape_js_string, to_valid_asset_identifier},
@@ -209,13 +210,10 @@ pub fn generate_v_once_child(ctx: &mut CodegenContext, node: &TemplateChildNode<
         }
         TemplateChildNode::Interpolation(interp) => {
             ctx.use_helper(RuntimeHelper::CreateText);
-            ctx.use_helper(RuntimeHelper::ToDisplayString);
             ctx.push(ctx.helper(RuntimeHelper::CreateText));
             ctx.push("(");
-            ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
-            ctx.push("(");
-            generate_expression(ctx, &interp.content);
-            ctx.push("), 1 /* TEXT */)");
+            push_interpolation_value(ctx, interp);
+            ctx.push(", 1 /* TEXT */)");
         }
         _ => generate_node(ctx, node),
     }

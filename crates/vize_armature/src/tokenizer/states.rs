@@ -207,6 +207,16 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 self.section_start = self.index + 1;
                 self.state = State::Interpolation;
                 self.delimiter_index = 0;
+                // Vue 1.x triple-mustache (`{{{ expr }}}`): if a third `{`
+                // immediately follows the opened `{{`, treat this as a raw-HTML
+                // interpolation and drop the extra brace from the expression
+                // span. Gated on `triple_mustache`, so the default Vue 3 path is
+                // byte-identical (it falls through with the brace kept in the
+                // expression, exactly as today).
+                if self.triple_mustache && self.input.get(self.index + 1) == Some(&b'{') {
+                    self.in_raw_interpolation = true;
+                    self.section_start = self.index + 2;
+                }
             }
         } else if self.in_rcdata {
             self.state = State::InRCDATA;
@@ -229,16 +239,30 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         if c == self.delimiter_close[self.delimiter_index] {
             self.delimiter_index += 1;
             if self.delimiter_index == self.delimiter_close.len() {
-                self.callbacks.on_interpolation(
-                    self.section_start,
-                    self.index + 1 - self.delimiter_close.len(),
-                );
+                let expr_end = self.index + 1 - self.delimiter_close.len();
+                if self.in_raw_interpolation {
+                    // Vue 1.x `{{{ expr }}}`: consume a trailing third `}` (if
+                    // present) so the raw closing brace is not left as text, then
+                    // emit a raw-HTML interpolation. This branch only runs behind
+                    // `triple_mustache`, so the default path is untouched.
+                    self.in_raw_interpolation = false;
+                    self.callbacks
+                        .on_raw_interpolation(self.section_start, expr_end);
+                    let consumed_brace = self.input.get(self.index + 1) == Some(&b'}');
+                    self.section_start = self.index + 1 + usize::from(consumed_brace);
+                    if consumed_brace {
+                        self.index += 1;
+                    }
+                } else {
+                    self.callbacks
+                        .on_interpolation(self.section_start, expr_end);
+                    self.section_start = self.index + 1;
+                }
                 if self.in_rcdata {
                     self.state = State::InRCDATA
                 } else {
                     self.state = State::Text
                 }
-                self.section_start = self.index + 1;
             }
         } else {
             self.state = State::Interpolation;

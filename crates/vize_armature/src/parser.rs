@@ -216,6 +216,15 @@ impl<'a> Parser<'a> {
         parser
     }
 
+    /// Whether the configured dialect recognizes Vue 1.x triple-mustache
+    /// raw-HTML interpolation (`{{{ expr }}}`). Resolved once per file from the
+    /// dialect capabilities; `false` for the default Vue 3 dialect.
+    #[cfg(feature = "legacy")]
+    fn raw_html_interpolation_enabled(&self) -> bool {
+        crate::legacy::LegacyDialectCapabilities::for_dialect(self.options.dialect)
+            .raw_html_interpolation
+    }
+
     /// Parse the source and return the AST
     pub fn parse(mut self) -> (RootNode<'a>, Vec<'a, CompilerError>) {
         // Initialize root node
@@ -231,6 +240,8 @@ impl<'a> Parser<'a> {
         // We need to use a struct that implements Callbacks
         // Create a wrapper that can capture the parser
         let document = self.document;
+        #[cfg(feature = "legacy")]
+        let triple_mustache = self.raw_html_interpolation_enabled();
         let mut tokenizer = Tokenizer::with_delimiters(
             self.source,
             ParserCallbacks { parser: &mut self },
@@ -238,6 +249,8 @@ impl<'a> Parser<'a> {
             &delimiter_close,
         );
         tokenizer.set_tolerate_declarations(document);
+        #[cfg(feature = "legacy")]
+        tokenizer.set_triple_mustache(triple_mustache);
         tokenizer.tokenize();
 
         // Handle any unclosed elements

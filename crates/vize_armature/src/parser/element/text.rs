@@ -98,6 +98,24 @@ impl<'a> Parser<'a> {
 
     /// Process interpolation
     pub(in crate::parser) fn on_interpolation_impl(&mut self, start: usize, end: usize) {
+        self.build_interpolation(start, end, false);
+    }
+
+    /// Process a Vue 1.x raw-HTML interpolation (`{{{ expr }}}`), the pre-Vue-2
+    /// `v-html` equivalent. Only reached behind the `legacy` feature with a
+    /// Vue 1.x dialect; the resulting node is flagged `raw` so codegen emits the
+    /// expression unescaped instead of through `_toDisplayString`.
+    ///
+    /// `start`/`end` already span the trimmed-by-delimiter expression (the
+    /// tokenizer strips the extra `{` / `}`), so the only difference from a plain
+    /// interpolation is the triple-mustache delimiter width used for the node's
+    /// outer source location.
+    #[cfg(feature = "legacy")]
+    pub(in crate::parser) fn on_raw_interpolation_impl(&mut self, start: usize, end: usize) {
+        self.build_interpolation(start, end, true);
+    }
+
+    fn build_interpolation(&mut self, start: usize, end: usize, raw: bool) {
         let raw_content = self.get_source(start, end);
         let content = raw_content.trim();
 
@@ -106,9 +124,19 @@ impl<'a> Parser<'a> {
         let trimmed_start = start + leading_ws;
         let trimmed_end = trimmed_start + content.len();
 
-        let delim_len = self.options.delimiters.0.len();
-        let full_start = start - delim_len;
-        let full_end = end + self.options.delimiters.1.len();
+        // Raw `{{{ … }}}` interpolation uses three-byte delimiters; a plain
+        // `{{ … }}` uses the configured (default two-byte) delimiters. `raw` is
+        // only ever true behind the `legacy` feature.
+        let (open_len, close_len) = if raw {
+            (3, 3)
+        } else {
+            (
+                self.options.delimiters.0.len(),
+                self.options.delimiters.1.len(),
+            )
+        };
+        let full_start = start - open_len;
+        let full_end = end + close_len;
         let loc = self.create_loc(full_start, full_end);
         let inner_loc = self.create_loc(trimmed_start, trimmed_end);
 
@@ -119,6 +147,10 @@ impl<'a> Parser<'a> {
         let interp = InterpolationNode {
             content: ExpressionNode::Simple(expr_boxed),
             loc,
+            // `vize_armature/legacy` forwards to `vize_relief/_legacy`, so the
+            // `raw` field exists exactly when this feature is enabled.
+            #[cfg(feature = "legacy")]
+            raw,
         };
         let boxed = Box::new_in(interp, self.allocator);
         self.add_child(TemplateChildNode::Interpolation(boxed));

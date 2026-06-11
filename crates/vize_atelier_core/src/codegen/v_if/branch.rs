@@ -11,7 +11,7 @@ use vize_carton::ToCompactString;
 
 use super::{
     super::{
-        children::{generate_children_force_array, is_directive_comment},
+        children::{generate_children_force_array, is_directive_comment, push_interpolation_value},
         context::CodegenContext,
         element::{
             generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
@@ -619,11 +619,7 @@ fn generate_if_branch_children(ctx: &mut CodegenContext, children: &[TemplateChi
             }
             match child {
                 TemplateChildNode::Interpolation(interp) => {
-                    ctx.use_helper(RuntimeHelper::ToDisplayString);
-                    ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
-                    ctx.push("(");
-                    generate_expression(ctx, &interp.content);
-                    ctx.push(")");
+                    push_interpolation_value(ctx, interp);
                 }
                 TemplateChildNode::Text(text) => {
                     ctx.push("\"");

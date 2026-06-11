@@ -77,6 +77,18 @@ pub trait Callbacks {
 
     fn on_interpolation(&mut self, start: usize, end: usize);
 
+    /// A Vue 1.x raw-HTML (unescaped) interpolation, `{{{ expr }}}`.
+    ///
+    /// Only ever called when the tokenizer was built with triple-mustache
+    /// recognition enabled (the `legacy` feature + a Vue 1.x dialect); the
+    /// default Vue 3 path never emits it. The default implementation forwards to
+    /// [`Callbacks::on_interpolation`] so callers that do not model raw HTML get
+    /// the ordinary interpolation, but a `legacy`-aware parser overrides this to
+    /// flag the node as raw (the pre-Vue-2 `v-html` equivalent).
+    fn on_raw_interpolation(&mut self, start: usize, end: usize) {
+        self.on_interpolation(start, end);
+    }
+
     fn on_open_tag_name(&mut self, start: usize, end: usize);
     fn on_open_tag_end(&mut self, end: usize);
     fn on_self_closing_tag(&mut self, end: usize);

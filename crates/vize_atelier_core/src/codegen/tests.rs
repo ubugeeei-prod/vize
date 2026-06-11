@@ -895,3 +895,61 @@ fn test_codegen_static_style_merged_with_dynamic_does_not_split_inside_parens() 
         output
     );
 }
+
+/// Vue 1.x triple-mustache (`{{{ html }}}`) is the pre-Vue-2 `v-html`
+/// equivalent: under the Vue 1.x dialect it renders the expression unescaped,
+/// so codegen emits the bare expression instead of wrapping it in
+/// `_toDisplayString`. Under the default Vue 3 dialect (and the non-`legacy`
+/// build) `{{{ x }}}` stays a `{{ … }}` mustache and is escaped as usual.
+#[cfg(feature = "legacy")]
+#[test]
+fn test_codegen_v1_triple_mustache_is_raw_unescaped() {
+    use crate::options::{CodegenOptions, ParserOptions, TransformOptions};
+    use crate::parser::parse_with_options;
+    use crate::transform::transform;
+    use bumpalo::Bump;
+    use vize_carton::config::VueVersion;
+
+    let allocator = Bump::new();
+    let mut options = ParserOptions::default();
+    options.dialect = VueVersion::V1;
+    let (mut root, errors) = parse_with_options(&allocator, "<div>{{{ rawHtml }}}</div>", options);
+    assert!(errors.is_empty(), "Parse errors: {errors:?}");
+
+    transform(
+        &allocator,
+        &mut root,
+        TransformOptions {
+            dialect: VueVersion::V1,
+            ..Default::default()
+        },
+        None,
+    );
+    let result = super::generate(&root, CodegenOptions::default());
+
+    // Raw interpolation: the expression is emitted directly, never escaped.
+    assert!(
+        result.code.contains("rawHtml"),
+        "raw expression should appear in output. Got:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("_toDisplayString(rawHtml)"),
+        "raw-HTML interpolation must not be escaped through _toDisplayString. Got:\n{}",
+        result.code
+    );
+}
+
+/// The default Vue 3 dialect keeps `{{{ x }}}` as a `{{ … }}` mustache (with a
+/// stray brace) followed by a `}` text node, and the interpolation is escaped —
+/// byte-identical to the non-`legacy` build.
+#[cfg(feature = "legacy")]
+#[test]
+fn test_codegen_triple_mustache_escaped_under_default_dialect() {
+    let result = compile!("<div>{{{ rawHtml }}}</div>");
+    assert!(
+        result.code.contains("_toDisplayString"),
+        "default dialect escapes the interpolation. Got:\n{}",
+        result.code
+    );
+}

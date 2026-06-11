@@ -65,6 +65,21 @@ pub struct Tokenizer<'a, C: Callbacks> {
     /// HTML document's doctype is skipped silently instead of producing a
     /// spurious parse error.
     tolerate_declarations: bool,
+
+    /// Whether to recognize Vue 1.x triple-mustache raw-HTML interpolation,
+    /// `{{{ expr }}}` (the pre-Vue-2 `v-html` equivalent).
+    ///
+    /// Resolved once per file from the dialect capabilities; the default Vue 3
+    /// path leaves it `false`, so the interpolation states stay byte-identical
+    /// to today and `{{{ x }}}` keeps tokenizing as a `{{ … }}` mustache with a
+    /// stray brace. Only ever set behind the `legacy` feature for a Vue 1.x
+    /// document, and only honored with the default `{{`/`}}` delimiters.
+    triple_mustache: bool,
+
+    /// True while the currently open interpolation is a `{{{ … }}}` raw-HTML
+    /// one. Reset when the interpolation closes; meaningless (always `false`)
+    /// unless [`Tokenizer::triple_mustache`] is set.
+    in_raw_interpolation: bool,
 }
 
 impl<'a, C: Callbacks> Tokenizer<'a, C> {
@@ -98,6 +113,8 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             in_rcdata: false,
             after_quoted_attr_value: false,
             tolerate_declarations: false,
+            triple_mustache: false,
+            in_raw_interpolation: false,
         }
     }
 
@@ -105,6 +122,14 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     /// reporting them as recoverable errors. Used by document parse mode.
     pub fn set_tolerate_declarations(&mut self, tolerate: bool) {
         self.tolerate_declarations = tolerate;
+    }
+
+    /// Enable recognition of Vue 1.x triple-mustache raw-HTML interpolation
+    /// (`{{{ expr }}}`). Off by default; only the `legacy` Vue 1.x path turns it
+    /// on. Honored only with the default `{{`/`}}` delimiters, so a custom
+    /// delimiter configuration is unaffected.
+    pub fn set_triple_mustache(&mut self, enabled: bool) {
+        self.triple_mustache = enabled && self.delimiter_open == b"{{";
     }
 
     /// Get the position for a given index

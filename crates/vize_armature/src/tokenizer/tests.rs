@@ -13,6 +13,8 @@ enum TokenEvent {
     Text(usize, usize),
     TextEntity(char, usize, usize),
     Interpolation(usize, usize),
+    #[cfg(feature = "legacy")]
+    RawInterpolation(usize, usize),
     OpenTagName(usize, usize),
     OpenTagEnd(usize),
     SelfClosingTag(usize),
@@ -44,6 +46,10 @@ impl Callbacks for TestCallbacks {
     }
     fn on_interpolation(&mut self, start: usize, end: usize) {
         self.events.push(TokenEvent::Interpolation(start, end));
+    }
+    #[cfg(feature = "legacy")]
+    fn on_raw_interpolation(&mut self, start: usize, end: usize) {
+        self.events.push(TokenEvent::RawInterpolation(start, end));
     }
     fn on_open_tag_name(&mut self, start: usize, end: usize) {
         self.events.push(TokenEvent::OpenTagName(start, end));
@@ -778,4 +784,78 @@ fn test_script_pseudo_close_kept_as_text_until_real_close() {
     assert!(cb.events.contains(&TokenEvent::OpenTagEnd(7)));
     assert!(cb.events.contains(&TokenEvent::Text(8, 20)));
     assert!(cb.events.contains(&TokenEvent::CloseTag(22, 28)));
+}
+
+// ===== Vue 1.x triple-mustache raw-HTML interpolation =====
+
+/// Without `set_triple_mustache`, `{{{ x }}}` tokenizes exactly as today: a
+/// `{{ … }}` interpolation whose expression keeps the leading `{`, plus a
+/// trailing `}` text node. This is the zero-cost default path.
+#[test]
+fn triple_mustache_default_is_braced_interpolation_plus_text() {
+    // "{{{ x }}}": indices 0..9
+    let cb = tokenize("{{{ x }}}");
+    assert!(cb.errors.is_empty());
+    // Expression span is `{ x ` -> [2, 6); trailing `}` text is [8, 9).
+    assert!(cb.events.contains(&TokenEvent::Interpolation(2, 6)));
+    assert!(cb.events.contains(&TokenEvent::Text(8, 9)));
+    // With no capability set, the raw-interpolation callback never fires; the
+    // `RawInterpolation` event variant only exists behind `legacy`.
+    #[cfg(feature = "legacy")]
+    assert!(
+        !cb.events
+            .iter()
+            .any(|e| matches!(e, TokenEvent::RawInterpolation(..))),
+        "no raw interpolation without the capability"
+    );
+}
+
+#[cfg(feature = "legacy")]
+fn tokenize_triple(input: &str) -> TestCallbacks {
+    let cb = TestCallbacks::default();
+    let mut tok = Tokenizer::new(input, cb);
+    tok.set_triple_mustache(true);
+    tok.tokenize();
+    tok.callbacks
+}
+
+#[cfg(feature = "legacy")]
+#[test]
+fn triple_mustache_with_capability_emits_raw_interpolation() {
+    // "{{{ x }}}": the expression span is ` x ` -> [3, 6); both extra braces
+    // are dropped and no trailing text is produced.
+    let cb = tokenize_triple("{{{ x }}}");
+    assert!(cb.errors.is_empty(), "{:?}", cb.errors);
+    assert!(cb.events.contains(&TokenEvent::RawInterpolation(3, 6)));
+    assert!(
+        !cb.events.iter().any(|e| matches!(e, TokenEvent::Text(..))),
+        "no stray brace text: {:?}",
+        cb.events
+    );
+}
+
+#[cfg(feature = "legacy")]
+#[test]
+fn double_mustache_with_capability_is_unchanged() {
+    // A plain `{{ x }}` is still an ordinary (escaped) interpolation even when
+    // triple-mustache recognition is enabled.
+    let cb = tokenize_triple("{{ x }}");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::Interpolation(2, 5)));
+    assert!(
+        !cb.events
+            .iter()
+            .any(|e| matches!(e, TokenEvent::RawInterpolation(..))),
+        "`{{{{ … }}}}` stays a plain interpolation"
+    );
+}
+
+#[cfg(feature = "legacy")]
+#[test]
+fn triple_mustache_adjacent_and_mixed_with_text() {
+    let cb = tokenize_triple("a {{{ x }}} b");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::Text(0, 2))); // "a "
+    assert!(cb.events.contains(&TokenEvent::RawInterpolation(5, 8))); // " x "
+    assert!(cb.events.contains(&TokenEvent::Text(11, 13))); // " b"
 }

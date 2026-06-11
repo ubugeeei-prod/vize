@@ -141,6 +141,7 @@ impl LegacyVueVersion {
                 computed_dollar_get_set: true,
                 attr_value_interpolation: true,
                 scoped_slot_attrs: false,
+                raw_html_interpolation: true,
             },
             Self::V0_11 => LegacyDialectCapabilities {
                 supports_filters: true,
@@ -152,6 +153,7 @@ impl LegacyVueVersion {
                 computed_dollar_get_set: false,
                 attr_value_interpolation: true,
                 scoped_slot_attrs: false,
+                raw_html_interpolation: true,
             },
             Self::V1 => LegacyDialectCapabilities {
                 supports_filters: true,
@@ -163,6 +165,7 @@ impl LegacyVueVersion {
                 computed_dollar_get_set: false,
                 attr_value_interpolation: true,
                 scoped_slot_attrs: false,
+                raw_html_interpolation: true,
             },
             Self::V2 => LegacyDialectCapabilities {
                 supports_filters: true,
@@ -174,6 +177,7 @@ impl LegacyVueVersion {
                 computed_dollar_get_set: false,
                 attr_value_interpolation: false,
                 scoped_slot_attrs: true,
+                raw_html_interpolation: false,
             },
         }
     }
@@ -239,6 +243,13 @@ pub struct LegacyDialectCapabilities {
     /// Scoped-slot attribute sugar: `scope` (added in 2.1) and `slot-scope`
     /// (added in 2.5). Vue 2 only; superseded by `v-slot` in 2.6 and Vue 3.
     pub scoped_slot_attrs: bool,
+    /// Triple-mustache raw-HTML (unescaped) text interpolation,
+    /// `{{{ html }}}` — the pre-Vue-2 equivalent of `v-html`. Vue 0.x / 1.x;
+    /// removed in Vue 2 in favor of `v-html` (Vue 2 migration guide,
+    /// "Interpolation"). Vue 2+ treats `{{{ x }}}` as an ordinary `{{ … }}`
+    /// mustache containing a stray brace, which is also the default (Vue 3)
+    /// behavior.
+    pub raw_html_interpolation: bool,
 }
 
 impl LegacyDialectCapabilities {
@@ -258,6 +269,7 @@ impl LegacyDialectCapabilities {
         computed_dollar_get_set: false,
         attr_value_interpolation: false,
         scoped_slot_attrs: false,
+        raw_html_interpolation: false,
     };
 
     /// Resolve a config-selected [`VueVersion`] straight to its capability
@@ -317,6 +329,8 @@ mod tests {
         assert!(v0_10.v_repeat_syntax && v0_11.v_repeat_syntax);
         assert!(v0_10.v_with_directive && v0_11.v_with_directive);
         assert!(v0_10.v_component_directive && v0_11.v_component_directive);
+        // Both 0.x lines support `{{{ html }}}` raw-HTML interpolation.
+        assert!(v0_10.raw_html_interpolation && v0_11.raw_html_interpolation);
     }
 
     #[test]
@@ -329,6 +343,8 @@ mod tests {
         assert!(!v1.v_with_directive && !v1.v_component_directive);
         assert!(v1.supports_filters && v1.space_separated_filter_args);
         assert!(v1.attr_value_interpolation);
+        // Vue 1.x keeps the `{{{ html }}}` raw-HTML interpolation.
+        assert!(v1.raw_html_interpolation);
     }
 
     #[test]
@@ -339,6 +355,8 @@ mod tests {
         assert!(v1.space_separated_filter_args && !v2.space_separated_filter_args);
         assert!(v1.attr_value_interpolation && !v2.attr_value_interpolation);
         assert!(!v1.scoped_slot_attrs && v2.scoped_slot_attrs);
+        // Vue 2 dropped triple-mustache raw-HTML interpolation in favor of `v-html`.
+        assert!(v1.raw_html_interpolation && !v2.raw_html_interpolation);
     }
 
     #[test]
@@ -359,6 +377,7 @@ mod tests {
         assert_eq!(caps, LegacyDialectCapabilities::default());
         assert!(!caps.supports_filters);
         assert!(!caps.v_repeat_syntax);
+        assert!(!caps.raw_html_interpolation);
         assert_eq!(caps.directive_arg_style, DirectiveArgStyle::Colon);
         // Every legacy line differs from the default set, so a capability
         // check can never confuse a legacy document with a Vue 3 one.

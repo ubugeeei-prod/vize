@@ -528,11 +528,20 @@ fn generate_slot_children(ctx: &mut CodegenContext, children: &[TemplateChildNod
                     ctx.push("\"");
                 }
                 TemplateChildNode::Interpolation(interp) => {
-                    ctx.use_helper(RuntimeHelper::ToDisplayString);
-                    ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
-                    ctx.push("(");
-                    generate_slot_expression(ctx, &interp.content);
-                    ctx.push(")");
+                    // Vue 1.x raw-HTML `{{{ … }}}` renders unescaped.
+                    #[cfg(feature = "legacy")]
+                    let raw = interp.raw;
+                    #[cfg(not(feature = "legacy"))]
+                    let raw = false;
+                    if raw {
+                        generate_slot_expression(ctx, &interp.content);
+                    } else {
+                        ctx.use_helper(RuntimeHelper::ToDisplayString);
+                        ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
+                        ctx.push("(");
+                        generate_slot_expression(ctx, &interp.content);
+                        ctx.push(")");
+                    }
                 }
                 _ => {}
             }
@@ -566,14 +575,25 @@ fn generate_slot_child_node(ctx: &mut CodegenContext, child: &TemplateChildNode<
         }
         TemplateChildNode::Interpolation(interp) => {
             ctx.use_helper(RuntimeHelper::CreateText);
-            ctx.use_helper(RuntimeHelper::ToDisplayString);
             ctx.push(ctx.helper(RuntimeHelper::CreateText));
             ctx.push("(");
-            ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
-            ctx.push("(");
-            // Generate expression, stripping _ctx. prefix for slot params
-            generate_slot_expression(ctx, &interp.content);
-            ctx.push("), 1 /* TEXT */)");
+            // Vue 1.x raw-HTML `{{{ … }}}` renders unescaped.
+            #[cfg(feature = "legacy")]
+            let raw = interp.raw;
+            #[cfg(not(feature = "legacy"))]
+            let raw = false;
+            if raw {
+                // Generate expression, stripping _ctx. prefix for slot params
+                generate_slot_expression(ctx, &interp.content);
+            } else {
+                ctx.use_helper(RuntimeHelper::ToDisplayString);
+                ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
+                ctx.push("(");
+                // Generate expression, stripping _ctx. prefix for slot params
+                generate_slot_expression(ctx, &interp.content);
+                ctx.push(")");
+            }
+            ctx.push(", 1 /* TEXT */)");
         }
         _ => {
             generate_node(ctx, child);
