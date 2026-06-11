@@ -26,6 +26,18 @@ pub(super) fn generate_options_api_variables(
     summary: &Croquis,
     options: &VirtualTsOptions,
 ) {
+    // The Options API bridge only runs for non-`<script setup>` components.
+    // `<script setup>` already exposes its bindings (refs, props, setup
+    // returns) in template scope via the normal generator, and a
+    // `defineProps<Props>()` whose argument is a type reference (not an inline
+    // `TSTypeLiteral`) still registers destructured names as
+    // `BindingType::Props` without populating `summary.macros.props()`, which
+    // would otherwise let those names slip through the filter below and
+    // produce spurious `__VizeOptionsBinding` declarations.
+    if summary.bindings.is_script_setup {
+        return;
+    }
+
     let macro_prop_names: FxHashSet<&str> = summary
         .macros
         .props()
@@ -80,6 +92,12 @@ pub(super) fn generate_options_api_variables(
 }
 
 pub(super) fn generate_options_api_bridge(mut ts: &mut String, summary: &Croquis, script: &str) {
+    // Matches the gate in `generate_options_api_variables`: the typed-instance
+    // bridge is only meaningful for non-`<script setup>` components.
+    if summary.bindings.is_script_setup {
+        return;
+    }
+
     let Some(bridge) = collect_options_api_bridge(script) else {
         return;
     };
