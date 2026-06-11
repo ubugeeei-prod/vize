@@ -12,7 +12,11 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  VIZE_BENCH_FILE_COUNT: 300
+  # 1000 files keeps the fastest lane (compile, ~200us/file single-threaded)
+  # above ~200ms so runner thermal drift between interleaved runs stays well
+  # under the 5% threshold; at 300 files the lane ran ~65ms and perf-neutral
+  # PRs tripped the budget on drift alone (#1411: +5.27%).
+  VIZE_BENCH_FILE_COUNT: 1000
   # Optimized (ci-opt) binaries run fast enough that 5 runs / 1 warmup left the
   # gate's noise floor above the 5% threshold: an identical-source PR (#1395)
   # tripped the budget at +5.12% on the compile lane. More samples tighten the
