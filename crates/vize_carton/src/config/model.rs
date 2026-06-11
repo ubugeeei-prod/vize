@@ -23,7 +23,7 @@ pub use language_server::{LanguageServerConfig, LspConfig};
 #[allow(unused_imports)]
 pub use linter::{LintRuleSeverity, LinterConfig};
 pub use type_checker::TypeCheckerConfig;
-pub use vue::{ParseVueDialectError, VueDialect};
+pub use vue::{ParseVueVersionError, VueVersion};
 
 /// Effective shared configuration.
 #[derive(Debug, Clone, Default, Serialize)]
@@ -74,7 +74,7 @@ pub struct ConfigFeatureFlags {
     /// fail config loading instead of silently picking a line. Groundwork for
     /// legacy Vue support (#1392): consumers thread this into parser and
     /// transform options in follow-ups.
-    pub vue_dialect: Option<VueDialect>,
+    pub vue_version: Option<VueVersion>,
 }
 
 /// Raw config representation with legacy aliases preserved for migration.
@@ -176,7 +176,7 @@ impl RawVizeConfig {
             type_checker_options_api,
             type_checker_legacy_vue2,
             language_server_legacy_vue2: language_server_raw.legacy_vue2,
-            vue_dialect: vue.version,
+            vue_version: vue.version,
         };
 
         let config = VizeConfig {
