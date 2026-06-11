@@ -88,4 +88,42 @@ mod tests {
             Some(PathBuf::from("/workspace/pages/[[org]]/[name] #1.vue.ts"))
         );
     }
+
+    #[test]
+    fn decodes_multi_byte_utf8_escapes() {
+        // Multi-byte sequences must be assembled from the decoded bytes;
+        // pushing each byte as a `char` would produce mojibake.
+        assert_eq!(
+            file_uri_to_path("file:///Users/foo/%E3%83%86%E3%82%B9%E3%83%88/App.vue"),
+            Some(PathBuf::from("/Users/foo/テスト/App.vue"))
+        );
+    }
+
+    #[test]
+    fn round_trips_non_ascii_paths() {
+        let path = Path::new("/Users/foo/テスト/App.vue");
+        assert_eq!(
+            path_to_file_uri(path),
+            "file:///Users/foo/%E3%83%86%E3%82%B9%E3%83%88/App.vue"
+        );
+        assert_eq!(
+            file_uri_to_path(&path_to_file_uri(path)),
+            Some(path.to_path_buf())
+        );
+    }
+
+    #[test]
+    fn decodes_windows_drive_letter_uris() {
+        // The escaped drive colon must decode; the leading slash is kept
+        // as-is (drive-letter normalization is out of scope here).
+        assert_eq!(
+            file_uri_to_path("file:///c%3A/work/App.vue"),
+            Some(PathBuf::from("/c:/work/App.vue"))
+        );
+    }
+
+    #[test]
+    fn rejects_escape_sequences_that_are_not_valid_utf8() {
+        assert_eq!(file_uri_to_path("file:///work/%FF%FE/App.vue"), None);
+    }
 }

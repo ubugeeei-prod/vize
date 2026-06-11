@@ -628,12 +628,14 @@ impl Default for CorsaServer {
 /// `DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE`). Uses the lightweight validator
 /// entry point so the socket-mode check stays as fast as the Virtual TS path.
 /// Resolve a URI (file:// or plain path) to an absolute filesystem path.
-/// Returns None when the URI is a non-`file` scheme or the path cannot be
-/// extracted. Used by socket-mode sibling overlay to read siblings from disk.
+/// Returns None when the URI is a non-`file` scheme, the path cannot be
+/// extracted, or percent-decoding yields invalid UTF-8. Used by socket-mode
+/// sibling overlay to read siblings from disk. `file://` URIs go through the
+/// shared converter in `crate::file_uri` so percent-escapes are decoded as
+/// UTF-8 byte sequences (not per-byte chars, which garbles non-ASCII paths).
 fn uri_to_path(uri: &str, working_dir: &Path) -> Option<PathBuf> {
-    if let Some(stripped) = uri.strip_prefix("file://") {
-        let decoded = percent_decode(stripped);
-        return Some(PathBuf::from(decoded));
+    if uri.starts_with("file://") {
+        return crate::file_uri::file_uri_to_path(uri);
     }
     if uri.contains("://") {
         return None;
@@ -644,28 +646,6 @@ fn uri_to_path(uri: &str, working_dir: &Path) -> Option<PathBuf> {
     } else {
         Some(working_dir.join(path))
     }
-}
-
-/// Minimal `%`-decoder for `file://` URIs. Only handles the small set of
-/// characters TypeScript and Corsa typically encode (space, special chars).
-fn percent_decode(input: &str) -> String {
-    let bytes = input.as_bytes();
-    let mut out = String::with_capacity(input.len());
-    let mut i = 0;
-    while i < bytes.len() {
-        if bytes[i] == b'%' && i + 2 < bytes.len() {
-            let hi = (bytes[i + 1] as char).to_digit(16);
-            let lo = (bytes[i + 2] as char).to_digit(16);
-            if let (Some(hi), Some(lo)) = (hi, lo) {
-                out.push(((hi * 16 + lo) as u8) as char);
-                i += 3;
-                continue;
-            }
-        }
-        out.push(bytes[i] as char);
-        i += 1;
-    }
-    out
 }
 
 fn collect_sfc_compile_diagnostic(
@@ -754,7 +734,9 @@ fn offset_to_line_column(source: &str, offset: usize) -> (u32, u32) {
 
 #[cfg(test)]
 mod tests {
-    use super::{CorsaServer, JsonRpcRequest, ServerConfig};
+    use std::path::{Path, PathBuf};
+
+    use super::{CorsaServer, JsonRpcRequest, ServerConfig, uri_to_path};
     use vize_carton::String;
 
     #[test]
@@ -796,5 +778,47 @@ mod tests {
             server.virtual_uri_for("file:///workspace/src/App.vue"),
             String::from("file:///workspace/src/App.vue.ts")
         );
+    }
+
+    #[test]
+    fn uri_to_path_decodes_multi_byte_utf8_escapes() {
+        // %E3%83%86%E3%82%B9%E3%83%88 is "テスト"; per-byte char pushes
+        // would turn it into mojibake instead of the original segment.
+        assert_eq!(
+            uri_to_path(
+                "file:///Users/foo/%E3%83%86%E3%82%B9%E3%83%88/App.vue",
+                Path::new("/wd")
+            ),
+            Some(PathBuf::from("/Users/foo/テスト/App.vue"))
+        );
+    }
+
+    #[test]
+    fn uri_to_path_decodes_spaces() {
+        assert_eq!(
+            uri_to_path("file:///work/my%20app/App.vue", Path::new("/wd")),
+            Some(PathBuf::from("/work/my app/App.vue"))
+        );
+    }
+
+    #[test]
+    fn uri_to_path_rejects_invalid_utf8_escapes() {
+        assert_eq!(
+            uri_to_path("file:///work/%FF%FE/App.vue", Path::new("/wd")),
+            None
+        );
+    }
+
+    #[test]
+    fn uri_to_path_resolves_relative_paths_against_working_dir() {
+        assert_eq!(
+            uri_to_path("src/App.vue", Path::new("/workspace/project")),
+            Some(PathBuf::from("/workspace/project/src/App.vue"))
+        );
+    }
+
+    #[test]
+    fn uri_to_path_rejects_non_file_schemes() {
+        assert_eq!(uri_to_path("untitled://buffer-1", Path::new("/wd")), None);
     }
 }
