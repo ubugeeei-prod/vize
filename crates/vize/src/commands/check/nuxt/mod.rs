@@ -61,6 +61,12 @@ pub(in crate::commands::check) fn detect_nuxt_auto_imports(
         &mut seen_names,
         &mut external_template_bindings,
     );
+    // Surface the degraded fallback: without generated `.nuxt` types,
+    // auto-imports resolve to permissive `any` stubs that hide real type
+    // errors. detect_nuxt_auto_imports runs once per check, so this warns once.
+    if let Some(message) = missing_generated_types_warning(has_generated_imports) {
+        eprintln!("{message}");
+    }
     collect_plugin_injection_stubs(cwd, &mut collected, &mut seen_names);
     collect_fallback_stubs(&mut collected, &mut seen_names, has_generated_imports);
     if !has_generated_imports {
@@ -91,4 +97,16 @@ fn is_nuxt_project(cwd: &Path) -> bool {
     cwd.join("nuxt.config.ts").exists()
         || cwd.join("nuxt.config.js").exists()
         || cwd.join("nuxt.config.mts").exists()
+}
+
+/// Warning shown once per `vize check` run for a Nuxt project that has no
+/// generated `.nuxt` type artifacts. Without them, auto-imports fall back to
+/// permissive `any` stubs that hide real type errors, so the user is told how
+/// to generate them. Returns `None` when generated types are present (the
+/// checked types are accurate and no warning is warranted).
+fn missing_generated_types_warning(has_generated_imports: bool) -> Option<&'static str> {
+    (!has_generated_imports).then_some(
+        "vize check: no generated `.nuxt` types found; Nuxt auto-imports fall back to `any` \
+         stubs and some type errors will be missed. Run `nuxi prepare` to generate them.",
+    )
 }
