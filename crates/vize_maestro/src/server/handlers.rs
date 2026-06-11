@@ -823,6 +823,13 @@ impl LanguageServer for MaestroServer {
 
         let uri = &params.text_document.uri;
 
+        // Standalone (petite-vue) HTML documents are not SFCs: running the SFC
+        // formatter over them corrupts the file. Skip until a dedicated HTML
+        // formatter lands (#1393).
+        if crate::utils::is_standalone_html_path(uri.path()) {
+            return Ok(None);
+        }
+
         let Some(doc) = self.state.documents.get(uri) else {
             return Ok(None);
         };
@@ -847,6 +854,11 @@ impl LanguageServer for MaestroServer {
 
         let uri = &params.text_document.uri;
 
+        // See `formatting`: standalone HTML must not go through the SFC formatter.
+        if crate::utils::is_standalone_html_path(uri.path()) {
+            return Ok(None);
+        }
+
         let Some(doc) = self.state.documents.get(uri) else {
             return Ok(None);
         };
@@ -859,5 +871,73 @@ impl LanguageServer for MaestroServer {
         }
         #[cfg(not(feature = "glyph"))]
         Ok(None)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tower_lsp::{
+        LspService,
+        lsp_types::{FormattingOptions, TextDocumentIdentifier, Url, WorkDoneProgressParams},
+    };
+
+    fn formatting_params(uri: Url) -> DocumentFormattingParams {
+        DocumentFormattingParams {
+            text_document: TextDocumentIdentifier { uri },
+            options: FormattingOptions::default(),
+            work_done_progress_params: WorkDoneProgressParams::default(),
+        }
+    }
+
+    #[test]
+    fn formatting_returns_no_edits_for_standalone_html() {
+        let (service, _socket) = LspService::new(MaestroServer::new);
+        let server = service.inner();
+        server
+            .state
+            .apply_lsp_initialization_options(Some(&serde_json::json!({ "formatting": true })));
+
+        let uri = Url::parse("file:///index.html").unwrap();
+        let source = "<!DOCTYPE html>\n<html><body>\n<div   v-scope=\"{ count: 0 }\" >{{ count }}</div>\n</body></html>\n";
+        server
+            .state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "html".to_string());
+
+        let edits =
+            futures::executor::block_on(server.formatting(formatting_params(uri.clone()))).unwrap();
+        assert!(
+            edits.is_none(),
+            "the SFC formatter must not touch standalone HTML documents"
+        );
+
+        let range_params = DocumentRangeFormattingParams {
+            text_document: TextDocumentIdentifier { uri },
+            range: Range::new(Position::new(0, 0), Position::new(0, 1)),
+            options: FormattingOptions::default(),
+            work_done_progress_params: WorkDoneProgressParams::default(),
+        };
+        let edits = futures::executor::block_on(server.range_formatting(range_params)).unwrap();
+        assert!(
+            edits.is_none(),
+            "range formatting must not touch standalone HTML documents"
+        );
+
+        // Guard against the gate over-matching: SFC formatting must still work.
+        #[cfg(feature = "glyph")]
+        {
+            let vue_uri = Url::parse("file:///App.vue").unwrap();
+            let vue_source = "<template>\n<div>hello</div>\n</template>\n";
+            server.state.documents.open(
+                vue_uri.clone(),
+                vue_source.to_string(),
+                1,
+                "vue".to_string(),
+            );
+            let edits =
+                futures::executor::block_on(server.formatting(formatting_params(vue_uri))).unwrap();
+            assert!(edits.is_some(), "Vue SFC formatting must keep working");
+        }
     }
 }
