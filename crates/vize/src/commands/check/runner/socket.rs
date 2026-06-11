@@ -22,7 +22,11 @@ use crate::{
     profile_support,
 };
 
-use super::{collect::collect_vue_files, diagnostics::save_virtual_ts_for_path, display_path};
+use super::{
+    collect::collect_vue_files,
+    diagnostics::{render_virtual_ts_output, save_virtual_ts_for_path},
+    display_path,
+};
 use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
 
 /// Run type checking via Unix socket connection to check-server.
@@ -162,14 +166,19 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
                 .iter()
                 .filter(|diagnostic| diagnostic.severity == "warning")
                 .count();
-            if args.show_virtual_ts {
-                eprintln!("\n=== {} ===", filename);
-                eprintln!("{}", result.virtual_ts);
-            }
             results.push((filename, result));
         }
     }
     let request_time = request_start.elapsed();
+
+    if args.show_virtual_ts {
+        eprint!(
+            "{}",
+            render_virtual_ts_output(results.iter().map(|(filename, result)| {
+                (std::path::Path::new(filename), result.virtual_ts.as_str())
+            }))
+        );
+    }
 
     if let Some(path) = args.save_virtual_ts_for.as_deref() {
         let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));

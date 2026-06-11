@@ -43,7 +43,7 @@ mod tests;
 use collect::collect_check_files;
 use diagnostics::{
     emit_json_output, is_reported, is_suppressed_false_positive, render_diagnostics,
-    save_virtual_ts_for_path, write_profile_virtual_ts,
+    render_virtual_ts_output, save_virtual_ts_for_path, write_profile_virtual_ts,
 };
 use global_components::{
     build_virtual_ts_options, collect_project_global_component_stubs, template_syntax_mode,
@@ -333,10 +333,14 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     }
 
     if args.show_virtual_ts {
-        for file in &virtual_files {
-            eprintln!("\n=== {} ===", file.original_path.display());
-            eprintln!("{}", file.content);
-        }
+        eprint!(
+            "{}",
+            render_virtual_ts_output(
+                virtual_files
+                    .iter()
+                    .map(|file| (file.original_path.as_path(), file.content.as_str()))
+            )
+        );
     }
 
     if let Some(path) = args.save_virtual_ts_for.as_deref() {

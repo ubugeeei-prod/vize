@@ -1,7 +1,7 @@
 //! Diagnostic reporting, JSON serialization, and profile artifacts for the
 //! `check` runner.
 
-use std::{fs, path::Path, path::PathBuf};
+use std::{fmt::Write as _, fs, path::Path, path::PathBuf};
 
 use vize_carton::{FxHashSet, String as CompactString, cstr, profile, profiler::global_profiler};
 
@@ -16,6 +16,30 @@ pub(super) fn emit_json_output(json_output: JsonOutput) {
             std::process::exit(1);
         }
     }
+}
+
+pub(super) fn render_virtual_ts_output<'a>(
+    files: impl IntoIterator<Item = (&'a Path, &'a str)>,
+) -> std::string::String {
+    let mut output = std::string::String::new();
+    append_virtual_ts_section(
+        &mut output,
+        Path::new(vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME),
+        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+    );
+    for (path, content) in files {
+        append_virtual_ts_section(&mut output, path, content);
+    }
+    output
+}
+
+fn append_virtual_ts_section(output: &mut std::string::String, path: &Path, content: &str) {
+    output.push('\n');
+    output.push_str("=== ");
+    let _ = write!(output, "{}", path.display());
+    output.push_str(" ===\n");
+    output.push_str(content);
+    output.push('\n');
 }
 
 /// Whether a registered file's diagnostics should be reported. For an explicit
@@ -237,7 +261,24 @@ pub(super) fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
 
 #[cfg(test)]
 mod tests {
-    use super::{save_virtual_ts_for_path, virtual_ts_save_path};
+    use super::{render_virtual_ts_output, save_virtual_ts_for_path, virtual_ts_save_path};
+
+    #[test]
+    fn render_virtual_ts_output_includes_shared_helpers_before_source_files() {
+        let output =
+            render_virtual_ts_output([(std::path::Path::new("App.vue"), "const value = 1;\n")]);
+
+        let helpers_header = format!(
+            "=== {} ===",
+            vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME
+        );
+        let source_header = "=== App.vue ===";
+        assert!(output.contains(&helpers_header));
+        assert!(output.contains("Shared ambient helpers for vize virtual TypeScript"));
+        assert!(output.contains("declare function __vize_defineProps"));
+        assert!(output.contains(source_header));
+        assert!(output.find(&helpers_header).unwrap() < output.find(source_header).unwrap());
+    }
 
     #[test]
     fn virtual_ts_save_path_appends_virtual_ts_after_full_file_name() {
