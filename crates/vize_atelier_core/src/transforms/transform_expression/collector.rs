@@ -254,6 +254,15 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
             return;
         }
 
+        // Vue 2 filter asset ids (`_filter_capitalize`) are introduced by the
+        // legacy filter rewrite, not the user, and must never be prefixed with
+        // `_ctx.`/`.value`. Mirrors `@vue/compiler-core` skipping
+        // `name.startsWith("_filter_")` during identifier prefixing. Legacy-only.
+        #[cfg(feature = "legacy")]
+        if name.starts_with("_filter_") {
+            return;
+        }
+
         let needs_unref = self.needs_unref(name);
         let is_assignment_target = self
             .assignment_targets

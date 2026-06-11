@@ -21,6 +21,19 @@ pub struct RootNode<'a> {
     pub helpers: Vec<'a, RuntimeHelper>,
     pub components: Vec<'a, String>,
     pub directives: Vec<'a, String>,
+    /// Vue 2 pipe filters referenced by the template (e.g. `capitalize` in
+    /// `{{ msg | capitalize }}`), in first-seen order. Each becomes a
+    /// `const _filter_<name> = _resolveFilter("<name>")` asset declaration in
+    /// the render preamble, mirroring `@vue/compiler-core`'s Vue-2-compat
+    /// filter output.
+    ///
+    /// Legacy-only: filters were removed in Vue 3, so this field is compiled
+    /// only behind the internal `_legacy` cargo feature (enabled transitively
+    /// by `vize_atelier_core/legacy`). The default Vue 3 build never sees it,
+    /// keeping the public AST surface — and `cargo-semver-checks`, whose
+    /// feature heuristic skips `_`-prefixed features — byte-identical.
+    #[cfg(feature = "_legacy")]
+    pub filters: Vec<'a, String>,
     pub hoists: Vec<'a, Option<JsChildNode<'a>>>,
     pub imports: Vec<'a, ImportItem<'a>>,
     pub cached: Vec<'a, Option<Box<'a, CacheExpression<'a>>>>,
@@ -38,6 +51,8 @@ impl<'a> RootNode<'a> {
             helpers: Vec::new_in(allocator),
             components: Vec::new_in(allocator),
             directives: Vec::new_in(allocator),
+            #[cfg(feature = "_legacy")]
+            filters: Vec::new_in(allocator),
             hoists: Vec::new_in(allocator),
             imports: Vec::new_in(allocator),
             cached: Vec::new_in(allocator),

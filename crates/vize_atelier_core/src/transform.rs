@@ -70,6 +70,11 @@ pub struct TransformContext<'a> {
     pub components: std::vec::Vec<String>,
     /// Directives used (Vec to maintain template order for code generation)
     pub directives: std::vec::Vec<String>,
+    /// Vue 2 pipe filters referenced by the template, first-seen order.
+    /// Flushed to [`RootNode::filters`](crate::ast::RootNode) and emitted as
+    /// `_resolveFilter` asset declarations. Legacy-only and dialect-gated.
+    #[cfg(feature = "legacy")]
+    pub(crate) filters: std::vec::Vec<String>,
     /// Hoisted expressions
     pub hoists: Vec<'a, Option<JsChildNode<'a>>>,
     /// Cached expressions
@@ -276,6 +281,11 @@ fn transform_inner<'a>(
     }
     for directive in ctx.directives.into_iter() {
         root.directives.push(directive);
+    }
+    // Transfer Vue 2 pipe filters (legacy-only; empty for Vue 3).
+    #[cfg(feature = "legacy")]
+    for filter in ctx.filters.into_iter() {
+        root.filters.push(filter);
     }
     // Transfer hoisted nodes to root
     for hoist in ctx.hoists.into_iter() {

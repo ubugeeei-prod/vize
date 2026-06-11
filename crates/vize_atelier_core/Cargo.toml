@@ -7,6 +7,13 @@ license.workspace = true
 repository.workspace = true
 description = "Atelier Core - The core workshop for Vize Vue template parsing and transforms"
 
+[features]
+# Opt-in support for legacy Vue lines (v0.10 / v0.11 / v1 / v2). Off by default
+# so the Vue 3 `vize` binary never compiles it. Enables dialect-gated legacy
+# transforms such as Vue 2 pipe filters; forwards to the `legacy` features of
+# the AST (`vize_relief`) and dialect-capability (`vize_armature`) crates.
+legacy = ["vize_relief/_legacy", "vize_armature/legacy"]
+
 [dependencies]
 vize_carton = { workspace = true }
 vize_croquis = { workspace = true }

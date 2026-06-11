@@ -175,6 +175,25 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
         has_resolved_assets = true;
     }
 
+    // Resolve Vue 2 pipe filters (`const _filter_x = _resolveFilter("x")`).
+    // Legacy-only and emitted after components/directives, matching
+    // `@vue/compiler-core`'s asset order. `root.filters` is always empty for
+    // Vue 3, so this loop never runs there (and is not compiled without the
+    // `legacy` feature).
+    #[cfg(feature = "legacy")]
+    for filter in root.filters.iter() {
+        ctx.use_helper(RuntimeHelper::ResolveFilter);
+        ctx.push("const ");
+        ctx.push(&to_valid_asset_identifier("filter", filter));
+        ctx.push(" = ");
+        ctx.push(ctx.helper(RuntimeHelper::ResolveFilter));
+        ctx.push("(\"");
+        ctx.push(filter);
+        ctx.push("\")");
+        ctx.newline();
+        has_resolved_assets = true;
+    }
+
     if has_resolved_assets {
         ctx.newline();
     }

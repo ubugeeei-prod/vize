@@ -4,6 +4,10 @@
 //! directives and node types during the transform phase.
 
 pub mod hoist_static;
+/// Vue 2 pipe-filter parsing/rewriting. Legacy-only and dialect-gated; see the
+/// module docs. Compiled only behind the `legacy` cargo feature.
+#[cfg(feature = "legacy")]
+pub(crate) mod legacy_filters;
 pub mod transform_element;
 pub mod transform_expression;
 pub mod transform_text;

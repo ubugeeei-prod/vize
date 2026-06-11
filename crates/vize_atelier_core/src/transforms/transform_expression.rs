@@ -143,6 +143,61 @@ pub fn is_function_expression(content: &str) -> bool {
     )
 }
 
+/// Rewrite Vue 2 pipe filters in `exp` in place, mirroring
+/// `@vue/compiler-core`'s `transformFilter` / `wrapFilter`.
+///
+/// Returns `true` and rewrites `exp.content` to the unprefixed
+/// `_filter_<name>(base,args)` form (registering each filter and the
+/// `_resolveFilter` helper) when the dialect supports filters and the content
+/// actually contains a top-level filter pipe. Returns `false` — leaving `exp`
+/// untouched — otherwise, so non-filter expressions (and every Vue 3 source)
+/// are byte-identical to before.
+#[cfg(feature = "legacy")]
+fn rewrite_filters_in_place<'a>(
+    ctx: &mut TransformContext<'a>,
+    exp: &mut Box<'a, SimpleExpressionNode<'a>>,
+) -> bool {
+    use crate::transforms::legacy_filters::{filter_name, parse_filters, wrap_filter};
+
+    if !ctx.supports_filters() {
+        return false;
+    }
+
+    let Some(parsed) = parse_filters(exp.content.as_str()) else {
+        return false;
+    };
+
+    // Validate every filter name up front; if any is malformed, bail out and
+    // leave the original expression untouched (matches Vue resolving named
+    // filters only).
+    let mut names: std::vec::Vec<(String, String)> = std::vec::Vec::new();
+    for filter in &parsed.filters {
+        let Some(name) = filter_name(filter) else {
+            return false;
+        };
+        let id = crate::codegen::to_valid_asset_identifier("filter", name);
+        names.push((String::new(name), id));
+    }
+
+    // Build the wrapped expression from the inside out: each filter wraps the
+    // running expression, outermost filter last.
+    let mut wrapped = parsed.base;
+    for (filter, (name, id)) in parsed.filters.iter().zip(names.iter()) {
+        let Some(next) = wrap_filter(wrapped.as_str(), filter, id.as_str()) else {
+            return false;
+        };
+        wrapped = next;
+        ctx.add_filter(name.clone());
+    }
+
+    ctx.helper(crate::ast::RuntimeHelper::ResolveFilter);
+    exp.content = wrapped;
+    // The content was rewritten from source text, so any cached parse is stale.
+    exp.js_ast = None;
+    exp.is_ref_transformed = false;
+    true
+}
+
 /// Process expression with identifier prefixing and TypeScript stripping
 pub fn process_expression<'a>(
     ctx: &mut TransformContext<'a>,
@@ -151,7 +206,26 @@ pub fn process_expression<'a>(
 ) -> ExpressionNode<'a> {
     let allocator = ctx.allocator;
 
-    let normalized = normalize_expression(exp, allocator);
+    // `mut` is only consumed by the legacy filter rewrite below; without the
+    // `legacy` feature that block is cfg'd out and the binding is never mutated.
+    #[cfg_attr(not(feature = "legacy"), allow(unused_mut))]
+    let mut normalized = normalize_expression(exp, allocator);
+
+    // Vue 2 pipe filters (`{{ msg | capitalize }}`): split the top-level `|`
+    // chain into an unprefixed `_filter_<name>(base,args)` rewrite, register
+    // the filters, and pull in `_resolveFilter`. Identifier prefixing then runs
+    // over the rewritten text below (skipping the `_filter_` ids). Legacy-only
+    // and dialect-gated: never entered for the default Vue 3 dialect, where a
+    // `|`-containing expression stays byte-identical to today's bitwise-or.
+    #[cfg(feature = "legacy")]
+    if !normalized.is_static && rewrite_filters_in_place(ctx, &mut normalized) {
+        // The content now contains `_filter_*(...)` calls. Fall through to the
+        // identifier-prefixing pass (which handles `_ctx.`/`.value` on the base
+        // and args) when prefixing/TS is on; otherwise return the rewrite as-is.
+        if !ctx.options.prefix_identifiers && !ctx.options.is_ts {
+            return ExpressionNode::Simple(normalized);
+        }
+    }
 
     // If not prefixing identifiers and not TypeScript, just clone
     if !ctx.options.prefix_identifiers && !ctx.options.is_ts {

@@ -26,4 +26,8 @@ use crate::options::CodegenOptions;
 
 pub use context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};
 pub(crate) use helpers::is_constant_simple_expression;
+// Shared with the dialect-gated Vue 2 filter transform, which builds the same
+// `_filter_<name>` asset id the codegen preamble declares.
+#[cfg(feature = "legacy")]
+pub(crate) use helpers::to_valid_asset_identifier;
 pub use pipeline::{generate, generate_with_sections};
