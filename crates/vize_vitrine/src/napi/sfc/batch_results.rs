@@ -41,6 +41,14 @@ pub fn compile_sfc_batch_with_results(
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
+    // Heavy/optional payloads are opt-in so the default boundary stays lean:
+    // `code`/`css` are always materialized eagerly (fairness), but the per-block
+    // `styles` (which re-sends the CSS `css` already carries), custom blocks,
+    // macro artifacts and content hashes are skipped unless the caller asks.
+    let include_styles = opts.include_styles.unwrap_or(false);
+    let include_custom_blocks = opts.include_custom_blocks.unwrap_or(false);
+    let include_macro_artifacts = opts.include_macro_artifacts.unwrap_or(false);
+    let include_hashes = opts.include_hashes.unwrap_or(false);
     let start = Instant::now();
 
     // Indexed parallel map keeps results in input order (deterministic) and
@@ -78,11 +86,25 @@ pub fn compile_sfc_batch_with_results(
                 }
             };
 
-            let template_hash: Option<String> = descriptor.template_hash().map(Into::into);
-            let style_hash: Option<String> = descriptor.style_hash().map(Into::into);
-            let script_hash: Option<String> = descriptor.script_hash().map(Into::into);
-            let styles = style_blocks_to_napi(&descriptor.styles);
-            let custom_blocks = custom_blocks_to_napi(&descriptor.custom_blocks);
+            let (template_hash, style_hash, script_hash) = if include_hashes {
+                (
+                    descriptor.template_hash().map(Into::into),
+                    descriptor.style_hash().map(Into::into),
+                    descriptor.script_hash().map(Into::into),
+                )
+            } else {
+                (None, None, None)
+            };
+            let styles = if include_styles {
+                style_blocks_to_napi(&descriptor.styles)
+            } else {
+                vec![]
+            };
+            let custom_blocks = if include_custom_blocks {
+                custom_blocks_to_napi(&descriptor.custom_blocks)
+            } else {
+                vec![]
+            };
             let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
             let template_compiler_options = Some(vize_atelier_dom::DomCompilerOptions {
                 scope_id: has_scoped.then(|| cstr!("data-v-{scope_id}")),
@@ -122,28 +144,46 @@ pub fn compile_sfc_batch_with_results(
             match compile_result {
                 Ok(result) => {
                     success_count.fetch_add(1, Ordering::Relaxed);
+                    // Empty diagnostic vectors are the common case; skip the
+                    // per-element map/collect (and the empty-array boundary
+                    // crossing) when there is nothing to report.
+                    let errors = if result.errors.is_empty() {
+                        vec![]
+                    } else {
+                        result
+                            .errors
+                            .into_iter()
+                            .map(|e| e.message.into())
+                            .collect()
+                    };
+                    let warnings = if result.warnings.is_empty() {
+                        vec![]
+                    } else {
+                        result
+                            .warnings
+                            .into_iter()
+                            .map(|e| e.message.into())
+                            .collect()
+                    };
+                    let macro_artifacts = if include_macro_artifacts {
+                        macro_artifacts_to_napi(result.macro_artifacts)
+                    } else {
+                        vec![]
+                    };
                     BatchFileResultNapi {
                         path: file.path,
                         code: result.code.into(),
                         css: result.css.map(Into::into),
                         scope_id: scope_id.into(),
                         has_scoped,
-                        errors: result
-                            .errors
-                            .into_iter()
-                            .map(|e| e.message.into())
-                            .collect(),
-                        warnings: result
-                            .warnings
-                            .into_iter()
-                            .map(|e| e.message.into())
-                            .collect(),
+                        errors,
+                        warnings,
                         template_hash,
                         style_hash,
                         script_hash,
                         styles,
                         custom_blocks,
-                        macro_artifacts: macro_artifacts_to_napi(result.macro_artifacts),
+                        macro_artifacts,
                     }
                 }
                 Err(error) => BatchFileResultNapi {

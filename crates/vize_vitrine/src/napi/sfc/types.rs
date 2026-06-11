@@ -109,6 +109,19 @@ pub struct BatchCompileOptionsNapi {
     /// Preserve TypeScript in output when true
     pub is_ts: Option<bool>,
     pub threads: Option<u32>,
+    /// Include per-block style metadata (incl. `styles[].content`). Default OFF.
+    ///
+    /// `code`/`css` are always materialized; the per-block `styles` payload
+    /// re-sends the raw CSS that `css` already carries, so the default boundary
+    /// omits it to avoid duplicate UTF-8 -> V8 copies. Consumers that need the
+    /// preprocessor/CSS-modules metadata opt in explicitly.
+    pub include_styles: Option<bool>,
+    /// Include parsed custom blocks. Default OFF.
+    pub include_custom_blocks: Option<bool>,
+    /// Include compile-time macro artifacts. Default OFF.
+    pub include_macro_artifacts: Option<bool>,
+    /// Include template/style/script content hashes (for HMR). Default OFF.
+    pub include_hashes: Option<bool>,
 }
 
 #[napi(object)]

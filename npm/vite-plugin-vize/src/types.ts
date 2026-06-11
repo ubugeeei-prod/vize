@@ -313,6 +313,18 @@ export interface BatchCompileOptionsNapi {
   runtimeGlobalName?: string;
   vueVersion?: string;
   threads?: number;
+  /**
+   * Include per-block style metadata (incl. `styles[].content`). Default OFF.
+   * `code`/`css` are always returned; this opts into the extra CSS-modules /
+   * preprocessor metadata the bundler pipeline needs.
+   */
+  includeStyles?: boolean;
+  /** Include parsed custom blocks. Default OFF. */
+  includeCustomBlocks?: boolean;
+  /** Include compile-time macro artifacts. Default OFF. */
+  includeMacroArtifacts?: boolean;
+  /** Include template/style/script content hashes (for HMR). Default OFF. */
+  includeHashes?: boolean;
 }
 
 export interface BatchCompileResultWithFiles {

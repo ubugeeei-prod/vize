@@ -52,6 +52,12 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer ?? false,
+    // Opt into exactly the optional payloads the bundler pipeline consumes:
+    // per-block style metadata, macro artifacts, and HMR content hashes.
+    // Custom blocks are not used in the batch path, so they stay omitted.
+    includeStyles: true,
+    includeMacroArtifacts: true,
+    includeHashes: true,
     ...(options.mode === undefined ? {} : { mode: options.mode }),
     ...(options.templateSyntax === undefined ? {} : { templateSyntax: options.templateSyntax }),
     ...(options.runtimeModuleName === undefined
