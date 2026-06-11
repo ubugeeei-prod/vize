@@ -12,7 +12,7 @@
 //! # Dialect resolution model
 //!
 //! A document's dialect is selected by config (`vue.version`, normalized to
-//! [`VueDialect`] in `vize_carton`) and resolved **once per file** into a
+//! [`VueVersion`] in `vize_carton`) and resolved **once per file** into a
 //! [`LegacyDialectCapabilities`] set via [`LegacyDialectCapabilities::for_dialect`].
 //! Hot paths (tokenizer states, attribute classification, directive
 //! finalization, transforms) must only read capability fields; they must never
@@ -22,7 +22,7 @@
 //! short-circuits exactly like today's unconditional Vue 3 code paths — and
 //! without the `legacy` feature this module is not compiled at all.
 
-use vize_carton::config::VueDialect;
+use vize_carton::config::VueVersion;
 
 /// A legacy (pre-Vue-3) version line that Vize can opt into supporting.
 ///
@@ -99,7 +99,7 @@ impl LegacyVueVersion {
     ///
     /// Kept stable so it can be used in diagnostics and feature reporting
     /// without churning across releases. Config-side parsing lives on
-    /// [`VueDialect`] in `vize_carton`, which accepts these identifiers as
+    /// [`VueVersion`] in `vize_carton`, which accepts these identifiers as
     /// well as the bare `vue.version` numbers.
     pub fn as_str(self) -> &'static str {
         match self {
@@ -110,18 +110,18 @@ impl LegacyVueVersion {
         }
     }
 
-    /// Resolve a config-selected [`VueDialect`] into a legacy line.
+    /// Resolve a config-selected [`VueVersion`] into a legacy line.
     ///
-    /// Returns `None` for [`VueDialect::V3`]: modern Vue 3 is not a legacy
+    /// Returns `None` for [`VueVersion::V3`]: modern Vue 3 is not a legacy
     /// line and must take the default (non-legacy) code paths. Vue 2.7 and
     /// Vue 2 share the [`V2`](Self::V2) template dialect.
-    pub const fn from_dialect(dialect: VueDialect) -> Option<Self> {
+    pub const fn from_dialect(dialect: VueVersion) -> Option<Self> {
         match dialect {
-            VueDialect::V3 => None,
-            VueDialect::V2_7 | VueDialect::V2 => Some(Self::V2),
-            VueDialect::V1 => Some(Self::V1),
-            VueDialect::V0_11 => Some(Self::V0_11),
-            VueDialect::V0_10 => Some(Self::V0_10),
+            VueVersion::V3 => None,
+            VueVersion::V2_7 | VueVersion::V2 => Some(Self::V2),
+            VueVersion::V1 => Some(Self::V1),
+            VueVersion::V0_11 => Some(Self::V0_11),
+            VueVersion::V0_10 => Some(Self::V0_10),
         }
     }
 
@@ -260,11 +260,11 @@ impl LegacyDialectCapabilities {
         scoped_slot_attrs: false,
     };
 
-    /// Resolve a config-selected [`VueDialect`] straight to its capability
+    /// Resolve a config-selected [`VueVersion`] straight to its capability
     /// set ([`VUE3`](Self::VUE3) for the default dialect).
     ///
     /// This is the once-per-file entry point for option builders.
-    pub const fn for_dialect(dialect: VueDialect) -> LegacyDialectCapabilities {
+    pub const fn for_dialect(dialect: VueVersion) -> LegacyDialectCapabilities {
         match LegacyVueVersion::from_dialect(dialect) {
             None => Self::VUE3,
             Some(version) => version.capabilities(),
@@ -286,7 +286,7 @@ mod tests {
     fn as_str_round_trips_all_variants_through_config_parsing() {
         assert_eq!(LegacyVueVersion::ALL.len(), 4);
         for version in LegacyVueVersion::ALL {
-            let dialect = VueDialect::from_config_str(version.as_str())
+            let dialect = VueVersion::from_config_str(version.as_str())
                 .unwrap_or_else(|error| panic!("{}: {error}", version.as_str()));
             assert_eq!(LegacyVueVersion::from_dialect(dialect), Some(version));
         }
@@ -296,7 +296,7 @@ mod tests {
     fn config_string_resolves_to_version_and_capabilities() {
         // The full plumbing a config consumer runs once per file:
         // raw string -> dialect -> legacy line -> capability set.
-        let dialect = VueDialect::from_config_str("0.10").unwrap();
+        let dialect = VueVersion::from_config_str("0.10").unwrap();
         let version = LegacyVueVersion::from_dialect(dialect).unwrap();
         assert_eq!(version, LegacyVueVersion::V0_10);
         let caps = version.capabilities();
@@ -343,18 +343,18 @@ mod tests {
 
     #[test]
     fn v2_and_v2_7_share_the_template_dialect() {
-        let v2 = LegacyVueVersion::from_dialect(VueDialect::V2).unwrap();
-        let v2_7 = LegacyVueVersion::from_dialect(VueDialect::V2_7).unwrap();
+        let v2 = LegacyVueVersion::from_dialect(VueVersion::V2).unwrap();
+        let v2_7 = LegacyVueVersion::from_dialect(VueVersion::V2_7).unwrap();
         assert_eq!(v2, v2_7);
         assert_eq!(
-            LegacyDialectCapabilities::for_dialect(VueDialect::V2),
-            LegacyDialectCapabilities::for_dialect(VueDialect::V2_7),
+            LegacyDialectCapabilities::for_dialect(VueVersion::V2),
+            LegacyDialectCapabilities::for_dialect(VueVersion::V2_7),
         );
     }
 
     #[test]
     fn default_dialect_resolves_to_the_all_off_vue3_set() {
-        let caps = LegacyDialectCapabilities::for_dialect(VueDialect::V3);
+        let caps = LegacyDialectCapabilities::for_dialect(VueVersion::V3);
         assert_eq!(caps, LegacyDialectCapabilities::VUE3);
         assert_eq!(caps, LegacyDialectCapabilities::default());
         assert!(!caps.supports_filters);

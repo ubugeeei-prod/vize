@@ -2863,6 +2863,7 @@ defineProps<PublicProps>()
         declarations,
         vec![
             "types-from-tsconfig/App.vue.d.ts",
+            "types-from-tsconfig/__vize_helpers.d.ts",
             "types-from-tsconfig/index.d.ts"
         ]
     );
