@@ -2929,3 +2929,113 @@ export default {
 
     insta::assert_snapshot!(result.code.as_str());
 }
+/// A class component's `@Component({ components: { Foo } })` registration and
+/// its members must thread through compile output exactly like the equivalent
+/// Options API component: `<Foo/>` resolves via `_resolveComponent("Foo")`
+/// (the registration is resolved from the instance's `components` option at
+/// runtime, matching `@vue/compiler-sfc`), and template member usages are
+/// prefixed from binding metadata (`$props.` / `$data.` / `$options.`) rather
+/// than falling back to `_ctx.` for everything.
+#[test]
+fn test_class_component_registered_component_and_member_bindings() {
+    let class_src = r#"<script lang="ts">
+import { Vue, Component, Prop } from 'vue-property-decorator'
+import Foo from './Foo.vue'
+
+@Component({ components: { Foo } })
+export default class MyComp extends Vue {
+  @Prop() msg!: string
+  count = 0
+  get doubled() { return this.count * 2 }
+  greet() { return 'hi' }
+}
+</script>
+
+<template>
+  <Foo />
+  <p>{{ msg }}{{ count }}{{ doubled }}{{ greet() }}</p>
+</template>"#;
+    let descriptor = crate::parse_sfc(class_src, crate::SfcParseOptions::default()).expect("parse");
+    let result = super::compile_sfc(&descriptor, crate::types::SfcCompileOptions::default())
+        .expect("compile");
+
+    // `<Foo/>` resolves as a registered component, not via an arbitrary
+    // `_ctx.Foo` / `$setup.Foo` rewrite.
+    assert!(
+        result
+            .code
+            .contains(r#"_component_Foo = _resolveComponent("Foo")"#),
+        "expected <Foo/> to resolve from the @Component registration:\n{}",
+        result.code
+    );
+
+    // Class members thread through binding metadata with the Options API
+    // prefixes Vue's compiler-sfc emits.
+    assert!(
+        result.code.contains("_toDisplayString($props.msg)"),
+        "@Prop member should be prefixed `$props.`:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("_toDisplayString($data.count)"),
+        "plain field should be prefixed `$data.`:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("_toDisplayString($options.doubled)"),
+        "getter should be prefixed `$options.`:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("_toDisplayString($options.greet())"),
+        "method should be prefixed `$options.`:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("_ctx.msg")
+            && !result.code.contains("_ctx.count")
+            && !result.code.contains("_ctx.doubled")
+            && !result.code.contains("_ctx.greet"),
+        "class members must not fall back to `_ctx.`:\n{}",
+        result.code
+    );
+
+    // The class component output must match the equivalent Options API
+    // component's render function exactly (only the script body differs).
+    let options_src = r#"<script lang="ts">
+import { defineComponent } from 'vue'
+import Foo from './Foo.vue'
+
+export default defineComponent({
+  components: { Foo },
+  props: { msg: String },
+  data() { return { count: 0 } },
+  computed: { doubled() { return this.count * 2 } },
+  methods: { greet() { return 'hi' } },
+})
+</script>
+
+<template>
+  <Foo />
+  <p>{{ msg }}{{ count }}{{ doubled }}{{ greet() }}</p>
+</template>"#;
+    let options_descriptor =
+        crate::parse_sfc(options_src, crate::SfcParseOptions::default()).expect("parse");
+    let options_result = super::compile_sfc(
+        &options_descriptor,
+        crate::types::SfcCompileOptions::default(),
+    )
+    .expect("compile");
+
+    fn render_fn(code: &str) -> &str {
+        let start = code
+            .find("function _sfc_render(")
+            .expect("render function present");
+        &code[start..]
+    }
+    assert_eq!(
+        render_fn(&result.code),
+        render_fn(&options_result.code),
+        "class component render function must match the Options API equivalent"
+    );
+}
