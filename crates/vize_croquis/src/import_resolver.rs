@@ -14,8 +14,14 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use dashmap::DashMap;
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Declaration, Statement, TSInterfaceDeclaration, TSTypeAliasDeclaration};
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
 use serde::Deserialize;
-use vize_carton::{CompactString, FxHashMap, String, ToCompactString, cstr, profiler::CacheStats};
+use vize_carton::{
+    CompactString, FxHashMap, String, ToCompactString, profile, profiler::CacheStats,
+};
 
 /// Resolved module information
 #[derive(Debug, Clone)]
@@ -377,42 +383,65 @@ impl ImportResolver {
 
     /// Extract type definitions from a module's content
     ///
-    /// Extracts interface and type alias definitions that can be used
-    /// for type resolution in defineProps/defineEmits.
+    /// Parses the module with OXC and collects exported `interface` and
+    /// `type` alias declarations — including locally declared types that are
+    /// surfaced through `export { ... }` / `export type { ... }` specifiers —
+    /// so they can be used for type resolution in defineProps/defineEmits.
+    ///
+    /// The parse is lazy: it only runs when a caller actually requests
+    /// cross-file type definitions for a resolved module, so sources without
+    /// type imports never pay for it. The resolved module's content is not
+    /// parsed anywhere else, so this is its first and only parse.
     pub fn extract_type_definitions(
         &self,
         content: &str,
     ) -> FxHashMap<CompactString, CompactString> {
         let mut definitions = FxHashMap::default();
 
-        // Simple regex-based extraction for common patterns
-        // TODO: Use OXC for more accurate parsing
-
-        // Extract interface definitions
-        let interface_re = regex::Regex::new(
-            r"(?s)export\s+interface\s+(\w+)(?:<[^>]*>)?\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}",
+        let allocator = Allocator::default();
+        let source_type = SourceType::from_path("module.ts").unwrap_or_default();
+        let ret = profile!(
+            "croquis.import_resolver.oxc_parse",
+            Parser::new(&allocator, content, source_type).parse()
         );
-        if let Ok(re) = interface_re {
-            for cap in re.captures_iter(content) {
-                if let (Some(name), Some(body)) = (cap.get(1), cap.get(2)) {
-                    definitions.insert(
-                        CompactString::new(name.as_str()),
-                        cstr!("{{ {} }}", body.as_str().trim()),
-                    );
+        if ret.panicked {
+            return definitions;
+        }
+
+        // Locally declared (non-exported) types, kept so export specifiers
+        // (`export { Name }`, possibly renamed) can surface them afterwards.
+        let mut local_definitions: FxHashMap<CompactString, CompactString> = FxHashMap::default();
+        // `(exported name, local name)` pairs from export specifiers.
+        let mut export_specifiers: Vec<(CompactString, CompactString)> = Vec::new();
+
+        for stmt in &ret.program.body {
+            match stmt {
+                Statement::ExportNamedDeclaration(export) => {
+                    if let Some(decl) = &export.declaration {
+                        record_type_declaration(decl, content, &mut definitions);
+                    }
+                    for spec in &export.specifiers {
+                        export_specifiers.push((
+                            CompactString::new(spec.exported.name().as_str()),
+                            CompactString::new(spec.local.name().as_str()),
+                        ));
+                    }
                 }
+                Statement::TSTypeAliasDeclaration(alias) => {
+                    record_type_alias(alias, content, &mut local_definitions);
+                }
+                Statement::TSInterfaceDeclaration(interface) => {
+                    record_interface(interface, content, &mut local_definitions);
+                }
+                _ => {}
             }
         }
 
-        // Extract type alias definitions
-        let type_re = regex::Regex::new(r"export\s+type\s+(\w+)(?:<[^>]*>)?\s*=\s*([^;]+);");
-        if let Ok(re) = type_re {
-            for cap in re.captures_iter(content) {
-                if let (Some(name), Some(body)) = (cap.get(1), cap.get(2)) {
-                    definitions.insert(
-                        CompactString::new(name.as_str()),
-                        CompactString::new(body.as_str().trim()),
-                    );
-                }
+        // Export specifiers may appear before or after the declaration they
+        // reference, so resolve them once the whole module body is walked.
+        for (exported, local) in export_specifiers {
+            if let Some(body) = local_definitions.get(&local) {
+                definitions.insert(exported, body.clone());
             }
         }
 
@@ -455,6 +484,47 @@ impl Default for ImportResolver {
     fn default() -> Self {
         Self::new(std::env::current_dir().unwrap_or_default())
     }
+}
+
+/// Record an exported `interface` / `type` alias declaration.
+fn record_type_declaration(
+    decl: &Declaration<'_>,
+    content: &str,
+    definitions: &mut FxHashMap<CompactString, CompactString>,
+) {
+    match decl {
+        Declaration::TSTypeAliasDeclaration(alias) => {
+            record_type_alias(alias, content, definitions);
+        }
+        Declaration::TSInterfaceDeclaration(interface) => {
+            record_interface(interface, content, definitions);
+        }
+        _ => {}
+    }
+}
+
+/// Record a `type Name = ...` alias as `Name -> RHS source text`.
+fn record_type_alias(
+    alias: &TSTypeAliasDeclaration<'_>,
+    content: &str,
+    definitions: &mut FxHashMap<CompactString, CompactString>,
+) {
+    definitions.insert(
+        CompactString::new(alias.id.name.as_str()),
+        CompactString::new(alias.type_annotation.span().source_text(content).trim()),
+    );
+}
+
+/// Record an `interface Name { ... }` declaration as `Name -> { body } source text`.
+fn record_interface(
+    interface: &TSInterfaceDeclaration<'_>,
+    content: &str,
+    definitions: &mut FxHashMap<CompactString, CompactString>,
+) {
+    definitions.insert(
+        CompactString::new(interface.id.name.as_str()),
+        CompactString::new(interface.body.span.source_text(content)),
+    );
 }
 
 #[cfg(test)]
@@ -530,6 +600,125 @@ mod tests {
         let defs = resolver.extract_type_definitions(content);
         assert!(defs.contains_key("Props"));
         assert!(defs.contains_key("Emits"));
+    }
+
+    #[test]
+    fn test_extract_ignores_strings_and_comments() {
+        let resolver = ImportResolver::default();
+        let content = r#"
+            // export interface FakeComment { a: string }
+            /* export interface FakeBlock { b: number }
+               export type FakeBlockAlias = string; */
+            const snippet = "export interface FakeString { c: boolean }";
+            export const tpl = `export type FakeTemplate = number;`;
+            export interface Real { value: number }
+        "#;
+
+        let defs = resolver.extract_type_definitions(content);
+        assert!(defs.contains_key("Real"));
+        assert!(!defs.contains_key("FakeComment"));
+        assert!(!defs.contains_key("FakeBlock"));
+        assert!(!defs.contains_key("FakeBlockAlias"));
+        assert!(!defs.contains_key("FakeString"));
+        assert!(!defs.contains_key("FakeTemplate"));
+    }
+
+    #[test]
+    fn test_extract_generic_interface() {
+        let resolver = ImportResolver::default();
+        // Nested generics (`Record<string, unknown>`) defeat naive `<[^>]*>`
+        // scanning because the first `>` is not the end of the param list.
+        let content = r#"
+            export interface Box<T extends Record<string, unknown>> {
+                value: T;
+                items: Array<T>;
+            }
+        "#;
+
+        let defs = resolver.extract_type_definitions(content);
+        let body = defs.get("Box").expect("generic interface extracted");
+        assert!(body.contains("value: T"));
+        assert!(body.contains("items: Array<T>"));
+    }
+
+    #[test]
+    fn test_extract_multi_line_nested_interface() {
+        let resolver = ImportResolver::default();
+        // Two levels of brace nesting break one-level-deep text scanning.
+        let content = r#"
+            export interface Outer {
+                nested: {
+                    deep: { a: string };
+                };
+                sibling: number;
+            }
+        "#;
+
+        let defs = resolver.extract_type_definitions(content);
+        let body = defs.get("Outer").expect("nested interface extracted");
+        assert!(body.contains("deep: { a: string }"));
+        assert!(body.contains("sibling: number"));
+    }
+
+    #[test]
+    fn test_extract_union_and_intersection_aliases() {
+        let resolver = ImportResolver::default();
+        let content = r#"
+            export type Status =
+                | 'active'
+                | 'inactive'
+                | 'pending';
+            export type Mixed = { base: string } & { extra: boolean };
+            export type Handlers = { (e: 'click'): void; (e: 'change', v: string): void };
+        "#;
+
+        let defs = resolver.extract_type_definitions(content);
+
+        let status = defs.get("Status").expect("union alias extracted");
+        assert!(status.contains("'active'"));
+        assert!(status.contains("'pending'"));
+
+        let mixed = defs.get("Mixed").expect("intersection alias extracted");
+        assert!(mixed.contains("{ base: string }"));
+        assert!(mixed.contains('&'));
+        assert!(mixed.contains("{ extra: boolean }"));
+
+        // Semicolon-terminated scanning truncated the body at the first `;`
+        // inside the object type; the AST keeps both call signatures.
+        let handlers = defs.get("Handlers").expect("object alias extracted");
+        assert!(handlers.contains("(e: 'click'): void"));
+        assert!(handlers.contains("(e: 'change', v: string): void"));
+    }
+
+    #[test]
+    fn test_extract_reexported_local_types() {
+        let resolver = ImportResolver::default();
+        let content = r#"
+            export type { Emits as PublicEmits };
+            interface Props { msg: string }
+            type Emits = (e: 'click') => void;
+            export { Props };
+        "#;
+
+        let defs = resolver.extract_type_definitions(content);
+        assert!(defs.contains_key("Props"));
+        assert!(defs.contains_key("PublicEmits"));
+        assert!(!defs.contains_key("Emits"));
+    }
+
+    #[test]
+    fn test_extract_skips_non_exported_types() {
+        let resolver = ImportResolver::default();
+        let content = r#"
+            interface Hidden { a: string }
+            type AlsoHidden = number;
+            export interface Visible { b: string }
+        "#;
+
+        let defs = resolver.extract_type_definitions(content);
+        assert!(defs.contains_key("Visible"));
+        assert!(!defs.contains_key("Hidden"));
+        assert!(!defs.contains_key("AlsoHidden"));
     }
 
     #[test]
