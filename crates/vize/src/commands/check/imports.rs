@@ -13,6 +13,8 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
+use super::path_cache::CanonicalPathCache;
+
 /// Source extensions whose imports carry TypeScript types worth pulling into the
 /// virtual project, in module-resolution precedence order.
 ///
@@ -25,13 +27,17 @@ const RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".vue", ".mts", ".cts"];
 /// Walk the relative-import graph reachable from `roots` and return the extra
 /// on-disk source files that should be registered alongside them. The roots
 /// themselves are excluded from the result; every returned path is absolute.
-pub(super) fn collect_transitive_local_imports(roots: &[PathBuf], cwd: &Path) -> Vec<PathBuf> {
+pub(super) fn collect_transitive_local_imports(
+    roots: &[PathBuf],
+    cwd: &Path,
+    canonical_paths: &mut CanonicalPathCache,
+) -> Vec<PathBuf> {
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut queue: Vec<PathBuf> = Vec::new();
 
     // Seed the visited set with the roots so they are never re-registered.
     for root in roots {
-        if let Some(absolute) = absolutize(root, cwd)
+        if let Some(absolute) = absolutize(root, cwd, canonical_paths)
             && visited.insert(absolute.clone())
         {
             queue.push(absolute);
@@ -51,7 +57,7 @@ pub(super) fn collect_transitive_local_imports(roots: &[PathBuf], cwd: &Path) ->
         // `import`/`from` string operands, so an SFC's `<template>`/`<style>`
         // are inert and no `.vue` parse is needed on this hot path.
         for specifier in extract_relative_specifiers(&source) {
-            let Some(resolved) = resolve_relative_import(dir, &specifier) else {
+            let Some(resolved) = resolve_relative_import(dir, &specifier, canonical_paths) else {
                 continue;
             };
             // Never register an ambient declaration file — its `declare module`
@@ -71,13 +77,17 @@ pub(super) fn collect_transitive_local_imports(roots: &[PathBuf], cwd: &Path) ->
 
 /// Resolve `path` against `cwd` and canonicalize it so duplicate registrations
 /// of the same file under different spellings collapse.
-fn absolutize(path: &Path, cwd: &Path) -> Option<PathBuf> {
+fn absolutize(
+    path: &Path,
+    cwd: &Path,
+    canonical_paths: &mut CanonicalPathCache,
+) -> Option<PathBuf> {
     let joined = if path.is_absolute() {
         path.to_path_buf()
     } else {
         cwd.join(path)
     };
-    Some(joined.canonicalize().unwrap_or(joined))
+    Some(canonical_paths.canonicalize(&joined))
 }
 
 /// Collect the relative (`./`, `../`) module specifiers of `source`'s `import` /
@@ -161,16 +171,20 @@ fn is_relative_specifier(specifier: &str) -> bool {
 /// Resolve a relative module specifier against `dir` to an existing on-disk
 /// source file, mirroring TypeScript's extension and `index` probing (including
 /// the `.js` → `.ts` rewrite used under bundler/Node-ESM resolution).
-fn resolve_relative_import(dir: &Path, specifier: &str) -> Option<PathBuf> {
+fn resolve_relative_import(
+    dir: &Path,
+    specifier: &str,
+    canonical_paths: &mut CanonicalPathCache,
+) -> Option<PathBuf> {
     let base = dir.join(specifier);
 
     // 1. The specifier already points at an existing source file.
     if has_source_extension(&base) && base.is_file() {
-        return canonicalize(&base);
+        return Some(canonical_paths.canonicalize(&base));
     }
 
     // 2. A `.js`/`.mjs`/`.cjs` specifier resolving to its `.ts`/`.tsx` sibling.
-    if let Some(rewritten) = rewrite_js_to_ts(&base) {
+    if let Some(rewritten) = rewrite_js_to_ts(&base, canonical_paths) {
         return Some(rewritten);
     }
 
@@ -178,7 +192,7 @@ fn resolve_relative_import(dir: &Path, specifier: &str) -> Option<PathBuf> {
     for ext in RESOLVE_EXTENSIONS {
         let candidate = append_extension(&base, ext);
         if candidate.is_file() {
-            return canonicalize(&candidate);
+            return Some(canonical_paths.canonicalize(&candidate));
         }
     }
 
@@ -186,14 +200,14 @@ fn resolve_relative_import(dir: &Path, specifier: &str) -> Option<PathBuf> {
     for ext in RESOLVE_EXTENSIONS {
         let candidate = base.join(cstr_index(ext));
         if candidate.is_file() {
-            return canonicalize(&candidate);
+            return Some(canonical_paths.canonicalize(&candidate));
         }
     }
 
     None
 }
 
-fn rewrite_js_to_ts(base: &Path) -> Option<PathBuf> {
+fn rewrite_js_to_ts(base: &Path, canonical_paths: &mut CanonicalPathCache) -> Option<PathBuf> {
     let name = base.file_name()?.to_str()?;
     let stem = name
         .strip_suffix(".js")
@@ -202,7 +216,7 @@ fn rewrite_js_to_ts(base: &Path) -> Option<PathBuf> {
     for ext in [".ts", ".tsx", ".mts", ".cts"] {
         let candidate = base.with_file_name(cstr!("{stem}{ext}"));
         if candidate.is_file() {
-            return canonicalize(&candidate);
+            return Some(canonical_paths.canonicalize(&candidate));
         }
     }
     None
@@ -236,10 +250,6 @@ fn append_extension(base: &Path, ext: &str) -> PathBuf {
 
 fn cstr_index(ext: &str) -> String {
     cstr!("index{ext}")
-}
-
-fn canonicalize(path: &Path) -> Option<PathBuf> {
-    Some(path.canonicalize().unwrap_or_else(|_| path.to_path_buf()))
 }
 
 #[cfg(test)]
@@ -278,7 +288,11 @@ mod tests {
         );
         let util = write(&root, "src/nested/util.ts", "export const helper = 1\n");
 
-        let discovered = collect_transitive_local_imports(&[app.clone()], &root);
+        let discovered = collect_transitive_local_imports(
+            std::slice::from_ref(&app),
+            &root,
+            &mut CanonicalPathCache::default(),
+        );
 
         let canon = |p: &Path| p.canonicalize().unwrap();
         assert!(discovered.contains(&canon(&types)));
@@ -302,7 +316,8 @@ mod tests {
             "import { ref } from 'vue'\nimport { gone } from './missing'\nexport const a = ref(0)\nvoid gone\n",
         );
 
-        let discovered = collect_transitive_local_imports(&[entry], &root);
+        let discovered =
+            collect_transitive_local_imports(&[entry], &root, &mut CanonicalPathCache::default());
         assert!(discovered.is_empty());
 
         let _ = std::fs::remove_dir_all(&root);

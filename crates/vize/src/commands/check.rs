@@ -6,6 +6,7 @@
 mod dts;
 mod imports;
 mod nuxt;
+mod path_cache;
 mod reporting;
 mod runner;
 mod tsconfig_inputs;

@@ -5,6 +5,7 @@ use std::{fs, path::Path, path::PathBuf};
 
 use vize_carton::{FxHashSet, String as CompactString, cstr, profile, profiler::global_profiler};
 
+use crate::commands::check::path_cache::CanonicalPathCache;
 use crate::commands::check::reporting::JsonOutput;
 
 pub(super) fn emit_json_output(json_output: JsonOutput) {
@@ -22,15 +23,18 @@ pub(super) fn emit_json_output(json_output: JsonOutput) {
 /// and transitively-registered files exist only to resolve cross-file types.
 /// Project-level diagnostics (anchored to a tsconfig or the project root, not
 /// a source file) describe the whole check and are always reported.
-pub(super) fn is_reported(reported: &Option<FxHashSet<PathBuf>>, path: &Path) -> bool {
+pub(super) fn is_reported(
+    reported: &Option<FxHashSet<PathBuf>>,
+    path: &Path,
+    canonical_paths: &mut CanonicalPathCache,
+) -> bool {
     match reported {
         None => true,
         Some(set) => {
             if !is_source_path(path) {
                 return true;
             }
-            let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
-            set.contains(&canonical)
+            set.contains(&canonical_paths.canonicalize(path))
         }
     }
 }

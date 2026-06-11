@@ -6,7 +6,7 @@ use ignore::WalkBuilder;
 use vize_carton::FxHashSet;
 
 use super::glob::{default_exclude_specs, normalize_input_path, normalize_walked_path};
-use super::loader::{collect_tsconfig_project_paths, load_tsconfig_inputs};
+use super::loader::{TsconfigInputCache, collect_tsconfig_project_paths};
 use super::matching::{
     is_generated_path, is_hidden_path_segment, is_supported_check_file, matches_tsconfig_patterns,
     should_skip_generated_for_root,
@@ -122,6 +122,7 @@ fn hidden_pattern_root(base_dir: &Path, pattern: &str) -> Option<PathBuf> {
 pub(crate) fn resolve_tsconfig_for_files(
     tsconfig_path: Option<&Path>,
     files: &[PathBuf],
+    cache: &mut TsconfigInputCache,
 ) -> Option<PathBuf> {
     let tsconfig_path = tsconfig_path?;
     let projects = collect_tsconfig_project_paths(tsconfig_path);
@@ -138,63 +139,106 @@ pub(crate) fn resolve_tsconfig_for_files(
         return Some(root_project);
     }
 
-    if let Some(owner) = projects
+    // Load each candidate project's input spec exactly once and precompile its
+    // ownership matcher, so the per-file checks below are pure in-memory glob
+    // matches instead of re-reading the tsconfig chain for every file.
+    let matchers = projects
         .iter()
-        .find(|project| files.iter().all(|file| tsconfig_owns_file(project, file)))
+        .map(|project| TsconfigOwnershipMatcher::load(project, cache))
+        .collect::<Vec<_>>();
+
+    if let Some((owner, _)) = projects
+        .iter()
+        .zip(&matchers)
+        .find(|(_, matcher)| files.iter().all(|file| matcher.owns(file)))
     {
         return Some(owner.clone());
     }
 
-    let mut shared_owner = None::<PathBuf>;
+    let mut shared_owner = None::<&PathBuf>;
     for file in &files {
-        let Some(owner) = projects
+        let Some((owner, _)) = projects
             .iter()
-            .find(|project| tsconfig_owns_file(project, file))
+            .zip(&matchers)
+            .find(|(_, matcher)| matcher.owns(file))
         else {
             return Some(root_project);
         };
-        match &shared_owner {
+        match shared_owner {
             Some(shared) if shared != owner => return Some(root_project),
             Some(_) => {}
-            None => shared_owner = Some(owner.clone()),
+            None => shared_owner = Some(owner),
         }
     }
 
-    shared_owner.or(Some(root_project))
+    shared_owner.cloned().or(Some(root_project))
 }
 
-fn tsconfig_owns_file(tsconfig_path: &Path, file: &Path) -> bool {
-    let Some(spec) = load_tsconfig_inputs(tsconfig_path) else {
-        return false;
-    };
-    let file = normalize_input_path(file);
-    if spec
-        .files
-        .iter()
-        .any(|entry| normalize_input_path(&entry.resolve()) == file)
-    {
-        return true;
+/// Precompiled ownership matcher for one tsconfig project: the canonicalized
+/// `files` entries plus the effective include/exclude globs (with tsc's
+/// defaults applied), built once per project so matching N files needs no
+/// further I/O or glob compilation.
+struct TsconfigOwnershipMatcher {
+    /// Whether the tsconfig chain loaded; an unreadable tsconfig owns nothing.
+    loaded: bool,
+    files: FxHashSet<PathBuf>,
+    includes: Vec<GlobSpec>,
+    excludes: Vec<GlobSpec>,
+}
+
+impl TsconfigOwnershipMatcher {
+    fn load(tsconfig_path: &Path, cache: &mut TsconfigInputCache) -> Self {
+        let Some(spec) = cache.load(tsconfig_path) else {
+            return Self {
+                loaded: false,
+                files: FxHashSet::default(),
+                includes: Vec::new(),
+                excludes: Vec::new(),
+            };
+        };
+
+        let files = spec
+            .files
+            .iter()
+            .map(|entry| normalize_input_path(&entry.resolve()))
+            .collect();
+        let default_base_dir = tsconfig_path
+            .parent()
+            .map(Path::to_path_buf)
+            .unwrap_or_default();
+        let includes = if !spec.has_includes && !spec.has_files {
+            GlobSpec::new(&default_base_dir, "**/*")
+                .into_iter()
+                .collect::<Vec<_>>()
+        } else {
+            spec.includes.clone()
+        };
+        let excludes = if !spec.has_excludes {
+            default_exclude_specs(&default_base_dir)
+        } else {
+            spec.excludes.clone()
+        };
+
+        Self {
+            loaded: true,
+            files,
+            includes,
+            excludes,
+        }
     }
 
-    let default_base_dir = tsconfig_path
-        .parent()
-        .map(Path::to_path_buf)
-        .unwrap_or_default();
-    let includes = if !spec.has_includes && !spec.has_files {
-        GlobSpec::new(&default_base_dir, "**/*")
-            .into_iter()
-            .collect::<Vec<_>>()
-    } else {
-        spec.includes
-    };
-    if includes.is_empty() || !is_supported_check_file(&file) {
-        return false;
+    /// Whether this project owns `file`, which must already be normalized via
+    /// `normalize_input_path`.
+    fn owns(&self, file: &Path) -> bool {
+        if !self.loaded {
+            return false;
+        }
+        if self.files.contains(file) {
+            return true;
+        }
+        if self.includes.is_empty() || !is_supported_check_file(file) {
+            return false;
+        }
+        matches_tsconfig_patterns(file, &self.includes, &self.excludes)
     }
-    let excludes = if !spec.has_excludes {
-        default_exclude_specs(&default_base_dir)
-    } else {
-        spec.excludes
-    };
-
-    matches_tsconfig_patterns(&file, &includes, &excludes)
 }

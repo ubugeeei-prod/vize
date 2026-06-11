@@ -2,13 +2,35 @@
 
 #![allow(clippy::disallowed_macros, clippy::disallowed_types)]
 
-use super::{
-    collect_ambient_declaration_files, collect_default_check_files,
-    load_tsconfig_declaration_options, resolve_extended_tsconfig, resolve_tsconfig_for_files,
-};
+use super::{TsconfigInputCache, load_tsconfig_declaration_options, resolve_extended_tsconfig};
 use std::fs;
 use std::path::{Path, PathBuf};
 use vize_carton::cstr;
+
+// Each call uses a fresh run-scoped cache, mirroring how an actual `vize
+// check` run constructs one `TsconfigInputCache` per invocation.
+fn collect_default_check_files(project_root: &Path, tsconfig_path: Option<&Path>) -> Vec<PathBuf> {
+    super::collect_default_check_files(
+        project_root,
+        tsconfig_path,
+        &mut TsconfigInputCache::default(),
+    )
+}
+
+fn collect_ambient_declaration_files(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+) -> Vec<PathBuf> {
+    super::collect_ambient_declaration_files(
+        project_root,
+        tsconfig_path,
+        &mut TsconfigInputCache::default(),
+    )
+}
+
+fn resolve_tsconfig_for_files(tsconfig_path: Option<&Path>, files: &[PathBuf]) -> Option<PathBuf> {
+    super::resolve_tsconfig_for_files(tsconfig_path, files, &mut TsconfigInputCache::default())
+}
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
@@ -1079,6 +1101,63 @@ fn owner_resolution_falls_back_to_root_for_an_unowned_file() {
     let owner = resolve_tsconfig_for_files(Some(&root), &[unowned]);
 
     assert_eq!(owner, Some(root.canonicalize().unwrap_or(root.clone())));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn shared_run_cache_matches_fresh_cache_results() {
+    let case_dir = unique_case_dir("tsconfig-shared-cache");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    let app = case_dir.join("src/App.vue");
+    let main = case_dir.join("src/main.ts");
+    fs::write(&app, "<template />").unwrap();
+    fs::write(&main, "export const ok = true").unwrap();
+    fs::write(
+        case_dir.join("src/globals.d.ts"),
+        "declare const FLAG: boolean",
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts"] }"#,
+    )
+    .unwrap();
+    let tsconfig = case_dir.join("tsconfig.json");
+
+    // One run-scoped cache shared across owner resolution (twice), default
+    // collection, and ambient collection must match per-call fresh caches.
+    let mut cache = TsconfigInputCache::default();
+    let owner_shared = super::resolve_tsconfig_for_files(
+        Some(&tsconfig),
+        &[app.clone(), main.clone()],
+        &mut cache,
+    );
+    let owner_shared_again =
+        super::resolve_tsconfig_for_files(Some(&tsconfig), &[app.clone()], &mut cache);
+    let files_shared = super::collect_default_check_files(&case_dir, Some(&tsconfig), &mut cache);
+    let ambient_shared =
+        super::collect_ambient_declaration_files(&case_dir, Some(&tsconfig), &mut cache);
+
+    assert_eq!(
+        owner_shared,
+        resolve_tsconfig_for_files(Some(&tsconfig), &[app.clone(), main])
+    );
+    assert_eq!(
+        owner_shared_again,
+        resolve_tsconfig_for_files(Some(&tsconfig), &[app])
+    );
+    assert_eq!(
+        files_shared,
+        collect_default_check_files(&case_dir, Some(&tsconfig))
+    );
+    assert_eq!(
+        ambient_shared,
+        collect_ambient_declaration_files(&case_dir, Some(&tsconfig))
+    );
+    assert_eq!(files_shared.len(), 3);
+    assert_eq!(ambient_shared.len(), 1);
 
     let _ = fs::remove_dir_all(&case_dir);
 }

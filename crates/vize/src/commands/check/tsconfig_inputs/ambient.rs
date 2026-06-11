@@ -10,6 +10,7 @@ use vize_carton::FxHashSet;
 use super::NODE_MODULES_DIR;
 use super::collect_default_check_files_inner;
 use super::glob::normalize_input_path;
+use super::loader::TsconfigInputCache;
 use super::matching::path_has_component;
 
 /// Collect ambient declaration (`.d.ts`) files that belong to the tsconfig
@@ -30,9 +31,10 @@ use super::matching::path_has_component;
 pub(crate) fn collect_ambient_declaration_files(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
+    cache: &mut TsconfigInputCache,
 ) -> Vec<PathBuf> {
     let project_root = normalize_input_path(project_root);
-    let mut files = collect_default_check_files_inner(&project_root, tsconfig_path, true);
+    let mut files = collect_default_check_files_inner(&project_root, tsconfig_path, true, cache);
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut index = 0;
     while index < files.len() {

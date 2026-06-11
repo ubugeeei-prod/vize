@@ -6,7 +6,7 @@ use std::{
 };
 
 use serde_json::Value;
-use vize_carton::{FxHashSet, profile, profiler::global_profiler};
+use vize_carton::{FxHashMap, FxHashSet, profile, profiler::global_profiler};
 
 use super::glob::normalize_input_path;
 use super::jsonc::parse_jsonc_value;
@@ -42,7 +42,33 @@ fn collect_tsconfig_project_paths_inner(
     }
 }
 
-pub(super) fn load_tsconfig_inputs(tsconfig_path: &Path) -> Option<TsconfigInputSpec> {
+/// Run-scoped memo for merged tsconfig input specs, keyed by canonical
+/// tsconfig path.
+///
+/// Resolving tsconfig ownership for an explicit file subset asks the same
+/// tsconfig chain about every checked file; without a cache each question
+/// re-reads and re-parses the chain and recompiles every include/exclude
+/// `GlobSpec`. One cache per `vize check` run keeps that work at once per
+/// tsconfig with no cross-run staleness.
+#[derive(Default)]
+pub(crate) struct TsconfigInputCache {
+    specs: FxHashMap<PathBuf, Option<TsconfigInputSpec>>,
+}
+
+impl TsconfigInputCache {
+    /// Load (or reuse) the merged input spec for `tsconfig_path`. Returns
+    /// `None` when the tsconfig chain cannot be read, exactly like an uncached
+    /// `load_tsconfig_inputs` call.
+    pub(super) fn load(&mut self, tsconfig_path: &Path) -> Option<&TsconfigInputSpec> {
+        let resolved = normalize_input_path(tsconfig_path);
+        self.specs
+            .entry(resolved)
+            .or_insert_with_key(|resolved| load_tsconfig_inputs(resolved))
+            .as_ref()
+    }
+}
+
+fn load_tsconfig_inputs(tsconfig_path: &Path) -> Option<TsconfigInputSpec> {
     let mut seen = FxHashSet::default();
     load_tsconfig_inputs_inner(tsconfig_path, &mut seen).ok()
 }

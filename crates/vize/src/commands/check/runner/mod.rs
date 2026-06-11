@@ -24,9 +24,11 @@ use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print
 
 use super::{
     CheckArgs,
+    path_cache::CanonicalPathCache,
     reporting::{JsonFileResult, JsonOutput},
     tsconfig_inputs::{
-        collect_ambient_declaration_files, collect_default_check_files, resolve_tsconfig_for_files,
+        TsconfigInputCache, collect_ambient_declaration_files, collect_default_check_files,
+        resolve_tsconfig_for_files,
     },
 };
 
@@ -142,9 +144,19 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
+    // Run-scoped caches: tsconfig chains are parsed (and their include/exclude
+    // globs compiled) once per run, and each unique path is canonicalized at
+    // most once across reported-file bookkeeping, diagnostic filtering, and
+    // transitive import resolution.
+    let mut tsconfig_input_cache = TsconfigInputCache::default();
+    let mut canonical_paths = CanonicalPathCache::default();
     let collect_start = Instant::now();
     let mut files = if args.patterns.is_empty() {
-        collect_default_check_files(&project_root, tsconfig_path.as_deref())
+        collect_default_check_files(
+            &project_root,
+            tsconfig_path.as_deref(),
+            &mut tsconfig_input_cache,
+        )
     } else {
         collect_check_files(&args.patterns)
     };
@@ -166,7 +178,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         Some(
             files
                 .iter()
-                .map(|path| path.canonicalize().unwrap_or_else(|_| path.clone()))
+                .map(|path| canonical_paths.canonicalize(path))
                 .collect(),
         )
     };
@@ -197,7 +209,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // Do this before root resolution so cwd-external files without tsconfig can
     // still choose a materialization root covering all registered source files.
     if !args.patterns.is_empty() {
-        for path in super::imports::collect_transitive_local_imports(&files, &cwd) {
+        for path in
+            super::imports::collect_transitive_local_imports(&files, &cwd, &mut canonical_paths)
+        {
             if !files.contains(&path) {
                 files.push(path);
             }
@@ -212,7 +226,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let program_tsconfig_path = if args.patterns.is_empty() {
         tsconfig_path.clone()
     } else {
-        resolve_tsconfig_for_files(tsconfig_path.as_deref(), &explicit_files)
+        resolve_tsconfig_for_files(
+            tsconfig_path.as_deref(),
+            &explicit_files,
+            &mut tsconfig_input_cache,
+        )
     };
 
     // An explicit file subset (`vize check src/App.vue`) omits ambient
@@ -220,9 +238,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // would then be missing and surface as false `TS2304` errors. Pull the
     // tsconfig program's `.d.ts` files back in so global types stay in scope.
     if !args.patterns.is_empty() && program_tsconfig_path.is_some() {
-        for path in
-            collect_ambient_declaration_files(&project_root, program_tsconfig_path.as_deref())
-        {
+        for path in collect_ambient_declaration_files(
+            &project_root,
+            program_tsconfig_path.as_deref(),
+            &mut tsconfig_input_cache,
+        ) {
             if !files.contains(&path) {
                 files.push(path);
             }
@@ -390,7 +410,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         .diagnostics
         .iter()
         .filter(|diagnostic| {
-            if !is_reported(&reported_files, &diagnostic.file) {
+            if !is_reported(&reported_files, &diagnostic.file, &mut canonical_paths) {
                 return false;
             }
             !is_suppressed_false_positive(diagnostic)
@@ -504,7 +524,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     if args.format == "json" {
         let mut files_json: Vec<JsonFileResult> = virtual_files
             .iter()
-            .filter(|file| is_reported(&reported_files, &file.original_path))
+            .filter(|file| is_reported(&reported_files, &file.original_path, &mut canonical_paths))
             .map(|file| {
                 let key = file.original_path.to_string_lossy().into_owned();
                 JsonFileResult {

@@ -24,7 +24,7 @@ mod tests;
 pub(crate) use ambient::collect_ambient_declaration_files;
 pub(crate) use collect::resolve_tsconfig_for_files;
 pub(super) use jsonc::parse_jsonc_value;
-pub(crate) use loader::load_tsconfig_declaration_options;
+pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};
 pub(super) use loader::{read_extends_entries, resolve_extended_tsconfig};
 pub(crate) use spec::TsconfigDeclarationOptions;
 
@@ -32,9 +32,9 @@ use collect::{
     collect_supported_files, collect_supported_files_with_options, explicit_hidden_include_roots,
 };
 use glob::{default_exclude_specs, normalize_input_path};
-use loader::{collect_tsconfig_project_paths, load_tsconfig_inputs};
+use loader::collect_tsconfig_project_paths;
 use matching::is_supported_check_file;
-use spec::{FileCollectionOptions, GlobSpec};
+use spec::{FileCollectionOptions, GlobSpec, TsconfigInputSpec};
 
 const TARGET_DIR: &str = "target";
 const NODE_MODULES_DIR: &str = "node_modules";
@@ -43,14 +43,16 @@ const VIZE_CACHE_DIR: &str = ".vize";
 pub(crate) fn collect_default_check_files(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
+    cache: &mut TsconfigInputCache,
 ) -> Vec<PathBuf> {
-    collect_default_check_files_inner(project_root, tsconfig_path, false)
+    collect_default_check_files_inner(project_root, tsconfig_path, false, cache)
 }
 
 fn collect_default_check_files_inner(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
     include_hidden_tsconfig_roots: bool,
+    cache: &mut TsconfigInputCache,
 ) -> Vec<PathBuf> {
     let Some(tsconfig_path) = tsconfig_path else {
         return collect_supported_files(project_root, &[], &[]);
@@ -63,6 +65,7 @@ fn collect_default_check_files_inner(
             project_root,
             &tsconfig_path,
             include_hidden_tsconfig_roots,
+            cache,
             &mut files,
             &mut seen,
         );
@@ -76,12 +79,14 @@ fn collect_default_check_files_for_tsconfig(
     project_root: &Path,
     tsconfig_path: &Path,
     include_hidden_tsconfig_roots: bool,
+    cache: &mut TsconfigInputCache,
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
 ) {
-    let spec = load_tsconfig_inputs(tsconfig_path).unwrap_or_default();
+    let default_spec = TsconfigInputSpec::default();
+    let spec = cache.load(tsconfig_path).unwrap_or(&default_spec);
 
-    for file in spec.files {
+    for file in &spec.files {
         let resolved = normalize_input_path(&file.resolve());
         if resolved.starts_with(project_root)
             && resolved.is_file()
@@ -97,33 +102,37 @@ fn collect_default_check_files_for_tsconfig(
         .map(Path::to_path_buf)
         .unwrap_or_else(|| project_root.to_path_buf());
 
-    let includes = if !spec.has_includes && !spec.has_files && files.is_empty() {
-        GlobSpec::new(&default_base_dir, "**/*")
+    let default_includes;
+    let includes: &[GlobSpec] = if !spec.has_includes && !spec.has_files && files.is_empty() {
+        default_includes = GlobSpec::new(&default_base_dir, "**/*")
             .into_iter()
-            .collect::<Vec<_>>()
+            .collect::<Vec<_>>();
+        &default_includes
     } else {
-        spec.includes
+        &spec.includes
     };
 
-    let excludes = if !spec.has_excludes {
-        default_exclude_specs(&default_base_dir)
+    let default_excludes;
+    let excludes: &[GlobSpec] = if !spec.has_excludes {
+        default_excludes = default_exclude_specs(&default_base_dir);
+        &default_excludes
     } else {
-        spec.excludes
+        &spec.excludes
     };
 
     if !includes.is_empty() {
-        let collected = collect_supported_files(project_root, &includes, &excludes);
+        let collected = collect_supported_files(project_root, includes, excludes);
         for path in collected {
             if seen.insert(path.clone()) {
                 files.push(path);
             }
         }
         if include_hidden_tsconfig_roots {
-            for root in explicit_hidden_include_roots(project_root, &includes) {
+            for root in explicit_hidden_include_roots(project_root, includes) {
                 for path in collect_supported_files_with_options(
                     &root,
-                    &includes,
-                    &excludes,
+                    includes,
+                    excludes,
                     FileCollectionOptions {
                         include_hidden: true,
                     },
