@@ -2106,6 +2106,22 @@ export const ecosystemProductsApp: AppConfig = {
   },
 };
 
+export const nuxtParityApp: AppConfig = {
+  name: "nuxt-parity",
+  cwd: path.join(PROJECTS_DIR, "nuxt-parity"),
+  command: "",
+  args: [],
+  port: 0,
+  url: "",
+  mountSelector: "",
+  readyPattern: /./,
+  startupTimeout: 0,
+  check: {
+    cwd: path.join(PROJECTS_DIR, "nuxt-parity"),
+    patterns: ["pages/**/*.vue", "components/**/*.vue"],
+  },
+};
+
 export const SCREENSHOT_DIR = path.resolve(TESTS_DIR, "app", "screenshots");
 const BIN_EXT = process.platform === "win32" ? ".exe" : "";
 const VIZE_CI_BIN = path.resolve(TESTS_DIR, `../target/ci/vize${BIN_EXT}`);
