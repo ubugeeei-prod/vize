@@ -61,6 +61,7 @@ export const LINT_RULE_NAMES = [
   "html/no-empty-palpable-content",
   "html/require-datetime",
   "petite-vue/no-unsupported-directive",
+  "petite-vue/valid-v-scope",
   "script/no-async-in-computed",
   "script/no-deep-destructure-in-props",
   "script/no-dupe-keys",
