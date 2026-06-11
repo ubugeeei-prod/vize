@@ -105,6 +105,7 @@ export const LINT_RULE_NAMES = [
   "vue/mustache-interpolation-spacing",
   "vue/no-boolean-attr-value",
   "vue/no-child-content",
+  "vue/no-deprecated-v-on-native-modifier",
   "vue/no-dupe-v-else-if",
   "vue/no-duplicate-attributes",
   "vue/no-inline-style",
