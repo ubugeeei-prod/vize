@@ -228,6 +228,79 @@ fn test_options_api_template_bindings_use_default_instance_type() {
 }
 
 #[test]
+fn test_class_component_default_export_keeps_decorators_on_class() {
+    // vue-class-component / vue-property-decorator: a decorated class default
+    // export must become a standalone class declaration plus a
+    // `const __default__ = Foo` alias. The decorator must stay on a real class
+    // declaration (never on a `const`/class expression — TS1206).
+    let script = r#"import { Vue } from 'vue-class-component'
+import { Component, Prop } from 'vue-property-decorator'
+
+@Component
+export default class Counter extends Vue {
+  @Prop() readonly initial!: number
+  count = 0
+  get doubled() {
+    return this.count * 2
+  }
+  bump() {
+    this.count += 1
+  }
+}
+"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, "<div>{{ count }}{{ doubled }}</div>");
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
+        .with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        output.code.contains("@Component"),
+        "the class-level decorator must be preserved:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("class Counter extends Vue {"),
+        "the class must stay a standalone class declaration:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("const __default__ = Counter"),
+        "the class must be aliased to __default__ by name:\n{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("__default__ = class"),
+        "the class must not become a class expression assigned to a const (TS1206):\n{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("export default class"),
+        "the `export default` keyword must be stripped off the class declaration:\n{}",
+        output.code
+    );
+    // The instance-type bridge resolves template bindings against the class
+    // instance (`typeof __default__` -> InstanceType), not bare `any`.
+    assert!(
+        output
+            .code
+            .contains("const count: __VizeOptionsBinding<typeof __default__, \"count\">"),
+        "class members must be typed from the class instance:\n{}",
+        output.code
+    );
+}
+
+#[test]
 fn test_script_setup_output_does_not_emit_options_api_bridge() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 

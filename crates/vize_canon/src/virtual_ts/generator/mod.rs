@@ -16,7 +16,7 @@ use self::imports::{
     extract_declared_name,
 };
 use self::options_api::{
-    find_plain_default_export_object, generate_options_api_bridge, generate_options_api_variables,
+    find_default_export_targets, generate_options_api_bridge, generate_options_api_variables,
 };
 use self::spans::{
     DEFINE_COMPONENT_HELPER, DEFINE_COMPONENT_REF, collect_template_referenced_names,
@@ -214,19 +214,27 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .iter()
         .any(|scope| matches!(scope.kind, ScopeKind::NonScriptSetup));
 
-    // Plain `export default { ... }` in the main <script> block (the Options
-    // API shape) gets wrapped with Vue's `defineComponent` so `this` inside
-    // computed/methods is typed by Vue's options machinery. Script setup
-    // virtual TS is never touched: in setup-only SFCs no wrap target exists,
-    // so the helper lookup is skipped entirely.
-    let default_export_object = if !has_script_setup || has_plain_script_scope {
+    // Classify the main `<script>` default export in one parse. A plain
+    // `export default { ... }` (Options API shape) gets wrapped with Vue's
+    // `defineComponent` so `this` inside computed/methods is typed by Vue's
+    // options machinery; a class default export (class-component shape) keeps
+    // its decorators on a standalone class declaration plus a
+    // `const __default__ =` alias (a bare `const __default__ = class {}`
+    // rewrite would move the decorators onto a class expression — TS1206).
+    // Script setup virtual TS is never touched: in setup-only SFCs no rewrite
+    // target exists, so the lookup is skipped entirely.
+    let default_export_targets = if !has_script_setup || has_plain_script_scope {
         profile!(
-            "canon.virtual_ts.find_default_export_object",
-            script_content.and_then(find_plain_default_export_object)
+            "canon.virtual_ts.find_default_export_targets",
+            script_content
+                .map(find_default_export_targets)
+                .unwrap_or_default()
         )
     } else {
-        None
+        Default::default()
     };
+    let default_export_object = default_export_targets.object;
+    let default_export_class = default_export_targets.class;
     if default_export_object.is_some() {
         ts.push_str(DEFINE_COMPONENT_HELPER);
     }
@@ -462,6 +470,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // closing brace; the matching `)` for the `defineComponent(` wrap
             // opened on an earlier line is inserted there.
             let mut pending_wrap_close: Option<usize> = None;
+            // A class default export (class component) keeps its decorators on
+            // a real class declaration; the `const __default__ = <Name>` alias
+            // is appended once the class body closes. Holds `(class_end, name)`
+            // (script-absolute end offset + class identifier).
+            let mut pending_class_alias: Option<(usize, &str)> = None;
 
             // Check if script uses import.meta and add a polyfill variable.
             // This avoids TS1343 when module is not set to es2020+.
@@ -525,25 +538,59 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     .filter(|rest| rest.chars().next().is_none_or(char::is_whitespace))
                 {
                     let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
+                    // A class default export (the class-component shape) stays
+                    // a real class declaration so `@Component()` decorators
+                    // remain valid (a bare `const __default__ = class {}`
+                    // rewrite moves them onto a class expression — TS1206). The
+                    // `const __default__ = <Name>` alias is deferred until the
+                    // class body closes.
+                    let class_default =
+                        if has_script_setup || matches!(output_line, std::borrow::Cow::Owned(_)) {
+                            None
+                        } else {
+                            default_export_class.filter(
+                                |&(export_start, class_start, class_end, _, _)| {
+                                    export_start >= line_start
+                                        && class_start >= line_start
+                                        && class_start < line_end
+                                        && class_end > line_start
+                                        && class_start - line_start <= line.len()
+                                        && line.is_char_boundary(class_start - line_start)
+                                },
+                            )
+                        };
                     // Wrap a plain object-literal default export (Options
                     // API) with `defineComponent` so `this` in
                     // computed/methods gets Vue's instance typing. Applies
                     // only to the plain <script> block; any other shape keeps
                     // the bare `const __default__ =` rewrite.
-                    let wrap_object =
-                        if has_script_setup || matches!(output_line, std::borrow::Cow::Owned(_)) {
-                            None
-                        } else {
-                            default_export_object.filter(|&(export_start, object_start, _)| {
-                                export_start >= line_start
-                                    && object_start >= line_start
-                                    && object_start < line_end
-                                    && object_start - line_start <= line.len()
-                                    && line[object_start - line_start..].starts_with('{')
-                            })
-                        };
+                    let wrap_object = if class_default.is_some()
+                        || has_script_setup
+                        || matches!(output_line, std::borrow::Cow::Owned(_))
+                    {
+                        None
+                    } else {
+                        default_export_object.filter(|&(export_start, object_start, _)| {
+                            export_start >= line_start
+                                && object_start >= line_start
+                                && object_start < line_end
+                                && object_start - line_start <= line.len()
+                                && line[object_start - line_start..].starts_with('{')
+                        })
+                    };
                     #[allow(clippy::disallowed_types)]
-                    if let Some((object_column, object_end)) =
+                    if let Some((class_start, class_end, name_start, name_end)) =
+                        class_default.map(|(_, cs, ce, ns, ne)| (cs, ce, ns, ne))
+                    {
+                        // Drop the `export default ` keyword, keep the class
+                        // (and any same-line trailing decorator) verbatim.
+                        let class_column = class_start - line_start;
+                        let name = &script[name_start..name_end];
+                        output_line = std::borrow::Cow::Owned(
+                            cstr!("{leading_ws}{}", &line[class_column..]).into(),
+                        );
+                        pending_class_alias = Some((class_end, name));
+                    } else if let Some((object_column, object_end)) =
                         wrap_object.and_then(|(_, object_start, object_end)| {
                             let object_column = object_start - line_start;
                             (line.len() - default_expr.len() <= object_column)
@@ -616,8 +663,22 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         sub_spans: Vec::new(),
                     });
                 }
+                // Once the class body has closed, append the deferred
+                // `const __default__ = <Name>` alias for the class component.
+                if let Some((class_end, name)) = pending_class_alias
+                    && class_end <= line_end
+                {
+                    append!(ts, "  const __default__ = {name};\n");
+                    pending_class_alias = None;
+                }
                 let _ = gen_line_start; // suppress unused warning
                 src_byte_offset += raw_byte_len;
+            }
+            if let Some((_, name)) = pending_class_alias.take() {
+                // Defensive: the line carrying the class body's closing brace
+                // was never seen; still emit the alias so `__default__` (and the
+                // template bindings that read `typeof __default__`) resolve.
+                append!(ts, "  const __default__ = {name};\n");
             }
             if pending_wrap_close.take().is_some() {
                 // Defensive: the line carrying the wrapped object's closing

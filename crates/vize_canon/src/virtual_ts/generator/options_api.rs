@@ -393,37 +393,78 @@ fn collect_mapped_type(call: &CallExpression<'_>, mapped_types: &mut Vec<String>
     mapped_types.push(mapped_type);
 }
 
-/// Locate a plain object-literal default export (`export default { ... }`) —
-/// the Options API component shape — in `script`.
+/// Byte offsets locating the rewriteable shape of a `<script>` default export.
 ///
-/// Returns `(export_start, object_start, object_end)` byte offsets into
-/// `script`. Default exports that are anything else — already-wrapped
-/// `defineComponent({...})` calls, class declarations, identifiers, function
-/// calls, `as`/`satisfies` expressions — return `None` so only the bare
-/// options object gets the `defineComponent` wrap.
-pub(super) fn find_plain_default_export_object(script: &str) -> Option<(usize, usize, usize)> {
+/// Both fields are offsets into the parsed `script`. A single default export is
+/// at most one of these (an SFC module has one default export), so at most one
+/// field is `Some`.
+#[derive(Default, Clone, Copy)]
+pub(super) struct DefaultExportTargets {
+    /// A plain object-literal default export (`export default { ... }`) — the
+    /// Options API shape — as `(export_start, object_start, object_end)`. Used
+    /// to wrap the object in `defineComponent` so `this` in computed/methods
+    /// gets Vue's instance typing. Anything else (already-wrapped
+    /// `defineComponent({...})`, identifiers, calls, `as`/`satisfies`) stays
+    /// `None` so only the bare options object is wrapped.
+    pub object: Option<(usize, usize, usize)>,
+    /// A class-declaration default export (`export default class Foo {}`, the
+    /// class-component shape — vue-class-component / vue-property-decorator) as
+    /// `(export_start, class_start, class_end, name_start, name_end)`.
+    /// `export_start..class_start` is the `export default ` keyword (stripped);
+    /// `class_start..class_end` is the class declaration; `name_start..name_end`
+    /// is the class identifier. Decorators written before `export default` sit
+    /// ahead of `export_start`; decorators after it fall inside the class span —
+    /// so stripping only the keyword run keeps `@Component()` on a real class
+    /// declaration either way (the line-based fallback would move it onto a
+    /// `const`, which TypeScript rejects with TS1206). Anonymous default classes
+    /// stay `None` (no name to alias by) and fall through to the existing
+    /// rewrite.
+    pub class: Option<(usize, usize, usize, usize, usize)>,
+}
+
+/// Classify a `<script>` default export in a single parse. Parsing once keeps
+/// the virtual-TS hot path free of a second full OXC parse per plain-`<script>`
+/// component.
+pub(super) fn find_default_export_targets(script: &str) -> DefaultExportTargets {
+    let mut targets = DefaultExportTargets::default();
     if !script.contains("export default") {
-        return None;
+        return targets;
     }
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
     if parsed.panicked {
-        return None;
+        return targets;
     }
-    parsed.program.body.iter().find_map(|statement| {
+    for statement in parsed.program.body.iter() {
         let Statement::ExportDefaultDeclaration(export) = statement else {
-            return None;
+            continue;
         };
-        let ExportDefaultDeclarationKind::ObjectExpression(object) = &export.declaration else {
-            return None;
-        };
-        let object_span = object.span();
-        Some((
-            export.span.start as usize,
-            object_span.start as usize,
-            object_span.end as usize,
-        ))
-    })
+        match &export.declaration {
+            ExportDefaultDeclarationKind::ObjectExpression(object) => {
+                let object_span = object.span();
+                targets.object = Some((
+                    export.span.start as usize,
+                    object_span.start as usize,
+                    object_span.end as usize,
+                ));
+            }
+            ExportDefaultDeclarationKind::ClassDeclaration(class) => {
+                if let Some(id) = class.id.as_ref() {
+                    targets.class = Some((
+                        export.span.start as usize,
+                        class.span.start as usize,
+                        class.span.end as usize,
+                        id.span.start as usize,
+                        id.span.end as usize,
+                    ));
+                }
+            }
+            _ => {}
+        }
+        // A module has a single default export; stop at the first one.
+        break;
+    }
+    targets
 }
 
 fn component_options_from_program<'a>(
