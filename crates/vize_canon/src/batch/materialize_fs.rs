@@ -32,10 +32,11 @@ pub(super) fn ensure_materialize_root(path: &Path) -> io::Result<()> {
 }
 
 pub(super) fn write_if_changed(path: &Path, content: &[u8]) -> io::Result<()> {
-    // For stable control files, skipping same-content writes matters more than
-    // saving the write syscall itself: TypeScript/Corsa watch file mtimes and may
-    // invalidate internal state when `tsconfig.json` or stubs are touched. The
-    // length check avoids reading most stale files before the byte comparison.
+    // Skipping same-content writes matters more than saving the write syscall
+    // itself: TypeScript/Corsa watch file mtimes and may invalidate internal
+    // state when `tsconfig.json`, stubs, or materialized sources are touched.
+    // The length check avoids reading most stale files before the byte
+    // comparison.
     match fs::symlink_metadata(path) {
         Ok(metadata) if !metadata.file_type().is_file() || metadata.file_type().is_symlink() => {
             remove_path(path)?;
@@ -69,21 +70,6 @@ pub(super) fn write_file(path: &Path, content: &[u8]) -> io::Result<()> {
             Err(error)
         }
     }
-}
-
-pub(super) fn write_file_untracked(path: &Path, content: &[u8]) -> io::Result<()> {
-    fs::write(path, content)
-}
-
-pub(super) fn record_write_batch(calls: u64, bytes: u64) {
-    if calls == 0 {
-        return;
-    }
-    let profiler = global_profiler();
-    profiler.record_counter("io.write.calls", calls);
-    profiler.record_counter("io.write.attempted_bytes", bytes);
-    profiler.record_counter("io.write.bytes", bytes);
-    profiler.record_counter("syscall.fs.write.calls", calls);
 }
 
 fn file_bytes_match(path: &Path, expected: &[u8]) -> io::Result<bool> {

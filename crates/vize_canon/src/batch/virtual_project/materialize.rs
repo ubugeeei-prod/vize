@@ -9,8 +9,7 @@ use vize_carton::{FxHashSet, String as CompactString, profile};
 
 use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::{
-    ensure_dir, ensure_materialize_root, prune_unexpected_entries, record_write_batch,
-    write_file_untracked, write_if_changed,
+    ensure_dir, ensure_materialize_root, prune_unexpected_entries, write_if_changed,
 };
 use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
@@ -21,10 +20,11 @@ impl VirtualProject {
     ///
     /// The materialized tree is a cache, but Corsa observes it as a real project.
     /// We therefore prune only entries outside the expected file/dir set and
-    /// preserve nested runtime dependencies under `node_modules`. File writes are
-    /// batched with directory creation de-duplicated per parent path; tsconfig and
-    /// other stable control files still use `write_if_changed` because touching
-    /// them can invalidate TypeScript's own filesystem caches.
+    /// preserve nested runtime dependencies under `node_modules`. Directory
+    /// creation is de-duplicated per parent path, and every file write goes
+    /// through `write_if_changed`: warm reruns with unchanged content skip the
+    /// rewrite entirely, which avoids needless write IO and keeps mtimes stable
+    /// so TypeScript's own filesystem caches are not invalidated.
     pub fn materialize(&self) -> CorsaResult<()> {
         let expected_files = self.expected_materialized_files();
         profile!(
@@ -69,27 +69,23 @@ impl VirtualProject {
                     }
                 }
 
-                let virtual_written = self
-                    .virtual_files
+                // `write_if_changed` records IO counters per call: actually
+                // performed writes land in `io.write.*` (the curator audit
+                // consumes actually-written bytes), skipped same-content
+                // rewrites in `io.write.skipped.*`.
+                self.virtual_files
                     .par_iter()
-                    .map(|(_, file)| -> CorsaResult<u64> {
-                        write_file_untracked(&file.virtual_path, file.content.as_bytes())?;
-                        Ok(file.content.len() as u64)
-                    })
-                    .try_reduce(|| 0u64, |acc, bytes| Ok(acc + bytes))?;
-                let passthrough_written = self
-                    .passthrough_files
-                    .par_iter()
-                    .map(|(virtual_path, original_path)| -> CorsaResult<u64> {
+                    .try_for_each(|(_, file)| -> CorsaResult<()> {
+                        write_if_changed(&file.virtual_path, file.content.as_bytes())?;
+                        Ok(())
+                    })?;
+                self.passthrough_files.par_iter().try_for_each(
+                    |(virtual_path, original_path)| -> CorsaResult<()> {
                         let content = std::fs::read(original_path)?;
-                        write_file_untracked(virtual_path, &content)?;
-                        Ok(content.len() as u64)
-                    })
-                    .try_reduce(|| 0u64, |acc, bytes| Ok(acc + bytes))?;
-                record_write_batch(
-                    (self.virtual_files.len() + self.passthrough_files.len()) as u64,
-                    virtual_written + passthrough_written,
-                );
+                        write_if_changed(virtual_path, &content)?;
+                        Ok(())
+                    },
+                )?;
                 Ok(())
             })()
         )?;

@@ -583,6 +583,70 @@ fn test_materialize_writes_relative_json_modules() {
 }
 
 #[test]
+fn materialize_skips_rewriting_unchanged_files() {
+    let case_dir = unique_case_dir("materialize-skip-unchanged");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+    let vue_path = src_dir.join("App.vue");
+    fs::write(
+        &vue_path,
+        r#"<script setup lang="ts">
+const message = 'Hello'
+</script>
+
+<template>
+  <div>{{ message }}</div>
+</template>
+"#,
+    )
+    .unwrap();
+    let ts_path = src_dir.join("tokens.ts");
+    fs::write(
+        &ts_path,
+        "import colors from './colors.tokens.json'\nvoid colors\n",
+    )
+    .unwrap();
+    fs::write(
+        src_dir.join("colors.tokens.json"),
+        "{\"primary\":\"#0057ff\"}\n",
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_path(&vue_path).unwrap();
+    project.register_path(&ts_path).unwrap();
+    project.materialize().unwrap();
+
+    // One bulk virtual file and one passthrough mirror; rewriting either on
+    // the warm rerun below would bump its mtime back to "now".
+    let virtual_root = project.virtual_root().to_path_buf();
+    let tracked = [
+        virtual_root.join("src/App.vue.ts"),
+        virtual_root.join("src/colors.tokens.json"),
+    ];
+    let stale_mtime =
+        std::time::SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(1_000_000_000);
+    for path in &tracked {
+        let file = fs::File::options().write(true).open(path).unwrap();
+        file.set_modified(stale_mtime).unwrap();
+    }
+
+    project.materialize().unwrap();
+
+    for path in &tracked {
+        assert_eq!(
+            fs::metadata(path).unwrap().modified().unwrap(),
+            stale_mtime,
+            "unchanged file should not be rewritten on warm rerun: {}",
+            path.display()
+        );
+    }
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn materialize_prunes_stale_virtual_project_entries() {
     let case_dir = unique_case_dir("materialize-gc");
     let _ = fs::remove_dir_all(&case_dir);
