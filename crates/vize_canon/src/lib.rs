@@ -119,7 +119,7 @@ pub use batch::{
     DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput,
     Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap, PackageManager, SfcBlockType,
     TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait, VirtualFile,
-    VirtualProject, VirtualTsGenerator,
+    VirtualProject, VirtualTsGenerator, sfc_block_fallback_offset,
 };
 
 #[cfg(feature = "native")]

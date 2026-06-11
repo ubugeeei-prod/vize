@@ -86,17 +86,14 @@ fn sfc_error_to_diagnostic(
 /// Best-effort fallback location for SFC compile errors that carry no `loc`.
 /// Points at the start of the most relevant block so the diagnostic lands
 /// somewhere clickable instead of at file offset 0.
+///
+/// Block selection is shared with the rest of the toolchain via
+/// [`crate::batch::sfc_block_fallback_offset`] (#1389); when the descriptor has
+/// no blocks we keep the historical `(0, Script)` default.
 fn default_diagnostic_offset(descriptor: &SfcDescriptor) -> (u32, SfcBlockType) {
-    if let Some(setup) = descriptor.script_setup.as_ref() {
-        return (setup.loc.start as u32, SfcBlockType::ScriptSetup);
-    }
-    if let Some(script) = descriptor.script.as_ref() {
-        return (script.loc.start as u32, SfcBlockType::Script);
-    }
-    if let Some(template) = descriptor.template.as_ref() {
-        return (template.loc.start as u32, SfcBlockType::Template);
-    }
-    (0, SfcBlockType::Script)
+    crate::batch::sfc_block_fallback_offset(descriptor)
+        .map(|(offset, block_type)| (offset as u32, block_type))
+        .unwrap_or((0, SfcBlockType::Script))
 }
 
 pub(super) fn invalid_sfc_fallback_virtual_ts() -> CompactString {
@@ -123,21 +120,12 @@ pub(super) fn diagnostic_for_offset(
 }
 
 fn line_column_for_offset(source: &str, offset: u32) -> (u32, u32) {
-    let target = (offset as usize).min(source.len());
-    let mut line = 0;
-    let mut line_start = 0;
-
-    for (index, character) in source.char_indices() {
-        if index >= target {
-            break;
-        }
-        if character == '\n' {
-            line += 1;
-            line_start = index + 1;
-        }
-    }
-
-    (line, target.saturating_sub(line_start) as u32)
+    // LSP `Position.character` is in UTF-16 code units. Shared, UTF-16-correct
+    // implementation lives in `vize_carton::line_index` (#1389). The previous
+    // local copy emitted *byte* columns, which mismatched the editor's
+    // coordinate system on any line containing multi-byte characters (the
+    // #1223 class of bug).
+    vize_carton::line_index::offset_to_line_col(source, offset as usize)
 }
 
 pub(super) fn collect_sfc_block_ranges(descriptor: &SfcDescriptor) -> Vec<SfcBlockRange> {

@@ -697,39 +697,14 @@ fn script_setup_has_validator_candidates(content: &str) -> bool {
 }
 
 fn sfc_block_fallback_offset(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> usize {
-    if let Some(setup) = descriptor.script_setup.as_ref() {
-        return setup.loc.start;
-    }
-    if let Some(script) = descriptor.script.as_ref() {
-        return script.loc.start;
-    }
-    if let Some(template) = descriptor.template.as_ref() {
-        return template.loc.start;
-    }
-    0
+    // Shared block-selection logic lives in `crate::batch` (#1389).
+    crate::batch::sfc_block_fallback_offset(descriptor).map_or(0, |(offset, _block)| offset)
 }
 
 fn offset_to_line_column(source: &str, offset: usize) -> (u32, u32) {
-    let target = offset.min(source.len());
-    let mut line: u32 = 0;
-    let mut line_start: usize = 0;
-    for (index, ch) in source.char_indices() {
-        if index >= target {
-            break;
-        }
-        if ch == '\n' {
-            line += 1;
-            line_start = index + 1;
-        }
-    }
-    // LSP `Position.character` is in UTF-16 code units. Astral characters
-    // (`len_utf16() == 2`) count as two so the column lines up with
-    // `vue-tsc` / `@vue/language-tools`. (#965)
-    let column: u32 = source[line_start..target]
-        .chars()
-        .map(|ch| ch.len_utf16() as u32)
-        .sum();
-    (line, column)
+    // LSP `Position.character` is in UTF-16 code units. Shared, UTF-16-correct
+    // implementation lives in `vize_carton::line_index` (#1389).
+    vize_carton::line_index::offset_to_line_col(source, offset)
 }
 
 #[cfg(test)]

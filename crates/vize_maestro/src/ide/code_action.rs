@@ -10,6 +10,8 @@ use super::IdeContext;
 use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, Position, Range, TextEdit, WorkspaceEdit,
 };
+// Shared, UTF-16-correct offset->(line, column) conversion (#1389).
+use vize_carton::line_index::offset_to_line_col;
 
 /// Code action service for providing quick fixes and refactorings.
 pub struct CodeActionService;
@@ -564,28 +566,6 @@ impl CodeActionService {
             change_annotations: None,
         })
     }
-}
-
-/// Convert byte offset to (line, column) - both 0-indexed for LSP.
-fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
-    let mut line = 0u32;
-    let mut col = 0u32;
-    let mut current_offset = 0;
-
-    for ch in source.chars() {
-        if current_offset >= offset {
-            break;
-        }
-        if ch == '\n' {
-            line += 1;
-            col = 0;
-        } else {
-            col += ch.len_utf16() as u32;
-        }
-        current_offset += ch.len_utf8();
-    }
-
-    (line, col)
 }
 
 fn template_position(template_start_line: u32, line: u32, character: u32) -> Position {

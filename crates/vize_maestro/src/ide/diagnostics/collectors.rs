@@ -347,7 +347,8 @@ impl DiagnosticService {
         } else {
             // Fall back to the start of the most relevant block so the
             // diagnostic lands somewhere clickable in the editor.
-            let (offset, _block) = sfc_block_fallback_offset(descriptor);
+            let offset = vize_canon::sfc_block_fallback_offset(descriptor)
+                .map_or(0, |(offset, _block)| offset);
             let (line, column) = line_index.line_col(offset);
             Range {
                 start: Position {
@@ -626,21 +627,6 @@ fn script_source_type(lang: Option<&str>) -> Option<SourceType> {
 /// `crates/vize_canon/src/batch/virtual_project.rs`.
 fn script_setup_has_validator_candidates(content: &str) -> bool {
     content.contains("defineProps<") && content.contains("= defineProps")
-}
-
-/// Best-effort fallback offset (byte) for SFC compile errors that ship
-/// without a `loc`. Returns the start of the most relevant block.
-fn sfc_block_fallback_offset(descriptor: &SfcDescriptor<'_>) -> (usize, &'static str) {
-    if let Some(setup) = descriptor.script_setup.as_ref() {
-        return (setup.loc.start, "scriptSetup");
-    }
-    if let Some(script) = descriptor.script.as_ref() {
-        return (script.loc.start, "script");
-    }
-    if let Some(template) = descriptor.template.as_ref() {
-        return (template.loc.start, "template");
-    }
-    (0, "")
 }
 
 fn diagnostic_span(error: &oxc_diagnostics::OxcDiagnostic, source_len: usize) -> (usize, usize) {

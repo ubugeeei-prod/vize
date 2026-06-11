@@ -37,6 +37,43 @@ pub enum SfcBlockType {
     Style,
 }
 
+impl SfcBlockType {
+    /// The SFC block name as it appears in a `.vue` file / `@vue/compiler-sfc`
+    /// descriptor (`scriptSetup`, `script`, `template`, `style`).
+    pub fn block_name(self) -> &'static str {
+        match self {
+            SfcBlockType::Template => "template",
+            SfcBlockType::Script => "script",
+            SfcBlockType::ScriptSetup => "scriptSetup",
+            SfcBlockType::Style => "style",
+        }
+    }
+}
+
+/// Best-effort fallback byte offset for SFC diagnostics that ship without a
+/// `loc`. Returns the start of the most relevant block (`<script setup>`, then
+/// `<script>`, then `<template>`) so the diagnostic lands somewhere clickable
+/// instead of at file offset 0.
+///
+/// Shared by the canon batch pipeline, the `corsa_server` transport, and the
+/// maestro diagnostic collectors so the fallback location is computed in one
+/// place (#1389). Returns `None` when the descriptor has none of those blocks;
+/// callers fall back to `(0, _)`.
+pub fn sfc_block_fallback_offset(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+) -> Option<(usize, SfcBlockType)> {
+    if let Some(setup) = descriptor.script_setup.as_ref() {
+        return Some((setup.loc.start, SfcBlockType::ScriptSetup));
+    }
+    if let Some(script) = descriptor.script.as_ref() {
+        return Some((script.loc.start, SfcBlockType::Script));
+    }
+    if let Some(template) = descriptor.template.as_ref() {
+        return Some((template.loc.start, SfcBlockType::Template));
+    }
+    None
+}
+
 /// Diagnostic reported by Corsa.
 #[derive(Debug, Clone)]
 pub struct Diagnostic {

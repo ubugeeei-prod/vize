@@ -290,26 +290,9 @@ impl TypeService {
 }
 
 /// Convert byte offset to (line, column), both 0-indexed for LSP.
-pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
-    let mut line = 0u32;
-    let mut col = 0u32;
-    let mut current_offset = 0;
-
-    for ch in source.chars() {
-        if current_offset >= offset {
-            break;
-        }
-        if ch == '\n' {
-            line += 1;
-            col = 0;
-        } else {
-            col += ch.len_utf16() as u32;
-        }
-        current_offset += ch.len_utf8();
-    }
-
-    (line, col)
-}
+///
+/// Shared, UTF-16-correct implementation in `vize_carton::line_index` (#1389).
+pub(super) use vize_carton::line_index::offset_to_line_col;
 
 #[cfg(test)]
 mod diagnostics_tests {
