@@ -1,9 +1,22 @@
 //! Built-in fallback stubs and `nuxt.config` module-driven fallbacks.
+//!
+//! Module detection parses the `modules` array out of the default-exported
+//! config object with OXC instead of substring-matching the raw source, so
+//! commented-out entries and module names inside unrelated strings no longer
+//! count as installed modules.
 
 use std::path::Path;
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectExpression, Statement};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, ToCompactString};
 
+use super::parsing::{
+    extract_call_expression_from_export, extract_expression, extract_object_expression,
+    find_object_property,
+};
 use super::stubs::{
     declared_name, push_generic_function_stub, push_named_overload_stubs, push_stub,
     tracked_read_to_string,
@@ -74,8 +87,9 @@ pub(super) fn collect_module_fallback_stubs(
     if config_source.is_empty() {
         return;
     }
+    let modules = parse_nuxt_config_modules(&config_source);
 
-    if config_source.contains("@nuxtjs/i18n") || config_source.contains("@nuxt/i18n") {
+    if modules.might_include(&["@nuxtjs/i18n", "@nuxt/i18n"]) {
         push_stub(
             stubs,
             seen_names,
@@ -87,7 +101,7 @@ pub(super) fn collect_module_fallback_stubs(
         stubs.push("declare module \"@nuxtjs/i18n\" { export type Directions = any; }".into());
     }
 
-    if config_source.contains("@vueuse/nuxt") {
+    if modules.might_include(&["@vueuse/nuxt"]) {
         for name in ["useClipboard", "usePreferredDark", "useScrollLock"] {
             push_generic_function_stub(stubs, seen_names, name);
         }
@@ -107,7 +121,7 @@ pub(super) fn collect_module_fallback_stubs(
         );
     }
 
-    if config_source.contains("@nuxtjs/color-mode") {
+    if modules.might_include(&["@nuxtjs/color-mode"]) {
         push_stub(
             stubs,
             seen_names,
@@ -116,9 +130,136 @@ pub(super) fn collect_module_fallback_stubs(
         );
     }
 
-    if config_source.contains("nuxt-og-image") {
+    if modules.might_include(&["nuxt-og-image"]) {
         push_generic_function_stub(stubs, seen_names, "defineOgImageComponent");
     }
+}
+
+/// Statically-resolved view of the `modules` array in `nuxt.config`.
+#[derive(Debug, Default)]
+pub(super) struct NuxtConfigModules {
+    /// Module names found as static entries: string literals,
+    /// no-substitution template literals, and the first element of
+    /// `['module-name', { ...options }]` tuples.
+    names: FxHashSet<String>,
+    /// Set when the module list cannot be fully resolved statically: spread
+    /// or computed entries, a non-literal tuple head, a non-array `modules`
+    /// value, or a default export we cannot see through (identifier
+    /// reference, unknown wrapper call, CommonJS config).
+    has_unresolved_entries: bool,
+}
+
+impl NuxtConfigModules {
+    fn unresolved() -> Self {
+        Self {
+            names: FxHashSet::default(),
+            has_unresolved_entries: true,
+        }
+    }
+
+    fn insert(&mut self, name: &str) {
+        self.names.insert(name.to_compact_string());
+    }
+
+    /// Conservative membership test: an unresolved entry may name any module,
+    /// so it counts as a potential match for every candidate. Missing a
+    /// module here would surface false "undefined name" diagnostics, while
+    /// over-matching only injects a few extra `any` stubs on the (already
+    /// `.nuxt`-less) fallback path.
+    pub(super) fn might_include(&self, candidates: &[&str]) -> bool {
+        self.has_unresolved_entries
+            || candidates
+                .iter()
+                .any(|candidate| self.names.contains(*candidate))
+    }
+}
+
+/// Parses `nuxt.config` source and extracts the `modules` array from the
+/// default-exported config object, handling both
+/// `export default defineNuxtConfig({ ... })` and `export default { ... }`.
+pub(super) fn parse_nuxt_config_modules(config_source: &str) -> NuxtConfigModules {
+    let allocator = Allocator::default();
+    let source_type = SourceType::default()
+        .with_module(true)
+        .with_typescript(true);
+    let ret = Parser::new(&allocator, config_source, source_type).parse();
+    if ret.panicked {
+        return NuxtConfigModules::unresolved();
+    }
+
+    let Some(config_object) = default_export_config_object(&ret.program.body) else {
+        return NuxtConfigModules::unresolved();
+    };
+
+    let Some(modules_value) = find_object_property(config_object, "modules") else {
+        // A statically-visible config without a `modules` key registers no
+        // modules, so nothing needs stubbing.
+        return NuxtConfigModules::default();
+    };
+
+    let Some(Expression::ArrayExpression(modules)) = extract_expression(modules_value) else {
+        return NuxtConfigModules::unresolved();
+    };
+
+    let mut resolved = NuxtConfigModules::default();
+    for element in &modules.elements {
+        match element {
+            ArrayExpressionElement::Elision(_) => {}
+            ArrayExpressionElement::SpreadElement(_) => resolved.has_unresolved_entries = true,
+            _ => match element.as_expression().and_then(extract_expression) {
+                Some(Expression::StringLiteral(literal)) => resolved.insert(&literal.value),
+                Some(Expression::TemplateLiteral(template)) => match template.single_quasi() {
+                    Some(name) => resolved.insert(&name),
+                    None => resolved.has_unresolved_entries = true,
+                },
+                // `['module-name', { ...options }]` tuple form.
+                Some(Expression::ArrayExpression(tuple)) => {
+                    match tuple
+                        .elements
+                        .first()
+                        .and_then(ArrayExpressionElement::as_expression)
+                        .and_then(extract_expression)
+                    {
+                        Some(Expression::StringLiteral(literal)) => resolved.insert(&literal.value),
+                        _ => resolved.has_unresolved_entries = true,
+                    }
+                }
+                _ => resolved.has_unresolved_entries = true,
+            },
+        }
+    }
+    resolved
+}
+
+/// Finds the config object behind the default export, looking through the
+/// `defineNuxtConfig(...)` wrapper as well as parenthesized/`as`/`satisfies`
+/// wrappers on either form. Returns `None` for anything else (identifier
+/// references, unknown wrapper calls, missing default export), which callers
+/// treat as an unresolved module list.
+fn default_export_config_object<'a>(
+    statements: &'a [Statement<'a>],
+) -> Option<&'a ObjectExpression<'a>> {
+    let export = statements.iter().find_map(|statement| match statement {
+        Statement::ExportDefaultDeclaration(export) => Some(export),
+        _ => None,
+    })?;
+
+    if let Some(call) = extract_call_expression_from_export(&export.declaration) {
+        if !matches!(&call.callee, Expression::Identifier(callee) if callee.name == "defineNuxtConfig")
+        {
+            return None;
+        }
+        return call
+            .arguments
+            .first()
+            .and_then(|argument| argument.as_expression())
+            .and_then(extract_object_expression);
+    }
+
+    export
+        .declaration
+        .as_expression()
+        .and_then(extract_object_expression)
 }
 
 pub(super) fn nuxt_config_source(cwd: &Path) -> String {
