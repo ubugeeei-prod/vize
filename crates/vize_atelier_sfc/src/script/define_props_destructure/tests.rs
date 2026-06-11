@@ -33,7 +33,7 @@ mod tests {
     fn test_transform_simple() {
         let bindings = make_bindings(&["msg"]);
         let source = "console.log(msg)";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -43,7 +43,7 @@ mod tests {
 
         // msg is shadowed by the arrow function parameter
         let source = "const fn = (msg) => console.log(msg)";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -53,7 +53,7 @@ mod tests {
 
         // count inside computed arrow function should be rewritten
         let source = "const double = computed(() => count * 2)";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         assert_eq!(result, "const double = computed(() => __props.count * 2)");
     }
 
@@ -62,7 +62,7 @@ mod tests {
         let bindings = make_bindings(&["foo", "bar"]);
 
         let source = "const result = foo + bar";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -76,7 +76,7 @@ mod tests {
         let source = r#"function double() {
     return count * 2
 }"#;
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -89,7 +89,7 @@ mod tests {
     const inner = () => msg
     return inner()
 }"#;
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -101,7 +101,7 @@ mod tests {
         let source = r#"const obj = {
     getCount: function() { return count }
 }"#;
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -112,7 +112,7 @@ mod tests {
         let source = r#"watch(() => count, (newVal) => {
     console.log(newVal)
 })"#;
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -124,7 +124,7 @@ mod tests {
         let source = r#"for (const item of items) {
     console.log(item)
 }"#;
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -136,7 +136,7 @@ mod tests {
         let source = r#"for (const key in obj) {
     console.log(key)
 }"#;
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -150,7 +150,7 @@ mod tests {
 } catch (error) {
     console.log(error)
 }"#;
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -163,7 +163,7 @@ mod tests {
     const doubled = count * 2
     console.log(doubled)
 }"#;
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -176,7 +176,7 @@ mod tests {
     const count = 10
     console.log(count)
 }"#;
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -185,7 +185,7 @@ mod tests {
         let bindings = make_bindings(&["name"]);
 
         let source = "const greeting = `Hello, ${name}!`";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -194,7 +194,7 @@ mod tests {
         let bindings = make_bindings(&["show"]);
 
         let source = "const display = show ? 'visible' : 'hidden'";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -203,7 +203,7 @@ mod tests {
         let bindings = make_bindings(&["enabled", "active"]);
 
         let source = "const isOn = enabled && active";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -212,7 +212,7 @@ mod tests {
         let bindings = make_bindings(&["foo"]);
 
         let source = "const obj = { foo }";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -221,7 +221,7 @@ mod tests {
         let bindings = make_bindings(&["items"]);
 
         let source = "const first = items[0]";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -230,7 +230,7 @@ mod tests {
         let bindings = make_bindings(&["user"]);
 
         let source = "const name = user.name";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -239,7 +239,7 @@ mod tests {
         let bindings = make_bindings(&["data"]);
 
         let source = "const value = data.nested.value";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -248,7 +248,7 @@ mod tests {
         let bindings = make_bindings(&["row"]);
 
         let source = "const phaseLabel = computed(() => DAY_PHASE_LABELS[row.phaseSnapshot.phase])";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         assert_eq!(
             result,
             "const phaseLabel = computed(() => DAY_PHASE_LABELS[__props.row.phaseSnapshot.phase])"
@@ -260,7 +260,7 @@ mod tests {
         let bindings = make_bindings(&["count"]);
 
         let source = "doSomething(count, 'test')";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -271,7 +271,7 @@ mod tests {
         let source = r#"console.log(msg)
 const double = count * 2
 return { msg, count }"#;
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -281,7 +281,7 @@ return { msg, count }"#;
 
         // msg as property key should NOT be rewritten
         let source = "const obj = { msg: 'hello' }";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -291,7 +291,7 @@ return { msg, count }"#;
 
         // .name should NOT be rewritten (it's property access, not reference)
         let source = "const userName = user.name";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
     }
 
@@ -309,8 +309,27 @@ return { msg, count }"#;
         );
 
         let source = "console.log(msg)";
-        let result = transform_destructured_props(source, &bindings);
+        let result = transform_destructured_props(source, &bindings).unwrap();
         insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_transform_unparsable_source_emits_diagnostic() {
+        let bindings = make_bindings(&["foo"]);
+
+        // Setup body that OXC cannot parse. Previously this silently fell back
+        // to a text rewrite (masking the parse error); now it must surface a
+        // structured compile diagnostic instead of best-effort rewriting.
+        let source = "const x = foo +++ ===";
+        let result = transform_destructured_props(source, &bindings);
+
+        let err = result.expect_err("malformed setup body must produce a diagnostic");
+        assert_eq!(err.code.as_deref(), Some("DEFINE_PROPS_DESTRUCTURE_PARSE"));
+        assert!(
+            err.message.contains("defineProps"),
+            "diagnostic should mention defineProps, got: {}",
+            err.message
+        );
     }
 
     // ==================== Snapshot tests ====================
@@ -327,7 +346,7 @@ return { msg, count }"#;
         fn test_basic_usage() {
             let bindings = make_bindings(&["foo"]);
             let source = "console.log(foo)";
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -338,7 +357,7 @@ return { msg, count }"#;
     console.log(foo)
     console.log(bar)
 }"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -347,7 +366,7 @@ return { msg, count }"#;
             let bindings = make_bindings(&["foo"]);
             let source = r#"const bar = 'fish', hello = 'world'
 console.log(foo)"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -360,7 +379,7 @@ console.log(foo)"#;
     }
 }
 console.log(value)"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -385,7 +404,7 @@ console.log(value)"#;
             );
             let source = r#"let a = x
 let b = y"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -394,7 +413,7 @@ let b = y"#;
             let bindings = make_bindings(&["count"]);
             let source = r#"const double = computed(() => count * 2)
 const triple = computed(function() { return count * 3 })"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -404,7 +423,7 @@ const triple = computed(function() { return count * 3 })"#;
             let source = r#"watch(() => count, (newVal, oldVal) => {
     console.log('changed from', oldVal, 'to', newVal)
 })"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -412,7 +431,7 @@ const triple = computed(function() { return count * 3 })"#;
         fn test_template_literal() {
             let bindings = make_bindings(&["name", "age"]);
             let source = r#"const greeting = `Hello ${name}, you are ${age} years old`"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -420,7 +439,7 @@ const triple = computed(function() { return count * 3 })"#;
         fn test_object_shorthand_props() {
             let bindings = make_bindings(&["foo", "bar"]);
             let source = r#"const obj = { foo, bar, baz: 123 }"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -434,7 +453,7 @@ const triple = computed(function() { return count * 3 })"#;
     })
     return result
 }"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -450,7 +469,7 @@ for (const item of items) {
 for (const index in items) {
     console.log(index)
 }"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -464,7 +483,7 @@ for (const index in items) {
 } finally {
     console.log(error)
 }"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -473,7 +492,7 @@ for (const index in items) {
             let bindings = make_bindings(&["show", "msg"]);
             let source = r#"const display = show ? msg : 'hidden'
 const result = show && msg || 'default'"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -483,7 +502,7 @@ const result = show && msg || 'default'"#;
             let source = r#"const name = user.profile.name
 const email = user?.contact?.email
 const id = user['id']"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -493,7 +512,7 @@ const id = user['id']"#;
             let source = r#"const filtered = items.filter(x => x > 0)
 const mapped = items.map(x => x * 2)
 const reduced = items.reduce((acc, x) => acc + x, 0)"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -502,7 +521,7 @@ const reduced = items.reduce((acc, x) => acc + x, 0)"#;
             let bindings = make_bindings(&["data"]);
             let source = r#"const fn = ({ x, y }) => x + y
 console.log(data)"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -519,7 +538,7 @@ console.log(data)"#;
     default:
         console.log(value)
 }"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -532,7 +551,7 @@ console.log(data)"#;
 do {
     console.log(count)
 } while (count > 0)"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -557,7 +576,7 @@ do {
 })
 const rebloggedBy = computed(() => props.status.reblog ? props.status.account : null)
 console.log(actions)"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
 
@@ -578,7 +597,7 @@ console.log(actions)"#;
 
             let source = r#"console.log(rest)
 const b = rest"#;
-            let result = transform_destructured_props(source, &bindings);
+            let result = transform_destructured_props(source, &bindings).unwrap();
             insta::assert_snapshot!(result);
         }
     }

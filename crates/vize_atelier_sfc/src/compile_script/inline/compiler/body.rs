@@ -100,7 +100,7 @@ pub(super) fn compile_script_setup_inline_body(
         profile!(
             "atelier.script_inline.transform_props_destructure",
             transform_destructured_props(&setup_code, destructure)
-        )
+        )?
     } else {
         setup_code
     };

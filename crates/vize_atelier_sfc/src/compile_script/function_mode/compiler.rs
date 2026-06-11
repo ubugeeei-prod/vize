@@ -220,7 +220,7 @@ pub fn compile_script_setup(
     let model_binding_names = emit_model_bindings(&mut output, &ctx);
 
     let transformed_setup: String = if let Some(ref destructure) = ctx.macros.props_destructure {
-        transform_destructured_props(&setup_code, destructure)
+        transform_destructured_props(&setup_code, destructure)?
     } else {
         setup_code.into()
     };
