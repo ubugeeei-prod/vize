@@ -87,9 +87,16 @@ const show = ref(true)
 
 const FIXTURES: &[Fixture] = &[
     // Budgets carry ~25-30% headroom over the measured steady state
-    // (script_setup 185 / 236_041, options_api 72 / 89_285,
+    // (script_setup 185 / 236_041, options_api 110 / 137_333,
     // template_heavy 262 / 327_764) so toolchain drift stays green while a real
     // regression trips the gate.
+    //
+    // The options_api steady state rose from 72 / 89_285 when the compiler began
+    // resolving Options API template bindings: a non-`<script setup>` component
+    // now parses its `<script>` a second time to extract `data`/`computed`/
+    // `methods`/`props`/`inject` binding metadata for the template prefixer
+    // (`$data.` / `$options.` / `$props.`), mirroring the dedicated binding pass
+    // `@vue/compiler-sfc` runs. Budgets re-blessed to keep ~25% headroom.
     Fixture {
         name: "script_setup",
         source: SCRIPT_SETUP,
@@ -99,8 +106,8 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         name: "options_api",
         source: OPTIONS_API,
-        max_alloc_calls: 92,
-        max_requested_bytes: 115_000,
+        max_alloc_calls: 140,
+        max_requested_bytes: 174_000,
     },
     Fixture {
         name: "template_heavy",

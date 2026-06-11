@@ -137,15 +137,13 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
             let prefix = if let Some(ref metadata) = self.ctx.options.binding_metadata {
                 if let Some(binding) = metadata.bindings.get(name) {
                     binding_type = Some(*binding);
-                    match binding {
-                        BindingType::Props | BindingType::PropsAliased => "$props.",
-                        _ => {
-                            if self.ctx.options.inline {
-                                ""
-                            } else {
-                                "$setup."
-                            }
+                    if self.ctx.options.inline {
+                        match binding {
+                            BindingType::Props | BindingType::PropsAliased => "$props.",
+                            _ => "",
                         }
+                    } else {
+                        binding.non_inline_template_prefix()
                     }
                 } else {
                     "_ctx."
@@ -231,15 +229,13 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
                                 binding_type,
                                 BindingType::SetupLet | BindingType::SetupMaybeRef
                             );
-                        match binding_type {
-                            BindingType::Props | BindingType::PropsAliased => "$props.",
-                            _ => {
-                                if self.ctx.options.inline {
-                                    ""
-                                } else {
-                                    "$setup."
-                                }
+                        if self.ctx.options.inline {
+                            match binding_type {
+                                BindingType::Props | BindingType::PropsAliased => "$props.",
+                                _ => "",
                             }
+                        } else {
+                            binding_type.non_inline_template_prefix()
                         }
                     } else {
                         "_ctx."

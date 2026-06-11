@@ -16,7 +16,7 @@ import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayStr
 
 const _hoisted_1 = /*#__PURE__*/ _createElementVNode("h1", null, "Title")
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Layout = _resolveComponent("Layout")
   
   return (_openBlock(), _createBlock(_component_Layout, null, {

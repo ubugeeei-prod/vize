@@ -12,9 +12,9 @@ const _sfc_main = {
 
 import { withModifiers as _withModifiers, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("form", {
-    onSubmit: _withModifiers($event => (_ctx.$emit('submit', _ctx.value)), ["prevent"])
+    onSubmit: _withModifiers($event => (_ctx.$emit('submit', $data.value)), ["prevent"])
   }, [
     _createElementVNode("button", {
       type: "button",

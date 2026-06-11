@@ -17,11 +17,11 @@ const _sfc_main = {
 
 import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _withDirectives((_openBlock(), _createElementBlock("input", {
-    "onUpdate:modelValue": $event => ((_ctx.form.name) = $event)
+    "onUpdate:modelValue": $event => (($data.form.name) = $event)
   }, null, 8 /* PROPS */, ["onUpdate:modelValue"])), [
-    [_vModelText, _ctx.form.name]
+    [_vModelText, $data.form.name]
   ])
 }
 _sfc_main.render = _sfc_render

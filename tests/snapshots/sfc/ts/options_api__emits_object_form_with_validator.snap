@@ -15,9 +15,9 @@ const _sfc_main = {
 
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("button", {
-    onClick: $event => (_ctx.$emit('submit', _ctx.value))
+    onClick: $event => (_ctx.$emit('submit', $data.value))
   }, "go", 8 /* PROPS */, ["onClick"]))
 }
 _sfc_main.render = _sfc_render

@@ -251,6 +251,42 @@ impl BindingType {
             Self::ExternalModule => "ext",
         }
     }
+
+    /// Render-function prefix for this binding in non-inline (function) mode,
+    /// matching `@vue/compiler-core`'s `rewriteIdentifier`:
+    ///
+    /// - setup-* bindings and `literal-const` → `$setup.`
+    /// - `props` → `$props.`
+    /// - `data` → `$data.`
+    /// - `options` (computed / methods / inject) → `$options.`
+    ///
+    /// `props-aliased` is intentionally not handled here: it rewrites to
+    /// `$props['<original-key>']` and must be resolved via the props-alias map
+    /// by the caller. Globals/external bindings fall back to `_ctx.` at the call
+    /// site and are not represented here.
+    #[inline]
+    pub const fn non_inline_template_prefix(self) -> &'static str {
+        match self {
+            Self::SetupLet
+            | Self::SetupMaybeRef
+            | Self::SetupRef
+            | Self::SetupReactiveConst
+            | Self::SetupConst
+            | Self::LiteralConst => "$setup.",
+            Self::Props | Self::PropsAliased => "$props.",
+            Self::Data => "$data.",
+            Self::Options => "$options.",
+            // Globals and external-module bindings are resolved to `_ctx.` by the
+            // caller; this arm keeps the match exhaustive and conservative.
+            Self::JsGlobalUniversal
+            | Self::JsGlobalBrowser
+            | Self::JsGlobalNode
+            | Self::JsGlobalDeno
+            | Self::JsGlobalBun
+            | Self::VueGlobal
+            | Self::ExternalModule => "$setup.",
+        }
+    }
 }
 
 /// Codegen options
@@ -416,6 +452,47 @@ mod tests {
         assert_eq!(BindingType::JsGlobalBun.to_vir(), "#bun");
         assert_eq!(BindingType::VueGlobal.to_vir(), "vue");
         assert_eq!(BindingType::ExternalModule.to_vir(), "ext");
+    }
+
+    #[test]
+    fn non_inline_template_prefix_matches_vue_compiler_core() {
+        // Mirrors `@vue/compiler-core`'s `rewriteIdentifier` else-branch:
+        // setup-* / literal-const -> $setup., props -> $props.,
+        // data -> $data., options -> $options.
+        assert_eq!(
+            BindingType::SetupLet.non_inline_template_prefix(),
+            "$setup."
+        );
+        assert_eq!(
+            BindingType::SetupMaybeRef.non_inline_template_prefix(),
+            "$setup."
+        );
+        assert_eq!(
+            BindingType::SetupRef.non_inline_template_prefix(),
+            "$setup."
+        );
+        assert_eq!(
+            BindingType::SetupReactiveConst.non_inline_template_prefix(),
+            "$setup."
+        );
+        assert_eq!(
+            BindingType::SetupConst.non_inline_template_prefix(),
+            "$setup."
+        );
+        assert_eq!(
+            BindingType::LiteralConst.non_inline_template_prefix(),
+            "$setup."
+        );
+        assert_eq!(BindingType::Props.non_inline_template_prefix(), "$props.");
+        assert_eq!(
+            BindingType::PropsAliased.non_inline_template_prefix(),
+            "$props."
+        );
+        assert_eq!(BindingType::Data.non_inline_template_prefix(), "$data.");
+        assert_eq!(
+            BindingType::Options.non_inline_template_prefix(),
+            "$options."
+        );
     }
 
     #[test]

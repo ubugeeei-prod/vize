@@ -11,9 +11,9 @@ const _sfc_main = {
 
 import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock, KeepAlive as _KeepAlive } from "vue"
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createBlock(_KeepAlive, null, [
-    (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.view)))
+    (_openBlock(), _createBlock(_resolveDynamicComponent($data.view)))
   ], 1024 /* DYNAMIC_SLOTS */))
 }
 _sfc_main.render = _sfc_render

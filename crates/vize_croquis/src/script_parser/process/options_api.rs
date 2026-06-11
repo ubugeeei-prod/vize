@@ -220,12 +220,15 @@ fn collect_options_object_template_bindings<'a>(
         "asyncData",
         BindingType::Data,
     );
+    // Options API `setup()` return values are setup bindings, not `options`
+    // members: `@vue/compiler-sfc` types them `setup-maybe-ref`, so the template
+    // compiler prefixes them with `$setup.` (not `$options.`) in non-inline mode.
     collect_returned_object_option_bindings(
         result,
         options,
         object_bindings,
         "setup",
-        BindingType::Options,
+        BindingType::SetupMaybeRef,
     );
     collect_mixins_bindings(result, options, object_bindings, seen_mixins);
     collect_extends_bindings(result, options, object_bindings, seen_mixins);

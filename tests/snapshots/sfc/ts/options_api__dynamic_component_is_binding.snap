@@ -15,8 +15,8 @@ const _sfc_main = {
 
 import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 
-function _sfc_render(_ctx, _cache) {
-  return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.current)))
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent($data.current)))
 }
 _sfc_main.render = _sfc_render
 export default _sfc_main

@@ -16,9 +16,9 @@ const _sfc_main = {
 
 import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", {
-    class: _normalizeClass(_ctx.classes)
+    class: _normalizeClass($options.classes)
   }, "content", 2 /* CLASS */))
 }
 _sfc_main.render = _sfc_render

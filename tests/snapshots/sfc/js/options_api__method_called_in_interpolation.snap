@@ -16,8 +16,8 @@ const _sfc_main = {
 
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-function _sfc_render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.greet(_ctx.name)), 1 /* TEXT */))
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString($options.greet($data.name)), 1 /* TEXT */))
 }
 _sfc_main.render = _sfc_render
 export default _sfc_main

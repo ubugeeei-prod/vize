@@ -13,10 +13,10 @@ const _sfc_main = {
 
 import { createElementVNode as _createElementVNode, normalizeStyle as _normalizeStyle, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", { class: "map" }, [
     _createElementVNode("div", {
-      style: _normalizeStyle(_ctx.knobStyle),
+      style: _normalizeStyle($options.knobStyle),
       class: _normalizeClass({ dragging: _ctx.dragging })
     }, null, 6 /* CLASS, STYLE */)
   ]))

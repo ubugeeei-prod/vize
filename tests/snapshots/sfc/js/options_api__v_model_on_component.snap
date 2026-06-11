@@ -14,12 +14,12 @@ const _sfc_main = {
 
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_TextField = _resolveComponent("TextField")
   
   return (_openBlock(), _createBlock(_component_TextField, {
-    modelValue: _ctx.name,
-    "onUpdate:modelValue": $event => ((_ctx.name) = $event)
+    modelValue: $data.name,
+    "onUpdate:modelValue": $event => (($data.name) = $event)
   }, null, 8 /* PROPS */, ["modelValue", "onUpdate:modelValue"]))
 }
 _sfc_main.render = _sfc_render

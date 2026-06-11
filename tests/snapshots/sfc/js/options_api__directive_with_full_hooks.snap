@@ -21,13 +21,13 @@ const _sfc_main = {
 
 import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from "vue"
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _directive_color = _resolveDirective("color")
   
   return _withDirectives((_openBlock(), _createElementBlock("p", null, [
     _createTextVNode("text")
   ])), [
-    [_directive_color, _ctx.tint]
+    [_directive_color, $data.tint]
   ])
 }
 _sfc_main.render = _sfc_render

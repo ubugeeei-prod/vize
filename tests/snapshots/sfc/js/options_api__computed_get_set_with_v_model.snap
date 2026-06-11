@@ -23,11 +23,11 @@ const _sfc_main = {
 
 import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _withDirectives((_openBlock(), _createElementBlock("input", {
-    "onUpdate:modelValue": $event => ((_ctx.fullName) = $event)
+    "onUpdate:modelValue": $event => (($options.fullName) = $event)
   }, null, 8 /* PROPS */, ["onUpdate:modelValue"])), [
-    [_vModelText, _ctx.fullName]
+    [_vModelText, $options.fullName]
   ])
 }
 _sfc_main.render = _sfc_render

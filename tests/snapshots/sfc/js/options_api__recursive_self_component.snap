@@ -10,14 +10,14 @@ const _sfc_main = {
 
 import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, createCommentVNode as _createCommentVNode, renderList as _renderList } from "vue"
 
-function _sfc_render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_TreeNode = _resolveComponent("TreeNode")
   
   return (_openBlock(), _createElementBlock("li", null, [
-    _createTextVNode(_toDisplayString(_ctx.node.label) + " ", 1 /* TEXT */),
-    (_ctx.node.children)
+    _createTextVNode(_toDisplayString($props.node.label) + " ", 1 /* TEXT */),
+    ($props.node.children)
       ? (_openBlock(), _createElementBlock("ul", { key: 0 }, [
-        (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.node.children, (child) => {
+        (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($props.node.children, (child) => {
           return (_openBlock(), _createBlock(_component_TreeNode, {
             key: child.id,
             node: child

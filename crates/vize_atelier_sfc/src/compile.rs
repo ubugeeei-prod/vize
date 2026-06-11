@@ -22,8 +22,8 @@ use crate::compile_template::{
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
 use crate::types::{
-    BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError, SfcMacroArtifact,
-    css_modules_object_literal,
+    BindingMetadata, BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
+    SfcMacroArtifact, css_modules_object_literal,
 };
 use vize_atelier_core::TemplateSyntaxMode;
 
@@ -495,6 +495,62 @@ fn compile_sfc_inner(
             final_script = script_with_preamble;
         }
 
+        // Resolve Options API template bindings (data / computed / methods /
+        // props / inject) from the plain `<script>` so the template compiler can
+        // emit the render-function prefixes Vue's compiler-sfc uses
+        // (`$data.`, `$options.`, `$props.`) instead of falling back to `_ctx.`
+        // for everything. This mirrors `@vue/compiler-sfc`, which feeds the
+        // analyzed Options API bindingMetadata to template codegen.
+        //
+        // Only the Options API member kinds are forwarded. `@vue/compiler-sfc`
+        // does NOT register top-level imports, module-local consts, or
+        // `components: {}` registrations from a non-`<script setup>` block as
+        // template bindings — Croquis assigns those `SetupConst`/`LiteralConst`,
+        // which would otherwise rewrite locally-registered components to
+        // `$setup.Foo` instead of leaving them for `_resolveComponent("Foo")`.
+        let options_api_bindings: Option<BindingMetadata> = if has_template {
+            // Parse the `<script>` once for Options API binding extraction only —
+            // this lighter `parse_script_with_options` path skips the full
+            // template/reactivity Croquis analysis the `<script setup>` path runs.
+            let parsed = profile!(
+                "atelier.sfc.normal_script.options_api_bindings",
+                vize_croquis::script_parser::parse_script_with_options(
+                    &script_content,
+                    vize_croquis::script_parser::ScriptParserOptions {
+                        options_api: true,
+                        legacy_vue2: false,
+                    },
+                )
+            );
+            let mut bindings = BindingMetadata::default();
+            for (name, bt) in parsed.bindings.iter() {
+                // Forward only the unambiguous Options API member kinds. Croquis
+                // assigns `SetupConst`/`LiteralConst` to top-level imports and
+                // module-local consts and `SetupMaybeRef` to `setup()` returns —
+                // none of which `@vue/compiler-sfc` registers as template
+                // bindings for a non-`<script setup>` block (forwarding them would
+                // rewrite locally-registered components to `$setup.Foo` instead of
+                // leaving them for `_resolveComponent("Foo")`).
+                if matches!(
+                    bt,
+                    BindingType::Data
+                        | BindingType::Options
+                        | BindingType::Props
+                        | BindingType::PropsAliased
+                ) {
+                    bindings.bindings.insert(name.to_compact_string(), bt);
+                }
+            }
+            for (local, key) in &parsed.bindings.props_aliases {
+                bindings
+                    .props_aliases
+                    .insert(local.to_compact_string(), key.to_compact_string());
+            }
+            (!bindings.bindings.is_empty()).then_some(bindings)
+        } else {
+            None
+        };
+
         // Compile template if present
         if has_template {
             let template = descriptor.template.as_ref().unwrap();
@@ -531,7 +587,7 @@ fn compile_sfc_inner(
                             is_ts: template_is_ts,
                             inline: false,
                             component_name: Some(&component_name),
-                            bindings: None,
+                            bindings: options_api_bindings.as_ref(),
                             croquis: None,
                         },
                         template_syntax,

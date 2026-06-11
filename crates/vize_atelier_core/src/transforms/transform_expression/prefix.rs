@@ -53,9 +53,10 @@ pub(crate) fn get_identifier_prefix(
             // In inline mode, setup bindings are accessed directly via closure
             return None;
         } else {
-            // In function mode (inline = false), setup bindings use $setup. prefix
-            // This is the pattern Vue's @vitejs/plugin-vue uses for proper reactivity tracking
-            return Some("$setup.");
+            // In function mode (inline = false), bindings use the render-function
+            // prefix Vue's compiler-core emits: setup-* / literal-const → $setup.,
+            // data → $data., options (computed/methods/inject) → $options.
+            return Some(binding_type.non_inline_template_prefix());
         }
     }
 
