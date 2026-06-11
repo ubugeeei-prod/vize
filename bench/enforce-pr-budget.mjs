@@ -9,6 +9,8 @@ import { pathToFileURL } from "node:url";
 
 import { createBenchmarkBudget } from "./compare-pr.mjs";
 
+export const DEFAULT_SKIP_OVERRIDE_LABEL = "ci:allow-skipped-benchmark";
+
 function parseArgs(argv) {
   const args = {};
   for (let i = 0; i < argv.length; i++) {
@@ -51,11 +53,32 @@ function formatRate(value) {
   return `${value.toFixed(3)}x`;
 }
 
-export function enforceBenchmarkBudget(data) {
+function parseLabelsJson(value) {
+  if (!value) {
+    return [];
+  }
+
+  const labels = JSON.parse(value);
+  if (!Array.isArray(labels) || labels.some((label) => typeof label !== "string")) {
+    throw new Error("--labels-json must be a JSON array of label names");
+  }
+  return labels;
+}
+
+export function enforceBenchmarkBudget(data, options = {}) {
   if (data.skipped) {
+    const skipOverrideLabel = options.skipOverrideLabel ?? DEFAULT_SKIP_OVERRIDE_LABEL;
+    const labels = options.labels ?? data.labels ?? [];
+    if (labels.includes(skipOverrideLabel)) {
+      return {
+        ok: true,
+        message: `Benchmark budget skipped with override label '${skipOverrideLabel}': ${data.reason ?? "benchmark skipped"}`,
+      };
+    }
+
     return {
-      ok: true,
-      message: `Benchmark budget skipped: ${data.reason ?? "benchmark skipped"}`,
+      ok: false,
+      message: `Benchmark budget skipped without override label '${skipOverrideLabel}': ${data.reason ?? "benchmark skipped"}`,
     };
   }
 
@@ -84,7 +107,10 @@ export function main(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
   const jsonPath = resolve(requireArg(args, "json"));
   const data = JSON.parse(readFileSync(jsonPath, "utf8"));
-  const result = enforceBenchmarkBudget(data);
+  const result = enforceBenchmarkBudget(data, {
+    labels: parseLabelsJson(args["labels-json"]),
+    skipOverrideLabel: args["skip-override-label"],
+  });
 
   console.log(result.message);
   if (!result.ok) {

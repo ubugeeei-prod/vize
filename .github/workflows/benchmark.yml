@@ -213,6 +213,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      issues: read
     steps:
       - name: Checkout head
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -225,8 +226,44 @@ jobs:
         with:
           name: pr-benchmark
 
+      - name: Read current PR labels
+        id: pr-labels
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          node <<'EOF' >> "$GITHUB_OUTPUT"
+          async function main() {
+            const apiUrl = process.env.GITHUB_API_URL ?? "https://api.github.com";
+            const url = `${apiUrl}/repos/${process.env.REPOSITORY}/issues/${process.env.PR_NUMBER}/labels?per_page=100`;
+            const response = await fetch(url, {
+              headers: {
+                accept: "application/vnd.github+json",
+                authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+              },
+            });
+            if (!response.ok) {
+              throw new Error(`Failed to read PR labels: ${response.status} ${response.statusText}`);
+            }
+            const labels = await response.json();
+            console.log("labels<<JSON");
+            console.log(JSON.stringify(labels.map((label) => label.name)));
+            console.log("JSON");
+          }
+          main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          EOF
+
       - name: Enforce benchmark budget
-        run: node head/bench/enforce-pr-budget.mjs --json benchmark-results.json
+        env:
+          PR_LABELS_JSON: ${{ steps.pr-labels.outputs.labels }}
+        run: >-
+          node head/bench/enforce-pr-budget.mjs
+          --json benchmark-results.json
+          --labels-json "$PR_LABELS_JSON"
 
   pr-benchmark-comment:
     name: pr-benchmark-comment
