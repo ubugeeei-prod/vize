@@ -2,9 +2,8 @@
 //!
 //! Vue 2 carried a handful of template-syntax conveniences that Vue 3 removed in
 //! favor of more explicit forms. This module desugars the high-value, cleanly
-//! bounded subset into their Vue 3 equivalents **once, before the main transform
-//! traversal**, so the rest of the pipeline only ever sees modern Vue 3 AST and
-//! needs no per-node legacy branches:
+//! bounded subset into their Vue 3 equivalents so the rest of the pipeline only
+//! ever sees modern Vue 3 AST and needs no per-node legacy branches:
 //!
 //! - **`.sync` modifier** — `:foo.sync="bar"` is Vue 2 sugar for a two-way bind.
 //!   It expands to `:foo="bar"` plus an `@update:foo="bar = $event"` listener,
@@ -19,6 +18,18 @@
 //!   2.1, is the older alias for `slot-scope`, added in 2.5). The companion
 //!   `slot="name"` static attribute supplies the slot argument and is consumed.
 //!
+//! The `.sync` and scoped-slot rewrites run **once, before the main transform
+//! traversal**, via [`desugar_legacy_template`].
+//!
+//! - **v-on event-modifier sugar** (`@click.native`, numeric keycodes such as
+//!   `@keyup.13`) — both surfaces were removed in Vue 3. Unlike the rewrites
+//!   above, this one is applied per v-on directive during element processing
+//!   (see [`desugar_v2_v_on_modifiers`]), gated by
+//!   [`supports_v2_event_sugar`](crate::transform::TransformContext::supports_v2_event_sugar).
+//!   `.native` is stripped (Vue 3 lets component listeners fall through to the
+//!   root by default) and numeric keyCodes are rewritten to their Vue 3 key
+//!   names (`13` -> `enter`), so `@keyup.13` behaves like `@keyup.enter`.
+//!
 //! # Zero-cost contract
 //!
 //! This module is compiled only under the `legacy` cargo feature, and even then
@@ -27,7 +38,9 @@
 //! dialect (`LegacyDialectCapabilities::VUE3`) the entry point is a single
 //! capability-field read that short-circuits before touching the tree — so a
 //! `legacy`-enabled build compiling Vue 3 sources takes a branch-identical path
-//! to the default build, which never compiles this file at all.
+//! to the default build, which never compiles this file at all. The per-element
+//! [`desugar_v2_v_on_modifiers`] is likewise only reached under the Vue 2
+//! dialect (its call site is guarded by `supports_v2_event_sugar`).
 
 use vize_armature::legacy::LegacyDialectCapabilities;
 use vize_carton::{Box, Bump, String, Vec};
@@ -228,15 +241,65 @@ fn desugar_scoped_slot_attrs<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>) 
     el.props.push(v_slot);
 }
 
+/// Map a Vue 2 numeric `keyCode` modifier to its Vue 3 key name, mirroring
+/// `@vue/compiler-dom`'s removed `keyCodes` table (the aliases Vue 2 shipped as
+/// `config.keyCodes` defaults).
+///
+/// Returns `None` for any number Vue 2 had no built-in alias for; the caller
+/// leaves such a modifier unchanged.
+fn keycode_to_key_name(code: &str) -> Option<&'static str> {
+    // Mirrors Vue 2's `genGuard` keyCodes plus the `keyNames` map used by
+    // `withKeys`: enter/tab/delete/esc/space/up/down/left/right, with `delete`
+    // covering both Backspace (8) and Delete (46) as Vue 2 did.
+    Some(match code {
+        "8" => "delete", // Backspace — Vue 2 grouped 8 and 46 under `delete`.
+        "9" => "tab",
+        "13" => "enter",
+        "27" => "esc",
+        "32" => "space",
+        "37" => "left",
+        "38" => "up",
+        "39" => "right",
+        "40" => "down",
+        "46" => "delete",
+        _ => return None,
+    })
+}
+
+/// Desugar Vue 2 v-on event-modifier sugar on one directive, in place.
+///
+/// Strips `.native` and rewrites built-in numeric keyCode modifiers to their
+/// Vue 3 key names. Only ever called for v-on (`name == "on"`) directives under
+/// the Vue 2 dialect; a no-op for any directive that carries neither surface.
+pub(crate) fn desugar_v2_v_on_modifiers(dir: &mut DirectiveNode<'_>) {
+    if dir.modifiers.is_empty() {
+        return;
+    }
+
+    // `.native` is removed wholesale; everything else is kept (with numeric
+    // keycodes rewritten in place). `retain_mut` keeps the arena `Vec` order.
+    dir.modifiers.retain_mut(|modifier| {
+        if modifier.content.as_str() == "native" {
+            return false;
+        }
+        if let Some(name) = keycode_to_key_name(modifier.content.as_str()) {
+            modifier.content = String::new(name);
+        }
+        true
+    });
+}
+
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
 mod tests {
     use super::*;
+    use crate::ast::{SimpleExpressionNode, SourceLocation};
     use crate::codegen::generate;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
     use crate::transform::transform;
     use vize_armature::legacy::{LegacyDialectCapabilities, LegacyVueVersion};
+    use vize_carton::Vec as ArenaVec;
     use vize_carton::config::VueVersion;
 
     /// Full pipeline (parse -> transform -> codegen) under a given dialect.
@@ -471,5 +534,96 @@ mod tests {
         // dialect is V3 or V2 (the pre-transform leaves it untouched).
         let src = r#"<div :id="x" @click="go">{{ msg }}</div>"#;
         assert_eq!(compile(src, VueVersion::V3), compile(src, VueVersion::V2));
+    }
+
+    // --- v-on event-modifier sugar (`.native`, numeric keycodes) ---
+
+    fn directive_with_modifiers<'a>(allocator: &'a Bump, modifiers: &[&str]) -> DirectiveNode<'a> {
+        let mut dir = DirectiveNode::new(allocator, "on", SourceLocation::STUB);
+        let mut mods = ArenaVec::new_in(allocator);
+        for m in modifiers {
+            mods.push(SimpleExpressionNode::new(*m, false, SourceLocation::STUB));
+        }
+        dir.modifiers = mods;
+        dir
+    }
+
+    /// Assert the directive's modifier list (by content, in order) equals
+    /// `expected`. Stays on `&str` to avoid the crate's disallowed std
+    /// `String`.
+    fn assert_modifiers(dir: &DirectiveNode<'_>, expected: &[&str]) {
+        assert_eq!(dir.modifiers.len(), expected.len());
+        for (got, want) in dir.modifiers.iter().zip(expected) {
+            assert_eq!(got.content.as_str(), *want);
+        }
+    }
+
+    #[test]
+    fn strips_native_modifier() {
+        let allocator = Bump::new();
+        let mut dir = directive_with_modifiers(&allocator, &["native"]);
+        desugar_v2_v_on_modifiers(&mut dir);
+        assert!(dir.modifiers.is_empty());
+    }
+
+    #[test]
+    fn strips_native_keeps_other_modifiers() {
+        let allocator = Bump::new();
+        let mut dir = directive_with_modifiers(&allocator, &["native", "stop"]);
+        desugar_v2_v_on_modifiers(&mut dir);
+        assert_modifiers(&dir, &["stop"]);
+    }
+
+    #[test]
+    fn maps_common_numeric_keycodes() {
+        let allocator = Bump::new();
+        for (code, name) in [
+            ("8", "delete"),
+            ("9", "tab"),
+            ("13", "enter"),
+            ("27", "esc"),
+            ("32", "space"),
+            ("37", "left"),
+            ("38", "up"),
+            ("39", "right"),
+            ("40", "down"),
+            ("46", "delete"),
+        ] {
+            let mut dir = directive_with_modifiers(&allocator, &[code]);
+            desugar_v2_v_on_modifiers(&mut dir);
+            assert_modifiers(&dir, &[name]);
+        }
+    }
+
+    #[test]
+    fn leaves_unmapped_numeric_keycode_untouched() {
+        let allocator = Bump::new();
+        let mut dir = directive_with_modifiers(&allocator, &["65"]);
+        desugar_v2_v_on_modifiers(&mut dir);
+        assert_modifiers(&dir, &["65"]);
+    }
+
+    #[test]
+    fn leaves_named_modifiers_untouched() {
+        let allocator = Bump::new();
+        let mut dir = directive_with_modifiers(&allocator, &["stop", "prevent", "enter"]);
+        desugar_v2_v_on_modifiers(&mut dir);
+        assert_modifiers(&dir, &["stop", "prevent", "enter"]);
+    }
+
+    #[test]
+    fn combined_native_and_keycode() {
+        let allocator = Bump::new();
+        let mut dir = directive_with_modifiers(&allocator, &["native", "13"]);
+        desugar_v2_v_on_modifiers(&mut dir);
+        assert_modifiers(&dir, &["enter"]);
+    }
+
+    #[test]
+    fn no_modifiers_is_noop() {
+        let allocator = Bump::new();
+        let mut dir = directive_with_modifiers(&allocator, &[]);
+        desugar_v2_v_on_modifiers(&mut dir);
+        assert!(dir.modifiers.is_empty());
     }
 }

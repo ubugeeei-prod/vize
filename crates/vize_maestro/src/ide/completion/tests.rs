@@ -169,6 +169,66 @@ fn test_standalone_html_completion_includes_petite_vue_directives() {
 }
 
 #[test]
+fn test_standalone_html_completion_includes_v_scope_bindings_in_expression() {
+    let dir = tempfile::tempdir().unwrap();
+    let source_path = dir.path().join("index.html");
+    let source = r#"<script src="https://unpkg.com/petite-vue" defer init></script>
+<div v-scope="{ count: 0, msg: 'x' }">{{ count }}</div>
+"#;
+    fs::write(&source_path, source).unwrap();
+
+    let uri = Url::from_file_path(&source_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "html".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    // Cursor inside the `{{ count }}` interpolation expression.
+    let offset = source.find("{{ count").unwrap() + "{{ co".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+    // `v-scope` keys resolve as template-scope completions inside expressions.
+    assert!(
+        has_label(&labels, "count"),
+        "v-scope key `count` should be offered inside the expression; got {labels:?}"
+    );
+    assert!(
+        has_label(&labels, "msg"),
+        "v-scope key `msg` should be offered inside the expression; got {labels:?}"
+    );
+}
+
+#[test]
+fn test_standalone_html_completion_v_scope_bindings_do_not_leak_to_sibling() {
+    let dir = tempfile::tempdir().unwrap();
+    let source_path = dir.path().join("index.html");
+    let source = r#"<script src="https://unpkg.com/petite-vue" defer init></script>
+<span v-scope="{ count: 0 }">{{ count }}</span><p>{{ count }}</p>
+"#;
+    fs::write(&source_path, source).unwrap();
+
+    let uri = Url::from_file_path(&source_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "html".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    // Cursor inside the sibling `<p>` interpolation, outside the v-scope subtree.
+    let p_start = source.find("<p>").unwrap();
+    let offset = source[p_start..].find("{{ count").unwrap() + p_start + "{{ co".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+    assert!(
+        !has_label(&labels, "count"),
+        "v-scope binding must not leak to a sibling subtree; got {labels:?}"
+    );
+}
+
+#[test]
 fn test_standalone_html_completion_ignores_petite_vue_mention_in_comment() {
     let dir = tempfile::tempdir().unwrap();
     let source_path = dir.path().join("index.html");

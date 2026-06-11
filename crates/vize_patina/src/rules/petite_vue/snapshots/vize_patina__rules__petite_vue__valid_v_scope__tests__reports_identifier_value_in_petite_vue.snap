@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/petite_vue/valid_v_scope.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "petite-vue/valid-v-scope",
+        severity: Error,
+        message: "`v-scope` must bind an object literal",
+        start: 79,
+        end: 84,
+        help: Some(
+            "petite-vue's v-scope introduces scope bindings from an object literal, e.g. v-scope=\"{ count: 0 }\". A non-object value declares no bindings. Use an object literal, or a bare v-scope to mark a scope root without bindings.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

@@ -6,6 +6,7 @@ use super::{
 };
 use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 use corsa::{
+    CorsaError,
     jsonrpc::InboundEvent,
     lsp::{LspClient, LspSpawnConfig, VirtualDocument},
     runtime::block_on,
@@ -110,7 +111,7 @@ impl CorsaProjectClient {
     ) -> Result<Option<DiagnosticBatch>, String> {
         let report = match block_on(self.session.get_diagnostics_for_project()) {
             Ok(report) => report,
-            Err(error) if diagnostics_api_error_is_unsupported(&error) => return Ok(None),
+            Err(error) if corsa_diagnostics_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
                 return Err(cstr!(
                     "Failed to request Corsa project diagnostics: {error}"
@@ -143,7 +144,7 @@ impl CorsaProjectClient {
         );
         let response = match response {
             Ok(response) => response,
-            Err(error) if diagnostics_api_error_is_unsupported(&error) => return Ok(None),
+            Err(error) if corsa_diagnostics_error_is_unsupported(&error) => return Ok(None),
             Err(error) => return Err(cstr!("Failed to request Corsa file diagnostics: {error}")),
         };
         Ok(Some(Ok(self.store_file_diagnostics(
@@ -158,7 +159,7 @@ impl CorsaProjectClient {
     ) -> Result<Option<Result<DiagnosticFetch, String>>, String> {
         let report = match block_on(self.session.get_diagnostics_for_project()) {
             Ok(report) => report,
-            Err(error) if diagnostics_api_error_is_unsupported(&error) => return Ok(None),
+            Err(error) if corsa_diagnostics_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
                 return Err(cstr!(
                     "Failed to request Corsa project diagnostics: {error}"
@@ -318,7 +319,7 @@ impl CorsaProjectClient {
     ) -> Result<Option<DiagnosticBatch>, String> {
         let report = match block_on(self.session.get_diagnostics_for_project()) {
             Ok(report) => report,
-            Err(error) if diagnostics_api_error_is_unsupported(&error) => return Ok(None),
+            Err(error) if corsa_diagnostics_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
                 return Err(cstr!(
                     "Failed to request Corsa project diagnostics: {error}"
@@ -484,6 +485,18 @@ impl CorsaProjectClient {
     }
 }
 
+/// The corsa `ProjectSession` reports a missing diagnostics endpoint through
+/// the typed `CorsaError::Unsupported` variant: corsa-bind raises it directly
+/// when a scope is unavailable and normalizes "unknown method" RPC errors to
+/// it as well. Gating the diagnostics fallback on the variant keeps the
+/// capability handshake typed instead of sniffing the rendered message text.
+fn corsa_diagnostics_error_is_unsupported(error: &CorsaError) -> bool {
+    matches!(error, CorsaError::Unsupported(_))
+}
+
+/// Message-text fallback used only on the legacy LSP transport, whose
+/// `textDocument/diagnostic` errors arrive as an opaque `String` with no typed
+/// variant to match against.
 fn diagnostics_api_is_unsupported(error: &str) -> bool {
     error.contains("unknown API method")
         || error.contains("method not found")
@@ -670,7 +683,26 @@ fn language_id_for_uri(uri: &str) -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    use super::{diagnostics_api_is_unsupported, lsp_diagnostics_error_is_transient};
+    use super::{
+        CorsaError, corsa_diagnostics_error_is_unsupported, diagnostics_api_is_unsupported,
+        lsp_diagnostics_error_is_transient,
+    };
+
+    // Regression: a missing diagnostics scope on the corsa `ProjectSession`
+    // must be detected through the typed `CorsaError::Unsupported` variant
+    // (corsa-bind raises it directly and normalizes "unknown method" RPC
+    // errors into it), so the project/file-diagnostics fallback gates on the
+    // variant rather than sniffing the rendered message. A genuine failure on
+    // a different variant must propagate instead of being silently swallowed.
+    #[test]
+    fn corsa_diagnostics_unsupported_uses_typed_capability_error() {
+        assert!(corsa_diagnostics_error_is_unsupported(
+            &CorsaError::Unsupported("file diagnostics are not supported")
+        ));
+        assert!(!corsa_diagnostics_error_is_unsupported(
+            &CorsaError::Protocol("diagnostics request failed: process exited".into())
+        ));
+    }
 
     #[test]
     fn recognizes_unsupported_diagnostics_api_errors() {

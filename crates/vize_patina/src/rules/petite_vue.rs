@@ -6,16 +6,19 @@
 
 mod no_unsupported_directive;
 mod valid_v_effect;
+mod valid_v_scope;
 
 use crate::rule::{Rule, RuleRegistry};
 
 pub use no_unsupported_directive::NoUnsupportedDirective;
 pub use valid_v_effect::ValidVEffect;
+pub use valid_v_scope::ValidVScope;
 
 /// Register petite-vue rules as explicit opt-in rules.
 pub(crate) fn register_opt_in(registry: &mut RuleRegistry) {
     register_if_missing(registry, Box::new(NoUnsupportedDirective));
     register_if_missing(registry, Box::new(ValidVEffect));
+    register_if_missing(registry, Box::new(ValidVScope));
 }
 
 fn register_if_missing(registry: &mut RuleRegistry, rule: Box<dyn Rule>) {

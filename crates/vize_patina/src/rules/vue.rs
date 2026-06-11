@@ -13,6 +13,7 @@
 mod attribute_hyphenation;
 mod attribute_order;
 mod no_child_content;
+mod no_deprecated_v_on_native_modifier;
 mod no_dupe_v_else_if;
 mod no_duplicate_attributes;
 mod no_reserved_component_names;
@@ -74,6 +75,7 @@ mod single_style_block;
 pub use crate::rules::opinionated::vue::MultiWordComponentNames;
 pub use crate::rules::opinionated::vue::UseVOnExact;
 pub use no_child_content::NoChildContent;
+pub use no_deprecated_v_on_native_modifier::NoDeprecatedVOnNativeModifier;
 pub use no_dupe_v_else_if::NoDupeVElseIf;
 pub use no_duplicate_attributes::NoDuplicateAttributes;
 pub use no_reserved_component_names::NoReservedComponentNames;
@@ -148,3 +150,15 @@ pub use single_style_block::SingleStyleBlock;
 // Warning rules exports
 pub use crate::rules::opinionated::vue::WarnCustomBlock;
 pub use crate::rules::opinionated::vue::WarnCustomDirective;
+
+/// Register Vue migration rules as explicit opt-in rules.
+///
+/// These flag deprecated Vue 2 template syntax that Vue 3 removed. They are
+/// opt-in (not part of any preset) so they only run when a project adopting the
+/// migration pack asks for them, and each rule gates itself on the default Vue 3
+/// dialect.
+pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
+    if !registry.has_rule("vue/no-deprecated-v-on-native-modifier") {
+        registry.register(Box::new(NoDeprecatedVOnNativeModifier));
+    }
+}

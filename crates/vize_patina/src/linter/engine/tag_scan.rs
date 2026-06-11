@@ -5,6 +5,34 @@ pub(super) fn find_tag_end(bytes: &[u8], start: usize) -> Option<usize> {
     memchr::memchr(b'>', &bytes[start..]).map(|offset| start + offset)
 }
 
+/// Find the `>` that ends the start tag beginning at `lt_idx` (the `<`),
+/// skipping over single- and double-quoted attribute values so a `>` or `<`
+/// embedded in a quoted value (e.g. `<div title="</template>">`) is not
+/// mistaken for the tag end or a nested tag. Returns the index of the closing
+/// `>`, or `None` if the tag is unterminated.
+pub(super) fn find_start_tag_end(bytes: &[u8], lt_idx: usize) -> Option<usize> {
+    let mut pos = lt_idx + 1;
+
+    while pos < bytes.len() {
+        // Jump to the next byte that can change scan state: a quote opens an
+        // attribute value to skip, a `>` closes the tag.
+        let offset = memchr::memchr3(b'"', b'\'', b'>', &bytes[pos..])?;
+        let idx = pos + offset;
+        match bytes[idx] {
+            b'>' => return Some(idx),
+            quote => {
+                // Skip the quoted attribute value, including any `>`/`<` inside.
+                match memchr::memchr(quote, &bytes[idx + 1..]) {
+                    Some(end) => pos = idx + 1 + end + 1,
+                    None => return None,
+                }
+            }
+        }
+    }
+
+    None
+}
+
 pub(super) fn find_closing_tag(bytes: &[u8], tag_name: &[u8], from: usize) -> Option<usize> {
     let mut pos = from;
 

@@ -423,10 +423,14 @@ fn external_document_path(uri: &str) -> Option<PathBuf> {
     Some(session_path)
 }
 
-fn overlay_changes_error_is_unsupported(error: &impl std::fmt::Display) -> bool {
-    let message = cstr!("{error}");
-    message.contains("overlayChanges")
-        && (message.contains("unsupported") || message.contains("not supported"))
+/// The runtime advertised overlay support through `describeCapabilities`, but
+/// rejected the overlay write at request time. corsa-bind surfaces this as the
+/// typed `CorsaError::Unsupported` variant (also for runtimes that lack the
+/// `updateSnapshot.overlayChanges` method entirely, normalized from the RPC
+/// "method not found" error), so we gate the materialized fallback on the
+/// variant rather than sniffing the human-readable message text.
+fn overlay_changes_error_is_unsupported(error: &CorsaError) -> bool {
+    matches!(error, CorsaError::Unsupported(_))
 }
 
 pub(super) fn materialize_session_document(
@@ -502,7 +506,8 @@ pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u
 mod tests {
     use super::{
         api_mode_for_executable, build_session_document_uri, line_character_to_utf16_offset,
-        path_to_file_uri, should_retry_json_rpc, uri_document_identifier,
+        overlay_changes_error_is_unsupported, path_to_file_uri, should_retry_json_rpc,
+        uri_document_identifier,
     };
     use corsa::CorsaError;
     use corsa::api::{ApiMode, DocumentIdentifier};
@@ -578,6 +583,27 @@ mod tests {
 
         assert!(should_retry_json_rpc(ApiMode::SyncMsgpackStdio, &error));
         assert!(!should_retry_json_rpc(ApiMode::AsyncJsonRpcStdio, &error));
+    }
+
+    // Regression: the materialized-overlay fallback must be gated on the typed
+    // `CorsaError::Unsupported` variant that corsa-bind raises when a runtime
+    // rejects `updateSnapshot.overlayChanges`, not on sniffing the rendered
+    // error message. A runtime that fails an overlay write for an unrelated
+    // reason (e.g. a transport/protocol fault) must surface as an error rather
+    // than silently degrading to the slower materialized path.
+    #[test]
+    fn overlay_unsupported_uses_typed_capability_error() {
+        assert!(overlay_changes_error_is_unsupported(
+            &CorsaError::Unsupported(
+                "updateSnapshot.overlayChanges is not supported by this runtime",
+            )
+        ));
+
+        // A look-alike message routed through a different (protocol) variant
+        // must NOT be treated as an overlay-capability gap.
+        assert!(!overlay_changes_error_is_unsupported(
+            &CorsaError::Protocol("overlayChanges write failed: connection unsupported".into())
+        ));
     }
 
     #[test]

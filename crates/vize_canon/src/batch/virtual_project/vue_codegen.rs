@@ -45,6 +45,12 @@ pub(super) struct VueCodegenOptions {
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
     pub(super) template_syntax: TemplateSyntaxMode,
+    /// Whether the shared preamble (ImportMeta augmentation + helper types) is
+    /// hoisted to a program-wide ambient `.d.ts`. The batch path materializes
+    /// `SHARED_HELPERS_FILE` and lists it in every tsconfig, so it hoists
+    /// (`true`); the single-document Corsa socket session has no such shared
+    /// file and must keep the preamble inline (`false`).
+    pub(super) hoist_shared_preamble: bool,
 }
 
 pub(super) fn generate_vue_virtual_ts(
@@ -193,8 +199,9 @@ pub(super) fn generate_vue_virtual_ts(
                 ),
                 // The virtual project materializes SHARED_HELPERS_FILE and
                 // lists it in every generated tsconfig, so per-file output
-                // drops the duplicated preamble.
-                hoist_shared_preamble: true,
+                // drops the duplicated preamble. The single-document Corsa
+                // socket path has no shared file and keeps it inline.
+                hoist_shared_preamble: codegen_options.hoist_shared_preamble,
             },
         )
     );
