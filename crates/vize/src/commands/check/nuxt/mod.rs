@@ -62,7 +62,7 @@ pub(in crate::commands::check) fn detect_nuxt_auto_imports(
         &mut external_template_bindings,
     );
     collect_plugin_injection_stubs(cwd, &mut collected, &mut seen_names);
-    collect_fallback_stubs(&mut collected, &mut seen_names);
+    collect_fallback_stubs(&mut collected, &mut seen_names, has_generated_imports);
     if !has_generated_imports {
         collect_module_fallback_stubs(cwd, &mut collected, &mut seen_names);
         collect_source_auto_import_stubs(cwd, &mut collected, &mut seen_names);

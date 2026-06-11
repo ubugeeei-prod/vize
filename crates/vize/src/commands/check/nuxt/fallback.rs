@@ -9,9 +9,46 @@ use super::stubs::{
     tracked_read_to_string,
 };
 
-pub(super) fn collect_fallback_stubs(stubs: &mut Vec<String>, seen_names: &mut FxHashSet<String>) {
+pub(super) fn collect_fallback_stubs(
+    stubs: &mut Vec<String>,
+    seen_names: &mut FxHashSet<String>,
+    has_generated_imports: bool,
+) {
     let mut fallback_names = FxHashSet::default();
-    for stub in fallback_stub_strings() {
+    push_fallback_stub_group(
+        fallback_type_alias_stubs(),
+        stubs,
+        seen_names,
+        &mut fallback_names,
+    );
+    // The hardcoded `any` ladder silently weakens checking, so only inject it
+    // when the project has no generated `.nuxt` import manifest to rely on.
+    if !has_generated_imports {
+        push_fallback_stub_group(
+            fallback_value_stubs(),
+            stubs,
+            seen_names,
+            &mut fallback_names,
+        );
+    }
+    // Built-in component consts stay name-deduped against the generated
+    // `GlobalComponents` members: `.nuxt/components.d.ts` may omit built-ins,
+    // and dropping these would newly error every `<NuxtLink>` reference.
+    push_fallback_stub_group(
+        fallback_component_stubs(),
+        stubs,
+        seen_names,
+        &mut fallback_names,
+    );
+}
+
+fn push_fallback_stub_group(
+    group: Vec<String>,
+    stubs: &mut Vec<String>,
+    seen_names: &mut FxHashSet<String>,
+    fallback_names: &mut FxHashSet<String>,
+) {
+    for stub in group {
         if let Some(name) = declared_name(&stub) {
             let name = name.to_compact_string();
             if fallback_names.contains(name.as_str()) {
@@ -94,7 +131,18 @@ pub(super) fn nuxt_config_source(cwd: &Path) -> String {
     String::default()
 }
 
+#[cfg(test)]
 pub(super) fn fallback_stub_strings() -> Vec<String> {
+    let mut stubs = fallback_type_alias_stubs();
+    stubs.extend(fallback_value_stubs());
+    stubs.extend(fallback_component_stubs());
+    stubs
+}
+
+/// Type aliases for auto-imported Vue types. Generated `.nuxt` artifacts are
+/// only mined for `declare global` consts and `GlobalComponents` members, so
+/// these aliases have no generated counterpart and are always injected.
+fn fallback_type_alias_stubs() -> Vec<String> {
     vec![
         "type Composer = any;".into(),
         "type Ref<T = any> = import('vue').Ref<T>;".into(),
@@ -106,6 +154,14 @@ pub(super) fn fallback_stub_strings() -> Vec<String> {
         "type MaybeRef<T = any> = import('vue').MaybeRef<T>;".into(),
         "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;".into(),
         "type Component = import('vue').Component;".into(),
+    ]
+}
+
+/// Hardcoded `any`-typed value stubs. Skipped whenever the project ships a
+/// generated `.nuxt` import manifest, which covers all of these names with
+/// real `typeof import(...)` types.
+fn fallback_value_stubs() -> Vec<String> {
+    vec![
         "declare function ref<T>(value: T): Ref<UnwrapRef<T>>;".into(),
         "declare function ref<T = any>(): Ref<T | undefined>;".into(),
         "declare function computed<T>(getter: () => T): ComputedRef<T>;".into(),
@@ -192,6 +248,14 @@ pub(super) fn fallback_stub_strings() -> Vec<String> {
         "declare function useRequestFetch(): typeof globalThis.fetch;".into(),
         "declare function useResponseHeaders(headers?: Record<string, string>): any;".into(),
         "declare function $fetch<T = any>(...args: any[]): Promise<T>;".into(),
+    ]
+}
+
+/// Nuxt built-in component consts. Always injected (name-deduped against the
+/// generated `GlobalComponents` members) because `.nuxt/components.d.ts` may
+/// legitimately omit built-ins.
+fn fallback_component_stubs() -> Vec<String> {
+    vec![
         "declare const NuxtLink: any;".into(),
         "declare const NuxtPage: any;".into(),
         "declare const NuxtLayout: any;".into(),

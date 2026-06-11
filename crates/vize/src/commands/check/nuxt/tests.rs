@@ -383,6 +383,91 @@ export {}
 }
 
 #[test]
+fn skips_fallback_any_stubs_when_generated_import_manifest_exists() {
+    let project_root = unique_case_dir("nuxt-no-fallback-with-generated");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join(".nuxt/types")).unwrap();
+    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/types/imports.d.ts"),
+        r#"declare global {
+  const useRouter: typeof import('vue-router')['useRouter']
+  const navigateTo: typeof import('../../node_modules/nuxt/dist/app/composables/router')['navigateTo']
+}
+export {}
+"#,
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+
+    assert!(
+        options
+            .auto_import_stubs
+            .iter()
+            .any(|stub| stub.contains("declare const useRouter: typeof import(")),
+        "expected generated useRouter stub, got: {:#?}",
+        options.auto_import_stubs
+    );
+    let any_ladder = [
+        "declare function useRouter(): any;",
+        "declare function useRoute(name?: string): any;",
+        "declare function navigateTo(to: string | any, options?: any): any;",
+        "declare function useNuxtApp(): any;",
+        "declare function watch(source: any, cb: (...args: any[]) => any, options?: any): any;",
+    ];
+    for fallback in any_ladder {
+        assert!(
+            !options
+                .auto_import_stubs
+                .iter()
+                .any(|stub| stub == fallback),
+            "fallback any-stub {fallback:?} should not be injected when .nuxt generated types exist: {:#?}",
+            options.auto_import_stubs
+        );
+    }
+    assert!(
+        options
+            .auto_import_stubs
+            .iter()
+            .any(|stub| stub == "type Ref<T = any> = import('vue').Ref<T>;"),
+        "auto-imported type aliases should still be injected: {:#?}",
+        options.auto_import_stubs
+    );
+    assert!(
+        options
+            .auto_import_stubs
+            .iter()
+            .any(|stub| stub == "declare const NuxtLink: any;"),
+        "built-in component stubs should still be injected: {:#?}",
+        options.auto_import_stubs
+    );
+
+    // Without generated artifacts the any-ladder remains the last resort.
+    let fallback_root = unique_case_dir("nuxt-fallback-without-generated");
+    let _ = std::fs::remove_dir_all(&fallback_root);
+    std::fs::create_dir_all(&fallback_root).unwrap();
+    std::fs::write(fallback_root.join("nuxt.config.ts"), "export default {}").unwrap();
+
+    let mut fallback_options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut fallback_options, &fallback_root);
+    for fallback in any_ladder {
+        assert!(
+            fallback_options
+                .auto_import_stubs
+                .iter()
+                .any(|stub| stub == fallback),
+            "fallback any-stub {fallback:?} should be injected without .nuxt generated types: {:#?}",
+            fallback_options.auto_import_stubs
+        );
+    }
+
+    let _ = std::fs::remove_dir_all(&project_root);
+    let _ = std::fs::remove_dir_all(&fallback_root);
+}
+
+#[test]
 fn detects_module_fallbacks_from_nuxt_config() {
     let project_root = unique_case_dir("nuxt-module-fallbacks");
     let _ = std::fs::remove_dir_all(&project_root);
