@@ -1,7 +1,10 @@
 //! Tests for the Vue template parser.
 #![allow(clippy::disallowed_macros)]
 
-use super::{parse, parse_with_options, parse_with_options_and_template_syntax};
+use super::{
+    parse, parse_document, parse_document_with_options, parse_with_options,
+    parse_with_options_and_template_syntax,
+};
 use vize_carton::Bump;
 use vize_relief::{
     ast::{ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode},
@@ -1756,4 +1759,182 @@ fn test_parse_nested_p_without_boundary_still_auto_closes() {
         &root.children[1],
         TemplateChildNode::Element(p) if p.tag.as_str() == "p"
     ));
+}
+
+// --- Document mode (petite-vue / standalone HTML) -------------------------
+
+/// Recursively find the first element with the given tag in a child list.
+fn find_element<'a, 'b>(
+    children: &'b [TemplateChildNode<'a>],
+    tag: &str,
+) -> Option<&'b vize_relief::ast::ElementNode<'a>> {
+    for child in children {
+        if let TemplateChildNode::Element(el) = child {
+            if el.tag.as_str() == tag {
+                return Some(el);
+            }
+            if let Some(found) = find_element(&el.children, tag) {
+                return Some(found);
+            }
+        }
+    }
+    None
+}
+
+/// A full HTML document with a doctype parses without the spurious
+/// `IncorrectlyOpenedComment` error that SFC-template parsing would emit, and
+/// the `<html>/<head>/<body>` tree is available for downstream analysis.
+#[test]
+fn test_document_mode_tolerates_doctype() {
+    let allocator = Bump::new();
+    let src = "<!DOCTYPE html>\n<html><head></head><body><div>hi</div></body></html>";
+    let (root, errors) = parse_document(&allocator, src);
+
+    assert!(
+        !errors
+            .iter()
+            .any(|e| e.code == ErrorCode::IncorrectlyOpenedComment),
+        "doctype should not produce IncorrectlyOpenedComment: {errors:?}"
+    );
+    assert!(find_element(&root.children, "html").is_some());
+    assert!(find_element(&root.children, "head").is_some());
+    assert!(find_element(&root.children, "body").is_some());
+    assert!(find_element(&root.children, "div").is_some());
+}
+
+/// Doctype is case-insensitive and may carry a legacy public identifier; still
+/// tolerated in document mode.
+#[test]
+fn test_document_mode_tolerates_legacy_doctype() {
+    let allocator = Bump::new();
+    let src = r#"<!doctype HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><html><body></body></html>"#;
+    let (root, errors) = parse_document(&allocator, src);
+
+    assert!(
+        !errors
+            .iter()
+            .any(|e| e.code == ErrorCode::IncorrectlyOpenedComment),
+        "legacy doctype should be tolerated: {errors:?}"
+    );
+    assert!(find_element(&root.children, "body").is_some());
+}
+
+/// petite-vue directives on ordinary DOM elements (`v-scope`, `v-effect`,
+/// `@click`) are parsed as directives, so lint/scope can analyze them.
+#[test]
+fn test_document_mode_parses_petite_directives() {
+    let allocator = Bump::new();
+    let src = concat!(
+        "<!DOCTYPE html>\n",
+        r#"<html><body><div v-scope="{ count: 0 }" v-effect="$el.dataset.c = count">"#,
+        r#"<button @click="count++">inc</button></div></body></html>"#,
+    );
+    let (root, errors) = parse_document(&allocator, src);
+    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+
+    let div = find_element(&root.children, "div").expect("div present");
+    let mut saw_scope = false;
+    let mut saw_effect = false;
+    for prop in &div.props {
+        if let PropNode::Directive(dir) = prop {
+            match dir.name.as_str() {
+                "scope" => {
+                    saw_scope = true;
+                    if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
+                        assert_eq!(exp.content.as_str(), "{ count: 0 }");
+                    }
+                }
+                "effect" => saw_effect = true,
+                _ => {}
+            }
+        }
+    }
+    assert!(saw_scope, "v-scope directive should be parsed");
+    assert!(saw_effect, "v-effect directive should be parsed");
+
+    let button = find_element(&root.children, "button").expect("button present");
+    let on = button.props.iter().find_map(|p| match p {
+        PropNode::Directive(d) if d.name.as_str() == "on" => Some(d),
+        _ => None,
+    });
+    let on = on.expect("@click should parse as v-on");
+    if let Some(ExpressionNode::Simple(arg)) = &on.arg {
+        assert_eq!(arg.content.as_str(), "click");
+    }
+}
+
+/// `<script>` and `<style>` content is kept as raw text in document mode (no
+/// interpolation/tag parsing inside), matching template-mode RCDATA handling.
+#[test]
+fn test_document_mode_script_and_style_are_raw() {
+    let allocator = Bump::new();
+    let src = concat!(
+        "<!DOCTYPE html>\n",
+        r#"<html><head><style>.a { color: red }</style>"#,
+        r#"<script>if (a < b) { x = "{{ not interpolation }}" }</script>"#,
+        r#"</head><body></body></html>"#,
+    );
+    let (root, errors) = parse_document(&allocator, src);
+    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+
+    let script = find_element(&root.children, "script").expect("script present");
+    assert_eq!(script.children.len(), 1);
+    assert!(matches!(&script.children[0], TemplateChildNode::Text(_)));
+    let style = find_element(&root.children, "style").expect("style present");
+    assert_eq!(style.children.len(), 1);
+    assert!(matches!(&style.children[0], TemplateChildNode::Text(_)));
+}
+
+/// Document mode is additive: a bare `<!DOCTYPE html>` in SFC-template mode
+/// still reports the recoverable error, proving the existing behavior is
+/// untouched and the toleration is opt-in.
+#[test]
+fn test_template_mode_doctype_still_errors() {
+    let allocator = Bump::new();
+    let (_root, errors) = parse(&allocator, "<!DOCTYPE html><div></div>");
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::IncorrectlyOpenedComment),
+        "template mode must keep reporting the doctype as IncorrectlyOpenedComment"
+    );
+}
+
+/// Real parse errors (e.g. an unclosed element) are still surfaced in document
+/// mode — toleration is scoped to the doctype declaration only.
+#[test]
+fn test_document_mode_reports_real_errors() {
+    let allocator = Bump::new();
+    let src = "<!DOCTYPE html><html><body><div></body></html>";
+    let (_root, errors) = parse_document(&allocator, src);
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingEndTag || e.code == ErrorCode::InvalidEndTag),
+        "unclosed <div> should still produce an error: {errors:?}"
+    );
+}
+
+/// `parse_document_with_options` honors custom parser options (here custom
+/// interpolation delimiters) while still tolerating the doctype.
+#[test]
+fn test_document_mode_with_options() {
+    let allocator = Bump::new();
+    let mut options = ParserOptions::default();
+    options.delimiters = ("[[".into(), "]]".into());
+    let src = "<!DOCTYPE html><html><body><span>[[ msg ]]</span></body></html>";
+    let (root, errors) = parse_document_with_options(&allocator, src, options);
+    assert!(
+        !errors
+            .iter()
+            .any(|e| e.code == ErrorCode::IncorrectlyOpenedComment),
+        "doctype tolerated with options: {errors:?}"
+    );
+    let span = find_element(&root.children, "span").expect("span present");
+    assert!(
+        span.children
+            .iter()
+            .any(|c| matches!(c, TemplateChildNode::Interpolation(_))),
+        "custom delimiters should produce an interpolation node"
+    );
 }

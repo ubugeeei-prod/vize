@@ -60,6 +60,11 @@ pub struct Parser<'a> {
     open_a_count: usize,
     open_button_count: usize,
     open_form_count: usize,
+    /// Whether the parser is in full-HTML-document mode (petite-vue / standalone
+    /// HTML). When set, the tokenizer tolerates the leading doctype declaration
+    /// so a real document's `<!DOCTYPE html>` is not reported as a parse error.
+    /// SFC `<template>` parsing leaves this `false` and stays byte-identical.
+    document: bool,
 }
 
 /// Stack entry for tracking parent elements
@@ -178,7 +183,37 @@ impl<'a> Parser<'a> {
             open_a_count: 0,
             open_button_count: 0,
             open_form_count: 0,
+            document: false,
         }
+    }
+
+    /// Create a new parser in full-HTML-document mode.
+    ///
+    /// Document mode is additive: it parses an entire HTML document (doctype +
+    /// `<html>/<head>/<body>`, with `<script>`/`<style>` kept as raw text) into
+    /// the same template AST, so downstream analysis (lint/scope) can run over a
+    /// petite-vue HTML page where directives (`v-scope`, `v-effect`, `@click`)
+    /// live on ordinary elements. The only behavioral difference from
+    /// [`Parser::with_options`] is doctype tolerance; SFC `<template>` parsing is
+    /// unaffected.
+    pub fn new_document(allocator: &'a Bump, source: &'a str) -> Self {
+        Self::document_with_options(allocator, source, ParserOptions::default())
+    }
+
+    /// Create a new document-mode parser with options.
+    pub fn document_with_options(
+        allocator: &'a Bump,
+        source: &'a str,
+        options: ParserOptions,
+    ) -> Self {
+        let mut parser = Self::with_options_and_template_syntax(
+            allocator,
+            source,
+            options,
+            TemplateSyntaxMode::Standard,
+        );
+        parser.document = true;
+        parser
     }
 
     /// Parse the source and return the AST
@@ -195,12 +230,14 @@ impl<'a> Parser<'a> {
 
         // We need to use a struct that implements Callbacks
         // Create a wrapper that can capture the parser
+        let document = self.document;
         let mut tokenizer = Tokenizer::with_delimiters(
             self.source,
             ParserCallbacks { parser: &mut self },
             &delimiter_open,
             &delimiter_close,
         );
+        tokenizer.set_tolerate_declarations(document);
         tokenizer.tokenize();
 
         // Handle any unclosed elements
@@ -348,6 +385,30 @@ impl<'a> Parser<'a> {
 /// Parse a Vue template
 pub fn parse<'a>(allocator: &'a Bump, source: &'a str) -> (RootNode<'a>, Vec<'a, CompilerError>) {
     Parser::new(allocator, source).parse()
+}
+
+/// Parse a full HTML document (petite-vue / standalone HTML) into the template AST.
+///
+/// Unlike [`parse`], which expects an SFC `<template>` block, this entry point
+/// tolerates a leading `<!DOCTYPE html>` declaration and parses the whole
+/// document (`<html>/<head>/<body>`, `<script>`/`<style>` as raw text) so
+/// downstream lint/scope analysis can run on petite-vue pages whose directives
+/// sit on ordinary DOM elements. Additive: existing template parsing is
+/// unchanged.
+pub fn parse_document<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    Parser::new_document(allocator, source).parse()
+}
+
+/// Parse a full HTML document with options. See [`parse_document`].
+pub fn parse_document_with_options<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: ParserOptions,
+) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    Parser::document_with_options(allocator, source, options).parse()
 }
 
 /// Parse a Vue template with options

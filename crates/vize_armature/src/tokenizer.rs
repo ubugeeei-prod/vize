@@ -56,6 +56,15 @@ pub struct Tokenizer<'a, C: Callbacks> {
     /// The tokenizer needs this one-token memory to report `<div a="b"c>` as
     /// recoverable missing whitespace instead of silently starting `c`.
     after_quoted_attr_value: bool,
+
+    /// Whether to tolerate top-level markup declarations such as `<!DOCTYPE html>`.
+    ///
+    /// In the default (SFC `<template>`) mode this stays `false`, so a stray
+    /// declaration is reported as a recoverable `IncorrectlyOpenedComment` and
+    /// the hot path is byte-identical. Document mode sets it `true` so a real
+    /// HTML document's doctype is skipped silently instead of producing a
+    /// spurious parse error.
+    tolerate_declarations: bool,
 }
 
 impl<'a, C: Callbacks> Tokenizer<'a, C> {
@@ -88,7 +97,14 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             sequence_index: 0,
             in_rcdata: false,
             after_quoted_attr_value: false,
+            tolerate_declarations: false,
         }
+    }
+
+    /// Tolerate top-level markup declarations (e.g. `<!DOCTYPE html>`) instead of
+    /// reporting them as recoverable errors. Used by document parse mode.
+    pub fn set_tolerate_declarations(&mut self, tolerate: bool) {
+        self.tolerate_declarations = tolerate;
     }
 
     /// Get the position for a given index

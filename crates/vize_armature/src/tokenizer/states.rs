@@ -594,10 +594,16 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.state = State::CDATASequence;
             self.section_start = self.index + 1;
         } else {
-            self.callbacks.on_error(
-                ErrorCode::IncorrectlyOpenedComment,
-                self.section_start.saturating_sub(2),
-            );
+            // In document mode a leading `<!DOCTYPE html>` (or any markup
+            // declaration) is expected; skip it silently rather than reporting
+            // a spurious recoverable error. SFC `<template>` mode keeps the
+            // original behavior so existing output stays byte-identical.
+            if !self.tolerate_declarations {
+                self.callbacks.on_error(
+                    ErrorCode::IncorrectlyOpenedComment,
+                    self.section_start.saturating_sub(2),
+                );
+            }
             self.state = State::InDeclaration;
         }
     }
