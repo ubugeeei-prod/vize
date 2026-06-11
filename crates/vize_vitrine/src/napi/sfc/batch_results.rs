@@ -1,11 +1,8 @@
 use napi::{Result, Status};
 use napi_derive::napi;
-use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::{
-    sync::{
-        Mutex,
-        atomic::{AtomicUsize, Ordering},
-    },
+    sync::atomic::{AtomicUsize, Ordering},
     time::Instant,
 };
 use vize_carton::cstr;
@@ -35,9 +32,8 @@ pub fn compile_sfc_batch_with_results(
             .build_global();
     }
 
-    let results: Mutex<Vec<BatchFileResultNapi>> = Mutex::new(Vec::with_capacity(files.len()));
+    let total_count = files.len();
     let success_count = AtomicUsize::new(0);
-    let failed_count = AtomicUsize::new(0);
     let ssr = opts.ssr.unwrap_or(false);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
@@ -47,25 +43,25 @@ pub fn compile_sfc_batch_with_results(
     let standalone = opts.mode.as_deref() == Some("function");
     let start = Instant::now();
 
-    files.par_iter().for_each(|file| {
-        let filename = &file.path;
-        let source = &file.source;
-        let scope_id = vize_atelier_sfc::generate_bundler_scope_id(filename, None, false, None);
-        let filename_cs: vize_carton::CompactString = filename.clone().into();
-        let descriptor = match sfc_parse(
-            source,
-            SfcParseOptions {
-                filename: filename_cs.clone(),
-                ..Default::default()
-            },
-        ) {
-            Ok(descriptor) => descriptor,
-            Err(error) => {
-                failed_count.fetch_add(1, Ordering::Relaxed);
-                push_result(
-                    &results,
-                    BatchFileResultNapi {
-                        path: filename.clone(),
+    // Indexed parallel map keeps results in input order (deterministic) and
+    // collects lock-free, replacing the previous contended `Mutex<Vec>`.
+    let results: Vec<BatchFileResultNapi> = files
+        .into_par_iter()
+        .map(|file| {
+            let scope_id =
+                vize_atelier_sfc::generate_bundler_scope_id(&file.path, None, false, None);
+            let filename_cs: vize_carton::CompactString = file.path.as_str().into();
+            let descriptor = match sfc_parse(
+                &file.source,
+                SfcParseOptions {
+                    filename: filename_cs.clone(),
+                    ..Default::default()
+                },
+            ) {
+                Ok(descriptor) => descriptor,
+                Err(error) => {
+                    return BatchFileResultNapi {
+                        path: file.path,
                         code: String::new(),
                         css: None,
                         scope_id: scope_id.into(),
@@ -78,61 +74,56 @@ pub fn compile_sfc_batch_with_results(
                         styles: vec![],
                         custom_blocks: vec![],
                         macro_artifacts: vec![],
-                    },
-                );
-                return;
-            }
-        };
+                    };
+                }
+            };
 
-        let template_hash: Option<String> = descriptor.template_hash().map(Into::into);
-        let style_hash: Option<String> = descriptor.style_hash().map(Into::into);
-        let script_hash: Option<String> = descriptor.script_hash().map(Into::into);
-        let styles = style_blocks_to_napi(&descriptor.styles);
-        let custom_blocks = custom_blocks_to_napi(&descriptor.custom_blocks);
-        let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
-        let template_compiler_options = Some(vize_atelier_dom::DomCompilerOptions {
-            scope_id: has_scoped.then(|| cstr!("data-v-{scope_id}")),
-            ..Default::default()
-        });
-        let compile_opts = SfcCompileOptions {
-            parse: SfcParseOptions {
-                filename: filename_cs.clone(),
+            let template_hash: Option<String> = descriptor.template_hash().map(Into::into);
+            let style_hash: Option<String> = descriptor.style_hash().map(Into::into);
+            let script_hash: Option<String> = descriptor.script_hash().map(Into::into);
+            let styles = style_blocks_to_napi(&descriptor.styles);
+            let custom_blocks = custom_blocks_to_napi(&descriptor.custom_blocks);
+            let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
+            let template_compiler_options = Some(vize_atelier_dom::DomCompilerOptions {
+                scope_id: has_scoped.then(|| cstr!("data-v-{scope_id}")),
                 ..Default::default()
-            },
-            script: ScriptCompileOptions {
-                id: Some(filename_cs.clone()),
-                inline_template: standalone,
-                is_ts,
-                ..Default::default()
-            },
-            template: TemplateCompileOptions {
-                id: Some(filename_cs.clone()),
-                scoped: has_scoped,
-                ssr,
-                is_ts,
-                custom_renderer,
-                compiler_options: template_compiler_options,
-                ..Default::default()
-            },
-            style: StyleCompileOptions {
-                id: filename_cs,
-                scoped: has_scoped,
-                ..Default::default()
-            },
-            vapor,
-            scope_id: Some(scope_id.clone()),
-        };
+            });
+            // `parse.filename` is left empty: compile falls back to `script.id`,
+            // which carries the same value, so no per-file clone is needed.
+            // `template.id` is never read by the template compiler.
+            let compile_opts = SfcCompileOptions {
+                parse: SfcParseOptions::default(),
+                script: ScriptCompileOptions {
+                    id: Some(filename_cs.clone()),
+                    inline_template: standalone,
+                    is_ts,
+                    ..Default::default()
+                },
+                template: TemplateCompileOptions {
+                    scoped: has_scoped,
+                    ssr,
+                    is_ts,
+                    custom_renderer,
+                    compiler_options: template_compiler_options,
+                    ..Default::default()
+                },
+                style: StyleCompileOptions {
+                    id: filename_cs,
+                    scoped: has_scoped,
+                    ..Default::default()
+                },
+                vapor,
+                scope_id: Some(scope_id.clone()),
+            };
 
-        let compile_result =
-            sfc_compile_with_template_syntax(&descriptor, compile_opts, template_syntax);
+            let compile_result =
+                sfc_compile_with_template_syntax(&descriptor, compile_opts, template_syntax);
 
-        match compile_result {
-            Ok(result) => {
-                success_count.fetch_add(1, Ordering::Relaxed);
-                push_result(
-                    &results,
+            match compile_result {
+                Ok(result) => {
+                    success_count.fetch_add(1, Ordering::Relaxed);
                     BatchFileResultNapi {
-                        path: filename.clone(),
+                        path: file.path,
                         code: result.code.into(),
                         css: result.css.map(Into::into),
                         scope_id: scope_id.into(),
@@ -147,56 +138,39 @@ pub fn compile_sfc_batch_with_results(
                             .into_iter()
                             .map(|e| e.message.into())
                             .collect(),
-                        template_hash: template_hash.clone(),
-                        style_hash: style_hash.clone(),
-                        script_hash: script_hash.clone(),
-                        styles,
-                        custom_blocks,
-                        macro_artifacts: macro_artifacts_to_napi(result.macro_artifacts),
-                    },
-                );
-            }
-            Err(error) => {
-                failed_count.fetch_add(1, Ordering::Relaxed);
-                push_result(
-                    &results,
-                    BatchFileResultNapi {
-                        path: filename.clone(),
-                        code: String::new(),
-                        css: None,
-                        scope_id: scope_id.into(),
-                        has_scoped,
-                        errors: vec![error.message.into()],
-                        warnings: vec![],
                         template_hash,
                         style_hash,
                         script_hash,
                         styles,
                         custom_blocks,
-                        macro_artifacts: vec![],
-                    },
-                );
+                        macro_artifacts: macro_artifacts_to_napi(result.macro_artifacts),
+                    }
+                }
+                Err(error) => BatchFileResultNapi {
+                    path: file.path,
+                    code: String::new(),
+                    css: None,
+                    scope_id: scope_id.into(),
+                    has_scoped,
+                    errors: vec![error.message.into()],
+                    warnings: vec![],
+                    template_hash,
+                    style_hash,
+                    script_hash,
+                    styles,
+                    custom_blocks,
+                    macro_artifacts: vec![],
+                },
             }
-        }
-    });
+        })
+        .collect();
 
-    let final_results = match results.into_inner() {
-        Ok(results) => results,
-        Err(poisoned) => poisoned.into_inner(),
-    };
+    let success = success_count.load(Ordering::Relaxed);
 
     Ok(BatchCompileResultWithFilesNapi {
-        results: final_results,
-        success_count: success_count.load(Ordering::Relaxed) as u32,
-        failed_count: failed_count.load(Ordering::Relaxed) as u32,
+        results,
+        success_count: success as u32,
+        failed_count: (total_count - success) as u32,
         time_ms: start.elapsed().as_secs_f64() * 1000.0,
     })
-}
-
-fn push_result(results: &Mutex<Vec<BatchFileResultNapi>>, result: BatchFileResultNapi) {
-    let mut guard = match results.lock() {
-        Ok(guard) => guard,
-        Err(poisoned) => poisoned.into_inner(),
-    };
-    guard.push(result);
 }
