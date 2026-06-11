@@ -320,6 +320,25 @@ impl<'a> TransformContext<'a> {
             .supports_filters
     }
 
+    /// Whether the resolved dialect is the Vue 2 / 2.7 template line, which
+    /// carried the removed v-on event-modifier sugar (`@click.native`, numeric
+    /// keycodes such as `@keyup.13`). Resolved from
+    /// [`vize_armature::legacy::LegacyVueVersion::from_dialect`] for the dialect
+    /// on [`TransformOptions::dialect`](crate::options::TransformOptions::dialect).
+    ///
+    /// Always `false` for the default Vue 3 dialect (and every other legacy
+    /// line), so the Vue 2 event-modifier desugaring is never entered there and
+    /// the directive's modifiers stay byte-identical to today's output.
+    /// Legacy-only.
+    #[cfg(feature = "legacy")]
+    #[inline]
+    pub(crate) fn supports_v2_event_sugar(&self) -> bool {
+        matches!(
+            vize_armature::legacy::LegacyVueVersion::from_dialect(self.options.dialect),
+            Some(vize_armature::legacy::LegacyVueVersion::V2)
+        )
+    }
+
     /// Add an identifier to current scope
     pub fn add_identifier(&mut self, id: impl Into<CompactString>) {
         self.scope_chain

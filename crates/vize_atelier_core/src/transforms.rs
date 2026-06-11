@@ -4,8 +4,10 @@
 //! directives and node types during the transform phase.
 
 pub mod hoist_static;
-/// Legacy Vue (v2 / v2.7) template-sugar pre-transforms. Compiled only with the
-/// `legacy` cargo feature; a no-op for the default Vue 3 dialect.
+/// Legacy Vue (v2 / v2.7) template-sugar pre-transforms (`.sync`, scoped-slot
+/// attributes) and v-on event-modifier sugar (`.native`, numeric keycodes).
+/// Compiled only with the `legacy` cargo feature; a no-op for the default Vue 3
+/// dialect.
 #[cfg(feature = "legacy")]
 pub mod legacy;
 /// Vue 2 pipe-filter parsing/rewriting. Legacy-only and dialect-gated; see the
