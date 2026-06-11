@@ -44,6 +44,8 @@ pub(super) struct VueCodegenOptions {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
+    /// Configured Vue dialect (default [`VueVersion::V3`]); plumbing only today.
+    pub(super) dialect: vize_carton::config::VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
     /// Whether the shared preamble (ImportMeta augmentation + helper types) is
     /// hoisted to a program-wide ambient `.d.ts`. The batch path materializes
@@ -190,6 +192,7 @@ pub(super) fn generate_vue_virtual_ts(
             options,
             VirtualTsGenerationOptions {
                 check_options: codegen_options.check_options,
+                dialect: codegen_options.dialect,
                 preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
                 options_api: codegen_options.options_api,
                 legacy_vue2: codegen_options.legacy_vue2,

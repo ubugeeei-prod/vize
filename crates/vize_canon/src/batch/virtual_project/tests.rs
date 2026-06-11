@@ -196,6 +196,67 @@ defineProps<{
 }
 
 #[test]
+fn test_configured_dialect_threads_through_generation_without_changing_output() {
+    // Plumbing check for issue #1392: a configured non-default Vue dialect
+    // (`vue.version`) is threaded through `set_dialect` into virtual-TS
+    // generation. This PR is plumbing only, so the dialect must reach the
+    // generator without changing output yet — Vue 2 output is byte-identical to
+    // the default Vue 3 output until the dialect-aware emission lands.
+    let vue_content = r#"<script setup lang="ts">
+defineProps<{
+  test: string
+}>()
+</script>
+
+<template>
+  <div>{{ test }}</div>
+</template>
+"#;
+
+    let v3_dir = unique_case_dir("dialect-default-v3");
+    let _ = fs::remove_dir_all(&v3_dir);
+    let v3_src = v3_dir.join("src");
+    fs::create_dir_all(&v3_src).unwrap();
+    let v3_path = v3_src.join("App.vue");
+    fs::write(&v3_path, vue_content).unwrap();
+
+    let mut default_project = VirtualProject::new(&v3_dir).unwrap();
+    // No `set_dialect` call: the default is Vue 3.
+    default_project.register_path(&v3_path).unwrap();
+    let default_content = default_project
+        .find_by_original(&v3_path)
+        .unwrap()
+        .content
+        .clone();
+
+    let v2_dir = unique_case_dir("dialect-v2");
+    let _ = fs::remove_dir_all(&v2_dir);
+    let v2_src = v2_dir.join("src");
+    fs::create_dir_all(&v2_src).unwrap();
+    let v2_path = v2_src.join("App.vue");
+    fs::write(&v2_path, vue_content).unwrap();
+
+    let mut v2_project = VirtualProject::new(&v2_dir).unwrap();
+    v2_project.set_dialect(vize_carton::config::VueVersion::V2);
+    v2_project.register_path(&v2_path).unwrap();
+    let v2_content = v2_project
+        .find_by_original(&v2_path)
+        .unwrap()
+        .content
+        .clone();
+
+    // The dialect reached generation (the call compiles and registration
+    // succeeds), and plumbing-only means default-V3 output is unchanged.
+    assert_eq!(
+        v2_content, default_content,
+        "plumbing-only: Vue 2 dialect must not change generated virtual TS yet"
+    );
+
+    let _ = fs::remove_dir_all(&v3_dir);
+    let _ = fs::remove_dir_all(&v2_dir);
+}
+
+#[test]
 fn test_register_vue_file_reports_script_parse_error_with_fallback() {
     let case_dir = unique_case_dir("script-parse-error");
     let _ = fs::remove_dir_all(&case_dir);

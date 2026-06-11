@@ -1,5 +1,5 @@
 use super::{
-    collect_project_global_component_stubs, find_nearest_tsconfig_dir,
+    collect_project_global_component_stubs, dialect_from_features, find_nearest_tsconfig_dir,
     is_suppressed_false_positive, resolve_declaration_dir, resolve_declaration_emit_options,
     resolve_project_root, resolve_tsconfig_path, validate_corsa_server_count,
     write_nuxt_fallback_tsconfig,
@@ -331,6 +331,22 @@ fn writes_nuxt_fallback_tsconfig_without_overwriting_existing_paths() {
     assert_eq!(paths["#shared/*"], serde_json::json!(["../../../shared/*"]));
 
     let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn resolves_configured_vue_dialect_for_canon_generation() {
+    use crate::config::VueVersion;
+
+    // Plumbing for issue #1392: `vue.version` from config reaches canon's
+    // virtual-TS generation. An explicit Vue 2 config selects V2; an unset
+    // `vue.version` defaults to Vue 3 so the default path stays unchanged.
+    assert_eq!(dialect_from_features(Some(VueVersion::V2)), VueVersion::V2);
+    assert_eq!(
+        dialect_from_features(Some(VueVersion::V2_7)),
+        VueVersion::V2_7
+    );
+    assert_eq!(dialect_from_features(None), VueVersion::V3);
+    assert_eq!(dialect_from_features(Some(VueVersion::V3)), VueVersion::V3);
 }
 
 #[test]

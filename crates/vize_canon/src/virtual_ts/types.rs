@@ -2,6 +2,7 @@
 
 use std::ops::Range;
 use vize_carton::String;
+use vize_carton::config::VueVersion;
 
 /// A mapping from generated virtual TS position to SFC source position.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -107,6 +108,13 @@ impl Default for VirtualTsCheckOptions {
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct VirtualTsGenerationOptions {
     pub(crate) check_options: VirtualTsCheckOptions,
+    /// Configured Vue dialect for this project (default [`VueVersion::V3`]).
+    ///
+    /// Threaded from `vue.version` in `vize.config` through the check runner so
+    /// canon can later emit dialect-aware instance types (e.g. a Vue 2 `this`
+    /// shape). Plumbing only today: the generator carries it but does not branch
+    /// on it yet, so default-V3 output stays byte-identical.
+    pub(crate) dialect: VueVersion,
     /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
     pub(crate) options_api: bool,
     /// Legacy Vue 2.7 / Nuxt 2 (implies `options_api` plus Nuxt 2 globals).

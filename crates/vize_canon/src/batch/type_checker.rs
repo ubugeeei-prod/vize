@@ -183,6 +183,17 @@ impl BatchTypeChecker {
         self.project.set_template_syntax(template_syntax);
     }
 
+    /// Set the configured Vue dialect (`vue.version`; default
+    /// [`VueVersion::V3`](vize_carton::config::VueVersion::V3)).
+    ///
+    /// Plumbing only today: the dialect is threaded into virtual-TS generation
+    /// so canon can later emit dialect-aware instance types (e.g. a Vue 2 `this`
+    /// shape). It does not change generated output yet, so the default V3 path
+    /// stays byte-identical.
+    pub fn set_dialect(&mut self, dialect: vize_carton::config::VueVersion) {
+        self.project.set_dialect(dialect);
+    }
+
     /// Scan an explicit set of project files.
     ///
     /// The underlying virtual project parallelizes registration for multi-file

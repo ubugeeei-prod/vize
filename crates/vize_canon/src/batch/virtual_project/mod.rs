@@ -94,6 +94,12 @@ pub struct VirtualProject {
     options_api: bool,
     legacy_vue2: bool,
 
+    /// Configured Vue dialect from `vue.version` (default [`VueVersion::V3`]).
+    ///
+    /// Threaded in for future dialect-aware instance typing; plumbing only
+    /// today, so it does not affect generated virtual TS yet.
+    dialect: vize_carton::config::VueVersion,
+
     /// Template syntax compatibility used when parsing SFC templates.
     template_syntax: TemplateSyntaxMode,
 

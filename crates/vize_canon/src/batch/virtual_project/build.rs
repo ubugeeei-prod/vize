@@ -43,6 +43,8 @@ pub(super) struct VirtualBuildContext<'a> {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
+    /// Configured Vue dialect (default [`VueVersion::V3`]); plumbing only today.
+    pub(super) dialect: vize_carton::config::VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) rewriter: &'a ImportRewriter,
 }
@@ -115,6 +117,7 @@ pub(super) fn build_vue_registered_file(
                 preserve_unused_diagnostics: context.preserve_unused_diagnostics,
                 options_api: context.options_api,
                 legacy_vue2: context.legacy_vue2,
+                dialect: context.dialect,
                 template_syntax: context.template_syntax,
                 hoist_shared_preamble: true,
             },
@@ -206,6 +209,8 @@ pub fn generate_vue_document_virtual_ts(
             preserve_unused_diagnostics: false,
             options_api: false,
             legacy_vue2: false,
+            // Single-document socket path is always the default Vue 3 dialect.
+            dialect: vize_carton::config::VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
             hoist_shared_preamble,
         },

@@ -46,7 +46,8 @@ use diagnostics::{
     save_virtual_ts_for_path, write_profile_virtual_ts,
 };
 use global_components::{
-    build_virtual_ts_options, collect_project_global_component_stubs, template_syntax_mode,
+    build_virtual_ts_options, collect_project_global_component_stubs, dialect_from_features,
+    template_syntax_mode,
 };
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
 #[cfg(test)]
@@ -98,6 +99,10 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         .source_path
         .as_deref()
         .and_then(|path| crate::config::load_compiler_template_syntax(Some(path)));
+    // Configured Vue dialect (`vue.version`). Defaults to Vue 3 when unset.
+    // Plumbing only today: threaded into canon's virtual-TS generation so it can
+    // later emit dialect-aware instance types; it does not change output yet.
+    let dialect = dialect_from_features(loaded_config.features.vue_version);
     // Vue 3 Options API binding resolution is officially supported and is a
     // standard-build opt-in (not the `legacy` feature).
     let options_api = loaded_config.features.type_checker_options_api;
@@ -304,6 +309,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         checker.enable_legacy_vue2();
     }
     checker.set_template_syntax(template_syntax_mode(compiler_template_syntax));
+    checker.set_dialect(dialect);
     checker.set_virtual_ts_checks(
         config.type_checker.check_props && !args.no_check_props,
         config.type_checker.check_template_bindings && !args.no_check_template_bindings,
