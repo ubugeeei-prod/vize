@@ -883,6 +883,82 @@ export default class App extends Vue {
 }
 
 #[test]
+fn test_parse_class_component_member_decorator_semantics() {
+    // `@Emit` declares emitted events; `@Inject` members resolve like Options
+    // API `inject` (template-referenceable, not reactive data).
+    let source = r#"
+import { Vue, Component, Emit, Inject } from 'vue-property-decorator'
+
+@Component
+export default class Widget extends Vue {
+  @Inject() readonly svc!: Svc
+  @Inject('themeKey') readonly theme!: Theme
+
+  count = 0
+
+  @Emit()
+  onChange() {
+    return this.count
+  }
+
+  @Emit('reset-all')
+  reset() {}
+}
+"#;
+    let result = parse_script(source);
+
+    assert_eq!(result.component_shape, ComponentShape::ClassApi);
+
+    // `@Inject` members are injected bindings, classified like an Options API
+    // `inject` entry (`Options`), and remain template-referenceable.
+    assert_eq!(result.bindings.get("svc"), Some(BindingType::Options));
+    assert_eq!(result.bindings.get("theme"), Some(BindingType::Options));
+
+    // Undecorated field stays reactive data.
+    assert_eq!(result.bindings.get("count"), Some(BindingType::Data));
+
+    // The `@Emit` methods are still ordinary `Options` (methods) bindings.
+    assert_eq!(result.bindings.get("onChange"), Some(BindingType::Options));
+    assert_eq!(result.bindings.get("reset"), Some(BindingType::Options));
+
+    // `@Emit()` without an argument defaults to the method name kebab-cased;
+    // `@Emit('reset-all')` uses the explicit event name.
+    let emits: Vec<&str> = result
+        .macros
+        .emits()
+        .iter()
+        .map(|e| e.name.as_str())
+        .collect();
+    assert!(
+        emits.contains(&"on-change"),
+        "expected `on-change` emit, got {emits:?}"
+    );
+    assert!(
+        emits.contains(&"reset-all"),
+        "expected `reset-all` emit, got {emits:?}"
+    );
+    assert_eq!(result.macros.emits().len(), 2);
+}
+
+#[test]
+fn test_parse_class_component_no_emit_decorator_no_emits() {
+    // Plain methods (no `@Emit`) declare no emitted events.
+    let source = r#"
+import { Vue, Component } from 'vue-property-decorator'
+
+@Component
+export default class Plain extends Vue {
+  save() {}
+}
+"#;
+    let result = parse_script(source);
+
+    assert_eq!(result.component_shape, ComponentShape::ClassApi);
+    assert_eq!(result.bindings.get("save"), Some(BindingType::Options));
+    assert!(result.macros.emits().is_empty());
+}
+
+#[test]
 fn test_parse_non_class_components_keep_unspecified_shape() {
     // Options-object and script-setup analysis are untouched by the class
     // path: shape stays `Unspecified` and no class-style bindings appear.

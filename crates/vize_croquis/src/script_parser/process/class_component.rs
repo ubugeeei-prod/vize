@@ -26,21 +26,33 @@
 //! the class body and are skipped, along with `static` members (not on the
 //! instance), `declare` fields, computed keys, and the constructor.
 //!
-//! Member-level `@Prop`-style decorators map fields/accessors to prop bindings.
-//! Other member decorators (`@Emit`, `@Watch`, ...) are not interpreted yet;
-//! the members keep the same template binding names either way. The
-//! `@Component({ ... })` / `@Options({ ... })` decorator argument is a regular
-//! options object and is fed through the existing Options API collectors (so
-//! `components:` registrations and inline `data`/`computed`/`methods` behave
-//! identically to an options component).
+//! Member-level decorators are interpreted as follows:
+//!
+//! - `@Prop`-style decorators (`@Prop`/`@PropSync`/`@Model`/`@VModel`) map a
+//!   field/accessor to a prop binding (see #1431).
+//! - `@Emit('name')` on a method declares an emitted event, mirroring an
+//!   Options API `emits` entry / a `defineEmits` declaration: the event name
+//!   defaults to the method name kebab-cased when no string argument is given.
+//! - `@Inject`-style decorators (`@Inject`/`@InjectReactive`) mark a field as
+//!   an injected binding, resolved like an Options API `inject` member
+//!   (`BindingType::Options`) rather than reactive `data`.
+//!
+//! `@Watch` (watcher registration) and `@Provide` have no direct template /
+//! type-resolution effect — the watched/provided members keep their ordinary
+//! binding classification — so they are deliberately not interpreted here.
+//!
+//! The `@Component({ ... })` / `@Options({ ... })` decorator argument is a
+//! regular options object and is fed through the existing Options API
+//! collectors (so `components:` registrations and inline
+//! `data`/`computed`/`methods` behave identically to an options component).
 
 use oxc_ast::ast::{
     Argument, Class, ClassElement, Decorator, ExportDefaultDeclarationKind, Expression,
-    MethodDefinitionKind, ObjectExpression, PropertyKey,
+    MethodDefinition, MethodDefinitionKind, ObjectExpression, PropertyKey,
 };
 use oxc_span::GetSpan;
 
-use vize_carton::FxHashMap;
+use vize_carton::{CompactString, FxHashMap, hyphenate};
 use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
@@ -50,6 +62,7 @@ use super::options_api::{
     property_key_name,
 };
 use crate::croquis::ComponentShape;
+use crate::macros::EmitDefinition;
 
 /// Return the class when the default export is a class declaration or a
 /// (possibly TS-wrapped / parenthesized) class expression.
@@ -120,6 +133,9 @@ pub(super) fn collect_class_component_metadata<'a>(
                 {
                     continue;
                 }
+                // `@Emit` on a method declares an emitted event (the method
+                // body still runs and its return value is the payload).
+                collect_emit_decorator(result, method);
                 // Methods map to `methods`, get/set accessors to `computed`;
                 // both resolve as `Options` bindings.
                 add_class_member_binding(result, &method.key, BindingType::Options);
@@ -150,28 +166,87 @@ pub(super) fn collect_class_component_metadata<'a>(
 }
 
 fn class_field_binding_type(decorators: &[Decorator<'_>]) -> BindingType {
-    if decorators.iter().any(is_prop_like_member_decorator) {
+    // `@Prop`-style decorators win over `@Inject` (a field is never both), and
+    // a plain field falls back to reactive `data`.
+    if decorators
+        .iter()
+        .any(|decorator| member_decorator_name(decorator).is_some_and(is_prop_like_decorator_name))
+    {
         BindingType::Props
+    } else if decorators
+        .iter()
+        .any(|decorator| member_decorator_name(decorator).is_some_and(is_inject_decorator_name))
+    {
+        // `@Inject`/`@InjectReactive` members are injected bindings, resolved
+        // like an Options API `inject` entry (`BindingType::Options`).
+        BindingType::Options
     } else {
         BindingType::Data
     }
 }
 
-fn is_prop_like_member_decorator(decorator: &Decorator<'_>) -> bool {
+/// Identifier name of a member decorator, unwrapping a call form
+/// (`@Emit('x')`) to its callee. Returns `None` for non-identifier callees.
+fn member_decorator_name<'a>(decorator: &'a Decorator<'a>) -> Option<&'a str> {
     match &decorator.expression {
-        Expression::Identifier(identifier) => is_prop_like_decorator_name(identifier.name.as_str()),
-        Expression::CallExpression(call) => {
-            let Expression::Identifier(identifier) = &call.callee else {
-                return false;
-            };
-            is_prop_like_decorator_name(identifier.name.as_str())
-        }
-        _ => false,
+        Expression::Identifier(identifier) => Some(identifier.name.as_str()),
+        Expression::CallExpression(call) => match &call.callee {
+            Expression::Identifier(identifier) => Some(identifier.name.as_str()),
+            _ => None,
+        },
+        _ => None,
     }
 }
 
 fn is_prop_like_decorator_name(name: &str) -> bool {
     matches!(name, "Prop" | "PropSync" | "Model" | "ModelSync" | "VModel")
+}
+
+fn is_inject_decorator_name(name: &str) -> bool {
+    matches!(name, "Inject" | "InjectReactive")
+}
+
+/// Record an `@Emit(...)` decorator on a method as an emitted event.
+///
+/// vue-property-decorator's `@Emit` emits the event named by the decorator's
+/// string argument, defaulting to the method name kebab-cased when omitted
+/// (`@Emit() onReset()` -> `on-reset`). The payload type is left unresolved
+/// here: the method body is a real method whose return value is the payload,
+/// so payload typing is the virtual-TS bridge's job, not the binding pass.
+fn collect_emit_decorator(result: &mut ScriptParseResult, method: &MethodDefinition<'_>) {
+    for decorator in &method.decorators {
+        if member_decorator_name(decorator) != Some("Emit") {
+            continue;
+        }
+
+        let name = match emit_decorator_event_name(&decorator.expression) {
+            Some(name) => name,
+            None => {
+                let Some(method_name) = property_key_name(&method.key) else {
+                    continue;
+                };
+                CompactString::new(hyphenate(method_name))
+            }
+        };
+
+        result.macros.add_emit(EmitDefinition {
+            name,
+            payload_type: None,
+        });
+        // A method carries at most one meaningful `@Emit`; stop after the first.
+        break;
+    }
+}
+
+/// The explicit string-literal event name from `@Emit('name')`, if any.
+fn emit_decorator_event_name(expression: &Expression<'_>) -> Option<CompactString> {
+    let Expression::CallExpression(call) = expression else {
+        return None;
+    };
+    match call.arguments.first()? {
+        Argument::StringLiteral(literal) => Some(CompactString::new(literal.value.as_str())),
+        _ => None,
+    }
 }
 
 /// Options object passed to a `@Component(...)` / `@Options(...)` decorator.
