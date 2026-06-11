@@ -16,7 +16,7 @@ use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 
-// Emit `const <name>: any` declarations for Options API template bindings
+// Emit declarations for Options API template bindings
 // (`data`/`computed`/`methods`/`inject`/`setup`/`props`, plus any Nuxt 2 globals
 // the legacy path collected). Options API is officially supported in Vue 3, so
 // this is part of the standard build and driven by a runtime opt-in — it costs
@@ -60,8 +60,17 @@ pub(super) fn generate_options_api_variables(
     }
 
     ts.push_str("  // Options API template bindings\n");
+    ts.push_str(
+        "  type __VizeOptionsInstance<T> = T extends abstract new (...args: any) => infer I ? I : any;\n",
+    );
+    ts.push_str(
+        "  type __VizeOptionsBinding<T, K extends string> = K extends keyof __VizeOptionsInstance<T> ? __VizeOptionsInstance<T>[K] : any;\n",
+    );
     for name in &names {
-        append!(ts, "  const {name}: any = undefined as any;\n");
+        append!(
+            ts,
+            "  const {name}: __VizeOptionsBinding<typeof __default__, \"{name}\"> = undefined as any;\n"
+        );
     }
     ts.push_str("  ");
     for name in &names {

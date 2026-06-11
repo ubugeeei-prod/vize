@@ -1043,6 +1043,51 @@ fn batch_type_checker_accepts_options_api_this_data_access_in_computed() {
 }
 
 #[test]
+fn batch_type_checker_reports_options_api_template_type_mismatch() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "options-api-template-binding-type",
+        &[(
+            "src/App.vue",
+            r#"<script lang="ts">
+export default {
+  data() {
+    return { count: 0 }
+  },
+}
+</script>
+
+<template>
+  <div>{{ count.toFixed(true) }}</div>
+</template>
+"#,
+        )],
+    );
+
+    if !project_root.join("node_modules/vue/dist").exists() {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    }
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot
+            .iter()
+            .any(|(file, code, _)| { file == "src/App.vue" && *code == Some(2345) }),
+        "expected Options API data binding to keep its number type in the template: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_options_api_wrap_adds_no_errors_in_facade_fallback() {
     if resolve_test_tsgo_binary().is_none() {
         return;
