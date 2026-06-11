@@ -4,7 +4,7 @@
 //! [`ScriptParserOptions`], and the small metadata enums/structs that back
 //! plain-value and runtime-object tracking.
 
-use crate::croquis::{BindingMetadata, ComponentRegistration, Croquis};
+use crate::croquis::{BindingMetadata, ComponentRegistration, ComponentShape, Croquis};
 use crate::croquis::{ImportStatementInfo, InvalidExport, ReExportInfo, TypeExport};
 use crate::macros::{EmitDefinition, MacroTracker, PropDefinition};
 use crate::provide::ProvideInjectTracker;
@@ -91,6 +91,8 @@ pub struct ScriptParseResult {
     pub re_exports: Vec<ReExportInfo>,
     /// Components registered through Options API `components`.
     pub component_registrations: Vec<ComponentRegistration>,
+    /// API shape of the component's default export (e.g. class component).
+    pub component_shape: ComponentShape,
     /// Definition spans for bindings (name -> (start, end) offset in script)
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
     /// Value import source by local binding name.
@@ -186,6 +188,7 @@ impl ScriptParseResult {
         summary.import_statements = self.import_statements;
         summary.re_exports = self.re_exports;
         summary.component_registrations = self.component_registrations;
+        summary.component_shape = self.component_shape;
         summary.binding_spans = self.binding_spans;
     }
 

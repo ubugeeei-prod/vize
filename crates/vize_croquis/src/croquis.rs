@@ -35,8 +35,9 @@ mod vir;
 
 // Re-export all public croquis data types from their focused modules.
 pub use bindings::{
-    BindingMetadata, COMPILER_MACRO_NAMES, ImportStatementInfo, InvalidExport, InvalidExportKind,
-    ReExportInfo, TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar, UnusedVarContext,
+    BindingMetadata, COMPILER_MACRO_NAMES, ComponentShape, ImportStatementInfo, InvalidExport,
+    InvalidExportKind, ReExportInfo, TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar,
+    UnusedVarContext,
 };
 pub use model::{AnalysisStats, CroquisStats};
 pub use template::{
@@ -89,6 +90,12 @@ pub struct Croquis {
 
     /// Script binding metadata (for template access)
     pub bindings: BindingMetadata,
+
+    /// API shape of the component's default export.
+    ///
+    /// `ClassApi` when the default export is a class (vue-class-component /
+    /// vue-property-decorator); `Unspecified` otherwise.
+    pub component_shape: ComponentShape,
 
     /// Template-level metadata (root count, $attrs usage, etc.)
     pub template_info: TemplateInfo,

@@ -102,6 +102,25 @@ impl BindingMetadata {
     }
 }
 
+/// API shape of the component's default export.
+///
+/// Recorded by script analysis so downstream consumers (linter, virtual TS,
+/// LSP) can tell how the component is authored without re-walking the AST.
+/// Purely additive metadata: `Unspecified` preserves pre-existing behavior
+/// for every non-class component.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[repr(u8)]
+pub enum ComponentShape {
+    /// No specific shape detected (script setup, options object, or no
+    /// default export).
+    #[default]
+    Unspecified = 0,
+    /// The default export is a class (vue-class-component /
+    /// vue-property-decorator style), optionally decorated with
+    /// `@Component` / `@Options`.
+    ClassApi = 1,
+}
+
 /// An undefined reference in template
 #[derive(Debug, Clone)]
 pub struct UndefinedRef {

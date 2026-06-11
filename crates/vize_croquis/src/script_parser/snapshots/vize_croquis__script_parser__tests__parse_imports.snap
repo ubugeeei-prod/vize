@@ -1299,6 +1299,7 @@ ScriptParseResult {
     ],
     re_exports: [],
     component_registrations: [],
+    component_shape: Unspecified,
     binding_spans: {
         "computed": (
             27,

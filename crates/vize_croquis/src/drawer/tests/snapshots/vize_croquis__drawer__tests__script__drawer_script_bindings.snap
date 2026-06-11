@@ -1,6 +1,5 @@
 ---
 source: crates/vize_croquis/src/drawer/tests/script.rs
-assertion_line: 19
 expression: summary
 ---
 Croquis {
@@ -1270,6 +1269,7 @@ Croquis {
         is_script_setup: true,
         props_aliases: {},
     },
+    component_shape: Unspecified,
     template_info: TemplateInfo {
         root_element_count: 0,
         uses_attrs: false,

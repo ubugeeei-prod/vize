@@ -1,5 +1,7 @@
 use super::{ScriptParserOptions, parse_script, parse_script_setup, parse_script_with_options};
+use crate::croquis::ComponentShape;
 use vize_carton::{CompactString, append, cstr};
+use vize_relief::BindingType;
 
 #[test]
 fn test_parse_define_props_type() {
@@ -484,6 +486,187 @@ export default {
     ] {
         assert!(result.bindings.contains(name), "missing binding {name}");
     }
+}
+
+#[test]
+fn test_parse_class_component_decorated_members() {
+    // Class components are auto-detected by shape (default export is a
+    // class), independent of the `options_api` flag.
+    let source = r#"
+import Vue from 'vue'
+import Component from 'vue-class-component'
+import UserBadge from './UserBadge.vue'
+
+@Component({
+  components: {
+    UserBadge,
+  },
+})
+export default class HelloWorld extends Vue {
+  count = 0
+  private msg!: string
+  protected items: string[] = []
+  #internal = 'hidden'
+  static version = '1.0.0'
+  declare ambient: string
+
+  get doubled() {
+    return this.count * 2
+  }
+
+  set doubled(value: number) {
+    this.count = value / 2
+  }
+
+  save() {}
+
+  private reset() {}
+
+  constructor() {
+    super()
+  }
+}
+"#;
+    let result = parse_script(source);
+
+    assert_eq!(result.component_shape, ComponentShape::ClassApi);
+
+    // Fields -> Data (TS `private`/`protected` are erased at runtime, so the
+    // template still resolves them; the canonical Vue CLI class-component
+    // scaffold renders `private` members).
+    assert_eq!(result.bindings.get("count"), Some(BindingType::Data));
+    assert_eq!(result.bindings.get("msg"), Some(BindingType::Data));
+    assert_eq!(result.bindings.get("items"), Some(BindingType::Data));
+
+    // Methods and get/set accessors -> Options (methods/computed-like).
+    assert_eq!(result.bindings.get("doubled"), Some(BindingType::Options));
+    assert_eq!(result.bindings.get("save"), Some(BindingType::Options));
+    assert_eq!(result.bindings.get("reset"), Some(BindingType::Options));
+
+    // Hard-private (#), static, declare, and constructor never resolve in
+    // templates.
+    assert!(!result.bindings.contains("internal"));
+    assert!(!result.bindings.contains("#internal"));
+    assert!(!result.bindings.contains("version"));
+    assert!(!result.bindings.contains("ambient"));
+    assert!(!result.bindings.contains("constructor"));
+
+    // The `@Component({ components: { ... } })` argument reuses the Options
+    // API registration collector.
+    assert_eq!(result.component_registrations.len(), 1);
+    assert_eq!(result.component_registrations[0].name, "UserBadge");
+    assert_eq!(result.component_registrations[0].local_name, "UserBadge");
+
+    // Members carry definition spans for Go-to-Definition.
+    assert!(result.binding_spans.contains_key("count"));
+    assert!(result.binding_spans.contains_key("doubled"));
+}
+
+#[test]
+fn test_parse_class_component_undecorated_extends_vue() {
+    let source = r#"
+import Vue from 'vue'
+
+export default class Counter extends Vue {
+  count = 0
+
+  get label() {
+    return `count: ${this.count}`
+  }
+
+  increment() {
+    this.count += 1
+  }
+}
+"#;
+    let result = parse_script(source);
+
+    assert_eq!(result.component_shape, ComponentShape::ClassApi);
+    assert_eq!(result.bindings.get("count"), Some(BindingType::Data));
+    assert_eq!(result.bindings.get("label"), Some(BindingType::Options));
+    assert_eq!(result.bindings.get("increment"), Some(BindingType::Options));
+}
+
+#[test]
+fn test_parse_class_component_expression_export() {
+    // Class *expressions* behind parens / TS wrappers are classified too.
+    let source = r#"
+import Vue from 'vue'
+
+export default (class extends Vue {
+  count = 0
+
+  increment() {}
+})
+"#;
+    let result = parse_script(source);
+
+    assert_eq!(result.component_shape, ComponentShape::ClassApi);
+    assert_eq!(result.bindings.get("count"), Some(BindingType::Data));
+    assert_eq!(result.bindings.get("increment"), Some(BindingType::Options));
+}
+
+#[test]
+fn test_parse_class_component_decorator_options_template_bindings() {
+    // Options declared inside the decorator argument behave exactly like an
+    // options component (vue-class-component merges them).
+    let source = r#"
+import { Options, Vue } from 'vue-class-component'
+
+@Options({
+  data() {
+    return { fromDecorator: 1 }
+  },
+  computed: {
+    decoratedComputed() {
+      return 2
+    },
+  },
+  methods: {
+    decoratedMethod() {},
+  },
+})
+export default class App extends Vue {
+  local = 0
+}
+"#;
+    let result = parse_script(source);
+
+    assert_eq!(result.component_shape, ComponentShape::ClassApi);
+    assert_eq!(result.bindings.get("local"), Some(BindingType::Data));
+    assert_eq!(
+        result.bindings.get("fromDecorator"),
+        Some(BindingType::Data)
+    );
+    assert_eq!(
+        result.bindings.get("decoratedComputed"),
+        Some(BindingType::Options)
+    );
+    assert_eq!(
+        result.bindings.get("decoratedMethod"),
+        Some(BindingType::Options)
+    );
+}
+
+#[test]
+fn test_parse_non_class_components_keep_unspecified_shape() {
+    // Options-object and script-setup analysis are untouched by the class
+    // path: shape stays `Unspecified` and no class-style bindings appear.
+    let options_result = parse_script_with_options(
+        "export default { data() { return { count: 0 } } }",
+        ScriptParserOptions {
+            options_api: true,
+            legacy_vue2: false,
+        },
+    );
+    assert_eq!(options_result.component_shape, ComponentShape::Unspecified);
+    assert_eq!(
+        options_result.bindings.get("count"),
+        Some(BindingType::Data)
+    );
+
+    let setup_result = parse_script_setup("const count = ref(0)");
+    assert_eq!(setup_result.component_shape, ComponentShape::Unspecified);
 }
 
 #[test]

@@ -9,10 +9,12 @@
 //! This module is split into:
 //! - `statements`: Top-level statement and declaration processing
 //! - `options_api`: Options API component metadata collection
+//! - `class_component`: Class component (vue-class-component) extraction
 //! - `macros`: Variable declarator processing (macros, reactivity, inject)
 //! - `bindings`: Binding pattern helpers and expression classification
 
 mod bindings;
+mod class_component;
 mod macros;
 mod options_api;
 mod statements;

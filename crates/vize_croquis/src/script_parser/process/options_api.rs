@@ -40,6 +40,19 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
             continue;
         };
 
+        // Class components (vue-class-component / vue-property-decorator):
+        // in an SFC the default export *is* the component, so a class default
+        // export is unambiguous. Auto-detected by AST shape — no flag, and
+        // this arm never executes for non-class components.
+        if let Some(class) = super::class_component::class_from_export(&export.declaration) {
+            super::class_component::collect_class_component_metadata(
+                result,
+                class,
+                &object_bindings,
+            );
+            continue;
+        }
+
         let Some(options) =
             component_options_from_export(&export.declaration, &component_option_bindings)
         else {
@@ -121,7 +134,7 @@ fn collect_component_options_bindings<'a>(
     }
 }
 
-fn collect_component_registrations_from_options<'a>(
+pub(super) fn collect_component_registrations_from_options<'a>(
     result: &mut ScriptParseResult,
     options: &'a ObjectExpression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
@@ -140,7 +153,7 @@ fn collect_component_registrations_from_options<'a>(
     );
 }
 
-fn collect_options_api_template_bindings_from_options<'a>(
+pub(super) fn collect_options_api_template_bindings_from_options<'a>(
     result: &mut ScriptParseResult,
     options: &'a ObjectExpression<'a>,
     object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
@@ -340,7 +353,7 @@ fn collect_object_property_bindings(
     }
 }
 
-fn add_template_binding(
+pub(super) fn add_template_binding(
     result: &mut ScriptParseResult,
     name: &str,
     binding_type: BindingType,
@@ -358,7 +371,7 @@ fn add_template_binding(
     );
 }
 
-fn normalize_template_binding_name(name: &str) -> Option<CompactString> {
+pub(super) fn normalize_template_binding_name(name: &str) -> Option<CompactString> {
     if is_valid_template_binding_name(name) {
         return Some(CompactString::new(name));
     }
@@ -706,7 +719,7 @@ fn option_expression_property<'a>(
     })
 }
 
-fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+pub(super) fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
     match key {
         PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
         PropertyKey::StringLiteral(string) => Some(string.value.as_str()),

@@ -1287,6 +1287,7 @@ ScriptParseResult {
     import_statements: [],
     re_exports: [],
     component_registrations: [],
+    component_shape: Unspecified,
     binding_spans: {
         "doubled": (
             52,

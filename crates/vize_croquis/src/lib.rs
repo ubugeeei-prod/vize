@@ -82,7 +82,7 @@ pub use symbol::{Symbol, SymbolFlags, SymbolId, SymbolTable};
 // Re-export analysis types
 pub use analyzer::{Analyzer, AnalyzerOptions};
 pub use croquis::{
-    AnalysisStats, BindingMetadata, COMPILER_MACRO_NAMES, Croquis, CroquisStats,
+    AnalysisStats, BindingMetadata, COMPILER_MACRO_NAMES, ComponentShape, Croquis, CroquisStats,
     ImportStatementInfo, InvalidExport, InvalidExportKind, ReExportInfo, TemplateExpression,
     TemplateExpressionKind, TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar,
     UnusedVarContext,
