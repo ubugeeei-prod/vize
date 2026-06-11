@@ -23,7 +23,7 @@ const STALE_SESSION_SECONDS: u64 = 24 * 60 * 60;
 impl CorsaProjectClient {
     /// Start a Corsa project session rooted at an isolated scratch workspace.
     pub fn new(corsa_path: Option<&str>, working_dir: Option<&str>) -> Result<Self, String> {
-        let executable = resolve_corsa_executable(corsa_path, working_dir);
+        let executable = resolve_corsa_executable(corsa_path, working_dir)?;
 
         let project_root = working_dir
             .map(PathBuf::from)
@@ -64,7 +64,7 @@ impl CorsaProjectClient {
             .canonicalize()
             .unwrap_or_else(|_| workspace_root.to_path_buf());
         let working_dir = workspace_root.to_string_lossy();
-        let executable = resolve_corsa_executable(corsa_path, Some(working_dir.as_ref()));
+        let executable = resolve_corsa_executable(corsa_path, Some(working_dir.as_ref()))?;
 
         Self::spawn_initialized_client(
             executable.as_str(),

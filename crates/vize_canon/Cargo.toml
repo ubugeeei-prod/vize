@@ -9,7 +9,7 @@ description = "Canon - The standard of correctness for Vize type checking"
 
 [features]
 default = ["native"]
-native = ["dep:which", "dep:walkdir", "dep:dirs", "dep:corsa", "dep:lsp-types"]
+native = ["dep:walkdir", "dep:dirs", "dep:corsa", "dep:lsp-types"]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) type-checking surface. Not enabled by the
 # default Vue 3 build; turns on the parser-side legacy feature too.
 legacy = ["vize_armature/legacy"]
@@ -42,7 +42,6 @@ lsp-types = { workspace = true, optional = true }
 dashmap.workspace = true
 rayon.workspace = true
 tracing.workspace = true
-which = { workspace = true, optional = true }
 dirs = { workspace = true, optional = true }
 thiserror.workspace = true
 corsa = { workspace = true, optional = true }

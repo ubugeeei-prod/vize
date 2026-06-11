@@ -3554,7 +3554,6 @@ dependencies = [
  "vize_croquis",
  "vize_relief",
  "walkdir",
- "which",
 ]
 
 [[package]]
@@ -3573,6 +3572,7 @@ dependencies = [
  "serde_json",
  "smallvec",
  "tempfile",
+ "which",
  "xxhash-rust",
 ]
 

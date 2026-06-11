@@ -23,6 +23,9 @@ smallvec = { workspace = true }
 xxhash-rust = { workspace = true }
 pklrust = { workspace = true }
 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+which = { workspace = true }
+
 [features]
 default = []
 

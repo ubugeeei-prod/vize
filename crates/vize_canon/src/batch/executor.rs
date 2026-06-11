@@ -13,13 +13,13 @@ use super::type_checker::{
     DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput, TypeCheckResult,
 };
 use super::virtual_project::{AUTO_IMPORT_STUBS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
-use crate::{
-    corsa_client::CorsaProjectClient,
-    file_uri::path_to_file_uri,
-    lsp_client::paths::{corsa_search_roots, find_corsa_in_search_roots},
-};
+use crate::{corsa_client::CorsaProjectClient, file_uri::path_to_file_uri};
 use oxc_span::SourceType;
-use vize_carton::{String, cstr, profile};
+use vize_carton::{
+    String,
+    corsa_resolver::{CorsaResolveError, CorsaResolveRequest, resolve_corsa_executable},
+    cstr, profile,
+};
 
 mod cli;
 mod diagnostics;
@@ -44,51 +44,18 @@ impl CorsaExecutor {
         project_root: &Path,
         corsa_path: Option<&Path>,
     ) -> Result<Self, CorsaNotFoundError> {
-        if let Some(path) = corsa_path {
-            let resolved_path = resolve_explicit_corsa_path(project_root, path);
-            if !resolved_path.exists() {
-                return Err(CorsaNotFoundError::new_explicit(
-                    project_root,
-                    &resolved_path,
-                ));
+        let request = CorsaResolveRequest {
+            explicit_path: corsa_path,
+            project_root: Some(project_root),
+        };
+
+        match resolve_corsa_executable(request) {
+            Ok(corsa_path) => Ok(Self { corsa_path }),
+            Err(CorsaResolveError::ExplicitNotFound { path, .. }) => {
+                Err(CorsaNotFoundError::new_explicit(project_root, &path))
             }
-            let corsa_path = normalize_corsa_path(resolved_path.clone()).unwrap_or(resolved_path);
-            let corsa_path = corsa_path.canonicalize().unwrap_or(corsa_path);
-            return Ok(Self { corsa_path });
+            Err(CorsaResolveError::NotFound) => Err(CorsaNotFoundError::new(project_root)),
         }
-
-        for env_name in ["CORSA_PATH", "TSGO_PATH"] {
-            if let Some(path) = std::env::var_os(env_name).map(PathBuf::from) {
-                let resolved_path = resolve_explicit_corsa_path(project_root, &path);
-                if !resolved_path.exists() {
-                    return Err(CorsaNotFoundError::new_explicit(
-                        project_root,
-                        &resolved_path,
-                    ));
-                }
-                let corsa_path =
-                    normalize_corsa_path(resolved_path.clone()).unwrap_or(resolved_path);
-                let corsa_path = corsa_path.canonicalize().unwrap_or(corsa_path);
-                return Ok(Self { corsa_path });
-            }
-        }
-
-        let search_roots = corsa_search_roots(Some(project_root));
-        if let Some(local_corsa) = find_corsa_in_search_roots(&search_roots)
-            && let Some(corsa_path) = normalize_corsa_path(PathBuf::from(local_corsa.as_str()))
-        {
-            return Ok(Self { corsa_path });
-        }
-
-        for executable in ["corsa", "tsgo"] {
-            if let Ok(global_corsa) = which::which(executable)
-                && let Some(corsa_path) = normalize_corsa_path(global_corsa)
-            {
-                return Ok(Self { corsa_path });
-            }
-        }
-
-        Err(CorsaNotFoundError::new(project_root))
     }
 
     /// Get the resolved executable path.
@@ -233,50 +200,6 @@ impl CorsaExecutor {
     }
 }
 
-fn resolve_explicit_corsa_path(project_root: &Path, path: &Path) -> PathBuf {
-    if path.is_absolute() {
-        return path.to_path_buf();
-    }
-
-    let project_candidate = project_root.join(path);
-    if project_candidate.exists() {
-        return project_candidate;
-    }
-
-    if let Ok(cwd) = std::env::current_dir() {
-        let cwd_candidate = cwd.join(path);
-        if cwd_candidate.exists() {
-            return cwd_candidate;
-        }
-    }
-
-    project_candidate
-}
-
-fn normalize_corsa_path(path: PathBuf) -> Option<PathBuf> {
-    let Some(bin_dir) = path.parent() else {
-        return Some(path);
-    };
-    if bin_dir.file_name().and_then(|name| name.to_str()) != Some(".bin") {
-        return Some(path);
-    }
-
-    let Some(node_modules_dir) = bin_dir.parent() else {
-        return Some(path);
-    };
-    if node_modules_dir.file_name().and_then(|name| name.to_str()) != Some("node_modules") {
-        return Some(path);
-    }
-
-    let Some(project_root) = node_modules_dir.parent() else {
-        return Some(path);
-    };
-    find_corsa_in_search_roots(&corsa_search_roots(Some(project_root)))
-        .map(|resolved| PathBuf::from(resolved.as_str()))
-        .filter(|resolved| resolved != &path)
-        .or(Some(path))
-}
-
 fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
     let mut uris = Vec::new();
 
@@ -400,9 +323,7 @@ fn should_fallback_to_cli(error: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        CorsaExecutor, collect_declaration_outputs, collect_virtual_file_uris, normalize_corsa_path,
-    };
+    use super::{CorsaExecutor, collect_declaration_outputs, collect_virtual_file_uris};
     use crate::file_uri::path_to_file_uri;
     use std::{
         fs,
@@ -477,7 +398,7 @@ mod tests {
     }
 
     #[test]
-    fn normalizes_node_modules_bin_wrapper_to_native_preview_binary() {
+    fn normalizes_explicit_node_modules_bin_wrapper_to_native_preview_binary() {
         let temp_dir = TempDir::new().unwrap();
         let root = temp_dir.path();
         let wrapper = root.join("node_modules/.bin/tsgo");
@@ -493,22 +414,9 @@ mod tests {
         fs::write(&wrapper, "").unwrap();
         fs::write(&native, "").unwrap();
 
-        assert_eq!(normalize_corsa_path(wrapper), Some(native));
-    }
+        let executor = CorsaExecutor::with_corsa_path(root, Some(&wrapper)).unwrap();
 
-    #[test]
-    fn falls_back_to_project_cache_when_wrapper_lacks_native_binary() {
-        let temp_dir = TempDir::new().unwrap();
-        let root = temp_dir.path();
-        let wrapper = root.join("node_modules/.bin/tsgo");
-        let cache = root.join(".cache").join("tsgo");
-
-        fs::create_dir_all(wrapper.parent().unwrap()).unwrap();
-        fs::create_dir_all(cache.parent().unwrap()).unwrap();
-        fs::write(&wrapper, "").unwrap();
-        fs::write(&cache, "").unwrap();
-
-        assert_eq!(normalize_corsa_path(wrapper), Some(cache));
+        assert_eq!(executor.corsa_path(), native.canonicalize().unwrap());
     }
 
     #[test]

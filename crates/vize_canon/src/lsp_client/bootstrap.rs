@@ -1,46 +1,27 @@
-use super::{
-    CorsaProjectClient,
-    paths::{
-        corsa_search_roots, find_corsa_in_common_locations, find_corsa_in_path,
-        find_corsa_in_search_roots, normalize_corsa_path,
-    },
-    session::spawn_project_session,
-};
+use super::{CorsaProjectClient, session::spawn_project_session};
 use std::path::{Path, PathBuf};
-use vize_carton::String;
+use vize_carton::{
+    String,
+    corsa_resolver::{CorsaResolveError, CorsaResolveRequest},
+    cstr,
+};
 
 pub(super) fn resolve_corsa_executable(
     corsa_path: Option<&str>,
     working_dir: Option<&str>,
-) -> String {
-    let search_roots = corsa_search_roots(working_dir.map(Path::new));
+) -> Result<String, String> {
+    let request = CorsaResolveRequest {
+        explicit_path: corsa_path.map(Path::new),
+        project_root: working_dir.map(Path::new),
+    };
 
-    corsa_path
-        .map(normalize_resolved_corsa_path)
-        .or_else(|| {
-            std::env::var("CORSA_PATH")
-                .ok()
-                .map(|path| normalize_resolved_corsa_path(path.as_str()))
-        })
-        .or_else(|| {
-            std::env::var("TSGO_PATH")
-                .ok()
-                .map(|path| normalize_resolved_corsa_path(path.as_str()))
-        })
-        .or_else(|| {
-            find_corsa_in_search_roots(&search_roots)
-                .map(|path| normalize_resolved_corsa_path(path.as_str()))
-        })
-        .or_else(|| {
-            find_corsa_in_common_locations()
-                .map(|path| normalize_resolved_corsa_path(path.as_str()))
-        })
-        .or_else(|| find_corsa_in_path().map(|path| normalize_resolved_corsa_path(path.as_str())))
-        .unwrap_or_else(|| "corsa".into())
-}
-
-fn normalize_resolved_corsa_path(path: &str) -> String {
-    normalize_corsa_path(path).unwrap_or_else(|| path.into())
+    match vize_carton::corsa_resolver::resolve_corsa_executable(request) {
+        Ok(path) => Ok(path.to_string_lossy().into()),
+        // Preserve the historical lenient fallback: spawning a bare `corsa`
+        // still lets `PATH` changes made after resolution take effect.
+        Err(CorsaResolveError::NotFound) => Ok("corsa".into()),
+        Err(error @ CorsaResolveError::ExplicitNotFound { .. }) => Err(cstr!("{error}")),
+    }
 }
 
 impl CorsaProjectClient {

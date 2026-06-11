@@ -2051,10 +2051,7 @@ fn resolve_test_tsgo_binary() -> Option<PathBuf> {
         return Some(sibling_cache);
     }
 
-    crate::lsp_client::paths::find_corsa_in_local_node_modules(Some(
-        &workspace_root.display().to_string(),
-    ))
-    .map(|path| PathBuf::from(path.as_str()))
+    vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
 }
 
 fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
@@ -2093,27 +2090,24 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
         write_test_vite_stub(&target)?;
     }
 
-    if let Some(corsa_path) = crate::lsp_client::paths::find_corsa_in_local_node_modules(Some(
-        &workspace_root.display().to_string(),
-    )) {
-        let source = PathBuf::from(corsa_path.as_str());
-        if source.exists() {
-            let file_name = source.file_name().ok_or_else(|| {
-                std::io::Error::new(
-                    std::io::ErrorKind::InvalidInput,
-                    "invalid corsa binary path",
-                )
-            })?;
-            symlink_path(
-                &source,
-                &target
-                    .join("@typescript")
-                    .join("native-preview")
-                    .join("lib")
-                    .join(file_name),
-            )?;
-            symlink_path(&source, &target.join(".bin").join(file_name))?;
-        }
+    if let Some(source) = vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+        && source.exists()
+    {
+        let file_name = source.file_name().ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "invalid corsa binary path",
+            )
+        })?;
+        symlink_path(
+            &source,
+            &target
+                .join("@typescript")
+                .join("native-preview")
+                .join("lib")
+                .join(file_name),
+        )?;
+        symlink_path(&source, &target.join(".bin").join(file_name))?;
     }
 
     Ok(())

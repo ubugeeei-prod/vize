@@ -2,11 +2,12 @@ use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicU64, Ordering},
 };
-use vize_carton::{String, ToCompactString, cstr};
+use vize_carton::{
+    String, ToCompactString,
+    corsa_resolver::{CORSA_EXECUTABLE_NAMES, CorsaResolveError, CorsaResolveRequest},
+    cstr,
+};
 
-const EXECUTABLE_ENV_VARS: [&str; 2] = ["CORSA_EXECUTABLE", "CORSA_PATH"];
-const LEGACY_EXECUTABLE_ENV_VARS: [&str; 2] = ["TSGO_EXECUTABLE", "TSGO_PATH"];
-const EXECUTABLE_NAMES: [&str; 2] = ["corsa", "tsgo"];
 const SESSION_DIRECTORY_PREFIX: &str = "session-";
 pub(super) const VIRTUAL_FILE_NAME: &str = "active.patina.ts";
 pub(super) const TSCONFIG_FILE_NAME: &str = "tsconfig.json";
@@ -157,49 +158,18 @@ pub(super) fn resolve_corsa_executable(
     project_root: &Path,
     configured_path: Option<&Path>,
 ) -> Result<PathBuf, String> {
-    if let Some(path) = configured_path {
-        if !path.exists() {
-            return Err(cstr!(
-                "Configured Corsa executable does not exist: {}",
-                path.display()
-            ));
-        }
-        return Ok(path.to_path_buf());
-    }
+    let request = CorsaResolveRequest {
+        explicit_path: configured_path,
+        project_root: Some(project_root),
+    };
 
-    if let Some(path) = resolve_executable_from_env(&EXECUTABLE_ENV_VARS) {
-        return Ok(path);
+    match vize_carton::corsa_resolver::resolve_corsa_executable(request) {
+        Ok(path) => Ok(path),
+        // Preserve the historical lenient fallback: a bare `corsa` lets the
+        // spawn-time `PATH` lookup have the final word.
+        Err(CorsaResolveError::NotFound) => Ok(PathBuf::from(CORSA_EXECUTABLE_NAMES[0])),
+        Err(error @ CorsaResolveError::ExplicitNotFound { .. }) => Err(cstr!("{error}")),
     }
-    if let Some(path) = resolve_executable_from_env(&LEGACY_EXECUTABLE_ENV_VARS) {
-        return Ok(path);
-    }
-
-    for current in project_root.ancestors() {
-        for candidate in corsa_executable_candidates(current) {
-            if candidate.exists() {
-                return Ok(candidate);
-            }
-        }
-        if let Some(parent) = current.parent() {
-            for candidate in corsa_executable_candidates(&parent.join("corsa-bind")) {
-                if candidate.exists() {
-                    return Ok(candidate);
-                }
-            }
-        }
-        if let Some(path) = resolve_node_modules_executable(current) {
-            return Ok(path);
-        }
-    }
-
-    if let Some(home) = std::env::var_os("HOME") {
-        let home = PathBuf::from(home);
-        if let Some(path) = resolve_home_executable(&home) {
-            return Ok(path);
-        }
-    }
-
-    Ok(resolve_path_executable().unwrap_or_else(|| PathBuf::from(EXECUTABLE_NAMES[0])))
 }
 
 fn source_directory(filename: &str) -> PathBuf {
@@ -214,191 +184,6 @@ fn source_directory(filename: &str) -> PathBuf {
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let joined = cwd.join(path);
     joined.parent().map(Path::to_path_buf).unwrap_or(cwd)
-}
-
-fn resolve_executable_from_env(env_names: &[&str]) -> Option<PathBuf> {
-    for env_name in env_names {
-        let Some(path) = std::env::var_os(env_name).map(PathBuf::from) else {
-            continue;
-        };
-        if path.exists() {
-            return Some(path);
-        }
-    }
-    None
-}
-
-fn corsa_executable_candidates(root: &Path) -> [PathBuf; 12] {
-    [
-        root.join(".cache").join("corsa"),
-        root.join(".cache").join("corsa.exe"),
-        root.join(".cache").join("tsgo"),
-        root.join(".cache").join("tsgo.exe"),
-        root.join("ref")
-            .join("typescript-go")
-            .join(".cache")
-            .join("corsa"),
-        root.join("ref")
-            .join("typescript-go")
-            .join(".cache")
-            .join("corsa.exe"),
-        root.join("ref")
-            .join("typescript-go")
-            .join(".cache")
-            .join("tsgo"),
-        root.join("ref")
-            .join("typescript-go")
-            .join(".cache")
-            .join("tsgo.exe"),
-        root.join("ref")
-            .join("typescript-go")
-            .join("built")
-            .join("local")
-            .join("corsa"),
-        root.join("ref")
-            .join("typescript-go")
-            .join("built")
-            .join("local")
-            .join("corsa.exe"),
-        root.join("ref")
-            .join("typescript-go")
-            .join("built")
-            .join("local")
-            .join("tsgo"),
-        root.join("ref")
-            .join("typescript-go")
-            .join("built")
-            .join("local")
-            .join("tsgo.exe"),
-    ]
-}
-
-fn resolve_node_modules_executable(root: &Path) -> Option<PathBuf> {
-    if let Some(path) = resolve_native_preview_executable(root) {
-        return Some(path);
-    }
-
-    for executable in EXECUTABLE_NAMES {
-        let direct = root.join("node_modules").join(".bin").join(executable);
-        if direct.exists() {
-            return Some(direct);
-        }
-    }
-
-    for executable in EXECUTABLE_NAMES {
-        let native_preview = root
-            .join("node_modules")
-            .join("@typescript")
-            .join("native-preview")
-            .join("bin")
-            .join(executable);
-        if native_preview.exists() {
-            return Some(native_preview);
-        }
-    }
-
-    None
-}
-
-fn resolve_native_preview_executable(root: &Path) -> Option<PathBuf> {
-    let platform_suffix = platform_suffix();
-    if platform_suffix.is_empty() {
-        return None;
-    }
-
-    let pnpm_root = root.join("node_modules/.pnpm");
-    if pnpm_root.exists()
-        && let Ok(entries) = std::fs::read_dir(&pnpm_root)
-    {
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if !name.starts_with("@typescript+native-preview-") || !name.contains(platform_suffix) {
-                continue;
-            }
-
-            for executable in EXECUTABLE_NAMES {
-                let candidate = entry.path().join(&*cstr!(
-                    "node_modules/@typescript/native-preview-{}/lib/{}",
-                    platform_suffix,
-                    executable
-                ));
-                if candidate.exists() {
-                    return Some(candidate);
-                }
-            }
-        }
-    }
-
-    for executable in EXECUTABLE_NAMES {
-        let native_candidates = [
-            root.join(&*cstr!(
-                "node_modules/@typescript/native-preview-{}/lib/{}",
-                platform_suffix,
-                executable
-            )),
-            root.join(&*cstr!(
-                "node_modules/@typescript/native-preview/lib/{executable}"
-            )),
-        ];
-        for candidate in native_candidates {
-            if candidate.exists() {
-                return Some(candidate);
-            }
-        }
-    }
-
-    None
-}
-
-fn resolve_home_executable(home: &Path) -> Option<PathBuf> {
-    const HOME_PREFIXES: [&str; 4] = [".asdf/shims", ".volta/bin", ".npm-global/bin", ".npm/bin"];
-
-    for prefix in HOME_PREFIXES {
-        for executable in EXECUTABLE_NAMES {
-            let location = home.join(prefix).join(executable);
-            if location.exists() {
-                return Some(location);
-            }
-        }
-    }
-
-    None
-}
-
-fn resolve_path_executable() -> Option<PathBuf> {
-    let path = std::env::var_os("PATH")?;
-
-    for directory in std::env::split_paths(&path) {
-        for executable in EXECUTABLE_NAMES {
-            let location = directory.join(executable);
-            if location.exists() {
-                return Some(location);
-            }
-        }
-    }
-
-    None
-}
-
-pub(super) fn platform_suffix() -> &'static str {
-    if cfg!(target_os = "macos") {
-        if cfg!(target_arch = "aarch64") {
-            "darwin-arm64"
-        } else {
-            "darwin-x64"
-        }
-    } else if cfg!(target_os = "linux") {
-        if cfg!(target_arch = "aarch64") {
-            "linux-arm64"
-        } else {
-            "linux-x64"
-        }
-    } else if cfg!(target_os = "windows") {
-        "win32-x64"
-    } else {
-        ""
-    }
 }
 
 fn push_u64(buffer: &mut String, value: u64) {
@@ -438,7 +223,10 @@ mod tests {
         let native = root
             .join("node_modules")
             .join("@typescript")
-            .join(&*cstr!("native-preview-{}", super::platform_suffix()))
+            .join(&*cstr!(
+                "native-preview-{}",
+                vize_carton::corsa_resolver::platform_suffix()
+            ))
             .join("lib")
             .join("tsgo");
 
@@ -446,19 +234,6 @@ mod tests {
         write_file(&native);
 
         assert_eq!(resolve_corsa_executable(&root, None).unwrap(), native);
-
-        let _ = std::fs::remove_dir_all(&root);
-    }
-
-    #[test]
-    fn resolves_node_modules_bin_wrapper_when_native_binary_is_absent() {
-        let root = case_dir("wrapper-fallback");
-        let _ = std::fs::remove_dir_all(&root);
-        let wrapper = root.join("node_modules/.bin/tsgo");
-
-        write_file(&wrapper);
-
-        assert_eq!(resolve_corsa_executable(&root, None).unwrap(), wrapper);
 
         let _ = std::fs::remove_dir_all(&root);
     }
