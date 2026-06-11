@@ -13,8 +13,12 @@ env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   VIZE_BENCH_FILE_COUNT: 300
-  VIZE_BENCH_RUNS: 5
-  VIZE_BENCH_WARMUPS: 1
+  # Optimized (ci-opt) binaries run fast enough that 5 runs / 1 warmup left the
+  # gate's noise floor above the 5% threshold: an identical-source PR (#1395)
+  # tripped the budget at +5.12% on the compile lane. More samples tighten the
+  # median instead of weakening the threshold.
+  VIZE_BENCH_RUNS: 10
+  VIZE_BENCH_WARMUPS: 2
   VIZE_BENCH_REGRESSION_THRESHOLD_PERCENT: 5
 
 jobs:

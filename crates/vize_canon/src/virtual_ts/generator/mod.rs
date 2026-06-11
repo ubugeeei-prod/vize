@@ -15,10 +15,12 @@ use self::imports::{
     collect_imported_names, emit_global_component_stubs, emit_reference_type_directives,
     extract_declared_name,
 };
-use self::options_api::{generate_options_api_bridge, generate_options_api_variables};
+use self::options_api::{
+    find_plain_default_export_object, generate_options_api_bridge, generate_options_api_variables,
+};
 use self::spans::{
-    collect_template_referenced_names, is_local_setup_binding, merge_overlapping_spans,
-    rewrite_export_default_for_module_scope,
+    DEFINE_COMPONENT_HELPER, DEFINE_COMPONENT_REF, collect_template_referenced_names,
+    is_local_setup_binding, merge_overlapping_spans, rewrite_export_default_for_module_scope,
 };
 use super::{
     helpers::{
@@ -200,6 +202,32 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str(VUE_TYPE_HELPERS);
     ts.push('\n');
 
+    let has_script_setup = summary
+        .scopes
+        .iter()
+        .any(|scope| matches!(scope.kind, ScopeKind::ScriptSetup));
+    let has_plain_script_scope = summary
+        .scopes
+        .iter()
+        .any(|scope| matches!(scope.kind, ScopeKind::NonScriptSetup));
+
+    // Plain `export default { ... }` in the main <script> block (the Options
+    // API shape) gets wrapped with Vue's `defineComponent` so `this` inside
+    // computed/methods is typed by Vue's options machinery. Script setup
+    // virtual TS is never touched: in setup-only SFCs no wrap target exists,
+    // so the helper lookup is skipped entirely.
+    let default_export_object = if !has_script_setup || has_plain_script_scope {
+        profile!(
+            "canon.virtual_ts.find_default_export_object",
+            script_content.and_then(find_plain_default_export_object)
+        )
+    } else {
+        None
+    };
+    if default_export_object.is_some() {
+        ts.push_str(DEFINE_COMPONENT_HELPER);
+    }
+
     // Collect all module-level statement spans from croquis analysis once and
     // keep them sorted. Later script-body emission advances an index through
     // this list, so each source line checks only the overlapping tail instead
@@ -212,10 +240,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         for re in &summary.re_exports {
             module_spans.push((re.start, re.end));
         }
-        let has_script_setup = summary
-            .scopes
-            .iter()
-            .any(|scope| matches!(scope.kind, ScopeKind::ScriptSetup));
         if has_script_setup {
             module_spans.extend(summary.scopes.iter().filter_map(|scope| {
                 matches!(scope.kind, ScopeKind::NonScriptSetup)
@@ -309,7 +333,20 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
                 let gen_start = ts.len();
                 if text.contains("export default") {
-                    let text = rewrite_export_default_for_module_scope(text);
+                    // Re-base the script-absolute default-export-object
+                    // offsets onto this module span so the rewrite can wrap
+                    // a plain options object with `defineComponent`.
+                    let span_relative_object = default_export_object.and_then(
+                        |(export_start, object_start, object_end)| {
+                            let span_start = start as usize;
+                            (export_start >= span_start && object_end <= end as usize).then_some((
+                                export_start - span_start,
+                                object_start - span_start,
+                                object_end - span_start,
+                            ))
+                        },
+                    );
+                    let text = rewrite_export_default_for_module_scope(text, span_relative_object);
                     ts.push_str(&text);
                 } else {
                     ts.push_str(text);
@@ -414,6 +451,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // causing src_byte_offset drift that incorrectly skips user code.
             let mut src_byte_offset: usize = 0; // offset within script content
             let mut module_span_index = 0usize;
+            // Script-absolute offset right after the wrapped options object's
+            // closing brace; the matching `)` for the `defineComponent(` wrap
+            // opened on an earlier line is inserted there.
+            let mut pending_wrap_close: Option<usize> = None;
 
             // Check if script uses import.meta and add a polyfill variable.
             // This avoids TS1343 when module is not set to es2020+.
@@ -452,6 +493,24 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 // replace import.meta with polyfill variable
                 let mut output_line = std::borrow::Cow::Borrowed(line);
 
+                // Close the `defineComponent(` wrap right after the wrapped
+                // options object's closing brace.
+                if let Some(close_offset) = pending_wrap_close
+                    && close_offset > line_start
+                    && close_offset <= line_end
+                    && close_offset - line_start <= line.len()
+                    && line.is_char_boundary(close_offset - line_start)
+                {
+                    let column = close_offset - line_start;
+                    #[allow(clippy::disallowed_types)]
+                    {
+                        output_line = std::borrow::Cow::Owned(
+                            cstr!("{}){}", &line[..column], &line[column..]).into(),
+                        );
+                    }
+                    pending_wrap_close = None;
+                }
+
                 // Strip `export` from non-import lines inside setup scope
                 let trimmed_line = output_line.trim_start();
                 if let Some(default_expr) = trimmed_line
@@ -459,8 +518,56 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     .filter(|rest| rest.chars().next().is_none_or(char::is_whitespace))
                 {
                     let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
+                    // Wrap a plain object-literal default export (Options
+                    // API) with `defineComponent` so `this` in
+                    // computed/methods gets Vue's instance typing. Applies
+                    // only to the plain <script> block; any other shape keeps
+                    // the bare `const __default__ =` rewrite.
+                    let wrap_object =
+                        if has_script_setup || matches!(output_line, std::borrow::Cow::Owned(_)) {
+                            None
+                        } else {
+                            default_export_object.filter(|&(export_start, object_start, _)| {
+                                export_start >= line_start
+                                    && object_start >= line_start
+                                    && object_start < line_end
+                                    && object_start - line_start <= line.len()
+                                    && line[object_start - line_start..].starts_with('{')
+                            })
+                        };
                     #[allow(clippy::disallowed_types)]
+                    if let Some((object_column, object_end)) =
+                        wrap_object.and_then(|(_, object_start, object_end)| {
+                            let object_column = object_start - line_start;
+                            (line.len() - default_expr.len() <= object_column)
+                                .then_some((object_column, object_end))
+                        })
                     {
+                        let keyword_end = line.len() - default_expr.len();
+                        if object_end <= line_end && object_end - line_start <= line.len() {
+                            // Single-line `export default { ... }`.
+                            let close_column = object_end - line_start;
+                            output_line = std::borrow::Cow::Owned(
+                                cstr!(
+                                    "{leading_ws}const __default__ ={}{DEFINE_COMPONENT_REF}({}){}",
+                                    &line[keyword_end..object_column],
+                                    &line[object_column..close_column],
+                                    &line[close_column..],
+                                )
+                                .into(),
+                            );
+                        } else {
+                            pending_wrap_close = Some(object_end);
+                            output_line = std::borrow::Cow::Owned(
+                                cstr!(
+                                    "{leading_ws}const __default__ ={}{DEFINE_COMPONENT_REF}({}",
+                                    &line[keyword_end..object_column],
+                                    &line[object_column..],
+                                )
+                                .into(),
+                            );
+                        }
+                    } else {
                         output_line = std::borrow::Cow::Owned(
                             cstr!("{leading_ws}const __default__ ={}", default_expr).into(),
                         );
@@ -504,6 +611,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 }
                 let _ = gen_line_start; // suppress unused warning
                 src_byte_offset += raw_byte_len;
+            }
+            if pending_wrap_close.take().is_some() {
+                // Defensive: the line carrying the wrapped object's closing
+                // brace was never emitted; close the `defineComponent(` call
+                // so the generated module stays parseable.
+                ts.push_str("  )\n");
             }
             let script_gen_end = ts.len();
             append!(

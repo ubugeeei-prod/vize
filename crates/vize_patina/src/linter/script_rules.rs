@@ -587,6 +587,9 @@ fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
             memmem::find(bytes, b"toMatchSnapshot").is_some()
                 && memmem::find(bytes, b".html").is_some()
         }
+        // `watch` also appears in any aliased import (`watch as observe`), so
+        // this never skips a block the AST check could flag.
+        RULE_PREFER_COMPUTED => memmem::find(bytes, b"watch").is_some(),
         _ => true,
     }
 }

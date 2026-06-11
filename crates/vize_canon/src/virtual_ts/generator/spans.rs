@@ -83,7 +83,30 @@ pub(super) fn merge_overlapping_spans(mut spans: Vec<(u32, u32)>) -> Vec<(u32, u
     merged
 }
 
-pub(super) fn rewrite_export_default_for_module_scope(text: &str) -> String {
+/// Generated identifier resolving Vue's `defineComponent` (see
+/// `DEFINE_COMPONENT_HELPER`). Plain object-literal default exports are
+/// wrapped in a call to it so TypeScript binds `this` inside
+/// computed/methods via Vue's `ThisType` machinery instead of the bare
+/// object literal (which produced TS2339 false positives).
+pub(super) const DEFINE_COMPONENT_REF: &str = "__vizeDefineComponent";
+
+/// Module-scope declaration for `DEFINE_COMPONENT_REF`. Uses the same
+/// `import('vue')` reference form as the other generated vue helpers so it
+/// never collides with user imports.
+pub(super) const DEFINE_COMPONENT_HELPER: &str =
+    "declare const __vizeDefineComponent: typeof import('vue').defineComponent;\n";
+
+pub(super) fn rewrite_export_default_for_module_scope(
+    text: &str,
+    default_object: Option<(usize, usize, usize)>,
+) -> String {
+    // Plain `export default { ... }` (the Options API shape) is wrapped with
+    // Vue's `defineComponent`; any other default-export shape falls through
+    // to the line-based `const __default__ =` rewrite below.
+    if let Some(output) = wrap_default_export_object(text, default_object) {
+        return output;
+    }
+
     let mut output = String::with_capacity(text.len());
     for segment in text.split_inclusive('\n') {
         let (line_with_optional_cr, newline) = segment
@@ -108,6 +131,45 @@ pub(super) fn rewrite_export_default_for_module_scope(text: &str) -> String {
     }
 
     output
+}
+
+/// Rewrite `export default { ... }` to
+/// `const __default__ = __vizeDefineComponent({ ... })` using the
+/// `(export_start, object_start, object_end)` offsets (relative to `text`)
+/// located by the AST. Returns `None` when the offsets do not describe a
+/// plain object-literal default export inside `text`.
+fn wrap_default_export_object(
+    text: &str,
+    default_object: Option<(usize, usize, usize)>,
+) -> Option<String> {
+    const EXPORT_DEFAULT: &str = "export default";
+
+    let (export_start, object_start, object_end) = default_object?;
+    if object_end > text.len() || object_start >= object_end {
+        return None;
+    }
+    let keyword_end = export_start.checked_add(EXPORT_DEFAULT.len())?;
+    if keyword_end > object_start
+        || !text.is_char_boundary(export_start)
+        || !text.is_char_boundary(object_start)
+        || !text.is_char_boundary(object_end)
+        || !text[export_start..].starts_with(EXPORT_DEFAULT)
+        || !text[object_start..].starts_with('{')
+    {
+        return None;
+    }
+
+    let mut output =
+        String::with_capacity(text.len() + DEFINE_COMPONENT_REF.len() + EXPORT_DEFAULT.len());
+    output.push_str(&text[..export_start]);
+    output.push_str("const __default__ =");
+    output.push_str(&text[keyword_end..object_start]);
+    output.push_str(DEFINE_COMPONENT_REF);
+    output.push('(');
+    output.push_str(&text[object_start..object_end]);
+    output.push(')');
+    output.push_str(&text[object_end..]);
+    Some(output)
 }
 
 pub(super) fn is_local_setup_binding(summary: &Croquis, name: &str) -> bool {

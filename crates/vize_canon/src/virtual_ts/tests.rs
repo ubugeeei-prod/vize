@@ -1297,3 +1297,126 @@ const item = ref<{ name: string } | undefined>()
         output.code.as_str(),
     );
 }
+
+#[test]
+fn test_plain_options_object_default_export_is_wrapped_with_define_component() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"export default {
+  data() {
+    return { count: 0 }
+  },
+  computed: {
+    doubled() {
+      return this.count * 2
+    },
+  },
+}
+"#;
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_plain(script);
+    let summary = analyzer.finish();
+
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+
+    assert!(
+        output
+            .code
+            .contains("declare const __vizeDefineComponent: typeof import('vue').defineComponent;"),
+        "expected the defineComponent helper declaration:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("const __default__ = __vizeDefineComponent({"),
+        "expected the options object to be wrapped with defineComponent:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("\n  })\n"),
+        "expected the wrap to be closed after the options object:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_single_line_options_object_default_export_wrap_keeps_trailing_text() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = "export default { name: 'Foo' };\n";
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_plain(script);
+    let summary = analyzer.finish();
+
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+
+    assert!(
+        output
+            .code
+            .contains("const __default__ = __vizeDefineComponent({ name: 'Foo' });"),
+        "expected a single-line wrap that preserves the trailing semicolon:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_define_component_default_export_is_not_double_wrapped() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import { defineComponent } from 'vue'
+
+export default defineComponent({
+  data() {
+    return { count: 0 }
+  },
+})
+"#;
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_plain(script);
+    let summary = analyzer.finish();
+
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+
+    assert!(
+        !output.code.contains("__vizeDefineComponent"),
+        "an explicit defineComponent call must not be re-wrapped:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("const __default__ = defineComponent({"),
+        "expected the existing rewrite to stay untouched:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_non_object_default_export_is_not_wrapped() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"const component = { name: 'Foo' }
+export default component
+"#;
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_plain(script);
+    let summary = analyzer.finish();
+
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+
+    assert!(
+        !output.code.contains("__vizeDefineComponent"),
+        "identifier default exports must not be wrapped:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("const __default__ = component"),
+        "expected the existing rewrite to stay untouched:\n{}",
+        output.code
+    );
+}

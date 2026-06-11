@@ -384,6 +384,39 @@ fn collect_mapped_type(call: &CallExpression<'_>, mapped_types: &mut Vec<String>
     mapped_types.push(mapped_type);
 }
 
+/// Locate a plain object-literal default export (`export default { ... }`) —
+/// the Options API component shape — in `script`.
+///
+/// Returns `(export_start, object_start, object_end)` byte offsets into
+/// `script`. Default exports that are anything else — already-wrapped
+/// `defineComponent({...})` calls, class declarations, identifiers, function
+/// calls, `as`/`satisfies` expressions — return `None` so only the bare
+/// options object gets the `defineComponent` wrap.
+pub(super) fn find_plain_default_export_object(script: &str) -> Option<(usize, usize, usize)> {
+    if !script.contains("export default") {
+        return None;
+    }
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+    if parsed.panicked {
+        return None;
+    }
+    parsed.program.body.iter().find_map(|statement| {
+        let Statement::ExportDefaultDeclaration(export) = statement else {
+            return None;
+        };
+        let ExportDefaultDeclarationKind::ObjectExpression(object) = &export.declaration else {
+            return None;
+        };
+        let object_span = object.span();
+        Some((
+            export.span.start as usize,
+            object_span.start as usize,
+            object_span.end as usize,
+        ))
+    })
+}
+
 fn component_options_from_program<'a>(
     program: &'a Program<'a>,
 ) -> Option<&'a ObjectExpression<'a>> {

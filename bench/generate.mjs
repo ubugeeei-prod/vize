@@ -353,8 +353,23 @@ for (const file of readdirSync(benchDir)) {
   }
 }
 
+// Every generated body must be unique. Repeating identical bodies lets
+// content-addressed compile caches (e.g. the `vize build --format stats`
+// dedup cache) serve most of the corpus from a hash lookup, so the benchmark
+// measures cache hits instead of compilation. A per-file token inside an
+// existing string literal keeps each complexity tier intact while forcing a
+// real compile per file.
+function uniquify(template, index) {
+  const id = String(index).padStart(4, "0");
+  const marked = template.replace(/ref\('([^']*)'\)/, (_, text) => `ref('${text} ${id}')`);
+  if (marked === template) {
+    throw new Error("template has no ref('...') anchor to uniquify");
+  }
+  return marked;
+}
+
 for (let i = 0; i < FILE_COUNT; i++) {
-  const template = templates[i % templates.length];
+  const template = uniquify(templates[i % templates.length], i);
   const filename = `Component${String(i).padStart(4, "0")}.vue`;
   const filepath = join(benchDir, filename);
   writeFileSync(filepath, template);
