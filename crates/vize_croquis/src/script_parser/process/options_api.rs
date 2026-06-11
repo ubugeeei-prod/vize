@@ -13,7 +13,9 @@ use oxc_ast::ast::{
 use oxc_span::GetSpan;
 
 use crate::ScopeBinding;
-use crate::croquis::ComponentRegistration;
+use crate::croquis::{
+    ComponentRegistration, OptionGroup, OptionKey, OptionMember, OptionsDescriptor,
+};
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String};
 use vize_relief::BindingType;
 
@@ -59,6 +61,9 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
         else {
             continue;
         };
+        if result.options_descriptor.is_none() {
+            result.options_descriptor = Some(build_options_descriptor(options.object));
+        }
         collect_component_registrations_from_options(result, options.object, &object_bindings);
         // Options API template bindings are valid in Vue 3 too; legacy Vue 2.7
         // implies them and additionally pulls in the Nuxt 2 globals below.
@@ -857,5 +862,303 @@ pub(super) fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str>
         PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
         PropertyKey::StringLiteral(string) => Some(string.value.as_str()),
         _ => None,
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Options descriptor (shared single-source-of-truth options-object view).
+// ---------------------------------------------------------------------------
+
+/// Resolve the component's Options API options object from `program` and build
+/// its [`OptionsDescriptor`], reusing the same authoritative
+/// `export default` / `defineComponent(...)` / identifier-bound /
+/// `as`/`satisfies`/non-null/paren resolution that drives template-binding
+/// collection.
+///
+/// Returns the descriptor for the first resolved options object (matching the
+/// resolution order of the existing collectors), or `None` when the script does
+/// not declare an Options API component via `export default`.
+///
+/// Spans are program-relative; callers add their block offset.
+pub fn collect_options_descriptor(program: &Program<'_>) -> Option<OptionsDescriptor> {
+    let mut component_option_bindings = FxHashMap::default();
+    collect_component_options_bindings(program, &mut component_option_bindings);
+
+    for statement in program.body.iter() {
+        let Statement::ExportDefaultDeclaration(export) = statement else {
+            continue;
+        };
+        // Class components are not Options API options objects.
+        if super::class_component::class_from_export(&export.declaration).is_some() {
+            continue;
+        }
+        let Some(options) =
+            component_options_from_export(&export.declaration, &component_option_bindings)
+        else {
+            continue;
+        };
+        return Some(build_options_descriptor(options.object));
+    }
+
+    None
+}
+
+/// Build an [`OptionsDescriptor`] from an already-resolved options object.
+///
+/// Member names and spans are recorded verbatim (no kebab→camel normalization);
+/// array-form `props`/`inject` entries record the full string-literal span
+/// including quotes, matching how lint diagnostics point at the declaration.
+fn build_options_descriptor(object: &ObjectExpression<'_>) -> OptionsDescriptor {
+    let mut option_keys = Vec::new();
+    let mut members = Vec::new();
+
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        if property.computed {
+            continue;
+        }
+        let Some(name) = property_key_name(&property.key) else {
+            continue;
+        };
+        let key_span = property.key.span();
+        option_keys.push(OptionKey {
+            name: CompactString::new(name),
+            start: key_span.start,
+            end: key_span.end,
+        });
+
+        if let Some(group) = descriptor_group(name) {
+            collect_descriptor_members(group, &property.value, &mut members);
+        }
+    }
+
+    OptionsDescriptor {
+        options_start: object.span.start,
+        options_end: object.span.end,
+        option_keys,
+        members,
+    }
+}
+
+fn descriptor_group(name: &str) -> Option<OptionGroup> {
+    match name {
+        "props" => Some(OptionGroup::Props),
+        "inject" => Some(OptionGroup::Inject),
+        "computed" => Some(OptionGroup::Computed),
+        "methods" => Some(OptionGroup::Methods),
+        "data" => Some(OptionGroup::Data),
+        "setup" => Some(OptionGroup::Setup),
+        _ => None,
+    }
+}
+
+fn collect_descriptor_members(
+    group: OptionGroup,
+    value: &Expression<'_>,
+    members: &mut Vec<OptionMember>,
+) {
+    match group {
+        // `props`/`inject` accept either `['a', 'b']` or `{ a: ..., b: ... }`.
+        OptionGroup::Props | OptionGroup::Inject => match value {
+            Expression::ArrayExpression(array) => {
+                for element in &array.elements {
+                    let Some(Expression::StringLiteral(string)) = element.as_expression() else {
+                        continue;
+                    };
+                    members.push(OptionMember {
+                        name: CompactString::new(string.value.as_str()),
+                        start: string.span.start,
+                        end: string.span.end,
+                        group,
+                    });
+                }
+            }
+            Expression::ObjectExpression(object) => {
+                push_object_key_members(object, group, members);
+            }
+            _ => {}
+        },
+        OptionGroup::Computed | OptionGroup::Methods => {
+            if let Expression::ObjectExpression(object) = value {
+                push_object_key_members(object, group, members);
+            }
+        }
+        // `data`/`setup` are functions whose returned object literal declares
+        // members.
+        OptionGroup::Data | OptionGroup::Setup => {
+            if let Some(object) = descriptor_returned_object(value) {
+                push_object_key_members(object, group, members);
+            }
+        }
+    }
+}
+
+fn push_object_key_members(
+    object: &ObjectExpression<'_>,
+    group: OptionGroup,
+    members: &mut Vec<OptionMember>,
+) {
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        if property.computed {
+            continue;
+        }
+        let Some(name) = property_key_name(&property.key) else {
+            continue;
+        };
+        let span = property.key.span();
+        members.push(OptionMember {
+            name: CompactString::new(name),
+            start: span.start,
+            end: span.end,
+            group,
+        });
+    }
+}
+
+/// Returned object literal of a `data`/`setup` function value: function
+/// expression `return`, arrow concise body `() => ({ ... })`, or arrow block
+/// `return`. Parentheses are unwrapped; identifier-bound returns are not
+/// resolved (matching the lint walkers being unified).
+fn descriptor_returned_object<'a>(value: &'a Expression<'a>) -> Option<&'a ObjectExpression<'a>> {
+    match value {
+        Expression::FunctionExpression(function) => {
+            descriptor_returned_object_in_body(&function.body.as_ref()?.statements)
+        }
+        Expression::ArrowFunctionExpression(arrow) => {
+            if arrow.expression {
+                let Statement::ExpressionStatement(expr) = arrow.body.statements.first()? else {
+                    return None;
+                };
+                descriptor_object_expression(&expr.expression)
+            } else {
+                descriptor_returned_object_in_body(&arrow.body.statements)
+            }
+        }
+        _ => None,
+    }
+}
+
+fn descriptor_returned_object_in_body<'a>(
+    statements: &'a oxc_allocator::Vec<'a, Statement<'a>>,
+) -> Option<&'a ObjectExpression<'a>> {
+    for statement in statements.iter() {
+        if let Statement::ReturnStatement(ret) = statement
+            && let Some(argument) = ret.argument.as_ref()
+        {
+            return descriptor_object_expression(argument);
+        }
+    }
+    None
+}
+
+fn descriptor_object_expression<'a>(
+    expression: &'a Expression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match expression {
+        Expression::ObjectExpression(object) => Some(object.as_ref()),
+        Expression::ParenthesizedExpression(paren) => {
+            descriptor_object_expression(&paren.expression)
+        }
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod descriptor_tests {
+    use super::collect_options_descriptor;
+    use oxc_allocator::Allocator;
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
+    use vize_carton::{CompactString, cstr};
+
+    /// Parse `source` and return `(member_name, group_label)` pairs in order.
+    /// Labels are compared instead of the enum to keep names borrowed (the
+    /// workspace disallows `ToString::to_string`).
+    fn members(allocator: &Allocator, source: &str) -> Vec<(CompactString, &'static str)> {
+        let source_type = SourceType::from_path("script.ts").unwrap();
+        let ret = Parser::new(allocator, source, source_type).parse();
+        let descriptor = collect_options_descriptor(&ret.program).expect("descriptor");
+        descriptor
+            .members
+            .iter()
+            .map(|member| (member.name.clone(), member.group.label()))
+            .collect()
+    }
+
+    #[test]
+    fn collects_members_across_groups_in_source_order() {
+        let source = r#"
+export default {
+  props: ['foo'],
+  data() { return { bar: 1 } },
+  computed: { baz() { return 2 } },
+  methods: { qux() {} },
+  inject: { wiz: { from: 'w' } },
+  setup() { return { zap: 0 } },
+}
+"#;
+        let allocator = Allocator::default();
+        assert_eq!(
+            members(&allocator, source),
+            vec![
+                (cstr!("foo"), "props"),
+                (cstr!("bar"), "data"),
+                (cstr!("baz"), "computed"),
+                (cstr!("qux"), "methods"),
+                (cstr!("wiz"), "inject"),
+                (cstr!("zap"), "setup"),
+            ]
+        );
+    }
+
+    #[test]
+    fn records_array_prop_span_including_quotes_and_all_option_keys() {
+        let allocator = Allocator::default();
+        let source = "export default { props: ['foo'], name: 'C' }";
+        let source_type = SourceType::from_path("script.ts").unwrap();
+        let ret = Parser::new(&allocator, source, source_type).parse();
+        let descriptor = collect_options_descriptor(&ret.program).expect("descriptor");
+
+        // Array-form prop member span covers the full string literal incl. quotes.
+        let prop = &descriptor.members[0];
+        assert_eq!(&source[prop.start as usize..prop.end as usize], "'foo'");
+
+        // Every top-level option key is recorded (props + name), verbatim.
+        let keys: Vec<&str> = descriptor
+            .option_keys
+            .iter()
+            .map(|k| k.name.as_str())
+            .collect();
+        assert_eq!(keys, vec!["props", "name"]);
+    }
+
+    #[test]
+    fn resolves_define_component_and_identifier_export() {
+        let allocator = Allocator::default();
+        let from_define = members(
+            &allocator,
+            "export default defineComponent({ methods: { a() {} } })",
+        );
+        assert_eq!(from_define, vec![(cstr!("a"), "methods")]);
+
+        let from_ident = members(
+            &allocator,
+            "const c = { computed: { b() { return 1 } } }\nexport default c",
+        );
+        assert_eq!(from_ident, vec![(cstr!("b"), "computed")]);
+    }
+
+    #[test]
+    fn no_options_for_script_setup_style() {
+        let allocator = Allocator::default();
+        let source = "import { ref } from 'vue'\nconst x = ref(0)";
+        let source_type = SourceType::from_path("script.ts").unwrap();
+        let ret = Parser::new(&allocator, source, source_type).parse();
+        assert!(collect_options_descriptor(&ret.program).is_none());
     }
 }

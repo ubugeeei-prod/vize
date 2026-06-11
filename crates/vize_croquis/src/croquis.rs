@@ -30,6 +30,7 @@
 
 mod bindings;
 mod model;
+mod options_descriptor;
 mod template;
 mod vir;
 
@@ -40,6 +41,7 @@ pub use bindings::{
     UnusedVarContext,
 };
 pub use model::{AnalysisStats, CroquisStats};
+pub use options_descriptor::{OptionGroup, OptionKey, OptionMember, OptionsDescriptor};
 pub use template::{
     ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener, PassedProp,
     SlotUsage, TemplateExpression, TemplateExpressionKind, TemplateInfo,
@@ -139,6 +141,33 @@ pub struct Croquis {
     /// Definition spans for bindings (name -> (start, end) offset in script)
     /// Used for Go-to-Definition support.
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
+
+    /// Authoritative Options API options-object descriptor, when the script
+    /// resolves to an Options API component.
+    ///
+    /// Private (with the [`Croquis::options_descriptor`] accessor) so adding it
+    /// does not introduce a new public field on the otherwise all-`pub`
+    /// `Croquis` struct, which `cargo-semver-checks` would flag.
+    options_descriptor: Option<OptionsDescriptor>,
+}
+
+impl Croquis {
+    /// The resolved Options API options-object descriptor, if the script
+    /// defines an Options API component.
+    ///
+    /// Spans are relative to the script content the component was parsed from;
+    /// add the script block's offset before reporting.
+    #[inline]
+    pub fn options_descriptor(&self) -> Option<&OptionsDescriptor> {
+        self.options_descriptor.as_ref()
+    }
+
+    /// Set the Options API options-object descriptor. Used by the script parser
+    /// when populating a summary.
+    #[inline]
+    pub(crate) fn set_options_descriptor(&mut self, descriptor: Option<OptionsDescriptor>) {
+        self.options_descriptor = descriptor;
+    }
 }
 
 #[cfg(test)]

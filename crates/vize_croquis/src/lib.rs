@@ -83,9 +83,9 @@ pub use symbol::{Symbol, SymbolFlags, SymbolId, SymbolTable};
 pub use analyzer::{Analyzer, AnalyzerOptions};
 pub use croquis::{
     AnalysisStats, BindingMetadata, COMPILER_MACRO_NAMES, ComponentShape, Croquis, CroquisStats,
-    ImportStatementInfo, InvalidExport, InvalidExportKind, ReExportInfo, TemplateExpression,
-    TemplateExpressionKind, TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar,
-    UnusedVarContext,
+    ImportStatementInfo, InvalidExport, InvalidExportKind, OptionGroup, OptionKey, OptionMember,
+    OptionsDescriptor, ReExportInfo, TemplateExpression, TemplateExpressionKind, TypeExport,
+    TypeExportKind, UndefinedRef, UnusedTemplateVar, UnusedVarContext,
 };
 pub use drawer::{Drawer, DrawerOptions};
 
