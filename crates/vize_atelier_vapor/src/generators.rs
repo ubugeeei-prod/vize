@@ -7,7 +7,6 @@ pub mod component;
 pub mod directive;
 pub mod event;
 pub mod for_node;
-pub mod generate_slot;
 pub mod generate_text;
 pub mod if_node;
 pub mod prop;
@@ -29,10 +28,6 @@ pub use event::{
     generate_inline_handler, generate_set_event,
 };
 pub use for_node::{can_optimize_for, generate_for, generate_for_memo};
-pub use generate_slot::{
-    generate_dynamic_slot_name, generate_normalize_slots, generate_scoped_slots,
-    generate_slot_function, generate_slot_outlet, is_dynamic_slot_name,
-};
 pub use generate_text::{
     build_text_expression, can_inline_text, generate_create_text_node, generate_set_text,
     generate_text_content, generate_to_display_string,
