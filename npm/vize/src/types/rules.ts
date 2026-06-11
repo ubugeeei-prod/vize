@@ -60,6 +60,7 @@ export const LINT_RULE_NAMES = [
   "html/no-duplicate-dt",
   "html/no-empty-palpable-content",
   "html/require-datetime",
+  "petite-vue/no-unsupported-directive",
   "script/no-async-in-computed",
   "script/no-deep-destructure-in-props",
   "script/no-dupe-keys",
