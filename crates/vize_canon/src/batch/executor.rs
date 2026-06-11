@@ -93,19 +93,21 @@ impl CorsaExecutor {
                 check_with_cli_sharded(&self.corsa_path, project, servers)
             ) {
                 Ok(result) => return Ok(result),
-                Err(_cli_error) => {
+                Err(cli_error) => {
                     // Degrade to a single CLI program before the session API:
                     // a shard-specific failure must not cost CLI support.
+                    warn_fallback(FallbackStep::ShardedCliToSingleCli, &cli_error);
                 }
             }
         }
 
         match profile!("canon.corsa.cli", check_with_cli(&self.corsa_path, project)) {
             Ok(result) => return Ok(result),
-            Err(_cli_error) => {
+            Err(cli_error) => {
                 // Fall through to the project-session API. This keeps the batch
                 // runner usable with runtimes whose CLI diagnostics are not
                 // available or not parseable.
+                warn_fallback(FallbackStep::CliToSession, &cli_error);
             }
         }
 
@@ -123,6 +125,10 @@ impl CorsaExecutor {
         ) {
             Ok(client) => client,
             Err(error) if should_fallback_to_cli(&error) => {
+                warn_fallback(
+                    FallbackStep::SessionToCli,
+                    &map_corsa_error(error.as_str().into()),
+                );
                 return profile!(
                     "canon.corsa.cli_fallback",
                     check_with_cli(&self.corsa_path, project)
@@ -361,9 +367,148 @@ fn should_fallback_to_cli(error: &str) -> bool {
         || error.contains("broken pipe")
 }
 
+/// A degradation step on the Corsa fallback ladder. Each variant names the
+/// faster/stronger path that failed and the slower/weaker path taken instead,
+/// so an operator can tell from a single signal which capability was lost.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FallbackStep {
+    /// Parallel sharded CLI check failed; degraded to a single CLI program
+    /// (doubles work on wide machines).
+    ShardedCliToSingleCli,
+    /// The CLI fast path failed; degraded to the much slower project-session
+    /// API.
+    CliToSession,
+    /// The project-session API could not be spawned/handshaken; degraded back
+    /// to a single CLI program.
+    SessionToCli,
+}
+
+impl FallbackStep {
+    const fn description(self) -> &'static str {
+        match self {
+            FallbackStep::ShardedCliToSingleCli => {
+                "sharded Corsa CLI check failed; degraded to a single CLI program"
+            }
+            FallbackStep::CliToSession => {
+                "Corsa CLI fast path unavailable; degraded to the slower project-session API"
+            }
+            FallbackStep::SessionToCli => {
+                "Corsa project-session API unavailable; degraded to a single CLI program"
+            }
+        }
+    }
+}
+
+/// Coarse cause of a ladder degradation, so the signal distinguishes a dead
+/// process from an unparseable runtime from a real type-check failure.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FallbackCause {
+    /// The Corsa process could not be spawned or died (IO error, broken pipe,
+    /// closed reader, panic).
+    Spawn,
+    /// The Corsa process ran but its output could not be decoded/parsed.
+    Parse,
+    /// The Corsa process produced a usable error that is neither a spawn nor a
+    /// parse problem.
+    Check,
+}
+
+impl FallbackCause {
+    const fn label(self) -> &'static str {
+        match self {
+            FallbackCause::Spawn => "spawn",
+            FallbackCause::Parse => "parse",
+            FallbackCause::Check => "check",
+        }
+    }
+}
+
+/// Classify a ladder error as a spawn, parse, or check failure from its kind
+/// and message, without depending on any single error variant.
+fn classify_fallback_cause(error: &CorsaError) -> FallbackCause {
+    match error {
+        CorsaError::Io(_) => FallbackCause::Spawn,
+        CorsaError::JsonParse(_) => FallbackCause::Parse,
+        _ => {
+            let message = cstr!("{error}");
+            if message.contains("Broken pipe")
+                || message.contains("broken pipe")
+                || message.contains("process is closed")
+                || message.contains("jsonrpc reader")
+                || message.contains("worker panicked")
+                || message.contains("No such file")
+                || message.contains("not found")
+            {
+                FallbackCause::Spawn
+            } else if message.contains("marker")
+                || message.contains("decode")
+                || message.contains("parse")
+                || message.contains("unexpected")
+            {
+                FallbackCause::Parse
+            } else {
+                FallbackCause::Check
+            }
+        }
+    }
+}
+
+/// Whether the once-per-run fallback signal has already been emitted to stderr.
+/// The structured `tracing` event fires on every degradation (subscribers can
+/// dedup/aggregate), but the human-facing stderr line is emitted at most once
+/// per process so a large project's repeated fallbacks stay quiet.
+static FALLBACK_NOTICE_EMITTED: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
+/// Emit an observable signal that the Corsa integration degraded to a
+/// slower/weaker path. Always records a structured `tracing::warn!` event
+/// (consumed by the LSP and CI which install a subscriber); additionally prints
+/// a single human-readable stderr warning per process for the `vize check` CLI,
+/// which installs no subscriber. The happy path never reaches this function, so
+/// a fully fast-path run stays silent.
+fn warn_fallback(step: FallbackStep, error: &CorsaError) {
+    let cause = classify_fallback_cause(error);
+    tracing::warn!(
+        target: "vize_canon::corsa::fallback",
+        fallback = ?step,
+        cause = cause.label(),
+        error = %error,
+        "{}",
+        step.description(),
+    );
+
+    if let Some(notice) = fallback_stderr_notice(step, cause) {
+        eprintln!("{notice}");
+    }
+}
+
+/// Build the human-facing stderr warning for a ladder degradation, claiming the
+/// once-per-process slot as a side effect. Returns `None` when the notice is
+/// suppressed (`VIZE_SILENCE_CORSA_FALLBACK`) or already emitted this run, so a
+/// large project's repeated fallbacks stay quiet. Separated from `eprintln!` so
+/// the once/suppression policy is unit-testable without capturing real stderr.
+fn fallback_stderr_notice(step: FallbackStep, cause: FallbackCause) -> Option<String> {
+    // Noise-sensitive embedders can suppress only the stderr line; the
+    // structured `tracing` event still fires for observability.
+    if std::env::var_os("VIZE_SILENCE_CORSA_FALLBACK").is_some() {
+        return None;
+    }
+    if FALLBACK_NOTICE_EMITTED.swap(true, std::sync::atomic::Ordering::Relaxed) {
+        return None;
+    }
+    Some(cstr!(
+        "\x1b[33mwarning:\x1b[0m corsa: {} ({} failure). Type checking continues on a slower path.",
+        step.description(),
+        cause.label(),
+    ))
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{CorsaExecutor, collect_declaration_outputs, collect_virtual_file_uris};
+    use super::{
+        CorsaError, CorsaExecutor, FallbackCause, classify_fallback_cause,
+        collect_declaration_outputs, collect_virtual_file_uris,
+    };
     use crate::file_uri::path_to_file_uri;
     use std::{
         fs,
@@ -580,5 +725,89 @@ mod tests {
         assert!(result.diagnostics.is_empty());
 
         let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn classifies_spawn_failures() {
+        let io = CorsaError::Io(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "No such file or directory",
+        ));
+        assert_eq!(classify_fallback_cause(&io), FallbackCause::Spawn);
+
+        let broken_pipe = CorsaError::CorsaExecution {
+            exit_code: -1,
+            message: "write failed: Broken pipe".into(),
+        };
+        assert_eq!(classify_fallback_cause(&broken_pipe), FallbackCause::Spawn);
+
+        let panicked = CorsaError::CorsaExecution {
+            exit_code: -1,
+            message: "sharded corsa CLI worker panicked".into(),
+        };
+        assert_eq!(classify_fallback_cause(&panicked), FallbackCause::Spawn);
+    }
+
+    #[test]
+    fn classifies_parse_failures() {
+        let parse = CorsaError::CorsaExecution {
+            exit_code: -1,
+            message: "expected tuple marker but found 0x00".into(),
+        };
+        assert_eq!(classify_fallback_cause(&parse), FallbackCause::Parse);
+    }
+
+    #[test]
+    fn classifies_check_failures() {
+        let check = CorsaError::CorsaExecution {
+            exit_code: 2,
+            message: "Type 'string' is not assignable to type 'number'.".into(),
+        };
+        assert_eq!(classify_fallback_cause(&check), FallbackCause::Check);
+    }
+
+    #[test]
+    fn fallback_notice_is_observable_once_and_silenceable() {
+        use super::{FallbackCause, FallbackStep, fallback_stderr_notice};
+
+        // Re-arm the once-per-run guard and ensure the notice is not suppressed,
+        // regardless of earlier degradations in this process.
+        super::FALLBACK_NOTICE_EMITTED.store(false, std::sync::atomic::Ordering::Relaxed);
+        // SAFETY: single-threaded test; the var is only read by the helper.
+        unsafe { std::env::remove_var("VIZE_SILENCE_CORSA_FALLBACK") };
+
+        // First degradation produces an observable, descriptive notice.
+        let notice = fallback_stderr_notice(FallbackStep::SessionToCli, FallbackCause::Spawn)
+            .expect("first fallback must produce an observable notice");
+        assert!(
+            notice.contains("corsa:") && notice.contains("slower path"),
+            "expected an observable corsa fallback notice, got: {notice:?}"
+        );
+        assert!(
+            notice.contains("project-session API unavailable") && notice.contains("spawn failure"),
+            "notice must name the step and cause, got: {notice:?}"
+        );
+
+        // A second degradation in the same run must stay quiet (once per run).
+        assert!(
+            fallback_stderr_notice(FallbackStep::CliToSession, FallbackCause::Parse).is_none(),
+            "the stderr notice must fire at most once per run"
+        );
+
+        // Opt-out suppresses the stderr notice without claiming the guard.
+        super::FALLBACK_NOTICE_EMITTED.store(false, std::sync::atomic::Ordering::Relaxed);
+        // SAFETY: single-threaded test; restored immediately after the call.
+        unsafe { std::env::set_var("VIZE_SILENCE_CORSA_FALLBACK", "1") };
+        let suppressed = fallback_stderr_notice(FallbackStep::CliToSession, FallbackCause::Check);
+        // SAFETY: single-threaded test cleanup.
+        unsafe { std::env::remove_var("VIZE_SILENCE_CORSA_FALLBACK") };
+        assert!(
+            suppressed.is_none(),
+            "silenced fallback must not emit a notice"
+        );
+        assert!(
+            !super::FALLBACK_NOTICE_EMITTED.load(std::sync::atomic::Ordering::Relaxed),
+            "silenced fallback must not claim the once-per-run guard"
+        );
     }
 }
