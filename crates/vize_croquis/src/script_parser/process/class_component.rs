@@ -9,7 +9,8 @@
 //!
 //! | Class member                  | Binding type | Options API equivalent |
 //! |-------------------------------|--------------|------------------------|
-//! | property field / `accessor`   | `Data`       | `data()`               |
+//! | `@Prop`-style field/accessor  | `Props`      | `props`                |
+//! | other property field/accessor | `Data`       | `data()`               |
 //! | method                        | `Options`    | `methods`              |
 //! | `get` / `set` accessor        | `Options`    | `computed`             |
 //!
@@ -25,16 +26,17 @@
 //! the class body and are skipped, along with `static` members (not on the
 //! instance), `declare` fields, computed keys, and the constructor.
 //!
-//! Member-level decorator semantics (`@Prop`, `@Emit`, `@Watch`, ...) are not
-//! interpreted yet; fields keep the `Data` mapping so templates resolve the
-//! identifiers either way. The `@Component({ ... })` / `@Options({ ... })`
-//! decorator argument is a regular options object and is fed through the
-//! existing Options API collectors (so `components:` registrations and inline
-//! `data`/`computed`/`methods` behave identically to an options component).
+//! Member-level `@Prop`-style decorators map fields/accessors to prop bindings.
+//! Other member decorators (`@Emit`, `@Watch`, ...) are not interpreted yet;
+//! the members keep the same template binding names either way. The
+//! `@Component({ ... })` / `@Options({ ... })` decorator argument is a regular
+//! options object and is fed through the existing Options API collectors (so
+//! `components:` registrations and inline `data`/`computed`/`methods` behave
+//! identically to an options component).
 
 use oxc_ast::ast::{
-    Argument, Class, ClassElement, ExportDefaultDeclarationKind, Expression, MethodDefinitionKind,
-    ObjectExpression, PropertyKey,
+    Argument, Class, ClassElement, Decorator, ExportDefaultDeclarationKind, Expression,
+    MethodDefinitionKind, ObjectExpression, PropertyKey,
 };
 use oxc_span::GetSpan;
 
@@ -126,17 +128,50 @@ pub(super) fn collect_class_component_metadata<'a>(
                 if property.r#static || property.computed || property.declare {
                     continue;
                 }
-                add_class_member_binding(result, &property.key, BindingType::Data);
+                add_class_member_binding(
+                    result,
+                    &property.key,
+                    class_field_binding_type(&property.decorators),
+                );
             }
             ClassElement::AccessorProperty(accessor) => {
                 if accessor.r#static || accessor.computed {
                     continue;
                 }
-                add_class_member_binding(result, &accessor.key, BindingType::Data);
+                add_class_member_binding(
+                    result,
+                    &accessor.key,
+                    class_field_binding_type(&accessor.decorators),
+                );
             }
             ClassElement::StaticBlock(_) | ClassElement::TSIndexSignature(_) => {}
         }
     }
+}
+
+fn class_field_binding_type(decorators: &[Decorator<'_>]) -> BindingType {
+    if decorators.iter().any(is_prop_like_member_decorator) {
+        BindingType::Props
+    } else {
+        BindingType::Data
+    }
+}
+
+fn is_prop_like_member_decorator(decorator: &Decorator<'_>) -> bool {
+    match &decorator.expression {
+        Expression::Identifier(identifier) => is_prop_like_decorator_name(identifier.name.as_str()),
+        Expression::CallExpression(call) => {
+            let Expression::Identifier(identifier) = &call.callee else {
+                return false;
+            };
+            is_prop_like_decorator_name(identifier.name.as_str())
+        }
+        _ => false,
+    }
+}
+
+fn is_prop_like_decorator_name(name: &str) -> bool {
+    matches!(name, "Prop" | "PropSync" | "Model" | "ModelSync" | "VModel")
 }
 
 /// Options object passed to a `@Component(...)` / `@Options(...)` decorator.

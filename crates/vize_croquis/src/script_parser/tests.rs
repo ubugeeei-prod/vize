@@ -672,6 +672,7 @@ fn test_parse_class_component_decorated_members() {
     let source = r#"
 import Vue from 'vue'
 import Component from 'vue-class-component'
+import { Model, ModelSync, Prop, PropSync, VModel } from 'vue-property-decorator'
 import UserBadge from './UserBadge.vue'
 
 @Component({
@@ -681,7 +682,11 @@ import UserBadge from './UserBadge.vue'
 })
 export default class HelloWorld extends Vue {
   count = 0
-  private msg!: string
+  @Prop() private msg!: string
+  @PropSync('title') syncedTitle!: string
+  @Model('change') modelValue!: string
+  @ModelSync('checked') checked!: boolean
+  @VModel() selected!: string
   protected items: string[] = []
   #internal = 'hidden'
   static version = '1.0.0'
@@ -708,11 +713,17 @@ export default class HelloWorld extends Vue {
 
     assert_eq!(result.component_shape, ComponentShape::ClassApi);
 
-    // Fields -> Data (TS `private`/`protected` are erased at runtime, so the
-    // template still resolves them; the canonical Vue CLI class-component
-    // scaffold renders `private` members).
+    // Prop-like member decorators -> Props.
+    assert_eq!(result.bindings.get("msg"), Some(BindingType::Props));
+    assert_eq!(result.bindings.get("syncedTitle"), Some(BindingType::Props));
+    assert_eq!(result.bindings.get("modelValue"), Some(BindingType::Props));
+    assert_eq!(result.bindings.get("checked"), Some(BindingType::Props));
+    assert_eq!(result.bindings.get("selected"), Some(BindingType::Props));
+
+    // Undecorated fields -> Data (TS `private`/`protected` are erased at
+    // runtime, so the template still resolves them; the canonical Vue CLI
+    // class-component scaffold renders `private` members).
     assert_eq!(result.bindings.get("count"), Some(BindingType::Data));
-    assert_eq!(result.bindings.get("msg"), Some(BindingType::Data));
     assert_eq!(result.bindings.get("items"), Some(BindingType::Data));
 
     // Methods and get/set accessors -> Options (methods/computed-like).
