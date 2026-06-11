@@ -24,6 +24,17 @@ pub(crate) fn extract_template_fast(source: &str) -> Option<(String, u32)> {
             None => break,
         };
 
+        // Skip HTML comments wholesale. A comment can legitimately contain
+        // `</template>` or `<template>` text (e.g. a commented-out template
+        // fragment); counting those as real tags would close the block early
+        // and truncate the extracted template. An unterminated comment runs to
+        // EOF, leaving no trustworthy closing tag, so the scan ends.
+        if bytes[next_lt..].starts_with(b"<!--") {
+            pos = memchr::memmem::find(&bytes[next_lt + 4..], b"-->")
+                .map_or(bytes.len(), |offset| next_lt + 4 + offset + 3);
+            continue;
+        }
+
         // Check if it's <template or </template
         if tag_name_at(bytes, next_lt)
             .is_some_and(|(name, _)| name.eq_ignore_ascii_case(b"template"))
@@ -124,5 +135,37 @@ mod tests {
             extract(source).as_deref(),
             Some("<template #default><slot /></template>")
         );
+    }
+
+    #[test]
+    fn extract_template_fast_ignores_closing_tag_inside_comment() {
+        // A commented-out `</template>` must not close the block early.
+        let source = "<template><div /><!-- </template> --><span /></template>";
+
+        assert_eq!(
+            extract(source).as_deref(),
+            Some("<div /><!-- </template> --><span />")
+        );
+    }
+
+    #[test]
+    fn extract_template_fast_ignores_opening_tag_inside_comment() {
+        // A commented-out `<template>` must not inflate the nesting depth and
+        // swallow the real closing tag.
+        let source = "<template><!-- <template> --><div /></template><script>x</script>";
+
+        assert_eq!(
+            extract(source).as_deref(),
+            Some("<!-- <template> --><div />")
+        );
+    }
+
+    #[test]
+    fn extract_template_fast_handles_unterminated_comment() {
+        // An unterminated comment leaves no trustworthy closing tag; extraction
+        // bails rather than returning a truncated or corrupt template.
+        let source = "<template><div /><!-- no end";
+
+        assert_eq!(extract(source), None);
     }
 }
