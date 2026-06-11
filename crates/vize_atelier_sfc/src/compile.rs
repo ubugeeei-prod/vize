@@ -653,15 +653,31 @@ fn compile_sfc_inner(
     };
 
     let lazy_hydration_transform = transform_lazy_hydration_macros(&script_setup.content);
-    let mut script_setup_content = lazy_hydration_transform
+    let script_setup_content = lazy_hydration_transform
         .as_ref()
         .map(|result| result.code.clone())
         .unwrap_or_else(|| script_setup.content.to_compact_string());
 
+    // Parse the script setup once. Croquis binding analysis, the macro
+    // context analysis, and (unless v-model demotion rewrites the content
+    // below) the inline compiler's statement sectioning all reuse this AST
+    // instead of independently re-parsing identical content. `None` means the
+    // parser panicked; each stage then falls back to its legacy parse path,
+    // which reproduces the historical panicked behavior.
+    let setup_ast_allocator = oxc_allocator::Allocator::default();
+    let setup_program =
+        crate::script::parse_script_setup_program(&setup_ast_allocator, &script_setup_content);
+
     // 1. Croquis parser: rich analysis with ReactivityTracker
     let mut croquis = profile!(
         "atelier.sfc.script_setup.croquis",
-        crate::script::analyze_script_setup_to_summary(&script_setup_content)
+        match setup_program.as_ref() {
+            Some(program) => crate::script::analyze_script_setup_program_to_summary(
+                program,
+                &script_setup_content,
+            ),
+            None => crate::script::analyze_script_setup_to_summary(&script_setup_content),
+        }
     );
     let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings);
 
@@ -697,7 +713,13 @@ fn compile_sfc_inner(
             )
         );
     }
-    profile!("atelier.sfc.script_context.analyze", ctx.analyze());
+    profile!(
+        "atelier.sfc.script_context.analyze",
+        match setup_program.as_ref() {
+            Some(program) => ctx.analyze_program(program, &script_setup_content),
+            None => ctx.analyze(),
+        }
+    );
 
     // 3. Merge Props bindings from ScriptCompileContext (type resolution fallback)
     //    Croquis can't resolve interface references, so we take Props from the legacy analyzer
@@ -765,24 +787,31 @@ fn compile_sfc_inner(
             .or_insert(BindingType::SetupConst);
     }
 
+    // When v-model demotion rewrites `const` to `let`, the rewritten content
+    // replaces the original for the inline compile below and the shared
+    // pre-demotion AST is no longer valid for it.
+    let mut demoted_setup_content: Option<String> = None;
     if let Some(template) = &descriptor.template {
-        let demoted_ids = profile!(
+        let demote_result = profile!(
             "atelier.sfc.script_setup.demote_v_model_reactive_consts",
             demote_v_model_reactive_const_bindings(
                 &template.content,
                 script_setup.lang.as_deref(),
-                &mut script_setup_content,
+                &script_setup_content,
                 &mut ctx,
                 &mut script_bindings,
                 &mut croquis,
             )
         );
 
-        for binding_name in demoted_ids {
-            warnings.push(create_v_model_reactive_const_warning(
-                script_setup,
-                &binding_name,
-            ));
+        if let Some((rewritten, demoted_ids)) = demote_result {
+            for binding_name in demoted_ids {
+                warnings.push(create_v_model_reactive_const_warning(
+                    script_setup,
+                    &binding_name,
+                ));
+            }
+            demoted_setup_content = Some(rewritten);
         }
     }
 
@@ -891,6 +920,14 @@ fn compile_sfc_inner(
         ),
     };
 
+    // When demotion rewrote the content, the shared AST is stale for the
+    // rewritten text; the inline compiler re-parses in that rare case.
+    let (setup_content_for_inline, setup_program_for_inline) = match demoted_setup_content.as_ref()
+    {
+        Some(content) => (content.as_str(), None),
+        None => (script_setup_content.as_str(), setup_program.as_ref()),
+    };
+
     // Compile script setup using inline mode to match Vue's @vue/compiler-sfc output format:
     // 1. Template imports (from "vue")
     // 2. User imports
@@ -900,7 +937,8 @@ fn compile_sfc_inner(
         "atelier.sfc.script_setup.inline_compile",
         compile_script_setup_inline_with_context(
             ctx,
-            &script_setup_content,
+            setup_content_for_inline,
+            setup_program_for_inline,
             &component_name,
             is_ts,
             source_is_ts,

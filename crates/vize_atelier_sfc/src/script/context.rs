@@ -95,6 +95,17 @@ impl ScriptCompileContext {
         self.bindings.is_script_setup = true;
     }
 
+    /// Analyze script setup from an already-parsed oxc program.
+    ///
+    /// Parse-free variant of [`Self::analyze`] for the SFC compiler's
+    /// parse-once pipeline. `source` must be the exact text `program` was
+    /// parsed from (and match the source this context was created with).
+    pub fn analyze_program(&mut self, program: &oxc_ast::ast::Program<'_>, source: &str) {
+        self.process_program(program, source);
+        // ScriptCompileContext is always used for <script setup>
+        self.bindings.is_script_setup = true;
+    }
+
     /// Convert to an Croquis for use in transforms and linting.
     ///
     /// This bridges the atelier script context to the shared croquis analysis format.

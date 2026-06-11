@@ -41,16 +41,21 @@ pub(super) fn extract_component_name(filename: &str) -> String {
 /// keep ordinary SFCs out of it: first require a literal `v-model`, then require
 /// at least one `SetupReactiveConst` binding. After resolving concrete v-model
 /// identifiers, the script parse runs only when such a binding is affected.
+///
+/// Returns `Some((rewritten_content, demoted_binding_names))` when at least one
+/// binding was demoted, `None` otherwise. The caller swaps in the rewritten
+/// content; taking `script_content` by shared reference lets the parse-once
+/// pipeline keep its oxc AST borrowed from the original content alive.
 pub(super) fn demote_v_model_reactive_const_bindings(
     template_content: &str,
     script_lang: Option<&str>,
-    script_content: &mut String,
+    script_content: &str,
     ctx: &mut ScriptCompileContext,
     script_bindings: &mut BindingMetadata,
     croquis: &mut vize_croquis::analysis::Croquis,
-) -> Vec<String> {
+) -> Option<(String, Vec<String>)> {
     if !template_content.contains("v-model") {
-        return Vec::new();
+        return None;
     }
 
     if !script_bindings
@@ -58,7 +63,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
         .values()
         .any(|binding_type| matches!(binding_type, BindingType::SetupReactiveConst))
     {
-        return Vec::new();
+        return None;
     }
 
     let template_allocator = TemplateAllocator::default();
@@ -66,7 +71,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
     let v_model_ids = resolve_template_v_model_identifiers(&root);
 
     if v_model_ids.is_empty() {
-        return Vec::new();
+        return None;
     }
 
     if !v_model_ids.iter().any(|binding_name| {
@@ -75,7 +80,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
             Some(BindingType::SetupReactiveConst)
         )
     }) {
-        return Vec::new();
+        return None;
     }
 
     let source_type = source_type_for_script_lang(script_lang);
@@ -83,7 +88,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
     let ret = OxcParser::new(&allocator, script_content, source_type).parse();
 
     if ret.panicked {
-        return Vec::new();
+        return None;
     }
 
     let mut rewritten = String::default();
@@ -142,13 +147,12 @@ pub(super) fn demote_v_model_reactive_const_bindings(
     }
 
     if demoted_ids.is_empty() {
-        return demoted_ids;
+        return None;
     }
 
     rewritten.push_str(&script_content[last_end..]);
-    *script_content = rewritten;
 
-    demoted_ids
+    Some((rewritten, demoted_ids))
 }
 
 fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {

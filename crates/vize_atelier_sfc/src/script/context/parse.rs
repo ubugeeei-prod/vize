@@ -4,7 +4,9 @@
 //! and extracts macro calls, bindings, and type definitions.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, BindingPattern, Expression, Statement, VariableDeclarationKind};
+use oxc_ast::ast::{
+    Argument, BindingPattern, Expression, Program, Statement, VariableDeclarationKind,
+};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 
@@ -36,8 +38,15 @@ impl ScriptCompileContext {
             return;
         }
 
-        let program = ret.program;
+        self.process_program(&ret.program, source);
+    }
 
+    /// Extract information from an already-parsed program.
+    ///
+    /// Parse-free core of [`Self::parse_with_oxc`] for callers that already
+    /// hold an oxc `Program` for `source` (the SFC compiler's parse-once
+    /// pipeline). `source` must be the exact text the program was parsed from.
+    pub(super) fn process_program(&mut self, program: &Program<'_>, source: &str) {
         // First pass: collect all TypeScript interfaces and type aliases
         // This ensures they're available when resolving type references in macros
         for stmt in program.body.iter() {

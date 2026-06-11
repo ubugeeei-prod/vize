@@ -1,6 +1,7 @@
 //! Public parse entry points for script setup and plain (Options API) scripts.
 
 use oxc_allocator::Allocator;
+use oxc_ast::ast::Program;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
@@ -30,6 +31,21 @@ pub fn parse_script_setup_with_generic(source: &str, generic: Option<&str>) -> S
         return ScriptParseResult::default();
     }
 
+    analyze_script_setup_program(&ret.program, source, generic)
+}
+
+/// Analyze an already-parsed script setup program.
+///
+/// This is the parse-free core of [`parse_script_setup_with_generic`]: callers
+/// that already hold an oxc `Program` for the same source (e.g. the SFC
+/// compiler's parse-once pipeline) can run the binding/scope analysis without
+/// paying for another parse. `source` must be the exact text the program was
+/// parsed from.
+pub fn analyze_script_setup_program(
+    program: &Program<'_>,
+    source: &str,
+    generic: Option<&str>,
+) -> ScriptParseResult {
     let source_len = source.len() as u32;
 
     let mut result = ScriptParseResult {
@@ -57,7 +73,7 @@ pub fn parse_script_setup_with_generic(source: &str, generic: Option<&str>) -> S
 
     // Process all statements
     profile!("croquis.script_setup.walk_statements", {
-        for stmt in ret.program.body.iter() {
+        for stmt in program.body.iter() {
             process::process_statement(&mut result, stmt, source);
         }
     });

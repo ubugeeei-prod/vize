@@ -1,3 +1,4 @@
+use oxc_ast::ast::Program;
 use vize_carton::{String, ToCompactString};
 
 use super::super::super::{
@@ -5,18 +6,27 @@ use super::super::super::{
         is_macro_call_line, is_multiline_macro_start, is_paren_macro_start,
         is_props_destructure_line,
     },
-    statement_sections::extract_script_sections,
+    statement_sections::{extract_script_sections, extract_script_sections_from_program},
 };
 use super::super::helpers::strip_comments_for_counting;
 
 /// Parse script content to extract imports, setup lines, and TypeScript declarations.
 ///
+/// When the caller already holds an oxc `Program` for `content` (the SFC
+/// compiler's parse-once pipeline), `program` skips the re-parse; otherwise
+/// the content is parsed here as before.
+///
 /// Returns a tuple of (user_imports, setup_lines, ts_declarations).
 pub(super) fn parse_script_content(
     content: &str,
     is_ts: bool,
+    program: Option<&Program<'_>>,
 ) -> (Vec<String>, Vec<String>, Vec<String>) {
-    if let Some(sections) = extract_script_sections(content, is_ts) {
+    let sections = match program {
+        Some(program) => extract_script_sections_from_program(program, content, is_ts),
+        None => extract_script_sections(content, is_ts),
+    };
+    if let Some(sections) = sections {
         return sections;
     }
 

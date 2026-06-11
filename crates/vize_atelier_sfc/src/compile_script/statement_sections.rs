@@ -4,7 +4,7 @@
 //! precise OXC statement spans instead of line-based heuristics.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Declaration, Expression, Statement};
+use oxc_ast::ast::{Declaration, Expression, Program, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 
@@ -32,15 +32,26 @@ pub(crate) fn extract_script_sections(
         return None;
     }
 
+    extract_script_sections_from_program(&ret.program, content, is_ts)
+}
+
+/// Parse-free core of [`extract_script_sections`] for callers that already
+/// hold an oxc `Program` for `content` (the SFC compiler's parse-once
+/// pipeline). `content` must be the exact text the program was parsed from.
+pub(crate) fn extract_script_sections_from_program(
+    program: &Program<'_>,
+    content: &str,
+    is_ts: bool,
+) -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
     let mut user_imports = Vec::new();
     let mut setup_lines = Vec::new();
     let mut ts_declarations = Vec::new();
 
     let mut prev_end = 0usize;
     let mut pending_gap = String::default();
-    let runtime_bindings = collect_runtime_bindings(ret.program.body.iter());
+    let runtime_bindings = collect_runtime_bindings(program.body.iter());
 
-    for stmt in ret.program.body.iter() {
+    for stmt in program.body.iter() {
         let span = stmt.span();
         let start = span.start as usize;
         let end = span.end as usize;

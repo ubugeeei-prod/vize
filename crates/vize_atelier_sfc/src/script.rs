@@ -96,6 +96,46 @@ pub fn analyze_script_setup_to_summary(content: &str) -> CroquisSummary {
     vize_croquis::script_parser::parse_script_setup(content).into_croquis()
 }
 
+/// Parse `<script setup>` content once for reuse across compile stages.
+///
+/// The SFC compiler needs the same oxc AST in three places: croquis binding
+/// analysis, `ScriptCompileContext` macro analysis, and statement sectioning
+/// in the inline script compiler. Parsing here once and lending the program
+/// out replaces three identical parses of the same content.
+///
+/// Returns `None` when the parser panicked; callers fall back to the legacy
+/// per-stage parse paths, which reproduce the historical panicked behavior.
+pub fn parse_script_setup_program<'a>(
+    allocator: &'a oxc_allocator::Allocator,
+    content: &'a str,
+) -> Option<oxc_ast::ast::Program<'a>> {
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
+    use vize_carton::profile;
+
+    // Same source type as the per-stage parsers this replaces
+    // (croquis `parse_script_setup`, `ScriptCompileContext::parse_with_oxc`,
+    // and `extract_script_sections` all parse as "script.ts").
+    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
+    let ret = profile!(
+        "atelier.sfc.script_setup.oxc_parse",
+        Parser::new(allocator, content, source_type).parse()
+    );
+    (!ret.panicked).then_some(ret.program)
+}
+
+/// Analyze an already-parsed script setup program into a croquis Croquis.
+///
+/// Parse-free variant of [`analyze_script_setup_to_summary`] used by the
+/// parse-once SFC pipeline. `content` must be the exact text `program` was
+/// parsed from.
+pub fn analyze_script_setup_program_to_summary(
+    program: &oxc_ast::ast::Program<'_>,
+    content: &str,
+) -> CroquisSummary {
+    vize_croquis::script_parser::analyze_script_setup_program(program, content, None).into_croquis()
+}
+
 /// Convert a full ScriptCompileContext analysis to Croquis.
 ///
 /// This uses the full atelier_sfc analysis (which includes more detailed

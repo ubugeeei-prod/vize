@@ -52,6 +52,7 @@ pub fn compile_script_setup_inline(
     let mut result = compile_script_setup_inline_with_context(
         ctx,
         content,
+        None,
         component_name,
         is_ts,
         source_is_ts,
@@ -77,6 +78,7 @@ pub fn compile_script_setup_inline(
 pub(crate) fn compile_script_setup_inline_with_context(
     ctx: ScriptCompileContext,
     content: &str,
+    setup_program: Option<&oxc_ast::ast::Program<'_>>,
     component_name: &str,
     is_ts: bool,
     source_is_ts: bool,
@@ -91,10 +93,11 @@ pub(crate) fn compile_script_setup_inline_with_context(
     is_prod: bool,
 ) -> Result<ScriptCompileResult, SfcError> {
     // Extract user imports and setup lines from script content once; await detection
-    // and output assembly share the same split.
+    // and output assembly share the same split. `setup_program` (when provided
+    // by the parse-once pipeline) skips re-parsing `content` here.
     let (user_imports, setup_lines, ts_declarations) = profile!(
         "atelier.script_inline.parse_sections",
-        parse_script_content(content, is_ts)
+        parse_script_content(content, is_ts, setup_program)
     );
     let setup_code: String = setup_lines.join("\n").into();
 

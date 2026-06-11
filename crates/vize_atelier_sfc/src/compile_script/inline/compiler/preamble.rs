@@ -124,7 +124,7 @@ pub(super) fn emit_preamble(
     // the single emission point for every user import. See #993 (side-effect imports running
     // twice when an SFC has both `<script>` and `<script setup>`).
     let normal_script_imports = preserved_normal_script
-        .map(|script| parse_script_content(script, is_ts).0)
+        .map(|script| parse_script_content(script, is_ts, None).0)
         .unwrap_or_default();
     let mut combined_imports: Vec<String> = normal_script_imports;
     combined_imports.extend_from_slice(user_imports);

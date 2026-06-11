@@ -26,7 +26,8 @@ mod typeof_refs;
 mod walk;
 
 pub use parse::{
-    parse_script, parse_script_setup, parse_script_setup_with_generic, parse_script_with_options,
+    analyze_script_setup_program, parse_script, parse_script_setup,
+    parse_script_setup_with_generic, parse_script_with_options,
 };
 pub use process::process_statement;
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
