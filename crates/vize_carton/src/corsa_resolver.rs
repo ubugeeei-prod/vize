@@ -21,6 +21,10 @@
 //!      reading its platform `optionalDependencies` entry
 //!    - the platform package / meta package under `node_modules/@typescript`
 //!    - the pnpm virtual store (`node_modules/.pnpm`) as a legacy fallback
+//!
+//!      Every native-binary probe accepts both `{corsa,tsgo}` and
+//!      `{corsa,tsgo}.exe` — npm's Windows platform packages ship
+//!      `lib/tsgo.exe`.
 //!    - `node_modules/.bin` wrappers (used only when no native binary is
 //!      found anywhere in the walk)
 //! 4. Common global install locations under `$HOME` plus `npm root -g`.
@@ -135,7 +139,11 @@ pub fn platform_suffix() -> &'static str {
             "linux-x64"
         }
     } else if cfg!(target_os = "windows") {
-        "win32-x64"
+        if cfg!(target_arch = "aarch64") {
+            "win32-arm64"
+        } else {
+            "win32-x64"
+        }
     } else {
         ""
     }
@@ -300,17 +308,26 @@ fn find_project_cache(dir: &Path, dev_paths: bool) -> Option<PathBuf> {
 
     for cache_dir in cache_dirs {
         for executable in CORSA_EXECUTABLE_NAMES {
-            let plain = cache_dir.join(executable);
-            if plain.exists() {
-                return Some(plain);
-            }
-            let windows = cache_dir.join(&*crate::cstr!("{executable}.exe"));
-            if windows.exists() {
-                return Some(windows);
+            if let Some(found) = existing_executable(&cache_dir, executable) {
+                return Some(found);
             }
         }
     }
 
+    None
+}
+
+/// Probe `dir/{name}` and `dir/{name}.exe`. npm's Windows platform packages
+/// ship `lib/tsgo.exe`; every other platform ships an extensionless binary.
+fn existing_executable(dir: &Path, executable: &str) -> Option<PathBuf> {
+    let plain = dir.join(executable);
+    if plain.exists() {
+        return Some(plain);
+    }
+    let windows = dir.join(&*crate::cstr!("{executable}.exe"));
+    if windows.exists() {
+        return Some(windows);
+    }
     None
 }
 
@@ -325,24 +342,21 @@ fn find_node_modules_native(dir: &Path) -> Option<PathBuf> {
             return Some(path);
         }
 
+        let lib_dir = platform_package_root(&node_modules, suffix).join("lib");
         for executable in CORSA_EXECUTABLE_NAMES {
-            let candidate = platform_package_root(&node_modules, suffix)
-                .join("lib")
-                .join(executable);
-            if candidate.exists() {
-                return Some(candidate);
+            if let Some(found) = existing_executable(&lib_dir, executable) {
+                return Some(found);
             }
         }
     }
 
+    let meta_lib_dir = node_modules
+        .join("@typescript")
+        .join("native-preview")
+        .join("lib");
     for executable in CORSA_EXECUTABLE_NAMES {
-        let candidate = node_modules
-            .join("@typescript")
-            .join("native-preview")
-            .join("lib")
-            .join(executable);
-        if candidate.exists() {
-            return Some(candidate);
+        if let Some(found) = existing_executable(&meta_lib_dir, executable) {
+            return Some(found);
         }
     }
 
@@ -378,10 +392,10 @@ fn resolve_platform_package(node_modules: &Path, suffix: &str) -> Option<PathBuf
         if !package_root.is_dir() {
             continue;
         }
+        let lib_dir = package_root.join("lib");
         for executable in CORSA_EXECUTABLE_NAMES {
-            let candidate = package_root.join("lib").join(executable);
-            if candidate.exists() {
-                return Some(candidate);
+            if let Some(found) = existing_executable(&lib_dir, executable) {
+                return Some(found);
             }
         }
     }
@@ -407,12 +421,10 @@ fn scrape_pnpm_store(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
         if !name.starts_with("@typescript+native-preview-") || !name.contains(suffix) {
             continue;
         }
+        let lib_dir = platform_package_root(&entry.path().join("node_modules"), suffix).join("lib");
         for executable in CORSA_EXECUTABLE_NAMES {
-            let candidate = platform_package_root(&entry.path().join("node_modules"), suffix)
-                .join("lib")
-                .join(executable);
-            if candidate.exists() {
-                return Some(candidate);
+            if let Some(found) = existing_executable(&lib_dir, executable) {
+                return Some(found);
             }
         }
     }
@@ -806,6 +818,61 @@ mod tests {
         // Node-style resolution canonicalizes the meta package directory, so
         // compare canonicalized paths (macOS tempdirs live behind a symlink).
         assert_eq!(resolved, Some(platform_binary.canonicalize().unwrap()));
+    }
+
+    // Regression for the native-smoke fresh-install matrix on Windows: npm's
+    // platform packages ship `lib/tsgo.exe` (no extensionless sibling), and
+    // `node_modules/.bin/tsgo` is a POSIX sh shim that CreateProcess rejects
+    // with "%1 is not a valid Win32 application" (os error 193). The resolver
+    // must find the `.exe` and never fall back to the sh shim.
+    #[test]
+    fn resolves_platform_package_exe_binary_over_bin_wrapper() {
+        let suffix = platform_suffix();
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path().join("project");
+        let node_modules = root.join("node_modules");
+        let manifest = node_modules
+            .join("@typescript")
+            .join("native-preview")
+            .join("package.json");
+        let platform_binary = node_modules
+            .join("@typescript")
+            .join(&*crate::cstr!("native-preview-{suffix}"))
+            .join("lib")
+            .join("tsgo.exe");
+        let wrapper = node_modules.join(".bin").join("tsgo");
+
+        fs::create_dir_all(manifest.parent().unwrap()).unwrap();
+        fs::write(
+            &manifest,
+            &*crate::cstr!(
+                r#"{{"name":"@typescript/native-preview","optionalDependencies":{{"@typescript/native-preview-{suffix}":"7.0.0"}}}}"#
+            ),
+        )
+        .unwrap();
+        write_file(&platform_binary);
+        write_file(&wrapper);
+
+        let resolved = discover_in_walk(&[root], false);
+
+        assert_eq!(resolved, Some(platform_binary.canonicalize().unwrap()));
+    }
+
+    #[test]
+    fn resolves_meta_package_exe_binary() {
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path().join("project");
+        let native = root
+            .join("node_modules")
+            .join("@typescript")
+            .join("native-preview")
+            .join("lib")
+            .join("tsgo.exe");
+        write_file(&native);
+
+        let resolved = discover_in_walk(&[root], false);
+
+        assert_eq!(resolved, Some(native));
     }
 
     #[cfg(unix)]

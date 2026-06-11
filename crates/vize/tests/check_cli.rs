@@ -3328,7 +3328,11 @@ fn native_preview_platform_suffix() -> &'static str {
             "linux-x64"
         }
     } else if cfg!(target_os = "windows") {
-        "win32-x64"
+        if cfg!(target_arch = "aarch64") {
+            "win32-arm64"
+        } else {
+            "win32-x64"
+        }
     } else {
         ""
     }
