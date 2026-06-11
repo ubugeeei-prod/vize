@@ -13,8 +13,8 @@ pub use loader::{
 pub use model::{
     ArrowParens, AttributeSortOrder, ConfigFeatureFlags, EndOfLine, FormatterConfig,
     GlobalTypeDeclaration, GlobalTypesConfig, LanguageServerConfig, LintRuleSeverity, LinterConfig,
-    LspConfig, ParseVueDialectError, QuoteProps, TrailingComma, TypeCheckerConfig, VizeConfig,
-    VueDialect,
+    LspConfig, ParseVueVersionError, QuoteProps, TrailingComma, TypeCheckerConfig, VizeConfig,
+    VueVersion,
 };
 pub use normalize::normalize_public_config_value;
 
