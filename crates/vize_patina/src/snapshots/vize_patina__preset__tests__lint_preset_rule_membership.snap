@@ -458,6 +458,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "petite-vue/valid-v-effect",
     "petite-vue/valid-v-scope",
     "vue/no-deprecated-v-on-native-modifier",
+    "vue/no-deprecated-v-bind-sync",
     "ecosystem/pinia-prefer-store-to-refs",
     "ecosystem/vue-router-prefer-named-push",
     "ecosystem/vue-test-utils-no-html-snapshot",
