@@ -1,9 +1,9 @@
 //! DOM template compilation: parse, transform, and codegen entry points.
 
-use vize_atelier_core::codegen::CodegenResult;
+use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
 use vize_atelier_core::{
     CompilerError, RootNode,
-    codegen::generate,
+    codegen::generate_with_sections,
     options::{CodegenOptions, ParserOptions, TemplateSyntaxMode, TransformOptions},
     parser::parse_with_options_and_template_syntax,
     transform::{
@@ -115,6 +115,25 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id<'a>(
     )
 }
 
+/// Compile a Vue template for DOM with template syntax mode, hoisted scope ID,
+/// and emission-recorded codegen section boundaries.
+#[doc(hidden)]
+pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
+    compile_template_inner_with_sections(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+    )
+}
+
 fn compile_template_inner<'a>(
     allocator: &'a Bump,
     source: &'a str,
@@ -122,6 +141,23 @@ fn compile_template_inner<'a>(
     template_syntax: TemplateSyntaxMode,
     hoisted_scope_id: Option<String>,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    let (root, errors, codegen_result) = compile_template_inner_with_sections(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+    );
+    (root, errors, codegen_result.into_result())
+}
+
+fn compile_template_inner_with_sections<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
     // Create parser options with DOM-specific settings
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
@@ -151,9 +187,15 @@ fn compile_template_inner<'a>(
             code: String::default(),
             preamble: String::default(),
             map: None,
-            sections: None,
         };
-        return (root, errors.to_vec(), codegen_result);
+        return (
+            root,
+            errors.to_vec(),
+            CodegenResultWithSections {
+                result: codegen_result,
+                sections: None,
+            },
+        );
     }
 
     // Transform with DOM-specific transforms
@@ -226,7 +268,7 @@ fn compile_template_inner<'a>(
     };
     let codegen_result = profile!(
         "atelier.dom.template.codegen",
-        generate(&root, codegen_opts)
+        generate_with_sections(&root, codegen_opts)
     );
 
     (root, errors, codegen_result)

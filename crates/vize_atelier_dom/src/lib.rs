@@ -25,6 +25,7 @@ pub use compile::{
     compile_template, compile_template_with_options,
     compile_template_with_options_and_hoisted_scope_id, compile_template_with_template_syntax,
     compile_template_with_template_syntax_and_hoisted_scope_id,
+    compile_template_with_template_syntax_and_hoisted_scope_id_with_sections,
 };
 #[allow(deprecated)]
 pub use compile::{

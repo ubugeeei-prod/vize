@@ -10,7 +10,7 @@ use crate::{
 use vize_carton::profile;
 
 use super::children::is_directive_comment;
-use super::context::{CodegenContext, CodegenResult, CodegenSections};
+use super::context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};
 use super::element::generate_root_node;
 use super::generate::{collect_hoist_helpers, generate_hoists};
 use super::node::generate_node;
@@ -21,6 +21,14 @@ use super::root::{
 
 /// Generate code from root AST.
 pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
+    generate_with_sections(root, options).into_result()
+}
+
+/// Generate code from root AST and return emission-recorded section boundaries.
+pub fn generate_with_sections(
+    root: &RootNode<'_>,
+    options: CodegenOptions,
+) -> CodegenResultWithSections {
     let mut ctx = CodegenContext::new(options);
     ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();
     let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
@@ -143,10 +151,12 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         preamble.push_str(&hoists_code);
     }
 
-    CodegenResult {
-        code: ctx.into_code(),
-        preamble,
-        map: None,
+    CodegenResultWithSections {
+        result: CodegenResult {
+            code: ctx.into_code(),
+            preamble,
+            map: None,
+        },
         sections: Some(CodegenSections {
             imports_len,
             assets_start,

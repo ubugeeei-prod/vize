@@ -97,9 +97,25 @@ pub struct CodegenResult {
     pub preamble: String,
     /// Source map (JSON)
     pub map: Option<String>,
+}
+
+/// Code generation result with emission-recorded section boundaries.
+///
+/// This is a separate wrapper so the longstanding public [`CodegenResult`]
+/// remains constructible with the same public fields.
+pub struct CodegenResultWithSections {
+    /// Generated code, preamble, and source map.
+    pub result: CodegenResult,
     /// Section boundaries recorded during emission (`None` when codegen
     /// bailed out before producing a render function).
     pub sections: Option<CodegenSections>,
+}
+
+impl CodegenResultWithSections {
+    /// Drop section metadata and keep the public codegen result.
+    pub fn into_result(self) -> CodegenResult {
+        self.result
+    }
 }
 
 impl CodegenContext {

@@ -185,7 +185,7 @@ pub(crate) fn compile_template_block(
     // Compile template
     let (_, errors, result) = profile!(
         "atelier.sfc.template.dom",
-        vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id(
+        vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id_with_sections(
             &allocator,
             &template.content,
             dom_opts,
@@ -212,19 +212,19 @@ pub(crate) fn compile_template_block(
     let mut output = String::default();
 
     // Add Vue imports
-    output.push_str(&result.preamble);
+    output.push_str(&result.result.preamble);
     output.push('\n');
 
     // The codegen already generates a complete function with closing brace,
     // so we just need to use it directly
-    output.push_str(&result.code);
+    output.push_str(&result.result.code);
     output.push('\n');
 
     // Translate the emission-recorded section offsets into the concatenated
     // output: `output = preamble + '\n' + code + '\n'`, where `preamble` is
     // the import statement followed (when hoists exist) by '\n' + hoists.
     let sections = result.sections.map(|s| {
-        let preamble_len = result.preamble.len();
+        let preamble_len = result.result.preamble.len();
         let fn_base = preamble_len + 1;
         TemplateCodeSections {
             imports: (0, s.imports_len),

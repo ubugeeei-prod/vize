@@ -49,7 +49,10 @@ pub use vize_armature::{
     parse_with_options_and_template_syntax,
 };
 
-pub use codegen::{CodegenContext, CodegenResult, CodegenSections, generate};
+pub use codegen::{
+    CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections, generate,
+    generate_with_sections,
+};
 pub use runtime_helpers::{RuntimeHelpers, get_vnode_block_helper, get_vnode_helper};
 #[allow(deprecated)]
 pub use transform::{
