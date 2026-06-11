@@ -148,12 +148,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     generation_options: VirtualTsGenerationOptions,
 ) -> VirtualTsOutput {
     let check_options = generation_options.check_options;
-    // Configured Vue dialect, plumbed in for future dialect-aware instance
-    // typing (e.g. a Vue 2 `this` shape). Not branched on yet: today's output is
-    // dialect-independent, so reading it here only anchors the plumbing without
-    // changing generated TS. The leading underscore keeps the unused binding
-    // explicit until the dialect-aware emission lands.
-    let _dialect = generation_options.dialect;
+    // Configured Vue dialect, used to emit dialect-aware template instance
+    // typing (e.g. a Vue 2 `this`/template shape with `$listeners`,
+    // `$children`, `$on`, ... that Vue 3's `ComponentPublicInstance` lacks).
+    // Vue 3 (the default) is unaffected: its output stays byte-identical.
+    let dialect = generation_options.dialect;
     let legacy_vue2 = generation_options.legacy_vue2;
     let options_api = generation_options.options_api || legacy_vue2;
     let hoist_shared_preamble = generation_options.hoist_shared_preamble;
@@ -783,7 +782,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // Vue template context (available in template expressions)
             let template_context = profile!(
                 "canon.virtual_ts.generate_template_context",
-                generate_template_context(options)
+                generate_template_context(options, dialect)
             );
             ts.push_str(&template_context);
             ts.push('\n');

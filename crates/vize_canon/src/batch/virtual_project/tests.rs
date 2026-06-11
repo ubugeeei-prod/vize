@@ -196,12 +196,13 @@ defineProps<{
 }
 
 #[test]
-fn test_configured_dialect_threads_through_generation_without_changing_output() {
-    // Plumbing check for issue #1392: a configured non-default Vue dialect
-    // (`vue.version`) is threaded through `set_dialect` into virtual-TS
-    // generation. This PR is plumbing only, so the dialect must reach the
-    // generator without changing output yet — Vue 2 output is byte-identical to
-    // the default Vue 3 output until the dialect-aware emission lands.
+fn test_configured_dialect_drives_dialect_aware_instance_typing() {
+    // Issue #1392: a configured non-default Vue dialect (`vue.version`) is
+    // threaded through `set_dialect` into virtual-TS generation and now drives
+    // dialect-aware template instance typing. A Vue 2 dialect augments the
+    // template context with Vue 2-only public-instance members (`$listeners`,
+    // `$children`, ...) so legacy templates type-check, while the default Vue 3
+    // dialect stays byte-identical to before.
     let vue_content = r#"<script setup lang="ts">
 defineProps<{
   test: string
@@ -245,11 +246,23 @@ defineProps<{
         .content
         .clone();
 
-    // The dialect reached generation (the call compiles and registration
-    // succeeds), and plumbing-only means default-V3 output is unchanged.
-    assert_eq!(
+    // The default Vue 3 output never gains Vue 2-only members.
+    assert!(
+        !default_content.contains("$listeners"),
+        "default Vue 3 output must not emit Vue 2-only instance members"
+    );
+    // The Vue 2 dialect augments the template instance context.
+    assert!(
+        v2_content.contains("const $listeners = undefined as any;"),
+        "Vue 2 dialect must emit Vue 2-only instance members"
+    );
+    assert!(
+        v2_content.contains("const $children = undefined as any;"),
+        "Vue 2 dialect must emit Vue 2-only instance members"
+    );
+    assert_ne!(
         v2_content, default_content,
-        "plumbing-only: Vue 2 dialect must not change generated virtual TS yet"
+        "Vue 2 dialect output must differ from default Vue 3 output"
     );
 
     let _ = fs::remove_dir_all(&v3_dir);

@@ -8,6 +8,7 @@ use std::ops::Range;
 use super::types::VirtualTsOptions;
 use vize_carton::String;
 use vize_carton::append;
+use vize_carton::config::VueVersion;
 use vize_croquis::macros::{
     DEFINE_EMITS, DEFINE_EXPOSE, DEFINE_MODEL, DEFINE_PROPS, DEFINE_SLOTS, WITH_DEFAULTS,
 };
@@ -232,16 +233,48 @@ pub const DECLARATION_HELPERS_DTS: &str = concat!(
     emit_overload_helpers_text!(),
 );
 
+/// Vue 2-only public-instance members that are absent from Vue 3's
+/// `ComponentPublicInstance`.
+///
+/// In a Vue 2 / 2.7 dialect, template (and `this`) references such as
+/// `$listeners`, `$children`, `$scopedSlots`, the `$on`/`$off`/`$once` event
+/// emitter, `$set`/`$delete`, and `$createElement`/`_c` are valid but resolve
+/// to nothing on the Vue 3 instance type, so Corsa would false-error on them.
+/// They are emitted as permissive `any` bindings so v2 templates type-check.
+/// Vue 3 output never emits these, so it stays byte-identical.
+const VUE2_INSTANCE_MEMBERS: &[&str] = &[
+    "$listeners",
+    "$children",
+    "$scopedSlots",
+    "$on",
+    "$off",
+    "$once",
+    "$set",
+    "$delete",
+    "$createElement",
+    "_c",
+];
+
 /// Generate Vue template context declarations dynamically.
 ///
 /// Derives `$`-prefixed globals from `ComponentPublicInstance` so that
 /// type resolution is delegated to Corsa via Vue's type system
 /// (including `ComponentCustomProperties` augmentations from plugins).
-pub(crate) fn generate_template_context(options: &VirtualTsOptions) -> String {
+///
+/// When `dialect` is a Vue 2 line (`V2` / `V2_7`), the context is additionally
+/// augmented with Vue 2-only public-instance members (see
+/// [`VUE2_INSTANCE_MEMBERS`]) so legacy templates do not false-error. Vue 3
+/// (the default) emits the exact same output as before — byte-identical.
+pub(crate) fn generate_template_context(options: &VirtualTsOptions, dialect: VueVersion) -> String {
     let mut ctx = String::default();
 
     let needs_global_helper =
         !options.template_globals.is_empty() || !options.css_modules.is_empty();
+
+    // Vue 2 / 2.7 share a template dialect whose public instance still exposes
+    // members removed in Vue 3 (`$listeners`, `$children`, the `$on`/`$off`/
+    // `$once` event emitter, `$set`/`$delete`, `$createElement`, ...).
+    let vue2_dialect = matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
 
     // Instance type + conditional accessor helper
     ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n");
@@ -256,6 +289,14 @@ pub(crate) fn generate_template_context(options: &VirtualTsOptions) -> String {
     ctx.push_str("    const $slots = __ctx.$slots;\n");
     ctx.push_str("    const $refs = __ctx.$refs;\n");
     ctx.push_str("    const $emit = __ctx.$emit;\n");
+
+    // Vue 2-only instance members (absent from Vue 3's ComponentPublicInstance).
+    if vue2_dialect {
+        ctx.push_str("    // Vue 2 instance members (not on Vue 3 ComponentPublicInstance)\n");
+        for member in VUE2_INSTANCE_MEMBERS {
+            append!(ctx, "    const {member} = undefined as any;\n");
+        }
+    }
 
     // Plugin globals (resolved via ComponentCustomProperties if augmented,
     // otherwise falls back to the configured type_annotation)
@@ -286,6 +327,13 @@ pub(crate) fn generate_template_context(options: &VirtualTsOptions) -> String {
 
     // Mark all as used
     ctx.push_str("    void __ctx; void $attrs; void $slots; void $refs; void $emit;\n");
+    if vue2_dialect {
+        ctx.push_str("    ");
+        for member in VUE2_INSTANCE_MEMBERS {
+            append!(ctx, "void {member};");
+        }
+        ctx.push('\n');
+    }
     if !options.template_globals.is_empty() {
         ctx.push_str("    ");
         for (i, global) in options.template_globals.iter().enumerate() {
