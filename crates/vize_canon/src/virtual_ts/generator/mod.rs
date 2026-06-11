@@ -172,7 +172,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str("// ============================================\n\n");
 
     // Check for generic type parameter from <script setup generic="T">
-    let (generic_param, mut is_async) = summary
+    let (generic_param, is_async) = summary
         .scopes
         .iter()
         .find(|s| matches!(s.kind, ScopeKind::ScriptSetup))
@@ -184,14 +184,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             }
         })
         .unwrap_or((None, false));
-
-    // Also detect top-level await in script content (Vue 3 script setup supports this)
-    if let Some(script) = script_content
-        && script.contains("await ")
-        && !is_async
-    {
-        is_async = true;
-    }
 
     if hoist_shared_preamble {
         // ImportMeta augmentation and shared type helpers live once per

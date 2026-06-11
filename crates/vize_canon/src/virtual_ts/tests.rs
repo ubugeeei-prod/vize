@@ -197,6 +197,69 @@ const count = ref(0)
     );
 }
 
+fn generate_script_setup_virtual_ts(script: &str) -> String {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    let summary = analyzer.finish();
+
+    generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default())
+        .code
+        .to_string()
+}
+
+#[test]
+fn test_script_setup_top_level_await_emits_async_setup() {
+    let output = generate_script_setup_virtual_ts("const data = await fetchData()\n");
+
+    assert!(
+        output.contains("async function __setup()"),
+        "expected top-level await to emit async setup:\n{output}"
+    );
+}
+
+#[test]
+fn test_script_setup_top_level_for_await_emits_async_setup() {
+    let output = generate_script_setup_virtual_ts(
+        r#"
+for await (const item of items) {
+    console.log(item)
+}
+"#,
+    );
+
+    assert!(
+        output.contains("async function __setup()"),
+        "expected top-level for-await to emit async setup:\n{output}"
+    );
+}
+
+#[test]
+fn test_script_setup_nested_await_and_text_do_not_emit_async_setup() {
+    let output = generate_script_setup_virtual_ts(
+        r#"
+const message = "await should not force async setup"
+// await should not force async setup
+async function load() {
+    await fetchData()
+}
+const run = async () => {
+    await fetchData()
+}
+"#,
+    );
+
+    assert!(
+        output.contains("function __setup()"),
+        "expected setup function to be emitted:\n{output}"
+    );
+    assert!(
+        !output.contains("async function __setup()"),
+        "nested/text await must not force async setup:\n{output}"
+    );
+}
+
 #[test]
 fn test_const_auto_import_stubs_skip_imported_names() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
