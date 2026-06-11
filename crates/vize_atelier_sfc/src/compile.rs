@@ -76,7 +76,7 @@ fn create_standalone_import_warning() -> SfcError {
     }
 }
 
-fn is_ts_lang(lang: Option<&str>) -> bool {
+pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
     matches!(lang, Some("ts" | "tsx"))
 }
 
@@ -681,15 +681,20 @@ fn compile_sfc_inner(
             ctx.collect_types_from(&script.content)
         );
     }
+    let source_is_ts = is_ts_lang(script_setup.lang.as_deref());
     profile!(
         "atelier.sfc.script_context.collect_setup_import_types",
-        ctx.collect_imported_types_from_path(&script_setup_content, source_filename)
+        ctx.collect_imported_types_from_path(&script_setup_content, source_filename, source_is_ts)
     );
     if has_script {
         let script = descriptor.script.as_ref().unwrap();
         profile!(
             "atelier.sfc.script_context.collect_normal_import_types",
-            ctx.collect_imported_types_from_path(&script.content, source_filename)
+            ctx.collect_imported_types_from_path(
+                &script.content,
+                source_filename,
+                is_ts_lang(script.lang.as_deref()),
+            )
         );
     }
     profile!("atelier.sfc.script_context.analyze", ctx.analyze());
@@ -780,11 +785,6 @@ fn compile_sfc_inner(
             ));
         }
     }
-
-    let source_is_ts = script_setup
-        .lang
-        .as_ref()
-        .is_some_and(|l| l == "ts" || l == "tsx");
 
     // Compile template with bindings (if present) to get the render function
     let template_result = if let Some(template) = &descriptor.template {

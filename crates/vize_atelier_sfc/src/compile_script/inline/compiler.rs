@@ -48,7 +48,7 @@ pub fn compile_script_setup_inline(
         .as_ref()
         .map(|result| result.code.as_str())
         .unwrap_or(content);
-    let ctx = build_script_setup_context(content, normal_script_content, filename);
+    let ctx = build_script_setup_context(content, normal_script_content, filename, source_is_ts);
     let mut result = compile_script_setup_inline_with_context(
         ctx,
         content,
@@ -194,6 +194,7 @@ fn build_script_setup_context(
     content: &str,
     normal_script_content: Option<&str>,
     filename: Option<&str>,
+    source_is_ts: bool,
 ) -> ScriptCompileContext {
     let mut ctx = profile!(
         "atelier.script_inline.context.new",
@@ -213,14 +214,14 @@ fn build_script_setup_context(
     if let Some(path) = filename {
         profile!(
             "atelier.script_inline.collect_setup_import_types",
-            ctx.collect_imported_types_from_path(content, path)
+            ctx.collect_imported_types_from_path(content, path, source_is_ts)
         );
         if let Some(normal_src) = normal_script_content
             && !normal_src.is_empty()
         {
             profile!(
                 "atelier.script_inline.collect_normal_import_types",
-                ctx.collect_imported_types_from_path(normal_src, path)
+                ctx.collect_imported_types_from_path(normal_src, path, source_is_ts)
             );
         }
     }

@@ -322,6 +322,7 @@ pub fn merge_resolved_props_into_croquis(
     descriptor: &SfcDescriptor<'_>,
     filename: &str,
 ) {
+    use crate::compile::is_ts_lang;
     use crate::script::ScriptCompileContext;
     use crate::types::BindingType;
 
@@ -334,9 +335,17 @@ pub fn merge_resolved_props_into_croquis(
         ctx.collect_types_from(&script.content);
     }
     if !filename.is_empty() {
-        ctx.collect_imported_types_from_path(&script_setup.content, filename);
+        ctx.collect_imported_types_from_path(
+            &script_setup.content,
+            filename,
+            is_ts_lang(script_setup.lang.as_deref()),
+        );
         if let Some(ref script) = descriptor.script {
-            ctx.collect_imported_types_from_path(&script.content, filename);
+            ctx.collect_imported_types_from_path(
+                &script.content,
+                filename,
+                is_ts_lang(script.lang.as_deref()),
+            );
         }
     }
     ctx.analyze();

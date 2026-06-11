@@ -235,9 +235,17 @@ fn augment_type_based_props_from_script_context(
         && !script.content.is_empty()
     {
         ctx.collect_types_from(&script.content);
-        ctx.collect_imported_types_from_path(&script.content, path_string.as_ref());
+        ctx.collect_imported_types_from_path(
+            &script.content,
+            path_string.as_ref(),
+            matches!(script.lang.as_deref(), Some("ts" | "tsx")),
+        );
     }
-    ctx.collect_imported_types_from_path(&script_setup.content, path_string.as_ref());
+    ctx.collect_imported_types_from_path(
+        &script_setup.content,
+        path_string.as_ref(),
+        matches!(script_setup.lang.as_deref(), Some("ts" | "tsx")),
+    );
     ctx.analyze();
 
     let known_props = known_type_based_prop_names(croquis, &script_setup.content);

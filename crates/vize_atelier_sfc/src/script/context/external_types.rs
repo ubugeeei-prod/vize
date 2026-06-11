@@ -176,13 +176,35 @@ const INDEX_CANDIDATES: &[&str] = &[
 ];
 
 impl ScriptCompileContext {
-    pub fn collect_imported_types_from_path(&mut self, source: &str, filename: &str) {
+    /// Walk the script's type-bearing imports/re-exports on disk and merge the
+    /// interfaces/type aliases they declare into this context.
+    ///
+    /// `is_ts` must reflect whether the script block is TypeScript
+    /// (`lang="ts"`/`"tsx"`, computed once per compile at the call site).
+    /// Imported *types* can only be referenced from TypeScript
+    /// (`defineProps<Props>()`), so for plain JS the walk would only burn
+    /// stat/realpath syscalls — the substring pre-check below misfires on JS
+    /// object keys like `type: 'text'` next to any `import`, which is exactly
+    /// what the `is_ts` gate cuts off.
+    pub fn collect_imported_types_from_path(&mut self, source: &str, filename: &str, is_ts: bool) {
+        if !is_ts {
+            return;
+        }
         if !source.contains("type") || (!source.contains("import") && !source.contains("export")) {
             return;
         }
 
-        let owned_base = canonicalize_or_original(PathBuf::from(filename))
-            .unwrap_or_else(|| PathBuf::from(filename));
+        // The root source lives in memory (possibly unsaved editor state), so
+        // parse it directly; only files read from disk go through the cache.
+        let mut root = FileTypeSummary::default();
+        extract_script_summary(source, &mut root);
+        if root.specifiers.is_empty() {
+            // Nothing to resolve — skip base-file canonicalization entirely
+            // (the common case: scripts with only runtime imports).
+            return;
+        }
+
+        let owned_base = canonical_base_file(filename);
         let base_file = owned_base.as_path();
         let Some(base_dir) = base_file.parent() else {
             return;
@@ -192,10 +214,6 @@ impl ScriptCompileContext {
         }
 
         let mut visited = FxHashSet::default();
-        // The root source lives in memory (possibly unsaved editor state), so
-        // parse it directly; only files read from disk go through the cache.
-        let mut root = FileTypeSummary::default();
-        extract_script_summary(source, &mut root);
         for specifier in &root.specifiers {
             self.collect_types_from_specifier(specifier, base_file, &mut visited);
         }
@@ -260,6 +278,47 @@ impl ScriptCompileContext {
                 .entry(name.clone())
                 .or_insert_with(|| body.clone());
         }
+    }
+}
+
+/// Base-file canonicalization cache: `(cwd, filename) -> canonical path`.
+/// The same SFC filename is canonicalized by several passes per compile
+/// (script setup + normal script, croquis prop merge, inline compile) and
+/// `canonicalize` walks every path component; a hit is revalidated with a
+/// single `is_file` check so a deleted file falls back to a fresh
+/// canonicalization, and failures are never cached so files created later
+/// are picked up.
+static BASE_CANON_CACHE: LazyLock<RwLock<FxHashMap<(PathBuf, String), PathBuf>>> =
+    LazyLock::new(|| RwLock::new(FxHashMap::default()));
+
+/// Canonicalize the compiled file's own path, falling back to the original
+/// path for virtual filenames (in-memory compiles) that don't exist on disk.
+fn canonical_base_file(filename: &str) -> PathBuf {
+    let path = PathBuf::from(filename);
+    // The canonical form of a relative path depends on the process cwd, so
+    // the cache key includes it; absolute paths (the batch-compile case) use
+    // an empty component and never pay the `getcwd` call.
+    let cwd = if path.is_absolute() {
+        PathBuf::new()
+    } else {
+        std::env::current_dir().unwrap_or_default()
+    };
+    let key = (cwd, filename.to_compact_string());
+    if let Ok(cache) = BASE_CANON_CACHE.read()
+        && let Some(canonical) = cache.get(&key)
+        && canonical.is_file()
+    {
+        return canonical.clone();
+    }
+
+    match path.canonicalize() {
+        Ok(canonical) => {
+            if let Ok(mut cache) = BASE_CANON_CACHE.write() {
+                cache.insert(key, canonical.clone());
+            }
+            canonical
+        }
+        Err(_) => path,
     }
 }
 
@@ -629,7 +688,7 @@ const props = defineProps<SelectProps>();
 "#;
 
         let mut ctx = super::ScriptCompileContext::new(source);
-        ctx.collect_imported_types_from_path(source, current.to_string_lossy().as_ref());
+        ctx.collect_imported_types_from_path(source, current.to_string_lossy().as_ref(), true);
         ctx.analyze();
 
         assert!(ctx.interfaces.contains_key("RootProps"));
@@ -696,7 +755,7 @@ const props = defineProps<ParentProps>();
 "#;
 
         let mut ctx = super::ScriptCompileContext::new(source);
-        ctx.collect_imported_types_from_path(source, parent.to_string_lossy().as_ref());
+        ctx.collect_imported_types_from_path(source, parent.to_string_lossy().as_ref(), true);
         ctx.analyze();
 
         assert!(ctx.interfaces.contains_key("BaseProps"));
@@ -747,7 +806,7 @@ const props = defineProps<ParentProps>();
 "#;
 
         let mut ctx = super::ScriptCompileContext::new(source);
-        ctx.collect_imported_types_from_path(source, parent.to_string_lossy().as_ref());
+        ctx.collect_imported_types_from_path(source, parent.to_string_lossy().as_ref(), true);
         ctx.analyze();
 
         assert!(ctx.interfaces.contains_key("ContentProps"));
@@ -759,6 +818,43 @@ const props = defineProps<ParentProps>();
             ctx.bindings.bindings.get("asChild"),
             Some(&crate::types::BindingType::Props)
         );
+
+        let _ = std::fs::remove_dir_all(project);
+    }
+
+    #[test]
+    fn skips_type_import_collection_for_plain_js_scripts() {
+        // Regression: the substring pre-check matches plain-JS object keys
+        // like `type: 'text'` next to any `import`/`export`, which used to
+        // fire the whole stat/realpath resolution walk for every generated
+        // JS script. Non-TS blocks must skip collection entirely.
+        let project = temp_project_dir("plain-js-gate");
+        let components = project.join("src/components");
+        std::fs::create_dir_all(&components).unwrap();
+        std::fs::write(
+            components.join("shared.ts"),
+            "export interface InjectedProps { injected?: boolean }",
+        )
+        .unwrap();
+
+        let current = components.join("Field.vue");
+        let source = r#"
+import { reactive } from 'vue'
+export * from './shared'
+
+const field = reactive({ type: 'text', name: 'email' })
+"#;
+
+        let mut ctx = super::ScriptCompileContext::new(source);
+        ctx.collect_imported_types_from_path(source, current.to_string_lossy().as_ref(), false);
+        assert!(ctx.interfaces.is_empty());
+        assert!(ctx.type_aliases.is_empty());
+
+        // Sanity: the same source *would* pull the interface in for a TS
+        // block, so the assertions above genuinely exercise the gate.
+        let mut ts_ctx = super::ScriptCompileContext::new(source);
+        ts_ctx.collect_imported_types_from_path(source, current.to_string_lossy().as_ref(), true);
+        assert!(ts_ctx.interfaces.contains_key("InjectedProps"));
 
         let _ = std::fs::remove_dir_all(project);
     }
@@ -803,7 +899,7 @@ const props = defineProps<ButtonProps>();
 "#;
 
         let mut ctx = super::ScriptCompileContext::new(source);
-        ctx.collect_imported_types_from_path(source, parent.to_string_lossy().as_ref());
+        ctx.collect_imported_types_from_path(source, parent.to_string_lossy().as_ref(), true);
         ctx.analyze();
 
         assert!(ctx.interfaces.contains_key("LinkProps"));
