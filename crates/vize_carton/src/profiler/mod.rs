@@ -11,6 +11,7 @@ mod report;
 
 pub use allocation::{
     AllocationSnapshot, ProfilingAllocator, allocation_snapshot, reset_allocation_counters,
+    set_allocation_tracking_enabled,
 };
 pub use cache::CacheStats;
 pub use core::{ProfileGuard, Profiler, Timer, global_profiler};

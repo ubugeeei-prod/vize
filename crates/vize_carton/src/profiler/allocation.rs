@@ -228,6 +228,18 @@ pub fn reset_allocation_counters() {
     REALLOC_NEW_BYTES.store(0, Ordering::Relaxed);
 }
 
+/// Toggle allocation tracking without starting the timing profiler.
+///
+/// [`Profiler::enable`](crate::profiler::Profiler) also flips this flag, but it
+/// turns on span timing too — whose own bookkeeping allocates. Tests that want
+/// to *measure* allocation counts need tracking on while the timing profiler
+/// stays off, so the counters reflect only the code under test. Pair with
+/// [`reset_allocation_counters`] before and [`allocation_snapshot`] after the
+/// measured region.
+pub fn set_allocation_tracking_enabled(enabled: bool) {
+    ALLOCATION_TRACKING_ENABLED.store(enabled, Ordering::Relaxed);
+}
+
 /// Capture allocation counters for the current profile window.
 pub fn allocation_snapshot() -> AllocationSnapshot {
     AllocationSnapshot {
