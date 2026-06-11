@@ -191,6 +191,10 @@ pub(super) fn generate_vue_virtual_ts(
                     codegen_options.template_syntax,
                     TemplateSyntaxMode::Quirks
                 ),
+                // The virtual project materializes SHARED_HELPERS_FILE and
+                // lists it in every generated tsconfig, so per-file output
+                // drops the duplicated preamble.
+                hoist_shared_preamble: true,
             },
         )
     );

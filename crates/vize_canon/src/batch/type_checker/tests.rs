@@ -1831,7 +1831,17 @@ export { answer } from '@/helper'
         .collect();
     paths.sort();
 
-    assert_eq!(paths, vec!["App.vue.d.ts", "helper.d.ts", "index.d.ts"]);
+    // `__vize_helpers.d.ts` carries the shared helper type aliases referenced
+    // by the emitted `.vue.d.ts` files (via `/// <reference path>`).
+    assert_eq!(
+        paths,
+        vec![
+            "App.vue.d.ts",
+            "__vize_helpers.d.ts",
+            "helper.d.ts",
+            "index.d.ts"
+        ]
+    );
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

@@ -44,6 +44,7 @@ impl CorsaProjectClient {
         write_session_meta(&temp_dir_path)?;
         install_node_modules_link(project_root.as_deref(), &temp_dir_path);
         write_vue_module_stubs(&temp_dir_path)?;
+        write_shared_helper_decls(&temp_dir_path)?;
         write_temp_tsconfig(&temp_dir_path)?;
 
         let temp_root = temp_dir_path.canonicalize().ok();
@@ -332,6 +333,19 @@ declare module "*.vue.ts" {
 "#;
     std::fs::write(temp_dir_path.join("__vize_vue_modules.d.ts"), content)
         .map_err(|e| cstr!("Failed to write Vue module declarations: {e}"))
+}
+
+/// Write the shared ambient helpers into the scratch session so virtual
+/// documents generated with the hoisted preamble resolve the program-wide
+/// helper declarations. Self-contained (non-hoisted) documents are unaffected:
+/// their module-local helpers shadow these globals and the `ImportMeta`
+/// interface merges with identical members.
+fn write_shared_helper_decls(temp_dir_path: &Path) -> Result<(), String> {
+    std::fs::write(
+        temp_dir_path.join(crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME),
+        crate::virtual_ts::SHARED_PREAMBLE_DTS,
+    )
+    .map_err(|e| cstr!("Failed to write shared helper declarations: {e}"))
 }
 
 #[cfg(test)]

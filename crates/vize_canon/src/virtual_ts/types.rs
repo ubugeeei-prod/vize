@@ -117,6 +117,13 @@ pub(crate) struct VirtualTsGenerationOptions {
     /// Preserve TypeScript's user-authored unused local/import diagnostics by
     /// avoiding broad synthetic setup-binding references.
     pub(crate) preserve_unused_diagnostics: bool,
+    /// Hoist the shared preamble (ImportMeta augmentation, type helpers, and
+    /// compiler-macro signatures) out of the generated module. Callers that
+    /// enable this must make the shared ambient helpers file
+    /// (`SHARED_PREAMBLE_FILE_NAME` / `SHARED_PREAMBLE_DTS`) part of the same
+    /// TypeScript program. Off by default so standalone single-document
+    /// consumers keep self-contained output.
+    pub(crate) hoist_shared_preamble: bool,
 }
 
 /// Default plugin globals.

@@ -14,7 +14,7 @@ use super::tsconfig_paths::{
     normalize_path_lexically, normalize_tsconfig_path_target, parse_jsonc_value,
     resolve_extended_tsconfig_path,
 };
-use super::{AUTO_IMPORT_STUBS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
+use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
 
 const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
     "baseUrl",
@@ -239,6 +239,9 @@ impl VirtualProject {
             includes.push(AUTO_IMPORT_STUBS_FILE.into());
         }
         includes.push(VUE_MODULE_STUBS_FILE.into());
+        // Every program (full and per-shard) must see the hoisted preamble
+        // declarations exactly once.
+        includes.push(SHARED_HELPERS_FILE.into());
         includes.sort();
         includes
     }

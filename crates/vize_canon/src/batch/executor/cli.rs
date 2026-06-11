@@ -139,8 +139,9 @@ fn partition_virtual_files(project: &VirtualProject, servers: usize) -> ShardPla
     let mut shared: Vec<&Path> = Vec::new();
     for file in files {
         // The program-wide check reads the original source: the generated Vue
-        // wrapper always contains an identical `declare global` ImportMeta
-        // block of its own.
+        // wrapper carries no `declare global` of its own — the shared
+        // ImportMeta augmentation lives once per program in the hoisted
+        // helpers file (SHARED_HELPERS_FILE), which every shard includes.
         let program_wide = project
             .original_content_for_virtual(&file.virtual_path)
             .is_some_and(declares_program_wide_types);

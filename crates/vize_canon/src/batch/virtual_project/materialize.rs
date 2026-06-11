@@ -14,7 +14,7 @@ use crate::batch::materialize_fs::{
 };
 use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
-use super::{AUTO_IMPORT_STUBS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
+use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
 
 impl VirtualProject {
     /// Materialize the virtual project to disk for diagnostics collection.
@@ -105,6 +105,11 @@ impl VirtualProject {
         )?;
 
         profile!(
+            "canon.project.write_shared_helpers",
+            self.write_shared_helpers()
+        )?;
+
+        profile!(
             "canon.project.write_tsconfig",
             self.write_tsconfig_file(&self.virtual_root.join("tsconfig.json"), None, false)
         )?;
@@ -158,15 +163,27 @@ impl VirtualProject {
         Ok(())
     }
 
+    /// Write the shared ambient helpers file. The generated `.vue.ts` modules
+    /// hoist their common preamble (ImportMeta augmentation, type helpers,
+    /// compiler-macro signatures) into this single program-wide declaration.
+    fn write_shared_helpers(&self) -> CorsaResult<()> {
+        write_if_changed(
+            &self.virtual_root.join(SHARED_HELPERS_FILE),
+            crate::virtual_ts::SHARED_PREAMBLE_DTS.as_bytes(),
+        )?;
+        Ok(())
+    }
+
     fn expected_materialized_files(&self) -> FxHashSet<PathBuf> {
         let mut files = FxHashSet::default();
-        files.reserve(self.virtual_files.len() + 3);
+        files.reserve(self.virtual_files.len() + 4);
         files.extend(self.virtual_files.keys().cloned());
         files.extend(self.passthrough_files.keys().cloned());
         if !self.virtual_ts_options.auto_import_stubs.is_empty() {
             files.insert(self.virtual_root.join(AUTO_IMPORT_STUBS_FILE));
         }
         files.insert(self.virtual_root.join(VUE_MODULE_STUBS_FILE));
+        files.insert(self.virtual_root.join(SHARED_HELPERS_FILE));
         files.insert(self.virtual_root.join("tsconfig.json"));
         files
     }

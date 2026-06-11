@@ -704,7 +704,7 @@ const unusedLocal = 2
                     ),
                     ts6133_diagnostic_at(
                         virtual_file.content.as_str(),
-                        "function defineProps",
+                        "const defineProps",
                         "'defineProps' is declared but its value is never read.",
                     ),
                 ],

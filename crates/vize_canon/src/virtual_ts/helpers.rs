@@ -28,8 +28,12 @@ pub(crate) const SETUP_SCOPE_HELPER_NAMES: &[&str] = &[
     USE_TEMPLATE_REF,
 ];
 
-/// Shared type helpers used by generated virtual modules and setup-scope macros.
-pub(crate) const VUE_TYPE_HELPERS: &str = r#"type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
+/// Shared type-helper text used both by the per-file embedded preamble and by
+/// the hoisted ambient helpers file. Declared as a macro so the exact same
+/// bytes can be spliced into both constants at compile time.
+macro_rules! vue_type_aliases_text {
+    () => {
+        r#"type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
 type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
 type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
 type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
@@ -40,12 +44,59 @@ type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
 type __Ref<T> = import('vue').Ref<T>;
-type __ShallowRef<T> = import('vue').ShallowRef<T>;
-declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
+type __ShallowRef<T> = import('vue').ShallowRef<T>;"#
+    };
+}
+
+macro_rules! v_for_list_decls_text {
+    () => {
+        r#"declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
 declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
 declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
 declare function __vForList<T>(source: Iterable<T> | undefined | null): readonly [item: T, key: number, index: number][];
-declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];"#;
+declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];"#
+    };
+}
+
+macro_rules! vue_type_helpers_text {
+    () => {
+        concat!(vue_type_aliases_text!(), "\n", v_for_list_decls_text!())
+    };
+}
+
+/// Emit-overload helper text shared between the per-file embedded emission and
+/// the hoisted ambient helpers file. Each line ends with `\n`.
+///
+/// Deliberately excludes `__EmitProps`: that alias dereferences
+/// `import('vue').EmitsToProps`, which only exists on Vue >= 3.3, so it stays
+/// per-file and is only emitted for components that actually declare emits —
+/// exactly as before hoisting.
+macro_rules! emit_overload_helpers_text {
+    () => {
+        concat!(
+            "type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;\n",
+            "type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown> = TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>> | ((...args: TArgs) => TReturn) : never;\n",
+            "type __VizeOverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<__VizeOverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;\n",
+            "type __VizeOverloadParameters<T extends (...args: any[]) => any> = Parameters<__VizeOverloadUnion<T>>;\n",
+            "type __VizeIsStringLiteral<T> = T extends string ? string extends T ? false : true : false;\n",
+            "type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };\n",
+            "type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});\n",
+        )
+    };
+}
+
+/// Shared type helpers used by generated virtual modules and setup-scope macros.
+pub(crate) const VUE_TYPE_HELPERS: &str = vue_type_helpers_text!();
+
+/// Emit-overload helpers embedded per-file when the shared preamble is not
+/// hoisted. In hoisted mode the same text lives in the ambient helpers file.
+pub(crate) const EMIT_OVERLOAD_HELPERS: &str = emit_overload_helpers_text!();
+
+/// Per-file `__EmitProps` alias. Stays per-file in both modes because
+/// `EmitsToProps` is only exported by Vue >= 3.3; emitting it only for
+/// components with emits keeps older-Vue programs error-free, as before.
+pub(crate) const EMIT_PROPS_HELPER: &str =
+    "type __EmitProps<T> = import('vue').EmitsToProps<__EmitOptions<T>>;\n";
 
 /// Vue setup-scope helpers - these are defined inside setup scope, NOT globally.
 /// Compiler macros stay setup-only, while runtime helper shims model Vue APIs.
@@ -86,6 +137,100 @@ declare global {
   }
 }
 "#;
+
+/// Per-file setup-scope helper block emitted when the shared preamble is
+/// hoisted: the macro signatures live once in the ambient helpers file as
+/// `__vize_*` globals and are aliased into setup scope here, so compiler
+/// macros stay setup-scope-only and still shadow same-named module imports
+/// exactly like the embedded `function` declarations did.
+pub(crate) const VUE_SETUP_HELPERS_HOISTED: &str = r#"  // Compiler macros (setup-scope only; signatures hoisted to the shared helpers file)
+  const defineProps = __vize_defineProps;
+  const defineEmits = __vize_defineEmits;
+  const defineExpose = __vize_defineExpose;
+  const defineModel = __vize_defineModel;
+  const defineSlots = __vize_defineSlots;
+  const withDefaults = __vize_withDefaults;
+  const useTemplateRef = __vize_useTemplateRef;
+  // Mark compiler macros as used
+  void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#;
+
+/// File name of the shared ambient helpers declaration materialized once per
+/// program when the preamble is hoisted out of the generated virtual modules.
+pub const SHARED_PREAMBLE_FILE_NAME: &str = "__vize_helpers.d.ts";
+
+/// Content of the shared ambient helpers file.
+///
+/// This file is a global script (no imports/exports), so every declaration
+/// merges into the program's global scope exactly once:
+///
+/// - the `ImportMeta` augmentation becomes a plain global interface merge,
+///   so generated modules stop carrying per-file `declare global` blocks
+///   (which made every module a global-scope augmenter and defeated
+///   incremental rebuilds);
+/// - the generic type helpers ([`VUE_TYPE_HELPERS`] /
+///   [`EMIT_OVERLOAD_HELPERS`]) are file-independent and hoist verbatim;
+/// - the compiler-macro signatures are declared as `__vize_*` global
+///   functions with byte-identical signatures (same overload order, type
+///   parameter and parameter names) and aliased into each module's
+///   `__setup()` scope, preserving exact overload parity while keeping the
+///   macros invalid outside setup scope.
+pub const SHARED_PREAMBLE_DTS: &str = concat!(
+    "// ============================================\n",
+    "// Shared ambient helpers for vize virtual TypeScript\n",
+    "// Generated by vize\n",
+    "// ============================================\n",
+    "// Global script: one copy of these declarations per program replaces the\n",
+    "// preamble previously embedded in every generated .vue.ts module.\n",
+    "\n",
+    "// ImportMeta augmentation (reference existing framework types)\n",
+    "/// <reference types=\"vite/client\" />\n",
+    "// Extend ImportMeta with Nuxt-specific properties not covered by vite/client\n",
+    "interface ImportMeta {\n",
+    "  client: boolean;\n",
+    "  server: boolean;\n",
+    "  dev: boolean;\n",
+    "  prod: boolean;\n",
+    "  ssr: boolean;\n",
+    "}\n",
+    "\n",
+    "// Shared type helpers used by generated virtual modules\n",
+    vue_type_helpers_text!(),
+    "\n\n",
+    "// Emit-overload helpers (consumed by the per-file __EmitProps alias)\n",
+    emit_overload_helpers_text!(),
+    "\n",
+    "// Compiler-macro signatures (aliased inside each module's __setup() scope)\n",
+    "declare function __vize_defineProps<_T = unknown>(): _T;\n",
+    "declare function __vize_defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };\n",
+    "declare function __vize_defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;\n",
+    "declare function __vize_defineEmits<_T = unknown>(): __EmitFn<_T>;\n",
+    "declare function __vize_defineEmits<const _T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void;\n",
+    "declare function __vize_defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;\n",
+    "declare function __vize_defineExpose<_T = unknown>(_exposed?: _T): void;\n",
+    "declare function __vize_defineModel<_T = unknown>(): __Ref<_T | undefined>;\n",
+    "declare function __vize_defineModel<_T = unknown>(_options: any): __Ref<_T>;\n",
+    "declare function __vize_defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T>;\n",
+    "declare function __vize_defineSlots<_T = unknown>(): _T;\n",
+    "declare function __vize_withDefaults<_T, _D extends __WithDefaultsArgs<_T>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D>;\n",
+    "declare function __vize_useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null>;\n",
+);
+
+/// Helper declarations shipped next to emitted declaration outputs.
+///
+/// Emitted `.vue.d.ts` files reference the shared helper type aliases by
+/// name (e.g. `__EmitFn<Emits>`), so declaration output directories carry one
+/// copy of the type aliases, wired up via a `/// <reference path>` from each
+/// emitted file. Deliberately excludes the `vite/client` reference, the
+/// `ImportMeta` augmentation, and the value-level macro declarations: emitted
+/// declarations never reference those, and they must not leak into consumer
+/// programs.
+pub const DECLARATION_HELPERS_DTS: &str = concat!(
+    "// Shared helper types for vize-generated declaration files.\n",
+    "// Generated by vize\n",
+    vue_type_aliases_text!(),
+    "\n",
+    emit_overload_helpers_text!(),
+);
 
 /// Generate Vue template context declarations dynamically.
 ///

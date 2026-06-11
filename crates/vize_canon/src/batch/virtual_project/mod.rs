@@ -39,6 +39,9 @@ mod tests;
 
 pub(super) const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
 pub(super) const VUE_MODULE_STUBS_FILE: &str = "__vize_vue_modules.d.ts";
+/// Shared ambient helpers materialized once per program; generated `.vue.ts`
+/// modules are emitted with their preamble hoisted into this file.
+pub(super) const SHARED_HELPERS_FILE: &str = crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME;
 
 /// A virtual file in the project.
 #[derive(Debug)]

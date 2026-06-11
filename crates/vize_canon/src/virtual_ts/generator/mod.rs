@@ -24,7 +24,8 @@ use self::spans::{
 };
 use super::{
     helpers::{
-        IMPORT_META_AUGMENTATION, SETUP_SCOPE_HELPER_NAMES, VUE_SETUP_HELPERS, VUE_TYPE_HELPERS,
+        EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, IMPORT_META_AUGMENTATION,
+        SETUP_SCOPE_HELPER_NAMES, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED, VUE_TYPE_HELPERS,
         generate_template_context, to_safe_identifier,
     },
     props::{
@@ -147,6 +148,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let check_options = generation_options.check_options;
     let legacy_vue2 = generation_options.legacy_vue2;
     let options_api = generation_options.options_api || legacy_vue2;
+    let hoist_shared_preamble = generation_options.hoist_shared_preamble;
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
@@ -191,16 +193,25 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         is_async = true;
     }
 
-    // ImportMeta augmentation (must be at top level, before any code)
-    ts.push_str(IMPORT_META_AUGMENTATION);
-    ts.push('\n');
+    if hoist_shared_preamble {
+        // ImportMeta augmentation and shared type helpers live once per
+        // program in the ambient helpers file (SHARED_PREAMBLE_DTS); the
+        // module no longer augments global scope itself.
+        ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
+    } else {
+        // ImportMeta augmentation (must be at top level, before any code)
+        ts.push_str(IMPORT_META_AUGMENTATION);
+        ts.push('\n');
+    }
 
     // Module scope: Extract imports, re-exports, and type declarations to module level.
     // Type declarations (interface, type, enum) must be at module level so they
     // are accessible from `export type Props = ...` outside __setup().
     ts.push_str("// ========== Module Scope (imports) ==========\n");
-    ts.push_str(VUE_TYPE_HELPERS);
-    ts.push('\n');
+    if !hoist_shared_preamble {
+        ts.push_str(VUE_TYPE_HELPERS);
+        ts.push('\n');
+    }
 
     let has_script_setup = summary
         .scopes
@@ -438,7 +449,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     append!(ts, "{async_prefix}function __setup{generic_params}() {{\n",);
 
     // Setup helpers (only valid inside setup scope)
-    ts.push_str(VUE_SETUP_HELPERS);
+    ts.push_str(if hoist_shared_preamble {
+        VUE_SETUP_HELPERS_HOISTED
+    } else {
+        VUE_SETUP_HELPERS
+    });
     ts.push_str("\n\n");
 
     // User's script content (minus imports)
@@ -1031,14 +1046,16 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push('\n');
 
     if has_emits_for_props {
-        ts.push_str("type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;\n");
-        ts.push_str("type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown> = TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>> | ((...args: TArgs) => TReturn) : never;\n");
-        ts.push_str("type __VizeOverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<__VizeOverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;\n");
-        ts.push_str("type __VizeOverloadParameters<T extends (...args: any[]) => any> = Parameters<__VizeOverloadUnion<T>>;\n");
-        ts.push_str("type __VizeIsStringLiteral<T> = T extends string ? string extends T ? false : true : false;\n");
-        ts.push_str("type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };\n");
-        ts.push_str("type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});\n");
-        ts.push_str("type __EmitProps<T> = import('vue').EmitsToProps<__EmitOptions<T>>;\n\n");
+        // The overload helpers are file-independent; in hoisted mode the one
+        // copy in the ambient helpers file serves the whole program. The
+        // `__EmitProps` alias stays per-file in both modes: it dereferences
+        // `import('vue').EmitsToProps` (Vue >= 3.3 only), so it must remain
+        // scoped to components that actually declare emits.
+        if !hoist_shared_preamble {
+            ts.push_str(EMIT_OVERLOAD_HELPERS);
+        }
+        ts.push_str(EMIT_PROPS_HELPER);
+        ts.push('\n');
         if define_emits_runtime_args.is_some() {
             ts.push_str("type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emit_options\"]>;\n\n");
         } else {

@@ -1,6 +1,6 @@
 use super::build::source_type_for_path;
 use super::tsconfig_paths::{parse_jsonc_value, strip_json_comments};
-use super::{AUTO_IMPORT_STUBS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
+use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
 use crate::batch::SfcBlockType;
 use crate::virtual_ts::VirtualTsOptions;
 use std::fs;
@@ -655,6 +655,22 @@ const message = 'Hello'
     }
     assert!(virtual_root.join(VUE_MODULE_STUBS_FILE).exists());
     assert!(virtual_root.join("tsconfig.json").exists());
+
+    // The hoisted preamble file survives re-materialization, carries the
+    // shared declarations, and is listed in the generated tsconfig include.
+    let helpers_path = virtual_root.join(SHARED_HELPERS_FILE);
+    assert!(helpers_path.exists());
+    let helpers_content = fs::read_to_string(&helpers_path).unwrap();
+    assert!(helpers_content.contains("interface ImportMeta"));
+    assert!(helpers_content.contains("type __EmitShape<T>"));
+    assert!(helpers_content.contains("declare function __vize_defineProps"));
+    let tsconfig_content = fs::read_to_string(virtual_root.join("tsconfig.json")).unwrap();
+    assert!(tsconfig_content.contains(SHARED_HELPERS_FILE));
+    // The generated module relies on the hoisted preamble instead of
+    // embedding it (no per-file `declare global` augmentation).
+    let generated = fs::read_to_string(virtual_root.join("src/App.vue.ts")).unwrap();
+    assert!(!generated.contains("declare global"));
+    assert!(generated.contains("const defineProps = __vize_defineProps;"));
 
     let _ = fs::remove_dir_all(&case_dir);
 }

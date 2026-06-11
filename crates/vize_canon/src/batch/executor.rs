@@ -12,7 +12,9 @@ use super::import_rewriter::ImportRewriter;
 use super::type_checker::{
     DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput, TypeCheckResult,
 };
-use super::virtual_project::{AUTO_IMPORT_STUBS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
+use super::virtual_project::{
+    AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
+};
 use crate::{corsa_client::CorsaProjectClient, file_uri::path_to_file_uri};
 use oxc_span::SourceType;
 use vize_carton::{
@@ -20,6 +22,11 @@ use vize_carton::{
     corsa_resolver::{CorsaResolveError, CorsaResolveRequest, resolve_corsa_executable},
     cstr, profile,
 };
+
+/// Helper-type declarations shipped alongside emitted declaration outputs.
+/// Shares the mirror helpers file name so the artifact is recognizable, but
+/// carries only the type aliases (no global augmentation, no macro values).
+const DECLARATION_HELPERS_FILE: &str = crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME;
 
 mod cli;
 mod diagnostics;
@@ -228,7 +235,12 @@ fn is_internal_virtual_project_file(virtual_root: &Path, path: &Path) -> bool {
 fn is_internal_virtual_project_stub(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
-        .is_some_and(|name| matches!(name, AUTO_IMPORT_STUBS_FILE | VUE_MODULE_STUBS_FILE))
+        .is_some_and(|name| {
+            matches!(
+                name,
+                AUTO_IMPORT_STUBS_FILE | VUE_MODULE_STUBS_FILE | SHARED_HELPERS_FILE
+            )
+        })
 }
 
 fn is_under_virtual_node_modules(virtual_root: &Path, path: &Path) -> bool {
@@ -279,27 +291,55 @@ fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
         return Ok(());
     }
 
+    let mut wrote_vue_declaration = false;
     for entry in walkdir::WalkDir::new(out_dir) {
         let entry = entry?;
         let path = entry.path();
         if !path.is_file() {
             continue;
         }
-        if !path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| name.ends_with(".d.ts"))
-        {
+        let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
+            continue;
+        };
+        if !name.ends_with(".d.ts") {
             continue;
         }
 
         let content = std::fs::read_to_string(path)?;
-        let rewritten = rewriter
+        let mut rewritten = rewriter
             .rewrite_declaration_specifiers(&content, SourceType::ts())
             .code;
+        // Generated `.vue.d.ts` outputs reference the hoisted helper type
+        // aliases (`__EmitFn`, `__RuntimePropShape`, ...). Wire each one to
+        // the helpers declaration shipped alongside the outputs so consumer
+        // programs resolve them without including the virtual mirror.
+        if name.ends_with(".vue.d.ts") {
+            wrote_vue_declaration = true;
+            let depth = path
+                .strip_prefix(out_dir)
+                .ok()
+                .and_then(|relative| relative.parent())
+                .map(|parent| parent.components().count())
+                .unwrap_or(0);
+            let mut reference = String::from("/// <reference path=\"");
+            for _ in 0..depth {
+                reference.push_str("../");
+            }
+            reference.push_str(DECLARATION_HELPERS_FILE);
+            reference.push_str("\" />\n");
+            reference.push_str(&rewritten);
+            rewritten = reference.as_str().into();
+        }
         if rewritten.as_str() != content {
             std::fs::write(path, rewritten.as_str())?;
         }
+    }
+
+    if wrote_vue_declaration {
+        std::fs::write(
+            out_dir.join(DECLARATION_HELPERS_FILE),
+            crate::virtual_ts::DECLARATION_HELPERS_DTS,
+        )?;
     }
 
     Ok(())
