@@ -312,73 +312,47 @@ impl CorsaServer {
 
     /// Check a Vue SFC and return diagnostics.
     fn check_vue_sfc(&mut self, uri: &str, content: &str) -> Result<CheckResult, String> {
-        use vize_atelier_core::parser::parse;
-        use vize_atelier_sfc::{
-            SfcParseOptions,
-            croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
-            parse_sfc,
-        };
-        use vize_carton::Bump;
-        use vize_croquis::virtual_ts::generate_virtual_ts;
+        use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
-        // Parse SFC
-        let parse_opts = SfcParseOptions {
-            filename: uri.into(),
-            ..Default::default()
-        };
-
-        let descriptor = parse_sfc(content, parse_opts)
-            .map_err(|e| cstr!("Failed to parse SFC: {}", e.message))?;
-
-        // Create allocator
-        let allocator = Bump::new();
-
-        let template_offset = descriptor
-            .template
-            .as_ref()
-            .map(|t| t.loc.start as u32)
-            .unwrap_or(0);
-
-        let template_ast = if let Some(ref template) = descriptor.template {
-            let (root, _) = parse(&allocator, &template.content);
-            Some(root)
-        } else {
-            None
-        };
-
-        let analysis = analyze_sfc_descriptor_with_context(
-            &descriptor,
-            template_ast.as_ref(),
-            SfcCroquisOptions::full().without_script_merge(),
-        );
-
-        // Generate Virtual TypeScript
-        let output = generate_virtual_ts(
-            analysis.script_content_ref(),
-            template_ast.as_ref(),
-            &analysis.croquis.bindings,
-            None,
-            Some(Path::new(uri)),
-            template_offset,
-        );
-
-        // Issue #752: rewrite `.vue` import specifiers to `.vue.ts` so the
-        // socket-mode Corsa session resolves siblings via the same virtual
-        // mirrors used by the batch path, then overlay each relative
-        // sibling's virtual TS into the session. The cached `virtual_ts`
-        // intentionally reflects what we ship to Corsa (rewritten form), so
-        // consumers that introspect the cache see the same coordinates.
-        let pre_rewrite_ts = output.content;
+        // Reuse the canon batch virtual-TS pipeline (issue #1389) so the
+        // socket-mode single-document path and `vize check` generate identical
+        // virtual TS for the same input. The shared generator keeps the shared
+        // preamble inline (`hoist_shared_preamble = false`) because this session
+        // overlays standalone documents and has no program-wide helpers file.
         let rewriter = crate::batch::ImportRewriter::new();
-        let virtual_ts: String = rewriter
-            .rewrite(pre_rewrite_ts.as_str(), oxc_span::SourceType::ts())
-            .code;
+        let generated = crate::batch::generate_vue_document_virtual_ts(
+            Path::new(uri),
+            content,
+            &crate::virtual_ts::VirtualTsOptions::default(),
+            &rewriter,
+            false,
+        )
+        .map_err(|e| cstr!("Failed to generate virtual TS: {e}"))?;
 
+        // Issue #752: the rewritten form resolves `.vue` siblings via the same
+        // `.vue.ts` virtual mirrors used by the batch path. The cached
+        // `virtual_ts` intentionally reflects what we ship to Corsa (rewritten
+        // form), so consumers that introspect the cache see the same
+        // coordinates.
+        let virtual_ts: String = generated.code;
         self.cache.insert(uri.into(), virtual_ts.clone());
 
+        // The SFC compile diagnostic still needs the descriptor; parse it once
+        // here for that merge below.
+        let descriptor = parse_sfc(
+            content,
+            SfcParseOptions {
+                filename: uri.into(),
+                ..Default::default()
+            },
+        )
+        .map_err(|e| cstr!("Failed to parse SFC: {}", e.message))?;
+
         // Overlay sibling .vue.ts mirrors discovered from the host's imports.
-        let relative_specifiers = rewriter
-            .collect_relative_vue_specifiers(pre_rewrite_ts.as_str(), oxc_span::SourceType::ts());
+        let relative_specifiers = rewriter.collect_relative_vue_specifiers(
+            generated.pre_rewrite_code.as_str(),
+            oxc_span::SourceType::ts(),
+        );
         if !relative_specifiers.is_empty() {
             self.overlay_sibling_vue_mirrors(uri, &relative_specifiers);
         }
@@ -459,15 +433,6 @@ impl CorsaServer {
     /// './app.vue'` (issue #752). Errors are logged and skipped so a missing
     /// sibling still surfaces as TS2307 from the host check.
     fn overlay_sibling_vue_mirrors(&mut self, host_uri: &str, initial_specifiers: &[String]) {
-        use vize_atelier_core::parser::parse;
-        use vize_atelier_sfc::{
-            SfcParseOptions,
-            croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
-            parse_sfc,
-        };
-        use vize_carton::Bump;
-        use vize_croquis::virtual_ts::generate_virtual_ts;
-
         let Some(host_path) = uri_to_path(host_uri, &self.working_dir()) else {
             tracing::debug!("overlay_sibling_vue_mirrors: cannot resolve host path: {host_uri}");
             return;
@@ -511,41 +476,19 @@ impl CorsaServer {
                 let sibling_uri = crate::file_uri::path_to_file_uri(&canonical);
                 let sibling_virtual_uri = self.virtual_uri_for(&sibling_uri);
 
-                let parse_opts = SfcParseOptions {
-                    filename: sibling_uri.as_str().into(),
-                    ..Default::default()
-                };
-                let Ok(descriptor) = parse_sfc(&sibling_content, parse_opts) else {
+                // Reuse the shared canon batch generator (issue #1389) so
+                // overlaid siblings are byte-identical to the host document and
+                // to `vize check`.
+                let Ok(sibling_generated) = crate::batch::generate_vue_document_virtual_ts(
+                    canonical.as_path(),
+                    &sibling_content,
+                    &crate::virtual_ts::VirtualTsOptions::default(),
+                    &rewriter,
+                    false,
+                ) else {
                     continue;
                 };
-
-                let allocator = Bump::new();
-                let template_offset = descriptor
-                    .template
-                    .as_ref()
-                    .map(|t| t.loc.start as u32)
-                    .unwrap_or(0);
-                let template_ast = descriptor.template.as_ref().map(|template| {
-                    let (root, _) = parse(&allocator, &template.content);
-                    root
-                });
-                let analysis = analyze_sfc_descriptor_with_context(
-                    &descriptor,
-                    template_ast.as_ref(),
-                    SfcCroquisOptions::full().without_script_merge(),
-                );
-                let sibling_output = generate_virtual_ts(
-                    analysis.script_content_ref(),
-                    template_ast.as_ref(),
-                    &analysis.croquis.bindings,
-                    None,
-                    Some(canonical.as_path()),
-                    template_offset,
-                );
-
-                let sibling_rewrite =
-                    rewriter.rewrite(sibling_output.content.as_str(), oxc_span::SourceType::ts());
-                let sibling_virtual_ts: String = sibling_rewrite.code;
+                let sibling_virtual_ts: String = sibling_generated.code;
 
                 let client = match self.corsa_client.as_mut() {
                     Some(client) => client,
@@ -574,7 +517,7 @@ impl CorsaServer {
                 }
 
                 let next_specifiers = rewriter.collect_relative_vue_specifiers(
-                    sibling_output.content.as_str(),
+                    sibling_generated.pre_rewrite_code.as_str(),
                     oxc_span::SourceType::ts(),
                 );
                 if !next_specifiers.is_empty() {
