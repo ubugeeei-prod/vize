@@ -1,7 +1,8 @@
 #![allow(clippy::disallowed_macros)]
 
 use vize_carton::config::{
-    load_config, load_config_with_features_and_source, load_config_with_source,
+    VueDialect, load_config, load_config_with_features_and_source, load_config_with_source,
+    validate_explicit_config_path,
 };
 
 #[test]
@@ -78,6 +79,77 @@ fn loads_json_legacy_vue2_feature_flags() {
     assert!(loaded.features.type_checker_legacy_vue2);
     assert_eq!(loaded.features.language_server_legacy_vue2, Some(true));
     assert!(loaded.config.type_checker.enabled);
+}
+
+#[test]
+fn loads_json_vue_version_dialect() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r#"{
+          "vue": {
+            "version": "0.10"
+          }
+        }"#,
+    )
+    .unwrap();
+
+    let loaded = load_config_with_features_and_source(Some(dir.path()));
+
+    assert_eq!(loaded.features.vue_dialect, Some(VueDialect::V0_10));
+}
+
+#[test]
+fn vue_version_defaults_to_unset() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("vize.config.json"), r#"{}"#).unwrap();
+
+    let loaded = load_config_with_features_and_source(Some(dir.path()));
+
+    assert_eq!(loaded.features.vue_dialect, None);
+}
+
+#[test]
+fn rejects_ambiguous_vue_version() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+          "vue": {
+            "version": "0"
+          }
+        }"#,
+    )
+    .unwrap();
+
+    // Explicit --config must hard-error with the actionable message.
+    let error = validate_explicit_config_path(&config_path).unwrap_err();
+    assert!(error.contains("ambiguous"), "{error}");
+    assert!(error.contains("0.10") && error.contains("0.11"), "{error}");
+
+    // Auto-discovery warns and falls back to defaults: it must never resolve
+    // an ambiguous selector to some 0.x line.
+    let loaded = load_config_with_features_and_source(Some(dir.path()));
+    assert_eq!(loaded.features.vue_dialect, None);
+}
+
+#[test]
+fn rejects_unquoted_vue_version_numbers() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+          "vue": {
+            "version": 2.7
+          }
+        }"#,
+    )
+    .unwrap();
+
+    let error = validate_explicit_config_path(&config_path).unwrap_err();
+    assert!(error.contains("Vue version string"), "{error}");
 }
 
 #[test]

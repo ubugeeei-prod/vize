@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Armature - The structural parser framework for Vize Vue templates"
 
 [features]
-# Opt-in support for legacy Vue lines (v0 / v1 / v2). Off by default so the
+# Opt-in support for legacy Vue lines (v0.10 / v0.11 / v1 / v2). Off by default so the
 # Vue 3 `vize` binary never compiles it. See the `legacy` module.
 legacy = []
 

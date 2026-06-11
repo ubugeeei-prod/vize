@@ -56,7 +56,7 @@ pub mod source_map;
 mod types;
 pub mod virtual_ts;
 
-/// Legacy Vue (v0 / v1 / v2) type-checking surface. Gated behind the `legacy`
+/// Legacy Vue (v0.10 / v0.11 / v1 / v2) type-checking surface. Gated behind the `legacy`
 /// feature and dropped from the default Vue 3 build; opt-in only.
 #[cfg(feature = "legacy")]
 pub mod legacy;

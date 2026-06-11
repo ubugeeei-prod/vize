@@ -6,10 +6,12 @@ mod global_types;
 mod language_server;
 mod linter;
 mod type_checker;
+mod vue;
 
 use serde::{Deserialize, Serialize};
 
 use compiler::RawCompilerConfig;
+use vue::RawVueConfig;
 
 use crate::String;
 pub use formatter::{
@@ -20,6 +22,7 @@ pub use language_server::{LanguageServerConfig, LspConfig};
 #[allow(unused_imports)]
 pub use linter::{LintRuleSeverity, LinterConfig};
 pub use type_checker::TypeCheckerConfig;
+pub use vue::{ParseVueDialectError, VueDialect};
 
 /// Effective shared configuration.
 #[derive(Debug, Clone, Default, Serialize)]
@@ -60,6 +63,12 @@ pub struct ConfigFeatureFlags {
     pub type_checker_options_api: bool,
     pub type_checker_legacy_vue2: bool,
     pub language_server_legacy_vue2: Option<bool>,
+    /// Dialect selected by `vue.version`; `None` when the key is absent
+    /// (modern Vue 3). Validated at parse time — unknown or ambiguous values
+    /// fail config loading instead of silently picking a line. Groundwork for
+    /// legacy Vue support (#1392): consumers thread this into parser and
+    /// transform options in follow-ups.
+    pub vue_dialect: Option<VueDialect>,
 }
 
 /// Raw config representation with legacy aliases preserved for migration.
@@ -70,6 +79,7 @@ pub(crate) struct RawVizeConfig {
     pub schema: Option<String>,
     pub formatter: FormatterConfig,
     pub(crate) compiler: RawCompilerConfig,
+    pub(crate) vue: RawVueConfig,
     pub linter: LinterConfig,
     #[serde(rename = "typeChecker")]
     type_checker: RawTypeCheckerConfig,
@@ -120,6 +130,7 @@ impl RawVizeConfig {
             schema,
             formatter,
             compiler: _,
+            vue,
             linter: _,
             type_checker: raw_type_checker,
             language_server: raw_language_server,
@@ -157,6 +168,7 @@ impl RawVizeConfig {
             type_checker_options_api,
             type_checker_legacy_vue2,
             language_server_legacy_vue2: language_server_raw.legacy_vue2,
+            vue_dialect: vue.version,
         };
 
         let config = VizeConfig {
