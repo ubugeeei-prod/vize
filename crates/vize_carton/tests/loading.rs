@@ -1,7 +1,7 @@
 #![allow(clippy::disallowed_macros)]
 
 use vize_carton::config::{
-    VueDialect, load_config, load_config_with_features_and_source, load_config_with_source,
+    VueVersion, load_config, load_config_with_features_and_source, load_config_with_source,
     validate_explicit_config_path,
 };
 
@@ -96,7 +96,7 @@ fn loads_json_vue_version_dialect() {
 
     let loaded = load_config_with_features_and_source(Some(dir.path()));
 
-    assert_eq!(loaded.features.vue_dialect, Some(VueDialect::V0_10));
+    assert_eq!(loaded.features.vue_version, Some(VueVersion::V0_10));
 }
 
 #[test]
@@ -106,7 +106,7 @@ fn vue_version_defaults_to_unset() {
 
     let loaded = load_config_with_features_and_source(Some(dir.path()));
 
-    assert_eq!(loaded.features.vue_dialect, None);
+    assert_eq!(loaded.features.vue_version, None);
 }
 
 #[test]
@@ -131,7 +131,7 @@ fn rejects_ambiguous_vue_version() {
     // Auto-discovery warns and falls back to defaults: it must never resolve
     // an ambiguous selector to some 0.x line.
     let loaded = load_config_with_features_and_source(Some(dir.path()));
-    assert_eq!(loaded.features.vue_dialect, None);
+    assert_eq!(loaded.features.vue_version, None);
 }
 
 #[test]
