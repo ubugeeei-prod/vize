@@ -24,8 +24,15 @@ oxc_syntax = { workspace = true }
 oxc_span = { workspace = true }
 oxc_diagnostics = { workspace = true }
 
+[dev-dependencies]
+criterion = { workspace = true }
+
 [features]
 default = []
 # Mirror the relief legacy surface so the `InterpolationNode::raw` field stays
 # in sync under workspace feature unification (see vize_armature's `legacy`).
 legacy = ["vize_relief/_legacy"]
+
+[[bench]]
+name = "jsx_compile"
+harness = false

@@ -3485,6 +3485,7 @@ dependencies = [
 name = "vize_atelier_jsx"
 version = "0.206.0"
 dependencies = [
+ "criterion",
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",
