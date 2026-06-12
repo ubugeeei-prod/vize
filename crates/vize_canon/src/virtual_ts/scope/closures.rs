@@ -190,9 +190,38 @@ fn generate_scope_node(
 
     match scope.data() {
         ScopeData::VFor(data) => {
+            // When the v-for element is nested inside an enclosing `v-if`, wrap
+            // the whole `__vForList(source).forEach(...)` loop in `if (guard) {}`
+            // so TypeScript narrows identifiers used in the v-for source
+            // expression (e.g. `elems[key]` with `key` narrowed by the parent
+            // `v-if="key === 'b'"`). Without this the source is evaluated outside
+            // the narrowing scope and yields the unnarrowed (wider) type (#1511).
+            //
+            // The v-for element's own bindings (`:key`, etc.) and interpolations
+            // are recorded as expressions in this scope carrying that enclosing
+            // guard; any deeper `v-if` nested *inside* the loop body extends the
+            // guard with extra `&& (...)` terms. The enclosing guard is therefore
+            // the longest `&&`-separated prefix common to every direct expression
+            // in the scope — conservative enough never to import a nested
+            // branch's condition.
+            let enclosing_guard: Option<String> = ctx
+                .expressions_by_scope
+                .get(&scope_id)
+                .filter(|_| ctx.check_options.check_template_bindings)
+                .and_then(|exprs| common_vif_guard_prefix(exprs));
+            let enclosing_guard = enclosing_guard.as_deref();
+            let (loop_indent, vfor_inner_indent) = if enclosing_guard.is_some() {
+                (cstr!("{indent}  "), cstr!("{inner_indent}  "))
+            } else {
+                (String::from(indent), inner_indent.clone())
+            };
+            if let Some(guard) = enclosing_guard {
+                append!(*ts, "{indent}if ({guard}) {{\n");
+            }
+
             append_v_for_comment(
                 ts,
-                indent,
+                &loop_indent,
                 "v-for scope",
                 data.value_alias.as_str(),
                 data.source.as_str(),
@@ -200,7 +229,7 @@ fn generate_scope_node(
 
             emit_v_for_loop_open(
                 ts,
-                indent,
+                &loop_indent,
                 data.value_alias.as_str(),
                 data.key_alias.as_deref(),
                 data.index_alias.as_deref(),
@@ -209,13 +238,13 @@ fn generate_scope_node(
 
             // Mark v-for variables as used to avoid TS6133
             for value in &data.value_bindings {
-                append!(*ts, "{inner_indent}void {value};\n");
+                append!(*ts, "{vfor_inner_indent}void {value};\n");
             }
             if let Some(ref key) = data.key_alias {
-                append!(*ts, "{inner_indent}void {key};\n");
+                append!(*ts, "{vfor_inner_indent}void {key};\n");
             }
             if let Some(ref index) = data.index_alias {
-                append!(*ts, "{inner_indent}void {index};\n");
+                append!(*ts, "{vfor_inner_indent}void {index};\n");
             }
 
             // Generate expressions in this scope
@@ -228,18 +257,22 @@ fn generate_scope_node(
                     exprs,
                     ctx.template_prop_names,
                     ctx.template_offset,
-                    &inner_indent,
+                    &vfor_inner_indent,
                 );
             }
 
             // Recursively generate child scopes inside this closure
             profile!(
                 "canon.virtual_ts.child_scopes",
-                generate_child_scopes(ts, mappings, ctx, scope_id, &inner_indent)
+                generate_child_scopes(ts, mappings, ctx, scope_id, &vfor_inner_indent)
             );
 
-            ts.push_str(indent);
+            ts.push_str(&loop_indent);
             ts.push_str("});\n");
+
+            if enclosing_guard.is_some() {
+                append!(*ts, "{indent}}}\n");
+            }
         }
         ScopeData::VSlot(data) => {
             append!(*ts, "\n{indent}// v-slot scope: #{}\n", data.name);
@@ -439,4 +472,77 @@ fn generate_child_scopes(
             }
         }
     }
+}
+
+/// Compute the v-if guard active for a v-for *element* from the template
+/// expressions recorded in its scope.
+///
+/// Every expression carries the joined `v-if` guard (`(a) && (b) && ...`)
+/// active where it appears. For a v-for element, its own bindings/interpolations
+/// share the element's enclosing guard, while expressions under a `v-if` nested
+/// *inside* the loop body extend that guard with further `&& (...)` terms. The
+/// enclosing guard is therefore the longest `&&`-separated prefix common to
+/// every expression in the scope: it can never include a nested branch's
+/// condition, and is `None` when any expression is unguarded (i.e. the v-for is
+/// not inside a `v-if`). Returns the re-joined guard string when non-empty.
+fn common_vif_guard_prefix(exprs: &[&vize_croquis::TemplateExpression]) -> Option<String> {
+    let mut iter = exprs.iter();
+    // Seed the common prefix with the first expression's guard terms; an
+    // unguarded expression immediately rules out any common guard.
+    let first = iter.next()?.vif_guard.as_ref()?;
+    let mut common: Vec<&str> = split_guard_terms(first.as_str());
+
+    for expr in iter {
+        let guard = expr.vif_guard.as_ref()?;
+        let terms = split_guard_terms(guard.as_str());
+        let shared = common
+            .iter()
+            .zip(terms.iter())
+            .take_while(|(a, b)| a == b)
+            .count();
+        common.truncate(shared);
+        if common.is_empty() {
+            return None;
+        }
+    }
+
+    (!common.is_empty()).then(|| String::from(common.join(" && ").as_str()))
+}
+
+/// Split a joined v-if guard into its top-level ` && `-separated terms.
+///
+/// The drawer joins each branch condition — already wrapped as `(cond)` or
+/// `!(cond)` — with ` && `, so a single condition may itself contain ` && `
+/// inside its parentheses (`v-if="a && b"` becomes the term `(a && b)`). The
+/// split must therefore only break on the ` && ` joiner at paren depth zero so
+/// such conditions stay intact.
+fn split_guard_terms(guard: &str) -> Vec<&str> {
+    let bytes = guard.as_bytes();
+    let mut terms = Vec::new();
+    let mut depth = 0i32;
+    let mut start = 0usize;
+    let mut index = 0usize;
+
+    while index < bytes.len() {
+        match bytes[index] {
+            b'(' | b'[' | b'{' => depth += 1,
+            b')' | b']' | b'}' => depth -= 1,
+            b'&' if depth == 0
+                && bytes.get(index + 1) == Some(&b'&')
+                && index >= 1
+                && bytes[index - 1] == b' '
+                && bytes.get(index + 2) == Some(&b' ') =>
+            {
+                terms.push(guard[start..index - 1].trim());
+                index += 3;
+                start = index;
+                continue;
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+
+    terms.push(guard[start..].trim());
+    terms
 }

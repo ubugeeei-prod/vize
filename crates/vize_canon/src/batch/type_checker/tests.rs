@@ -861,6 +861,96 @@ const val = 0 as unknown as UnionType
 }
 
 #[test]
+fn batch_type_checker_narrows_v_for_source_by_enclosing_v_if() {
+    // Regression for #1511: a v-for whose source depends on a value narrowed by
+    // an *enclosing* v-if must type-check without a spurious diagnostic — the
+    // iterated element type follows the narrowed source (`elems['b']` is
+    // `string[]`, so `value` is `string`).
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "vfor-source-narrowed-by-enclosing-vif",
+        &[(
+            "src/VForNarrowedByVif.vue",
+            r#"<script setup lang="ts">
+const elems = { a: [1], b: ["a"] } as const;
+const key = "a" as "a" | "b";
+function wantsString(value: string) { void value; }
+</script>
+
+<template>
+  <div v-if="key === 'b'">
+    <button v-for="value in elems[key]" :key="value">
+      {{ wantsString(value) }}
+    </button>
+  </div>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot
+            .iter()
+            .all(|(file, _, _)| file != "src/VForNarrowedByVif.vue"),
+        "expected no diagnostics for v-for narrowed by enclosing v-if, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_keeps_v_for_error_without_enclosing_v_if() {
+    // Companion guard for #1511: when there is NO enclosing v-if to narrow the
+    // source, the unnarrowed union element type must still produce a diagnostic
+    // (we must not over-narrow). `elems[key]` with `key: "a" | "b"` yields a
+    // `(string | number)` element, so `wantsString(value)` is a real error.
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "vfor-source-not-narrowed-without-vif",
+        &[(
+            "src/VForNotNarrowed.vue",
+            r#"<script setup lang="ts">
+const elems = { a: [1], b: ["a"] } as const;
+const key = "a" as "a" | "b";
+function wantsString(value: string) { void value; }
+</script>
+
+<template>
+  <button v-for="value in elems[key]" :key="value">
+    {{ wantsString(value) }}
+  </button>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot
+            .iter()
+            .any(|(file, code, _)| { file == "src/VForNotNarrowed.vue" && *code == Some(2345) }),
+        "expected TS2345 for un-narrowed v-for source, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_uses_workspace_vue_runtime_without_node_modules() {
     if resolve_test_tsgo_binary().is_none() {
         return;
