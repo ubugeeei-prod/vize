@@ -320,6 +320,7 @@ fn push_expr(content: &str, loc: &vize_relief::ast::core::SourceLocation, out: &
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ide::jsx::position::source_offset_to_virtual_position;
 
     fn generate(source: &str) -> JsxVirtualTs {
         generate_jsx_virtual_ts(source, JsxLang::Tsx).unwrap()
@@ -394,5 +395,85 @@ mod tests {
         );
         // The `emit(...)` call in the setup body is verbatim (checked in place).
         assert!(generated.code.contains("emit('change', props.n);"));
+    }
+
+    /// #1502 acceptance: hover/completion must reflect **props, emits, and
+    /// slots** on a typed `.tsx` component. Hover/completion query the Corsa
+    /// backend over this generated virtual TS, so the data they surface is
+    /// exactly what this lowering preserves. Pin that all three typed surfaces of
+    /// a fully-typed component — the props parameter type, the emits tuple, and
+    /// the slots shape — survive into the virtual TS verbatim (so the type
+    /// checker resolves each), and that a cursor on a `props.` / `slots.` access
+    /// forward-maps into the virtual TS (so a hover/completion request lands on
+    /// the typed member rather than falling off the mapping).
+    #[test]
+    fn typed_props_emits_and_slots_are_all_resolvable_in_virtual_ts() {
+        let source = "const Comp = (\n  props: { msg: string },\n  { emit, slots }: Ctx<{ change: [value: number] }, { default: () => unknown }>,\n) => {\n  emit('change', 1);\n  return <div>{props.msg}{slots.default()}</div>;\n};\n";
+        let generated = generate(source);
+
+        // Props: the typed parameter is verbatim, so `props.msg` resolves to
+        // `string` (what hover/completion would report).
+        assert!(
+            generated.code.contains("props: { msg: string }"),
+            "typed props param dropped: {}",
+            generated.code
+        );
+        // Emits + slots: the typed `Ctx<Emits, Slots>` second parameter is
+        // verbatim and the ambient `Ctx` helper is injected, so `emit` and
+        // `slots` both type-check against the declared shapes.
+        assert!(
+            generated.code.contains("type Ctx<Emits = {}, Slots = {}>"),
+            "ambient Ctx helper missing: {}",
+            generated.code
+        );
+        assert!(
+            generated.code.contains(
+                "{ emit, slots }: Ctx<{ change: [value: number] }, { default: () => unknown }>"
+            ),
+            "typed emits/slots param dropped: {}",
+            generated.code
+        );
+        // The emits call and both the props and slots accesses are re-emitted as
+        // plain TS expressions (the JSX render root collapses to the sink call),
+        // so each is independently type-checked.
+        assert!(generated.code.contains("emit('change', 1);"));
+        assert!(
+            generated.code.contains("props.msg"),
+            "props access not re-emitted: {}",
+            generated.code
+        );
+        assert!(
+            generated.code.contains("slots.default()"),
+            "slots access not re-emitted: {}",
+            generated.code
+        );
+
+        // A hover/completion cursor on the `props.msg` access must forward-map
+        // into the generated virtual TS (this is exactly what
+        // `JsxService::prepare_request` does before querying Corsa). If the
+        // mapping dropped the access, hover/completion would silently no-op.
+        let props_access = source.find("props.msg").expect("props.msg present");
+        assert!(
+            source_offset_to_virtual_position(
+                &generated.code,
+                &generated.mappings,
+                // Land the cursor on the member name (after the dot).
+                props_access + "props.".len(),
+            )
+            .is_some(),
+            "props member access did not forward-map into the virtual TS"
+        );
+        // Same for the `slots.default` access — proving slots access is reachable
+        // by the type-aware features, not just present as text.
+        let slots_access = source.find("slots.default").expect("slots.default present");
+        assert!(
+            source_offset_to_virtual_position(
+                &generated.code,
+                &generated.mappings,
+                slots_access + "slots.".len(),
+            )
+            .is_some(),
+            "slots member access did not forward-map into the virtual TS"
+        );
     }
 }

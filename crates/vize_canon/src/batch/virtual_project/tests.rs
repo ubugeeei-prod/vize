@@ -62,6 +62,52 @@ fn test_materialize_writes_inert_vue_module_stub_file() {
 }
 
 #[test]
+fn tsx_script_block_is_type_checked_not_collapsed_to_fallback_stub() {
+    // #1498: a `.vue` whose `<script setup lang="tsx">` contains JSX must be
+    // lowered to real virtual TypeScript so the script body reaches the type
+    // checker. Before the `lang`-aware script parse, the JSX (`<button>…`) was
+    // parsed as plain TS, raised a spurious parse error, and collapsed the whole
+    // SFC to the `__vize_component: any` fallback stub — silently dropping all
+    // type-checking of the script. Pin that the JSX dialect is now honored: the
+    // generated virtual TS is the real module (byte-identical across the batch
+    // and single-document generators), not the stub.
+    let case_dir = unique_case_dir("tsx-script-not-stub");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+    let vue_path = src_dir.join("App.vue");
+    let vue_content = "<script setup lang=\"tsx\">\nconst label: string = 'hi'\nconst vnode = <button>{label}</button>\n</script>\n";
+    fs::write(&vue_path, vue_content).unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_vue_file(&vue_path, vue_content).unwrap();
+    let batch_content = project.find_by_original(&vue_path).unwrap().content.clone();
+
+    // The whole-SFC fallback stub emitted when a hard parse error aborts codegen.
+    let fallback_stub = "declare const __vize_component: any;\nexport default __vize_component;\n";
+    assert_ne!(
+        batch_content.as_str(),
+        fallback_stub,
+        "tsx script with JSX collapsed to the fallback stub instead of being type-checked"
+    );
+
+    // The single-document (LSP/socket) generator must agree byte-for-byte with
+    // the batch generator, so the editor type-checks the JSX script identically.
+    let rewriter = super::super::import_rewriter::ImportRewriter::new();
+    let shared = super::generate_vue_document_virtual_ts(
+        &vue_path,
+        vue_content,
+        &VirtualTsOptions::default(),
+        &rewriter,
+        true,
+    )
+    .unwrap();
+    assert_eq!(shared.code.as_str(), batch_content.as_str());
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn shared_document_generator_is_byte_identical_to_batch_pipeline() {
     // Issue #1389: the Corsa socket single-document path and the `vize check`
     // batch path must produce identical virtual TS for the same input. With the

@@ -162,8 +162,11 @@ impl TypeCheckService {
 
         let mut has_script_parse_errors = false;
         if let Some(ref script) = descriptor.script {
-            let script_diagnostics =
-                collect_script_parse_diagnostics(&script.content, script.loc.start as u32);
+            let script_diagnostics = collect_script_parse_diagnostics(
+                &script.content,
+                script.loc.start as u32,
+                script.lang.as_deref(),
+            );
             if !script_diagnostics.is_empty() {
                 has_script_parse_errors = true;
                 add_script_parse_diagnostics(script_diagnostics, &mut result);
@@ -173,6 +176,7 @@ impl TypeCheckService {
             let script_diagnostics = collect_script_parse_diagnostics(
                 &script_setup.content,
                 script_setup.loc.start as u32,
+                script_setup.lang.as_deref(),
             );
             if !script_diagnostics.is_empty() {
                 has_script_parse_errors = true;

@@ -16,6 +16,28 @@
 //! Every entry point here is reached **only** when `typeChecker.jsxTypecheck`
 //! is enabled (checked by the caller in the request handlers); React `.tsx`
 //! files are otherwise left entirely untouched.
+//!
+//! ## Signature help (#1502): N/A by parity with the SFC path
+//!
+//! Issue #1502's acceptance asks for hover / completion / **signature help** to
+//! reflect props, emits, and slots, "where the SFC services provide the
+//! equivalent". Hover and completion are implemented above. Signature help is
+//! **not** a capability the maestro server provides for **any** document:
+//! `textDocument/signatureHelp` has no handler on the [`LanguageServer`] impl,
+//! [`server_capabilities`] advertises `signature_help_provider: None`, and the
+//! [`CorsaBridge`] exposes no signature-help request to bridge over. Because the
+//! SFC path provides no signature help, the "where SFC provides the equivalent"
+//! scope makes signature help **N/A** for JSX/TSX as well — there is no SFC
+//! behavior to mirror. If the SFC services ever gain signature help, the JSX
+//! parallel would slot in here exactly like [`Self::hover`]: build the virtual
+//! TS via [`Self::prepare_request`], forward the cursor, call a new
+//! `bridge.signature_help(...)`, and map the result's ranges back with
+//! [`Self::map_virtual_range`]. The props/emits/slots that such signature help
+//! would surface are already present and type-checked in the generated virtual
+//! TS (see [`super::virtual_ts`] and its tests).
+//!
+//! [`LanguageServer`]: tower_lsp::LanguageServer
+//! [`server_capabilities`]: crate::server::server_capabilities
 
 use std::sync::Arc;
 

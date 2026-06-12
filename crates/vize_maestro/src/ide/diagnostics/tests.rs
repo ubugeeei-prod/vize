@@ -577,6 +577,107 @@ fn collect_produces_no_error_for_valid_jsx() {
     );
 }
 
+// ----------------------------------------------------------------------
+// VDOM/Vapor mode directives on JSX/TSX (#1498).
+//
+// `"use vue:vdom"` / `"use vue:vapor"` select a component's output mode. A
+// malformed or conflicting mode directive is a JSX-compiler diagnostic; a
+// well-formed one selects the mode and must NOT be mis-diagnosed. These are
+// structural (no Corsa bridge / no `jsxTypecheck`), surfaced via the JSX
+// compiler lane.
+// ----------------------------------------------------------------------
+
+/// A well-formed `"use vue:vapor"` component must type-check the same as the
+/// default VDOM mode: the resolved mode is reflected (the component compiles in
+/// Vapor mode) without surfacing any spurious diagnostic.
+#[test]
+fn collect_does_not_misdiagnose_valid_vapor_mode_tsx() {
+    let state = state_with_lsp_diagnostics(true, false);
+    let uri = Url::parse("file:///Vapor.tsx").unwrap();
+    state.documents.open(
+        uri.clone(),
+        "const Fast = () => {\n  \"use vue:vapor\";\n  return <div class=\"a\">hi</div>;\n};\n"
+            .to_string(),
+        1,
+        "typescriptreact".to_string(),
+    );
+
+    let diagnostics = DiagnosticService::collect(&state, &uri);
+
+    assert!(
+        !diagnostics
+            .iter()
+            .any(|d| d.severity == Some(DiagnosticSeverity::ERROR)),
+        "a valid \"use vue:vapor\" component must not be mis-diagnosed, got: {diagnostics:?}"
+    );
+}
+
+/// A malformed mode directive (`"use vue:vdomm"`, a typo) surfaces as a JSX
+/// compiler error with the exact guidance message.
+#[test]
+fn collect_surfaces_malformed_mode_directive_on_tsx() {
+    let state = state_with_lsp_diagnostics(true, false);
+    let uri = Url::parse("file:///Typo.tsx").unwrap();
+    state.documents.open(
+        uri.clone(),
+        "const C = () => {\n  \"use vue:vdomm\";\n  return <div>hi</div>;\n};\n".to_string(),
+        1,
+        "typescriptreact".to_string(),
+    );
+
+    let diagnostics = DiagnosticService::collect(&state, &uri);
+
+    let mode_errors: Vec<_> = diagnostics
+        .iter()
+        .filter(|d| d.source.as_deref() == Some(sources::JSX_COMPILER))
+        .collect();
+    assert_eq!(
+        mode_errors.len(),
+        1,
+        "expected exactly one JSX mode diagnostic, got: {diagnostics:?}"
+    );
+    assert_eq!(
+        mode_errors[0].message,
+        "unknown JSX mode directive \"use vue:vdomm\": expected \"use vue:vdom\" or \"use vue:vapor\""
+    );
+    assert_eq!(mode_errors[0].severity, Some(DiagnosticSeverity::ERROR));
+    // The squiggle lands on the directive line (line index 1).
+    assert_eq!(mode_errors[0].range.start.line, 1);
+}
+
+/// Two different mode directives in one component conflict; the later one is
+/// reported with the exact "select only one output mode" message.
+#[test]
+fn collect_surfaces_conflicting_mode_directives_on_tsx() {
+    let state = state_with_lsp_diagnostics(true, false);
+    let uri = Url::parse("file:///Conflict.tsx").unwrap();
+    state.documents.open(
+        uri.clone(),
+        "const C = () => {\n  \"use vue:vdom\";\n  \"use vue:vapor\";\n  return <div>hi</div>;\n};\n"
+            .to_string(),
+        1,
+        "typescriptreact".to_string(),
+    );
+
+    let diagnostics = DiagnosticService::collect(&state, &uri);
+
+    let mode_errors: Vec<_> = diagnostics
+        .iter()
+        .filter(|d| d.source.as_deref() == Some(sources::JSX_COMPILER))
+        .collect();
+    assert_eq!(
+        mode_errors.len(),
+        1,
+        "expected exactly one conflict diagnostic, got: {diagnostics:?}"
+    );
+    assert_eq!(
+        mode_errors[0].message,
+        "conflicting JSX mode directives: \"use vue:vapor\" follows \"use vue:vdom\" in the same \
+         component; a component can select only one output mode"
+    );
+    assert_eq!(mode_errors[0].severity, Some(DiagnosticSeverity::ERROR));
+}
+
 /// React `.tsx` must be left untouched when `typeChecker.jsxTypecheck` is off:
 /// the async pass adds no `vize/types` (type-checker) diagnostics for JSX. With
 /// the flag off the JSX type branch is skipped entirely, so even without a
@@ -696,6 +797,66 @@ fn collect_lint_only_is_empty_when_lint_disabled() {
     );
 
     assert!(DiagnosticService::collect_lint_only(&state, &uri).is_empty());
+}
+
+// ----------------------------------------------------------------------
+// JSX-in-SFC `<script lang="tsx">` (#1498).
+//
+// A `.vue` whose `<script lang="tsx">` carries a Vue JSX render function must
+// be handled as TSX: the embedded JSX is valid, not a script-parse error. The
+// script-parse lane resolves the block dialect from `lang`, so the JSX is
+// accepted instead of collapsing the SFC to the typed fallback stub. (The
+// canon side pins the type-checking lowering; this pins the LSP diagnostics.)
+// ----------------------------------------------------------------------
+
+#[test]
+fn collect_accepts_jsx_render_fn_in_tsx_script_block() {
+    let state = state_with_lsp_diagnostics(true, true);
+    let uri = Url::parse("file:///TsxRenderFn.vue").unwrap();
+    state.documents.open(
+        uri.clone(),
+        "<script setup lang=\"tsx\">\nconst label: string = 'hi'\nconst render = () => <button>{label}</button>\n</script>\n"
+            .to_string(),
+        1,
+        "vue".to_string(),
+    );
+
+    let diagnostics = DiagnosticService::collect(&state, &uri);
+
+    // The JSX is valid TSX, so neither the script parser nor the SFC compiler
+    // may flag it (a plain-TS parse would have rejected the `<button>`).
+    assert!(
+        !diagnostics.iter().any(|diagnostic| matches!(
+            diagnostic.source.as_deref(),
+            Some(sources::SCRIPT_PARSER) | Some(sources::SFC_COMPILER)
+        )),
+        "JSX in a <script lang=\"tsx\"> block must not raise a parse/compile diagnostic, got: {diagnostics:?}"
+    );
+}
+
+#[test]
+fn collect_still_rejects_jsx_in_plain_ts_script_block() {
+    // The dialect is keyed off `lang`: a plain `<script lang="ts">` (no JSX
+    // opt-in) with a stray `<button>` is still a real script parse error, so we
+    // did not blanket-enable JSX for every SFC script.
+    let state = state_with_lsp_diagnostics(true, true);
+    let uri = Url::parse("file:///TsRenderFn.vue").unwrap();
+    state.documents.open(
+        uri.clone(),
+        "<script setup lang=\"ts\">\nconst render = () => <button>x</button>\n</script>\n"
+            .to_string(),
+        1,
+        "vue".to_string(),
+    );
+
+    let diagnostics = DiagnosticService::collect(&state, &uri);
+
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER)),
+        "JSX in a plain <script lang=\"ts\"> block must still be a parse error, got: {diagnostics:?}"
+    );
 }
 
 #[test]

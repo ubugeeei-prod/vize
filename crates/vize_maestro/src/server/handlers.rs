@@ -1250,6 +1250,89 @@ mod tests {
         );
     }
 
+    /// A component directive change (`"use vue:vdom"` / `"use vue:vapor"`)
+    /// invalidates the derived virtual docs and diagnostics (#1498). `did_change`
+    /// fully re-runs `update_virtual_docs` and the diagnostics re-lower from the
+    /// current content, so a malformed directive's error clears the moment the
+    /// directive is corrected — no stale cache survives the edit.
+    #[test]
+    fn directive_edit_reinvalidates_jsx_diagnostics_and_virtual_docs() {
+        use tower_lsp::lsp_types::{
+            DidChangeTextDocumentParams, DidOpenTextDocumentParams, TextDocumentContentChangeEvent,
+            TextDocumentItem, VersionedTextDocumentIdentifier,
+        };
+
+        let (service, _socket) = LspService::new(MaestroServer::new);
+        let server = service.inner();
+        server
+            .state
+            .apply_lsp_initialization_options(Some(&serde_json::json!({ "lint": true })));
+
+        let uri = Url::parse("file:///ModeSwitch.tsx").unwrap();
+        // A typo'd mode directive (error) plus a `<style scoped>` so the JSX
+        // scoped-CSS virtual doc is part of what must be rebuilt.
+        let before = "const C = () => {\n  \"use vue:vdomm\";\n  return (\n    <>\n      <div class=\"box\">hi</div>\n      <style scoped>{`.box { color: red; }`}</style>\n    </>\n  );\n};\n";
+        futures::executor::block_on(server.did_open(DidOpenTextDocumentParams {
+            text_document: TextDocumentItem {
+                uri: uri.clone(),
+                language_id: "typescriptreact".to_string(),
+                version: 1,
+                text: before.to_string(),
+            },
+        }));
+
+        // The malformed directive is surfaced, and the scoped-CSS virtual doc is
+        // cached from the initial content.
+        let before_diags = crate::ide::DiagnosticService::collect(&server.state, &uri);
+        assert!(
+            before_diags.iter().any(|d| d.message
+                == "unknown JSX mode directive \"use vue:vdomm\": expected \"use vue:vdom\" or \"use vue:vapor\""),
+            "expected the malformed-directive diagnostic before the edit, got: {before_diags:?}"
+        );
+        assert_eq!(
+            server
+                .state
+                .get_virtual_docs(&uri)
+                .map(|docs| docs.styles.len()),
+            Some(1),
+            "scoped-CSS virtual doc must be cached from the initial content"
+        );
+
+        // Correct the directive to a valid `"use vue:vapor"`.
+        let after = "const C = () => {\n  \"use vue:vapor\";\n  return (\n    <>\n      <div class=\"box\">hi</div>\n      <style scoped>{`.box { color: red; }`}</style>\n    </>\n  );\n};\n";
+        futures::executor::block_on(server.did_change(DidChangeTextDocumentParams {
+            text_document: VersionedTextDocumentIdentifier {
+                uri: uri.clone(),
+                version: 2,
+            },
+            content_changes: vec![TextDocumentContentChangeEvent {
+                range: None,
+                range_length: None,
+                text: after.to_string(),
+            }],
+        }));
+
+        // The stale malformed-directive diagnostic is gone: the diagnostics
+        // re-lowered from the edited content (cache invalidated).
+        let after_diags = crate::ide::DiagnosticService::collect(&server.state, &uri);
+        assert!(
+            !after_diags.iter().any(|d| d.source.as_deref()
+                == Some(crate::ide::diagnostics::sources::JSX_COMPILER)
+                && d.severity == Some(tower_lsp::lsp_types::DiagnosticSeverity::ERROR)),
+            "directive fix must clear the JSX mode error, got: {after_diags:?}"
+        );
+        // And the virtual docs were rebuilt against the new content (still one
+        // scoped-CSS doc; the rebuild ran rather than serving a stale entry).
+        assert_eq!(
+            server
+                .state
+                .get_virtual_docs(&uri)
+                .map(|docs| docs.styles.len()),
+            Some(1),
+            "virtual docs must be rebuilt on the directive edit"
+        );
+    }
+
     #[test]
     fn document_symbol_still_parses_sfc_after_jsx_routing() {
         // Guard against the JSX gate over-matching: a regular `.vue` SFC must
