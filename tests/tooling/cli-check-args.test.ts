@@ -94,7 +94,7 @@ test("vize check --no-config bypasses validation of an invalid -c path", () => {
     const result = runCheck(["zzz.vue", "--no-config", "-c", "./missing.config.ts"], dir);
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
     assert.doesNotMatch(`${result.stdout}${result.stderr}`, /config file not found/);
-    assert.match(`${result.stdout}${result.stderr}`, /No Vue or TypeScript files found/);
+    assert.match(`${result.stdout}${result.stderr}`, /No Vue, TypeScript, or JSX files found/);
   });
 });
 

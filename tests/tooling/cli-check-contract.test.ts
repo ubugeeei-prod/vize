@@ -104,7 +104,7 @@ test("vize check exits 0 when explicit inputs match no supported files", () => {
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
     assert.match(
       `${result.stdout}${result.stderr}`,
-      /No Vue or TypeScript files found matching inputs/,
+      /No Vue, TypeScript, or JSX files found matching inputs/,
     );
   });
 });
@@ -115,7 +115,7 @@ test("vize check exits 0 in an empty project with no inputs", () => {
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
     assert.match(
       `${result.stdout}${result.stderr}`,
-      /No Vue or TypeScript files found matching inputs/,
+      /No Vue, TypeScript, or JSX files found matching inputs/,
     );
   });
 });
