@@ -106,6 +106,7 @@ pub use telegraph::{
     Emitter, FormatEmitter, JsonEmitter, LintTransmission, LspDiagnostic, LspEmitter, Telegraph,
     TextEmitter,
 };
+pub use vize_atelier_jsx::JsxLang;
 pub use vize_carton::i18n::Locale;
 
 /// Lint a Vue template source with default rules
@@ -114,6 +115,15 @@ pub use vize_carton::i18n::Locale;
 /// For more control, use `Linter::new()` directly.
 pub fn lint(source: &str, filename: &str) -> LintResult {
     Linter::new().lint_template(source, filename)
+}
+
+/// Lint JSX/TSX source with default rules.
+///
+/// Lowers the JSX/TSX to the shared relief template AST and runs the existing
+/// element/attribute/binding template rules over it. See [`Linter::lint_jsx`]
+/// for the directive-rule caveat.
+pub fn lint_jsx(source: &str, filename: &str, lang: JsxLang) -> LintResult {
+    Linter::new().lint_jsx(source, filename, lang)
 }
 
 #[cfg(test)]

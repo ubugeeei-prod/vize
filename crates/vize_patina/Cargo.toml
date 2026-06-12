@@ -14,6 +14,7 @@ vize_armature.workspace = true
 vize_carton.workspace = true
 vize_croquis.workspace = true
 vize_atelier_sfc.workspace = true
+vize_atelier_jsx.workspace = true
 
 # OXC for JS/TS parsing and diagnostics
 oxc_allocator.workspace = true

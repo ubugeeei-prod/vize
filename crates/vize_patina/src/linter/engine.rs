@@ -335,6 +335,92 @@ impl Linter {
         self.lint_template_with_allocator(&allocator, source, filename)
     }
 
+    /// Lint JSX/TSX source by lowering it to the shared relief template AST and
+    /// running the existing element/attribute/binding template rules over it.
+    ///
+    /// JSX/TSX lowers (via [`vize_atelier_jsx::lower_source`]) to the same
+    /// [`RootNode`] that SFC `<template>` blocks produce, so any AST-driven
+    /// template rule (e.g. `vue/a11y-img-alt`) runs unchanged.
+    ///
+    /// Note: directive-structure rules such as `vue/require-v-for-key` do **not**
+    /// fire on JSX. JSX `items.map(...)` lowers to a `ForNode` and
+    /// `cond && <x/>` to an `IfNode` *structurally*, not as `v-for`/`v-if`
+    /// directives, so directive-shaped rules have nothing to match against.
+    pub fn lint_jsx(
+        &self,
+        source: &str,
+        filename: &str,
+        lang: vize_atelier_jsx::JsxLang,
+    ) -> LintResult {
+        let capacity = (source.len() * 4).max(self.initial_capacity);
+        let allocator = Allocator::with_capacity(capacity);
+
+        let lowered = profile!(
+            "patina.jsx.lower",
+            vize_atelier_jsx::lower_source(allocator.as_bump(), source, lang)
+        );
+
+        let mut result = Self::jsx_diagnostics_lint_result(filename, &lowered.diagnostics);
+
+        for lowered_root in &lowered.roots {
+            let root_result = self.lint_template_root(
+                &allocator,
+                source,
+                filename,
+                &lowered_root.root,
+                TemplateAnalysis::Lazy,
+                TemplateRuleEnv {
+                    sfc_descriptor: None,
+                    dialect: VueDialect::Vue,
+                },
+            );
+            result = Self::merge_lint_results(result, root_result);
+        }
+
+        result
+    }
+
+    fn jsx_diagnostics_lint_result(
+        filename: &str,
+        diagnostics: &[vize_atelier_jsx::JsxDiagnostic],
+    ) -> LintResult {
+        use crate::diagnostic::LintDiagnostic;
+
+        const JSX_PARSE_RULE: &str = "parser/jsx";
+
+        let mut lint_diagnostics = Vec::with_capacity(diagnostics.len());
+        let mut error_count = 0;
+        let mut warning_count = 0;
+
+        for diagnostic in diagnostics {
+            let lint_diagnostic = if diagnostic.is_error() {
+                error_count += 1;
+                LintDiagnostic::error(
+                    JSX_PARSE_RULE,
+                    diagnostic.message.clone(),
+                    diagnostic.start,
+                    diagnostic.end,
+                )
+            } else {
+                warning_count += 1;
+                LintDiagnostic::warn(
+                    JSX_PARSE_RULE,
+                    diagnostic.message.clone(),
+                    diagnostic.start,
+                    diagnostic.end,
+                )
+            };
+            lint_diagnostics.push(lint_diagnostic);
+        }
+
+        LintResult {
+            filename: filename.to_compact_string(),
+            diagnostics: lint_diagnostics,
+            error_count,
+            warning_count,
+        }
+    }
+
     /// Lint a Vue template with a provided allocator (for reuse).
     pub fn lint_template_with_allocator(
         &self,
