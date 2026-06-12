@@ -322,7 +322,8 @@ impl DiagnosticService {
             {
                 let corsa_bridge = state.get_corsa_bridge().await;
                 let jsx_future = crate::ide::JsxService::diagnostics(&ctx, corsa_bridge);
-                match crate::runtime::timeout(std::time::Duration::from_secs(10), jsx_future).await {
+                match crate::runtime::timeout(std::time::Duration::from_secs(10), jsx_future).await
+                {
                     Ok(jsx_type_diags) => {
                         tracing::info!("jsx type diagnostics count: {}", jsx_type_diags.len());
                         diagnostics.extend(jsx_type_diags);

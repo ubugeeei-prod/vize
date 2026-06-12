@@ -54,7 +54,10 @@ impl JsxService {
     }
 
     /// Hover on a `.jsx`/`.tsx` component, resolved through virtual TS.
-    pub async fn hover(ctx: &IdeContext<'_>, corsa_bridge: Option<Arc<CorsaBridge>>) -> Option<Hover> {
+    pub async fn hover(
+        ctx: &IdeContext<'_>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
+    ) -> Option<Hover> {
         let bridge = corsa_bridge?;
         if !bridge.is_initialized() {
             return None;
@@ -130,7 +133,10 @@ impl JsxService {
             .await
             .ok()?;
 
-        let locations = bridge.definition(&request_uri, line, character).await.ok()?;
+        let locations = bridge
+            .definition(&request_uri, line, character)
+            .await
+            .ok()?;
         if locations.is_empty() {
             return None;
         }
@@ -185,8 +191,7 @@ impl JsxService {
                 // Skip "declared but never used" noise on the synthesized sink
                 // helper and any other internal `__vize_` symbol.
                 let is_unused = diag.message.contains("is declared but")
-                    && (diag.message.contains("never read")
-                        || diag.message.contains("never used"));
+                    && (diag.message.contains("never read") || diag.message.contains("never used"));
                 if is_unused && diag.message.contains("'__vize") {
                     return None;
                 }
@@ -317,7 +322,12 @@ mod tests {
     use super::*;
     use crate::server::ServerState;
 
-    fn ctx_for<'a>(state: &'a ServerState, uri: &'a Url, source: &str, marker: &str) -> IdeContext<'a> {
+    fn ctx_for<'a>(
+        state: &'a ServerState,
+        uri: &'a Url,
+        source: &str,
+        marker: &str,
+    ) -> IdeContext<'a> {
         let offset = source.find(marker).expect("marker present") + marker.len();
         IdeContext::with_content(state, uri, offset, source.to_string())
     }

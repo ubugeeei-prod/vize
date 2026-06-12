@@ -32,7 +32,10 @@ pub(super) fn source_offset_to_virtual_position(
 ) -> Option<(u32, u32)> {
     let mapping = mapping_for_source_offset(mappings, source_offset)?;
     let relative = source_offset.saturating_sub(mapping.src_range.start);
-    let gen_len = mapping.gen_range.end.saturating_sub(mapping.gen_range.start);
+    let gen_len = mapping
+        .gen_range
+        .end
+        .saturating_sub(mapping.gen_range.start);
     let gen_offset = mapping
         .gen_range
         .start
@@ -81,7 +84,12 @@ fn mapping_for_source_offset(mappings: &[VizeMapping], offset: usize) -> Option<
     mappings
         .iter()
         .filter(|mapping| offset >= mapping.src_range.start && offset < mapping.src_range.end)
-        .min_by_key(|mapping| mapping.src_range.end.saturating_sub(mapping.src_range.start))
+        .min_by_key(|mapping| {
+            mapping
+                .src_range
+                .end
+                .saturating_sub(mapping.src_range.start)
+        })
 }
 
 fn mapping_for_generated_offset(mappings: &[VizeMapping], offset: usize) -> Option<&VizeMapping> {
@@ -224,8 +232,7 @@ mod tests {
             super::super::virtual_ts::generate_jsx_virtual_ts(source, JsxLang::Tsx).unwrap();
         // Cursor immediately after the `.` in `props.`.
         let dot = source.find("props.").unwrap() + "props.".len();
-        let mapped =
-            source_offset_to_virtual_position(&generated.code, &generated.mappings, dot);
+        let mapped = source_offset_to_virtual_position(&generated.code, &generated.mappings, dot);
         assert!(
             mapped.is_some(),
             "member-access trigger did not map into virtual TS:\n{}",
