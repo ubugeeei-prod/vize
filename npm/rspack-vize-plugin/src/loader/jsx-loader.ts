@@ -34,6 +34,7 @@ export default function vizeJsxLoader(
 
   try {
     const { code, warnings } = compileJsxModule(resourcePath, source, {
+      jsxMode: options.jsxMode,
       vapor: options.vapor ?? false,
     });
 

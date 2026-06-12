@@ -54,6 +54,12 @@ export type CompileSfcFn = (
 export interface JsxCompileOptionsNapi {
   filename?: string;
   lang?: string;
+  /**
+   * Default JSX output mode (`"vdom"` | `"vapor"`). Mirrors `compiler.jsxMode`
+   * and takes precedence over `vapor`. Per-component `"use vue:*"` directives
+   * still override it.
+   */
+  jsxMode?: "vdom" | "vapor";
   vapor?: boolean;
 }
 
@@ -182,6 +188,15 @@ export interface VizeOptions {
    * @default false
    */
   vapor?: boolean;
+
+  /**
+   * Default output mode for `.jsx`/`.tsx` components without a `"use vue:*"`
+   * directive. Distinct from `vapor` (which targets `.vue` SFCs): a project can
+   * keep SFCs on VDOM while defaulting JSX to Vapor, or vice versa. A
+   * per-component `"use vue:vapor"` / `"use vue:vdom"` directive overrides it.
+   * @default "vdom"
+   */
+  jsxMode?: "vdom" | "vapor";
 
   /**
    * Treat lowercase non-HTML tags as custom renderer elements instead of Vue components.

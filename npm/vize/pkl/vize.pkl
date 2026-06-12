@@ -10,6 +10,7 @@ module vize.Config
 
 typealias CompilerMode = "module" | "function"
 typealias TemplateSyntax = "standard" | "strict" | "quirks"
+typealias JsxMode = "vdom" | "vapor"
 typealias ScriptExt = "ts" | "js"
 typealias RuleSeverity = "off" | "warn" | "error"
 typealias LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "ecosystem" | "nuxt"
@@ -21,6 +22,7 @@ typealias ConfigExtends = String | Listing<String>
 class CompilerConfig {
   mode: CompilerMode? = null
   vapor: Boolean? = null
+  jsxMode: JsxMode? = null
   customRenderer: Boolean? = null
   ssr: Boolean? = null
   templateSyntax: TemplateSyntax? = null

@@ -68,6 +68,7 @@ export function normalizeOptions(
     sourceMap: rawOptions.sourceMap ?? !isProduction,
     mode,
     vapor: rawOptions.vapor ?? false,
+    jsxMode: rawOptions.jsxMode,
     customRenderer: rawOptions.customRenderer ?? false,
     templateSyntax,
     runtimeModuleName: rawOptions.runtimeModuleName ?? "vue",

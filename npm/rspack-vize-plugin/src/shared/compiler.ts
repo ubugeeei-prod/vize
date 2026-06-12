@@ -35,11 +35,12 @@ export function isJsxFile(filePath: string): boolean {
 export function compileJsxModule(
   filePath: string,
   source: string,
-  options: { vapor?: boolean } = {},
+  options: { jsxMode?: "vdom" | "vapor"; vapor?: boolean } = {},
 ): { code: string; warnings: string[] } {
   const result = compileJsx(source, {
     filename: filePath,
     lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
+    jsxMode: options.jsxMode,
     vapor: options.vapor ?? false,
   });
 

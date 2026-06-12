@@ -235,9 +235,15 @@ export interface JsxCompileOptionsNapi {
    */
   lang?: string;
   /**
-   * Default output mode: `true` compiles components to Vapor, `false` (default)
-   * to VDOM. Per-component "use vue:vapor" / "use vue:vdom" directives override
-   * this.
+   * Default output mode: "vdom" (default) or "vapor". Mirrors the
+   * `compiler.jsxMode` config key and takes precedence over `vapor`.
+   * Per-component "use vue:vapor" / "use vue:vdom" directives override it.
+   */
+  jsxMode?: string;
+  /**
+   * Legacy default-mode toggle: `true` compiles components to Vapor, `false`
+   * (default) to VDOM. Kept for back-compat; prefer `jsxMode`. Ignored when
+   * `jsxMode` is set.
    */
   vapor?: boolean;
 }

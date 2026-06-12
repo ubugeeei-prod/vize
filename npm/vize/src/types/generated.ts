@@ -73,6 +73,10 @@ export interface CompilerConfig {
    */
   vapor?: boolean;
   /**
+   * Default output mode for .jsx/.tsx components without a "use vue:*" directive
+   */
+  jsxMode?: "vdom" | "vapor";
+  /**
    * Treat lowercase non-HTML tags as custom renderer elements
    */
   customRenderer?: boolean;

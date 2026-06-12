@@ -15,6 +15,8 @@ export interface SfcCompileOptionsNapi {
 export interface JsxCompileOptionsNapi {
   filename?: string;
   lang?: "jsx" | "tsx";
+  /** Default JSX output mode; mirrors `compiler.jsxMode`, wins over `vapor`. */
+  jsxMode?: "vdom" | "vapor";
   vapor?: boolean;
 }
 
@@ -66,6 +68,13 @@ export interface VizeUnpluginOptions {
   sourceMap?: boolean;
   mode?: "module" | "function";
   vapor?: boolean;
+  /**
+   * Default output mode for `.jsx`/`.tsx` components without a `"use vue:*"`
+   * directive. Distinct from `vapor` (which targets `.vue` SFCs). A
+   * per-component directive overrides it.
+   * @default "vdom"
+   */
+  jsxMode?: "vdom" | "vapor";
   customRenderer?: boolean;
   templateSyntax?: VizeTemplateSyntax;
   runtimeModuleName?: string;
@@ -146,6 +155,8 @@ export interface NormalizedVizeUnpluginOptions {
   sourceMap: boolean;
   mode: "module" | "function";
   vapor: boolean;
+  /** Default JSX output mode; `undefined` when unset (treated as VDOM). */
+  jsxMode?: "vdom" | "vapor";
   customRenderer: boolean;
   templateSyntax: VizeTemplateSyntax;
   runtimeModuleName: string;

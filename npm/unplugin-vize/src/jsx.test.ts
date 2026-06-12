@@ -8,12 +8,13 @@ interface TransformResult {
   map?: unknown;
 }
 
-function createPlugin(vapor: boolean) {
+function createPlugin(vapor: boolean, jsxMode?: "vdom" | "vapor") {
   return vizeUnplugin.raw(
     {
       isProduction: true,
       root: packageRoot,
       vapor,
+      jsxMode,
     },
     {
       framework: "rollup",
@@ -25,8 +26,9 @@ async function runTransform(
   vapor: boolean,
   source: string,
   id: string,
+  jsxMode?: "vdom" | "vapor",
 ): Promise<{ result: TransformResult | null; warnings: string[] }> {
-  const plugin = createPlugin(vapor);
+  const plugin = createPlugin(vapor, jsxMode);
 
   const transformInclude = plugin.transformInclude;
   if (typeof transformInclude === "function") {
@@ -86,5 +88,31 @@ void test("vapor:true compiles the .jsx fixture to vapor template output", async
     result.code,
     /_createElementBlock/,
     "vapor JSX output does not use the vdom element block factory",
+  );
+});
+
+void test("jsxMode:'vapor' selects the vapor default and wins over vapor:false", async (t) => {
+  // The explicit `jsxMode` option mirrors `compiler.jsxMode` and takes
+  // precedence over the legacy `vapor` boolean (here left false).
+  const id = resolveFixturePath("jsx", "App.jsx");
+  const { result, warnings } = await runTransform(false, APP_JSX, id, "vapor");
+
+  t.assert.ok(result && typeof result === "object", "transform returns a result object");
+  t.assert.ok(result.code.length > 0, "emitted code is non-empty");
+  t.assert.deepStrictEqual(warnings, [], "no warnings are emitted");
+  t.assert.match(result.code, /template\(/, "jsxMode:'vapor' produces vapor template output");
+});
+
+void test("jsxMode:'vdom' keeps the vdom default even when vapor:true", async (t) => {
+  // Conversely, `jsxMode:'vdom'` overrides a `vapor:true` legacy toggle.
+  const id = resolveFixturePath("jsx", "App.jsx");
+  const { result, warnings } = await runTransform(true, APP_JSX, id, "vdom");
+
+  t.assert.ok(result && typeof result === "object", "transform returns a result object");
+  t.assert.deepStrictEqual(warnings, [], "no warnings are emitted");
+  t.assert.match(
+    result.code,
+    /_createElementBlock\("div"/,
+    "jsxMode:'vdom' produces vdom element-block output",
   );
 });

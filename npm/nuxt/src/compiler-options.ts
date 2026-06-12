@@ -50,6 +50,11 @@ export interface VizeNuxtCompilerOptions {
   sourceMap?: boolean;
   /** Enable Vapor mode compilation. */
   vapor?: boolean;
+  /**
+   * Default output mode for `.jsx`/`.tsx` components without a `"use vue:*"`
+   * directive (forwarded to the underlying Vize plugin). @default "vdom"
+   */
+  jsxMode?: "vdom" | "vapor";
   /** Treat lowercase non-HTML tags as custom renderer elements. */
   customRenderer?: boolean;
   /** Template syntax compatibility mode. */

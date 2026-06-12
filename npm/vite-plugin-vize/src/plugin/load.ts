@@ -437,6 +437,7 @@ export function transformJsxRequest(
     : request.path;
 
   const { code: compiled, warnings } = compileJsxModule(realPath, code, {
+    jsxMode: state.mergedOptions.jsxMode,
     vapor: state.mergedOptions.vapor ?? false,
   });
 

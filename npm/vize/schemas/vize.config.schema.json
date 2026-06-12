@@ -16,6 +16,12 @@
           "default": false,
           "type": "boolean"
         },
+        "jsxMode": {
+          "description": "Default output mode for .jsx/.tsx components without a \"use vue:*\" directive",
+          "default": "vdom",
+          "type": "string",
+          "enum": ["vdom", "vapor"]
+        },
         "customRenderer": {
           "description": "Treat lowercase non-HTML tags as custom renderer elements",
           "default": false,

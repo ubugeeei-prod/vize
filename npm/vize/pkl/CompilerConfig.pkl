@@ -3,6 +3,7 @@ module vize.CompilerConfig
 
 typealias VueVersion = Number | "legacy"
 typealias TemplateSyntax = "standard" | "strict" | "quirks"
+typealias JsxMode = "vdom" | "vapor"
 
 class CompilerCompatibilityConfig {
   /// Host Vue runtime version for opt-in compatibility modes.
@@ -30,6 +31,9 @@ class CompilerConfig {
 
   /// Enable Vapor mode compilation.
   vapor: Boolean = false
+
+  /// Default output mode for .jsx/.tsx components without a "use vue:*" directive.
+  jsxMode: JsxMode = "vdom"
 
   /// Treat lowercase non-HTML tags as custom renderer elements.
   customRenderer: Boolean = false

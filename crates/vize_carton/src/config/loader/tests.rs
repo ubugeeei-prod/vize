@@ -1,8 +1,9 @@
 use super::{
-    load_compiler_template_syntax, load_compiler_vue_version, load_config_and_linter_with_source,
-    load_config_with_source, load_linter_config, validate_explicit_config_path,
+    load_compiler_jsx_mode, load_compiler_template_syntax, load_compiler_vue_version,
+    load_config_and_linter_with_source, load_config_with_source, load_linter_config,
+    validate_explicit_config_path,
 };
-use crate::config::VueVersion;
+use crate::config::{JsxMode, VueVersion};
 
 #[test]
 fn validate_explicit_config_path_missing_errors() {
@@ -124,6 +125,44 @@ fn load_compiler_vue_version_defaults_to_unset_for_vue3() {
 
     // No `vue.version` key → modern Vue 3 (the absent/default dialect).
     assert_eq!(load_compiler_vue_version(Some(&config_path)), None);
+}
+
+#[test]
+fn load_compiler_jsx_mode_reads_jsx_mode_key() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(&config_path, r#"{ "compiler": { "jsxMode": "vapor" } }"#).unwrap();
+
+    assert_eq!(
+        load_compiler_jsx_mode(Some(&config_path)),
+        Some(JsxMode::Vapor)
+    );
+    assert_eq!(
+        load_compiler_jsx_mode(Some(&config_path)).map(JsxMode::as_str),
+        Some("vapor")
+    );
+}
+
+#[test]
+fn load_compiler_jsx_mode_reads_vdom() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(&config_path, r#"{ "compiler": { "jsxMode": "vdom" } }"#).unwrap();
+
+    assert_eq!(
+        load_compiler_jsx_mode(Some(&config_path)),
+        Some(JsxMode::Vdom)
+    );
+}
+
+#[test]
+fn load_compiler_jsx_mode_defaults_to_unset() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(&config_path, r#"{ "formatter": { "singleQuote": true } }"#).unwrap();
+
+    // No `compiler.jsxMode` key → absent (the JSX entry points treat this as VDOM).
+    assert_eq!(load_compiler_jsx_mode(Some(&config_path)), None);
 }
 
 #[test]

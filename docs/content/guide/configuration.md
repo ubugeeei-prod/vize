@@ -180,6 +180,7 @@ every integration consumes every field yet.
 | `sourceMap`         | `boolean`                               | Enable source maps in the Vite plugin                            |
 | `ssr`               | `boolean`                               | Compile for SSR when not relying on Vite's SSR build flag        |
 | `vapor`             | `boolean`                               | Enable Vapor-mode compilation                                    |
+| `jsxMode`           | `"vdom"` or `"vapor"`                   | Default output backend for `.jsx`/`.tsx` components              |
 | `customRenderer`    | `boolean`                               | Treat lowercase non-HTML tags as custom renderer elements        |
 | `templateSyntax`    | `"standard"`, `"strict"`, or `"quirks"` | Choose warning, error, or Vue-quirk handling for template syntax |
 | `scriptExt`         | `"ts"` or `"js"`                        | Preserve TS output or downcompile to JS in the npm build command |
@@ -246,6 +247,77 @@ Vue upstream implementation:
 
 See [Troubleshooting](./troubleshooting.md) for the HTML strict-mode behavior behind invalid
 self-closing tags.
+
+## JSX & TSX Output Mode
+
+Vize compiles `.jsx`/`.tsx` Vue components to either Virtual DOM or
+[Vapor](https://blog.vuejs.org/posts/vue-vapor) output. `compiler.jsxMode` selects the **global
+default** for components that do not opt in explicitly; it defaults to `"vdom"`.
+
+```ts
+// vize.config.ts
+import { defineConfig } from "@vizejs/vite-plugin";
+
+export default defineConfig({
+  compiler: {
+    // Default every .jsx/.tsx component to Vapor output.
+    jsxMode: "vapor",
+  },
+});
+```
+
+`jsxMode` is independent of `compiler.vapor`: `vapor` toggles Vapor for `.vue` SFCs, while `jsxMode`
+controls the default backend for JSX/TSX. A project can keep SFCs on VDOM while defaulting JSX to
+Vapor, or vice versa. The Vite plugin also accepts `jsxMode` directly as a plugin option, which
+overrides the shared config.
+
+### Per-component directives
+
+An individual component overrides the default with a directive prologue, mirroring `"use strict"`:
+
+```tsx
+// Compiled to Vapor regardless of the configured default.
+const Fast = () => {
+  "use vue:vapor";
+  return <div class="fast" />;
+};
+
+// Compiled to Virtual DOM regardless of the configured default.
+const Classic = () => {
+  "use vue:vdom";
+  return <div class="classic" />;
+};
+```
+
+Because each component is routed independently, a **single module can mix both backends**:
+
+```tsx
+// vize.config: { compiler: { jsxMode: "vapor" } }
+
+// No directive -> takes the configured default (Vapor here).
+export const Dashboard = () => <main>{/* ... */}</main>;
+
+// Opts back into Virtual DOM just for this component.
+export const LegacyWidget = () => {
+  "use vue:vdom";
+  return <aside>{/* ... */}</aside>;
+};
+```
+
+### Precedence
+
+The output mode for a component resolves in this order:
+
+1. A per-component `"use vue:vapor"` / `"use vue:vdom"` directive.
+2. The `compiler.jsxMode` default from config (or the plugin's `jsxMode` option).
+3. The built-in fallback, `"vdom"`.
+
+### Diagnostics
+
+A directive that begins with `"use vue:"` but does not name a known mode (a typo such as
+`"use vue:vdomm"`) is reported as a compile error rather than silently ignored, and two conflicting
+mode directives in one component (`"use vue:vapor"` followed by `"use vue:vdom"`) are likewise
+diagnosed. Unrelated prologues such as `"use strict"` are left untouched.
 
 ## Vue Dialect
 

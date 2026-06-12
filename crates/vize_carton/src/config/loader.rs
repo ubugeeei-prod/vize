@@ -139,6 +139,18 @@ pub fn load_compiler_vue_version(path: Option<&Path>) -> Option<crate::config::V
     features.vue_version
 }
 
+/// Load the configured `compiler.jsxMode` default output mode (#1496).
+///
+/// Returns `None` when the key is absent (treated as VDOM by the JSX entry
+/// points). The build runner and plugins thread this into the native
+/// `compileJsx` mode-selection logic, where a per-component `"use vue:*"`
+/// directive can still override it.
+pub fn load_compiler_jsx_mode(path: Option<&Path>) -> Option<crate::config::JsxMode> {
+    let loaded = load_raw_config_with_source(path);
+    let (_, features) = loaded.config.into_config_and_features();
+    features.jsx_mode
+}
+
 /// Load configuration and linter settings from a directory or file path in one pass.
 ///
 /// The lint/check CLIs call this on every invocation. Keeping the raw config

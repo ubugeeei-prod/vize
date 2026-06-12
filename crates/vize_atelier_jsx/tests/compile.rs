@@ -153,3 +153,61 @@ fn empty_module_yields_no_components_and_no_errors() {
     assert!(out.components.is_empty(), "expected no render roots");
     assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
 }
+
+#[test]
+fn vapor_default_config_with_vdom_directive_override_in_one_module() {
+    // #1496 acceptance, end to end: a Vapor *global default* (as set by
+    // `compiler.jsxMode: "vapor"`) routes undirected components to Vapor, while a
+    // `"use vue:vdom"` directive overrides one component back to VDOM — all in a
+    // single module that is lowered and analyzed once.
+    let config = JsxCompileConfig {
+        default_mode: JsxOutputMode::Vapor,
+        ..Default::default()
+    };
+    let src = "const Default = () => <a/>;\n\
+               const Overridden = () => { \"use vue:vdom\"; return <b/>; };";
+    let bump = Bump::new();
+    let out = compile_jsx(&bump, src, JsxLang::Jsx, &config);
+    assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
+    assert_eq!(out.components.len(), 2);
+
+    // Undirected component takes the Vapor default.
+    assert_eq!(out.components[0].component_name(), Some("Default"));
+    assert_eq!(out.components[0].mode(), JsxOutputMode::Vapor);
+    assert!(
+        out.components[0].code().contains("template("),
+        "{}",
+        out.components[0].code()
+    );
+
+    // The `"use vue:vdom"` directive overrides the default back to VDOM.
+    assert_eq!(out.components[1].component_name(), Some("Overridden"));
+    assert_eq!(out.components[1].mode(), JsxOutputMode::Vdom);
+    assert!(
+        out.components[1]
+            .code()
+            .contains("_createElementBlock(\"b\")"),
+        "{}",
+        out.components[1].code()
+    );
+}
+
+#[test]
+fn invalid_directive_produces_a_diagnostic() {
+    // #1496 acceptance: a malformed `"use vue:"` directive is surfaced as an
+    // error diagnostic rather than silently ignored.
+    let bump = Bump::new();
+    let src = "const App = () => { \"use vue:vapour\"; return <div/>; };";
+    let out = compile_jsx(&bump, src, JsxLang::Jsx, &JsxCompileConfig::default());
+    assert!(
+        out.has_errors(),
+        "expected a diagnostic for the typo'd directive"
+    );
+    assert!(
+        out.diagnostics
+            .iter()
+            .any(|d| d.is_error() && d.message.as_str().contains("use vue:vapour")),
+        "diagnostics: {:?}",
+        out.diagnostics
+    );
+}

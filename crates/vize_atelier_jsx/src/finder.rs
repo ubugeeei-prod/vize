@@ -21,8 +21,9 @@ use oxc_syntax::scope::ScopeFlags;
 use vize_carton::String;
 
 use crate::LoweredRoot;
+use crate::diagnostics::JsxDiagnostic;
 use crate::lower::Lowerer;
-use crate::mode::JsxOutputMode;
+use crate::mode::{DirectiveKind, JsxOutputMode, classify_directive};
 
 /// Lower every outermost JSX root in `program` into a [`LoweredRoot`].
 pub(crate) fn lower_program_roots<'a>(
@@ -67,8 +68,57 @@ impl RootLowerer<'_, '_, '_, '_> {
     }
 
     fn push_scope(&mut self, body: Option<&FunctionBody<'_>>, name: Option<String>) {
-        let mode = body.and_then(body_mode);
+        let mode = body.and_then(|body| self.resolve_body_mode(body));
         self.scopes.push(FnScope { mode, name });
+    }
+
+    /// Resolve the JSX output mode declared by a function body's directive
+    /// prologue, reporting diagnostics for malformed or conflicting directives.
+    ///
+    /// - A directive that opens with `"use vue:"` but does not name a known mode
+    ///   (e.g. `"use vue:vdomm"`) is almost always a typo, so it is reported as
+    ///   an error and otherwise ignored.
+    /// - Two directives selecting *different* modes in one body conflict; the
+    ///   first wins and the later one is reported as an error.
+    /// - Unrelated prologues (`"use strict"`, …) are left untouched.
+    fn resolve_body_mode(&mut self, body: &FunctionBody<'_>) -> Option<JsxOutputMode> {
+        let mut resolved: Option<JsxOutputMode> = None;
+        for directive in &body.directives {
+            let raw = directive.directive.as_str();
+            match classify_directive(raw) {
+                DirectiveKind::Mode(mode) => match resolved {
+                    None => resolved = Some(mode),
+                    Some(existing) if existing != mode => {
+                        // Point at the string literal itself, not the whole
+                        // statement (which includes the trailing `;`).
+                        let loc = self.lowerer.mapper().location(directive.expression.span);
+                        self.lowerer.report(JsxDiagnostic::error_at(
+                            vize_carton::cstr!(
+                                "conflicting JSX mode directives: \"{}\" follows \"{}\" in the \
+                                 same component; a component can select only one output mode",
+                                mode.directive(),
+                                existing.directive()
+                            ),
+                            &loc,
+                        ));
+                    }
+                    Some(_) => {}
+                },
+                DirectiveKind::MalformedVue => {
+                    let loc = self.lowerer.mapper().location(directive.expression.span);
+                    self.lowerer.report(JsxDiagnostic::error_at(
+                        vize_carton::cstr!(
+                            "unknown JSX mode directive \"{raw}\": expected \"{}\" or \"{}\"",
+                            JsxOutputMode::Vdom.directive(),
+                            JsxOutputMode::Vapor.directive()
+                        ),
+                        &loc,
+                    ));
+                }
+                DirectiveKind::Unrelated => {}
+            }
+        }
+        resolved
     }
 }
 
@@ -124,11 +174,4 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
             scoped_css,
         });
     }
-}
-
-/// The first JSX output-mode directive in a function body's prologue, if any.
-fn body_mode(body: &FunctionBody<'_>) -> Option<JsxOutputMode> {
-    body.directives
-        .iter()
-        .find_map(|directive| JsxOutputMode::from_directive(directive.directive.as_str()))
 }

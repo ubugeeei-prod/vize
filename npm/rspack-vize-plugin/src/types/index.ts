@@ -70,7 +70,12 @@ export interface JsxCompileOptionsNapi {
   filename?: string;
   /** Source language: "jsx" or "tsx". Inferred from a `.tsx` filename. */
   lang?: string;
-  /** Default output mode: `true` → Vapor, `false` (default) → VDOM. */
+  /**
+   * Default output mode (`"vdom"` | `"vapor"`); mirrors `compiler.jsxMode` and
+   * wins over `vapor`. Per-component `"use vue:*"` directives still override it.
+   */
+  jsxMode?: "vdom" | "vapor";
+  /** Legacy default-mode toggle: `true` → Vapor, `false` (default) → VDOM. */
   vapor?: boolean;
 }
 
@@ -226,6 +231,9 @@ export interface VizeLoaderOptions {
   /** Vapor mode @default false */
   vapor?: boolean;
 
+  /** Default JSX output mode for `.jsx`/`.tsx` without a `"use vue:*"` directive. @default "vdom" */
+  jsxMode?: "vdom" | "vapor";
+
   /** HMR. false to disable in dev. @default true (dev), false (prod/SSR) */
   hotReload?: boolean;
 
@@ -267,6 +275,9 @@ export interface VizeRspackPluginOptions {
 
   /** Vapor mode @default false */
   vapor?: boolean;
+
+  /** Default JSX output mode for `.jsx`/`.tsx` without a `"use vue:*"` directive. @default "vdom" */
+  jsxMode?: "vdom" | "vapor";
 
   /** Root directory @default Rspack's root */
   root?: string;

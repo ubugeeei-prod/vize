@@ -3,8 +3,12 @@
 //! Mirrors the SFC `compileSfc` binding: a `.jsx`/`.tsx` source string in,
 //! generated render code + diagnostics out. The per-component
 //! `"use vue:vapor"` / `"use vue:vdom"` directive prologue is handled inside
-//! [`vize_atelier_jsx::compile_jsx`]; the `vapor` option here only selects the
-//! default mode for components without an explicit directive.
+//! [`vize_atelier_jsx::compile_jsx`]; the `jsxMode` / `vapor` options here only
+//! select the *default* mode for components without an explicit directive.
+//!
+//! Mode selection follows the project's `compiler.jsxMode` config: the explicit
+//! `jsxMode` string (`"vdom"` / `"vapor"`) wins when present; otherwise the
+//! legacy `vapor` bool applies for back-compat; otherwise the default is VDOM.
 //!
 //! FFI boundary code: uses std types for JavaScript interop.
 #![allow(
@@ -26,9 +30,13 @@ pub struct JsxCompileOptionsNapi {
     /// Source language: `"jsx"` or `"tsx"`. Defaults to `"jsx"` (or is inferred
     /// from a `.tsx` `filename`).
     pub lang: Option<String>,
-    /// Default output mode: `true` compiles components to Vapor, `false`
-    /// (default) to VDOM. Per-component `"use vue:vapor"` / `"use vue:vdom"`
-    /// directives override this.
+    /// Default output mode: `"vdom"` (default) or `"vapor"`. Mirrors the
+    /// `compiler.jsxMode` config key and takes precedence over `vapor`.
+    /// Per-component `"use vue:vapor"` / `"use vue:vdom"` directives override it.
+    pub jsx_mode: Option<String>,
+    /// Legacy default-mode toggle: `true` compiles components to Vapor, `false`
+    /// (default) to VDOM. Kept for back-compat; prefer `jsxMode`. Ignored when
+    /// `jsxMode` is set.
     pub vapor: Option<bool>,
 }
 
@@ -42,6 +50,22 @@ pub struct JsxCompileResultNapi {
     pub errors: Vec<String>,
     /// Warning-severity diagnostic messages.
     pub warnings: Vec<String>,
+}
+
+/// Resolve the default JSX output mode from the binding options, following the
+/// `compiler.jsxMode` precedence: an explicit `jsxMode` string wins, then the
+/// legacy `vapor` bool, then VDOM. An unrecognized `jsxMode` string falls
+/// through to the same `vapor`/VDOM fallback rather than erroring, so a stray
+/// value never blocks compilation.
+fn resolve_default_mode(jsx_mode: Option<&str>, vapor: Option<bool>) -> JsxOutputMode {
+    if let Some(mode) = jsx_mode.and_then(JsxOutputMode::from_config_str) {
+        return mode;
+    }
+    if vapor.unwrap_or(false) {
+        JsxOutputMode::Vapor
+    } else {
+        JsxOutputMode::Vdom
+    }
 }
 
 #[napi(js_name = "compileJsx")]
@@ -59,11 +83,7 @@ pub fn compile_jsx(
         },
     };
 
-    let default_mode = if opts.vapor.unwrap_or(false) {
-        JsxOutputMode::Vapor
-    } else {
-        JsxOutputMode::Vdom
-    };
+    let default_mode = resolve_default_mode(opts.jsx_mode.as_deref(), opts.vapor);
 
     let config = JsxCompileConfig {
         default_mode,
@@ -96,4 +116,34 @@ pub fn compile_jsx(
         errors,
         warnings,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn jsx_mode_takes_precedence_over_vapor() {
+        // Explicit `jsxMode` wins even when `vapor` disagrees.
+        assert_eq!(
+            resolve_default_mode(Some("vapor"), Some(false)),
+            JsxOutputMode::Vapor
+        );
+        assert_eq!(
+            resolve_default_mode(Some("vdom"), Some(true)),
+            JsxOutputMode::Vdom
+        );
+    }
+
+    #[test]
+    fn falls_back_to_vapor_bool_then_vdom() {
+        assert_eq!(resolve_default_mode(None, Some(true)), JsxOutputMode::Vapor);
+        assert_eq!(resolve_default_mode(None, Some(false)), JsxOutputMode::Vdom);
+        assert_eq!(resolve_default_mode(None, None), JsxOutputMode::Vdom);
+        // An unrecognized jsxMode string falls through rather than erroring.
+        assert_eq!(
+            resolve_default_mode(Some("react"), Some(true)),
+            JsxOutputMode::Vapor
+        );
+    }
 }

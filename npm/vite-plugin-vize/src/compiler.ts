@@ -191,6 +191,8 @@ export function compileFile(
 }
 
 export interface JsxCompileFileOptions {
+  /** Default JSX output mode; takes precedence over `vapor`. */
+  jsxMode?: "vdom" | "vapor";
   vapor?: boolean;
 }
 
@@ -209,6 +211,7 @@ export function compileJsxModule(
   const result = compileJsx(source, {
     filename: filePath,
     lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
+    jsxMode: options.jsxMode,
     vapor: options.vapor ?? false,
   });
 

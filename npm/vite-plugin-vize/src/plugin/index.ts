@@ -276,6 +276,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         ssr: options.ssr ?? compilerConfig.ssr ?? false,
         sourceMap: options.sourceMap ?? compilerConfig.sourceMap,
         vapor: options.vapor ?? compilerConfig.vapor ?? false,
+        jsxMode: options.jsxMode ?? compilerConfig.jsxMode,
         customRenderer: options.customRenderer ?? compilerConfig.customRenderer ?? false,
         templateSyntax,
         compatibility,

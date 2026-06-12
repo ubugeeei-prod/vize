@@ -43,6 +43,12 @@ local compilerConfigDef: JsonSchema = new JsonSchema {
       description = "Enable Vapor mode compilation"
       default = false
     }
+    ["jsxMode"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "vdom"; "vapor" }
+      description = "Default output mode for .jsx/.tsx components without a \"use vue:*\" directive"
+      default = "vdom"
+    }
     ["ssr"] = new JsonSchema {
       type = "boolean"
       description = "Enable SSR mode"

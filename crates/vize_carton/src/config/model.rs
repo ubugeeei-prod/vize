@@ -13,6 +13,8 @@ use serde::{Deserialize, Serialize};
 use compiler::RawCompilerConfig;
 use vue::RawVueConfig;
 
+pub use compiler::JsxMode;
+
 use crate::String;
 use crate::dialect::VueDialect;
 pub use formatter::{
@@ -84,6 +86,12 @@ pub struct ConfigFeatureFlags {
     /// legacy Vue support (#1392): consumers thread this into parser and
     /// transform options in follow-ups.
     pub vue_version: Option<VueVersion>,
+    /// Default JSX/TSX output backend selected by `compiler.jsxMode` (#1496);
+    /// `None` when the key is absent (treated as VDOM). The JS plugins and the
+    /// native `compileJsx` binding thread this into the per-component
+    /// mode-selection logic so a single module can still mix VDOM and Vapor via
+    /// `"use vue:*"` directives.
+    pub jsx_mode: Option<JsxMode>,
 }
 
 impl Default for ConfigFeatureFlags {
@@ -95,6 +103,7 @@ impl Default for ConfigFeatureFlags {
             type_checker_jsx_typecheck: false,
             language_server_legacy_vue2: None,
             vue_version: None,
+            jsx_mode: None,
         }
     }
 }
@@ -163,7 +172,7 @@ impl RawVizeConfig {
             schema,
             dialect,
             formatter,
-            compiler: _,
+            compiler,
             vue,
             linter: _,
             type_checker: raw_type_checker,
@@ -206,6 +215,7 @@ impl RawVizeConfig {
             type_checker_jsx_typecheck,
             language_server_legacy_vue2: language_server_raw.legacy_vue2,
             vue_version: vue.version,
+            jsx_mode: compiler.jsx_mode,
         };
 
         let config = VizeConfig {

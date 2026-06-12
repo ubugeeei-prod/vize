@@ -4,8 +4,12 @@
 //! `compileSfc` binding: a `.jsx`/`.tsx` source string in, generated render
 //! code + diagnostics out. The per-component `"use vue:vapor"` /
 //! `"use vue:vdom"` directive prologue is handled inside
-//! [`vize_atelier_jsx::compile_jsx`]; the `vapor` option here only selects the
-//! default mode for components without an explicit directive.
+//! [`vize_atelier_jsx::compile_jsx`]; the `jsxMode` / `vapor` options here only
+//! select the *default* mode for components without an explicit directive.
+//!
+//! Mode selection mirrors the NAPI binding and the `compiler.jsxMode` config:
+//! the explicit `jsxMode` string (`"vdom"` / `"vapor"`) wins, then the legacy
+//! `vapor` bool, then VDOM.
 
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
@@ -49,10 +53,18 @@ fn resolve_lang(options: &JsValue) -> JsxLang {
     }
 }
 
-/// Resolve the default output mode from the JS options object. `vapor: true`
-/// selects Vapor; anything else (including absent) defaults to VDOM, matching
-/// the NAPI binding.
+/// Resolve the default output mode from the JS options object, mirroring the
+/// NAPI binding and `compiler.jsxMode` precedence: an explicit `jsxMode` string
+/// (`"vdom"` / `"vapor"`) wins, then the legacy `vapor` bool, then VDOM. An
+/// unrecognized `jsxMode` string falls through to the `vapor`/VDOM fallback.
 fn resolve_default_mode(options: &JsValue) -> JsxOutputMode {
+    let jsx_mode = js_sys::Reflect::get(options, &JsValue::from_str("jsxMode"))
+        .ok()
+        .and_then(|v| v.as_string());
+    if let Some(mode) = jsx_mode.as_deref().and_then(JsxOutputMode::from_config_str) {
+        return mode;
+    }
+
     let vapor = js_sys::Reflect::get(options, &JsValue::from_str("vapor"))
         .ok()
         .and_then(|v| v.as_bool())

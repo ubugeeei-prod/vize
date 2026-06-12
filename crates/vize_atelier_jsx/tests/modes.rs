@@ -48,6 +48,79 @@ fn unrelated_prologue_is_ignored() {
 }
 
 #[test]
+fn unrelated_prologue_produces_no_diagnostic() {
+    // `"use strict"` is a legitimate directive, not a malformed Vize one.
+    let bump = Bump::new();
+    let out = lower_source(
+        &bump,
+        "const App = () => { \"use strict\"; return <div/>; };",
+        JsxLang::Jsx,
+    );
+    assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
+}
+
+#[test]
+fn malformed_vue_directive_is_diagnosed() {
+    // A typo'd suffix (`vdomm`) opens with `use vue:` so it is almost certainly
+    // a mistyped mode directive; report it instead of silently ignoring it.
+    let bump = Bump::new();
+    let src = "const App = () => { \"use vue:vdomm\"; return <div/>; };";
+    let out = lower_source(&bump, src, JsxLang::Jsx);
+    assert!(out.has_errors(), "expected a diagnostic for the typo");
+    let diag = out
+        .diagnostics
+        .iter()
+        .find(|d| d.message.as_str().contains("use vue:vdomm"))
+        .expect("diagnostic should name the offending directive");
+    assert!(diag.message.as_str().contains("use vue:vdom"));
+    assert!(diag.message.as_str().contains("use vue:vapor"));
+    // The range maps back into the original source.
+    assert!(diag.end > diag.start);
+    assert_eq!(
+        &src[diag.start as usize..diag.end as usize],
+        "\"use vue:vdomm\""
+    );
+    // The unknown directive does not select a mode.
+    assert_eq!(out.roots.len(), 1);
+    assert_eq!(out.roots[0].mode, None);
+}
+
+#[test]
+fn conflicting_directives_are_diagnosed() {
+    // Two different mode directives in one component cannot both apply.
+    let bump = Bump::new();
+    let src = "const App = () => { \"use vue:vapor\"; \"use vue:vdom\"; return <div/>; };";
+    let out = lower_source(&bump, src, JsxLang::Jsx);
+    assert!(out.has_errors(), "expected a conflict diagnostic");
+    let diag = out
+        .diagnostics
+        .iter()
+        .find(|d| {
+            d.message
+                .as_str()
+                .contains("conflicting JSX mode directives")
+        })
+        .expect("a conflict diagnostic should be produced");
+    // The diagnostic points at the second, conflicting directive.
+    assert_eq!(
+        &src[diag.start as usize..diag.end as usize],
+        "\"use vue:vdom\""
+    );
+    // The first directive still wins for the component's resolved mode.
+    assert_eq!(out.roots[0].mode, Some(JsxOutputMode::Vapor));
+}
+
+#[test]
+fn repeated_identical_directives_do_not_conflict() {
+    // Redundant but not contradictory: no diagnostic.
+    let bump = Bump::new();
+    let src = "const App = () => { \"use vue:vapor\"; \"use vue:vapor\"; return <div/>; };";
+    let out = lower_source(&bump, src, JsxLang::Jsx);
+    assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
+    assert_eq!(out.roots[0].mode, Some(JsxOutputMode::Vapor));
+}
+
+#[test]
 fn arrow_component_name_is_resolved() {
     let bump = Bump::new();
     let lowered = jsx(&bump, "const MyButton = () => <button/>;");
