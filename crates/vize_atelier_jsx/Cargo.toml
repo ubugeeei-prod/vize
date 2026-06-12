@@ -1,0 +1,29 @@
+[package]
+name = "vize_atelier_jsx"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Atelier JSX - Shared JSX/TSX lowering layer for Vize"
+
+[dependencies]
+# Internal crates
+vize_carton = { workspace = true }
+vize_relief = { workspace = true }
+vize_croquis = { workspace = true }
+
+# OXC for JSX/TSX parsing and diagnostics
+oxc_allocator = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_ast = { workspace = true }
+oxc_ast_visit = { workspace = true }
+oxc_syntax = { workspace = true }
+oxc_span = { workspace = true }
+oxc_diagnostics = { workspace = true }
+
+[features]
+default = []
+# Mirror the relief legacy surface so the `InterpolationNode::raw` field stays
+# in sync under workspace feature unification (see vize_armature's `legacy`).
+legacy = ["vize_relief/_legacy"]

@@ -3482,6 +3482,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_atelier_jsx"
+version = "0.206.0"
+dependencies = [
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_diagnostics",
+ "oxc_parser",
+ "oxc_span",
+ "oxc_syntax",
+ "vize_carton",
+ "vize_croquis",
+ "vize_relief",
+]
+
+[[package]]
 name = "vize_atelier_sfc"
 version = "0.206.0"
 dependencies = [
