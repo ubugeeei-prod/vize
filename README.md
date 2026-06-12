@@ -64,8 +64,8 @@ Measured on Blacksmith `blacksmith-32vcpu-ubuntu-2404`, 15,000 generated Vue SFC
 | SFC compile | @vue/compiler-sfc  |   16.86s | 292.8ms |  **57.6×** |
 | Lint        | eslint-plugin-vue  |   55.54s | 260.7ms | **213.1×** |
 | Format      | Prettier           |  139.17s |   1.43s |  **97.5×** |
-| Type check  | vue-tsc            |    5.37s | 402.4ms |   **13.3×** |
-| Vite build  | @vitejs/plugin-vue |    1.63s | 611.0ms |    **2.7×** |
+| Type check  | vue-tsc            |    5.37s | 402.4ms |  **13.3×** |
+| Vite build  | @vitejs/plugin-vue |    1.63s | 611.0ms |   **2.7×** |
 
 See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for
 methodology and per-variant numbers.
