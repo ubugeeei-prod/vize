@@ -61,6 +61,7 @@ impl ServerState {
     fn apply_config_features(&self, features: vize_carton::config::ConfigFeatureFlags) {
         *self.type_checker_options_api.write() = features.type_checker_options_api;
         *self.type_checker_legacy_vue2.write() = features.type_checker_legacy_vue2;
+        *self.type_checker_jsx_typecheck.write() = features.type_checker_jsx_typecheck;
         if let Some(enabled) = features.language_server_legacy_vue2 {
             let mut lsp_features = self.lsp_features.write();
             lsp_features.legacy_vue2 = enabled;

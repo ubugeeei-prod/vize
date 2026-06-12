@@ -247,6 +247,32 @@ fn legacy_vue2_config_implies_options_api() {
 }
 
 #[test]
+fn jsx_typecheck_defaults_off() {
+    let state = ServerState::new();
+    assert!(
+        !state.jsx_typecheck_enabled(),
+        "JSX/TSX type-aware features must default off so React .tsx is untouched"
+    );
+}
+
+#[test]
+fn jsx_typecheck_config_opts_in() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r#"{ "typeChecker": { "jsxTypecheck": true } }"#,
+    )
+    .unwrap();
+
+    let state = ServerState::new();
+    state.load_workspace_config(dir.path());
+    assert!(
+        state.jsx_typecheck_enabled(),
+        "typeChecker.jsxTypecheck: true should enable JSX/TSX type-aware LSP"
+    );
+}
+
+#[test]
 fn load_lsp_config_updates_linter_config() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(

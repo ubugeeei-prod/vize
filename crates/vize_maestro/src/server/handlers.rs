@@ -156,6 +156,18 @@ impl LanguageServer for MaestroServer {
 
         let ctx = IdeContext::with_content(&self.state, uri, offset, content);
 
+        // Type-aware hover for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
+        // Routed before the SFC path since JSX documents never produce an SFC
+        // block type. React `.tsx` is untouched when the flag is off.
+        #[cfg(feature = "native")]
+        if crate::utils::is_jsx_path(uri.path()) {
+            if self.state.jsx_typecheck_enabled() {
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                return Ok(crate::ide::JsxService::hover(&ctx, corsa_bridge).await);
+            }
+            return Ok(None);
+        }
+
         #[cfg(feature = "native")]
         let mut hover_result: Option<Hover> = {
             let corsa_bridge = self.state.get_corsa_bridge().await;
@@ -191,6 +203,21 @@ impl LanguageServer for MaestroServer {
         };
 
         let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+
+        // Type-aware completion for `.jsx`/`.tsx` (opt-in
+        // `typeChecker.jsxTypecheck`). React `.tsx` is untouched when off.
+        #[cfg(feature = "native")]
+        if crate::utils::is_jsx_path(uri.path()) {
+            if self.state.jsx_typecheck_enabled() {
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                if let Some(response) = crate::ide::JsxService::completion(&ctx, corsa_bridge).await
+                {
+                    return Ok(Some(response));
+                }
+            }
+            return Ok(None);
+        }
+
         {
             #[cfg(feature = "native")]
             {
@@ -243,6 +270,21 @@ impl LanguageServer for MaestroServer {
         };
 
         let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+
+        // Type-aware go-to-definition for `.jsx`/`.tsx` (opt-in
+        // `typeChecker.jsxTypecheck`). React `.tsx` is untouched when off.
+        #[cfg(feature = "native")]
+        if crate::utils::is_jsx_path(uri.path()) {
+            if self.state.jsx_typecheck_enabled() {
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                if let Some(response) = crate::ide::JsxService::definition(&ctx, corsa_bridge).await
+                {
+                    return Ok(Some(response));
+                }
+            }
+            return Ok(None);
+        }
+
         {
             #[cfg(feature = "native")]
             {

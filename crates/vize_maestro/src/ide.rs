@@ -28,6 +28,7 @@ pub(crate) mod ecosystem;
 pub mod file_rename;
 pub mod hover;
 pub mod inlay_hint;
+pub mod jsx;
 pub(crate) mod musea;
 pub mod references;
 pub mod rename;
@@ -46,6 +47,8 @@ pub use document_link::DocumentLinkService;
 pub use file_rename::FileRenameService;
 pub use hover::{HoverBuilder, HoverService};
 pub use inlay_hint::InlayHintService;
+#[cfg(feature = "native")]
+pub use jsx::JsxService;
 pub use references::ReferencesService;
 pub use rename::RenameService;
 pub use semantic_tokens::{SemanticTokensService, TokenModifier, TokenType};
