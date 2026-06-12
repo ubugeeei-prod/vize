@@ -1,0 +1,152 @@
+name: Criterion Bench
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "crates/**"
+      - "bench/criterion-ab.mjs"
+      - "bench/dialect-guard.mjs"
+      - "bench/generate.mjs"
+      - ".github/workflows/criterion-bench.yml"
+
+concurrency:
+  group: criterion-bench-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # Report-only: criterion micro-benchmarks are noisy on shared CI runners, so
+  # the A/B table is surfaced for review but the empty threshold keeps it from
+  # blocking a PR. The dialect guard below is a hard gate because byte-identical
+  # codegen is deterministic and not subject to timing jitter.
+  CRITERION_AB_THRESHOLD: ""
+  # The dialect-guard corpus is small so the legacy OFF/ON binaries compile it
+  # quickly; identity is exact, and the A/B timing tolerates a 2% delta.
+  DIALECT_GUARD_FILE_COUNT: 400
+  DIALECT_GUARD_THRESHOLD_PERCENT: 2
+
+jobs:
+  criterion-ab:
+    name: criterion-ab
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout head
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: head
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Checkout base
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: base
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      # Both sides bench into head/target so critcmp can read both baselines, so
+      # a single shared target disk is mounted (base and head compile into it).
+      - uses: ./head/.github/actions/setup-rust-sticky-cache
+        with:
+          key: criterion-bench
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('head/Cargo.lock') }}
+          target-path: head/target
+
+      # The A/B driver is plain Node (no npm deps); pin the runtime so the
+      # script never runs under an unexpected runner-default Node version.
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "head/.node-version"
+          cache: true
+          run-install: false
+
+      - name: Cache critcmp
+        id: cache-critcmp
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.cargo/bin/critcmp
+          key: ${{ runner.os }}-critcmp-0.1.8
+
+      - name: Install critcmp
+        if: steps.cache-critcmp.outputs.cache-hit != 'true'
+        run: cargo install critcmp --version 0.1.8 --locked
+
+      # Both checkouts save their criterion baselines into the head checkout's
+      # shared target dir so critcmp can diff base against head in one pass.
+      - name: Run criterion A/B
+        run: |
+          node head/bench/criterion-ab.mjs \
+            --base-dir "$GITHUB_WORKSPACE/base" \
+            --head-dir "$GITHUB_WORKSPACE/head" \
+            --target-dir "$GITHUB_WORKSPACE/head/target" \
+            ${CRITERION_AB_THRESHOLD:+--threshold "$CRITERION_AB_THRESHOLD"} \
+            --out "$GITHUB_WORKSPACE/criterion-ab-summary.md"
+
+      - name: Upload criterion A/B summary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: criterion-ab
+          path: criterion-ab-summary.md
+          if-no-files-found: warn
+          retention-days: 14
+
+  dialect-guard:
+    name: dialect-guard
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout head
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: dialect-guard
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+
+      # The corpus generator and guard driver are plain Node (no npm deps).
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      # A vize binary with the legacy Vue feature OFF (the shipped Vue 3 build)
+      # and one with it ON. Distinct target dirs keep the two feature sets from
+      # invalidating each other's incremental cache.
+      - name: Build vize (legacy OFF)
+        run: cargo build --profile ci-opt -p vize --target-dir target/off
+
+      - name: Build vize (legacy ON)
+        run: cargo build --profile ci-opt -p vize --features legacy --target-dir target/on
+
+      - name: Generate Vue 3 corpus
+        run: node bench/generate.mjs "$DIALECT_GUARD_FILE_COUNT"
+
+      - name: Compare legacy OFF vs ON
+        run: |
+          node bench/dialect-guard.mjs \
+            --input bench/__in__ \
+            --off-bin target/off/ci-opt/vize \
+            --on-bin target/on/ci-opt/vize \
+            --out-dir "$GITHUB_WORKSPACE/dialect-guard-out" \
+            --threshold "$DIALECT_GUARD_THRESHOLD_PERCENT"
