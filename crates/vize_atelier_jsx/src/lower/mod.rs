@@ -8,6 +8,7 @@
 
 mod attr;
 mod child;
+mod control_flow;
 mod element;
 mod expr;
 mod name;

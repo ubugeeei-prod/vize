@@ -1,0 +1,110 @@
+//! JSX control-flow expression children -> real v-if / v-for VNodes (feature A).
+//!
+//! Idiomatic JSX control flow is written as an expression child
+//! (`{cond && <X/>}`, `{cond ? <A/> : <B/>}`, `{items.map(i => <li/>)}`). The
+//! lowering layer recognizes these patterns and synthesizes structural relief
+//! nodes (v-if / v-for) instead of `_toDisplayString(expr)` text.
+//!
+//! Each integration test file is its own binary, so the `dom`/`vapor` helpers
+//! are defined locally (mirroring `tests/dom.rs`). The Vapor helper drives the
+//! Vapor backend directly to confirm the same lowered IR also feeds the Vapor
+//! if/for codegen paths.
+
+use vize_atelier_jsx::{
+    DomCompileOptions, JsxLang, VaporCompileOptions, compile_to_dom, compile_to_vapor,
+};
+use vize_carton::Bump;
+
+fn dom(src: &str) -> vize_carton::String {
+    let bump = Bump::new();
+    let out = compile_to_dom(&bump, src, JsxLang::Jsx, DomCompileOptions::default());
+    assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
+    assert_eq!(out.components.len(), 1, "expected one component");
+    out.components.into_iter().next().unwrap().code
+}
+
+fn vapor(src: &str) -> vize_carton::String {
+    let bump = Bump::new();
+    let out = compile_to_vapor(&bump, src, JsxLang::Jsx, VaporCompileOptions::default());
+    assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
+    assert_eq!(out.components.len(), 1, "expected one component");
+    out.components.into_iter().next().unwrap().code
+}
+
+// 1. `{cond && <X/>}` -> single-branch v-if rendering `<li/>` (not text).
+#[test]
+fn logical_and_with_jsx_becomes_v_if() {
+    let code = dom("const A = () => <ul>{ok && <li/>}</ul>;");
+    assert!(!code.contains("_toDisplayString"), "{code}");
+    // The `<li/>` is conditionally created, guarded by `ok`.
+    assert!(code.contains("_createElementBlock(\"li\""), "{code}");
+    assert!(code.contains("(ok)"), "{code}");
+    // The absent branch renders an empty comment, the v-if signature.
+    assert!(code.contains("_createCommentVNode(\"v-if\""), "{code}");
+}
+
+// 2. `{cond ? <A/> : <B/>}` -> two-branch v-if (both arms, no text ternary).
+#[test]
+fn conditional_with_jsx_arms_becomes_two_branch_v_if() {
+    let code = dom("const A = () => <div>{ok ? <a/> : <b/>}</div>;");
+    assert!(!code.contains("_toDisplayString"), "{code}");
+    assert!(code.contains("_createElementBlock(\"a\""), "{code}");
+    assert!(code.contains("_createElementBlock(\"b\""), "{code}");
+    assert!(code.contains("(ok)"), "{code}");
+}
+
+// 3. `{items.map((i) => <li>{i}</li>)}` -> v-for over `items`.
+#[test]
+fn map_callback_becomes_v_for() {
+    let code = dom("const A = () => <ul>{items.map((i) => <li>{i}</li>)}</ul>;");
+    assert!(code.contains("_renderList(items"), "{code}");
+    assert!(code.contains("(i) =>"), "{code}");
+    // Inner interpolation `{i}` is still real text inside the list item.
+    assert!(code.contains("_toDisplayString(i)"), "{code}");
+    assert!(code.contains("_createElementBlock(\"li\""), "{code}");
+}
+
+// 4. `.map((row, idx) => ...)` -> v-for with both value and index aliases.
+#[test]
+fn map_callback_with_index_alias() {
+    let code = dom("const A = () => <ul>{rows.map((row, idx) => <li key={idx}>{row}</li>)}</ul>;");
+    assert!(code.contains("_renderList(rows"), "{code}");
+    assert!(code.contains("(row, idx) =>"), "{code}");
+    assert!(code.contains("_toDisplayString(row)"), "{code}");
+}
+
+// 5. Regression: a plain expression child stays an interpolation.
+#[test]
+fn plain_expression_still_interpolates() {
+    let code = dom("const A = () => <div>{count}</div>;");
+    assert!(code.contains("_toDisplayString(count)"), "{code}");
+}
+
+// 6. Non-JSX `&&` is value coalescing, not conditional rendering -> stays text.
+#[test]
+fn non_jsx_logical_and_stays_interpolation() {
+    let code = dom("const A = () => <div>{a && b}</div>;");
+    assert!(code.contains("_toDisplayString(a && b)"), "{code}");
+    // It must NOT have become an If node (no v-if comment fallback).
+    assert!(!code.contains("_createCommentVNode(\"v-if\""), "{code}");
+}
+
+// 7. Vapor: `{cond && <span/>}` drives the Vapor `createIf` path.
+#[test]
+fn vapor_logical_and_uses_create_if() {
+    let code = vapor("const A = () => <ul>{ok && <span/>}</ul>;");
+    assert!(code.contains("_createIf("), "{code}");
+    // JSX closure semantics: the condition stays bare, not `_ctx.`-prefixed.
+    assert!(code.contains("ok") && !code.contains("_ctx."), "{code}");
+    assert!(code.contains("\"<span></span>\""), "{code}");
+}
+
+// 8. Vapor: `{items.map(...)}` drives the Vapor `createFor` path.
+#[test]
+fn vapor_map_uses_create_for() {
+    let code = vapor("const A = () => <ul>{items.map((i) => <li/>)}</ul>;");
+    assert!(code.contains("_createFor("), "{code}");
+    // JSX closure semantics: the for source stays bare, not `_ctx.`-prefixed.
+    assert!(code.contains("items") && !code.contains("_ctx."), "{code}");
+    assert!(code.contains("\"<li></li>\""), "{code}");
+}

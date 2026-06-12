@@ -52,6 +52,13 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                 self.bump(),
             ))),
             expression => {
+                // Recognize JSX control-flow idioms (`cond && <X/>`,
+                // `cond ? <A/> : <B/>`, `items.map(i => <li/>)`) and synthesize
+                // real v-if / v-for relief nodes. Anything unrecognized returns
+                // `None` and falls through to plain interpolation.
+                if let Some(node) = self.lower_control_flow_child(expression, container.span) {
+                    return Some(node);
+                }
                 let content = self.dyn_expr(expression.span());
                 Some(self.interpolation(content, container.span))
             }
