@@ -1,6 +1,6 @@
 [package]
 name = "vize-zed-extension"
-version = "0.206.0"
+version = "0.207.0"
 edition = "2024"
 license = "MIT"
 publish = false
