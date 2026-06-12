@@ -176,7 +176,11 @@ Idiomatically the `<style scoped>` element goes **last**, after the markup — m
 const Card = () => (
   <>
     <div class="box">hi</div>
-    <style scoped>{`.box { color: red }`}</style>
+    <style scoped>{`
+      .box {
+        color: red;
+      }
+    `}</style>
   </>
 );
 ```
@@ -190,7 +194,11 @@ Template-literal interpolations `${expr}` inside the style block are the Vize eq
 const Box = (props: { color: string }) => (
   <>
     <div class="box" />
-    <style scoped>{`.box { color: ${props.color}; }`}</style>
+    <style scoped>{`
+      .box {
+        color: ${props.color};
+      }
+    `}</style>
   </>
 );
 ```
