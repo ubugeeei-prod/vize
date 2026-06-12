@@ -186,7 +186,10 @@ fn desugar_scoped_slot_attrs<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>) 
     let PropNode::Attribute(scope_attr) = &el.props[scope_idx] else {
         return;
     };
-    let slot_props = scope_attr.value.as_ref().map(|v| v.content.clone());
+    let slot_props = scope_attr
+        .value
+        .as_ref()
+        .map(|value| (value.content.clone(), value.loc.clone()));
     let scope_loc = scope_attr.loc.clone();
 
     // The companion `slot="name"` static attribute names the target slot. Its
@@ -197,22 +200,24 @@ fn desugar_scoped_slot_attrs<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>) 
         .position(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name.as_str() == "slot"));
     let slot_name = slot_name_idx.and_then(|idx| {
         if let PropNode::Attribute(attr) = &el.props[idx] {
-            attr.value.as_ref().map(|v| v.content.clone())
+            attr.value
+                .as_ref()
+                .map(|value| (value.content.clone(), value.loc.clone()))
         } else {
             None
         }
     });
 
     // Build the v-slot directive: name="slot", arg=<slot name> (static), exp=<slot props>.
-    let arg = slot_name.map(|name| {
+    let arg = slot_name.map(|(name, loc)| {
         ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode::new(name.as_str(), true, scope_loc.clone()),
+            SimpleExpressionNode::new(name.as_str(), true, loc),
             allocator,
         ))
     });
-    let exp = slot_props.map(|props| {
+    let exp = slot_props.map(|(props, loc)| {
         ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode::new(props.as_str(), false, scope_loc.clone()),
+            SimpleExpressionNode::new(props.as_str(), false, loc),
             allocator,
         ))
     });
@@ -411,20 +416,19 @@ mod tests {
         assert_eq!(dirs.len(), 1);
         let v_slot = dirs[0];
         assert_eq!(v_slot.name.as_str(), "slot");
-        assert_eq!(
-            match v_slot.arg.as_ref().unwrap() {
-                ExpressionNode::Simple(s) => s.content.as_str(),
-                _ => panic!(),
-            },
-            "header"
-        );
-        assert_eq!(
-            match v_slot.exp.as_ref().unwrap() {
-                ExpressionNode::Simple(s) => s.content.as_str(),
-                _ => panic!(),
-            },
-            "props"
-        );
+        let arg = match v_slot.arg.as_ref().unwrap() {
+            ExpressionNode::Simple(s) => s,
+            _ => panic!(),
+        };
+        assert_eq!(arg.content.as_str(), "header");
+        assert_eq!(arg.loc.source.as_str(), "header");
+
+        let exp = match v_slot.exp.as_ref().unwrap() {
+            ExpressionNode::Simple(s) => s,
+            _ => panic!(),
+        };
+        assert_eq!(exp.content.as_str(), "props");
+        assert_eq!(exp.loc.source.as_str(), "props");
     }
 
     #[test]
@@ -445,13 +449,12 @@ mod tests {
         assert_eq!(dirs.len(), 1);
         assert_eq!(dirs[0].name.as_str(), "slot");
         assert!(dirs[0].arg.is_none(), "no slot= means default slot");
-        assert_eq!(
-            match dirs[0].exp.as_ref().unwrap() {
-                ExpressionNode::Simple(s) => s.content.as_str(),
-                _ => panic!(),
-            },
-            "props"
-        );
+        let exp = match dirs[0].exp.as_ref().unwrap() {
+            ExpressionNode::Simple(s) => s,
+            _ => panic!(),
+        };
+        assert_eq!(exp.content.as_str(), "props");
+        assert_eq!(exp.loc.source.as_str(), "props");
     }
 
     #[test]
