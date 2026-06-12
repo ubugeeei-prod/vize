@@ -90,10 +90,24 @@ void test("jsx: a .jsx Vue component compiles to VDOM render code", async (t) =>
     throw new Error(JSON.stringify(info.errors, null, 2));
   }
 
+  // The JSX loader now emits a self-contained module whose render code imports
+  // its VDOM helpers from `"vue"` (the runtime-helper preamble is no longer
+  // dropped, #1533). `vue` is externalized, so rspack rewrites each helper
+  // reference to a property access on the external import binding
+  // (`(0,vue__rspack_import_0.createElementBlock)(…)`) — i.e. the emitted
+  // helpers are now genuinely imported and resolved, not dangling bare aliases.
   const bundle = bundleSource(stats);
-  t.assert.ok(
-    bundle.includes("_createElementBlock"),
-    "VDOM bundle should contain _createElementBlock",
+  const renderMatch = bundle.match(/function render\(_ctx, _cache\) \{[\s\S]*?\n\}/);
+  t.assert.ok(renderMatch, "the bundle carries the compiled render function");
+  t.assert.equal(
+    renderMatch[0],
+    "function render(_ctx, _cache) {\n" +
+      '  return ((0,vue__rspack_import_0.openBlock)(), (0,vue__rspack_import_0.createElementBlock)("div", { class: "jsx-app" }, [\n' +
+      '    (0,vue__rspack_import_0.createElementVNode)("p", null, "hello jsx"),\n' +
+      '    (0,vue__rspack_import_0.createElementVNode)("span", null, (0,vue__rspack_import_0.toDisplayString)(count + 1), 1 /* TEXT */)\n' +
+      "  ]))\n" +
+      "}",
+    "the bundled render code resolves every VDOM helper through the externalized vue import",
   );
 });
 
