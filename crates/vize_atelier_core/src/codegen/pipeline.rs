@@ -151,11 +151,21 @@ pub fn generate_with_sections(
         preamble.push_str(&hoists_code);
     }
 
+    // Assemble the source map (only populated when the `source_map` flag is on,
+    // in which case `take_map_builder` returns `Some`). Segments were recorded
+    // against byte offsets into `ctx.code` during emission, so resolve them
+    // against the final code buffer before it is moved out. The render `code`
+    // string itself is unchanged whether or not a map is produced.
+    let map = ctx.take_map_builder().map(|builder| {
+        let filename = ctx.options.filename.as_str();
+        builder.finish(ctx.code_as_str(), filename, root.source.as_str())
+    });
+
     CodegenResultWithSections {
         result: CodegenResult {
             code: ctx.into_code(),
             preamble,
-            map: None,
+            map,
         },
         sections: Some(CodegenSections {
             imports_len,

@@ -953,3 +953,238 @@ fn test_codegen_triple_mustache_escaped_under_default_dialect() {
         result.code
     );
 }
+
+// --- Source Map v3 emission (#1533) -----------------------------------------
+
+/// A single decoded `mappings` segment: 0-indexed generated line/column and the
+/// source line/column it points back to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct DecodedSegment {
+    generated_line: u32,
+    generated_column: u32,
+    source_line: u32,
+    source_column: u32,
+}
+
+const VLQ_CHARS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+/// Decode one base64-VLQ value from `bytes`, returning the value and how many
+/// base64 digits it consumed. Independent decoder so the test does not lean on
+/// the encoder it is meant to validate.
+fn decode_one_vlq(bytes: &[u8]) -> (i64, usize) {
+    let mut result: u64 = 0;
+    let mut shift = 0u32;
+    let mut consumed = 0usize;
+    for &c in bytes {
+        let digit = VLQ_CHARS
+            .iter()
+            .position(|&b| b == c)
+            .expect("valid base64") as u64;
+        consumed += 1;
+        result |= (digit & 0b1_1111) << shift;
+        shift += 5;
+        if digit & 0b10_0000 == 0 {
+            break;
+        }
+    }
+    let negative = result & 1 != 0;
+    let magnitude = (result >> 1) as i64;
+    (if negative { -magnitude } else { magnitude }, consumed)
+}
+
+/// Decode a full v3 `mappings` string into absolute decoded segments.
+fn decode_mappings(mappings: &str) -> Vec<DecodedSegment> {
+    let mut out = Vec::new();
+    // Source index/line/column accumulate across the whole document; generated
+    // column resets at each generated line (each `;`).
+    let mut source_line = 0i64;
+    let mut source_column = 0i64;
+
+    for (generated_line, line) in mappings.split(';').enumerate() {
+        let mut generated_column = 0i64;
+        for seg in line.split(',').filter(|s| !s.is_empty()) {
+            let bytes = seg.as_bytes();
+            let (d_gen_col, c1) = decode_one_vlq(bytes);
+            let (_d_src_idx, c2) = decode_one_vlq(&bytes[c1..]);
+            let (d_src_line, c3) = decode_one_vlq(&bytes[c1 + c2..]);
+            let (d_src_col, _c4) = decode_one_vlq(&bytes[c1 + c2 + c3..]);
+            generated_column += d_gen_col;
+            source_line += d_src_line;
+            source_column += d_src_col;
+            out.push(DecodedSegment {
+                generated_line: generated_line as u32,
+                generated_column: generated_column as u32,
+                source_line: source_line as u32,
+                source_column: source_column as u32,
+            });
+        }
+    }
+    out
+}
+
+/// Compile a template with `prefix_identifiers` so dynamic expressions surface
+/// as `_ctx.<name>` in the output (the interesting mapping case).
+fn compile_with_map(src: &str, filename: &str) -> super::CodegenResult {
+    let allocator = bumpalo::Bump::new();
+    let (mut root, errors) = crate::parser::parse(&allocator, src);
+    assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+    crate::transform::transform(
+        &allocator,
+        &mut root,
+        crate::options::TransformOptions {
+            prefix_identifiers: true,
+            ..Default::default()
+        },
+        None,
+    );
+    super::generate(
+        &root,
+        crate::options::CodegenOptions {
+            prefix_identifiers: true,
+            source_map: true,
+            filename: filename.into(),
+            ..Default::default()
+        },
+    )
+}
+
+/// Find the 0-indexed (line, column) of the first byte of `needle` in `code`,
+/// counting columns in UTF-16 code units to match the source-map convention.
+fn generated_position_of(code: &str, needle: &str) -> (u32, u32) {
+    let byte_idx = code.find(needle).expect("needle present in generated code");
+    let prefix = &code[..byte_idx];
+    let line = prefix.bytes().filter(|&b| b == b'\n').count() as u32;
+    let line_start = prefix.rfind('\n').map(|i| i + 1).unwrap_or(0);
+    let column = code[line_start..byte_idx]
+        .chars()
+        .map(|c| c.len_utf16() as u32)
+        .sum();
+    (line, column)
+}
+
+#[test]
+fn source_map_disabled_by_default_yields_none() {
+    let result = compile!("<div>{{ msg }}</div>");
+    assert!(
+        result.map.is_none(),
+        "map must be None when source_map flag is off"
+    );
+}
+
+#[test]
+fn source_map_enabled_emits_valid_v3_document() {
+    let result = compile_with_map("<div>{{ msg }}</div>", "Foo.vue");
+    let map = result
+        .map
+        .expect("map should be Some when source_map is on");
+
+    let parsed: serde_json::Value = serde_json::from_str(&map).expect("map must be valid JSON");
+    assert_eq!(parsed["version"], 3, "must be a v3 source map");
+    assert_eq!(parsed["sources"][0], "Foo.vue");
+    assert_eq!(parsed["sourcesContent"][0], "<div>{{ msg }}</div>");
+    assert!(
+        parsed["mappings"].as_str().is_some_and(|m| !m.is_empty()),
+        "mappings must be a non-empty string"
+    );
+}
+
+#[test]
+fn source_map_maps_known_expression_and_tag_positions() {
+    let src = "<div>{{ msg }}</div>";
+    let result = compile_with_map(src, "Foo.vue");
+    let map = result.map.expect("map should be Some");
+    let parsed: serde_json::Value = serde_json::from_str(&map).unwrap();
+    let segments = decode_mappings(parsed["mappings"].as_str().unwrap());
+
+    // The `msg` identifier in the template starts at line 0, column 8
+    // (`<div>{{ ` is eight chars). Its generated occurrence is `_ctx.msg`.
+    let (gen_line, gen_col) = generated_position_of(&result.code, "_ctx.msg");
+    let expr_seg = segments
+        .iter()
+        .find(|s| s.generated_line == gen_line && s.generated_column == gen_col)
+        .expect("a segment should anchor the generated _ctx.msg expression");
+    assert_eq!(
+        (expr_seg.source_line, expr_seg.source_column),
+        (0, 8),
+        "expression should map back to `msg` in the template"
+    );
+
+    // The `<div>` tag name is at line 0, column 0; generated as `"div"`.
+    let (tag_line, tag_col) = generated_position_of(&result.code, "\"div\"");
+    // The anchor points at the tag name itself (just inside the opening quote).
+    let tag_seg = segments
+        .iter()
+        .find(|s| s.generated_line == tag_line && s.generated_column == tag_col + 1)
+        .expect("a segment should anchor the generated tag-name string");
+    assert_eq!(
+        (tag_seg.source_line, tag_seg.source_column),
+        (0, 0),
+        "element tag should map back to the `<div>` open tag"
+    );
+}
+
+#[test]
+fn source_map_does_not_alter_generated_code() {
+    // The hard invariant: enabling source maps is purely additive — the `code`
+    // and `preamble` strings must be byte-for-byte identical with the flag off.
+    let src = r#"<div :id="dynId" @click="onClick">{{ msg }}<span>{{ count }}</span></div>"#;
+
+    let with_map = compile_with_map(src, "Foo.vue");
+
+    let allocator = bumpalo::Bump::new();
+    let (mut root, errors) = crate::parser::parse(&allocator, src);
+    assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+    crate::transform::transform(
+        &allocator,
+        &mut root,
+        crate::options::TransformOptions {
+            prefix_identifiers: true,
+            ..Default::default()
+        },
+        None,
+    );
+    let without_map = super::generate(
+        &root,
+        crate::options::CodegenOptions {
+            prefix_identifiers: true,
+            source_map: false,
+            filename: "Foo.vue".into(),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        with_map.code.as_str(),
+        without_map.code.as_str(),
+        "generated code must be byte-identical regardless of source_map flag"
+    );
+    assert_eq!(
+        with_map.preamble.as_str(),
+        without_map.preamble.as_str(),
+        "preamble must be byte-identical regardless of source_map flag"
+    );
+    assert!(with_map.map.is_some());
+    assert!(without_map.map.is_none());
+}
+
+#[test]
+fn source_map_handles_multiline_template() {
+    // A template spanning multiple lines exercises non-zero source lines.
+    let src = "<div>\n  {{ msg }}\n</div>";
+    let result = compile_with_map(src, "Foo.vue");
+    let map = result.map.expect("map should be Some");
+    let parsed: serde_json::Value = serde_json::from_str(&map).unwrap();
+    let segments = decode_mappings(parsed["mappings"].as_str().unwrap());
+
+    // `msg` is on source line 1 (0-indexed), column 5 (`  {{ ` before it).
+    let (gen_line, gen_col) = generated_position_of(&result.code, "_ctx.msg");
+    let expr_seg = segments
+        .iter()
+        .find(|s| s.generated_line == gen_line && s.generated_column == gen_col)
+        .expect("expression segment present");
+    assert_eq!(
+        (expr_seg.source_line, expr_seg.source_column),
+        (1, 5),
+        "expression should map to line 1, column 5 of the multiline template"
+    );
+}

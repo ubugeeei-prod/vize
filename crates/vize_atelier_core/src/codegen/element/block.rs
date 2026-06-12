@@ -154,6 +154,9 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
             ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
             ctx.push("(\"");
+            // Anchor the generated tag-name string back to the element's source
+            // position (the `<` of the open tag). No-op without `source_map`.
+            ctx.record_mapping(&el.loc.start);
             ctx.push(&el.tag);
             ctx.push("\"");
 

@@ -68,6 +68,14 @@ pub fn generate_simple_expression(ctx: &mut CodegenContext, exp: &SimpleExpressi
             content = convert_line_comments_to_block(&content);
         }
 
+        // Record a source-map anchor from this generated expression back to its
+        // template position before any of its bytes are written. Dynamic
+        // expressions are the highest-value mapping target (a debugger steps
+        // from generated `_ctx.foo` back to template `foo`), and this is the
+        // single chokepoint every dynamic expression flows through. No-op unless
+        // the `source_map` flag is on.
+        ctx.record_mapping(&exp.loc.start);
+
         // Replace _ctx.X with X when X is a known slot/v-for parameter.
         // This handles destructured variables that the transform phase
         // incorrectly prefixed with _ctx. because it didn't know the scope.
