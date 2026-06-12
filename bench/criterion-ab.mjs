@@ -152,9 +152,7 @@ export function parseCritcmpRegressions(table, thresholdPercent) {
       continue;
     }
     // Columns: <name> <baseFactor> <baseTime> <headFactor> <headTime>
-    const match = line.match(
-      /^(\S+)\s+(\d+(?:\.\d+)?)\s+\S+\s+(\d+(?:\.\d+)?)\s+\S+/,
-    );
+    const match = line.match(/^(\S+)\s+(\d+(?:\.\d+)?)\s+\S+\s+(\d+(?:\.\d+)?)\s+\S+/);
     if (!match) {
       continue;
     }
