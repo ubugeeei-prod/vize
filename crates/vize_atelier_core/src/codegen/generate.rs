@@ -3,7 +3,7 @@
 //! Generates hoisted variable declarations and serializes JS child nodes,
 //! VNode calls, props expressions, and children to byte output.
 
-use crate::ast::{
+use crate::{
     DynamicProps, ExpressionNode, JsChildNode, PropsExpression, RootNode, RuntimeHelper,
     TemplateChildNode, TemplateTextChildNode, VNodeCall, VNodeChildren, VNodeTag,
 };
@@ -379,7 +379,7 @@ fn generate_vnode_children_to_bytes(
 /// string literal, matching @vue/compiler-core's hoisted static output.
 fn generate_static_element_to_bytes(
     ctx: &CodegenContext,
-    el: &crate::ast::ElementNode<'_>,
+    el: &crate::ElementNode<'_>,
     out: &mut String,
 ) {
     out.push_str(ctx.helper(RuntimeHelper::CreateElementVNode));
@@ -454,8 +454,8 @@ fn generate_static_element_to_bytes(
 /// Build the props-object literal for a static element, or `None` when it has
 /// no renderable static props. Mirrors the dedupe and quoting rules used by the
 /// main props codegen.
-fn build_static_props(el: &crate::ast::ElementNode<'_>) -> Option<String> {
-    use crate::ast::PropNode;
+fn build_static_props(el: &crate::ElementNode<'_>) -> Option<String> {
+    use crate::PropNode;
 
     let mut buf = String::default();
     buf.push_str("{ ");

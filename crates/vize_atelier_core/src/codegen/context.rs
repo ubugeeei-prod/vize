@@ -1,8 +1,8 @@
 //! Code generation context and result types.
 
-use crate::ast::{Namespace, Position, RuntimeHelper};
 use crate::options::CodegenOptions;
 use crate::runtime_helpers::RuntimeHelpers;
+use crate::{Namespace, Position, RuntimeHelper};
 
 use super::helpers::default_helper_alias;
 use super::source_map::SourceMapBuilder;

@@ -24,7 +24,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::ToCompactString;
-use vize_relief::relief::{ElementNode, PropNode};
+use vize_relief::{ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-duplicate-attributes",
@@ -206,10 +206,10 @@ impl Rule for NoDuplicateAttributes {
 }
 
 /// Get content from ExpressionNode
-fn get_expression_content(expr: &vize_relief::relief::ExpressionNode) -> String {
+fn get_expression_content(expr: &vize_relief::ExpressionNode) -> String {
     match expr {
-        vize_relief::relief::ExpressionNode::Simple(s) => s.content.to_compact_string(),
-        vize_relief::relief::ExpressionNode::Compound(_) => "<dynamic>".to_compact_string(),
+        vize_relief::ExpressionNode::Simple(s) => s.content.to_compact_string(),
+        vize_relief::ExpressionNode::Compound(_) => "<dynamic>".to_compact_string(),
     }
 }
 

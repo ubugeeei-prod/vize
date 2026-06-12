@@ -22,7 +22,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::{ElementNode, ElementType};
+use vize_relief::{ElementNode, ElementType};
 
 use super::helpers::{get_implicit_role, get_static_attribute_value};
 

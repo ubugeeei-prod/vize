@@ -7,7 +7,7 @@
 
 use crate::scope::CallbackScopeData;
 use vize_carton::{CompactString, cstr, profile};
-use vize_relief::relief::{ElementNode, ExpressionNode};
+use vize_relief::{ElementNode, ExpressionNode};
 
 use crate::drawer::Drawer;
 use crate::drawer::helpers::extract_inline_callback_params;
@@ -18,7 +18,7 @@ impl Drawer {
     /// Note: `:key` extraction is done in the first pass before scope creation.
     pub(in crate::drawer) fn handle_v_bind_directive(
         &mut self,
-        dir: &vize_relief::relief::DirectiveNode<'_>,
+        dir: &vize_relief::DirectiveNode<'_>,
         _el: &ElementNode<'_>,
         scope_vars: &mut Vec<CompactString>,
     ) {

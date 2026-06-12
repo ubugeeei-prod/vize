@@ -3,10 +3,7 @@
 //! Drives the top-level `generate()` pipeline and computes the deduplicated,
 //! import-ranked helper list used to build the module preamble.
 
-use crate::{
-    ast::{RootNode, RuntimeHelper, TemplateChildNode},
-    options::CodegenOptions,
-};
+use crate::{RootNode, RuntimeHelper, TemplateChildNode, options::CodegenOptions};
 use vize_carton::profile;
 
 use super::children::is_directive_comment;

@@ -28,7 +28,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::ElementNode;
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/a11y-img-alt",
@@ -54,12 +54,12 @@ impl Rule for A11yImgAlt {
 
         // Check for alt attribute (static or dynamic)
         let has_alt = element.props.iter().any(|prop| match prop {
-            vize_relief::relief::PropNode::Attribute(attr) => attr.name == "alt",
-            vize_relief::relief::PropNode::Directive(dir) => {
+            vize_relief::PropNode::Attribute(attr) => attr.name == "alt",
+            vize_relief::PropNode::Directive(dir) => {
                 if dir.name == "bind" {
                     matches!(
                         &dir.arg,
-                        Some(vize_relief::relief::ExpressionNode::Simple(s)) if s.content == "alt"
+                        Some(vize_relief::ExpressionNode::Simple(s)) if s.content == "alt"
                     )
                 } else {
                     false

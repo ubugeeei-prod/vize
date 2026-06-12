@@ -3,7 +3,7 @@
 //! Contains prop object generation, static class/style extraction,
 //! dynamic binding checks, event key deduplication, and spread detection.
 
-use crate::ast::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropNode};
+use crate::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropNode};
 
 use super::super::{
     context::CodegenContext,

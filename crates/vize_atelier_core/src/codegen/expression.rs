@@ -7,7 +7,7 @@
 mod generate;
 pub(crate) mod helpers;
 
-use crate::ast::{CompoundExpressionChild, ExpressionNode, SimpleExpressionNode};
+use crate::{CompoundExpressionChild, ExpressionNode, SimpleExpressionNode};
 
 use super::{context::CodegenContext, helpers::escape_js_string};
 

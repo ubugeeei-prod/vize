@@ -4,9 +4,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::MarkupRule;
 use crate::preset::LintPreset;
-use vize_relief::relief::{
-    DirectiveNode, ElementNode, ForNode, IfNode, InterpolationNode, RootNode,
-};
+use vize_relief::{DirectiveNode, ElementNode, ForNode, IfNode, InterpolationNode, RootNode};
 
 /// Rule category for organization
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

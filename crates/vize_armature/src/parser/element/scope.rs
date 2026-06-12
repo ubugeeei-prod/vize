@@ -1,7 +1,7 @@
 //! "In body" start-tag handling: implicit end-tag closing and HTML scopes
 //! (`<a>`/`<button>`/`<li>`/`<dt>`/`<dd>`/`<option>`/`<optgroup>`/`<p>`).
 
-use vize_relief::relief::*;
+use vize_relief::*;
 
 use super::super::Parser;
 

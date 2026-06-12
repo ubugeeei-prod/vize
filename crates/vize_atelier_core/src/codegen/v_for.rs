@@ -6,8 +6,8 @@
 mod generate;
 pub(crate) mod helpers;
 
-use crate::ast::{ForNode, RuntimeHelper, TemplateChildNode};
 use crate::transforms::v_memo::{get_memo_exp, has_v_memo};
+use crate::{ForNode, RuntimeHelper, TemplateChildNode};
 
 use super::{
     children::generate_children, context::CodegenContext, expression::generate_expression,

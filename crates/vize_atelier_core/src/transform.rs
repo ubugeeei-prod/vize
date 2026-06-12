@@ -10,10 +10,10 @@ pub mod traverse;
 use vize_carton::{Box, Bump, SmallVec, String, Vec, profile};
 use vize_croquis::{Croquis, ScopeChain};
 
-use crate::ast::*;
 use crate::errors::CompilerError;
 use crate::options::TransformOptions;
 use crate::runtime_helpers::RuntimeHelpers;
+use crate::*;
 
 use traverse::traverse_children;
 
@@ -71,7 +71,7 @@ pub struct TransformContext<'a> {
     /// Directives used (Vec to maintain template order for code generation)
     pub directives: std::vec::Vec<String>,
     /// Vue 2 pipe filters referenced by the template, first-seen order.
-    /// Flushed to [`RootNode::filters`](crate::ast::RootNode) and emitted as
+    /// Flushed to [`RootNode::filters`](crate::RootNode) and emitted as
     /// `_resolveFilter` asset declarations. Legacy-only and dialect-gated.
     #[cfg(feature = "legacy")]
     pub(crate) filters: std::vec::Vec<String>,
@@ -370,7 +370,7 @@ mod tests {
             !root
                 .helpers
                 .iter()
-                .any(|helper| matches!(helper, crate::ast::RuntimeHelper::ResolveComponent)),
+                .any(|helper| matches!(helper, crate::RuntimeHelper::ResolveComponent)),
             "Dynamic component special tag should not request resolveComponent"
         );
     }
@@ -394,7 +394,7 @@ mod tests {
         transform(&allocator, &mut root, TransformOptions::default(), None);
 
         assert!(
-            !matches!(&root.children[0], crate::ast::TemplateChildNode::For(_)),
+            !matches!(&root.children[0], crate::TemplateChildNode::For(_)),
             "strict parser mode should not accept unmatched v-for alias parens"
         );
     }
@@ -413,8 +413,8 @@ mod tests {
         );
 
         match &root.children[0] {
-            crate::ast::TemplateChildNode::For(for_node) => match &for_node.value_alias {
-                Some(crate::ast::ExpressionNode::Simple(value)) => {
+            crate::TemplateChildNode::For(for_node) => match &for_node.value_alias {
+                Some(crate::ExpressionNode::Simple(value)) => {
                     assert_eq!(value.content.as_str(), "item");
                 }
                 _ => panic!("expected value alias"),
@@ -439,7 +439,7 @@ mod tests {
         );
 
         match &root.children[0] {
-            crate::ast::TemplateChildNode::If(if_node) => {
+            crate::TemplateChildNode::If(if_node) => {
                 assert_eq!(if_node.branches.len(), 1, "Should have 1 branch");
                 // First branch should have condition "show"
                 let branch = &if_node.branches[0];
@@ -469,7 +469,7 @@ mod tests {
         );
 
         match &root.children[0] {
-            crate::ast::TemplateChildNode::If(if_node) => {
+            crate::TemplateChildNode::If(if_node) => {
                 assert_eq!(
                     if_node.branches.len(),
                     2,
@@ -506,10 +506,10 @@ mod tests {
         );
 
         match &root.children[0] {
-            crate::ast::TemplateChildNode::For(for_node) => {
+            crate::TemplateChildNode::For(for_node) => {
                 // Check source is "items"
                 match &for_node.source {
-                    crate::ast::ExpressionNode::Simple(exp) => {
+                    crate::ExpressionNode::Simple(exp) => {
                         assert_eq!(exp.content.as_str(), "items", "Source should be 'items'");
                     }
                     _ => panic!("Expected Simple expression for source"),
@@ -517,7 +517,7 @@ mod tests {
                 // Check value alias is "item"
                 assert!(for_node.value_alias.is_some(), "Should have value alias");
                 match for_node.value_alias.as_ref().unwrap() {
-                    crate::ast::ExpressionNode::Simple(exp) => {
+                    crate::ExpressionNode::Simple(exp) => {
                         assert_eq!(exp.content.as_str(), "item", "Value alias should be 'item'");
                     }
                     _ => panic!("Expected Simple expression for value alias"),

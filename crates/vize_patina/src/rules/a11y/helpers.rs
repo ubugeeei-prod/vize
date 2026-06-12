@@ -4,7 +4,7 @@
 //! to avoid code duplication.
 
 use vize_carton::is_native_tag;
-use vize_relief::relief::{ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 /// Check if an element should be treated as a component or custom element.
 ///

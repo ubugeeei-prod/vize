@@ -3,7 +3,7 @@
 use oxc_ast::ast::{JSXChild, JSXExpression, JSXExpressionContainer, JSXSpreadChild};
 use oxc_span::GetSpan;
 use vize_carton::{Box, Vec};
-use vize_relief::relief::{InterpolationNode, TemplateChildNode, TextNode};
+use vize_relief::{InterpolationNode, TemplateChildNode, TextNode};
 
 use super::Lowerer;
 
@@ -81,7 +81,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
 
     fn interpolation(
         &self,
-        content: vize_relief::relief::ExpressionNode<'a>,
+        content: vize_relief::ExpressionNode<'a>,
         span: oxc_span::Span,
     ) -> TemplateChildNode<'a> {
         let node = InterpolationNode {

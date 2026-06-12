@@ -90,10 +90,7 @@ pub fn expression_exceeds_max_depth(content: &str) -> bool {
     expression_nesting_depth(content) > MAX_EXPRESSION_NESTING_DEPTH
 }
 
-use crate::{
-    ast::{ConstantType, ExpressionNode, SimpleExpressionNode},
-    transform::TransformContext,
-};
+use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, transform::TransformContext};
 
 pub use inline_handler::process_inline_handler;
 pub use prefix::{is_simple_identifier, prefix_identifiers_in_expression};
@@ -190,7 +187,7 @@ fn rewrite_filters_in_place<'a>(
         ctx.add_filter(name.clone());
     }
 
-    ctx.helper(crate::ast::RuntimeHelper::ResolveFilter);
+    ctx.helper(crate::RuntimeHelper::ResolveFilter);
     exp.content = wrapped;
     // The content was rewritten from source text, so any cached parse is stale.
     exp.js_ast = None;
@@ -253,7 +250,7 @@ pub fn process_expression<'a>(
         // rewrite_expression handles both TS stripping and prefixing
         let result = rewrite_expression(content, ctx, as_params);
         if result.used_unref {
-            ctx.helper(crate::ast::RuntimeHelper::Unref);
+            ctx.helper(crate::RuntimeHelper::Unref);
         }
         // The expression failed to parse entirely and was passed through
         // raw — report it instead of silently emitting broken render code.
@@ -373,7 +370,7 @@ mod tests {
         typescript::strip_typescript_from_expression,
     };
     use crate::{
-        ast::{CompoundExpressionNode, ExpressionNode, Position, RuntimeHelper, SourceLocation},
+        CompoundExpressionNode, ExpressionNode, Position, RuntimeHelper, SourceLocation,
         options::{BindingMetadata, BindingType, TransformOptions},
         transform::TransformContext,
     };

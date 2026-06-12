@@ -7,7 +7,7 @@
 mod branch;
 mod generate;
 
-use crate::ast::{IfBranchNode, IfNode, PropNode, RuntimeHelper};
+use crate::{IfBranchNode, IfNode, PropNode, RuntimeHelper};
 
 use super::{context::CodegenContext, expression::generate_expression, helpers::escape_js_string};
 

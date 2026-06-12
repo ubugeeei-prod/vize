@@ -74,7 +74,7 @@ fn directive_and_plain_attributes_coexist() {
     let element = root_element(&root);
     assert!(find_directive(element, "model").is_some());
     let has_class = element.props.iter().any(|p| match p {
-        vize_relief::relief::PropNode::Attribute(a) => a.name.as_str() == "class",
+        vize_relief::PropNode::Attribute(a) => a.name.as_str() == "class",
         _ => false,
     });
     assert!(has_class);

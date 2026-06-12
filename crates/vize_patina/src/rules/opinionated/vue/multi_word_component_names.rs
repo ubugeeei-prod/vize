@@ -29,7 +29,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::RootNode;
+use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/multi-word-component-names",

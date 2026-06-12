@@ -6,7 +6,7 @@ use crate::context::{ElementContext, LintContext};
 use crate::rule::Rule;
 use vize_carton::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
 use vize_carton::{CompactString, cstr, profile};
-use vize_relief::relief::{
+use vize_relief::{
     CommentNode, ElementNode, ExpressionNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
 };
 
@@ -461,7 +461,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     }
 
     #[inline]
-    fn visit_if(&mut self, if_node: &vize_relief::relief::IfNode<'a>) {
+    fn visit_if(&mut self, if_node: &vize_relief::IfNode<'a>) {
         // Run if checks
         let keep_mask = self.keep_mask;
         profile!("patina.rules.check_if", {
@@ -488,7 +488,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     }
 
     #[inline]
-    fn visit_for(&mut self, for_node: &vize_relief::relief::ForNode<'a>) {
+    fn visit_for(&mut self, for_node: &vize_relief::ForNode<'a>) {
         // Run for checks
         let keep_mask = self.keep_mask;
         profile!("patina.rules.check_for", {
@@ -613,14 +613,14 @@ fn find_pattern(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 mod tests {
     use super::{CompactString, ExpressionNode, parse_v_for_variables};
     use vize_carton::Bump;
-    use vize_relief::relief::SimpleExpressionNode;
+    use vize_relief::SimpleExpressionNode;
 
     fn make_simple_exp<'a>(allocator: &'a Bump, content: &str) -> ExpressionNode<'a> {
         ExpressionNode::Simple(vize_carton::Box::new_in(
             SimpleExpressionNode::new(
                 vize_carton::String::from(content),
                 false,
-                vize_relief::relief::SourceLocation::STUB,
+                vize_relief::SourceLocation::STUB,
             ),
             allocator,
         ))

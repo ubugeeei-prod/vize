@@ -27,7 +27,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::is_html_tag;
-use vize_relief::relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode};
+use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-model",

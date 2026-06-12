@@ -1,6 +1,6 @@
 //! Slot outlet (`<slot />`) name and props generation.
 
-use crate::ast::*;
+use crate::*;
 use vize_carton::String;
 
 use super::super::context::CodegenContext;

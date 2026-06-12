@@ -1,7 +1,7 @@
 //! AST traversal functions for template transformation.
 
-use crate::ast::*;
 use crate::transforms::v_slot::{get_slot_name, get_slot_prop_names, get_slot_props_string};
+use crate::*;
 use vize_carton::profile;
 
 use super::element::{transform_element, transform_interpolation};

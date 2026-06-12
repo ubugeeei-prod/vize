@@ -1,6 +1,6 @@
 //! Node generation functions.
 
-use crate::ast::*;
+use crate::*;
 
 use super::children::{generate_comment, generate_interpolation, generate_text};
 use super::context::CodegenContext;

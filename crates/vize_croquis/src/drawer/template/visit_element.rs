@@ -14,7 +14,7 @@ use crate::croquis::ComponentUsage;
 use crate::drawer::Drawer;
 use crate::drawer::helpers::{ConditionalKind, is_component_tag};
 use vize_carton::{CompactString, SmallVec, profile};
-use vize_relief::relief::ElementNode;
+use vize_relief::ElementNode;
 
 impl Drawer {
     /// Visit element node.

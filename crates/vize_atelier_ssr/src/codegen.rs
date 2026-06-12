@@ -7,7 +7,7 @@ mod element;
 pub(crate) mod helpers;
 
 use crate::options::SsrCompilerOptions;
-use vize_atelier_core::ast::{RootNode, RuntimeHelper, TemplateChildNode};
+use vize_atelier_core::{RootNode, RuntimeHelper, TemplateChildNode};
 use vize_carton::{Bump, FxHashSet, SmallVec, String, ToCompactString, camelize, capitalize};
 
 /// SSR codegen result

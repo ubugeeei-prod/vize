@@ -30,7 +30,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::naming::names_match;
-use vize_relief::relief::{ElementNode, ExpressionNode};
+use vize_relief::{ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/prefer-props-shorthand",
@@ -60,7 +60,7 @@ impl Rule for PreferPropsShorthand {
         }
 
         for attr in &element.props {
-            if let vize_relief::relief::PropNode::Directive(dir) = attr
+            if let vize_relief::PropNode::Directive(dir) = attr
                 && dir.name == "bind"
                 && !dir.shorthand
                 && let Some(arg) = &dir.arg

@@ -47,7 +47,7 @@ mod types;
 use std::path::Path;
 
 use vize_carton::profile;
-use vize_relief::relief::RootNode;
+use vize_relief::RootNode;
 
 use crate::croquis::BindingMetadata;
 use crate::import_resolver::ImportResolver;

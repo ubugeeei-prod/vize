@@ -59,7 +59,7 @@ use std::marker::PhantomData;
 use vize_carton::String;
 use vize_carton::profile;
 use vize_croquis::Croquis;
-use vize_relief::relief::{
+use vize_relief::{
     AttributeNode, DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode,
     PropNode, RootNode, SourceLocation, TemplateChildNode, TextNode,
 };
@@ -294,7 +294,7 @@ impl<'a> MarkupElement<'a> {
         match self.inner {
             MarkupElementInner::Relief(node) => {
                 for prop in &node.props {
-                    if let vize_relief::relief::PropNode::Attribute(attr) = prop {
+                    if let vize_relief::PropNode::Attribute(attr) = prop {
                         visitor(MarkupAttribute::from_relief(attr));
                     }
                 }

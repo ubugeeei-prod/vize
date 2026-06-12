@@ -22,7 +22,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_croquis::naming::is_camel_case;
-use vize_relief::relief::{ElementNode, PropNode};
+use vize_relief::{ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/attribute-hyphenation",
@@ -115,7 +115,7 @@ impl Rule for AttributeHyphenation {
                     if dir.name.as_str() == "bind" {
                         if let Some(arg) = &dir.arg {
                             match arg {
-                                vize_relief::relief::ExpressionNode::Simple(s) => {
+                                vize_relief::ExpressionNode::Simple(s) => {
                                     (s.content.as_str(), &dir.loc)
                                 }
                                 _ => continue,

@@ -8,9 +8,9 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{String, is_builtin_directive};
 
-use crate::ast::*;
 use crate::errors::ErrorCode;
 use crate::transform::TransformContext;
+use crate::*;
 
 /// Check if element has v-slot directive
 pub fn has_v_slot(el: &ElementNode<'_>) -> bool {
@@ -532,7 +532,7 @@ mod tests {
                     .props
                     .iter()
                     .find_map(|prop| match prop {
-                        crate::ast::PropNode::Directive(dir) if dir.name == "slot" => Some(dir),
+                        crate::PropNode::Directive(dir) if dir.name == "slot" => Some(dir),
                         _ => None,
                     })
                     .expect("expected v-slot directive");

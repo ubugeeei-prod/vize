@@ -4,8 +4,8 @@
 
 use vize_carton::String;
 
-use crate::ast::*;
 use crate::transform::TransformContext;
+use crate::*;
 
 /// Transform v-bind directive - adds required helpers
 pub fn process_v_bind(ctx: &mut TransformContext<'_>, dir: &DirectiveNode<'_>) {

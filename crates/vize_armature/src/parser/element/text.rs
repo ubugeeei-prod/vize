@@ -1,7 +1,7 @@
 //! Text, fostered text, and interpolation processing.
 
 use vize_carton::Box;
-use vize_relief::relief::*;
+use vize_relief::*;
 
 use super::super::Parser;
 

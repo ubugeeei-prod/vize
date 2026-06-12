@@ -8,7 +8,7 @@
 
 use oxc_ast::ast::JSXText;
 use vize_carton::{Box, String};
-use vize_relief::relief::{TemplateChildNode, TextNode};
+use vize_relief::{TemplateChildNode, TextNode};
 
 use super::Lowerer;
 

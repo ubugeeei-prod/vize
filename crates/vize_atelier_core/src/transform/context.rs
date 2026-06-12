@@ -4,9 +4,9 @@ use vize_carton::{Box, Bump, CompactString, String};
 use vize_croquis::reactivity::ReactiveKind;
 use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
 
-use crate::ast::*;
 use crate::errors::{CompilerError, ErrorCode};
 use crate::options::TransformOptions;
+use crate::*;
 
 use super::TransformContext;
 

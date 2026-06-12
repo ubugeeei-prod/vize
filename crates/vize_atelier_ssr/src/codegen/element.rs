@@ -9,7 +9,7 @@ mod props;
 mod slot;
 mod vnode;
 
-use vize_atelier_core::ast::{
+use vize_atelier_core::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode, PropNode,
     RuntimeHelper, TemplateChildNode,
 };

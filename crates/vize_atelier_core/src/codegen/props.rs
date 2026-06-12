@@ -5,7 +5,7 @@ mod events;
 mod generate;
 mod scan;
 
-use crate::ast::{PropNode, RuntimeHelper};
+use crate::{PropNode, RuntimeHelper};
 
 use super::{context::CodegenContext, expression::generate_expression};
 

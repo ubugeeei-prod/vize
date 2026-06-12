@@ -1,7 +1,7 @@
 //! Slot detection predicates (which children form slots, dynamic/forwarded checks).
 
-use crate::ast::*;
 use crate::transforms::v_slot::{collect_slots, has_v_slot};
+use crate::*;
 
 /// Check if component has slot children that need to be generated as slots object
 pub fn has_slot_children(el: &ElementNode<'_>) -> bool {

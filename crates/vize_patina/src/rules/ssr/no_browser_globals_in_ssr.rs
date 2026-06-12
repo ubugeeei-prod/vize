@@ -46,7 +46,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::BindingType;
-use vize_relief::relief::{ElementNode, ExpressionNode, InterpolationNode, RootNode};
+use vize_relief::{ElementNode, ExpressionNode, InterpolationNode, RootNode};
 
 /// Browser-only global names that are NOT available in SSR
 const BROWSER_GLOBALS: &[&str] = &[
@@ -436,7 +436,7 @@ impl Rule for NoBrowserGlobalsInSsr {
         &self,
         ctx: &mut LintContext<'a>,
         _element: &ElementNode<'a>,
-        directive: &vize_relief::relief::DirectiveNode<'a>,
+        directive: &vize_relief::DirectiveNode<'a>,
     ) {
         // Only run if SSR mode is enabled
         if !ctx.is_ssr_enabled() {

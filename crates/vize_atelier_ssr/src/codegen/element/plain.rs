@@ -102,7 +102,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Process element attributes
     fn process_element_attrs(&mut self, el: &ElementNode) {
-        use vize_atelier_core::ast::PropNode;
+        use vize_atelier_core::PropNode;
 
         let has_dynamic_class = self.has_dynamic_bind(el, "class");
         let has_dynamic_style = self.has_dynamic_bind(el, "style");
@@ -346,7 +346,7 @@ impl<'a> SsrCodegenContext<'a> {
     fn process_directive_on_element(
         &mut self,
         el: &ElementNode,
-        dir: &vize_atelier_core::ast::DirectiveNode,
+        dir: &vize_atelier_core::DirectiveNode,
     ) {
         match dir.name.as_str() {
             "bind" => {
@@ -378,9 +378,9 @@ impl<'a> SsrCodegenContext<'a> {
     fn process_v_bind_on_element(
         &mut self,
         el: &ElementNode,
-        dir: &vize_atelier_core::ast::DirectiveNode,
+        dir: &vize_atelier_core::DirectiveNode,
     ) {
-        use vize_atelier_core::ast::ExpressionNode;
+        use vize_atelier_core::ExpressionNode;
 
         // Get the argument (attribute name)
         let arg_name = match &dir.arg {
@@ -448,7 +448,7 @@ impl<'a> SsrCodegenContext<'a> {
     fn process_v_model_on_element(
         &mut self,
         el: &ElementNode,
-        dir: &vize_atelier_core::ast::DirectiveNode,
+        dir: &vize_atelier_core::DirectiveNode,
     ) {
         let exp = match &dir.exp {
             Some(exp) => self.expression_to_string(exp),
@@ -517,7 +517,7 @@ impl<'a> SsrCodegenContext<'a> {
     fn process_v_show_on_element(
         &mut self,
         el: &ElementNode,
-        dir: &vize_atelier_core::ast::DirectiveNode,
+        dir: &vize_atelier_core::DirectiveNode,
     ) {
         if self.has_explicit_style_prop(el) {
             return;
@@ -537,7 +537,7 @@ impl<'a> SsrCodegenContext<'a> {
     fn process_static_style_attr_with_v_show(
         &mut self,
         el: &ElementNode,
-        attr: &vize_atelier_core::ast::AttributeNode,
+        attr: &vize_atelier_core::AttributeNode,
     ) {
         let Some(v_show_style) = self.v_show_style_expression(el) else {
             return;
@@ -571,7 +571,7 @@ impl<'a> SsrCodegenContext<'a> {
     fn process_custom_directive(
         &mut self,
         _el: &ElementNode,
-        dir: &vize_atelier_core::ast::DirectiveNode,
+        dir: &vize_atelier_core::DirectiveNode,
     ) {
         self.use_ssr_helper(RuntimeHelper::SsrGetDirectiveProps);
         // Custom directives use ssrGetDirectiveProps to merge props
@@ -583,7 +583,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Get an attribute value from an element
     pub(crate) fn get_element_attr_value(&self, el: &ElementNode, name: &str) -> Option<String> {
-        use vize_atelier_core::ast::PropNode;
+        use vize_atelier_core::PropNode;
 
         for prop in &el.props {
             if let PropNode::Attribute(attr) = prop

@@ -1,7 +1,7 @@
 use crate::croquis::{TemplateExpression, TemplateExpressionKind};
 use crate::drawer::Drawer;
 use vize_carton::{CompactString, profile};
-use vize_relief::relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 impl Drawer {
     pub(super) fn process_element_directives(

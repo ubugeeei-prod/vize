@@ -31,7 +31,7 @@ pub use transforms::{
 
 // Re-export core types
 pub use vize_atelier_core::{
-    Allocator, CompilerError, Namespace, RootNode, RuntimeHelper, TemplateChildNode, ast,
+    Allocator, CompilerError, Namespace, RootNode, RuntimeHelper, TemplateChildNode,
     codegen as core_codegen, errors as core_errors, parser, runtime_helpers, tokenizer, transform,
 };
 

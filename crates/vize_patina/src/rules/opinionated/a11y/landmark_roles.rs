@@ -34,7 +34,7 @@ use crate::rules::a11y::helpers::get_static_or_bound_literal_attribute_value;
 use vize_carton::FxHashMap;
 use vize_carton::String;
 use vize_carton::ToCompactString;
-use vize_relief::relief::{
+use vize_relief::{
     ElementNode, ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
 

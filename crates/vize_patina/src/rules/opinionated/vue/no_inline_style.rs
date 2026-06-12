@@ -28,7 +28,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::{ElementNode, ExpressionNode};
+use vize_relief::{ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-inline-style",
@@ -50,7 +50,7 @@ impl Rule for NoInlineStyle {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Check for static style attribute
         for attr in &element.props {
-            if let vize_relief::relief::PropNode::Attribute(attr) = attr
+            if let vize_relief::PropNode::Attribute(attr) = attr
                 && attr.name == "style"
             {
                 ctx.warn_with_help(
@@ -61,7 +61,7 @@ impl Rule for NoInlineStyle {
             }
 
             // Check for dynamic :style binding
-            if let vize_relief::relief::PropNode::Directive(dir) = attr
+            if let vize_relief::PropNode::Directive(dir) = attr
                 && dir.name == "bind"
                 && let Some(arg) = &dir.arg
             {

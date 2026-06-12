@@ -1,6 +1,6 @@
 //! Directive-to-prop generation (v-bind, v-on, v-model, v-html, v-text).
 
-use crate::ast::{DirectiveNode, ExpressionNode, RuntimeHelper};
+use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
 
 use super::super::{
     context::CodegenContext,
@@ -49,13 +49,13 @@ pub struct StaticMerge<'a> {
 
 impl<'a> StaticMerge<'a> {
     /// Build the merge metadata from an element's props in source order.
-    pub fn from_props(props: &'a [crate::ast::PropNode<'a>]) -> Self {
+    pub fn from_props(props: &'a [crate::PropNode<'a>]) -> Self {
         let mut merge = StaticMerge::default();
         let mut class_index = None;
         let mut style_index = None;
         for (index, prop) in props.iter().enumerate() {
             match prop {
-                crate::ast::PropNode::Attribute(attr) => {
+                crate::PropNode::Attribute(attr) => {
                     if attr.name == "class" && merge.class.is_none() {
                         merge.class = attr.value.as_ref().map(|v| v.content.as_str());
                         class_index = Some(index);
@@ -64,7 +64,7 @@ impl<'a> StaticMerge<'a> {
                         style_index = Some(index);
                     }
                 }
-                crate::ast::PropNode::Directive(dir) => {
+                crate::PropNode::Directive(dir) => {
                     if dir.name == "bind"
                         && let Some(ExpressionNode::Simple(exp)) = &dir.arg
                         && exp.is_static

@@ -5,8 +5,8 @@
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
-use crate::ast::*;
 use crate::transform::TransformContext;
+use crate::*;
 
 /// Check if element has v-memo directive
 pub fn has_v_memo(el: &ElementNode<'_>) -> bool {

@@ -21,7 +21,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::naming::{hyphenate, is_camel_case};
-use vize_relief::relief::{ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/prop-name-casing",

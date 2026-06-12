@@ -10,7 +10,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::a11y::helpers::is_slot_element;
-use vize_relief::relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
+use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/heading-has-content",

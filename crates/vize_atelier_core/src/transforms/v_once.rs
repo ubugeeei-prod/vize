@@ -2,8 +2,8 @@
 //!
 //! Transforms v-once directives for one-time rendering.
 
-use crate::ast::*;
 use crate::transform::TransformContext;
+use crate::*;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 

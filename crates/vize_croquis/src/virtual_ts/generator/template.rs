@@ -548,7 +548,7 @@ fn extract_var_name(expr: &ExpressionNode) -> Option<String> {
             is_simple_identifier(name).then_some(name.to_compact_string())
         }
         ExpressionNode::Compound(compound) => {
-            use vize_relief::relief::CompoundExpressionChild;
+            use vize_relief::CompoundExpressionChild;
             if let Some(CompoundExpressionChild::Simple(simple)) = compound.children.first() {
                 let name = simple.content.trim();
                 return is_simple_identifier(name).then_some(name.to_compact_string());

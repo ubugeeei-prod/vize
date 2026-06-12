@@ -4,7 +4,7 @@ mod common;
 
 use common::{as_element, as_text, lower_one, root_element};
 use vize_carton::Bump;
-use vize_relief::relief::core::ElementType;
+use vize_relief::ElementType;
 
 #[test]
 fn top_level_fragment_lifts_children_to_root() {

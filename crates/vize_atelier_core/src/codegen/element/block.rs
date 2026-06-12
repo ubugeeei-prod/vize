@@ -3,8 +3,8 @@
 //! Generates elements that open a new block scope using `openBlock()` and
 //! `createElementBlock()` / `createBlock()` for efficient patching.
 
-use crate::ast::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper};
 use crate::transforms::v_memo::{get_memo_exp, has_v_memo};
+use crate::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper};
 
 use super::{
     super::{

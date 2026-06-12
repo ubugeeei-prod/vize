@@ -1,6 +1,6 @@
 //! Slot parameter helpers (scoped slot props parsing and prefixing).
 
-use crate::ast::*;
+use crate::*;
 use vize_carton::String;
 
 /// Get slot props expression as raw source (not transformed)

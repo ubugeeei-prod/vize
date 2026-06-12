@@ -4,7 +4,7 @@
 //! v-model, v-show, and custom directives on elements.
 
 use crate::{
-    ast::{ElementNode, ExpressionNode, PropNode, RuntimeHelper},
+    ElementNode, ExpressionNode, PropNode, RuntimeHelper,
     transforms::v_model::{get_vmodel_helper, parse_model_modifiers},
 };
 
@@ -17,7 +17,7 @@ use crate::codegen::helpers::to_valid_asset_identifier;
 fn generate_vmodel_entry(
     ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
-    dir: &crate::ast::DirectiveNode<'_>,
+    dir: &crate::DirectiveNode<'_>,
 ) {
     let helper = get_vmodel_helper(el);
     ctx.use_helper(helper);
@@ -79,7 +79,7 @@ fn generate_vmodel_entry(
     }
 }
 
-fn generate_vshow_entry(ctx: &mut CodegenContext, dir: &crate::ast::DirectiveNode<'_>) -> bool {
+fn generate_vshow_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>) -> bool {
     let Some(exp) = &dir.exp else {
         return false;
     };
@@ -93,7 +93,7 @@ fn generate_vshow_entry(ctx: &mut CodegenContext, dir: &crate::ast::DirectiveNod
     true
 }
 
-fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::ast::DirectiveNode<'_>) {
+fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>) {
     ctx.push("  [");
     ctx.push(&to_valid_asset_identifier("directive", &dir.name));
 

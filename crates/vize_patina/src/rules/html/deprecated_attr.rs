@@ -24,7 +24,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::{ElementNode, ElementType, PropNode};
+use vize_relief::{ElementNode, ElementType, PropNode};
 
 use super::helpers::deprecated_attr_suggestion;
 

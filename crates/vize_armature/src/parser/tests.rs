@@ -7,9 +7,9 @@ use super::{
 };
 use vize_carton::Bump;
 use vize_relief::{
+    ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
     options::{ParserOptions, TemplateSyntaxMode},
-    relief::{ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode},
 };
 
 fn error_recovery_snapshot(errors: &[CompilerError]) -> std::vec::Vec<(ErrorCode, &str, &str)> {
@@ -1767,7 +1767,7 @@ fn test_parse_nested_p_without_boundary_still_auto_closes() {
 fn find_element<'a, 'b>(
     children: &'b [TemplateChildNode<'a>],
     tag: &str,
-) -> Option<&'b vize_relief::relief::ElementNode<'a>> {
+) -> Option<&'b vize_relief::ElementNode<'a>> {
     for child in children {
         if let TemplateChildNode::Element(el) = child {
             if el.tag.as_str() == tag {

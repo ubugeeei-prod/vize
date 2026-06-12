@@ -1,6 +1,6 @@
 //! HTML escaping utilities and child/control-flow processing for SSR codegen.
 
-use vize_atelier_core::ast::{
+use vize_atelier_core::{
     CommentNode, ElementType, ForNode, IfNode, InterpolationNode, RuntimeHelper, TemplateChildNode,
     TextNode,
 };
@@ -140,7 +140,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Process an interpolation node ({{ expr }})
     fn process_interpolation(&mut self, interp: &InterpolationNode) {
-        use vize_atelier_core::ast::ExpressionNode;
+        use vize_atelier_core::ExpressionNode;
 
         self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
 
@@ -275,8 +275,8 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Push an expression node
-    pub(crate) fn push_expression(&mut self, expr: &vize_atelier_core::ast::ExpressionNode) {
-        use vize_atelier_core::ast::ExpressionNode;
+    pub(crate) fn push_expression(&mut self, expr: &vize_atelier_core::ExpressionNode) {
+        use vize_atelier_core::ExpressionNode;
 
         match expr {
             ExpressionNode::Simple(simple) => {
@@ -287,7 +287,7 @@ impl<'a> SsrCodegenContext<'a> {
                 // Flatten compound expression
                 let mut content = String::default();
                 for child in &compound.children {
-                    use vize_atelier_core::ast::CompoundExpressionChild;
+                    use vize_atelier_core::CompoundExpressionChild;
                     match child {
                         CompoundExpressionChild::Simple(s) => content.push_str(&s.content),
                         CompoundExpressionChild::String(s) => content.push_str(s),
@@ -322,15 +322,15 @@ pub(crate) fn collect_for_scoped_params(for_node: &ForNode) -> FxHashSet<String>
 }
 
 pub(crate) fn collect_expression_params(
-    expr: &vize_atelier_core::ast::ExpressionNode,
+    expr: &vize_atelier_core::ExpressionNode,
     params: &mut FxHashSet<String>,
 ) {
     let content = match expr {
-        vize_atelier_core::ast::ExpressionNode::Simple(simple) => simple.content.clone(),
-        vize_atelier_core::ast::ExpressionNode::Compound(compound) => {
+        vize_atelier_core::ExpressionNode::Simple(simple) => simple.content.clone(),
+        vize_atelier_core::ExpressionNode::Compound(compound) => {
             let mut content = String::default();
             for child in &compound.children {
-                use vize_atelier_core::ast::CompoundExpressionChild;
+                use vize_atelier_core::CompoundExpressionChild;
                 match child {
                     CompoundExpressionChild::Simple(simple) => content.push_str(&simple.content),
                     CompoundExpressionChild::String(value) => content.push_str(value),

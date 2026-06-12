@@ -39,7 +39,7 @@ macro_rules! assert_parse {
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         assert_eq!(root.children.len(), 1, "Expected 1 child");
         match &root.children[0] {
-            $crate::ast::TemplateChildNode::Element(el) => {
+            $crate::TemplateChildNode::Element(el) => {
                 assert_eq!(el.tag.as_str(), $tag, "Tag mismatch");
             }
             other => panic!("Expected Element, got {:?}", other.node_type()),
@@ -52,7 +52,7 @@ macro_rules! assert_parse {
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         assert_eq!(root.children.len(), 1, "Expected 1 root child");
         match &root.children[0] {
-            $crate::ast::TemplateChildNode::Element(el) => {
+            $crate::TemplateChildNode::Element(el) => {
                 assert_eq!(el.tag.as_str(), $tag, "Tag mismatch");
                 assert_eq!(el.children.len(), $count, "Children count mismatch");
             }
@@ -65,7 +65,7 @@ macro_rules! assert_parse {
         let (root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         match &root.children[0] {
-            $crate::ast::TemplateChildNode::Element(el) => {
+            $crate::TemplateChildNode::Element(el) => {
                 assert_eq!(el.tag.as_str(), $tag);
                 let mut _i = 0;
                 $(
@@ -83,7 +83,7 @@ macro_rules! assert_parse {
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         assert_eq!(root.children.len(), 1, "Expected 1 child");
         match &root.children[0] {
-            $crate::ast::TemplateChildNode::Text(text) => {
+            $crate::TemplateChildNode::Text(text) => {
                 assert_eq!(text.content.as_str(), $content, "Text content mismatch");
             }
             other => panic!("Expected Text, got {:?}", other.node_type()),
@@ -96,9 +96,9 @@ macro_rules! assert_parse {
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         assert_eq!(root.children.len(), 1, "Expected 1 child");
         match &root.children[0] {
-            $crate::ast::TemplateChildNode::Interpolation(interp) => {
+            $crate::TemplateChildNode::Interpolation(interp) => {
                 match &interp.content {
-                    $crate::ast::ExpressionNode::Simple(exp) => {
+                    $crate::ExpressionNode::Simple(exp) => {
                         assert_eq!(exp.content.as_str(), $content, "Expression content mismatch");
                     }
                     _ => panic!("Expected SimpleExpression"),
@@ -121,7 +121,7 @@ macro_rules! assert_parse {
 macro_rules! assert_prop {
     ($prop:expr, attr($name:expr)) => {
         match $prop {
-            $crate::ast::PropNode::Attribute(attr) => {
+            $crate::PropNode::Attribute(attr) => {
                 assert_eq!(attr.name.as_str(), $name, "Attribute name mismatch");
             }
             _ => panic!("Expected Attribute"),
@@ -130,7 +130,7 @@ macro_rules! assert_prop {
 
     ($prop:expr, attr($name:expr, $value:expr)) => {
         match $prop {
-            $crate::ast::PropNode::Attribute(attr) => {
+            $crate::PropNode::Attribute(attr) => {
                 assert_eq!(attr.name.as_str(), $name, "Attribute name mismatch");
                 match &attr.value {
                     Some(v) => assert_eq!(v.content.as_str(), $value, "Attribute value mismatch"),
@@ -143,7 +143,7 @@ macro_rules! assert_prop {
 
     ($prop:expr, dir($name:expr)) => {
         match $prop {
-            $crate::ast::PropNode::Directive(dir) => {
+            $crate::PropNode::Directive(dir) => {
                 assert_eq!(dir.name.as_str(), $name, "Directive name mismatch");
             }
             _ => panic!("Expected Directive"),
@@ -152,10 +152,10 @@ macro_rules! assert_prop {
 
     ($prop:expr, dir($name:expr, arg: $arg:expr)) => {
         match $prop {
-            $crate::ast::PropNode::Directive(dir) => {
+            $crate::PropNode::Directive(dir) => {
                 assert_eq!(dir.name.as_str(), $name, "Directive name mismatch");
                 match &dir.arg {
-                    Some($crate::ast::ExpressionNode::Simple(exp)) => {
+                    Some($crate::ExpressionNode::Simple(exp)) => {
                         assert_eq!(exp.content.as_str(), $arg, "Directive arg mismatch");
                     }
                     _ => panic!("Expected directive argument"),
@@ -167,10 +167,10 @@ macro_rules! assert_prop {
 
     ($prop:expr, dir($name:expr, exp: $exp:expr)) => {
         match $prop {
-            $crate::ast::PropNode::Directive(dir) => {
+            $crate::PropNode::Directive(dir) => {
                 assert_eq!(dir.name.as_str(), $name, "Directive name mismatch");
                 match &dir.exp {
-                    Some($crate::ast::ExpressionNode::Simple(exp)) => {
+                    Some($crate::ExpressionNode::Simple(exp)) => {
                         assert_eq!(exp.content.as_str(), $exp, "Directive exp mismatch");
                     }
                     _ => panic!("Expected directive expression"),
@@ -182,16 +182,16 @@ macro_rules! assert_prop {
 
     ($prop:expr, dir($name:expr, arg: $arg:expr, exp: $exp:expr)) => {
         match $prop {
-            $crate::ast::PropNode::Directive(dir) => {
+            $crate::PropNode::Directive(dir) => {
                 assert_eq!(dir.name.as_str(), $name, "Directive name mismatch");
                 match &dir.arg {
-                    Some($crate::ast::ExpressionNode::Simple(a)) => {
+                    Some($crate::ExpressionNode::Simple(a)) => {
                         assert_eq!(a.content.as_str(), $arg, "Directive arg mismatch");
                     }
                     _ => panic!("Expected directive argument"),
                 }
                 match &dir.exp {
-                    Some($crate::ast::ExpressionNode::Simple(e)) => {
+                    Some($crate::ExpressionNode::Simple(e)) => {
                         assert_eq!(e.content.as_str(), $exp, "Directive exp mismatch");
                     }
                     _ => panic!("Expected directive expression"),
@@ -213,7 +213,7 @@ macro_rules! assert_transform {
         assert!(root.transformed, "Expected root to be transformed");
         $(
             assert!(
-                root.helpers.iter().any(|h| matches!(h, $crate::ast::RuntimeHelper::$helper)),
+                root.helpers.iter().any(|h| matches!(h, $crate::RuntimeHelper::$helper)),
                 concat!("Expected helper: ", stringify!($helper))
             );
         )*
@@ -238,13 +238,13 @@ macro_rules! assert_transform {
 macro_rules! get_element {
     ($root:expr) => {
         match &$root.children[0] {
-            $crate::ast::TemplateChildNode::Element(el) => el,
+            $crate::TemplateChildNode::Element(el) => el,
             other => panic!("Expected Element, got {:?}", other.node_type()),
         }
     };
     ($root:expr, $index:expr) => {
         match &$root.children[$index] {
-            $crate::ast::TemplateChildNode::Element(el) => el,
+            $crate::TemplateChildNode::Element(el) => el,
             other => panic!("Expected Element, got {:?}", other.node_type()),
         }
     };
@@ -257,7 +257,7 @@ macro_rules! get_directive {
         $el.props
             .iter()
             .find_map(|p| match p {
-                $crate::ast::PropNode::Directive(d) if d.name.as_str() == $name => Some(d),
+                $crate::PropNode::Directive(d) if d.name.as_str() == $name => Some(d),
                 _ => None,
             })
             .expect(concat!("Directive not found: ", $name))

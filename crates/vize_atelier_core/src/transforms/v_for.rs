@@ -4,8 +4,8 @@
 
 use vize_carton::{Box, Bump};
 
-use crate::ast::*;
 use crate::transform::TransformContext;
+use crate::*;
 
 /// Check if an element has a v-for directive
 pub fn has_v_for(el: &ElementNode<'_>) -> bool {

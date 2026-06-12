@@ -5,10 +5,7 @@
 
 use vize_carton::{Box, String};
 
-use crate::{
-    ast::{ConstantType, ExpressionNode, SimpleExpressionNode},
-    transform::TransformContext,
-};
+use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, transform::TransformContext};
 
 use super::{
     clone_expression, is_event_handler_reference_expression, is_function_expression,
@@ -53,7 +50,7 @@ pub fn process_inline_handler<'a>(
         if ctx.options.prefix_identifiers {
             let result = rewrite_expression(content, ctx, false);
             if result.used_unref {
-                ctx.helper(crate::ast::RuntimeHelper::Unref);
+                ctx.helper(crate::RuntimeHelper::Unref);
             }
             if let Some(detail) = &result.parse_error {
                 report_invalid_expression(ctx, detail, &normalized.loc);
@@ -108,7 +105,7 @@ pub fn process_inline_handler<'a>(
             } else {
                 let result = rewrite_expression(content, ctx, false);
                 if result.used_unref {
-                    ctx.helper(crate::ast::RuntimeHelper::Unref);
+                    ctx.helper(crate::RuntimeHelper::Unref);
                 }
                 if let Some(detail) = &result.parse_error {
                     report_invalid_expression(ctx, detail, &normalized.loc);
@@ -143,7 +140,7 @@ pub fn process_inline_handler<'a>(
     let rewritten: String = if ctx.options.prefix_identifiers {
         let result = rewrite_expression(content, ctx, false);
         if result.used_unref {
-            ctx.helper(crate::ast::RuntimeHelper::Unref);
+            ctx.helper(crate::RuntimeHelper::Unref);
         }
         if let Some(detail) = &result.parse_error {
             report_invalid_expression(ctx, detail, &normalized.loc);
@@ -192,7 +189,7 @@ pub fn process_inline_handler<'a>(
 mod tests {
     use super::process_inline_handler;
     use crate::{
-        ast::{CompoundExpressionNode, ExpressionNode, Position, SourceLocation},
+        CompoundExpressionNode, ExpressionNode, Position, SourceLocation,
         options::{BindingMetadata, BindingType, TransformOptions},
         transform::TransformContext,
     };

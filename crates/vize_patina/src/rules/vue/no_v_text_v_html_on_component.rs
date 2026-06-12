@@ -23,7 +23,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::{DirectiveNode, ElementNode, ElementType};
+use vize_relief::{DirectiveNode, ElementNode, ElementType};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-v-text-v-html-on-component",

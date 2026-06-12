@@ -4,7 +4,7 @@
 //! original `.jsx`/`.tsx` source by the compiler, type checker, and LSP.
 
 use vize_carton::String;
-use vize_relief::relief::core::SourceLocation;
+use vize_relief::SourceLocation;
 
 /// Severity of a JSX lowering diagnostic.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

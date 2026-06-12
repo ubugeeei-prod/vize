@@ -40,7 +40,7 @@ use vize_carton::{CompactString, FxHashSet, String, ToCompactString};
 use vize_croquis::naming::{is_pascal_case, to_pascal_case};
 use vize_croquis::{Croquis, ScopeData};
 use vize_relief::BindingType;
-use vize_relief::relief::RootNode;
+use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unused-components",

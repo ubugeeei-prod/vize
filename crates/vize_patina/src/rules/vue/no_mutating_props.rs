@@ -50,7 +50,7 @@ use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_croquis::reactivity::ReactiveKind;
 use vize_relief::BindingType;
-use vize_relief::relief::{DirectiveNode, ElementNode, PropNode, RootNode, TemplateChildNode};
+use vize_relief::{DirectiveNode, ElementNode, PropNode, RootNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-mutating-props",
@@ -80,8 +80,8 @@ impl NoMutatingProps {
         // Get the v-model expression
         if let Some(ref exp) = directive.exp {
             let content = match exp {
-                vize_relief::relief::ExpressionNode::Simple(s) => s.content.as_str(),
-                vize_relief::relief::ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                vize_relief::ExpressionNode::Simple(s) => s.content.as_str(),
+                vize_relief::ExpressionNode::Compound(c) => c.loc.source.as_str(),
             };
 
             if is_prop_mutation_target(content, prop_names, has_props_object_binding) {

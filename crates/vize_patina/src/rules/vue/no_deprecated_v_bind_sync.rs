@@ -37,7 +37,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::dialect::VueDialect;
-use vize_relief::relief::{DirectiveNode, ElementNode};
+use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-v-bind-sync",

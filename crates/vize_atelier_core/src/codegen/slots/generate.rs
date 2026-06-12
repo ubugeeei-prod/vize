@@ -1,7 +1,7 @@
 //! Slots object generation for component children.
 
-use crate::ast::*;
 use crate::transforms::v_slot::{collect_slots, get_slot_name, has_v_slot};
+use crate::*;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
@@ -618,7 +618,7 @@ fn generate_slot_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>)
         ExpressionNode::Compound(comp) => {
             for child in comp.children.iter() {
                 match child {
-                    crate::ast::CompoundExpressionChild::Simple(exp) => {
+                    crate::CompoundExpressionChild::Simple(exp) => {
                         if exp.is_static {
                             ctx.push("\"");
                             ctx.push(&exp.content);
@@ -628,10 +628,10 @@ fn generate_slot_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>)
                             ctx.push(&content);
                         }
                     }
-                    crate::ast::CompoundExpressionChild::String(s) => {
+                    crate::CompoundExpressionChild::String(s) => {
                         ctx.push(s);
                     }
-                    crate::ast::CompoundExpressionChild::Symbol(helper) => {
+                    crate::CompoundExpressionChild::Symbol(helper) => {
                         ctx.push(ctx.helper(*helper));
                     }
                     _ => {}

@@ -28,7 +28,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::ToCompactString;
-use vize_relief::relief::{ElementNode, PropNode};
+use vize_relief::{ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-useless-template-attributes",
@@ -68,7 +68,7 @@ impl NoUselessTemplateAttributes {
                 }
                 // :key is allowed on v-for templates
                 if name == "bind"
-                    && let Some(vize_relief::relief::ExpressionNode::Simple(arg)) = &dir.arg
+                    && let Some(vize_relief::ExpressionNode::Simple(arg)) = &dir.arg
                     && arg.content == "key"
                 {
                     return true;

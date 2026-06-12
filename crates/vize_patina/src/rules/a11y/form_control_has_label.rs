@@ -11,7 +11,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::helpers::get_static_or_bound_literal_attribute_value;
 

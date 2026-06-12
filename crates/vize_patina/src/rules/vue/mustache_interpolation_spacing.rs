@@ -21,7 +21,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::{ExpressionNode, InterpolationNode};
+use vize_relief::{ExpressionNode, InterpolationNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/mustache-interpolation-spacing",

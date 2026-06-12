@@ -4,7 +4,7 @@ use super::super::helpers::collect_for_scoped_params;
 use super::component::{has_slot_directive, slot_template_in_children, template_slot_is_dynamic};
 use super::props::*;
 use super::*;
-use vize_atelier_core::ast::ForNode;
+use vize_atelier_core::ForNode;
 
 impl<'a> SsrCodegenContext<'a> {
     fn vnode_children_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
@@ -392,10 +392,7 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_conditional_slot_entry(
-        &mut self,
-        if_node: &vize_atelier_core::ast::IfNode<'a>,
-    ) -> String {
+    fn vnode_conditional_slot_entry(&mut self, if_node: &vize_atelier_core::IfNode<'a>) -> String {
         let mut out = String::default();
         for (index, branch) in if_node.branches.iter().enumerate() {
             if index > 0 {
@@ -473,7 +470,7 @@ impl<'a> SsrCodegenContext<'a> {
     fn slot_directive<'node>(
         &self,
         el: &'node ElementNode<'a>,
-    ) -> Option<&'node vize_atelier_core::ast::DirectiveNode<'a>> {
+    ) -> Option<&'node vize_atelier_core::DirectiveNode<'a>> {
         el.props.iter().find_map(|prop| match prop {
             PropNode::Directive(dir) if dir.name == "slot" => Some(dir.as_ref()),
             _ => None,
@@ -522,7 +519,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.vnode_children_expression(children)
     }
 
-    fn vnode_if_expression(&mut self, if_node: &vize_atelier_core::ast::IfNode<'a>) -> String {
+    fn vnode_if_expression(&mut self, if_node: &vize_atelier_core::IfNode<'a>) -> String {
         self.use_core_helper(RuntimeHelper::CreateComment);
 
         let mut out = String::default();

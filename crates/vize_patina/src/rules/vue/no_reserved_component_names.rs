@@ -30,7 +30,7 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::is_html_tag;
 use vize_croquis::builtins::is_builtin_component;
-use vize_relief::relief::RootNode;
+use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-reserved-component-names",

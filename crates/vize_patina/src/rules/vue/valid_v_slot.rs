@@ -21,7 +21,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::{DirectiveNode, ElementNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-slot",

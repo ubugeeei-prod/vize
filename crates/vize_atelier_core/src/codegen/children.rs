@@ -1,7 +1,7 @@
 //! Children, text, comment, and interpolation generation functions.
 
-use crate::ast::*;
 use crate::transforms::hoist_static::is_static_node;
+use crate::*;
 
 use super::context::CodegenContext;
 use super::element::helpers::{child_namespace, has_renderable_props};

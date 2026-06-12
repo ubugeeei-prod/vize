@@ -13,8 +13,8 @@ mod tags;
 mod text;
 
 use vize_relief::{
+    SourceLocation,
     errors::{CompilerError, ErrorCode},
-    relief::SourceLocation,
 };
 
 use super::Parser;

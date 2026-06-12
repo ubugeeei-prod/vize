@@ -53,7 +53,7 @@ use vize_carton::{FxHashMap, FxHashSet, String};
 pub fn generate_virtual_ts(
     summary: &Croquis,
     script_content: Option<&str>,
-    template_ast: Option<&vize_relief::relief::RootNode<'_>>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
     template_offset: u32,
 ) -> VirtualTsOutput {
     generate_virtual_ts_with_offsets(
@@ -75,7 +75,7 @@ pub fn generate_virtual_ts(
 pub fn generate_virtual_ts_with_offsets(
     summary: &Croquis,
     script_content: Option<&str>,
-    template_ast: Option<&vize_relief::relief::RootNode<'_>>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
     script_offset: u32,
     template_offset: u32,
     options: &VirtualTsOptions,
@@ -96,7 +96,7 @@ pub fn generate_virtual_ts_with_offsets(
 pub fn generate_virtual_ts_with_offsets_options_api(
     summary: &Croquis,
     script_content: Option<&str>,
-    template_ast: Option<&vize_relief::relief::RootNode<'_>>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
     script_offset: u32,
     template_offset: u32,
     options: &VirtualTsOptions,
@@ -119,7 +119,7 @@ pub fn generate_virtual_ts_with_offsets_options_api(
 pub fn generate_virtual_ts_with_offsets_legacy_vue2(
     summary: &Croquis,
     script_content: Option<&str>,
-    template_ast: Option<&vize_relief::relief::RootNode<'_>>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
     script_offset: u32,
     template_offset: u32,
     options: &VirtualTsOptions,
@@ -141,7 +141,7 @@ pub fn generate_virtual_ts_with_offsets_legacy_vue2(
 pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     summary: &Croquis,
     script_content: Option<&str>,
-    template_ast: Option<&vize_relief::relief::RootNode<'_>>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
     script_offset: u32,
     template_offset: u32,
     options: &VirtualTsOptions,

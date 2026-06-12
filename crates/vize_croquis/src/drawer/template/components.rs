@@ -5,7 +5,7 @@
 
 use crate::croquis::{ComponentUsage, EventListener, PassedProp};
 use vize_carton::{CompactString, SmallVec, cstr};
-use vize_relief::relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::super::Drawer;
 

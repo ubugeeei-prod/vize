@@ -9,7 +9,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::String;
 
-use crate::ast::SourceLocation;
+use crate::SourceLocation;
 use crate::errors::ErrorCode;
 use crate::transform::TransformContext;
 

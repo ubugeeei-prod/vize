@@ -1,7 +1,7 @@
 //! Shared JSX/TSX lowering layer for Vize.
 //!
 //! This crate turns OXC-parsed JSX/TSX into Vize's shared template IR
-//! ([`vize_relief::relief::RootNode`]) exactly once, so the VDOM
+//! ([`vize_relief::RootNode`]) exactly once, so the VDOM
 //! ([`vize_atelier_dom`](https://docs.rs/vize_atelier_dom)) and Vapor
 //! (`vize_atelier_vapor`) backends, the type checker, the LSP, and Patina all
 //! consume the same lowered representation instead of forking JSX-only logic.
@@ -10,7 +10,7 @@
 //! VDOM or Vapor codegen. It only:
 //!
 //! 1. parses `.jsx`/`.tsx` with OXC ([`parse`]),
-//! 2. maps OXC byte spans to Vize [`SourceLocation`](vize_relief::relief::core::SourceLocation)s
+//! 2. maps OXC byte spans to Vize [`SourceLocation`](vize_relief::SourceLocation)s
 //!    ([`span`]), and
 //! 3. lowers JSX elements, fragments, text, expressions, spreads, attributes,
 //!    directives, and component references into [`vize_relief`] structures
@@ -47,7 +47,7 @@ pub use analyze::analyze_program as analyze_jsx_program;
 use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
 use vize_croquis::croquis::BindingMetadata;
-use vize_relief::relief::RootNode;
+use vize_relief::RootNode;
 
 pub use compile::{JsxCompileConfig, JsxCompileOutput, JsxComponent, compile_jsx, resolve_mode};
 pub use diagnostics::{JsxDiagnostic, Severity};

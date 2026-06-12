@@ -140,7 +140,7 @@ fn test_static_ref_matching_prop_name_stays_string_ref() {
 fn find_element<'a, 'b>(
     children: &'b [TemplateChildNode<'a>],
     tag: &str,
-) -> Option<&'b super::ast::ElementNode<'a>> {
+) -> Option<&'b super::ElementNode<'a>> {
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {

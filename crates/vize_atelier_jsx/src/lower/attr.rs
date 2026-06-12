@@ -15,10 +15,10 @@ use oxc_ast::ast::{
 };
 use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, String, Vec};
-use vize_relief::relief::core::SourceLocation;
-use vize_relief::relief::{AttributeNode, DirectiveNode, PropNode, TextNode};
+use vize_relief::SourceLocation;
+use vize_relief::{AttributeNode, DirectiveNode, PropNode, TextNode};
 
-use vize_relief::relief::SimpleExpressionNode;
+use vize_relief::SimpleExpressionNode;
 
 use super::Lowerer;
 use super::expr::container_expr_span;
@@ -298,7 +298,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     fn directive_value_expr(
         &self,
         value: Option<&JSXAttributeValue<'_>>,
-    ) -> Option<vize_relief::relief::ExpressionNode<'a>> {
+    ) -> Option<vize_relief::ExpressionNode<'a>> {
         match value? {
             JSXAttributeValue::StringLiteral(string) => {
                 Some(self.static_expr(string.value.as_str(), string.span))

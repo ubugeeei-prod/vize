@@ -9,8 +9,8 @@
 
 use vize_atelier_jsx::{DomCompileOptions, JsxLang, compile_to_dom, lower_source};
 use vize_carton::Bump;
-use vize_relief::relief::core::ElementType;
-use vize_relief::relief::{ExpressionNode, PropNode, TemplateChildNode};
+use vize_relief::ElementType;
+use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
 
 /// Compile JSX to VDOM render code, asserting a single error-free component.
 fn dom(src: &str) -> vize_carton::String {

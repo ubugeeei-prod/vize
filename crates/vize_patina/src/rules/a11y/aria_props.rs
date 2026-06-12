@@ -13,7 +13,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::{ElementNode, PropNode, SourceLocation};
+use vize_relief::{ElementNode, PropNode, SourceLocation};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/aria-props",
@@ -176,7 +176,7 @@ impl Rule for AriaProps {
                 PropNode::Directive(dir) => {
                     // Check v-bind:aria-* or :aria-*
                     if dir.name == "bind"
-                        && let Some(vize_relief::relief::ExpressionNode::Simple(arg)) = &dir.arg
+                        && let Some(vize_relief::ExpressionNode::Simple(arg)) = &dir.arg
                     {
                         let name = arg.content.as_str();
                         if Self::is_aria_attr(name) && !Self::is_valid_aria_attr(name) {

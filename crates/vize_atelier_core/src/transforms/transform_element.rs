@@ -4,8 +4,8 @@
 
 use vize_carton::{String, capitalize, is_native_tag};
 
-use crate::ast::*;
 use crate::transform::TransformContext;
+use crate::*;
 
 /// Resolve element type
 pub fn resolve_element_type<'a>(
@@ -294,7 +294,7 @@ pub enum ChildrenType {
 #[cfg(test)]
 mod tests {
     use super::{ElementType, resolve_element_type};
-    use crate::ast::TemplateChildNode;
+    use crate::TemplateChildNode;
     use crate::parser::parse;
     use crate::transform::TransformContext;
     use bumpalo::Bump;

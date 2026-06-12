@@ -7,7 +7,7 @@
 
 use crate::croquis::{ElementIdInfo, ElementIdKind, UndefinedRef};
 use vize_carton::{CompactString, profile};
-use vize_relief::relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::super::Drawer;
 use super::super::helpers::{extract_identifiers_oxc, is_keyword};

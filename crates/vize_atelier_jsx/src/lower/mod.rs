@@ -1,7 +1,7 @@
 //! Lowering OXC JSX nodes into Vize's shared template IR.
 //!
 //! The [`Lowerer`] walks OXC JSX/TSX nodes and produces
-//! [`vize_relief::relief::RootNode`]s. Owned strings are copied out of the OXC
+//! [`vize_relief::RootNode`]s. Owned strings are copied out of the OXC
 //! arena (Vize uses `CompactString`), and the tree structure is built in the
 //! caller-supplied [`Bump`] arena, so the lowered IR does not borrow the OXC
 //! allocator and outlives parsing.
@@ -20,7 +20,7 @@ pub(crate) use style::{RawScopedStyle, ScopedStyleExpr};
 
 use oxc_ast::ast::{JSXElement, JSXFragment};
 use vize_carton::{Box, Bump, String};
-use vize_relief::relief::{RootNode, TemplateChildNode};
+use vize_relief::{RootNode, TemplateChildNode};
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::span::SpanMapper;

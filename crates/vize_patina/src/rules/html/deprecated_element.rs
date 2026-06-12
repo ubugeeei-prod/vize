@@ -26,7 +26,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::{ElementNode, ElementType};
+use vize_relief::{ElementNode, ElementType};
 
 use super::helpers::DEPRECATED_ELEMENTS;
 

@@ -2,10 +2,10 @@
 
 use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
 
-use crate::ast::*;
 use crate::errors::ErrorCode;
 use crate::transforms::transform_expression::process_inline_handler;
 use crate::transforms::v_slot::validate_v_slot_usage;
+use crate::*;
 
 use super::{ExitFns, TransformContext};
 
@@ -608,7 +608,7 @@ mod tests {
 
     use super::transform_element;
     use crate::{
-        ast::{PropNode, TemplateChildNode},
+        PropNode, TemplateChildNode,
         errors::{CompilerError, ErrorCode},
         options::TransformOptions,
         parser::parse,
@@ -633,7 +633,7 @@ mod tests {
                 if dir.name == "on"
                     && matches!(
                         &dir.arg,
-                        Some(crate::ast::ExpressionNode::Simple(arg))
+                        Some(crate::ExpressionNode::Simple(arg))
                             if arg.content == "update:modelValue"
                     )
         )));

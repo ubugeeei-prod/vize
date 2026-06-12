@@ -4,9 +4,9 @@
 
 use vize_carton::{Box, Bump, String, ToCompactString, Vec, camelize};
 
-use crate::ast::*;
 use crate::codegen::is_constant_simple_expression;
 use crate::transform::TransformContext;
+use crate::*;
 
 /// Check if a node is fully static (can be hoisted)
 pub fn is_static_node(node: &TemplateChildNode<'_>) -> bool {
@@ -732,8 +732,8 @@ pub fn count_dynamic_children(children: &[TemplateChildNode<'_>]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::{get_static_type, is_static_node};
-    use crate::ast::{PropNode, TemplateChildNode};
     use crate::parser::parse;
+    use crate::{PropNode, TemplateChildNode};
     use bumpalo::Bump;
 
     #[test]

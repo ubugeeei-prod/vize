@@ -1,6 +1,6 @@
 //! Main props generation logic.
 
-use crate::ast::{ExpressionNode, PropNode, RuntimeHelper};
+use crate::{ExpressionNode, PropNode, RuntimeHelper};
 use vize_relief::options::BindingType;
 
 use super::{

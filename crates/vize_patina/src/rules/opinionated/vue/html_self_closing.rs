@@ -22,7 +22,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::ElementNode;
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/html-self-closing",

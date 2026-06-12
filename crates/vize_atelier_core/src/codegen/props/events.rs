@@ -1,7 +1,7 @@
 //! Event-related props generation (v-on merging and handler generation).
 
-use crate::ast::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper};
 use crate::options::BindingType;
+use crate::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper};
 
 use super::super::{
     context::CodegenContext,

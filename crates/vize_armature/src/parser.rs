@@ -19,7 +19,7 @@ use vize_carton::{Bump, String, Vec};
 use vize_relief::{
     errors::{CompilerError, ErrorCode},
     options::{ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
-    relief::*,
+    *,
 };
 
 use crate::tokenizer::Tokenizer;

@@ -3,7 +3,7 @@
 //! Generates code for individual v-if/v-else-if/v-else branches including
 //! component, element, template fragment, and regular fragment rendering.
 
-use crate::ast::{
+use crate::{
     ElementNode, ElementType, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper,
     TemplateChildNode,
 };

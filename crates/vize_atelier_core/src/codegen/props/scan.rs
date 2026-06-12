@@ -1,7 +1,7 @@
 //! Single-pass prop metadata collection for code generation.
 
-use crate::ast::{DirectiveNode, ExpressionNode, PropNode};
 use crate::options::BindingType;
+use crate::{DirectiveNode, ExpressionNode, PropNode};
 
 use super::super::context::CodegenContext;
 use super::directives::is_supported_directive;

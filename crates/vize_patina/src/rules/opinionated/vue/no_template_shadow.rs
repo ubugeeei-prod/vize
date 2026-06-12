@@ -29,7 +29,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::visitor::parse_v_for_variables;
-use vize_relief::relief::{DirectiveNode, ElementNode};
+use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-template-shadow",

@@ -3,7 +3,7 @@
 //! Provides parameter extraction, destructuring pattern parsing,
 //! and utility predicates for v-for rendering.
 
-use crate::ast::{ElementNode, ExpressionNode, PropNode};
+use crate::{ElementNode, ExpressionNode, PropNode};
 use vize_carton::String;
 use vize_carton::ToCompactString;
 

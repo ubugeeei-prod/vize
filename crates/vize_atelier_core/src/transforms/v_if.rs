@@ -2,8 +2,8 @@
 //!
 //! Transforms elements with v-if, v-else-if, and v-else directives into IfNode.
 
-use crate::ast::*;
 use crate::transform::TransformContext;
+use crate::*;
 
 /// Check if an element has a v-if directive
 pub fn has_v_if(el: &ElementNode<'_>) -> bool {

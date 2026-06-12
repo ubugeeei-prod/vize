@@ -2,8 +2,8 @@
 
 use vize_carton::{Box, String, Vec};
 
-use crate::ast::*;
 use crate::errors::ErrorCode;
+use crate::*;
 
 use super::context::clone_expression;
 use super::traverse::traverse_children;

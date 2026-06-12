@@ -1,7 +1,7 @@
 //! Utility functions for code generation.
 
 use crate::{
-    ast::{RuntimeHelper, SimpleExpressionNode},
+    RuntimeHelper, SimpleExpressionNode,
     options::{BindingMetadata, BindingType},
 };
 use oxc_ast::ast as oxc_ast_types;

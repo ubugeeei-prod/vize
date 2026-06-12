@@ -40,7 +40,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::RootNode;
+use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-src-attribute",

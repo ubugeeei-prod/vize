@@ -1,8 +1,8 @@
 //! Patch flag calculation and naming functions.
 
 use super::helpers::camelize;
-use crate::ast::*;
 use crate::options::{BindingMetadata, BindingType};
+use crate::*;
 use oxc_ast::ast as oxc_ast_types;
 use oxc_parser::Parser;
 use oxc_span::SourceType;

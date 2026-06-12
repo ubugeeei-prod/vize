@@ -2,7 +2,7 @@ use crate::drawer::Drawer;
 use crate::drawer::helpers::{ConditionalKind, VForScopeAliases};
 use crate::scope::{ParamNames, VForScopeData, VSlotScopeData};
 use vize_carton::{CompactString, SmallVec};
-use vize_relief::relief::ElementNode;
+use vize_relief::ElementNode;
 
 use super::bounds::element_subtree_end;
 use super::v_for_scope::v_for_scope_bindings;

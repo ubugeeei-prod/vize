@@ -1,7 +1,7 @@
 //! Comment and CDATA processing.
 
 use vize_carton::{Box, directive::parse_vize_directive};
-use vize_relief::{errors::ErrorCode, relief::*};
+use vize_relief::*;
 
 use super::super::Parser;
 

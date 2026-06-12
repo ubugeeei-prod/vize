@@ -54,7 +54,7 @@ fn attribute_value_location_round_trips() {
     let src = "const a = <div title=\"hello\"/>;";
     let out = lower_all(&bump, src);
     let attr = match &root_element(&out.roots[0].root).props[0] {
-        vize_relief::relief::PropNode::Attribute(a) => a,
+        vize_relief::PropNode::Attribute(a) => a,
         _ => panic!("expected attribute"),
     };
     let value = attr.value.as_ref().unwrap();

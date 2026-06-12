@@ -3,7 +3,7 @@
 //! Handles generating event handler expressions with proper arrow function
 //! wrapping, TypeScript stripping, and identifier prefixing.
 
-use crate::ast::{CompoundExpressionChild, ExpressionNode};
+use crate::{CompoundExpressionChild, ExpressionNode};
 
 use super::{
     super::context::CodegenContext,
@@ -153,10 +153,10 @@ pub fn generate_event_handler(
 #[allow(clippy::disallowed_macros)]
 mod tests {
     use super::generate_simple_expression_with_prefix;
-    use crate::ast::{ExpressionNode, SimpleExpressionNode, SourceLocation};
     use crate::codegen::context::CodegenContext;
     use crate::codegen::expression::{generate_event_handler, generate_simple_expression};
     use crate::options::{BindingMetadata, BindingType, CodegenOptions};
+    use crate::{ExpressionNode, SimpleExpressionNode, SourceLocation};
     use vize_carton::{Bump, FxHashMap};
 
     #[test]
@@ -281,7 +281,7 @@ mod tests {
             SimpleExpressionNode {
                 content: "$event => (selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id))".into(),
                 is_static: false,
-                const_type: crate::ast::ConstantType::NotConstant,
+                const_type: crate::ConstantType::NotConstant,
                 loc: SourceLocation::STUB,
                 js_ast: None,
                 hoisted: None,

@@ -9,13 +9,13 @@ use crate::drawer::Drawer;
 use crate::drawer::helpers::extract_inline_callback_params;
 use crate::scope::EventHandlerScopeData;
 use vize_carton::{CompactString, profile, smallvec};
-use vize_relief::relief::ExpressionNode;
+use vize_relief::ExpressionNode;
 
 impl Drawer {
     /// Handle v-on directive.
     pub(in crate::drawer) fn handle_v_on_directive(
         &mut self,
-        dir: &vize_relief::relief::DirectiveNode<'_>,
+        dir: &vize_relief::DirectiveNode<'_>,
         scope_vars: &mut Vec<CompactString>,
         target_component: Option<CompactString>,
     ) {

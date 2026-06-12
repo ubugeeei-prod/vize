@@ -14,7 +14,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::relief::{ElementNode, PropNode, SourceLocation};
+use vize_relief::{ElementNode, PropNode, SourceLocation};
 
 use super::helpers::string_literal_value;
 
@@ -255,12 +255,12 @@ impl Rule for AriaRole {
                 PropNode::Directive(dir) => {
                     // Check :role or v-bind:role with static value
                     if dir.name == "bind"
-                        && let Some(vize_relief::relief::ExpressionNode::Simple(arg)) = &dir.arg
+                        && let Some(vize_relief::ExpressionNode::Simple(arg)) = &dir.arg
                         && arg.content.as_str() == "role"
                     {
                         // For dynamic roles, we can only check if the entire
                         // expression is a single string/template literal.
-                        if let Some(vize_relief::relief::ExpressionNode::Simple(expr)) = &dir.exp
+                        if let Some(vize_relief::ExpressionNode::Simple(expr)) = &dir.exp
                             && let Some(role) = string_literal_value(expr.content.as_str())
                         {
                             self.check_role(ctx, role, &dir.loc);

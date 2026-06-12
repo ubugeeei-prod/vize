@@ -10,7 +10,7 @@
 //! ```
 //!
 //! Without this pass every such child would fall through to
-//! [`InterpolationNode`](vize_relief::relief::InterpolationNode) and be codegen'd as
+//! [`InterpolationNode`](vize_relief::InterpolationNode) and be codegen'd as
 //! `_toDisplayString(expr)` (TEXT), silently mis-compiling the render output.
 //!
 //! The core transform consumes **pre-built** [`IfNode`]/[`ForNode`] children
@@ -28,7 +28,7 @@ use oxc_ast::ast::{
 };
 use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, Vec};
-use vize_relief::relief::{
+use vize_relief::{
     ExpressionNode, ForNode, ForParseResult, IfBranchNode, IfNode, TemplateChildNode,
 };
 
@@ -318,7 +318,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         content: ExpressionNode<'a>,
         span: Span,
     ) -> TemplateChildNode<'a> {
-        let node = vize_relief::relief::InterpolationNode {
+        let node = vize_relief::InterpolationNode {
             content,
             loc: self.mapper().location(span),
             #[cfg(feature = "legacy")]

@@ -10,7 +10,7 @@ use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{Visit, walk::walk_arrow_function_expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_atelier_core::ast::{
+use vize_atelier_core::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, SimpleExpressionNode,
     TemplateChildNode,
 };
@@ -103,10 +103,10 @@ fn walk_node(
         TemplateChildNode::TextCall(text_call) => {
             if collect_used_ids {
                 match &text_call.content {
-                    vize_atelier_core::ast::TextCallContent::Interpolation(interp) => {
+                    vize_atelier_core::TextCallContent::Interpolation(interp) => {
                         extract_identifiers_from_expression(&interp.content, &mut result.used_ids);
                     }
-                    vize_atelier_core::ast::TextCallContent::Compound(compound) => {
+                    vize_atelier_core::TextCallContent::Compound(compound) => {
                         extract_identifiers_from_compound(compound, &mut result.used_ids);
                     }
                     _ => {}
@@ -381,7 +381,7 @@ fn extract_identifiers_from_js_expression(content: &str, ids: &mut FxHashSet<Str
 
 /// Extract identifiers from a compound expression node.
 fn extract_identifiers_from_compound(
-    node: &vize_atelier_core::ast::CompoundExpressionNode,
+    node: &vize_atelier_core::CompoundExpressionNode,
     ids: &mut FxHashSet<String>,
 ) {
     // Use pre-parsed identifiers if available
@@ -395,13 +395,13 @@ fn extract_identifiers_from_compound(
     // Otherwise, walk children
     for child in node.children.iter() {
         match child {
-            vize_atelier_core::ast::CompoundExpressionChild::Simple(simple) => {
+            vize_atelier_core::CompoundExpressionChild::Simple(simple) => {
                 extract_identifiers_from_simple_expression(simple, ids);
             }
-            vize_atelier_core::ast::CompoundExpressionChild::Compound(compound) => {
+            vize_atelier_core::CompoundExpressionChild::Compound(compound) => {
                 extract_identifiers_from_compound(compound, ids);
             }
-            vize_atelier_core::ast::CompoundExpressionChild::Interpolation(interp) => {
+            vize_atelier_core::CompoundExpressionChild::Interpolation(interp) => {
                 extract_identifiers_from_expression(&interp.content, ids);
             }
             // Text and Symbol don't contain identifiers

@@ -29,7 +29,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::a11y::helpers::get_static_attribute_value;
-use vize_relief::relief::ElementNode;
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/no-i-for-icon",

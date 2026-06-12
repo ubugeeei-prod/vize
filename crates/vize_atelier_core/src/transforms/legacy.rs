@@ -45,7 +45,7 @@
 use vize_armature::legacy::LegacyDialectCapabilities;
 use vize_carton::{Box, Bump, String, Vec};
 
-use crate::ast::*;
+use crate::*;
 
 /// Desugar Vue 2 template sugar in `root` into Vue 3 equivalents.
 ///
@@ -298,11 +298,11 @@ pub(crate) fn desugar_v2_v_on_modifiers(dir: &mut DirectiveNode<'_>) {
 #[allow(clippy::disallowed_macros)]
 mod tests {
     use super::*;
-    use crate::ast::{SimpleExpressionNode, SourceLocation};
     use crate::codegen::generate;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
     use crate::transform::transform;
+    use crate::{SimpleExpressionNode, SourceLocation};
     use vize_armature::legacy::{LegacyDialectCapabilities, LegacyVueVersion};
     use vize_carton::Vec as ArenaVec;
     use vize_carton::config::VueVersion;

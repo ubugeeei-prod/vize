@@ -24,7 +24,7 @@ pub use vize_relief::options::{
     BindingMetadata, BindingType, CodegenMode, CodegenOptions, CompilerOptions, ParseMode,
     ParserOptions, TemplateSyntaxMode, TextMode, TransformOptions, WhitespaceStrategy,
 };
-pub use vize_relief::relief::{
+pub use vize_relief::{
     ArrayElement, ArrayExpression, AssignmentExpression, AttributeNode, BlockStatement,
     BlockStatementBody, CacheExpression, CallArgument, CallExpression, Callee, CodegenNode,
     CommentNode, CompoundExpressionChild, CompoundExpressionNode, ConditionalExpression,
@@ -38,7 +38,7 @@ pub use vize_relief::relief::{
     TemplateLiteralElement, TemplateTextChildNode, TextCallCodegenNode, TextCallContent,
     TextCallNode, TextNode, VNodeCall, VNodeChildren, VNodeTag,
 };
-pub use vize_relief::{errors, options, relief as ast};
+pub use vize_relief::{errors, options};
 
 // Re-export from vize_armature (parser, tokenizer)
 pub use vize_armature as parser;
