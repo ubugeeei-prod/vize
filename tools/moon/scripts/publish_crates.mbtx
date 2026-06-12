@@ -31,6 +31,7 @@ let published_crates : Array[String] = [
   "vize_croquis_cf",
   "vize_atelier_core",
   "vize_atelier_dom",
+  "vize_atelier_jsx",
   "vize_atelier_vapor",
   "vize_atelier_ssr",
   "vize_atelier_sfc",
