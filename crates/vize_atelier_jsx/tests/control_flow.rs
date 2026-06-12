@@ -108,3 +108,40 @@ fn vapor_map_uses_create_for() {
     assert!(code.contains("items") && !code.contains("_ctx."), "{code}");
     assert!(code.contains("\"<li></li>\""), "{code}");
 }
+
+// 9. A nested ternary in the alternate is the idiomatic `v-else-if` chain and
+//    flattens into one IfNode with multiple branches — rather than slicing the
+//    inner ternary into an interpolation expression (invalid JS embedding the
+//    JSX), which previously overflowed the Vapor transform's stack. Each arm's
+//    element must be reachable as a conditional VNode/template.
+#[test]
+fn nested_ternary_alternate_flattens_to_else_if_chain() {
+    let code = dom("const A = () => <div>{a ? <p/> : b ? <em/> : <span/>}</div>;");
+    assert!(!code.contains("_toDisplayString"), "{code}");
+    assert!(code.contains("_createElementBlock(\"p\""), "{code}");
+    assert!(code.contains("_createElementBlock(\"em\""), "{code}");
+    assert!(code.contains("_createElementBlock(\"span\""), "{code}");
+    assert!(code.contains("(a)") && code.contains("(b)"), "{code}");
+}
+
+// 10. Vapor parity for the nested ternary: it lowers to nested `createIf`
+//     without crashing, and conditions stay bare under JSX closure semantics.
+#[test]
+fn vapor_nested_ternary_uses_nested_create_if() {
+    let code = vapor("const A = () => <div>{a ? <p/> : b ? <em/> : <span/>}</div>;");
+    assert!(code.contains("_createIf(() => (a)"), "{code}");
+    assert!(code.contains("_createIf(() => (b)"), "{code}");
+    assert!(!code.contains("_ctx."), "{code}");
+}
+
+// 11. A `&&` arm inside a ternary recurses into a nested v-if instead of being
+//     mis-lowered as text.
+#[test]
+fn logical_and_arm_inside_ternary_recurses() {
+    let code = dom("const A = () => <div>{a ? <p/> : (cond && <span/>)}</div>;");
+    assert!(!code.contains("_toDisplayString"), "{code}");
+    assert!(code.contains("_createElementBlock(\"p\""), "{code}");
+    assert!(code.contains("_createElementBlock(\"span\""), "{code}");
+    // The `&&` arm contributes its own v-if comment fallback.
+    assert!(code.contains("_createCommentVNode(\"v-if\""), "{code}");
+}

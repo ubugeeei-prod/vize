@@ -49,7 +49,11 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         self.lower_control_flow_expr(expr, container_span)
     }
 
-    fn lower_control_flow_expr(
+    /// Lower an arbitrary expression as JSX control flow (`&&`, `?:`, `.map`)
+    /// against `container_span`, or `None` when it is not a recognized pattern.
+    /// Shared with slot-body lowering ([`super::slot`]) so a `.map`/conditional
+    /// rendered inside a slot reuses the same If/For relief lowering.
+    pub(crate) fn lower_control_flow_expr(
         &mut self,
         expr: &Expression<'_>,
         container_span: Span,
@@ -83,45 +87,83 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         }
     }
 
-    /// `test ? consequent : alternate` -> two-branch `IfNode`, but only if at
+    /// `test ? consequent : alternate` -> a multi-branch `IfNode`, but only if at
     /// least one arm is JSX (otherwise it is an ordinary value expression that
     /// belongs in interpolation).
+    ///
+    /// A nested ternary in the alternate (`a ? <A/> : b ? <B/> : <C/>`) is the
+    /// idiomatic JSX `v-else-if` chain, so it is flattened into the *same*
+    /// `IfNode` as additional condition-carrying branches rather than nested as
+    /// a child. That matches the `if / else if / else` shape both the SSR and
+    /// client codegen already lower, and — critically — avoids re-slicing the
+    /// nested ternary's raw source into an interpolation expression, which is
+    /// invalid JS (`{a ? <A/> : ...}` embeds JSX in a string) and crashes the
+    /// client transform.
     fn lower_conditional(
         &mut self,
         conditional: &ConditionalExpression<'_>,
         container_span: Span,
     ) -> Option<TemplateChildNode<'a>> {
-        let consequent_is_jsx = is_jsx(unwrap_parens(&conditional.consequent));
-        let alternate_is_jsx = is_jsx(unwrap_parens(&conditional.alternate));
-        if !consequent_is_jsx && !alternate_is_jsx {
+        if !self.conditional_has_jsx_arm(conditional) {
             return None;
         }
 
-        let consequent_child = self.lower_branch_child(&conditional.consequent);
-        let alternate_child = self.lower_branch_child(&conditional.alternate);
-
         let mut if_node = IfNode::new(self.bump(), self.mapper().location(container_span));
+        self.push_conditional_branches(&mut if_node, conditional);
+        Some(TemplateChildNode::If(Box::new_in(if_node, self.bump())))
+    }
 
-        // Branch 0: the `test` condition.
+    /// Whether a conditional renders JSX in either arm (recursing through a
+    /// nested ternary alternate), i.e. it is conditional *rendering* and not a
+    /// plain value expression. A bare-value ternary (`a ? x : y`) stays
+    /// interpolation, preserving today's behavior.
+    fn conditional_has_jsx_arm(&self, conditional: &ConditionalExpression<'_>) -> bool {
+        if is_jsx(unwrap_parens(&conditional.consequent)) {
+            return true;
+        }
+        match unwrap_parens(&conditional.alternate) {
+            Expression::ConditionalExpression(nested) => self.conditional_has_jsx_arm(nested),
+            other => is_jsx(other),
+        }
+    }
+
+    /// Append the `if` / `else if` / `else` branches of a (possibly nested)
+    /// ternary to `if_node`. The first call contributes the `if` branch; a
+    /// nested ternary alternate recurses to contribute `else if` branches; a
+    /// non-ternary alternate becomes the final condition-less `else` branch.
+    fn push_conditional_branches(
+        &mut self,
+        if_node: &mut IfNode<'a>,
+        conditional: &ConditionalExpression<'_>,
+    ) {
+        // Condition-carrying branch for `test`.
+        let consequent_child = self.lower_branch_child(&conditional.consequent);
         let condition = self.dyn_expr(conditional.test.span());
-        let mut then_branch = IfBranchNode::new(
+        let mut branch = IfBranchNode::new(
             self.bump(),
             Some(condition),
             self.mapper().location(conditional.consequent.span()),
         );
-        then_branch.children.push(consequent_child);
-        if_node.branches.push(then_branch);
+        branch.children.push(consequent_child);
+        if_node.branches.push(branch);
 
-        // Branch 1: the `else` branch (no condition).
-        let mut else_branch = IfBranchNode::new(
-            self.bump(),
-            None,
-            self.mapper().location(conditional.alternate.span()),
-        );
-        else_branch.children.push(alternate_child);
-        if_node.branches.push(else_branch);
-
-        Some(TemplateChildNode::If(Box::new_in(if_node, self.bump())))
+        // Flatten a nested ternary alternate into further `else if` branches;
+        // otherwise emit the terminal `else` branch.
+        match unwrap_parens(&conditional.alternate) {
+            Expression::ConditionalExpression(nested) => {
+                self.push_conditional_branches(if_node, nested);
+            }
+            _ => {
+                let alternate_child = self.lower_branch_child(&conditional.alternate);
+                let mut else_branch = IfBranchNode::new(
+                    self.bump(),
+                    None,
+                    self.mapper().location(conditional.alternate.span()),
+                );
+                else_branch.children.push(alternate_child);
+                if_node.branches.push(else_branch);
+            }
+        }
     }
 
     /// `<expr>.map((value, index) => <jsx/>)` -> `ForNode`.
@@ -240,12 +282,22 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         }
     }
 
-    /// Lower a conditional arm: JSX becomes an element child; anything else
-    /// reuses the interpolation path so non-JSX arms stay correct text.
+    /// Lower a conditional arm into a single child. JSX becomes an element
+    /// child; a `&&` / `.map(...)` arm recurses into nested control flow (so an
+    /// arm like `cond && <X/>` or `items.map(...)` renders correctly instead of
+    /// being sliced into an invalid interpolation expression); anything else
+    /// reuses the interpolation path so non-JSX value arms stay correct text.
     fn lower_branch_child(&mut self, expr: &Expression<'_>) -> TemplateChildNode<'a> {
-        match unwrap_parens(expr) {
+        let inner = unwrap_parens(expr);
+        match inner {
             Expression::JSXElement(element) => self.element_child(element),
             Expression::JSXFragment(fragment) => self.fragment_child(fragment),
+            Expression::LogicalExpression(_) | Expression::CallExpression(_) => self
+                .lower_control_flow_expr(inner, inner.span())
+                .unwrap_or_else(|| {
+                    let content = self.dyn_expr(inner.span());
+                    self.interpolation_child(content, inner.span())
+                }),
             other => {
                 let content = self.dyn_expr(other.span());
                 self.interpolation_child(content, other.span())

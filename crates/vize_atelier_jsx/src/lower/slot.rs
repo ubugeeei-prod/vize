@@ -181,29 +181,39 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Lower the body of a slot function into template children.
     ///
     /// Expression-body arrows (`() => <p/>`) reach the returned expression;
-    /// block bodies (`() => { return <p/>; }`) reach the `return` argument.
-    /// Only JSX elements/fragments are lowered as slot content; anything else
-    /// is reported and produces an empty body.
+    /// block bodies (`() => { return <p/>; }`) reach the `return` argument. A
+    /// JSX element/fragment becomes the slot content directly; a control-flow
+    /// expression (`(rows) => rows.map(...)`, a conditional, or `&&`) reuses the
+    /// shared control-flow lowering so a list/conditional rendered inside a slot
+    /// works the same as one rendered as an ordinary child. Anything else
+    /// produces an empty body.
     fn extract_fn_slot_body(&mut self, slot_fn: &SlotFn<'_>) -> Vec<'a, TemplateChildNode<'a>> {
-        match slot_fn.return_expr {
-            Some(Expression::JSXElement(element)) => {
-                let mut out = Vec::new_in(self.bump());
+        let mut out = Vec::new_in(self.bump());
+        let Some(expr) = slot_fn.return_expr else {
+            return out;
+        };
+        match expr.get_inner_expression() {
+            Expression::JSXElement(element) => {
                 out.push(TemplateChildNode::Element(Box::new_in(
                     self.lower_element_node(element),
                     self.bump(),
                 )));
-                out
             }
-            Some(Expression::JSXFragment(fragment)) => {
-                let mut out = Vec::new_in(self.bump());
+            Expression::JSXFragment(fragment) => {
                 out.push(TemplateChildNode::Element(Box::new_in(
                     self.lower_fragment_node(fragment),
                     self.bump(),
                 )));
-                out
             }
-            _ => Vec::new_in(self.bump()),
+            // `&&` / ternary / `.map(...)` slot bodies lower to the same
+            // If/For relief children as control-flow expression children.
+            other => {
+                if let Some(child) = self.lower_control_flow_expr(other, other.span()) {
+                    out.push(child);
+                }
+            }
         }
+        out
     }
 }
 
