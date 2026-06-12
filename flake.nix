@@ -43,19 +43,19 @@
         );
         moonbitArtifacts = {
           aarch64-darwin = {
-            version = "0.9.3-2026-05-22";
+            version = "0.1.20260608-2026-06-08";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
-            hash = "sha256-wYckl/EM1e8w+Nj+2d7p0DtqTe6i71d2wPXjRG/j+Zs=";
+            hash = "sha256-YAgKPu+uA4e2Z/UXJJpwt2ezdMANIjLuczet2ff3JIc=";
           };
           x86_64-linux = {
-            version = "0.9.3-2026-05-22";
+            version = "0.1.20260608-2026-06-08";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz";
-            hash = "sha256-/FRxLbk/zuLMmMBUbwJVI++fcECnvjsV7jj0itzwa9U=";
+            hash = "sha256-PFAX9WkoSALxoLhCLRSZY6AcpYfFFEURZK75HGXfiqg=";
           };
           aarch64-linux = {
-            version = "0.9.3-2026-05-22";
+            version = "0.1.20260608-2026-06-08";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-aarch64.tar.gz";
-            hash = "sha256-0Lrjab3LTISXN4/JRu8I1/78wS89/fLPS4y6F/JPG3w=";
+            hash = "sha256-fw4LyzobPWKaDV/9sattbQzjs2GXdRJ+wLhr/4dtVo4=";
           };
         };
         moonbit =
@@ -71,7 +71,7 @@
               };
               coreSrc = pkgs.fetchurl {
                 url = "https://cli.moonbitlang.com/cores/core-latest.tar.gz";
-                hash = "sha256-IfB4RrsGhm7Vj79Tq9CTmC3/SKcNX+Jfb5zpDF12Ct0=";
+                hash = "sha256-LMOHyw9HPsEBp+BnOAAUnIhHgSFkRfBgTtXx4RDPc+o=";
               };
               nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.patchelf ];
               dontUnpack = true;
