@@ -35,9 +35,14 @@ struct JsxScopedStyleWasm {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct JsxWasmResult {
-    /// Generated render code for every component in the module, in source
-    /// order, concatenated.
+    /// Generated render code for the module: the deduplicated runtime-helper
+    /// preamble (`import { … } from "vue"`) followed by every component's render
+    /// code in source order — a self-contained module, matching the NAPI binding
+    /// and `compileSfc` (the helper imports are no longer dropped, #1533).
     code: String,
+    /// v3 source map (JSON) for `code`, present only when `sourceMap` was
+    /// requested and the module is a single component. `null` otherwise (#1533).
+    map: Option<String>,
     /// Error-severity diagnostic messages.
     errors: Vec<String>,
     /// Warning-severity diagnostic messages.
@@ -93,10 +98,20 @@ fn resolve_default_mode(options: &JsValue) -> JsxOutputMode {
     }
 }
 
+/// Resolve the `sourceMap` flag from the JS options object: `true` enables v3
+/// source-map emission, anything else (including omission) leaves it off.
+fn resolve_source_map(options: &JsValue) -> bool {
+    js_sys::Reflect::get(options, &JsValue::from_str("sourceMap"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false)
+}
+
 fn compile_jsx_internal(source: &str, options: &JsValue) -> JsxWasmResult {
     let lang = resolve_lang(options);
     let default_mode = resolve_default_mode(options);
-    build_jsx_wasm_result(source, lang, default_mode)
+    let source_map = resolve_source_map(options);
+    build_jsx_wasm_result(source, lang, default_mode, source_map)
 }
 
 /// Build the JSX compile result from already-resolved options. Kept free of
@@ -106,22 +121,22 @@ fn build_jsx_wasm_result(
     source: &str,
     lang: JsxLang,
     default_mode: JsxOutputMode,
+    source_map: bool,
 ) -> JsxWasmResult {
-    let config = JsxCompileConfig {
+    let mut config = JsxCompileConfig {
         default_mode,
         ..Default::default()
     };
+    // Source maps are emitted by the VDOM codegen path; a no-op for Vapor.
+    config.dom.source_map = source_map;
 
     let bump = Bump::new();
     let output = jsx_compile(&bump, source, lang, &config);
 
-    let mut code = String::new();
-    for component in &output.components {
-        if !code.is_empty() {
-            code.push('\n');
-        }
-        code.push_str(component.code());
-    }
+    // A single self-contained module: deduplicated runtime-helper preamble + every
+    // component's render code (the preamble is no longer dropped, #1533).
+    let code = output.module_code().as_str().to_string();
+    let map = output.source_map().map(|map| map.to_string());
 
     let mut scoped_styles = Vec::new();
     for component in &output.components {
@@ -145,6 +160,7 @@ fn build_jsx_wasm_result(
 
     JsxWasmResult {
         code,
+        map,
         errors,
         warnings,
         scoped_styles,
@@ -173,7 +189,7 @@ mod tests {
                 </div>
             );
         "#;
-        let result = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom);
+        let result = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, false);
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         assert_eq!(
@@ -200,11 +216,44 @@ mod tests {
             "const App = () => <div class=\"box\">hi</div>;",
             JsxLang::Jsx,
             JsxOutputMode::Vdom,
+            false,
         );
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
         assert!(
             result.scoped_styles.is_empty(),
             "no scoped styles without a block"
         );
+    }
+
+    #[test]
+    fn wasm_jsx_result_includes_runtime_helper_preamble() {
+        // The WASM result `code` carries the runtime-helper imports so the
+        // playground emits a self-contained module (preamble no longer dropped,
+        // #1533).
+        let result = build_jsx_wasm_result(
+            "const App = () => <div>{message}</div>;",
+            JsxLang::Jsx,
+            JsxOutputMode::Vdom,
+            false,
+        );
+        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
+        assert!(
+            result.code.contains("from \"vue\"") && result.code.contains("_createElementBlock"),
+            "code carries the runtime-helper import: {}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn wasm_jsx_result_surfaces_source_map_when_requested() {
+        let source = "const App = () => <div>{message}</div>;";
+
+        let without = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, false);
+        assert!(without.map.is_none(), "no map unless requested");
+
+        let with = build_jsx_wasm_result(source, JsxLang::Jsx, JsxOutputMode::Vdom, true);
+        assert!(with.errors.is_empty(), "errors: {:?}", with.errors);
+        let map = with.map.expect("a map is surfaced when requested");
+        assert!(map.contains("\"version\":3"), "v3 source map: {map}");
     }
 }

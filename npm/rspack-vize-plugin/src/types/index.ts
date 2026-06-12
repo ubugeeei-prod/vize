@@ -77,6 +77,8 @@ export interface JsxCompileOptionsNapi {
   jsxMode?: "vdom" | "vapor";
   /** Legacy default-mode toggle: `true` → Vapor, `false` (default) → VDOM. */
   vapor?: boolean;
+  /** Emit a v3 source map for the generated render code (#1533). */
+  sourceMap?: boolean;
 }
 
 /** A JSX component's extracted `<style scoped>` block (#1495, #1533). */
@@ -89,8 +91,17 @@ export interface JsxScopedStyleNapi {
 
 /** Result of the native `compileJsx`. */
 export interface JsxCompileResultNapi {
-  /** Generated render code for every component in the module. */
+  /**
+   * Generated render code for the module: the deduplicated runtime-helper
+   * preamble followed by every component's render code (the helper imports are
+   * no longer dropped, #1533).
+   */
   code: string;
+  /**
+   * v3 source map (JSON) for `code`, present only when `sourceMap` was requested
+   * and the module is a single component. `null`/absent otherwise (#1533).
+   */
+  map?: string;
   /** Error-severity diagnostic messages. */
   errors: string[];
   /** Warning-severity diagnostic messages. */

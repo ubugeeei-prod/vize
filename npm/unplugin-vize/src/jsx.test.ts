@@ -118,6 +118,36 @@ void test("jsxMode:'vdom' keeps the vdom default even when vapor:true", async (t
   );
 });
 
+void test("a .tsx transform carries the runtime-helper preamble and a source map", async (t) => {
+  // The VDOM render code references `_createElementBlock` / `_toDisplayString`,
+  // so the emitted module must import them (the preamble is no longer dropped);
+  // with `sourceMap` on, a single-component module also surfaces a v3 map
+  // (#1533).
+  const id = resolveFixturePath("jsx", "App.tsx");
+  const plugin = vizeUnplugin.raw(
+    { isProduction: false, sourceMap: true, root: packageRoot },
+    { framework: "rollup" },
+  );
+  const transform = plugin.transform;
+  if (typeof transform !== "function") {
+    throw new Error("plugin.transform is not a function");
+  }
+  const result = (await transform.call(
+    { warn() {} } as never,
+    "const App = () => <div>{message}</div>;\nexport default App;\n",
+    id,
+  )) as TransformResult | null;
+
+  t.assert.ok(result && typeof result === "object", "transform returns a result object");
+  t.assert.match(
+    result.code,
+    /import \{[^}]*createElementBlock[^}]*\} from "vue"/,
+    "the emitted module imports its runtime helpers",
+  );
+  t.assert.equal(typeof result.map, "string", "a source map is surfaced when requested");
+  t.assert.match(String(result.map), /"version":\s*3/, "the surfaced source map is v3");
+});
+
 void test("a .tsx <style scoped> block emits scope-rewritten CSS through the plugin", async (t) => {
   // Mirrors the SFC plain-CSS path: a JSX/TSX `<style scoped>` block becomes
   // emitted CSS the bundler picks up, with the `data-v-<hash>` scope id already

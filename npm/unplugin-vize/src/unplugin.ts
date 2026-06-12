@@ -241,13 +241,18 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
         if (!filter(id)) {
           return null;
         }
-        const { code: jsxCode, warnings } = compileJsxModule(id, code, options);
+        const { code: jsxCode, map: jsxMap, warnings } = compileJsxModule(id, code, options);
         for (const warning of warnings) {
           this.warn(`[vize] ${warning}`);
         }
+        // HMR (deferred, #1533): the JSX compiler emits a render-function-only
+        // module with no component object to attach a Vue HMR record to (unlike
+        // the `.vue` path's `_sfc_main`), so a state-preserving boundary awaits
+        // the JSX component-wrapper output. Source map + preamble plumbing land
+        // now (`map` above, preamble inside `compileJsxModule`).
         return {
           code: jsxCode,
-          map: null,
+          map: jsxMap,
         };
       }
 

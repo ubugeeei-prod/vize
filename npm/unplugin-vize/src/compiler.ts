@@ -96,12 +96,13 @@ export function compileJsxModule(
   filePath: string,
   source: string,
   options: NormalizedVizeUnpluginOptions,
-): { code: string; warnings: string[] } {
+): { code: string; map: string | null; warnings: string[] } {
   const result = compileJsx(source, {
     filename: filePath,
     lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
     jsxMode: options.jsxMode,
     vapor: options.vapor,
+    sourceMap: options.sourceMap,
   });
 
   if (result.errors.length > 0) {
@@ -115,13 +116,18 @@ export function compileJsxModule(
   // are concatenated and emitted verbatim.
   const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
   let code = result.code;
+  // The native v3 map targets the unshifted render code, so it is dropped once
+  // the inline-style injection prepends to `code` (#1533).
+  let map = result.map ?? null;
   if (css) {
     const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
     code = prependInlineStyleInjection(code, css, styleKey);
+    map = null;
   }
 
   return {
     code,
+    map,
     warnings: result.warnings,
   };
 }

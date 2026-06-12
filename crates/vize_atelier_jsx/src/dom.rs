@@ -49,6 +49,14 @@ pub struct DomComponent {
     pub code: String,
     /// Import/preamble section for runtime helpers.
     pub preamble: String,
+    /// v3 source map (JSON) mapping the generated render code back to the JSX
+    /// source, emitted only when [`DomCompileOptions::source_map`] is set
+    /// (#1533). `None` otherwise. The map's `mappings` cover the render
+    /// expression; it does not account for a prepended preamble, so a consumer
+    /// that inlines the preamble must offset accordingly (the bindings surface
+    /// the map alongside a `preamble` kept structurally separate for exactly
+    /// this reason).
+    pub map: Option<String>,
     /// Extracted `<style scoped>` block (#1495): the generated scope id and the
     /// scoped-rewritten CSS. `None` when the component had no `<style scoped>`.
     /// A bundler emits this CSS to a stylesheet (deferred, #1533); the scope id
@@ -161,6 +169,7 @@ pub(crate) fn compile_root_to_dom(
         mode: mode.unwrap_or(JsxOutputMode::Vdom),
         code: result.code,
         preamble: result.preamble,
+        map: result.map,
         scoped_style,
     }
 }

@@ -437,17 +437,40 @@ export function transformJsxRequest(
     ? classifyVitePluginRequest(request.normalizedFsId).path
     : request.path;
 
-  const { code: compiled, warnings } = compileJsxModule(realPath, code, {
+  const ssr = options?.ssr ?? false;
+  // Match the SFC path's source-map policy: on unless explicitly disabled or in
+  // a production build (#1533).
+  const sourceMap = getCompileOptionsForRequest(state, ssr).sourceMap;
+
+  const {
+    code: compiled,
+    map,
+    warnings,
+  } = compileJsxModule(realPath, code, {
     jsxMode: state.mergedOptions.jsxMode,
     vapor: state.mergedOptions.vapor ?? false,
-    ssr: options?.ssr ?? false,
+    ssr,
+    sourceMap,
   });
 
   for (const warning of warnings) {
     state.logger.warn(`Warning in ${realPath}: ${warning}`);
   }
 
-  return { code: compiled, map: null };
+  // HMR (deferred, #1533): unlike `.vue` SFCs — whose compiled module exposes a
+  // `_sfc_main` component object that the injected `import.meta.hot.accept`
+  // boundary attaches an `__hmrId`/HMR record to (see
+  // `vize_atelier_sfc::vite_plugin::generate_hmr_code`) — the JSX compiler emits
+  // a render-function-only module (`export function render(…)`) with no
+  // component object to register against. A state-preserving Vue HMR boundary
+  // (`__VUE_HMR_RUNTIME__.rerender`/`reload`) therefore needs the upcoming
+  // JSX component-wrapper output before it can hook up; until then `.jsx`/`.tsx`
+  // edits fall back to Vite's default module reload. Source map + preamble
+  // plumbing (this function's `map`/preamble) land now.
+  //
+  // Vite's `TransformResult.map` is the object form, so parse the native v3 JSON
+  // map before handing it back (#1533).
+  return { code: compiled, map: map ? JSON.parse(map) : null };
 }
 
 // Strip TypeScript from compiled .vue output and apply define replacements

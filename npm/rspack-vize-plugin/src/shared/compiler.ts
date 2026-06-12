@@ -68,13 +68,14 @@ ${output}`;
 export function compileJsxModule(
   filePath: string,
   source: string,
-  options: { jsxMode?: "vdom" | "vapor"; vapor?: boolean } = {},
-): { code: string; warnings: string[] } {
+  options: { jsxMode?: "vdom" | "vapor"; vapor?: boolean; sourceMap?: boolean } = {},
+): { code: string; map: string | null; warnings: string[] } {
   const result = compileJsx(source, {
     filename: filePath,
     lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
     jsxMode: options.jsxMode,
     vapor: options.vapor ?? false,
+    sourceMap: options.sourceMap ?? false,
   });
 
   if (result.errors.length > 0) {
@@ -83,12 +84,16 @@ export function compileJsxModule(
 
   const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
   let code = result.code;
+  // The native v3 map targets the unshifted render code; drop it once the
+  // inline-style injection prepends to `code` (#1533).
+  let map = result.map ?? null;
   if (css) {
     const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
     code = prependInlineStyleInjection(code, css, styleKey);
+    map = null;
   }
 
-  return { code, warnings: result.warnings };
+  return { code, map, warnings: result.warnings };
 }
 
 // Compilation Cache

@@ -33,16 +33,24 @@ export default function vizeJsxLoader(
   }
 
   try {
-    const { code, warnings } = compileJsxModule(resourcePath, source, {
+    // Honor the loader's source-map setting (rspack toggles `this.sourceMap`
+    // from devtool); fall back to the explicit option, then on by default to
+    // match the `.vue` loader. Skipped only when the compiler tooling is off.
+    const sourceMap = options.sourceMap ?? this.sourceMap ?? true;
+
+    const { code, map, warnings } = compileJsxModule(resourcePath, source, {
       jsxMode: options.jsxMode,
       vapor: options.vapor ?? false,
+      sourceMap,
     });
 
     for (const warning of warnings) {
       this.emitWarning(new Error(`[vize] ${warning}`));
     }
 
-    callback(null, code);
+    // Forward the v3 map (parsed to the object rspack expects) so downstream
+    // devtools chain it back to the JSX source (#1533).
+    callback(null, code, map ? JSON.parse(map) : undefined);
   } catch (error) {
     callback(error as Error);
   }

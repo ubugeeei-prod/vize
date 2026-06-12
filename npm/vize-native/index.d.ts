@@ -246,15 +246,30 @@ export interface JsxCompileOptionsNapi {
    * `jsxMode` is set.
    */
   vapor?: boolean;
+  /**
+   * Emit a v3 source map for the generated render code. When `true`, the
+   * result's `map` carries the map JSON; when `false` (default), `map` is
+   * `null` and no mapping work is done (#1533).
+   */
+  sourceMap?: boolean;
 }
 
 /** Result of `compileJsx`. */
 export interface JsxCompileResultNapi {
   /**
-   * Generated render code for every component in the module, in source order,
-   * concatenated.
+   * Generated render code for the module: the deduplicated runtime-helper
+   * preamble (`import { … } from "vue"`) followed by every component's render
+   * code in source order. A self-contained module string, matching the shape
+   * `compileSfc` returns (the runtime-helper imports are no longer dropped,
+   * #1533).
    */
   code: string;
+  /**
+   * v3 source map (JSON) for `code`, present only when `sourceMap` was
+   * requested and the module is a single component (the per-file shape the
+   * bundler plugins consume). `null` otherwise (#1533).
+   */
+  map?: string;
   /** Error-severity diagnostic messages. */
   errors: Array<string>;
   /** Warning-severity diagnostic messages. */

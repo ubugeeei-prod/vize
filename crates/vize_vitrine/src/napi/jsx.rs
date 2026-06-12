@@ -38,6 +38,10 @@ pub struct JsxCompileOptionsNapi {
     /// (default) to VDOM. Kept for back-compat; prefer `jsxMode`. Ignored when
     /// `jsxMode` is set.
     pub vapor: Option<bool>,
+    /// Emit a v3 source map for the generated render code. When `true`, the
+    /// result's `map` carries the map JSON; when `false` (default), `map` is
+    /// `null` and no mapping work is done (#1533).
+    pub source_map: Option<bool>,
 }
 
 /// A JSX component's extracted `<style scoped>` block, surfaced to the bundler
@@ -57,9 +61,16 @@ pub struct JsxScopedStyleNapi {
 /// Result of [`compile_jsx`].
 #[napi(object)]
 pub struct JsxCompileResultNapi {
-    /// Generated render code for every component in the module, in source order,
-    /// concatenated.
+    /// Generated render code for the module: the deduplicated runtime-helper
+    /// preamble (`import { … } from "vue"`) followed by every component's render
+    /// code in source order. This is a self-contained module string, matching
+    /// the shape `compileSfc` returns, so a bundler can emit it directly
+    /// (the runtime-helper imports are no longer dropped, #1533).
     pub code: String,
+    /// v3 source map (JSON) for `code`, present only when `sourceMap` was
+    /// requested and the module is a single component (the per-file shape the
+    /// bundler plugins consume). `null` otherwise (#1533).
+    pub map: Option<String>,
     /// Error-severity diagnostic messages.
     pub errors: Vec<String>,
     /// Warning-severity diagnostic messages.
@@ -116,21 +127,23 @@ fn compile_jsx_impl(
 
     let default_mode = resolve_default_mode(opts.jsx_mode.as_deref(), opts.vapor);
 
-    let config = JsxCompileConfig {
+    let mut config = JsxCompileConfig {
         default_mode,
         ..Default::default()
     };
+    // Surface a v3 source map when requested. The flag only affects the VDOM
+    // codegen path (the Vapor backend does not emit a map yet); enabling it is a
+    // no-op for Vapor output.
+    config.dom.source_map = opts.source_map.unwrap_or(false);
 
     let bump = Bump::new();
     let output = jsx_compile(&bump, &source, lang, &config);
 
-    let mut code = String::new();
-    for component in &output.components {
-        if !code.is_empty() {
-            code.push('\n');
-        }
-        code.push_str(component.code());
-    }
+    // A single self-contained module: the deduplicated runtime-helper preamble
+    // followed by every component's render code (the preamble is no longer
+    // dropped, #1533).
+    let code = output.module_code().as_str().to_string();
+    let map = output.source_map().map(|map| map.to_string());
 
     let mut scoped_styles = Vec::new();
     for component in &output.components {
@@ -154,6 +167,7 @@ fn compile_jsx_impl(
 
     JsxCompileResultNapi {
         code,
+        map,
         errors,
         warnings,
         scoped_styles,
@@ -233,5 +247,53 @@ mod tests {
             result.scoped_styles.is_empty(),
             "no scoped styles without a <style scoped> block"
         );
+    }
+
+    #[test]
+    fn jsx_compile_result_includes_runtime_helper_preamble() {
+        // The result `code` must carry the runtime-helper imports so the emitted
+        // `_createElementBlock` / `_toDisplayString` helpers are actually
+        // imported (previously the preamble was dropped, #1533).
+        let source = "const App = () => <div>{message}</div>;\nexport default App;\n";
+        let result = compile_jsx_impl(source.to_string(), None);
+
+        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
+        assert!(
+            result.code.contains("from \"vue\""),
+            "code carries the runtime-helper import: {}",
+            result.code
+        );
+        // The import precedes the render code that references the helper.
+        let import_at = result.code.find("from \"vue\"").expect("vue import");
+        let usage_at = result
+            .code
+            .find("_createElementBlock(")
+            .expect("render uses _createElementBlock");
+        assert!(
+            import_at < usage_at,
+            "preamble precedes usage: {}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn jsx_compile_result_surfaces_source_map_when_requested() {
+        let source = "const App = () => <div>{message}</div>;\nexport default App;\n";
+
+        // Off by default: no map.
+        let without = compile_jsx_impl(source.to_string(), None);
+        assert!(without.map.is_none(), "no map unless requested");
+
+        // On request: a non-empty v3 map.
+        let with = compile_jsx_impl(
+            source.to_string(),
+            Some(JsxCompileOptionsNapi {
+                source_map: Some(true),
+                ..Default::default()
+            }),
+        );
+        assert!(with.errors.is_empty(), "errors: {:?}", with.errors);
+        let map = with.map.expect("a map is surfaced when requested");
+        assert!(map.contains("\"version\":3"), "v3 source map: {map}");
     }
 }

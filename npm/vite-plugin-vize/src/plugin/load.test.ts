@@ -904,7 +904,25 @@ assert.match(
   /_createElementBlock\("div"/,
   "VDOM .jsx components should compile to Vize render code through the transform hook",
 );
-assert.equal(jsxTransform.map, null, "JSX transform should not allocate a discarded sourcemap");
+// The render code's runtime helpers must be imported (the preamble is no longer
+// dropped, #1533).
+assert.match(
+  jsxTransform.code,
+  /import \{[^}]*createElementBlock[^}]*\} from "vue"/,
+  "VDOM .jsx output should carry the runtime-helper import preamble",
+);
+// Source maps are on in dev (isProduction === false), so a single-component
+// .jsx transform surfaces a v3 map (parsed to the object form Vite expects) for
+// the bundler to consume (#1533).
+assert.ok(
+  jsxTransform.map && typeof jsxTransform.map === "object",
+  "JSX transform should surface a source map object in dev",
+);
+assert.equal(
+  (jsxTransform.map as { version?: number }).version,
+  3,
+  "the surfaced JSX source map should be v3",
+);
 
 const jsxVaporState: VizePluginState = {
   ...jsxState,
@@ -922,6 +940,12 @@ assert.match(
   jsxVaporTransform.code,
   /_template\(/,
   "Vapor .jsx components should compile to hoisted templates through the transform hook",
+);
+// The Vapor backend does not emit a source map yet, so the transform reports none.
+assert.equal(
+  jsxVaporTransform.map,
+  null,
+  "Vapor .jsx transform has no source map (Vapor codegen does not emit one yet)",
 );
 
 const tsxFsTransform = await transformHook(

@@ -200,26 +200,35 @@ export interface JsxCompileFileOptions {
    * path which only injects on the client.
    */
   ssr?: boolean;
+  /**
+   * Request a v3 source map for the generated render code (#1533). When set,
+   * the returned `map` carries the map JSON (or `null` when the native compiler
+   * produced none, e.g. a Vapor component or a multi-component module).
+   */
+  sourceMap?: boolean;
 }
 
 /**
  * Compile a `.jsx`/`.tsx` Vue component module to render code through Vize.
  *
  * Mirrors `compileFile` for SFCs but routes through the native `compileJsx`
- * binding. A component's `<style scoped>` CSS is surfaced (already
- * scope-rewritten) and emitted through the same inline-injection path plain SFC
- * `<style>` blocks use (#1495, #1533).
+ * binding. The returned `code` is a self-contained module (the runtime-helper
+ * preamble is included, #1533), and `map` carries a v3 source map when
+ * `sourceMap` is requested. A component's `<style scoped>` CSS is surfaced
+ * (already scope-rewritten) and emitted through the same inline-injection path
+ * plain SFC `<style>` blocks use (#1495, #1533).
  */
 export function compileJsxModule(
   filePath: string,
   source: string,
   options: JsxCompileFileOptions = {},
-): { code: string; warnings: string[] } {
+): { code: string; map: string | null; warnings: string[] } {
   const result = compileJsx(source, {
     filename: filePath,
     lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
     jsxMode: options.jsxMode,
     vapor: options.vapor ?? false,
+    sourceMap: options.sourceMap ?? false,
   });
 
   if (result.errors.length > 0) {
@@ -232,13 +241,18 @@ export function compileJsxModule(
   // verbatim. Skipped under SSR, matching the SFC inline-CSS path.
   const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
   let code = result.code;
+  // Prepending the inline-style injection shifts the render code, so the v3 map
+  // (which targets the unshifted render code) is dropped once we mutate `code`.
+  let map = result.map ?? null;
   if (css && !options.ssr) {
     const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
     code = prependInlineStyleInjection(code, css, styleKey);
+    map = null;
   }
 
   return {
     code,
+    map,
     warnings: result.warnings,
   };
 }
