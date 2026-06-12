@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_jsx/tests/modes.rs
+expression: out.diagnostics
+---
+[
+    JsxDiagnostic {
+        severity: Error,
+        message: "conflicting JSX mode directives: \"use vue:vdom\" follows \"use vue:vapor\" in the same component; a component can select only one output mode",
+        start: 37,
+        end: 51,
+    },
+]

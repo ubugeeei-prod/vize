@@ -57,7 +57,7 @@ impl ProvideInjectTree {
                 };
                 writeln!(
                     output,
-                    "{}  🔹 provide(`\"{}\"`){}{} ",
+                    "{}  🔹 provide(`\"{}\"`){}{}",
                     indent, p.key, type_str, consumers
                 )
                 .ok();
@@ -75,7 +75,7 @@ impl ProvideInjectTree {
                 };
                 writeln!(
                     output,
-                    "{}  🔸 inject(`\"{}\"`){}{} ",
+                    "{}  🔸 inject(`\"{}\"`){}{}",
                     indent, i.key, default_str, provider_str
                 )
                 .ok();

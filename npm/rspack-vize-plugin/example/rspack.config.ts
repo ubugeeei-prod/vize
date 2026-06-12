@@ -16,7 +16,7 @@ export default defineConfig({
     clean: true,
   },
   resolve: {
-    extensions: ["...", ".ts", ".jsx", ".vue"],
+    extensions: ["...", ".ts", ".tsx", ".jsx", ".vue"],
   },
   experiments: {
     css: true,
@@ -27,6 +27,12 @@ export default defineConfig({
       {
         test: /\.vue$/,
         loader: "@vizejs/rspack-plugin/loader",
+      },
+      // JSX / TSX components via Vize
+      {
+        test: /\.[jt]sx$/,
+        exclude: /node_modules/,
+        loader: "@vizejs/rspack-plugin/jsx-loader",
       },
       // TypeScript / JavaScript via SWC
       {

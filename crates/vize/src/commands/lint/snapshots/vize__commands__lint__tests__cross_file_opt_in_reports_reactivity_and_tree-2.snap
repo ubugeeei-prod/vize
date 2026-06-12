@@ -1,0 +1,11 @@
+---
+source: crates/vize/src/commands/lint/tests.rs
+expression: tree
+---
+## Provide/Inject Tree
+
+📦 **App**
+  🔹 provide(`"state"`) → 1 consumer(s)
+  📦 **Middle**
+    📦 **Child**
+      🔸 inject(`"state"`) ✅

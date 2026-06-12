@@ -296,7 +296,7 @@
           "type": "boolean"
         },
         "jsxTypecheck": {
-          "description": "Opt-in type-checking of .jsx/.tsx Vue components (#1497). Default-off: JSX support is experimental and a repository may contain React .tsx files that must not be type-checked as Vue JSX. Set to true to route .jsx/.tsx through the Vize JSX virtual-TS path.",
+          "description": "Opt-in type-checking of .jsx/.tsx Vue components (#1497). Default-off so mixed Vue/React repositories do not accidentally route React .tsx through the Vue JSX checker. Set to true to route .jsx/.tsx through the Vize JSX virtual-TS path.",
           "default": false,
           "type": "boolean"
         },

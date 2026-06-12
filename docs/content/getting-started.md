@@ -8,7 +8,7 @@ title: Getting Started
 
 ## What is Vize?
 
-Vize (_/viːz/_) is an unofficial Vue.js toolchain written in Rust. The workspace contains shared
+Vize (_/viːz/_) is a Vue.js toolchain written in Rust. The workspace contains shared
 building blocks for:
 
 | Area            | Main Rust crate(s)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | User-facing entry point                        |

@@ -15,6 +15,12 @@ use crate::config::model::RawVizeConfig;
 
 /// Evaluate a JS-like config file through Node and deserialize the result.
 pub(super) fn parse_js_config(path: &Path) -> Result<RawVizeConfig, Box<dyn std::error::Error>> {
+    let config_path = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()?.join(path)
+    };
+    let config_path = config_path.canonicalize().unwrap_or(config_path);
     let script = r#"
 import { pathToFileURL } from "node:url";
 
@@ -30,8 +36,8 @@ process.stdout.write(JSON.stringify(config ?? {}));
         .arg("--input-type=module")
         .arg("-e")
         .arg(script)
-        .arg(path)
-        .current_dir(path.parent().unwrap_or_else(|| Path::new(".")))
+        .arg(&config_path)
+        .current_dir(config_path.parent().unwrap_or_else(|| Path::new(".")))
         .output()?;
 
     if !output.status.success() {

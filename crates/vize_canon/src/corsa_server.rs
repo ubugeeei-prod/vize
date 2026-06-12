@@ -351,14 +351,14 @@ impl CorsaServer {
         // Overlay sibling .vue.ts mirrors discovered from the host's imports.
         let relative_specifiers = rewriter.collect_relative_vue_specifiers(
             generated.pre_rewrite_code.as_str(),
-            oxc_span::SourceType::ts(),
+            generated.source_type,
         );
         if !relative_specifiers.is_empty() {
             self.overlay_sibling_vue_mirrors(uri, &relative_specifiers);
         }
 
         // Run Corsa on the virtual TypeScript through the project-session API.
-        let mut diagnostics = self.run_corsa(uri, &virtual_ts)?;
+        let mut diagnostics = self.run_corsa(uri, &virtual_ts, generated.virtual_suffix)?;
 
         // Merge in Vue-specific compile errors (e.g. props destructure default type
         // mismatch) so the socket-mode check matches the direct `vize check` runner.
@@ -376,7 +376,12 @@ impl CorsaServer {
     }
 
     /// Run Corsa on TypeScript content and parse diagnostics via project sessions.
-    fn run_corsa(&mut self, uri: &str, content: &str) -> Result<Vec<Diagnostic>, String> {
+    fn run_corsa(
+        &mut self,
+        uri: &str,
+        content: &str,
+        virtual_suffix: &str,
+    ) -> Result<Vec<Diagnostic>, String> {
         if self.corsa_client.is_none() {
             let client = crate::corsa_client::CorsaProjectClient::new(
                 self.config.corsa_path.as_deref(),
@@ -385,7 +390,7 @@ impl CorsaServer {
             self.corsa_client = Some(client);
         }
 
-        let virtual_uri = self.virtual_uri_for(uri);
+        let virtual_uri = self.virtual_uri_for(uri, virtual_suffix);
         let client = self
             .corsa_client
             .as_mut()
@@ -473,9 +478,6 @@ impl CorsaServer {
                     }
                 };
 
-                let sibling_uri = crate::file_uri::path_to_file_uri(&canonical);
-                let sibling_virtual_uri = self.virtual_uri_for(&sibling_uri);
-
                 // Reuse the shared canon batch generator (issue #1389) so
                 // overlaid siblings are byte-identical to the host document and
                 // to `vize check`.
@@ -488,6 +490,9 @@ impl CorsaServer {
                 ) else {
                     continue;
                 };
+                let sibling_uri = crate::file_uri::path_to_file_uri(&canonical);
+                let sibling_virtual_uri =
+                    self.virtual_uri_for(&sibling_uri, sibling_generated.virtual_suffix);
                 let sibling_virtual_ts: String = sibling_generated.code;
 
                 let client = match self.corsa_client.as_mut() {
@@ -518,7 +523,7 @@ impl CorsaServer {
 
                 let next_specifiers = rewriter.collect_relative_vue_specifiers(
                     sibling_generated.pre_rewrite_code.as_str(),
-                    oxc_span::SourceType::ts(),
+                    sibling_generated.source_type,
                 );
                 if !next_specifiers.is_empty() {
                     let next_dir = canonical
@@ -531,12 +536,12 @@ impl CorsaServer {
         }
     }
 
-    fn virtual_uri_for(&self, uri: &str) -> String {
+    fn virtual_uri_for(&self, uri: &str, virtual_suffix: &str) -> String {
         if uri.starts_with("file://") || uri.contains("://") {
-            return cstr!("{uri}.ts");
+            return cstr!("{uri}{virtual_suffix}");
         }
 
-        let virtual_path = cstr!("{uri}.ts");
+        let virtual_path = cstr!("{uri}{virtual_suffix}");
         let path = Path::new(virtual_path.as_str());
         let path = if path.is_absolute() {
             path.to_path_buf()
@@ -673,7 +678,7 @@ mod tests {
         });
 
         assert_eq!(
-            server.virtual_uri_for("src/App.vue"),
+            server.virtual_uri_for("src/App.vue", ".ts"),
             String::from("file:///workspace/project/src/App.vue.ts")
         );
     }
@@ -683,7 +688,7 @@ mod tests {
         let server = CorsaServer::new();
 
         assert_eq!(
-            server.virtual_uri_for("/workspace/pages/[name] #1.vue"),
+            server.virtual_uri_for("/workspace/pages/[name] #1.vue", ".ts"),
             String::from("file:///workspace/pages/%5Bname%5D%20%231.vue.ts")
         );
     }
@@ -693,8 +698,8 @@ mod tests {
         let server = CorsaServer::new();
 
         assert_eq!(
-            server.virtual_uri_for("file:///workspace/src/App.vue"),
-            String::from("file:///workspace/src/App.vue.ts")
+            server.virtual_uri_for("file:///workspace/src/App.vue", ".tsx"),
+            String::from("file:///workspace/src/App.vue.tsx")
         );
     }
 

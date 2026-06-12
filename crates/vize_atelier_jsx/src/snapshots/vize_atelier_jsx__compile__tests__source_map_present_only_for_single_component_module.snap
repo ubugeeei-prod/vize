@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_jsx/src/compile.rs
+expression: map
+---
+{"file":"template.vue","mappings":";6CAAc,6BAAA","names":[],"sources":["template.vue"],"sourcesContent":["<div>{x}</div>"],"version":3}

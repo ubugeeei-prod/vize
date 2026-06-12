@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: output.module_code().as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("main", null, "default"))
+}
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<section> </section>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setText(x0, _toDisplayString(message)))
+  return n0
+}
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("aside", null, _toDisplayString(count), 1 /* TEXT */))
+}

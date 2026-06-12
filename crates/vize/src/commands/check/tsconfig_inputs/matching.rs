@@ -7,6 +7,11 @@ use glob::MatchOptions;
 use super::spec::GlobSpec;
 use super::{NODE_MODULES_DIR, TARGET_DIR, VIZE_CACHE_DIR};
 
+#[derive(Debug, Clone, Copy, Default)]
+pub(super) struct SupportedFileOptions {
+    pub(super) include_jsx: bool,
+}
+
 pub(super) fn path_has_component(path: &Path, component_name: &str) -> bool {
     path.components().any(|component| {
         component
@@ -68,7 +73,10 @@ fn is_generated_component(previous: Option<&str>, name: &str) -> bool {
     name == TARGET_DIR || (previous == Some(NODE_MODULES_DIR) && name == VIZE_CACHE_DIR)
 }
 
-pub(super) fn is_supported_check_file(path: &Path) -> bool {
+pub(super) fn is_supported_check_file_with_options(
+    path: &Path,
+    options: SupportedFileOptions,
+) -> bool {
     if path
         .file_name()
         .and_then(|name| name.to_str())
@@ -79,7 +87,10 @@ pub(super) fn is_supported_check_file(path: &Path) -> bool {
 
     path.extension()
         .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts"))
+        .is_some_and(|extension| {
+            matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts")
+                || (options.include_jsx && extension == "jsx")
+        })
 }
 
 pub(super) fn glob_match_options() -> MatchOptions {

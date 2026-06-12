@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "dom_output_summary(source, &output)"
+---
+DomOutputSummary {
+    diagnostics: [],
+    components: [
+        RenderComponentSummary {
+            name: Some(
+                "Copy",
+            ),
+            mode: "Vdom",
+            preamble: Some(
+                "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+            ),
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createTextVNode(\"Hello\"),\n    _createElementVNode(\"strong\", null, _toDisplayString(name), 1 /* TEXT */),\n    (count > 1)\n      ? (_openBlock(), _createElementBlock(\"span\", { key: 0 }, _toDisplayString(count) + \" items\", 1 /* TEXT */))\n      : (_openBlock(), _createElementBlock(\"span\", { key: 1 }, \"one item\"))\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+            templates: [],
+            scoped_style: None,
+        },
+    ],
+}

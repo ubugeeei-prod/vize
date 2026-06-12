@@ -1,0 +1,324 @@
+---
+source: crates/vize_atelier_jsx/tests/parity_vapor.rs
+expression: "snapshot_cases(&cases, |source| { vapor_code(source, JsxLang::Jsx, false) })"
+---
+## intrinsic element
+### source
+const A = () => <div/>;
+### output
+import { template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}
+
+
+## component
+### source
+const A = () => <Comp/>;
+### output
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+
+export function render(_ctx) {
+  const _component_Comp = _resolveComponent("Comp")
+  const n0 = _createComponentWithFallback(_component_Comp, null, null, true)
+  return n0
+}
+
+
+## fragment
+### source
+const A = () => <><a/><b/></>;
+### output
+import { template as _template } from 'vue';
+const t0 = _template("<a></a>")
+const t1 = _template("<b></b>")
+
+export function render(_ctx) {
+  const n0 = t0()
+  const n1 = t1()
+  return [n0, n1]
+}
+
+
+## static attributes
+### source
+const A = () => <div class="a" id="b" data-x="y"/>;
+### output
+import { template as _template } from 'vue';
+const t0 = _template("<div class=\"a\" id=\"b\" data-x=\"y\"></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}
+
+
+## dynamic bind
+### source
+const A = () => <div id={x}/>;
+### output
+import { setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _renderEffect(() => _setProp(n0, "id", x))
+  return n0
+}
+
+
+## spread
+### source
+const A = () => <div {...attrs}/>;
+### output
+import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _renderEffect(() => _setDynamicProps(n0, [attrs]))
+  return n0
+}
+
+
+## dynamic class
+### source
+const A = () => <div class={c}/>;
+### output
+import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _renderEffect(() => _setClass(n0, c))
+  return n0
+}
+
+
+## dynamic style
+### source
+const A = () => <div style={s}/>;
+### output
+import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _renderEffect(() => _setStyle(n0, s))
+  return n0
+}
+
+
+## static text
+### source
+const A = () => <div>hello</div>;
+### output
+import { template as _template } from 'vue';
+const t0 = _template("<div>hello</div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}
+
+
+## interpolation
+### source
+const A = () => <div>{count}</div>;
+### output
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div> </div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setText(x0, _toDisplayString(count)))
+  return n0
+}
+
+
+## mixed text
+### source
+const A = () => <div>Hi {name}!</div>;
+### output
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div>Hi  !</div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setText(x0, "Hi " + _toDisplayString(name) + "!"))
+  return n0
+}
+
+
+## member expression
+### source
+const A = () => <p>{user.name}</p>;
+### output
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<p> </p>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setText(x0, _toDisplayString(user.name)))
+  return n0
+}
+
+
+## logical and child
+### source
+const A = () => <ul>{ok && <span/>}</ul>;
+### output
+import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<span></span>", true)
+const t1 = _template("<ul></ul>", true)
+
+export function render(_ctx) {
+  const n3 = t1()
+  _setInsertionState(n3, null, true)
+  const n0 = _createIf(() => (ok), () => {
+    const n2 = t0()
+    return n2
+  })
+  return n3
+}
+
+
+## ternary arms
+### source
+const A = () => <div>{ok ? <a/> : <b/>}</div>;
+### output
+import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<a></a>", true)
+const t1 = _template("<b></b>", true)
+const t2 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n5 = t2()
+  _setInsertionState(n5, null, true)
+  const n0 = _createIf(() => (ok), () => {
+    const n2 = t0()
+    return n2
+  }, () => {
+    const n4 = t1()
+    return n4
+  })
+  return n5
+}
+
+
+## map callback
+### source
+const A = () => <ul>{items.map((i) => <li/>)}</ul>;
+### output
+import { setInsertionState as _setInsertionState, createFor as _createFor, template as _template } from 'vue';
+const t0 = _template("<li></li>")
+const t1 = _template("<ul></ul>", true)
+
+export function render(_ctx) {
+  const n3 = t1()
+  _setInsertionState(n3, null, true)
+  const n0 = _createFor(() => (items), (_for_item0) => {
+    const n2 = t0()
+    return n2
+  })
+  return n3
+}
+
+
+## plain event
+### source
+const A = () => <button onClick={h}>go</button>;
+### output
+import { setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<button>go</button>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _renderEffect(() => _setProp(n0, "onClick", h))
+  return n0
+}
+
+
+## capture event
+### source
+const A = () => <button onClickCapture={h}/>;
+### output
+import { createInvoker as _createInvoker, on as _on, template as _template } from 'vue';
+const t0 = _template("<button></button>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _on(n0, "click", _createInvoker(e => h(e)), {
+    capture: true
+  })
+  return n0
+}
+
+
+## v-model input
+### source
+const A = () => <input v-model={val}/>;
+### output
+import { applyTextModel as _applyTextModel, template as _template } from 'vue';
+const t0 = _template("<input>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _applyTextModel(n0, () => (_ctx.val), _value => (_ctx.val = _value))
+  return n0
+}
+
+
+## v-model component
+### source
+const A = () => <Input v-model={val}/>;
+### output
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+
+export function render(_ctx) {
+  const _component_Input = _resolveComponent("Input")
+  const n0 = _createComponentWithFallback(_component_Input, {
+    modelValue: () => (val),
+    "onUpdate:modelValue": () => _value => (_ctx.val = _value)
+  }, null, true)
+  return n0
+}
+
+
+## v-show
+### source
+const A = () => <div v-show={ok}>x</div>;
+### output
+import { applyVShow as _applyVShow, template as _template } from 'vue';
+const t0 = _template("<div>x</div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _applyVShow(n0, () => (ok))
+  return n0
+}
+
+
+## object child slot
+### source
+const A = () => <Comp>{{ header: () => <h1>Hi</h1> }}</Comp>;
+### output
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, template as _template } from 'vue';
+const t0 = _template("<h1>Hi</h1>")
+
+export function render(_ctx) {
+  const _component_Comp = _resolveComponent("Comp")
+  const n2 = _createComponentWithFallback(_component_Comp, null, {
+    "header": () => {
+      const n0 = t0()
+      return n0
+    }
+  }, true)
+  return n2
+}

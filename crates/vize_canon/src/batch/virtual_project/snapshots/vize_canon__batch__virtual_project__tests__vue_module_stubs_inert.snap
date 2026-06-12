@@ -1,0 +1,5 @@
+---
+source: crates/vize_canon/src/batch/virtual_project/tests.rs
+expression: stubs.as_str()
+---
+// Vue SFC modules resolve through materialized .vue.ts files.

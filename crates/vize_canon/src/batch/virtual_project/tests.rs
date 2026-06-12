@@ -1,7 +1,7 @@
 use super::build::source_type_for_path;
 use super::tsconfig_paths::{parse_jsonc_value, strip_json_comments};
 use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
-use crate::batch::SfcBlockType;
+use crate::batch::{Diagnostic, SfcBlockType};
 use crate::virtual_ts::VirtualTsOptions;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -26,6 +26,52 @@ fn assert_ts_parses(source: &str) {
         "virtual TS should parse without errors: {:?}",
         parsed.errors
     );
+}
+
+fn assert_tsx_parses(source: &str) {
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::tsx()).parse();
+    assert!(
+        parsed.errors.is_empty(),
+        "virtual TSX should parse without errors: {:?}",
+        parsed.errors
+    );
+}
+
+#[derive(Debug)]
+#[allow(dead_code)]
+struct DiagnosticSnapshot<'a> {
+    line: u32,
+    column: u32,
+    message: &'a str,
+    code: Option<u32>,
+    severity: u8,
+    block_type: Option<SfcBlockType>,
+}
+
+fn diagnostic_snapshot(diagnostics: &[Diagnostic]) -> Vec<DiagnosticSnapshot<'_>> {
+    diagnostics
+        .iter()
+        .map(|diagnostic| DiagnosticSnapshot {
+            line: diagnostic.line,
+            column: diagnostic.column,
+            message: diagnostic.message.as_str(),
+            code: diagnostic.code,
+            severity: diagnostic.severity,
+            block_type: diagnostic.block_type,
+        })
+        .collect()
+}
+
+fn snapshot_text(source: &str) -> std::string::String {
+    let mut output = std::string::String::with_capacity(source.len());
+    for (index, line) in source.split('\n').enumerate() {
+        if index > 0 {
+            output.push('\n');
+        }
+        output.push_str(line.trim_end_matches(|ch| ch == ' ' || ch == '\t'));
+    }
+    output
 }
 
 #[test]
@@ -56,7 +102,7 @@ fn test_materialize_writes_inert_vue_module_stub_file() {
     project.materialize().unwrap();
 
     let stubs = fs::read_to_string(project.virtual_root().join("__vize_vue_modules.d.ts")).unwrap();
-    assert!(!stubs.contains(r#"declare module "*.vue.ts""#));
+    insta::assert_snapshot!("vue_module_stubs_inert", stubs.as_str());
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -81,7 +127,12 @@ fn tsx_script_block_is_type_checked_not_collapsed_to_fallback_stub() {
 
     let mut project = VirtualProject::new(&case_dir).unwrap();
     project.register_vue_file(&vue_path, vue_content).unwrap();
-    let batch_content = project.find_by_original(&vue_path).unwrap().content.clone();
+    let virtual_file = project.find_by_original(&vue_path).unwrap();
+    assert_eq!(
+        virtual_file.virtual_path,
+        project.virtual_root().join("src/App.vue.tsx")
+    );
+    let batch_content = virtual_file.content.clone();
 
     // The whole-SFC fallback stub emitted when a hard parse error aborts codegen.
     let fallback_stub = "declare const __vize_component: any;\nexport default __vize_component;\n";
@@ -103,6 +154,23 @@ fn tsx_script_block_is_type_checked_not_collapsed_to_fallback_stub() {
     )
     .unwrap();
     assert_eq!(shared.code.as_str(), batch_content.as_str());
+    assert_eq!(shared.virtual_suffix, ".tsx");
+    assert_tsx_parses(batch_content.as_str());
+
+    project.materialize().unwrap();
+    assert!(project.virtual_root().join("src/App.vue.tsx").exists());
+    let tsconfig: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(project.virtual_root().join("tsconfig.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        tsconfig["compilerOptions"]["jsx"],
+        serde_json::json!("preserve")
+    );
+    assert_eq!(
+        tsconfig["compilerOptions"]["jsxImportSource"],
+        serde_json::json!("vue")
+    );
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -292,20 +360,11 @@ defineProps<{
         .content
         .clone();
 
-    // The default Vue 3 output never gains Vue 2-only members.
-    assert!(
-        !default_content.contains("$listeners"),
-        "default Vue 3 output must not emit Vue 2-only instance members"
+    insta::assert_snapshot!(
+        "dialect_default_v3",
+        snapshot_text(default_content.as_str())
     );
-    // The Vue 2 dialect augments the template instance context.
-    assert!(
-        v2_content.contains("const $listeners = undefined as any;"),
-        "Vue 2 dialect must emit Vue 2-only instance members"
-    );
-    assert!(
-        v2_content.contains("const $children = undefined as any;"),
-        "Vue 2 dialect must emit Vue 2-only instance members"
-    );
+    insta::assert_snapshot!("dialect_v2", snapshot_text(v2_content.as_str()));
     assert_ne!(
         v2_content, default_content,
         "Vue 2 dialect output must differ from default Vue 3 output"
@@ -336,16 +395,16 @@ const count =
 
     let diagnostics = project.diagnostics();
     assert_eq!(diagnostics.len(), 1);
-    assert!(diagnostics[0].message.contains("Script parse error"));
-    assert_eq!(diagnostics[0].block_type, Some(SfcBlockType::ScriptSetup));
+    insta::assert_debug_snapshot!(
+        "script_parse_error_diagnostics",
+        diagnostic_snapshot(diagnostics)
+    );
 
     let virtual_file = project.find_by_original(&vue_path).unwrap();
-    assert!(
-        virtual_file
-            .content
-            .contains("export default __vize_component")
+    insta::assert_snapshot!(
+        "script_parse_error_fallback_virtual_ts",
+        snapshot_text(virtual_file.content.as_str())
     );
-    assert!(!virtual_file.content.contains("const count ="));
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -375,20 +434,10 @@ const { msg = 0 } = defineProps<{ msg?: string }>();
 
     let diagnostics = project.diagnostics();
     assert_eq!(diagnostics.len(), 1, "expected one SFC compile diagnostic");
-    let diagnostic = &diagnostics[0];
-    assert!(
-        diagnostic
-            .message
-            .contains("DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE"),
-        "expected DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE in message, got: {}",
-        diagnostic.message
+    insta::assert_debug_snapshot!(
+        "props_destructure_default_type_mismatch_diagnostics",
+        diagnostic_snapshot(diagnostics)
     );
-    assert!(
-        diagnostic.message.contains("Default value of prop \"msg\""),
-        "expected message to name the prop, got: {}",
-        diagnostic.message
-    );
-    assert_eq!(diagnostic.severity, 1);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -440,16 +489,16 @@ const count = 1
 
     let diagnostics = project.diagnostics();
     assert_eq!(diagnostics.len(), 1);
-    assert!(diagnostics[0].message.contains("Template parse error"));
-    assert_eq!(diagnostics[0].block_type, Some(SfcBlockType::Template));
+    insta::assert_debug_snapshot!(
+        "template_parse_error_diagnostics",
+        diagnostic_snapshot(diagnostics)
+    );
 
     let virtual_file = project.find_by_original(&vue_path).unwrap();
-    assert!(
-        virtual_file
-            .content
-            .contains("export default __vize_component")
+    insta::assert_snapshot!(
+        "template_parse_error_fallback_virtual_ts",
+        snapshot_text(virtual_file.content.as_str())
     );
-    assert!(!virtual_file.content.contains("__vize_check_template"));
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -488,20 +537,9 @@ const count = 1
     );
 
     let virtual_file = project.find_by_original(&vue_path).unwrap();
-    // The exact fallback stub is `declare const __vize_component: any;` — real
-    // codegen instead emits a typed `__vize_component__` instance constructor.
-    assert!(
-        !virtual_file
-            .content
-            .contains("declare const __vize_component: any"),
-        "file must not collapse to the fallback stub: {}",
-        virtual_file.content
-    );
-    // Real codegen ran: the template-check binding for `count` is present.
-    assert!(
-        virtual_file.content.contains("count"),
-        "expected real virtual TS referencing `count`: {}",
-        virtual_file.content
+    insta::assert_snapshot!(
+        "template_recovery_no_fallback_virtual_ts",
+        snapshot_text(virtual_file.content.as_str())
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -564,24 +602,9 @@ const props = defineProps<ParentWidgetProps>();
 
     let virtual_parent = project.find_by_original(&parent).unwrap();
     assert_ts_parses(&virtual_parent.content);
-    assert!(
-        virtual_parent
-            .content
-            .contains(r#"const _as = props["as"];"#),
-        "{}",
-        virtual_parent.content
-    );
-    assert!(
-        virtual_parent.content.contains(r#"void (props["as"]);"#),
-        "{}",
-        virtual_parent.content
-    );
-    assert!(
-        virtual_parent
-            .content
-            .contains(r#"type Props = ParentWidgetProps;"#),
-        "{}",
-        virtual_parent.content
+    insta::assert_snapshot!(
+        "reexported_vue_interface_props_virtual_ts",
+        snapshot_text(virtual_parent.content.as_str())
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -632,29 +655,9 @@ const onFocus = (target: HTMLElement) => {
 
     let virtual_file = project.find_by_original(&vue_path).unwrap();
     assert_ts_parses(&virtual_file.content);
-    assert!(
-        virtual_file.content.contains("void ((value as any));"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        virtual_file
-            .content
-            .contains("['--demo-value' as any]: value"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        virtual_file
-            .content
-            .contains("onFocus(event.target as HTMLElement)"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        !virtual_file.content.contains(r#"value props["as"] any"#),
-        "{}",
-        virtual_file.content
+    insta::assert_snapshot!(
+        "template_as_assertion_prop_virtual_ts",
+        snapshot_text(virtual_file.content.as_str())
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -696,20 +699,17 @@ const message = 'Hello'
     assert!(virtual_vue_path.exists());
     assert!(tsconfig_path.exists());
     assert!(auto_imports_path.exists());
-    assert!(
-        !fs::read_to_string(&virtual_vue_path)
-            .unwrap()
-            .contains("autoGenerated")
+    insta::assert_snapshot!(
+        "materialize_virtual_vue",
+        snapshot_text(fs::read_to_string(&virtual_vue_path).unwrap().as_str())
     );
-    assert!(
-        fs::read_to_string(&auto_imports_path)
-            .unwrap()
-            .contains("autoGenerated")
+    insta::assert_snapshot!(
+        "materialize_auto_imports",
+        fs::read_to_string(&auto_imports_path).unwrap().as_str()
     );
-    assert!(
-        fs::read_to_string(&tsconfig_path)
-            .unwrap()
-            .contains("__vize_auto_imports.d.ts")
+    insta::assert_snapshot!(
+        "materialize_tsconfig",
+        fs::read_to_string(&tsconfig_path).unwrap().as_str()
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -888,16 +888,13 @@ const message = 'Hello'
     let helpers_path = virtual_root.join(SHARED_HELPERS_FILE);
     assert!(helpers_path.exists());
     let helpers_content = fs::read_to_string(&helpers_path).unwrap();
-    assert!(helpers_content.contains("interface ImportMeta"));
-    assert!(helpers_content.contains("type __EmitShape<T>"));
-    assert!(helpers_content.contains("declare function __vize_defineProps"));
+    insta::assert_snapshot!("pruned_helpers", helpers_content.as_str());
     let tsconfig_content = fs::read_to_string(virtual_root.join("tsconfig.json")).unwrap();
-    assert!(tsconfig_content.contains(SHARED_HELPERS_FILE));
+    insta::assert_snapshot!("pruned_tsconfig", tsconfig_content.as_str());
     // The generated module relies on the hoisted preamble instead of
     // embedding it (no per-file `declare global` augmentation).
     let generated = fs::read_to_string(virtual_root.join("src/App.vue.ts")).unwrap();
-    assert!(!generated.contains("declare global"));
-    assert!(generated.contains("const defineProps = __vize_defineProps;"));
+    insta::assert_snapshot!("pruned_generated_vue", snapshot_text(generated.as_str()));
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -1200,11 +1197,9 @@ fn jsx_typecheck_off_keeps_tsx_verbatim_passthrough() {
         .unwrap();
     let virtual_file = project.find_by_original(&tsx_path).unwrap();
     assert_eq!(virtual_file.content.as_str(), source);
-    assert!(
-        virtual_file
-            .virtual_path
-            .to_string_lossy()
-            .ends_with(".tsx")
+    assert_eq!(
+        virtual_file.virtual_path,
+        project.virtual_root().join("Comp.tsx")
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -1228,29 +1223,14 @@ fn jsx_typecheck_on_lowers_tsx_to_plain_ts() {
     // Plain `.ts` output: the JSX element is gone, the typed props parameter is
     // verbatim, and the JSX expression is re-emitted as plain TS.
     assert_ts_parses(&virtual_file.content);
-    assert!(
-        !virtual_file.content.contains("<div"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        virtual_file.content.contains("props: { msg: string }"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        virtual_file
-            .content
-            .contains("__vize_jsx_expr__(props.msg)"),
-        "{}",
-        virtual_file.content
+    insta::assert_snapshot!(
+        "jsx_typecheck_on_lowers_tsx_to_plain_ts",
+        virtual_file.content.as_str()
     );
     // Virtual path mirrors to `<name>.ts` so Corsa checks it as TypeScript.
-    assert!(
-        virtual_file
-            .virtual_path
-            .to_string_lossy()
-            .ends_with("Comp.tsx.ts")
+    assert_eq!(
+        virtual_file.virtual_path,
+        project.virtual_root().join("Comp.tsx.ts")
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -1277,28 +1257,9 @@ fn jsx_typecheck_on_types_emits_from_ctx_second_param() {
     // Plain TS, and the ambient `Ctx` plus its emit-typing helper are injected so
     // the verbatim `Ctx<{ change: [value: number] }>` annotation resolves.
     assert_ts_parses(&virtual_file.content);
-    assert!(
-        virtual_file
-            .content
-            .contains("type Ctx<Emits = {}, Slots = {}>"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        virtual_file
-            .content
-            .contains("{ emit }: Ctx<{ change: [value: number] }>"),
-        "{}",
-        virtual_file.content
-    );
-    // The `emit(...)` call is re-emitted, so its payload type-checks at the call
-    // site against `[value: number]`.
-    assert!(
-        virtual_file
-            .content
-            .contains("emit('change', props.msg.length)"),
-        "{}",
-        virtual_file.content
+    insta::assert_snapshot!(
+        "jsx_typecheck_on_types_emits_from_ctx_second_param",
+        virtual_file.content.as_str()
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -1322,19 +1283,9 @@ fn jsx_typecheck_on_types_slots_from_ctx_second_param() {
     let virtual_file = project.find_by_original(&tsx_path).unwrap();
 
     assert_ts_parses(&virtual_file.content);
-    assert!(
-        virtual_file
-            .content
-            .contains("{ slots }: Ctx<{}, { default: () => unknown }>"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        virtual_file
-            .content
-            .contains("__vize_jsx_expr__(slots.default())"),
-        "{}",
-        virtual_file.content
+    insta::assert_snapshot!(
+        "jsx_typecheck_on_types_slots_from_ctx_second_param",
+        virtual_file.content.as_str()
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -1359,44 +1310,9 @@ fn jsx_typecheck_on_handles_mixed_props_emits_slots() {
     let virtual_file = project.find_by_original(&tsx_path).unwrap();
 
     assert_ts_parses(&virtual_file.content);
-    // Both typed parameters and the setup statement stay verbatim.
-    assert!(
-        virtual_file
-            .content
-            .contains("props: { label: string; count?: number }"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        virtual_file.content.contains(
-            "{ emit, slots }: Ctx<{ change: [next: number] }, { default: () => unknown }>"
-        ),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        virtual_file
-            .content
-            .contains("const next = (props.count ?? 0) + 1;"),
-        "{}",
-        virtual_file.content
-    );
-    // The emit and slots usages survive as re-emitted plain TS.
-    assert!(
-        virtual_file.content.contains("emit('change', next)"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        virtual_file.content.contains("slots.default()"),
-        "{}",
-        virtual_file.content
-    );
-    // No JSX element syntax leaks into the virtual TS.
-    assert!(
-        !virtual_file.content.contains("<button"),
-        "{}",
-        virtual_file.content
+    insta::assert_snapshot!(
+        "jsx_typecheck_on_handles_mixed_props_emits_slots",
+        virtual_file.content.as_str()
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -1421,17 +1337,9 @@ fn jsx_typecheck_on_reemits_v_model_target_as_assignment() {
     let virtual_file = project.find_by_original(&tsx_path).unwrap();
 
     assert_ts_parses(&virtual_file.content);
-    assert!(
-        virtual_file
-            .content
-            .contains("__vize_jsx_expr__((model.value = model.value))"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        !virtual_file.content.contains("<input"),
-        "{}",
-        virtual_file.content
+    insta::assert_snapshot!(
+        "jsx_typecheck_on_reemits_v_model_target_as_assignment",
+        virtual_file.content.as_str()
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -1457,18 +1365,9 @@ fn jsx_typecheck_on_binds_v_for_alias_inside_map_callback() {
     let virtual_file = project.find_by_original(&tsx_path).unwrap();
 
     assert_ts_parses(&virtual_file.content);
-    assert!(
-        virtual_file
-            .content
-            .contains("(props.items).map((item) => __vize_jsx_expr__(item.toFixed(2)))"),
-        "{}",
-        virtual_file.content
-    );
-    // The alias must not leak as an unbound outer-scope sink argument.
-    assert!(
-        !virtual_file.content.contains(", item)"),
-        "{}",
-        virtual_file.content
+    insta::assert_snapshot!(
+        "jsx_typecheck_on_binds_v_for_alias_inside_map_callback",
+        virtual_file.content.as_str()
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -1494,17 +1393,9 @@ fn jsx_typecheck_on_reemits_style_block_interpolation() {
     let virtual_file = project.find_by_original(&tsx_path).unwrap();
 
     assert_ts_parses(&virtual_file.content);
-    assert!(
-        virtual_file
-            .content
-            .contains("__vize_jsx_expr__(props.color)"),
-        "{}",
-        virtual_file.content
-    );
-    assert!(
-        !virtual_file.content.contains("<style"),
-        "{}",
-        virtual_file.content
+    insta::assert_snapshot!(
+        "jsx_typecheck_on_reemits_style_block_interpolation",
+        virtual_file.content.as_str()
     );
 
     let _ = fs::remove_dir_all(&case_dir);

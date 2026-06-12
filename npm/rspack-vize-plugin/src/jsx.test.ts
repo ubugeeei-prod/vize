@@ -3,7 +3,12 @@ import path from "node:path";
 import { rspack } from "@rspack/core";
 import "./test/setup.ts";
 import { VizePlugin } from "./plugin/index.ts";
-import { packageRoot, prepareOutputDir, resolveFixturePath } from "./test/helpers.ts";
+import {
+  normalizeSnapshot,
+  packageRoot,
+  prepareOutputDir,
+  resolveFixturePath,
+} from "./test/helpers.ts";
 
 function runCompiler(compiler: ReturnType<typeof rspack>) {
   return new Promise<NonNullable<Parameters<Parameters<typeof compiler.run>[0]>[1]>>(
@@ -90,25 +95,7 @@ void test("jsx: a .jsx Vue component compiles to VDOM render code", async (t) =>
     throw new Error(JSON.stringify(info.errors, null, 2));
   }
 
-  // The JSX loader now emits a self-contained module whose render code imports
-  // its VDOM helpers from `"vue"` (the runtime-helper preamble is no longer
-  // dropped, #1533). `vue` is externalized, so rspack rewrites each helper
-  // reference to a property access on the external import binding
-  // (`(0,vue__rspack_import_0.createElementBlock)(…)`) — i.e. the emitted
-  // helpers are now genuinely imported and resolved, not dangling bare aliases.
-  const bundle = bundleSource(stats);
-  const renderMatch = bundle.match(/function render\(_ctx, _cache\) \{[\s\S]*?\n\}/);
-  t.assert.ok(renderMatch, "the bundle carries the compiled render function");
-  t.assert.equal(
-    renderMatch[0],
-    "function render(_ctx, _cache) {\n" +
-      '  return ((0,vue__rspack_import_0.openBlock)(), (0,vue__rspack_import_0.createElementBlock)("div", { class: "jsx-app" }, [\n' +
-      '    (0,vue__rspack_import_0.createElementVNode)("p", null, "hello jsx"),\n' +
-      '    (0,vue__rspack_import_0.createElementVNode)("span", null, (0,vue__rspack_import_0.toDisplayString)(count + 1), 1 /* TEXT */)\n' +
-      "  ]))\n" +
-      "}",
-    "the bundled render code resolves every VDOM helper through the externalized vue import",
-  );
+  t.assert.snapshot(normalizeSnapshot(bundleSource(stats)));
 });
 
 void test("jsx: a .jsx <style scoped> block emits scope-rewritten CSS into the bundle", async (t) => {
@@ -124,17 +111,7 @@ void test("jsx: a .jsx <style scoped> block emits scope-rewritten CSS into the b
     throw new Error(JSON.stringify(info.errors, null, 2));
   }
 
-  const bundle = bundleSource(stats);
-  t.assert.ok(
-    bundle.includes("__vize_css__"),
-    "bundle should carry the inline-style injection for the scoped CSS",
-  );
-  const scopeMatch = bundle.match(/data-v-[0-9a-f]+/);
-  t.assert.ok(scopeMatch, "the emitted CSS should carry a data-v- scope id");
-  t.assert.ok(
-    bundle.includes(`.jsx-scoped-box[${scopeMatch[0]}]`),
-    "the emitted CSS should apply the scope id to the component selector",
-  );
+  t.assert.snapshot(normalizeSnapshot(bundleSource(stats)));
 });
 
 void test("jsx: a vapor .jsx component compiles to template render code", async (t) => {
@@ -146,19 +123,5 @@ void test("jsx: a vapor .jsx component compiles to template render code", async 
     throw new Error(JSON.stringify(info.errors, null, 2));
   }
 
-  const bundle = bundleSource(stats);
-  // The vapor path emits a `_template(...)` call importing `template` from
-  // `vue`; rspack rewrites the externalized import (e.g.
-  // `(0,vue__rspack_import_0.template)(...)`). The vapor output never goes
-  // through the VDOM `_createElementBlock` block helper, and it inlines the
-  // component markup into a static template string.
-  t.assert.ok(bundle.includes(".template)"), "vapor bundle should contain a template() call");
-  t.assert.ok(
-    bundle.includes("jsx-vapor-app") && bundle.includes("hello vapor jsx"),
-    "vapor bundle should inline the component markup into a template string",
-  );
-  t.assert.ok(
-    !bundle.includes("_createElementBlock"),
-    "vapor bundle should not contain VDOM _createElementBlock",
-  );
+  t.assert.snapshot(normalizeSnapshot(bundleSource(stats)));
 });

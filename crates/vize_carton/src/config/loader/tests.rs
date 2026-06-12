@@ -12,7 +12,10 @@ fn validate_explicit_config_path_missing_errors() {
 
     let result = validate_explicit_config_path(&missing);
     assert!(result.is_err());
-    assert!(result.unwrap_err().contains("config file not found"));
+    assert_eq!(
+        result.unwrap_err(),
+        format!("config file not found: {}", missing.display())
+    );
 }
 
 #[test]
@@ -23,7 +26,10 @@ fn validate_explicit_config_path_malformed_errors() {
 
     let result = validate_explicit_config_path(&config_path);
     assert!(result.is_err());
-    assert!(result.unwrap_err().contains("failed to parse"));
+    let error = result
+        .unwrap_err()
+        .replace(config_path.to_string_lossy().as_ref(), "<CONFIG>");
+    insta::assert_snapshot!(error);
 }
 
 #[test]
@@ -52,7 +58,10 @@ fn validate_explicit_config_path_empty_dir_errors() {
     let dir = tempfile::tempdir().unwrap();
     let result = validate_explicit_config_path(dir.path());
     assert!(result.is_err());
-    assert!(result.unwrap_err().contains("no vize config file found"));
+    assert_eq!(
+        result.unwrap_err(),
+        format!("no vize config file found under {}", dir.path().display())
+    );
 }
 
 #[test]
@@ -198,4 +207,33 @@ export default {
     );
     assert_eq!(linter.disabled_rules(), ["vue/prop-name-casing"]);
     assert_eq!(linter.enabled_rules(), ["script/no-options-api"]);
+}
+
+#[test]
+fn load_config_uses_relative_typescript_file_path() {
+    let cwd = std::env::current_dir().unwrap();
+    let case_dir = cwd
+        .join("target")
+        .join(format!("vize-config-relative-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&case_dir);
+    std::fs::create_dir_all(&case_dir).unwrap();
+    let config_path = case_dir.join("vize.config.ts");
+    std::fs::write(
+        &config_path,
+        r#"
+export default {
+  formatter: {
+    singleQuote: true,
+  },
+}
+"#,
+    )
+    .unwrap();
+    let relative_config_path = config_path.strip_prefix(&cwd).unwrap();
+
+    let loaded = load_config_with_source(Some(relative_config_path));
+
+    assert!(loaded.config.formatter.single_quote);
+
+    let _ = std::fs::remove_dir_all(&case_dir);
 }

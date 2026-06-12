@@ -1,6 +1,6 @@
 ---
 title: Personal Speed
-description: Why Vize being unofficial and personal can be an advantage for exploration, speed, and ambitious toolchain design.
+description: Why Vize being independent and personal can be an advantage for exploration, speed, and ambitious toolchain design.
 ---
 
 # Personal Speed
@@ -21,7 +21,7 @@ description: Why Vize being unofficial and personal can be an advantage for expl
   </a>
 </div>
 
-Vize is unofficial.
+Vize is independent.
 
 It is also personal.
 
@@ -45,7 +45,7 @@ That is necessary.
 
 But it also means official tools cannot always explore every idea at full speed. They need consensus, compatibility, and ecosystem timing.
 
-Unofficial tools can play a different role.
+Independent tools can play a different role.
 
 ## Personal Projects Can Take Sharper Turns
 
@@ -137,13 +137,13 @@ The frontend ecosystem is changing quickly:
 - Vue is exploring Vapor
 - design systems need more executable structure
 
-This is exactly the kind of period where unofficial experiments matter.
+This is exactly the kind of period where independent experiments matter.
 
 They can explore before the ecosystem has settled.
 They can expose tradeoffs.
 They can prove or disprove ideas.
 They can feed lessons back into the broader community.
 
-Vize being unofficial and personal is not an apology.
+Vize being independent and personal is not an apology.
 
 It is part of the development model: move fast, validate aggressively, compare honestly with the official stack, and let real feedback decide which ideas deserve to survive.

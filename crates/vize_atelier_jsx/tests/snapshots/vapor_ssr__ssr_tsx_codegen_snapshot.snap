@@ -1,0 +1,15 @@
+---
+source: crates/vize_atelier_jsx/tests/vapor_ssr.rs
+expression: "snapshot_lang_cases(&cases, |source, lang| { vapor_code(source, lang, true) })"
+---
+## tsx ssr
+### lang
+Tsx
+### source
+const A = (): JSX.Element => <span>{label}</span>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<span${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(label)}</span>`)
+}

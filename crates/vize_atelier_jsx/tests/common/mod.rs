@@ -4,7 +4,11 @@
 //! the helpers, so unused-helper warnings are expected and silenced.
 #![allow(dead_code)]
 
-use vize_atelier_jsx::{JsxLang, LowerOutput, lower_source};
+use std::fmt::Write as _;
+use vize_atelier_jsx::{
+    DomCompileOptions, JsxLang, LowerOutput, VaporCompileOptions, compile_to_dom, compile_to_vapor,
+    lower_source,
+};
 use vize_carton::Bump;
 use vize_relief::{
     AttributeNode, DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode,
@@ -45,6 +49,84 @@ pub fn lower_single<'a>(
 /// Lower JSX source and return the full output (roots + diagnostics).
 pub fn lower_all<'a>(bump: &'a Bump, source: &str) -> LowerOutput<'a> {
     lower_source(bump, source, JsxLang::Jsx)
+}
+
+/// Compile one component to VDOM render code.
+pub fn dom_code(source: &str, lang: JsxLang) -> vize_carton::String {
+    let bump = Bump::new();
+    let out = compile_to_dom(&bump, source, lang, DomCompileOptions::default());
+    assert!(
+        !out.has_errors(),
+        "unexpected diagnostics: {:?}",
+        out.diagnostics
+    );
+    assert_eq!(out.components.len(), 1, "expected exactly one component");
+    out.components.into_iter().next().unwrap().code
+}
+
+/// Compile one component to Vapor render code.
+pub fn vapor_code(source: &str, lang: JsxLang, ssr: bool) -> vize_carton::String {
+    let bump = Bump::new();
+    let out = compile_to_vapor(&bump, source, lang, VaporCompileOptions { ssr });
+    assert!(
+        !out.has_errors(),
+        "unexpected diagnostics: {:?}",
+        out.diagnostics
+    );
+    assert_eq!(out.components.len(), 1, "expected exactly one component");
+    out.components.into_iter().next().unwrap().code
+}
+
+/// Normalize generated text before writing it into snapshot files.
+pub fn snapshot_text(source: &str) -> std::string::String {
+    let mut output = std::string::String::with_capacity(source.len());
+    for (index, line) in source.split('\n').enumerate() {
+        if index > 0 {
+            output.push('\n');
+        }
+        output.push_str(line.trim_end_matches(|ch| ch == ' ' || ch == '\t'));
+    }
+    output
+}
+
+/// Render a named case matrix into a single deterministic snapshot body.
+pub fn snapshot_cases(
+    cases: &[(&str, &str)],
+    mut compile: impl FnMut(&str) -> vize_carton::String,
+) -> std::string::String {
+    let mut snapshot = std::string::String::new();
+    for (index, (name, source)) in cases.iter().enumerate() {
+        if index > 0 {
+            snapshot.push_str("\n\n");
+        }
+        writeln!(snapshot, "## {name}").unwrap();
+        writeln!(snapshot, "### source").unwrap();
+        writeln!(snapshot, "{source}").unwrap();
+        writeln!(snapshot, "### output").unwrap();
+        snapshot.push_str(snapshot_text(compile(source).as_str()).as_str());
+    }
+    snapshot
+}
+
+/// Render a named, language-aware case matrix into a snapshot body.
+pub fn snapshot_lang_cases(
+    cases: &[(&str, JsxLang, &str)],
+    mut compile: impl FnMut(&str, JsxLang) -> vize_carton::String,
+) -> std::string::String {
+    let mut snapshot = std::string::String::new();
+    for (index, (name, lang, source)) in cases.iter().enumerate() {
+        if index > 0 {
+            snapshot.push_str("\n\n");
+        }
+        writeln!(snapshot, "## {name}").unwrap();
+        writeln!(snapshot, "### lang").unwrap();
+        writeln!(snapshot, "{lang:?}").unwrap();
+        writeln!(snapshot, "### source").unwrap();
+        writeln!(snapshot, "{source}").unwrap();
+        writeln!(snapshot, "### output").unwrap();
+        snapshot.push_str(snapshot_text(compile(source, *lang).as_str()).as_str());
+    }
+    snapshot
 }
 
 /// Borrow a child as an element, panicking otherwise.

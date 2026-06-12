@@ -1,0 +1,45 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: summaries
+---
+[
+    NamedDiagnostics {
+        name: "jsx_rejects_ts_type_annotation",
+        diagnostics: [
+            DiagnosticSummary {
+                severity: "Error",
+                message: "Expected `,` or `)` but found `:`",
+                source: ":",
+                range: 19..20,
+            },
+        ],
+    },
+    NamedDiagnostics {
+        name: "conflicting_mode_directives",
+        diagnostics: [
+            DiagnosticSummary {
+                severity: "Error",
+                message: "conflicting JSX mode directives: \"use vue:vdom\" follows \"use vue:vapor\" in the same component; a component can select only one output mode",
+                source: "\"use vue:vdom\"",
+                range: 41..55,
+            },
+        ],
+    },
+    NamedDiagnostics {
+        name: "malformed_jsx_tree",
+        diagnostics: [
+            DiagnosticSummary {
+                severity: "Error",
+                message: "Expected corresponding JSX closing tag for 'span'.",
+                source: "div",
+                range: 31..34,
+            },
+            DiagnosticSummary {
+                severity: "Error",
+                message: "Unexpected token",
+                source: ";",
+                range: 35..36,
+            },
+        ],
+    },
+]

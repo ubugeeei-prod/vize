@@ -1,0 +1,115 @@
+---
+source: crates/vize_atelier_jsx/tests/vapor.rs
+expression: "snapshot_lang_cases(&cases, |source, lang|\n{ vapor_code(source, lang, false) })"
+---
+## element
+### lang
+Jsx
+### source
+const A = () => <div/>;
+### output
+import { template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}
+
+
+## static attribute
+### lang
+Jsx
+### source
+const A = () => <div class="a"/>;
+### output
+import { template as _template } from 'vue';
+const t0 = _template("<div class=\"a\"></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}
+
+
+## interpolation
+### lang
+Jsx
+### source
+const A = () => <div>{count}</div>;
+### output
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div> </div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setText(x0, _toDisplayString(count)))
+  return n0
+}
+
+
+## member expression
+### lang
+Jsx
+### source
+const A = () => <p>{user.name}</p>;
+### output
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<p> </p>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setText(x0, _toDisplayString(user.name)))
+  return n0
+}
+
+
+## event handler
+### lang
+Jsx
+### source
+const A = () => <button onClick={h}>go</button>;
+### output
+import { setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<button>go</button>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _renderEffect(() => _setProp(n0, "onClick", h))
+  return n0
+}
+
+
+## dynamic binding
+### lang
+Jsx
+### source
+const A = () => <div id={x}/>;
+### output
+import { setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _renderEffect(() => _setProp(n0, "id", x))
+  return n0
+}
+
+
+## tsx
+### lang
+Tsx
+### source
+const A = (): JSX.Element => <span>{label}</span>;
+### output
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<span> </span>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setText(x0, _toDisplayString(label)))
+  return n0
+}

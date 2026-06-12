@@ -1,0 +1,17 @@
+{
+  "name": "vize-jsx-tsx-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "vp check src",
+    "lint": "vp lint src",
+    "fmt": "vp fmt --write src"
+  },
+  "dependencies": {
+    "vue": "catalog:vue-stable"
+  },
+  "devDependencies": {
+    "typescript": "catalog:typescript",
+    "vize": "workspace:*"
+  }
+}

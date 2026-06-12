@@ -1,0 +1,17 @@
+---
+source: crates/vize_canon/src/batch/virtual_project/tests.rs
+expression: "fs::read_to_string(&tsconfig_path).unwrap().as_str()"
+---
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "exclude": [],
+  "include": [
+    "__vize_auto_imports.d.ts",
+    "__vize_helpers.d.ts",
+    "__vize_vue_modules.d.ts",
+    "src/App.vue.ts"
+  ]
+}

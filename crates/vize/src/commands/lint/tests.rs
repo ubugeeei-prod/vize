@@ -1,8 +1,39 @@
 //! Tests for the lint command.
 
-use super::{build_cross_file_lint_output, should_render_lint_details};
-use std::fs;
-use vize_patina::{LintPreset, Linter, OutputFormat};
+use super::{
+    build_cross_file_lint_output, collect::collect_lint_files, should_render_lint_details,
+};
+use std::{fs, path::Path};
+use vize_patina::{LintPreset, LintResult, Linter, OutputFormat};
+
+fn result_for_file<'a>(results: &'a [LintResult], file_name: &str) -> &'a LintResult {
+    results
+        .iter()
+        .find(|result| {
+            Path::new(result.filename.as_str())
+                .file_name()
+                .and_then(|name| name.to_str())
+                == Some(file_name)
+        })
+        .expect("result should exist")
+}
+
+fn diagnostic_summary(result: &LintResult) -> Vec<String> {
+    result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            format!(
+                "{:?}|{}|{}..{}",
+                diagnostic.severity, diagnostic.message, diagnostic.start, diagnostic.end
+            )
+        })
+        .collect()
+}
+
+fn all_diagnostic_summary(results: &[LintResult]) -> Vec<String> {
+    results.iter().flat_map(diagnostic_summary).collect()
+}
 
 #[test]
 fn quiet_text_output_skips_detailed_diagnostics() {
@@ -21,6 +52,28 @@ fn report_formats_render_in_quiet_mode() {
     assert!(should_render_lint_details(OutputFormat::Markdown, true));
     assert!(should_render_lint_details(OutputFormat::Html, true));
     assert!(should_render_lint_details(OutputFormat::Agent, true));
+}
+
+#[test]
+fn lint_collection_includes_jsx_and_tsx() {
+    let dir = tempfile::tempdir().unwrap();
+    let src = dir.path().join("src");
+    fs::create_dir_all(&src).unwrap();
+    fs::write(src.join("App.vue"), "").unwrap();
+    fs::write(src.join("Panel.jsx"), "").unwrap();
+    fs::write(src.join("Widget.tsx"), "").unwrap();
+    fs::write(src.join("skip.ts"), "").unwrap();
+
+    let files = collect_lint_files(&[src.display().to_string().into()]);
+
+    assert_eq!(
+        files,
+        vec![
+            src.join("App.vue"),
+            src.join("Panel.jsx"),
+            src.join("Widget.tsx"),
+        ]
+    );
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -85,24 +138,14 @@ const { count } = inject('state') as { count: number }
         .collect::<Vec<_>>();
     let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, true);
 
-    let child_result = output
-        .results
-        .iter()
-        .find(|result| result.filename.ends_with("Child.vue"))
-        .expect("child result should exist");
-    assert!(child_result.diagnostics.iter().any(|diagnostic| {
-        diagnostic
-            .message
-            .contains("destructuring-breaks-reactivity")
-    }));
+    let child_result = result_for_file(&output.results, "Child.vue");
+    insta::assert_debug_snapshot!(diagnostic_summary(child_result));
 
     let tree = output
         .provide_inject_tree
         .as_deref()
         .expect("tree should be rendered");
-    assert!(tree.contains("App"));
-    assert!(tree.contains("Middle"));
-    assert!(tree.contains("Child"));
+    insta::assert_snapshot!(tree);
 }
 
 #[test]
@@ -163,22 +206,13 @@ import Provider from './Provider.vue'
         .collect::<Vec<_>>();
     let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, true);
 
-    let diagnostics = output
-        .results
-        .iter()
-        .flat_map(|result| result.diagnostics.iter())
-        .collect::<Vec<_>>();
-    assert!(diagnostics.iter().all(|diagnostic| {
-        !diagnostic.message.contains("unmatched-inject")
-            && !diagnostic.message.contains("unused-provide")
-    }));
+    insta::assert_debug_snapshot!(all_diagnostic_summary(&output.results));
 
     let tree = output
         .provide_inject_tree
         .as_deref()
         .expect("tree should be rendered");
-    assert!(tree.contains("Provider"));
-    assert!(tree.contains("Consumer"));
+    insta::assert_snapshot!(tree);
 }
 
 #[test]
@@ -212,16 +246,10 @@ const ready = true
         .collect::<Vec<_>>();
     let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
 
-    let first_result = output
-        .results
-        .iter()
-        .find(|result| result.filename.ends_with("First.vue"))
-        .expect("first result should exist");
-    let diagnostic = first_result
-        .diagnostics
-        .iter()
-        .find(|diagnostic| diagnostic.message.contains("duplicate-id"))
-        .expect("duplicate element id should be reported");
+    let first_result = result_for_file(&output.results, "First.vue");
+    insta::assert_debug_snapshot!(diagnostic_summary(first_result));
+    assert_eq!(first_result.diagnostics.len(), 1);
+    let diagnostic = &first_result.diagnostics[0];
 
     let expected_start = first_source.find("id=\"email\"").unwrap() as u32;
     assert_eq!(diagnostic.start, expected_start);
@@ -258,16 +286,9 @@ fn cross_file_opt_in_skips_template_ast_after_fatal_parse_error() {
         .collect::<Vec<_>>();
     let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
 
-    let diagnostics = output
-        .results
-        .iter()
-        .flat_map(|result| result.diagnostics.iter())
-        .collect::<Vec<_>>();
-    assert!(
-        diagnostics
-            .iter()
-            .all(|diagnostic| !diagnostic.message.contains("duplicate-id")),
-        "malformed templates should not contribute cross-file template facts: {diagnostics:?}"
+    assert_eq!(
+        all_diagnostic_summary(&output.results),
+        Vec::<String>::new()
     );
 }
 
@@ -308,17 +329,8 @@ const { item } = props
         .collect::<Vec<_>>();
     let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
 
-    let child_result = output
-        .results
-        .iter()
-        .find(|result| result.filename.ends_with("Child.vue"))
-        .expect("child result should exist");
-    assert!(child_result.diagnostics.iter().any(|diagnostic| {
-        diagnostic.severity == vize_patina::Severity::Error
-            && diagnostic
-                .message
-                .contains("destructuring-breaks-reactivity")
-    }));
+    let child_result = result_for_file(&output.results, "Child.vue");
+    insta::assert_debug_snapshot!(diagnostic_summary(child_result));
 }
 
 #[test]
@@ -351,30 +363,11 @@ const item2 = item
         .collect::<Vec<_>>();
     let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
 
-    let direct_result = output
-        .results
-        .iter()
-        .find(|result| result.filename.ends_with("Direct.vue"))
-        .expect("direct result should exist");
-    assert!(!direct_result.diagnostics.iter().any(|diagnostic| {
-        diagnostic
-            .message
-            .contains("destructuring-breaks-reactivity")
-            || diagnostic
-                .message
-                .contains("value-extraction-breaks-reactivity")
-    }));
+    let direct_result = result_for_file(&output.results, "Direct.vue");
+    assert_eq!(diagnostic_summary(direct_result), Vec::<String>::new());
 
-    let alias_result = output
-        .results
-        .iter()
-        .find(|result| result.filename.ends_with("Alias.vue"))
-        .expect("alias result should exist");
-    assert!(alias_result.diagnostics.iter().any(|diagnostic| {
-        diagnostic
-            .message
-            .contains("value-extraction-breaks-reactivity")
-    }));
+    let alias_result = result_for_file(&output.results, "Alias.vue");
+    insta::assert_debug_snapshot!(diagnostic_summary(alias_result));
 }
 
 #[test]
@@ -402,16 +395,10 @@ const rows = [{ name: 'Ada' }]
         .collect::<Vec<_>>();
     let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
 
-    let list_result = output
-        .results
-        .iter()
-        .find(|result| result.filename.ends_with("List.vue"))
-        .expect("list result should exist");
-    let diagnostic = list_result
-        .diagnostics
-        .iter()
-        .find(|diagnostic| diagnostic.message.contains("non-unique-id"))
-        .expect("static id in v-for should be reported");
+    let list_result = result_for_file(&output.results, "List.vue");
+    insta::assert_debug_snapshot!(diagnostic_summary(list_result));
+    assert_eq!(list_result.diagnostics.len(), 1);
+    let diagnostic = &list_result.diagnostics[0];
 
     let expected_start = source.find("id=\"row-label\"").unwrap() as u32;
     assert_eq!(diagnostic.start, expected_start);
@@ -463,13 +450,6 @@ watch(query, async () => {
         .collect::<Vec<_>>();
     let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
 
-    let child_result = output
-        .results
-        .iter()
-        .find(|result| result.filename.ends_with("Child.vue"))
-        .expect("child result should exist");
-    assert!(child_result.diagnostics.iter().any(|diagnostic| {
-        diagnostic.severity == vize_patina::Severity::Error
-            && diagnostic.message.contains("injected-async-mutation-race")
-    }));
+    let child_result = result_for_file(&output.results, "Child.vue");
+    insta::assert_debug_snapshot!(diagnostic_summary(child_result));
 }

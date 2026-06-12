@@ -28,12 +28,10 @@ pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};
 pub(super) use loader::{read_extends_entries, resolve_extended_tsconfig};
 pub(crate) use spec::TsconfigDeclarationOptions;
 
-use collect::{
-    collect_supported_files, collect_supported_files_with_options, explicit_hidden_include_roots,
-};
+use collect::{collect_supported_files_with_options, explicit_hidden_include_roots};
 use glob::{default_exclude_specs, normalize_input_path};
 use loader::collect_tsconfig_project_paths;
-use matching::is_supported_check_file;
+use matching::{SupportedFileOptions, is_supported_check_file_with_options};
 use spec::{FileCollectionOptions, GlobSpec, TsconfigInputSpec};
 
 const TARGET_DIR: &str = "target";
@@ -43,19 +41,29 @@ const VIZE_CACHE_DIR: &str = ".vize";
 pub(crate) fn collect_default_check_files(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
+    include_jsx: bool,
     cache: &mut TsconfigInputCache,
 ) -> Vec<PathBuf> {
-    collect_default_check_files_inner(project_root, tsconfig_path, false, cache)
+    collect_default_check_files_inner(project_root, tsconfig_path, false, include_jsx, cache)
 }
 
 fn collect_default_check_files_inner(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
     include_hidden_tsconfig_roots: bool,
+    include_jsx: bool,
     cache: &mut TsconfigInputCache,
 ) -> Vec<PathBuf> {
     let Some(tsconfig_path) = tsconfig_path else {
-        return collect_supported_files(project_root, &[], &[]);
+        return collect_supported_files_with_options(
+            project_root,
+            &[],
+            &[],
+            FileCollectionOptions {
+                include_hidden: false,
+                include_jsx,
+            },
+        );
     };
 
     let mut files = Vec::new();
@@ -65,6 +73,7 @@ fn collect_default_check_files_inner(
             project_root,
             &tsconfig_path,
             include_hidden_tsconfig_roots,
+            include_jsx,
             cache,
             &mut files,
             &mut seen,
@@ -79,6 +88,7 @@ fn collect_default_check_files_for_tsconfig(
     project_root: &Path,
     tsconfig_path: &Path,
     include_hidden_tsconfig_roots: bool,
+    include_jsx: bool,
     cache: &mut TsconfigInputCache,
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
@@ -90,7 +100,7 @@ fn collect_default_check_files_for_tsconfig(
         let resolved = normalize_input_path(&file.resolve());
         if resolved.starts_with(project_root)
             && resolved.is_file()
-            && is_supported_check_file(&resolved)
+            && is_supported_check_file_with_options(&resolved, SupportedFileOptions { include_jsx })
             && seen.insert(resolved.clone())
         {
             files.push(resolved);
@@ -121,7 +131,15 @@ fn collect_default_check_files_for_tsconfig(
     };
 
     if !includes.is_empty() {
-        let collected = collect_supported_files(project_root, includes, excludes);
+        let collected = collect_supported_files_with_options(
+            project_root,
+            includes,
+            excludes,
+            FileCollectionOptions {
+                include_hidden: false,
+                include_jsx,
+            },
+        );
         for path in collected {
             if seen.insert(path.clone()) {
                 files.push(path);
@@ -135,6 +153,7 @@ fn collect_default_check_files_for_tsconfig(
                     excludes,
                     FileCollectionOptions {
                         include_hidden: true,
+                        include_jsx,
                     },
                 ) {
                     if seen.insert(path.clone()) {

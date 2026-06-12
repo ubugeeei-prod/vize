@@ -1,0 +1,10 @@
+---
+source: crates/vize_atelier_jsx/tests/style.rs
+expression: dom_snapshot(&component)
+---
+## code
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { class: "box" }, "hi"))
+}
+## scoped_style
+none

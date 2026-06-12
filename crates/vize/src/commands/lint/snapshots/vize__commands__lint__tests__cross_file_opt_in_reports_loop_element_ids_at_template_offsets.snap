@@ -1,0 +1,7 @@
+---
+source: crates/vize/src/commands/lint/tests.rs
+expression: diagnostic_summary(list_result)
+---
+[
+    "Error|vize:croquis/cf/non-unique-id: Static ID 'row-label' inside v-for will create duplicate IDs|118..132",
+]

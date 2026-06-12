@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "dom_output_summary(source, &output)"
+---
+DomOutputSummary {
+    diagnostics: [],
+    components: [
+        RenderComponentSummary {
+            name: Some(
+                "Panel",
+            ),
+            mode: "Vdom",
+            preamble: Some(
+                "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList } from \"vue\"\n",
+            ),
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"section\", {\n    class: _normalizeClass({ panel: true, dense })\n  }, [\n    _createElementVNode(\"header\", null, [\n      _createElementVNode(\"h2\", null, _toDisplayString(activeRow.value?.title ?? \"Select a row\"), 1 /* TEXT */)\n    ]),\n    _createElementVNode(\"ul\", null, [\n      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row, index) => {\n        return (_openBlock(), _createElementBlock(\"li\", {\n          key: row.id,\n          class: _normalizeClass({ done: row.done, active: row.id === activeId.value }),\n          \"data-index\": index\n        }, [\n          _createElementVNode(\"button\", {\n            type: \"button\",\n            onClick: () => choose(row.id)\n          }, [\n            _createElementVNode(\"span\", null, _toDisplayString(row.title), 1 /* TEXT */),\n            (row.id === activeId.value)\n              ? (_openBlock(), _createElementBlock(\"strong\", { key: 0 }, \"Active\"))\n              : (_openBlock(), _createElementBlock(\"em\", { key: 1 }, _toDisplayString(index + 1), 1 /* TEXT */))\n          ], 8 /* PROPS */, [\"onClick\"])\n        ], 10 /* CLASS, PROPS */, [\"data-index\"]))\n      }), 128 /* KEYED_FRAGMENT */))\n    ]),\n    _createElementVNode(\"footer\", null, _toDisplayString(slots.footer()), 1 /* TEXT */)\n  ], 2 /* CLASS */))\n}",
+            templates: [],
+            scoped_style: None,
+        },
+    ],
+}

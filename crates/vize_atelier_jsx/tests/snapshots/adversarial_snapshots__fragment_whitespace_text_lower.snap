@@ -1,0 +1,77 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "lower_summary(source, &output)"
+---
+LowerSummary {
+    diagnostics: [],
+    roots: [
+        RootSummary {
+            component_name: Some(
+                "Copy",
+            ),
+            mode: None,
+            scoped_css: None,
+            scoped_style_exprs: [],
+            root: [
+                Text {
+                    content: "Hello",
+                },
+                Text {
+                    content: " ",
+                },
+                Element {
+                    tag: "strong",
+                    tag_type: "Element",
+                    is_self_closing: false,
+                    props: [],
+                    children: [
+                        Interpolation {
+                            expression: "dynamic:name",
+                        },
+                    ],
+                },
+                If {
+                    branches: [
+                        IfBranchSummary {
+                            condition: Some(
+                                "dynamic:count > 1",
+                            ),
+                            children: [
+                                Element {
+                                    tag: "span",
+                                    tag_type: "Element",
+                                    is_self_closing: false,
+                                    props: [],
+                                    children: [
+                                        Interpolation {
+                                            expression: "dynamic:count",
+                                        },
+                                        Text {
+                                            content: " items",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                        IfBranchSummary {
+                            condition: None,
+                            children: [
+                                Element {
+                                    tag: "span",
+                                    tag_type: "Element",
+                                    is_self_closing: false,
+                                    props: [],
+                                    children: [
+                                        Text {
+                                            content: "one item",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+}

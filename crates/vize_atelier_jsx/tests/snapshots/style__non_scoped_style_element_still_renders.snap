@@ -1,0 +1,9 @@
+---
+source: crates/vize_atelier_jsx/tests/style.rs
+expression: component.code.as_str()
+---
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    _createElementVNode("style", null, _toDisplayString(`.x{}`), 1 /* TEXT */)
+  ]))
+}

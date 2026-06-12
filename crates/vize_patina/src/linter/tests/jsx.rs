@@ -14,7 +14,7 @@
 //! a legacy `Rule` impl) firing over the lowering path; and `no_jsx_equivalent_*`
 //! documents that a directive with no JSX analogue is silently skipped.
 
-use crate::linter::Linter;
+use crate::linter::{LintResult, Linter};
 use crate::rule::{Rule, RuleRegistry};
 use crate::rules::a11y::{
     ImgAlt, NoAccessKey, NoAutofocus, NoDistractingElements, TabindexNoPositive,
@@ -27,6 +27,14 @@ fn linter_with(rule: Box<dyn Rule>) -> Linter {
     let mut registry = RuleRegistry::new();
     registry.register(rule);
     Linter::with_registry(registry)
+}
+
+fn diagnostic_rules(result: &LintResult) -> Vec<&str> {
+    result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.rule_name.as_ref())
+        .collect()
 }
 
 // ===========================================================================
@@ -48,14 +56,7 @@ fn ir_img_alt_jsx_without_alt_is_flagged() {
         "<img> without alt must flag through the IR pass: {:?}",
         result.diagnostics
     );
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.rule_name == "a11y/img-alt"),
-        "expected a11y/img-alt diagnostic: {:?}",
-        result.diagnostics
-    );
+    assert_eq!(diagnostic_rules(&result), vec!["a11y/img-alt"]);
 }
 
 #[test]
@@ -332,14 +333,7 @@ fn fallback_img_without_alt_is_flagged() {
         "<img> without alt should be flagged via fallback: {:?}",
         result.diagnostics
     );
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.rule_name == "vue/a11y-img-alt"),
-        "expected vue/a11y-img-alt diagnostic: {:?}",
-        result.diagnostics
-    );
+    assert_eq!(diagnostic_rules(&result), vec!["vue/a11y-img-alt"]);
 }
 
 #[test]
@@ -421,16 +415,8 @@ fn ir_and_fallback_rules_coexist() {
         "both the IR rule and the fallback rule must fire once each: {:?}",
         result.diagnostics
     );
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|d| d.rule_name == "a11y/img-alt")
-    );
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|d| d.rule_name == "vue/a11y-img-alt")
+    assert_eq!(
+        diagnostic_rules(&result),
+        vec!["a11y/img-alt", "vue/a11y-img-alt"]
     );
 }

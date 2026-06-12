@@ -1,0 +1,8 @@
+---
+source: crates/vize/src/commands/lint/tests.rs
+expression: diagnostic_summary(child_result)
+---
+[
+    "Warning|vize:croquis/cf/inject-without-symbol: inject('store') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow|81..96",
+    "Error|vize:croquis/cf/injected-async-mutation-race: Injected state 'store' is mutated from watch await in a consumer; provider-owned state can be overwritten by stale async completions|121..183",
+]

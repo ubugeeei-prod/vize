@@ -8,9 +8,9 @@ Usage: vize [COMMAND]
 
 Commands:
   build         Compile Vue SFC files (default command) [aliases: atelier]
-  fmt           Format Vue SFC files [aliases: glyph]
-  lint          Lint Vue SFC files [aliases: patina]
-  check         Type check Vue SFC files
+  fmt           Format Vue, JSX, and TSX files [aliases: glyph]
+  lint          Lint Vue, HTML, JSX, and TSX files [aliases: patina]
+  check         Type check Vue, JSX, and TSX files
   inspector     Create playground compiler inspector payloads and agent reports
   curator       Curator utilities for diagnostics and reports
   clean         Remove Vize-generated cache artifacts

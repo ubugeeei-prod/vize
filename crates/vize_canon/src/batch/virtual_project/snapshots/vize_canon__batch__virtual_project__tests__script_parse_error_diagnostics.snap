@@ -1,0 +1,16 @@
+---
+source: crates/vize_canon/src/batch/virtual_project/tests.rs
+expression: diagnostic_snapshot(diagnostics)
+---
+[
+    DiagnosticSnapshot {
+        line: 2,
+        column: 0,
+        message: "Script parse error: Unexpected token",
+        code: None,
+        severity: 1,
+        block_type: Some(
+            ScriptSetup,
+        ),
+    },
+]

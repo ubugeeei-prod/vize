@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "vapor_output_summary(source, &output)"
+---
+VaporOutputSummary {
+    diagnostics: [],
+    components: [
+        RenderComponentSummary {
+            name: Some(
+                "Copy",
+            ),
+            mode: "Vapor",
+            preamble: None,
+            code: "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"Hello\")\nconst t1 = _template(\" \")\nconst t2 = _template(\"<strong> </strong>\")\nconst t3 = _template(\"<span>  items</span>\", true)\nconst t4 = _template(\"<span>one item</span>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const n1 = t1()\n  const n2 = t2()\n  const x2 = _txt(n2)\n  const n3 = _createIf(() => (count > 1), () => {\n    const n5 = t3()\n    const x5 = _txt(n5)\n    _renderEffect(() => _setText(x5, _toDisplayString(count) + \" items\"))\n    return n5\n  }, () => {\n    const n7 = t4()\n    return n7\n  })\n  _renderEffect(() => _setText(x2, _toDisplayString(name)))\n  return [n0, n1, n2, n3]\n}\n",
+            templates: [
+                "Hello",
+                " ",
+                "<strong> </strong>",
+                "<span>  items</span>",
+                "<span>one item</span>",
+            ],
+            scoped_style: None,
+        },
+    ],
+}

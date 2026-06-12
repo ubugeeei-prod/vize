@@ -111,13 +111,13 @@ That is especially important for Vize because it touches many layers. A compiler
 
 The bar is high because the surface area is high.
 
-## Why Being Unofficial Helps Here
+## Why Independence Helps Here
 
 Official tools need a different kind of caution.
 
 They carry ecosystem expectations immediately. They cannot experiment too aggressively without affecting a large user base.
 
-Vize is unofficial, and that gives it room to move quickly:
+Vize is independent, and that gives it room to move quickly:
 
 - try architecture changes
 - rewrite internals

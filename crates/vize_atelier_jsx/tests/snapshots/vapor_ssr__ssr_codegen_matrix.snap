@@ -1,0 +1,269 @@
+---
+source: crates/vize_atelier_jsx/tests/vapor_ssr.rs
+expression: "snapshot_cases(&cases, |source| { vapor_code(source, JsxLang::Jsx, true) })"
+---
+## ssr render function
+### source
+const A = () => <div/>;
+### output
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}></div>`)
+}
+
+
+## server helpers
+### source
+const A = () => <div>{msg}</div>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(msg)}</div>`)
+}
+
+
+## static element
+### source
+const A = () => <p>hi</p>;
+### output
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}>hi</p>`)
+}
+
+
+## static attribute
+### source
+const A = () => <div class="box">x</div>;
+### output
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: "box" }, _attrs))}>x</div>`)
+}
+
+
+## dynamic attribute
+### source
+const A = () => <div id={x}/>;
+### output
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_mergeProps({ id: x }, _attrs))}></div>`)
+}
+
+
+## text interpolation
+### source
+const A = () => <div>{msg}</div>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(msg)}</div>`)
+}
+
+
+## static dynamic interpolation
+### source
+const A = () => <div id={x} class="box">{msg}</div>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_mergeProps({ id: x, class: "box" }, _attrs))}>${_ssrInterpolate(msg)}</div>`)
+}
+
+
+## member expression
+### source
+const A = () => <p>{user.name}</p>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(user.name)}</p>`)
+}
+
+
+## logical and
+### source
+const A = () => <div>{cond && <span>yes</span>}</div>;
+### output
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}>`)
+  if (cond) {
+    _push(`<span>yes</span>`)
+  } else {
+    _push(`<!---->`)
+  }
+  _push(`</div>`)
+}
+
+
+## ternary
+### source
+const A = () => <div>{cond ? <span>a</span> : <em>b</em>}</div>;
+### output
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}>`)
+  if (cond) {
+    _push(`<span>a</span>`)
+  } else {
+    _push(`<em>b</em>`)
+  }
+  _push(`</div>`)
+}
+
+
+## map
+### source
+const A = () => <ul>{items.map((i) => <li>{i}</li>)}</ul>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<ul${_ssrRenderAttrs(_attrs)}>`)
+  _push(`<!--[-->`)
+  _ssrRenderList(items, (i) => {
+    _push(`<li>${_ssrInterpolate(i)}</li>`)
+  })
+  _push(`<!--]-->`)
+  _push(`</ul>`)
+}
+
+
+## map components
+### source
+const A = () => <ul>{rows.map((row) => <Item data={row}/>)}</ul>;
+### output
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+import { resolveComponent as _resolveComponent } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<ul${_ssrRenderAttrs(_attrs)}>`)
+  _push(`<!--[-->`)
+  _ssrRenderList(rows, (row) => {
+    _push(_ssrRenderComponent(_resolveComponent("Item"), { data: row }, null, _parent))
+  })
+  _push(`<!--]-->`)
+  _push(`</ul>`)
+}
+
+
+## nested ternary
+### source
+const A = () => <div>{a ? <p>A</p> : b ? <em>B</em> : <span>C</span>}</div>;
+### output
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}>`)
+  if (a) {
+    _push(`<p>A</p>`)
+  } else if (b) {
+    _push(`<em>B</em>`)
+  } else {
+    _push(`<span>C</span>`)
+  }
+  _push(`</div>`)
+}
+
+
+## default scoped slot
+### source
+const A = () => <List>{(item) => <li>{item}</li>}</List>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("List"), _attrs, {
+    default: _withCtx((item, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<li>${_ssrInterpolate(item)}</li>`)
+      } else {
+        return [_createElementVNode("li", null, [_createTextVNode(_toDisplayString(item))])]
+      }
+    }),
+    _: 1
+  }, _parent))
+}
+
+
+## named object slots
+### source
+const A = () => <Comp>{{ header: () => <h1>H</h1>, default: () => <p>P</p> }}</Comp>;
+### output
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, withCtx as _withCtx } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Comp"), _attrs, {
+    header: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<h1>H</h1>`)
+      } else {
+        return [_createElementVNode("h1", null, "H")]
+      }
+    }),
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<p>P</p>`)
+      } else {
+        return [_createElementVNode("p", null, "P")]
+      }
+    }),
+    _: 1
+  }, _parent))
+}
+
+
+## nested component
+### source
+const A = () => <div><Child msg={x}/></div>;
+### output
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { resolveComponent as _resolveComponent } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}>`)
+  _push(_ssrRenderComponent(_resolveComponent("Child"), { msg: x }, null, _parent))
+  _push(`</div>`)
+}
+
+
+## control flow in slot
+### source
+const A = () => <List>{(rows) => rows.map((r) => <li>{r}</li>)}</List>;
+### output
+import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("List"), _attrs, {
+    default: _withCtx((rows, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<!--[-->`)
+        _ssrRenderList(rows, (r) => {
+          _push(`<li>${_ssrInterpolate(r)}</li>`)
+        })
+        _push(`<!--]-->`)
+      } else {
+        return _renderList(rows, (r) => _createElementVNode("li", null, [_createTextVNode(_toDisplayString(r))])).flat()
+      }
+    }),
+    _: 1
+  }, _parent))
+}

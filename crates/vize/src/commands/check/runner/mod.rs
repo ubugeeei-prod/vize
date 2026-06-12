@@ -106,8 +106,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // Vue 3 Options API binding resolution is officially supported and is a
     // standard-build opt-in (not the `legacy` feature).
     let options_api = loaded_config.features.type_checker_options_api;
-    // Opt-in type-checking of `.jsx`/`.tsx` Vize components (#1497). Default-off:
-    // JSX is experimental and React `.tsx` must not be Vue-JSX type-checked.
+    // Opt-in type-checking of `.jsx`/`.tsx` Vize components (#1497). Default-off
+    // so React `.tsx` is not accidentally routed through the Vue JSX checker.
     let jsx_typecheck = loaded_config.features.type_checker_jsx_typecheck;
     // Legacy Vue 2.7 / Nuxt 2 Options-API type checking is opt-in and compiled out
     // of the default Vue 3 binary. Without the `legacy` feature, honor the config
@@ -161,10 +161,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         collect_default_check_files(
             &project_root,
             tsconfig_path.as_deref(),
+            jsx_typecheck,
             &mut tsconfig_input_cache,
         )
     } else {
-        collect_check_files(&args.patterns)
+        collect_check_files(&args.patterns, jsx_typecheck)
     };
     let explicit_files = if args.patterns.is_empty() {
         Vec::new()
@@ -201,7 +202,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             return;
         }
         eprintln!(
-            "No Vue or TypeScript files found matching inputs: {:?}",
+            "No Vue, TypeScript, or JSX files found matching inputs: {:?}",
             args.patterns
         );
         return;
@@ -215,9 +216,12 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // Do this before root resolution so cwd-external files without tsconfig can
     // still choose a materialization root covering all registered source files.
     if !args.patterns.is_empty() {
-        for path in
-            super::imports::collect_transitive_local_imports(&files, &cwd, &mut canonical_paths)
-        {
+        for path in super::imports::collect_transitive_local_imports(
+            &files,
+            &cwd,
+            &mut canonical_paths,
+            jsx_typecheck,
+        ) {
             if !files.contains(&path) {
                 files.push(path);
             }
@@ -235,6 +239,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         resolve_tsconfig_for_files(
             tsconfig_path.as_deref(),
             &explicit_files,
+            jsx_typecheck,
             &mut tsconfig_input_cache,
         )
     };

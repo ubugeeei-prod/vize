@@ -1,0 +1,19 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "vapor_output_summary(source, &output)"
+---
+VaporOutputSummary {
+    diagnostics: [],
+    components: [
+        RenderComponentSummary {
+            name: Some(
+                "Panel",
+            ),
+            mode: "Vapor",
+            preamble: None,
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderAttr as _ssrRenderAttr, ssrRenderClass as _ssrRenderClass, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<section${_ssrRenderAttrs(_mergeProps({ class: { panel: true, dense } }, _attrs))}><header><h2>${_ssrInterpolate(activeRow.value?.title ?? \"Select a row\")}</h2></header><ul>`)\n  _push(`<!--[-->`)\n  _ssrRenderList(rows, (row, index) => {\n    _push(`<li${_ssrRenderAttr(\"key\", row.id)} class=\"${_ssrRenderClass({ done: row.done, active: row.id === activeId.value })}\"${_ssrRenderAttr(\"data-index\", index)}><button type=\"button\"${_ssrRenderAttr(\"onClick\", () => choose(row.id))}><span>${_ssrInterpolate(row.title)}</span>`)\n    if (row.id === activeId.value) {\n      _push(`<strong>Active</strong>`)\n    } else {\n      _push(`<em>${_ssrInterpolate(index + 1)}</em>`)\n    }\n    _push(`</button></li>`)\n  })\n  _push(`<!--]-->`)\n  _push(`</ul><footer>${_ssrInterpolate(slots.footer())}</footer></section>`)\n}\n",
+            templates: [],
+            scoped_style: None,
+        },
+    ],
+}

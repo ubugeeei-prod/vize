@@ -216,5 +216,5 @@ void test("rspack omits script setup imports used only in TypeScript positions",
     .map((asset) => normalizeSnapshot(asset.source().toString()))
     .join("\n");
 
-  t.assert.ok(!bundle.includes("BadgeType"), bundle);
+  t.assert.snapshot(bundle);
 });

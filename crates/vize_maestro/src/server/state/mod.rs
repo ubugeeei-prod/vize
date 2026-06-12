@@ -129,8 +129,8 @@ impl ServerState {
             // opt out with `typeChecker.optionsApi: false`.
             type_checker_options_api: RwLock::new(true),
             type_checker_legacy_vue2: RwLock::new(false),
-            // JSX/TSX type-aware features are experimental and default off so
-            // React `.tsx` is left untouched until opted in (#1498).
+            // JSX/TSX type-aware features default off so React `.tsx` is left
+            // untouched until explicitly opted in (#1498).
             type_checker_jsx_typecheck: RwLock::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
             dialect_config: RwLock::new(None),

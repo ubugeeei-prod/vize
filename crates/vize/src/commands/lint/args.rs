@@ -7,15 +7,15 @@ use vize_carton::String;
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct LintArgs {
-    /// Glob pattern(s) to match .vue or standalone .html files
-    #[arg(default_value = "./**/*.vue")]
+    /// Glob pattern(s) to match .vue, standalone .html, .jsx, or .tsx files
+    #[arg(default_values = ["./**/*.vue", "./**/*.html", "./**/*.htm", "./**/*.jsx", "./**/*.tsx"])]
     pub patterns: Vec<String>,
 
     /// Automatically fix problems (not yet implemented)
     #[arg(long)]
     pub fix: bool,
 
-    /// Config file path (not yet implemented)
+    /// Config file path
     #[arg(short, long)]
     pub config: Option<PathBuf>,
 

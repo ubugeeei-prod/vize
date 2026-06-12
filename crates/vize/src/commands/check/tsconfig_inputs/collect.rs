@@ -8,18 +8,11 @@ use vize_carton::FxHashSet;
 use super::glob::{default_exclude_specs, normalize_input_path, normalize_walked_path};
 use super::loader::{TsconfigInputCache, collect_tsconfig_project_paths};
 use super::matching::{
-    is_generated_path, is_hidden_path_segment, is_supported_check_file, matches_tsconfig_patterns,
+    SupportedFileOptions, is_generated_path, is_hidden_path_segment,
+    is_supported_check_file_with_options, matches_tsconfig_patterns,
     should_skip_generated_for_root,
 };
 use super::spec::{FileCollectionOptions, GlobSpec};
-
-pub(super) fn collect_supported_files(
-    root: &Path,
-    includes: &[GlobSpec],
-    excludes: &[GlobSpec],
-) -> Vec<PathBuf> {
-    collect_supported_files_with_options(root, includes, excludes, FileCollectionOptions::default())
-}
 
 pub(super) fn collect_supported_files_with_options(
     root: &Path,
@@ -45,7 +38,12 @@ pub(super) fn collect_supported_files_with_options(
             if let Ok(entry) = entry {
                 let path = entry.path();
                 if path.is_file()
-                    && is_supported_check_file(path)
+                    && is_supported_check_file_with_options(
+                        path,
+                        SupportedFileOptions {
+                            include_jsx: options.include_jsx,
+                        },
+                    )
                     && (!skip_generated || !is_generated_path(path))
                     && matches_tsconfig_patterns(path, includes, excludes)
                     && let Ok(mut collected) = collected.lock()
@@ -122,6 +120,7 @@ fn hidden_pattern_root(base_dir: &Path, pattern: &str) -> Option<PathBuf> {
 pub(crate) fn resolve_tsconfig_for_files(
     tsconfig_path: Option<&Path>,
     files: &[PathBuf],
+    include_jsx: bool,
     cache: &mut TsconfigInputCache,
 ) -> Option<PathBuf> {
     let tsconfig_path = tsconfig_path?;
@@ -132,7 +131,9 @@ pub(crate) fn resolve_tsconfig_for_files(
         .unwrap_or_else(|| normalize_input_path(tsconfig_path));
     let files = files
         .iter()
-        .filter(|path| is_supported_check_file(path))
+        .filter(|path| {
+            is_supported_check_file_with_options(path, SupportedFileOptions { include_jsx })
+        })
         .map(|path| normalize_input_path(path))
         .collect::<Vec<_>>();
     if files.is_empty() {
@@ -144,7 +145,7 @@ pub(crate) fn resolve_tsconfig_for_files(
     // matches instead of re-reading the tsconfig chain for every file.
     let matchers = projects
         .iter()
-        .map(|project| TsconfigOwnershipMatcher::load(project, cache))
+        .map(|project| TsconfigOwnershipMatcher::load(project, cache, include_jsx))
         .collect::<Vec<_>>();
 
     if let Some((owner, _)) = projects
@@ -184,16 +185,18 @@ struct TsconfigOwnershipMatcher {
     files: FxHashSet<PathBuf>,
     includes: Vec<GlobSpec>,
     excludes: Vec<GlobSpec>,
+    include_jsx: bool,
 }
 
 impl TsconfigOwnershipMatcher {
-    fn load(tsconfig_path: &Path, cache: &mut TsconfigInputCache) -> Self {
+    fn load(tsconfig_path: &Path, cache: &mut TsconfigInputCache, include_jsx: bool) -> Self {
         let Some(spec) = cache.load(tsconfig_path) else {
             return Self {
                 loaded: false,
                 files: FxHashSet::default(),
                 includes: Vec::new(),
                 excludes: Vec::new(),
+                include_jsx,
             };
         };
 
@@ -224,6 +227,7 @@ impl TsconfigOwnershipMatcher {
             files,
             includes,
             excludes,
+            include_jsx,
         }
     }
 
@@ -236,7 +240,14 @@ impl TsconfigOwnershipMatcher {
         if self.files.contains(file) {
             return true;
         }
-        if self.includes.is_empty() || !is_supported_check_file(file) {
+        if self.includes.is_empty()
+            || !is_supported_check_file_with_options(
+                file,
+                SupportedFileOptions {
+                    include_jsx: self.include_jsx,
+                },
+            )
+        {
             return false;
         }
         matches_tsconfig_patterns(file, &self.includes, &self.excludes)

@@ -1,0 +1,36 @@
+---
+source: crates/vize_maestro/src/ide/jsx/virtual_ts.rs
+expression: exprs
+---
+[
+    ExprSummary {
+        content: "props.items",
+        source: "props.items",
+        start: 72,
+        end: 83,
+    },
+    ExprSummary {
+        content: "item",
+        source: "item",
+        start: 89,
+        end: 93,
+    },
+    ExprSummary {
+        content: "item",
+        source: "item",
+        start: 105,
+        end: 109,
+    },
+    ExprSummary {
+        content: "props.color",
+        source: "props.color",
+        start: 140,
+        end: 151,
+    },
+    ExprSummary {
+        content: "props.color",
+        source: "props.color",
+        start: 192,
+        end: 203,
+    },
+]

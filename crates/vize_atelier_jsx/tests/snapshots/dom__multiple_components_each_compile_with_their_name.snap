@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_jsx/tests/dom.rs
+expression: "format!(\"## component 0 preamble\\n{}## component 0 code\\n{}\\n\\n## component 1 preamble\\n{}## component 1 code\\n{}\",\nout.components[0].preamble, out.components[0].code,\nout.components[1].preamble, out.components[1].code)"
+---
+## component 0 preamble
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+## component 0 code
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("a"))
+}
+
+## component 1 preamble
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+## component 1 code
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("b"))
+}

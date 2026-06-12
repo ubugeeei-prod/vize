@@ -1,0 +1,30 @@
+---
+source: crates/vize_canon/src/batch/virtual_project/jsx_codegen.rs
+expression: "mapping_summary(source, &generated)"
+---
+[
+    MappingSummary {
+        generated: "export const Plain = ({ msg }) => ",
+        source: "export const Plain = ({ msg }) => ",
+        gen_range: 643..677,
+        src_range: 0..34,
+    },
+    MappingSummary {
+        generated: "() => save(msg)",
+        source: "() => save(msg)",
+        gen_range: 695..710,
+        src_range: 51..66,
+    },
+    MappingSummary {
+        generated: "msg",
+        source: "msg",
+        gen_range: 712..715,
+        src_range: 69..72,
+    },
+    MappingSummary {
+        generated: ";\n",
+        source: ";\n",
+        gen_range: 716..718,
+        src_range: 82..84,
+    },
+]

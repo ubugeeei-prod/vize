@@ -1,0 +1,8 @@
+---
+source: crates/vize/src/commands/lint/tests.rs
+expression: diagnostic_summary(child_result)
+---
+[
+    "Error|vize:croquis/cf/destructuring-breaks-reactivity: Destructuring inject('state') into { count } breaks reactivity connection|73..88",
+    "Warning|vize:croquis/cf/inject-without-symbol: inject('state') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow|73..88",
+]

@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_jsx/tests/style.rs
+expression: vapor_snapshot(&component)
+---
+## code
+import { template as _template } from 'vue';
+const t0 = _template("<div class=\"box\">hi</div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}
+
+## templates
+<div class="box">hi</div>
+## scoped_style
+none

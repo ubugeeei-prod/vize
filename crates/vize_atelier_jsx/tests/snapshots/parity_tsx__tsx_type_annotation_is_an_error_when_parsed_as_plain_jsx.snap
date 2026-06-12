@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_jsx/tests/parity_tsx.rs
+expression: out.diagnostics
+---
+[
+    JsxDiagnostic {
+        severity: Error,
+        message: "Expected `,` or `)` but found `:`",
+        start: 16,
+        end: 17,
+    },
+]

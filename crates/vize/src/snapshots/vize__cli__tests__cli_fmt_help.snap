@@ -2,15 +2,15 @@
 source: crates/vize/src/cli.rs
 expression: "command_help(\"fmt\")"
 ---
-Format Vue SFC files
+Format Vue, JSX, and TSX files
 
 Usage: fmt [OPTIONS] [PATTERNS]...
 
 Arguments:
   [PATTERNS]...
-          Glob pattern(s) to match .vue files
+          Glob pattern(s) to match .vue, .jsx, and .tsx files
 
-          [default: ./**/*.vue]
+          [default: ./**/*.vue ./**/*.jsx ./**/*.tsx]
 
 Options:
       --check

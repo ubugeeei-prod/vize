@@ -1,0 +1,16 @@
+---
+source: crates/vize_canon/src/batch/virtual_project/tests.rs
+expression: diagnostic_snapshot(diagnostics)
+---
+[
+    DiagnosticSnapshot {
+        line: 4,
+        column: 10,
+        message: "Template parse error: Element is missing end tag.",
+        code: None,
+        severity: 1,
+        block_type: Some(
+            Template,
+        ),
+    },
+]

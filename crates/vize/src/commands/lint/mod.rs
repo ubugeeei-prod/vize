@@ -21,7 +21,9 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use std::time::Instant;
 use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profiler};
-use vize_patina::{HelpLevel, LintPreset, Linter, OutputFormat, format_results, format_summary};
+use vize_patina::{
+    HelpLevel, JsxLang, LintPreset, Linter, OutputFormat, format_results, format_summary,
+};
 
 use crate::profile_support;
 use vize_curator::profile::{
@@ -76,14 +78,14 @@ pub fn run(args: LintArgs) {
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
 
-    // Collect .vue and standalone .html files using glob patterns or directory walking
+    // Collect .vue, standalone .html, and JSX/TSX files using glob patterns or directory walking
     let collect_start = Instant::now();
     let files = collect_lint_files(&args.patterns);
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
         eprintln!(
-            "No .vue or .html files found matching patterns: {:?}",
+            "No .vue, .html, .jsx, or .tsx files found matching patterns: {:?}",
             args.patterns
         );
         return;
@@ -149,6 +151,8 @@ pub fn run(args: LintArgs) {
             let result = profile!("cli.lint.file.lint", {
                 if is_standalone_html_path(path) {
                     linter.lint_standalone_html(&source, &filename)
+                } else if let Some(lang) = jsx_lang_for_path(path) {
+                    linter.lint_jsx(&source, &filename, lang)
                 } else {
                     linter.lint_sfc(&source, &filename)
                 }
@@ -393,6 +397,14 @@ pub fn run(args: LintArgs) {
     {
         eprintln!("\nToo many warnings ({} > max {})", total_warnings, max);
         std::process::exit(1);
+    }
+}
+
+fn jsx_lang_for_path(path: &Path) -> Option<JsxLang> {
+    match path.extension().and_then(|extension| extension.to_str()) {
+        Some("jsx") => Some(JsxLang::Jsx),
+        Some("tsx") => Some(JsxLang::Tsx),
+        _ => None,
     }
 }
 

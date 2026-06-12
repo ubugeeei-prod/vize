@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "vapor_output_summary(source, &output)"
+---
+VaporOutputSummary {
+    diagnostics: [],
+    components: [
+        RenderComponentSummary {
+            name: Some(
+                "Styled",
+            ),
+            mode: "Vapor",
+            preamble: None,
+            code: "import { setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<article data-v-2216d773 class=\\\"box\\\"><p>content</p></article>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  _renderEffect(() => _setStyle(n0, {\n      \"--box-color\": color,\n      \"--box-gap\": `${gap}px`,\n    }))\n  return n0\n}\n",
+            templates: [
+                "<article data-v-2216d773 class=\"box\"><p>content</p></article>",
+            ],
+            scoped_style: Some(
+                ScopedStyleSummary {
+                    scope_id: "data-v-2216d773",
+                    css: ".box[data-v-2216d773]{\n        color: var(--box-color);\n        gap: var(--box-gap);\n      }",
+                },
+            ),
+        },
+    ],
+}

@@ -1,0 +1,16 @@
+---
+source: crates/vize_atelier_jsx/tests/compile.rs
+expression: component_matrix(&out)
+---
+## component 0
+name: Some("App")
+mode: Vapor
+variant: vapor
+code:
+import { template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}

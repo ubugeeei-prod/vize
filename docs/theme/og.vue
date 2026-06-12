@@ -18,7 +18,7 @@ const props = defineProps<{
           {{ props.title }}
         </h1>
         <p class="desc">
-          {{ props.description || "Unofficial High-Performance Vue.js Toolchain in Rust" }}
+          {{ props.description || "High-Performance Vue.js Toolchain in Rust" }}
         </p>
       </div>
       <span class="url"> vizejs.dev </span>

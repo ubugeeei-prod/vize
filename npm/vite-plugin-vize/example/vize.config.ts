@@ -10,7 +10,7 @@ export default defineConfig({
     cacheHandlers: true,
   },
   vite: {
-    scanPatterns: ["src/**/*.vue"],
+    scanPatterns: ["src/**/*.vue", "src/**/*.jsx", "src/**/*.tsx"],
     ignorePatterns: ["node_modules/**", "dist/**"],
   },
   linter: {
@@ -22,6 +22,7 @@ export default defineConfig({
   },
   typeChecker: {
     enabled: true,
+    jsxTypecheck: true,
     strict: false,
     checkProps: true,
     checkEmits: true,

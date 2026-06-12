@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_jsx/tests/modes.rs
+expression: out.diagnostics
+---
+[
+    JsxDiagnostic {
+        severity: Error,
+        message: "unknown JSX mode directive \"use vue:vdomm\": expected \"use vue:vdom\" or \"use vue:vapor\"",
+        start: 20,
+        end: 35,
+    },
+]

@@ -256,6 +256,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         for imp in &summary.import_statements {
             module_spans.push((imp.start, imp.end));
         }
+        if let Some(script) = script_content {
+            module_spans.extend(collect_line_module_import_spans(script));
+        }
         for re in &summary.re_exports {
             module_spans.push((re.start, re.end));
         }
@@ -1188,4 +1191,25 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str("export default __vize_component__;\n");
 
     VirtualTsOutput { code: ts, mappings }
+}
+
+fn collect_line_module_import_spans(script: &str) -> Vec<(u32, u32)> {
+    let mut spans = Vec::new();
+    let mut offset = 0usize;
+    for raw_line in script.split_inclusive('\n') {
+        let line = raw_line.strip_suffix('\n').unwrap_or(raw_line);
+        let line = line.strip_suffix('\r').unwrap_or(line);
+        let trimmed = line.trim_start();
+        if trimmed.starts_with("import ")
+            || trimmed.starts_with("import\t")
+            || (trimmed.starts_with("export ")
+                && (trimmed.contains(" from ") || trimmed.starts_with("export type ")))
+        {
+            let start = offset + (line.len() - line.trim_start().len());
+            let end = offset + line.len();
+            spans.push((start as u32, end as u32));
+        }
+        offset += raw_line.len();
+    }
+    spans
 }

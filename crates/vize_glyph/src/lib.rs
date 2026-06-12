@@ -83,6 +83,17 @@ pub fn format_script(source: &str, options: &FormatOptions) -> Result<String, Fo
     script::format_script_content(source, options, &allocator)
 }
 
+/// Format only script content with an explicit JavaScript/TypeScript source type.
+#[inline]
+pub fn format_script_with_source_type(
+    source: &str,
+    options: &FormatOptions,
+    allocator: &Allocator,
+    source_type: oxc_span::SourceType,
+) -> Result<String, FormatError> {
+    script::format_script_content_with_source_type(source, options, allocator, source_type)
+}
+
 /// Format only the template content
 #[inline]
 pub fn format_template(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
@@ -162,6 +173,32 @@ const msg = 'hello'
 <i18n global locale="en">
 {"hello":"Hello"}
 </i18n>
+"#;
+        let options = FormatOptions::default();
+        let result = format_sfc(source, &options).unwrap();
+
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_format_sfc_tsx_script_block() {
+        let source = r#"<script setup lang="tsx">
+const Card=(props:{title:string;items:string[]})=><section class="card"><h2>{props.title}</h2>{props.items.map((item)=><span key={item}>{item}</span>)}</section>
+</script>
+
+<template><Card title="Docs" :items="['a']" /></template>
+"#;
+        let options = FormatOptions::default();
+        let result = format_sfc(source, &options).unwrap();
+
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_format_sfc_jsx_script_block() {
+        let source = r#"<script lang="jsx">
+export default function App(){return <><button onClick={()=>emit('save')}>Save</button></>}
+</script>
 "#;
         let options = FormatOptions::default();
         let result = format_sfc(source, &options).unwrap();

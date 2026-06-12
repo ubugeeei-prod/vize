@@ -1,0 +1,6 @@
+---
+source: crates/vize_canon/src/batch/virtual_project/tests.rs
+expression: virtual_file.content.as_str()
+---
+declare const __vize_component: any;
+export default __vize_component;

@@ -1,0 +1,245 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "lower_summary(source, &output)"
+---
+LowerSummary {
+    diagnostics: [],
+    roots: [
+        RootSummary {
+            component_name: Some(
+                "Complex",
+            ),
+            mode: None,
+            scoped_css: None,
+            scoped_style_exprs: [],
+            root: [
+                Element {
+                    tag: "form",
+                    tag_type: "Element",
+                    is_self_closing: false,
+                    props: [
+                        Directive {
+                            name: "bind",
+                            raw_name: None,
+                            arg: None,
+                            exp: Some(
+                                "dynamic:attrs",
+                            ),
+                            modifiers: [],
+                            shorthand: false,
+                        },
+                        Directive {
+                            name: "show",
+                            raw_name: None,
+                            arg: None,
+                            exp: Some(
+                                "dynamic:visible",
+                            ),
+                            modifiers: [],
+                            shorthand: false,
+                        },
+                        Directive {
+                            name: "on",
+                            raw_name: None,
+                            arg: Some(
+                                "static:submit",
+                            ),
+                            exp: Some(
+                                "dynamic:model.submit",
+                            ),
+                            modifiers: [],
+                            shorthand: false,
+                        },
+                    ],
+                    children: [
+                        Element {
+                            tag: "input",
+                            tag_type: "Element",
+                            is_self_closing: true,
+                            props: [
+                                Directive {
+                                    name: "model",
+                                    raw_name: None,
+                                    arg: None,
+                                    exp: Some(
+                                        "dynamic:model.email",
+                                    ),
+                                    modifiers: [],
+                                    shorthand: false,
+                                },
+                                Directive {
+                                    name: "focus",
+                                    raw_name: None,
+                                    arg: Some(
+                                        "static:lazy",
+                                    ),
+                                    exp: Some(
+                                        "dynamic:focusOptions",
+                                    ),
+                                    modifiers: [],
+                                    shorthand: false,
+                                },
+                            ],
+                            children: [],
+                        },
+                        Element {
+                            tag: "div",
+                            tag_type: "Element",
+                            is_self_closing: true,
+                            props: [
+                                Directive {
+                                    name: "html",
+                                    raw_name: None,
+                                    arg: None,
+                                    exp: Some(
+                                        "dynamic:raw",
+                                    ),
+                                    modifiers: [],
+                                    shorthand: false,
+                                },
+                            ],
+                            children: [],
+                        },
+                        Element {
+                            tag: "svg",
+                            tag_type: "Element",
+                            is_self_closing: false,
+                            props: [
+                                Attribute {
+                                    name: "viewBox",
+                                    value: Some(
+                                        "0 0 24 24",
+                                    ),
+                                },
+                                Attribute {
+                                    name: "aria-hidden",
+                                    value: Some(
+                                        "true",
+                                    ),
+                                },
+                            ],
+                            children: [
+                                Element {
+                                    tag: "use",
+                                    tag_type: "Element",
+                                    is_self_closing: true,
+                                    props: [
+                                        Directive {
+                                            name: "bind",
+                                            raw_name: None,
+                                            arg: Some(
+                                                "static:xlink:href",
+                                            ),
+                                            exp: Some(
+                                                "dynamic:href",
+                                            ),
+                                            modifiers: [],
+                                            shorthand: false,
+                                        },
+                                    ],
+                                    children: [],
+                                },
+                            ],
+                        },
+                        Element {
+                            tag: "List",
+                            tag_type: "Component",
+                            is_self_closing: false,
+                            props: [
+                                Directive {
+                                    name: "bind",
+                                    raw_name: None,
+                                    arg: Some(
+                                        "static:rows",
+                                    ),
+                                    exp: Some(
+                                        "dynamic:rows",
+                                    ),
+                                    modifiers: [],
+                                    shorthand: false,
+                                },
+                            ],
+                            children: [
+                                Element {
+                                    tag: "template",
+                                    tag_type: "Template",
+                                    is_self_closing: false,
+                                    props: [
+                                        Directive {
+                                            name: "slot",
+                                            raw_name: None,
+                                            arg: Some(
+                                                "static:header",
+                                            ),
+                                            exp: None,
+                                            modifiers: [],
+                                            shorthand: false,
+                                        },
+                                    ],
+                                    children: [
+                                        Element {
+                                            tag: "h1",
+                                            tag_type: "Element",
+                                            is_self_closing: false,
+                                            props: [],
+                                            children: [
+                                                Interpolation {
+                                                    expression: "dynamic:model.email",
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                },
+                                Element {
+                                    tag: "template",
+                                    tag_type: "Template",
+                                    is_self_closing: false,
+                                    props: [
+                                        Directive {
+                                            name: "slot",
+                                            raw_name: None,
+                                            arg: Some(
+                                                "static:item",
+                                            ),
+                                            exp: Some(
+                                                "dynamic:{ row, index }",
+                                            ),
+                                            modifiers: [],
+                                            shorthand: false,
+                                        },
+                                    ],
+                                    children: [
+                                        Element {
+                                            tag: "span",
+                                            tag_type: "Element",
+                                            is_self_closing: false,
+                                            props: [
+                                                Directive {
+                                                    name: "bind",
+                                                    raw_name: None,
+                                                    arg: Some(
+                                                        "static:data-index",
+                                                    ),
+                                                    exp: Some(
+                                                        "dynamic:index",
+                                                    ),
+                                                    modifiers: [],
+                                                    shorthand: false,
+                                                },
+                                            ],
+                                            children: [
+                                                Interpolation {
+                                                    expression: "dynamic:row.label",
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+}

@@ -21,16 +21,16 @@ enum Commands {
     #[command(visible_alias = "atelier")]
     Build(crate::commands::build::BuildArgs),
 
-    /// Format Vue SFC files
+    /// Format Vue, JSX, and TSX files
     #[cfg(feature = "glyph")]
     #[command(visible_alias = "glyph")]
     Fmt(crate::commands::fmt::FmtArgs),
 
-    /// Lint Vue SFC files
+    /// Lint Vue, HTML, JSX, and TSX files
     #[command(visible_alias = "patina")]
     Lint(crate::commands::lint::LintArgs),
 
-    /// Type check Vue SFC files
+    /// Type check Vue, JSX, and TSX files
     Check(crate::commands::check::CheckArgs),
 
     /// Create playground compiler inspector payloads and agent reports

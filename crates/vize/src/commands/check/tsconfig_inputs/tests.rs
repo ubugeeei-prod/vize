@@ -10,9 +10,18 @@ use vize_carton::cstr;
 // Each call uses a fresh run-scoped cache, mirroring how an actual `vize
 // check` run constructs one `TsconfigInputCache` per invocation.
 fn collect_default_check_files(project_root: &Path, tsconfig_path: Option<&Path>) -> Vec<PathBuf> {
+    collect_default_check_files_with_jsx(project_root, tsconfig_path, false)
+}
+
+fn collect_default_check_files_with_jsx(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+    include_jsx: bool,
+) -> Vec<PathBuf> {
     super::collect_default_check_files(
         project_root,
         tsconfig_path,
+        include_jsx,
         &mut TsconfigInputCache::default(),
     )
 }
@@ -29,7 +38,12 @@ fn collect_ambient_declaration_files(
 }
 
 fn resolve_tsconfig_for_files(tsconfig_path: Option<&Path>, files: &[PathBuf]) -> Option<PathBuf> {
-    super::resolve_tsconfig_for_files(tsconfig_path, files, &mut TsconfigInputCache::default())
+    super::resolve_tsconfig_for_files(
+        tsconfig_path,
+        files,
+        false,
+        &mut TsconfigInputCache::default(),
+    )
 }
 
 fn unique_case_dir(name: &str) -> PathBuf {
@@ -39,6 +53,18 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .join("target")
         .join("vize-tests")
         .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
+}
+
+fn relative_paths(root: &Path, files: &[PathBuf]) -> Vec<String> {
+    files
+        .iter()
+        .map(|path| {
+            path.strip_prefix(root)
+                .unwrap()
+                .to_string_lossy()
+                .replace('\\', "/")
+        })
+        .collect()
 }
 
 #[test]
@@ -65,14 +91,9 @@ fn default_collection_respects_include_and_exclude() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert_eq!(files.len(), 2);
-    assert!(files.iter().any(|path| path.ends_with("src/App.vue")));
-    assert!(files.iter().any(|path| path.ends_with("src/main.ts")));
-    assert!(!files.iter().any(|path| path.ends_with("vite.config.ts")));
-    assert!(
-        !files
-            .iter()
-            .any(|path| path.ends_with("src/generated/skip.ts"))
+    assert_eq!(
+        relative_paths(&case_dir, &files),
+        vec!["src/App.vue", "src/main.ts"]
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -140,9 +161,10 @@ fn default_collection_matches_parent_relative_extended_include() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/App.vue")));
-    assert!(files.iter().any(|path| path.ends_with("src/main.ts")));
-    assert!(!files.iter().any(|path| path.ends_with("dist/generated.ts")));
+    assert_eq!(
+        relative_paths(&case_dir, &files),
+        vec!["src/App.vue", "src/main.ts"]
+    );
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -318,16 +340,10 @@ fn ambient_declaration_collection_keeps_only_dts_within_include() {
 
     let files = collect_ambient_declaration_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert_eq!(files.len(), 2, "{files:?}");
-    assert!(
-        files
-            .iter()
-            .any(|path| path.ends_with("src/@types/globals.d.ts"))
+    assert_eq!(
+        relative_paths(&case_dir, &files),
+        vec!["src/@types/globals.d.ts", "src/env.d.ts"]
     );
-    assert!(files.iter().any(|path| path.ends_with("src/env.d.ts")));
-    assert!(!files.iter().any(|path| path.ends_with("src/App.vue")));
-    assert!(!files.iter().any(|path| path.ends_with("src/main.ts")));
-    assert!(!files.iter().any(|path| path.ends_with("outside.d.ts")));
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -394,43 +410,15 @@ fn ambient_declaration_collection_keeps_project_shims_but_skips_vue_shadows() {
 
     let files = collect_ambient_declaration_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(
-        files.iter().any(|path| path.ends_with("src/globals.d.ts")),
-        "declare-global file should be collected: {files:?}"
-    );
-    assert!(
-        files
-            .iter()
-            .any(|path| path.ends_with("src/namespace.d.ts")),
-        "namespace-style declaration should be collected: {files:?}"
-    );
-    assert!(
-        files
-            .iter()
-            .any(|path| path.ends_with("src/project-shims.d.ts")),
-        "project module shims should be collected: {files:?}"
-    );
-    assert!(
-        files
-            .iter()
-            .any(|path| path.ends_with("src/vue-augmentation.d.ts")),
-        "external-module Vue augmentations should be collected: {files:?}"
-    );
-    assert!(
-        !files.iter().any(|path| path.ends_with(".nuxt/nuxt.d.ts")),
-        "reference-only Nuxt declaration manifest should be expanded but not collected: {files:?}"
-    );
-    assert!(
-        files
-            .iter()
-            .any(|path| path.ends_with(".nuxt/types/feature-flags.d.ts")),
-        "hidden Nuxt referenced declaration should be collected: {files:?}"
-    );
-    assert!(
-        !files
-            .iter()
-            .any(|path| path.ends_with("src/vue-shadow.d.ts")),
-        "ambient Vue shadow declaration file should be skipped: {files:?}"
+    assert_eq!(
+        relative_paths(&case_dir, &files),
+        vec![
+            "src/globals.d.ts",
+            "src/namespace.d.ts",
+            "src/project-shims.d.ts",
+            "src/vue-augmentation.d.ts",
+            ".nuxt/types/feature-flags.d.ts",
+        ]
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -488,21 +476,13 @@ fn default_collection_follows_referenced_tsconfigs() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/App.vue")));
-    assert!(
-        !files
-            .iter()
-            .any(|path| path.ends_with(".generated/types.d.ts")),
-        "normal default scan keeps hidden generated roots ignored: {files:?}"
-    );
+    assert_eq!(relative_paths(&case_dir, &files), vec!["src/App.vue"]);
 
     let ambient =
         collect_ambient_declaration_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
-    assert!(
-        ambient
-            .iter()
-            .any(|path| path.ends_with(".generated/types.d.ts")),
-        "ambient scan should include hidden referenced declaration roots: {ambient:?}"
+    assert_eq!(
+        relative_paths(&case_dir, &ambient),
+        vec![".generated/types.d.ts"]
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -557,11 +537,7 @@ fn jsonc_comments_and_trailing_commas_are_stripped_before_parsing() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/keep.ts")));
-    assert!(
-        !files.iter().any(|path| path.ends_with("src/skip.ts")),
-        "JSONC parsing should have applied the exclude: {files:?}"
-    );
+    assert_eq!(relative_paths(&case_dir, &files), vec!["src/keep.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -587,8 +563,7 @@ fn jsonc_does_not_strip_comment_like_sequences_inside_strings() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
-    assert!(!files.iter().any(|path| path.ends_with("src/skip.ts")));
+    assert_eq!(relative_paths(&case_dir, &files), vec!["src/a.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -612,13 +587,7 @@ fn single_star_include_does_not_cross_directory_separator() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/top.ts")));
-    assert!(
-        !files
-            .iter()
-            .any(|path| path.ends_with("src/nested/deep.ts")),
-        "a single * must not match across a directory separator: {files:?}"
-    );
+    assert_eq!(relative_paths(&case_dir, &files), vec!["src/top.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -638,12 +607,9 @@ fn bare_directory_include_expands_to_recursive_glob() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/top.ts")));
-    assert!(
-        files
-            .iter()
-            .any(|path| path.ends_with("src/nested/deep.ts")),
-        "a bare directory include should expand to a recursive glob: {files:?}"
+    assert_eq!(
+        relative_paths(&case_dir, &files),
+        vec!["src/nested/deep.ts", "src/top.ts"]
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -660,8 +626,10 @@ fn dot_include_matches_every_supported_file() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("root.ts")));
-    assert!(files.iter().any(|path| path.ends_with("nested/leaf.ts")));
+    assert_eq!(
+        relative_paths(&case_dir, &files),
+        vec!["nested/leaf.ts", "root.ts"]
+    );
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -680,7 +648,7 @@ fn leading_dot_slash_include_is_normalized() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+    assert_eq!(relative_paths(&case_dir, &files), vec!["src/a.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -724,11 +692,9 @@ fn declaration_files_are_always_supported() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/env.d.ts")));
-    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
-    assert!(
-        !files.iter().any(|path| path.ends_with("src/ignore.js")),
-        ".js is not a supported check extension: {files:?}"
+    assert_eq!(
+        relative_paths(&case_dir, &files),
+        vec!["src/a.ts", "src/env.d.ts"]
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -752,22 +718,50 @@ fn supported_extensions_cover_ts_family_and_reject_js_family() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    for name in supported {
-        assert!(
-            files
-                .iter()
-                .any(|path| path.ends_with(&format!("src/{name}"))),
-            "{name} should be collected: {files:?}"
-        );
-    }
-    for name in unsupported {
-        assert!(
-            !files
-                .iter()
-                .any(|path| path.ends_with(&format!("src/{name}"))),
-            "{name} should be rejected: {files:?}"
-        );
-    }
+    assert_eq!(
+        files,
+        vec![
+            case_dir.join("src/App.vue"),
+            case_dir.join("src/a.ts"),
+            case_dir.join("src/b.tsx"),
+            case_dir.join("src/c.mts"),
+            case_dir.join("src/d.cts"),
+        ]
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn jsx_extension_is_collected_only_for_jsx_typecheck() {
+    let case_dir = unique_case_dir("tsconfig-ext-jsx");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(case_dir.join("src/App.jsx"), "const App = () => <div />").unwrap();
+    fs::write(case_dir.join("src/App.tsx"), "const App = () => <div />").unwrap();
+    fs::write(case_dir.join("src/skip.js"), "export const skip = true").unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "include": ["src/**/*"] }"#,
+    )
+    .unwrap();
+
+    let without_jsx = collect_default_check_files_with_jsx(
+        &case_dir,
+        Some(&case_dir.join("tsconfig.json")),
+        false,
+    );
+    let with_jsx = collect_default_check_files_with_jsx(
+        &case_dir,
+        Some(&case_dir.join("tsconfig.json")),
+        true,
+    );
+
+    assert_eq!(without_jsx, vec![case_dir.join("src/App.tsx")]);
+    assert_eq!(
+        with_jsx,
+        vec![case_dir.join("src/App.jsx"), case_dir.join("src/App.tsx")]
+    );
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -791,13 +785,7 @@ fn malformed_tsconfig_falls_back_to_full_default_scan() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
-    assert!(
-        !files
-            .iter()
-            .any(|path| path.ends_with("node_modules/dep/index.ts")),
-        "default excludes should still drop node_modules: {files:?}"
-    );
+    assert_eq!(relative_paths(&case_dir, &files), vec!["src/a.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -820,11 +808,7 @@ fn custom_exclude_glob_drops_a_matching_subtree() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/keep/a.ts")));
-    assert!(
-        !files.iter().any(|path| path.ends_with("src/skip/b.ts")),
-        "a custom exclude should drop the matching subtree: {files:?}"
-    );
+    assert_eq!(relative_paths(&case_dir, &files), vec!["src/keep/a.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -927,10 +911,7 @@ fn files_entry_outside_project_root_is_dropped() {
 
     let files = collect_default_check_files(&app_dir, Some(&app_dir.join("tsconfig.json")));
 
-    assert!(
-        !files.iter().any(|path| path.ends_with("sibling.ts")),
-        "a files entry resolving outside the project root should drop: {files:?}"
-    );
+    assert_eq!(files, Vec::<PathBuf>::new());
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -954,7 +935,7 @@ fn circular_extends_chain_terminates_and_applies_host_include() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+    assert_eq!(relative_paths(&case_dir, &files), vec!["src/a.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -973,7 +954,7 @@ fn missing_extends_target_is_skipped() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("src/a.ts")));
+    assert_eq!(relative_paths(&case_dir, &files), vec!["src/a.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -999,8 +980,7 @@ fn circular_references_chain_terminates_and_each_project_contributes() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(files.iter().any(|path| path.ends_with("a/x.ts")));
-    assert!(files.iter().any(|path| path.ends_with("b/y.ts")));
+    assert_eq!(relative_paths(&case_dir, &files), vec!["a/x.ts", "b/y.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -1024,10 +1004,7 @@ fn reference_path_to_directory_resolves_to_tsconfig_json() {
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(
-        files.iter().any(|path| path.ends_with("sub/z.ts")),
-        "a references path to a directory should resolve to its tsconfig.json: {files:?}"
-    );
+    assert_eq!(relative_paths(&case_dir, &files), vec!["sub/z.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -1132,11 +1109,13 @@ fn shared_run_cache_matches_fresh_cache_results() {
     let owner_shared = super::resolve_tsconfig_for_files(
         Some(&tsconfig),
         &[app.clone(), main.clone()],
+        false,
         &mut cache,
     );
     let owner_shared_again =
-        super::resolve_tsconfig_for_files(Some(&tsconfig), &[app.clone()], &mut cache);
-    let files_shared = super::collect_default_check_files(&case_dir, Some(&tsconfig), &mut cache);
+        super::resolve_tsconfig_for_files(Some(&tsconfig), &[app.clone()], false, &mut cache);
+    let files_shared =
+        super::collect_default_check_files(&case_dir, Some(&tsconfig), false, &mut cache);
     let ambient_shared =
         super::collect_ambient_declaration_files(&case_dir, Some(&tsconfig), &mut cache);
 

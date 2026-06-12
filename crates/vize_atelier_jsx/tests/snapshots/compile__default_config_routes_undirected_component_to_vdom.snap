@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_jsx/tests/compile.rs
+expression: component_matrix(&out)
+---
+## component 0
+name: Some("App")
+mode: Vdom
+variant: dom
+code:
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div"))
+}

@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_jsx/tests/events.rs
+expression: "common::snapshot_cases(&cases, |source| { dom_code(source, JsxLang::Jsx) })"
+---
+## capture
+### source
+const A = () => <button onClickCapture={h}/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", { onClickCapture: h }, null, 40 /* PROPS, NEED_HYDRATION */, ["onClickCapture"]))
+}
+
+## once
+### source
+const A = () => <button onClickOnce={h}/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", { onClickOnce: h }, null, 40 /* PROPS, NEED_HYDRATION */, ["onClickOnce"]))
+}
+
+## passive capture
+### source
+const A = () => <input onInputPassiveCapture={h}/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("input", { onInputPassiveCapture: h }, null, 40 /* PROPS, NEED_HYDRATION */, ["onInputPassiveCapture"]))
+}
+
+## plain
+### source
+const A = () => <button onClick={h}/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", { onClick: h }, null, 8 /* PROPS */, ["onClick"]))
+}

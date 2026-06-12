@@ -109,7 +109,7 @@ This is where Vize's static analysis and snapshot-heavy testing approach becomes
 
 Vapor is performance-oriented, but performance cannot come at the cost of Vue semantics.
 
-Users should not have to memorize a second unofficial language just to use the faster path. The best outcome is that the compiler understands Vue code well enough to make direct rendering feel natural.
+Users should not have to memorize a second template language just to use the faster path. The best outcome is that the compiler understands Vue code well enough to make direct rendering feel natural.
 
 That requires:
 
@@ -127,7 +127,7 @@ The goal is a compiler path that is fast because it understands more, not becaus
 
 Vize is still experimental. That is exactly why Vapor is a natural area for it.
 
-An unofficial toolchain can explore:
+An independent toolchain can explore:
 
 - alternate compiler output shapes
 - stricter diagnostics

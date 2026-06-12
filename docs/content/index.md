@@ -1,10 +1,10 @@
 ---
 layout: entry
 title: Vize
-description: Unofficial High-Performance Vue.js Toolchain in Rust. Compile, lint, format, type-check, and explore Vue components.
+description: High-Performance Vue.js Toolchain in Rust. Compile, lint, format, type-check, and explore Vue components.
 hero:
   name: Vize
-  text: Unofficial High-Performance Vue.js Toolchain in Rust
+  text: High-Performance Vue.js Toolchain in Rust
   tagline: "/viːz/ — A wise tool that sees through your code. Compile, lint, format, type-check, and explore Vue components — all powered by Rust. ⚠️ Not yet production-ready."
   image:
     src: logo.svg

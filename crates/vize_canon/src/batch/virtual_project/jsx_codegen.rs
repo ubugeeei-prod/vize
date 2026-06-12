@@ -3,8 +3,8 @@
 //!
 //! This is the JSX/TSX parallel to [`super::vue_codegen`]. It is reached only
 //! when the user explicitly enables `typeChecker.jsxTypecheck` (default off):
-//! JSX support is experimental and a repository may contain React `.tsx` files
-//! that must *not* be type-checked as Vue JSX.
+//! mixed Vue/React repositories may contain React `.tsx` files that must *not*
+//! be type-checked as Vue JSX.
 //!
 //! # Authoring convention (#1502)
 //!
@@ -147,8 +147,8 @@ enum JsxEmit {
     /// body units evaluated with those aliases in scope.
     ForScope {
         source: JsxExpr,
-        value_alias: Option<CompactString>,
-        key_alias: Option<CompactString>,
+        value_alias: Option<JsxExpr>,
+        key_alias: Option<JsxExpr>,
         body: Vec<JsxEmit>,
     },
 }
@@ -297,13 +297,13 @@ fn render_emit(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, emit: &
             push_mapped_expr(out, mappings, source);
             out.push_str(").map((");
             if let Some(value) = value_alias {
-                out.push_str(value);
+                push_mapped_expr(out, mappings, value);
             } else {
                 out.push_str("__vize_v");
             }
             if let Some(key) = key_alias {
                 out.push_str(", ");
-                out.push_str(key);
+                push_mapped_expr(out, mappings, key);
             }
             out.push_str(") => ");
             render_sink_call(out, mappings, body);
@@ -433,8 +433,8 @@ fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxEmit>) {
             }
             out.push(JsxEmit::ForScope {
                 source,
-                value_alias: node.value_alias.as_ref().and_then(alias_text),
-                key_alias: node.key_alias.as_ref().and_then(alias_text),
+                value_alias: node.value_alias.as_ref().and_then(alias_expr),
+                key_alias: node.key_alias.as_ref().and_then(alias_expr),
                 body,
             });
         }
@@ -535,11 +535,15 @@ fn expr_of(expression: &ExpressionNode<'_>) -> Option<JsxExpr> {
 
 /// The source text of a `v-for` alias binding pattern (the lowering stores each
 /// alias as a dynamic simple expression of the pattern), or `None` when absent.
-fn alias_text(alias: &ExpressionNode<'_>) -> Option<CompactString> {
+fn alias_expr(alias: &ExpressionNode<'_>) -> Option<JsxExpr> {
     match alias {
         ExpressionNode::Simple(simple) => {
             let content = simple.content.trim();
-            (!content.is_empty()).then(|| content.to_compact_string())
+            (!content.is_empty()).then(|| JsxExpr {
+                content: content.to_compact_string(),
+                start: simple.loc.start.offset,
+                end: simple.loc.end.offset,
+            })
         }
         ExpressionNode::Compound(_) => None,
     }
@@ -558,308 +562,76 @@ fn jsx_expr(content: &str, start: u32, end: u32) -> Option<JsxExpr> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::ops::Range;
 
     fn generate(source: &str) -> GeneratedJsxFile {
         generate_jsx_virtual_ts(Path::new("Comp.tsx"), source, JsxLang::Tsx).unwrap()
     }
 
+    fn assert_generated_snapshot(name: &str, source: &str) {
+        let generated = generate(source);
+        insta::assert_snapshot!(format!("{name}_code"), generated.code.as_str());
+        insta::assert_debug_snapshot!(
+            format!("{name}_mappings"),
+            mapping_summary(source, &generated)
+        );
+        insta::assert_debug_snapshot!(format!("{name}_diagnostics"), generated.diagnostics);
+    }
+
+    fn mapping_summary<'a>(
+        source: &'a str,
+        generated: &'a GeneratedJsxFile,
+    ) -> Vec<MappingSummary<'a>> {
+        generated
+            .mappings
+            .iter()
+            .map(|mapping| MappingSummary {
+                generated: &generated.code[mapping.gen_range.clone()],
+                source: &source[mapping.src_range.clone()],
+                gen_range: mapping.gen_range.clone(),
+                src_range: mapping.src_range.clone(),
+            })
+            .collect()
+    }
+
+    #[allow(dead_code)]
+    #[derive(Debug)]
+    struct MappingSummary<'a> {
+        generated: &'a str,
+        source: &'a str,
+        gen_range: Range<usize>,
+        src_range: Range<usize>,
+    }
+
     #[test]
-    fn keeps_typed_props_param_verbatim_and_reemits_jsx_expr() {
+    fn typed_component_with_jsx_control_flow_directives_and_styles_is_exact() {
+        let source = "import { computed, ref } from 'vue';\n\nconst Comp = (\n  { items, ok, tone, gap }: { items: Array<{ id: string; label: string }>; ok: boolean; tone: string; gap: number },\n  { emit, slots }: Ctx<{ select: [id: string] }, { footer: () => unknown }>,\n) => {\n  const selected = ref(items[0]?.id);\n  const activeItem = computed(() => items.find((item) => item.id === selected.value));\n  return (\n    <>\n      <ul class={tone} v-show={ok}>\n        {items.map((item, index) => (\n          <li key={item.id} onClick={() => emit('select', item.id)} data-index={index}>\n            {item.label}{selected.value === item.id ? <strong>Selected</strong> : <em>{index}</em>}\n          </li>\n        ))}\n      </ul>\n      <input v-model={selected.value} v-focus:lazy={tone} />\n      <footer>{activeItem.value?.label}{slots.footer()}</footer>\n      <style scoped>{`.row { gap: ${gap}px; }`}</style>\n    </>\n  );\n};\n";
+
+        assert_generated_snapshot(
+            "typed_component_with_jsx_control_flow_directives_and_styles",
+            source,
+        );
+    }
+
+    #[test]
+    fn multiple_roots_and_static_style_are_exact() {
+        let source = "const First = (props: { msg: string }) => <section>{props.msg}</section>;\nconst Second = () => (\n  <>\n    <div class=\"box\" />\n    <style scoped>{`.box { color: red; }`}</style>\n  </>\n);\n";
+
+        assert_generated_snapshot("multiple_roots_and_static_style", source);
+    }
+
+    #[test]
+    fn jsx_file_mode_is_exact() {
         let source =
-            "const Comp = (props: { msg: string }) => <div class=\"a\">{props.msg}</div>;\n";
-        let generated = generate(source);
-        // The typed first parameter stays verbatim so `props.msg` type-checks.
-        assert!(
-            generated.code.contains("props: { msg: string }"),
-            "typed props param dropped: {}",
-            generated.code
-        );
-        // The JSX expression is re-emitted as plain TS through the sink helper.
-        assert!(
-            generated.code.contains("__vize_jsx_expr__(props.msg)"),
-            "jsx expr not re-emitted: {}",
-            generated.code
-        );
-        // Output is plain TS: no JSX element syntax survives.
-        assert!(
-            !generated.code.contains("<div"),
-            "JSX element leaked into virtual TS: {}",
-            generated.code
-        );
-        // A mapping points the re-emitted `props.msg` back at its source range.
-        let src = source.find("props.msg").unwrap();
-        assert!(
-            generated
-                .mappings
-                .iter()
-                .any(|mapping| mapping.src_range.start == src),
-            "no source mapping for re-emitted expression"
-        );
-    }
+            "export const Plain = ({ msg }) => <button onClick={() => save(msg)}>{msg}</button>;\n";
+        let generated =
+            generate_jsx_virtual_ts(Path::new("Plain.jsx"), source, JsxLang::Jsx).unwrap();
 
-    #[test]
-    fn setup_scope_statements_stay_verbatim() {
-        let source = "const Comp = (props: { n: number }) => {\n  const doubled = props.n * 2;\n  return <span>{doubled}</span>;\n};\n";
-        let generated = generate(source);
-        assert!(generated.code.contains("const doubled = props.n * 2;"));
-        assert!(generated.code.contains("__vize_jsx_expr__(doubled)"));
-    }
-
-    #[test]
-    fn collects_bound_attribute_expressions() {
-        let source = "const Comp = (props: { cls: string }) => <div class={props.cls}>hi</div>;\n";
-        let generated = generate(source);
-        assert!(generated.code.contains("__vize_jsx_expr__(props.cls)"));
-    }
-
-    #[test]
-    fn injects_ambient_ctx_helper() {
-        // The ambient `Ctx<Emits, Slots>` is declared at module scope, with
-        // `emit` typed via the same `__EmitFn` emits-as-tuple convention as the
-        // `.vue` path so a component's typed second parameter resolves.
-        let generated = generate("const Comp = () => <div>hi</div>;\n");
-        assert!(
-            generated
-                .code
-                .contains("type Ctx<Emits = {}, Slots = {}> = { emit: __EmitFn<Emits>;"),
-            "ambient Ctx not injected: {}",
-            generated.code
+        insta::assert_snapshot!("jsx_file_mode_code", generated.code.as_str());
+        insta::assert_debug_snapshot!(
+            "jsx_file_mode_mappings",
+            mapping_summary(source, &generated)
         );
-        assert!(
-            generated.code.contains("type __EmitFn<T>"),
-            "emit-typing helper not injected: {}",
-            generated.code
-        );
-    }
-
-    #[test]
-    fn keeps_typed_ctx_param_verbatim_and_reemits_emit_call() {
-        // `props` is the typed first parameter; `{ emit }: Ctx<…>` is the typed
-        // second parameter. Both stay verbatim, and the `emit(...)` call in a
-        // JSX expression is re-emitted as plain TS so its payload type-checks.
-        let source = "const Comp = (\n  props: { msg: string },\n  { emit }: Ctx<{ change: [value: number] }>,\n) => <button onClick={() => emit('change', 1)}>{props.msg}</button>;\n";
-        let generated = generate(source);
-        // The typed second parameter is preserved verbatim.
-        assert!(
-            generated
-                .code
-                .contains("{ emit }: Ctx<{ change: [value: number] }>"),
-            "typed Ctx param dropped: {}",
-            generated.code
-        );
-        // The `emit(...)` call inside the JSX handler is re-emitted as plain TS.
-        assert!(
-            generated.code.contains("emit('change', 1)"),
-            "emit call not re-emitted: {}",
-            generated.code
-        );
-        // Output stays plain TS.
-        assert!(
-            !generated.code.contains("<button"),
-            "JSX element leaked into virtual TS: {}",
-            generated.code
-        );
-    }
-
-    #[test]
-    fn reemits_slots_usage_from_typed_ctx_param() {
-        // `slots` comes from the typed second parameter and is re-emitted inside
-        // the JSX expression so slot access type-checks against `Slots`.
-        let source = "const Comp = (\n  _props: {},\n  { slots }: Ctx<{}, { default: () => unknown }>,\n) => <div>{slots.default()}</div>;\n";
-        let generated = generate(source);
-        assert!(
-            generated
-                .code
-                .contains("{ slots }: Ctx<{}, { default: () => unknown }>"),
-            "typed Ctx slots param dropped: {}",
-            generated.code
-        );
-        assert!(
-            generated
-                .code
-                .contains("__vize_jsx_expr__(slots.default())"),
-            "slots usage not re-emitted: {}",
-            generated.code
-        );
-    }
-
-    #[test]
-    fn reemits_v_model_target_as_self_assignment() {
-        // A `v-model` binding target is re-emitted as `(target = target)` so a
-        // readonly/const/non-lvalue binding is reported at the binding, while the
-        // mapped left-hand side keeps name-resolution errors at the right place.
-        let source = "const Comp = (model: { value: string }) => <input v-model={model.value}/>;\n";
-        let generated = generate(source);
-        assert!(
-            generated
-                .code
-                .contains("__vize_jsx_expr__((model.value = model.value))"),
-            "v-model target not re-emitted as assignment: {}",
-            generated.code
-        );
-        // Output stays plain TS.
-        assert!(
-            !generated.code.contains("<input"),
-            "JSX element leaked into virtual TS: {}",
-            generated.code
-        );
-        // Only the left-hand side is mapped back to source (the unmapped RHS copy
-        // exists so the assignment is well-formed but never double-reports).
-        let lvalue_start = source.find("model.value").unwrap();
-        assert_eq!(
-            generated
-                .mappings
-                .iter()
-                .filter(|mapping| mapping.src_range.start == lvalue_start)
-                .count(),
-            1,
-            "expected exactly one mapping for the v-model lvalue: {:?}",
-            generated.mappings
-        );
-    }
-
-    #[test]
-    fn reemits_v_for_body_inside_map_callback_binding_alias() {
-        // The `items.map((item) => …)` body is re-emitted *inside* the callback so
-        // `item` binds with its inferred element type — fixing the spurious
-        // "Cannot find name 'item'" the flat collection produced.
-        let source = "const Comp = (props: { items: number[] }) => <ul>{props.items.map((item) => <li>{item}</li>)}</ul>;\n";
-        let generated = generate(source);
-        assert!(
-            generated
-                .code
-                .contains("(props.items).map((item) => __vize_jsx_expr__(item))"),
-            "v-for body not bound inside .map callback: {}",
-            generated.code
-        );
-        // The bare alias must not leak as a sink argument at the outer scope.
-        assert!(
-            !generated
-                .code
-                .contains("__vize_jsx_expr__(props.items, item)"),
-            "v-for alias leaked as unbound outer argument: {}",
-            generated.code
-        );
-        // Stays plain TS.
-        assert!(
-            !generated.code.contains("<li"),
-            "JSX element leaked into virtual TS: {}",
-            generated.code
-        );
-    }
-
-    #[test]
-    fn reemits_v_for_with_index_alias() {
-        // A two-arg `.map((value, index) => …)` binds both aliases in the callback.
-        let source = "const Comp = (props: { xs: string[] }) => <ul>{props.xs.map((x, i) => <li>{x + i}</li>)}</ul>;\n";
-        let generated = generate(source);
-        assert!(
-            generated
-                .code
-                .contains("(props.xs).map((x, i) => __vize_jsx_expr__(x + i))"),
-            "v-for value+index aliases not bound: {}",
-            generated.code
-        );
-    }
-
-    #[test]
-    fn collects_v_show_and_v_if_conditions_as_plain_reads() {
-        // Directive conditions stay plain reads (no lvalue rewrite) so an unknown
-        // identifier in a `v-show`/`v-if` condition is reported at the condition.
-        let show = generate("const Comp = (props: { ok: boolean }) => <div v-show={props.ok}/>;\n");
-        assert!(
-            show.code.contains("__vize_jsx_expr__(props.ok)"),
-            "v-show condition not re-emitted: {}",
-            show.code
-        );
-        let if_attr =
-            generate("const Comp = (props: { ok: boolean }) => <div v-if={props.ok}>x</div>;\n");
-        assert!(
-            if_attr.code.contains("__vize_jsx_expr__(props.ok)"),
-            "v-if condition not re-emitted: {}",
-            if_attr.code
-        );
-    }
-
-    #[test]
-    fn reemits_style_block_interpolation_through_sink() {
-        // A `<style scoped>` template-literal interpolation references a script
-        // value (`props.color`); it is extracted out of the rendered children but
-        // re-emitted through the sink so it type-checks against the component
-        // scope, source-mapped back to its `${…}` range.
-        let source = "const Comp = (props: { color: string }) => (\n  <>\n    <div class=\"box\">hi</div>\n    <style scoped>{`.box { color: ${props.color}; }`}</style>\n  </>\n);\n";
-        let generated = generate(source);
-        assert!(
-            generated.code.contains("__vize_jsx_expr__(props.color)"),
-            "style interpolation not re-emitted: {}",
-            generated.code
-        );
-        // Output stays plain TS: no `<style>` element survives.
-        assert!(
-            !generated.code.contains("<style"),
-            "style element leaked into virtual TS: {}",
-            generated.code
-        );
-        // A mapping points the re-emitted interpolation back at its source range.
-        let src = source.find("props.color").unwrap();
-        assert!(
-            generated
-                .mappings
-                .iter()
-                .any(|mapping| mapping.src_range.start == src),
-            "no source mapping for re-emitted style interpolation: {:?}",
-            generated.mappings
-        );
-    }
-
-    #[test]
-    fn reemits_multiple_style_block_interpolations() {
-        // Every `${expr}` in the style block is re-emitted, in source order.
-        let source = "const Comp = (props: { fg: string; bg: string }) => (\n  <>\n    <div class=\"box\"/>\n    <style scoped>{`.box { color: ${props.fg}; background: ${props.bg}; }`}</style>\n  </>\n);\n";
-        let generated = generate(source);
-        assert!(
-            generated.code.contains("props.fg") && generated.code.contains("props.bg"),
-            "not all style interpolations re-emitted: {}",
-            generated.code
-        );
-    }
-
-    #[test]
-    fn static_style_block_emits_no_extra_sink_args() {
-        // A static `<style scoped>` (no `${}`) contributes no re-emitted
-        // expressions: the sink call stays empty for an otherwise-static root.
-        let source = "const Comp = () => (\n  <>\n    <div class=\"box\"/>\n    <style scoped>{`.box { color: red; }`}</style>\n  </>\n);\n";
-        let generated = generate(source);
-        assert!(
-            generated.code.contains("__vize_jsx_expr__()"),
-            "static style block should not add sink arguments: {}",
-            generated.code
-        );
-        assert!(
-            !generated.code.contains("<style"),
-            "style element leaked into virtual TS: {}",
-            generated.code
-        );
-    }
-
-    #[test]
-    fn reemits_event_handler_and_custom_directive_value() {
-        // Event handlers and custom directive values remain plain reads.
-        let handler = generate(
-            "const Comp = (props: { f: () => void }) => <button onClick={props.f}>x</button>;\n",
-        );
-        assert!(
-            handler.code.contains("__vize_jsx_expr__(props.f)"),
-            "event handler not re-emitted: {}",
-            handler.code
-        );
-        let custom = generate(
-            "const Comp = (props: { o: string }) => <div v-focus:lazy={props.o}>x</div>;\n",
-        );
-        assert!(
-            custom.code.contains("__vize_jsx_expr__(props.o)"),
-            "custom directive value not re-emitted: {}",
-            custom.code
-        );
+        insta::assert_debug_snapshot!("jsx_file_mode_diagnostics", generated.diagnostics);
     }
 }

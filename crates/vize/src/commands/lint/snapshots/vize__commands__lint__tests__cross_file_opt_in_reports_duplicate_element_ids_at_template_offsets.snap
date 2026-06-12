@@ -1,0 +1,7 @@
+---
+source: crates/vize/src/commands/lint/tests.rs
+expression: diagnostic_summary(first_result)
+---
+[
+    "Warning|vize:croquis/cf/duplicate-id: Element ID 'email' is used in 2 different locations across files|110..120",
+]

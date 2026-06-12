@@ -7,67 +7,41 @@
 //! a real `_withCtx` slots object — we are the parent *passing* slots, not the
 //! component rendering them, so the output uses `_withCtx` (not `_renderSlot`).
 
-use vize_atelier_jsx::{DomCompileOptions, JsxLang, compile_to_dom, lower_source};
+mod common;
+
+use vize_atelier_jsx::{JsxLang, lower_source};
 use vize_carton::Bump;
 use vize_relief::ElementType;
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
 
-/// Compile JSX to VDOM render code, asserting a single error-free component.
-fn dom(src: &str) -> vize_carton::String {
-    let bump = Bump::new();
-    let out = compile_to_dom(&bump, src, JsxLang::Jsx, DomCompileOptions::default());
-    assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
-    assert_eq!(out.components.len(), 1, "expected one component");
-    out.components.into_iter().next().unwrap().code
-}
-
-// 1. Object child => named slots, with a stable `_: 1` flag.
 #[test]
-fn object_child_lowers_to_named_slots() {
-    let code = dom(
-        "const A = () => <Comp>{{ header: () => <h1>Hi</h1>, footer: () => <p>Bye</p> }}</Comp>;",
-    );
-    assert!(code.contains("_withCtx"), "{code}");
-    assert!(code.contains("header:"), "{code}");
-    assert!(code.contains("footer:"), "{code}");
-    assert!(code.contains("_createElementVNode(\"h1\""), "{code}");
-    assert!(code.contains("_: 1 /* STABLE */"), "{code}");
-}
+fn slot_codegen_snapshot() {
+    let cases = [
+        (
+            "object child named slots",
+            "const A = () => <Comp>{{ header: () => <h1>Hi</h1>, footer: () => <p>Bye</p> }}</Comp>;",
+        ),
+        (
+            "scoped named slot",
+            "const A = () => <List>{{ item: ({ x }) => <li>{x}</li> }}</List>;",
+        ),
+        (
+            "render prop default slot",
+            "const A = () => <List>{(item) => <li>{item}</li>}</List>;",
+        ),
+        (
+            "default and named slots",
+            "const A = () => <Card>{{ default: () => <p>body</p>, title: () => <h1>T</h1> }}</Card>;",
+        ),
+        (
+            "implicit default slot",
+            "const A = () => <Card><h1>Title</h1></Card>;",
+        ),
+    ];
 
-// 2. Scoped named slot: destructured param stays bare (no `_ctx.`).
-#[test]
-fn object_child_supports_scoped_slot_params() {
-    let code = dom("const A = () => <List>{{ item: ({ x }) => <li>{x}</li> }}</List>;");
-    assert!(code.contains("item: _withCtx(({ x }) =>"), "{code}");
-    assert!(code.contains("_toDisplayString(x)"), "{code}");
-    assert!(!code.contains("_ctx.x"), "{code}");
-}
-
-// 3. Single render-prop child => default scoped slot, bare param.
-#[test]
-fn render_prop_child_lowers_to_default_scoped_slot() {
-    let code = dom("const A = () => <List>{(item) => <li>{item}</li>}</List>;");
-    assert!(code.contains("default: _withCtx((item) =>"), "{code}");
-    assert!(code.contains("_toDisplayString(item)"), "{code}");
-    assert!(!code.contains("_ctx.item"), "{code}");
-}
-
-// 4. Object child mixing `default` with a named slot.
-#[test]
-fn object_child_mixes_default_and_named_slots() {
-    let code = dom(
-        "const A = () => <Card>{{ default: () => <p>body</p>, title: () => <h1>T</h1> }}</Card>;",
-    );
-    assert!(code.contains("default: _withCtx"), "{code}");
-    assert!(code.contains("title: _withCtx"), "{code}");
-}
-
-// 5. Regression: plain element children still form an implicit default slot.
-#[test]
-fn plain_element_children_stay_implicit_default_slot() {
-    let code = dom("const A = () => <Card><h1>Title</h1></Card>;");
-    assert!(code.contains("default: _withCtx(() =>"), "{code}");
-    assert!(code.contains("_createElementVNode(\"h1\""), "{code}");
+    insta::assert_snapshot!(common::snapshot_cases(&cases, |source| {
+        common::dom_code(source, JsxLang::Jsx)
+    }));
 }
 
 // 6. IR-level: the lowered slot is a `<template>` with `tag_type == Template`

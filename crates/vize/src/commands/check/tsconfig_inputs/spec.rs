@@ -107,4 +107,5 @@ impl GlobSpec {
 #[derive(Debug, Clone, Copy, Default)]
 pub(super) struct FileCollectionOptions {
     pub(super) include_hidden: bool,
+    pub(super) include_jsx: bool,
 }

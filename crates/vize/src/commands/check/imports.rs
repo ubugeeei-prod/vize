@@ -23,6 +23,7 @@ use super::path_cache::CanonicalPathCache;
 /// when registered as program roots, so pulling them in would break `vue`
 /// resolution for every file. TypeScript still loads reachable `.d.ts` on demand.
 const RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".vue", ".mts", ".cts"];
+const JSX_RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".jsx", ".vue", ".mts", ".cts"];
 
 /// Walk the relative-import graph reachable from `roots` and return the extra
 /// on-disk source files that should be registered alongside them. The roots
@@ -31,6 +32,7 @@ pub(super) fn collect_transitive_local_imports(
     roots: &[PathBuf],
     cwd: &Path,
     canonical_paths: &mut CanonicalPathCache,
+    include_jsx: bool,
 ) -> Vec<PathBuf> {
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut queue: Vec<PathBuf> = Vec::new();
@@ -57,7 +59,9 @@ pub(super) fn collect_transitive_local_imports(
         // `import`/`from` string operands, so an SFC's `<template>`/`<style>`
         // are inert and no `.vue` parse is needed on this hot path.
         for specifier in extract_relative_specifiers(&source) {
-            let Some(resolved) = resolve_relative_import(dir, &specifier, canonical_paths) else {
+            let Some(resolved) =
+                resolve_relative_import(dir, &specifier, canonical_paths, include_jsx)
+            else {
                 continue;
             };
             // Never register an ambient declaration file — its `declare module`
@@ -175,11 +179,12 @@ fn resolve_relative_import(
     dir: &Path,
     specifier: &str,
     canonical_paths: &mut CanonicalPathCache,
+    include_jsx: bool,
 ) -> Option<PathBuf> {
     let base = dir.join(specifier);
 
     // 1. The specifier already points at an existing source file.
-    if has_source_extension(&base) && base.is_file() {
+    if has_source_extension(&base, include_jsx) && base.is_file() {
         return Some(canonical_paths.canonicalize(&base));
     }
 
@@ -189,7 +194,7 @@ fn resolve_relative_import(
     }
 
     // 3. Append a source extension: `./types` → `./types.ts`.
-    for ext in RESOLVE_EXTENSIONS {
+    for ext in resolve_extensions(include_jsx) {
         let candidate = append_extension(&base, ext);
         if candidate.is_file() {
             return Some(canonical_paths.canonicalize(&candidate));
@@ -197,7 +202,7 @@ fn resolve_relative_import(
     }
 
     // 4. Directory index: `./feature` → `./feature/index.ts`.
-    for ext in RESOLVE_EXTENSIONS {
+    for ext in resolve_extensions(include_jsx) {
         let candidate = base.join(cstr_index(ext));
         if candidate.is_file() {
             return Some(canonical_paths.canonicalize(&candidate));
@@ -230,13 +235,21 @@ fn is_declaration_file(path: &Path) -> bool {
         })
 }
 
-fn has_source_extension(path: &Path) -> bool {
+fn has_source_extension(path: &Path, include_jsx: bool) -> bool {
     let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
         return false;
     };
-    RESOLVE_EXTENSIONS
+    resolve_extensions(include_jsx)
         .iter()
         .any(|ext| name.ends_with(ext) && name.len() > ext.len())
+}
+
+fn resolve_extensions(include_jsx: bool) -> &'static [&'static str] {
+    if include_jsx {
+        JSX_RESOLVE_EXTENSIONS
+    } else {
+        RESOLVE_EXTENSIONS
+    }
 }
 
 /// Append a full extension (e.g. `.d.ts`) to a path's file name without
@@ -292,14 +305,11 @@ mod tests {
             std::slice::from_ref(&app),
             &root,
             &mut CanonicalPathCache::default(),
+            false,
         );
 
         let canon = |p: &Path| p.canonicalize().unwrap();
-        assert!(discovered.contains(&canon(&types)));
-        assert!(discovered.contains(&canon(&child)));
-        assert!(discovered.contains(&canon(&util)));
-        // The root itself is never re-registered.
-        assert!(!discovered.contains(&canon(&app)));
+        assert_eq!(discovered, vec![canon(&types), canon(&child), canon(&util)]);
 
         let _ = std::fs::remove_dir_all(&root);
     }
@@ -316,9 +326,41 @@ mod tests {
             "import { ref } from 'vue'\nimport { gone } from './missing'\nexport const a = ref(0)\nvoid gone\n",
         );
 
-        let discovered =
-            collect_transitive_local_imports(&[entry], &root, &mut CanonicalPathCache::default());
+        let discovered = collect_transitive_local_imports(
+            &[entry],
+            &root,
+            &mut CanonicalPathCache::default(),
+            false,
+        );
         assert!(discovered.is_empty());
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn jsx_imports_are_resolved_only_when_jsx_typecheck_is_enabled() {
+        let root = std::env::temp_dir().join(cstr!("vize-imports-jsx-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join("src")).unwrap();
+
+        let entry = write(&root, "src/entry.tsx", "import './Panel.jsx'\n");
+        let panel = write(&root, "src/Panel.jsx", "const Panel = () => <div />\n");
+
+        let disabled = collect_transitive_local_imports(
+            &[entry.clone()],
+            &root,
+            &mut CanonicalPathCache::default(),
+            false,
+        );
+        let enabled = collect_transitive_local_imports(
+            &[entry],
+            &root,
+            &mut CanonicalPathCache::default(),
+            true,
+        );
+
+        assert_eq!(disabled, Vec::<PathBuf>::new());
+        assert_eq!(enabled, vec![panel.canonicalize().unwrap()]);
 
         let _ = std::fs::remove_dir_all(&root);
     }

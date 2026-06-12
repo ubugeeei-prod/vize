@@ -1,0 +1,114 @@
+---
+source: crates/vize_maestro/src/ide/jsx/virtual_ts.rs
+expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\", \"tone} v-show\", \"ok}>\", \"item.id\", \"emit('select', item.id)\",\n\"item.label\", \"selected.value === item.id\", \"index\",\n\"selected.value} v-focus\", \"activeItem.value?.label\", \"slots.footer()\",\n\"gap}px\",],)"
+---
+[
+    VirtualPosition {
+        marker: "items.map",
+        source_offset: 442,
+        source: "items.map",
+        position: (
+            14,
+            33,
+        ),
+    },
+    VirtualPosition {
+        marker: "tone} v-show",
+        source_offset: 414,
+        source: "tone} v-show",
+        position: (
+            14,
+            22,
+        ),
+    },
+    VirtualPosition {
+        marker: "ok}>",
+        source_offset: 428,
+        source: "ok}>",
+        position: (
+            14,
+            28,
+        ),
+    },
+    VirtualPosition {
+        marker: "item.id",
+        source_offset: 349,
+        source: "item.id",
+        position: (
+            12,
+            57,
+        ),
+    },
+    VirtualPosition {
+        marker: "emit('select', item.id)",
+        source_offset: 514,
+        source: "emit('select', item.id)",
+        position: (
+            14,
+            94,
+        ),
+    },
+    VirtualPosition {
+        marker: "item.label",
+        source_offset: 572,
+        source: "item.label",
+        position: (
+            14,
+            126,
+        ),
+    },
+    VirtualPosition {
+        marker: "selected.value === item.id",
+        source_offset: 584,
+        source: "selected.value === item.id",
+        position: (
+            14,
+            138,
+        ),
+    },
+    VirtualPosition {
+        marker: "index",
+        source_offset: 459,
+        source: "index",
+        position: (
+            14,
+            51,
+        ),
+    },
+    VirtualPosition {
+        marker: "selected.value} v-focus",
+        source_offset: 721,
+        source: "selected.value} v-focus",
+        position: (
+            14,
+            176,
+        ),
+    },
+    VirtualPosition {
+        marker: "activeItem.value?.label",
+        source_offset: 775,
+        source: "activeItem.value?.label",
+        position: (
+            14,
+            216,
+        ),
+    },
+    VirtualPosition {
+        marker: "slots.footer()",
+        source_offset: 800,
+        source: "slots.footer()",
+        position: (
+            14,
+            241,
+        ),
+    },
+    VirtualPosition {
+        marker: "gap}px",
+        source_offset: 861,
+        source: "gap}px",
+        position: (
+            14,
+            257,
+        ),
+    },
+]

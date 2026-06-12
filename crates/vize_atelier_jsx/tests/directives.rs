@@ -73,9 +73,8 @@ fn directive_and_plain_attributes_coexist() {
     let root = lower_one(&bump, "const a = <input class=\"f\" v-model={v}/>;");
     let element = root_element(&root);
     assert!(find_directive(element, "model").is_some());
-    let has_class = element.props.iter().any(|p| match p {
-        vize_relief::PropNode::Attribute(a) => a.name.as_str() == "class",
-        _ => false,
-    });
-    assert!(has_class);
+    assert_eq!(element.props.len(), 2);
+    let attr = common::as_attribute(&element.props[0]);
+    assert_eq!(attr.name.as_str(), "class");
+    assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "f");
 }

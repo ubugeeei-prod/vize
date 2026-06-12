@@ -1,0 +1,28 @@
+---
+source: crates/vize_atelier_jsx/tests/compile.rs
+expression: "format!(\"## vapor override\\n{}\\n\\n## vdom override\\n{}\",\ncomponent_matrix(&vdom_default), component_matrix(&vapor_default))"
+---
+## vapor override
+## component 0
+name: Some("Fast")
+mode: Vapor
+variant: vapor
+code:
+import { template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}
+
+
+## vdom override
+## component 0
+name: Some("Slow")
+mode: Vdom
+variant: dom
+code:
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div"))
+}

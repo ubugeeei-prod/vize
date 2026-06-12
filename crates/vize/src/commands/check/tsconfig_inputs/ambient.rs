@@ -34,7 +34,8 @@ pub(crate) fn collect_ambient_declaration_files(
     cache: &mut TsconfigInputCache,
 ) -> Vec<PathBuf> {
     let project_root = normalize_input_path(project_root);
-    let mut files = collect_default_check_files_inner(&project_root, tsconfig_path, true, cache);
+    let mut files =
+        collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut index = 0;
     while index < files.len() {

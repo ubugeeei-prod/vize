@@ -121,8 +121,6 @@ void test("vapor: script setup SFC compiles successfully", async (t) => {
   }
 
   const assets = extractAssets(stats);
-  const jsBundle = Object.values(assets).find((v) => v.includes("vapor"));
-  t.assert.ok(jsBundle, "bundle should contain vapor-related output");
   t.assert.snapshot(JSON.stringify(assets, null, 2));
 });
 
@@ -136,17 +134,6 @@ void test("vapor: scoped style coexists with vapor mode", async (t) => {
   }
 
   const assets = extractAssets(stats);
-
-  // Verify vapor output exists
-  const jsBundle = Object.values(assets).find((v) => v.includes("vapor"));
-  t.assert.ok(jsBundle, "bundle should contain vapor-related output");
-
-  // Verify scoped style is present (CSS asset or inline)
-  const hasStyle = Object.values(assets).some(
-    (v) => v.includes("scoped-app") || v.includes("data-v-"),
-  );
-  t.assert.ok(hasStyle, "bundle should contain scoped style output");
-
   t.assert.snapshot(JSON.stringify(assets, null, 2));
 });
 
@@ -161,6 +148,5 @@ void test("vapor: HMR injection does not break __vapor marker", async (t) => {
   }
 
   const assets = extractAssets(stats);
-  const jsBundle = Object.values(assets).find((v) => v.includes("__vapor"));
-  t.assert.ok(jsBundle, "HMR build should preserve __vapor marker in output");
+  t.assert.snapshot(JSON.stringify(assets, null, 2));
 });

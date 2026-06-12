@@ -33,7 +33,7 @@ Here is the fastest way to position them:
 
 | Project                | Main center of gravity                                                                | What it is not                                     |
 | ---------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **Vize**               | Unofficial full Vue toolchain in Rust                                                 | Not the official Vue editor stack                  |
+| **Vize**               | Independent full Vue toolchain in Rust                                                | Not the official Vue editor stack                  |
 | **Vue Language Tools** | Official Vue editor + type-check tooling                                              | Not a full compiler/linter/formatter toolchain     |
 | **Golar**              | `typescript-go`-based embedded-language type checking framework                       | Not a Vue-specific full toolchain                  |
 | **Verter**             | Alternative full Vue compiler + LSP + build toolchain                                 | Not the official Vue toolchain                     |
@@ -44,7 +44,7 @@ If you keep that table in your head, most of the confusion goes away.
 
 ## Vize
 
-Vize is best understood as an **unofficial, full Vue toolchain in Rust**.
+Vize is best understood as an **independent, full Vue toolchain in Rust**.
 
 Its ambition is broad:
 
@@ -96,7 +96,7 @@ Vize overlaps with that world because Vize also has a type checker and an LSP. B
 So the simplest distinction is:
 
 - **Vue Language Tools** is the official editor and type-check foundation for Vue
-- **Vize** is an unofficial attempt to unify much more of the Vue toolchain under one Rust architecture
+- **Vize** is an independent attempt to unify much more of the Vue toolchain under one Rust architecture
 
 If your priority is production-ready editor support today, the official Vue stack is the baseline. If your interest is a broader, experimental, Rust-native Vue toolchain, that is where Vize starts to make sense.
 
@@ -138,7 +138,7 @@ Like Vize, Verter is aiming high. Its public vision is a hybrid Rust + TypeScrip
 This is where the differences become more about product shape and architecture than category:
 
 - **Verter** presents itself as a strict-first Vue language and compiler toolchain with a strong VS Code and TS provider story.
-- **Vize** presents itself as an unofficial high-performance Vue toolchain with a unified CLI, Vite integration, Musea, and a stronger "one parser / one AST / one toolchain" narrative.
+- **Vize** presents itself as an independent high-performance Vue toolchain with a unified CLI, Vite integration, Musea, and a stronger "one parser / one AST / one toolchain" narrative.
 
 There is also a difference in emphasis:
 
@@ -205,7 +205,7 @@ It is:
 
 If I had to compress it into one sentence:
 
-> Vize is an unofficial Rust-native attempt to unify much more of the Vue toolchain than the official language tools cover, while still cooperating with broader ecosystem tools rather than replacing them.
+> Vize is an independent Rust-native attempt to unify much more of the Vue toolchain than the official language tools cover, while still cooperating with broader ecosystem tools rather than replacing them.
 
 ## Which One Should You Reach For?
 

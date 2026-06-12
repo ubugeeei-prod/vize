@@ -1,10 +1,11 @@
-//! Format command - High-performance Vue SFC formatting using vize_glyph
+//! Format command - High-performance Vue, JSX, and TSX formatting using vize_glyph
 
 #![allow(clippy::disallowed_macros)]
 
 use clap::Args;
 use glob::{MatchOptions, Pattern, glob};
 use ignore::WalkBuilder;
+use oxc_span::SourceType;
 use rayon::prelude::*;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -12,7 +13,10 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 use vize_carton::{cstr, profile, profiler::global_profiler};
-use vize_glyph::{Allocator, FormatOptions, format_sfc_with_allocator};
+use vize_glyph::{
+    Allocator, FormatOptions, FormatResult, format_script_with_source_type,
+    format_sfc_with_allocator,
+};
 
 use crate::{config, profile_support};
 use vize_curator::profile::{
@@ -25,8 +29,8 @@ const VIZE_CACHE_DIR: &str = ".vize";
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct FmtArgs {
-    /// Glob pattern(s) to match .vue files
-    #[arg(default_value = "./**/*.vue")]
+    /// Glob pattern(s) to match .vue, .jsx, and .tsx files
+    #[arg(default_values_t = default_fmt_patterns())]
     pub patterns: Vec<String>,
 
     /// Check formatting without writing (exit with error if files need formatting)
@@ -107,11 +111,11 @@ pub fn run(args: FmtArgs) {
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
-        eprintln!("No .vue files found matching the patterns");
+        eprintln!("No .vue, .jsx, or .tsx files found matching the patterns");
         return;
     }
 
-    eprintln!("Found {} .vue file(s)", files.len());
+    eprintln!("Found {} file(s)", files.len());
 
     let has_errors = AtomicBool::new(false);
     let files_changed = AtomicUsize::new(0);
@@ -363,6 +367,15 @@ fn build_format_options(args: &FmtArgs) -> FormatOptions {
 }
 
 #[allow(clippy::disallowed_types)]
+fn default_fmt_patterns() -> Vec<std::string::String> {
+    vec![
+        "./**/*.vue".into(),
+        "./**/*.jsx".into(),
+        "./**/*.tsx".into(),
+    ]
+}
+
+#[allow(clippy::disallowed_types)]
 fn collect_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
     let mut files = Vec::new();
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
@@ -376,18 +389,14 @@ fn collect_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
         } else if contains_glob_char(&normalized) {
             if let Ok(paths) = glob(&normalized) {
                 for path in paths.flatten() {
-                    if path.extension().is_some_and(|ext| ext == "vue") && !is_generated_path(&path)
-                    {
+                    if is_format_target(&path) && !is_generated_path(&path) {
                         files.push(path);
                     }
                 }
             }
         } else {
             let path = PathBuf::from(&normalized);
-            if path.extension().is_some_and(|ext| ext == "vue")
-                && path.is_file()
-                && !is_generated_path(&path)
-            {
+            if is_format_target(&path) && path.is_file() && !is_generated_path(&path) {
                 files.push(path);
             }
         }
@@ -411,10 +420,7 @@ fn collect_walked_files(pattern: &FmtPattern, files: &mut Vec<PathBuf>) {
 
     for entry in walker.filter_map(Result::ok) {
         let path = entry.path();
-        if path.extension().is_some_and(|ext| ext == "vue")
-            && pattern.matches(path)
-            && !is_generated_path(path)
-        {
+        if is_format_target(path) && pattern.matches(path) && !is_generated_path(path) {
             files.push(path.to_path_buf());
         }
     }
@@ -422,7 +428,17 @@ fn collect_walked_files(pattern: &FmtPattern, files: &mut Vec<PathBuf>) {
 
 #[inline]
 fn should_walk_with_gitignore(pattern: &str) -> bool {
-    matches!(pattern, "**/*.vue" | "./**/*.vue")
+    matches!(
+        pattern,
+        "**/*"
+            | "./**/*"
+            | "**/*.vue"
+            | "./**/*.vue"
+            | "**/*.jsx"
+            | "./**/*.jsx"
+            | "**/*.tsx"
+            | "./**/*.tsx"
+    )
 }
 
 struct FmtPattern {
@@ -467,17 +483,24 @@ fn normalize_fmt_pattern(pattern: &str) -> vize_carton::String {
     }
 
     if normalized.is_empty() || normalized == "." {
-        return "**/*.vue".into();
+        return "**/*".into();
     }
 
     if !contains_glob_char(&normalized) && Path::new(&normalized).is_dir() {
         if !normalized.ends_with('/') {
             normalized.push('/');
         }
-        normalized.push_str("**/*.vue");
+        normalized.push_str("**/*");
     }
 
     normalized
+}
+
+#[inline]
+fn is_format_target(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| matches!(extension, "vue" | "jsx" | "tsx"))
 }
 
 #[inline]
@@ -544,11 +567,8 @@ fn process_file(
 
     // Format the source using the provided allocator
     let format_start = profile.then(Instant::now);
-    let result = profile!(
-        "cli.fmt.file.format_sfc",
-        format_sfc_with_allocator(&source, options, allocator)
-    )
-    .map_err(|e| format!("Format error: {}", e))?;
+    let result = format_file_source(path, &source, options, allocator)
+        .map_err(|e| format!("Format error: {}", e))?;
     let format_time = format_start
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
@@ -609,6 +629,50 @@ fn process_file(
         changed: result.changed,
         profile,
     })
+}
+
+fn format_file_source(
+    path: &Path,
+    source: &str,
+    options: &FormatOptions,
+    allocator: &Allocator,
+) -> Result<FormatResult, vize_glyph::FormatError> {
+    match path.extension().and_then(|extension| extension.to_str()) {
+        Some("jsx") => {
+            let code = profile!(
+                "cli.fmt.file.format_jsx",
+                format_script_with_source_type(
+                    source,
+                    options,
+                    allocator,
+                    SourceType::jsx().with_module(true),
+                )
+            )?;
+            Ok(FormatResult {
+                changed: code.as_str() != source,
+                code,
+            })
+        }
+        Some("tsx") => {
+            let code = profile!(
+                "cli.fmt.file.format_tsx",
+                format_script_with_source_type(
+                    source,
+                    options,
+                    allocator,
+                    SourceType::tsx().with_module(true),
+                )
+            )?;
+            Ok(FormatResult {
+                changed: code.as_str() != source,
+                code,
+            })
+        }
+        _ => profile!(
+            "cli.fmt.file.format_sfc",
+            format_sfc_with_allocator(source, options, allocator)
+        ),
+    }
 }
 
 struct FormatFileResult {
@@ -672,7 +736,7 @@ struct FormatFileProfile {
 
 #[cfg(test)]
 mod tests {
-    use super::{FmtPattern, atomic_write, collect_files};
+    use super::{FmtPattern, atomic_write, collect_files, format_file_source};
     use std::{
         fs,
         path::{Path, PathBuf},
@@ -714,6 +778,46 @@ mod tests {
         let _ = fs::remove_dir_all(&root);
 
         assert_eq!(files, vec![src.join("App.vue")]);
+    }
+
+    #[test]
+    fn collect_files_matches_vue_jsx_and_tsx() {
+        let root = unique_case_dir("format-targets");
+        let src = root.join("src");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&src).unwrap();
+        fs::write(src.join("App.vue"), "<template><div/></template>").unwrap();
+        fs::write(src.join("Panel.jsx"), "const Panel=()=> <div />").unwrap();
+        fs::write(src.join("Widget.tsx"), "const Widget=()=> <div />").unwrap();
+        fs::write(src.join("types.ts"), "export type Widget = {}").unwrap();
+
+        let pattern = root.to_string_lossy().into_owned();
+        let files = collect_files(&[pattern]);
+        let _ = fs::remove_dir_all(&root);
+
+        assert_eq!(
+            files,
+            vec![
+                src.join("App.vue"),
+                src.join("Panel.jsx"),
+                src.join("Widget.tsx")
+            ]
+        );
+    }
+
+    #[test]
+    fn format_file_source_formats_standalone_tsx() {
+        let options = super::FormatOptions::default();
+        let allocator = super::Allocator::default();
+        let result = format_file_source(
+            Path::new("Component.tsx"),
+            "const Component=({label}:{label:string})=><button>{label}</button>",
+            &options,
+            &allocator,
+        )
+        .unwrap();
+
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]

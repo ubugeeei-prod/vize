@@ -1,0 +1,94 @@
+---
+source: crates/vize_atelier_jsx/tests/vapor_ssr.rs
+expression: "snapshot_cases(&cases, |source| { vapor_code(source, JsxLang::Jsx, false) })"
+---
+## static dynamic interpolation
+### source
+const A = () => <div id={x} class="box">{msg}</div>;
+### output
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div class=\"box\"> </div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => {
+    _setProp(n0, "id", x)
+    _setText(x0, _toDisplayString(msg))
+  })
+  return n0
+}
+
+
+## ternary
+### source
+const A = () => <div>{cond ? <span>a</span> : <em>b</em>}</div>;
+### output
+import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<span>a</span>", true)
+const t1 = _template("<em>b</em>", true)
+const t2 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n5 = t2()
+  _setInsertionState(n5, null, true)
+  const n0 = _createIf(() => (cond), () => {
+    const n2 = t0()
+    return n2
+  }, () => {
+    const n4 = t1()
+    return n4
+  })
+  return n5
+}
+
+
+## map
+### source
+const A = () => <ul>{items.map((i) => <li>{i}</li>)}</ul>;
+### output
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+const t0 = _template("<li> </li>")
+const t1 = _template("<ul></ul>", true)
+
+export function render(_ctx) {
+  const n3 = t1()
+  _setInsertionState(n3, null, true)
+  const n0 = _createFor(() => (items), (_for_item0) => {
+    const n2 = t0()
+    const x2 = _txt(n2)
+    _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value)))
+    return n2
+  })
+  return n3
+}
+
+
+## nested ternary
+### source
+const A = () => <div>{a ? <p>A</p> : b ? <em>B</em> : <span>C</span>}</div>;
+### output
+import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<p>A</p>", true)
+const t1 = _template("<em>B</em>", true)
+const t2 = _template("<span>C</span>", true)
+const t3 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n8 = t3()
+  _setInsertionState(n8, null, true)
+  const n0 = _createIf(() => (a), () => {
+    const n2 = t0()
+    return n2
+  }, () => {
+    _setInsertionState(n8, null, true)
+    return _createIf(() => (b), () => {
+      const n4 = t1()
+      return n4
+    }, () => {
+      const n7 = t2()
+      return n7
+    })
+  })
+  return n8
+}

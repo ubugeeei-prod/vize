@@ -120,6 +120,12 @@ pub(super) fn build_vue_registered_file(
 
     let effective_options =
         virtual_ts_options_for_descriptor(context.virtual_ts_options, &descriptor);
+    let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
+    let virtual_source_type = if use_tsx_virtual {
+        SourceType::tsx()
+    } else {
+        SourceType::ts()
+    };
     let generated = profile!(
         "canon.vue.virtual_ts",
         generate_vue_virtual_ts(
@@ -145,13 +151,18 @@ pub(super) fn build_vue_registered_file(
     } = generated;
     let rewritten = profile!(
         "canon.import.rewrite.vue",
-        context.rewriter.rewrite(&code, SourceType::ts())
+        context.rewriter.rewrite(&code, virtual_source_type)
     );
     let source_map = CompositeSourceMap::new_vue(
         SfcSourceMap::new(mappings, collect_sfc_block_ranges(&descriptor)),
         rewritten.source_map,
     );
-    let virtual_path = virtual_vue_path(context.project_root, context.virtual_root, path)?;
+    let virtual_path = virtual_vue_path(
+        context.project_root,
+        context.virtual_root,
+        path,
+        use_tsx_virtual,
+    )?;
 
     Ok(RegisteredFile {
         file: VirtualFile {
@@ -263,6 +274,10 @@ pub struct VueDocumentVirtualTs {
     /// Generated source *before* import rewriting. Used to collect the relative
     /// `.vue` import specifiers for sibling overlay without re-running codegen.
     pub pre_rewrite_code: CompactString,
+    /// Source type used for parsing the generated virtual document.
+    pub source_type: SourceType,
+    /// Suffix appended to the original `.vue` URI/path for socket-mode Corsa.
+    pub virtual_suffix: &'static str,
 }
 
 /// Generate the rewritten virtual TypeScript for one in-memory `.vue` document.
@@ -294,6 +309,12 @@ pub fn generate_vue_document_virtual_ts(
     .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))?;
 
     let effective_options = virtual_ts_options_for_descriptor(options, &descriptor);
+    let use_tsx_virtual = descriptor_uses_jsx_script(&descriptor);
+    let source_type = if use_tsx_virtual {
+        SourceType::tsx()
+    } else {
+        SourceType::ts()
+    };
     let GeneratedVueFile { code, .. } = generate_vue_virtual_ts(
         path,
         content,
@@ -311,10 +332,12 @@ pub fn generate_vue_document_virtual_ts(
         },
     )?;
 
-    let rewritten = rewriter.rewrite(&code, SourceType::ts());
+    let rewritten = rewriter.rewrite(&code, source_type);
     Ok(VueDocumentVirtualTs {
         code: rewritten.code,
         pre_rewrite_code: code,
+        source_type,
+        virtual_suffix: if use_tsx_virtual { ".tsx" } else { ".ts" },
     })
 }
 
@@ -394,17 +417,45 @@ pub(super) fn mirrored_virtual_path(
     Ok(virtual_root.join(relative))
 }
 
-fn virtual_vue_path(project_root: &Path, virtual_root: &Path, path: &Path) -> CorsaResult<PathBuf> {
+fn virtual_vue_path(
+    project_root: &Path,
+    virtual_root: &Path,
+    path: &Path,
+    use_tsx_virtual: bool,
+) -> CorsaResult<PathBuf> {
     let mut virtual_path = mirrored_virtual_path(project_root, virtual_root, path)?;
     let file_name = virtual_path
         .file_name()
         .and_then(|name| name.to_str())
-        .map(|name| cstr!("{name}.ts"))
+        .map(|name| {
+            if use_tsx_virtual {
+                cstr!("{name}.tsx")
+            } else {
+                cstr!("{name}.ts")
+            }
+        })
         .ok_or_else(|| CorsaError::PathError {
             path: path.to_path_buf(),
         })?;
     virtual_path.set_file_name(file_name.as_str());
     Ok(virtual_path)
+}
+
+fn descriptor_uses_jsx_script(descriptor: &SfcDescriptor) -> bool {
+    descriptor
+        .script
+        .as_ref()
+        .and_then(|script| script.lang.as_deref())
+        .is_some_and(is_jsx_like_lang)
+        || descriptor
+            .script_setup
+            .as_ref()
+            .and_then(|script| script.lang.as_deref())
+            .is_some_and(is_jsx_like_lang)
+}
+
+fn is_jsx_like_lang(lang: &str) -> bool {
+    matches!(lang, "jsx" | "tsx")
 }
 
 pub(super) fn source_type_for_path(path: &Path) -> Option<SourceType> {

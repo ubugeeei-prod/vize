@@ -129,6 +129,30 @@ vize lsp --debug
 
 ---
 
+## JSX/TSX Example
+
+`examples/jsx-tsx/` contains focused JSX/TSX source examples for the compiler, linter, type
+checker, LSP, and formatter.
+
+### Setup
+
+```bash
+cd examples/jsx-tsx
+vp check src
+vp lint src
+vp fmt --write src
+```
+
+### File Structure
+
+| File                           | Description                                               |
+| ------------------------------ | --------------------------------------------------------- |
+| `src/StatefulPanel.tsx`        | Destructured props, state, emits, slots, lists, and style |
+| `src/AccessibleMedia.jsx`      | Accessible JSX lint sample with keyed list rendering      |
+| `src/FormattedScriptBlock.vue` | `.vue` `<script setup lang="tsx">` formatter sample       |
+
+---
+
 ## Vite + Musea Example
 
 The `examples/vite-musea/` directory contains a sample component gallery built with Vite + Musea.

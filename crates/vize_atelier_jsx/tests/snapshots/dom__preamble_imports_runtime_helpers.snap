@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_jsx/tests/dom.rs
+expression: "out.components[0].preamble.as_str()"
+---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"

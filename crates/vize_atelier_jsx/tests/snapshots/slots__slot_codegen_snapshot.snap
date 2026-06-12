@@ -1,0 +1,84 @@
+---
+source: crates/vize_atelier_jsx/tests/slots.rs
+expression: "common::snapshot_cases(&cases, |source|\n{ common::dom_code(source, JsxLang::Jsx) })"
+---
+## object child named slots
+### source
+const A = () => <Comp>{{ header: () => <h1>Hi</h1>, footer: () => <p>Bye</p> }}</Comp>;
+### output
+export function render(_ctx, _cache) {
+  const _component_Comp = _resolveComponent("Comp")
+
+  return (_openBlock(), _createBlock(_component_Comp, null, {
+    header: _withCtx(() => [
+      _createElementVNode("h1", null, "Hi")
+    ]),
+    footer: _withCtx(() => [
+      _createElementVNode("p", null, "Bye")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+## scoped named slot
+### source
+const A = () => <List>{{ item: ({ x }) => <li>{x}</li> }}</List>;
+### output
+export function render(_ctx, _cache) {
+  const _component_List = _resolveComponent("List")
+
+  return (_openBlock(), _createBlock(_component_List, null, {
+    item: _withCtx(({ x }) => [
+      _createElementVNode("li", null, _toDisplayString(x), 1 /* TEXT */)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+## render prop default slot
+### source
+const A = () => <List>{(item) => <li>{item}</li>}</List>;
+### output
+export function render(_ctx, _cache) {
+  const _component_List = _resolveComponent("List")
+
+  return (_openBlock(), _createBlock(_component_List, null, {
+    default: _withCtx((item) => [
+      _createElementVNode("li", null, _toDisplayString(item), 1 /* TEXT */)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+## default and named slots
+### source
+const A = () => <Card>{{ default: () => <p>body</p>, title: () => <h1>T</h1> }}</Card>;
+### output
+export function render(_ctx, _cache) {
+  const _component_Card = _resolveComponent("Card")
+
+  return (_openBlock(), _createBlock(_component_Card, null, {
+    default: _withCtx(() => [
+      _createElementVNode("p", null, "body")
+    ]),
+    title: _withCtx(() => [
+      _createElementVNode("h1", null, "T")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+## implicit default slot
+### source
+const A = () => <Card><h1>Title</h1></Card>;
+### output
+export function render(_ctx, _cache) {
+  const _component_Card = _resolveComponent("Card")
+
+  return (_openBlock(), _createBlock(_component_Card, null, {
+    default: _withCtx(() => [
+      _createElementVNode("h1", null, "Title")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}

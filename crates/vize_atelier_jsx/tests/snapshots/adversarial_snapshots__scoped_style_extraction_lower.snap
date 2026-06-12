@@ -1,0 +1,59 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "lower_summary(source, &output)"
+---
+LowerSummary {
+    diagnostics: [],
+    roots: [
+        RootSummary {
+            component_name: Some(
+                "Styled",
+            ),
+            mode: None,
+            scoped_css: Some(
+                ".box {\n        color: var(--box-color);\n        gap: var(--box-gap);\n      }",
+            ),
+            scoped_style_exprs: [],
+            root: [
+                Element {
+                    tag: "article",
+                    tag_type: "Element",
+                    is_self_closing: false,
+                    props: [
+                        Attribute {
+                            name: "class",
+                            value: Some(
+                                "box",
+                            ),
+                        },
+                        Directive {
+                            name: "bind",
+                            raw_name: None,
+                            arg: Some(
+                                "static:style",
+                            ),
+                            exp: Some(
+                                "dynamic:{\n      \"--box-color\": color,\n      \"--box-gap\": `${gap}px`,\n    }",
+                            ),
+                            modifiers: [],
+                            shorthand: false,
+                        },
+                    ],
+                    children: [
+                        Element {
+                            tag: "p",
+                            tag_type: "Element",
+                            is_self_closing: false,
+                            props: [],
+                            children: [
+                                Text {
+                                    content: "content",
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+}

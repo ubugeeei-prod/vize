@@ -1,0 +1,5 @@
+---
+source: crates/vize_carton/src/config/loader/tests.rs
+expression: error
+---
+failed to parse <CONFIG>: expected ident at line 1 column 2

@@ -1,0 +1,211 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "lower_summary(source, &output)"
+---
+LowerSummary {
+    diagnostics: [],
+    roots: [
+        RootSummary {
+            component_name: Some(
+                "Panel",
+            ),
+            mode: None,
+            scoped_css: None,
+            scoped_style_exprs: [],
+            root: [
+                Element {
+                    tag: "section",
+                    tag_type: "Element",
+                    is_self_closing: false,
+                    props: [
+                        Directive {
+                            name: "bind",
+                            raw_name: None,
+                            arg: Some(
+                                "static:class",
+                            ),
+                            exp: Some(
+                                "dynamic:{ panel: true, dense }",
+                            ),
+                            modifiers: [],
+                            shorthand: false,
+                        },
+                    ],
+                    children: [
+                        Element {
+                            tag: "header",
+                            tag_type: "Element",
+                            is_self_closing: false,
+                            props: [],
+                            children: [
+                                Element {
+                                    tag: "h2",
+                                    tag_type: "Element",
+                                    is_self_closing: false,
+                                    props: [],
+                                    children: [
+                                        Interpolation {
+                                            expression: "dynamic:activeRow.value?.title ?? \"Select a row\"",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                        Element {
+                            tag: "ul",
+                            tag_type: "Element",
+                            is_self_closing: false,
+                            props: [],
+                            children: [
+                                For {
+                                    source: "dynamic:rows",
+                                    value_alias: Some(
+                                        "dynamic:row",
+                                    ),
+                                    key_alias: Some(
+                                        "dynamic:index",
+                                    ),
+                                    object_index_alias: None,
+                                    children: [
+                                        Element {
+                                            tag: "li",
+                                            tag_type: "Element",
+                                            is_self_closing: false,
+                                            props: [
+                                                Directive {
+                                                    name: "bind",
+                                                    raw_name: None,
+                                                    arg: Some(
+                                                        "static:key",
+                                                    ),
+                                                    exp: Some(
+                                                        "dynamic:row.id",
+                                                    ),
+                                                    modifiers: [],
+                                                    shorthand: false,
+                                                },
+                                                Directive {
+                                                    name: "bind",
+                                                    raw_name: None,
+                                                    arg: Some(
+                                                        "static:class",
+                                                    ),
+                                                    exp: Some(
+                                                        "dynamic:{ done: row.done, active: row.id === activeId.value }",
+                                                    ),
+                                                    modifiers: [],
+                                                    shorthand: false,
+                                                },
+                                                Directive {
+                                                    name: "bind",
+                                                    raw_name: None,
+                                                    arg: Some(
+                                                        "static:data-index",
+                                                    ),
+                                                    exp: Some(
+                                                        "dynamic:index",
+                                                    ),
+                                                    modifiers: [],
+                                                    shorthand: false,
+                                                },
+                                            ],
+                                            children: [
+                                                Element {
+                                                    tag: "button",
+                                                    tag_type: "Element",
+                                                    is_self_closing: false,
+                                                    props: [
+                                                        Attribute {
+                                                            name: "type",
+                                                            value: Some(
+                                                                "button",
+                                                            ),
+                                                        },
+                                                        Directive {
+                                                            name: "bind",
+                                                            raw_name: None,
+                                                            arg: Some(
+                                                                "static:onClick",
+                                                            ),
+                                                            exp: Some(
+                                                                "dynamic:() => choose(row.id)",
+                                                            ),
+                                                            modifiers: [],
+                                                            shorthand: false,
+                                                        },
+                                                    ],
+                                                    children: [
+                                                        Element {
+                                                            tag: "span",
+                                                            tag_type: "Element",
+                                                            is_self_closing: false,
+                                                            props: [],
+                                                            children: [
+                                                                Interpolation {
+                                                                    expression: "dynamic:row.title",
+                                                                },
+                                                            ],
+                                                        },
+                                                        If {
+                                                            branches: [
+                                                                IfBranchSummary {
+                                                                    condition: Some(
+                                                                        "dynamic:row.id === activeId.value",
+                                                                    ),
+                                                                    children: [
+                                                                        Element {
+                                                                            tag: "strong",
+                                                                            tag_type: "Element",
+                                                                            is_self_closing: false,
+                                                                            props: [],
+                                                                            children: [
+                                                                                Text {
+                                                                                    content: "Active",
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    ],
+                                                                },
+                                                                IfBranchSummary {
+                                                                    condition: None,
+                                                                    children: [
+                                                                        Element {
+                                                                            tag: "em",
+                                                                            tag_type: "Element",
+                                                                            is_self_closing: false,
+                                                                            props: [],
+                                                                            children: [
+                                                                                Interpolation {
+                                                                                    expression: "dynamic:index + 1",
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                        },
+                                                    ],
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                        Element {
+                            tag: "footer",
+                            tag_type: "Element",
+                            is_self_closing: false,
+                            props: [],
+                            children: [
+                                Interpolation {
+                                    expression: "dynamic:slots.footer()",
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+}

@@ -1,15 +1,14 @@
 ---
 source: crates/vize/src/cli.rs
-assertion_line: 126
 expression: "command_help(\"check\")"
 ---
-Type check Vue SFC files
+Type check Vue, JSX, and TSX files
 
 Usage: check [OPTIONS] [PATTERNS]...
 
 Arguments:
   [PATTERNS]...
-          Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.d.ts`). When omitted, `tsconfig.json` include/exclude/files are used if available
+          Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.jsx`, `.d.ts`). When omitted, `tsconfig.json` include/exclude/files are used if available
 
 Options:
   -c, --config <CONFIG>

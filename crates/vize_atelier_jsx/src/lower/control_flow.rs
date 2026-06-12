@@ -246,7 +246,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             let Statement::ExpressionStatement(expr_stmt) = stmt else {
                 return None;
             };
-            self.lower_jsx_expression(&expr_stmt.expression)
+            self.lower_render_expr_child(&expr_stmt.expression)
         } else {
             self.lower_block_return_jsx(&arrow.body.statements)
         }
@@ -266,10 +266,27 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         for stmt in statements {
             if let Statement::ReturnStatement(ret) = stmt {
                 let argument = ret.argument.as_ref()?;
-                return self.lower_jsx_expression(argument);
+                return self.lower_render_expr_child(argument);
             }
         }
         None
+    }
+
+    /// Lower a returned render expression. This accepts JSX directly and JSX
+    /// control-flow expressions such as `value ? <A/> : <B/>` inside `.map()`
+    /// callbacks, while still rejecting ordinary value-returning callbacks so
+    /// they keep the plain interpolation fallback.
+    fn lower_render_expr_child(&mut self, expr: &Expression<'_>) -> Option<TemplateChildNode<'a>> {
+        let inner = unwrap_parens(expr);
+        match inner {
+            Expression::JSXElement(_) | Expression::JSXFragment(_) => {
+                self.lower_jsx_expression(inner)
+            }
+            Expression::LogicalExpression(_)
+            | Expression::ConditionalExpression(_)
+            | Expression::CallExpression(_) => self.lower_control_flow_expr(inner, inner.span()),
+            _ => None,
+        }
     }
 
     /// Lower an expression as a JSX element/fragment child, or `None` if it is
@@ -292,7 +309,9 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         match inner {
             Expression::JSXElement(element) => self.element_child(element),
             Expression::JSXFragment(fragment) => self.fragment_child(fragment),
-            Expression::LogicalExpression(_) | Expression::CallExpression(_) => self
+            Expression::LogicalExpression(_)
+            | Expression::ConditionalExpression(_)
+            | Expression::CallExpression(_) => self
                 .lower_control_flow_expr(inner, inner.span())
                 .unwrap_or_else(|| {
                     let content = self.dyn_expr(inner.span());

@@ -381,15 +381,7 @@ mod tests {
             &JsxCompileConfig::default(),
         );
         let module = out.module_code();
-        assert!(module.contains("from \"vue\""), "{module}");
-        assert!(module.contains("_createElementBlock"), "{module}");
-        // The import precedes the render code that references it.
-        let import_at = module.find("from \"vue\"").unwrap();
-        let usage_at = module.find("_createElementBlock(").unwrap();
-        assert!(
-            import_at < usage_at,
-            "preamble must precede usage: {module}"
-        );
+        insta::assert_snapshot!(module);
     }
 
     #[test]
@@ -406,7 +398,7 @@ mod tests {
         );
         assert_eq!(single.components.len(), 1);
         let map = single.source_map().expect("single component carries a map");
-        assert!(map.contains("\"version\":3"), "{map}");
+        insta::assert_snapshot!(map);
 
         let multi = compile_jsx(
             &bump,

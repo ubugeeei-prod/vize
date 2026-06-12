@@ -74,10 +74,10 @@ pub struct ConfigFeatureFlags {
     pub type_checker_options_api: bool,
     pub type_checker_legacy_vue2: bool,
     /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off
-    /// because JSX support is experimental and a repository may contain React
-    /// `.tsx` files that must not be type-checked as Vue JSX. Set
-    /// `typeChecker.jsxTypecheck: true` to route `.jsx`/`.tsx` through the Vize
-    /// JSX virtual-TS path instead of the verbatim passthrough.
+    /// so mixed Vue/React repositories do not accidentally route React `.tsx`
+    /// through the Vue JSX checker. Set `typeChecker.jsxTypecheck: true` to route
+    /// `.jsx`/`.tsx` through the Vize JSX virtual-TS path instead of the verbatim
+    /// passthrough.
     pub type_checker_jsx_typecheck: bool,
     pub language_server_legacy_vue2: Option<bool>,
     /// Dialect selected by `vue.version`; `None` when the key is absent

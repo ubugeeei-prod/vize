@@ -106,7 +106,7 @@ While `@vue/compiler-sfc` added Vapor support incrementally, Vize's `vize_atelie
 
 ### 6. Developer Sovereignty
 
-Vize is an **unofficial** toolchain. It is not controlled by the Vue.js core team, and it makes no claim to be the "official" way to build Vue applications. This is intentional.
+Vize is an **independent** toolchain. It is not controlled by the Vue.js core team, and it makes no claim to be the "official" way to build Vue applications. This is intentional.
 
 By remaining independent, Vize can:
 

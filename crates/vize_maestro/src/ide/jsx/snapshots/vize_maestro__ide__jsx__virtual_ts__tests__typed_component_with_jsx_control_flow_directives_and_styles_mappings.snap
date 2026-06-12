@@ -1,0 +1,114 @@
+---
+source: crates/vize_maestro/src/ide/jsx/virtual_ts.rs
+expression: "mapping_summary(source, &generated)"
+---
+[
+    MappingSummary {
+        generated: "import { computed, ref } from 'vue';\n\nconst Comp = (\n  { items, ok, tone, gap }: { items: Array<{ id: string; label: string }>; ok: boolean; tone: string; gap: number },\n  { emit, slots }: Ctx<{ select: [id: string] }, { footer: () => unknown }>,\n) => {\n  const selected = ref(items[0]?.id);\n  const activeItem = computed(() => items.find((item) => item.id === selected.value));\n  return (\n    ",
+        source: "import { computed, ref } from 'vue';\n\nconst Comp = (\n  { items, ok, tone, gap }: { items: Array<{ id: string; label: string }>; ok: boolean; tone: string; gap: number },\n  { emit, slots }: Ctx<{ select: [id: string] }, { footer: () => unknown }>,\n) => {\n  const selected = ref(items[0]?.id);\n  const activeItem = computed(() => items.find((item) => item.id === selected.value));\n  return (\n    ",
+        gen_range: 643..1037,
+        src_range: 0..394,
+    },
+    MappingSummary {
+        generated: "tone",
+        source: "tone",
+        gen_range: 1055..1059,
+        src_range: 414..418,
+    },
+    MappingSummary {
+        generated: "ok",
+        source: "ok",
+        gen_range: 1061..1063,
+        src_range: 428..430,
+    },
+    MappingSummary {
+        generated: "items",
+        source: "items",
+        gen_range: 1066..1071,
+        src_range: 442..447,
+    },
+    MappingSummary {
+        generated: "item",
+        source: "item",
+        gen_range: 1078..1082,
+        src_range: 453..457,
+    },
+    MappingSummary {
+        generated: "index",
+        source: "index",
+        gen_range: 1084..1089,
+        src_range: 459..464,
+    },
+    MappingSummary {
+        generated: "item.id",
+        source: "item.id",
+        gen_range: 1112..1119,
+        src_range: 490..497,
+    },
+    MappingSummary {
+        generated: "() => emit('select', item.id)",
+        source: "() => emit('select', item.id)",
+        gen_range: 1121..1150,
+        src_range: 508..537,
+    },
+    MappingSummary {
+        generated: "index",
+        source: "index",
+        gen_range: 1152..1157,
+        src_range: 551..556,
+    },
+    MappingSummary {
+        generated: "item.label",
+        source: "item.label",
+        gen_range: 1159..1169,
+        src_range: 572..582,
+    },
+    MappingSummary {
+        generated: "selected.value === item.id",
+        source: "selected.value === item.id",
+        gen_range: 1171..1197,
+        src_range: 584..610,
+    },
+    MappingSummary {
+        generated: "index",
+        source: "index",
+        gen_range: 1199..1204,
+        src_range: 646..651,
+    },
+    MappingSummary {
+        generated: "selected.value",
+        source: "selected.value",
+        gen_range: 1209..1223,
+        src_range: 721..735,
+    },
+    MappingSummary {
+        generated: "tone",
+        source: "tone",
+        gen_range: 1243..1247,
+        src_range: 751..755,
+    },
+    MappingSummary {
+        generated: "activeItem.value?.label",
+        source: "activeItem.value?.label",
+        gen_range: 1249..1272,
+        src_range: 775..798,
+    },
+    MappingSummary {
+        generated: "slots.footer()",
+        source: "slots.footer()",
+        gen_range: 1274..1288,
+        src_range: 800..814,
+    },
+    MappingSummary {
+        generated: "gap",
+        source: "gap",
+        gen_range: 1290..1293,
+        src_range: 861..864,
+    },
+    MappingSummary {
+        generated: "\n  );\n};\n",
+        source: "\n  );\n};\n",
+        gen_range: 1294..1303,
+        src_range: 888..897,
+    },
+]

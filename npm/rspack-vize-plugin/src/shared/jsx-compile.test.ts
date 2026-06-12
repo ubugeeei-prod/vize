@@ -4,23 +4,18 @@ import { compileJsxModule } from "./compiler.ts";
 
 const SOURCE = "const App = () => <div>{message}</div>;\nexport default App;\n";
 
-void test("compileJsxModule includes the runtime-helper preamble in the emitted module", () => {
+void test("compileJsxModule includes the runtime-helper preamble in the emitted module", (t) => {
   // The VDOM render code references `_createElementBlock` / `_toDisplayString`,
   // so the emitted module must import them — the preamble is no longer dropped
   // (#1533).
   const { code } = compileJsxModule("/src/App.tsx", SOURCE, { jsxMode: "vdom" });
-  assert.match(
-    code,
-    /import \{[^}]*createElementBlock[^}]*\} from "vue"/,
-    "the module imports its runtime helpers",
-  );
-  assert.match(code, /_createElementBlock\("div"/, "the render code uses the imported helper");
+  t.assert.snapshot(code);
 });
 
-void test("compileJsxModule surfaces a v3 source map when sourceMap is requested", () => {
+void test("compileJsxModule surfaces a v3 source map when sourceMap is requested", (t) => {
   const { map } = compileJsxModule("/src/App.tsx", SOURCE, { jsxMode: "vdom", sourceMap: true });
   assert.equal(typeof map, "string", "a source map is surfaced when requested");
-  assert.match(String(map), /"version":\s*3/, "the source map is v3");
+  t.assert.snapshot(String(map));
 });
 
 void test("compileJsxModule omits the source map when sourceMap is off", () => {

@@ -8,41 +8,25 @@
 
 mod common;
 
-use common::{as_directive, lower_one, root_element, simple_content};
-use vize_atelier_jsx::{DomCompileOptions, JsxLang, compile_to_dom};
+use common::{as_directive, dom_code, lower_one, root_element, simple_content};
+use vize_atelier_jsx::JsxLang;
 use vize_carton::Bump;
 
-fn dom(src: &str) -> vize_carton::String {
-    let bump = Bump::new();
-    let out = compile_to_dom(&bump, src, JsxLang::Jsx, DomCompileOptions::default());
-    assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
-    assert_eq!(out.components.len(), 1, "expected one component");
-    out.components.into_iter().next().unwrap().code
-}
-
 #[test]
-fn capture_modifier_yields_capture_listener_key() {
-    let code = dom("const A = () => <button onClickCapture={h}/>;");
-    assert!(code.contains("onClickCapture: h"), "{code}");
-}
+fn event_modifier_codegen_snapshot() {
+    let cases = [
+        ("capture", "const A = () => <button onClickCapture={h}/>;"),
+        ("once", "const A = () => <button onClickOnce={h}/>;"),
+        (
+            "passive capture",
+            "const A = () => <input onInputPassiveCapture={h}/>;",
+        ),
+        ("plain", "const A = () => <button onClick={h}/>;"),
+    ];
 
-#[test]
-fn once_modifier_yields_once_listener_key() {
-    let code = dom("const A = () => <button onClickOnce={h}/>;");
-    assert!(code.contains("onClickOnce: h"), "{code}");
-}
-
-#[test]
-fn composed_passive_capture_yields_combined_listener_key() {
-    let code = dom("const A = () => <input onInputPassiveCapture={h}/>;");
-    assert!(code.contains("onInputPassiveCapture: h"), "{code}");
-}
-
-#[test]
-fn plain_on_click_stays_a_bare_bind_prop() {
-    // Regression: no recognized suffix -> plain `v-bind:onClick`, unchanged.
-    let code = dom("const A = () => <button onClick={h}/>;");
-    assert!(code.contains("onClick: h"), "{code}");
+    insta::assert_snapshot!(common::snapshot_cases(&cases, |source| {
+        dom_code(source, JsxLang::Jsx)
+    }));
 }
 
 #[test]

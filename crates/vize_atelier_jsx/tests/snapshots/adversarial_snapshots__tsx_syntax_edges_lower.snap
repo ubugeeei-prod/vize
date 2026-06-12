@@ -1,0 +1,147 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "lower_summary(source, &output)"
+---
+LowerSummary {
+    diagnostics: [],
+    roots: [
+        RootSummary {
+            component_name: Some(
+                "GenericList",
+            ),
+            mode: None,
+            scoped_css: None,
+            scoped_style_exprs: [],
+            root: [
+                Element {
+                    tag: "List",
+                    tag_type: "Component",
+                    is_self_closing: true,
+                    props: [
+                        Directive {
+                            name: "bind",
+                            raw_name: None,
+                            arg: Some(
+                                "static:items",
+                            ),
+                            exp: Some(
+                                "dynamic:items",
+                            ),
+                            modifiers: [],
+                            shorthand: false,
+                        },
+                    ],
+                    children: [],
+                },
+                Element {
+                    tag: "input",
+                    tag_type: "Element",
+                    is_self_closing: true,
+                    props: [
+                        Directive {
+                            name: "bind",
+                            raw_name: None,
+                            arg: Some(
+                                "static:ref",
+                            ),
+                            exp: Some(
+                                "dynamic:inputRef!",
+                            ),
+                            modifiers: [],
+                            shorthand: false,
+                        },
+                        Directive {
+                            name: "bind",
+                            raw_name: None,
+                            arg: Some(
+                                "static:value",
+                            ),
+                            exp: Some(
+                                "dynamic:(items[0]?.key as string) satisfies string",
+                            ),
+                            modifiers: [],
+                            shorthand: false,
+                        },
+                    ],
+                    children: [],
+                },
+                For {
+                    source: "dynamic:items",
+                    value_alias: Some(
+                        "dynamic:{ key, value }",
+                    ),
+                    key_alias: Some(
+                        "dynamic:index",
+                    ),
+                    object_index_alias: None,
+                    children: [
+                        If {
+                            branches: [
+                                IfBranchSummary {
+                                    condition: Some(
+                                        "dynamic:value",
+                                    ),
+                                    children: [
+                                        Element {
+                                            tag: "output",
+                                            tag_type: "Element",
+                                            is_self_closing: false,
+                                            props: [
+                                                Directive {
+                                                    name: "bind",
+                                                    raw_name: None,
+                                                    arg: Some(
+                                                        "static:key",
+                                                    ),
+                                                    exp: Some(
+                                                        "dynamic:key",
+                                                    ),
+                                                    modifiers: [],
+                                                    shorthand: false,
+                                                },
+                                            ],
+                                            children: [
+                                                Interpolation {
+                                                    expression: "dynamic:`${index}:${key}`",
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                },
+                                IfBranchSummary {
+                                    condition: None,
+                                    children: [
+                                        Element {
+                                            tag: "small",
+                                            tag_type: "Element",
+                                            is_self_closing: false,
+                                            props: [
+                                                Directive {
+                                                    name: "bind",
+                                                    raw_name: None,
+                                                    arg: Some(
+                                                        "static:key",
+                                                    ),
+                                                    exp: Some(
+                                                        "dynamic:key",
+                                                    ),
+                                                    modifiers: [],
+                                                    shorthand: false,
+                                                },
+                                            ],
+                                            children: [
+                                                Interpolation {
+                                                    expression: "dynamic:key",
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+}

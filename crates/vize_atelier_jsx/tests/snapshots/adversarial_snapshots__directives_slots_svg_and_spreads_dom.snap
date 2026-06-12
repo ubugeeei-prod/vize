@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "dom_output_summary(source, &output)"
+---
+DomOutputSummary {
+    diagnostics: [],
+    components: [
+        RenderComponentSummary {
+            name: Some(
+                "Complex",
+            ),
+            mode: "Vdom",
+            preamble: Some(
+                "import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, vModelText as _vModelText, withDirectives as _withDirectives, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock, vShow as _vShow, withCtx as _withCtx } from \"vue\"\n",
+            ),
+            code: "export function render(_ctx, _cache) {\n  const _component_List = _resolveComponent(\"List\")\n  const _directive_focus = _resolveDirective(\"focus\")\n  \n  return _withDirectives((_openBlock(), _createElementBlock(\"form\", _mergeProps(attrs, { onSubmit: model.submit }), [\n    _withDirectives(_createElementVNode(\"input\", {\n      \"onUpdate:modelValue\": $event => ((model.email) = $event)\n    }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"]), [\n      [_vModelText, model.email],\n      [_directive_focus, focusOptions, \"lazy\"]\n    ]),\n    _createElementVNode(\"div\", { innerHTML: raw }, null, 8 /* PROPS */, [\"innerHTML\"]),\n    _createElementVNode(\"svg\", {\n      viewBox: \"0 0 24 24\",\n      \"aria-hidden\": \"true\"\n    }, [\n      _createElementVNode(\"use\", { \"xlink:href\": href }, null, 8 /* PROPS */, [\"xlink:href\"])\n    ]),\n    _createVNode(_component_List, { rows: rows }, {\n      header: _withCtx(() => [\n        _createElementVNode(\"h1\", null, _toDisplayString(model.email), 1 /* TEXT */)\n      ]),\n      item: _withCtx(({ row, index }) => [\n        _createElementVNode(\"span\", { \"data-index\": index }, _toDisplayString(row.label), 9 /* TEXT, PROPS */, [\"data-index\"])\n      ]),\n      _: 1 /* STABLE */\n    }, 8 /* PROPS */, [\"rows\"])\n  ], 48 /* FULL_PROPS, NEED_HYDRATION */, [\"onSubmit\"])), [\n    [_vShow, visible]\n  ])\n}",
+            templates: [],
+            scoped_style: None,
+        },
+    ],
+}

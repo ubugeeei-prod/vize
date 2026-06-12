@@ -38,10 +38,10 @@ class TypeCheckerConfig {
   /// Enable Vue 2.7 / Nuxt 2 Options API template binding support.
   legacyVue2: Boolean = false
 
-  /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off:
-  /// JSX support is experimental and a repository may contain React `.tsx`
-  /// files that must not be type-checked as Vue JSX. Set to `true` to route
-  /// `.jsx`/`.tsx` through the Vize JSX virtual-TS path.
+  /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off
+  /// so mixed Vue/React repositories do not accidentally route React `.tsx`
+  /// through the Vue JSX checker. Set to `true` to route `.jsx`/`.tsx` through
+  /// the Vize JSX virtual-TS path.
   jsxTypecheck: Boolean = false
 
   /// Path to tsconfig.json.

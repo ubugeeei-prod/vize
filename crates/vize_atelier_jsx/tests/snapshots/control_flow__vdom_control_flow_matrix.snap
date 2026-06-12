@@ -1,0 +1,97 @@
+---
+source: crates/vize_atelier_jsx/tests/control_flow.rs
+expression: "snapshot_cases(&cases, |source| { dom_code(source, JsxLang::Jsx) })"
+---
+## logical and with jsx
+### source
+const A = () => <ul>{ok && <li/>}</ul>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("ul", null, [
+    (ok)
+      ? (_openBlock(), _createElementBlock("li", { key: 0 }))
+      : _createCommentVNode("v-if", true)
+  ]))
+}
+
+## conditional jsx arms
+### source
+const A = () => <div>{ok ? <a/> : <b/>}</div>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (ok)
+      ? (_openBlock(), _createElementBlock("a", { key: 0 }))
+      : (_openBlock(), _createElementBlock("b", { key: 1 }))
+  ]))
+}
+
+## map callback
+### source
+const A = () => <ul>{items.map((i) => <li>{i}</li>)}</ul>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("ul", null, [
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (i) => {
+      return (_openBlock(), _createElementBlock("li", null, _toDisplayString(i), 1 /* TEXT */))
+    }), 256 /* UNKEYED_FRAGMENT */))
+  ]))
+}
+
+## map callback index alias
+### source
+const A = () => <ul>{rows.map((row, idx) => <li key={idx}>{row}</li>)}</ul>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("ul", null, [
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row, idx) => {
+      return (_openBlock(), _createElementBlock("li", { key: idx }, _toDisplayString(row), 1 /* TEXT */))
+    }), 128 /* KEYED_FRAGMENT */))
+  ]))
+}
+
+## plain expression
+### source
+const A = () => <div>{count}</div>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(count), 1 /* TEXT */))
+}
+
+## non jsx logical and
+### source
+const A = () => <div>{a && b}</div>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(a && b), 1 /* TEXT */))
+}
+
+## nested ternary alternate
+### source
+const A = () => <div>{a ? <p/> : b ? <em/> : <span/>}</div>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (a)
+      ? (_openBlock(), _createElementBlock("p", { key: 0 }))
+      : (b)
+        ? (_openBlock(), _createElementBlock("em", { key: 1 }))
+      : (_openBlock(), _createElementBlock("span", { key: 2 }))
+  ]))
+}
+
+## logical and arm inside ternary
+### source
+const A = () => <div>{a ? <p/> : (cond && <span/>)}</div>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (a)
+      ? (_openBlock(), _createElementBlock("p", { key: 0 }))
+      : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [
+        (cond)
+          ? (_openBlock(), _createElementBlock("span", { key: 0 }))
+          : _createCommentVNode("v-if", true)
+      ], 64 /* STABLE_FRAGMENT */))
+  ]))
+}

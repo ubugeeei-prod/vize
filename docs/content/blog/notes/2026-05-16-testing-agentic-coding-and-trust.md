@@ -113,7 +113,7 @@ It is also:
 
 Every one of those reports should become a fixture, a regression test, or a benchmark.
 
-That is how feedback becomes memory. That is how an unofficial experimental tool becomes more serious over time.
+That is how feedback becomes memory. That is how an experimental tool becomes more serious over time.
 
 ## Agents Need Smaller, Better Loops
 

@@ -67,13 +67,9 @@ fn malformed_vue_directive_is_diagnosed() {
     let src = "const App = () => { \"use vue:vdomm\"; return <div/>; };";
     let out = lower_source(&bump, src, JsxLang::Jsx);
     assert!(out.has_errors(), "expected a diagnostic for the typo");
-    let diag = out
-        .diagnostics
-        .iter()
-        .find(|d| d.message.as_str().contains("use vue:vdomm"))
-        .expect("diagnostic should name the offending directive");
-    assert!(diag.message.as_str().contains("use vue:vdom"));
-    assert!(diag.message.as_str().contains("use vue:vapor"));
+    assert_eq!(out.diagnostics.len(), 1);
+    let diag = &out.diagnostics[0];
+    insta::assert_debug_snapshot!(out.diagnostics);
     // The range maps back into the original source.
     assert!(diag.end > diag.start);
     assert_eq!(
@@ -92,15 +88,9 @@ fn conflicting_directives_are_diagnosed() {
     let src = "const App = () => { \"use vue:vapor\"; \"use vue:vdom\"; return <div/>; };";
     let out = lower_source(&bump, src, JsxLang::Jsx);
     assert!(out.has_errors(), "expected a conflict diagnostic");
-    let diag = out
-        .diagnostics
-        .iter()
-        .find(|d| {
-            d.message
-                .as_str()
-                .contains("conflicting JSX mode directives")
-        })
-        .expect("a conflict diagnostic should be produced");
+    assert_eq!(out.diagnostics.len(), 1);
+    let diag = &out.diagnostics[0];
+    insta::assert_debug_snapshot!(out.diagnostics);
     // The diagnostic points at the second, conflicting directive.
     assert_eq!(
         &src[diag.start as usize..diag.end as usize],

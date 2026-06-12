@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_jsx/tests/parity_tsx.rs
+expression: "snapshot_cases(&cases, |source| { dom_code(source, JsxLang::Tsx) })"
+---
+## typed arrow component
+### source
+const A = (props: { id: number }): JSX.Element => <div id={props.id}/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { id: props.id }, null, 8 /* PROPS */, ["id"]))
+}
+
+## generic component call
+### source
+const A = () => <List<number> items={xs}/>;
+### output
+export function render(_ctx, _cache) {
+  const _component_List = _resolveComponent("List")
+
+  return (_openBlock(), _createBlock(_component_List, { items: xs }, null, 8 /* PROPS */, ["items"]))
+}
+
+## as cast interpolation
+### source
+const A = () => <p>{(x as string)}</p>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("p", null, _toDisplayString(x), 1 /* TEXT */))
+}
+
+## non null binding
+### source
+const A = () => <div title={el!}/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { title: el }, null, 8 /* PROPS */, ["title"]))
+}

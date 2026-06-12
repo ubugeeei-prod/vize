@@ -1,0 +1,7 @@
+exports[`compileJsxModule includes the runtime-helper preamble in the emitted module 1`] = `
+"import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \\"vue\\"\\nexport function render(_ctx, _cache) {\\n  return (_openBlock(), _createElementBlock(\\"div\\", null, _toDisplayString(message), 1 /* TEXT */))\\n}"
+`;
+
+exports[`compileJsxModule surfaces a v3 source map when sourceMap is requested 1`] = `
+"{\\"file\\":\\"template.vue\\",\\"mappings\\":\\";6CAAkB,6BAAE\\",\\"names\\":[],\\"sources\\":[\\"template.vue\\"],\\"sourcesContent\\":[\\"<div>{message}</div>\\"],\\"version\\":3}"
+`;

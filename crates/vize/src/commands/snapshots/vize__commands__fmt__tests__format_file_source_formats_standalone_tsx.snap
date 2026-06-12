@@ -1,0 +1,5 @@
+---
+source: crates/vize/src/commands/fmt.rs
+expression: result.code.as_str()
+---
+const Component = ({ label }: { label: string }) => <button>{label}</button>;

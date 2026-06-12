@@ -1,0 +1,7 @@
+---
+source: crates/vize/src/commands/lint/tests.rs
+expression: diagnostic_summary(alias_result)
+---
+[
+    "Error|vize:croquis/cf/value-extraction-breaks-reactivity: Assigning reactive 'item via item' to 'item2' creates a non-reactive copy|99..103",
+]

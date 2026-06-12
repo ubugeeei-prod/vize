@@ -1,0 +1,14 @@
+---
+source: crates/vize_canon/src/batch/virtual_project/tests.rs
+expression: diagnostic_snapshot(diagnostics)
+---
+[
+    DiagnosticSnapshot {
+        line: 1,
+        column: 14,
+        message: "Vue compile error [DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE]: Default value of prop \"msg\" does not match declared type.",
+        code: None,
+        severity: 1,
+        block_type: None,
+    },
+]

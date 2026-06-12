@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "dom_output_summary(source, &output)"
+---
+DomOutputSummary {
+    diagnostics: [],
+    components: [
+        RenderComponentSummary {
+            name: Some(
+                "Styled",
+            ),
+            mode: "Vdom",
+            preamble: Some(
+                "import { createElementVNode as _createElementVNode, normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            ),
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"article\", {\n    class: \"box\",\n    style: _normalizeStyle({\n      \"--box-color\": color,\n      \"--box-gap\": `${gap}px`,\n    }),\n    \"data-v-2216d773\": \"\"\n  }, [\n    _createElementVNode(\"p\", null, \"content\")\n  ], 4 /* STYLE */))\n}",
+            templates: [],
+            scoped_style: Some(
+                ScopedStyleSummary {
+                    scope_id: "data-v-2216d773",
+                    css: ".box[data-v-2216d773]{\n        color: var(--box-color);\n        gap: var(--box-gap);\n      }",
+                },
+            ),
+        },
+    ],
+}

@@ -20,6 +20,26 @@ pub fn format_script_content(
     options: &FormatOptions,
     _allocator: &Allocator,
 ) -> Result<String, FormatError> {
+    format_script_content_with_source_type(
+        source,
+        options,
+        _allocator,
+        SourceType::ts().with_module(true),
+    )
+}
+
+/// Format JavaScript/TypeScript/JSX/TSX content using an explicit OXC source type.
+///
+/// SFC formatting calls this with the script block's `lang` attribute so
+/// `<script lang="jsx">` and `<script lang="tsx">` preserve JSX syntax instead
+/// of falling back through the non-JSX TypeScript parser.
+#[inline]
+pub fn format_script_content_with_source_type(
+    source: &str,
+    options: &FormatOptions,
+    _allocator: &Allocator,
+    source_type: SourceType,
+) -> Result<String, FormatError> {
     // Fast path for empty content
     let trimmed = source.trim();
     if trimmed.is_empty() {
@@ -28,9 +48,6 @@ pub fn format_script_content(
 
     // Use OXC's allocator for parsing (required by oxc_parser)
     let oxc_allocator = OxcAllocator::default();
-
-    // Determine source type (default to TypeScript module)
-    let source_type = SourceType::ts().with_module(true);
 
     // Parse the source with formatter-compatible options
     let parsed = Parser::new(&oxc_allocator, source, source_type)
@@ -53,6 +70,14 @@ pub fn format_script_content(
     let formatted = OxcFormatter::new(&oxc_allocator, oxc_options).build(&parsed.program);
 
     Ok(formatted.into())
+}
+
+pub(crate) fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {
+    match lang {
+        Some("jsx") => SourceType::jsx().with_module(true),
+        Some("tsx") => SourceType::tsx().with_module(true),
+        _ => SourceType::ts().with_module(true),
+    }
 }
 
 thread_local! {
@@ -120,7 +145,11 @@ pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<Strin
 
 #[cfg(test)]
 mod tests {
-    use super::{Allocator, FormatOptions, format_js_expression, format_script_content};
+    use super::{
+        Allocator, FormatOptions, format_js_expression, format_script_content,
+        format_script_content_with_source_type,
+    };
+    use oxc_span::SourceType;
     use vize_carton::String;
 
     #[test]
@@ -139,6 +168,39 @@ mod tests {
         let options = FormatOptions::default();
         let allocator = Allocator::default();
         let result = format_script_content(source, &options, &allocator).unwrap();
+
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_format_tsx_component_script() {
+        let source =
+            "const Comp=(props:{msg:string})=><section class=\"box\">{props.msg}</section>";
+        let options = FormatOptions::default();
+        let allocator = Allocator::default();
+        let result = format_script_content_with_source_type(
+            source,
+            &options,
+            &allocator,
+            SourceType::tsx().with_module(true),
+        )
+        .unwrap();
+
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_format_jsx_component_script() {
+        let source = "const Comp=({msg})=><><span data-id=\"x\">{msg}</span></>";
+        let options = FormatOptions::default();
+        let allocator = Allocator::default();
+        let result = format_script_content_with_source_type(
+            source,
+            &options,
+            &allocator,
+            SourceType::jsx().with_module(true),
+        )
+        .unwrap();
 
         insta::assert_snapshot!(result.as_str());
     }

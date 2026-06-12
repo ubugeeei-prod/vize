@@ -1,0 +1,24 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "vapor_output_summary(source, &output)"
+---
+VaporOutputSummary {
+    diagnostics: [],
+    components: [
+        RenderComponentSummary {
+            name: Some(
+                "Panel",
+            ),
+            mode: "Vapor",
+            preamble: None,
+            code: "import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';\nconst t0 = _template(\"<strong>Active</strong>\")\nconst t1 = _template(\"<em> </em>\")\nconst t2 = _template(\"<li><button type=\\\"button\\\"><span> </span></button></li>\")\nconst t3 = _template(\"<section><header><h2> </h2></header><ul></ul><footer> </footer></section>\", true)\n\nexport function render(_ctx) {\n  const n3 = t3()\n  const n0 = _child(n3)\n  const n4 = _child(n0)\n  const n1 = _next(n0, 1)\n  const n2 = _next(n1, 1)\n  const x4 = _txt(n4)\n  const x2 = _txt(n2)\n  _setInsertionState(n1, null, true)\n  const n5 = _createFor(() => (rows), (_for_item0, _for_key0) => {\n    const n8 = t2()\n    const n7 = _child(n8)\n    const n9 = _child(n7)\n    const x9 = _txt(n9)\n    _setInsertionState(n7, null, true)\n    const n10 = _createIf(() => (_for_item0.value.id === activeId.value), () => {\n      const n12 = t0()\n      return n12\n    }, () => {\n      const n14 = t1()\n      const x14 = _txt(n14)\n      _renderEffect(() => _setText(x14, _toDisplayString(_for_key0.value + 1)))\n      return n14\n    })\n    _renderEffect(() => {\n      _setClass(n8, { done: _for_item0.value.done, active: _for_item0.value.id === activeId.value })\n      _setProp(n8, \"data-index\", _for_key0.value)\n      _setProp(n7, \"onClick\", () => choose(_for_item0.value.id))\n      _setText(x9, _toDisplayString(_for_item0.value.title))\n    })\n    return n8\n  }, (row, index) => (row.id))\n  _renderEffect(() => {\n    _setClass(n3, { panel: true, dense })\n    _setText(x4, _toDisplayString(activeRow.value?.title ?? \"Select a row\"))\n    _setText(x2, _toDisplayString(slots.footer()))\n  })\n  return n3\n}\n",
+            templates: [
+                "<strong>Active</strong>",
+                "<em> </em>",
+                "<li><button type=\"button\"><span> </span></button></li>",
+                "<section><header><h2> </h2></header><ul></ul><footer> </footer></section>",
+            ],
+            scoped_style: None,
+        },
+    ],
+}

@@ -69,9 +69,9 @@ The Vize docs now have two writing lanes:
     <strong>Production Ready</strong>
     <span>Why exhaustive real-world validation and community feedback are the path from experimental project to production-ready toolchain.</span>
   </a>
-  <a class="blog-post-list-item" href="./notes/2026-05-16-unofficial-personal-tooling-and-development-speed/">
+  <a class="blog-post-list-item" href="./notes/2026-05-16-personal-tooling-and-development-speed/">
     <strong>Personal Speed</strong>
-    <span>Why Vize being unofficial and personal can be an advantage for exploration, speed, and ambitious toolchain design.</span>
+    <span>Why Vize being independent and personal can be an advantage for exploration, speed, and ambitious toolchain design.</span>
   </a>
   <a class="blog-post-list-item" href="./notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration/">
     <strong>Vertical Toolchains</strong>

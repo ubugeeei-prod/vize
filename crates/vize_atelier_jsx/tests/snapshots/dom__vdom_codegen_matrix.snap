@@ -1,0 +1,140 @@
+---
+source: crates/vize_atelier_jsx/tests/dom.rs
+expression: "snapshot_lang_cases(&cases, dom_code)"
+---
+## single element
+### lang
+Jsx
+### source
+const A = () => <div/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div"))
+}
+
+## static attribute
+### lang
+Jsx
+### source
+const A = () => <div class="a"/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { class: "a" }))
+}
+
+## interpolation
+### lang
+Jsx
+### source
+const A = () => <div>{count}</div>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(count), 1 /* TEXT */))
+}
+
+## component
+### lang
+Jsx
+### source
+const A = () => <Comp/>;
+### output
+export function render(_ctx, _cache) {
+  const _component_Comp = _resolveComponent("Comp")
+
+  return (_openBlock(), _createBlock(_component_Comp))
+}
+
+## event handler
+### lang
+Jsx
+### source
+const A = () => <button onClick={h}/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", { onClick: h }, null, 8 /* PROPS */, ["onClick"]))
+}
+
+## fragment
+### lang
+Jsx
+### source
+const A = () => <><a/><b/></>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("a"),
+    _createElementVNode("b")
+  ], 64 /* STABLE_FRAGMENT */))
+}
+
+## v-if
+### lang
+Jsx
+### source
+const A = () => <div v-if={ok}>x</div>;
+### output
+export function render(_ctx, _cache) {
+  return (ok)
+    ? (_openBlock(), _createElementBlock("div", { key: 0 }, "x"))
+    : _createCommentVNode("v-if", true)
+}
+
+## v-for
+### lang
+Jsx
+### source
+const A = () => <ul><li v-for={(i) in items}>{i}</li></ul>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("ul", null, [
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (i) => {
+      return (_openBlock(), _createElementBlock("li", null, _toDisplayString(i), 1 /* TEXT */))
+    }), 256 /* UNKEYED_FRAGMENT */))
+  ]))
+}
+
+## v-model
+### lang
+Jsx
+### source
+const A = () => <input v-model={val}/>;
+### output
+export function render(_ctx, _cache) {
+  return _withDirectives((_openBlock(), _createElementBlock("input", {
+    "onUpdate:modelValue": $event => ((val) = $event)
+  }, null, 8 /* PROPS */, ["onUpdate:modelValue"])), [
+    [_vModelText, val]
+  ])
+}
+
+## dynamic style
+### lang
+Jsx
+### source
+const A = () => <div style={s}/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    style: _normalizeStyle(s)
+  }, null, 4 /* STYLE */))
+}
+
+## spread props
+### lang
+Jsx
+### source
+const A = () => <div {...attrs}/>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(attrs)), null, 16 /* FULL_PROPS */))
+}
+
+## tsx
+### lang
+Tsx
+### source
+const A = (): JSX.Element => <p>{msg}</p>;
+### output
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("p", null, _toDisplayString(msg), 1 /* TEXT */))
+}

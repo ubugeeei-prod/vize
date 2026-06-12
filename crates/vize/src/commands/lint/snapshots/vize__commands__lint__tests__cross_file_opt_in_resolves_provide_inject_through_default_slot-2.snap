@@ -1,0 +1,10 @@
+---
+source: crates/vize/src/commands/lint/tests.rs
+expression: tree
+---
+## Provide/Inject Tree
+
+📦 **Provider**
+  🔹 provide(`"count"`) → 1 consumer(s)
+  📦 **Consumer**
+    🔸 inject(`"count"`) ✅

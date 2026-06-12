@@ -65,7 +65,7 @@ fn add_lint_file(path: &Path, files: &mut Vec<PathBuf>, seen: &mut FxHashSet<Pat
 fn is_lintable_path(path: &Path) -> bool {
     matches!(
         path.extension().and_then(|extension| extension.to_str()),
-        Some("vue" | "html" | "htm")
+        Some("vue" | "html" | "htm" | "jsx" | "tsx")
     )
 }
 

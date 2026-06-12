@@ -31,14 +31,14 @@ The real question is: **which layer does each project want to own?**
 
 ## Quick Map
 
-| Project              | Center of gravity                                             | How Vize relates to it                                                            |
-| -------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Official Vue tooling | The production baseline for Vue compiler and language tooling | Vize is unofficial and experimental, so it must treat this as the reference point |
-| Oxc / Oxlint         | General JavaScript and TypeScript infrastructure              | Vize can reuse and cooperate with Oxc while owning Vue-specific semantics         |
-| Golar                | `typescript-go`-based embedded-language type checking         | Vize has a broader Vue toolchain scope than type checking alone                   |
-| Verter               | Alternative next-generation Vue compiler and toolchain        | Closest in ambition, different in architecture and product shape                  |
-| Flint                | Friendly, typed JS/TS linting with strong defaults            | Complementary for general TS linting, not a Vue SFC toolchain                     |
-| TSSLint              | TypeScript-native linting inside the language server          | Strong semantic linting idea, but not a full Vue compiler/linter/gallery stack    |
+| Project              | Center of gravity                                             | How Vize relates to it                                                             |
+| -------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Official Vue tooling | The production baseline for Vue compiler and language tooling | Vize is independent and experimental, so it must treat this as the reference point |
+| Oxc / Oxlint         | General JavaScript and TypeScript infrastructure              | Vize can reuse and cooperate with Oxc while owning Vue-specific semantics          |
+| Golar                | `typescript-go`-based embedded-language type checking         | Vize has a broader Vue toolchain scope than type checking alone                    |
+| Verter               | Alternative next-generation Vue compiler and toolchain        | Closest in ambition, different in architecture and product shape                   |
+| Flint                | Friendly, typed JS/TS linting with strong defaults            | Complementary for general TS linting, not a Vue SFC toolchain                      |
+| TSSLint              | TypeScript-native linting inside the language server          | Strong semantic linting idea, but not a full Vue compiler/linter/gallery stack     |
 
 ## Official Vue Tooling
 
@@ -160,7 +160,7 @@ It should cooperate elsewhere:
 
 The cleanest positioning is this:
 
-> Vize is an unofficial, experimental, Rust-native Vue toolchain that tries to make compiler, linter, formatter, type checker, LSP, component gallery, and AI-facing diagnostics feel like one coherent environment.
+> Vize is an independent, experimental, Rust-native Vue toolchain that tries to make compiler, linter, formatter, type checker, LSP, component gallery, and AI-facing diagnostics feel like one coherent environment.
 
 That means Vize is not the official answer.
 

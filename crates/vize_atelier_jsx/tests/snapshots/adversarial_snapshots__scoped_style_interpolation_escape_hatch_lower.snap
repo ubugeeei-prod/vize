@@ -1,0 +1,58 @@
+---
+source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
+expression: "lower_summary(source, &output)"
+---
+LowerSummary {
+    diagnostics: [],
+    roots: [
+        RootSummary {
+            component_name: Some(
+                "Styled",
+            ),
+            mode: None,
+            scoped_css: Some(
+                ".box {\n        color: ;\n        gap: px;\n      }",
+            ),
+            scoped_style_exprs: [
+                ExprSpanSummary {
+                    content: "color",
+                    source: "color",
+                    range: 132..137,
+                },
+                ExprSpanSummary {
+                    content: "gap",
+                    source: "gap",
+                    range: 155..158,
+                },
+            ],
+            root: [
+                Element {
+                    tag: "article",
+                    tag_type: "Element",
+                    is_self_closing: false,
+                    props: [
+                        Attribute {
+                            name: "class",
+                            value: Some(
+                                "box",
+                            ),
+                        },
+                    ],
+                    children: [
+                        Element {
+                            tag: "p",
+                            tag_type: "Element",
+                            is_self_closing: false,
+                            props: [],
+                            children: [
+                                Text {
+                                    content: "content",
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+}

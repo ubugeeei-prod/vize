@@ -154,6 +154,14 @@ impl VirtualProject {
             compiler_options.remove(*option);
         }
         compiler_options.insert("allowImportingTsExtensions".into(), Value::Bool(true));
+        if self.needs_vue_jsx_compiler_options() {
+            compiler_options
+                .entry("jsx")
+                .or_insert_with(|| Value::String("preserve".into()));
+            compiler_options
+                .entry("jsxImportSource")
+                .or_insert_with(|| Value::String("vue".into()));
+        }
 
         // Re-anchor tsconfig `paths` into the virtual mirror. Without this the
         // aliases inherited via `extends` resolve against the real source tree,
@@ -219,6 +227,15 @@ impl VirtualProject {
         config.insert("exclude".into(), Value::Array(Vec::new()));
 
         Ok(Value::Object(config))
+    }
+
+    fn needs_vue_jsx_compiler_options(&self) -> bool {
+        self.virtual_files.values().any(|file| {
+            file.virtual_path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.ends_with(".vue.tsx"))
+        })
     }
 
     fn include_paths(&self, include_virtual_paths: Option<&[&Path]>) -> Vec<CompactString> {

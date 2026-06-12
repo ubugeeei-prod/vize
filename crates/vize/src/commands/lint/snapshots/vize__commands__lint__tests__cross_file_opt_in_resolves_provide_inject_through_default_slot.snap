@@ -1,0 +1,8 @@
+---
+source: crates/vize/src/commands/lint/tests.rs
+expression: all_diagnostic_summary(&output.results)
+---
+[
+    "Warning|vize:croquis/cf/provide-without-symbol: provide('count') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow|82..105",
+    "Warning|vize:croquis/cf/inject-without-symbol: inject('count') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow|69..84",
+]

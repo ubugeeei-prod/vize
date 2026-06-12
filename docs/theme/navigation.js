@@ -22,7 +22,7 @@ const vizeDocsNavigation = (() => {
       "/blog/notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready",
       "Production Ready",
     ],
-    ["/blog/notes/2026-05-16-unofficial-personal-tooling-and-development-speed", "Personal Speed"],
+    ["/blog/notes/2026-05-16-personal-tooling-and-development-speed", "Personal Speed"],
     [
       "/blog/notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration",
       "Vertical Toolchains",
