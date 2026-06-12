@@ -106,6 +106,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // Vue 3 Options API binding resolution is officially supported and is a
     // standard-build opt-in (not the `legacy` feature).
     let options_api = loaded_config.features.type_checker_options_api;
+    // Opt-in type-checking of `.jsx`/`.tsx` Vize components (#1497). Default-off:
+    // JSX is experimental and React `.tsx` must not be Vue-JSX type-checked.
+    let jsx_typecheck = loaded_config.features.type_checker_jsx_typecheck;
     // Legacy Vue 2.7 / Nuxt 2 Options-API type checking is opt-in and compiled out
     // of the default Vue 3 binary. Without the `legacy` feature, honor the config
     // flag by warning instead of silently ignoring it.
@@ -307,6 +310,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     #[cfg(feature = "legacy")]
     if legacy_vue2 {
         checker.enable_legacy_vue2();
+    }
+    if jsx_typecheck {
+        checker.enable_jsx_typecheck();
     }
     checker.set_template_syntax(template_syntax_mode(compiler_template_syntax));
     checker.set_dialect(dialect);

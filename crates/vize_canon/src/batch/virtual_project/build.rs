@@ -43,6 +43,11 @@ pub(super) struct VirtualBuildContext<'a> {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
+    /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). When
+    /// `false` (default), `.jsx`/`.tsx` are passed to TypeScript verbatim
+    /// (React passthrough); when `true`, they route through the Vize JSX
+    /// virtual-TS path.
+    pub(super) jsx_typecheck: bool,
     /// Configured Vue dialect (default [`VueVersion::V3`]); plumbing only today.
     pub(super) dialect: vize_carton::config::VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
@@ -71,6 +76,16 @@ pub(super) fn build_registered_file(
             context.virtual_root,
             context.rewriter,
         );
+    }
+
+    // Opt-in Vize JSX/TSX type-checking (#1497). Only when the user explicitly
+    // enabled `typeChecker.jsxTypecheck`: otherwise `.jsx`/`.tsx` is passed to
+    // TypeScript verbatim (React passthrough) by the script path below.
+    if context.jsx_typecheck
+        && let Some(name) = path.file_name().and_then(|name| name.to_str())
+        && (name.ends_with(".jsx") || name.ends_with(".tsx"))
+    {
+        return build_jsx_registered_file(path, content, context);
     }
 
     let source_type = source_type_for_path(path).ok_or_else(|| CorsaError::PathError {
@@ -154,6 +169,86 @@ pub(super) fn build_vue_registered_file(
         ),
         diagnostics,
     })
+}
+
+/// Build a virtual file for a `.jsx`/`.tsx` Vize component (#1497, opt-in).
+///
+/// Parallels [`build_vue_registered_file`]: lower the JSX/TSX to plain virtual
+/// TypeScript (props from the typed first parameter + setup scope + JSX
+/// expressions), rewrite imports, and mirror the file to `<name>.ts` so Corsa
+/// type-checks it as plain TypeScript. Reached only when `jsx_typecheck` is on.
+pub(super) fn build_jsx_registered_file(
+    path: &Path,
+    content: &str,
+    context: VirtualBuildContext<'_>,
+) -> CorsaResult<RegisteredFile> {
+    let lang = jsx_lang_for_path(path);
+    let generated = profile!(
+        "canon.jsx.virtual_ts",
+        super::jsx_codegen::generate_jsx_virtual_ts(path, content, lang)
+    )?;
+    let super::jsx_codegen::GeneratedJsxFile {
+        code,
+        mappings,
+        diagnostics,
+    } = generated;
+
+    let rewritten = profile!(
+        "canon.import.rewrite.jsx",
+        context.rewriter.rewrite(&code, SourceType::ts())
+    );
+
+    // The whole `.jsx`/`.tsx` body is one Script block for block-type recovery.
+    let blocks = vec![crate::batch::source_map::SfcBlockRange {
+        start: 0,
+        end: content.len() as u32,
+        block_type: crate::batch::SfcBlockType::Script,
+    }];
+    let source_map =
+        CompositeSourceMap::new_vue(SfcSourceMap::new(mappings, blocks), rewritten.source_map);
+    let virtual_path = virtual_jsx_path(context.project_root, context.virtual_root, path)?;
+
+    Ok(RegisteredFile {
+        file: VirtualFile {
+            content: rewritten.code,
+            source_map,
+            original_path: path.to_path_buf(),
+            virtual_path,
+        },
+        original_content: content.to_compact_string(),
+        passthrough_files: collect_passthrough_json_modules(
+            path,
+            content,
+            context.project_root,
+            context.virtual_root,
+        ),
+        diagnostics,
+    })
+}
+
+fn jsx_lang_for_path(path: &Path) -> vize_atelier_jsx::JsxLang {
+    let is_tsx = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".tsx"));
+    if is_tsx {
+        vize_atelier_jsx::JsxLang::Tsx
+    } else {
+        vize_atelier_jsx::JsxLang::Jsx
+    }
+}
+
+fn virtual_jsx_path(project_root: &Path, virtual_root: &Path, path: &Path) -> CorsaResult<PathBuf> {
+    let mut virtual_path = mirrored_virtual_path(project_root, virtual_root, path)?;
+    let file_name = virtual_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| cstr!("{name}.ts"))
+        .ok_or_else(|| CorsaError::PathError {
+            path: path.to_path_buf(),
+        })?;
+    virtual_path.set_file_name(file_name.as_str());
+    Ok(virtual_path)
 }
 
 /// Rewritten virtual TypeScript for a single in-memory `.vue` document,

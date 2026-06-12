@@ -60,6 +60,7 @@ class TypeCheckerConfig {
   checkInvalidExports: Boolean? = null
   checkFallthroughAttrs: Boolean? = null
   legacyVue2: Boolean? = null
+  jsxTypecheck: Boolean? = null
   tsconfig: String? = null
   corsaPath: String? = null
   tsgoPath: String? = null

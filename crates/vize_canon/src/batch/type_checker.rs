@@ -163,6 +163,16 @@ impl BatchTypeChecker {
         self.project.set_legacy_vue2(true);
     }
 
+    /// Enable opt-in type-checking of `.jsx`/`.tsx` Vize components (#1497).
+    ///
+    /// Off by default: JSX support is experimental and a repository may contain
+    /// React `.tsx` files that must not be type-checked as Vue JSX. When
+    /// enabled, `.jsx`/`.tsx` route through the Vize JSX virtual-TS path instead
+    /// of the verbatim React passthrough.
+    pub fn enable_jsx_typecheck(&mut self) {
+        self.project.set_jsx_typecheck(true);
+    }
+
     /// Configure which virtual TypeScript checks are generated for Vue files.
     pub fn set_virtual_ts_checks(
         &mut self,

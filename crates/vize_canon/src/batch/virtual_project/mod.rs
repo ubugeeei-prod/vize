@@ -27,6 +27,7 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 mod build;
 pub use build::{VueDocumentVirtualTs, generate_vue_document_virtual_ts};
 mod diagnostics;
+mod jsx_codegen;
 mod mapping;
 mod materialize;
 mod passthrough;
@@ -93,6 +94,12 @@ pub struct VirtualProject {
     /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for virtual files.
     options_api: bool,
     legacy_vue2: bool,
+
+    /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off:
+    /// when disabled, `.jsx`/`.tsx` are passed to TypeScript verbatim (React
+    /// passthrough); when enabled, they are routed through the Vize JSX
+    /// virtual-TS path.
+    jsx_typecheck: bool,
 
     /// Configured Vue dialect from `vue.version` (default [`VueVersion::V3`]).
     ///

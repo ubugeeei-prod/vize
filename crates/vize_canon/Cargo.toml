@@ -20,6 +20,7 @@ vize_croquis.workspace = true
 vize_relief.workspace = true
 vize_armature.workspace = true
 vize_atelier_core.workspace = true
+vize_atelier_jsx.workspace = true
 vize_atelier_sfc.workspace = true
 
 # OXC for parsing and AST manipulation (import rewriting)

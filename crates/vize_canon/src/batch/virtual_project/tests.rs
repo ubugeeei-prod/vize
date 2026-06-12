@@ -1135,3 +1135,77 @@ fn test_source_type_for_path() {
     );
     assert_eq!(source_type_for_path(Path::new("foo.vue")), None);
 }
+
+// --- JSX/TSX opt-in type-checking (#1497, #1502) -------------------------
+
+#[test]
+fn jsx_typecheck_off_keeps_tsx_verbatim_passthrough() {
+    let case_dir = unique_case_dir("jsx-off");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    let tsx_path = case_dir.join("Comp.tsx");
+    let source = "const Comp = (props: { msg: string }) => <div>{props.msg}</div>;\n";
+
+    // Flag off (the default): the .tsx is mirrored verbatim (React passthrough),
+    // its virtual path keeps the `.tsx` extension, and no JSX lowering happens.
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project
+        .register_path_with_content(&tsx_path, source)
+        .unwrap();
+    let virtual_file = project.find_by_original(&tsx_path).unwrap();
+    assert_eq!(virtual_file.content.as_str(), source);
+    assert!(
+        virtual_file
+            .virtual_path
+            .to_string_lossy()
+            .ends_with(".tsx")
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn jsx_typecheck_on_lowers_tsx_to_plain_ts() {
+    let case_dir = unique_case_dir("jsx-on");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    let tsx_path = case_dir.join("Comp.tsx");
+    let source = "const Comp = (props: { msg: string }) => <div class=\"a\">{props.msg}</div>;\n";
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.set_jsx_typecheck(true);
+    project
+        .register_path_with_content(&tsx_path, source)
+        .unwrap();
+    let virtual_file = project.find_by_original(&tsx_path).unwrap();
+
+    // Plain `.ts` output: the JSX element is gone, the typed props parameter is
+    // verbatim, and the JSX expression is re-emitted as plain TS.
+    assert_ts_parses(&virtual_file.content);
+    assert!(
+        !virtual_file.content.contains("<div"),
+        "{}",
+        virtual_file.content
+    );
+    assert!(
+        virtual_file.content.contains("props: { msg: string }"),
+        "{}",
+        virtual_file.content
+    );
+    assert!(
+        virtual_file
+            .content
+            .contains("__vize_jsx_expr__(props.msg)"),
+        "{}",
+        virtual_file.content
+    );
+    // Virtual path mirrors to `<name>.ts` so Corsa checks it as TypeScript.
+    assert!(
+        virtual_file
+            .virtual_path
+            .to_string_lossy()
+            .ends_with("Comp.tsx.ts")
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

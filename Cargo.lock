@@ -3587,6 +3587,7 @@ dependencies = [
  "tracing",
  "vize_armature",
  "vize_atelier_core",
+ "vize_atelier_jsx",
  "vize_atelier_sfc",
  "vize_carton",
  "vize_croquis",

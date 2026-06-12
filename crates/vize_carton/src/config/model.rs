@@ -71,6 +71,12 @@ pub struct ConfigFeatureFlags {
     /// build (not a legacy feature).
     pub type_checker_options_api: bool,
     pub type_checker_legacy_vue2: bool,
+    /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off
+    /// because JSX support is experimental and a repository may contain React
+    /// `.tsx` files that must not be type-checked as Vue JSX. Set
+    /// `typeChecker.jsxTypecheck: true` to route `.jsx`/`.tsx` through the Vize
+    /// JSX virtual-TS path instead of the verbatim passthrough.
+    pub type_checker_jsx_typecheck: bool,
     pub language_server_legacy_vue2: Option<bool>,
     /// Dialect selected by `vue.version`; `None` when the key is absent
     /// (modern Vue 3). Validated at parse time — unknown or ambiguous values
@@ -86,6 +92,7 @@ impl Default for ConfigFeatureFlags {
             // Options API resolution is default-on (matches vue-tsc).
             type_checker_options_api: true,
             type_checker_legacy_vue2: false,
+            type_checker_jsx_typecheck: false,
             language_server_legacy_vue2: None,
             vue_version: None,
         }
@@ -126,6 +133,8 @@ struct RawTypeCheckerConfig {
     /// (matches vue-tsc). Set `false` to opt out.
     options_api: Option<bool>,
     legacy_vue2: bool,
+    /// Opt-in type-checking of JSX/TSX Vue components (#1497). Default-off.
+    jsx_typecheck: bool,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -168,6 +177,7 @@ impl RawVizeConfig {
         // Default-on (matches vue-tsc); explicit `false` opts out.
         let type_checker_options_api = raw_type_checker.options_api.unwrap_or(true);
         let type_checker_legacy_vue2 = raw_type_checker.legacy_vue2;
+        let type_checker_jsx_typecheck = raw_type_checker.jsx_typecheck;
         let mut type_checker = raw_type_checker.config;
         if let Some(legacy_check) = legacy_check {
             if type_checker.globals_file.is_none() {
@@ -193,6 +203,7 @@ impl RawVizeConfig {
         let features = ConfigFeatureFlags {
             type_checker_options_api,
             type_checker_legacy_vue2,
+            type_checker_jsx_typecheck,
             language_server_legacy_vue2: language_server_raw.legacy_vue2,
             vue_version: vue.version,
         };

@@ -40,6 +40,7 @@ impl VirtualProject {
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             options_api: false,
             legacy_vue2: false,
+            jsx_typecheck: false,
             dialect: vize_carton::config::VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
             virtual_files: FxHashMap::default(),
@@ -75,6 +76,11 @@ impl VirtualProject {
 
     pub(crate) fn set_legacy_vue2(&mut self, enabled: bool) {
         self.legacy_vue2 = enabled;
+    }
+
+    /// Enable opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497).
+    pub(crate) fn set_jsx_typecheck(&mut self, enabled: bool) {
+        self.jsx_typecheck = enabled;
     }
 
     /// Set the configured Vue dialect (default [`VueVersion::V3`]).
@@ -118,6 +124,7 @@ impl VirtualProject {
                 preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
+                jsx_typecheck: self.jsx_typecheck,
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
                 rewriter: &self.rewriter,
@@ -164,6 +171,7 @@ impl VirtualProject {
             preserve_unused_diagnostics,
             options_api: self.options_api,
             legacy_vue2: self.legacy_vue2,
+            jsx_typecheck: self.jsx_typecheck,
             dialect: self.dialect,
             template_syntax: self.template_syntax,
             rewriter: &self.rewriter,
@@ -197,6 +205,7 @@ impl VirtualProject {
                 preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
+                jsx_typecheck: self.jsx_typecheck,
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
                 rewriter: &self.rewriter,
