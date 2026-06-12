@@ -22,6 +22,14 @@ env:
   # the A/B table is surfaced for review but the empty threshold keeps it from
   # blocking a PR. The dialect guard below is a hard gate because byte-identical
   # codegen is deterministic and not subject to timing jitter.
+  #
+  # The A/B sweep covers the four JSX cost dimensions #1501 requires — parser/
+  # lowering (jsx_lower), Croquis analysis (jsx_croquis_analyze), Patina rule
+  # traversal (jsx_lint, from vize_patina/markup_ir_bench), and VDOM/Vapor
+  # codegen — so a regression in any of them shows up in the critcmp table. The
+  # documented JSX regression threshold is 10% (see bench/criterion-ab.mjs):
+  # setting CRITERION_AB_THRESHOLD: 10 here flips this lane from report-only into
+  # a hard gate that fails on a +10% median regression, no code change needed.
   CRITERION_AB_THRESHOLD: ""
   # The dialect-guard corpus is small so the legacy OFF/ON binaries compile it
   # quickly; identity is exact, and the A/B timing tolerates a 2% delta.

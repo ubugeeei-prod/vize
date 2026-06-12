@@ -18,6 +18,18 @@
  * runs it in report-only mode so micro-benchmark jitter never blocks a PR; the
  * threshold knob is wired so the gate can be tightened later without a code
  * change.
+ *
+ * Documented JSX regression threshold (#1501): the four JSX cost dimensions —
+ * parser/lowering (`jsx_lower`), Croquis semantic analysis
+ * (`jsx_croquis_analyze`), Patina rule traversal (`jsx_lint`), and VDOM/Vapor
+ * codegen (`jsx_compile_dom` / `jsx_compile_vapor` / `jsx_compile_mode_aware`) —
+ * are all A/B-compared here. When the gate is enabled, run with
+ * `--threshold 10`: a +10% median regression on any of these ids fails the run.
+ * 10% sits above the run-to-run jitter we observe for these microsecond-scale
+ * benches on shared runners (so it does not false-positive) while still catching
+ * a real algorithmic regression. Set `CRITERION_AB_THRESHOLD: 10` in
+ * `.github/workflows/criterion-bench.yml` to flip the report-only lane into a
+ * hard gate without any code change.
  */
 
 import { spawnSync } from "node:child_process";
@@ -35,10 +47,15 @@ export const CRITERION_SUITES = [
     benches: ["sfc_parse", "sfc_compile"],
     label: "SFC parse + compile",
   },
+  // jsx_compile owns the JSX parser/lowering, Croquis-analysis
+  // (`jsx_croquis_analyze`), and VDOM/Vapor backend dimensions (#1501);
+  // markup_ir_bench's `jsx_lint` group covers the Patina rule-traversal cost on
+  // JSX. Both targets are A/B-compared so a regression in any of the four JSX
+  // cost dimensions surfaces here.
   { package: "vize_atelier_jsx", benches: ["jsx_compile"], label: "JSX compile" },
   { package: "vize_croquis_cf", benches: ["cross_file"], label: "Cross-file analysis" },
   { package: "vize_glyph", benches: ["formatter"], label: "Formatter" },
-  { package: "vize_patina", benches: ["lint_bench"], label: "Lint" },
+  { package: "vize_patina", benches: ["lint_bench", "markup_ir_bench"], label: "Lint" },
 ];
 
 function parseArgs(argv) {
