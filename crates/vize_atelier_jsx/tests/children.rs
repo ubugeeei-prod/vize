@@ -4,7 +4,7 @@ mod common;
 
 use common::{as_text, lower_one, root_element, simple_content};
 use vize_carton::Bump;
-use vize_relief::ast::TemplateChildNode;
+use vize_relief::relief::TemplateChildNode;
 
 #[test]
 fn plain_text_child_is_lowered() {

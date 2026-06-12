@@ -1,7 +1,7 @@
 use crate::drawer::helpers::VForScopeAliases;
 use crate::scope::ParamNames;
 use vize_carton::{CompactString, SmallVec};
-use vize_relief::ast::ExpressionNode;
+use vize_relief::relief::ExpressionNode;
 
 pub(super) fn v_for_scope_bindings(aliases: &VForScopeAliases) -> ParamNames {
     let mut bindings = aliases.value_bindings.clone();

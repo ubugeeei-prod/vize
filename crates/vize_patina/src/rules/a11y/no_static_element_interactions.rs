@@ -21,7 +21,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::helpers::{has_interactive_role, is_component_like_element, is_interactive_element};
 

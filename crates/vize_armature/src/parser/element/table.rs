@@ -1,7 +1,7 @@
 //! Table foster parenting and implicit table section/row insertion.
 
 use vize_carton::Vec;
-use vize_relief::ast::*;
+use vize_relief::relief::*;
 
 use super::super::{Parser, ParserStackEntry, StackInsertion};
 

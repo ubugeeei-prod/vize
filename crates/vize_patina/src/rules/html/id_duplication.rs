@@ -31,7 +31,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::FxHashMap;
 use vize_carton::String;
 use vize_carton::ToCompactString;
-use vize_relief::ast::{ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode};
+use vize_relief::relief::{ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "html/id-duplication",

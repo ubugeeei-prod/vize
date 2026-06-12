@@ -5,7 +5,7 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use vize_armature::RootNode;
-use vize_relief::ast::*;
+use vize_relief::relief::*;
 
 use super::{MappingData, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage};
 use vize_carton::cstr;

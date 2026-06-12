@@ -20,7 +20,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, TemplateChildNode};
+use vize_relief::relief::{ElementNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-textarea-mustache",

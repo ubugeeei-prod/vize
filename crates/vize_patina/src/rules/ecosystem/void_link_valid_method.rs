@@ -9,7 +9,7 @@ use super::void_link_require_href::{has_named_prop, is_void_link_in_context, sta
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::ElementNode;
+use vize_relief::relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "ecosystem/void-link-valid-method",

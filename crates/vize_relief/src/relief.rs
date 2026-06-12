@@ -1,8 +1,8 @@
-//! Vue template AST node types.
+//! Relief IR node types.
 //!
-//! This module defines the AST (Abstract Syntax Tree) for Vue templates.
-//! All AST nodes are allocated in a bumpalo arena for efficient memory management
-//! and zero-copy transfer to JavaScript.
+//! This module defines the lowered relief IR that both template and JSX lowering
+//! target. All nodes are allocated in a bumpalo arena for efficient memory
+//! management and zero-copy transfer to JavaScript.
 
 pub mod codegen;
 pub mod control_flow;

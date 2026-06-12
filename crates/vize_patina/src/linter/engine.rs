@@ -28,7 +28,7 @@ use vize_carton::ToCompactString;
 use vize_carton::dialect::{VueDialect, standalone_html_dialect};
 use vize_carton::profile;
 use vize_croquis::{Analyzer, Croquis};
-use vize_relief::ast::RootNode;
+use vize_relief::relief::RootNode;
 
 use super::config::{LintResult, Linter};
 

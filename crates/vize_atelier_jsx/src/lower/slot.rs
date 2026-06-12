@@ -18,8 +18,8 @@ use oxc_ast::ast::{
 };
 use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, Vec};
-use vize_relief::ast::core::ElementType;
-use vize_relief::ast::{DirectiveNode, ElementNode, PropNode, TemplateChildNode};
+use vize_relief::relief::core::ElementType;
+use vize_relief::relief::{DirectiveNode, ElementNode, PropNode, TemplateChildNode};
 
 use super::Lowerer;
 use crate::diagnostics::JsxDiagnostic;

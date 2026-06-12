@@ -49,7 +49,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, ExpressionNode, InterpolationNode};
+use vize_relief::relief::{ElementNode, ExpressionNode, InterpolationNode};
 
 /// Non-deterministic function/value patterns that cause hydration mismatch
 const HYDRATION_MISMATCH_PATTERNS: &[(&str, &str)] = &[
@@ -372,7 +372,7 @@ impl Rule for NoHydrationMismatch {
         &self,
         ctx: &mut LintContext<'a>,
         _element: &ElementNode<'a>,
-        directive: &vize_relief::ast::DirectiveNode<'a>,
+        directive: &vize_relief::relief::DirectiveNode<'a>,
     ) {
         // Only run if SSR mode is enabled
         if !ctx.is_ssr_enabled() {

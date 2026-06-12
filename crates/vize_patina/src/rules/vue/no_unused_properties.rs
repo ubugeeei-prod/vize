@@ -39,7 +39,7 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::String;
 use vize_carton::ToCompactString;
-use vize_relief::ast::RootNode;
+use vize_relief::relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unused-properties",

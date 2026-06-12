@@ -22,7 +22,7 @@
 use vize_atelier_jsx::{JsxLang, lower_source};
 use vize_canon::virtual_ts::VizeMapping;
 use vize_carton::Bump;
-use vize_relief::ast::{
+use vize_relief::relief::{
     ExpressionNode, RootNode, TemplateChildNode,
     elements::PropNode,
     expressions::{CompoundExpressionChild, CompoundExpressionNode},
@@ -248,8 +248,8 @@ fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxExpr>) {
     }
 }
 
-fn collect_text_call(content: &vize_relief::ast::TextCallContent<'_>, out: &mut Vec<JsxExpr>) {
-    use vize_relief::ast::TextCallContent;
+fn collect_text_call(content: &vize_relief::relief::TextCallContent<'_>, out: &mut Vec<JsxExpr>) {
+    use vize_relief::relief::TextCallContent;
     match content {
         TextCallContent::Interpolation(interpolation) => {
             collect_expression(&interpolation.content, out);
@@ -305,7 +305,11 @@ fn collect_compound(compound: &CompoundExpressionNode<'_>, out: &mut Vec<JsxExpr
     }
 }
 
-fn push_expr(content: &str, loc: &vize_relief::ast::core::SourceLocation, out: &mut Vec<JsxExpr>) {
+fn push_expr(
+    content: &str,
+    loc: &vize_relief::relief::core::SourceLocation,
+    out: &mut Vec<JsxExpr>,
+) {
     let content = content.trim();
     if content.is_empty() {
         return;

@@ -28,7 +28,7 @@ pub use parser::*;
 pub use tokenizer::*;
 
 // Re-export from vize_relief for convenience
-pub use vize_relief::ast::*;
+pub use vize_relief::relief::*;
 pub use vize_relief::{
     AllocBox, AllocVec, Allocator, CloneIn, CompilerError, CompilerResult, ErrorCode, ParseMode,
     ParserOptions, TextMode, WhitespaceStrategy,

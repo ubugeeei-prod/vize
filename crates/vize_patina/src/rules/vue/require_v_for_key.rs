@@ -22,7 +22,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::{MarkupContext, MarkupElement, MarkupList, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
+use vize_relief::relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/require-v-for-key",

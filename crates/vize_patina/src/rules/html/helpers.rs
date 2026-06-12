@@ -1,6 +1,6 @@
 //! Shared helper functions for HTML conformance rules.
 
-use vize_relief::ast::{ElementNode, ElementType, TemplateChildNode};
+use vize_relief::relief::{ElementNode, ElementType, TemplateChildNode};
 
 /// Deprecated HTML elements per the Living Standard
 pub const DEPRECATED_ELEMENTS: &[&str] = &[

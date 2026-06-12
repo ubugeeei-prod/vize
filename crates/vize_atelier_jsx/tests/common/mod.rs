@@ -6,22 +6,26 @@
 
 use vize_atelier_jsx::{JsxLang, LowerOutput, lower_source};
 use vize_carton::Bump;
-use vize_relief::ast::{
+use vize_relief::relief::{
     AttributeNode, DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode,
     TextNode,
 };
 
 /// Lower JSX source, asserting a single error-free render root, and return it.
-pub fn lower_one<'a>(bump: &'a Bump, source: &str) -> vize_relief::ast::RootNode<'a> {
+pub fn lower_one<'a>(bump: &'a Bump, source: &str) -> vize_relief::relief::RootNode<'a> {
     lower_one_in(bump, source, JsxLang::Jsx)
 }
 
 /// Lower TSX source, asserting a single error-free render root, and return it.
-pub fn lower_one_tsx<'a>(bump: &'a Bump, source: &str) -> vize_relief::ast::RootNode<'a> {
+pub fn lower_one_tsx<'a>(bump: &'a Bump, source: &str) -> vize_relief::relief::RootNode<'a> {
     lower_one_in(bump, source, JsxLang::Tsx)
 }
 
-fn lower_one_in<'a>(bump: &'a Bump, source: &str, lang: JsxLang) -> vize_relief::ast::RootNode<'a> {
+fn lower_one_in<'a>(
+    bump: &'a Bump,
+    source: &str,
+    lang: JsxLang,
+) -> vize_relief::relief::RootNode<'a> {
     lower_single(bump, source, lang).root
 }
 
@@ -64,7 +68,7 @@ pub fn as_text<'a>(child: &'a TemplateChildNode<'a>) -> &'a TextNode {
 }
 
 /// The first child of a root, as an element.
-pub fn root_element<'a>(root: &'a vize_relief::ast::RootNode<'a>) -> &'a ElementNode<'a> {
+pub fn root_element<'a>(root: &'a vize_relief::relief::RootNode<'a>) -> &'a ElementNode<'a> {
     as_element(&root.children[0])
 }
 

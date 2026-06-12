@@ -26,7 +26,7 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::String;
 use vize_carton::ToCompactString;
-use vize_relief::ast::{ElementNode, PropNode};
+use vize_relief::relief::{ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-template-key",
@@ -86,10 +86,10 @@ impl Rule for NoTemplateKey {
 }
 
 /// Get content from ExpressionNode
-fn get_expression_content(expr: &vize_relief::ast::ExpressionNode) -> String {
+fn get_expression_content(expr: &vize_relief::relief::ExpressionNode) -> String {
     match expr {
-        vize_relief::ast::ExpressionNode::Simple(s) => s.content.to_compact_string(),
-        vize_relief::ast::ExpressionNode::Compound(_) => String::default(),
+        vize_relief::relief::ExpressionNode::Simple(s) => s.content.to_compact_string(),
+        vize_relief::relief::ExpressionNode::Compound(_) => String::default(),
     }
 }
 

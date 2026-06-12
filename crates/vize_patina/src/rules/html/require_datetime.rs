@@ -25,7 +25,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, PropNode, TemplateChildNode};
+use vize_relief::relief::{ElementNode, PropNode, TemplateChildNode};
 
 use super::helpers::is_valid_datetime;
 use vize_carton::String;
@@ -57,7 +57,7 @@ impl Rule for RequireDatetime {
             PropNode::Directive(dir) => {
                 dir.name == "bind"
                     && dir.arg.as_ref().is_some_and(|arg| {
-                        if let vize_relief::ast::ExpressionNode::Simple(s) = arg {
+                        if let vize_relief::relief::ExpressionNode::Simple(s) = arg {
                             s.content == "datetime"
                         } else {
                             false

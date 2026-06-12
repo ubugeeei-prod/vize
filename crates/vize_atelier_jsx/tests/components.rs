@@ -4,7 +4,7 @@ mod common;
 
 use common::{as_element, find_directive, is_static, lower_all, lower_one, root_element};
 use vize_carton::Bump;
-use vize_relief::ast::core::ElementType;
+use vize_relief::relief::core::ElementType;
 
 #[test]
 fn multiple_top_level_roots_are_each_lowered() {

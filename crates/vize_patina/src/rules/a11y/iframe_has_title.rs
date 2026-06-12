@@ -9,7 +9,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, PropNode};
+use vize_relief::relief::{ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/iframe-has-title",
@@ -46,7 +46,7 @@ impl Rule for IframeHasTitle {
                 if dir.name == "bind" {
                     matches!(
                         &dir.arg,
-                        Some(vize_relief::ast::ExpressionNode::Simple(s)) if s.content == "title"
+                        Some(vize_relief::relief::ExpressionNode::Simple(s)) if s.content == "title"
                     )
                 } else {
                     false

@@ -24,10 +24,10 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, ElementType, TemplateChildNode};
+use vize_relief::relief::{ElementNode, ElementType, TemplateChildNode};
 
 use super::helpers::get_static_attribute_value;
-use vize_relief::ast::PropNode;
+use vize_relief::relief::PropNode;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/media-has-caption",

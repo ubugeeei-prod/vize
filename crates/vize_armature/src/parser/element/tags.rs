@@ -2,9 +2,9 @@
 
 use vize_carton::{Box, Vec};
 use vize_relief::{
-    ast::*,
     errors::{CompilerError, ErrorCode},
     options::TemplateSyntaxMode,
+    relief::*,
 };
 
 use super::super::{CurrentElement, Parser, ParserStackEntry, StackInsertion};

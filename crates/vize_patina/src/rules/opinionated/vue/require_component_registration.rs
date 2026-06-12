@@ -48,7 +48,7 @@ use vize_croquis::builtins::is_builtin_component;
 use vize_croquis::naming::{names_match, to_pascal_case};
 use vize_croquis::{Croquis, ScopeData};
 use vize_relief::BindingType;
-use vize_relief::ast::{ElementNode, RootNode};
+use vize_relief::relief::{ElementNode, RootNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/require-component-registration",
@@ -220,14 +220,14 @@ fn collect_components<'a>(root: &RootNode<'a>, result: &mut Vec<(String, u32, u3
         ));
 
         for child in element.children.iter() {
-            if let vize_relief::ast::TemplateChildNode::Element(el) = child {
+            if let vize_relief::relief::TemplateChildNode::Element(el) = child {
                 visit_element(el, result);
             }
         }
     }
 
     for child in root.children.iter() {
-        if let vize_relief::ast::TemplateChildNode::Element(el) = child {
+        if let vize_relief::relief::TemplateChildNode::Element(el) = child {
             visit_element(el, result);
         }
     }

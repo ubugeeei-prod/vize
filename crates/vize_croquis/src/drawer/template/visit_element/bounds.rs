@@ -1,4 +1,4 @@
-use vize_relief::ast::{ElementNode, TemplateChildNode};
+use vize_relief::relief::{ElementNode, TemplateChildNode};
 
 /// End offset of an element's full subtree (including children) in the source.
 /// `ElementNode::loc` only covers the opening tag, so v-for / v-slot scopes

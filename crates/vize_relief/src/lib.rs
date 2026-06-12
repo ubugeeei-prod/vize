@@ -18,13 +18,13 @@
 //! - Arena-allocated nodes for zero-copy JavaScript interop
 //! - Serialization support with serde
 
-pub mod ast;
 pub mod errors;
 pub mod options;
+pub mod relief;
 
-pub use ast::*;
 pub use errors::*;
 pub use options::*;
+pub use relief::*;
 
 /// Re-export allocator types for convenience
 pub use vize_carton::{Allocator, Box as AllocBox, CloneIn, Vec as AllocVec};

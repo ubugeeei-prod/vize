@@ -19,7 +19,12 @@ pub mod transform;
 pub mod transforms;
 
 // Re-export from vize_relief (AST, errors, options)
-pub use vize_relief::ast::{
+pub use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};
+pub use vize_relief::options::{
+    BindingMetadata, BindingType, CodegenMode, CodegenOptions, CompilerOptions, ParseMode,
+    ParserOptions, TemplateSyntaxMode, TextMode, TransformOptions, WhitespaceStrategy,
+};
+pub use vize_relief::relief::{
     ArrayElement, ArrayExpression, AssignmentExpression, AttributeNode, BlockStatement,
     BlockStatementBody, CacheExpression, CallArgument, CallExpression, Callee, CodegenNode,
     CommentNode, CompoundExpressionChild, CompoundExpressionNode, ConditionalExpression,
@@ -33,12 +38,7 @@ pub use vize_relief::ast::{
     TemplateLiteralElement, TemplateTextChildNode, TextCallCodegenNode, TextCallContent,
     TextCallNode, TextNode, VNodeCall, VNodeChildren, VNodeTag,
 };
-pub use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};
-pub use vize_relief::options::{
-    BindingMetadata, BindingType, CodegenMode, CodegenOptions, CompilerOptions, ParseMode,
-    ParserOptions, TemplateSyntaxMode, TextMode, TransformOptions, WhitespaceStrategy,
-};
-pub use vize_relief::{ast, errors, options};
+pub use vize_relief::{errors, options, relief as ast};
 
 // Re-export from vize_armature (parser, tokenizer)
 pub use vize_armature as parser;

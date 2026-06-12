@@ -1,7 +1,7 @@
 use super::{RULE_NO_FLOATING_PROMISES, RULE_NO_UNSAFE_TEMPLATE_BINDING};
 use crate::diagnostic::LintDiagnostic;
 use vize_croquis::virtual_ts::VirtualTsOutput;
-use vize_relief::ast::{ExpressionNode, RootNode};
+use vize_relief::relief::{ExpressionNode, RootNode};
 
 mod calls;
 mod collector;

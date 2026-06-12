@@ -8,7 +8,7 @@
 
 use oxc_span::Span;
 use vize_carton::line_index::LineIndex;
-use vize_relief::ast::core::{Position, SourceLocation};
+use vize_relief::relief::core::{Position, SourceLocation};
 
 /// Converts OXC byte spans into Vize source locations against one source text.
 ///

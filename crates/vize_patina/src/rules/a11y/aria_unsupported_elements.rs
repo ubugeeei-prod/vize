@@ -11,7 +11,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode, SourceLocation};
+use vize_relief::relief::{ElementNode, ElementType, ExpressionNode, PropNode, SourceLocation};
 
 use super::helpers;
 

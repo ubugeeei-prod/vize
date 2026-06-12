@@ -27,7 +27,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::ToCompactString;
-use vize_relief::ast::{
+use vize_relief::relief::{
     ElementNode, ExpressionNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
 };
 

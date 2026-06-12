@@ -5,8 +5,8 @@ mod common;
 use common::{lower_one_tsx, root_element, simple_content};
 use vize_atelier_jsx::{JsxLang, lower_source};
 use vize_carton::Bump;
-use vize_relief::ast::TemplateChildNode;
-use vize_relief::ast::core::ElementType;
+use vize_relief::relief::TemplateChildNode;
+use vize_relief::relief::core::ElementType;
 
 #[test]
 fn typed_arrow_component_lowers() {

@@ -35,7 +35,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::FxHashMap;
 use vize_carton::String;
 use vize_carton::ToCompactString;
-use vize_relief::ast::{ElementNode, ElementType, TemplateChildNode};
+use vize_relief::relief::{ElementNode, ElementType, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "html/no-duplicate-dt",

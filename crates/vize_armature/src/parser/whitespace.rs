@@ -7,7 +7,7 @@
 //! `is_vue_whitespace` rather than the full-Unicode `char::is_whitespace`.
 
 use vize_carton::{String, Vec};
-use vize_relief::ast::TemplateChildNode;
+use vize_relief::relief::TemplateChildNode;
 
 /// Per Vue: only `[ \t\n\f\r]` is whitespace for the condense strategy.
 #[inline]

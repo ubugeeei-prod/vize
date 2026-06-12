@@ -1,7 +1,7 @@
 //! Adoption-agency recovery for misnested formatting end tags.
 
 use vize_carton::Vec;
-use vize_relief::ast::*;
+use vize_relief::relief::*;
 
 use super::super::{Parser, ParserStackEntry, StackInsertion};
 

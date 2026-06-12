@@ -1,6 +1,6 @@
 //! Element-type classification, component detection, and namespace resolution.
 
-use vize_relief::ast::*;
+use vize_relief::relief::*;
 
 use super::super::Parser;
 

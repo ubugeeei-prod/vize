@@ -14,7 +14,7 @@ use vize_carton::{
     source_range::{MappingData, SourceMap, SourceMapping, SourceRange},
 };
 use vize_relief::BindingType;
-use vize_relief::ast::{
+use vize_relief::relief::{
     DirectiveNode, ElementNode, ExpressionNode, ForNode, IfNode, InterpolationNode, PropNode,
     RootNode, TemplateChildNode,
 };

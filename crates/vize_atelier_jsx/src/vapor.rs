@@ -2,7 +2,7 @@
 //!
 //! Like the VDOM backend ([`crate::dom`]), this reuses existing Vize
 //! infrastructure: the shared lowering produces a
-//! [`RootNode`](vize_relief::ast::RootNode), which is run through
+//! [`RootNode`](vize_relief::relief::RootNode), which is run through
 //! `vize_atelier_core`'s transform (in `vapor: true` mode) and then
 //! `vize_atelier_vapor`'s IR lowering + code generation — the same paths the
 //! Vue template Vapor compiler uses.

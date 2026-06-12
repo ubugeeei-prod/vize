@@ -32,7 +32,7 @@ use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_croquis::analysis::ElementIdKind;
-use vize_relief::ast::RootNode;
+use vize_relief::relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/no-refer-to-non-existent-id",

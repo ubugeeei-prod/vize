@@ -2,7 +2,7 @@
 //!
 //! This reuses the existing Vize DOM compiler infrastructure rather than a
 //! separate Babel-style emitter: the shared lowering layer produces a
-//! [`RootNode`](vize_relief::ast::RootNode), which is fed straight into
+//! [`RootNode`](vize_relief::relief::RootNode), which is fed straight into
 //! `vize_atelier_core`'s transform and codegen passes — the same passes the SFC
 //! template path uses.
 //!

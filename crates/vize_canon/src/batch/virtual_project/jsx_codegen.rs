@@ -69,7 +69,7 @@ use std::path::Path;
 
 use vize_atelier_jsx::{JsxDiagnostic, JsxLang, StyleExprSpan, lower_source};
 use vize_carton::{Bump, String as CompactString, ToCompactString, cstr};
-use vize_relief::ast::{
+use vize_relief::relief::{
     ExpressionNode, RootNode, TemplateChildNode,
     elements::PropNode,
     expressions::{CompoundExpressionChild, CompoundExpressionNode},
@@ -447,8 +447,8 @@ fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxEmit>) {
     }
 }
 
-fn collect_text_call(content: &vize_relief::ast::TextCallContent<'_>, out: &mut Vec<JsxEmit>) {
-    use vize_relief::ast::TextCallContent;
+fn collect_text_call(content: &vize_relief::relief::TextCallContent<'_>, out: &mut Vec<JsxEmit>) {
+    use vize_relief::relief::TextCallContent;
     match content {
         TextCallContent::Interpolation(interpolation) => {
             collect_expression(&interpolation.content, out);
@@ -514,7 +514,11 @@ fn collect_compound(compound: &CompoundExpressionNode<'_>, out: &mut Vec<JsxEmit
     }
 }
 
-fn push_expr(content: &str, loc: &vize_relief::ast::core::SourceLocation, out: &mut Vec<JsxEmit>) {
+fn push_expr(
+    content: &str,
+    loc: &vize_relief::relief::core::SourceLocation,
+    out: &mut Vec<JsxEmit>,
+) {
     if let Some(expr) = jsx_expr(content, loc.start.offset, loc.end.offset) {
         out.push(JsxEmit::Expr(expr));
     }

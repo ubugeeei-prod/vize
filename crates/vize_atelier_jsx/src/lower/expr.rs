@@ -3,7 +3,7 @@
 use oxc_ast::ast::{JSXExpression, JSXExpressionContainer};
 use oxc_span::{GetSpan, Span};
 use vize_carton::Box;
-use vize_relief::ast::{ExpressionNode, SimpleExpressionNode};
+use vize_relief::relief::{ExpressionNode, SimpleExpressionNode};
 
 use super::Lowerer;
 

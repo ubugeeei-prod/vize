@@ -9,7 +9,7 @@ use crate::drawer::helpers::build_branch_guard;
 use crate::scope::VForScopeData;
 use vize_carton::{CompactString, SmallVec, profile, smallvec};
 use vize_relief::BindingType;
-use vize_relief::ast::{ExpressionNode, ForNode, IfNode, PropNode};
+use vize_relief::relief::{ExpressionNode, ForNode, IfNode, PropNode};
 
 impl Drawer {
     /// Visit if node.

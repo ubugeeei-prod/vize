@@ -14,7 +14,7 @@ pub fn generate_virtual_ts_with_scopes(
     summary: &vize_croquis::Croquis,
     script_content: Option<&str>,
     script_offset: u32,
-    template_ast: Option<&vize_relief::ast::RootNode<'_>>,
+    template_ast: Option<&vize_relief::relief::RootNode<'_>>,
     template_offset: u32,
 ) -> String {
     let output = crate::virtual_ts::generate_virtual_ts_with_offsets(

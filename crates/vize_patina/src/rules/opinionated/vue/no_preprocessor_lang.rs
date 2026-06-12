@@ -17,7 +17,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::RootNode;
+use vize_relief::relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-preprocessor-lang",

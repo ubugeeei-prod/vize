@@ -17,7 +17,7 @@ mod tests;
 
 use super::Drawer;
 use vize_carton::{CompactString, profile};
-use vize_relief::ast::{ExpressionNode, RootNode, TemplateChildNode};
+use vize_relief::relief::{ExpressionNode, RootNode, TemplateChildNode};
 
 impl Drawer {
     /// Draw template AST facts into the croquis.

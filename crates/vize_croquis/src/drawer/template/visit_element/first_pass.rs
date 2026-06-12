@@ -4,7 +4,7 @@ use crate::drawer::helpers::{
     parse_v_for_scope_expression,
 };
 use vize_carton::{CompactString, SmallVec, profile, smallvec};
-use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::bounds::element_subtree_end;
 use super::scopes::ElementDirectiveState;

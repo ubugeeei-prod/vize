@@ -5,11 +5,11 @@
 
 use vize_carton::{Box, String, Vec, appends};
 use vize_relief::{
-    ast::{
+    errors::{CompilerError, ErrorCode},
+    relief::{
         AttributeNode, ConstantType, DirectiveNode, ExpressionNode, PropNode, SimpleExpressionNode,
         TextNode,
     },
-    errors::{CompilerError, ErrorCode},
 };
 
 use crate::tokenizer::QuoteType;

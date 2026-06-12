@@ -4,7 +4,7 @@ mod common;
 
 use common::{as_element, lower_one, root_element};
 use vize_carton::Bump;
-use vize_relief::ast::core::ElementType;
+use vize_relief::relief::core::ElementType;
 
 #[test]
 fn lowers_a_single_intrinsic_element() {

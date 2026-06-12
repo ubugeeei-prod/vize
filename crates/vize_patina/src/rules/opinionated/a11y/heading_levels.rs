@@ -29,7 +29,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::html::helpers::walk_elements;
-use vize_relief::ast::RootNode;
+use vize_relief::relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/heading-levels",

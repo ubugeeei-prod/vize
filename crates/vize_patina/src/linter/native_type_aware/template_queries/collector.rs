@@ -8,7 +8,7 @@ use oxc_allocator::Allocator as OxcAllocator;
 use oxc_span::SourceType;
 use vize_carton::profile;
 use vize_croquis::virtual_ts::VirtualTsOutput;
-use vize_relief::ast::{
+use vize_relief::relief::{
     DirectiveNode, ExpressionNode, ForNode, IfNode, PropNode, RootNode, TemplateChildNode,
     TextCallContent,
 };

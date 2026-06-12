@@ -19,7 +19,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::ElementNode;
+use vize_relief::relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-multi-spaces",

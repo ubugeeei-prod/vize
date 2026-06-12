@@ -24,7 +24,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::url::has_javascript_scheme;
-use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/anchor-is-valid",

@@ -23,7 +23,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::String;
-use vize_relief::ast::{DirectiveNode, ElementNode};
+use vize_relief::relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-on-style",

@@ -23,7 +23,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::{is_html_tag, is_svg_tag};
 use vize_croquis::builtins::is_builtin_component;
 use vize_croquis::naming::{is_kebab_case_loose, is_pascal_case};
-use vize_relief::ast::ElementNode;
+use vize_relief::relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/component-name-in-template-casing",

@@ -11,7 +11,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::a11y::helpers::is_slot_element;
-use vize_relief::ast::{ElementNode, PropNode, TemplateChildNode};
+use vize_relief::relief::{ElementNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/anchor-has-content",
@@ -36,7 +36,7 @@ impl AnchorHasContent {
             }
             if let PropNode::Directive(dir) = prop
                 && dir.name == "bind"
-                && let Some(vize_relief::ast::ExpressionNode::Simple(s)) = &dir.arg
+                && let Some(vize_relief::relief::ExpressionNode::Simple(s)) = &dir.arg
                 && (s.content == "aria-label" || s.content == "aria-labelledby")
             {
                 return true;
