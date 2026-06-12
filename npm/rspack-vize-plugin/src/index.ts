@@ -8,6 +8,7 @@ export type { VizeRspackPluginOptions } from "./types/index.ts";
 
 // Loaders (for direct import)
 export { default as vizeLoader } from "./loader/index.ts";
+export { default as vizeJsxLoader } from "./loader/jsx-loader.ts";
 export { default as vizeStyleLoader } from "./loader/style-loader.ts";
 export { default as vizeScopeLoader } from "./loader/scope-loader.ts";
 export type { VizeLoaderOptions, VizeStyleLoaderOptions } from "./types/index.ts";
@@ -25,7 +26,13 @@ export {
 
 export { genHotReloadCode } from "./shared/hotReload.ts";
 
-export { compileFile, generateOutput, clearCompilationCache } from "./shared/compiler.ts";
+export {
+  compileFile,
+  compileJsxModule,
+  isJsxFile,
+  generateOutput,
+  clearCompilationCache,
+} from "./shared/compiler.ts";
 
 // Types
 export type {
@@ -36,5 +43,7 @@ export type {
   SfcSrcInfo,
   SfcCompileOptionsNapi,
   SfcCompileResultNapi,
+  JsxCompileOptionsNapi,
+  JsxCompileResultNapi,
   LoaderEntry,
 } from "./types/index.ts";

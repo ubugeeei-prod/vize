@@ -2,7 +2,11 @@
 
 import { createHash } from "node:crypto";
 import * as native from "@vizejs/native";
-import type { CompiledModule, SfcCompileOptionsNapi } from "../types/index.ts";
+import type {
+  CompiledModule,
+  JsxCompileResultNapi,
+  SfcCompileOptionsNapi,
+} from "../types/index.ts";
 import {
   generateScopeId,
   collectTemplateAssetUrls,
@@ -13,6 +17,38 @@ import {
 export { generateOutput } from "./output.ts";
 
 const { compileSfc } = native;
+
+const { compileJsx } = native as {
+  compileJsx: (source: string, options?: Record<string, unknown>) => JsxCompileResultNapi;
+};
+
+/** `.jsx`/`.tsx` Vue components routed to the native JSX compiler. */
+export function isJsxFile(filePath: string): boolean {
+  return filePath.endsWith(".jsx") || filePath.endsWith(".tsx");
+}
+
+/**
+ * Compile a `.jsx`/`.tsx` Vue module to render code via the native JSX
+ * compiler. Mirrors {@link compileFile} but for the JSX lowering path: no
+ * scoped CSS, custom blocks, or asset-url rewriting apply.
+ */
+export function compileJsxModule(
+  filePath: string,
+  source: string,
+  options: { vapor?: boolean } = {},
+): { code: string; warnings: string[] } {
+  const result = compileJsx(source, {
+    filename: filePath,
+    lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
+    vapor: options.vapor ?? false,
+  });
+
+  if (result.errors.length > 0) {
+    throw new Error(`[vize] Compilation failed for ${filePath}:\n${result.errors.join("\n")}`);
+  }
+
+  return { code: result.code, warnings: result.warnings };
+}
 
 // Compilation Cache
 

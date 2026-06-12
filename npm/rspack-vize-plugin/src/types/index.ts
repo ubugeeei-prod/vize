@@ -62,6 +62,28 @@ export interface SfcCompileResultNapi {
   macroArtifacts?: MacroArtifact[];
 }
 
+// JSX Compile API Types
+
+/** Options for the native `compileJsx`. */
+export interface JsxCompileOptionsNapi {
+  /** Source filename, used to infer the language when `lang` is omitted. */
+  filename?: string;
+  /** Source language: "jsx" or "tsx". Inferred from a `.tsx` filename. */
+  lang?: string;
+  /** Default output mode: `true` → Vapor, `false` (default) → VDOM. */
+  vapor?: boolean;
+}
+
+/** Result of the native `compileJsx`. */
+export interface JsxCompileResultNapi {
+  /** Generated render code for every component in the module. */
+  code: string;
+  /** Error-severity diagnostic messages. */
+  errors: string[];
+  /** Warning-severity diagnostic messages. */
+  warnings: string[];
+}
+
 // CSS Compile API Types
 
 export interface CssCompileTargets {

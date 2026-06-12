@@ -39,6 +39,11 @@
       "import": "./dist/loader/index.mjs",
       "default": "./dist/loader/index.mjs"
     },
+    "./jsx-loader": {
+      "types": "./dist/loader/jsx-loader.d.mts",
+      "import": "./dist/loader/jsx-loader.mjs",
+      "default": "./dist/loader/jsx-loader.mjs"
+    },
     "./style-loader": {
       "types": "./dist/loader/style-loader.d.mts",
       "import": "./dist/loader/style-loader.mjs",
