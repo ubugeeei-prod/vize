@@ -42,6 +42,8 @@ pub mod vapor;
 mod analyze;
 mod finder;
 
+pub use analyze::analyze_program as analyze_jsx_program;
+
 use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
 use vize_croquis::croquis::BindingMetadata;

@@ -92,6 +92,10 @@ impl Rule for PreferStaticClass {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,

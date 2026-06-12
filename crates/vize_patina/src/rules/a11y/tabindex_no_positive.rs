@@ -9,6 +9,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBinding, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ast::{ElementNode, PropNode};
 
@@ -24,9 +25,52 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct TabindexNoPositive;
 
+impl TabindexNoPositive {
+    /// Whether a statically-written `tabindex` value parses to a positive int.
+    fn is_positive(value: &str) -> bool {
+        value.parse::<i32>().is_ok_and(|num| num > 0)
+    }
+}
+
+/// Markup-IR entry point for `a11y/tabindex-no-positive`.
+///
+/// Inspects the statically-written `tabindex` value on both backends: a Vue
+/// `tabindex="1"` and a JSX `tabIndex="1"` both surface a static binding value
+/// of `"1"`. A JSX numeric-expression `tabIndex={1}` has no static string value,
+/// so — exactly like the legacy template path, which only reads static
+/// attribute text — it is not flagged here.
+impl MarkupRule for TabindexNoPositive {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        if !binding.arg_name_eq("tabindex") {
+            return;
+        }
+        let Some(value) = binding.static_value() else {
+            return;
+        };
+        if Self::is_positive(value) {
+            let message = ctx.lint().t("a11y/tabindex-no-positive.message");
+            let help = ctx.lint().t("a11y/tabindex-no-positive.help");
+            ctx.lint().warn_at_with_help(message, binding.range(), help);
+        }
+    }
+}
+
 impl Rule for TabindexNoPositive {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

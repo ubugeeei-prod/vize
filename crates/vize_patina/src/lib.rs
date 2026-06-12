@@ -131,9 +131,10 @@ pub fn lint(source: &str, filename: &str) -> LintResult {
 
 /// Lint JSX/TSX source with default rules.
 ///
-/// Lowers the JSX/TSX to the shared relief template AST and runs the existing
-/// element/attribute/binding template rules over it. See [`Linter::lint_jsx`]
-/// for the directive-rule caveat.
+/// Runs rules over the zero-cost markup IR projected straight from the OXC AST
+/// ([`MarkupDocument::from_jsx`](markup::MarkupDocument::from_jsx)) — no
+/// synthetic template AST on the common path. Rules not yet migrated to the
+/// markup IR fall back to a lowering pass. See [`Linter::lint_jsx`].
 pub fn lint_jsx(source: &str, filename: &str, lang: JsxLang) -> LintResult {
     Linter::new().lint_jsx(source, filename, lang)
 }

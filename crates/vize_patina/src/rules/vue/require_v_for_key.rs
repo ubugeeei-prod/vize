@@ -98,6 +98,17 @@ impl Rule for RequireVForKey {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        // `v-for`'s JSX form is `items.map(…)`, which is a JS expression with no
+        // list scope until lowering. The `enter_list` hook only fires over the
+        // lowered relief AST, so route this rule there for JSX.
+        true
+    }
+
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,

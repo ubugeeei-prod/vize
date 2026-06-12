@@ -10,6 +10,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode};
 
@@ -25,9 +26,47 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoAccessKey;
 
+/// Markup-IR entry point for `a11y/no-access-key`.
+///
+/// Flags any `accesskey` binding — static (`accesskey="h"`), `v-bind`
+/// (`:accesskey`), or JSX (`accessKey={…}`). Reasoning over the normalized
+/// [`MarkupBinding`] view lets one rule body handle both backends; the
+/// ASCII-case-insensitive `arg_name_eq` absorbs the JSX `accessKey` casing.
+/// Components are exempt on both sides.
+impl MarkupRule for NoAccessKey {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        if element.is_component() {
+            return;
+        }
+        if !matches!(
+            binding.kind(),
+            MarkupBindingKind::Attribute | MarkupBindingKind::Bind
+        ) || !binding.arg_name_eq("accesskey")
+        {
+            return;
+        }
+        let message = ctx.lint().t("a11y/no-access-key.message");
+        let help = ctx.lint().t("a11y/no-access-key.help");
+        ctx.lint().warn_at_with_help(message, binding.range(), help);
+    }
+}
+
 impl Rule for NoAccessKey {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

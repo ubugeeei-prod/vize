@@ -24,6 +24,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ast::{ElementNode, ElementType};
 
@@ -40,9 +41,40 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct DeprecatedElement;
 
+/// Markup-IR entry point for `html/deprecated-element`.
+///
+/// HTML conformance is purely tag-driven, so the same lookup runs over a Vue
+/// template `<center>` and a JSX `<center />`. Components are exempt on both
+/// backends ([`MarkupElement::is_component`]), and `DEPRECATED_ELEMENTS` is an
+/// HTML-name set so the JSX lowercase-intrinsic convention lines up.
+impl MarkupRule for DeprecatedElement {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if element.is_component() {
+            return;
+        }
+
+        let tag = element.tag();
+        if DEPRECATED_ELEMENTS.contains(&tag) {
+            let message = ctx
+                .lint()
+                .t_fmt("html/deprecated-element.message", &[("tag", tag)]);
+            let help = ctx.lint().t("html/deprecated-element.help");
+            ctx.lint().warn_at_with_help(message, element.range(), help);
+        }
+    }
+}
+
 impl Rule for DeprecatedElement {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

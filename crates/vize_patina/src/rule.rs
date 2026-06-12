@@ -2,6 +2,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::MarkupRule;
 use crate::preset::LintPreset;
 use vize_relief::ast::{DirectiveNode, ElementNode, ForNode, IfNode, InterpolationNode, RootNode};
 
@@ -49,6 +50,39 @@ pub struct RuleMeta {
 pub trait Rule: Send + Sync {
     /// Get rule metadata
     fn meta(&self) -> &'static RuleMeta;
+
+    /// Project this rule onto the zero-copy markup IR, when it has a
+    /// cross-backend [`MarkupRule`] implementation.
+    ///
+    /// Rules that also implement [`MarkupRule`] override this to return
+    /// `Some(self)`, which lets the JSX/TSX lint path drive them directly over
+    /// the borrow-based [`MarkupDocument`](crate::markup::MarkupDocument)
+    /// projected from the OXC AST — no synthetic template reconstruction. Rules
+    /// that return `None` (the default) have no JSX-capable entry point and are
+    /// handled by the fallback lowering path instead.
+    ///
+    /// The returned reference borrows `self`, so the projection costs nothing.
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        None
+    }
+
+    /// Whether this (markup-capable) rule's JSX/TSX equivalent only materializes
+    /// after lowering, so it must run over the **lowered** markup IR rather than
+    /// the OXC projection.
+    ///
+    /// Most migrated rules are element/attribute/binding-shaped and run on the
+    /// zero-cost OXC projection directly. A few are structural: `v-for`'s JSX
+    /// form is `items.map(…)`, a JS *expression* with no markup until lowering
+    /// turns it into a `ForNode`/list scope. Such a rule returns `true` so the
+    /// JSX path drives its [`MarkupRule`] hooks over the lowered relief AST (via
+    /// the same markup visitor, so reporting stays unified and single), instead
+    /// of the OXC AST where the list shape is absent.
+    ///
+    /// Ignored unless [`Self::as_markup_rule`] is `Some`. No effect on Vue
+    /// templates, where the directive shape is present pre-lowering.
+    fn jsx_needs_lowering(&self) -> bool {
+        false
+    }
 
     /// Run on the full SFC source before template extraction.
     #[allow(unused_variables)]
@@ -156,6 +190,17 @@ impl RuleRegistry {
     /// Check whether a rule with the given name is registered.
     pub fn has_rule(&self, name: &str) -> bool {
         self.rule_names.contains(&name)
+    }
+
+    /// Whether any registered rule exposes a [`MarkupRule`] projection (i.e. has
+    /// a JSX-capable IR entry point via [`Rule::as_markup_rule`]).
+    ///
+    /// Lets the JSX lint path skip building the markup IR entirely when the
+    /// active rule set has nothing to run over it.
+    pub fn has_markup_rules(&self) -> bool {
+        self.rules
+            .iter()
+            .any(|rule| rule.as_markup_rule().is_some())
     }
 
     /// Create a registry for a named preset.

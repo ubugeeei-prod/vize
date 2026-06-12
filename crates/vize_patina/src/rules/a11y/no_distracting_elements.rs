@@ -9,6 +9,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ast::ElementNode;
 
@@ -30,9 +31,40 @@ impl NoDistractingElements {
     }
 }
 
+/// Markup-IR entry point for `a11y/no-distracting-elements`.
+///
+/// A pure tag-name rule, so it maps one-to-one across backends: a Vue
+/// `<marquee>` and a JSX `<marquee />` both reach the same intrinsic tag check,
+/// and the diagnostic range addresses the original syntax. Components are exempt
+/// on both sides ([`MarkupElement::is_component`]), so a JSX `<Marquee/>` — a
+/// user component, not the intrinsic element — is never flagged.
+impl MarkupRule for NoDistractingElements {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if element.is_component() {
+            return;
+        }
+        let tag = element.tag();
+        if Self::is_distracting(tag) {
+            let message = ctx
+                .lint()
+                .t_fmt("a11y/no-distracting-elements.message", &[("tag", tag)]);
+            let help = ctx.lint().t("a11y/no-distracting-elements.help");
+            ctx.lint().warn_at_with_help(message, element.range(), help);
+        }
+    }
+}
+
 impl Rule for NoDistractingElements {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

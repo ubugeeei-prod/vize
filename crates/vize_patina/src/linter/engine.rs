@@ -335,17 +335,31 @@ impl Linter {
         self.lint_template_with_allocator(&allocator, source, filename)
     }
 
-    /// Lint JSX/TSX source by lowering it to the shared relief template AST and
-    /// running the existing element/attribute/binding template rules over it.
+    /// Lint JSX/TSX source through the zero-cost rule IR.
     ///
-    /// JSX/TSX lowers (via [`vize_atelier_jsx::lower_source`]) to the same
-    /// [`RootNode`] that SFC `<template>` blocks produce, so any AST-driven
-    /// template rule (e.g. `vue/a11y-img-alt`) runs unchanged.
+    /// This is the [`MarkupDocument::from_jsx`](crate::markup::MarkupDocument::from_jsx)
+    /// path: `.jsx`/`.tsx` is parsed once to an OXC program and every rule that
+    /// exposes a [`MarkupRule`](crate::markup::MarkupRule) projection (via
+    /// [`Rule::as_markup_rule`](crate::rule::Rule::as_markup_rule)) runs straight
+    /// over the borrow-based markup facade — **no synthetic template AST is
+    /// materialized on this common path**. Diagnostics and fixes carry
+    /// `ByteRange`s that already address the original JSX/TSX syntax.
     ///
-    /// Note: directive-structure rules such as `vue/require-v-for-key` do **not**
-    /// fire on JSX. JSX `items.map(...)` lowers to a `ForNode` and
-    /// `cond && <x/>` to an `IfNode` *structurally*, not as `v-for`/`v-if`
-    /// directives, so directive-shaped rules have nothing to match against.
+    /// Rules that have *not* been migrated to the markup IR (e.g. interpolation-
+    /// or expression-shaped template rules with no borrow-based JSX projection
+    /// yet) are still served, but only by a fallback that lowers the JSX to the
+    /// shared relief AST via [`vize_atelier_jsx::lower_source`] and runs the
+    /// remaining rules over it. The fallback is skipped entirely when every
+    /// active rule is markup-capable, so the hot path never reconstructs a
+    /// template.
+    ///
+    /// Migrated directive-shaped rules such as `vue/require-v-for-key` still fire
+    /// on JSX: `v-for`'s JSX form (`items.map(…)`) only becomes a list scope
+    /// after lowering, so that rule is driven over the *lowered* markup IR (via
+    /// the same markup visitor — see [`Rule::jsx_needs_lowering`]), while
+    /// element/attribute/binding-shaped rules run on the zero-cost OXC
+    /// projection. A directive with no JSX analogue at all (e.g. `v-html`) simply
+    /// never matches anything in JSX, the documented no-op behavior.
     pub fn lint_jsx(
         &self,
         source: &str,
@@ -355,29 +369,262 @@ impl Linter {
         let capacity = (source.len() * 4).max(self.initial_capacity);
         let allocator = Allocator::with_capacity(capacity);
 
-        let lowered = profile!(
-            "patina.jsx.lower",
-            vize_atelier_jsx::lower_source(allocator.as_bump(), source, lang)
+        // Partition the active rules into three disjoint groups so each rule runs
+        // exactly once (no double-report):
+        //
+        //   ir       — markup-capable, runs over the zero-cost OXC projection.
+        //   lowered  — markup-capable but needs the lowered list/branch shape
+        //              (`jsx_needs_lowering`), driven over the lowered markup IR.
+        //   legacy   — no markup entry point, served by the lowering fallback.
+        let rules = self.registry.rules();
+        let mut any_ir = false;
+        let mut any_lowered_markup = false;
+        let legacy_keep_mask: Vec<bool> = rules
+            .iter()
+            .map(|rule| match rule.as_markup_rule() {
+                Some(_) if rule.jsx_needs_lowering() => {
+                    any_lowered_markup = true;
+                    false
+                }
+                Some(_) => {
+                    any_ir = true;
+                    false
+                }
+                None => true,
+            })
+            .collect();
+        let any_legacy = legacy_keep_mask.iter().any(|keep| *keep);
+        let needs_lowering = any_lowered_markup || any_legacy;
+
+        // Parse `.jsx`/`.tsx` once with OXC. The same program backs the IR pass
+        // (directly) and, when needed, the Croquis analysis.
+        let oxc_allocator = oxc_allocator::Allocator::default();
+        let parsed = profile!(
+            "patina.jsx.parse",
+            vize_atelier_jsx::parse_module(&oxc_allocator, source, lang)
         );
 
-        let mut result = Self::jsx_diagnostics_lint_result(filename, &lowered.diagnostics);
+        let mut result = Self::jsx_diagnostics_lint_result(filename, &parsed.diagnostics);
 
-        for lowered_root in &lowered.roots {
-            let root_result = self.lint_template_root(
-                &allocator,
-                source,
-                filename,
-                &lowered_root.root,
-                TemplateAnalysis::Lazy,
-                TemplateRuleEnv {
-                    sfc_descriptor: None,
-                    dialect: VueDialect::Vue,
-                },
+        // --- Zero-cost IR pass: rules run over the OXC AST, no template AST. ---
+        if any_ir {
+            let ir_result = self.lint_jsx_over_ir(&allocator, source, filename, &parsed.program);
+            result = Self::merge_lint_results(result, ir_result);
+        }
+
+        // --- Lowering: only when a lowered-shape rule or a legacy rule needs it.
+        if needs_lowering {
+            let lowered = profile!(
+                "patina.jsx.lower",
+                vize_atelier_jsx::lower_source(allocator.as_bump(), source, lang)
             );
-            result = Self::merge_lint_results(result, root_result);
+            // Lowering re-parses, so its diagnostic set is a superset of the IR
+            // parse's; keep only the ones the IR parse did not already report.
+            let mut lower_diags = Self::jsx_diagnostics_lint_result(filename, &lowered.diagnostics);
+            Self::dedupe_against(&mut lower_diags, &result);
+            result = Self::merge_lint_results(result, lower_diags);
+
+            for lowered_root in &lowered.roots {
+                // Markup-capable rules whose JSX shape only exists post-lowering,
+                // driven over the lowered relief AST with the markup visitor.
+                if any_lowered_markup {
+                    let lowered_markup = self.lint_jsx_lowered_markup_root(
+                        &allocator,
+                        source,
+                        filename,
+                        &lowered_root.root,
+                    );
+                    result = Self::merge_lint_results(result, lowered_markup);
+                }
+                // Rules with no markup entry point, over the legacy visitor.
+                if any_legacy {
+                    let legacy = self.lint_jsx_fallback_root(
+                        &allocator,
+                        source,
+                        filename,
+                        &lowered_root.root,
+                        &legacy_keep_mask,
+                    );
+                    result = Self::merge_lint_results(result, legacy);
+                }
+            }
         }
 
         result
+    }
+
+    /// Drive the markup-capable rules that need the lowered list/branch shape
+    /// (`jsx_needs_lowering`) over a single lowered JSX root, using the **markup
+    /// visitor** so reporting stays unified with the OXC IR pass. This is how a
+    /// rule like `vue/require-v-for-key` catches the JSX `.map()` form, whose
+    /// list scope only materializes after lowering.
+    fn lint_jsx_lowered_markup_root(
+        &self,
+        allocator: &Allocator,
+        source: &str,
+        filename: &str,
+        root: &RootNode<'_>,
+    ) -> LintResult {
+        use crate::ir::TemplateSyntax;
+        use crate::markup::{MarkupContext, MarkupDocument};
+
+        let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
+        ctx.set_enabled_rules(self.enabled_rules.clone());
+        ctx.set_config_disabled_rules(self.disabled_rules.clone());
+        ctx.set_help_level(self.help_level);
+
+        let document = MarkupDocument::new(root, TemplateSyntax::Vue);
+        profile!("patina.jsx.lowered_markup.visit", {
+            let mut markup_ctx = MarkupContext::new(&mut ctx, &document);
+            for rule in self.registry.rules() {
+                if rule.jsx_needs_lowering()
+                    && let Some(markup_rule) = rule.as_markup_rule()
+                {
+                    document.visit_with(markup_rule, &mut markup_ctx);
+                }
+            }
+        });
+
+        let error_count = ctx.error_count();
+        let warning_count = ctx.warning_count();
+        let diagnostics = ctx.into_diagnostics();
+
+        LintResult {
+            filename: filename.to_compact_string(),
+            diagnostics,
+            error_count,
+            warning_count,
+        }
+    }
+
+    /// Run every markup-capable rule over the JSX/TSX program projected straight
+    /// from the OXC AST — the zero-cost path that never builds a template AST.
+    fn lint_jsx_over_ir(
+        &self,
+        allocator: &Allocator,
+        source: &str,
+        filename: &str,
+        program: &oxc_ast::ast::Program<'_>,
+    ) -> LintResult {
+        use crate::ir::TemplateSyntax;
+        use crate::markup::{MarkupContext, MarkupDocument};
+
+        let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
+        ctx.set_enabled_rules(self.enabled_rules.clone());
+        ctx.set_config_disabled_rules(self.disabled_rules.clone());
+        ctx.set_help_level(self.help_level);
+
+        // Croquis is only worth computing when a semantic rule is active *and*
+        // markup-capable; attach it to the document so type/binding-aware markup
+        // rules reach the same analysis the lowering pipeline would have seen.
+        let analysis = if self.jsx_ir_needs_analysis() {
+            Some(profile!(
+                "patina.jsx.croquis",
+                vize_atelier_jsx::analyze_jsx_program(program, source)
+            ))
+        } else {
+            None
+        };
+
+        let mut document = MarkupDocument::from_jsx(program, TemplateSyntax::Vue, 0);
+        if let Some(analysis) = analysis.as_ref() {
+            ctx.set_analysis(analysis);
+            document = document.with_analysis(analysis);
+        }
+
+        profile!("patina.jsx.ir.visit", {
+            let mut markup_ctx = MarkupContext::new(&mut ctx, &document);
+            for rule in self.registry.rules() {
+                // `jsx_needs_lowering` rules are driven over the lowered IR
+                // instead (their JSX shape is absent from the OXC projection).
+                if rule.jsx_needs_lowering() {
+                    continue;
+                }
+                if let Some(markup_rule) = rule.as_markup_rule() {
+                    document.visit_with(markup_rule, &mut markup_ctx);
+                }
+            }
+        });
+
+        let error_count = ctx.error_count();
+        let warning_count = ctx.warning_count();
+        let diagnostics = ctx.into_diagnostics();
+
+        LintResult {
+            filename: filename.to_compact_string(),
+            diagnostics,
+            error_count,
+            warning_count,
+        }
+    }
+
+    /// Whether any active rule needs semantic analysis, so the IR path should
+    /// compute Croquis for the JSX program and attach it to the markup document.
+    fn jsx_ir_needs_analysis(&self) -> bool {
+        self.has_active_semantic_template_rules()
+    }
+
+    /// Run the lowering-based legacy fallback for a single lowered JSX root,
+    /// dispatching only the rules whose `keep_mask` entry is `true` (the rules
+    /// with no markup-IR entry point), so rules already handled by the IR or
+    /// lowered-markup passes do not report a second time.
+    fn lint_jsx_fallback_root(
+        &self,
+        allocator: &Allocator,
+        source: &str,
+        filename: &str,
+        root: &RootNode<'_>,
+        keep_mask: &[bool],
+    ) -> LintResult {
+        let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
+        ctx.set_enabled_rules(self.enabled_rules.clone());
+        ctx.set_config_disabled_rules(self.disabled_rules.clone());
+        ctx.set_help_level(self.help_level);
+        ctx.set_dialect(VueDialect::Vue);
+
+        let rule_count = self.registry.rules().len();
+        let mut visitor = LintVisitor::with_rule_filter(
+            &mut ctx,
+            &self.registry.rules()[..rule_count],
+            &self.rule_names()[..rule_count],
+            self.registry.has_exit_element_rules(),
+            &keep_mask[..rule_count],
+        );
+        profile!("patina.jsx.fallback.visit", visitor.visit_root(root));
+
+        let error_count = ctx.error_count();
+        let warning_count = ctx.warning_count();
+        let diagnostics = ctx.into_diagnostics();
+
+        LintResult {
+            filename: filename.to_compact_string(),
+            diagnostics,
+            error_count,
+            warning_count,
+        }
+    }
+
+    /// Remove from `result` any diagnostic that already appears in `seen`
+    /// (matched by rule name and range). Used so the lowering fallback does not
+    /// re-emit parse diagnostics the IR-path parse already produced.
+    fn dedupe_against(result: &mut LintResult, seen: &LintResult) {
+        if seen.diagnostics.is_empty() || result.diagnostics.is_empty() {
+            return;
+        }
+        result.diagnostics.retain(|candidate| {
+            !seen.diagnostics.iter().any(|existing| {
+                existing.rule_name == candidate.rule_name
+                    && existing.start == candidate.start
+                    && existing.end == candidate.end
+            })
+        });
+        // Recount after retain so the summary stays accurate.
+        result.error_count = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| matches!(diagnostic.severity, crate::diagnostic::Severity::Error))
+            .count();
+        result.warning_count = result.diagnostics.len() - result.error_count;
     }
 
     fn jsx_diagnostics_lint_result(

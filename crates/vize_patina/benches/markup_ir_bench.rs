@@ -18,7 +18,7 @@ use vize_carton::append;
 use vize_patina::ir::TemplateSyntax;
 use vize_patina::markup::{MarkupContext, MarkupDocument};
 use vize_patina::rules::a11y::ImgAlt;
-use vize_patina::{LintContext, Linter, RuleRegistry};
+use vize_patina::{JsxLang, LintContext, Linter, RuleRegistry};
 
 /// A representative template with a mix of elements, bindings, and `<img>`
 /// nodes (the rule's trigger), large enough to exercise traversal.
@@ -60,6 +60,80 @@ fn lint_via_markup_ir(source: &str) -> usize {
     lint.warning_count()
 }
 
+/// A representative JSX module: a component returning a gallery with many
+/// `<img>` nodes (the rule's trigger), bindings, and events — large enough to
+/// exercise the projection / lowering traversal.
+fn sample_jsx() -> String {
+    let mut module = String::from("const Gallery = () => (\n  <div className=\"gallery\">\n");
+    for i in 0..80 {
+        append!(
+            module,
+            r#"    <figure className="item">
+      <img src={{`/photo{i}.jpg`}} />
+      <figcaption title={{`caption{i}`}}>Photo {i}</figcaption>
+      <button onClick={{() => open({i})}}>Open</button>
+    </figure>
+"#,
+        );
+    }
+    module.push_str("  </div>\n);");
+    module
+}
+
+/// JSX lint over the **zero-cost rule IR**: `a11y/img-alt` is markup-capable, so
+/// `lint_jsx` parses the OXC program once and runs the rule straight over the
+/// borrow-based [`MarkupDocument::from_jsx`] facade — no template reconstruction.
+fn lint_jsx_via_ir(linter: &Linter, source: &str) -> usize {
+    linter
+        .lint_jsx(source, "bench.jsx", JsxLang::Jsx)
+        .warning_count
+}
+
+/// JSX lint over the **lowering fallback**: `vue/a11y-img-alt` has only a legacy
+/// `Rule` impl, so the same `<img>` alt check is served by lowering the JSX to a
+/// synthetic relief template AST first — the allocation-heavy reconstruction the
+/// IR path avoids.
+fn lint_jsx_via_lowering(linter: &Linter, source: &str) -> usize {
+    linter
+        .lint_jsx(source, "bench.jsx", JsxLang::Jsx)
+        .warning_count
+}
+
+fn bench_jsx_ir_vs_lowering(c: &mut Criterion) {
+    use vize_patina::rules::vue::A11yImgAlt;
+
+    let module = sample_jsx();
+
+    // IR arm: a markup-capable rule (runs over the OXC projection).
+    let mut ir_registry = RuleRegistry::new();
+    ir_registry.register(Box::new(ImgAlt));
+    let ir_linter = Linter::with_registry(ir_registry);
+
+    // Lowering arm: an equivalent unmigrated rule (forces the lowering fallback).
+    let mut lowering_registry = RuleRegistry::new();
+    lowering_registry.register(Box::new(A11yImgAlt));
+    let lowering_linter = Linter::with_registry(lowering_registry);
+
+    // Sanity: both arms must flag the same number of `<img>` nodes, otherwise
+    // the comparison is meaningless.
+    let expected = lint_jsx_via_ir(&ir_linter, &module);
+    assert_eq!(lint_jsx_via_lowering(&lowering_linter, &module), expected);
+    assert!(expected > 0, "fixture should trigger the rule");
+
+    let mut group = c.benchmark_group("jsx_lint");
+    group.throughput(Throughput::Bytes(module.len() as u64));
+
+    group.bench_function("ir_projection", |b| {
+        b.iter(|| lint_jsx_via_ir(&ir_linter, black_box(&module)))
+    });
+
+    group.bench_function("lowering_fallback", |b| {
+        b.iter(|| lint_jsx_via_lowering(&lowering_linter, black_box(&module)))
+    });
+
+    group.finish();
+}
+
 fn bench_markup_ir_vs_template(c: &mut Criterion) {
     let template = sample_template();
 
@@ -88,5 +162,9 @@ fn bench_markup_ir_vs_template(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_markup_ir_vs_template);
+criterion_group!(
+    benches,
+    bench_markup_ir_vs_template,
+    bench_jsx_ir_vs_lowering
+);
 criterion_main!(benches);
