@@ -24,7 +24,7 @@ use crate::batch::error::CorsaResult;
 use crate::batch::{Diagnostic, SfcBlockType};
 use crate::script_parse::collect_script_parse_diagnostics;
 use crate::virtual_ts::{
-    VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions, extract_interface_fields,
+    VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions,
     generate_virtual_ts_with_offsets_and_checks,
 };
 
@@ -262,7 +262,7 @@ fn augment_type_based_props_from_script_context(
     );
     ctx.analyze();
 
-    let known_props = known_type_based_prop_names(croquis, &script_setup.content);
+    let known_props = known_type_based_prop_names(croquis);
     let mut missing_props: Vec<CompactString> = ctx
         .bindings
         .bindings
@@ -296,10 +296,7 @@ fn augment_type_based_props_from_script_context(
     }
 }
 
-fn known_type_based_prop_names(
-    croquis: &vize_croquis::Croquis,
-    script_setup: &str,
-) -> FxHashSet<CompactString> {
+fn known_type_based_prop_names(croquis: &vize_croquis::Croquis) -> FxHashSet<CompactString> {
     let mut names: FxHashSet<CompactString> = croquis
         .macros
         .props()
@@ -315,12 +312,15 @@ fn known_type_based_prop_names(
         return names;
     };
 
+    // Resolve the named type's fields through the croquis TypeResolver, which
+    // script analysis populates from the OXC AST — including local interfaces
+    // and type literals. This replaces the old raw-text interface scanner.
     let type_name = strip_outer_angle_brackets(type_args.trim());
-    for prop in croquis.types.extract_properties(type_name) {
+    for prop in croquis
+        .types
+        .extract_properties(type_reference_lookup_key(type_name))
+    {
         names.insert(prop.name);
-    }
-    for field in extract_interface_fields(script_setup, type_name) {
-        names.insert(CompactString::new(field));
     }
 
     names
@@ -331,4 +331,19 @@ fn strip_outer_angle_brackets(value: &str) -> &str {
         .strip_prefix('<')
         .and_then(|value| value.strip_suffix('>'))
         .unwrap_or(value)
+}
+
+/// Lookup key for a `defineProps<...>` type argument: inline object literals
+/// (`{ ... }`) are passed through, while a type *reference* drops any generic
+/// instantiation (`Foo<T>` -> `Foo`) so the resolver can find the local
+/// declaration registered under its bare name.
+fn type_reference_lookup_key(type_name: &str) -> &str {
+    let trimmed = type_name.trim();
+    if trimmed.starts_with('{') {
+        return type_name;
+    }
+    match trimmed.find('<') {
+        Some(pos) => trimmed[..pos].trim_end(),
+        None => trimmed,
+    }
 }

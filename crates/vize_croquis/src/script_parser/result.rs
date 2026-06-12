@@ -4,6 +4,9 @@
 //! [`ScriptParserOptions`], and the small metadata enums/structs that back
 //! plain-value and runtime-object tracking.
 
+use oxc_ast::ast::Declaration;
+use oxc_span::GetSpan;
+
 use crate::croquis::{BindingMetadata, ComponentRegistration, ComponentShape, Croquis};
 use crate::croquis::{
     ImportStatementInfo, InvalidExport, OptionsDescriptor, ReExportInfo, TypeExport,
@@ -14,6 +17,7 @@ use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
 use crate::scope::ScopeChain;
 use crate::setup_context::SetupContextTracker;
+use crate::types::TypeResolver;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 
 /// Origin of a local binding that already carries a plain, non-reactive value.
@@ -60,6 +64,11 @@ pub struct ScriptParseResult {
     pub macros: MacroTracker,
     pub reactivity: ReactivityTracker,
     pub race_conditions: RaceConditionTracker,
+    /// Local `interface` / `type` definitions registered by name, so
+    /// `defineProps<Name>()` and template-binding analysis can resolve the
+    /// fields of a locally declared type through an OXC-backed AST walk
+    /// rather than a raw-text scan.
+    pub types: TypeResolver,
     pub type_exports: Vec<TypeExport>,
     pub invalid_exports: Vec<InvalidExport>,
     /// Scope chain for tracking nested JavaScript scopes
@@ -121,6 +130,31 @@ pub struct ScriptParserOptions {
 }
 
 impl ScriptParseResult {
+    /// Register a top-level `interface Name { ... }` or `type Name = ...`
+    /// declaration into the [`TypeResolver`] by name, keyed to its body source
+    /// text (`{ ... }` for interfaces, the RHS for aliases). This is the
+    /// AST-backed replacement for canon's old raw-text interface scanner:
+    /// `defineProps<Name>()` and template-binding analysis recover the type's
+    /// fields by resolving the name here, which handles nested braces,
+    /// generics, and comments correctly.
+    pub(crate) fn register_local_type(&mut self, decl: &Declaration<'_>, source: &str) {
+        match decl {
+            Declaration::TSInterfaceDeclaration(interface) => {
+                self.types.add_interface(
+                    interface.id.name.as_str(),
+                    interface.body.span.source_text(source),
+                );
+            }
+            Declaration::TSTypeAliasDeclaration(alias) => {
+                self.types.add_type_alias(
+                    alias.id.name.as_str(),
+                    alias.type_annotation.span().source_text(source).trim(),
+                );
+            }
+            _ => {}
+        }
+    }
+
     /// Record a `TypeExport` together with the `typeof` value-identifier
     /// references found in its body. Must be the only call site that pushes
     /// to `type_exports` so the two vectors stay in lockstep for
@@ -180,6 +214,7 @@ impl ScriptParseResult {
         summary.macros = self.macros;
         summary.reactivity = self.reactivity;
         summary.race_conditions = self.race_conditions;
+        summary.types = self.types;
         summary.type_exports = self.type_exports;
         summary.invalid_exports = self.invalid_exports;
         summary.scopes = self.scopes;

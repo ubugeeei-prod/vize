@@ -168,11 +168,13 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
                     Declaration::TSTypeAliasDeclaration(_)
                     | Declaration::TSInterfaceDeclaration(_) => {
                         // Type exports are valid in script setup
+                        result.register_local_type(decl, source);
                         process_type_export(result, decl, stmt.span());
                     }
                     _ => {
                         // Check if it's a type-only export (export type { ... })
                         if export.export_kind.is_type() {
+                            result.register_local_type(decl, source);
                             process_type_export(result, decl, stmt.span());
                         } else if result.is_non_setup_script {
                             // Plain <script> exports stay in the synthetic setup
@@ -201,6 +203,10 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
         Statement::TSTypeAliasDeclaration(type_alias) => {
             // Type aliases are allowed (not bindings, but tracked)
             let name = type_alias.id.name.as_str();
+            result.types.add_type_alias(
+                name,
+                type_alias.type_annotation.span().source_text(source).trim(),
+            );
             let typeof_refs = super::super::typeof_refs::collect_from_type_alias(type_alias);
             result.record_type_export(
                 TypeExport {
@@ -217,6 +223,9 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
         Statement::TSInterfaceDeclaration(interface) => {
             // Interfaces are allowed (not bindings, but tracked)
             let name = interface.id.name.as_str();
+            result
+                .types
+                .add_interface(name, interface.body.span.source_text(source));
             let typeof_refs = super::super::typeof_refs::collect_from_interface(interface);
             result.record_type_export(
                 TypeExport {

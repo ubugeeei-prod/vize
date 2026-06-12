@@ -798,7 +798,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // Props are available in template as variables
             profile!(
                 "canon.virtual_ts.generate_props_variables",
-                generate_props_variables(&mut ts, summary, script_content, generic_param)
+                generate_props_variables(&mut ts, summary, generic_param)
             );
             if options_api {
                 profile!(
@@ -808,7 +808,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             }
             let template_prop_names = profile!(
                 "canon.virtual_ts.collect_template_prop_names",
-                collect_template_prop_names(summary, script_content)
+                collect_template_prop_names(summary)
             );
 
             // Generate scope closures

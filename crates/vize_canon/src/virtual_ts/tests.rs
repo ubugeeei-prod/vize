@@ -565,6 +565,105 @@ fn generate_script_setup_virtual_ts(script: &str) -> String {
 }
 
 #[test]
+fn test_define_props_local_interface_fields_resolved_via_ast() {
+    // Verify-real for #1394: a local `interface Props` whose body the old
+    // raw-text scanner mis-handled is now resolved through the OXC AST that
+    // croquis registers into the TypeResolver. The script exercises three
+    // failure modes of the deleted scanner at once:
+    //   1. A leading comment that literally contains `interface Props { ... }`.
+    //      The old `find_type_body` anchored on the *first* substring match of
+    //      `interface Props `, so it would extract the decoy field from the
+    //      comment instead of the real declaration.
+    //   2. A field whose type is a generic with a comma (`Map<string, number>`).
+    //   3. A nested object type and a trailing line comment containing a `}`.
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"
+// A real interface Props { decoy: never } lives further down.
+interface Props {
+  title: string;
+  meta: {
+    createdAt: number;
+    tags: string[];
+  };
+  lookup: Map<string, number>;
+  count?: number; // counts things } and quotes "}"
+}
+
+defineProps<Props>();
+"#;
+    let template = r#"<div>{{ title }}{{ meta }}{{ lookup }}{{ count }}</div>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    // The interface was registered into the TypeResolver from the OXC AST, so
+    // its top-level fields resolve directly — no raw-text scan.
+    let props = summary.types.extract_properties("Props");
+    let names: Vec<&str> = props.iter().map(|p| p.name.as_str()).collect();
+    assert_eq!(
+        names,
+        vec!["title", "meta", "lookup", "count"],
+        "AST-backed TypeResolver must yield exactly the top-level interface fields"
+    );
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    for field in ["title", "meta", "lookup", "count"] {
+        assert!(
+            output.code.contains(&format!("void {field};")),
+            "expected AST-resolved prop `{field}` to be bound in template scope:\n{}",
+            output.code
+        );
+    }
+    assert!(
+        !output.code.contains("void decoy;"),
+        "the decoy field from the comment must not be extracted as a prop:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_define_props_local_intersection_alias_emits_keyed_bindings() {
+    // A local `type Props = A & B` resolves through the now-populated
+    // TypeResolver: its body carries a top-level `&`, so the generator falls
+    // back to keyed `satisfies keyof Props` bindings rather than field-by-field
+    // extraction. This path previously relied on the definitions map being
+    // empty; registering local types from the AST drives it correctly.
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"
+interface Base { id: string }
+interface Extra { label: string }
+type Props = Base & Extra;
+
+defineProps<Props>();
+"#;
+    let template = r#"<div>{{ id }}{{ label }}</div>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert!(
+        output.code.contains("satisfies keyof Props"),
+        "an intersection prop alias should emit keyed template bindings:\n{}",
+        output.code
+    );
+}
+
+#[test]
 fn test_script_setup_top_level_await_emits_async_setup() {
     let output = generate_script_setup_virtual_ts("const data = await fetchData()\n");
 

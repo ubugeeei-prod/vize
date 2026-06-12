@@ -11,7 +11,6 @@ use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_carton::profile;
 use vize_croquis::BindingType;
 use vize_croquis::Croquis;
 use vize_croquis::macros::{MacroKind, ModelDefinition};
@@ -404,7 +403,6 @@ fn emit_options_api_props_type(
 pub(crate) fn generate_props_variables(
     ts: &mut String,
     summary: &Croquis,
-    script_content: Option<&str>,
     generic_param: Option<&str>,
 ) {
     let props = summary.macros.props();
@@ -461,39 +459,25 @@ pub(crate) fn generate_props_variables(
             // type_args may include angle brackets (e.g., "<Props>", "<Foo<T>>"), strip outer pair
             let type_name = strip_outer_angle_brackets(type_args.trim());
 
-            // Try TypeResolver first (handles inline object types and registered types)
-            let type_properties = summary.types.extract_properties(type_name);
-            if !type_properties.is_empty() {
-                for prop in &type_properties {
-                    if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-                        continue;
-                    }
-                    emit_template_prop_binding(
-                        ts,
-                        template_props_type_ref.as_str(),
-                        prop.name.as_str(),
-                        defaulted_prop_names.contains(&prop.name),
-                    );
-                    emitted_names.insert(prop.name.as_str().into());
+            // Resolve the named type's fields through the croquis TypeResolver,
+            // which the script analysis populates from the OXC AST (local
+            // interfaces/type literals included). This handles inline object
+            // types, registered local types, nested braces, generics, and
+            // comments — no raw-text scanning.
+            let type_properties = summary
+                .types
+                .extract_properties(type_reference_lookup_key(type_name));
+            for prop in &type_properties {
+                if should_skip_template_prop_binding(summary, prop.name.as_str()) {
+                    continue;
                 }
-            } else if let Some(script) = script_content {
-                // Fallback: extract field names from script text (for local interfaces)
-                let field_names = profile!(
-                    "canon.virtual_ts.extract_interface_fields",
-                    extract_interface_fields(script, type_name)
+                emit_template_prop_binding(
+                    ts,
+                    template_props_type_ref.as_str(),
+                    prop.name.as_str(),
+                    defaulted_prop_names.contains(&prop.name),
                 );
-                for field in &field_names {
-                    if should_skip_template_prop_binding(summary, field.as_str()) {
-                        continue;
-                    }
-                    emit_template_prop_binding(
-                        ts,
-                        template_props_type_ref.as_str(),
-                        field.as_str(),
-                        defaulted_prop_names.contains(field),
-                    );
-                    emitted_names.insert(field.as_str().into());
-                }
+                emitted_names.insert(prop.name.as_str().into());
             }
 
             if should_emit_keyed_template_prop_bindings(summary, type_name, &emitted_names) {
@@ -525,10 +509,7 @@ pub(crate) fn generate_props_variables(
     }
 }
 
-pub(crate) fn collect_template_prop_names(
-    summary: &Croquis,
-    script_content: Option<&str>,
-) -> FxHashSet<String> {
+pub(crate) fn collect_template_prop_names(summary: &Croquis) -> FxHashSet<String> {
     let mut names = FxHashSet::default();
     let props = summary.macros.props();
     if !props.is_empty() {
@@ -562,196 +543,33 @@ pub(crate) fn collect_template_prop_names(
         return names;
     };
     let type_name = strip_outer_angle_brackets(type_args.trim());
-    let type_properties = summary.types.extract_properties(type_name);
-    if !type_properties.is_empty() {
-        for prop in &type_properties {
-            if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-                continue;
-            }
-            if !is_reserved_identifier(prop.name.as_str()) {
-                continue;
-            }
-            names.insert(prop.name.as_str().into());
-        }
-        return names;
-    }
-
-    let Some(script) = script_content else {
-        return names;
-    };
-    let field_names = profile!(
-        "canon.virtual_ts.extract_interface_fields_for_expressions",
-        extract_interface_fields(script, type_name)
-    );
-    for field in &field_names {
-        if should_skip_template_prop_binding(summary, field.as_str()) {
+    let type_properties = summary
+        .types
+        .extract_properties(type_reference_lookup_key(type_name));
+    for prop in &type_properties {
+        if should_skip_template_prop_binding(summary, prop.name.as_str()) {
             continue;
         }
-        if !is_reserved_identifier(field.as_str()) {
+        if !is_reserved_identifier(prop.name.as_str()) {
             continue;
         }
-        names.insert(field.clone());
+        names.insert(prop.name.as_str().into());
     }
     names
 }
 
-/// Extract field names from an interface or type literal in script content.
-/// Fallback for when TypeResolver doesn't have the type registered.
-pub(crate) fn extract_interface_fields(script: &str, type_name: &str) -> Vec<String> {
-    let mut fields = Vec::new();
-
-    let body = if type_name.starts_with('{') {
-        Some(type_name)
+/// Lookup key for a `defineProps<...>` type argument when resolving its fields
+/// through the croquis `TypeResolver`.
+///
+/// Inline object types (`{ msg: string }`) are passed through verbatim — the
+/// resolver parses them directly. A type *reference* may carry a generic
+/// instantiation (`Foo<T>`); the resolver registers local types under their
+/// bare declaration name, so strip the arguments to recover `Foo`.
+fn type_reference_lookup_key(type_name: &str) -> &str {
+    if type_name.trim_start().starts_with('{') {
+        type_name
     } else {
-        find_type_body(script, type_name)
-    };
-
-    if let Some(body) = body {
-        let inner = if let Some(start) = body.find('{') {
-            let end = find_matching_brace(body, start);
-            &body[start + 1..end]
-        } else {
-            body
-        };
-
-        fields.extend(extract_top_level_type_fields(inner));
-    }
-
-    fields
-}
-
-fn extract_top_level_type_fields(inner: &str) -> Vec<String> {
-    let mut fields = Vec::new();
-    let mut member_start = 0usize;
-    let mut collecting_name = true;
-    let mut brace_depth = 0u32;
-    let mut bracket_depth = 0u32;
-    let mut paren_depth = 0u32;
-    let mut angle_depth = 0u32;
-    let mut quote = None;
-    let mut escaped = false;
-    let mut line_comment = false;
-    let mut block_comment = false;
-    let mut chars = inner.char_indices().peekable();
-
-    while let Some((idx, ch)) = chars.next() {
-        if line_comment {
-            if ch == '\n' {
-                line_comment = false;
-                if brace_depth == 0 && bracket_depth == 0 && paren_depth == 0 && angle_depth == 0 {
-                    collecting_name = true;
-                    member_start = idx + ch.len_utf8();
-                }
-            }
-            continue;
-        }
-
-        if block_comment {
-            if ch == '*'
-                && let Some(&(slash_idx, '/')) = chars.peek()
-            {
-                chars.next();
-                block_comment = false;
-                if collecting_name
-                    && brace_depth == 0
-                    && bracket_depth == 0
-                    && paren_depth == 0
-                    && angle_depth == 0
-                    && inner[member_start..idx].trim().is_empty()
-                {
-                    member_start = slash_idx + 1;
-                }
-            }
-            continue;
-        }
-
-        if let Some(quote_ch) = quote {
-            if escaped {
-                escaped = false;
-            } else if ch == '\\' {
-                escaped = true;
-            } else if ch == quote_ch {
-                quote = None;
-            }
-            continue;
-        }
-
-        if ch == '/'
-            && let Some(&(_, next)) = chars.peek()
-        {
-            match next {
-                '/' => {
-                    chars.next();
-                    line_comment = true;
-                    continue;
-                }
-                '*' => {
-                    chars.next();
-                    block_comment = true;
-                    continue;
-                }
-                _ => {}
-            }
-        }
-
-        match ch {
-            '\'' | '"' | '`' => {
-                quote = Some(ch);
-                escaped = false;
-                continue;
-            }
-            '{' => brace_depth += 1,
-            '}' => brace_depth = brace_depth.saturating_sub(1),
-            '[' => bracket_depth += 1,
-            ']' => bracket_depth = bracket_depth.saturating_sub(1),
-            '(' => paren_depth += 1,
-            ')' => paren_depth = paren_depth.saturating_sub(1),
-            '<' => angle_depth += 1,
-            '>' if angle_depth > 0 => angle_depth -= 1,
-            _ => {}
-        }
-
-        if brace_depth != 0 || bracket_depth != 0 || paren_depth != 0 || angle_depth != 0 {
-            continue;
-        }
-
-        match ch {
-            ':' if collecting_name => {
-                if let Some(field_name) = parse_top_level_field_name(&inner[member_start..idx]) {
-                    fields.push(field_name);
-                }
-                collecting_name = false;
-            }
-            ';' | ',' => {
-                collecting_name = true;
-                member_start = idx + ch.len_utf8();
-            }
-            '\n' if !collecting_name => {
-                collecting_name = true;
-                member_start = idx + ch.len_utf8();
-            }
-            '\n' if inner[member_start..idx].trim().is_empty() => {
-                member_start = idx + ch.len_utf8();
-            }
-            _ => {}
-        }
-    }
-
-    fields
-}
-
-fn parse_top_level_field_name(candidate: &str) -> Option<String> {
-    let candidate = candidate.trim();
-    let candidate = candidate.strip_prefix("readonly ").unwrap_or(candidate);
-    let field_name = candidate.trim().trim_end_matches('?').trim();
-    if !field_name.is_empty()
-        && field_name
-            .chars()
-            .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
-    {
-        Some(field_name.into())
-    } else {
-        None
+        strip_generic_params(type_name).trim()
     }
 }
 
@@ -787,46 +605,6 @@ fn strip_generic_params(type_name: &str) -> &str {
         Some(pos) => &type_name[..pos],
         None => type_name,
     }
-}
-
-/// Find the body of an interface or type declaration in script content.
-fn find_type_body<'a>(script: &'a str, type_name: &str) -> Option<&'a str> {
-    // Strip generic params from name for searching (e.g., "Foo<T>" → "Foo")
-    let base_name = strip_generic_params(type_name);
-    for pattern in &[
-        cstr!("interface {base_name} "),
-        cstr!("interface {base_name}{{"),
-        cstr!("interface {base_name}<"),
-        cstr!("type {base_name} "),
-        cstr!("type {base_name}<"),
-    ] {
-        if let Some(pos) = script.find(pattern.as_str()) {
-            let rest = &script[pos..];
-            if let Some(brace_start) = rest.find('{') {
-                let end = find_matching_brace(rest, brace_start);
-                return Some(&rest[..end + 1]);
-            }
-        }
-    }
-    None
-}
-
-/// Find the matching closing brace for an opening brace at `start`.
-fn find_matching_brace(s: &str, start: usize) -> usize {
-    let mut depth = 0;
-    for (i, c) in s[start..].char_indices() {
-        match c {
-            '{' => depth += 1,
-            '}' => {
-                depth -= 1;
-                if depth == 0 {
-                    return start + i;
-                }
-            }
-            _ => {}
-        }
-    }
-    s.len().saturating_sub(1)
 }
 
 /// First identifier of a generic parameter declaration, skipping the TS 5.0
@@ -994,8 +772,8 @@ fn append_param_with_default(result: &mut String, param: &str) {
 mod tests {
     use super::{
         add_generic_defaults, collect_with_defaults_default_names_from_source,
-        extract_generic_names, extract_interface_fields, strip_const_modifiers,
-        template_props_type_ref,
+        extract_generic_names, strip_const_modifiers, template_props_type_ref,
+        type_reference_lookup_key,
     };
     use vize_carton::{FxHashSet, String};
 
@@ -1083,24 +861,24 @@ mod tests {
     }
 
     #[test]
-    fn extracts_only_top_level_interface_fields() {
-        let script = r#"
-interface Props {
-  config: {
-    inner: string
-    nested: { value: number }
-  }
-  readonly name?: string
-  handler: (event: { inner: string }) => void
-  items: Array<{ id: string }>
-  method(): void
-  [key: string]: unknown
-}
-"#;
-
+    fn type_reference_lookup_key_strips_generics_but_preserves_inline_literals() {
+        // Type references drop their generic instantiation so the resolver can
+        // find the local declaration registered under its bare name.
+        assert_eq!(type_reference_lookup_key("Props"), "Props");
+        assert_eq!(type_reference_lookup_key("Foo<T>"), "Foo");
         assert_eq!(
-            extract_interface_fields(script, "Props"),
-            vec!["config", "name", "handler", "items"]
+            type_reference_lookup_key("ContextMenuContentProps<T, U>"),
+            "ContextMenuContentProps"
+        );
+        // Inline object literals are passed through verbatim — the `<` inside a
+        // property type must not be mistaken for a generic argument list.
+        assert_eq!(
+            type_reference_lookup_key("{ items: Array<{ id: string }> }"),
+            "{ items: Array<{ id: string }> }"
+        );
+        assert_eq!(
+            type_reference_lookup_key("  { msg: string }"),
+            "  { msg: string }"
         );
     }
 }
