@@ -80,49 +80,71 @@ pub fn compile_to_dom(
     let analysis: &Croquis = &*bump.alloc(lowered.analysis);
 
     let mut components = Vec::with_capacity(lowered.roots.len());
-    for LoweredRoot {
-        mut root,
-        mode,
-        component_name,
-    } in lowered.roots
-    {
-        let transform_opts = TransformOptions {
-            // JSX render fns close over the setup scope; don't prefix `_ctx.`.
-            prefix_identifiers: false,
-            hoist_static: options.hoist_static,
-            cache_handlers: options.cache_handlers,
+    for lowered_root in lowered.roots {
+        components.push(compile_root_to_dom(
+            bump,
+            lowered_root,
+            analysis,
             is_ts,
-            // Binding info is supplied via the `analysis` Croquis below; the
-            // relief-side `binding_metadata` (a distinct type) is only needed
-            // for SFC inline-mode ref unwrapping, which JSX closures don't use.
-            binding_metadata: None,
-            ..Default::default()
-        };
-        let errors = transform(bump, &mut root, transform_opts, Some(analysis));
-        diagnostics.extend(errors.iter().map(compiler_error_to_diagnostic));
-
-        let codegen_opts = CodegenOptions {
-            mode: CodegenMode::Module,
-            source_map: options.source_map,
-            component_name: component_name.clone(),
-            is_ts,
-            cache_handlers: options.cache_handlers,
-            binding_metadata: None,
-            ..Default::default()
-        };
-        let result = generate(&root, codegen_opts);
-
-        components.push(DomComponent {
-            component_name,
-            mode: mode.unwrap_or(JsxOutputMode::Vdom),
-            code: result.code,
-            preamble: result.preamble,
-        });
+            &options,
+            &mut diagnostics,
+        ));
     }
 
     DomOutput {
         components,
         diagnostics,
+    }
+}
+
+/// Compile a single already-lowered root to a VDOM [`DomComponent`], appending
+/// any transform diagnostics. Shared by [`compile_to_dom`] and the mode-aware
+/// dispatcher in [`crate::compile`].
+pub(crate) fn compile_root_to_dom(
+    bump: &Bump,
+    lowered: LoweredRoot,
+    analysis: &Croquis,
+    is_ts: bool,
+    options: &DomCompileOptions,
+    diagnostics: &mut Vec<JsxDiagnostic>,
+) -> DomComponent {
+    let LoweredRoot {
+        mut root,
+        mode,
+        component_name,
+    } = lowered;
+
+    let transform_opts = TransformOptions {
+        // JSX render fns close over the setup scope; don't prefix `_ctx.`.
+        prefix_identifiers: false,
+        hoist_static: options.hoist_static,
+        cache_handlers: options.cache_handlers,
+        is_ts,
+        // Binding info is supplied via the `analysis` Croquis below; the
+        // relief-side `binding_metadata` (a distinct type) is only needed
+        // for SFC inline-mode ref unwrapping, which JSX closures don't use.
+        binding_metadata: None,
+        ..Default::default()
+    };
+    let errors = transform(bump, &mut root, transform_opts, Some(analysis));
+    diagnostics.extend(errors.iter().map(compiler_error_to_diagnostic));
+
+    let codegen_opts = CodegenOptions {
+        mode: CodegenMode::Module,
+        source_map: options.source_map,
+        component_name: component_name.clone(),
+        is_ts,
+        cache_handlers: options.cache_handlers,
+        binding_metadata: None,
+        ..Default::default()
+    };
+    let result = generate(&root, codegen_opts);
+
+    DomComponent {
+        component_name,
+        mode: mode.unwrap_or(JsxOutputMode::Vdom),
+        code: result.code,
+        preamble: result.preamble,
     }
 }
 

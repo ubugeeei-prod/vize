@@ -12,9 +12,12 @@
 //! ```
 
 /// The compilation target for a JSX/TSX component.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+///
+/// [`JsxOutputMode::Vdom`] is the default (matching Vue's default renderer).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum JsxOutputMode {
     /// Virtual DOM output (`"use vue:vdom"`).
+    #[default]
     Vdom,
     /// Vapor output (`"use vue:vapor"`).
     Vapor,

@@ -69,38 +69,55 @@ pub fn compile_to_vapor(
     let analysis: &Croquis = &*bump.alloc(lowered.analysis);
 
     let mut components = Vec::with_capacity(lowered.roots.len());
-    for LoweredRoot {
-        mut root,
-        mode,
-        component_name,
-    } in lowered.roots
-    {
-        let transform_opts = TransformOptions {
-            // JSX render fns close over the setup scope; don't prefix `_ctx.`.
-            prefix_identifiers: false,
-            ssr: options.ssr,
-            // Vapor IR lowering requires the core transform to run in vapor mode
-            // (e.g. it skips v-model desugaring, handled by the Vapor backend).
-            vapor: true,
-            binding_metadata: None,
-            ..Default::default()
-        };
-        transform(bump, &mut root, transform_opts, Some(analysis));
-
-        let ir = transform_to_ir(bump, &root);
-        let generated =
-            generate_vapor_with_options(&ir, None, VaporGenerateOptions { jsx_closure: true });
-
-        components.push(VaporComponent {
-            component_name,
-            mode: mode.unwrap_or(JsxOutputMode::Vapor),
-            code: generated.code,
-            templates: generated.templates,
-        });
+    for lowered_root in lowered.roots {
+        components.push(compile_root_to_vapor(
+            bump,
+            lowered_root,
+            analysis,
+            &options,
+        ));
     }
 
     VaporOutput {
         components,
         diagnostics,
+    }
+}
+
+/// Compile a single already-lowered root to a [`VaporComponent`]. Shared by
+/// [`compile_to_vapor`] and the mode-aware dispatcher in [`crate::compile`].
+pub(crate) fn compile_root_to_vapor(
+    bump: &Bump,
+    lowered: LoweredRoot,
+    analysis: &Croquis,
+    options: &VaporCompileOptions,
+) -> VaporComponent {
+    let LoweredRoot {
+        mut root,
+        mode,
+        component_name,
+    } = lowered;
+
+    let transform_opts = TransformOptions {
+        // JSX render fns close over the setup scope; don't prefix `_ctx.`.
+        prefix_identifiers: false,
+        ssr: options.ssr,
+        // Vapor IR lowering requires the core transform to run in vapor mode
+        // (e.g. it skips v-model desugaring, handled by the Vapor backend).
+        vapor: true,
+        binding_metadata: None,
+        ..Default::default()
+    };
+    transform(bump, &mut root, transform_opts, Some(analysis));
+
+    let ir = transform_to_ir(bump, &root);
+    let generated =
+        generate_vapor_with_options(&ir, None, VaporGenerateOptions { jsx_closure: true });
+
+    VaporComponent {
+        component_name,
+        mode: mode.unwrap_or(JsxOutputMode::Vapor),
+        code: generated.code,
+        templates: generated.templates,
     }
 }
