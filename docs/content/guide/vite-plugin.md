@@ -319,4 +319,5 @@ See [Nuxt Integration](../integrations/nuxt.md) for more details.
 - Vapor mode compilation is available via `vize_atelier_vapor` (Vue 3.6+)
 - DOM (VDom) compilation uses `vize_atelier_dom`
 - The plugin supports `virtual:vize-styles` for importing all compiled CSS as a module
+- `.jsx`/`.tsx` Vue components are compiled automatically through the same plugin — see the [JSX & TSX](./jsx.md) guide
 - For experimental rollup / webpack / esbuild / Rspack support, see [Experimental Bundler Integrations](./unplugin.md)

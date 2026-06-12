@@ -250,6 +250,9 @@ self-closing tags.
 
 ## JSX & TSX Output Mode
 
+> For the full authoring API, scoped styles, type-checking, editor support, and limitations, see the
+> [JSX & TSX guide](./jsx.md). This section covers only the output-mode config keys.
+
 Vize compiles `.jsx`/`.tsx` Vue components to either Virtual DOM or
 [Vapor](https://blog.vuejs.org/posts/vue-vapor) output. `compiler.jsxMode` selects the **global
 default** for components that do not opt in explicitly; it defaults to `"vdom"`.

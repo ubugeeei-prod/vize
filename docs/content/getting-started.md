@@ -48,6 +48,9 @@ See [Static Analysis](./guide/static-analysis.md) for the lint and type-checking
 [Rules](./rules/index.md) for concrete rule output, and
 [Configuration](./guide/configuration.md) for shared config and compiler options.
 
+Authoring components in JSX/TSX instead of `.vue` SFCs? See the [JSX & TSX](./guide/jsx.md) guide —
+`.jsx`/`.tsx` Vue components compile through the same Rust pipeline.
+
 ## Choose Your Entry Point
 
 ### 1. Vite Projects
