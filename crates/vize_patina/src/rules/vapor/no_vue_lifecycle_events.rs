@@ -27,6 +27,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ast::{DirectiveNode, ElementNode, ExpressionNode};
 
@@ -40,6 +41,42 @@ static META: RuleMeta = RuleMeta {
 
 /// Disallow @vue:xxx lifecycle events
 pub struct NoVueLifecycleEvents;
+
+/// Markup-IR entry point for `vapor/no-vue-lifecycle-events`.
+///
+/// An event-shaped rule expressed against the normalized [`MarkupBinding`]
+/// view: it flags any event binding whose name starts with `vue:`. The same
+/// logic applies to a Vue `@vue:mounted` and a JSX `v-on:vue:mounted` (both
+/// project to a `MarkupBindingKind::On` binding with argument `vue:mounted`),
+/// so the Vapor rule no longer needs a directive-only entry point.
+impl MarkupRule for NoVueLifecycleEvents {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        if binding.kind() != MarkupBindingKind::On {
+            return;
+        }
+
+        let Some(lifecycle_name) = binding.arg_name().and_then(|n| n.strip_prefix("vue:")) else {
+            return;
+        };
+
+        let message = ctx.lint().t_fmt(
+            "vapor/no-vue-lifecycle-events.message",
+            &[("event", lifecycle_name)],
+        );
+        let help = ctx.lint().t("vapor/no-vue-lifecycle-events.help");
+        ctx.lint()
+            .error_at_with_help(message, binding.range(), help);
+    }
+}
 
 impl Rule for NoVueLifecycleEvents {
     fn meta(&self) -> &'static RuleMeta {

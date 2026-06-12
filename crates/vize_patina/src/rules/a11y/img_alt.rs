@@ -9,6 +9,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ast::ElementNode;
 
@@ -23,6 +24,45 @@ static META: RuleMeta = RuleMeta {
 /// Require alt attribute on images
 #[derive(Default)]
 pub struct ImgAlt;
+
+/// Markup-IR entry point for `a11y/img-alt`.
+///
+/// An HTML-shaped rule: it only inspects the tag name and whether *some* `alt`
+/// binding exists (static `alt="…"`, dynamic `:alt`, or JSX `alt={…}`). Because
+/// the [`MarkupElement`] facade answers those questions over both backends, the
+/// same rule runs unchanged on a Vue `<img>` and a JSX `<img />` projected
+/// directly from the OXC AST — no synthetic template AST in between.
+impl MarkupRule for ImgAlt {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if !element.is_tag("img") {
+            return;
+        }
+
+        // An `alt` exists if there is any binding whose argument is `alt`,
+        // whether it is a plain attribute (`alt="x"`), a `v-bind`/`:alt`, or a
+        // JSX `alt={…}`.
+        let mut has_alt = false;
+        element.walk_bindings(&mut |binding| {
+            if matches!(
+                binding.kind(),
+                MarkupBindingKind::Attribute | MarkupBindingKind::Bind
+            ) && binding.arg_name_eq("alt")
+            {
+                has_alt = true;
+            }
+        });
+
+        if !has_alt {
+            let message = ctx.lint().t("a11y/img-alt.message");
+            let help = ctx.lint().t("a11y/img-alt.help");
+            ctx.lint().warn_at_with_help(message, element.range(), help);
+        }
+    }
+}
 
 impl Rule for ImgAlt {
     fn meta(&self) -> &'static RuleMeta {

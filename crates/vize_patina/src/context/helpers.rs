@@ -5,6 +5,7 @@
 //! diagnostics with various severity and help levels.
 
 use crate::diagnostic::LintDiagnostic;
+use crate::ir::ByteRange;
 use vize_carton::CompactString;
 use vize_relief::{BindingType, ast::SourceLocation};
 
@@ -20,6 +21,66 @@ impl<'a> LintContext<'a> {
             loc.start.offset,
             loc.end.offset,
         ));
+    }
+
+    /// Report an error at a [`ByteRange`].
+    ///
+    /// Markup-IR rules carry source positions as backend-neutral
+    /// [`ByteRange`]s (projected from either a `vize_relief`
+    /// [`SourceLocation`] or an OXC span), so this is the range-based twin of
+    /// [`Self::error`]. The range already addresses the *original* source, so
+    /// diagnostics and fixes map back to the syntax the user wrote.
+    #[inline]
+    pub fn error_at(&mut self, message: impl Into<CompactString>, range: ByteRange) {
+        self.report(LintDiagnostic::error(
+            self.current_rule,
+            message,
+            range.start,
+            range.end,
+        ));
+    }
+
+    /// Report a warning at a [`ByteRange`]. See [`Self::error_at`].
+    #[inline]
+    pub fn warn_at(&mut self, message: impl Into<CompactString>, range: ByteRange) {
+        self.report(LintDiagnostic::warn(
+            self.current_rule,
+            message,
+            range.start,
+            range.end,
+        ));
+    }
+
+    /// Report an error at a [`ByteRange`] with a help message.
+    #[inline]
+    pub fn error_at_with_help(
+        &mut self,
+        message: impl Into<CompactString>,
+        range: ByteRange,
+        help: impl Into<CompactString>,
+    ) {
+        let mut diag = LintDiagnostic::error(self.current_rule, message, range.start, range.end);
+        let help_str: CompactString = help.into();
+        if let Some(processed) = self.help_level.process(help_str.as_str()) {
+            diag = diag.with_help(processed);
+        }
+        self.report(diag);
+    }
+
+    /// Report a warning at a [`ByteRange`] with a help message.
+    #[inline]
+    pub fn warn_at_with_help(
+        &mut self,
+        message: impl Into<CompactString>,
+        range: ByteRange,
+        help: impl Into<CompactString>,
+    ) {
+        let mut diag = LintDiagnostic::warn(self.current_rule, message, range.start, range.end);
+        let help_str: CompactString = help.into();
+        if let Some(processed) = self.help_level.process(help_str.as_str()) {
+            diag = diag.with_help(processed);
+        }
+        self.report(diag);
     }
 
     /// Report a warning at a location.

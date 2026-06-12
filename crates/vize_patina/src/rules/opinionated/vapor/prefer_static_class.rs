@@ -23,6 +23,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, Severity, TextEdit};
+use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::String;
 use vize_relief::ast::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
@@ -37,6 +38,54 @@ static META: RuleMeta = RuleMeta {
 
 /// Prefer static class in Vapor mode
 pub struct PreferStaticClass;
+
+/// Markup-IR entry point for `vapor/prefer-static-class`.
+///
+/// A binding-shaped Vapor rule that maps cleanly across backends: a Vue
+/// `:class="'a'"` and a JSX `class={'a'}` both project to a
+/// [`MarkupBindingKind::Bind`] whose argument is `class` and whose
+/// [`MarkupBinding::expression`] is the string literal `'a'`. The rule warns
+/// when that literal could be a plain static `class` instead. (The auto-fix
+/// stays on the legacy [`Rule`] path; the IR entry point reports through
+/// `ByteRange`s that map to the original syntax.)
+impl MarkupRule for PreferStaticClass {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        if binding.kind() != MarkupBindingKind::Bind || !binding.arg_name_eq("class") {
+            return;
+        }
+        let Some(expression) = binding.expression() else {
+            return;
+        };
+        if !is_string_literal(expression.trim()) {
+            return;
+        }
+        // If a static `class` attribute is already present, the dynamic one is
+        // redundant but cannot simply be folded in; just flag it.
+        let mut has_static_class = false;
+        element.walk_bindings(&mut |other| {
+            if other.kind() == MarkupBindingKind::Attribute && other.arg_name_eq("class") {
+                has_static_class = true;
+            }
+        });
+
+        let message = ctx.lint().t("vapor/prefer-static-class.message");
+        if has_static_class {
+            let help = ctx.lint().t("vapor/prefer-static-class.help");
+            ctx.lint().warn_at_with_help(message, binding.range(), help);
+        } else {
+            ctx.lint().warn_at(message, binding.range());
+        }
+    }
+}
 
 impl Rule for PreferStaticClass {
     fn meta(&self) -> &'static RuleMeta {

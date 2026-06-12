@@ -51,3 +51,7 @@ criterion.workspace = true
 [[bench]]
 name = "lint_bench"
 harness = false
+
+[[bench]]
+name = "markup_ir_bench"
+harness = false

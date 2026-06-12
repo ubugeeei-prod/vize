@@ -5,7 +5,7 @@
 
 use crate::ir::ByteRange;
 use lightningcss::{
-    rules::{font_face::FontFaceRule, style::StyleRule, CssRule as LightningCssRule},
+    rules::{CssRule as LightningCssRule, font_face::FontFaceRule, style::StyleRule},
     stylesheet::StyleSheet,
 };
 

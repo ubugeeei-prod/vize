@@ -85,11 +85,14 @@
 
 mod context;
 mod diagnostic;
+pub mod ir;
 mod linter;
+pub mod markup;
 pub mod output;
 mod preset;
 mod rule;
 pub mod rules;
+pub mod style;
 pub mod telegraph;
 mod visitor;
 
@@ -97,11 +100,20 @@ pub use context::LintContext;
 pub use diagnostic::{
     Fix, HelpLevel, HelpRenderTarget, LintDiagnostic, LintSummary, Severity, TextEdit, render_help,
 };
+pub use ir::{
+    ByteRange, LintDocument, LintDocumentKind, ScriptBlock, ScriptLanguage, TemplateBlock,
+};
 pub use linter::script_rules::{BuiltinScriptRuleMeta, builtin_script_rules};
 pub use linter::{LintResult, Linter};
+pub use markup::{
+    MarkupAttribute, MarkupBinding, MarkupBindingKind, MarkupConditional, MarkupContext,
+    MarkupDirective, MarkupDocument, MarkupDocumentVisitor, MarkupElement, MarkupElementKind,
+    MarkupList, MarkupNode, MarkupRule, MarkupText,
+};
 pub use output::{OutputFormat, format_results, format_summary, rule_docs_path};
 pub use preset::LintPreset;
 pub use rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
+pub use style::{ParsedStyleSheet, StyleDocument, StyleSyntax};
 pub use telegraph::{
     Emitter, FormatEmitter, JsonEmitter, LintTransmission, LspDiagnostic, LspEmitter, Telegraph,
     TextEmitter,

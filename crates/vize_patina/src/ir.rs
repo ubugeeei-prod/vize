@@ -70,6 +70,12 @@ impl ScriptLanguage {
         }
     }
 
+    /// The OXC [`SourceType`] used to parse a script block in this language.
+    ///
+    /// Scaffolding for the script-block parsing path of the rule IR; the markup
+    /// facade currently projects from already-parsed roots/programs, so this is
+    /// not yet exercised by a callsite in this crate.
+    #[allow(dead_code)]
     pub(crate) fn source_type(self) -> SourceType {
         match self {
             Self::JavaScript => SourceType::default().with_module(true),
@@ -167,6 +173,9 @@ impl<'a> ScriptBlock<'a> {
         self.range.start as usize
     }
 
+    /// The OXC [`SourceType`] used to parse this script block. Scaffolding for
+    /// the script-block parsing path (see [`ScriptLanguage::source_type`]).
+    #[allow(dead_code)]
     pub(crate) fn source_type(&self) -> SourceType {
         self.language.source_type()
     }

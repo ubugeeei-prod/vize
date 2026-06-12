@@ -20,6 +20,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupList, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ast::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
@@ -33,6 +34,64 @@ static META: RuleMeta = RuleMeta {
 
 /// Require v-bind:key with v-for directives
 pub struct RequireVForKey;
+
+impl RequireVForKey {
+    /// Report when `element` (the repeated node of a `v-for`) lacks a key.
+    fn check_keyed_element<'a>(ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        // petite-vue does not require a `:key` on `v-for`.
+        if ctx.lint().is_petite_vue() {
+            return;
+        }
+        // `<template v-for>` carries the key on its children, not itself.
+        if element.is_tag("template") {
+            return;
+        }
+        if element.has_key_binding() {
+            return;
+        }
+
+        let tag = element.tag();
+        let message = ctx
+            .lint()
+            .t_fmt("vue/require-v-for-key.message", &[("tag", tag)]);
+        let help = ctx.lint().t("vue/require-v-for-key.help");
+        ctx.lint()
+            .error_at_with_help(message, element.range(), help);
+    }
+}
+
+/// Markup-IR entry point for `vue/require-v-for-key`.
+///
+/// Demonstrates the unified rule IR: the same logic runs over a Vue template
+/// **and** over JSX/TSX. `v-for` has two shapes the facade normalizes over:
+///
+/// - *Pre-transform* (a freshly parsed Vue template): the `v-for` is a
+///   directive on the repeated element — handled in [`Self::enter_element`].
+/// - *Post-transform* (lowered JSX `items.map((i) => <li/>)`, or a transformed
+///   template): the repeated element is wrapped by a list scope — handled in
+///   [`Self::enter_list`].
+///
+/// Either way the rule only asks "does this element have a key binding?", and
+/// `key={…}` lowers to the very same `:key` (`bind` directive, arg `key`).
+impl MarkupRule for RequireVForKey {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        // Pre-transform shape: the element itself carries the `v-for` directive.
+        if element.has_directive("for") {
+            Self::check_keyed_element(ctx, element);
+        }
+    }
+
+    fn enter_list<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, list: &MarkupList<'a>) {
+        // Post-transform shape: the list scope wraps the repeated element(s).
+        list.walk_elements(&mut |element| {
+            Self::check_keyed_element(ctx, &element);
+        });
+    }
+}
 
 impl Rule for RequireVForKey {
     fn meta(&self) -> &'static RuleMeta {
