@@ -23,7 +23,9 @@ pub use compile::{
 pub use compile::{
     compile_vapor_with_vue_parser_quirks, compile_vapor_with_vue_parser_quirks_and_diagnostics,
 };
-pub use generate::{VaporGenerateResult, generate_vapor};
+pub use generate::{
+    VaporGenerateOptions, VaporGenerateResult, generate_vapor, generate_vapor_with_options,
+};
 pub use generators::{
     GenerateContext, build_text_expression, can_inline_text, can_optimize_for, can_use_ternary,
     capitalize_event_name, escape_template, generate_async_component, generate_attribute,

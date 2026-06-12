@@ -62,6 +62,10 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) standalone_text_elements: &'a FxHashSet<usize>,
     /// Binding metadata from script setup imports.
     pub(crate) binding_metadata: Option<&'a BindingMetadata>,
+    /// JSX closure mode: the render code runs inside the component function's
+    /// closure (JSX/TSX authoring), so free identifiers resolve to enclosing
+    /// scope variables and must stay bare instead of being `_ctx.`-prefixed.
+    pub(crate) jsx_closure: bool,
 }
 
 impl<'a> GenerateContext<'a> {
@@ -86,6 +90,7 @@ impl<'a> GenerateContext<'a> {
             resolved_component_scopes: std::vec::Vec::new(),
             standalone_text_elements,
             binding_metadata,
+            jsx_closure: false,
         }
     }
 
@@ -257,6 +262,11 @@ impl<'a> GenerateContext<'a> {
                 return expr.to_compact_string();
             }
 
+            // JSX closure mode: the base is captured from the component closure.
+            if self.jsx_closure {
+                return expr.to_compact_string();
+            }
+
             let mut resolved = String::with_capacity(expr.len() + 5);
             resolved.push_str("_ctx.");
             resolved.push_str(expr);
@@ -270,6 +280,11 @@ impl<'a> GenerateContext<'a> {
         if is_global_allowed(expr)
             || matches!(expr, "_ctx" | "$props" | "$slots" | "$attrs" | "$emit")
         {
+            return expr.to_compact_string();
+        }
+
+        // JSX closure mode: a free identifier is a captured closure variable.
+        if self.jsx_closure {
             return expr.to_compact_string();
         }
 

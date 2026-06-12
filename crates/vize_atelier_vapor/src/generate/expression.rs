@@ -203,6 +203,13 @@ impl<'a, 'ctx> ExpressionRewriteCollector<'a, 'ctx> {
             return Some(replacement);
         }
 
+        // In JSX closure mode there is no `_ctx`: a free identifier is captured
+        // from the enclosing component function, so it stays bare (matching
+        // `vue-jsx-vapor`).
+        if self.ctx.jsx_closure {
+            return None;
+        }
+
         let mut resolved = String::with_capacity(name.len() + 5);
         resolved.push_str("_ctx.");
         resolved.push_str(name);

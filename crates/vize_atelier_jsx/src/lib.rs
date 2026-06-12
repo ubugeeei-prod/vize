@@ -35,6 +35,7 @@ pub mod lower;
 pub mod mode;
 pub mod parse;
 pub mod span;
+pub mod vapor;
 
 mod analyze;
 mod finder;
@@ -51,6 +52,7 @@ pub use lower::Lowerer;
 pub use mode::JsxOutputMode;
 pub use parse::{ParsedModule, parse_module};
 pub use span::SpanMapper;
+pub use vapor::{VaporCompileOptions, VaporComponent, VaporOutput, compile_to_vapor};
 
 /// A single lowered render root plus the component metadata recovered from its
 /// enclosing function.
