@@ -57,15 +57,15 @@ reasonably large Vue projects to use as test beds.
 ## Benchmarks
 
 Measured on Blacksmith `blacksmith-32vcpu-ubuntu-2404`, 15,000 generated Vue SFCs, median of 5 runs
-([latest run](https://github.com/ubugeeei-prod/vize/actions/runs/27319736609)):
+([latest run](https://github.com/ubugeeei-prod/vize/actions/runs/27408931576)):
 
 | Surface     | Existing tool      | Existing |    Vize |    Speedup |
 | ----------- | ------------------ | -------: | ------: | ---------: |
-| SFC compile | @vue/compiler-sfc  |    8.51s | 261.8ms |  **32.5×** |
-| Lint        | eslint-plugin-vue  |   42.29s | 230.2ms | **183.7×** |
-| Format      | Prettier           |   80.04s |   1.37s |  **58.4×** |
-| Type check  | vue-tsc            |    3.85s | 483.3ms |   **8.0×** |
-| Vite build  | @vitejs/plugin-vue |  987.4ms | 465.0ms |   **2.1×** |
+| SFC compile | @vue/compiler-sfc  |   16.86s | 292.8ms |  **57.6×** |
+| Lint        | eslint-plugin-vue  |   55.54s | 260.7ms | **213.1×** |
+| Format      | Prettier           |  139.17s |   1.43s |  **97.5×** |
+| Type check  | vue-tsc            |    5.37s | 402.4ms |   **13.3×** |
+| Vite build  | @vitejs/plugin-vue |    1.63s | 611.0ms |    **2.7×** |
 
 See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for
 methodology and per-variant numbers.
