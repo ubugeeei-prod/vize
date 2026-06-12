@@ -16,7 +16,11 @@ const SCOPED: &str = r#"
 const Comp = () => (
   <>
     <div class="box">hi</div>
-    <style scoped>{`.box { color: red }`}</style>
+    <style scoped>{`
+      .box {
+        color: red;
+      }
+    `}</style>
   </>
 );
 "#;
@@ -217,7 +221,11 @@ fn tsx_components_support_scoped_styles() {
 const Comp = (): any => (
   <>
     <div class="box">hi</div>
-    <style scoped>{`.box { color: red }`}</style>
+    <style scoped>{`
+      .box {
+        color: red;
+      }
+    `}</style>
   </>
 );
 "#;

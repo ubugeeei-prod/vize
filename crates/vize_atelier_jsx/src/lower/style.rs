@@ -8,7 +8,11 @@
 //! const Comp = () => (
 //!   <>
 //!     <div class="box">hi</div>
-//!     <style scoped>{`.box { color: red }`}</style>
+//!     <style scoped>{`
+//!       .box {
+//!         color: red;
+//!       }
+//!     `}</style>
 //!   </>
 //! )
 //! ```
