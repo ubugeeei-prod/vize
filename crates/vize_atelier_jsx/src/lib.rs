@@ -79,6 +79,30 @@ pub struct LoweredRoot<'a> {
     /// scope-id generation over this and expose the result on the compiled
     /// component.
     pub scoped_css: Option<String>,
+    /// Template-literal interpolation expressions (`${expr}`) embedded in the
+    /// component's `<style scoped>` block(s), in source order, each paired with
+    /// its byte range in the original source (#1497).
+    ///
+    /// The style extractor consumes these (they are not CSS text), but they
+    /// reference script values that must type-check against the component scope.
+    /// The type checker ([`vize_canon`](https://docs.rs/vize_canon)) re-emits
+    /// each as plain TypeScript, source-mapped back to its `.jsx`/`.tsx` range,
+    /// so a wrong type inside a style interpolation is reported at the
+    /// interpolation. Empty when no `<style scoped>` interpolations were present.
+    pub scoped_style_exprs: Vec<StyleExprSpan>,
+}
+
+/// A `<style scoped>` template-literal interpolation expression (`${expr}`)
+/// recovered from a JSX/TSX component, with the byte range it occupied in the
+/// original source (#1497).
+#[derive(Debug, Clone)]
+pub struct StyleExprSpan {
+    /// The expression source text, exactly as authored between `${` and `}`.
+    pub content: String,
+    /// Byte offset of the expression's start in the original source.
+    pub start: u32,
+    /// Byte offset of the expression's end in the original source.
+    pub end: u32,
 }
 
 /// The result of lowering a whole JSX/TSX module.

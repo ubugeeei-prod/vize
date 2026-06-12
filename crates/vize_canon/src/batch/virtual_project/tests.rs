@@ -1427,3 +1427,39 @@ fn jsx_typecheck_on_binds_v_for_alias_inside_map_callback() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn jsx_typecheck_on_reemits_style_block_interpolation() {
+    // A `<style scoped>` template-literal interpolation (`${props.color}`) is
+    // extracted out of the rendered children (#1495) but re-emitted through the
+    // sink so it type-checks against the component scope (#1497). The virtual TS
+    // stays plain and parses, and the `<style>` element is gone.
+    let case_dir = unique_case_dir("jsx-style-expr");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    let tsx_path = case_dir.join("Comp.tsx");
+    let source = "const Comp = (props: { color: string }) => (\n  <>\n    <div class=\"box\">hi</div>\n    <style scoped>{`.box { color: ${props.color}; }`}</style>\n  </>\n);\n";
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.set_jsx_typecheck(true);
+    project
+        .register_path_with_content(&tsx_path, source)
+        .unwrap();
+    let virtual_file = project.find_by_original(&tsx_path).unwrap();
+
+    assert_ts_parses(&virtual_file.content);
+    assert!(
+        virtual_file
+            .content
+            .contains("__vize_jsx_expr__(props.color)"),
+        "{}",
+        virtual_file.content
+    );
+    assert!(
+        !virtual_file.content.contains("<style"),
+        "{}",
+        virtual_file.content
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

@@ -26,6 +26,7 @@
 use oxc_ast::ast::{
     JSXAttributeItem, JSXAttributeName, JSXChild, JSXElement, JSXElementName, JSXExpression,
 };
+use oxc_span::GetSpan;
 
 use vize_carton::String;
 
@@ -36,6 +37,23 @@ use super::Lowerer;
 pub(crate) struct RawScopedStyle {
     /// The CSS text exactly as authored between the `<style>` tags.
     pub css: String,
+    /// The template-literal interpolation expressions (`${expr}`) embedded in
+    /// the style block, in source order, each paired with its byte range in the
+    /// original `.jsx`/`.tsx` source. These are consumed by the style extractor
+    /// (they are *not* CSS text), but the type checker re-emits them so they
+    /// type-check against the component scope (#1497).
+    pub exprs: std::vec::Vec<ScopedStyleExpr>,
+}
+
+/// One interpolation expression (`${expr}`) recovered from a `<style scoped>`
+/// template literal: its source text and the byte range it occupied.
+pub(crate) struct ScopedStyleExpr {
+    /// The expression source text, exactly as authored between `${` and `}`.
+    pub content: String,
+    /// Byte offset of the expression's start in the original source.
+    pub start: u32,
+    /// Byte offset of the expression's end in the original source.
+    pub end: u32,
 }
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
@@ -48,9 +66,74 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         if !is_intrinsic_style(&opening.name) || !has_scoped_attr(&opening.attributes) {
             return false;
         }
-        let css = collect_style_css(&element.children);
-        self.push_scoped_style(RawScopedStyle { css });
+        let mut css = String::default();
+        let mut exprs = std::vec::Vec::new();
+        self.collect_style(&element.children, &mut css, &mut exprs);
+        self.push_scoped_style(RawScopedStyle { css, exprs });
         true
+    }
+
+    /// Concatenate the CSS text from a `<style>` element's children, recording
+    /// each template-literal interpolation expression's source text and byte
+    /// range into `exprs`. Supports the idiomatic template-literal form
+    /// (`{`…`}`), a plain string literal (`{'…'}`), and bare JSX text.
+    fn collect_style(
+        &self,
+        children: &[JSXChild<'_>],
+        css: &mut String,
+        exprs: &mut std::vec::Vec<ScopedStyleExpr>,
+    ) {
+        for child in children {
+            match child {
+                JSXChild::Text(text) => css.push_str(text.value.as_str()),
+                JSXChild::ExpressionContainer(container) => match &container.expression {
+                    JSXExpression::StringLiteral(string) => css.push_str(string.value.as_str()),
+                    JSXExpression::TemplateLiteral(template) => {
+                        self.push_template_css(css, exprs, template);
+                    }
+                    _ => {}
+                },
+                _ => {}
+            }
+        }
+    }
+
+    /// Append a template literal's cooked CSS text and record each `${expr}`
+    /// interpolation's source text + byte range.
+    ///
+    /// A `<style scoped>` body is typically a static template literal, but any
+    /// `${expr}` substitutions (e.g. `color: ${props.color}`) reference script
+    /// values that must type-check against the component scope (#1497); their
+    /// spans are captured here so the type checker can re-emit them. The cooked
+    /// quasis are still concatenated so the static rules survive for the CSS
+    /// scoping backends.
+    fn push_template_css(
+        &self,
+        css: &mut String,
+        exprs: &mut std::vec::Vec<ScopedStyleExpr>,
+        template: &oxc_ast::ast::TemplateLiteral<'_>,
+    ) {
+        for quasi in &template.quasis {
+            let text = quasi
+                .value
+                .cooked
+                .as_ref()
+                .map(|cooked| cooked.as_str())
+                .unwrap_or_else(|| quasi.value.raw.as_str());
+            css.push_str(text);
+        }
+        for expression in &template.expressions {
+            let span = expression.span();
+            let content = self.mapper().slice(span);
+            if content.trim().is_empty() {
+                continue;
+            }
+            exprs.push(ScopedStyleExpr {
+                content: String::from(content),
+                start: span.start,
+                end: span.end,
+            });
+        }
     }
 }
 
@@ -73,41 +156,4 @@ fn has_scoped_attr(attributes: &[JSXAttributeItem<'_>]) -> bool {
         },
         JSXAttributeItem::SpreadAttribute(_) => false,
     })
-}
-
-/// Concatenate the CSS text from a `<style>` element's children. Supports the
-/// idiomatic template-literal form (`{`…`}`), a plain string literal
-/// (`{'…'}`), and bare JSX text. Interpolations and other expressions are
-/// skipped (CSS `v-bind()` / style expressions are a deferred follow-up).
-fn collect_style_css(children: &[JSXChild<'_>]) -> String {
-    let mut css = String::default();
-    for child in children {
-        match child {
-            JSXChild::Text(text) => css.push_str(text.value.as_str()),
-            JSXChild::ExpressionContainer(container) => match &container.expression {
-                JSXExpression::StringLiteral(string) => css.push_str(string.value.as_str()),
-                JSXExpression::TemplateLiteral(template) => {
-                    push_template_css(&mut css, template);
-                }
-                _ => {}
-            },
-            _ => {}
-        }
-    }
-    css
-}
-
-/// Append a template literal's cooked text. A `<style scoped>` body is expected
-/// to be a static template literal with no `${}` substitutions; if any are
-/// present we still emit the literal quasis so the static rules survive.
-fn push_template_css(css: &mut String, template: &oxc_ast::ast::TemplateLiteral<'_>) {
-    for quasi in &template.quasis {
-        let text = quasi
-            .value
-            .cooked
-            .as_ref()
-            .map(|cooked| cooked.as_str())
-            .unwrap_or_else(|| quasi.value.raw.as_str());
-        css.push_str(text);
-    }
 }

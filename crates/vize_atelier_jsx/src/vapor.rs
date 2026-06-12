@@ -108,6 +108,9 @@ pub(crate) fn compile_root_to_vapor(
         mode,
         component_name,
         scoped_css,
+        // The style interpolation spans are consumed by the type checker
+        // (`vize_canon`), not the Vapor scoping backend.
+        scoped_style_exprs: _,
     } = lowered;
 
     // Extract + rewrite the `<style scoped>` CSS and derive the scope id, reusing

@@ -8,7 +8,7 @@
 //! scope id are exposed on the compiled component for a bundler to emit later.
 
 use vize_atelier_jsx::{
-    DomCompileOptions, JsxLang, VaporCompileOptions, compile_to_dom, compile_to_vapor,
+    DomCompileOptions, JsxLang, VaporCompileOptions, compile_to_dom, compile_to_vapor, lower_source,
 };
 use vize_carton::{Bump, cstr};
 
@@ -195,6 +195,64 @@ fn dom_and_vapor_agree_on_scope_id() {
         d.scoped_style.unwrap().scope_id,
         v.scoped_style.unwrap().scope_id,
         "VDOM and Vapor should derive the same scope id for the same component"
+    );
+}
+
+// --- Style-block interpolation expressions (#1497) ---------------------------
+
+#[test]
+fn scoped_style_interpolations_are_recovered_with_source_spans() {
+    // A `${expr}` in the style template literal is consumed by the extractor (so
+    // it is not CSS text) but recovered on `LoweredRoot::scoped_style_exprs` with
+    // its source byte range, so the type checker can re-emit it (#1497).
+    let bump = Bump::new();
+    let src = r#"const Comp = (props: { color: string }) => (
+  <>
+    <div class="box"/>
+    <style scoped>{`.box { color: ${props.color}; border: ${props.color}; }`}</style>
+  </>
+);
+"#;
+    let out = lower_source(&bump, src, JsxLang::Tsx);
+    assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
+    let root = &out.roots[0];
+
+    // Both interpolations are captured, in source order.
+    assert_eq!(
+        root.scoped_style_exprs.len(),
+        2,
+        "expected two style interpolations: {:?}",
+        root.scoped_style_exprs
+            .iter()
+            .map(|e| e.content.as_str())
+            .collect::<std::vec::Vec<_>>()
+    );
+    for expr in &root.scoped_style_exprs {
+        assert_eq!(expr.content.as_str(), "props.color");
+        // The recorded span recovers the exact source text it points at.
+        assert_eq!(&src[expr.start as usize..expr.end as usize], "props.color");
+    }
+    // The static CSS still survives for the scoping backends; the interpolation
+    // placeholders are not part of the captured CSS text.
+    let css = root.scoped_css.as_deref().expect("scoped css");
+    assert!(css.contains("color:"), "css: {css:?}");
+    assert!(!css.contains("props.color"), "css: {css:?}");
+}
+
+#[test]
+fn static_scoped_style_has_no_interpolations() {
+    // A static `<style scoped>` (no `${}`) records no interpolation expressions.
+    let bump = Bump::new();
+    let out = lower_source(&bump, SCOPED, JsxLang::Jsx);
+    assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
+    assert!(
+        out.roots[0].scoped_style_exprs.is_empty(),
+        "static style block should expose no interpolations: {:?}",
+        out.roots[0]
+            .scoped_style_exprs
+            .iter()
+            .map(|e| e.content.as_str())
+            .collect::<std::vec::Vec<_>>()
     );
 }
 

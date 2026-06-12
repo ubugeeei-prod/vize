@@ -16,7 +16,7 @@ mod slot;
 mod style;
 mod text;
 
-pub(crate) use style::RawScopedStyle;
+pub(crate) use style::{RawScopedStyle, ScopedStyleExpr};
 
 use oxc_ast::ast::{JSXElement, JSXFragment};
 use vize_carton::{Box, Bump, String};
@@ -55,20 +55,26 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Drain the `<style scoped>` blocks accumulated while lowering the current
     /// render root, concatenating their CSS into one block (multiple `<style
     /// scoped>` elements in one component join, mirroring SFC's multi-`<style>`
-    /// behavior). Returns `None` when no scoped style was present.
-    pub(crate) fn take_scoped_styles(&mut self) -> Option<String> {
+    /// behavior) and flattening every template-literal interpolation expression
+    /// (`${expr}`) across them, in source order. Returns `None` when no scoped
+    /// style was present.
+    pub(crate) fn take_scoped_styles(
+        &mut self,
+    ) -> Option<(String, std::vec::Vec<ScopedStyleExpr>)> {
         if self.pending_styles.is_empty() {
             return None;
         }
         let styles = std::mem::take(&mut self.pending_styles);
         let mut css = String::default();
+        let mut exprs = std::vec::Vec::new();
         for (index, style) in styles.into_iter().enumerate() {
             if index > 0 {
                 css.push('\n');
             }
             css.push_str(style.css.trim());
+            exprs.extend(style.exprs);
         }
-        Some(css)
+        Some((css, exprs))
     }
 
     /// Diagnostics accumulated so far.

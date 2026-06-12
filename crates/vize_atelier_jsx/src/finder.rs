@@ -20,10 +20,10 @@ use oxc_ast_visit::{Visit, walk};
 use oxc_syntax::scope::ScopeFlags;
 use vize_carton::String;
 
-use crate::LoweredRoot;
 use crate::diagnostics::JsxDiagnostic;
-use crate::lower::Lowerer;
+use crate::lower::{Lowerer, ScopedStyleExpr};
 use crate::mode::{DirectiveKind, JsxOutputMode, classify_directive};
+use crate::{LoweredRoot, StyleExprSpan};
 
 /// Lower every outermost JSX root in `program` into a [`LoweredRoot`].
 pub(crate) fn lower_program_roots<'a>(
@@ -65,6 +65,32 @@ impl RootLowerer<'_, '_, '_, '_> {
             .iter()
             .rev()
             .find_map(|scope| scope.name.clone())
+    }
+
+    /// Drain the current root's `<style scoped>` blocks into the raw CSS (for
+    /// the scoping backends) and the public interpolation spans (for the type
+    /// checker), mapping each internal [`ScopedStyleExpr`] to a [`StyleExprSpan`].
+    fn take_scoped_style(&mut self) -> (Option<String>, std::vec::Vec<StyleExprSpan>) {
+        match self.lowerer.take_scoped_styles() {
+            None => (None, std::vec::Vec::new()),
+            Some((css, exprs)) => {
+                let spans = exprs
+                    .into_iter()
+                    .map(
+                        |ScopedStyleExpr {
+                             content,
+                             start,
+                             end,
+                         }| StyleExprSpan {
+                            content,
+                            start,
+                            end,
+                        },
+                    )
+                    .collect();
+                (Some(css), spans)
+            }
+        }
     }
 
     fn push_scope(&mut self, body: Option<&FunctionBody<'_>>, name: Option<String>) {
@@ -155,23 +181,25 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         // Lower this root and intentionally do NOT descend: nested JSX is
         // lowered as part of this root's children, not as separate roots.
         let root = self.lowerer.lower_element_root(element);
-        let scoped_css = self.lowerer.take_scoped_styles();
+        let (scoped_css, scoped_style_exprs) = self.take_scoped_style();
         self.roots.push(LoweredRoot {
             root,
             mode: self.current_mode(),
             component_name: self.current_name(),
             scoped_css,
+            scoped_style_exprs,
         });
     }
 
     fn visit_jsx_fragment(&mut self, fragment: &JSXFragment<'ast>) {
         let root = self.lowerer.lower_fragment_root(fragment);
-        let scoped_css = self.lowerer.take_scoped_styles();
+        let (scoped_css, scoped_style_exprs) = self.take_scoped_style();
         self.roots.push(LoweredRoot {
             root,
             mode: self.current_mode(),
             component_name: self.current_name(),
             scoped_css,
+            scoped_style_exprs,
         });
     }
 }

@@ -52,14 +52,22 @@
 //!   callback so the loop aliases bind with their inferred element types; and
 //!   `v-show`/`v-if` conditions, directive arg/value expressions, and event
 //!   handlers are re-emitted as plain reads.
+//! - **style-block expressions** are checked too (#1497): a `<style scoped>` JSX
+//!   block (#1495) is extracted out of the rendered children, but its
+//!   template-literal interpolations (`${expr}`, e.g. `color: ${props.color}`)
+//!   reference script values and are re-emitted through the same sink and
+//!   component scope as that root's JSX expressions, so a wrong type inside a
+//!   style interpolation is reported at the interpolation.
 //!
-//! Deferred (see issue #1497): style-block-expression checks, the stateful
-//! `defineComponent(() => () => VNode)` form, and full source-map fidelity for
-//! the synthesized wrapper scaffolding.
+//! Deferred (see issue #1497): CSS `v-bind(expr)` references inside a
+//! `<style scoped>` block (their spans live in cooked CSS text whose offsets no
+//! longer map to source bytes, so recovering them needs dedicated extraction);
+//! the stateful `defineComponent(() => () => VNode)` form; and full source-map
+//! fidelity for the synthesized wrapper scaffolding.
 
 use std::path::Path;
 
-use vize_atelier_jsx::{JsxDiagnostic, JsxLang, lower_source};
+use vize_atelier_jsx::{JsxDiagnostic, JsxLang, StyleExprSpan, lower_source};
 use vize_carton::{Bump, String as CompactString, ToCompactString, cstr};
 use vize_relief::ast::{
     ExpressionNode, RootNode, TemplateChildNode,
@@ -160,6 +168,13 @@ pub(super) fn generate_jsx_virtual_ts(
     for root in &lowered.roots {
         let mut exprs = Vec::new();
         collect_root_expressions(&root.root, &mut exprs);
+        // The `<style scoped>` block is extracted out of the rendered children
+        // (#1495), so its template-literal interpolations (`${expr}`) never reach
+        // the lowered tree above. Append them as plain reads so they type-check
+        // against the very same component scope (props, setup vars, ctx) as the
+        // root's JSX expressions, source-mapped back to their `.tsx` ranges
+        // (#1497).
+        collect_style_expressions(&root.scoped_style_exprs, &mut exprs);
         roots.push((root.root.loc.start.offset, root.root.loc.end.offset, exprs));
     }
     // Outermost roots never overlap and are produced in source order, but guard
@@ -340,6 +355,28 @@ fn push_verbatim(
 fn collect_root_expressions(root: &RootNode<'_>, out: &mut Vec<JsxEmit>) {
     for child in &root.children {
         collect_child(child, out);
+    }
+}
+
+/// Append a component's `<style scoped>` template-literal interpolations as
+/// plain reads.
+///
+/// The style block is extracted out of the rendered tree (#1495), so its
+/// `${expr}` interpolations are recovered separately on
+/// [`LoweredRoot::scoped_style_exprs`](vize_atelier_jsx::LoweredRoot). Each
+/// references script values in the component scope (`props`, setup-scope
+/// bindings, the `Ctx` context), so re-emitting it through the same sink and
+/// scope as the root's JSX expressions type-checks it, with its mapping pointing
+/// diagnostics back at the original `${…}` byte range (#1497).
+///
+/// CSS `v-bind(expr)` references are *not* handled here (see the deferral note in
+/// the module docs): they live in the cooked CSS text whose offsets no longer map
+/// to source bytes, so recovering their spans needs dedicated extraction infra.
+fn collect_style_expressions(style_exprs: &[StyleExprSpan], out: &mut Vec<JsxEmit>) {
+    for style_expr in style_exprs {
+        if let Some(expr) = jsx_expr(&style_expr.content, style_expr.start, style_expr.end) {
+            out.push(JsxEmit::Expr(expr));
+        }
     }
 }
 
@@ -741,6 +778,67 @@ mod tests {
             if_attr.code.contains("__vize_jsx_expr__(props.ok)"),
             "v-if condition not re-emitted: {}",
             if_attr.code
+        );
+    }
+
+    #[test]
+    fn reemits_style_block_interpolation_through_sink() {
+        // A `<style scoped>` template-literal interpolation references a script
+        // value (`props.color`); it is extracted out of the rendered children but
+        // re-emitted through the sink so it type-checks against the component
+        // scope, source-mapped back to its `${…}` range.
+        let source = "const Comp = (props: { color: string }) => (\n  <>\n    <div class=\"box\">hi</div>\n    <style scoped>{`.box { color: ${props.color}; }`}</style>\n  </>\n);\n";
+        let generated = generate(source);
+        assert!(
+            generated.code.contains("__vize_jsx_expr__(props.color)"),
+            "style interpolation not re-emitted: {}",
+            generated.code
+        );
+        // Output stays plain TS: no `<style>` element survives.
+        assert!(
+            !generated.code.contains("<style"),
+            "style element leaked into virtual TS: {}",
+            generated.code
+        );
+        // A mapping points the re-emitted interpolation back at its source range.
+        let src = source.find("props.color").unwrap();
+        assert!(
+            generated
+                .mappings
+                .iter()
+                .any(|mapping| mapping.src_range.start == src),
+            "no source mapping for re-emitted style interpolation: {:?}",
+            generated.mappings
+        );
+    }
+
+    #[test]
+    fn reemits_multiple_style_block_interpolations() {
+        // Every `${expr}` in the style block is re-emitted, in source order.
+        let source = "const Comp = (props: { fg: string; bg: string }) => (\n  <>\n    <div class=\"box\"/>\n    <style scoped>{`.box { color: ${props.fg}; background: ${props.bg}; }`}</style>\n  </>\n);\n";
+        let generated = generate(source);
+        assert!(
+            generated.code.contains("props.fg") && generated.code.contains("props.bg"),
+            "not all style interpolations re-emitted: {}",
+            generated.code
+        );
+    }
+
+    #[test]
+    fn static_style_block_emits_no_extra_sink_args() {
+        // A static `<style scoped>` (no `${}`) contributes no re-emitted
+        // expressions: the sink call stays empty for an otherwise-static root.
+        let source = "const Comp = () => (\n  <>\n    <div class=\"box\"/>\n    <style scoped>{`.box { color: red; }`}</style>\n  </>\n);\n";
+        let generated = generate(source);
+        assert!(
+            generated.code.contains("__vize_jsx_expr__()"),
+            "static style block should not add sink arguments: {}",
+            generated.code
+        );
+        assert!(
+            !generated.code.contains("<style"),
+            "style element leaked into virtual TS: {}",
+            generated.code
         );
     }
 
