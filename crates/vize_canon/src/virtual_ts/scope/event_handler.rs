@@ -23,7 +23,7 @@ pub(super) fn generate_event_handler_expressions(
             let content = expr.content.as_str();
             let is_implicit_reference =
                 ctx.data.has_implicit_event && is_callable_handler_reference(content);
-            let inline_callback_event_arg = inline_callback_event_argument(content);
+            let inline_callback_arg = inline_callback_event_argument(content);
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
             let guard = expr.vif_guard.as_ref().map(|guard| {
@@ -41,7 +41,28 @@ pub(super) fn generate_event_handler_expressions(
             };
 
             let gen_stmt_start = ts.len();
-            if is_implicit_reference {
+            // Component `@event` handlers carry the full emit listener type so
+            // multi-arg emits keep every parameter (#1512). Both a bare callable
+            // reference and an inline arrow/function are checked against the
+            // listener type and invoked through the typed const with the full
+            // argument spread. `__vize_args` is `Parameters<listener>` (a tuple),
+            // so the spread always targets the listener's own parameter list,
+            // verifying each parameter while avoiding TS2556.
+            if let Some(listener_type) = ctx.event_listener_type
+                && (is_implicit_reference || inline_callback_arg.is_some())
+            {
+                let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
+                append!(
+                    *ts,
+                    "{indent}const {handler_name} = ((handler: {listener_type}) => handler)(({content}));\n",
+                    indent = handler_indent,
+                );
+                append!(
+                    *ts,
+                    "{indent}{handler_name}(...__vize_args);  // handler expression\n",
+                    indent = handler_indent,
+                );
+            } else if is_implicit_reference {
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
                 append!(
                     *ts,
@@ -54,7 +75,7 @@ pub(super) fn generate_event_handler_expressions(
                     "{indent}{handler_name}($event);  // handler expression\n",
                     indent = handler_indent,
                 );
-            } else if let Some(event_arg) = inline_callback_event_arg {
+            } else if let Some(event_arg) = inline_callback_arg {
                 append!(
                     *ts,
                     "{indent}({content})({event_arg});  // handler expression\n",

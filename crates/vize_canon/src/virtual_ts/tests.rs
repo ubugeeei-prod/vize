@@ -1933,3 +1933,139 @@ export default component
         output.code
     );
 }
+
+#[test]
+fn test_component_event_listener_uses_full_emit_arg_tuple() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    // A child component emit declared as a multi-element tuple must type its
+    // parent `@event` listeners against the FULL argument tuple, not just the
+    // first element (regression test for #1512). Both a bare callable reference
+    // and an inline arrow with multiple parameters must be checked against the
+    // synthesized listener type and invoked with every argument spread into a
+    // rest parameter.
+    let script = r#"import Test from './Test.vue'
+function handleTest(value1: string, value2: number) {
+  void value1
+  void value2
+}
+"#;
+    let template = r#"<Test @test="handleTest" /><Test @test="(value1, value2) => handleTest(value1, value2)" />"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    // The listener type expands to the full emit argument tuple (and only falls
+    // back to a single `$event` when the emit stays unresolved).
+    assert!(
+        output.code.contains(
+            "type __Test_8_test_listener = unknown[] extends __Test_8_test_args ? (($event: __Test_8_test_event) => unknown) : ((...args: __Test_8_test_args) => unknown);"
+        ),
+        "component event listener must expand to the full emit argument tuple:\n{}",
+        output.code
+    );
+
+    // The closure receives every emit argument via a rest parameter typed by
+    // `Parameters<listener>`, instead of a single `$event` parameter.
+    assert!(
+        output
+            .code
+            .contains("((...__vize_args: Parameters<__Test_8_test_listener>) => {"),
+        "component event closure must receive the full listener parameter tuple:\n{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("(($event: __Test_8_test_event) => {"),
+        "component event closure must not collapse the emit tuple to a single \
+         $event parameter:\n{}",
+        output.code
+    );
+
+    // Bare callable reference: checked against the listener type and invoked
+    // with every argument spread.
+    assert!(
+        output
+            .code
+            .contains("((handler: __Test_8_test_listener) => handler)((handleTest));"),
+        "bare handler reference must be typed against the emit listener type:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("__vize_handler_8_13(...__vize_args);"),
+        "bare handler reference must be invoked with the full argument spread:\n{}",
+        output.code
+    );
+
+    // Inline multi-parameter arrow: also checked against the listener type (so
+    // its parameters are typed) and invoked through the typed const with the
+    // full argument spread, avoiding TS2556 on the fixed-arity arrow.
+    assert!(
+        output.code.contains(
+            "((handler: __Test_9_test_listener) => handler)(((value1, value2) => handleTest(value1, value2)));"
+        ),
+        "inline multi-arg arrow must be typed against the emit listener type:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("__vize_handler_9_40(...__vize_args);"),
+        "inline multi-arg arrow must be invoked with the full argument spread:\n{}",
+        output.code
+    );
+    assert!(
+        !output
+            .code
+            .contains("(value1, value2) => handleTest(value1, value2))($event)"),
+        "inline multi-arg arrow must not be invoked with only the first \
+         emit argument:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_native_event_handler_keeps_single_event_parameter() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    // Native DOM events must keep the single `$event` parameter typed by the DOM
+    // event type; the emit-tuple expansion only applies to component `@event`
+    // listeners (guards against #1512 regressing native handlers).
+    let script = r#"function handleClick(event: PointerEvent) {
+  void event
+}
+"#;
+    let template = r#"<button @click="handleClick">Click</button>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert!(
+        output.code.contains("(($event: PointerEvent) => {"),
+        "native event handler must keep the single $event parameter:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("((handler: ($event: PointerEvent) => unknown) => handler)((handleClick));"),
+        "native event handler reference must be typed by the DOM event:\n{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("...__vize_args"),
+        "native event handler must not use the emit argument tuple spread:\n{}",
+        output.code
+    );
+}

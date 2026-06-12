@@ -388,7 +388,30 @@ fn generate_scope_node(
 
                 let event_type =
                     cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
-                append!(*ts, "{indent}(($event: {event_type}) => {{\n");
+                let args_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_args");
+                let listener_type =
+                    cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
+                // Type the listener against the FULL emit argument tuple so
+                // multi-arg emits keep every parameter (#1512). When the emit
+                // signature stays unresolved (`unknown[]`, e.g. a fallthrough
+                // DOM event on a component), fall back to the single `$event`
+                // parameter so those handlers keep type-checking.
+                append!(
+                    *ts,
+                    "{indent}type {listener_type} = unknown[] extends {args_type} ? (($event: {event_type}) => unknown) : ((...args: {args_type}) => unknown);\n",
+                );
+                // Receive every listener argument via a rest parameter typed by
+                // `Parameters<listener>` (always a tuple, so the spread targets a
+                // rest parameter and avoids TS2556). `$event` stays bound to the
+                // first element for handlers/expressions that reference it.
+                append!(
+                    *ts,
+                    "{indent}((...__vize_args: Parameters<{listener_type}>) => {{\n",
+                );
+                append!(
+                    *ts,
+                    "{inner_indent}const $event = __vize_args[0] as {event_type}; void $event;\n",
+                );
 
                 profile!(
                     "canon.virtual_ts.event_handler_expressions",
@@ -400,6 +423,7 @@ fn generate_scope_node(
                             expressions_by_scope: ctx.expressions_by_scope,
                             data,
                             event_type: event_type.as_str(),
+                            event_listener_type: Some(listener_type.as_str()),
                             template_prop_names: ctx.template_prop_names,
                             template_offset: ctx.template_offset,
                             indent: &inner_indent,
@@ -407,7 +431,10 @@ fn generate_scope_node(
                     )
                 );
 
-                append!(*ts, "{indent}}})({{}} as {event_type});\n");
+                append!(
+                    *ts,
+                    "{indent}}})(...({{}} as Parameters<{listener_type}>));\n",
+                );
             } else {
                 let event_type = get_dom_event_type(data.event_name.as_str());
                 append!(*ts, "{indent}(($event: {event_type}) => {{\n");
@@ -422,6 +449,7 @@ fn generate_scope_node(
                             expressions_by_scope: ctx.expressions_by_scope,
                             data,
                             event_type,
+                            event_listener_type: None,
                             template_prop_names: ctx.template_prop_names,
                             template_offset: ctx.template_offset,
                             indent: &inner_indent,
