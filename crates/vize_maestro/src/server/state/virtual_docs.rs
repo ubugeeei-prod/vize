@@ -23,6 +23,11 @@ impl ServerState {
             return;
         }
 
+        if crate::utils::is_jsx_path(uri.path()) {
+            self.update_jsx_virtual_docs(uri, content);
+            return;
+        }
+
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: uri.path().to_string().into(),
             ..Default::default()
@@ -53,6 +58,25 @@ impl ServerState {
 
         let mut docs = VirtualDocuments::new();
         docs.template = Some(template_doc);
+        self.virtual_docs_cache.insert(uri.clone(), docs);
+    }
+
+    /// Generate and cache virtual documents for a `.jsx`/`.tsx` document.
+    ///
+    /// JSX/TSX components are not SFCs, so the only embedded-language virtual
+    /// documents they produce are the CSS blocks of any `<style scoped>` (#1495,
+    /// #1498). The type-aware features build their own per-request virtual TS
+    /// (see [`crate::ide::JsxService`]); this cache only needs to expose the
+    /// scoped CSS so the editor's CSS service gets diagnostics + source mapping,
+    /// mirroring the SFC style virtual-document path.
+    fn update_jsx_virtual_docs(&self, uri: &Url, content: &str) {
+        let styles = crate::ide::JsxScopedStyleService::virtual_css_documents(content, uri);
+        if styles.is_empty() {
+            self.remove_virtual_docs(uri);
+            return;
+        }
+        let mut docs = VirtualDocuments::new();
+        docs.styles = styles;
         self.virtual_docs_cache.insert(uri.clone(), docs);
     }
 

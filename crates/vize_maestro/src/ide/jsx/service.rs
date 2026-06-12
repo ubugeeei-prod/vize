@@ -42,15 +42,43 @@ impl JsxService {
     ///
     /// Distinct from the SFC `.script.ts`/`.setup.ts`/`.template.ts` suffixes so
     /// a JSX document never collides with an SFC virtual doc in the Corsa
-    /// session.
-    fn request_path(uri: &Url) -> vize_carton::String {
+    /// session. Shared by every type-aware JSX request (hover, completion,
+    /// definition, references, rename, diagnostics) so they all key the same
+    /// virtual document in the session cache.
+    pub(super) fn request_path(uri: &Url) -> vize_carton::String {
         cstr!("{}.jsx.ts", uri.path())
     }
 
     /// Lower the current document to its plain virtual TypeScript.
-    fn virtual_ts(ctx: &IdeContext<'_>) -> Option<JsxVirtualTs> {
+    pub(super) fn virtual_ts(ctx: &IdeContext<'_>) -> Option<JsxVirtualTs> {
         let lang = JsxLang::from_path(ctx.uri.path());
         generate_jsx_virtual_ts(&ctx.content, lang)
+    }
+
+    /// Generate the virtual TS, forward-map the editor cursor into it, and open
+    /// the (shared) virtual document on the bridge. Returns everything a
+    /// position-based request needs: the virtual TS, the opened virtual-doc URI,
+    /// and the cursor's `(line, character)` in virtual-TS coordinates.
+    ///
+    /// `None` when the bridge is missing/uninitialized, lowering fails, or the
+    /// cursor doesn't map into the virtual TS — every type-aware JSX entry point
+    /// degrades gracefully in those cases.
+    pub(super) async fn prepare_request(
+        ctx: &IdeContext<'_>,
+        bridge: &CorsaBridge,
+    ) -> Option<(JsxVirtualTs, vize_carton::String, u32, u32)> {
+        if !bridge.is_initialized() {
+            return None;
+        }
+        let virtual_ts = Self::virtual_ts(ctx)?;
+        let (line, character) =
+            source_offset_to_virtual_position(&virtual_ts.code, &virtual_ts.mappings, ctx.offset)?;
+        let request_path = Self::request_path(ctx.uri);
+        let uri = bridge
+            .open_or_update_virtual_document(&request_path, &virtual_ts.code)
+            .await
+            .ok()?;
+        Some((virtual_ts, uri, line, character))
     }
 
     /// Hover on a `.jsx`/`.tsx` component, resolved through virtual TS.
@@ -59,18 +87,7 @@ impl JsxService {
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Hover> {
         let bridge = corsa_bridge?;
-        if !bridge.is_initialized() {
-            return None;
-        }
-        let virtual_ts = Self::virtual_ts(ctx)?;
-        let (line, character) =
-            source_offset_to_virtual_position(&virtual_ts.code, &virtual_ts.mappings, ctx.offset)?;
-
-        let request_path = Self::request_path(ctx.uri);
-        let uri = bridge
-            .open_or_update_virtual_document(&request_path, &virtual_ts.code)
-            .await
-            .ok()?;
+        let (virtual_ts, uri, line, character) = Self::prepare_request(ctx, &bridge).await?;
 
         let lsp_hover = bridge.hover(&uri, line, character).await.ok()??;
         let mut hover = HoverService::convert_lsp_hover(lsp_hover);
@@ -89,18 +106,7 @@ impl JsxService {
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<CompletionResponse> {
         let bridge = corsa_bridge?;
-        if !bridge.is_initialized() {
-            return None;
-        }
-        let virtual_ts = Self::virtual_ts(ctx)?;
-        let (line, character) =
-            source_offset_to_virtual_position(&virtual_ts.code, &virtual_ts.mappings, ctx.offset)?;
-
-        let request_path = Self::request_path(ctx.uri);
-        let uri = bridge
-            .open_or_update_virtual_document(&request_path, &virtual_ts.code)
-            .await
-            .ok()?;
+        let (_virtual_ts, uri, line, character) = Self::prepare_request(ctx, &bridge).await?;
 
         let items = bridge.completion(&uri, line, character).await.ok()?;
         if items.is_empty() {
@@ -120,18 +126,8 @@ impl JsxService {
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
         let bridge = corsa_bridge?;
-        if !bridge.is_initialized() {
-            return None;
-        }
-        let virtual_ts = Self::virtual_ts(ctx)?;
-        let (line, character) =
-            source_offset_to_virtual_position(&virtual_ts.code, &virtual_ts.mappings, ctx.offset)?;
-
-        let request_path = Self::request_path(ctx.uri);
-        let request_uri = bridge
-            .open_or_update_virtual_document(&request_path, &virtual_ts.code)
-            .await
-            .ok()?;
+        let (virtual_ts, request_uri, line, character) =
+            Self::prepare_request(ctx, &bridge).await?;
 
         let locations = bridge
             .definition(&request_uri, line, character)
@@ -236,7 +232,7 @@ impl JsxService {
     /// Locations pointing at this document's own virtual TS are remapped to the
     /// original `.jsx`/`.tsx` source range; locations in real project files
     /// (e.g. a `node_modules` `.d.ts`) pass through unchanged.
-    fn map_location(
+    pub(super) fn map_location(
         ctx: &IdeContext<'_>,
         virtual_ts: &JsxVirtualTs,
         request_uri: &str,
@@ -280,7 +276,11 @@ impl JsxService {
     }
 
     /// Map an LSP range in virtual-TS coordinates back to the source document.
-    fn map_virtual_range(virtual_ts: &JsxVirtualTs, source: &str, range: Range) -> Option<Range> {
+    pub(super) fn map_virtual_range(
+        virtual_ts: &JsxVirtualTs,
+        source: &str,
+        range: Range,
+    ) -> Option<Range> {
         let (start_line, end_line, start_char, end_char) = virtual_range_to_source(
             &virtual_ts.code,
             source,
@@ -305,7 +305,7 @@ impl JsxService {
     /// Compare a Corsa-returned URI against the virtual-document URI we opened.
     /// Corsa may echo the URI in `file://` form while the request path is a
     /// bare filesystem path, so compare on the path component.
-    fn same_uri(candidate: &str, request_uri: &str) -> bool {
+    pub(super) fn same_uri(candidate: &str, request_uri: &str) -> bool {
         if candidate == request_uri {
             return true;
         }

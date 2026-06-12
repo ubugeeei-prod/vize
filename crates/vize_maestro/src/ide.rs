@@ -47,8 +47,12 @@ pub use document_link::DocumentLinkService;
 pub use file_rename::FileRenameService;
 pub use hover::{HoverBuilder, HoverService};
 pub use inlay_hint::InlayHintService;
+pub use jsx::{
+    JsxCodeActionService, JsxDocumentSymbolsService, JsxScopedStyleService,
+    JsxSemanticTokensService,
+};
 #[cfg(feature = "native")]
-pub use jsx::JsxService;
+pub use jsx::{JsxReferencesService, JsxRenameService, JsxService};
 pub use references::ReferencesService;
 pub use rename::RenameService;
 pub use semantic_tokens::{SemanticTokensService, TokenModifier, TokenType};

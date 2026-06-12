@@ -15,8 +15,33 @@
 mod position;
 pub mod virtual_ts;
 
+// Structural (parse-based) JSX/TSX LSP providers. These need no Corsa bridge —
+// like their SFC counterparts they answer from the parsed/lowered document —
+// so they are available regardless of the `native` feature and are NOT gated on
+// `typeChecker.jsxTypecheck`.
+mod code_action;
+mod document_symbols;
+mod scoped_style;
+mod semantic_tokens;
+
+pub use code_action::JsxCodeActionService;
+pub use document_symbols::JsxDocumentSymbolsService;
+pub use scoped_style::JsxScopedStyleService;
+pub use semantic_tokens::JsxSemanticTokensService;
+
+// Type-aware JSX/TSX LSP providers over the Corsa bridge. Gated on `native`
+// (the bridge is a native-only feature) and reached only when
+// `typeChecker.jsxTypecheck` is enabled.
+#[cfg(feature = "native")]
+mod references;
+#[cfg(feature = "native")]
+mod rename;
 #[cfg(feature = "native")]
 mod service;
 
+#[cfg(feature = "native")]
+pub use references::JsxReferencesService;
+#[cfg(feature = "native")]
+pub use rename::JsxRenameService;
 #[cfg(feature = "native")]
 pub use service::JsxService;

@@ -59,10 +59,28 @@ pub(in crate::ide) struct JsxVirtualTs {
 
 /// A dynamic JSX expression recovered from the lowered tree: its original
 /// source text plus the byte range it occupied in the `.jsx`/`.tsx` source.
-struct JsxExpr {
-    content: String,
-    start: u32,
-    end: u32,
+pub(in crate::ide) struct JsxExpr {
+    pub(in crate::ide) content: String,
+    pub(in crate::ide) start: u32,
+    pub(in crate::ide) end: u32,
+}
+
+/// Collect every dynamic (non-static) JSX expression in `source` with its
+/// original source byte range, in source order.
+///
+/// Shares the exact lowering + expression walk that builds the virtual TS, so
+/// callers (e.g. semantic tokens) see the same set of expressions, at the same
+/// spans, that the type-aware features re-emit. Returns the expressions across
+/// all render roots flattened into one list.
+pub(in crate::ide) fn collect_jsx_expressions(source: &str, lang: JsxLang) -> Vec<JsxExpr> {
+    let bump = Bump::new();
+    let lowered = lower_source(&bump, source, lang);
+    let mut exprs = Vec::new();
+    for root in &lowered.roots {
+        collect_root_expressions(&root.root, &mut exprs);
+    }
+    exprs.sort_by_key(|expr| expr.start);
+    exprs
 }
 
 /// Lower a `.jsx`/`.tsx` Vize component to plain virtual TypeScript.

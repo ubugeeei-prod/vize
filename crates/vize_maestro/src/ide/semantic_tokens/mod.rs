@@ -19,12 +19,20 @@ mod tests;
 
 pub use types::{TokenModifier, TokenType};
 
+// Re-exported for the JSX/TSX semantic-tokens path (#1498), which tokenizes
+// each re-emitted JSX expression directly in source coordinates using the same
+// JS/TS expression tokenizer + delta encoder the SFC template path uses.
+pub(crate) use encoding::encode_tokens as encode_semantic_tokens;
+pub(crate) use expressions::tokenize_expression;
+// `AbsoluteToken` is also used locally below; the `pub(crate) use` both brings
+// it into this module's scope and re-exports it for the JSX path.
+pub(crate) use types::AbsoluteToken;
+
 use tower_lsp::lsp_types::{
     Range, SemanticTokens, SemanticTokensRangeResult, SemanticTokensResult,
 };
 
 use encoding::{LineIndex, encode_tokens};
-use types::AbsoluteToken;
 
 /// Semantic tokens service.
 pub struct SemanticTokensService;
