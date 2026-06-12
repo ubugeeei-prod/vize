@@ -367,30 +367,77 @@ fn plain_element_children_form_implicit_default_slot() {
 }
 
 // ---------------------------------------------------------------------------
-// Category: DEFERRED — see PARITY_INVENTORY.md.
+// Category: v-model modifier forms (babel-plugin-jsx parity — #1489/#1491).
 //
-// These are reference @vue/babel-plugin-jsx behaviors Vize does not yet handle
-// correctly; they are ignored (never red) and tracked in the inventory.
+// JSX attribute names cannot contain `.`, so @vue/babel-plugin-jsx expresses
+// v-model modifiers two ways: an array value `{[val, ['trim']]}` and an
+// underscore-suffixed name `v-model_lazy`. Both lower to a `model` directive
+// with `modelModifiers` + a single clean `onUpdate:modelValue` handler.
 // ---------------------------------------------------------------------------
 
 #[test]
-#[ignore = "deferred: v-model modifier-array form `{[val, ['trim']]}` lowers to a malformed nested $event chain; tracked in PARITY_INVENTORY.md / #1491"]
-fn v_model_with_modifier_array_is_not_yet_supported() {
+fn v_model_modifier_array_attaches_model_modifiers() {
     let code = dom("const A = () => <input v-model={[val, ['trim']]}/>;");
-    // Reference babel-jsx attaches `.trim` as a model modifier; Vize currently
-    // emits `$event => ($event => (...))`. When fixed, assert a single clean
-    // update handler + a `modelModifiers` entry here.
+    // No malformed nested handler, no leftover array as the bound expression.
     assert!(!code.contains("$event => ($event =>"), "{code}");
+    assert!(!code.contains("[val, ['trim']]"), "{code}");
+    // Single clean update handler bound to the model expression.
+    assert!(
+        code.contains("\"onUpdate:modelValue\": $event => ((val) = $event)"),
+        "{code}"
+    );
+    // `.trim` lands as a model modifier on the v-model directive entry.
+    assert!(code.contains("{ trim: true }"), "{code}");
 }
 
 #[test]
-#[ignore = "deferred: babel-jsx `v-model_lazy` suffix-modifier form resolves as a custom directive instead of a lazy model modifier; tracked in PARITY_INVENTORY.md / #1491"]
-fn v_model_underscore_suffix_modifier_is_not_yet_supported() {
+fn v_model_modifier_array_single_element_has_no_modifiers() {
+    // `{[val]}` is just the bound expression with no modifiers/arg.
+    let code = dom("const A = () => <input v-model={[val]}/>;");
+    assert!(!code.contains("$event => ($event =>"), "{code}");
+    assert!(
+        code.contains("\"onUpdate:modelValue\": $event => ((val) = $event)"),
+        "{code}"
+    );
+    assert!(code.contains("[_vModelText, val]"), "{code}");
+}
+
+#[test]
+fn v_model_modifier_array_with_component_arg_and_modifiers() {
+    // `{[val, 'foo', ['trim']]}` — arg `foo` + `.trim` on a component v-model.
+    let code = dom("const A = () => <Comp v-model={[val, 'foo', ['trim']]}/>;");
+    assert!(!code.contains("$event => ($event =>"), "{code}");
+    assert!(code.contains("foo: val"), "{code}");
+    assert!(
+        code.contains("\"onUpdate:foo\": $event => ((val) = $event)"),
+        "{code}"
+    );
+    assert!(code.contains("fooModifiers: { trim: true }"), "{code}");
+}
+
+#[test]
+fn v_model_underscore_suffix_attaches_lazy_modifier() {
     let code = dom("const A = () => <input v-model_lazy={val}/>;");
-    // Reference treats the `_lazy` suffix as a v-model modifier; Vize resolves a
-    // `model_lazy` custom directive. When fixed, assert `lazy: true` modifier.
+    // No bogus custom directive resolution for the `_lazy` suffix.
     assert!(
         !code.contains("_resolveDirective(\"model_lazy\")"),
         "{code}"
     );
+    assert!(!code.contains("_directive_model_lazy"), "{code}");
+    assert!(
+        code.contains("\"onUpdate:modelValue\": $event => ((val) = $event)"),
+        "{code}"
+    );
+    assert!(code.contains("{ lazy: true }"), "{code}");
+}
+
+#[test]
+fn v_model_underscore_suffix_chains_multiple_modifiers() {
+    let code = dom("const A = () => <input v-model_number_lazy={val}/>;");
+    assert!(
+        !code.contains("_resolveDirective(\"model_number_lazy\")"),
+        "{code}"
+    );
+    assert!(code.contains("number: true"), "{code}");
+    assert!(code.contains("lazy: true"), "{code}");
 }

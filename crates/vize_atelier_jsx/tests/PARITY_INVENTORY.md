@@ -59,6 +59,9 @@ fine-grained lowering coverage; this inventory tracks the **parity** layer.
 |                  | `v-model` on checkbox → `vModelCheckbox`                                             |      ✅       |       |     |
 |                  | `v-model` on component → `modelValue` prop                                           |      ✅       |  ✅   |     |
 |                  | `v-model:foo` named arg → `foo` + `onUpdate:foo`                                     |      ✅       |       |     |
+|                  | `v-model={[val, ['trim']]}` modifier-array → `modelModifiers` `{ trim: true }`       |      ✅       |       |     |
+|                  | `v-model={[val, 'foo', ['trim']]}` array arg+modifiers → `fooModifiers`              |      ✅       |       |     |
+|                  | `v-model_lazy` / `v-model_number_lazy` suffix → v-model modifiers                    |      ✅       |       |     |
 |                  | `v-show` → `vShow` / `applyVShow`                                                    |      ✅       |  ✅   |     |
 |                  | `v-html` → `innerHTML` prop                                                          |      ✅       |       |     |
 |                  | `v-text` → `textContent` prop                                                        |      ✅       |       |     |
@@ -86,10 +89,15 @@ fine-grained lowering coverage; this inventory tracks the **parity** layer.
 
 Tracked as `#[ignore = "deferred: …"]` in `tests/parity_vdom.rs`:
 
-| Case                                              | Reason                                                                                                                                                     | Tracking               |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `v-model` modifier-array form `{[val, ['trim']]}` | Lowers to a malformed nested `$event => ($event => …)` chain instead of attaching `.trim` as a model modifier.                                             | this inventory / #1491 |
-| `v-model_lazy` suffix-modifier form               | babel-jsx's `v-model_lazy` / `v-model_number` underscore-suffix syntax resolves as a `model_lazy` **custom directive** instead of a lazy v-model modifier. | this inventory / #1491 |
+| Case | Reason | Tracking |
+| ---- | ------ | -------- |
+| _(none currently)_ | | |
+
+> Resolved in #1489: the `v-model` modifier-array form `{[val, ['trim']]}` and
+> the `v-model_lazy` / `v-model_number_lazy` underscore-suffix form now lower to
+> a `model` directive with `modelModifiers` + a single clean
+> `onUpdate:modelValue` handler (see the `v_model_modifier_array_*` /
+> `v_model_underscore_suffix_*` tests in `parity_vdom.rs`).
 
 ### Type-level / resolve-type parity — deferred
 

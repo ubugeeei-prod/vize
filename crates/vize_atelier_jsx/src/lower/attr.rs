@@ -10,7 +10,8 @@
 //! - `v-x` / `v-x:arg` -> [`DirectiveNode`] named `x`
 
 use oxc_ast::ast::{
-    JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXSpreadAttribute,
+    ArrayExpressionElement, Expression, JSXAttribute, JSXAttributeItem, JSXAttributeName,
+    JSXAttributeValue, JSXSpreadAttribute,
 };
 use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, String, Vec};
@@ -161,25 +162,136 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         attr: &JSXAttribute<'_>,
         loc: &SourceLocation,
     ) -> Option<PropNode<'a>> {
-        let (directive_name, arg) = match &attr.name {
+        let (raw_name, arg) = match &attr.name {
             JSXAttributeName::NamespacedName(named) => {
-                let directive_name = named.namespace.name.as_str().strip_prefix("v-")?;
+                let raw_name = named.namespace.name.as_str().strip_prefix("v-")?;
                 (
-                    directive_name,
+                    raw_name,
                     Some((named.name.name.as_str(), named.name.span())),
                 )
             }
             JSXAttributeName::Identifier(id) => {
-                let directive_name = id.name.as_str().strip_prefix("v-")?;
-                (directive_name, None)
+                let raw_name = id.name.as_str().strip_prefix("v-")?;
+                (raw_name, None)
             }
         };
 
-        let mut directive = DirectiveNode::new(self.bump(), directive_name, loc.clone());
+        // `v-model_lazy` / `v-model_number_lazy` — babel-plugin-jsx encodes
+        // v-model modifiers as `_<mod>` name suffixes (JSX attribute names cannot
+        // contain `.`). Strip the suffixes and lower as a `model` directive with
+        // those modifiers, NOT a `model_lazy` custom directive.
+        if let Some((directive_name, suffix_mods)) = split_underscore_model_modifiers(raw_name) {
+            let mut directive = DirectiveNode::new(self.bump(), directive_name, loc.clone());
+            if let Some((arg_name, arg_span)) = arg {
+                directive.arg = Some(self.static_expr(arg_name, arg_span));
+            }
+            directive.exp = self.directive_value_expr(attr.value.as_ref());
+            for modifier in suffix_mods {
+                directive
+                    .modifiers
+                    .push(SimpleExpressionNode::new(modifier, false, loc.clone()));
+            }
+            return Some(PropNode::Directive(Box::new_in(directive, self.bump())));
+        }
+
+        // `v-model={[value, ['trim']]}` — babel-plugin-jsx encodes the model
+        // expression, an optional string arg (component prop name), and a
+        // trailing modifiers array as an array literal. Destructure it instead of
+        // treating the whole array as the bound expression (which produced a
+        // malformed `$event => ($event => (...))` chain).
+        if raw_name == "model"
+            && arg.is_none()
+            && let Some(array) = self.model_array_value(attr.value.as_ref())
+            && let Some(prop) = self.lower_model_array(array, loc)
+        {
+            return Some(prop);
+        }
+
+        let mut directive = DirectiveNode::new(self.bump(), raw_name, loc.clone());
         if let Some((arg_name, arg_span)) = arg {
             directive.arg = Some(self.static_expr(arg_name, arg_span));
         }
         directive.exp = self.directive_value_expr(attr.value.as_ref());
+        Some(PropNode::Directive(Box::new_in(directive, self.bump())))
+    }
+
+    /// The `[value, ...]` array literal backing a `v-model={[...]}` attribute,
+    /// or `None` when the value is not an array-literal expression container.
+    fn model_array_value<'e>(
+        &self,
+        value: Option<&'e JSXAttributeValue<'e>>,
+    ) -> Option<&'e oxc_ast::ast::ArrayExpression<'e>> {
+        let JSXAttributeValue::ExpressionContainer(container) = value? else {
+            return None;
+        };
+        match &container.expression {
+            oxc_ast::ast::JSXExpression::ArrayExpression(array) => Some(array),
+            _ => None,
+        }
+    }
+
+    /// Lower a `v-model={[value, argString?, modifiersArray?]}` array into a
+    /// `model` directive. Layout (per babel-plugin-jsx):
+    ///   - element 0: the model expression (required)  -> `exp`
+    ///   - a trailing array-literal element: modifiers  -> `directive.modifiers`
+    ///   - an intermediate string-literal element: arg  -> `directive.arg`
+    ///
+    /// Returns `None` (fall back to default handling) for shapes we cannot
+    /// confidently destructure (e.g. empty array, spread/hole elements).
+    fn lower_model_array(
+        &self,
+        array: &oxc_ast::ast::ArrayExpression<'_>,
+        loc: &SourceLocation,
+    ) -> Option<PropNode<'a>> {
+        // Collect the plain (non-hole, non-spread) expression elements.
+        let mut elems: std::vec::Vec<&Expression<'_>> = std::vec::Vec::new();
+        for element in &array.elements {
+            match element {
+                ArrayExpressionElement::SpreadElement(_) | ArrayExpressionElement::Elision(_) => {
+                    return None;
+                }
+                _ => match element.as_expression() {
+                    Some(expr) => elems.push(expr),
+                    None => return None,
+                },
+            }
+        }
+
+        let value_expr = *elems.first()?;
+
+        // A trailing array-literal element is the modifiers list. Its index marks
+        // the boundary so a middle string element can be recognized as the arg.
+        let modifiers_idx = match elems.last() {
+            Some(Expression::ArrayExpression(_)) if elems.len() >= 2 => Some(elems.len() - 1),
+            _ => None,
+        };
+
+        let mut directive = DirectiveNode::new(self.bump(), "model", loc.clone());
+        directive.exp = Some(self.dyn_expr(value_expr.span()));
+
+        // An intermediate string-literal element (index 1, before any modifiers
+        // array) is the arg: the bound prop name for component v-model.
+        if let Some(Expression::StringLiteral(s)) = elems.get(1).copied()
+            && modifiers_idx != Some(1)
+        {
+            directive.arg = Some(self.static_expr(s.value.as_str(), s.span));
+        }
+
+        if let Some(idx) = modifiers_idx
+            && let Expression::ArrayExpression(modifiers) = elems[idx]
+        {
+            for element in &modifiers.elements {
+                let Some(Expression::StringLiteral(s)) = element.as_expression() else {
+                    continue;
+                };
+                directive.modifiers.push(SimpleExpressionNode::new(
+                    s.value.as_str(),
+                    false,
+                    loc.clone(),
+                ));
+            }
+        }
+
         Some(PropNode::Directive(Box::new_in(directive, self.bump())))
     }
 
@@ -246,6 +358,28 @@ fn split_on_event_modifiers(name: &str) -> Option<(String, std::vec::Vec<&str>)>
     lowered.push(first.to_ascii_lowercase());
     lowered.push_str(chars.as_str());
     Some((lowered, mods))
+}
+
+/// Split a babel-plugin-jsx `v-model_<mod>(_<mod>)*` attribute name (already
+/// stripped of its `v-` prefix) into `("model", [modifiers...])`.
+///
+/// JSX attribute names cannot contain `.`, so babel-plugin-jsx encodes v-model
+/// modifiers as `_`-joined suffixes: `model_lazy`, `model_number_lazy`. The
+/// recognized standard modifiers are `lazy` / `trim` / `number`; any further
+/// `_`-separated segments are passed through verbatim (custom modifiers).
+///
+/// Returns `None` for names that are not `model` with at least one suffix (so
+/// bare `model` and unrelated directives keep their default behavior).
+fn split_underscore_model_modifiers(name: &str) -> Option<(&'static str, std::vec::Vec<&str>)> {
+    let rest = name.strip_prefix("model_")?;
+    if rest.is_empty() {
+        return None;
+    }
+    let mods: std::vec::Vec<&str> = rest.split('_').filter(|s| !s.is_empty()).collect();
+    if mods.is_empty() {
+        return None;
+    }
+    Some(("model", mods))
 }
 
 fn attr_full_name(name: &JSXAttributeName<'_>) -> String {
