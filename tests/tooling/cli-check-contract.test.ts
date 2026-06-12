@@ -102,9 +102,10 @@ test("vize check exits 0 when explicit inputs match no supported files", () => {
   withWorkspace((dir) => {
     const result = runCheck(["does-not-exist.vue"], dir);
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-    assert.match(
-      `${result.stdout}${result.stderr}`,
-      /No Vue, TypeScript, or JSX files found matching inputs/,
+    assert.equal(result.stdout, "");
+    assert.equal(
+      result.stderr,
+      'No Vue, TypeScript, or JSX files found matching inputs: ["does-not-exist.vue"]\n',
     );
   });
 });
@@ -113,9 +114,7 @@ test("vize check exits 0 in an empty project with no inputs", () => {
   withWorkspace((dir) => {
     const result = runCheck([], dir);
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-    assert.match(
-      `${result.stdout}${result.stderr}`,
-      /No Vue, TypeScript, or JSX files found matching inputs/,
-    );
+    assert.equal(result.stdout, "");
+    assert.equal(result.stderr, "No Vue, TypeScript, or JSX files found matching inputs: []\n");
   });
 });

@@ -118,10 +118,9 @@ test("no-match text run prints the notice to stderr, leaves stdout empty, exits 
     // The diagnostic stream separation is the load-bearing property here:
     // nothing on stdout, the human notice on stderr.
     assert.equal(result.stdout.trim(), "");
-    assert.match(result.stderr, /No Vue, TypeScript, or JSX files found matching inputs/);
-    assert.ok(
-      result.stderr.includes("zzz.vue"),
-      `stderr should name the pattern: ${result.stderr}`,
+    assert.equal(
+      result.stderr,
+      'No Vue, TypeScript, or JSX files found matching inputs: ["zzz.vue"]\n',
     );
   });
 });
