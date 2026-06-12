@@ -21,14 +21,20 @@
 //! buffer, so the generated `code` string is byte-identical whether or not the
 //! `source_map` flag is enabled. The map is only assembled when the flag is on.
 //!
-//! Coverage starts with the highest-value anchors — dynamic expressions
-//! (identifiers, member expressions, event handlers, directive expressions) and
-//! element tag names. Mapping fidelity can be widened incrementally; see the
+//! Coverage spans the highest-value anchors — dynamic expressions (identifiers,
+//! member expressions, event handlers, directive expressions), element tag
+//! names, static attribute names and values, text/comment content, and
+//! object-literal prop keys. Identifier-shaped anchors that carry a known source
+//! symbol (a prop key, a static attribute name) additionally populate the v3
+//! [`names`] array and the per-segment name index, so a consumer can recover the
+//! original symbol. Mapping fidelity can still be widened incrementally; see the
 //! crate-level codegen docs and the `#1533` tracking issue.
 //!
 //! [Source Map v3]: https://tc39.es/ecma426/
+//! [`names`]: https://tc39.es/ecma426/#json-names
 //! [VLQ]: https://en.wikipedia.org/wiki/Variable-length_quantity
 
+use vize_carton::FxHashMap;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
@@ -37,11 +43,15 @@ use vize_carton::ToCompactString;
 /// `generated_offset` is a byte offset into the code buffer captured at the
 /// moment the mapped token was about to be written; `source_offset` is the byte
 /// offset of the originating node in the original template source. Both are
-/// resolved to (line, column) at [`SourceMapBuilder::finish`].
+/// resolved to (line, column) at [`SourceMapBuilder::finish`]. `name` is an
+/// index into the builder's `names` table when the anchor carries a known
+/// source symbol (a prop key, a static attribute name), or `None` for anonymous
+/// anchors; it becomes the optional 5th VLQ field of the segment.
 #[derive(Debug, Clone, Copy)]
 struct Segment {
     generated_offset: u32,
     source_offset: u32,
+    name: Option<u32>,
 }
 
 /// Accumulates source-map segments during codegen and serializes a v3 map.
@@ -51,6 +61,12 @@ struct Segment {
 #[derive(Debug, Default)]
 pub(crate) struct SourceMapBuilder {
     segments: Vec<Segment>,
+    /// The v3 `names` array, in insertion order. A segment's `name` is an index
+    /// into this vector.
+    names: Vec<String>,
+    /// Interns symbol names to their index in `names`, so repeated symbols
+    /// (e.g. an `id` attribute on many elements) share one `names` entry.
+    name_index: FxHashMap<String, u32>,
 }
 
 impl SourceMapBuilder {
@@ -58,6 +74,8 @@ impl SourceMapBuilder {
     pub(crate) fn new() -> Self {
         Self {
             segments: Vec::new(),
+            names: Vec::new(),
+            name_index: FxHashMap::default(),
         }
     }
 
@@ -71,7 +89,35 @@ impl SourceMapBuilder {
         self.segments.push(Segment {
             generated_offset: generated_offset as u32,
             source_offset,
+            name: None,
         });
+    }
+
+    /// Record a mapping that additionally carries a known source symbol `name`.
+    ///
+    /// The name is interned into the v3 `names` array (deduplicated across the
+    /// whole map) and the segment references it by index, so a consumer can map
+    /// the generated token back to the original identifier. Otherwise identical
+    /// to [`add_raw`](Self::add_raw): call it immediately before writing the
+    /// mapped token.
+    pub(crate) fn add_named(&mut self, generated_offset: usize, source_offset: u32, name: &str) {
+        let index = self.intern_name(name);
+        self.segments.push(Segment {
+            generated_offset: generated_offset as u32,
+            source_offset,
+            name: Some(index),
+        });
+    }
+
+    /// Return the `names`-array index for `name`, inserting it if new.
+    fn intern_name(&mut self, name: &str) -> u32 {
+        if let Some(&index) = self.name_index.get(name) {
+            return index;
+        }
+        let index = self.names.len() as u32;
+        self.names.push(name.to_compact_string());
+        self.name_index.insert(name.to_compact_string(), index);
+        index
     }
 
     /// Serialize the accumulated segments into a Source Map v3 JSON string.
@@ -86,7 +132,9 @@ impl SourceMapBuilder {
     /// Each segment encodes 4 fields: generated column delta, source index
     /// delta, source line delta, source column delta (all relative to the
     /// previous segment, with source index/line/column relative across the whole
-    /// document and generated column reset per line).
+    /// document and generated column reset per line). Segments that carry a
+    /// source symbol add a 5th field: the name-index delta (relative to the
+    /// previous named segment across the whole document).
     pub(crate) fn finish(
         mut self,
         generated_code: &str,
@@ -102,14 +150,16 @@ impl SourceMapBuilder {
         let resolved = resolve_positions(generated_code, source_content, &self.segments);
         let mappings = encode_mappings(&resolved);
 
-        // Use serde_json to build the document so `filename`/source content are
-        // correctly JSON-escaped (quotes, control chars, unicode).
+        // Use serde_json to build the document so `filename`/source content and
+        // the `names` entries are correctly JSON-escaped (quotes, control chars,
+        // unicode).
+        let names: std::vec::Vec<&str> = self.names.iter().map(String::as_str).collect();
         let doc = serde_json::json!({
             "version": 3,
             "file": filename,
             "sources": [filename],
             "sourcesContent": [source_content],
-            "names": [],
+            "names": names,
             "mappings": mappings.as_str(),
         });
 
@@ -128,6 +178,9 @@ struct ResolvedSegment {
     generated_column: u32,
     source_line: u32,
     source_column: u32,
+    /// Index into the v3 `names` array when this anchor carries a known source
+    /// symbol, carried through unchanged from the recorded segment.
+    name: Option<u32>,
 }
 
 /// Resolve every segment's generated and source byte offsets to 0-indexed
@@ -173,6 +226,7 @@ fn resolve_positions(code: &str, source: &str, segments: &[Segment]) -> Vec<Reso
             generated_column,
             source_line,
             source_column,
+            name: seg.name,
         });
     }
 
@@ -220,9 +274,11 @@ fn utf16_len(s: &str) -> u32 {
 ///
 /// Lines are separated by `;`; segments within a line by `,`. Each segment is 4
 /// VLQ-encoded deltas: generated column, source index, source line, source
-/// column. Generated column is relative to the previous segment on the same
-/// line (reset to absolute at each new line); the other three are relative to
-/// the previous segment across the whole document.
+/// column — plus an optional 5th, the name index, present only for segments
+/// that carry a source symbol. Generated column is relative to the previous
+/// segment on the same line (reset to absolute at each new line); the other
+/// fields (source index/line/column and the name index) are relative to the
+/// previous segment that emitted them, across the whole document.
 fn encode_mappings(segments: &[ResolvedSegment]) -> String {
     let mut out = String::with_capacity(segments.len() * 6);
 
@@ -231,6 +287,7 @@ fn encode_mappings(segments: &[ResolvedSegment]) -> String {
     let mut prev_source_index = 0i64;
     let mut prev_source_line = 0i64;
     let mut prev_source_column = 0i64;
+    let mut prev_name_index = 0i64;
     let mut first_in_line = true;
 
     for seg in segments {
@@ -258,6 +315,15 @@ fn encode_mappings(segments: &[ResolvedSegment]) -> String {
         encode_vlq(&mut out, src_index - prev_source_index);
         encode_vlq(&mut out, src_line - prev_source_line);
         encode_vlq(&mut out, src_col - prev_source_column);
+
+        // The v3 name index is the optional 5th field. It is delta-encoded
+        // against the previous *named* segment (the running accumulator only
+        // advances when a name is present), matching how consumers decode it.
+        if let Some(name) = seg.name {
+            let name_index = name as i64;
+            encode_vlq(&mut out, name_index - prev_name_index);
+            prev_name_index = name_index;
+        }
 
         prev_generated_column = gen_col;
         prev_source_index = src_index;
@@ -371,10 +437,12 @@ mod tests {
             Segment {
                 generated_offset: 9,
                 source_offset: 0,
+                name: None,
             },
             Segment {
                 generated_offset: 12,
                 source_offset: 0,
+                name: None,
             },
         ];
         let resolved = resolve_positions(code, "", &segs);
@@ -419,5 +487,50 @@ mod tests {
         let (src_line, c3) = decode_vlq(&mappings.as_bytes()[c1 + c2..]);
         let (src_col, _) = decode_vlq(&mappings.as_bytes()[c1 + c2 + c3..]);
         assert_eq!((gen_col, src_idx, src_line, src_col), (0, 0, 0, 8));
+    }
+
+    #[test]
+    fn named_segment_populates_names_and_fifth_field() {
+        let mut b = SourceMapBuilder::new();
+        // Generated prop key `id` at offset 0; source `id` at byte offset 5.
+        b.add_named(0, 5, "id");
+        let code = "id: \"app\"";
+        let json = b.finish(code, "Foo.vue", r#"<div id="app">"#);
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+
+        // The symbol is recorded in `names`.
+        assert_eq!(parsed["names"][0], "id");
+
+        // The single segment carries all 5 VLQ fields, the last being the
+        // name-index delta (0, i.e. the first `names` entry).
+        let mappings = parsed["mappings"].as_str().unwrap();
+        let bytes = mappings.as_bytes();
+        let (gen_col, c1) = decode_vlq(bytes);
+        let (src_idx, c2) = decode_vlq(&bytes[c1..]);
+        let (src_line, c3) = decode_vlq(&bytes[c1 + c2..]);
+        let (src_col, c4) = decode_vlq(&bytes[c1 + c2 + c3..]);
+        let consumed = c1 + c2 + c3 + c4;
+        assert!(consumed < bytes.len(), "a 5th VLQ field must be present");
+        let (name_idx, c5) = decode_vlq(&bytes[consumed..]);
+        assert_eq!(
+            (gen_col, src_idx, src_line, src_col, name_idx),
+            (0, 0, 0, 5, 0)
+        );
+        assert_eq!(consumed + c5, bytes.len(), "no trailing bytes after name");
+    }
+
+    #[test]
+    fn intern_name_deduplicates() {
+        let mut b = SourceMapBuilder::new();
+        // Same symbol on two anchors interns to one `names` entry.
+        b.add_named(0, 0, "id");
+        b.add_named(10, 4, "id");
+        b.add_named(20, 8, "class");
+        let json = b.finish("0123456789012345678901234", "Foo.vue", "");
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+        let names = parsed["names"].as_array().unwrap();
+        assert_eq!(names.len(), 2, "`id` should be deduplicated");
+        assert_eq!(names[0], "id");
+        assert_eq!(names[1], "class");
     }
 }

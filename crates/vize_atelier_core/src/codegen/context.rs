@@ -178,6 +178,22 @@ impl CodegenContext {
         }
     }
 
+    /// Record a source-map segment that also carries a known source symbol
+    /// `name` (a prop key, a static attribute name).
+    ///
+    /// Behaves like [`record_mapping`](Self::record_mapping) but additionally
+    /// interns `name` into the map's v3 `names` array and references it from the
+    /// segment, so a consumer can recover the original identifier. No-op (and no
+    /// `names` growth) unless the `source_map` flag is on, keeping the generated
+    /// `code` byte-identical either way.
+    #[inline]
+    pub(super) fn record_mapping_named(&mut self, loc: &Position, name: &str) {
+        if let Some(builder) = self.map_builder.as_mut() {
+            let generated_offset = self.code.len();
+            builder.add_named(generated_offset, loc.offset, name);
+        }
+    }
+
     /// Take the source-map builder out of the context, if any.
     ///
     /// Consumed at the end of the pipeline to serialize the map once the full

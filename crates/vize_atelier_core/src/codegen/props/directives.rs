@@ -276,6 +276,10 @@ fn generate_vbind_prop(
             if needs_quotes {
                 ctx.push("\"");
             }
+            // Anchor the generated prop key back to the v-bind argument in
+            // source, recording the original (untransformed) symbol so it lands
+            // in the v3 `names` array. No-op without `source_map`.
+            ctx.record_mapping_named(&exp.loc.start, &exp.content);
             ctx.push(&transformed_key);
             if needs_quotes {
                 ctx.push("\"");
@@ -450,6 +454,10 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
             if needs_quotes {
                 ctx.push("\"");
             }
+            // Anchor the generated event-handler key back to the v-on argument
+            // in source, recording the original event name so it lands in the
+            // v3 `names` array. No-op without `source_map`.
+            ctx.record_mapping_named(&exp.loc.start, &exp.content);
             ctx.push(&event_name);
             if needs_quotes {
                 ctx.push("\"");

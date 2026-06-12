@@ -285,6 +285,10 @@ fn try_generate_static_attrs(
         if needs_quotes {
             ctx.push("\"");
         }
+        // Anchor the generated prop key back to the attribute name in source,
+        // recording the symbol so it lands in the v3 `names` array. No-op
+        // without `source_map`.
+        ctx.record_mapping_named(&attr.name_loc.start, &attr.name);
         ctx.push(&attr.name);
         if needs_quotes {
             ctx.push("\"");
@@ -292,6 +296,9 @@ fn try_generate_static_attrs(
         ctx.push(": ");
         if let Some(value) = &attr.value {
             ctx.push("\"");
+            // Anchor the generated value literal back to the attribute value in
+            // source, just inside the opening quote. No-op without `source_map`.
+            ctx.record_mapping(&value.loc.start);
             ctx.push(&escape_js_string(&value.content));
             ctx.push("\"");
         } else {
@@ -458,6 +465,10 @@ fn generate_props_object_inner(
                     if needs_quotes {
                         ctx.push("\"");
                     }
+                    // Anchor the generated prop key back to the attribute name in
+                    // source, recording the symbol so it lands in the v3 `names`
+                    // array. No-op without `source_map`.
+                    ctx.record_mapping_named(&attr.name_loc.start, &attr.name);
                     ctx.push(&attr.name);
                     if needs_quotes {
                         ctx.push("\"");
@@ -470,6 +481,10 @@ fn generate_props_object_inner(
                             ctx.push(&value.content);
                         } else {
                             ctx.push("\"");
+                            // Anchor the generated value literal back to the
+                            // attribute value, just inside the opening quote.
+                            // No-op without `source_map`.
+                            ctx.record_mapping(&value.loc.start);
                             ctx.push(&escape_js_string(&value.content));
                             ctx.push("\"");
                         }

@@ -48,6 +48,9 @@ fn generate_children_inner(
         match effective[0] {
             TemplateChildNode::Text(text) => {
                 ctx.push("\"");
+                // Anchor the inlined text literal back to its source position,
+                // just inside the opening quote. No-op without `source_map`.
+                ctx.record_mapping(&text.loc.start);
                 ctx.push(&escape_js_string(&text.content));
                 ctx.push("\"");
                 return;
@@ -77,6 +80,9 @@ fn generate_children_inner(
             match child {
                 TemplateChildNode::Text(text) => {
                     ctx.push("\"");
+                    // Anchor each concatenated text fragment back to its own
+                    // source position. No-op without `source_map`.
+                    ctx.record_mapping(&text.loc.start);
                     ctx.push(&escape_js_string(&text.content));
                     ctx.push("\"");
                 }
@@ -163,6 +169,9 @@ fn generate_children_inner(
                     match child {
                         TemplateChildNode::Text(text) => {
                             ctx.push("\"");
+                            // Anchor each merged text fragment back to its own
+                            // source position. No-op without `source_map`.
+                            ctx.record_mapping(&text.loc.start);
                             ctx.push(&escape_js_string(&text.content));
                             ctx.push("\"");
                         }
@@ -181,6 +190,9 @@ fn generate_children_inner(
                     }
                     if let TemplateChildNode::Text(text) = child {
                         ctx.push("\"");
+                        // Anchor each text fragment back to its own source
+                        // position. No-op without `source_map`.
+                        ctx.record_mapping(&text.loc.start);
                         ctx.push(&escape_js_string(&text.content));
                         ctx.push("\"");
                     }
@@ -310,6 +322,9 @@ pub fn generate_text(ctx: &mut CodegenContext, text: &TextNode) {
         ctx.push("()");
     } else {
         ctx.push("(\"");
+        // Anchor the generated string literal back to the text node's source
+        // position, just inside the opening quote. No-op without `source_map`.
+        ctx.record_mapping(&text.loc.start);
         ctx.push(&escape_js_string(&text.content));
         ctx.push("\")");
     }
@@ -327,6 +342,9 @@ pub fn generate_comment(ctx: &mut CodegenContext, comment: &CommentNode) {
     ctx.use_helper(RuntimeHelper::CreateComment);
     ctx.push(helper);
     ctx.push("(\"");
+    // Anchor the generated comment string back to the comment node's source
+    // position, just inside the opening quote. No-op without `source_map`.
+    ctx.record_mapping(&comment.loc.start);
     ctx.push(&escape_js_string(&comment.content));
     ctx.push("\")");
 }

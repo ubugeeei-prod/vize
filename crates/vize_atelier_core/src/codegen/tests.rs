@@ -957,13 +957,15 @@ fn test_codegen_triple_mustache_escaped_under_default_dialect() {
 // --- Source Map v3 emission (#1533) -----------------------------------------
 
 /// A single decoded `mappings` segment: 0-indexed generated line/column and the
-/// source line/column it points back to.
+/// source line/column it points back to, plus the optional `names`-array index
+/// when the segment carried a 5th VLQ field.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct DecodedSegment {
     generated_line: u32,
     generated_column: u32,
     source_line: u32,
     source_column: u32,
+    name: Option<u32>,
 }
 
 const VLQ_CHARS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -995,10 +997,12 @@ fn decode_one_vlq(bytes: &[u8]) -> (i64, usize) {
 /// Decode a full v3 `mappings` string into absolute decoded segments.
 fn decode_mappings(mappings: &str) -> Vec<DecodedSegment> {
     let mut out = Vec::new();
-    // Source index/line/column accumulate across the whole document; generated
-    // column resets at each generated line (each `;`).
+    // Source index/line/column and the name index accumulate across the whole
+    // document; generated column resets at each generated line (each `;`). The
+    // name index only advances on segments that carry the optional 5th field.
     let mut source_line = 0i64;
     let mut source_column = 0i64;
+    let mut name_index = 0i64;
 
     for (generated_line, line) in mappings.split(';').enumerate() {
         let mut generated_column = 0i64;
@@ -1007,15 +1011,25 @@ fn decode_mappings(mappings: &str) -> Vec<DecodedSegment> {
             let (d_gen_col, c1) = decode_one_vlq(bytes);
             let (_d_src_idx, c2) = decode_one_vlq(&bytes[c1..]);
             let (d_src_line, c3) = decode_one_vlq(&bytes[c1 + c2..]);
-            let (d_src_col, _c4) = decode_one_vlq(&bytes[c1 + c2 + c3..]);
+            let (d_src_col, c4) = decode_one_vlq(&bytes[c1 + c2 + c3..]);
             generated_column += d_gen_col;
             source_line += d_src_line;
             source_column += d_src_col;
+            // A 5th VLQ field, when present, is the delta-encoded name index.
+            let consumed = c1 + c2 + c3 + c4;
+            let name = if consumed < bytes.len() {
+                let (d_name, _c5) = decode_one_vlq(&bytes[consumed..]);
+                name_index += d_name;
+                Some(name_index as u32)
+            } else {
+                None
+            };
             out.push(DecodedSegment {
                 generated_line: generated_line as u32,
                 generated_column: generated_column as u32,
                 source_line: source_line as u32,
                 source_column: source_column as u32,
+                name,
             });
         }
     }
@@ -1187,4 +1201,190 @@ fn source_map_handles_multiline_template() {
         (1, 5),
         "expression should map to line 1, column 5 of the multiline template"
     );
+}
+
+/// Resolve `name` indices on decoded segments against the v3 `names` array,
+/// returning the names of every segment that carried one (in segment order).
+fn named_symbols<'a>(segments: &[DecodedSegment], names: &'a [serde_json::Value]) -> Vec<&'a str> {
+    segments
+        .iter()
+        .filter_map(|s| s.name)
+        .map(|i| names[i as usize].as_str().expect("names entry is a string"))
+        .collect()
+}
+
+#[test]
+fn source_map_anchors_static_attribute_name_and_value() {
+    // `id="app"` is a static attribute. Both the generated prop key `id` and
+    // the value literal `"app"` should map back to their source positions, and
+    // the key's symbol should land in `names`.
+    let src = r#"<div id="app">x</div>"#;
+    let result = compile_with_map(src, "Foo.vue");
+    let map = result.map.expect("map should be Some");
+    let parsed: serde_json::Value = serde_json::from_str(&map).unwrap();
+    let names = parsed["names"].as_array().unwrap();
+    let segments = decode_mappings(parsed["mappings"].as_str().unwrap());
+
+    // Source: `id` name starts at column 5 (`<div ` precedes it); its value
+    // content `app` starts at column 9 (`<div id="` precedes it).
+    let attr_name_seg = segments
+        .iter()
+        .find(|s| s.source_line == 0 && s.source_column == 5)
+        .expect("a segment should anchor the static attribute name");
+    assert!(
+        attr_name_seg.name.is_some(),
+        "static attribute name segment should carry a names index"
+    );
+    assert_eq!(
+        names[attr_name_seg.name.unwrap() as usize],
+        "id",
+        "attribute name symbol should be recorded in `names`"
+    );
+
+    let value_col = src.find("app").unwrap() as u32;
+    assert!(
+        segments
+            .iter()
+            .any(|s| s.source_line == 0 && s.source_column == value_col),
+        "a segment should anchor the static attribute value"
+    );
+
+    assert!(
+        named_symbols(&segments, names).contains(&"id"),
+        "`names` should contain the attribute key symbol"
+    );
+}
+
+#[test]
+fn source_map_anchors_text_vnode_content() {
+    // A standalone text child becomes `_createTextVNode("hello")`; the string
+    // literal should map back to the text's position in the template. Wrapping
+    // the text in a `<pre>` keeps it from being hoisted/merged into the element.
+    let src = "<div>{{ x }}hello</div>";
+    let result = compile_with_map(src, "Foo.vue");
+    let map = result.map.expect("map should be Some");
+    let parsed: serde_json::Value = serde_json::from_str(&map).unwrap();
+    let segments = decode_mappings(parsed["mappings"].as_str().unwrap());
+
+    // `hello` starts at source column 12 (`<div>{{ x }}` precedes it).
+    let text_col = src.find("hello").unwrap() as u32;
+    let (gen_line, gen_col) = generated_position_of(&result.code, "\"hello\"");
+    let text_seg = segments
+        .iter()
+        // The anchor points just inside the opening quote (col + 1).
+        .find(|s| s.generated_line == gen_line && s.generated_column == gen_col + 1)
+        .expect("a segment should anchor the generated text literal");
+    assert_eq!(
+        (text_seg.source_line, text_seg.source_column),
+        (0, text_col),
+        "text content should map back to its template position"
+    );
+}
+
+#[test]
+fn source_map_anchors_comment_vnode_content() {
+    // An HTML comment becomes `_createCommentVNode("note")`; the string literal
+    // should map back to the comment's position.
+    let src = "<div><!--note--></div>";
+    let result = compile_with_map(src, "Foo.vue");
+    let map = result.map.expect("map should be Some");
+    let parsed: serde_json::Value = serde_json::from_str(&map).unwrap();
+    let segments = decode_mappings(parsed["mappings"].as_str().unwrap());
+
+    let comment_byte = src.find("<!--note-->").unwrap() as u32;
+    let (gen_line, gen_col) = generated_position_of(&result.code, "\"note\"");
+    let comment_seg = segments
+        .iter()
+        .find(|s| s.generated_line == gen_line && s.generated_column == gen_col + 1)
+        .expect("a segment should anchor the generated comment literal");
+    assert_eq!(
+        (comment_seg.source_line, comment_seg.source_column),
+        (0, comment_byte),
+        "comment content should map back to the `<!--` open position"
+    );
+}
+
+#[test]
+fn source_map_anchors_dynamic_prop_key_with_name() {
+    // `:id="dynId"` generates an `id:` object key. The key should map back to
+    // the v-bind argument and record `id` in `names`.
+    let src = r#"<div :id="dynId">x</div>"#;
+    let result = compile_with_map(src, "Foo.vue");
+    let map = result.map.expect("map should be Some");
+    let parsed: serde_json::Value = serde_json::from_str(&map).unwrap();
+    let names = parsed["names"].as_array().unwrap();
+    let segments = decode_mappings(parsed["mappings"].as_str().unwrap());
+
+    // The v-bind arg `id` starts at source column 6 (`<div :` precedes it).
+    let key_col = src.find(":id").unwrap() as u32 + 1;
+    let key_seg = segments
+        .iter()
+        .find(|s| s.source_line == 0 && s.source_column == key_col && s.name.is_some())
+        .expect("a named segment should anchor the v-bind prop key");
+    assert_eq!(
+        names[key_seg.name.unwrap() as usize],
+        "id",
+        "v-bind prop key symbol should be recorded in `names`"
+    );
+}
+
+#[test]
+fn source_map_names_array_deduplicates_repeated_symbols() {
+    // The same static attribute name on two elements should yield a single
+    // `names` entry shared by both segments.
+    let src = r#"<div id="a"><span id="b">x</span></div>"#;
+    let result = compile_with_map(src, "Foo.vue");
+    let map = result.map.expect("map should be Some");
+    let parsed: serde_json::Value = serde_json::from_str(&map).unwrap();
+    let names = parsed["names"].as_array().unwrap();
+
+    let id_count = names.iter().filter(|n| n.as_str() == Some("id")).count();
+    assert_eq!(
+        id_count, 1,
+        "`id` should appear exactly once in `names` even across two elements"
+    );
+}
+
+#[test]
+fn source_map_static_attr_and_text_do_not_alter_generated_code() {
+    // The additive invariant extended to the new anchor kinds: a template that
+    // exercises static attributes, a dynamic prop key, text, and a comment must
+    // still produce byte-identical `code`/`preamble` with source maps off.
+    let src = r#"<div id="app" :title="t"><!--c-->hello {{ x }}</div>"#;
+
+    let with_map = compile_with_map(src, "Foo.vue");
+
+    let allocator = bumpalo::Bump::new();
+    let (mut root, errors) = crate::parser::parse(&allocator, src);
+    assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+    crate::transform::transform(
+        &allocator,
+        &mut root,
+        crate::options::TransformOptions {
+            prefix_identifiers: true,
+            ..Default::default()
+        },
+        None,
+    );
+    let without_map = super::generate(
+        &root,
+        crate::options::CodegenOptions {
+            prefix_identifiers: true,
+            source_map: false,
+            filename: "Foo.vue".into(),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        with_map.code.as_str(),
+        without_map.code.as_str(),
+        "generated code must be byte-identical regardless of source_map flag"
+    );
+    assert_eq!(
+        with_map.preamble.as_str(),
+        without_map.preamble.as_str(),
+        "preamble must be byte-identical regardless of source_map flag"
+    );
+    assert!(without_map.map.is_none());
 }
