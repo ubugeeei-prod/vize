@@ -7,6 +7,7 @@ import {
   buildNuxtCompilerOptions,
   buildNuxtDevAssetBase,
   isVizeGeneratedVueModuleId,
+  isVizeJsxModuleId,
   isVizeVirtualVueModuleId,
   normalizeNuxtInjectedKeysForVizeVirtualModule,
   normalizeVizeGeneratedVueModuleId,
@@ -95,6 +96,30 @@ void test("ids without .vue are rejected and a query after .vue.ts is accepted",
   assert.equal(isVizeGeneratedVueModuleId("/App.ts"), false);
   assert.equal(isVizeVirtualVueModuleId("\0/App.vue.ts?vue"), true);
   assert.equal(isVizeGeneratedVueModuleId("/App.vue.ts?vue"), true);
+});
+
+void test("isVizeJsxModuleId matches in-place .jsx and .tsx component modules", () => {
+  // Raw JSX/TSX Vue components are compiled in place: the underlying Vite
+  // plugin keeps the original id (no `.vue.ts` virtual), so the Nuxt bridge
+  // must recognize them through this predicate to apply auto-imports etc.
+  assert.equal(isVizeJsxModuleId("/components/Foo.jsx"), true);
+  assert.equal(isVizeJsxModuleId("/components/Foo.tsx"), true);
+  // A plain `?vue` dev-server query suffix still matches.
+  assert.equal(isVizeJsxModuleId("/components/Foo.tsx?vue"), true);
+  // Such modules are NOT seen as `.vue` virtual/generated modules.
+  assert.equal(isVizeGeneratedVueModuleId("/components/Foo.tsx"), false);
+  assert.equal(isVizeVirtualVueModuleId("\0/components/Foo.tsx"), false);
+});
+
+void test("isVizeJsxModuleId rejects non-JSX ids and asset-import queries", () => {
+  assert.equal(isVizeJsxModuleId("/App.vue.ts"), false);
+  assert.equal(isVizeJsxModuleId("/App.ts"), false);
+  assert.equal(isVizeJsxModuleId("/App.js"), false);
+  // `.jsx`/`.tsx` referenced as raw/url/worker assets are not component modules.
+  assert.equal(isVizeJsxModuleId("/icon.tsx?raw"), false);
+  assert.equal(isVizeJsxModuleId("/icon.tsx?url"), false);
+  assert.equal(isVizeJsxModuleId("/worker.jsx?worker"), false);
+  assert.equal(isVizeJsxModuleId("/worker.jsx?sharedworker"), false);
 });
 
 void test("normalizeVizeVirtualVueModuleId strips the NUL and the optional vize-ssr prefix", () => {

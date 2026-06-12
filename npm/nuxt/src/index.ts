@@ -31,6 +31,7 @@ import {
 import {
   buildNuxtDevAssetBase,
   isVizeGeneratedVueModuleId,
+  isVizeJsxModuleId,
   isVizeVirtualVueModuleId,
   normalizeVizeVirtualVueModuleId,
   preserveExplicitVueImportsFromNuxtAutoImports,
@@ -426,10 +427,13 @@ export default defineNuxtModule<VizeNuxtOptions>({
         name: "vizejs:nuxt-transform-bridge",
         enforce: "post" as const,
         async transform(code: string, id: string, ...args: unknown[]) {
-          // Only process vize-generated Vue modules. In dev, Vite can call
+          // Only process Vize-compiled component modules. In dev, Vite can call
           // transform hooks with the plugin-visible `.vue.ts?vue&vize` ID
-          // rather than Rollup's internal `\0` virtual ID.
-          if (!isVizeGeneratedVueModuleId(id)) return;
+          // rather than Rollup's internal `\0` virtual ID. Raw `.jsx`/`.tsx`
+          // Vue components are compiled in place (no `.vue.ts` virtual id), so
+          // they are matched separately and still receive Nuxt's auto-import,
+          // component, and i18n bridging.
+          if (!isVizeGeneratedVueModuleId(id) && !isVizeJsxModuleId(id)) return;
 
           let result = code;
           let changed = false;

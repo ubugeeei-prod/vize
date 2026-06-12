@@ -77,6 +77,40 @@ export function isVizeGeneratedVueModuleId(id: string): boolean {
   return /\.vue\.ts(?:\?|$)/.test(normalized);
 }
 
+/**
+ * Recognize raw `.jsx`/`.tsx` Vue component modules compiled by Vize.
+ *
+ * Unlike `.vue` files, JSX/TSX modules are transformed in place by the
+ * underlying Vite plugin (the original `.jsx`/`.tsx` id is preserved, no
+ * `\0`-prefixed `.vue.ts` virtual id is created). Nuxt's auto-import,
+ * component, and i18n transforms still need to run on these modules, so the
+ * Nuxt transform bridge keys off this predicate in addition to
+ * `isVizeGeneratedVueModuleId`.
+ *
+ * A bare query suffix (e.g. `?vue`) is ignored so dev-server requests still
+ * match, but `?raw`/`?url`/`?worker` asset imports are rejected since those
+ * are not compiled component modules.
+ */
+export function isVizeJsxModuleId(id: string): boolean {
+  const queryIndex = id.indexOf("?");
+  const pathPart = queryIndex === -1 ? id : id.slice(0, queryIndex);
+  if (!/\.(?:jsx|tsx)$/.test(pathPart)) {
+    return false;
+  }
+
+  if (queryIndex === -1) {
+    return true;
+  }
+
+  const params = new URLSearchParams(id.slice(queryIndex + 1));
+  return !(
+    params.has("raw") ||
+    params.has("url") ||
+    params.has("worker") ||
+    params.has("sharedworker")
+  );
+}
+
 export function normalizeVizeVirtualVueModuleId(id: string): string {
   const withoutPrefix = id.startsWith("\0vize-ssr:") ? id.slice("\0vize-ssr:".length) : id.slice(1);
   return withoutPrefix.replace(/\.ts(?=\?|$)/, "");
