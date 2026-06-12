@@ -107,17 +107,39 @@ infrastructure that is not yet wired through this crate. Deferred pending the
 type-checker work in **#1497 / #1502**. The current TSX suite covers _syntax_
 acceptance and type-stripping, not type-driven prop/emit generation.
 
-### Ecosystem testbeds — deferred (network / CI infra)
+### Ecosystem testbeds — documented manual workflow
 
-Running the full `@vue/babel-plugin-jsx` + `vue-jsx-vapor` reference fixture
-corpora and real-world component-library testbeds requires cloning external
-repos and network access, which is unavailable in this build and gated on CI
-infrastructure:
+Running the upstream `@vue/babel-plugin-jsx` + `vue-jsx-vapor` reference corpora
+and real-world component-library testbeds requires cloning external repos and
+network access, so it stays out of the fast, offline PR CI lane. It is instead a
+**documented manual workflow**: a pinned-revision manifest plus an `#[ignore]`d
+coverage smoke.
 
-| Testbed  | Repo                | Reason deferred                           |
-| -------- | ------------------- | ----------------------------------------- |
-| Vuetify  | `vuetifyjs/vuetify` | Network clone + CI build matrix required. |
-| Naive UI | `tusen-ai/naive-ui` | Network clone + CI build matrix required. |
+- **Manifest** (`tests/ecosystem/testbeds.json`) — each entry pins a full commit
+  SHA so reruns are deterministic; bump revisions deliberately.
 
-These are tracked as the ecosystem-CI portion of **#1491** and are **not** closed
-by this PR. This PR delivers the parity-suite + inventory **foundation** only.
+  | Entry                 | Repo                     | Pinned revision |
+  | --------------------- | ------------------------ | --------------- |
+  | @vue/babel-plugin-jsx | `vuejs/babel-plugin-jsx` | `803aab3c…`     |
+  | vue-jsx-vapor         | `vuejs/vue-jsx-vapor`    | `25eba175…`     |
+  | Vuetify               | `vuetifyjs/vuetify`      | `e5555ae8…`     |
+  | Naive UI              | `tusen-ai/naive-ui`      | `7a12097e…`     |
+
+- **Run it**:
+
+  ```text
+  cargo test -p vize_atelier_jsx --test ecosystem_smoke -- --ignored --nocapture
+  ```
+
+  The smoke (`tests/ecosystem_smoke.rs`) shallow-clones each pinned entry, walks
+  its roots for `.jsx`/`.tsx`, runs every file through `lower_source`, and prints
+  a per-testbed table of files / clean / with-diagnostics / panicked. A panic
+  fails the run — the compiler must surface a diagnostic, never unwind. Offline,
+  the smoke degrades gracefully ("clone failed — skipped") instead of failing.
+
+- **CI guard** — `tests/tooling/jsx-ecosystem-fixtures.test.ts` validates the
+  manifest shape (pinned SHAs, github repos, roots, extensions) offline on every
+  PR, keeping the testbed list honest without network access.
+
+Wiring the smoke into a scheduled GitHub Actions lane (sharded, non-PR-gating)
+is a maintainer infra decision, tracked alongside #1501's benchmark-CI lane.

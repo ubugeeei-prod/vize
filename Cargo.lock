@@ -3493,6 +3493,8 @@ dependencies = [
  "oxc_parser",
  "oxc_span",
  "oxc_syntax",
+ "serde",
+ "serde_json",
  "vize_atelier_core",
  "vize_atelier_sfc",
  "vize_atelier_vapor",
