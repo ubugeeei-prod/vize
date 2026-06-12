@@ -151,6 +151,36 @@ export interface SfcCompileResult {
   macroArtifacts?: MacroArtifact[];
 }
 
+/** JSX/TSX compile options */
+export interface JsxCompileOptions {
+  /** Source filename, used to infer the language when `lang` is omitted. */
+  filename?: string;
+  /**
+   * Source language. Defaults to `"jsx"` (or is inferred from a `.tsx`
+   * `filename`).
+   */
+  lang?: "jsx" | "tsx";
+  /**
+   * Default output mode: `true` compiles components to Vapor, `false`
+   * (default) to VDOM. Per-component `"use vue:vapor"` / `"use vue:vdom"`
+   * directives override this.
+   */
+  vapor?: boolean;
+}
+
+/** Result of JSX/TSX compilation */
+export interface JsxCompileResult {
+  /**
+   * Generated render code for every component in the module, in source order,
+   * concatenated.
+   */
+  code: string;
+  /** Compilation errors */
+  errors: string[];
+  /** Compilation warnings */
+  warnings: string[];
+}
+
 /** CSS compile options */
 export interface CssCompileOptions {
   /** Scope ID for scoped CSS */
@@ -246,6 +276,12 @@ export declare function compileSfc(
   source: string,
   options?: SfcCompileOptions
 ): SfcCompileResult;
+
+/** Compile JSX/TSX to render code */
+export declare function compileJsx(
+  source: string,
+  options?: JsxCompileOptions
+): JsxCompileResult;
 
 /** Compile CSS with LightningCSS */
 export declare function compileCss(

@@ -20,6 +20,7 @@ const REQUIRED_EXPORTS = [
   "Compiler",
   "compile",
   "compileCss",
+  "compileJsx",
   "compileSfc",
   "compileVapor",
   "default",

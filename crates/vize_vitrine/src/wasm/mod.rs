@@ -20,6 +20,7 @@ mod cross_file;
 #[cfg(feature = "glyph")]
 mod format;
 mod inspector;
+mod jsx;
 mod lint;
 mod musea;
 mod options;
@@ -40,6 +41,7 @@ pub use cross_file::*;
 #[cfg(feature = "glyph")]
 pub use format::*;
 pub use inspector::*;
+pub use jsx::*;
 pub use lint::*;
 pub use musea::*;
 pub use sfc_types::*;

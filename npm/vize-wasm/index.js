@@ -11,6 +11,7 @@ import initWasm, {
   parseTemplate as wasmParseTemplate,
   parseSfc as wasmParseSfc,
   compileSfc as wasmCompileSfc,
+  compileJsx as wasmCompileJsx,
   compileCss as wasmCompileCss,
 } from "./vize_vitrine.js";
 
@@ -210,6 +211,18 @@ export function parseSfc(source, options = {}) {
 export function compileSfc(source, options = {}) {
   ensureInitialized();
   return wasmCompileSfc(source, options);
+}
+
+/**
+ * Compile JSX/TSX to render code.
+ *
+ * @param {string} source
+ * @param {object} [options]
+ * @returns {object}
+ */
+export function compileJsx(source, options = {}) {
+  ensureInitialized();
+  return wasmCompileJsx(source, options);
 }
 
 /**
