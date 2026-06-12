@@ -39,6 +39,12 @@ pub(super) struct EventHandlerExprContext<'a> {
     pub(super) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
     pub(super) data: &'a EventHandlerScopeData,
     pub(super) event_type: &'a str,
+    /// For component `@event` handlers, the synthesized listener type
+    /// (e.g. `__Child_1_test_listener`) that captures the full emit argument
+    /// tuple (or the single `$event` fallback when the emit stays unresolved).
+    /// Native DOM events leave this `None` and fall back to the single `$event`
+    /// parameter typed by `event_type`.
+    pub(super) event_listener_type: Option<&'a str>,
     pub(super) template_prop_names: &'a FxHashSet<String>,
     pub(super) template_offset: u32,
     pub(super) indent: &'a str,

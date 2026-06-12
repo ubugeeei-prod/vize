@@ -100,11 +100,13 @@ function __setup() {
     : unknown[];
   type __my_widget_7_update_model_value_args = unknown[] extends __my_widget_7_update_model_value_prop_args ? __my_widget_7_update_model_value_emit_args : __my_widget_7_update_model_value_prop_args;
   type __my_widget_7_update_model_value_event = __my_widget_7_update_model_value_args extends [] ? any : __my_widget_7_update_model_value_args[0];
-  (($event: __my_widget_7_update_model_value_event) => {
-    const __vize_handler_7_47 = ((handler: ($event: __my_widget_7_update_model_value_event) => unknown) => handler)((handleUpdate));
-    __vize_handler_7_47($event);  // handler expression
+  type __my_widget_7_update_model_value_listener = unknown[] extends __my_widget_7_update_model_value_args ? (($event: __my_widget_7_update_model_value_event) => unknown) : ((...args: __my_widget_7_update_model_value_args) => unknown);
+  ((...__vize_args: Parameters<__my_widget_7_update_model_value_listener>) => {
+    const $event = __vize_args[0] as __my_widget_7_update_model_value_event; void $event;
+    const __vize_handler_7_47 = ((handler: __my_widget_7_update_model_value_listener) => handler)((handleUpdate));
+    __vize_handler_7_47(...__vize_args);  // handler expression
     // @vize-map: handler -> 47:59
-  })({} as __my_widget_7_update_model_value_event);
+  })(...({} as Parameters<__my_widget_7_update_model_value_listener>));
 
   // Auto-imported/built-in components (not in script bindings)
   const my_widget: any = undefined as any;
