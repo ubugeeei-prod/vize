@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "kind": "tool-comparison",
-  "generatedAt": "2026-06-11T02:33:33.312Z",
+  "generatedAt": "2026-06-12T10:10:23.793Z",
   "commit": {
-    "sha": "1fdbb7ad0c88d27a55d4fa9056b2140916d2ac17",
-    "ref": "docs/check-benchmark-refresh",
+    "sha": "07a1b83f49e46bb2762405c6cec185774df3a58a",
+    "ref": "vize-1440-bench-refresh",
     "repository": "ubugeeei-prod/vize",
-    "runUrl": "https://github.com/ubugeeei-prod/vize/actions/runs/27319736609"
+    "runUrl": "https://github.com/ubugeeei-prod/vize/actions/runs/27408931576"
   },
   "runner": {
     "label": "blacksmith-32vcpu-ubuntu-2404",
@@ -21,7 +21,7 @@
   "input": {
     "dir": "/home/runner/_work/vize/vize/bench/__in__",
     "fileCount": 15000,
-    "totalBytes": 38692500,
+    "totalBytes": 61516500,
     "checkFileCount": 500,
     "viteFileCount": 1000,
     "nuxtFileCount": 500,
@@ -53,59 +53,59 @@
       "id": "compile",
       "label": "SFC compile",
       "files": 15000,
-      "bytes": 38692500,
+      "bytes": 61516500,
       "variants": [
         {
           "id": "vue-compiler-sfc-1t",
           "label": "@vue/compiler-sfc (1T)",
-          "medianMs": 8508.821425999995,
+          "medianMs": 16862.340624999997,
           "runs": [
-            8748.298615, 8508.821425999995, 8654.746030000002, 8407.403009000001, 8350.788102000006
+            17866.230783000003, 17090.918230999996, 16753.111703000002, 16862.340624999997,
+            16775.983716999996
           ],
-          "throughput": "1.8k files/s"
+          "throughput": "890 files/s"
         },
         {
           "id": "vue-compiler-sfc-workers",
           "label": "@vue/compiler-sfc (32 workers)",
-          "medianMs": 3297.3814180000045,
+          "medianMs": 5957.337784999996,
           "runs": [
-            3565.5135889999983, 3306.800562000004, 3166.3339119999946, 3297.3814180000045,
-            3129.2816480000038
+            6051.396858, 5657.590904999997, 5957.337784999996, 5789.928039000006, 5981.128363000025
           ],
-          "throughput": "4.5k files/s"
+          "throughput": "2.5k files/s"
         },
         {
           "id": "vize-native-1t",
           "label": "Vize native loop (1T)",
-          "medianMs": 2683.404536999995,
+          "medianMs": 3372.8640819999855,
           "runs": [
-            2635.823269999997, 2570.711068999997, 2729.108250999998, 2767.132282999999,
-            2683.404536999995
+            3373.6758199999967, 3226.117846000001, 3431.2449070000002, 3356.873253999991,
+            3372.8640819999855
           ],
-          "throughput": "5.6k files/s"
+          "throughput": "4.4k files/s"
         },
         {
           "id": "vize-native-max",
           "label": "Vize native batch results (max)",
-          "medianMs": 261.79803399999946,
+          "medianMs": 292.79640500000096,
           "runs": [
-            261.79803399999946, 240.66578599999775, 276.2908929999976, 255.66050099999848,
-            274.86625300000014
+            287.65598200000386, 281.0967329999985, 299.48825500000385, 292.79640500000096,
+            295.215308999992
           ],
-          "throughput": "57.3k files/s"
+          "throughput": "51.2k files/s"
         },
         {
           "id": "vize-native-core-max",
           "label": "Vize native batch stats-only (core max)",
-          "medianMs": 24.558256,
-          "runs": [24.558256, 24.309558, 25.972127, 25.084637, 24.529390000000003],
-          "throughput": "610.8k files/s"
+          "medianMs": 183.472725,
+          "runs": [178.250833, 179.50261, 183.472725, 187.649389, 188.074699],
+          "throughput": "81.8k files/s"
         }
       ],
       "baselineId": "vue-compiler-sfc-1t",
       "vizeSingleId": "vize-native-1t",
       "vizeMaxId": "vize-native-max",
-      "primarySpeedup": 32.5014718254149
+      "primarySpeedup": 57.59066824949556
     },
     {
       "id": "large-compile",
@@ -116,55 +116,55 @@
         {
           "id": "vue-compiler-sfc-1t",
           "label": "@vue/compiler-sfc (1T)",
-          "medianMs": 200.8422830000054,
+          "medianMs": 194.5187819999992,
           "runs": [
-            201.81077700000606, 197.89776900000288, 201.14607499999693, 200.8422830000054,
-            193.50318400000106
+            194.5187819999992, 189.40126600000076, 189.5756349999865, 200.7581899999932,
+            203.61493799998425
           ],
           "throughput": "5 files/s"
         },
         {
           "id": "vue-compiler-sfc-workers",
           "label": "@vue/compiler-sfc (1 workers)",
-          "medianMs": 463.1379750000051,
+          "medianMs": 473.7403289999929,
           "runs": [
-            463.1379750000051, 459.3550819999946, 460.6172569999908, 474.1276890000008,
-            530.3899630000087
+            457.251734999998, 473.7403289999929, 497.92886100002215, 535.6909160000214,
+            439.641157999984
           ],
           "throughput": "2 files/s"
         },
         {
           "id": "vize-native-1t",
           "label": "Vize native loop (1T)",
-          "medianMs": 73.27315599999565,
+          "medianMs": 62.82680799998343,
           "runs": [
-            74.35275900000124, 69.88333299999067, 73.42971100000432, 69.30570499999158,
-            73.27315599999565
+            62.82680799998343, 57.631125999992946, 68.65034100000048, 61.788102000020444,
+            72.1163870000164
           ],
-          "throughput": "14 files/s"
+          "throughput": "16 files/s"
         },
         {
           "id": "vize-native-max",
           "label": "Vize native batch results (max)",
-          "medianMs": 67.5503999999928,
+          "medianMs": 61.16882599997916,
           "runs": [
-            67.64943599999242, 67.57423499999277, 67.5503999999928, 66.47350200000801,
-            66.52467800000159
+            56.96379999999772, 56.48092000000179, 63.873609000002034, 61.16882599997916,
+            64.95214899998973
           ],
-          "throughput": "15 files/s"
+          "throughput": "16 files/s"
         },
         {
           "id": "vize-native-core-max",
           "label": "Vize native batch stats-only (core max)",
-          "medianMs": 65.494459,
-          "runs": [65.494459, 65.583336, 68.461556, 65.33813400000001, 65.233617],
-          "throughput": "15 files/s"
+          "medianMs": 62.423698,
+          "runs": [57.126304000000005, 55.809014, 62.82600600000001, 62.423698, 63.872076],
+          "throughput": "16 files/s"
         }
       ],
       "baselineId": "vue-compiler-sfc-1t",
       "vizeSingleId": "vize-native-1t",
       "vizeMaxId": "vize-native-max",
-      "primarySpeedup": 2.9732212244491047
+      "primarySpeedup": 3.1800313120291936
     },
     {
       "id": "large-check",
@@ -175,237 +175,238 @@
         {
           "id": "vue-tsc",
           "label": "vue-tsc",
-          "medianMs": 1663.992465999996,
+          "medianMs": 1609.4353570000094,
           "runs": [
-            1671.882884999999, 1678.118437000012, 1660.6458960000018, 1617.6917119999998,
-            1663.992465999996
+            1622.64798899999, 1607.3348919999844, 1609.4353570000094, 1665.2726099999854,
+            1578.1555430000008
           ],
           "throughput": "1 files/s"
         },
         {
           "id": "vize-check-1t",
           "label": "Vize check (1T)",
-          "medianMs": 175.32754800000112,
+          "medianMs": 172.27874200002407,
           "runs": [
-            175.32754800000112, 175.7937660000025, 169.2953589999961, 171.0664140000008,
-            177.61804099999426
+            190.46552800000063, 172.99058299997705, 166.22989499999676, 170.60031200002413,
+            172.27874200002407
           ],
           "throughput": "6 files/s"
         },
         {
           "id": "vize-check-max",
           "label": "Vize check (max)",
-          "medianMs": 174.16646199999377,
+          "medianMs": 182.50664500001585,
           "runs": [
-            178.5870649999997, 173.21884799998952, 175.42735600000015, 170.79547399999865,
-            174.16646199999377
+            185.37886299999082, 189.83625500000198, 166.85658599997987, 182.50664500001585,
+            170.55991599999834
           ],
-          "throughput": "6 files/s"
+          "throughput": "5 files/s"
         }
       ],
       "baselineId": "vue-tsc",
       "vizeSingleId": "vize-check-1t",
       "vizeMaxId": "vize-check-max",
-      "primarySpeedup": 9.554034955363884
+      "primarySpeedup": 8.81850278382943
     },
     {
       "id": "lint",
       "label": "Lint",
       "files": 15000,
-      "bytes": 38692500,
+      "bytes": 61516500,
       "variants": [
         {
           "id": "eslint-plugin-vue-1t",
           "label": "eslint-plugin-vue (1T)",
-          "medianMs": 42287.907498000015,
+          "medianMs": 55541.109727,
           "runs": [
-            41914.319564000005, 43157.197409000015, 42608.202583999955, 42287.907498000015,
-            41370.23659799999
+            56236.119721000025, 53689.51550900005, 52876.44654199999, 56124.37110599992,
+            55541.109727
           ],
-          "throughput": "355 files/s"
+          "throughput": "270 files/s"
         },
         {
           "id": "eslint-plugin-vue-workers",
           "label": "eslint-plugin-vue (32 workers)",
-          "medianMs": 10792.434455999988,
+          "medianMs": 12907.762489999994,
           "runs": [
-            10792.434455999988, 10611.913971000002, 10987.147934999957, 10681.172602000006,
-            10989.92310700001
+            12985.328451999987, 12784.17929, 12907.762489999994, 12777.299610999995,
+            13112.397313999943
           ],
-          "throughput": "1.4k files/s"
+          "throughput": "1.2k files/s"
         },
         {
           "id": "vize-lint-1t",
           "label": "Vize lint (1T)",
-          "medianMs": 1225.3097999999882,
+          "medianMs": 1851.408151999989,
           "runs": [
-            1254.2686140000005, 1208.5454979999922, 1225.3097999999882, 1200.5274179999833,
-            1278.694592999993
+            1851.408151999989, 1806.1049019999919, 1862.2448790000053, 1808.7342219999991,
+            1858.6549670000095
           ],
-          "throughput": "12.2k files/s"
+          "throughput": "8.1k files/s"
         },
         {
           "id": "vize-lint-max",
           "label": "Vize lint (max)",
-          "medianMs": 230.1594369999948,
+          "medianMs": 260.6887150000548,
           "runs": [
-            228.6375050000206, 230.1594369999948, 228.1332340000081, 231.0922239999636,
-            231.36464800004615
+            260.6887150000548, 259.8235870000208, 263.5830399999977, 256.98428899998544,
+            266.70885900000576
           ],
-          "throughput": "65.2k files/s"
+          "throughput": "57.5k files/s"
         }
       ],
       "baselineId": "eslint-plugin-vue-1t",
       "vizeSingleId": "vize-lint-1t",
       "vizeMaxId": "vize-lint-max",
-      "primarySpeedup": 183.73310279691452
+      "primarySpeedup": 213.05528981946276
     },
     {
       "id": "fmt",
       "label": "Format",
       "files": 15000,
-      "bytes": 38692500,
+      "bytes": 61516500,
       "variants": [
         {
           "id": "prettier-cli",
           "label": "Prettier CLI",
-          "medianMs": 80043.36014200002,
+          "medianMs": 139165.87438299996,
           "runs": [
-            80177.47819, 79647.72169599996, 82677.04592300009, 80043.36014200002, 79090.532411
+            142213.01933299995, 146248.34517500002, 139031.85689499998, 138492.8939439999,
+            139165.87438299996
           ],
-          "throughput": "187 files/s"
+          "throughput": "108 files/s"
         },
         {
           "id": "vize-fmt-1t",
           "label": "Vize fmt (1T)",
-          "medianMs": 3613.7345310000237,
+          "medianMs": 4340.695928999921,
           "runs": [
-            3614.1001069999766, 3613.7345310000237, 3590.54686100001, 3730.655446999939,
-            3397.4723079999676
+            4381.214506000048, 4421.188464000006, 4281.084781999933, 4310.34591699997,
+            4340.695928999921
           ],
-          "throughput": "4.2k files/s"
+          "throughput": "3.5k files/s"
         },
         {
           "id": "vize-fmt-max",
           "label": "Vize fmt (max)",
-          "medianMs": 1371.0379110000795,
+          "medianMs": 1427.7423120000167,
           "runs": [
-            1389.5298730001086, 1370.4204979999922, 1371.2137009999715, 1371.0379110000795,
-            1344.769797999994
+            1447.0827689999714, 1427.7423120000167, 1401.381713999901, 1400.8025829999242,
+            1434.5720619999338
           ],
-          "throughput": "10.9k files/s"
+          "throughput": "10.5k files/s"
         }
       ],
       "baselineId": "prettier-cli",
       "vizeSingleId": "vize-fmt-1t",
       "vizeMaxId": "vize-fmt-max",
-      "primarySpeedup": 58.38158047986711
+      "primarySpeedup": 97.47268342005846
     },
     {
       "id": "check",
       "label": "Type check",
       "files": 500,
-      "bytes": 1285021,
+      "bytes": 2050350,
       "variants": [
         {
           "id": "vue-tsc",
           "label": "vue-tsc",
-          "medianMs": 3854.597485000035,
+          "medianMs": 5367.350493999897,
           "runs": [
-            3938.650970000075, 3841.1269679999677, 3977.2813170000445, 3854.597485000035,
-            3777.5431720000925
+            5367.350493999897, 5219.520497000078, 5262.258641999913, 5436.671930999961,
+            5487.351695999969
           ],
-          "throughput": "130 files/s"
+          "throughput": "93 files/s"
         },
         {
           "id": "vize-check-1t",
           "label": "Vize check (1T)",
-          "medianMs": 530.5508169999812,
+          "medianMs": 438.50531299994327,
           "runs": [
-            530.5508169999812, 523.8517220000504, 530.5731440000236, 545.2871329999762,
-            530.0352310000453
+            437.21807199995965, 433.65258300001733, 438.50531299994327, 443.1223489998374,
+            449.5166179998778
           ],
-          "throughput": "942 files/s"
+          "throughput": "1.1k files/s"
         },
         {
           "id": "vize-check-max",
           "label": "Vize check (max)",
-          "medianMs": 483.32249699998647,
+          "medianMs": 402.4237509998493,
           "runs": [
-            483.7459019999951, 491.70091900008265, 483.32249699998647, 476.2112099999795,
-            474.45273800008
+            398.36693900008686, 398.82052300008945, 402.4237509998493, 411.28600500011817,
+            403.6159139999654
           ],
-          "throughput": "1.0k files/s"
+          "throughput": "1.2k files/s"
         }
       ],
       "baselineId": "vue-tsc",
       "vizeSingleId": "vize-check-1t",
       "vizeMaxId": "vize-check-max",
-      "primarySpeedup": 7.975208083475872
+      "primarySpeedup": 13.337558930516272
     },
     {
       "id": "vite",
       "label": "Vite build (end-to-end)",
       "files": 1000,
-      "bytes": 2574036,
+      "bytes": 4100700,
       "variants": [
         {
           "id": "vite-plugin-vue",
           "label": "@vitejs/plugin-vue",
-          "medianMs": 987.3851720000384,
+          "medianMs": 1630.3018110000994,
           "runs": [
-            987.3851720000384, 1219.3970279999776, 1040.2692830000306, 936.4878119999776,
-            949.1692709999625
+            1608.8453470000532, 1640.3083059999626, 1630.3018110000994, 1550.9890929998364,
+            1873.995660000015
           ],
-          "throughput": "1.0k files/s"
+          "throughput": "613 files/s"
         },
         {
           "id": "vize-vite-plugin",
           "label": "@vizejs/vite-plugin",
-          "medianMs": 464.9654159999918,
+          "medianMs": 611.031544999918,
           "runs": [
-            481.7183639999712, 464.9654159999918, 462.2604200000642, 469.72507099993527,
-            443.4808830000693
+            611.031544999918, 797.4189369999804, 620.959191000089, 605.8138399999589,
+            594.4374959999695
           ],
-          "throughput": "2.2k files/s"
+          "throughput": "1.6k files/s"
         }
       ],
       "baselineId": "vite-plugin-vue",
       "vizeSingleId": null,
       "vizeMaxId": "vize-vite-plugin",
-      "primarySpeedup": 2.1235669106195543
+      "primarySpeedup": 2.6681139858341
     },
     {
       "id": "nuxt",
       "label": "Nuxt SPA build (end-to-end)",
       "files": 500,
-      "bytes": 1285021,
+      "bytes": 2050350,
       "variants": [
         {
           "id": "nuxt-default",
           "label": "Nuxt default compiler",
-          "medianMs": 5097.375406000065,
+          "medianMs": 6652.470842999872,
           "runs": [
-            5028.553624999942, 5097.375406000065, 5273.270672000013, 5249.63237700006,
-            4992.261304000043
+            6652.470842999872, 6437.1372050000355, 6640.7289440000895, 6706.364832000108,
+            6696.2165930001065
           ],
-          "throughput": "98 files/s"
+          "throughput": "75 files/s"
         },
         {
           "id": "vize-nuxt",
           "label": "@vizejs/nuxt",
-          "medianMs": 4935.877042000066,
+          "medianMs": 6040.407276999904,
           "runs": [
-            4884.73685700004, 4935.877042000066, 4909.02438800002, 5101.19837499992,
-            5087.9668459999375
+            6040.407276999904, 5967.124674000079, 6005.377907000016, 6148.199380999897,
+            6088.1595199999865
           ],
-          "throughput": "101 files/s"
+          "throughput": "83 files/s"
         }
       ],
       "baselineId": "nuxt-default",
       "vizeSingleId": null,
       "vizeMaxId": "vize-nuxt",
-      "primarySpeedup": 1.0327192842580533
+      "primarySpeedup": 1.1013281949266114
     }
   ]
 }
