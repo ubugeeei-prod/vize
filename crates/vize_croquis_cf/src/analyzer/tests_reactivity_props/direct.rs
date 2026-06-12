@@ -1,8 +1,8 @@
 use super::*;
-use crate::diagnostics::{CrossFileDiagnosticKind, DiagnosticSeverity};
+use crate::diagnostics::CrossFileDiagnosticKind;
 
 #[test]
-fn test_reactive_prop_direct_define_props_destructure_is_cross_file_error() {
+fn test_reactive_prop_direct_define_props_destructure_preserves_cross_file_flow() {
     let (mut analyzer, parent_id, child_id) = analyzer_with_parent_child(
         r#"import { reactive } from 'vue'
 import Child from './Child.vue'
@@ -12,22 +12,16 @@ const state = reactive({ count: 0 })"#,
     );
 
     let result = analyzer.analyze();
-    let issue = result
-        .cross_file_reactivity_issues
-        .iter()
-        .find(|issue| {
-            issue.file_id == child_id
-                && issue.related_file == Some(parent_id)
-                && matches!(
-                    &issue.kind,
-                    CrossFileReactivityIssueKind::ReactivityLostInPropChain { prop_name, .. }
-                        if prop_name == "item"
-                )
-        })
-        .expect("reactive prop destructure should be reported");
-
-    assert_eq!(issue.severity, DiagnosticSeverity::Error);
-    assert!(result.diagnostics.iter().any(|diagnostic| {
+    assert!(!result.cross_file_reactivity_issues.iter().any(|issue| {
+        issue.file_id == child_id
+            && issue.related_file == Some(parent_id)
+            && matches!(
+                &issue.kind,
+                CrossFileReactivityIssueKind::ReactivityLostInPropChain { prop_name, .. }
+                    if prop_name == "item"
+            )
+    }));
+    assert!(!result.diagnostics.iter().any(|diagnostic| {
         diagnostic.primary_file == child_id
             && diagnostic
                 .related_files
@@ -112,6 +106,40 @@ const ctx = useMyComposable(props.item)"#,
             && matches!(
                 &diagnostic.kind,
                 CrossFileDiagnosticKind::ValueExtractionBreaksReactivity { .. }
+            )
+    }));
+}
+
+#[test]
+fn test_reactive_prop_plain_alias_mutation_is_cross_file_loss() {
+    let (mut analyzer, parent_id, child_id) = analyzer_with_parent_child(
+        r#"import { reactive } from 'vue'
+import Child from './Child.vue'
+const item = reactive({ count: 0 })"#,
+        r#"const { item } = defineProps<{ item: { count: number } }>()
+const local = item
+local.count++"#,
+        &[("Child", &[("item", "item")])],
+    );
+
+    let result = analyzer.analyze();
+    assert!(result.cross_file_reactivity_issues.iter().any(|issue| {
+        issue.file_id == child_id
+            && issue.related_file == Some(parent_id)
+            && matches!(
+                &issue.kind,
+                CrossFileReactivityIssueKind::ReactivityLostInPropChain { prop_name, .. }
+                    if prop_name == "item"
+            )
+    }));
+    assert!(result.diagnostics.iter().any(|diagnostic| {
+        diagnostic.primary_file == child_id
+            && matches!(
+                &diagnostic.kind,
+                CrossFileDiagnosticKind::ValueExtractionBreaksReactivity {
+                    extracted_value,
+                    ..
+                } if extracted_value == "local.count"
             )
     }));
 }

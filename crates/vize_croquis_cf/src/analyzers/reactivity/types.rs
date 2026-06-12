@@ -24,6 +24,11 @@ pub enum ReactivityIssueKind {
         source_name: CompactString,
         target_name: CompactString,
     },
+    /// Plain reactive snapshot was mutated after the reactive reference was cut.
+    PlainSnapshotMutation {
+        source_name: CompactString,
+        target_name: CompactString,
+    },
     /// Plain reactive snapshot passed through a function boundary.
     ReactiveSnapshotPassedToCall {
         source_name: CompactString,

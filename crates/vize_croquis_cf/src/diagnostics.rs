@@ -178,6 +178,11 @@ pub enum CrossFileDiagnosticKind {
         hook_name: CompactString,
         context_description: CompactString,
     },
+    /// Lifecycle hook that usually registers resources has no matching cleanup hook.
+    LifecycleHookWithoutCleanup {
+        hook_name: CompactString,
+        cleanup_hook: CompactString,
+    },
     /// Watcher (watch, watchEffect) called outside setup context.
     /// This can cause memory leaks as the watcher won't be automatically cleaned up.
     WatcherOutsideSetup {

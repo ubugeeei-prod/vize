@@ -1,4 +1,5 @@
 use super::{CrossFileAnalyzer, CrossFileOptions};
+use crate::diagnostics::CrossFileDiagnosticKind;
 use std::path::Path;
 use vize_croquis::AnalyzerOptions;
 
@@ -161,6 +162,78 @@ onUnmounted(() => {
         2,
         "Should have 2 client-only scopes for onMounted and onUnmounted"
     );
+}
+
+#[test]
+fn test_lifecycle_hook_without_cleanup_is_reported() {
+    let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal().with_setup_context(true));
+
+    analyzer.add_file(
+        Path::new("MountedOnly.vue"),
+        r#"import { onMounted } from 'vue'
+
+onMounted(() => {
+    window.addEventListener('resize', () => {})
+})"#,
+    );
+
+    let result = analyzer.analyze();
+    assert!(result.diagnostics.iter().any(|diagnostic| {
+        matches!(
+            &diagnostic.kind,
+            CrossFileDiagnosticKind::LifecycleHookWithoutCleanup {
+                hook_name,
+                cleanup_hook,
+            } if hook_name == "onMounted" && cleanup_hook == "onUnmounted"
+        )
+    }));
+}
+
+#[test]
+fn test_lifecycle_hook_without_cleanup_is_reported_for_identifier_handler() {
+    let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal().with_setup_context(true));
+
+    analyzer.add_file(
+        Path::new("MountedIdentifier.vue"),
+        r#"import { onMounted } from 'vue'
+
+function start() {}
+onMounted(start)"#,
+    );
+
+    let result = analyzer.analyze();
+    assert!(result.diagnostics.iter().any(|diagnostic| {
+        matches!(
+            &diagnostic.kind,
+            CrossFileDiagnosticKind::LifecycleHookWithoutCleanup {
+                hook_name,
+                cleanup_hook,
+            } if hook_name == "onMounted" && cleanup_hook == "onUnmounted"
+        )
+    }));
+}
+
+#[test]
+fn test_lifecycle_hook_with_cleanup_is_allowed() {
+    let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal().with_setup_context(true));
+
+    analyzer.add_file(
+        Path::new("MountedPair.vue"),
+        r#"import { onMounted, onUnmounted, onActivated, onDeactivated } from 'vue'
+
+onMounted(() => {})
+onUnmounted(() => {})
+onActivated(() => {})
+onDeactivated(() => {})"#,
+    );
+
+    let result = analyzer.analyze();
+    assert!(!result.diagnostics.iter().any(|diagnostic| {
+        matches!(
+            &diagnostic.kind,
+            CrossFileDiagnosticKind::LifecycleHookWithoutCleanup { .. }
+        )
+    }));
 }
 
 #[test]

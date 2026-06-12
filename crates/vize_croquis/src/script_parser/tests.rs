@@ -1281,14 +1281,14 @@ const copy = { ...state }
 }
 
 #[test]
-fn test_props_snapshot_crossing_call_and_getter_context() {
+fn test_props_snapshot_composable_call_and_getter_extraction_are_losses() {
     use crate::reactivity::ReactivityLossKind;
 
     let result = parse_script_setup(
         r#"
 const { count } = defineProps<{ count: number }>()
 
-const ctx = useMyComposable(count)
+useMyComposable(count)
 
 const ctx2 = useMyComposable(() => count)
 const a = ctx2.count()
@@ -1322,7 +1322,7 @@ const a = ctx2.count()
 }
 
 #[test]
-fn test_plain_reactive_values_inside_call_arguments() {
+fn test_plain_reactive_values_are_reported_at_composable_boundaries() {
     use crate::reactivity::ReactivityLossKind;
 
     let result = parse_script_setup(
@@ -1330,10 +1330,15 @@ fn test_plain_reactive_values_inside_call_arguments() {
 const props = defineProps<{ count: number }>()
 const { count: localCount } = props
 const countRef = ref(0)
+const state = reactive({ format: (value: number) => value })
 
 useMyComposable({ count: localCount })
+useMyComposable({ [localCount]: 1 })
+useMyComposable(Number(localCount))
+useMyComposable(state.format(localCount))
 useMyComposable(props.count)
 useMyComposable(countRef.value)
+useMyComposable(`${countRef.value}`)
 watch(() => localCount, () => {})
 "#,
     );
@@ -1348,6 +1353,48 @@ watch(() => localCount, () => {})
         } if source_name == "props.count"
             && argument_name == "localCount"
             && callee_name == "useMyComposable"
+    )));
+    assert!(
+        losses
+            .iter()
+            .filter(|loss| matches!(
+                &loss.kind,
+                ReactivityLossKind::FunctionArgumentExtract {
+                    source_name,
+                    argument_name,
+                    callee_name,
+                } if source_name == "props.count"
+                    && argument_name == "localCount"
+                    && callee_name == "useMyComposable"
+            ))
+            .count()
+            >= 2,
+        "object values and computed property keys should both be evaluated"
+    );
+    assert!(
+        losses
+            .iter()
+            .filter(|loss| matches!(
+                &loss.kind,
+                ReactivityLossKind::FunctionArgumentExtract {
+                    source_name,
+                    argument_name,
+                    callee_name,
+                } if source_name == "props.count"
+                    && argument_name == "localCount"
+                    && callee_name == "useMyComposable"
+            ))
+            .count()
+            >= 3,
+        "nested call arguments should also be evaluated at composable boundaries"
+    );
+    assert!(!losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::FunctionArgumentExtract {
+            argument_name,
+            callee_name,
+            ..
+        } if argument_name == "state.format" && callee_name == "useMyComposable"
     )));
     assert!(losses.iter().any(|loss| matches!(
         &loss.kind,
@@ -1369,6 +1416,23 @@ watch(() => localCount, () => {})
             && argument_name == "countRef.value"
             && callee_name == "useMyComposable"
     )));
+    assert!(
+        losses
+            .iter()
+            .filter(|loss| matches!(
+                &loss.kind,
+                ReactivityLossKind::FunctionArgumentExtract {
+                    source_name,
+                    argument_name,
+                    callee_name,
+                } if source_name == "countRef.value"
+                    && argument_name == "countRef.value"
+                    && callee_name == "useMyComposable"
+            ))
+            .count()
+            >= 2,
+        "template literal expressions should also be evaluated at composable boundaries"
+    );
     assert!(!losses.iter().any(|loss| matches!(
         &loss.kind,
         ReactivityLossKind::FunctionArgumentExtract {
@@ -1380,7 +1444,7 @@ watch(() => localCount, () => {})
 }
 
 #[test]
-fn test_plain_reactive_values_ignore_value_sink_calls() {
+fn test_plain_reactive_values_ignore_call_boundaries() {
     use crate::reactivity::ReactivityLossKind;
 
     let result = parse_script_setup(
@@ -1410,7 +1474,7 @@ useMyComposable(count)
             } if callee_name == ignored_callee
         )));
     }
-    assert!(losses.iter().any(|loss| matches!(
+    assert!(!losses.iter().any(|loss| matches!(
         &loss.kind,
         ReactivityLossKind::FunctionArgumentExtract {
             argument_name,
@@ -1429,7 +1493,7 @@ useMyComposable(count)
 }
 
 #[test]
-fn test_plain_reactive_alias_chain_crosses_calls_and_getters() {
+fn test_plain_reactive_alias_chain_and_mutation_are_losses() {
     use crate::reactivity::ReactivityLossKind;
 
     let result = parse_script_setup(
@@ -1443,6 +1507,7 @@ assigned = second
 
 useMyComposable(second)
 useMyComposable(assigned)
+assigned++
 
 const ctx = useMyComposable(() => second)
 const a = ctx.second()
@@ -1501,12 +1566,154 @@ const a = ctx.second()
     )));
     assert!(losses.iter().any(|loss| matches!(
         &loss.kind,
+        ReactivityLossKind::PlainValueAlias {
+            source_name,
+            alias_name,
+            target_name,
+        } if source_name == "count" && alias_name == "<mutation>" && target_name == "assigned"
+    )));
+    assert_eq!(
+        losses
+            .iter()
+            .filter(|loss| matches!(
+                &loss.kind,
+                ReactivityLossKind::PlainValueAlias {
+                    alias_name,
+                    target_name,
+                    ..
+                } if alias_name == "<mutation>" && target_name == "assigned"
+            ))
+            .count(),
+        1,
+        "`assigned = second` should create a stale alias, not a mutation"
+    );
+    assert!(losses.iter().any(|loss| matches!(
+        &loss.kind,
         ReactivityLossKind::GetterCallExtract {
             context_name,
             getter_name,
             source_name,
             ..
         } if context_name == "ctx" && getter_name == "second" && source_name == "count"
+    )));
+}
+
+#[test]
+fn test_ref_value_children_are_tracked_as_reactive_objects() {
+    use crate::reactivity::ReactivityLossKind;
+
+    let result = parse_script_setup(
+        r#"
+const user = ref({ profile: { name: 'Ada' }, tags: ['a'] })
+
+const name = user.value.profile.name
+const { profile } = user.value
+const copy = { ...user.value }
+const tags = [...user.value.tags]
+useFeature(user.value.profile.name)
+user.value.profile.name = 'Grace'
+"#,
+    );
+
+    let losses = result.reactivity.losses();
+    assert!(losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::ReactivePropertyExtract {
+            source_name,
+            prop_name,
+            target_name,
+        } if source_name == "user.value" && prop_name == "profile" && target_name == "name"
+    )));
+    assert!(losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::RefValueDestructure {
+            source_name,
+            destructured_props,
+        } if source_name == "user" && destructured_props == &vec![CompactString::new("profile")]
+    )));
+    assert!(losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::ReactiveSpread { source_name }
+            if source_name == "user.value"
+    )));
+    assert!(losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::ReactiveSpread { source_name }
+            if source_name == "user.value.tags"
+    )));
+    assert!(losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::FunctionArgumentExtract {
+            argument_name,
+            callee_name,
+            ..
+        } if argument_name == "user.value.profile.name" && callee_name == "useFeature"
+    )));
+    assert!(!losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::PlainValueAlias {
+            alias_name,
+            target_name,
+            ..
+        } if alias_name == "<mutation>" && target_name == "user.value.profile.name"
+    )));
+}
+
+#[test]
+fn test_value_property_tracking_requires_reactive_ref_root() {
+    use crate::reactivity::ReactivityLossKind;
+
+    let result = parse_script_setup(
+        r#"
+const plain = { value: { profile: { name: 'Ada' } } }
+const plainName = plain.value.profile.name
+useFeature(plain.value.profile.name)
+const plainCopy = { ...plain.value }
+
+const box = reactive({ value: { name: 'Ada' } })
+const reactiveName = box.value.name
+useFeature(box.value.name)
+"#,
+    );
+
+    let losses = result.reactivity.losses();
+    assert!(!losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::ReactivePropertyExtract {
+            source_name,
+            target_name,
+            ..
+        } if source_name.starts_with("plain") || target_name == "plainName"
+    )));
+    assert!(!losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::FunctionArgumentExtract {
+            argument_name,
+            ..
+        } if argument_name.starts_with("plain.value")
+    )));
+    assert!(!losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::ReactiveSpread { source_name }
+            if source_name.starts_with("plain.value")
+    )));
+    assert!(losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::ReactivePropertyExtract {
+            source_name,
+            prop_name,
+            target_name,
+        } if source_name == "box" && prop_name == "value" && target_name == "reactiveName"
+    )));
+    assert!(losses.iter().any(|loss| matches!(
+        &loss.kind,
+        ReactivityLossKind::FunctionArgumentExtract {
+            source_name,
+            argument_name,
+            callee_name,
+        } if source_name == "box.value.name"
+            && argument_name == "box.value.name"
+            && callee_name == "useFeature"
     )));
 }
 

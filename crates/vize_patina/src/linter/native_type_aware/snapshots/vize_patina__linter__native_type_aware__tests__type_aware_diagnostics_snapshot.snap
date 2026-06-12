@@ -60,11 +60,11 @@ expression: diagnostics
     ),
     (
         "type/no-reactivity-loss",
-        "Passing 'count' to 'useMyComposable' crosses a plain-value boundary from 'countRef.value'",
+        "Passing 'count' to 'useMyComposable' cuts the reactive graph from 'countRef.value'",
         308,
         313,
         Some(
-            "Pass a ref, `toRef(...)`, `computed(...)`, or a getter so the callee can observe later updates.",
+            "Pass `Ref<T>` or `ComputedRef<T>` instead, for example `toRef(source, 'key')` or `computed(() => value)`.",
         ),
     ),
 ]

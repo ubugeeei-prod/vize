@@ -29,10 +29,6 @@ pub(crate) enum ReactiveValueOrigin {
     RefValue {
         source_name: CompactString,
     },
-    FunctionArgument {
-        source_name: CompactString,
-        callee_name: CompactString,
-    },
     GetterCall {
         context_name: CompactString,
         getter_name: CompactString,

@@ -94,6 +94,21 @@ pub(super) fn prop_reactivity_loss(
                 source_name,
                 alias_name,
                 target_name,
+            } if alias_name == "<mutation>"
+                && (reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
+                    || reactivity_loss_source_matches_prop(target_name.as_str(), prop_name)) =>
+            {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::NonReactiveIntermediate {
+                        intermediate: target_name.clone(),
+                    },
+                });
+            }
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
             } if reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
                 || reactivity_loss_source_matches_prop(alias_name.as_str(), prop_name)
                 || prop_names_match(target_name.as_str(), prop_name) =>
@@ -107,23 +122,6 @@ pub(super) fn prop_reactivity_loss(
             }
             _ => {}
         }
-    }
-
-    if let Some(destructure) = analysis.macros.props_destructure()
-        && (destructure
-            .bindings
-            .keys()
-            .any(|key| prop_names_match(key.as_str(), prop_name))
-            || destructure.rest_id.is_some())
-    {
-        let props = destructure.bindings.keys().cloned().collect::<Vec<_>>();
-        return Some(PropLoss {
-            offset: analysis
-                .macros
-                .define_props()
-                .map_or(0, |define_props| define_props.start),
-            reason: ReactivityLossReason::Destructured { props },
-        });
     }
 
     None

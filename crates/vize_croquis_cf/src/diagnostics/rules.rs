@@ -83,6 +83,9 @@ impl CrossFileDiagnostic {
             CrossFileDiagnosticKind::LifecycleOutsideSetup { .. } => {
                 "vize:croquis/cf/lifecycle-outside-setup"
             }
+            CrossFileDiagnosticKind::LifecycleHookWithoutCleanup { .. } => {
+                "vize:croquis/cf/lifecycle-without-cleanup"
+            }
             CrossFileDiagnosticKind::WatcherOutsideSetup { .. } => {
                 "vize:croquis/cf/watcher-outside-setup"
             }

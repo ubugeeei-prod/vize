@@ -145,6 +145,13 @@ pub(in crate::script_parser) fn walk_expression(
             for elem in arr.elements.iter() {
                 match elem {
                     oxc_ast::ast::ArrayExpressionElement::SpreadElement(spread) => {
+                        super::super::extract::check_reactive_spread_expression(
+                            result,
+                            &spread.argument,
+                            source,
+                            spread.span.start,
+                            spread.span.end,
+                        );
                         walk_expression(result, &spread.argument, source);
                     }
                     oxc_ast::ast::ArrayExpressionElement::Elision(_) => {}
@@ -160,20 +167,19 @@ pub(in crate::script_parser) fn walk_expression(
             for prop in obj.properties.iter() {
                 match prop {
                     ObjectPropertyKind::ObjectProperty(p) => {
+                        if let Some(key) = p.key.as_expression() {
+                            walk_expression(result, key, source);
+                        }
                         walk_expression(result, &p.value, source);
                     }
                     ObjectPropertyKind::SpreadProperty(spread) => {
-                        // Check for reactive spread: { ...state }
-                        if let Expression::Identifier(id) = &spread.argument {
-                            let var_name = CompactString::new(id.name.as_str());
-                            if result.reactivity.is_reactive(var_name.as_str()) {
-                                result.reactivity.record_spread(
-                                    var_name,
-                                    spread.span.start,
-                                    spread.span.end,
-                                );
-                            }
-                        }
+                        super::super::extract::check_reactive_spread_expression(
+                            result,
+                            &spread.argument,
+                            source,
+                            spread.span.start,
+                            spread.span.end,
+                        );
                         walk_expression(result, &spread.argument, source);
                     }
                 }
@@ -202,6 +208,12 @@ pub(in crate::script_parser) fn walk_expression(
 
         // Assignment
         Expression::AssignmentExpression(assign) => {
+            super::super::extract::check_reactive_plain_assignment_mutation(
+                result,
+                &assign.left,
+                source,
+            );
+
             // Check for reactive variable reassignment: state = newValue
             if let AssignmentTarget::AssignmentTargetIdentifier(id) = &assign.left {
                 let var_name = CompactString::new(id.name.as_str());
@@ -219,6 +231,14 @@ pub(in crate::script_parser) fn walk_expression(
                 }
             }
             walk_expression(result, &assign.right, source);
+        }
+
+        Expression::UpdateExpression(update) => {
+            super::super::extract::check_reactive_plain_update_mutation(
+                result,
+                &update.argument,
+                source,
+            );
         }
 
         // TypeScript type assertions (as, satisfies, !)
@@ -251,6 +271,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
     detect_provide_inject_call(result, call, source);
     detect_race_condition_call(result, call, source);
     detect_call_argument_reactivity_loss(result, call, source);
+    super::super::extract::check_reactive_plain_call_mutation(result, call, source);
 
     // Check if this is a client-only lifecycle hook
     let is_lifecycle_hook = if let Expression::Identifier(id) = &call.callee {
@@ -268,11 +289,19 @@ pub(in crate::script_parser) fn walk_call_arguments(
     } else {
         None
     };
+    let mut lifecycle_callback_scope_recorded = false;
 
     // Then walk each argument
     for arg in call.arguments.iter() {
         match arg {
             Argument::SpreadElement(spread) => {
+                super::super::extract::check_reactive_spread_expression(
+                    result,
+                    &spread.argument,
+                    source,
+                    spread.span.start,
+                    spread.span.end,
+                );
                 walk_expression(result, &spread.argument, source);
             }
             _ => {
@@ -282,6 +311,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
                     if let Some(name) = hook_name {
                         match expr {
                             Expression::ArrowFunctionExpression(arrow) => {
+                                lifecycle_callback_scope_recorded = true;
                                 // Enter client-only scope
                                 result.scopes.enter_client_only_scope(
                                     ClientOnlyScopeData {
@@ -323,6 +353,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                 continue;
                             }
                             Expression::FunctionExpression(func) => {
+                                lifecycle_callback_scope_recorded = true;
                                 // Enter client-only scope
                                 result.scopes.enter_client_only_scope(
                                     ClientOnlyScopeData {
@@ -368,5 +399,18 @@ pub(in crate::script_parser) fn walk_call_arguments(
                 }
             }
         }
+    }
+
+    if let Some(name) = hook_name
+        && !lifecycle_callback_scope_recorded
+    {
+        result.scopes.enter_client_only_scope(
+            ClientOnlyScopeData {
+                hook_name: CompactString::new(name),
+            },
+            call.span.start,
+            call.span.end,
+        );
+        result.scopes.exit_scope();
     }
 }

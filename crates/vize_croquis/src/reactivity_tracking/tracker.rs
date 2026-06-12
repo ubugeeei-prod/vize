@@ -292,24 +292,7 @@ impl ReactivityTracker {
                 });
             }
 
-            UseSiteKind::ClosureCapture { closure_start: _ } => {
-                // Check if this closure might escape (e.g., setTimeout, addEventListener)
-                // For now, we'll warn about all captures in potentially escaping closures
-                self.violations.push(ReactivityViolation {
-                    binding_id,
-                    kind: ViolationKind::UnsafeClosureCapture,
-                    start,
-                    end,
-                    message: cstr!(
-                        "Reactive reference '{}' captured in closure",
-                        binding.name
-                    ),
-                    suggestion: Some(CompactString::new(
-                        "Ensure closure doesn't outlive component, or use watchEffect for reactive effects",
-                    )),
-                    severity: ViolationSeverity::Info,
-                });
-            }
+            UseSiteKind::ClosureCapture { closure_start: _ } => {}
 
             UseSiteKind::Read
                 if binding.is_ref_type() && !self.in_template && !binding.value_accessed =>

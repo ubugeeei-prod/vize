@@ -1,30 +1,21 @@
-use oxc_ast::ast::{Expression, ObjectPropertyKind, Statement};
+use oxc_ast::ast::{Argument, ChainElement, Expression, ObjectPropertyKind, Statement};
 
-use vize_carton::CompactString;
-
-use super::super::super::{ReactiveValueOrigin, ScriptParseResult};
+use super::super::super::ScriptParseResult;
 use super::ReactivePlainValue;
 
-pub(super) fn record_reactive_plain_values_in_call_arg(
+pub(super) fn record_reactive_plain_values_in_composable_arg(
     result: &mut ScriptParseResult,
     expr: &Expression<'_>,
-    callee_name: &CompactString,
+    callee_name: &vize_carton::CompactString,
     source: &str,
 ) {
     if let Some(value) = super::sources::reactive_plain_value_from_expr(result, expr, source) {
         result.reactivity.record_function_argument_extract(
-            value.source_name.clone(),
-            value.argument_name.clone(),
+            value.source_name,
+            value.argument_name,
             callee_name.clone(),
             value.start,
             value.end,
-        );
-        result.reactive_value_origins.insert(
-            value.argument_name,
-            ReactiveValueOrigin::FunctionArgument {
-                source_name: value.source_name,
-                callee_name: callee_name.clone(),
-            },
         );
         return;
     }
@@ -34,7 +25,7 @@ pub(super) fn record_reactive_plain_values_in_call_arg(
             for elem in arr.elements.iter() {
                 match elem {
                     oxc_ast::ast::ArrayExpressionElement::SpreadElement(spread) => {
-                        record_reactive_plain_values_in_call_arg(
+                        record_reactive_plain_values_in_composable_arg(
                             result,
                             &spread.argument,
                             callee_name,
@@ -44,7 +35,7 @@ pub(super) fn record_reactive_plain_values_in_call_arg(
                     oxc_ast::ast::ArrayExpressionElement::Elision(_) => {}
                     _ => {
                         if let Some(expr) = elem.as_expression() {
-                            record_reactive_plain_values_in_call_arg(
+                            record_reactive_plain_values_in_composable_arg(
                                 result,
                                 expr,
                                 callee_name,
@@ -55,11 +46,49 @@ pub(super) fn record_reactive_plain_values_in_call_arg(
                 }
             }
         }
+        Expression::AwaitExpression(await_expr) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &await_expr.argument,
+                callee_name,
+                source,
+            );
+        }
+        Expression::BinaryExpression(binary) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &binary.left,
+                callee_name,
+                source,
+            );
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &binary.right,
+                callee_name,
+                source,
+            );
+        }
+        Expression::CallExpression(call) => {
+            for arg in call.arguments.iter() {
+                record_argument_reactive_plain_values(result, arg, callee_name, source);
+            }
+        }
+        Expression::ChainExpression(chain) => {
+            record_chain_reactive_plain_values(result, &chain.expression, callee_name, source);
+        }
         Expression::ObjectExpression(obj) => {
             for prop in obj.properties.iter() {
                 match prop {
                     ObjectPropertyKind::ObjectProperty(prop) => {
-                        record_reactive_plain_values_in_call_arg(
+                        if let Some(key) = prop.key.as_expression() {
+                            record_reactive_plain_values_in_composable_arg(
+                                result,
+                                key,
+                                callee_name,
+                                source,
+                            );
+                        }
+                        record_reactive_plain_values_in_composable_arg(
                             result,
                             &prop.value,
                             callee_name,
@@ -67,7 +96,7 @@ pub(super) fn record_reactive_plain_values_in_call_arg(
                         );
                     }
                     ObjectPropertyKind::SpreadProperty(spread) => {
-                        record_reactive_plain_values_in_call_arg(
+                        record_reactive_plain_values_in_composable_arg(
                             result,
                             &spread.argument,
                             callee_name,
@@ -77,22 +106,129 @@ pub(super) fn record_reactive_plain_values_in_call_arg(
                 }
             }
         }
+        Expression::ComputedMemberExpression(member) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &member.object,
+                callee_name,
+                source,
+            );
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &member.expression,
+                callee_name,
+                source,
+            );
+        }
+        Expression::StaticMemberExpression(member) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &member.object,
+                callee_name,
+                source,
+            );
+        }
+        Expression::PrivateFieldExpression(field) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &field.object,
+                callee_name,
+                source,
+            );
+        }
         Expression::ConditionalExpression(cond) => {
-            record_reactive_plain_values_in_call_arg(result, &cond.test, callee_name, source);
-            record_reactive_plain_values_in_call_arg(result, &cond.consequent, callee_name, source);
-            record_reactive_plain_values_in_call_arg(result, &cond.alternate, callee_name, source);
+            record_reactive_plain_values_in_composable_arg(result, &cond.test, callee_name, source);
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &cond.consequent,
+                callee_name,
+                source,
+            );
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &cond.alternate,
+                callee_name,
+                source,
+            );
         }
         Expression::LogicalExpression(logical) => {
-            record_reactive_plain_values_in_call_arg(result, &logical.left, callee_name, source);
-            record_reactive_plain_values_in_call_arg(result, &logical.right, callee_name, source);
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &logical.left,
+                callee_name,
+                source,
+            );
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &logical.right,
+                callee_name,
+                source,
+            );
+        }
+        Expression::NewExpression(new_expr) => {
+            for arg in new_expr.arguments.iter() {
+                record_argument_reactive_plain_values(result, arg, callee_name, source);
+            }
+        }
+        Expression::TaggedTemplateExpression(tagged) => {
+            for expr in tagged.quasi.expressions.iter() {
+                record_reactive_plain_values_in_composable_arg(result, expr, callee_name, source);
+            }
+        }
+        Expression::TemplateLiteral(template) => {
+            for expr in template.expressions.iter() {
+                record_reactive_plain_values_in_composable_arg(result, expr, callee_name, source);
+            }
+        }
+        Expression::UnaryExpression(unary) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &unary.argument,
+                callee_name,
+                source,
+            );
+        }
+        Expression::YieldExpression(yield_expr) => {
+            if let Some(argument) = &yield_expr.argument {
+                record_reactive_plain_values_in_composable_arg(
+                    result,
+                    argument,
+                    callee_name,
+                    source,
+                );
+            }
+        }
+        Expression::PrivateInExpression(private_in) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &private_in.right,
+                callee_name,
+                source,
+            );
+        }
+        Expression::ImportExpression(import_expr) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &import_expr.source,
+                callee_name,
+                source,
+            );
+            if let Some(options) = &import_expr.options {
+                record_reactive_plain_values_in_composable_arg(
+                    result,
+                    options,
+                    callee_name,
+                    source,
+                );
+            }
         }
         Expression::SequenceExpression(seq) => {
             for expr in seq.expressions.iter() {
-                record_reactive_plain_values_in_call_arg(result, expr, callee_name, source);
+                record_reactive_plain_values_in_composable_arg(result, expr, callee_name, source);
             }
         }
         Expression::ParenthesizedExpression(paren) => {
-            record_reactive_plain_values_in_call_arg(
+            record_reactive_plain_values_in_composable_arg(
                 result,
                 &paren.expression,
                 callee_name,
@@ -100,7 +236,7 @@ pub(super) fn record_reactive_plain_values_in_call_arg(
             );
         }
         Expression::TSAsExpression(ts_as) => {
-            record_reactive_plain_values_in_call_arg(
+            record_reactive_plain_values_in_composable_arg(
                 result,
                 &ts_as.expression,
                 callee_name,
@@ -108,7 +244,7 @@ pub(super) fn record_reactive_plain_values_in_call_arg(
             );
         }
         Expression::TSSatisfiesExpression(ts_satisfies) => {
-            record_reactive_plain_values_in_call_arg(
+            record_reactive_plain_values_in_composable_arg(
                 result,
                 &ts_satisfies.expression,
                 callee_name,
@@ -116,14 +252,111 @@ pub(super) fn record_reactive_plain_values_in_call_arg(
             );
         }
         Expression::TSNonNullExpression(ts_non_null) => {
-            record_reactive_plain_values_in_call_arg(
+            record_reactive_plain_values_in_composable_arg(
                 result,
                 &ts_non_null.expression,
                 callee_name,
                 source,
             );
         }
+        Expression::TSTypeAssertion(ts_assertion) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &ts_assertion.expression,
+                callee_name,
+                source,
+            );
+        }
+        Expression::TSInstantiationExpression(ts_instantiation) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &ts_instantiation.expression,
+                callee_name,
+                source,
+            );
+        }
+        Expression::V8IntrinsicExpression(intrinsic) => {
+            for arg in intrinsic.arguments.iter() {
+                record_argument_reactive_plain_values(result, arg, callee_name, source);
+            }
+        }
         _ => {}
+    }
+}
+
+fn record_argument_reactive_plain_values(
+    result: &mut ScriptParseResult,
+    arg: &Argument<'_>,
+    callee_name: &vize_carton::CompactString,
+    source: &str,
+) {
+    match arg {
+        Argument::SpreadElement(spread) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &spread.argument,
+                callee_name,
+                source,
+            );
+        }
+        _ => {
+            if let Some(expr) = arg.as_expression() {
+                record_reactive_plain_values_in_composable_arg(result, expr, callee_name, source);
+            }
+        }
+    }
+}
+
+fn record_chain_reactive_plain_values(
+    result: &mut ScriptParseResult,
+    chain: &ChainElement<'_>,
+    callee_name: &vize_carton::CompactString,
+    source: &str,
+) {
+    match chain {
+        ChainElement::CallExpression(call) => {
+            for arg in call.arguments.iter() {
+                record_argument_reactive_plain_values(result, arg, callee_name, source);
+            }
+        }
+        ChainElement::TSNonNullExpression(ts_non_null) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &ts_non_null.expression,
+                callee_name,
+                source,
+            );
+        }
+        ChainElement::ComputedMemberExpression(member) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &member.object,
+                callee_name,
+                source,
+            );
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &member.expression,
+                callee_name,
+                source,
+            );
+        }
+        ChainElement::StaticMemberExpression(member) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &member.object,
+                callee_name,
+                source,
+            );
+        }
+        ChainElement::PrivateFieldExpression(field) => {
+            record_reactive_plain_values_in_composable_arg(
+                result,
+                &field.object,
+                callee_name,
+                source,
+            );
+        }
     }
 }
 

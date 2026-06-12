@@ -755,7 +755,7 @@ const payload: { label: string } = { label: 'safe' }
 }
 
 #[test]
-fn no_reactivity_loss_tracks_props_calls_and_getter_returns() {
+fn no_reactivity_loss_tracks_props_composable_calls_and_getter_returns() {
     if !corsa_available() {
         return;
     }
@@ -764,7 +764,7 @@ fn no_reactivity_loss_tracks_props_calls_and_getter_returns() {
     let source = r#"<script setup lang="ts">
 const { count } = defineProps<{ count: number }>()
 
-const ctx = useMyComposable(count)
+useMyComposable(count)
 
 const ctx2 = useMyComposable(() => count)
 const a = ctx2.count()
@@ -849,6 +849,7 @@ assigned = second
 
 useMyComposable(second)
 useMyComposable(assigned)
+assigned++
 
 const ctx = useMyComposable(() => second)
 const a = ctx.second()
@@ -890,6 +891,16 @@ const a = ctx.second()
         messages
             .iter()
             .any(|message| message.contains("ctx.second()"))
+    );
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("Mutating 'assigned'"))
+    );
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("Passing 'second'"))
     );
 }
 

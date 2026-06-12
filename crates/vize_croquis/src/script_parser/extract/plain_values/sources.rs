@@ -1,4 +1,4 @@
-use oxc_ast::ast::{CallExpression, Expression};
+use oxc_ast::ast::{AssignmentTarget, CallExpression, Expression, SimpleAssignmentTarget};
 use oxc_span::GetSpan;
 
 use vize_carton::{CompactString, cstr};
@@ -25,6 +25,16 @@ pub(super) fn reactive_plain_value_from_expr(
             })
         }
         Expression::StaticMemberExpression(member) => {
+            if ref_value_member_root(result, expr).is_some() {
+                return Some(ReactivePlainValue {
+                    source_name: super::super::common::expression_label(source, member.span),
+                    argument_name: super::super::common::expression_label(source, member.span),
+                    getter_name: super::super::common::expression_label(source, member.span),
+                    start: member.span.start,
+                    end: member.span.end,
+                });
+            }
+
             if member.property.name.as_str() == "value"
                 && let Some(root) =
                     super::super::common::member_chain_root_identifier(&member.object)
@@ -65,6 +75,16 @@ pub(super) fn reactive_plain_value_from_expr(
             })
         }
         Expression::ComputedMemberExpression(member) => {
+            if ref_value_member_root(result, expr).is_some() {
+                return Some(ReactivePlainValue {
+                    source_name: super::super::common::expression_label(source, member.span),
+                    argument_name: super::super::common::expression_label(source, member.span),
+                    getter_name: super::super::common::expression_label(source, member.span),
+                    start: member.span.start,
+                    end: member.span.end,
+                });
+            }
+
             let root = super::super::common::member_chain_root_identifier(&member.object)?;
             if result
                 .reactivity
@@ -115,6 +135,160 @@ pub(super) fn reactive_plain_value_from_expr(
     }
 }
 
+pub(super) fn ref_value_property_extract(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+) -> Option<(CompactString, CompactString)> {
+    let (root, props) = static_member_chain(expr)?;
+    if props.len() < 2 || props.first().is_none_or(|prop| prop.as_str() != "value") {
+        return None;
+    }
+    if !result.reactivity.needs_value_access(root.as_str()) {
+        return None;
+    }
+    Some((cstr!("{root}.value"), props[1].clone()))
+}
+
+pub(super) fn ref_value_destructure_source(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+    source: &str,
+) -> Option<(CompactString, bool)> {
+    let (root, props) = static_member_chain(expr)?;
+    if props.first().is_none_or(|prop| prop.as_str() != "value") {
+        return None;
+    }
+    if !result.reactivity.needs_value_access(root.as_str()) {
+        return None;
+    }
+    if props.len() == 1 {
+        Some((root, true))
+    } else {
+        Some((
+            super::super::common::expression_label(source, expr.span()),
+            false,
+        ))
+    }
+}
+
+pub(super) fn reactive_member_destructure_source(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+    source: &str,
+) -> Option<CompactString> {
+    match expr {
+        Expression::StaticMemberExpression(member) => {
+            let root = super::super::common::member_chain_root_identifier(&member.object)?;
+            if result
+                .reactivity
+                .lookup(root.as_str())
+                .is_some_and(|source| !source.kind.needs_value_access())
+                || result.reactive_value_origins.contains_key(root.as_str())
+            {
+                return Some(super::super::common::expression_label(source, member.span));
+            }
+            None
+        }
+        Expression::ComputedMemberExpression(member) => {
+            let root = super::super::common::member_chain_root_identifier(&member.object)?;
+            if result
+                .reactivity
+                .lookup(root.as_str())
+                .is_some_and(|source| !source.kind.needs_value_access())
+                || result.reactive_value_origins.contains_key(root.as_str())
+            {
+                return Some(super::super::common::expression_label(source, member.span));
+            }
+            None
+        }
+        Expression::ParenthesizedExpression(paren) => {
+            reactive_member_destructure_source(result, &paren.expression, source)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            reactive_member_destructure_source(result, &ts_as.expression, source)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            reactive_member_destructure_source(result, &ts_satisfies.expression, source)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            reactive_member_destructure_source(result, &ts_non_null.expression, source)
+        }
+        _ => None,
+    }
+}
+
+pub(super) fn reactive_expression_label_for_spread(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+    source: &str,
+) -> Option<CompactString> {
+    match expr {
+        Expression::Identifier(id) => {
+            let name = id.name.as_str();
+            (result.reactivity.is_reactive(name)
+                || result.reactive_value_origins.contains_key(name))
+            .then(|| CompactString::new(name))
+        }
+        Expression::StaticMemberExpression(member) => {
+            if ref_value_member_root(result, expr).is_some() {
+                return Some(super::super::common::expression_label(source, member.span));
+            }
+            let root = super::super::common::member_chain_root_identifier(&member.object)?;
+            if result
+                .reactivity
+                .lookup(root.as_str())
+                .is_some_and(|source| !source.kind.needs_value_access())
+                || result.reactive_value_origins.contains_key(root.as_str())
+            {
+                return Some(super::super::common::expression_label(source, member.span));
+            }
+            None
+        }
+        Expression::ComputedMemberExpression(member) => {
+            if ref_value_member_root(result, expr).is_some() {
+                return Some(super::super::common::expression_label(source, member.span));
+            }
+            let root = super::super::common::member_chain_root_identifier(&member.object)?;
+            if result
+                .reactivity
+                .lookup(root.as_str())
+                .is_some_and(|source| !source.kind.needs_value_access())
+                || result.reactive_value_origins.contains_key(root.as_str())
+            {
+                return Some(super::super::common::expression_label(source, member.span));
+            }
+            None
+        }
+        Expression::ChainExpression(chain) => match &chain.expression {
+            oxc_ast::ast::ChainElement::StaticMemberExpression(member) => {
+                reactive_expression_label_for_spread(result, &member.object, source)
+                    .map(|_| super::super::common::expression_label(source, member.span))
+            }
+            oxc_ast::ast::ChainElement::ComputedMemberExpression(member) => {
+                reactive_expression_label_for_spread(result, &member.object, source)
+                    .map(|_| super::super::common::expression_label(source, member.span))
+            }
+            oxc_ast::ast::ChainElement::TSNonNullExpression(expr) => {
+                reactive_expression_label_for_spread(result, &expr.expression, source)
+            }
+            _ => None,
+        },
+        Expression::ParenthesizedExpression(paren) => {
+            reactive_expression_label_for_spread(result, &paren.expression, source)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            reactive_expression_label_for_spread(result, &ts_as.expression, source)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            reactive_expression_label_for_spread(result, &ts_satisfies.expression, source)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            reactive_expression_label_for_spread(result, &ts_non_null.expression, source)
+        }
+        _ => None,
+    }
+}
+
 pub(super) fn reactive_plain_identifier_value_from_expr(
     result: &ScriptParseResult,
     expr: &Expression<'_>,
@@ -146,6 +320,215 @@ pub(super) fn reactive_plain_identifier_value_from_expr(
         }
         _ => None,
     }
+}
+
+fn ref_value_member_root(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+) -> Option<CompactString> {
+    let (root, props) = static_member_chain(expr)?;
+    if props.first().is_some_and(|prop| prop.as_str() == "value")
+        && result.reactivity.needs_value_access(root.as_str())
+    {
+        Some(root)
+    } else {
+        None
+    }
+}
+
+fn static_member_chain(expr: &Expression<'_>) -> Option<(CompactString, Vec<CompactString>)> {
+    let mut props = Vec::new();
+    let mut current = expr;
+    loop {
+        match current {
+            Expression::StaticMemberExpression(member) => {
+                props.push(CompactString::new(member.property.name.as_str()));
+                current = &member.object;
+            }
+            Expression::Identifier(id) => {
+                props.reverse();
+                return Some((CompactString::new(id.name.as_str()), props));
+            }
+            Expression::ParenthesizedExpression(paren) => current = &paren.expression,
+            Expression::TSAsExpression(ts_as) => current = &ts_as.expression,
+            Expression::TSSatisfiesExpression(ts_satisfies) => current = &ts_satisfies.expression,
+            Expression::TSNonNullExpression(ts_non_null) => current = &ts_non_null.expression,
+            _ => return None,
+        }
+    }
+}
+
+pub(super) fn reactive_plain_value_from_assignment_target(
+    result: &ScriptParseResult,
+    target: &AssignmentTarget<'_>,
+    source: &str,
+) -> Option<ReactivePlainValue> {
+    match target {
+        AssignmentTarget::AssignmentTargetIdentifier(id) => {
+            reactive_plain_mutation_identifier_value(
+                result,
+                id.name.as_str(),
+                id.span.start,
+                id.span.end,
+            )
+        }
+        AssignmentTarget::StaticMemberExpression(member) => {
+            reactive_plain_value_from_mutated_member(
+                result,
+                &member.object,
+                source,
+                member.span.start,
+                member.span.end,
+            )
+        }
+        AssignmentTarget::ComputedMemberExpression(member) => {
+            reactive_plain_value_from_mutated_member(
+                result,
+                &member.object,
+                source,
+                member.span.start,
+                member.span.end,
+            )
+        }
+        _ => None,
+    }
+}
+
+pub(super) fn reactive_plain_value_from_simple_assignment_target(
+    result: &ScriptParseResult,
+    target: &SimpleAssignmentTarget<'_>,
+    source: &str,
+) -> Option<ReactivePlainValue> {
+    match target {
+        SimpleAssignmentTarget::AssignmentTargetIdentifier(id) => {
+            reactive_plain_mutation_identifier_value(
+                result,
+                id.name.as_str(),
+                id.span.start,
+                id.span.end,
+            )
+        }
+        SimpleAssignmentTarget::StaticMemberExpression(member) => {
+            reactive_plain_value_from_mutated_member(
+                result,
+                &member.object,
+                source,
+                member.span.start,
+                member.span.end,
+            )
+        }
+        SimpleAssignmentTarget::ComputedMemberExpression(member) => {
+            reactive_plain_value_from_mutated_member(
+                result,
+                &member.object,
+                source,
+                member.span.start,
+                member.span.end,
+            )
+        }
+        _ => None,
+    }
+}
+
+pub(super) fn reactive_plain_value_from_mutated_expression(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+    source: &str,
+) -> Option<ReactivePlainValue> {
+    match expr {
+        Expression::Identifier(id) => reactive_plain_mutation_identifier_value(
+            result,
+            id.name.as_str(),
+            id.span.start,
+            id.span.end,
+        ),
+        Expression::StaticMemberExpression(member) => reactive_plain_value_from_mutated_member(
+            result,
+            &member.object,
+            source,
+            member.span.start,
+            member.span.end,
+        ),
+        Expression::ComputedMemberExpression(member) => reactive_plain_value_from_mutated_member(
+            result,
+            &member.object,
+            source,
+            member.span.start,
+            member.span.end,
+        ),
+        Expression::ChainExpression(chain) => match &chain.expression {
+            oxc_ast::ast::ChainElement::StaticMemberExpression(member) => {
+                reactive_plain_value_from_mutated_member(
+                    result,
+                    &member.object,
+                    source,
+                    member.span.start,
+                    member.span.end,
+                )
+            }
+            oxc_ast::ast::ChainElement::ComputedMemberExpression(member) => {
+                reactive_plain_value_from_mutated_member(
+                    result,
+                    &member.object,
+                    source,
+                    member.span.start,
+                    member.span.end,
+                )
+            }
+            oxc_ast::ast::ChainElement::TSNonNullExpression(expr) => {
+                reactive_plain_value_from_mutated_expression(result, &expr.expression, source)
+            }
+            _ => None,
+        },
+        Expression::ParenthesizedExpression(paren) => {
+            reactive_plain_value_from_mutated_expression(result, &paren.expression, source)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            reactive_plain_value_from_mutated_expression(result, &ts_as.expression, source)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            reactive_plain_value_from_mutated_expression(result, &ts_satisfies.expression, source)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            reactive_plain_value_from_mutated_expression(result, &ts_non_null.expression, source)
+        }
+        _ => None,
+    }
+}
+
+fn reactive_plain_value_from_mutated_member(
+    result: &ScriptParseResult,
+    object: &Expression<'_>,
+    source: &str,
+    start: u32,
+    end: u32,
+) -> Option<ReactivePlainValue> {
+    let mut value = reactive_plain_value_from_mutated_expression(result, object, source)?;
+    value.argument_name =
+        super::super::common::expression_label(source, oxc_span::Span::new(start, end));
+    value.start = start;
+    value.end = end;
+    Some(value)
+}
+
+fn reactive_plain_mutation_identifier_value(
+    result: &ScriptParseResult,
+    binding_name: &str,
+    start: u32,
+    end: u32,
+) -> Option<ReactivePlainValue> {
+    let origin = result.reactive_value_origins.get(binding_name)?;
+    if matches!(origin, ReactiveValueOrigin::PropsDestructure { .. }) {
+        return None;
+    }
+    let (source_name, _) = plain_origin_labels(origin, binding_name);
+    Some(ReactivePlainValue {
+        source_name,
+        argument_name: CompactString::new(binding_name),
+        getter_name: CompactString::new(binding_name),
+        start,
+        end,
+    })
 }
 
 fn getter_call_plain_value(
@@ -221,10 +604,6 @@ fn plain_origin_labels(
         ReactiveValueOrigin::RefValue { source_name } => {
             (cstr!("{source_name}.value"), source_name.clone())
         }
-        ReactiveValueOrigin::FunctionArgument {
-            source_name,
-            callee_name: _callee_name,
-        } => (source_name.clone(), CompactString::new(binding_name)),
         ReactiveValueOrigin::GetterCall {
             context_name: _context_name,
             getter_name,

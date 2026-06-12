@@ -15,9 +15,12 @@ mod slots;
 pub use common::{extract_call_expression, get_binding_type_from_kind};
 pub use exports::{process_invalid_export, process_type_export};
 pub use macros::process_call_expression;
+pub(in crate::script_parser) use plain_values::reactive_destructure_source;
 pub use plain_values::{
     check_getter_call_extraction, check_reactive_plain_alias_extraction,
-    check_reactive_plain_assignment_alias, check_reactive_property_extraction,
+    check_reactive_plain_assignment_alias, check_reactive_plain_assignment_mutation,
+    check_reactive_plain_call_mutation, check_reactive_plain_update_mutation,
+    check_reactive_property_extraction, check_reactive_spread_expression,
     check_ref_value_extraction, detect_call_argument_reactivity_loss,
     record_getter_context_from_call,
 };

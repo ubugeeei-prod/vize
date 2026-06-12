@@ -167,6 +167,31 @@ pub(super) fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> Cross
             diag
         }
 
+        ReactivityIssueKind::PlainSnapshotMutation {
+            source_name,
+            target_name,
+        } => {
+            let mut diag = CrossFileDiagnostic::new(
+                CrossFileDiagnosticKind::ValueExtractionBreaksReactivity {
+                    source_name: source_name.clone(),
+                    extracted_value: target_name.clone(),
+                },
+                DiagnosticSeverity::Error,
+                file_id,
+                issue.offset,
+                cstr!(
+                    "Mutating '{}' writes through a plain snapshot from '{}'",
+                    target_name,
+                    source_name
+                ),
+            )
+            .with_suggestion("Mutate the reactive source directly, or keep the value as a ref/computed");
+            if let Some(end) = issue.end_offset {
+                diag = diag.with_end_offset(end);
+            }
+            diag
+        }
+
         ReactivityIssueKind::ReactiveSnapshotPassedToCall {
             source_name,
             argument_name,
@@ -181,13 +206,13 @@ pub(super) fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> Cross
                 file_id,
                 issue.offset,
                 cstr!(
-                    "Passing '{}' to '{}' captures a non-reactive snapshot",
+                    "Passing '{}' to '{}' cuts the reactive graph",
                     argument_name,
                     callee_name
                 ),
             )
             .with_suggestion(cstr!(
-                "Pass a getter like () => {argument_name}, or pass a ref/computed value explicitly"
+                "Pass Ref<T> or ComputedRef<T> instead, for example toRef(source, 'key') or computed(() => {argument_name})"
             ));
             if let Some(end) = issue.end_offset {
                 diag = diag.with_end_offset(end);
@@ -276,10 +301,10 @@ pub(super) fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> Cross
             DiagnosticSeverity::Error,
             file_id,
             issue.offset,
-            cstr!("Passing prop '{prop_name}' to ref() creates a non-reactive copy"),
+            cstr!("Using prop '{prop_name}' as a ref initial value creates a one-time copy"),
         )
         .with_suggestion(cstr!(
-            "Use toRef(props, '{prop_name}') or computed(() => props.{prop_name})"
+            "If this is derived state, use toRef(props, '{prop_name}') or computed(() => props.{prop_name}); if it is intentionally initial state, reset it from watch() or remount with a :key"
         )),
     }
 }

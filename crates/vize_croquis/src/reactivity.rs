@@ -284,6 +284,15 @@ impl ReactivityTracker {
         }
     }
 
+    /// Record spreading a reactive expression that is not a top-level binding.
+    pub fn record_spread_expression(&mut self, source_name: CompactString, start: u32, end: u32) {
+        self.losses.push(ReactivityLoss {
+            kind: ReactivityLossKind::ReactiveSpread { source_name },
+            start,
+            end,
+        });
+    }
+
     /// Record extracting ref.value to a plain variable
     pub fn record_ref_value_extract(
         &mut self,
@@ -377,6 +386,28 @@ impl ReactivityTracker {
             kind: ReactivityLossKind::PlainValueAlias {
                 source_name,
                 alias_name,
+                target_name,
+            },
+            start,
+            end,
+        });
+    }
+
+    /// Record mutating an already plain reactive snapshot.
+    pub fn record_plain_value_mutation(
+        &mut self,
+        source_name: CompactString,
+        target_name: CompactString,
+        start: u32,
+        end: u32,
+    ) {
+        // Keep this encoded as `PlainValueAlias` because `ReactivityLossKind`
+        // is a public exhaustive enum. Adding a variant would be a semver
+        // break for downstream match expressions.
+        self.losses.push(ReactivityLoss {
+            kind: ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name: CompactString::new("<mutation>"),
                 target_name,
             },
             start,

@@ -244,9 +244,7 @@ pub fn check_reactivity(
                 argument_name,
                 callee_name,
                 ..
-            } => cstr!(
-                "Passing '{argument_name}' to '{callee_name}' captures a non-reactive snapshot"
-            ),
+            } => cstr!("Passing '{argument_name}' to '{callee_name}' cuts the reactive graph"),
             ReactivityLossKind::GetterCallExtract {
                 context_name,
                 getter_name,
@@ -254,6 +252,13 @@ pub fn check_reactivity(
                 ..
             } => cstr!(
                 "Assigning '{context_name}.{getter_name}()' to '{target_name}' extracts a non-reactive snapshot"
+            ),
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } if alias_name == "<mutation>" => cstr!(
+                "Mutating '{target_name}' writes through a plain snapshot from '{source_name}'"
             ),
             ReactivityLossKind::PlainValueAlias {
                 source_name,

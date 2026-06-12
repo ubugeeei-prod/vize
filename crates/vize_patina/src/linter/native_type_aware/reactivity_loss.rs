@@ -193,12 +193,12 @@ fn reactivity_loss_diagnostic(loss: &ReactivityLoss) -> ReactivityLossQuery {
             callee_name,
         } => (
             cstr!(
-                "Passing '{}' to '{}' crosses a plain-value boundary from '{}'",
+                "Passing '{}' to '{}' cuts the reactive graph from '{}'",
                 argument_name,
                 callee_name,
                 source_name
             ),
-            "Pass a ref, `toRef(...)`, `computed(...)`, or a getter so the callee can observe later updates.",
+            "Pass `Ref<T>` or `ComputedRef<T>` instead, for example `toRef(source, 'key')` or `computed(() => value)`.",
         ),
         ReactivityLossKind::GetterCallExtract {
             context_name,
@@ -216,6 +216,18 @@ fn reactivity_loss_diagnostic(loss: &ReactivityLoss) -> ReactivityLossQuery {
                 callee_name
             ),
             "Keep the getter lazy, wrap it in `computed(...)`, or have the composable return a ref-like value.",
+        ),
+        ReactivityLossKind::PlainValueAlias {
+            source_name,
+            alias_name,
+            target_name,
+        } if alias_name == "<mutation>" => (
+            cstr!(
+                "Mutating '{}' writes through a plain snapshot from '{}'",
+                target_name,
+                source_name
+            ),
+            "Mutate the reactive source directly, or keep the value as a ref/computed.",
         ),
         ReactivityLossKind::PlainValueAlias {
             source_name,

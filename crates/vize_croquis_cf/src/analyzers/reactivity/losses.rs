@@ -112,6 +112,21 @@ pub(super) fn append_reactivity_losses(
                 source_name,
                 alias_name,
                 target_name,
+            } if alias_name == "<mutation>" => {
+                issues.push(InternalIssue {
+                    kind: ReactivityIssueKind::PlainSnapshotMutation {
+                        source_name: source_name.clone(),
+                        target_name: target_name.clone(),
+                    },
+                    offset: loss.start,
+                    end_offset: Some(loss.end),
+                    source: Some(source_name.clone()),
+                });
+            }
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
             } => {
                 issues.push(InternalIssue {
                     kind: ReactivityIssueKind::ReactiveToPlain {

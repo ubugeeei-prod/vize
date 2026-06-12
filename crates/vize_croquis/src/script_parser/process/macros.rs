@@ -311,6 +311,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 None
             });
 
+            let reactive_destructure_expr = declarator.init.as_ref().and_then(|init| {
+                super::super::extract::reactive_destructure_source(result, init, source)
+            });
+
             // If inject(), track it with ObjectDestructure pattern
             if let Some(call) = inject_call {
                 // Extract destructured property names
@@ -372,6 +376,25 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 result
                     .reactivity
                     .record_destructure(source_name, destructured_props, start, end);
+            } else if let Some((source_name, is_ref_value, start, end)) = reactive_destructure_expr
+            {
+                let destructured_props = collect_object_pattern_keys(obj);
+                use crate::reactivity::{ReactivityLoss, ReactivityLossKind};
+                record_object_pattern_property_origins(result, obj, source_name.clone());
+                let kind = if is_ref_value {
+                    ReactivityLossKind::RefValueDestructure {
+                        source_name,
+                        destructured_props,
+                    }
+                } else {
+                    ReactivityLossKind::ReactiveDestructure {
+                        source_name,
+                        destructured_props,
+                    }
+                };
+                result
+                    .reactivity
+                    .add_loss(ReactivityLoss { kind, start, end });
             } else if let Some((fn_name, start, end)) = direct_reactive_call {
                 // Direct destructuring: const { count } = reactive({ count: 0 })
                 let destructured_props = collect_object_pattern_keys(obj);

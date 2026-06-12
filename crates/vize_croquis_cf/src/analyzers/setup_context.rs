@@ -10,6 +10,7 @@ use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::CompactString;
 use vize_carton::cstr;
+use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::setup_context::{
     SetupContextViolation, SetupContextViolationKind, ViolationSeverity,
 };
@@ -55,9 +56,57 @@ pub fn analyze_setup_context(
                 end: violation.end,
             });
         }
+
+        diagnostics.extend(lifecycle_pair_diagnostics(file_id, analysis));
     }
 
     (issues, diagnostics)
+}
+
+fn lifecycle_pair_diagnostics(
+    file_id: FileId,
+    analysis: &vize_croquis::Croquis,
+) -> Vec<CrossFileDiagnostic> {
+    let mut hooks: FxHashMap<&str, u32> = FxHashMap::default();
+    let mut present: FxHashSet<&str> = FxHashSet::default();
+
+    for scope in analysis.scopes.iter() {
+        let vize_croquis::ScopeData::ClientOnly(data) = scope.data() else {
+            continue;
+        };
+        let hook_name = data.hook_name.as_str();
+        hooks.entry(hook_name).or_insert(scope.span.start);
+        present.insert(hook_name);
+    }
+
+    let mut diagnostics = Vec::new();
+    for (hook_name, cleanup_hook) in [
+        ("onMounted", "onUnmounted"),
+        ("onBeforeMount", "onBeforeUnmount"),
+        ("onActivated", "onDeactivated"),
+    ] {
+        if !present.contains(hook_name) || present.contains(cleanup_hook) {
+            continue;
+        }
+        let offset = hooks.get(hook_name).copied().unwrap_or(0);
+        diagnostics.push(
+            CrossFileDiagnostic::new(
+                CrossFileDiagnosticKind::LifecycleHookWithoutCleanup {
+                    hook_name: CompactString::new(hook_name),
+                    cleanup_hook: CompactString::new(cleanup_hook),
+                },
+                DiagnosticSeverity::Warning,
+                file_id,
+                offset,
+                cstr!("`{hook_name}()` has no matching `{cleanup_hook}()` cleanup hook"),
+            )
+            .with_suggestion(cstr!(
+                "Register `{cleanup_hook}()` when `{hook_name}()` creates listeners, timers, subscriptions, or activated resources"
+            )),
+        );
+    }
+
+    diagnostics
 }
 
 /// Create a diagnostic from a setup context violation.
