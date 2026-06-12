@@ -1209,3 +1209,149 @@ fn jsx_typecheck_on_lowers_tsx_to_plain_ts() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn jsx_typecheck_on_types_emits_from_ctx_second_param() {
+    // The typed second parameter `{ emit }: Ctx<Emits>` resolves against the
+    // injected ambient `Ctx`, and the `emit(...)` call is re-emitted as plain TS
+    // so the payload is checked against the declared tuple (#1502, #1497).
+    let case_dir = unique_case_dir("jsx-emits");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    let tsx_path = case_dir.join("Comp.tsx");
+    let source = "const Comp = (\n  props: { msg: string },\n  { emit }: Ctx<{ change: [value: number] }>,\n) => <button onClick={() => emit('change', props.msg.length)}>{props.msg}</button>;\n";
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.set_jsx_typecheck(true);
+    project
+        .register_path_with_content(&tsx_path, source)
+        .unwrap();
+    let virtual_file = project.find_by_original(&tsx_path).unwrap();
+
+    // Plain TS, and the ambient `Ctx` plus its emit-typing helper are injected so
+    // the verbatim `Ctx<{ change: [value: number] }>` annotation resolves.
+    assert_ts_parses(&virtual_file.content);
+    assert!(
+        virtual_file
+            .content
+            .contains("type Ctx<Emits = {}, Slots = {}>"),
+        "{}",
+        virtual_file.content
+    );
+    assert!(
+        virtual_file
+            .content
+            .contains("{ emit }: Ctx<{ change: [value: number] }>"),
+        "{}",
+        virtual_file.content
+    );
+    // The `emit(...)` call is re-emitted, so its payload type-checks at the call
+    // site against `[value: number]`.
+    assert!(
+        virtual_file
+            .content
+            .contains("emit('change', props.msg.length)"),
+        "{}",
+        virtual_file.content
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn jsx_typecheck_on_types_slots_from_ctx_second_param() {
+    // `slots` from the typed second parameter is typed as the `Slots` argument,
+    // and its usage in a JSX expression is re-emitted so slot access checks.
+    let case_dir = unique_case_dir("jsx-slots");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    let tsx_path = case_dir.join("Comp.tsx");
+    let source = "const Comp = (\n  _props: {},\n  { slots }: Ctx<{}, { default: () => unknown }>,\n) => <div>{slots.default()}</div>;\n";
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.set_jsx_typecheck(true);
+    project
+        .register_path_with_content(&tsx_path, source)
+        .unwrap();
+    let virtual_file = project.find_by_original(&tsx_path).unwrap();
+
+    assert_ts_parses(&virtual_file.content);
+    assert!(
+        virtual_file
+            .content
+            .contains("{ slots }: Ctx<{}, { default: () => unknown }>"),
+        "{}",
+        virtual_file.content
+    );
+    assert!(
+        virtual_file
+            .content
+            .contains("__vize_jsx_expr__(slots.default())"),
+        "{}",
+        virtual_file.content
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn jsx_typecheck_on_handles_mixed_props_emits_slots() {
+    // A component that uses all three of the typed props, emits, and slots
+    // lowers to plain TS that keeps both typed parameters verbatim and re-emits
+    // every dynamic JSX expression.
+    let case_dir = unique_case_dir("jsx-mixed");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    let tsx_path = case_dir.join("Comp.tsx");
+    let source = "const Comp = (\n  props: { label: string; count?: number },\n  { emit, slots }: Ctx<{ change: [next: number] }, { default: () => unknown }>,\n) => {\n  const next = (props.count ?? 0) + 1;\n  return (\n    <button onClick={() => emit('change', next)}>\n      {props.label}\n      {slots.default()}\n    </button>\n  );\n};\n";
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.set_jsx_typecheck(true);
+    project
+        .register_path_with_content(&tsx_path, source)
+        .unwrap();
+    let virtual_file = project.find_by_original(&tsx_path).unwrap();
+
+    assert_ts_parses(&virtual_file.content);
+    // Both typed parameters and the setup statement stay verbatim.
+    assert!(
+        virtual_file
+            .content
+            .contains("props: { label: string; count?: number }"),
+        "{}",
+        virtual_file.content
+    );
+    assert!(
+        virtual_file.content.contains(
+            "{ emit, slots }: Ctx<{ change: [next: number] }, { default: () => unknown }>"
+        ),
+        "{}",
+        virtual_file.content
+    );
+    assert!(
+        virtual_file
+            .content
+            .contains("const next = (props.count ?? 0) + 1;"),
+        "{}",
+        virtual_file.content
+    );
+    // The emit and slots usages survive as re-emitted plain TS.
+    assert!(
+        virtual_file.content.contains("emit('change', next)"),
+        "{}",
+        virtual_file.content
+    );
+    assert!(
+        virtual_file.content.contains("slots.default()"),
+        "{}",
+        virtual_file.content
+    );
+    // No JSX element syntax leaks into the virtual TS.
+    assert!(
+        !virtual_file.content.contains("<button"),
+        "{}",
+        virtual_file.content
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

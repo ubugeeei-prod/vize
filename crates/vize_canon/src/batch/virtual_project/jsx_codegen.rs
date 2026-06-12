@@ -34,6 +34,11 @@
 //! The result type-checks exactly what this first cut promises:
 //! - the **typed first parameter** stays verbatim, so every `props.X` access is
 //!   checked against the declared props type;
+//! - the **typed second parameter** (`{ emit, slots }: Ctx<Emits, Slots>`) stays
+//!   verbatim, and an ambient [`Ctx<Emits, Slots>`](CTX_HELPER) type is injected
+//!   so `emit(name, ...args)` checks `name` against `keyof Emits` and the payload
+//!   against the tuple `Emits[name]` (Vue's emits-as-tuple convention), and
+//!   `slots` is typed as `Slots`;
 //! - the **setup-scope** statements above the `return <jsx/>` stay verbatim, so
 //!   their declarations and uses are checked;
 //! - each **JSX expression** (`{props.msg}`, `class={cls}`, `{count + 1}`, …) is
@@ -41,10 +46,9 @@
 //!   byte range, so a wrong type inside a JSX expression is reported at the right
 //!   location.
 //!
-//! Deferred (see issue #1497): emits/slots typing from the `Ctx` second
-//! parameter, directive / `v-model` / style-expression checks, the stateful
-//! `defineComponent(() => () => VNode)` form, and full source-map fidelity for
-//! the synthesized wrapper scaffolding.
+//! Deferred (see issue #1497): directive / `v-model` / style-expression checks,
+//! the stateful `defineComponent(() => () => VNode)` form, and full source-map
+//! fidelity for the synthesized wrapper scaffolding.
 
 use std::path::Path;
 
@@ -73,6 +77,28 @@ pub(super) struct GeneratedJsxFile {
 /// expression. Declaring it ambient and `any`-returning lets each argument be
 /// type-checked independently while the whole call stays a valid render return.
 const JSX_EXPR_SINK: &str = "__vize_jsx_expr__";
+
+/// Ambient `Ctx<Emits, Slots>` type injected at module scope so the typed
+/// second parameter of a Vize JSX/TSX component (`{ emit, slots }: Ctx<…>`)
+/// resolves and type-checks (#1502).
+///
+/// `emit` reuses the very same emits-as-tuple convention as the `.vue` path's
+/// `defineEmits<E>()` (see `crate::virtual_ts::helpers`): the `__EmitFn<E>`
+/// alias resolves `E = { change: [value: number] }` to a callable
+/// `<K extends keyof E>(event: K, ...args: E[K]) => void`, so `emit('change', 1)`
+/// checks the payload against the declared tuple and an unknown event name or a
+/// wrong payload is reported at the `emit(...)` call site. `slots` is typed as
+/// the second type argument so slot access/usage type-checks. Both fall back to
+/// `{}` when omitted (`Ctx`, `Ctx<Emits>`). The type is purely ambient and fully
+/// erased — no runtime is emitted.
+///
+/// Kept self-contained (the emit trio is duplicated rather than pulling in the
+/// broader Vue helper blob) so JSX/TSX virtual TS never depends on resolving the
+/// `vue` module, matching the minimal, fully-erased intent of this path.
+const CTX_HELPER: &str = "type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;\n\
+type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];\n\
+type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);\n\
+type Ctx<Emits = {}, Slots = {}> = { emit: __EmitFn<Emits>; slots: Slots; attrs: Record<string, unknown>; };\n";
 
 /// A dynamic JSX expression recovered from the lowered tree: its original source
 /// text plus the byte range it occupied in the `.jsx`/`.tsx` source.
@@ -142,11 +168,14 @@ fn render_plain_ts(
     let mut out = CompactString::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
 
-    // Ambient helper: declared once at module scope so the re-emitted JSX
+    // Ambient helpers: declared once at module scope so the re-emitted JSX
     // expressions and the synthesized render returns both type-check.
     out.push_str("declare function ");
     out.push_str(JSX_EXPR_SINK);
     out.push_str("(...args: unknown[]): any;\n");
+    // Ambient `Ctx<Emits, Slots>` so the typed second parameter resolves and the
+    // `emit`/`slots` usages in the setup body and JSX expressions type-check.
+    out.push_str(CTX_HELPER);
 
     let mut cursor = 0usize;
     for (start, end, exprs) in roots {
@@ -392,5 +421,76 @@ mod tests {
         let source = "const Comp = (props: { cls: string }) => <div class={props.cls}>hi</div>;\n";
         let generated = generate(source);
         assert!(generated.code.contains("__vize_jsx_expr__(props.cls)"));
+    }
+
+    #[test]
+    fn injects_ambient_ctx_helper() {
+        // The ambient `Ctx<Emits, Slots>` is declared at module scope, with
+        // `emit` typed via the same `__EmitFn` emits-as-tuple convention as the
+        // `.vue` path so a component's typed second parameter resolves.
+        let generated = generate("const Comp = () => <div>hi</div>;\n");
+        assert!(
+            generated
+                .code
+                .contains("type Ctx<Emits = {}, Slots = {}> = { emit: __EmitFn<Emits>;"),
+            "ambient Ctx not injected: {}",
+            generated.code
+        );
+        assert!(
+            generated.code.contains("type __EmitFn<T>"),
+            "emit-typing helper not injected: {}",
+            generated.code
+        );
+    }
+
+    #[test]
+    fn keeps_typed_ctx_param_verbatim_and_reemits_emit_call() {
+        // `props` is the typed first parameter; `{ emit }: Ctx<…>` is the typed
+        // second parameter. Both stay verbatim, and the `emit(...)` call in a
+        // JSX expression is re-emitted as plain TS so its payload type-checks.
+        let source = "const Comp = (\n  props: { msg: string },\n  { emit }: Ctx<{ change: [value: number] }>,\n) => <button onClick={() => emit('change', 1)}>{props.msg}</button>;\n";
+        let generated = generate(source);
+        // The typed second parameter is preserved verbatim.
+        assert!(
+            generated
+                .code
+                .contains("{ emit }: Ctx<{ change: [value: number] }>"),
+            "typed Ctx param dropped: {}",
+            generated.code
+        );
+        // The `emit(...)` call inside the JSX handler is re-emitted as plain TS.
+        assert!(
+            generated.code.contains("emit('change', 1)"),
+            "emit call not re-emitted: {}",
+            generated.code
+        );
+        // Output stays plain TS.
+        assert!(
+            !generated.code.contains("<button"),
+            "JSX element leaked into virtual TS: {}",
+            generated.code
+        );
+    }
+
+    #[test]
+    fn reemits_slots_usage_from_typed_ctx_param() {
+        // `slots` comes from the typed second parameter and is re-emitted inside
+        // the JSX expression so slot access type-checks against `Slots`.
+        let source = "const Comp = (\n  _props: {},\n  { slots }: Ctx<{}, { default: () => unknown }>,\n) => <div>{slots.default()}</div>;\n";
+        let generated = generate(source);
+        assert!(
+            generated
+                .code
+                .contains("{ slots }: Ctx<{}, { default: () => unknown }>"),
+            "typed Ctx slots param dropped: {}",
+            generated.code
+        );
+        assert!(
+            generated
+                .code
+                .contains("__vize_jsx_expr__(slots.default())"),
+            "slots usage not re-emitted: {}",
+            generated.code
+        );
     }
 }
