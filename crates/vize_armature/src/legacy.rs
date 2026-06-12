@@ -211,7 +211,13 @@ pub enum DirectiveArgStyle {
 ///
 /// Each field documents the version lines it covers and the upstream Vue
 /// changelog / migration-guide entry that introduced or removed the surface.
+// `#[non_exhaustive]` so adding a capability field as new legacy Vue surfaces
+// land stays a non-breaking minor change: downstream crates construct this only
+// through [`for_dialect`](Self::for_dialect) / [`VUE3`](Self::VUE3), never a
+// struct literal, and the per-push cargo-semver-checks gate would otherwise flag
+// every field addition as breaking (`constructible_struct_adds_field`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub struct LegacyDialectCapabilities {
     /// Pipe filters in text interpolations and binding values
     /// (`{{ msg | capitalize }}`). All legacy lines; removed in Vue 3
