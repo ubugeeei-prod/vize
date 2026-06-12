@@ -1,4 +1,5 @@
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{LazyLock, RwLock};
 use std::time::SystemTime;
 
@@ -30,11 +31,43 @@ struct FileTypeSummary {
 /// the time.
 type FileStamp = (Option<SystemTime>, u64);
 
+/// One cached file summary plus the metadata needed to revalidate it.
+///
+/// `validated_epoch` records the [`BATCH_EPOCH`] in which the entry's
+/// [`FileStamp`] was last confirmed against disk. It is an atomic so a read
+/// hit can stamp it forward under the shared read guard, without upgrading to
+/// a write lock.
+struct CachedFileSummary {
+    stamp: FileStamp,
+    validated_epoch: AtomicU64,
+    summary: FileTypeSummary,
+}
+
+impl CachedFileSummary {
+    /// Whether this entry may be reused without re-reading the file, paying the
+    /// `file_stamp` `metadata` syscall only when the entry has not already been
+    /// confirmed this batch. The epoch is stamped forward on a successful
+    /// revalidation so later hits in the same batch skip the syscall; outside a
+    /// batch (`NO_EPOCH`) every call re-stamps.
+    fn is_fresh(&self, path: &Path, epoch: u64) -> bool {
+        if epoch != NO_EPOCH && self.validated_epoch.load(Ordering::Relaxed) == epoch {
+            return true;
+        }
+        if self.stamp == file_stamp(path) {
+            self.validated_epoch.store(epoch, Ordering::Relaxed);
+            true
+        } else {
+            false
+        }
+    }
+}
+
 /// Process-wide summary cache. Batch compiles and long-lived dev servers walk
 /// the same type-barrel closure for every SFC (nuxt-ui re-reads ~200 files per
-/// component without this); entries are revalidated against [`FileStamp`] on
-/// every use so on-disk edits are picked up.
-static FILE_TYPE_CACHE: LazyLock<RwLock<FxHashMap<PathBuf, (FileStamp, FileTypeSummary)>>> =
+/// component without this); outside a batch entries are revalidated against
+/// [`FileStamp`] on every use so on-disk edits are picked up, and within a
+/// batch the first hit revalidates and the rest reuse it (see [`BATCH_EPOCH`]).
+static FILE_TYPE_CACHE: LazyLock<RwLock<FxHashMap<PathBuf, CachedFileSummary>>> =
     LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
 fn file_stamp(path: &Path) -> FileStamp {
@@ -42,6 +75,47 @@ fn file_stamp(path: &Path) -> FileStamp {
         Ok(metadata) => (metadata.modified().ok(), metadata.len()),
         Err(_) => (None, 0),
     }
+}
+
+/// Monotonic batch generation. A batch compile snapshots its inputs up front
+/// and resolves a fixed set of files, so the type-resolution caches can treat
+/// the filesystem as stable for the batch's duration: once an entry is
+/// revalidated inside a batch, later hits in the *same* batch reuse it without
+/// re-issuing the `stat`/`metadata` syscall that dominates this path.
+///
+/// `0` is reserved for "no batch in flight" — single compiles (LSP edits, the
+/// dev-server one-file recompile) leave the epoch here and keep revalidating
+/// every hit, so an on-disk edit between compiles is still picked up exactly as
+/// before. [`begin_type_resolution_batch`] advances the epoch, never returning
+/// `0`, so each new batch invalidates the previous batch's "validated" stamps.
+static BATCH_EPOCH: AtomicU64 = AtomicU64::new(0);
+
+/// Sentinel meaning "this cache entry has not been revalidated inside any
+/// batch": it never equals a live epoch, so the first hit in a batch always
+/// pays one revalidation before the entry is trusted for the rest of it.
+const NO_EPOCH: u64 = 0;
+
+/// Open a new type-resolution batch and return its epoch.
+///
+/// Call this once before a batch of SFC compiles that share a filesystem
+/// snapshot (e.g. `compileSfcBatch*`). Within the returned epoch, the
+/// imported-type summary / canonicalization / resolution caches skip per-hit
+/// `stat` revalidation; the next batch advances the epoch and the first hit
+/// re-stats. Single compiles need not call this.
+pub fn begin_type_resolution_batch() -> u64 {
+    // `Relaxed` is enough: this is a generation counter, not a lock — readers
+    // only ever compare it for equality, and a batch publishes its files
+    // through rayon's join barriers, not through this value.
+    let previous = BATCH_EPOCH.fetch_add(1, Ordering::Relaxed);
+    // Skip the reserved `0` if the counter ever wraps back onto it.
+    if previous.wrapping_add(1) == NO_EPOCH {
+        BATCH_EPOCH.fetch_add(1, Ordering::Relaxed);
+    }
+    BATCH_EPOCH.load(Ordering::Relaxed)
+}
+
+fn current_batch_epoch() -> u64 {
+    BATCH_EPOCH.load(Ordering::Relaxed)
 }
 
 fn build_file_summary(path: &Path) -> Option<FileTypeSummary> {
@@ -180,22 +254,23 @@ impl ScriptCompileContext {
     /// interfaces/type aliases they declare into this context.
     ///
     /// `is_ts` must reflect whether the script block is TypeScript
-    /// (`lang="ts"`/`"tsx"`, computed once per compile at the call site).
-    /// Imported *types* can only be referenced from TypeScript
-    /// (`defineProps<Props>()`), so for plain JS the walk would only burn
-    /// stat/realpath syscalls — the substring pre-check below misfires on JS
-    /// object keys like `type: 'text'` next to any `import`, which is exactly
-    /// what the `is_ts` gate cuts off.
+    /// (`lang="ts"`/`"tsx"`, computed once per compile at the call site) — it
+    /// is the real signal, derived from the parsed SFC, that replaced the old
+    /// `source.contains("type")` substring pre-check. Imported *types* can only
+    /// be referenced from TypeScript (`defineProps<Props>()`), so for plain JS
+    /// the walk would only burn stat/realpath syscalls; the substring heuristic
+    /// misfired on JS object keys like `type: 'text'` next to any `import`,
+    /// which is exactly what the `is_ts` gate cuts off.
     pub fn collect_imported_types_from_path(&mut self, source: &str, filename: &str, is_ts: bool) {
         if !is_ts {
-            return;
-        }
-        if !source.contains("type") || (!source.contains("import") && !source.contains("export")) {
             return;
         }
 
         // The root source lives in memory (possibly unsaved editor state), so
         // parse it directly; only files read from disk go through the cache.
+        // The parsed specifier list is the precise "is there anything to
+        // follow?" signal — strictly tighter than the old substring guard, so
+        // no separate text pre-check is needed.
         let mut root = FileTypeSummary::default();
         extract_script_summary(source, &mut root);
         if root.specifiers.is_empty() {
@@ -237,26 +312,43 @@ impl ScriptCompileContext {
         // Fast path: merge the declarations under the read guard and only
         // clone the (small) specifier list for the recursion below — taking
         // the lock recursively would risk deadlock against writers.
-        let stamp = file_stamp(&resolved_path);
+        //
+        // Within a batch (epoch != NO_EPOCH), an entry already revalidated this
+        // epoch is trusted with no syscall: the only `file_stamp` (a `metadata`
+        // call) is paid on the first hit of the batch. Outside a batch every
+        // hit re-stats, preserving the edit-detection behavior single compiles
+        // rely on.
+        let epoch = current_batch_epoch();
         let mut specifiers: Option<std::vec::Vec<String>> = None;
         if let Ok(cache) = FILE_TYPE_CACHE.read()
-            && let Some((cached_stamp, summary)) = cache.get(&resolved_path)
-            && *cached_stamp == stamp
+            && let Some(entry) = cache.get(&resolved_path)
+            && entry.is_fresh(&resolved_path, epoch)
         {
-            self.merge_file_summary(summary);
-            specifiers = Some(summary.specifiers.clone());
+            self.merge_file_summary(&entry.summary);
+            specifiers = Some(entry.summary.specifiers.clone());
         }
 
         let specifiers = match specifiers {
             Some(specifiers) => specifiers,
             None => {
+                // Capture the stamp from the same snapshot we parse so the
+                // entry is consistent; a concurrent edit just loses the race
+                // and re-stamps on the next miss.
+                let stamp = file_stamp(&resolved_path);
                 let Some(summary) = build_file_summary(&resolved_path) else {
                     return;
                 };
                 self.merge_file_summary(&summary);
                 let specifiers = summary.specifiers.clone();
                 if let Ok(mut cache) = FILE_TYPE_CACHE.write() {
-                    cache.insert(resolved_path.clone(), (stamp, summary));
+                    cache.insert(
+                        resolved_path.clone(),
+                        CachedFileSummary {
+                            stamp,
+                            validated_epoch: AtomicU64::new(epoch),
+                            summary,
+                        },
+                    );
                 }
                 specifiers
             }
@@ -281,14 +373,39 @@ impl ScriptCompileContext {
     }
 }
 
+/// A resolved path plus the [`BATCH_EPOCH`] in which its existence was last
+/// confirmed. As with [`CachedFileSummary`], a read hit can stamp the epoch
+/// forward under the shared read guard.
+struct CachedPath {
+    path: PathBuf,
+    validated_epoch: AtomicU64,
+}
+
+/// Decide whether a cached resolved path is still usable, paying the `is_file`
+/// `stat` only when the entry has not already been confirmed this batch. The
+/// epoch is stamped forward on a successful revalidation so later hits in the
+/// same batch skip the syscall. Outside a batch (`NO_EPOCH`) every hit re-stats.
+fn cached_path_is_fresh(entry: &CachedPath, epoch: u64) -> bool {
+    if epoch != NO_EPOCH && entry.validated_epoch.load(Ordering::Relaxed) == epoch {
+        return true;
+    }
+    if entry.path.is_file() {
+        entry.validated_epoch.store(epoch, Ordering::Relaxed);
+        true
+    } else {
+        false
+    }
+}
+
 /// Base-file canonicalization cache: `(cwd, filename) -> canonical path`.
 /// The same SFC filename is canonicalized by several passes per compile
 /// (script setup + normal script, croquis prop merge, inline compile) and
-/// `canonicalize` walks every path component; a hit is revalidated with a
-/// single `is_file` check so a deleted file falls back to a fresh
-/// canonicalization, and failures are never cached so files created later
-/// are picked up.
-static BASE_CANON_CACHE: LazyLock<RwLock<FxHashMap<(PathBuf, String), PathBuf>>> =
+/// `canonicalize` walks every path component; outside a batch a hit is
+/// revalidated with a single `is_file` check so a deleted file falls back to a
+/// fresh canonicalization, within a batch the first hit revalidates and the
+/// rest reuse it, and failures are never cached so files created later are
+/// picked up.
+static BASE_CANON_CACHE: LazyLock<RwLock<FxHashMap<(PathBuf, String), CachedPath>>> =
     LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
 /// Canonicalize the compiled file's own path, falling back to the original
@@ -304,17 +421,24 @@ fn canonical_base_file(filename: &str) -> PathBuf {
         std::env::current_dir().unwrap_or_default()
     };
     let key = (cwd, filename.to_compact_string());
+    let epoch = current_batch_epoch();
     if let Ok(cache) = BASE_CANON_CACHE.read()
-        && let Some(canonical) = cache.get(&key)
-        && canonical.is_file()
+        && let Some(entry) = cache.get(&key)
+        && cached_path_is_fresh(entry, epoch)
     {
-        return canonical.clone();
+        return entry.path.clone();
     }
 
     match path.canonicalize() {
         Ok(canonical) => {
             if let Ok(mut cache) = BASE_CANON_CACHE.write() {
-                cache.insert(key, canonical.clone());
+                cache.insert(
+                    key,
+                    CachedPath {
+                        path: canonical.clone(),
+                        validated_epoch: AtomicU64::new(epoch),
+                    },
+                );
             }
             canonical
         }
@@ -323,26 +447,34 @@ fn canonical_base_file(filename: &str) -> PathBuf {
 }
 
 /// Positive resolution cache: `(importing dir, specifier) -> resolved path`.
-/// Resolution probes many extension/index candidates (each a `stat`); a hit
-/// is revalidated with a single `is_file` check so deleted files fall back
-/// to a full re-resolution, and misses are never cached so newly created
-/// files are picked up.
-static RESOLVE_CACHE: LazyLock<RwLock<FxHashMap<(PathBuf, String), PathBuf>>> =
+/// Resolution probes many extension/index candidates (each a `stat`); outside
+/// a batch a hit is revalidated with a single `is_file` check so deleted files
+/// fall back to a full re-resolution, within a batch the first hit revalidates
+/// and the rest reuse it, and misses are never cached so newly created files
+/// are picked up.
+static RESOLVE_CACHE: LazyLock<RwLock<FxHashMap<(PathBuf, String), CachedPath>>> =
     LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
 fn resolve_import_path(current_file: &Path, specifier: &str) -> Option<PathBuf> {
     let dir = current_file.parent()?.to_path_buf();
     let key = (dir, specifier.to_compact_string());
+    let epoch = current_batch_epoch();
     if let Ok(cache) = RESOLVE_CACHE.read()
-        && let Some(resolved) = cache.get(&key)
-        && resolved.is_file()
+        && let Some(entry) = cache.get(&key)
+        && cached_path_is_fresh(entry, epoch)
     {
-        return Some(resolved.clone());
+        return Some(entry.path.clone());
     }
 
     let resolved = resolve_import_path_uncached(current_file, specifier)?;
     if let Ok(mut cache) = RESOLVE_CACHE.write() {
-        cache.insert(key, resolved.clone());
+        cache.insert(
+            key,
+            CachedPath {
+                path: resolved.clone(),
+                validated_epoch: AtomicU64::new(epoch),
+            },
+        );
     }
     Some(resolved)
 }
@@ -912,6 +1044,59 @@ const props = defineProps<ButtonProps>();
             Some(&crate::types::BindingType::Props)
         );
         assert_eq!(ctx.bindings.bindings.get("raw"), None);
+
+        let _ = std::fs::remove_dir_all(project);
+    }
+
+    #[test]
+    fn batch_epochs_are_monotonic_and_never_reserved_zero() {
+        // Each batch must advance the epoch (so the previous batch's "validated
+        // this epoch" stamps stop matching) and never land on the reserved `0`
+        // that marks "no batch in flight".
+        let first = super::begin_type_resolution_batch();
+        let second = super::begin_type_resolution_batch();
+        assert_ne!(first, super::NO_EPOCH);
+        assert_ne!(second, super::NO_EPOCH);
+        assert!(second > first, "epoch must advance: {first} -> {second}");
+    }
+
+    #[test]
+    fn cached_path_revalidates_only_once_per_batch() {
+        use super::{CachedPath, NO_EPOCH, cached_path_is_fresh};
+        use std::sync::atomic::{AtomicU64, Ordering};
+
+        let project = temp_project_dir("cached-path-freshness");
+        std::fs::create_dir_all(&project).unwrap();
+        let file = project.join("present.ts");
+        std::fs::write(&file, "export type T = string").unwrap();
+
+        // Pretend this entry was validated in batch epoch 7.
+        let entry = CachedPath {
+            path: file.clone(),
+            validated_epoch: AtomicU64::new(7),
+        };
+
+        // A later hit in the *same* batch trusts the entry without touching the
+        // filesystem — proven by deleting the file first: a re-stat would fail,
+        // but the same-epoch fast path returns `true` anyway.
+        std::fs::remove_file(&file).unwrap();
+        assert!(
+            cached_path_is_fresh(&entry, 7),
+            "same-epoch hit must skip the is_file stat"
+        );
+
+        // A new batch (epoch 8) forces revalidation, which now fails because the
+        // file is gone — so a fresh resolution would run.
+        assert!(
+            !cached_path_is_fresh(&entry, 8),
+            "a new batch must re-stat and observe the deletion"
+        );
+
+        // Outside any batch (NO_EPOCH) every call re-stats; recreate the file
+        // and confirm it revalidates and stamps the epoch forward.
+        std::fs::write(&file, "export type T = number").unwrap();
+        assert!(cached_path_is_fresh(&entry, NO_EPOCH));
+        assert_eq!(entry.validated_epoch.load(Ordering::Relaxed), NO_EPOCH);
 
         let _ = std::fs::remove_dir_all(project);
     }

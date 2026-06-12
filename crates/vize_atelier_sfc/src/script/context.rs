@@ -8,6 +8,8 @@ mod helpers;
 mod parse;
 mod props;
 
+pub use external_types::begin_type_resolution_batch;
+
 use crate::types::{BindingMetadata, BindingType};
 use vize_carton::{CompactString, String, ToCompactString};
 use vize_croquis::analysis::Croquis;

@@ -50,6 +50,10 @@ pub fn compile_sfc_batch_with_results(
     let include_macro_artifacts = opts.include_macro_artifacts.unwrap_or(false);
     let include_hashes = opts.include_hashes.unwrap_or(false);
     let start = Instant::now();
+    // Snapshot the filesystem for this batch: imported-type resolution treats
+    // every file it stats as stable for the batch's duration, so the second and
+    // later hits of a shared types barrel skip their revalidation syscalls.
+    vize_atelier_sfc::begin_type_resolution_batch();
 
     // Indexed parallel map keeps results in input order (deterministic) and
     // collects lock-free, replacing the previous contended `Mutex<Vec>`.

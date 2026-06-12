@@ -69,6 +69,7 @@ pub use css::{
     compile_style_block, parse_css_ast, print_css_ast,
 };
 pub use parse::parse_sfc;
+pub use script::begin_type_resolution_batch;
 pub use types::{
     BindingMetadata, BindingType, BlockLocation, PadOption, PropsDestructure, ScriptCompileOptions,
     SfcCompileOptions, SfcCompileResult, SfcCustomBlock, SfcDescriptor, SfcError, SfcMacroArtifact,

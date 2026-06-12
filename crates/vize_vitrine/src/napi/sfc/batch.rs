@@ -221,6 +221,10 @@ pub fn compile_sfc_batch(
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
     let start = Instant::now();
+    // Snapshot the filesystem for this batch: imported-type resolution treats
+    // every file it stats as stable for the batch's duration, so the second and
+    // later hits of a shared types barrel skip their revalidation syscalls.
+    vize_atelier_sfc::begin_type_resolution_batch();
     let option_bits = batch_options_bits(ssr, vapor, is_ts, template_syntax, standalone);
     let read_inputs: Vec<_> = files
         .par_iter()
