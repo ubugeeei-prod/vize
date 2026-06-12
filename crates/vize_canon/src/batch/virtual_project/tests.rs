@@ -1355,3 +1355,75 @@ fn jsx_typecheck_on_handles_mixed_props_emits_slots() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn jsx_typecheck_on_reemits_v_model_target_as_assignment() {
+    // A `v-model` binding target is re-emitted as an assignment to itself so a
+    // readonly/const/non-lvalue binding is checked at the binding (#1497). The
+    // virtual TS stays plain and parses.
+    let case_dir = unique_case_dir("jsx-vmodel");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    let tsx_path = case_dir.join("Comp.tsx");
+    let source = "const Comp = (model: { value: string }) => <input v-model={model.value}/>;\n";
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.set_jsx_typecheck(true);
+    project
+        .register_path_with_content(&tsx_path, source)
+        .unwrap();
+    let virtual_file = project.find_by_original(&tsx_path).unwrap();
+
+    assert_ts_parses(&virtual_file.content);
+    assert!(
+        virtual_file
+            .content
+            .contains("__vize_jsx_expr__((model.value = model.value))"),
+        "{}",
+        virtual_file.content
+    );
+    assert!(
+        !virtual_file.content.contains("<input"),
+        "{}",
+        virtual_file.content
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn jsx_typecheck_on_binds_v_for_alias_inside_map_callback() {
+    // A `v-for` (idiomatic `items.map(…)`) body is re-emitted *inside* the
+    // `.map()` callback so its alias binds with the inferred element type — both
+    // fixing a spurious "Cannot find name '<alias>'" and checking the body
+    // against the real type (#1497).
+    let case_dir = unique_case_dir("jsx-vfor");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    let tsx_path = case_dir.join("Comp.tsx");
+    let source = "const Comp = (props: { items: number[] }) => <ul>{props.items.map((item) => <li>{item.toFixed(2)}</li>)}</ul>;\n";
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.set_jsx_typecheck(true);
+    project
+        .register_path_with_content(&tsx_path, source)
+        .unwrap();
+    let virtual_file = project.find_by_original(&tsx_path).unwrap();
+
+    assert_ts_parses(&virtual_file.content);
+    assert!(
+        virtual_file
+            .content
+            .contains("(props.items).map((item) => __vize_jsx_expr__(item.toFixed(2)))"),
+        "{}",
+        virtual_file.content
+    );
+    // The alias must not leak as an unbound outer-scope sink argument.
+    assert!(
+        !virtual_file.content.contains(", item)"),
+        "{}",
+        virtual_file.content
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

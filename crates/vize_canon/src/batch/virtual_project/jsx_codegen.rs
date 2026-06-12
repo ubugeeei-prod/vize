@@ -44,11 +44,18 @@
 //! - each **JSX expression** (`{props.msg}`, `class={cls}`, `{count + 1}`, …) is
 //!   re-emitted as real TypeScript at — and source-mapped back to — its original
 //!   byte range, so a wrong type inside a JSX expression is reported at the right
-//!   location.
+//!   location;
+//! - **directive expressions** are checked too (#1497): a `v-model` binding
+//!   target is re-emitted as an assignment to itself, so binding to a `const`,
+//!   a `readonly`/computed value, or a non-lvalue is reported at the binding; a
+//!   `v-for` (idiomatic `items.map(…)`) body is re-emitted *inside* the `.map()`
+//!   callback so the loop aliases bind with their inferred element types; and
+//!   `v-show`/`v-if` conditions, directive arg/value expressions, and event
+//!   handlers are re-emitted as plain reads.
 //!
-//! Deferred (see issue #1497): directive / `v-model` / style-expression checks,
-//! the stateful `defineComponent(() => () => VNode)` form, and full source-map
-//! fidelity for the synthesized wrapper scaffolding.
+//! Deferred (see issue #1497): style-block-expression checks, the stateful
+//! `defineComponent(() => () => VNode)` form, and full source-map fidelity for
+//! the synthesized wrapper scaffolding.
 
 use std::path::Path;
 
@@ -108,6 +115,36 @@ struct JsxExpr {
     end: u32,
 }
 
+/// One re-emitted unit recovered from a lowered JSX root, in source order.
+///
+/// The render pass turns these into the arguments of a `__vize_jsx_expr__(…)`
+/// call. Most are plain [`Expr`](JsxEmit::Expr) reads, but two directive forms
+/// need structured re-emission so their checks match Vue semantics:
+///
+/// - [`ModelTarget`](JsxEmit::ModelTarget): a `v-model` binding target re-emitted
+///   as an assignment to itself so TypeScript checks the target is a writable
+///   lvalue (binding to a `const`, a `readonly`/computed value, or a non-lvalue
+///   expression is reported at the binding).
+/// - [`ForScope`](JsxEmit::ForScope): a `v-for` (idiomatic `items.map(…)`) whose
+///   body is re-emitted *inside* the `.map()` callback so the loop aliases are
+///   bound with their inferred element types — both fixing a spurious
+///   "Cannot find name '<alias>'" and checking the body against the real type.
+enum JsxEmit {
+    /// A plain dynamic expression (interpolation, bound attribute, directive
+    /// value, `v-if`/`v-show` condition, event handler, …).
+    Expr(JsxExpr),
+    /// A `v-model` binding target, re-emitted as `(<lvalue> = <lvalue>)`.
+    ModelTarget(JsxExpr),
+    /// A `v-for` scope: the iterated `source` plus the alias patterns and the
+    /// body units evaluated with those aliases in scope.
+    ForScope {
+        source: JsxExpr,
+        value_alias: Option<CompactString>,
+        key_alias: Option<CompactString>,
+        body: Vec<JsxEmit>,
+    },
+}
+
 /// Lower a `.jsx`/`.tsx` Vize component to plain virtual TypeScript.
 pub(super) fn generate_jsx_virtual_ts(
     path: &Path,
@@ -119,7 +156,7 @@ pub(super) fn generate_jsx_virtual_ts(
 
     // Collect every outermost JSX root's byte range together with the dynamic
     // expressions inside it, in source order.
-    let mut roots: Vec<(u32, u32, Vec<JsxExpr>)> = Vec::with_capacity(lowered.roots.len());
+    let mut roots: Vec<(u32, u32, Vec<JsxEmit>)> = Vec::with_capacity(lowered.roots.len());
     for root in &lowered.roots {
         let mut exprs = Vec::new();
         collect_root_expressions(&root.root, &mut exprs);
@@ -159,11 +196,11 @@ fn jsx_parse_message(diagnostic: &JsxDiagnostic) -> CompactString {
 /// Build the plain-`.ts` text and its source mappings.
 ///
 /// Every byte outside a JSX render root is copied verbatim; each render root is
-/// replaced by `__vize_jsx_expr__(<expr>, <expr>, …)`, with each re-emitted
+/// replaced by `__vize_jsx_expr__(<unit>, <unit>, …)`, with each re-emitted
 /// expression mapped back to its original byte range.
 fn render_plain_ts(
     source: &str,
-    roots: &[(u32, u32, Vec<JsxExpr>)],
+    roots: &[(u32, u32, Vec<JsxEmit>)],
 ) -> (CompactString, Vec<VizeMapping>) {
     let mut out = CompactString::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
@@ -178,7 +215,7 @@ fn render_plain_ts(
     out.push_str(CTX_HELPER);
 
     let mut cursor = 0usize;
-    for (start, end, exprs) in roots {
+    for (start, end, emits) in roots {
         let start = (*start as usize).min(source.len());
         let end = (*end as usize).min(source.len());
         if start < cursor {
@@ -191,28 +228,86 @@ fn render_plain_ts(
         // despite the prepended ambient-helper preamble.
         push_verbatim(&mut out, &mut mappings, source, cursor, start);
 
-        out.push_str(JSX_EXPR_SINK);
-        out.push('(');
-        for (index, expr) in exprs.iter().enumerate() {
-            if index > 0 {
-                out.push_str(", ");
-            }
-            let gen_start = out.len();
-            out.push_str(&expr.content);
-            let gen_end = out.len();
-            mappings.push(VizeMapping {
-                gen_range: gen_start..gen_end,
-                src_range: expr.start as usize..expr.end as usize,
-                sub_spans: Vec::new(),
-            });
-        }
-        out.push(')');
+        render_sink_call(&mut out, &mut mappings, emits);
         cursor = end.max(start);
     }
     // Trailing verbatim suffix (e.g. `export default Comp;`).
     push_verbatim(&mut out, &mut mappings, source, cursor, source.len());
 
     (out, mappings)
+}
+
+/// Emit `__vize_jsx_expr__(<unit>, <unit>, …)` for one render scope, recursing
+/// into `v-for` bodies so their loop aliases stay in scope.
+fn render_sink_call(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, emits: &[JsxEmit]) {
+    out.push_str(JSX_EXPR_SINK);
+    out.push('(');
+    for (index, emit) in emits.iter().enumerate() {
+        if index > 0 {
+            out.push_str(", ");
+        }
+        render_emit(out, mappings, emit);
+    }
+    out.push(')');
+}
+
+/// Re-emit one [`JsxEmit`] unit as a `__vize_jsx_expr__` argument, recording the
+/// source mappings that point its diagnostics back at the original JSX.
+fn render_emit(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, emit: &JsxEmit) {
+    match emit {
+        JsxEmit::Expr(expr) => push_mapped_expr(out, mappings, expr),
+        JsxEmit::ModelTarget(expr) => {
+            // `v-model` binds a writable lvalue. Re-emit the target as an
+            // assignment to itself so TypeScript reports binding to a `const`,
+            // `readonly`/computed value, or a non-lvalue at the binding. Only the
+            // left-hand side is mapped: assignability and name-resolution errors
+            // land on the LHS, so the unmapped RHS copy never double-reports.
+            out.push('(');
+            push_mapped_expr(out, mappings, expr);
+            out.push_str(" = ");
+            out.push_str(&expr.content);
+            out.push(')');
+        }
+        JsxEmit::ForScope {
+            source,
+            value_alias,
+            key_alias,
+            body,
+        } => {
+            // `(<source>).map((<value>, <key>) => __vize_jsx_expr__(<body…>))`:
+            // the body is re-emitted inside the callback so the loop aliases bind
+            // with their inferred element types. The `.map` scaffolding is left
+            // unmapped (its diagnostics, if any, point at the mapped `source`).
+            out.push('(');
+            push_mapped_expr(out, mappings, source);
+            out.push_str(").map((");
+            if let Some(value) = value_alias {
+                out.push_str(value);
+            } else {
+                out.push_str("__vize_v");
+            }
+            if let Some(key) = key_alias {
+                out.push_str(", ");
+                out.push_str(key);
+            }
+            out.push_str(") => ");
+            render_sink_call(out, mappings, body);
+            out.push(')');
+        }
+    }
+}
+
+/// Copy a re-emitted expression's text into `out` and record the mapping from
+/// its generated range back to its original `.jsx`/`.tsx` byte range.
+fn push_mapped_expr(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, expr: &JsxExpr) {
+    let gen_start = out.len();
+    out.push_str(&expr.content);
+    let gen_end = out.len();
+    mappings.push(VizeMapping {
+        gen_range: gen_start..gen_end,
+        src_range: expr.start as usize..expr.end as usize,
+        sub_spans: Vec::new(),
+    });
 }
 
 /// Copy `source[src_start..src_end)` verbatim into `out`, recording an identity
@@ -242,13 +337,13 @@ fn push_verbatim(
 // (non-static) expression's source text and byte range.
 // ---------------------------------------------------------------------------
 
-fn collect_root_expressions(root: &RootNode<'_>, out: &mut Vec<JsxExpr>) {
+fn collect_root_expressions(root: &RootNode<'_>, out: &mut Vec<JsxEmit>) {
     for child in &root.children {
         collect_child(child, out);
     }
 }
 
-fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxExpr>) {
+fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxEmit>) {
     match child {
         TemplateChildNode::Element(element) => {
             for prop in &element.props {
@@ -283,10 +378,28 @@ fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxExpr>) {
             }
         }
         TemplateChildNode::For(node) => {
-            collect_expression(&node.source, out);
+            // The loop body is re-emitted *inside* the `.map()` callback so its
+            // aliases (`value`, `key`) bind with their inferred element types,
+            // both fixing a spurious "Cannot find name '<alias>'" and checking
+            // the body against the real type. The `source` is the iterated value.
+            let Some(source) = expr_of(&node.source) else {
+                // A static/empty source cannot be iterated meaningfully; fall
+                // back to just walking the body so nothing is silently dropped.
+                for child in &node.children {
+                    collect_child(child, out);
+                }
+                return;
+            };
+            let mut body = Vec::new();
             for child in &node.children {
-                collect_child(child, out);
+                collect_child(child, &mut body);
             }
+            out.push(JsxEmit::ForScope {
+                source,
+                value_alias: node.value_alias.as_ref().and_then(alias_text),
+                key_alias: node.key_alias.as_ref().and_then(alias_text),
+                body,
+            });
         }
         TemplateChildNode::TextCall(node) => {
             collect_text_call(&node.content, out);
@@ -297,7 +410,7 @@ fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxExpr>) {
     }
 }
 
-fn collect_text_call(content: &vize_relief::ast::TextCallContent<'_>, out: &mut Vec<JsxExpr>) {
+fn collect_text_call(content: &vize_relief::ast::TextCallContent<'_>, out: &mut Vec<JsxEmit>) {
     use vize_relief::ast::TextCallContent;
     match content {
         TextCallContent::Interpolation(interpolation) => {
@@ -308,12 +421,22 @@ fn collect_text_call(content: &vize_relief::ast::TextCallContent<'_>, out: &mut 
     }
 }
 
-fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxExpr>) {
+fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxEmit>) {
     match prop {
         // Static `class="a"` style attributes carry only literal text.
         PropNode::Attribute(_) => {}
         PropNode::Directive(directive) => {
-            if let Some(exp) = &directive.exp {
+            // `v-model`'s value expression is the binding target: re-emit it as
+            // an assignment so a `const`/`readonly`/non-lvalue binding is reported
+            // at the binding. Other directive values (`v-show`, `v-if`, custom
+            // `v-x:arg={…}`, `v-on` handlers, bound attributes) are plain reads.
+            if directive.name.as_str() == "model" {
+                if let Some(exp) = &directive.exp
+                    && let Some(target) = expr_of(exp)
+                {
+                    out.push(JsxEmit::ModelTarget(target));
+                }
+            } else if let Some(exp) = &directive.exp {
                 collect_expression(exp, out);
             }
             if let Some(arg) = &directive.arg {
@@ -323,7 +446,7 @@ fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxExpr>) {
     }
 }
 
-fn collect_expression(expression: &ExpressionNode<'_>, out: &mut Vec<JsxExpr>) {
+fn collect_expression(expression: &ExpressionNode<'_>, out: &mut Vec<JsxEmit>) {
     match expression {
         ExpressionNode::Simple(simple) => {
             if simple.is_static {
@@ -335,7 +458,7 @@ fn collect_expression(expression: &ExpressionNode<'_>, out: &mut Vec<JsxExpr>) {
     }
 }
 
-fn collect_compound(compound: &CompoundExpressionNode<'_>, out: &mut Vec<JsxExpr>) {
+fn collect_compound(compound: &CompoundExpressionNode<'_>, out: &mut Vec<JsxEmit>) {
     for child in &compound.children {
         match child {
             CompoundExpressionChild::Simple(simple) => {
@@ -354,16 +477,45 @@ fn collect_compound(compound: &CompoundExpressionNode<'_>, out: &mut Vec<JsxExpr
     }
 }
 
-fn push_expr(content: &str, loc: &vize_relief::ast::core::SourceLocation, out: &mut Vec<JsxExpr>) {
-    let content = content.trim();
-    if content.is_empty() {
-        return;
+fn push_expr(content: &str, loc: &vize_relief::ast::core::SourceLocation, out: &mut Vec<JsxEmit>) {
+    if let Some(expr) = jsx_expr(content, loc.start.offset, loc.end.offset) {
+        out.push(JsxEmit::Expr(expr));
     }
-    out.push(JsxExpr {
+}
+
+/// Build a [`JsxExpr`] from a dynamic simple [`ExpressionNode`], or `None` when
+/// the expression is static or trims to empty (e.g. a directive with no value).
+fn expr_of(expression: &ExpressionNode<'_>) -> Option<JsxExpr> {
+    match expression {
+        ExpressionNode::Simple(simple) if !simple.is_static => jsx_expr(
+            &simple.content,
+            simple.loc.start.offset,
+            simple.loc.end.offset,
+        ),
+        _ => None,
+    }
+}
+
+/// The source text of a `v-for` alias binding pattern (the lowering stores each
+/// alias as a dynamic simple expression of the pattern), or `None` when absent.
+fn alias_text(alias: &ExpressionNode<'_>) -> Option<CompactString> {
+    match alias {
+        ExpressionNode::Simple(simple) => {
+            let content = simple.content.trim();
+            (!content.is_empty()).then(|| content.to_compact_string())
+        }
+        ExpressionNode::Compound(_) => None,
+    }
+}
+
+/// Trim `content` and pair it with its byte range, or `None` when empty.
+fn jsx_expr(content: &str, start: u32, end: u32) -> Option<JsxExpr> {
+    let content = content.trim();
+    (!content.is_empty()).then(|| JsxExpr {
         content: content.to_compact_string(),
-        start: loc.start.offset,
-        end: loc.end.offset,
-    });
+        start,
+        end,
+    })
 }
 
 #[cfg(test)]
@@ -491,6 +643,125 @@ mod tests {
                 .contains("__vize_jsx_expr__(slots.default())"),
             "slots usage not re-emitted: {}",
             generated.code
+        );
+    }
+
+    #[test]
+    fn reemits_v_model_target_as_self_assignment() {
+        // A `v-model` binding target is re-emitted as `(target = target)` so a
+        // readonly/const/non-lvalue binding is reported at the binding, while the
+        // mapped left-hand side keeps name-resolution errors at the right place.
+        let source = "const Comp = (model: { value: string }) => <input v-model={model.value}/>;\n";
+        let generated = generate(source);
+        assert!(
+            generated
+                .code
+                .contains("__vize_jsx_expr__((model.value = model.value))"),
+            "v-model target not re-emitted as assignment: {}",
+            generated.code
+        );
+        // Output stays plain TS.
+        assert!(
+            !generated.code.contains("<input"),
+            "JSX element leaked into virtual TS: {}",
+            generated.code
+        );
+        // Only the left-hand side is mapped back to source (the unmapped RHS copy
+        // exists so the assignment is well-formed but never double-reports).
+        let lvalue_start = source.find("model.value").unwrap();
+        assert_eq!(
+            generated
+                .mappings
+                .iter()
+                .filter(|mapping| mapping.src_range.start == lvalue_start)
+                .count(),
+            1,
+            "expected exactly one mapping for the v-model lvalue: {:?}",
+            generated.mappings
+        );
+    }
+
+    #[test]
+    fn reemits_v_for_body_inside_map_callback_binding_alias() {
+        // The `items.map((item) => …)` body is re-emitted *inside* the callback so
+        // `item` binds with its inferred element type — fixing the spurious
+        // "Cannot find name 'item'" the flat collection produced.
+        let source = "const Comp = (props: { items: number[] }) => <ul>{props.items.map((item) => <li>{item}</li>)}</ul>;\n";
+        let generated = generate(source);
+        assert!(
+            generated
+                .code
+                .contains("(props.items).map((item) => __vize_jsx_expr__(item))"),
+            "v-for body not bound inside .map callback: {}",
+            generated.code
+        );
+        // The bare alias must not leak as a sink argument at the outer scope.
+        assert!(
+            !generated
+                .code
+                .contains("__vize_jsx_expr__(props.items, item)"),
+            "v-for alias leaked as unbound outer argument: {}",
+            generated.code
+        );
+        // Stays plain TS.
+        assert!(
+            !generated.code.contains("<li"),
+            "JSX element leaked into virtual TS: {}",
+            generated.code
+        );
+    }
+
+    #[test]
+    fn reemits_v_for_with_index_alias() {
+        // A two-arg `.map((value, index) => …)` binds both aliases in the callback.
+        let source = "const Comp = (props: { xs: string[] }) => <ul>{props.xs.map((x, i) => <li>{x + i}</li>)}</ul>;\n";
+        let generated = generate(source);
+        assert!(
+            generated
+                .code
+                .contains("(props.xs).map((x, i) => __vize_jsx_expr__(x + i))"),
+            "v-for value+index aliases not bound: {}",
+            generated.code
+        );
+    }
+
+    #[test]
+    fn collects_v_show_and_v_if_conditions_as_plain_reads() {
+        // Directive conditions stay plain reads (no lvalue rewrite) so an unknown
+        // identifier in a `v-show`/`v-if` condition is reported at the condition.
+        let show = generate("const Comp = (props: { ok: boolean }) => <div v-show={props.ok}/>;\n");
+        assert!(
+            show.code.contains("__vize_jsx_expr__(props.ok)"),
+            "v-show condition not re-emitted: {}",
+            show.code
+        );
+        let if_attr =
+            generate("const Comp = (props: { ok: boolean }) => <div v-if={props.ok}>x</div>;\n");
+        assert!(
+            if_attr.code.contains("__vize_jsx_expr__(props.ok)"),
+            "v-if condition not re-emitted: {}",
+            if_attr.code
+        );
+    }
+
+    #[test]
+    fn reemits_event_handler_and_custom_directive_value() {
+        // Event handlers and custom directive values remain plain reads.
+        let handler = generate(
+            "const Comp = (props: { f: () => void }) => <button onClick={props.f}>x</button>;\n",
+        );
+        assert!(
+            handler.code.contains("__vize_jsx_expr__(props.f)"),
+            "event handler not re-emitted: {}",
+            handler.code
+        );
+        let custom = generate(
+            "const Comp = (props: { o: string }) => <div v-focus:lazy={props.o}>x</div>;\n",
+        );
+        assert!(
+            custom.code.contains("__vize_jsx_expr__(props.o)"),
+            "custom directive value not re-emitted: {}",
+            custom.code
         );
     }
 }
