@@ -25,7 +25,7 @@ pub(super) fn reactive_plain_value_from_expr(
             })
         }
         Expression::StaticMemberExpression(member) => {
-            if ref_value_member_root(result, expr).is_some() {
+            if is_ref_value_member_root(result, expr) {
                 return Some(ReactivePlainValue {
                     source_name: super::super::common::expression_label(source, member.span),
                     argument_name: super::super::common::expression_label(source, member.span),
@@ -75,7 +75,7 @@ pub(super) fn reactive_plain_value_from_expr(
             })
         }
         Expression::ComputedMemberExpression(member) => {
-            if ref_value_member_root(result, expr).is_some() {
+            if is_ref_value_member_root(result, expr) {
                 return Some(ReactivePlainValue {
                     source_name: super::super::common::expression_label(source, member.span),
                     argument_name: super::super::common::expression_label(source, member.span),
@@ -139,14 +139,9 @@ pub(super) fn ref_value_property_extract(
     result: &ScriptParseResult,
     expr: &Expression<'_>,
 ) -> Option<(CompactString, CompactString)> {
-    let (root, props) = static_member_chain(expr)?;
-    if props.len() < 2 || props.first().is_none_or(|prop| prop.as_str() != "value") {
-        return None;
-    }
-    if !result.reactivity.needs_value_access(root.as_str()) {
-        return None;
-    }
-    Some((cstr!("{root}.value"), props[1].clone()))
+    let (root, prop_name) = static_ref_value_access(result, expr)?;
+    let prop_name = prop_name?;
+    Some((cstr!("{root}.value"), CompactString::new(prop_name)))
 }
 
 pub(super) fn ref_value_destructure_source(
@@ -154,15 +149,9 @@ pub(super) fn ref_value_destructure_source(
     expr: &Expression<'_>,
     source: &str,
 ) -> Option<(CompactString, bool)> {
-    let (root, props) = static_member_chain(expr)?;
-    if props.first().is_none_or(|prop| prop.as_str() != "value") {
-        return None;
-    }
-    if !result.reactivity.needs_value_access(root.as_str()) {
-        return None;
-    }
-    if props.len() == 1 {
-        Some((root, true))
+    let (root, prop_name) = static_ref_value_access(result, expr)?;
+    if prop_name.is_none() {
+        Some((CompactString::new(root), true))
     } else {
         Some((
             super::super::common::expression_label(source, expr.span()),
@@ -230,7 +219,7 @@ pub(super) fn reactive_expression_label_for_spread(
             .then(|| CompactString::new(name))
         }
         Expression::StaticMemberExpression(member) => {
-            if ref_value_member_root(result, expr).is_some() {
+            if is_ref_value_member_root(result, expr) {
                 return Some(super::super::common::expression_label(source, member.span));
             }
             let root = super::super::common::member_chain_root_identifier(&member.object)?;
@@ -245,7 +234,7 @@ pub(super) fn reactive_expression_label_for_spread(
             None
         }
         Expression::ComputedMemberExpression(member) => {
-            if ref_value_member_root(result, expr).is_some() {
+            if is_ref_value_member_root(result, expr) {
                 return Some(super::super::common::expression_label(source, member.span));
             }
             let root = super::super::common::member_chain_root_identifier(&member.object)?;
@@ -322,32 +311,35 @@ pub(super) fn reactive_plain_identifier_value_from_expr(
     }
 }
 
-fn ref_value_member_root(
-    result: &ScriptParseResult,
-    expr: &Expression<'_>,
-) -> Option<CompactString> {
-    let (root, props) = static_member_chain(expr)?;
-    if props.first().is_some_and(|prop| prop.as_str() == "value")
-        && result.reactivity.needs_value_access(root.as_str())
-    {
-        Some(root)
-    } else {
-        None
-    }
+fn is_ref_value_member_root(result: &ScriptParseResult, expr: &Expression<'_>) -> bool {
+    static_ref_value_access(result, expr).is_some()
 }
 
-fn static_member_chain(expr: &Expression<'_>) -> Option<(CompactString, Vec<CompactString>)> {
-    let mut props = Vec::new();
+fn static_ref_value_access<'a>(
+    result: &ScriptParseResult,
+    expr: &'a Expression<'a>,
+) -> Option<(&'a str, Option<&'a str>)> {
     let mut current = expr;
+    let mut previous_prop = None;
+    let mut prop_after_value = None;
+
     loop {
         match current {
             Expression::StaticMemberExpression(member) => {
-                props.push(CompactString::new(member.property.name.as_str()));
+                let prop_name = member.property.name.as_str();
+                if prop_name == "value" {
+                    prop_after_value = previous_prop;
+                }
+                previous_prop = Some(prop_name);
                 current = &member.object;
             }
             Expression::Identifier(id) => {
-                props.reverse();
-                return Some((CompactString::new(id.name.as_str()), props));
+                let root = id.name.as_str();
+                return prop_after_value
+                    .or_else(|| previous_prop.filter(|prop| *prop == "value"))
+                    .is_some()
+                    .then_some((root, prop_after_value))
+                    .filter(|(root, _)| result.reactivity.needs_value_access(root));
             }
             Expression::ParenthesizedExpression(paren) => current = &paren.expression,
             Expression::TSAsExpression(ts_as) => current = &ts_as.expression,

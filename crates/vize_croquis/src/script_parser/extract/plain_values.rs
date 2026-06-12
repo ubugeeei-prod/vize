@@ -81,7 +81,7 @@ pub fn record_getter_context_from_call(
         return;
     }
 
-    let mut getters = FxHashMap::default();
+    let mut getters = None;
 
     for arg in call.arguments.iter() {
         let Some(expr) = arg.as_expression() else {
@@ -90,12 +90,14 @@ pub fn record_getter_context_from_call(
         let Some(value) = records::getter_source_from_function(result, expr, source) else {
             continue;
         };
-        getters.insert(value.getter_name, value.source_name);
+        getters
+            .get_or_insert_with(FxHashMap::default)
+            .insert(value.getter_name, value.source_name);
     }
 
-    if getters.is_empty() {
+    let Some(getters) = getters else {
         return;
-    }
+    };
 
     result.reactive_getter_contexts.insert(
         CompactString::new(target_name),
