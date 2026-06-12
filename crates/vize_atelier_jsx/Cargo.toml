@@ -14,6 +14,10 @@ vize_relief = { workspace = true }
 vize_croquis = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_vapor = { workspace = true }
+# Reused for the first-cut JSX Vapor SSR render path (#1533): the lowered
+# RootNode is the same `vize_relief` type the SSR codegen consumes, so the
+# `ssrRender` HTML-string generator is shared rather than reimplemented.
+vize_atelier_ssr = { workspace = true }
 # Reused for scoped-CSS rewriting (`style::apply_scoped_css`) and scope-id
 # generation (`generate_bundler_scope_id`). No template/CSS preprocessing is
 # needed here, so the heavy `native`/lightningcss default feature is dropped.
