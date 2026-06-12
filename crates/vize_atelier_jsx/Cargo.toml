@@ -14,6 +14,10 @@ vize_relief = { workspace = true }
 vize_croquis = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_vapor = { workspace = true }
+# Reused for scoped-CSS rewriting (`style::apply_scoped_css`) and scope-id
+# generation (`generate_bundler_scope_id`). No template/CSS preprocessing is
+# needed here, so the heavy `native`/lightningcss default feature is dropped.
+vize_atelier_sfc = { workspace = true, default-features = false }
 
 # OXC for JSX/TSX parsing and diagnostics
 oxc_allocator = { workspace = true }

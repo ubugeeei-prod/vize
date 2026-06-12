@@ -25,10 +25,18 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     fn lower_child(&mut self, child: &JSXChild<'_>) -> Option<TemplateChildNode<'a>> {
         match child {
             JSXChild::Text(text) => self.lower_text(text),
-            JSXChild::Element(element) => Some(TemplateChildNode::Element(Box::new_in(
-                self.lower_element_node(element),
-                self.bump(),
-            ))),
+            JSXChild::Element(element) => {
+                // A `<style scoped>` block is extracted at compile time (#1495)
+                // and must not become an element vnode; drop it from the
+                // rendered children once captured.
+                if self.try_extract_scoped_style(element) {
+                    return None;
+                }
+                Some(TemplateChildNode::Element(Box::new_in(
+                    self.lower_element_node(element),
+                    self.bump(),
+                )))
+            }
             JSXChild::Fragment(fragment) => Some(TemplateChildNode::Element(Box::new_in(
                 self.lower_fragment_node(fragment),
                 self.bump(),

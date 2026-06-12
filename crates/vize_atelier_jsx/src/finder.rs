@@ -105,19 +105,23 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         // Lower this root and intentionally do NOT descend: nested JSX is
         // lowered as part of this root's children, not as separate roots.
         let root = self.lowerer.lower_element_root(element);
+        let scoped_css = self.lowerer.take_scoped_styles();
         self.roots.push(LoweredRoot {
             root,
             mode: self.current_mode(),
             component_name: self.current_name(),
+            scoped_css,
         });
     }
 
     fn visit_jsx_fragment(&mut self, fragment: &JSXFragment<'ast>) {
         let root = self.lowerer.lower_fragment_root(fragment);
+        let scoped_css = self.lowerer.take_scoped_styles();
         self.roots.push(LoweredRoot {
             root,
             mode: self.current_mode(),
             component_name: self.current_name(),
+            scoped_css,
         });
     }
 }

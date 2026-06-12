@@ -35,6 +35,7 @@ pub mod lang;
 pub mod lower;
 pub mod mode;
 pub mod parse;
+pub mod scoped;
 pub mod span;
 pub mod vapor;
 
@@ -53,6 +54,7 @@ pub use lang::JsxLang;
 pub use lower::Lowerer;
 pub use mode::JsxOutputMode;
 pub use parse::{ParsedModule, parse_module};
+pub use scoped::ScopedStyle;
 pub use span::SpanMapper;
 pub use vapor::{VaporCompileOptions, VaporComponent, VaporOutput, compile_to_vapor};
 
@@ -68,6 +70,13 @@ pub struct LoweredRoot<'a> {
     /// Name of the enclosing component function (`function App` / `const App =
     /// () => …`), if it could be resolved.
     pub component_name: Option<String>,
+    /// Raw (un-rewritten) CSS of the component's `<style scoped>` block(s),
+    /// extracted from the markup and removed from the rendered children
+    /// (#1495). `None` when the component had no `<style scoped>`. The backends
+    /// ([`compile_to_dom`] / [`compile_to_vapor`]) run the scoped-CSS rewrite +
+    /// scope-id generation over this and expose the result on the compiled
+    /// component.
+    pub scoped_css: Option<String>,
 }
 
 /// The result of lowering a whole JSX/TSX module.

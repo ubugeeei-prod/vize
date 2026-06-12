@@ -3494,6 +3494,7 @@ dependencies = [
  "oxc_span",
  "oxc_syntax",
  "vize_atelier_core",
+ "vize_atelier_sfc",
  "vize_atelier_vapor",
  "vize_carton",
  "vize_croquis",

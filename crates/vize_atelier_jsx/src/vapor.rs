@@ -19,6 +19,7 @@ use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
+use crate::scoped::{ScopedStyle, build_scoped_style};
 use crate::{JsxLang, JsxOutputMode, LoweredRoot, lower_source};
 
 /// Options controlling JSX/TSX -> Vapor compilation.
@@ -38,6 +39,11 @@ pub struct VaporComponent {
     pub code: String,
     /// Static template strings referenced by the render code.
     pub templates: Vec<String>,
+    /// Extracted `<style scoped>` block (#1495): the generated scope id and the
+    /// scoped-rewritten CSS. `None` when the component had no `<style scoped>`.
+    /// A bundler emits this CSS to a stylesheet (deferred, #1533); the scope id
+    /// is already injected into the generated templates.
+    pub scoped_style: Option<ScopedStyle>,
 }
 
 /// Result of compiling a JSX/TSX module to Vapor.
@@ -96,7 +102,16 @@ pub(crate) fn compile_root_to_vapor(
         mut root,
         mode,
         component_name,
+        scoped_css,
     } = lowered;
+
+    // Extract + rewrite the `<style scoped>` CSS and derive the scope id, reusing
+    // the SFC scope infrastructure. Unlike VDOM (where the codegen injects the
+    // scope attribute via `CodegenOptions.scope_id`), the Vapor generator emits
+    // static `_template("…")` strings, so — mirroring the SFC Vapor path — the
+    // `data-v-<hash>` attribute is injected into those strings post-generation.
+    let scoped_style =
+        scoped_css.map(|css| build_scoped_style(component_name.as_deref(), css.as_str()));
 
     let transform_opts = TransformOptions {
         // JSX render fns close over the setup scope; don't prefix `_ctx.`.
@@ -114,10 +129,100 @@ pub(crate) fn compile_root_to_vapor(
     let generated =
         generate_vapor_with_options(&ir, None, VaporGenerateOptions { jsx_closure: true });
 
+    let (code, templates) = if let Some(style) = scoped_style.as_ref() {
+        inject_scope_id(&generated.code, &generated.templates, &style.scope_id)
+    } else {
+        (generated.code, generated.templates)
+    };
+
     VaporComponent {
         component_name,
         mode: mode.unwrap_or(JsxOutputMode::Vapor),
-        code: generated.code,
-        templates: generated.templates,
+        code,
+        templates,
+        scoped_style,
     }
+}
+
+/// Inject the `data-v-<hash>` scope attribute into every Vapor `_template("…")`
+/// declaration's first element, mirroring the SFC Vapor scope path
+/// (`vize_atelier_sfc::compile_template::vapor::add_scope_id_to_template`).
+///
+/// Both the generated `code` (which inlines the `_template(...)` declarations)
+/// and the separately-collected `templates` are rewritten so the two stay in
+/// sync.
+fn inject_scope_id(code: &str, templates: &[String], scope_id: &str) -> (String, Vec<String>) {
+    let mut out_code = String::default();
+    for (index, line) in code.lines().enumerate() {
+        if index > 0 {
+            out_code.push('\n');
+        }
+        let trimmed = line.trim_start();
+        if trimmed.starts_with("const t") && trimmed.contains("_template(") {
+            out_code.push_str(&add_scope_id_to_template_line(line, scope_id));
+        } else {
+            out_code.push_str(line);
+        }
+    }
+    if code.ends_with('\n') {
+        out_code.push('\n');
+    }
+
+    let out_templates = templates
+        .iter()
+        .map(|template| add_scope_id_to_template_html(template, scope_id))
+        .collect();
+
+    (out_code, out_templates)
+}
+
+/// Inject the scope attribute into a `const tN = _template("<tag…>…")` line.
+fn add_scope_id_to_template_line(line: &str, scope_id: &str) -> String {
+    let Some(start) = line.find("\"<") else {
+        return String::from(line);
+    };
+    let Some(end_rel) = line[start..].find(">\"") else {
+        return String::from(line);
+    };
+    let end = start + end_rel;
+
+    let prefix = &line[..start + 2]; // up to and including the opening `<`
+    let content = &line[start + 2..end + 1]; // element content (no closing quote)
+    let suffix = &line[end + 1..]; // closing quote + remainder
+
+    let Some(tag_end) = content.find(|c: char| c.is_whitespace() || c == '>') else {
+        return String::from(line);
+    };
+    let tag_name = &content[..tag_end];
+    let rest = &content[tag_end..];
+
+    let mut result = String::default();
+    result.push_str(prefix);
+    result.push_str(tag_name);
+    result.push(' ');
+    result.push_str(scope_id);
+    result.push_str(rest);
+    result.push_str(suffix);
+    result
+}
+
+/// Inject the scope attribute into a raw template HTML string (no quoting), used
+/// for the `templates` vector.
+fn add_scope_id_to_template_html(template: &str, scope_id: &str) -> String {
+    let Some(open) = template.find('<') else {
+        return String::from(template);
+    };
+    let after_open = open + 1;
+    let Some(tag_end_rel) = template[after_open..].find(|c: char| c.is_whitespace() || c == '>')
+    else {
+        return String::from(template);
+    };
+    let tag_end = after_open + tag_end_rel;
+
+    let mut result = String::default();
+    result.push_str(&template[..tag_end]);
+    result.push(' ');
+    result.push_str(scope_id);
+    result.push_str(&template[tag_end..]);
+    result
 }

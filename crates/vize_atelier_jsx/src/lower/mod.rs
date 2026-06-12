@@ -13,10 +13,13 @@ mod element;
 mod expr;
 mod name;
 mod slot;
+mod style;
 mod text;
 
+pub(crate) use style::RawScopedStyle;
+
 use oxc_ast::ast::{JSXElement, JSXFragment};
-use vize_carton::{Box, Bump};
+use vize_carton::{Box, Bump, String};
 use vize_relief::ast::{RootNode, TemplateChildNode};
 
 use crate::diagnostics::JsxDiagnostic;
@@ -27,6 +30,10 @@ pub struct Lowerer<'a, 'm, 's> {
     bump: &'a Bump,
     mapper: &'m SpanMapper<'s>,
     diagnostics: std::vec::Vec<JsxDiagnostic>,
+    /// `<style scoped>` blocks extracted from the render root currently being
+    /// lowered, in source order. Drained by [`Self::take_scoped_styles`] once
+    /// the root is built.
+    pending_styles: std::vec::Vec<RawScopedStyle>,
 }
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
@@ -36,7 +43,32 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             bump,
             mapper,
             diagnostics: std::vec::Vec::new(),
+            pending_styles: std::vec::Vec::new(),
         }
+    }
+
+    /// Record a `<style scoped>` block extracted during child lowering.
+    pub(crate) fn push_scoped_style(&mut self, style: RawScopedStyle) {
+        self.pending_styles.push(style);
+    }
+
+    /// Drain the `<style scoped>` blocks accumulated while lowering the current
+    /// render root, concatenating their CSS into one block (multiple `<style
+    /// scoped>` elements in one component join, mirroring SFC's multi-`<style>`
+    /// behavior). Returns `None` when no scoped style was present.
+    pub(crate) fn take_scoped_styles(&mut self) -> Option<String> {
+        if self.pending_styles.is_empty() {
+            return None;
+        }
+        let styles = std::mem::take(&mut self.pending_styles);
+        let mut css = String::default();
+        for (index, style) in styles.into_iter().enumerate() {
+            if index > 0 {
+                css.push('\n');
+            }
+            css.push_str(style.css.trim());
+        }
+        Some(css)
     }
 
     /// Diagnostics accumulated so far.

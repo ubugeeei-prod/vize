@@ -22,6 +22,7 @@ use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
+use crate::scoped::{ScopedStyle, build_scoped_style};
 use crate::{JsxLang, JsxOutputMode, LoweredRoot, lower_source};
 
 /// Options controlling JSX/TSX -> VDOM compilation.
@@ -48,6 +49,11 @@ pub struct DomComponent {
     pub code: String,
     /// Import/preamble section for runtime helpers.
     pub preamble: String,
+    /// Extracted `<style scoped>` block (#1495): the generated scope id and the
+    /// scoped-rewritten CSS. `None` when the component had no `<style scoped>`.
+    /// A bundler emits this CSS to a stylesheet (deferred, #1533); the scope id
+    /// is already injected into the render output's elements.
+    pub scoped_style: Option<ScopedStyle>,
 }
 
 /// Result of compiling a JSX/TSX module to VDOM.
@@ -112,7 +118,14 @@ pub(crate) fn compile_root_to_dom(
         mut root,
         mode,
         component_name,
+        scoped_css,
     } = lowered;
+
+    // Extract + rewrite the `<style scoped>` CSS and derive the scope id, reusing
+    // the SFC scope infrastructure. The id is injected into rendered elements by
+    // the codegen via `CodegenOptions.scope_id` below.
+    let scoped_style =
+        scoped_css.map(|css| build_scoped_style(component_name.as_deref(), css.as_str()));
 
     let transform_opts = TransformOptions {
         // JSX render fns close over the setup scope; don't prefix `_ctx.`.
@@ -136,6 +149,9 @@ pub(crate) fn compile_root_to_dom(
         is_ts,
         cache_handlers: options.cache_handlers,
         binding_metadata: None,
+        // Inject the `data-v-<hash>` scope attribute into every rendered element
+        // (the same codegen path SFC scoped styles use).
+        scope_id: scoped_style.as_ref().map(|style| style.scope_id.clone()),
         ..Default::default()
     };
     let result = generate(&root, codegen_opts);
@@ -145,6 +161,7 @@ pub(crate) fn compile_root_to_dom(
         mode: mode.unwrap_or(JsxOutputMode::Vdom),
         code: result.code,
         preamble: result.preamble,
+        scoped_style,
     }
 }
 
