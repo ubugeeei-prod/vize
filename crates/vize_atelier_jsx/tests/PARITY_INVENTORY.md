@@ -89,9 +89,9 @@ fine-grained lowering coverage; this inventory tracks the **parity** layer.
 
 Tracked as `#[ignore = "deferred: …"]` in `tests/parity_vdom.rs`:
 
-| Case | Reason | Tracking |
-| ---- | ------ | -------- |
-| _(none currently)_ | | |
+| Case               | Reason | Tracking |
+| ------------------ | ------ | -------- |
+| _(none currently)_ |        |          |
 
 > Resolved in #1489: the `v-model` modifier-array form `{[val, ['trim']]}` and
 > the `v-model_lazy` / `v-model_number_lazy` underscore-suffix form now lower to
