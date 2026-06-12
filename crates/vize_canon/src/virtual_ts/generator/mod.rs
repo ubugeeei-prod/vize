@@ -242,6 +242,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     };
     let default_export_object = default_export_targets.object;
     let default_export_class = default_export_targets.class;
+    let default_export_expr = default_export_targets.expr;
     if default_export_object.is_some() {
         ts.push_str(DEFINE_COMPONENT_HELPER);
     }
@@ -351,20 +352,27 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
                 let gen_start = ts.len();
                 if text.contains("export default") {
-                    // Re-base the script-absolute default-export-object
-                    // offsets onto this module span so the rewrite can wrap
-                    // a plain options object with `defineComponent`.
-                    let span_relative_object = default_export_object.and_then(
-                        |(export_start, object_start, object_end)| {
-                            let span_start = start as usize;
-                            (export_start >= span_start && object_end <= end as usize).then_some((
-                                export_start - span_start,
-                                object_start - span_start,
-                                object_end - span_start,
-                            ))
-                        },
+                    // Re-base the script-absolute default-export offsets onto
+                    // this module span so the rewrite can wrap a plain options
+                    // object with `defineComponent`, or rewrite any other shape
+                    // to a bare `const __default__ = <expr>`, by slicing on AST
+                    // byte offsets instead of scanning lines.
+                    let span_start = start as usize;
+                    let span_end = end as usize;
+                    let rebase = |(export_start, inner_start, inner_end): (usize, usize, usize)| {
+                        (export_start >= span_start && inner_end <= span_end).then_some((
+                            export_start - span_start,
+                            inner_start - span_start,
+                            inner_end - span_start,
+                        ))
+                    };
+                    let span_relative_object = default_export_object.and_then(rebase);
+                    let span_relative_expr = default_export_expr.and_then(rebase);
+                    let text = rewrite_export_default_for_module_scope(
+                        text,
+                        span_relative_object,
+                        span_relative_expr,
                     );
-                    let text = rewrite_export_default_for_module_scope(text, span_relative_object);
                     ts.push_str(&text);
                 } else {
                     ts.push_str(text);

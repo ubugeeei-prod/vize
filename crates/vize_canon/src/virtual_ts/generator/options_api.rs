@@ -413,7 +413,7 @@ fn collect_mapped_type(call: &CallExpression<'_>, mapped_types: &mut Vec<String>
 
 /// Byte offsets locating the rewriteable shape of a `<script>` default export.
 ///
-/// Both fields are offsets into the parsed `script`. A single default export is
+/// All fields are offsets into the parsed `script`. A single default export is
 /// at most one of these (an SFC module has one default export), so at most one
 /// field is `Some`.
 #[derive(Default, Clone, Copy)]
@@ -435,9 +435,21 @@ pub(super) struct DefaultExportTargets {
     /// so stripping only the keyword run keeps `@Component()` on a real class
     /// declaration either way (the line-based fallback would move it onto a
     /// `const`, which TypeScript rejects with TS1206). Anonymous default classes
-    /// stay `None` (no name to alias by) and fall through to the existing
-    /// rewrite.
+    /// stay `None` (no name to alias by) and fall through to the generic
+    /// `expr` rewrite below.
     pub class: Option<(usize, usize, usize, usize, usize)>,
+    /// Any other default-export shape, rewritten to a bare
+    /// `const __default__ = <expr>` at module scope, as
+    /// `(export_start, expr_start, expr_end)`. Covers
+    /// `export default defineComponent({...})`, identifiers, parenthesized /
+    /// `as` / `satisfies` expressions, anonymous classes/functions, and
+    /// `export default{` with no space — including multi-line / awkwardly
+    /// formatted variants. `export_start..expr_start` is the `export default`
+    /// keyword run that is dropped; `expr_start..expr_end` is the exported
+    /// expression copied verbatim. This is the span-based replacement for the
+    /// former line-scanning fallback, so it is only populated when neither
+    /// `object` nor `class` applies.
+    pub expr: Option<(usize, usize, usize)>,
 }
 
 /// Classify a `<script>` default export in a single parse. Parsing once keeps
@@ -466,18 +478,31 @@ pub(super) fn find_default_export_targets(script: &str) -> DefaultExportTargets 
                     object_span.end as usize,
                 ));
             }
-            ExportDefaultDeclarationKind::ClassDeclaration(class) => {
-                if let Some(id) = class.id.as_ref() {
-                    targets.class = Some((
-                        export.span.start as usize,
-                        class.span.start as usize,
-                        class.span.end as usize,
-                        id.span.start as usize,
-                        id.span.end as usize,
-                    ));
-                }
+            ExportDefaultDeclarationKind::ClassDeclaration(class) if class.id.is_some() => {
+                let id = class.id.as_ref().expect("class id checked by guard");
+                targets.class = Some((
+                    export.span.start as usize,
+                    class.span.start as usize,
+                    class.span.end as usize,
+                    id.span.start as usize,
+                    id.span.end as usize,
+                ));
             }
-            _ => {}
+            // Every other default-export shape (already-wrapped
+            // `defineComponent(...)`, identifiers, `as`/`satisfies`,
+            // anonymous classes/functions, ...) is rewritten verbatim to a
+            // bare `const __default__ = <expr>` using the declaration span.
+            // Slicing on these AST offsets is correct regardless of source
+            // formatting (`export default{` with no space, multi-line calls),
+            // which the previous line scanner mishandled.
+            other => {
+                let declaration_span = other.span();
+                targets.expr = Some((
+                    export.span.start as usize,
+                    declaration_span.start as usize,
+                    declaration_span.end as usize,
+                ));
+            }
         }
         // A module has a single default export; stop at the first one.
         break;
