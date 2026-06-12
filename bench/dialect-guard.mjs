@@ -140,7 +140,7 @@ export function diffOutputs(off, on) {
 function run(command, commandArgs, options = {}) {
   const result = spawnSync(command, commandArgs, {
     cwd: options.cwd,
-    env: { ...process.env, ...(options.env ?? {}) },
+    env: { ...process.env, ...options.env },
     encoding: "utf8",
     stdio: options.capture ? "pipe" : "inherit",
     maxBuffer: 64 * 1024 * 1024,
