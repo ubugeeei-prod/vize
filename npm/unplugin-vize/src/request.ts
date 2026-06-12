@@ -6,6 +6,10 @@ export function isVueFile(id: string): boolean {
   return id.endsWith(".vue");
 }
 
+export function isJsxFile(id: string): boolean {
+  return id.endsWith(".jsx") || id.endsWith(".tsx");
+}
+
 export function isVueStyleRequest(id: string): boolean {
   // Style requests always carry the `?vue&type=style` query (the `vue` param is
   // serialized first, so the id always contains `?vue`). Skip URLSearchParams

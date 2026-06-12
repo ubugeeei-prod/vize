@@ -220,6 +220,41 @@ export interface CompilerOptions {
   scriptExt?: string;
 }
 
+export declare function compileJsx(
+  source: string,
+  options?: JsxCompileOptionsNapi | undefined | null,
+): JsxCompileResultNapi;
+
+/** Options for `compileJsx`. */
+export interface JsxCompileOptionsNapi {
+  /** Source filename, used to infer the language when `lang` is omitted. */
+  filename?: string;
+  /**
+   * Source language: "jsx" or "tsx". Defaults to "jsx" (or is inferred from a
+   * `.tsx` `filename`).
+   */
+  lang?: string;
+  /**
+   * Default output mode: `true` compiles components to Vapor, `false` (default)
+   * to VDOM. Per-component "use vue:vapor" / "use vue:vdom" directives override
+   * this.
+   */
+  vapor?: boolean;
+}
+
+/** Result of `compileJsx`. */
+export interface JsxCompileResultNapi {
+  /**
+   * Generated render code for every component in the module, in source order,
+   * concatenated.
+   */
+  code: string;
+  /** Error-severity diagnostic messages. */
+  errors: Array<string>;
+  /** Warning-severity diagnostic messages. */
+  warnings: Array<string>;
+}
+
 export declare function compileSfc(
   source: string,
   options?: SfcCompileOptionsNapi | undefined | null,

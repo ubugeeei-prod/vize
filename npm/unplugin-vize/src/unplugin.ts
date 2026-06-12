@@ -3,9 +3,10 @@ import { createRequire } from "node:module";
 import type { Compiler as WebpackCompiler } from "webpack";
 import { createUnplugin } from "unplugin";
 import { createFilter } from "./filter.ts";
-import { compileVueModule } from "./compiler.ts";
+import { compileJsxModule, compileVueModule } from "./compiler.ts";
 import {
   createVirtualStyleId,
+  isJsxFile,
   isVirtualStyleId,
   isVueFile,
   isVueStyleRequest,
@@ -215,6 +216,11 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
       if (options.hostCompiler) {
         return false;
       }
+      // `.jsx`/`.tsx` modules route to the JSX compiler. They never carry the
+      // `?vue` query, so a plain filename check plus the user filter is enough.
+      if (isJsxFile(id)) {
+        return filter(id);
+      }
       // A `.vue` filename (from the path or a `vize-file` query) is required for a
       // match, so ids without a `.vue` substring can never be transformed. Skip
       // URLSearchParams parsing for the common plain-JS imports.
@@ -229,6 +235,21 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
       if (options.hostCompiler) {
         return null;
       }
+
+      if (isJsxFile(id)) {
+        if (!filter(id)) {
+          return null;
+        }
+        const { code: jsxCode, warnings } = compileJsxModule(id, code, options);
+        for (const warning of warnings) {
+          this.warn(`[vize] ${warning}`);
+        }
+        return {
+          code: jsxCode,
+          map: null,
+        };
+      }
+
       if (!isVueFile(id) || !filter(id)) {
         return null;
       }
@@ -268,8 +289,8 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginOptions | undefined>((raw
     },
 
     esbuild: {
-      onResolveFilter: /\.vue(?:$|\?)/,
-      onLoadFilter: /\.vue(?:$|\?)/,
+      onResolveFilter: /\.(?:vue|[jt]sx)(?:$|\?)/,
+      onLoadFilter: /\.(?:vue|[jt]sx)(?:$|\?)/,
       loader(_code, id) {
         const request = parseVueRequest(id);
         if (request.query.type === "style") {

@@ -4,12 +4,14 @@ import type {
   CompiledModule,
   NormalizedVizeUnpluginOptions,
   CachedCompiledModule,
+  JsxCompileResultNapi,
   SfcCompileResultNapi,
 } from "./types.ts";
 import { generateScopeId, toStyleBlockInfo } from "./style.ts";
 
-const { compileSfc } = native as {
+const { compileSfc, compileJsx } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
+  compileJsx: (source: string, options?: Record<string, unknown>) => JsxCompileResultNapi;
 };
 
 function buildSignature(options: NormalizedVizeUnpluginOptions): string {
@@ -86,6 +88,27 @@ export function compileVueModule(
 
   return {
     compiled,
+    warnings: result.warnings,
+  };
+}
+
+export function compileJsxModule(
+  filePath: string,
+  source: string,
+  options: NormalizedVizeUnpluginOptions,
+): { code: string; warnings: string[] } {
+  const result = compileJsx(source, {
+    filename: filePath,
+    lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
+    vapor: options.vapor,
+  });
+
+  if (result.errors.length > 0) {
+    throw new Error(result.errors.join("\n"));
+  }
+
+  return {
+    code: result.code,
     warnings: result.warnings,
   };
 }

@@ -2,7 +2,11 @@ export function createFilter(
   include?: string | RegExp | Array<string | RegExp>,
   exclude?: string | RegExp | Array<string | RegExp>,
 ): (id: string) => boolean {
-  const includePatterns = include ? (Array.isArray(include) ? include : [include]) : [/\.vue$/];
+  const includePatterns = include
+    ? Array.isArray(include)
+      ? include
+      : [include]
+    : [/\.vue$/, /\.[jt]sx$/];
   const excludePatterns = exclude
     ? Array.isArray(exclude)
       ? exclude

@@ -38,6 +38,7 @@ vize_atelier_dom = { workspace = true }
 vize_atelier_vapor = { workspace = true }
 vize_atelier_ssr = { workspace = true }
 vize_atelier_sfc = { workspace = true, default-features = false }
+vize_atelier_jsx = { workspace = true }
 vize_musea = { workspace = true }
 vize_patina = { workspace = true }
 vize_glyph = { workspace = true, optional = true }

@@ -12,6 +12,18 @@ export interface SfcCompileOptionsNapi {
   scopeId?: string;
 }
 
+export interface JsxCompileOptionsNapi {
+  filename?: string;
+  lang?: "jsx" | "tsx";
+  vapor?: boolean;
+}
+
+export interface JsxCompileResultNapi {
+  code: string;
+  errors: string[];
+  warnings: string[];
+}
+
 export interface MacroArtifact {
   kind: string;
   name: string;

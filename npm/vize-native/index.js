@@ -767,6 +767,7 @@ module.exports.classifyVitePluginRequest = nativeBinding.classifyVitePluginReque
 module.exports.collectSfcTemplateAssetUrls = nativeBinding.collectSfcTemplateAssetUrls;
 module.exports.compile = nativeBinding.compile;
 module.exports.compileCss = nativeBinding.compileCss;
+module.exports.compileJsx = nativeBinding.compileJsx;
 module.exports.compileSfc = nativeBinding.compileSfc;
 module.exports.compileSfcBatch = nativeBinding.compileSfcBatch;
 module.exports.compileSfcBatchWithResults = nativeBinding.compileSfcBatchWithResults;
