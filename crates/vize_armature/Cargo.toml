@@ -25,3 +25,22 @@ htmlize = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
+
+[package.metadata.cargo-semver-checks.lints]
+# `LegacyDialectCapabilities` (in the `legacy`-gated module) lists one `bool`
+# per pre-Vue-3 dialect surface. Consumers obtain it through
+# `LegacyDialectCapabilities::for_dialect()` and the `VUE3` const and only ever
+# read its fields; it is never constructed with a struct literal in user code.
+# Adding a capability is the explicit purpose of the module (each new Vue 0.x
+# / Vue 1.x / Vue 2 surface lands as its own field), so the
+# constructible-struct field-add lint would otherwise flag every capability as
+# a major break.
+#
+# `vize_relief` avoids this by underscore-prefixing its `_legacy` feature so
+# the cargo-semver-checks default feature heuristic excludes it (see the
+# comment on `_legacy` in `vize_relief/Cargo.toml`). `vize_armature`'s
+# `legacy` feature shipped without the `_` prefix (#1408), and renaming it
+# now would itself trip `feature_missing`, so we allow this specific lint
+# instead. Whether the accumulated legacy delta deserves a version bump is a
+# release-time concern owned by release tooling, not a per-PR gate.
+constructible_struct_adds_field = "allow"
