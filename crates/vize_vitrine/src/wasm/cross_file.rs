@@ -408,6 +408,8 @@ fn diagnostic_kind_to_string(kind: &vize_croquis_cf::CrossFileDiagnosticKind) ->
         ToRawMutation { .. } => "to-raw-mutation",
         // Ultra-strict: event listener
         EventListenerWithoutCleanup { .. } => "event-listener-cleanup",
+        // Lifecycle hook cleanup
+        LifecycleHookWithoutCleanup { .. } => "lifecycle-cleanup",
         // Ultra-strict: array mutation
         ArrayMutationNotTriggering { .. } => "array-mutation",
         // Ultra-strict: Pinia
