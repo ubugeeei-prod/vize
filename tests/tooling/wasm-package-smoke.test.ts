@@ -38,6 +38,7 @@ export function compileVapor() {}
 export function parseTemplate() {}
 export function parseSfc() {}
 export function compileSfc() {}
+export function compileJsx() {}
 export function compileCss() {}
 `,
   );
