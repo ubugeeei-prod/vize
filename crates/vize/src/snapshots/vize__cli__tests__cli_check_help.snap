@@ -33,7 +33,7 @@ Options:
           Show generated virtual TypeScript
 
       --save-virtual-ts-for <FILE>
-          Save generated virtual TypeScript for a file next to that file
+          Save generated virtual TypeScript for a file next to that file. Repeatable: pass the flag multiple times to save several files in one run. Pass `__vize_helpers.d.ts` to save the shared helpers preamble file
 
       --max-warnings <MAX_WARNINGS>
           Maximum number of warnings before failing

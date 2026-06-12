@@ -112,11 +112,37 @@ pub(super) fn render_diagnostics(
         .collect()
 }
 
+/// Whether a `--save-virtual-ts-for` target names the shared ambient helpers
+/// file (`__vize_helpers.d.ts`) rather than a per-`.vue` virtual module.
+///
+/// Matched purely on the file name so the flag accepts the bare
+/// `__vize_helpers.d.ts`, a relative path, or an absolute path interchangeably.
+fn is_shared_helpers_target(requested_path: &Path) -> bool {
+    requested_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name == vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME)
+}
+
+/// Save the generated virtual TypeScript for a single `--save-virtual-ts-for`
+/// target.
+///
+/// A target that names the shared helpers file (`__vize_helpers.d.ts`) writes
+/// the program-wide helpers preamble ([`SHARED_PREAMBLE_DTS`]) verbatim at the
+/// requested location. Every other target resolves to a generated per-`.vue`
+/// virtual module and is written next to its source as `<file>.virtual.ts`,
+/// exactly as before.
+///
+/// [`SHARED_PREAMBLE_DTS`]: vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
 pub(super) fn save_virtual_ts_for_path<'a>(
     requested_path: &Path,
     cwd: &Path,
     candidates: impl IntoIterator<Item = (&'a Path, &'a str)>,
 ) -> Result<PathBuf, CompactString> {
+    if is_shared_helpers_target(requested_path) {
+        return save_shared_helpers_virtual_ts(requested_path, cwd);
+    }
+
     let requested_path = normalize_requested_virtual_ts_path(cwd, requested_path);
     let Some((original_path, content)) = candidates
         .into_iter()
@@ -129,14 +155,56 @@ pub(super) fn save_virtual_ts_for_path<'a>(
     };
 
     let target = virtual_ts_save_path(original_path)?;
+    write_virtual_ts(&target, content)
+}
+
+/// Save several `--save-virtual-ts-for` targets in one run, writing each one in
+/// turn and reporting every saved path. A failure on any target aborts the run.
+pub(super) fn save_virtual_ts_targets<'a, C>(
+    requested_paths: &[PathBuf],
+    cwd: &Path,
+    candidates: impl Fn() -> C,
+    quiet: bool,
+) where
+    C: IntoIterator<Item = (&'a Path, &'a str)>,
+{
+    for requested_path in requested_paths {
+        match save_virtual_ts_for_path(requested_path, cwd, candidates()) {
+            Ok(target) => {
+                if !quiet {
+                    eprintln!("Saved Virtual TS to {}", target.display());
+                }
+            }
+            Err(error) => {
+                eprintln!("\x1b[31mError:\x1b[0m {}", error);
+                std::process::exit(1);
+            }
+        }
+    }
+}
+
+/// Write the shared ambient helpers preamble to the requested location.
+fn save_shared_helpers_virtual_ts(
+    requested_path: &Path,
+    cwd: &Path,
+) -> Result<PathBuf, CompactString> {
+    let target = if requested_path.is_absolute() {
+        requested_path.to_path_buf()
+    } else {
+        cwd.join(requested_path)
+    };
+    write_virtual_ts(&target, vize_canon::virtual_ts::SHARED_PREAMBLE_DTS)
+}
+
+fn write_virtual_ts(target: &Path, content: &str) -> Result<PathBuf, CompactString> {
     let bytes = content.len();
     match profile!(
         "cli.check.save_virtual_ts.write",
-        fs::write(&target, content)
+        fs::write(target, content)
     ) {
         Ok(()) => {
             global_profiler().record_fs_write(bytes);
-            Ok(target)
+            Ok(target.to_path_buf())
         }
         Err(error) => {
             global_profiler().record_fs_write_failure(bytes);
@@ -237,7 +305,7 @@ pub(super) fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
 
 #[cfg(test)]
 mod tests {
-    use super::{save_virtual_ts_for_path, virtual_ts_save_path};
+    use super::{is_shared_helpers_target, save_virtual_ts_for_path, virtual_ts_save_path};
 
     #[test]
     fn virtual_ts_save_path_appends_virtual_ts_after_full_file_name() {
@@ -271,6 +339,69 @@ mod tests {
         assert_eq!(
             std::fs::read_to_string(saved).unwrap(),
             "const value = 1;\n"
+        );
+    }
+
+    #[test]
+    fn is_shared_helpers_target_matches_helpers_file_name_in_any_form() {
+        let bare = std::path::Path::new(vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME);
+        assert!(is_shared_helpers_target(bare));
+        assert!(is_shared_helpers_target(std::path::Path::new(
+            "some/nested/dir/__vize_helpers.d.ts"
+        )));
+        assert!(is_shared_helpers_target(std::path::Path::new(
+            "/abs/__vize_helpers.d.ts"
+        )));
+        assert!(!is_shared_helpers_target(std::path::Path::new(
+            "src/App.vue"
+        )));
+        assert!(!is_shared_helpers_target(std::path::Path::new(
+            "__vize_helpers.ts"
+        )));
+    }
+
+    #[test]
+    fn save_virtual_ts_for_path_writes_shared_helpers_preamble() {
+        let temp = tempfile::tempdir().unwrap();
+
+        // No `.vue` candidate matches the helpers target; it is served from the
+        // shared preamble constant instead of the per-file virtual modules.
+        let saved = save_virtual_ts_for_path(
+            std::path::Path::new(vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME),
+            temp.path(),
+            std::iter::empty(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            saved,
+            temp.path()
+                .join(vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME)
+        );
+        assert_eq!(
+            std::fs::read_to_string(saved).unwrap(),
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
+        );
+    }
+
+    #[test]
+    fn save_virtual_ts_for_path_writes_shared_helpers_to_absolute_target() {
+        let temp = tempfile::tempdir().unwrap();
+        let target = temp.path().join("out").join("__vize_helpers.d.ts");
+        std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+
+        // An unrelated cwd must not redirect an absolute helpers target.
+        let saved = save_virtual_ts_for_path(
+            &target,
+            std::path::Path::new("/nonexistent"),
+            std::iter::empty(),
+        )
+        .unwrap();
+
+        assert_eq!(saved, target);
+        assert_eq!(
+            std::fs::read_to_string(saved).unwrap(),
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
         );
     }
 }

@@ -43,7 +43,7 @@ mod tests;
 use collect::collect_check_files;
 use diagnostics::{
     emit_json_output, is_reported, is_suppressed_false_positive, render_diagnostics,
-    save_virtual_ts_for_path, write_profile_virtual_ts,
+    save_virtual_ts_targets, write_profile_virtual_ts,
 };
 use global_components::{
     build_virtual_ts_options, collect_project_global_component_stubs, dialect_from_features,
@@ -350,24 +350,17 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         }
     }
 
-    if let Some(path) = args.save_virtual_ts_for.as_deref() {
-        match save_virtual_ts_for_path(
-            path,
+    if !args.save_virtual_ts_for.is_empty() {
+        save_virtual_ts_targets(
+            &args.save_virtual_ts_for,
             &cwd,
-            virtual_files
-                .iter()
-                .map(|file| (file.original_path.as_path(), file.content.as_str())),
-        ) {
-            Ok(target) => {
-                if !args.quiet {
-                    eprintln!("Saved Virtual TS to {}", target.display());
-                }
-            }
-            Err(error) => {
-                eprintln!("\x1b[31mError:\x1b[0m {}", error);
-                std::process::exit(1);
-            }
-        }
+            || {
+                virtual_files
+                    .iter()
+                    .map(|file| (file.original_path.as_path(), file.content.as_str()))
+            },
+            args.quiet,
+        );
     }
 
     let profile_artifact_start = Instant::now();

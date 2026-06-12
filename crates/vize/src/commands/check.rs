@@ -46,9 +46,11 @@ pub struct CheckArgs {
     #[arg(long, alias = "include-virtual-ts")]
     pub show_virtual_ts: bool,
 
-    /// Save generated virtual TypeScript for a file next to that file
+    /// Save generated virtual TypeScript for a file next to that file.
+    /// Repeatable: pass the flag multiple times to save several files in one run.
+    /// Pass `__vize_helpers.d.ts` to save the shared helpers preamble file.
     #[arg(long, value_name = "FILE")]
-    pub save_virtual_ts_for: Option<PathBuf>,
+    pub save_virtual_ts_for: Vec<PathBuf>,
 
     /// Maximum number of warnings before failing
     #[arg(long)]

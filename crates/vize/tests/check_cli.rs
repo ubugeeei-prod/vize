@@ -120,6 +120,121 @@ void props
 }
 
 #[test]
+fn check_save_virtual_ts_for_accepts_multiple_targets() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "save-virtual-ts-multiple",
+        &[
+            (
+                "src/Foo.vue",
+                "<script setup lang=\"ts\">\nconst foo = 1\n</script>\n<template><div>{{ foo }}</div></template>\n",
+            ),
+            (
+                "src/Bar.vue",
+                "<script setup lang=\"ts\">\nconst bar = 2\n</script>\n<template><span>{{ bar }}</span></template>\n",
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/Foo.vue",
+            "src/Bar.vue",
+            "--save-virtual-ts-for",
+            "src/Foo.vue",
+            "--save-virtual-ts-for",
+            "src/Bar.vue",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "check failed: {}",
+        std::string::String::from_utf8_lossy(&output.stderr)
+    );
+
+    let foo_virtual = project_root.join("src/Foo.vue.virtual.ts");
+    let bar_virtual = project_root.join("src/Bar.vue.virtual.ts");
+    assert!(
+        foo_virtual.exists(),
+        "expected {} to be written",
+        foo_virtual.display()
+    );
+    assert!(
+        bar_virtual.exists(),
+        "expected {} to be written",
+        bar_virtual.display()
+    );
+    assert!(
+        std::fs::read_to_string(&foo_virtual)
+            .unwrap()
+            .contains("foo")
+    );
+    assert!(
+        std::fs::read_to_string(&bar_virtual)
+            .unwrap()
+            .contains("bar")
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_save_virtual_ts_for_writes_shared_helpers_target() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "save-virtual-ts-helpers",
+        &[(
+            "src/Foo.vue",
+            "<script setup lang=\"ts\">\nconst foo = 1\n</script>\n<template><div>{{ foo }}</div></template>\n",
+        )],
+    );
+
+    let helpers_name = vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME;
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/Foo.vue",
+            "--save-virtual-ts-for",
+            "src/Foo.vue",
+            "--save-virtual-ts-for",
+            helpers_name,
+        ])
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "check failed: {}",
+        std::string::String::from_utf8_lossy(&output.stderr)
+    );
+
+    let helpers_path = project_root.join(helpers_name);
+    assert!(
+        helpers_path.exists(),
+        "expected {} to be written",
+        helpers_path.display()
+    );
+    assert_eq!(
+        std::fs::read_to_string(&helpers_path).unwrap(),
+        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
+    );
+    assert!(project_root.join("src/Foo.vue.virtual.ts").exists());
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_without_patterns_uses_parent_relative_tsconfig_includes() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

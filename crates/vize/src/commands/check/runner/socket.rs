@@ -22,7 +22,7 @@ use crate::{
     profile_support,
 };
 
-use super::{collect::collect_vue_files, diagnostics::save_virtual_ts_for_path, display_path};
+use super::{collect::collect_vue_files, diagnostics::save_virtual_ts_targets, display_path};
 use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
 
 /// Run type checking via Unix socket connection to check-server.
@@ -180,25 +180,18 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     }
     let request_time = request_start.elapsed();
 
-    if let Some(path) = args.save_virtual_ts_for.as_deref() {
+    if !args.save_virtual_ts_for.is_empty() {
         let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
-        match save_virtual_ts_for_path(
-            path,
+        save_virtual_ts_targets(
+            &args.save_virtual_ts_for,
             &cwd,
-            results.iter().map(|(filename, result)| {
-                (std::path::Path::new(filename), result.virtual_ts.as_str())
-            }),
-        ) {
-            Ok(target) => {
-                if !args.quiet {
-                    eprintln!("Saved Virtual TS to {}", target.display());
-                }
-            }
-            Err(error) => {
-                eprintln!("\x1b[31mError:\x1b[0m {}", error);
-                std::process::exit(1);
-            }
-        }
+            || {
+                results.iter().map(|(filename, result)| {
+                    (std::path::Path::new(filename), result.virtual_ts.as_str())
+                })
+            },
+            args.quiet,
+        );
     }
 
     let render_start = Instant::now();
