@@ -1,5 +1,6 @@
 ---
 source: crates/vize_croquis/src/script_parser/tests.rs
+assertion_line: 342
 expression: result
 ---
 ScriptParseResult {
@@ -39,6 +40,13 @@ ScriptParseResult {
     },
     race_conditions: RaceConditionTracker {
         risks: [],
+    },
+    types: TypeResolver {
+        definitions: TypeDefinitions {
+            interfaces: {},
+            type_aliases: {},
+            imported_types: {},
+        },
     },
     type_exports: [],
     invalid_exports: [],

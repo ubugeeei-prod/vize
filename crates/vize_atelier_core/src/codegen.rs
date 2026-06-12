@@ -14,6 +14,7 @@ mod pipeline;
 mod props;
 mod root;
 mod slots;
+mod source_map;
 mod v_for;
 mod v_if;
 

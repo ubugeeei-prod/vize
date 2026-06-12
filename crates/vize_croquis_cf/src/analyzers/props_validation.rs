@@ -426,9 +426,27 @@ fn imported_aliases_for_child(
 
 fn import_targets_path(specifier: &str, from_dir: Option<&Path>, target: &Path) -> bool {
     let normalized_target = normalize_logical_path(target.to_path_buf());
+    // The component-suffix fallback (`target` ends with the candidate path) lets
+    // a flat in-memory/playground file matched by bare filename line up with a
+    // `target` that carries a directory prefix. It must NOT apply to relative
+    // specifiers (`./`, `../`): their directory is meaningful, so `./Child.vue`
+    // may only match its sibling, never a same-named file in a different
+    // directory. Relative specifiers therefore require exact canonical equality.
+    let allow_suffix = !is_relative_specifier(specifier);
     import_candidates(specifier, from_dir)
         .into_iter()
-        .any(|candidate| candidate == normalized_target || normalized_target.ends_with(&candidate))
+        .any(|candidate| {
+            candidate == normalized_target
+                || (allow_suffix && normalized_target.ends_with(&candidate))
+        })
+}
+
+/// Whether an import specifier is relative (`./` or `../`).
+fn is_relative_specifier(specifier: &str) -> bool {
+    specifier.starts_with("./")
+        || specifier.starts_with("../")
+        || specifier == "."
+        || specifier == ".."
 }
 
 fn import_candidates(specifier: &str, from_dir: Option<&Path>) -> Vec<PathBuf> {
@@ -553,7 +571,8 @@ fn is_builtin_attr(name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::is_builtin_attr;
+    use super::{import_targets_path, is_builtin_attr};
+    use std::path::Path;
 
     #[test]
     fn test_is_builtin_attr() {
@@ -562,5 +581,60 @@ mod tests {
         assert!(is_builtin_attr("v-model"));
         assert!(!is_builtin_attr("myProp"));
         assert!(!is_builtin_attr("customAttr"));
+    }
+
+    /// `./Button.vue` imported from `pages/` must not be treated as targeting
+    /// `admin/Button.vue`: relative specifiers require exact canonical equality,
+    /// so the prop-validation alias mapping never crosses directories.
+    #[test]
+    fn relative_import_targets_only_sibling() {
+        let from_dir = Some(Path::new("pages"));
+        assert!(import_targets_path(
+            "./Button.vue",
+            from_dir,
+            Path::new("pages/Button.vue")
+        ));
+        assert!(!import_targets_path(
+            "./Button.vue",
+            from_dir,
+            Path::new("admin/Button.vue")
+        ));
+    }
+
+    /// When the parent is at the project root (flat in-memory/playground), its
+    /// `from_dir` is empty and `./Button.vue` normalizes to the bare
+    /// `Button.vue`. The relative-specifier guard prevents that bare candidate
+    /// from suffix-matching a nested `admin/Button.vue`, so the alias mapping
+    /// still does not cross directories. A root-level sibling does resolve.
+    #[test]
+    fn relative_import_from_root_targets_only_root_sibling() {
+        let from_dir = Some(Path::new(""));
+        assert!(import_targets_path(
+            "./Button.vue",
+            from_dir,
+            Path::new("Button.vue")
+        ));
+        assert!(!import_targets_path(
+            "./Button.vue",
+            from_dir,
+            Path::new("admin/Button.vue")
+        ));
+        assert!(!import_targets_path(
+            "./Button.vue",
+            None,
+            Path::new("admin/Button.vue")
+        ));
+    }
+
+    /// A bare specifier in a flat virtual/playground project still matches a
+    /// `target` that carries a directory prefix, via the component-suffix
+    /// fallback.
+    #[test]
+    fn bare_import_targets_via_suffix_for_virtual_projects() {
+        assert!(import_targets_path(
+            "Button.vue",
+            None,
+            Path::new("components/Button.vue")
+        ));
     }
 }

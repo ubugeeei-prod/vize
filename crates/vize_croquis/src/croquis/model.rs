@@ -73,6 +73,7 @@ impl Croquis {
         self.race_conditions.extend(plain.race_conditions);
         self.provide_inject.extend(plain.provide_inject);
         self.setup_context.extend(plain.setup_context);
+        self.types.merge_keep_existing(plain.types);
         self.type_exports.extend(plain.type_exports);
         self.import_statements.extend(plain.import_statements);
         self.re_exports.extend(plain.re_exports);

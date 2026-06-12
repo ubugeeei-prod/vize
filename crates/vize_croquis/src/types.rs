@@ -96,6 +96,21 @@ impl TypeDefinitions {
     pub fn is_imported(&self, type_name: &str) -> bool {
         self.imported_types.contains_key(type_name)
     }
+
+    /// Merge another set of definitions in, keeping existing entries on a name
+    /// clash. Used to fold a plain `<script>`'s local types into a
+    /// `<script setup>` summary, which keeps precedence for setup-local data.
+    pub fn merge_keep_existing(&mut self, other: TypeDefinitions) {
+        for (name, body) in other.interfaces {
+            self.interfaces.entry(name).or_insert(body);
+        }
+        for (name, body) in other.type_aliases {
+            self.type_aliases.entry(name).or_insert(body);
+        }
+        for (name, source) in other.imported_types {
+            self.imported_types.entry(name).or_insert(source);
+        }
+    }
 }
 
 /// Type resolver for Vue compiler macros
@@ -142,6 +157,14 @@ impl TypeResolver {
         body: impl Into<CompactString>,
     ) {
         self.definitions.add_type_alias(name, body);
+    }
+
+    /// Fold another resolver's definitions in, keeping existing entries on a
+    /// name clash (the receiver wins). Used when merging a plain `<script>`'s
+    /// local types into a `<script setup>` summary.
+    #[inline]
+    pub fn merge_keep_existing(&mut self, other: TypeResolver) {
+        self.definitions.merge_keep_existing(other.definitions);
     }
 
     /// Extract properties from type arguments

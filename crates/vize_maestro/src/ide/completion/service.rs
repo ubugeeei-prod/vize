@@ -325,7 +325,7 @@ impl super::CompletionService {
 
     /// Convert a Corsa completion item to tower-lsp CompletionItem.
     #[cfg(feature = "native")]
-    fn convert_lsp_completion(item: LspCompletionItem) -> CompletionItem {
+    pub(in crate::ide) fn convert_lsp_completion(item: LspCompletionItem) -> CompletionItem {
         CompletionItem {
             label: item.label,
             kind: item.kind.map(Self::convert_completion_kind),

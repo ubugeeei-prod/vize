@@ -65,6 +65,10 @@ pub struct ServerState {
     type_checker_options_api: RwLock<bool>,
     /// Vue 2.7 / Nuxt 2 type checker compatibility flag from config.
     type_checker_legacy_vue2: RwLock<bool>,
+    /// Opt-in type-aware LSP features for `.jsx`/`.tsx` Vue components (#1498).
+    /// Default off: a repository may contain React `.tsx` files that must not
+    /// be type-checked as Vue JSX. Set via `typeChecker.jsxTypecheck`.
+    type_checker_jsx_typecheck: RwLock<bool>,
     /// Linter options shared by LSP diagnostics.
     linter_config: RwLock<LinterConfig>,
     /// Explicit Vue dialect from config (`dialect` key). `None` means the
@@ -125,6 +129,9 @@ impl ServerState {
             // opt out with `typeChecker.optionsApi: false`.
             type_checker_options_api: RwLock::new(true),
             type_checker_legacy_vue2: RwLock::new(false),
+            // JSX/TSX type-aware features are experimental and default off so
+            // React `.tsx` is left untouched until opted in (#1498).
+            type_checker_jsx_typecheck: RwLock::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
             dialect_config: RwLock::new(None),
             #[cfg(feature = "glyph")]
@@ -200,6 +207,16 @@ impl ServerState {
         *self.type_checker_options_api.read()
             || self.lsp_features().options_api
             || self.legacy_vue2_enabled()
+    }
+
+    /// Whether type-aware LSP features run for `.jsx`/`.tsx` Vue components.
+    ///
+    /// Gated by `typeChecker.jsxTypecheck` (default off) — the same opt-in
+    /// `vize check` uses — so React `.tsx` files are never type-checked as Vue
+    /// JSX unless the user explicitly enables it (#1498).
+    #[inline]
+    pub(crate) fn jsx_typecheck_enabled(&self) -> bool {
+        *self.type_checker_jsx_typecheck.read()
     }
 
     /// Check whether LSP lint diagnostics are enabled.

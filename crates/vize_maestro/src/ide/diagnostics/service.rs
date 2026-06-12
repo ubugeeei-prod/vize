@@ -312,6 +312,30 @@ impl DiagnosticService {
             return diagnostics;
         }
 
+        // JSX/TSX type diagnostics. The sync `collect` above already added the
+        // JSX compiler diagnostics; here we add TypeScript type errors derived
+        // from the JSX virtual TS, surfaced alongside them. Gated on the opt-in
+        // `typeChecker.jsxTypecheck` so React `.tsx` is never Vue-JSX-checked.
+        if is_jsx_path(uri.path()) {
+            if state.jsx_typecheck_enabled()
+                && let Some(ctx) = crate::ide::IdeContext::new(state, uri, 0)
+            {
+                let corsa_bridge = state.get_corsa_bridge().await;
+                let jsx_future = crate::ide::JsxService::diagnostics(&ctx, corsa_bridge);
+                match crate::runtime::timeout(std::time::Duration::from_secs(10), jsx_future).await
+                {
+                    Ok(jsx_type_diags) => {
+                        tracing::info!("jsx type diagnostics count: {}", jsx_type_diags.len());
+                        diagnostics.extend(jsx_type_diags);
+                    }
+                    Err(_) => tracing::warn!("jsx type diagnostics timed out for {}", uri),
+                }
+            } else {
+                tracing::info!("collect_async: jsx type diagnostics skipped (disabled by config)");
+            }
+            return diagnostics;
+        }
+
         if state.is_lsp_typecheck_enabled() {
             // Try to get Corsa diagnostics (with timeout, skip on failure).
             // Use 10s timeout - polling for diagnostics internally uses 5s

@@ -175,7 +175,7 @@ impl HoverService {
     }
 
     /// Convert a Corsa hover payload to tower-lsp Hover.
-    pub(super) fn convert_lsp_hover(lsp_hover: LspHover) -> Hover {
+    pub(in crate::ide) fn convert_lsp_hover(lsp_hover: LspHover) -> Hover {
         let value = match lsp_hover.contents {
             LspHoverContents::Markup(markup) => {
                 if markup.kind == "markdown" {

@@ -577,6 +577,36 @@ fn collect_produces_no_error_for_valid_jsx() {
     );
 }
 
+/// React `.tsx` must be left untouched when `typeChecker.jsxTypecheck` is off:
+/// the async pass adds no `vize/types` (type-checker) diagnostics for JSX. With
+/// the flag off the JSX type branch is skipped entirely, so even without a
+/// Corsa bridge this asserts the gating, not bridge availability.
+#[cfg(feature = "native")]
+#[test]
+fn collect_async_skips_jsx_type_diagnostics_when_flag_off() {
+    crate::runtime::block_on(async {
+        // typecheck on (so the pipeline runs) but jsxTypecheck left default-off.
+        let state = state_with_lsp_diagnostics(true, true);
+        assert!(!state.jsx_typecheck_enabled());
+        let uri = Url::parse("file:///React.tsx").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "const App = () => <div>{count}</div>;".to_string(),
+            1,
+            "typescriptreact".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect_async(&state, &uri).await;
+
+        assert!(
+            !diagnostics
+                .iter()
+                .any(|d| d.source.as_deref() == Some(sources::TYPE_CHECKER)),
+            "jsxTypecheck off must not surface any type-checker diagnostics for .tsx, got: {diagnostics:?}"
+        );
+    });
+}
+
 fn lint_subset(diagnostics: &[Diagnostic]) -> Vec<Diagnostic> {
     diagnostics
         .iter()

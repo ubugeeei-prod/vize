@@ -329,6 +329,7 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
   for (const workflowName of [
     "benchmark.yml",
     "check.yml",
+    "criterion-bench.yml",
     "deploy-docs.yml",
     "e2e.yml",
     "native-smoke.yml",
@@ -356,6 +357,7 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
 
   for (const workflowName of [
     "check.yml",
+    "criterion-bench.yml",
     "deploy-docs.yml",
     "e2e.yml",
     "fuzz.yml",
@@ -610,9 +612,11 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
     /node bench\/comment-pr\.mjs --body tool-benchmark-summary\.md --comment-key "\$BENCHMARK_COMMENT_KEY"/,
   );
 
+  // The snapshot commit job fires on a manual dispatch with commit_results set
+  // OR on the weekly scheduled ratchet, but never for tags (refs/heads guard).
   assert.match(
     commitJob,
-    /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && inputs\.commit_results && startsWith\(github\.ref, 'refs\/heads\/'\)\s*\}\}/,
+    /if:\s*\$\{\{\s*\(\(github\.event_name == 'workflow_dispatch' && inputs\.commit_results\) \|\| github\.event_name == 'schedule'\) && startsWith\(github\.ref, 'refs\/heads\/'\)\s*\}\}/,
   );
   assert.match(commitJob, /contents:\s*write/);
   assert.match(commitJob, /docs\/content\/architecture\/performance-blacksmith\.md/);
@@ -620,6 +624,71 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   assert.match(commitJob, /git commit -m "docs: update blacksmith benchmark snapshot"/);
   assert.match(commitJob, /git push origin HEAD:\$\{\{\s*github\.ref_name\s*\}\}/);
   assert.doesNotMatch(commitJob, /codex/i);
+});
+
+test("tool benchmark workflow ratchets the committed snapshot on a scheduled cadence", () => {
+  const workflow = readRepoFile(".github", "workflows", "tool-benchmark.yml");
+
+  // A weekly cron refreshes bench/results/tool-benchmark-latest.json on main so
+  // sub-threshold drift cannot accumulate between manual dispatches. A full run
+  // on every push is too heavy (the job is capped at 75 minutes).
+  assert.match(workflow, /\n  schedule:\n/);
+  assert.match(workflow, /- cron:\s*"41 5 \* \* 1"/);
+});
+
+test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard", () => {
+  const workflow = readRepoFile(".github", "workflows", "criterion-bench.yml");
+  const abJob = workflowJobBody(workflow, "criterion-ab");
+  const guardJob = workflowJobBody(workflow, "dialect-guard");
+
+  // Only runs on PRs and only when Rust or the bench harness changes.
+  assert.match(workflow, /\n  pull_request:\n/);
+  assert.match(workflow, /paths:\n\s+- "crates\/\*\*"/);
+  assert.match(workflow, /- "bench\/criterion-ab\.mjs"/);
+  assert.match(workflow, /- "bench\/dialect-guard\.mjs"/);
+  assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);
+
+  for (const [jobName, minutes] of [
+    ["criterion-ab", 45],
+    ["dialect-guard", 45],
+  ] as const) {
+    assert.match(
+      workflowJobBody(workflow, jobName),
+      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
+    );
+  }
+
+  // A/B: alternating base/head criterion baselines compared with critcmp into a
+  // shared target dir; report-only by default (no threshold blocks the PR).
+  assert.match(abJob, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
+  assert.match(abJob, /contents:\s*read/);
+  assert.doesNotMatch(abJob, /contents:\s*write/);
+  assert.match(
+    abJob,
+    /path:\s*head[\s\S]*ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
+  );
+  assert.match(
+    abJob,
+    /path:\s*base[\s\S]*ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/,
+  );
+  assert.match(abJob, /uses:\s*\.\/head\/\.github\/actions\/setup-rust-sticky-cache/);
+  assert.match(abJob, /cargo install critcmp --version 0\.1\.8 --locked/);
+  assert.match(abJob, /node head\/bench\/criterion-ab\.mjs/);
+  assert.match(abJob, /--target-dir "\$GITHUB_WORKSPACE\/head\/target"/);
+
+  // Dialect guard: build vize with legacy OFF and ON, then assert byte-identical
+  // Vue 3 codegen plus a small A/B timing budget.
+  assert.match(guardJob, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
+  assert.match(guardJob, /cargo build --profile ci-opt -p vize --target-dir target\/off/);
+  assert.match(
+    guardJob,
+    /cargo build --profile ci-opt -p vize --features legacy --target-dir target\/on/,
+  );
+  assert.match(guardJob, /node bench\/generate\.mjs "\$DIALECT_GUARD_FILE_COUNT"/);
+  assert.match(guardJob, /node bench\/dialect-guard\.mjs/);
+  assert.match(guardJob, /--off-bin target\/off\/ci-opt\/vize/);
+  assert.match(guardJob, /--on-bin target\/on\/ci-opt\/vize/);
+  assert.match(guardJob, /--threshold "\$DIALECT_GUARD_THRESHOLD_PERCENT"/);
 });
 
 test("check workflow comments a detailed PR test report for each head push", () => {
