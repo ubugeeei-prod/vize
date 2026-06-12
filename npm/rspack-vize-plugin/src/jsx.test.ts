@@ -97,6 +97,32 @@ void test("jsx: a .jsx Vue component compiles to VDOM render code", async (t) =>
   );
 });
 
+void test("jsx: a .jsx <style scoped> block emits scope-rewritten CSS into the bundle", async (t) => {
+  // The JSX loader emits the component's `<style scoped>` CSS through the same
+  // inline-style injection the integrations use for plain SFC CSS, so the
+  // rewritten CSS (scope id baked into the selector) lands in the bundle and the
+  // `data-v-<hash>` attribute is injected at runtime (#1495, #1533).
+  const compiler = createJsxCompiler("jsx-scoped", "jsx-scoped", false);
+  const stats = await runCompiler(compiler);
+
+  if (stats.hasErrors()) {
+    const info = stats.toJson({ all: false, errors: true });
+    throw new Error(JSON.stringify(info.errors, null, 2));
+  }
+
+  const bundle = bundleSource(stats);
+  t.assert.ok(
+    bundle.includes("__vize_css__"),
+    "bundle should carry the inline-style injection for the scoped CSS",
+  );
+  const scopeMatch = bundle.match(/data-v-[0-9a-f]+/);
+  t.assert.ok(scopeMatch, "the emitted CSS should carry a data-v- scope id");
+  t.assert.ok(
+    bundle.includes(`.jsx-scoped-box[${scopeMatch[0]}]`),
+    "the emitted CSS should apply the scope id to the component selector",
+  );
+});
+
 void test("jsx: a vapor .jsx component compiles to template render code", async (t) => {
   const compiler = createJsxCompiler("jsx-vapor", "jsx-vapor", true);
   const stats = await runCompiler(compiler);

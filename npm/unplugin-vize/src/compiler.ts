@@ -7,7 +7,7 @@ import type {
   JsxCompileResultNapi,
   SfcCompileResultNapi,
 } from "./types.ts";
-import { generateScopeId, toStyleBlockInfo } from "./style.ts";
+import { generateScopeId, prependInlineStyleInjection, toStyleBlockInfo } from "./style.ts";
 
 const { compileSfc, compileJsx } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
@@ -108,8 +108,20 @@ export function compileJsxModule(
     throw new Error(result.errors.join("\n"));
   }
 
+  // A `.jsx`/`.tsx` component's `<style scoped>` becomes emitted CSS through the
+  // same inline-injection path plain SFC `<style>` blocks use (#1495, #1533).
+  // The compiler already scope-rewrites each block (the `data-v-<hash>` attr is
+  // baked into the selectors and injected into the render output), so the blocks
+  // are concatenated and emitted verbatim.
+  const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
+  let code = result.code;
+  if (css) {
+    const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
+    code = prependInlineStyleInjection(code, css, styleKey);
+  }
+
   return {
-    code: result.code,
+    code,
     warnings: result.warnings,
   };
 }

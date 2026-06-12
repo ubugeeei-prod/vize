@@ -28,9 +28,42 @@ export function isJsxFile(filePath: string): boolean {
 }
 
 /**
+ * Prepend a runtime `<style>` injection for plain CSS to a module's output.
+ *
+ * Mirrors the inline-CSS path the Vite/unplugin integrations use for plain SFC
+ * `<style>` blocks: a guarded, idempotent `document.createElement("style")`
+ * keyed by a stable id. The JSX compiler already scope-rewrites the CSS (the
+ * `data-v-<hash>` attribute is baked into the selectors and the render output),
+ * so the content is emitted verbatim (#1495, #1533).
+ */
+function prependInlineStyleInjection(output: string, css: string, styleKey: string): string {
+  const cssCode = JSON.stringify(css);
+  const cssId = JSON.stringify(`vize-style-${styleKey}`);
+  return `
+export const __vize_css__ = ${cssCode};
+const __vize_css_id__ = ${cssId};
+(function() {
+  if (typeof document !== "undefined") {
+    let style = document.getElementById(__vize_css_id__);
+    if (!style) {
+      style = document.createElement("style");
+      style.id = __vize_css_id__;
+      style.textContent = __vize_css__;
+      document.head.appendChild(style);
+    } else {
+      style.textContent = __vize_css__;
+    }
+  }
+})();
+${output}`;
+}
+
+/**
  * Compile a `.jsx`/`.tsx` Vue module to render code via the native JSX
- * compiler. Mirrors {@link compileFile} but for the JSX lowering path: no
- * scoped CSS, custom blocks, or asset-url rewriting apply.
+ * compiler. Mirrors {@link compileFile} but for the JSX lowering path: no custom
+ * blocks or asset-url rewriting apply. A component's `<style scoped>` CSS is
+ * surfaced (already scope-rewritten) and emitted through the same inline-style
+ * injection path the integrations use for plain SFC CSS (#1495, #1533).
  */
 export function compileJsxModule(
   filePath: string,
@@ -48,7 +81,14 @@ export function compileJsxModule(
     throw new Error(`[vize] Compilation failed for ${filePath}:\n${result.errors.join("\n")}`);
   }
 
-  return { code: result.code, warnings: result.warnings };
+  const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
+  let code = result.code;
+  if (css) {
+    const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
+    code = prependInlineStyleInjection(code, css, styleKey);
+  }
+
+  return { code, warnings: result.warnings };
 }
 
 // Compilation Cache

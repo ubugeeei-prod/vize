@@ -56,6 +56,7 @@ async function runTransform(
 }
 
 const APP_JSX = fs.readFileSync(resolveFixturePath("jsx", "App.jsx"), "utf8");
+const SCOPED_APP_TSX = fs.readFileSync(resolveFixturePath("jsx", "ScopedApp.tsx"), "utf8");
 
 void test("an .jsx fixture flows through the transform and emits vdom render code", async (t) => {
   const id = resolveFixturePath("jsx", "App.jsx");
@@ -115,4 +116,27 @@ void test("jsxMode:'vdom' keeps the vdom default even when vapor:true", async (t
     /_createElementBlock\("div"/,
     "jsxMode:'vdom' produces vdom element-block output",
   );
+});
+
+void test("a .tsx <style scoped> block emits scope-rewritten CSS through the plugin", async (t) => {
+  // Mirrors the SFC plain-CSS path: a JSX/TSX `<style scoped>` block becomes
+  // emitted CSS the bundler picks up, with the `data-v-<hash>` scope id already
+  // applied to the selectors (#1495, #1533).
+  const id = resolveFixturePath("jsx", "ScopedApp.tsx");
+  const { result, warnings } = await runTransform(false, SCOPED_APP_TSX, id);
+
+  t.assert.ok(result && typeof result === "object", "transform returns a result object");
+  t.assert.deepStrictEqual(warnings, [], "no warnings are emitted");
+
+  // The plugin emits the CSS through the shared inline-injection path, so the
+  // compiled module carries the rewritten CSS as a string constant.
+  t.assert.match(result.code, /__vize_css__/, "emits CSS through the inline-style injection path");
+  const scopeMatch = result.code.match(/data-v-[0-9a-f]+/);
+  t.assert.ok(scopeMatch, "the emitted CSS carries a data-v- scope id");
+  t.assert.ok(
+    result.code.includes(`.box[${scopeMatch[0]}]`),
+    "the emitted CSS applies the scope id to the .box selector",
+  );
+  // The same scope id is applied to the rendered element (createElement path).
+  t.assert.ok(result.code.includes(scopeMatch[0]), "the render output and CSS share one scope id");
 });

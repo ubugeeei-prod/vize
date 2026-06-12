@@ -20,10 +20,25 @@ export interface JsxCompileOptionsNapi {
   vapor?: boolean;
 }
 
+/** A JSX component's extracted `<style scoped>` block (#1495, #1533). */
+export interface JsxScopedStyleNapi {
+  /** Generated scope id, e.g. `data-v-1a2b3c4d`, already applied to the CSS. */
+  scopeId: string;
+  /** Scope-rewritten CSS, with the `data-v-<hash>` attribute applied. */
+  css: string;
+}
+
 export interface JsxCompileResultNapi {
   code: string;
   errors: string[];
   warnings: string[];
+  /**
+   * Extracted `<style scoped>` blocks across the module's components, in source
+   * order (#1495). Empty when no component had a `<style scoped>`. Each entry's
+   * CSS is already scope-rewritten; the plugin emits it through the same path
+   * SFC `<style>` blocks use (#1533).
+   */
+  scopedStyles: JsxScopedStyleNapi[];
 }
 
 export interface MacroArtifact {

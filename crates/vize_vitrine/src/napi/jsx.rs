@@ -40,6 +40,20 @@ pub struct JsxCompileOptionsNapi {
     pub vapor: Option<bool>,
 }
 
+/// A JSX component's extracted `<style scoped>` block, surfaced to the bundler
+/// plugins so a `.jsx`/`.tsx` component's scoped CSS reaches the same emission
+/// path as SFC `<style>` blocks (#1495, #1533).
+#[napi(object)]
+pub struct JsxScopedStyleNapi {
+    /// The generated scope id, e.g. `data-v-1a2b3c4d`. Already injected into the
+    /// component's rendered elements; surfaced here so the bundler can name the
+    /// emitted stylesheet deterministically.
+    pub scope_id: String,
+    /// The scoped-rewritten CSS, with the `data-v-<hash>` attribute already
+    /// applied to selectors. A bundler emits this verbatim.
+    pub css: String,
+}
+
 /// Result of [`compile_jsx`].
 #[napi(object)]
 pub struct JsxCompileResultNapi {
@@ -50,6 +64,11 @@ pub struct JsxCompileResultNapi {
     pub errors: Vec<String>,
     /// Warning-severity diagnostic messages.
     pub warnings: Vec<String>,
+    /// Extracted `<style scoped>` blocks across the module's components, in
+    /// source order (#1495). Empty when no component had a `<style scoped>`. Each
+    /// entry's CSS is already scope-rewritten; the bundler plugins emit it
+    /// through the same path SFC styles use (#1533).
+    pub scoped_styles: Vec<JsxScopedStyleNapi>,
 }
 
 /// Resolve the default JSX output mode from the binding options, following the
@@ -73,6 +92,18 @@ pub fn compile_jsx(
     source: String,
     options: Option<JsxCompileOptionsNapi>,
 ) -> napi::Result<JsxCompileResultNapi> {
+    // Compilation is infallible at this layer (errors surface as `errors` in the
+    // result), so the `napi::Result` is always `Ok`. The work lives in
+    // [`compile_jsx_impl`] so unit tests can exercise it without linking the
+    // Node N-API runtime (a `napi::Result`/`napi::Error` would pull in N-API
+    // symbols unavailable to a standalone test binary).
+    Ok(compile_jsx_impl(source, options))
+}
+
+fn compile_jsx_impl(
+    source: String,
+    options: Option<JsxCompileOptionsNapi>,
+) -> JsxCompileResultNapi {
     let opts = options.unwrap_or_default();
 
     let lang = match opts.lang.as_deref() {
@@ -101,6 +132,16 @@ pub fn compile_jsx(
         code.push_str(component.code());
     }
 
+    let mut scoped_styles = Vec::new();
+    for component in &output.components {
+        if let Some(style) = component.scoped_style() {
+            scoped_styles.push(JsxScopedStyleNapi {
+                scope_id: style.scope_id.as_str().to_string(),
+                css: style.css.as_str().to_string(),
+            });
+        }
+    }
+
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
     for diagnostic in &output.diagnostics {
@@ -111,11 +152,12 @@ pub fn compile_jsx(
         }
     }
 
-    Ok(JsxCompileResultNapi {
+    JsxCompileResultNapi {
         code,
         errors,
         warnings,
-    })
+        scoped_styles,
+    }
 }
 
 #[cfg(test)]
@@ -144,6 +186,52 @@ mod tests {
         assert_eq!(
             resolve_default_mode(Some("react"), Some(true)),
             JsxOutputMode::Vapor
+        );
+    }
+
+    #[test]
+    fn jsx_compile_result_surfaces_scoped_style_css() {
+        // A `.jsx` component with `<style scoped>` must surface the extracted,
+        // scope-rewritten CSS so the bundler plugins can emit it (#1495, #1533).
+        let source = r#"
+            const App = () => (
+                <div class="box">
+                    <style scoped>{`.box { color: red }`}</style>
+                </div>
+            );
+        "#;
+        let result = compile_jsx_impl(source.to_string(), None);
+
+        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
+        assert_eq!(
+            result.scoped_styles.len(),
+            1,
+            "exactly one scoped style block is surfaced"
+        );
+        let style = &result.scoped_styles[0];
+        assert!(
+            style.scope_id.starts_with("data-v-"),
+            "scope id is a data-v- attribute: {}",
+            style.scope_id
+        );
+        // The rewritten CSS carries the scope-id attribute selector, and the
+        // scope id matches the one reported alongside it.
+        assert!(
+            style.css.contains(".box") && style.css.contains(&style.scope_id),
+            "rewritten CSS applies the scope id: {}",
+            style.css
+        );
+    }
+
+    #[test]
+    fn jsx_compile_result_has_no_scoped_styles_without_style_block() {
+        let source = "const App = () => <div class=\"box\">hi</div>;";
+        let result = compile_jsx_impl(source.to_string(), None);
+
+        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
+        assert!(
+            result.scoped_styles.is_empty(),
+            "no scoped styles without a <style scoped> block"
         );
     }
 }

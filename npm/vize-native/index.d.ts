@@ -259,6 +259,32 @@ export interface JsxCompileResultNapi {
   errors: Array<string>;
   /** Warning-severity diagnostic messages. */
   warnings: Array<string>;
+  /**
+   * Extracted `<style scoped>` blocks across the module's components, in
+   * source order (#1495). Empty when no component had a `<style scoped>`. Each
+   * entry's CSS is already scope-rewritten; the bundler plugins emit it
+   * through the same path SFC styles use (#1533).
+   */
+  scopedStyles: Array<JsxScopedStyleNapi>;
+}
+
+/**
+ * A JSX component's extracted `<style scoped>` block, surfaced to the bundler
+ * plugins so a `.jsx`/`.tsx` component's scoped CSS reaches the same emission
+ * path as SFC `<style>` blocks (#1495, #1533).
+ */
+export interface JsxScopedStyleNapi {
+  /**
+   * The generated scope id, e.g. `data-v-1a2b3c4d`. Already injected into the
+   * component's rendered elements; surfaced here so the bundler can name the
+   * emitted stylesheet deterministically.
+   */
+  scopeId: string;
+  /**
+   * The scoped-rewritten CSS, with the `data-v-<hash>` attribute already
+   * applied to selectors. A bundler emits this verbatim.
+   */
+  css: string;
 }
 
 export declare function compileSfc(

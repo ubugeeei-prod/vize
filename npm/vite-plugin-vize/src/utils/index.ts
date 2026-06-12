@@ -35,6 +35,37 @@ function supportsTemplateOnlyHmr(output: string): boolean {
   return /(?:^|\n)(?:_sfc_main|__sfc__)\.render\s*=\s*render\b/m.test(output);
 }
 
+/**
+ * Prepend a runtime `<style>` injection for plain CSS to a module's output.
+ *
+ * This is the same inline-CSS path plain SFC `<style>` blocks use in
+ * {@link generateOutput}: a guarded `document.createElement('style')` keyed by a
+ * stable id so the rule is injected once and idempotently. `styleKey` seeds the
+ * element id. Used for both SFC plain CSS and JSX `<style scoped>` CSS (#1495,
+ * #1533), whose content is already scope-rewritten by the compiler.
+ */
+export function prependInlineStyleInjection(output: string, css: string, styleKey: string): string {
+  const cssCode = JSON.stringify(css);
+  const cssId = JSON.stringify(`vize-style-${styleKey}`);
+  return `
+export const __vize_css__ = ${cssCode};
+const __vize_css_id__ = ${cssId};
+(function() {
+  if (typeof document !== 'undefined') {
+    let style = document.getElementById(__vize_css_id__);
+    if (!style) {
+      style = document.createElement('style');
+      style.id = __vize_css_id__;
+      style.textContent = __vize_css__;
+      document.head.appendChild(style);
+    } else {
+      style.textContent = __vize_css__;
+    }
+  }
+})();
+${output}`;
+}
+
 function insertAfterStaticImports(output: string, imports: string): string {
   let insertAt = 0;
   for (const match of output.matchAll(/^import\b[^\n]*(?:\r?\n|$)/gm)) {
@@ -209,25 +240,7 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
     }
   } else if (!ssr && compiled.css && !(isProduction && extractCss)) {
     // --- Inline CSS injection (original behavior for plain CSS) ---
-    const cssCode = JSON.stringify(compiled.css);
-    const cssId = JSON.stringify(`vize-style-${compiled.scopeId}`);
-    output = `
-export const __vize_css__ = ${cssCode};
-const __vize_css_id__ = ${cssId};
-(function() {
-  if (typeof document !== 'undefined') {
-    let style = document.getElementById(__vize_css_id__);
-    if (!style) {
-      style = document.createElement('style');
-      style.id = __vize_css_id__;
-      style.textContent = __vize_css__;
-      document.head.appendChild(style);
-    } else {
-      style.textContent = __vize_css__;
-    }
-  }
-})();
-${output}`;
+    output = prependInlineStyleInjection(output, compiled.css, compiled.scopeId);
   }
 
   // Add HMR support in development (skip in production)

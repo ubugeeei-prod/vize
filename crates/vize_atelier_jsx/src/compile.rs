@@ -14,6 +14,7 @@ use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::dom::{DomCompileOptions, DomComponent, compile_root_to_dom};
+use crate::scoped::ScopedStyle;
 use crate::vapor::{VaporCompileOptions, VaporComponent, compile_root_to_vapor};
 use crate::{JsxLang, JsxOutputMode, lower_source};
 
@@ -59,6 +60,19 @@ impl JsxComponent {
         match self {
             Self::Dom(component) => component.code.as_str(),
             Self::Vapor(component) => component.code.as_str(),
+        }
+    }
+
+    /// The component's extracted `<style scoped>` block (#1495): the generated
+    /// scope id plus the scoped-rewritten CSS, with the `data-v-<hash>`
+    /// attribute already applied to the selectors. `None` when the component had
+    /// no `<style scoped>`. A bundler integration emits this CSS through the same
+    /// path SFC styles use (#1533); the scope id is already injected into the
+    /// rendered elements.
+    pub fn scoped_style(&self) -> Option<&ScopedStyle> {
+        match self {
+            Self::Dom(component) => component.scoped_style.as_ref(),
+            Self::Vapor(component) => component.scoped_style.as_ref(),
         }
     }
 }

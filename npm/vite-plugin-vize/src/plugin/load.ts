@@ -426,6 +426,7 @@ export function transformJsxRequest(
   state: VizePluginState,
   code: string,
   id: string,
+  options?: { ssr?: boolean },
 ): TransformResult | undefined {
   const request = classifyVitePluginRequest(id);
   if (!shouldTransformJsxRequest(state, request)) {
@@ -439,6 +440,7 @@ export function transformJsxRequest(
   const { code: compiled, warnings } = compileJsxModule(realPath, code, {
     jsxMode: state.mergedOptions.jsxMode,
     vapor: state.mergedOptions.vapor ?? false,
+    ssr: options?.ssr ?? false,
   });
 
   for (const warning of warnings) {
@@ -460,7 +462,7 @@ export async function transformHook(
   // Compile `.jsx`/`.tsx` Vue components through Vize. Unlike SFCs, JSX/TSX
   // modules are real files Vite hands directly to the transform hook, so they
   // are handled here rather than through the virtual-module load pipeline.
-  const jsxResult = transformJsxRequest(state, code, id);
+  const jsxResult = transformJsxRequest(state, code, id, { ssr: options?.ssr });
   if (jsxResult !== undefined) {
     return jsxResult;
   }

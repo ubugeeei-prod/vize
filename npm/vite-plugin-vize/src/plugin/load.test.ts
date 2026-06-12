@@ -958,4 +958,27 @@ assert.equal(
   "?raw imports of a .jsx file should keep Vite's default asset handling, not Vize compilation",
 );
 
+// A .tsx component's `<style scoped>` becomes emitted CSS through the transform
+// hook, mirroring the SFC plain-CSS inline-injection path (#1495, #1533).
+const scopedTsxTransform = await transformHook(
+  jsxState,
+  `const Scoped = () => (\n  <div class="box">\n    <style scoped>{\`.box { color: red }\`}</style>\n  </div>\n);\nexport default Scoped;\n`,
+  "/src/Scoped.tsx",
+  { ssr: false },
+);
+assert.ok(
+  scopedTsxTransform && typeof scopedTsxTransform === "object",
+  "a .tsx with <style scoped> should produce a transform result",
+);
+assert.match(
+  scopedTsxTransform.code,
+  /__vize_css__/,
+  "the transform hook should emit JSX <style scoped> CSS through the inline-style injection path",
+);
+assert.match(
+  scopedTsxTransform.code,
+  /\.box\[data-v-[0-9a-f]+\]/,
+  "the emitted JSX CSS should apply the scope id to the .box selector",
+);
+
 console.log("✅ vite-plugin-vize load boundary tests passed!");

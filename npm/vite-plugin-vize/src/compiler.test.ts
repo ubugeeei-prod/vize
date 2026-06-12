@@ -1036,4 +1036,33 @@ assert.throws(
   "JSX compilation errors should fail the Vite plugin instead of emitting broken code",
 );
 
+// A `.tsx` component with `<style scoped>` emits its (scope-rewritten) CSS
+// through the same inline-injection path plain SFC `<style>` blocks use, with
+// the `data-v-<hash>` scope id already applied (#1495, #1533).
+const scopedJsxSource = `const Scoped = () => (\n  <div class="box">\n    <style scoped>{\`.box { color: red }\`}</style>\n  </div>\n);\nexport default Scoped;\n`;
+const scopedJsxCompiled = compileJsxModule("/src/Scoped.tsx", scopedJsxSource, { vapor: false });
+assert.match(
+  scopedJsxCompiled.code,
+  /__vize_css__/,
+  "JSX <style scoped> CSS should be emitted through the inline-style injection path",
+);
+const jsxScopeMatch = scopedJsxCompiled.code.match(/data-v-[0-9a-f]+/);
+assert.ok(jsxScopeMatch, "the emitted JSX CSS should carry a data-v- scope id");
+assert.ok(
+  scopedJsxCompiled.code.includes(`.box[${jsxScopeMatch[0]}]`),
+  "the emitted JSX CSS should apply the scope id to the .box selector",
+);
+
+// Under SSR the inline `document`-based injection is skipped, mirroring the SFC
+// inline-CSS path (the scope id still rides the render output).
+const scopedJsxSsr = compileJsxModule("/src/Scoped.tsx", scopedJsxSource, {
+  vapor: false,
+  ssr: true,
+});
+assert.doesNotMatch(
+  scopedJsxSsr.code,
+  /__vize_css__/,
+  "SSR JSX compilation should not emit the client-only inline-style injection",
+);
+
 console.log("✅ vite-plugin-vize compiler tests passed!");

@@ -14,7 +14,7 @@ import {
   type CompileBatchOptions,
   type CompileFileOptions,
 } from "./compile-options.ts";
-import { generateScopeId } from "./utils/index.ts";
+import { generateScopeId, prependInlineStyleInjection } from "./utils/index.ts";
 import type { CompileJsxFn } from "./types.ts";
 
 const { compileSfc, compileSfcBatchWithResults } = native;
@@ -194,14 +194,21 @@ export interface JsxCompileFileOptions {
   /** Default JSX output mode; takes precedence over `vapor`. */
   jsxMode?: "vdom" | "vapor";
   vapor?: boolean;
+  /**
+   * SSR build: skip the runtime `<style>` injection for any extracted
+   * `<style scoped>` CSS (it relies on `document`), mirroring the SFC inline-CSS
+   * path which only injects on the client.
+   */
+  ssr?: boolean;
 }
 
 /**
  * Compile a `.jsx`/`.tsx` Vue component module to render code through Vize.
  *
  * Mirrors `compileFile` for SFCs but routes through the native `compileJsx`
- * binding. JSX/TSX modules carry no `<style>` blocks or src imports, so the
- * result is just the generated render code plus any warnings.
+ * binding. A component's `<style scoped>` CSS is surfaced (already
+ * scope-rewritten) and emitted through the same inline-injection path plain SFC
+ * `<style>` blocks use (#1495, #1533).
  */
 export function compileJsxModule(
   filePath: string,
@@ -219,8 +226,19 @@ export function compileJsxModule(
     throw new VizeSfcCompileError(filePath, result.errors);
   }
 
+  // Emit the extracted, scope-rewritten `<style scoped>` CSS through the shared
+  // inline-injection path. The compiler already baked the `data-v-<hash>` scope
+  // id into both the selectors and the render output, so the blocks are emitted
+  // verbatim. Skipped under SSR, matching the SFC inline-CSS path.
+  const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
+  let code = result.code;
+  if (css && !options.ssr) {
+    const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
+    code = prependInlineStyleInjection(code, css, styleKey);
+  }
+
   return {
-    code: result.code,
+    code,
     warnings: result.warnings,
   };
 }
