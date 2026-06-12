@@ -132,19 +132,19 @@
         blacksmithArtifacts = {
           aarch64-darwin = {
             url = "https://clireleases.blacksmith.sh/cli/latest/darwin/arm64/blacksmith";
-            hash = "sha256-ozZ6tBUbEqTqdxUVwxSg1ItiKUwLZxMl1Ccx8r6XP2Y=";
+            hash = "sha256-wTCMj9d5siTpB01ljPFa3NAwN28lJicaJcc7AiqTRWw=";
           };
           x86_64-darwin = {
             url = "https://clireleases.blacksmith.sh/cli/latest/darwin/amd64/blacksmith";
-            hash = "sha256-YhC5jCuLeQNHlFYnd1PdCVntNPAibp1cQAIcl6JG9OE=";
+            hash = "sha256-aT3dpCOy00OyuEp/08z9pZxA31lZQEQ1MhRdNzwNgxM=";
           };
           x86_64-linux = {
             url = "https://clireleases.blacksmith.sh/cli/latest/linux/amd64/blacksmith";
-            hash = "sha256-h5HZEqBDHiO//2w2xPdQGYN6b2JgS+deRX66zk8FGDQ=";
+            hash = "sha256-zzc5MFZaS2xvqSGyG1uuTFYFLQhoIb7FEzxp1c0prvk=";
           };
           aarch64-linux = {
             url = "https://clireleases.blacksmith.sh/cli/latest/linux/arm64/blacksmith";
-            hash = "sha256-+HBaib2jDECu1UIxkWX0jO5H6W+9XlT/leB5Uow8hy4=";
+            hash = "sha256-6XF/S/sn4s6zktPJbadkXt0yALLIySppZTUeNvoiWss=";
           };
         };
         blacksmith =
