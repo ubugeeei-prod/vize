@@ -12,6 +12,7 @@ description = "Atelier JSX - Shared JSX/TSX lowering layer for Vize"
 vize_carton = { workspace = true }
 vize_relief = { workspace = true }
 vize_croquis = { workspace = true }
+vize_atelier_core = { workspace = true }
 
 # OXC for JSX/TSX parsing and diagnostics
 oxc_allocator = { workspace = true }

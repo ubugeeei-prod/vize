@@ -29,6 +29,7 @@
 //! ```
 
 pub mod diagnostics;
+pub mod dom;
 pub mod lang;
 pub mod lower;
 pub mod mode;
@@ -44,6 +45,7 @@ use vize_croquis::croquis::BindingMetadata;
 use vize_relief::ast::RootNode;
 
 pub use diagnostics::{JsxDiagnostic, Severity};
+pub use dom::{DomCompileOptions, DomComponent, DomOutput, compile_to_dom};
 pub use lang::JsxLang;
 pub use lower::Lowerer;
 pub use mode::JsxOutputMode;
