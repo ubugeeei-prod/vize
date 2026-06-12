@@ -15,8 +15,10 @@ import {
   type CompileFileOptions,
 } from "./compile-options.ts";
 import { generateScopeId } from "./utils/index.ts";
+import type { CompileJsxFn } from "./types.ts";
 
 const { compileSfc, compileSfcBatchWithResults } = native;
+const compileJsx = (native as { compileJsx: CompileJsxFn }).compileJsx;
 
 export class VizeSfcCompileError extends Error {
   readonly filePath: string;
@@ -186,6 +188,38 @@ export function compileFile(
 
   cache.set(filePath, compiled);
   return compiled;
+}
+
+export interface JsxCompileFileOptions {
+  vapor?: boolean;
+}
+
+/**
+ * Compile a `.jsx`/`.tsx` Vue component module to render code through Vize.
+ *
+ * Mirrors `compileFile` for SFCs but routes through the native `compileJsx`
+ * binding. JSX/TSX modules carry no `<style>` blocks or src imports, so the
+ * result is just the generated render code plus any warnings.
+ */
+export function compileJsxModule(
+  filePath: string,
+  source: string,
+  options: JsxCompileFileOptions = {},
+): { code: string; warnings: string[] } {
+  const result = compileJsx(source, {
+    filename: filePath,
+    lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
+    vapor: options.vapor ?? false,
+  });
+
+  if (result.errors.length > 0) {
+    throw new VizeSfcCompileError(filePath, result.errors);
+  }
+
+  return {
+    code: result.code,
+    warnings: result.warnings,
+  };
 }
 
 /**

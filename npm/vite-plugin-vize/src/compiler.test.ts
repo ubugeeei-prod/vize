@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { compileBatch, compileFile } from "./compiler.ts";
+import { compileBatch, compileFile, compileJsxModule } from "./compiler.ts";
 
 const invalidCache = new Map();
 assert.throws(
@@ -991,6 +991,49 @@ assert.match(
   ssrNormalScriptImportCompiled.code,
   /resolver: \$props\.schema \? (?:_unref\(\$setup\.valibotResolver\)|\$setup\.valibotResolver)\(\$props\.schema\) : undefined/,
   "SSR component props should call normal-script template imports through setup bindings",
+);
+
+const jsxSource = `const App = () => <div class="greeting">{message}</div>;\nexport default App;\n`;
+
+const jsxVdomCompiled = compileJsxModule("/src/App.jsx", jsxSource, { vapor: false });
+assert.match(
+  jsxVdomCompiled.code,
+  /_createElementBlock\("div"/,
+  "VDOM JSX compilation should emit the element block factory",
+);
+assert.deepEqual(
+  jsxVdomCompiled.warnings,
+  [],
+  "VDOM JSX compilation of a valid component should emit no warnings",
+);
+
+const jsxVaporCompiled = compileJsxModule("/src/App.jsx", jsxSource, { vapor: true });
+assert.match(
+  jsxVaporCompiled.code,
+  /_template\(/,
+  "Vapor JSX compilation should hoist a static template",
+);
+assert.doesNotMatch(
+  jsxVaporCompiled.code,
+  /_createElementBlock/,
+  "Vapor JSX compilation should not emit the VDOM element block factory",
+);
+
+const tsxCompiled = compileJsxModule(
+  "/src/Typed.tsx",
+  `const Typed = (props: { label: string }) => <span>{props.label}</span>;\nexport default Typed;\n`,
+  { vapor: false },
+);
+assert.match(
+  tsxCompiled.code,
+  /_createElementBlock\("span"|_createBlock|render/,
+  "TSX compilation should infer the tsx language from the .tsx filename and emit render code",
+);
+
+assert.throws(
+  () => compileJsxModule("/src/Broken.jsx", `const Broken = () => <div>{;`, { vapor: false }),
+  /Compilation failed in \/src\/Broken\.jsx/,
+  "JSX compilation errors should fail the Vite plugin instead of emitting broken code",
 );
 
 console.log("✅ vite-plugin-vize compiler tests passed!");

@@ -12,7 +12,7 @@ import {
   syncCollectedCssForFile,
   type VizePluginState,
 } from "./state.ts";
-import { compileFile } from "../compiler.ts";
+import { compileFile, compileJsxModule } from "../compiler.ts";
 import { generateOutput, hasDelegatedStyles } from "../utils/index.ts";
 import {
   resolveCssImports,
@@ -383,6 +383,70 @@ export function loadHook(
   return null;
 }
 
+function isJsxComponentPath(path: string): boolean {
+  return path.endsWith(".jsx") || path.endsWith(".tsx");
+}
+
+function shouldTransformJsxRequest(
+  state: VizePluginState,
+  request: ReturnType<typeof classifyVitePluginRequest>,
+): boolean {
+  if (!isJsxComponentPath(request.path)) {
+    return false;
+  }
+  // Skip Vite asset/worker imports of a JSX file (?raw, ?url, ?worker), which
+  // must keep Vite's default handling rather than being compiled to render code.
+  if (request.querySuffix) {
+    const params = new URLSearchParams(request.querySuffix.slice(1));
+    if (
+      params.has("raw") ||
+      params.has("url") ||
+      params.has("worker") ||
+      params.has("sharedworker")
+    ) {
+      return false;
+    }
+  }
+  // Honor an explicit user exclude (e.g. third-party JSX), but JSX/TSX is not
+  // covered by the default `**/*.vue` filter, so a bare extension match is enough.
+  if (state.mergedOptions.exclude && !state.filter(request.path)) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Route a raw `.jsx`/`.tsx` request through Vize's JSX compiler.
+ *
+ * Returns `undefined` when the request is not a JSX/TSX component (so the
+ * caller falls through to the virtual-module pipeline), or a transform result
+ * otherwise.
+ */
+export function transformJsxRequest(
+  state: VizePluginState,
+  code: string,
+  id: string,
+): TransformResult | undefined {
+  const request = classifyVitePluginRequest(id);
+  if (!shouldTransformJsxRequest(state, request)) {
+    return undefined;
+  }
+
+  const realPath = request.normalizedFsId
+    ? classifyVitePluginRequest(request.normalizedFsId).path
+    : request.path;
+
+  const { code: compiled, warnings } = compileJsxModule(realPath, code, {
+    vapor: state.mergedOptions.vapor ?? false,
+  });
+
+  for (const warning of warnings) {
+    state.logger.warn(`Warning in ${realPath}: ${warning}`);
+  }
+
+  return { code: compiled, map: null };
+}
+
 // Strip TypeScript from compiled .vue output and apply define replacements
 export async function transformHook(
   state: VizePluginState,
@@ -391,6 +455,15 @@ export async function transformHook(
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
+
+  // Compile `.jsx`/`.tsx` Vue components through Vize. Unlike SFCs, JSX/TSX
+  // modules are real files Vite hands directly to the transform hook, so they
+  // are handled here rather than through the virtual-module load pipeline.
+  const jsxResult = transformJsxRequest(state, code, id);
+  if (jsxResult !== undefined) {
+    return jsxResult;
+  }
+
   if (!id.startsWith("\0") && !pluginVisibleVirtualPath) {
     return null;
   }

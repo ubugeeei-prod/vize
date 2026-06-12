@@ -50,6 +50,25 @@ export type CompileSfcFn = (
   options?: SfcCompileOptionsNapi,
 ) => SfcCompileResultNapi;
 
+/** Options for the native `compileJsx` binding. */
+export interface JsxCompileOptionsNapi {
+  filename?: string;
+  lang?: string;
+  vapor?: boolean;
+}
+
+/** Result of the native `compileJsx` binding. */
+export interface JsxCompileResultNapi {
+  code: string;
+  errors: string[];
+  warnings: string[];
+}
+
+export type CompileJsxFn = (
+  source: string,
+  options?: JsxCompileOptionsNapi,
+) => JsxCompileResultNapi;
+
 export type VizeVueVersion = 0.11 | 1 | 2 | 3 | "legacy";
 
 export interface VizeCompatibilityOptions {
