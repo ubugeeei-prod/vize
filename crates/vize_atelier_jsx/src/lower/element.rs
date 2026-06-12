@@ -16,7 +16,14 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         node.tag_type = element_type(&opening.name);
         node.is_self_closing = element.closing_element.is_none();
         node.props = self.lower_attributes(&opening.attributes);
-        node.children = self.lower_children(&element.children);
+        // Components route through slot synthesis (object/render-prop children
+        // become `<template v-slot>`s); intrinsic elements lower children
+        // directly.
+        node.children = if node.tag_type == ElementType::Component {
+            self.lower_component_children(&element.children)
+        } else {
+            self.lower_children(&element.children)
+        };
         node
     }
 

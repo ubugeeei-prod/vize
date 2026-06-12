@@ -11,6 +11,7 @@ mod child;
 mod element;
 mod expr;
 mod name;
+mod slot;
 mod text;
 
 use oxc_ast::ast::{JSXElement, JSXFragment};

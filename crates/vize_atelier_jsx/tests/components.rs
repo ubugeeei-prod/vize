@@ -2,9 +2,8 @@
 
 mod common;
 
-use common::{as_element, lower_all, lower_one, root_element, simple_content};
+use common::{as_element, find_directive, is_static, lower_all, lower_one, root_element};
 use vize_carton::Bump;
-use vize_relief::ast::TemplateChildNode;
 use vize_relief::ast::core::ElementType;
 
 #[test]
@@ -28,32 +27,37 @@ fn component_with_element_children() {
 }
 
 #[test]
-fn object_slot_children_become_interpolation() {
+fn object_slot_children_become_slot_templates() {
     let bump = Bump::new();
-    // babel-plugin-jsx slot object syntax: the single object-expression child
-    // is preserved as an interpolation expression for the backends to interpret.
+    // babel-plugin-jsx slot object syntax: the single object-expression child is
+    // synthesized into `<template v-slot:name>` element children that the shared
+    // slot transform + codegen turn into a real slots object.
     let root = lower_one(&bump, "const a = <Comp>{{ default: () => <p/> }}</Comp>;");
     let comp = root_element(&root);
-    match &comp.children[0] {
-        TemplateChildNode::Interpolation(interp) => {
-            assert!(simple_content(&interp.content).contains("default"));
-        }
-        other => panic!(
-            "expected interpolation slot object, got {:?}",
-            other.node_type()
-        ),
-    }
+    let template = as_element(&comp.children[0]);
+    assert_eq!(template.tag.as_str(), "template");
+    assert_eq!(template.tag_type, ElementType::Template);
+    let slot = find_directive(template, "slot").expect("template carries a `slot` directive");
+    let arg = slot
+        .arg
+        .as_ref()
+        .expect("slot directive has a static name arg");
+    assert!(is_static(arg), "slot name is static");
+    assert_eq!(as_element(&template.children[0]).tag.as_str(), "p");
 }
 
 #[test]
-fn render_prop_child_is_interpolation() {
+fn render_prop_child_becomes_default_slot_template() {
     let bump = Bump::new();
+    // A single render-prop child becomes a scoped default slot template.
     let root = lower_one(&bump, "const a = <List>{(item) => <li/>}</List>;");
     let list = root_element(&root);
-    assert!(matches!(
-        &list.children[0],
-        TemplateChildNode::Interpolation(_)
-    ));
+    let template = as_element(&list.children[0]);
+    assert_eq!(template.tag.as_str(), "template");
+    assert_eq!(template.tag_type, ElementType::Template);
+    let slot = find_directive(template, "slot").expect("template carries a `slot` directive");
+    assert!(slot.exp.is_some(), "scoped slot carries the param pattern");
+    assert_eq!(as_element(&template.children[0]).tag.as_str(), "li");
 }
 
 #[test]
