@@ -84,6 +84,56 @@ impl DiagnosticService {
         diagnostics
     }
 
+    /// Collect JSX/TSX compiler diagnostics for a `.jsx`/`.tsx` document.
+    ///
+    /// This lowers the source through `vize_atelier_jsx::lower_source` and maps
+    /// each [`vize_atelier_jsx::JsxDiagnostic`] (byte range + severity) onto an
+    /// LSP [`Diagnostic`] via the shared [`LineIndex`]. It does **not** generate
+    /// any virtual TypeScript document — type-aware JSX features (hover,
+    /// completion, type errors) are deferred to #1497. This is the
+    /// diagnostics-only lane: parse errors and lowering warnings surface as
+    /// editor squiggles, nothing more.
+    pub(super) fn collect_jsx_diagnostics(
+        uri: &Url,
+        content: &str,
+        line_index: &LineIndex<'_>,
+    ) -> Vec<Diagnostic> {
+        let lang = vize_atelier_jsx::JsxLang::from_path(uri.path());
+
+        let bump = vize_carton::Bump::new();
+        let output = vize_atelier_jsx::lower_source(&bump, content, lang);
+
+        output
+            .diagnostics
+            .iter()
+            .map(|diag| {
+                let (start_line, start_col) = line_index.line_col(diag.start as usize);
+                let (end_line, end_col) = line_index.line_col(diag.end as usize);
+
+                Diagnostic {
+                    range: Range {
+                        start: Position {
+                            line: start_line,
+                            character: start_col,
+                        },
+                        end: Position {
+                            line: end_line,
+                            character: end_col,
+                        },
+                    },
+                    severity: Some(match diag.severity {
+                        vize_atelier_jsx::Severity::Error => DiagnosticSeverity::ERROR,
+                        vize_atelier_jsx::Severity::Warning => DiagnosticSeverity::WARNING,
+                    }),
+                    source: Some(sources::JSX_COMPILER.to_string()),
+                    #[allow(clippy::disallowed_methods)]
+                    message: diag.message.to_string(),
+                    ..Default::default()
+                }
+            })
+            .collect()
+    }
+
     /// Collect diagnostics for inline <art> custom blocks in regular .vue files.
     pub(super) fn collect_inline_art_diagnostics(
         _uri: &Url,

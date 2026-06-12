@@ -33,6 +33,7 @@ pub mod sources {
     pub const SFC_COMPILER: &str = "vize/sfc-compile";
     pub const TEMPLATE_PARSER: &str = "vize/template";
     pub const SCRIPT_PARSER: &str = "vize/script";
+    pub const JSX_COMPILER: &str = "vize/jsx";
     pub const LINTER: &str = "vize/lint";
     pub const TYPE_CHECKER: &str = "vize/types";
     pub const MUSEA: &str = "vize/musea";

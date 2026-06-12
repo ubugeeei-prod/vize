@@ -52,6 +52,7 @@ vize_carton.workspace = true
 vize_relief.workspace = true
 vize_armature.workspace = true
 vize_atelier_sfc.workspace = true
+vize_atelier_jsx.workspace = true
 vize_glyph = { workspace = true, optional = true }
 vize_patina.workspace = true
 vize_canon = { workspace = true }

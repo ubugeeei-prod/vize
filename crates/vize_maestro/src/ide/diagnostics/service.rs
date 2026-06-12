@@ -4,7 +4,7 @@ use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range
 
 use crate::ide::ecosystem;
 use crate::server::ServerState;
-use crate::utils::is_standalone_html_path;
+use crate::utils::{is_jsx_path, is_standalone_html_path};
 
 use super::{LineIndex, Severity, sources};
 
@@ -98,6 +98,17 @@ impl DiagnosticService {
                 );
                 diagnostics.extend(lint_diags);
             }
+            return diagnostics;
+        }
+
+        // JSX/TSX files (*.jsx, *.tsx): surface JSX compiler/lowering
+        // diagnostics (parse errors, lowering warnings) as LSP squiggles. This
+        // is diagnostics-only — no virtual TypeScript document is generated for
+        // JSX/TSX (type-aware features are deferred to #1497).
+        if is_jsx_path(path) {
+            let jsx_diags = Self::collect_jsx_diagnostics(uri, &content, &line_index);
+            tracing::info!("collect: jsx compiler diagnostics: {}", jsx_diags.len());
+            diagnostics.extend(jsx_diags);
             return diagnostics;
         }
 

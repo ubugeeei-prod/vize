@@ -13,3 +13,12 @@ pub fn is_standalone_html_path(path: &str) -> bool {
     let path = path.to_ascii_lowercase();
     path.ends_with(".html") || path.ends_with(".htm")
 }
+
+/// Returns true for JSX/TSX files that should be compiled outside the SFC
+/// pipeline. These surface JSX compiler/lowering diagnostics only — no virtual
+/// TypeScript document is generated for them (see #1497).
+#[inline]
+pub fn is_jsx_path(path: &str) -> bool {
+    let path = path.to_ascii_lowercase();
+    path.ends_with(".jsx") || path.ends_with(".tsx")
+}

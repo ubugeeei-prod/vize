@@ -497,6 +497,86 @@ fn collect_skips_unsupported_script_language() {
     );
 }
 
+#[test]
+fn collect_surfaces_jsx_compiler_error_for_broken_tsx() {
+    // `has_diagnostics()` gates the whole pipeline; enable lint so the
+    // JSX branch is reached (lint itself does not apply to `.tsx`).
+    let state = state_with_lsp_diagnostics(true, false);
+    let uri = Url::parse("file:///Broken.tsx").unwrap();
+    // Unclosed JSX element — the JSX compiler reports a parse error.
+    state.documents.open(
+        uri.clone(),
+        "const a = <div>;".to_string(),
+        1,
+        "typescriptreact".to_string(),
+    );
+
+    let diagnostics = DiagnosticService::collect(&state, &uri);
+
+    let jsx_errors: Vec<_> = diagnostics
+        .iter()
+        .filter(|d| {
+            d.source.as_deref() == Some(sources::JSX_COMPILER)
+                && d.severity == Some(DiagnosticSeverity::ERROR)
+        })
+        .collect();
+
+    assert!(
+        !jsx_errors.is_empty(),
+        "expected a JSX compiler error diagnostic, got: {diagnostics:?}"
+    );
+    // The range must be non-empty and land on the first (only) line.
+    let diag = jsx_errors[0];
+    assert_eq!(diag.range.start.line, 0);
+    assert!(
+        diag.range.end >= diag.range.start,
+        "diagnostic range must be well-ordered: {:?}",
+        diag.range
+    );
+}
+
+#[test]
+fn collect_produces_no_error_for_valid_tsx() {
+    let state = state_with_lsp_diagnostics(true, false);
+    let uri = Url::parse("file:///Valid.tsx").unwrap();
+    state.documents.open(
+        uri.clone(),
+        "const App = () => <div class=\"a\">{count}</div>;".to_string(),
+        1,
+        "typescriptreact".to_string(),
+    );
+
+    let diagnostics = DiagnosticService::collect(&state, &uri);
+
+    assert!(
+        !diagnostics
+            .iter()
+            .any(|d| d.severity == Some(DiagnosticSeverity::ERROR)),
+        "valid TSX must not produce error diagnostics, got: {diagnostics:?}"
+    );
+}
+
+#[test]
+fn collect_produces_no_error_for_valid_jsx() {
+    let state = state_with_lsp_diagnostics(true, false);
+    let uri = Url::parse("file:///Valid.jsx").unwrap();
+    state.documents.open(
+        uri.clone(),
+        "const App = () => <div class=\"a\">hello</div>;".to_string(),
+        1,
+        "javascriptreact".to_string(),
+    );
+
+    let diagnostics = DiagnosticService::collect(&state, &uri);
+
+    assert!(
+        !diagnostics
+            .iter()
+            .any(|d| d.severity == Some(DiagnosticSeverity::ERROR)),
+        "valid JSX must not produce error diagnostics, got: {diagnostics:?}"
+    );
+}
+
 fn lint_subset(diagnostics: &[Diagnostic]) -> Vec<Diagnostic> {
     diagnostics
         .iter()
