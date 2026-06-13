@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-deprecated-html-element-is",
+        severity: Error,
+        message: "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+        start: 5,
+        end: 21,
+        help: Some(
+            "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

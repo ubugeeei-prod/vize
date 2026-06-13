@@ -1303,7 +1303,7 @@ test("check workflow keeps JS checks separate from native and packaging work", (
 
   assert.match(checkJsJob, /vp run --workspace-root check:ci/);
   assert.doesNotMatch(checkJsJob, /cargo build/);
-  assert.doesNotMatch(checkJsJob, /setup-moonbit/);
+  assert.match(checkJsJob, /setup-moonbit/);
   assert.doesNotMatch(checkJsJob, /build:packages/);
 
   assert.match(buildJob, /vp run --filter '\.\/npm\/vize-native' build:ci/);
