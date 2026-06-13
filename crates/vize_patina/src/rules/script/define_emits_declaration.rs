@@ -220,10 +220,7 @@ mod tests {
         // Only top-level macro calls are flagged; an identifier named
         // `defineEmits` used inside a function body is not the macro.
         let linter = create_linter();
-        let result = linter.lint(
-            "function make() { return defineEmits(['change']) }",
-            0,
-        );
+        let result = linter.lint("function make() { return defineEmits(['change']) }", 0);
         assert_eq!(result.warning_count, 0);
     }
 
