@@ -7,6 +7,9 @@ use super::string_tracking::{
 };
 use crate::compile::output_module::{AtelierModuleSections, AtelierOutputSections, OutputRange};
 
+#[cfg(test)]
+mod tests;
+
 /// Slice the structural sections out of compiled template code using
 /// emission-recorded byte offsets.
 ///

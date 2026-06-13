@@ -5,6 +5,7 @@
 //! is delegated to specialized modules.
 
 mod bindings;
+mod fallbacks;
 mod helpers;
 mod normal_script;
 pub(crate) mod output_module;
@@ -18,8 +19,7 @@ use crate::compile_script::props::is_valid_identifier;
 use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
-    extract_template_parts, extract_template_parts_full, slice_template_parts,
-    slice_template_parts_full,
+    extract_template_parts, extract_template_parts_full_for_inline, slice_template_parts,
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
@@ -32,6 +32,7 @@ use vize_atelier_core::TemplateSyntaxMode;
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
 };
+use self::fallbacks::push_vapor_ssr_fallback_warning;
 use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
 };
@@ -44,19 +45,7 @@ use self::styles::compile_styles;
 
 // Re-export ScriptCompileResult for public API
 pub use crate::compile_script::ScriptCompileResult;
-use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profiler};
-
-fn create_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor) -> SfcError {
-    SfcError {
-        message: "SFC Vapor SSR is not supported yet; falling back to standard SSR output."
-            .to_compact_string(),
-        code: Some("VAPOR_SSR_FALLBACK".to_compact_string()),
-        loc: descriptor
-            .template
-            .as_ref()
-            .map(|template| template.loc.clone()),
-    }
-}
+use vize_carton::{String, ToCompactString, cstr, profile};
 
 fn create_v_model_reactive_const_warning(
     script_setup: &crate::types::SfcScriptBlock<'_>,
@@ -306,8 +295,7 @@ fn compile_sfc_inner(
     // Vapor components currently render on the client. For SSR we fall back to
     // the standard VDOM compiler and let the client hydrate with Vapor output.
     if descriptor.template.is_some() && options.template.ssr && vapor_requested {
-        global_profiler().record_counter("atelier.fallback.vapor_ssr", 1);
-        warnings.push(create_vapor_ssr_fallback_warning(descriptor));
+        push_vapor_ssr_fallback_warning(descriptor, &mut warnings);
     }
     let is_vapor = !options.template.ssr && vapor_requested;
 
@@ -903,16 +891,7 @@ fn compile_sfc_inner(
             if is_vapor || options.template.ssr {
                 let (imports, hoisted, render_fn, render_fn_name) = profile!(
                     "atelier.sfc.template.extract_parts_full",
-                    if options.template.ssr {
-                        match &template_output.module_sections {
-                            Some(sections) => {
-                                slice_template_parts_full(template_code, sections, "ssrRender")
-                            }
-                            None => extract_template_parts_full(template_code),
-                        }
-                    } else {
-                        extract_template_parts_full(template_code)
-                    }
+                    extract_template_parts_full_for_inline(template_output, options.template.ssr)
                 );
                 (
                     imports,

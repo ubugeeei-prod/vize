@@ -11,10 +11,7 @@ mod vapor;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use extraction::{
-    extract_template_parts, extract_template_parts_full, slice_template_parts,
-    slice_template_parts_full,
-};
+pub(crate) use extraction::{extract_template_parts, slice_template_parts};
 pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::TemplateSyntaxMode;
@@ -48,6 +45,23 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) component_name: Option<&'a str>,
     pub(crate) bindings: Option<&'a BindingMetadata>,
     pub(crate) croquis: Option<vize_croquis::analysis::Croquis>,
+}
+
+pub(crate) fn extract_template_parts_full_for_inline(
+    template_output: &TemplateBlockCompileResult,
+    is_ssr: bool,
+) -> (String, String, String, &'static str) {
+    let template_code = &template_output.code;
+    if is_ssr {
+        return match &template_output.module_sections {
+            Some(sections) => {
+                extraction::slice_template_parts_full(template_code, sections, "ssrRender")
+            }
+            None => extraction::extract_template_parts_full(template_code),
+        };
+    }
+
+    extraction::extract_template_parts_full(template_code)
 }
 
 /// Compile template block
