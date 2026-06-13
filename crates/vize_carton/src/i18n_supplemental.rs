@@ -305,6 +305,25 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "発行されるイベント名と一致するように、リスナー名をケバブケースに変更してください。",
         "请将监听器重命名为 kebab-case，以与发出的事件名称匹配。",
     ),
+    // html/no-duplicate-class
+    (
+        "html/no-duplicate-class.description",
+        "Disallow duplicate class names in a static class attribute",
+        "静的なclass属性内で重複したクラス名を禁止する",
+        "禁止在静态 class 属性中出现重复的类名",
+    ),
+    (
+        "html/no-duplicate-class.message",
+        "Duplicate class name '{name}'",
+        "クラス名 '{name}' が重複しています",
+        "类名 '{name}' 重复",
+    ),
+    (
+        "html/no-duplicate-class.help",
+        "Remove the duplicate occurrence so each class name appears only once in the class attribute.",
+        "重複しているクラス名を削除し、各クラス名がclass属性内で一度だけ現れるようにしてください。",
+        "请删除重复出现的类名，使每个类名在 class 属性中只出现一次。",
+    ),
     // vue/this-in-template
     (
         "vue/this-in-template.description",
