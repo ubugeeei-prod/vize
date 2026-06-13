@@ -248,4 +248,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。",
         "请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。",
     ),
+    // vue/this-in-template
+    (
+        "vue/this-in-template.description",
+        "Disallow `this.` in template expressions",
+        "テンプレート式での `this.` を禁止する",
+        "禁止在模板表达式中使用 `this.`",
+    ),
+    (
+        "vue/this-in-template.message",
+        "Unexpected usage of 'this.' in a template expression.",
+        "テンプレート式で予期しない 'this.' が使われています。",
+        "模板表达式中出现了意外的 'this.'。",
+    ),
+    (
+        "vue/this-in-template.help",
+        "Remove the 'this.' prefix; Vue resolves template identifiers against the component instance automatically.",
+        "'this.' を削除してください。Vue はテンプレートの識別子をコンポーネントインスタンスから自動的に解決します。",
+        "请移除 'this.' 前缀；Vue 会自动从组件实例解析模板中的标识符。",
+    ),
 ];

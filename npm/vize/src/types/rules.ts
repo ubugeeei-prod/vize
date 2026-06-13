@@ -150,6 +150,7 @@ export const LINT_RULE_NAMES = [
   "vue/sfc-element-order",
   "vue/single-style-block",
   "vue/slot-name-casing",
+  "vue/this-in-template",
   "vue/use-unique-element-ids",
   "vue/use-v-on-exact",
   "vue/v-bind-style",

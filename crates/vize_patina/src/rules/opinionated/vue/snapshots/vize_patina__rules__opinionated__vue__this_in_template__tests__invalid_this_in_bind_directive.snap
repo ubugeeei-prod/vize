@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/this-in-template",
+        severity: Warning,
+        message: "vue/this-in-template.message",
+        start: 13,
+        end: 27,
+        help: Some(
+            "vue/this-in-template.help",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
