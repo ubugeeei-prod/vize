@@ -8,6 +8,7 @@ use vize_atelier_vapor::{
 use vize_carton::{Bump, String, ToCompactString};
 
 use crate::{
+    compile::output_module::AtelierOutputMaps,
     compile_template::{TemplateBlockCompileResult, recoverable_template_warnings},
     types::{BindingMetadata, SfcError, SfcTemplateBlock},
 };
@@ -73,6 +74,7 @@ pub(crate) fn compile_template_block_vapor(
         warnings: recoverable_template_warnings(&diagnostics),
         sections: None,
         module_sections: None,
+        maps: AtelierOutputMaps::default(),
     })
 }
 

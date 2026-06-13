@@ -36,9 +36,9 @@ fn dom_codegen_sections_are_ranges_into_flattened_output() {
 
     let output = OutputModule::from_dom_codegen(result);
     let sections = output.sections.expect("DOM sections should be retained");
-    let (code, map) = output.into_code_and_map();
+    let (code, maps) = output.into_code_and_maps();
 
-    assert_eq!(map.as_deref(), Some("{\"version\":3}"));
+    assert_eq!(maps.source_map(), Some("{\"version\":3}"));
     assert_eq!(&code[sections.imports.start..sections.imports.end], imports);
     assert_eq!(&code[sections.hoisted.start..sections.hoisted.end], hoists);
     assert_eq!(

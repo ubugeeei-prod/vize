@@ -77,14 +77,18 @@ impl AtelierOutputSections {
 ///
 /// SFC compilation does not expose template source maps yet; this holder keeps
 /// the output assembly boundary ready without changing the public result.
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub(crate) struct AtelierOutputMaps {
-    source: Option<String>,
+    source_map: Option<String>,
 }
 
 impl AtelierOutputMaps {
     pub(crate) fn from_source_map(source: Option<String>) -> Self {
-        Self { source }
+        Self { source_map: source }
+    }
+
+    pub(crate) fn source_map(&self) -> Option<&str> {
+        self.source_map.as_deref()
     }
 }
 
@@ -205,9 +209,9 @@ impl OutputModule {
         Self::assemble_code(self.imports, self.hoists, self.functions, self.exports)
     }
 
-    pub(crate) fn into_code_and_map(self) -> (String, Option<String>) {
+    pub(crate) fn into_code_and_maps(self) -> (String, AtelierOutputMaps) {
         let code = Self::assemble_code(self.imports, self.hoists, self.functions, self.exports);
-        (code, self.maps.source)
+        (code, self.maps)
     }
 
     fn assemble_code(

@@ -45,7 +45,7 @@ use self::styles::compile_styles;
 
 // Re-export ScriptCompileResult for public API
 pub use crate::compile_script::ScriptCompileResult;
-use vize_carton::{String, ToCompactString, cstr, profile};
+use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 
 fn create_v_model_reactive_const_warning(
     script_setup: &crate::types::SfcScriptBlock<'_>,
@@ -874,6 +874,9 @@ fn compile_sfc_inner(
     };
 
     if let Some(Ok(template_output)) = &template_result {
+        if template_output.source_map_fragment().is_some() {
+            global_profiler().record_counter("atelier.profile.template_source_map_fragments", 1);
+        }
         warnings.extend(template_output.warnings.clone());
     }
 
