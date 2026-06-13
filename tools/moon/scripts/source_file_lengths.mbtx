@@ -99,7 +99,7 @@ fn is_excluded_path(path : String) -> Bool {
   has_path_segment(path, "snapshots") || has_path_segment(path, "dist") ||
   has_path_segment(path, "target") || has_path_segment(path, "node_modules") ||
   has_path_segment(path, "vendor") || has_path_segment(path, "generated") ||
-  has_path_segment(path, "__generated__") ||
+  has_path_segment(path, "__generated__") || has_path_segment(path, "i18n") ||
   has_path_segment(path, "playwright-report") || has_path_segment(path, "coverage")
 }
 
