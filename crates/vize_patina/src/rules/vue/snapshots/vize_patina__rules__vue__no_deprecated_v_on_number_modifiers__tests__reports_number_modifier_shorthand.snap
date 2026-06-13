@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-deprecated-v-on-number-modifiers",
+        severity: Error,
+        message: "vue/no-deprecated-v-on-number-modifiers.message",
+        start: 14,
+        end: 16,
+        help: Some(
+            "vue/no-deprecated-v-on-number-modifiers.help",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

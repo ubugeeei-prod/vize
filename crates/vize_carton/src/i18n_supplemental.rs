@@ -185,4 +185,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "='true' のバインディングを削除し、属性名だけを記述してください。",
         "去掉 ='true' 绑定，仅写属性名即可。",
     ),
+    // vue/no-deprecated-v-on-number-modifiers
+    (
+        "vue/no-deprecated-v-on-number-modifiers.description",
+        "Disallow deprecated numeric `keyCode` modifiers on `v-on`",
+        "v-on の非推奨な数値 keyCode 修飾子を禁止する",
+        "禁止在 v-on 上使用已废弃的数字 keyCode 修饰符",
+    ),
+    (
+        "vue/no-deprecated-v-on-number-modifiers.message",
+        "The numeric keyCode modifier '.{keyCode}' on 'v-on' was removed in Vue 3; use a named key instead",
+        "v-on の数値 keyCode 修飾子 '.{keyCode}' は Vue 3 で削除されました。名前付きキーを使用してください",
+        "v-on 上的数字 keyCode 修饰符 '.{keyCode}' 已在 Vue 3 中移除；请改用具名按键",
+    ),
+    (
+        "vue/no-deprecated-v-on-number-modifiers.help",
+        "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+        "数値 keyCode 修飾子を名前付きキーに置き換えてください（例: @keyup.13 ではなく @keyup.enter）。",
+        "请将数字 keyCode 修饰符替换为具名按键（例如用 @keyup.enter 代替 @keyup.13）。",
+    ),
 ];
