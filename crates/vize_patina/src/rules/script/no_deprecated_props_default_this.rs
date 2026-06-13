@@ -154,7 +154,11 @@ fn check_prop_declaration(
 
 /// Walk the `default`/`validator` function body and report any `this` access at
 /// the function's own `this`-scope.
-fn check_prop_function(property: &ObjectProperty<'_>, offset: usize, result: &mut ScriptLintResult) {
+fn check_prop_function(
+    property: &ObjectProperty<'_>,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
     let mut visitor = ThisVisitor { offset, result };
     match &property.value {
         // `default() {}` / `default: function () {}`.
