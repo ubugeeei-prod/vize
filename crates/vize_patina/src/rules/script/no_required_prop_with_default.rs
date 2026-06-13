@@ -79,7 +79,14 @@ fn check_props_object(props: &ObjectExpression<'_>, offset: usize, result: &mut 
             prop_required_true_span(declaration),
             prop_member_span(declaration, "default"),
         ) {
-            report(name, &property.key, required_span, default_span, offset, result);
+            report(
+                name,
+                &property.key,
+                required_span,
+                default_span,
+                offset,
+                result,
+            );
         }
     }
 }
@@ -131,14 +138,26 @@ fn report(
     message.push_str(name);
     message.push_str("' is required but also declares a default");
 
-    let diagnostic =
-        LintDiagnostic::error(META.name, message, base + key_span.start, base + key_span.end)
-            .with_label("marked required here", base + required_span.0, base + required_span.1)
-            .with_label("default declared here", base + default_span.0, base + default_span.1)
-            .with_help(
-                "A required prop is always provided, so its default is unreachable; \
+    let diagnostic = LintDiagnostic::error(
+        META.name,
+        message,
+        base + key_span.start,
+        base + key_span.end,
+    )
+    .with_label(
+        "marked required here",
+        base + required_span.0,
+        base + required_span.1,
+    )
+    .with_label(
+        "default declared here",
+        base + default_span.0,
+        base + default_span.1,
+    )
+    .with_help(
+        "A required prop is always provided, so its default is unreachable; \
                  drop `required: true` or remove the default.",
-            );
+    );
     result.add_diagnostic(diagnostic);
 }
 
@@ -210,10 +229,16 @@ fn component_options_from_call<'a>(
 fn is_define_component_callee(callee: &Expression<'_>) -> bool {
     match callee {
         Expression::Identifier(identifier) => {
-            matches!(identifier.name.as_str(), "defineComponent" | "_defineComponent")
+            matches!(
+                identifier.name.as_str(),
+                "defineComponent" | "_defineComponent"
+            )
         }
         Expression::StaticMemberExpression(member) => {
-            matches!(member.property.name.as_str(), "defineComponent" | "_defineComponent")
+            matches!(
+                member.property.name.as_str(),
+                "defineComponent" | "_defineComponent"
+            )
         }
         _ => false,
     }
@@ -249,7 +274,9 @@ fn resolve_object_or_binding<'a>(
 
 /// Unwrap paren / `as` / `satisfies` / non-null wrappers down to a plain object
 /// literal.
-fn unwrap_object_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a ObjectExpression<'a>> {
+fn unwrap_object_expression<'a>(
+    expression: &'a Expression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
     match expression {
         Expression::ObjectExpression(object) => Some(object.as_ref()),
         Expression::ParenthesizedExpression(paren) => unwrap_object_expression(&paren.expression),
@@ -302,11 +329,26 @@ mod tests {
         let cases = [
             // direct form / defineComponent wrapper / identifier-bound options /
             // identifier-bound props object / string-literal prop key
-            ("export default { props: { v: { type: Number, required: true, default: 0 } } }", 1),
-            ("export default defineComponent({ props: { v: { required: true, default: 1 } } })", 1),
-            ("const c = { props: { v: { required: true, default: 1 } } }\nexport default c", 1),
-            ("const props = { v: { required: true, default: 1 } }\nexport default { props }", 1),
-            ("export default { props: { 'data-id': { required: true, default: 0 } } }", 1),
+            (
+                "export default { props: { v: { type: Number, required: true, default: 0 } } }",
+                1,
+            ),
+            (
+                "export default defineComponent({ props: { v: { required: true, default: 1 } } })",
+                1,
+            ),
+            (
+                "const c = { props: { v: { required: true, default: 1 } } }\nexport default c",
+                1,
+            ),
+            (
+                "const props = { v: { required: true, default: 1 } }\nexport default { props }",
+                1,
+            ),
+            (
+                "export default { props: { 'data-id': { required: true, default: 0 } } }",
+                1,
+            ),
             // multiple offending props reported, valid ones skipped
             (
                 "export default { props: { a: { required: true, default: 1 }, \

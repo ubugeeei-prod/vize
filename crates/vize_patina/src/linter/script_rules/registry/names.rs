@@ -45,8 +45,7 @@ pub(crate) const RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API: &str =
 pub(crate) const RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION: &str =
     "script/no-deprecated-data-object-declaration";
 pub(crate) const RULE_NO_DEPRECATED_EVENTS_API: &str = "script/no-deprecated-events-api";
-pub(crate) const RULE_NO_REQUIRED_PROP_WITH_DEFAULT: &str =
-    "script/no-required-prop-with-default";
+pub(crate) const RULE_NO_REQUIRED_PROP_WITH_DEFAULT: &str = "script/no-required-prop-with-default";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
