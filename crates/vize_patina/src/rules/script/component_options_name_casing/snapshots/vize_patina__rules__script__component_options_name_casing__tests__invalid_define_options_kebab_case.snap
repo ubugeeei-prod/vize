@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/component_options_name_casing/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/component-options-name-casing",
+        severity: Error,
+        message: "Component name 'my-component' is not PascalCase.",
+        start: 25,
+        end: 39,
+        help: Some(
+            "Vue's style guide recommends PascalCase for component names; rename this to PascalCase (e.g. `MyComponent`).",
+        ),
+        labels: [
+            Label {
+                message: "expected PascalCase",
+                start: 25,
+                end: 39,
+            },
+        ],
+        fix: None,
+    },
+]
