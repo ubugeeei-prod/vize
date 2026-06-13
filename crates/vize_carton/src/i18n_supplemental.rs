@@ -229,4 +229,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "'<button>' の type は既定で \"submit\" となり、囲っているフォームを送信します。明示的に type=\"button\"、\"submit\"、\"reset\" のいずれかを指定してください。",
         "'<button>' 的 type 默认为 \"submit\"，会提交其所在的表单。请显式设置 type=\"button\"、\"submit\" 或 \"reset\"。",
     ),
+    // vue/slot-name-casing
+    (
+        "vue/slot-name-casing.description",
+        "Enforce kebab-case for named slots used via v-slot",
+        "v-slotで使用する名前付きスロットにケバブケースを強制する",
+        "强制通过v-slot使用的具名插槽采用短横线命名",
+    ),
+    (
+        "vue/slot-name-casing.message",
+        "Slot name '{name}' should be kebab-case",
+        "スロット名 '{name}' はケバブケースにしてください",
+        "插槽名称 '{name}' 应使用短横线命名",
+    ),
+    (
+        "vue/slot-name-casing.help",
+        "Rename the slot to kebab-case, e.g. '#my-slot' instead of '#mySlot' or '#my_slot'.",
+        "スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。",
+        "请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。",
+    ),
 ];

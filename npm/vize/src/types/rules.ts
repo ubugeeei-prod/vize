@@ -149,6 +149,7 @@ export const LINT_RULE_NAMES = [
   "vue/scoped-event-names",
   "vue/sfc-element-order",
   "vue/single-style-block",
+  "vue/slot-name-casing",
   "vue/use-unique-element-ids",
   "vue/use-v-on-exact",
   "vue/v-bind-style",

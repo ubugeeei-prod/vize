@@ -15,6 +15,7 @@ mod prefer_props_shorthand;
 mod prefer_true_attribute_shorthand;
 mod require_component_registration;
 mod scoped_event_names;
+mod slot_name_casing;
 mod use_unique_element_ids;
 mod use_v_on_exact;
 mod v_bind_style;
@@ -40,6 +41,7 @@ pub use prefer_props_shorthand::PreferPropsShorthand;
 pub use prefer_true_attribute_shorthand::PreferTrueAttributeShorthand;
 pub use require_component_registration::RequireComponentRegistration;
 pub use scoped_event_names::ScopedEventNames;
+pub use slot_name_casing::SlotNameCasing;
 pub use use_unique_element_ids::UseUniqueElementIds;
 pub use use_v_on_exact::UseVOnExact;
 pub use v_bind_style::{VBindStyle, VBindStyleOption};
@@ -65,6 +67,7 @@ fn register_shared(registry: &mut RuleRegistry) {
     registry.register(Box::new(HtmlButtonHasType));
     registry.register(Box::new(ScopedEventNames));
     registry.register(Box::new(PreferPropsShorthand));
+    registry.register(Box::new(SlotNameCasing));
 
     registry.register(Box::new(UseUniqueElementIds::default()));
 
