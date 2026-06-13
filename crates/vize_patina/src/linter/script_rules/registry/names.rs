@@ -54,6 +54,8 @@ pub(crate) const RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD: &str =
     "script/no-use-computed-property-like-method";
 pub(crate) const RULE_DEFINE_PROPS_DECLARATION: &str = "script/define-props-declaration";
 pub(crate) const RULE_NO_REQUIRED_PROP_WITH_DEFAULT: &str = "script/no-required-prop-with-default";
+pub(crate) const RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS: &str =
+    "script/no-deprecated-props-default-this";
 pub(crate) const RULE_REQUIRE_DEFAULT_PROP: &str = "script/require-default-prop";
 pub(crate) const RULE_REQUIRE_PROP_TYPES: &str = "script/require-prop-types";
 pub(crate) const RULE_NO_RESERVED_PROPS: &str = "script/no-reserved-props";
@@ -102,6 +104,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
     RULE_DEFINE_PROPS_DECLARATION,
     RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
+    RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS,
     RULE_REQUIRE_DEFAULT_PROP,
     RULE_REQUIRE_PROP_TYPES,
     RULE_NO_RESERVED_PROPS,
@@ -149,6 +152,7 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
     RULE_DEFINE_PROPS_DECLARATION,
     RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
+    RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS,
     RULE_REQUIRE_DEFAULT_PROP,
     RULE_REQUIRE_PROP_TYPES,
     RULE_NO_RESERVED_PROPS,

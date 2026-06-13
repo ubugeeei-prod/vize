@@ -76,6 +76,7 @@ export const LINT_RULE_NAMES = [
   "script/no-deprecated-dollar-listeners-api",
   "script/no-deprecated-dollar-scopedslots-api",
   "script/no-deprecated-events-api",
+  "script/no-deprecated-props-default-this",
   "script/no-dupe-keys",
   "script/no-export-in-script-setup",
   "script/no-get-current-instance",

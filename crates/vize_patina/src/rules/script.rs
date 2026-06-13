@@ -14,6 +14,7 @@ mod no_deprecated_data_object_declaration;
 mod no_deprecated_dollar_listeners_api;
 mod no_deprecated_dollar_scopedslots_api;
 mod no_deprecated_events_api;
+mod no_deprecated_props_default_this;
 mod no_dupe_keys;
 mod no_export_in_script_setup;
 mod no_get_current_instance;
@@ -71,6 +72,7 @@ pub use no_deprecated_data_object_declaration::NoDeprecatedDataObjectDeclaration
 pub use no_deprecated_dollar_listeners_api::NoDeprecatedDollarListenersApi;
 pub use no_deprecated_dollar_scopedslots_api::NoDeprecatedDollarScopedSlotsApi;
 pub use no_deprecated_events_api::NoDeprecatedEventsApi;
+pub use no_deprecated_props_default_this::NoDeprecatedPropsDefaultThis;
 pub use no_dupe_keys::NoDupeKeys;
 pub use no_export_in_script_setup::NoExportInScriptSetup;
 pub use no_get_current_instance::NoGetCurrentInstance;
