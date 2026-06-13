@@ -118,14 +118,6 @@ pub enum JsChildNode<'a> {
     CompoundExpression(Box<'a, CompoundExpressionNode<'a>>),
 }
 
-/// Codegen node union type
-#[derive(Debug)]
-pub enum CodegenNode<'a> {
-    TemplateChild(TemplateChildNode<'a>),
-    JsChild(JsChildNode<'a>),
-    BlockStatement(Box<'a, BlockStatement<'a>>),
-}
-
 /// Call expression
 #[derive(Debug)]
 pub struct CallExpression<'a> {

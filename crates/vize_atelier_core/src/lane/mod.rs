@@ -285,10 +285,10 @@ fn transform_inner<'a>(
         hoist_static(&mut ctx, &mut root.children)
     );
 
-    // Create root codegen node
+    // Register helpers implied by the root shape.
     profile!(
-        "atelier.transform.create_root_codegen",
-        create_root_codegen(&mut ctx, root)
+        "atelier.transform.register_root_helpers",
+        register_root_helpers(&mut ctx, root)
     );
 
     // Update root with context results
@@ -316,8 +316,7 @@ fn transform_inner<'a>(
     ctx.errors
 }
 
-/// Create codegen node for root
-fn create_root_codegen<'a>(ctx: &mut TransformContext<'a>, root: &mut RootNode<'a>) {
+fn register_root_helpers<'a>(ctx: &mut TransformContext<'a>, root: &mut RootNode<'a>) {
     if root.children.is_empty() {
         return;
     }
@@ -328,9 +327,6 @@ fn create_root_codegen<'a>(ctx: &mut TransformContext<'a>, root: &mut RootNode<'
         ctx.helper(RuntimeHelper::CreateElementBlock);
         ctx.helper(RuntimeHelper::Fragment);
     }
-
-    // Root codegen node is handled in codegen directly for now
-    root.codegen_node = None;
 }
 
 #[cfg(test)]

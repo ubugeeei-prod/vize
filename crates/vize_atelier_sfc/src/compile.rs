@@ -7,6 +7,7 @@
 mod bindings;
 mod helpers;
 mod normal_script;
+pub(crate) mod output_module;
 mod styles;
 #[cfg(test)]
 mod tests;
@@ -23,7 +24,7 @@ use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
 use crate::types::{
     BindingMetadata, BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
-    SfcMacroArtifact, css_modules_object_literal,
+    SfcMacroArtifact,
 };
 use vize_atelier_core::TemplateSyntaxMode;
 
@@ -34,6 +35,10 @@ use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
 };
 use self::normal_script::extract_normal_script_content;
+use self::output_module::{
+    RenderFunctionName, append_component_render_export, append_css_modules_assignment,
+    rewrite_client_render_for_sfc_main,
+};
 use self::styles::compile_styles;
 
 // Re-export ScriptCompileResult for public API
@@ -78,37 +83,6 @@ fn create_standalone_import_warning() -> SfcError {
 
 pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
     matches!(lang, Some("ts" | "tsx"))
-}
-
-fn append_css_modules_assignment(
-    code: &mut String,
-    target: &str,
-    css_modules: &[crate::types::CssModuleMapping],
-) {
-    if css_modules.is_empty() {
-        return;
-    }
-
-    code.push_str(target);
-    code.push_str(".__cssModules = ");
-    code.push_str(&css_modules_object_literal(css_modules, ""));
-    code.push('\n');
-}
-
-fn rewrite_client_render_for_sfc_main(template_code: &str) -> String {
-    if template_code.contains("export function render(") {
-        return template_code
-            .replacen("export function render(", "function _sfc_render(", 1)
-            .to_compact_string();
-    }
-
-    if template_code.contains("function render(") {
-        return template_code
-            .replacen("function render(", "function _sfc_render(", 1)
-            .to_compact_string();
-    }
-
-    template_code.to_compact_string()
 }
 
 fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacroArtifact> {
@@ -408,31 +382,28 @@ fn compile_sfc_inner(
                 code = template_output.code;
                 if is_vapor {
                     code.push_str("const _sfc_main = { __vapor: true }\n");
-                    code.push_str("_sfc_main.render = render\n");
-                    append_css_modules_assignment(
+                    append_component_render_export(
                         &mut code,
                         "_sfc_main",
+                        RenderFunctionName::Render,
                         &compiled_styles.css_modules,
                     );
-                    code.push_str("export default _sfc_main\n");
                 } else if options.template.ssr {
                     code.push_str("const _sfc_main = {}\n");
-                    code.push_str("_sfc_main.ssrRender = ssrRender\n");
-                    append_css_modules_assignment(
+                    append_component_render_export(
                         &mut code,
                         "_sfc_main",
+                        RenderFunctionName::SsrRender,
                         &compiled_styles.css_modules,
                     );
-                    code.push_str("export default _sfc_main\n");
                 } else if !compiled_styles.css_modules.is_empty() {
                     code.push_str("const _sfc_main = {}\n");
-                    code.push_str("_sfc_main.render = render\n");
-                    append_css_modules_assignment(
+                    append_component_render_export(
                         &mut code,
                         "_sfc_main",
+                        RenderFunctionName::Render,
                         &compiled_styles.css_modules,
                     );
-                    code.push_str("export default _sfc_main\n");
                 }
             }
             // Previously this just collected the error into a local vec
@@ -627,19 +598,19 @@ fn compile_sfc_inner(
                     if is_vapor {
                         code.push_str("_sfc_main.__vapor = true\n");
                     }
-                    if options.template.ssr {
-                        code.push_str("_sfc_main.ssrRender = ssrRender\n");
+                    let render = if options.template.ssr {
+                        RenderFunctionName::SsrRender
                     } else if is_vapor {
-                        code.push_str("_sfc_main.render = render\n");
+                        RenderFunctionName::Render
                     } else {
-                        code.push_str("_sfc_main.render = _sfc_render\n");
-                    }
-                    append_css_modules_assignment(
+                        RenderFunctionName::SfcRender
+                    };
+                    append_component_render_export(
                         &mut code,
                         "_sfc_main",
+                        render,
                         &compiled_styles.css_modules,
                     );
-                    code.push_str("export default _sfc_main\n");
                 }
                 Err(e) => {
                     errors.push(e);

@@ -195,7 +195,6 @@ fn root_node_new() {
     assert!(root.components.is_empty());
     assert_eq!(root.temps, 0);
     assert!(!root.transformed);
-    assert!(root.codegen_node.is_none());
     assert_eq!(root.node_type(), NodeType::Root);
 }
 
@@ -209,7 +208,6 @@ fn element_node_new() {
     assert!(el.props.is_empty());
     assert!(el.children.is_empty());
     assert!(!el.is_self_closing);
-    assert!(el.codegen_node.is_none());
     assert_eq!(el.node_type(), NodeType::Element);
 }
 
@@ -282,7 +280,6 @@ fn if_node_new() {
     let allocator = Bump::new();
     let if_node = IfNode::new(&allocator, SourceLocation::STUB);
     assert!(if_node.branches.is_empty());
-    assert!(if_node.codegen_node.is_none());
     assert_eq!(if_node.node_type(), NodeType::If);
 }
 

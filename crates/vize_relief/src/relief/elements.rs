@@ -6,7 +6,6 @@
 use vize_carton::{Box, Bump, String, Vec, directive::DirectiveKind};
 
 use super::{
-    codegen::{CacheExpression, VNodeCall},
     control_flow::ForParseResult,
     core::{ElementType, Namespace, NodeType, SourceLocation},
     expressions::{ExpressionNode, SimpleExpressionNode},
@@ -23,7 +22,6 @@ pub struct ElementNode<'a> {
     pub is_self_closing: bool,
     pub loc: SourceLocation,
     pub inner_loc: Option<SourceLocation>,
-    pub codegen_node: Option<ElementCodegenNode<'a>>,
     /// If props are hoisted, this is the index into the hoists array (1-based for _hoisted_N)
     pub hoisted_props_index: Option<usize>,
 }
@@ -39,7 +37,6 @@ impl<'a> ElementNode<'a> {
             is_self_closing: false,
             loc,
             inner_loc: None,
-            codegen_node: None,
             hoisted_props_index: None,
         }
     }
@@ -47,14 +44,6 @@ impl<'a> ElementNode<'a> {
     pub fn node_type(&self) -> NodeType {
         NodeType::Element
     }
-}
-
-/// Element codegen node (VNodeCall, SimpleExpression, CacheExpression, etc.)
-#[derive(Debug)]
-pub enum ElementCodegenNode<'a> {
-    VNodeCall(Box<'a, VNodeCall<'a>>),
-    SimpleExpression(Box<'a, SimpleExpressionNode<'a>>),
-    CacheExpression(Box<'a, CacheExpression<'a>>),
 }
 
 /// Prop node (attribute or directive)

@@ -19,6 +19,7 @@ pub(crate) use vapor::compile_template_block_vapor;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Bump;
 
+use crate::compile::output_module::OutputModule;
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
 
 pub(crate) struct TemplateBlockCompileResult {
@@ -130,11 +131,7 @@ pub(crate) fn compile_template_block(
             });
         }
 
-        let mut output = String::default();
-        output.push_str(&result.preamble);
-        output.push('\n');
-        output.push_str(&result.code);
-        output.push('\n');
+        let output = OutputModule::from_render_chunks(result.preamble, result.code).into_code();
         return Ok(TemplateBlockCompileResult {
             code: output,
             warnings: recoverable_template_warnings(&errors),
@@ -210,35 +207,24 @@ pub(crate) fn compile_template_block(
         });
     }
 
-    // Generate render function with proper imports
-    let mut output = String::default();
-
-    // Add Vue imports
-    output.push_str(&result.result.preamble);
-    output.push('\n');
-
-    // The codegen already generates a complete function with closing brace,
-    // so we just need to use it directly
-    output.push_str(&result.result.code);
-    output.push('\n');
-
     // Translate the emission-recorded section offsets into the concatenated
     // output: `output = preamble + '\n' + code + '\n'`, where `preamble` is
     // the import statement followed (when hoists exist) by '\n' + hoists.
-    let sections = result.sections.map(|s| {
-        let preamble_len = result.result.preamble.len();
-        let fn_base = preamble_len + 1;
-        TemplateCodeSections {
-            imports: (0, s.imports_len),
-            hoisted: if preamble_len > s.imports_len {
-                (s.imports_len + 1, preamble_len)
-            } else {
-                (preamble_len, preamble_len)
-            },
-            assets: (fn_base + s.assets_start, fn_base + s.assets_end),
-            return_expr: (fn_base + s.return_expr_start, fn_base + s.return_expr_end),
-        }
+    let output_module =
+        OutputModule::from_render_chunks(result.result.preamble, result.result.code);
+    let preamble_len = output_module.imports.len();
+    let fn_base = output_module.function_base_offset();
+    let sections = result.sections.map(|s| TemplateCodeSections {
+        imports: (0, s.imports_len),
+        hoisted: if preamble_len > s.imports_len {
+            (s.imports_len + 1, preamble_len)
+        } else {
+            (preamble_len, preamble_len)
+        },
+        assets: (fn_base + s.assets_start, fn_base + s.assets_end),
+        return_expr: (fn_base + s.return_expr_start, fn_base + s.return_expr_end),
     });
+    let output = output_module.into_code();
 
     Ok(TemplateBlockCompileResult {
         code: output,

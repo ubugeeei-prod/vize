@@ -249,7 +249,6 @@ pub(crate) fn transform_v_if_with_directive<'a>(
 
         let if_node = IfNode {
             branches,
-            codegen_node: None,
             loc: element_loc,
         };
 
@@ -492,7 +491,6 @@ pub fn transform_v_for<'a>(
         object_index_alias: index_alias,
         parse_result,
         children: for_children,
-        codegen_node: None,
         loc: element_loc,
     };
 

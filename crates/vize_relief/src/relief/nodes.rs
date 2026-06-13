@@ -6,8 +6,7 @@
 use vize_carton::{Box, Bump, String, Vec};
 
 use super::{
-    CodegenNode, ForNode, IfBranchNode, IfNode, ImportItem, JsChildNode, RuntimeHelper,
-    TextCallNode,
+    ForNode, IfBranchNode, IfNode, ImportItem, JsChildNode, RuntimeHelper, TextCallNode,
     codegen::CacheExpression,
     core::{NodeType, STUB_LOCATION, SourceLocation},
     elements::{CommentNode, ElementNode, InterpolationNode, TextNode},
@@ -40,7 +39,6 @@ pub struct RootNode<'a> {
     pub temps: u32,
     pub source: String,
     pub loc: SourceLocation,
-    pub codegen_node: Option<CodegenNode<'a>>,
     pub transformed: bool,
 }
 
@@ -59,7 +57,6 @@ impl<'a> RootNode<'a> {
             temps: 0,
             source: source.into(),
             loc: SourceLocation::STUB,
-            codegen_node: None,
             transformed: false,
         }
     }

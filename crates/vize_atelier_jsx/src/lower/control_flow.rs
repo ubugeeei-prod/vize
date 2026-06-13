@@ -229,7 +229,6 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             parse_result,
             children,
             loc: self.mapper().location(container_span),
-            codegen_node: None,
         };
         Some(TemplateChildNode::For(Box::new_in(for_node, self.bump())))
     }
