@@ -344,4 +344,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "数値 keyCode 修飾子を名前付きキーに置き換えてください（例: @keyup.13 ではなく @keyup.enter）。",
         "请将数字 keyCode 修饰符替换为具名按键（例如用 @keyup.enter 代替 @keyup.13）。",
     ),
+    // vue/no-deprecated-filter
+    (
+        "vue/no-deprecated-filter.description",
+        "Disallow deprecated Vue 2 filter syntax (the `|` pipe)",
+        "非推奨の Vue 2 フィルター構文（`|` パイプ）を禁止する",
+        "禁止已废弃的 Vue 2 过滤器语法（`|` 管道符）",
+    ),
+    (
+        "vue/no-deprecated-filter.message",
+        "Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "フィルターは Vue 3 で削除されました。'|' フィルターをメソッド呼び出しまたは算出プロパティに置き換えてください",
+        "过滤器已在 Vue 3 中移除；请将 '|' 过滤器替换为方法调用或计算属性",
+    ),
+    (
+        "vue/no-deprecated-filter.help",
+        "Replace the filter with a method call or computed property (e.g. {{ capitalize(message) }} instead of {{ message | capitalize }}).",
+        "フィルターをメソッド呼び出しまたは算出プロパティに置き換えてください（例: {{ message | capitalize }} ではなく {{ capitalize(message) }}）。",
+        "请将过滤器替换为方法调用或计算属性（例如用 {{ capitalize(message) }} 代替 {{ message | capitalize }}）。",
+    ),
 ];

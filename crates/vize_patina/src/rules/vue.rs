@@ -13,6 +13,7 @@
 mod attribute_hyphenation;
 mod attribute_order;
 mod no_child_content;
+mod no_deprecated_filter;
 mod no_deprecated_html_element_is;
 mod no_deprecated_router_link_tag_prop;
 mod no_deprecated_scope_attribute;
@@ -88,6 +89,7 @@ mod single_style_block;
 pub use crate::rules::opinionated::vue::MultiWordComponentNames;
 pub use crate::rules::opinionated::vue::UseVOnExact;
 pub use no_child_content::NoChildContent;
+pub use no_deprecated_filter::NoDeprecatedFilter;
 pub use no_deprecated_html_element_is::NoDeprecatedHtmlElementIs;
 pub use no_deprecated_router_link_tag_prop::NoDeprecatedRouterLinkTagProp;
 pub use no_deprecated_scope_attribute::NoDeprecatedScopeAttribute;
@@ -220,5 +222,8 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-deprecated-router-link-tag-prop") {
         registry.register(Box::new(NoDeprecatedRouterLinkTagProp));
+    }
+    if !registry.has_rule("vue/no-deprecated-filter") {
+        registry.register(Box::new(NoDeprecatedFilter));
     }
 }
