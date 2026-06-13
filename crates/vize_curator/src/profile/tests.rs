@@ -153,6 +153,14 @@ fn profile_report_snapshot() {
                 max: 1,
             },
             CounterEntry {
+                name: "atelier.profile.dialect.vue3",
+                samples: 2,
+                total: 2,
+                average: 1.0,
+                min: 1,
+                max: 1,
+            },
+            CounterEntry {
                 name: "atelier.fallback.vapor_ssr",
                 samples: 1,
                 total: 1,

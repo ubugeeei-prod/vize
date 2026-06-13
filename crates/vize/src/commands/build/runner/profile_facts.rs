@@ -1,5 +1,6 @@
 //! Profile facts recorded around per-file SFC compilation.
 
+use vize_carton::config::VueVersion;
 use vize_carton::profiler::global_profiler;
 
 use super::cache::StatsCompileCacheDecision;
@@ -38,6 +39,7 @@ pub(super) fn record_atelier_profile_facts(
         "atelier.profile.target.dom",
         u64::from(!settings.ssr && !settings.vapor),
     );
+    profiler.record_counter(dialect_counter_name(settings.dialect), 1);
 }
 
 pub(super) fn record_atelier_cache_decision(
@@ -62,4 +64,40 @@ pub(super) fn record_atelier_cache_decision(
 
 fn usize_to_counter(value: usize) -> u64 {
     value.try_into().unwrap_or(u64::MAX)
+}
+
+fn dialect_counter_name(dialect: VueVersion) -> &'static str {
+    match dialect {
+        VueVersion::V3 => "atelier.profile.dialect.vue3",
+        VueVersion::V2_7 => "atelier.profile.dialect.vue2_7",
+        VueVersion::V2 => "atelier.profile.dialect.vue2",
+        VueVersion::V1 => "atelier.profile.dialect.vue1",
+        VueVersion::V0_11 => "atelier.profile.dialect.vue0_11",
+        VueVersion::V0_10 => "atelier.profile.dialect.vue0_10",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dialect_counter_names_cover_all_config_versions() {
+        let names: std::vec::Vec<_> = VueVersion::ALL
+            .into_iter()
+            .map(dialect_counter_name)
+            .collect();
+
+        assert_eq!(
+            names,
+            [
+                "atelier.profile.dialect.vue3",
+                "atelier.profile.dialect.vue2_7",
+                "atelier.profile.dialect.vue2",
+                "atelier.profile.dialect.vue1",
+                "atelier.profile.dialect.vue0_11",
+                "atelier.profile.dialect.vue0_10",
+            ]
+        );
+    }
 }
