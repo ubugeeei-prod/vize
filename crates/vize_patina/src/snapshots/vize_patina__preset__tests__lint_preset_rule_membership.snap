@@ -550,6 +550,9 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-deprecated-dollar-listeners-api",
     "script/no-potential-component-option-typo",
     "script/return-in-computed-property",
+    "script/no-deprecated-dollar-scopedslots-api",
+    "script/no-deprecated-data-object-declaration",
+    "script/no-deprecated-events-api"
     "script/require-prop-type-constructor"
   ]
 }
