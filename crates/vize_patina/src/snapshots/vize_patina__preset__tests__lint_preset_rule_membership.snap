@@ -558,7 +558,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-prop-type-constructor",
     "script/define-macros-order",
     "script/define-emits-declaration",
-    "script/no-use-computed-property-like-method"
+    "script/no-use-computed-property-like-method",
     "script/no-required-prop-with-default"
   ]
 }
