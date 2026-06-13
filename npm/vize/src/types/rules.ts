@@ -92,6 +92,7 @@ export const LINT_RULE_NAMES = [
   "script/prefer-use-template-ref",
   "script/require-function-return-type",
   "script/require-symbol-provide",
+  "script/return-in-computed-property",
   "ssr/no-browser-globals-in-ssr",
   "ssr/no-hydration-mismatch",
   "type/no-floating-promises",

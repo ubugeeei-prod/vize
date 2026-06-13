@@ -19,7 +19,8 @@ use super::names::{
     RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE,
     RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,
     RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_SYMBOL_PROVIDE,
-    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 use super::{
     BuiltinScriptRuleEntry, ECOSYSTEM_SCRIPT_PRESETS, OPINIONATED_SCRIPT_PRESETS,
@@ -33,7 +34,7 @@ use crate::rules::script::{
     NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs,
     PreferComputed, PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId,
     PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType, RequireSymbolProvide,
-    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
+    ReturnInComputedProperty, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
 };
 
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
@@ -276,6 +277,14 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         fixable: false,
         presets: OPINIONATED_SCRIPT_PRESETS,
         rule: &NoPotentialComponentOptionTypo,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_RETURN_IN_COMPUTED_PROPERTY,
+        profile_name: "patina.script_rule.return_in_computed_property",
+        category: "Script",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &ReturnInComputedProperty,
     },
     BuiltinScriptRuleEntry {
         rule_name: RULE_NO_DEPRECATED_EVENTS_API,

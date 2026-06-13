@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/return_in_computed_property.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/return-in-computed-property",
+        severity: Error,
+        message: "Expected to return a value in this computed property.",
+        start: 19,
+        end: 50,
+        help: Some(
+            "A computed getter must return the derived value. Add a `return` that yields a value on every path through the getter.",
+        ),
+        labels: [
+            Label {
+                message: "computed getter without a return value",
+                start: 19,
+                end: 50,
+            },
+        ],
+        fix: None,
+    },
+]
