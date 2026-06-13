@@ -45,8 +45,7 @@ use vize_relief::{ElementNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-bare-strings-in-template",
-    description:
-        "Disallow raw human-readable text in the template that should be internationalized",
+    description: "Disallow raw human-readable text in the template that should be internationalized",
     category: RuleCategory::Recommended,
     fixable: false,
     default_severity: Severity::Warning,
