@@ -173,6 +173,7 @@ export const LINT_RULE_NAMES = [
   "vue/no-useless-mustaches",
   "vue/no-useless-template-attributes",
   "vue/no-useless-v-bind",
+  "vue/no-v-for-template-key-on-child",
   "vue/no-v-html",
   "vue/no-v-text",
   "vue/no-v-text-v-html-on-component",

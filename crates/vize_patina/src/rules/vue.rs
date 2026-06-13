@@ -29,6 +29,7 @@ mod no_textarea_mustache;
 mod no_unused_vars;
 mod no_use_v_if_with_v_for;
 mod no_useless_template_attributes;
+mod no_v_for_template_key_on_child;
 mod no_v_text_v_html_on_component;
 mod prop_name_casing;
 mod require_component_is;
@@ -104,6 +105,7 @@ pub use no_textarea_mustache::NoTextareaMustache;
 pub use no_unused_vars::NoUnusedVars;
 pub use no_use_v_if_with_v_for::NoUseVIfWithVFor;
 pub use no_useless_template_attributes::NoUselessTemplateAttributes;
+pub use no_v_for_template_key_on_child::NoVForTemplateKeyOnChild;
 pub use no_v_text_v_html_on_component::NoVTextVHtmlOnComponent;
 pub use require_component_is::RequireComponentIs;
 pub use require_v_for_key::RequireVForKey;
@@ -177,17 +179,20 @@ pub use single_style_block::SingleStyleBlock;
 pub use crate::rules::opinionated::vue::WarnCustomBlock;
 pub use crate::rules::opinionated::vue::WarnCustomDirective;
 
-/// Register the `valid-v-*` directive-shape rules that every preset shares.
+/// Register the shared `v-*` directive correctness rules every preset enables.
 ///
-/// These check that built-in directives carry the expected expression,
+/// Most of these check that built-in directives carry the expected expression,
 /// argument, and modifier shape (e.g. `v-cloak` takes none, `v-text` takes
-/// one). Bundling them here keeps the per-preset registration list short.
+/// one). The bundle also folds in the `v-for` key-placement check, which is the
+/// same class of essential directive-correctness rule. Bundling them here keeps
+/// the per-preset registration list short.
 pub(crate) fn register_valid_directives(registry: &mut crate::rule::RuleRegistry) {
     registry.register(Box::new(ValidVMemo));
     registry.register(Box::new(ValidVCloak));
     registry.register(Box::new(ValidVOnce));
     registry.register(Box::new(ValidVText));
     registry.register(Box::new(ValidVHtml));
+    registry.register(Box::new(NoVForTemplateKeyOnChild));
 }
 
 /// Register Vue migration rules as explicit opt-in rules.

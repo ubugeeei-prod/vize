@@ -174,4 +174,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "オブジェクトを1つにまとめてください。例: :class=\"[{ a }, { b }]\" は :class=\"{ a, b }\" になります。",
         "请将这些对象合并为一个，例如 :class=\"[{ a }, { b }]\" 改为 :class=\"{ a, b }\"。",
     ),
+    // vue/no-v-for-template-key-on-child
+    (
+        "vue/no-v-for-template-key-on-child.description",
+        "Disallow `key` on the child of a `<template v-for>`",
+        "`<template v-for>`の子要素への`key`を禁止する",
+        "禁止在`<template v-for>`的子元素上使用`key`",
+    ),
+    (
+        "vue/no-v-for-template-key-on-child.message",
+        "the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
+        "`<template v-for>`の`key`は子要素ではなく`<template>`自身に置く必要があります",
+        "`<template v-for>`的`key`必须放在`<template>`上，而不是其子元素上",
+    ),
+    (
+        "vue/no-v-for-template-key-on-child.help",
+        "Move the `:key` up onto the `<template v-for>` element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2).",
+        "`:key`を`<template v-for>`要素に移動してください。Vue 3ではキーは子要素ではなくtemplateに置きます（Vue 2とは逆）。",
+        "请将`:key`移到`<template v-for>`元素上。在Vue 3中，key位于template而非子元素上（与Vue 2相反）。",
+    ),
 ];
