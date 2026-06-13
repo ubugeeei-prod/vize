@@ -1,5 +1,5 @@
 ---
-source: crates/vize_croquis_cf/src/analyzers/cross_file_reactivity_tests.rs
+source: crates/vize_croquis_cf/src/rules/cross_file_reactivity_tests.rs
 expression: output
 ---
 === Cross-File Reactivity Issues ===

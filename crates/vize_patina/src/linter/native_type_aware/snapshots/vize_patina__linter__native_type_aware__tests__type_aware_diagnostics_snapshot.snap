@@ -13,6 +13,15 @@ expression: diagnostics
         ),
     ),
     (
+        "vue/v-on-handler-style",
+        "Prefer a method reference or an inline function over an inline statement for this v-on handler",
+        380,
+        401,
+        Some(
+            "Write the handler as a method reference (e.g. @click=\"handler\") or an inline function (e.g. @click=\"() => count++\") instead of an inline statement.",
+        ),
+    ),
+    (
         "type/require-typed-props",
         "Prop should have a type definition",
         51,
