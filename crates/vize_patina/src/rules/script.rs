@@ -21,6 +21,7 @@
 //! - `script/no-get-current-instance` - Disallow getCurrentInstance() calls
 //! - `script/no-next-tick` - Disallow nextTick() scheduling
 
+mod no_arrow_functions_in_watch;
 mod no_async_in_computed;
 mod no_deep_destructure_in_props;
 mod no_dupe_keys;
@@ -56,6 +57,7 @@ use oxc_span::SourceType;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_carton::profile;
 
+pub use no_arrow_functions_in_watch::NoArrowFunctionsInWatch;
 pub use no_async_in_computed::NoAsyncInComputed;
 pub use no_deep_destructure_in_props::NoDeepDestructureInProps;
 pub use no_dupe_keys::NoDupeKeys;

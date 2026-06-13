@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-arrow-functions-in-watch",
+        severity: Error,
+        message: "Unexpected arrow function as a watch handler.",
+        start: 57,
+        end: 99,
+        help: Some(
+            "An Options API watch handler is called with `this` bound to the component instance, but an arrow function captures `this` lexically. Use a regular function (`handler(newValue, oldValue) {}`) instead.",
+        ),
+        labels: [
+            Label {
+                message: "arrow function does not bind `this`",
+                start: 57,
+                end: 99,
+            },
+        ],
+        fix: None,
+    },
+]
