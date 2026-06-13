@@ -1,5 +1,5 @@
 ---
-source: crates/vize_patina/src/rules/vue/no_deprecated_filter.rs
+source: crates/vize_patina/src/rules/vue/no_deprecated_filter_tests.rs
 expression: result.diagnostics
 ---
 [
