@@ -243,19 +243,13 @@ mod tests {
 
     #[test]
     fn test_valid_extra_top_level_statement() {
-        let result = create_linter().lint(
-            "const x = 1\nexport default { name: 'Foo' }",
-            0,
-        );
+        let result = create_linter().lint("const x = 1\nexport default { name: 'Foo' }", 0);
         assert_eq!(result.warning_count, 0);
     }
 
     #[test]
     fn test_valid_spread_in_object() {
-        let result = create_linter().lint(
-            "export default { ...base, name: 'Foo' }",
-            0,
-        );
+        let result = create_linter().lint("export default { ...base, name: 'Foo' }", 0);
         assert_eq!(result.warning_count, 0);
     }
 

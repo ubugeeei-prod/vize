@@ -121,8 +121,7 @@ impl<'a> Visit<'a> for ValidNextTickVisitor<'_> {
         // `AwaitExpression`, a `.then(...)` member call, a declaration, ...), so
         // those forms are never reached here.
         if let Statement::ExpressionStatement(statement) = it
-            && let Some(span) =
-                bare_next_tick_call(&statement.expression, &self.imported_aliases)
+            && let Some(span) = bare_next_tick_call(&statement.expression, &self.imported_aliases)
         {
             let start = self.offset as u32 + span.start;
             let end = self.offset as u32 + span.end;
@@ -203,7 +202,10 @@ mod tests {
 
     #[test]
     fn test_valid_awaited() {
-        let result = create_linter().lint("import { nextTick } from 'vue'\nasync function f() { await nextTick() }", 0);
+        let result = create_linter().lint(
+            "import { nextTick } from 'vue'\nasync function f() { await nextTick() }",
+            0,
+        );
         assert_eq!(result.warning_count, 0);
     }
 
@@ -235,10 +237,8 @@ mod tests {
     fn test_valid_assigned_result() {
         // Assigning the promise is a use; this is a declaration, not a bare
         // expression statement.
-        let result = create_linter().lint(
-            "import { nextTick } from 'vue'\nconst p = nextTick()",
-            0,
-        );
+        let result =
+            create_linter().lint("import { nextTick } from 'vue'\nconst p = nextTick()", 0);
         assert_eq!(result.warning_count, 0);
     }
 
@@ -266,10 +266,7 @@ mod tests {
 
     #[test]
     fn test_invalid_aliased_bare_call() {
-        let result = create_linter().lint(
-            "import { nextTick as tick } from 'vue'\ntick()",
-            0,
-        );
+        let result = create_linter().lint("import { nextTick as tick } from 'vue'\ntick()", 0);
         assert_eq!(result.warning_count, 1);
     }
 

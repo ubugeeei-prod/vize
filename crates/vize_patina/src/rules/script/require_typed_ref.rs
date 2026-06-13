@@ -120,10 +120,7 @@ impl<'a> Visit<'a> for RequireTypedRefVisitor<'_> {
     }
 
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if self.is_ref_call(it)
-            && it.type_arguments.is_none()
-            && init_is_uninferable(it)
-        {
+        if self.is_ref_call(it) && it.type_arguments.is_none() && init_is_uninferable(it) {
             let start = self.offset as u32 + it.span.start;
             let end = self.offset as u32 + it.span.end;
             self.result.add_diagnostic(
@@ -194,8 +191,7 @@ mod tests {
 
     #[test]
     fn test_valid_typed_null() {
-        let result =
-            create_linter().lint(&format!("{IMPORT}const a = ref<User | null>(null)"), 0);
+        let result = create_linter().lint(&format!("{IMPORT}const a = ref<User | null>(null)"), 0);
         assert_eq!(result.warning_count, 0);
     }
 
@@ -245,8 +241,7 @@ mod tests {
 
     #[test]
     fn test_valid_typed_undefined() {
-        let result =
-            create_linter().lint(&format!("{IMPORT}const a = ref<string>(undefined)"), 0);
+        let result = create_linter().lint(&format!("{IMPORT}const a = ref<string>(undefined)"), 0);
         assert_eq!(result.warning_count, 0);
     }
 

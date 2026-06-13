@@ -27,9 +27,7 @@
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{
-    BindingPattern, CallExpression, Expression, Program, VariableDeclarator,
-};
+use oxc_ast::ast::{BindingPattern, CallExpression, Expression, Program, VariableDeclarator};
 use oxc_ast_visit::{Visit, walk::walk_variable_declarator};
 use oxc_span::Span;
 
@@ -114,7 +112,10 @@ fn is_define_props_call(expression: &Expression<'_>) -> bool {
     }
     // `const { x } = withDefaults(defineProps<...>(), { ... })`
     if call_is_named(call, "withDefaults")
-        && let Some(first) = call.arguments.first().and_then(|argument| argument.as_expression())
+        && let Some(first) = call
+            .arguments
+            .first()
+            .and_then(|argument| argument.as_expression())
     {
         return is_define_props_call(first);
     }
@@ -169,10 +170,8 @@ mod tests {
 
     #[test]
     fn test_invalid_object_destructure_with_defaults() {
-        let result = create_linter().lint(
-            "const { count = 0 } = defineProps<{ count?: number }>()",
-            0,
-        );
+        let result =
+            create_linter().lint("const { count = 0 } = defineProps<{ count?: number }>()", 0);
         assert_eq!(result.warning_count, 1);
     }
 

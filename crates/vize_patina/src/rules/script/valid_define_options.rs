@@ -137,9 +137,8 @@ impl ValidDefineOptionsVisitor<'_> {
     fn report(&mut self, span: Span, message: &'static str, help: &'static str) {
         let start = self.offset as u32 + span.start;
         let end = self.offset as u32 + span.end;
-        self.result.add_diagnostic(
-            LintDiagnostic::error(META.name, message, start, end).with_help(help),
-        );
+        self.result
+            .add_diagnostic(LintDiagnostic::error(META.name, message, start, end).with_help(help));
     }
 
     fn report_forbidden(&mut self, span: Span, key: &str) {
@@ -257,10 +256,7 @@ mod tests {
 
     #[test]
     fn test_invalid_expose_and_slots_keys() {
-        let result = create_linter().lint(
-            "defineOptions({ expose: ['a'], slots: {} })",
-            0,
-        );
+        let result = create_linter().lint("defineOptions({ expose: ['a'], slots: {} })", 0);
         assert_eq!(result.error_count, 2);
     }
 
@@ -272,10 +268,7 @@ mod tests {
 
     #[test]
     fn test_name_alongside_forbidden_key_reports_only_forbidden() {
-        let result = create_linter().lint(
-            "defineOptions({ name: 'Foo', props: ['bar'] })",
-            0,
-        );
+        let result = create_linter().lint("defineOptions({ name: 'Foo', props: ['bar'] })", 0);
         assert_eq!(result.error_count, 1);
     }
 
