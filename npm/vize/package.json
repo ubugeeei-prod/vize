@@ -58,8 +58,7 @@
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
-    "oxc-transform": "catalog:oxc",
-    "vue": "catalog:vue-stable"
+    "oxc-transform": "catalog:oxc"
   },
   "devDependencies": {
     "@pkl-community/pkl": "catalog:repo-tooling",
@@ -68,13 +67,18 @@
     "tsdown": "catalog:vite-stack",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
-    "vite-plus": "catalog:vite-stack"
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
   },
   "peerDependencies": {
-    "@pkl-community/pkl": "catalog:repo-tooling"
+    "@pkl-community/pkl": "catalog:repo-tooling",
+    "vue": ">=2.7.0"
   },
   "peerDependenciesMeta": {
     "@pkl-community/pkl": {
+      "optional": true
+    },
+    "vue": {
       "optional": true
     }
   },

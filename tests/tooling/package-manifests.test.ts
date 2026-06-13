@@ -324,6 +324,27 @@ test("native preview runtime is declared for vize check users", () => {
   assert.equal(packageJson.peerDependenciesMeta?.["@typescript/native-preview"], undefined);
 });
 
+test("vize package leaves Vue type versions to the consuming project", () => {
+  const packageJson = JSON.parse(readRepoFile("npm/vize/package.json")) as {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+    peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+  };
+  const cliEntry = readRepoFile("npm/vize/src/cli.ts");
+
+  assert.equal(packageJson.dependencies?.vue, undefined);
+  assert.equal(packageJson.optionalDependencies?.vue, undefined);
+  assert.equal(packageJson.devDependencies?.vue, "catalog:vue-stable");
+  assert.equal(packageJson.peerDependencies?.vue, ">=2.7.0");
+  assert.deepEqual(packageJson.peerDependenciesMeta?.vue, {
+    optional: true,
+  });
+  assert.doesNotMatch(cliEntry, /VIZE_VUE_PACKAGE\s*\?\?=/);
+  assert.doesNotMatch(cliEntry, /require\.resolve\("vue\/package\.json"\)/);
+});
+
 test("musea Nuxt tests the same vue-router major that it declares as a peer", () => {
   const workspaceYaml = readRepoFile("pnpm-workspace.yaml");
   const catalogVersion = workspaceYaml.match(/^\s+vue-router: "([^"]+)"$/m)?.[1];
