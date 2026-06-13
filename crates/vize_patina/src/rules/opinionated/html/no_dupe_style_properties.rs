@@ -108,8 +108,10 @@ mod tests {
     #[test]
     fn test_valid_unique_properties() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<div style="color: red; background: blue">x</div>"#, "test.vue");
+        let result = linter.lint_template(
+            r#"<div style="color: red; background: blue">x</div>"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 
@@ -131,16 +133,20 @@ mod tests {
     fn test_valid_dynamic_style_ignored() {
         let linter = create_linter();
         // Dynamic :style bindings are objects/expressions and must be ignored.
-        let result = linter
-            .lint_template(r#"<div :style="{ color: a, color: b }">x</div>"#, "test.vue");
+        let result = linter.lint_template(
+            r#"<div :style="{ color: a, color: b }">x</div>"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 
     #[test]
     fn test_invalid_duplicate_property() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<div style="color: red; color: blue">x</div>"#, "test.vue");
+        let result = linter.lint_template(
+            r#"<div style="color: red; color: blue">x</div>"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 1);
     }
 
@@ -155,8 +161,10 @@ mod tests {
     #[test]
     fn test_invalid_duplicate_with_whitespace() {
         let linter = create_linter();
-        let result = linter
-            .lint_template(r#"<div style="  color :red ;  color : blue ">x</div>"#, "test.vue");
+        let result = linter.lint_template(
+            r#"<div style="  color :red ;  color : blue ">x</div>"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 1);
     }
 
