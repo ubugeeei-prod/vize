@@ -33,8 +33,7 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{
     Visit,
     walk::{
-        walk_computed_member_expression, walk_identifier_reference,
-        walk_static_member_expression,
+        walk_computed_member_expression, walk_identifier_reference, walk_static_member_expression,
     },
 };
 use oxc_span::Span;
@@ -220,7 +219,10 @@ const b = ctx.$scopedSlots.footer
         assert_eq!(result.diagnostics.len(), 1);
         let diag = &result.diagnostics[0];
         // Span covers `this.$scopedSlots`, not the trailing `.header` access.
-        let start = source_index("const header = this.$scopedSlots.header", "this.$scopedSlots");
+        let start = source_index(
+            "const header = this.$scopedSlots.header",
+            "this.$scopedSlots",
+        );
         assert_eq!(diag.start, start as u32);
         assert_eq!(diag.end, (start + "this.$scopedSlots".len()) as u32);
     }
