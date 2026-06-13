@@ -203,3 +203,81 @@ void test("createApiMiddleware returns 400 for malformed art source JSON", async
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }
 });
+
+void test("createApiMiddleware populates inline art palette controls from host component props", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-inline-palette-"));
+  const componentPath = path.join(tempDir, "src", "InlineButton.vue");
+
+  try {
+    await fs.promises.mkdir(path.dirname(componentPath), { recursive: true });
+    await fs.promises.writeFile(
+      componentPath,
+      `<script setup lang="ts">
+defineProps<{
+  tone?: "brand" | "neutral";
+  disabled?: boolean;
+}>()
+</script>
+
+<template>
+  <button :disabled="disabled">{{ tone }}</button>
+</template>
+
+<art title="Inline Button">
+  <variant name="Default">
+    <Self tone="brand" :disabled="false" />
+  </variant>
+</art>
+`,
+      "utf-8",
+    );
+
+    const art = createArt(componentPath);
+    art.isInline = true;
+    art.componentPath = componentPath;
+
+    const ctx = createContext(tempDir, new Map([[componentPath, art]]));
+    const response = await invokeApi(ctx, {
+      method: "GET",
+      url: `/arts/${encodeURIComponent(componentPath)}/palette`,
+    });
+
+    assert.equal(response.statusCode, 200, response.body);
+
+    const body = JSON.parse(response.body) as {
+      controls: Array<{
+        name: string;
+        control: string;
+        required: boolean;
+        options: Array<{ label: string; value: unknown }>;
+      }>;
+    };
+    assert.deepEqual(
+      body.controls.map((control) => ({
+        name: control.name,
+        control: control.control,
+        required: control.required,
+        options: control.options,
+      })),
+      [
+        {
+          name: "tone",
+          control: "select",
+          required: false,
+          options: [
+            { label: "brand", value: "brand" },
+            { label: "neutral", value: "neutral" },
+          ],
+        },
+        {
+          name: "disabled",
+          control: "boolean",
+          required: false,
+          options: [],
+        },
+      ],
+    );
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});

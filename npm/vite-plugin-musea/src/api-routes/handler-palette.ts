@@ -58,8 +58,8 @@ export async function handleArtPalette(
       };
     }
 
-    // If the native palette returned no controls, try JS-based SFC analysis
-    if (palette.controls.length === 0 && art.metadata.component) {
+    // If the native palette returned no controls, try SFC analysis of the resolved component.
+    if (palette.controls.length === 0) {
       const resolvedComponentPath = resolveComponentSourcePath(
         art,
         artPath,
