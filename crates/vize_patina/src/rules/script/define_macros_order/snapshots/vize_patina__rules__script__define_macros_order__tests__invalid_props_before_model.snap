@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/define_macros_order/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/define-macros-order",
+        severity: Warning,
+        message: "`defineModel` should be declared before `defineProps` to follow the canonical macro order.",
+        start: 48,
+        end: 83,
+        help: Some(
+            "Declare the Vue compiler macros in the canonical order: `defineOptions`, `defineModel`, `defineProps`, `defineEmits`, `defineSlots`, before any other statement.",
+        ),
+        labels: [
+            Label {
+                message: "compiler macro out of order",
+                start: 48,
+                end: 83,
+            },
+        ],
+        fix: None,
+    },
+]
