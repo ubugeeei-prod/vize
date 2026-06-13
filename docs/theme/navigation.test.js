@@ -244,10 +244,11 @@ void test("applyNavigationOrder keeps the stability contract in Start", () => {
   ]);
 });
 
-void test("applyNavigationOrder includes language engineering in Architecture", () => {
+void test("applyNavigationOrder keeps developer architecture pages together", () => {
   const document = createNavigationDocument([
     ["/architecture/overview", "Architecture"],
     ["/architecture/crates", "Crates"],
+    ["/architecture/source-guide", "Source Guide"],
     ["/architecture/language-engineering-practices", "Language Engineering Practices"],
     ["/architecture/performance", "Performance"],
   ]);
@@ -257,7 +258,13 @@ void test("applyNavigationOrder includes language engineering in Architecture", 
   assert.deepEqual(sections(document), [
     {
       title: "Architecture",
-      labels: ["Architecture Overview", "Crates", "Language Engineering", "Performance"],
+      labels: [
+        "Architecture Overview",
+        "Crates",
+        "Source Guide",
+        "Language Engineering",
+        "Performance",
+      ],
     },
   ]);
 });
