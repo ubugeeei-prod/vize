@@ -1,4 +1,3 @@
-
 use super::NoRequiredPropWithDefault;
 use crate::rules::script::ScriptLinter;
 
