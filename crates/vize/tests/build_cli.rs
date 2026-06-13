@@ -66,6 +66,7 @@ fn build_stats_profile_reports_compile_cache_counters() {
         "{stderr}"
     );
     assert!(stderr.contains("atelier.profile.dialect.vue3"), "{stderr}");
+    assert!(stderr.contains("atelier.profile.source.sfc"), "{stderr}");
 
     let _ = fs::remove_dir_all(project_root);
 }

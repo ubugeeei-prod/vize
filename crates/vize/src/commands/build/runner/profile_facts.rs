@@ -33,6 +33,13 @@ pub(super) fn record_atelier_profile_facts(
     );
     profiler.record_counter("atelier.profile.has_scoped_style", u64::from(has_scoped));
     profiler.record_counter("atelier.profile.is_ts", u64::from(is_ts));
+    profiler.record_counter("atelier.profile.source.sfc", 1);
+    profiler.record_counter(
+        "atelier.profile.source.template",
+        u64::from(template_size > 0),
+    );
+    profiler.record_counter("atelier.profile.source.script", u64::from(script_size > 0));
+    profiler.record_counter("atelier.profile.source.style", u64::from(style_count > 0));
     profiler.record_counter("atelier.profile.target.ssr", u64::from(settings.ssr));
     profiler.record_counter("atelier.profile.target.vapor", u64::from(settings.vapor));
     profiler.record_counter(

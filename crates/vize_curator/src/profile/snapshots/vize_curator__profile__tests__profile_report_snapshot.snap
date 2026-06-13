@@ -46,6 +46,10 @@ expression: render_profile_report(&report)
   atelier.profile.template_bytes               2     1.50 KiB       768.0 B       512 B     1.00 KiB
   atelier.profile.script_bytes                 2       256 B       128.0 B         0 B       256 B
   atelier.profile.style_blocks                 2           1         0.5           0           1
+  atelier.profile.source.sfc                   2           2         1.0           1           1
+  atelier.profile.source.template              2           2         1.0           1           1
+  atelier.profile.source.script                2           1         0.5           0           1
+  atelier.profile.source.style                 2           1         0.5           0           1
   atelier.profile.target.dom                   2           2         1.0           1           1
   atelier.profile.dialect.vue3                 2           2         1.0           1           1
 
