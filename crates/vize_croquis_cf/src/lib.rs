@@ -52,10 +52,9 @@ mod graph;
 mod registry;
 mod suppression;
 
-// Rule implementations. The historical module is kept as a compatibility
-// source path while internal callers use the clearer `rules` name.
-pub(crate) mod analyzers;
-pub(crate) use analyzers as rules;
+// Rule implementations. Public cross-file analyzer API names stay unchanged,
+// while the private implementation grouping uses rule terminology.
+pub(crate) mod rules;
 
 // Re-exports
 pub use analyzer::{CrossFileAnalyzer, CrossFileOptions, CrossFileResult, CrossFileStats};
