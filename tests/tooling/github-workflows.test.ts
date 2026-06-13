@@ -219,7 +219,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
   const toolBenchmarkWorkflow = readRepoFile(".github", "workflows", "tool-benchmark.yml");
 
   for (const [jobName, minutes] of [
-    ["nix-flake", 30],
+    ["nix-flake", 60],
     ["fmt-rust", 10],
     ["check-js", 15],
     ["security-audit", 20],

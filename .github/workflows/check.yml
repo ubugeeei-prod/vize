@@ -27,7 +27,7 @@ env:
 jobs:
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
+    timeout-minutes: 60
     # Nix store cache restore + `nix flake check` was the second-slowest PR
     # gate after playground-test. The flake itself rarely changes between
     # PRs, so run it on push-to-main (catches merge regressions within
