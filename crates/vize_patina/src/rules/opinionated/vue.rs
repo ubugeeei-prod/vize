@@ -5,6 +5,7 @@ mod multi_word_component_names;
 mod no_boolean_attr_value;
 mod no_empty_component_block;
 mod no_inline_style;
+mod no_negated_v_if_condition;
 mod no_preprocessor_lang;
 mod no_script_non_standard_lang;
 mod no_src_attribute;
@@ -32,6 +33,7 @@ pub use multi_word_component_names::MultiWordComponentNames;
 pub use no_boolean_attr_value::NoBooleanAttrValue;
 pub use no_empty_component_block::NoEmptyComponentBlock;
 pub use no_inline_style::NoInlineStyle;
+pub use no_negated_v_if_condition::NoNegatedVIfCondition;
 pub use no_preprocessor_lang::NoPreprocessorLang;
 pub use no_script_non_standard_lang::NoScriptNonStandardLang;
 pub use no_src_attribute::NoSrcAttribute;
@@ -85,5 +87,6 @@ fn register_shared(registry: &mut RuleRegistry) {
     registry.register(Box::new(NoEmptyComponentBlock));
     registry.register(Box::new(NoUselessMustaches));
     registry.register(Box::new(NoUselessVBind));
+    registry.register(Box::new(NoNegatedVIfCondition));
     registry.register(Box::new(PreferTrueAttributeShorthand));
 }
