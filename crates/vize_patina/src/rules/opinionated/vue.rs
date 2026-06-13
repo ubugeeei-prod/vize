@@ -4,6 +4,7 @@ mod html_self_closing;
 mod multi_word_component_names;
 mod no_boolean_attr_value;
 mod no_inline_style;
+mod no_negated_v_if_condition;
 mod no_preprocessor_lang;
 mod no_root_v_if;
 mod no_script_non_standard_lang;
@@ -31,6 +32,7 @@ pub use html_self_closing::HtmlSelfClosing;
 pub use multi_word_component_names::MultiWordComponentNames;
 pub use no_boolean_attr_value::NoBooleanAttrValue;
 pub use no_inline_style::NoInlineStyle;
+pub use no_negated_v_if_condition::NoNegatedVIfCondition;
 pub use no_preprocessor_lang::NoPreprocessorLang;
 pub use no_root_v_if::NoRootVIf;
 pub use no_script_non_standard_lang::NoScriptNonStandardLang;
@@ -85,5 +87,6 @@ fn register_shared(registry: &mut RuleRegistry) {
     registry.register(Box::new(NoUselessMustaches));
     registry.register(Box::new(NoRootVIf));
     registry.register(Box::new(NoUselessVBind));
+    registry.register(Box::new(NoNegatedVIfCondition));
     registry.register(Box::new(PreferTrueAttributeShorthand));
 }
