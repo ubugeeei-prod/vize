@@ -32,7 +32,7 @@ fn component_matrix(out: &JsxCompileOutput) -> std::string::String {
 
 fn component_variant(component: &JsxComponent) -> &'static str {
     match component {
-        JsxComponent::Dom(_) => "vdom",
+        JsxComponent::Vdom(_) => "vdom",
         JsxComponent::Vapor(_) => "vapor",
     }
 }
