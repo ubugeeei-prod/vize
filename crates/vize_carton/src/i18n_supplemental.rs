@@ -343,23 +343,4 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "数値 keyCode 修飾子を名前付きキーに置き換えてください（例: @keyup.13 ではなく @keyup.enter）。",
         "请将数字 keyCode 修饰符替换为具名按键（例如用 @keyup.enter 代替 @keyup.13）。",
     ),
-    // html/no-dupe-style-properties
-    (
-        "html/no-dupe-style-properties.description",
-        "Disallow duplicate properties in inline style attributes",
-        "インラインstyle属性内の重複するプロパティを禁止する",
-        "禁止内联 style 属性中出现重复的属性",
-    ),
-    (
-        "html/no-dupe-style-properties.message",
-        "Duplicate property '{property}' in inline style",
-        "インラインstyleにプロパティ '{property}' が重複しています",
-        "内联 style 中存在重复的属性 '{property}'",
-    ),
-    (
-        "html/no-dupe-style-properties.help",
-        "Remove the duplicate declaration. When a property is declared more than once, only the last value applies, so the earlier ones are dead code.",
-        "重複した宣言を削除してください。同じプロパティを複数回宣言しても最後の値だけが適用されるため、それより前の宣言は無効なコードです。",
-        "请删除重复的声明。同一属性多次声明时只有最后一个值生效，因此前面的声明是无效代码。",
-    ),
 ];
