@@ -213,8 +213,10 @@ mod tests {
     #[test]
     fn warns_on_multiple_statements() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<button @click="doThis(); doThat()"></button>"#, "App.vue");
+        let result = linter.lint_template(
+            r#"<button @click="doThis(); doThat()"></button>"#,
+            "App.vue",
+        );
         assert_eq!(result.warning_count, 1);
     }
 
