@@ -483,8 +483,8 @@ onUnmounted(() => {
 
           <h4>By Type</h4>
           <div class="token-groups">
-            <template v-for="(tokens, type) in tokensByType">
-              <div v-if="tokens.length > 0" :key="type" class="token-group">
+            <template v-for="(tokens, type) in tokensByType" :key="type">
+              <div v-if="tokens.length > 0" class="token-group">
                 <div
                   class="group-header"
                   :style="{
