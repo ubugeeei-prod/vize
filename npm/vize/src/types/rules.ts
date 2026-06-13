@@ -114,6 +114,7 @@ export const LINT_RULE_NAMES = [
   "script/return-in-computed-property",
   "script/return-in-emits-validator",
   "script/valid-define-options",
+  "script/valid-define-props",
   "script/valid-next-tick",
   "ssr/no-browser-globals-in-ssr",
   "ssr/no-hydration-mismatch",

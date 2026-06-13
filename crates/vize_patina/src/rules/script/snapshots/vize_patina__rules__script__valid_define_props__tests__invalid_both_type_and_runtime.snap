@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/valid_define_props.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/valid-define-props",
+        severity: Error,
+        message: "defineProps() has both a type argument and a runtime argument.",
+        start: 29,
+        end: 44,
+        help: Some(
+            "Declare props with either a type argument (`defineProps<{ ... }>()`) or a runtime argument (`defineProps({ ... })`), not both.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

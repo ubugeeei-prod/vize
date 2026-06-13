@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/valid_define_props.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/valid-define-props",
+        severity: Error,
+        message: "defineProps() has been called multiple times.",
+        start: 29,
+        end: 57,
+        help: Some(
+            "Merge all props into a single defineProps() call; only one is allowed per <script setup> block.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
