@@ -1,12 +1,6 @@
-//! The ordered table of built-in script rules.
-//!
-//! To add a rule, import its type below, add a configured `static <NAME>_RULE`
-//! instance if it needs parameters (otherwise reference the unit struct
-//! directly), then append a [`BuiltinScriptRuleEntry`] to
-//! [`BUILTIN_SCRIPT_RULES`]. Existing entry order is load-bearing: the first
-//! three rules are always-on and the order fixes default diagnostic ordering,
-//! so append new rules at the end of their category grouping and mirror the
-//! addition in `names.rs`.
+//! The ordered table of built-in script rules. Order is load-bearing: the
+//! first three are always-on and fix default diagnostic ordering. Append new
+//! rules at the end of their category and mirror the addition in `names.rs`.
 
 use super::names::{
     RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_DEFINE_MACROS_ORDER, RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
@@ -46,11 +40,8 @@ use crate::rules::script::{
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
     NoDeepDestructureInProps { max_depth: 1 };
 
-/// The full ordered set of built-in script rules.
-///
-/// The original 6 engine-reachable rules stay first so existing default
-/// diagnostic ordering is preserved. The remaining script rules follow as
-/// opt-in built-ins and are reachable through explicit rule selection.
+/// The full ordered set of built-in script rules. The first 6 engine-reachable
+/// rules stay first to preserve default diagnostic ordering; the rest are opt-in.
 pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScriptRuleEntry] = &[
     BuiltinScriptRuleEntry {
         rule_name: RULE_NO_OPTIONS_API,
