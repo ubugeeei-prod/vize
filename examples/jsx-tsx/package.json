@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "check": "vp check src",
+    "check:fix": "vp check --fix src",
     "lint": "vp lint src",
     "fmt": "vp fmt --write src"
   },

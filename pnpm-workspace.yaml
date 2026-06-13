@@ -8,6 +8,7 @@ packages:
   - "npm/fresco/examples/*"
   - "examples/vite-musea"
   - "examples/oxlint-vize"
+  - "examples/jsx-tsx"
   - "docs"
   - "tests"
   - "bench"

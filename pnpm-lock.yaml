@@ -314,6 +314,19 @@ importers:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
 
+  examples/jsx-tsx:
+    dependencies:
+      vue:
+        specifier: catalog:vue-stable
+        version: 3.5.35(typescript@6.0.3)
+    devDependencies:
+      typescript:
+        specifier: catalog:typescript
+        version: 6.0.3
+      vize:
+        specifier: workspace:*
+        version: link:../../npm/vize
+
   examples/oxlint-vize:
     devDependencies:
       oxlint:

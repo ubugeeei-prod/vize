@@ -25,6 +25,7 @@ export const checkedPackages = [
   "./npm/rspack-vize-plugin/example",
   "./examples/vite-musea",
   "./examples/oxlint-vize",
+  "./examples/jsx-tsx",
   "./playground",
 ] satisfies PackagePath[];
 

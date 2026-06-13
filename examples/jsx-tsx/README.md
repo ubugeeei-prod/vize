@@ -4,10 +4,13 @@ This directory keeps focused JSX/TSX inputs for the compiler, linter, type check
 formatter.
 
 ```bash
-vp check src
-vp lint src
-vp fmt --write src
+vp run --filter './examples/jsx-tsx' check
+vp run --filter './examples/jsx-tsx' lint
+vp run --filter './examples/jsx-tsx' fmt
 ```
+
+Run these commands from the repository root. The example is part of the pnpm workspace and the
+repository Vite+ check list, so `vp run check` includes it in aggregate workspace checks.
 
 - `src/StatefulPanel.tsx` shows typed destructured props, setup state, emits, slots, JSX list
   rendering, scoped styles, and CSS custom properties for dynamic styling.

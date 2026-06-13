@@ -137,11 +137,13 @@ checker, LSP, and formatter.
 ### Setup
 
 ```bash
-cd examples/jsx-tsx
-vp check src
-vp lint src
-vp fmt --write src
+vp run --filter './examples/jsx-tsx' check
+vp run --filter './examples/jsx-tsx' lint
+vp run --filter './examples/jsx-tsx' fmt
 ```
+
+The workspace quality gate also includes this package, so `vp run check` covers these JSX/TSX
+inputs alongside the other checked examples.
 
 ### File Structure
 
