@@ -180,21 +180,9 @@ pub trait ScriptRule: Send + Sync {
         self.check_program(&parsed.program, source, offset, result);
     }
 
-    /// Check an already-parsed script program.
-    ///
-    /// Rules that need an oxc AST implement their visitor logic here, dropping
-    /// their per-rule `Parser::new`, and override [`ScriptRule::uses_ast`] to
-    /// return `true`. The default implementation does nothing so that byte-only
-    /// rules (which override `check`) need not implement it.
-    ///
-    /// The program reference and the AST allocation share a single lifetime
-    /// (`&'a Program<'a>`) so rules can hand out AST node references that live as
-    /// long as the program (required by some rules' binding maps).
-    ///
-    /// * `program` - The parsed oxc program (parsed with [`script_source_type`])
-    /// * `source` - The script block content
-    /// * `offset` - The offset of the script block in the original file
-    /// * `result` - Accumulator for diagnostics
+    /// Check an already-parsed script program. AST-based rules override this
+    /// (and [`ScriptRule::uses_ast`]) to reuse the shared parse from
+    /// [`ScriptLinter::lint`]; byte-only rules leave it as the default no-op.
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
@@ -206,10 +194,8 @@ pub trait ScriptRule: Send + Sync {
     }
 
     /// Whether this rule consumes the oxc AST via [`ScriptRule::check_program`].
-    ///
-    /// Rules that parse the script return `true` so callers can feed them a
-    /// shared, pre-parsed program. Byte-only rules leave this `false` and are
-    /// driven through [`ScriptRule::check`].
+    /// AST rules return `true` to receive a shared parse from
+    /// [`ScriptLinter::lint`]; byte-only rules leave it `false`.
     #[inline]
     fn uses_ast(&self) -> bool {
         false
@@ -266,12 +252,8 @@ impl ScriptLinter {
         }
     }
 
-    /// Create a script linter with Vapor-specific rules enabled
-    ///
-    /// Includes rules that check for patterns not supported in Vapor mode:
-    /// - `no-options-api` - Options API is not supported
-    /// - `no-get-current-instance` - getCurrentInstance() returns null
-    /// - `no-next-tick` - nextTick() should not be relied on
+    /// Create a script linter preloaded with Vapor-specific rules
+    /// (`no-options-api`, `no-get-current-instance`, `no-next-tick`).
     pub fn with_vapor_rules() -> Self {
         Self {
             rules: vec![
