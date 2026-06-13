@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Pinned JSX/TSX ecosystem testbeds and upstream reference suites for the Vize JSX compiler. This is the documented manual workflow for the ecosystem-CI portion of #1491: a network-gated coverage smoke that is NOT part of PR CI (so PR CI stays fast and offline). Run it explicitly with the command below; it shallow-clones each entry at its pinned revision and feeds every matched .jsx/.tsx file through the Vize JSX lowerer, reporting parse/lower coverage. Revisions are pinned by full commit SHA so reruns are deterministic; bump them deliberately.",
+  "description": "Pinned upstream JSX/TSX reference suites for the Vize JSX compiler. This is the documented manual workflow for the ecosystem-CI portion of #1491: a network-gated coverage smoke that is NOT part of PR CI (so PR CI stays fast and offline). Run it explicitly with the command below; it shallow-clones each entry at its pinned revision and feeds every matched .jsx/.tsx file through the Vize JSX lowerer, reporting parse/lower coverage. Real-world component-library fixtures live in tests/_fixtures/vue-ecosystem-fixtures.json so they run through the Vize-wide app e2e lanes. Revisions are pinned by full commit SHA so reruns are deterministic; bump them deliberately.",
   "command": "cargo test -p vize_atelier_jsx --test ecosystem_smoke -- --ignored --nocapture",
   "references": [
     {
@@ -24,26 +24,5 @@
       "kind": "reference-suite"
     }
   ],
-  "testbeds": [
-    {
-      "id": "vuetify",
-      "displayName": "Vuetify",
-      "repository": "https://github.com/vuetifyjs/vuetify.git",
-      "revision": "e5555ae86a03de867b54e6a7a90402bb8e1a23af",
-      "branch": "master",
-      "roots": ["packages/vuetify/src"],
-      "extensions": [".tsx"],
-      "kind": "component-library"
-    },
-    {
-      "id": "naive-ui",
-      "displayName": "Naive UI",
-      "repository": "https://github.com/tusen-ai/naive-ui.git",
-      "revision": "7a12097edc91962712d78f8cd9e301928eb5e558",
-      "branch": "main",
-      "roots": ["src"],
-      "extensions": [".tsx"],
-      "kind": "component-library"
-    }
-  ]
+  "testbeds": []
 }
