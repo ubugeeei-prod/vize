@@ -45,8 +45,9 @@ pub struct NoTemplateTargetBlank;
 
 /// Whether a `rel` value safely opts out of `window.opener` access.
 fn rel_is_safe(rel: &str) -> bool {
-    rel.split_whitespace()
-        .any(|token| token.eq_ignore_ascii_case("noopener") || token.eq_ignore_ascii_case("noreferrer"))
+    rel.split_whitespace().any(|token| {
+        token.eq_ignore_ascii_case("noopener") || token.eq_ignore_ascii_case("noreferrer")
+    })
 }
 
 impl MarkupRule for NoTemplateTargetBlank {
@@ -90,8 +91,8 @@ impl Rule for NoTemplateTargetBlank {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let is_blank = static_attribute_value(element, "target")
-            .is_some_and(|value| value.trim() == "_blank");
+        let is_blank =
+            static_attribute_value(element, "target").is_some_and(|value| value.trim() == "_blank");
         if !is_blank {
             return;
         }
@@ -113,9 +114,12 @@ impl Rule for NoTemplateTargetBlank {
 /// `None` when no such static attribute exists.
 fn static_attribute_value<'a>(element: &'a ElementNode<'a>, name: &str) -> Option<&'a str> {
     element.props.iter().find_map(|prop| match prop {
-        PropNode::Attribute(attr) if attr.name == name => {
-            Some(attr.value.as_ref().map(|v| v.content.as_str()).unwrap_or(""))
-        }
+        PropNode::Attribute(attr) if attr.name == name => Some(
+            attr.value
+                .as_ref()
+                .map(|v| v.content.as_str())
+                .unwrap_or(""),
+        ),
         _ => None,
     })
 }
@@ -167,10 +171,7 @@ mod tests {
     #[test]
     fn test_valid_same_tab() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<a href="https://example.com">x</a>"#,
-            "test.vue",
-        );
+        let result = linter.lint_template(r#"<a href="https://example.com">x</a>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
 
@@ -187,10 +188,7 @@ mod tests {
     #[test]
     fn test_invalid_bound_href() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<a :href="url" target="_blank">x</a>"#,
-            "test.vue",
-        );
+        let result = linter.lint_template(r#"<a :href="url" target="_blank">x</a>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
     }
 

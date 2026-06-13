@@ -134,8 +134,11 @@ mod tests {
     #[test]
     fn test_jsx_unsandboxed_iframe_reports() {
         let linter = create_linter();
-        let result =
-            linter.lint_jsx(r#"const A = () => <iframe src="/embed" />;"#, "test.jsx", JsxLang::Jsx);
+        let result = linter.lint_jsx(
+            r#"const A = () => <iframe src="/embed" />;"#,
+            "test.jsx",
+            JsxLang::Jsx,
+        );
         assert_eq!(result.warning_count, 1);
     }
 
