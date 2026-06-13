@@ -21,6 +21,7 @@ mod slot_name_casing;
 mod use_unique_element_ids;
 mod use_v_on_exact;
 mod v_bind_style;
+mod v_on_event_hyphenation;
 mod warn_custom_block;
 mod warn_custom_directive;
 
@@ -49,6 +50,7 @@ pub use slot_name_casing::SlotNameCasing;
 pub use use_unique_element_ids::UseUniqueElementIds;
 pub use use_v_on_exact::UseVOnExact;
 pub use v_bind_style::{VBindStyle, VBindStyleOption};
+pub use v_on_event_hyphenation::VOnEventHyphenation;
 pub use warn_custom_block::WarnCustomBlock;
 pub use warn_custom_directive::WarnCustomDirective;
 
@@ -89,4 +91,5 @@ fn register_shared(registry: &mut RuleRegistry) {
     registry.register(Box::new(NoNegatedVIfCondition));
     registry.register(Box::new(NoVText));
     registry.register(Box::new(PreferTrueAttributeShorthand));
+    registry.register(Box::new(VOnEventHyphenation));
 }

@@ -22,7 +22,7 @@ Suites are split so a failure points at the correct backend:
 
 The lower-level IR-shape tests (`tests/elements.rs`, `attributes.rs`,
 `children.rs`, `components.rs`, `slots.rs`, `control_flow.rs`, `events.rs`,
-`directives.rs`, `modes.rs`, `tsx.rs`, `dom.rs`, `vapor.rs`) remain the
+`directives.rs`, `modes.rs`, `tsx.rs`, `vdom.rs`, `vapor.rs`) remain the
 fine-grained lowering coverage; this inventory tracks the **parity** layer.
 
 ## Covered categories
