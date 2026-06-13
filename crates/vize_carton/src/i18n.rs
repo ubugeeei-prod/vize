@@ -283,6 +283,7 @@ static GLOBAL_TRANSLATOR: Lazy<Translator> = Lazy::new(|| {
     load_json(&mut messages[1], include_str!("i18n/ja.json"));
     load_json(&mut messages[2], include_str!("i18n/zh.json"));
     crate::i18n_supplemental::register(&mut messages);
+    crate::i18n_supplemental_extra::register(&mut messages);
     Translator { messages }
 });
 
