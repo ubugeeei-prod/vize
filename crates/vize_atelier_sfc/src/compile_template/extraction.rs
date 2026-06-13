@@ -2,10 +2,10 @@
 
 use vize_carton::{String, ToCompactString};
 
-use super::TemplateCodeSections;
 use super::string_tracking::{
     StringTrackState, count_braces_with_state, count_delims_with_state, count_parens_with_state,
 };
+use crate::compile::output_module::{AtelierOutputSections, OutputRange};
 
 /// Slice the structural sections out of compiled template code using
 /// emission-recorded byte offsets.
@@ -17,9 +17,13 @@ use super::string_tracking::{
 /// asset-resolution region.
 pub(crate) fn slice_template_parts(
     template_code: &str,
-    sections: &TemplateCodeSections,
+    sections: &AtelierOutputSections,
 ) -> (String, String, String, String, &'static str) {
-    let slice = |(start, end): (usize, usize)| template_code.get(start..end).unwrap_or_default();
+    let slice = |range: OutputRange| {
+        template_code
+            .get(range.start..range.end)
+            .unwrap_or_default()
+    };
 
     let imports = String::new(slice(sections.imports));
     let hoisted = String::new(slice(sections.hoisted));

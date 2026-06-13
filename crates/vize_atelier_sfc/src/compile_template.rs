@@ -19,7 +19,7 @@ pub(crate) use vapor::compile_template_block_vapor;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Bump;
 
-use crate::compile::output_module::OutputModule;
+use crate::compile::output_module::{AtelierOutputSections, OutputModule};
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
 
 pub(crate) struct TemplateBlockCompileResult {
@@ -28,24 +28,7 @@ pub(crate) struct TemplateBlockCompileResult {
     /// Section boundaries of `code`, recorded while the render module was
     /// emitted. `None` for the SSR/Vapor lanes (they re-scan via
     /// `extract_template_parts_full`) and for codegen error paths.
-    pub(crate) sections: Option<TemplateCodeSections>,
-}
-
-/// Byte ranges into [`TemplateBlockCompileResult::code`] marking the sections
-/// the inline SFC assembly consumes. Mirrors what
-/// [`extraction::extract_template_parts`] reconstructs by line scanning, but
-/// recorded at emission so the hot path can slice instead of re-scan.
-#[derive(Debug, Clone, Copy)]
-pub(crate) struct TemplateCodeSections {
-    /// `import { ... } from "vue"` line(s), trailing newline included.
-    pub(crate) imports: (usize, usize),
-    /// Hoisted module-level declarations, one per line.
-    pub(crate) hoisted: (usize, usize),
-    /// Component/directive resolution statements inside the render function
-    /// (raw slice; lines carry codegen indentation).
-    pub(crate) assets: (usize, usize),
-    /// The root `return` expression of the render function.
-    pub(crate) return_expr: (usize, usize),
+    pub(crate) sections: Option<AtelierOutputSections>,
 }
 
 pub(crate) struct TemplateBlockCompileContext<'a> {
@@ -210,21 +193,24 @@ pub(crate) fn compile_template_block(
     // Translate the emission-recorded section offsets into the concatenated
     // output: `output = preamble + '\n' + code + '\n'`, where `preamble` is
     // the import statement followed (when hoists exist) by '\n' + hoists.
-    let output_module =
-        OutputModule::from_render_chunks(result.result.preamble, result.result.code);
+    let codegen_result = result.result;
+    let mut output_module =
+        OutputModule::from_render_chunks(codegen_result.preamble, codegen_result.code)
+            .with_source_map(codegen_result.map);
     let preamble_len = output_module.imports.len();
     let fn_base = output_module.function_base_offset();
-    let sections = result.sections.map(|s| TemplateCodeSections {
-        imports: (0, s.imports_len),
-        hoisted: if preamble_len > s.imports_len {
-            (s.imports_len + 1, preamble_len)
-        } else {
-            (preamble_len, preamble_len)
-        },
-        assets: (fn_base + s.assets_start, fn_base + s.assets_end),
-        return_expr: (fn_base + s.return_expr_start, fn_base + s.return_expr_end),
+    let sections = result.sections.map(|s| {
+        AtelierOutputSections::from_dom_codegen(
+            s.imports_len,
+            preamble_len,
+            fn_base,
+            (s.assets_start, s.assets_end),
+            (s.return_expr_start, s.return_expr_end),
+        )
     });
-    let output = output_module.into_code();
+    output_module = output_module.with_sections(sections);
+    let sections = output_module.sections;
+    let (output, _map) = output_module.into_code_and_map();
 
     Ok(TemplateBlockCompileResult {
         code: output,

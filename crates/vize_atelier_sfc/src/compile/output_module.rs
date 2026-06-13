@@ -3,6 +3,89 @@
 use crate::types::{CssModuleMapping, css_modules_object_literal};
 use vize_carton::{String, ToCompactString};
 
+/// Byte range in the flattened Atelier output.
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub(crate) struct OutputRange {
+    pub(crate) start: usize,
+    pub(crate) end: usize,
+}
+
+impl OutputRange {
+    pub(crate) const fn new(start: usize, end: usize) -> Self {
+        Self { start, end }
+    }
+
+    pub(crate) const fn empty(offset: usize) -> Self {
+        Self {
+            start: offset,
+            end: offset,
+        }
+    }
+}
+
+/// Structural sections of a rendered Atelier module before inline SFC assembly.
+///
+/// The fields are ranges into the flattened output produced by
+/// [`OutputModule::into_code`]. This is the first SFC-side shape of the
+/// proposed `AtelierOutput`: consumers can slice known sections without
+/// scanning generated JavaScript again.
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub(crate) struct AtelierOutputSections {
+    /// `import { ... } from "vue"` line(s), trailing newline included.
+    pub(crate) imports: OutputRange,
+    /// Hoisted module-level declarations, one per line.
+    pub(crate) hoisted: OutputRange,
+    /// Component/directive resolution statements inside the render function.
+    pub(crate) assets: OutputRange,
+    /// The root `return` expression of the render function.
+    pub(crate) return_expr: OutputRange,
+}
+
+impl AtelierOutputSections {
+    pub(crate) fn from_dom_codegen(
+        imports_len: usize,
+        preamble_len: usize,
+        function_base_offset: usize,
+        assets: (usize, usize),
+        return_expr: (usize, usize),
+    ) -> Self {
+        Self {
+            imports: OutputRange::new(0, imports_len),
+            hoisted: if preamble_len > imports_len {
+                // DOM codegen inserts one blank-line separator between helper
+                // imports and hoists. Keep the public hoisted section focused
+                // on declarations, matching the legacy line scanner.
+                OutputRange::new(imports_len + 1, preamble_len)
+            } else {
+                OutputRange::empty(preamble_len)
+            },
+            assets: OutputRange::new(
+                function_base_offset + assets.0,
+                function_base_offset + assets.1,
+            ),
+            return_expr: OutputRange::new(
+                function_base_offset + return_expr.0,
+                function_base_offset + return_expr.1,
+            ),
+        }
+    }
+}
+
+/// Source maps carried with structured Atelier output.
+///
+/// SFC compilation does not expose template source maps yet; this holder keeps
+/// the output assembly boundary ready without changing the public result.
+#[derive(Debug, Default)]
+pub(crate) struct AtelierOutputMaps {
+    source: Option<String>,
+}
+
+impl AtelierOutputMaps {
+    pub(crate) fn from_source_map(source: Option<String>) -> Self {
+        Self { source }
+    }
+}
+
 /// The render function a generated SFC component should expose.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub(crate) enum RenderFunctionName {
@@ -30,14 +113,17 @@ impl RenderFunctionName {
 
 /// Structural output module used before SFC code is flattened into a string.
 ///
-/// This is intentionally small: it gives the SFC layer a typed boundary for
-/// imports/hoists/functions/exports without changing backend emitters yet.
+/// This is intentionally small: it gives the SFC layer a typed Atelier output
+/// boundary for imports/hoists/functions/exports/sections/maps without
+/// changing backend emitters yet.
 #[derive(Debug, Default)]
 pub(crate) struct OutputModule {
     pub(crate) imports: String,
     pub(crate) hoists: String,
     pub(crate) functions: String,
     pub(crate) exports: String,
+    pub(crate) sections: Option<AtelierOutputSections>,
+    pub(crate) maps: AtelierOutputMaps,
 }
 
 impl OutputModule {
@@ -49,18 +135,42 @@ impl OutputModule {
         }
     }
 
+    pub(crate) fn with_sections(mut self, sections: Option<AtelierOutputSections>) -> Self {
+        self.sections = sections;
+        self
+    }
+
+    pub(crate) fn with_source_map(mut self, source_map: Option<String>) -> Self {
+        self.maps = AtelierOutputMaps::from_source_map(source_map);
+        self
+    }
+
     pub(crate) fn function_base_offset(&self) -> usize {
         self.imports.len() + self.hoists.len() + 1
     }
 
     pub(crate) fn into_code(self) -> String {
+        Self::assemble_code(self.imports, self.hoists, self.functions, self.exports)
+    }
+
+    pub(crate) fn into_code_and_map(self) -> (String, Option<String>) {
+        let code = Self::assemble_code(self.imports, self.hoists, self.functions, self.exports);
+        (code, self.maps.source)
+    }
+
+    fn assemble_code(
+        imports: String,
+        hoists: String,
+        functions: String,
+        exports: String,
+    ) -> String {
         let mut code = String::default();
-        code.push_str(&self.imports);
-        code.push_str(&self.hoists);
+        code.push_str(&imports);
+        code.push_str(&hoists);
         code.push('\n');
-        code.push_str(&self.functions);
+        code.push_str(&functions);
         code.push('\n');
-        code.push_str(&self.exports);
+        code.push_str(&exports);
         code
     }
 }
