@@ -65,6 +65,7 @@ export const LINT_RULE_NAMES = [
   "petite-vue/no-unsupported-directive",
   "petite-vue/valid-v-effect",
   "petite-vue/valid-v-scope",
+  "script/component-options-name-casing",
   "script/no-arrow-functions-in-watch",
   "script/no-async-in-computed",
   "script/no-deep-destructure-in-props",

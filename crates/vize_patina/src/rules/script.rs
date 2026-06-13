@@ -21,6 +21,7 @@
 //! - `script/no-get-current-instance` - Disallow getCurrentInstance() calls
 //! - `script/no-next-tick` - Disallow nextTick() scheduling
 
+mod component_options_name_casing;
 mod no_arrow_functions_in_watch;
 mod no_async_in_computed;
 mod no_deep_destructure_in_props;
@@ -65,6 +66,7 @@ use oxc_span::SourceType;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_carton::profile;
 
+pub use component_options_name_casing::ComponentOptionsNameCasing;
 pub use no_arrow_functions_in_watch::NoArrowFunctionsInWatch;
 pub use no_async_in_computed::NoAsyncInComputed;
 pub use no_deep_destructure_in_props::NoDeepDestructureInProps;
@@ -204,6 +206,12 @@ pub trait ScriptRule: Send + Sync {
     #[inline]
     fn uses_ast(&self) -> bool {
         false
+    }
+
+    /// Whether this rule runs against `<script setup>` blocks (defaults to `true`).
+    #[inline]
+    fn runs_on_script_setup(&self) -> bool {
+        true
     }
 }
 
