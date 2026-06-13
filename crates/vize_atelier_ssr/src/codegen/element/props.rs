@@ -20,7 +20,7 @@ pub(super) fn slot_props_pattern_to_string(expr: &ExpressionNode) -> String {
         ExpressionNode::Simple(simple) => simple.loc.source.clone(),
         ExpressionNode::Compound(compound) => compound.loc.source.clone(),
     };
-    vize_atelier_core::transforms::strip_typescript_from_expression(&source)
+    vize_atelier_core::passes::strip_typescript_from_expression(&source)
 }
 
 pub(super) fn component_prop_entry(key: &str, value: &str, dynamic: bool) -> VNodePropEntry {

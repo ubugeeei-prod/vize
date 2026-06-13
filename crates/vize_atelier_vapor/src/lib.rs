@@ -11,6 +11,8 @@ pub mod generators;
 pub mod ir;
 pub mod transform;
 pub mod transforms;
+pub use transform as pipeline;
+pub use transforms as passes;
 
 #[cfg(test)]
 mod tests;

@@ -17,6 +17,8 @@ pub mod runtime_helpers;
 pub mod test_macros;
 pub mod transform;
 pub mod transforms;
+pub use transform as pipeline;
+pub use transforms as passes;
 
 // Re-export from vize_relief (AST, errors, options)
 pub use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};

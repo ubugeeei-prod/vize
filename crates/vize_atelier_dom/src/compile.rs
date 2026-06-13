@@ -6,7 +6,7 @@ use vize_atelier_core::{
     codegen::generate_with_sections,
     options::{CodegenOptions, ParserOptions, TemplateSyntaxMode, TransformOptions},
     parser::parse_with_options_and_template_syntax,
-    transform::{
+    pipeline::{
         transform as do_transform, transform_with_hoisted_scope_id,
         transform_with_template_syntax_quirks,
         transform_with_template_syntax_quirks_and_hoisted_scope_id,

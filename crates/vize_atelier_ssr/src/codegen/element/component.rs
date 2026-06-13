@@ -823,7 +823,7 @@ impl<'a> SsrCodegenContext<'a> {
         match arg {
             // `@click`, `@custom-event`, desugared `onUpdate:foo` (`Update:foo`).
             ExpressionNode::Simple(arg) if arg.is_static => {
-                let key = vize_atelier_core::transforms::create_on_name(&arg.content);
+                let key = vize_atelier_core::passes::create_on_name(&arg.content);
                 entries.push(component_prop_entry(&key, &handler, false));
             }
             // Dynamic event name: `@[name]="handler"`.
@@ -846,8 +846,8 @@ impl<'a> SsrCodegenContext<'a> {
             return rendered;
         }
 
-        if vize_atelier_core::transforms::transform_expression::is_function_expression(&rendered)
-            || vize_atelier_core::transforms::is_event_handler_reference_expression(&rendered)
+        if vize_atelier_core::passes::transform_expression::is_function_expression(&rendered)
+            || vize_atelier_core::passes::is_event_handler_reference_expression(&rendered)
         {
             return rendered;
         }

@@ -17,6 +17,7 @@ mod compile;
 mod namespace;
 pub mod options;
 pub mod transforms;
+pub use transforms as passes;
 
 #[cfg(test)]
 mod tests;
@@ -44,5 +45,5 @@ pub use transforms::{
 // Re-export core types
 pub use vize_atelier_core::{
     Allocator, CompilerError, ElementNode, Namespace, RootNode, TemplateChildNode, codegen, errors,
-    parser, runtime_helpers, tokenizer, transform,
+    parser, pipeline, runtime_helpers, tokenizer, transform,
 };

@@ -4,12 +4,12 @@
 //! code generation behind the public `compile_vapor*` functions.
 
 use crate::generate::generate_vapor;
-use crate::transform;
+use crate::pipeline as vapor_pipeline;
 use vize_atelier_core::{
     CompilerError, Namespace,
     options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
     parser::parse_with_options_and_template_syntax,
-    transform::{transform, transform_with_template_syntax_quirks},
+    pipeline::{transform, transform_with_template_syntax_quirks},
 };
 use vize_carton::{Bump, String};
 
@@ -150,7 +150,8 @@ fn compile_vapor_inner<'a>(
     }
 
     // Transform to Vapor IR
-    let (ir, transform_diagnostics) = transform::transform_to_ir_with_diagnostics(allocator, &root);
+    let (ir, transform_diagnostics) =
+        vapor_pipeline::transform_to_ir_with_diagnostics(allocator, &root);
 
     // Generate Vapor code
     let result = generate_vapor(&ir, binding_metadata.as_ref());
