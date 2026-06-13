@@ -41,4 +41,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "ハンドラをインライン文ではなく、メソッド参照（例: @click=\"handler\"）またはインライン関数（例: @click=\"() => count++\"）として記述してください。",
         "请将处理函数写成方法引用（例如 @click=\"handler\"）或内联函数（例如 @click=\"() => count++\"），而不是内联语句。",
     ),
+    // vue/this-in-template
+    (
+        "vue/this-in-template.description",
+        "Disallow `this.` in template expressions",
+        "テンプレート式での `this.` を禁止する",
+        "禁止在模板表达式中使用 `this.`",
+    ),
+    (
+        "vue/this-in-template.message",
+        "Unexpected usage of 'this.' in a template expression.",
+        "テンプレート式で予期しない 'this.' が使われています。",
+        "模板表达式中出现了意外的 'this.'。",
+    ),
+    (
+        "vue/this-in-template.help",
+        "Remove the 'this.' prefix; Vue resolves template identifiers against the component instance automatically.",
+        "'this.' を削除してください。Vue はテンプレートの識別子をコンポーネントインスタンスから自動的に解決します。",
+        "请移除 'this.' 前缀；Vue 会自动从组件实例解析模板中的标识符。",
+    ),
 ];
