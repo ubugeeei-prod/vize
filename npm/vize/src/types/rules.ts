@@ -106,6 +106,7 @@ export const LINT_RULE_NAMES = [
   "script/prefer-use-slots",
   "script/prefer-use-template-ref",
   "script/require-default-prop",
+  "script/require-explicit-slots",
   "script/require-function-return-type",
   "script/require-prop-type-constructor",
   "script/require-prop-types",
