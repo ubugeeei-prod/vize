@@ -9,6 +9,7 @@ mod fallbacks;
 mod helpers;
 mod normal_script;
 pub(crate) mod output_module;
+mod source_maps;
 mod styles;
 #[cfg(test)]
 mod tests;
@@ -18,9 +19,8 @@ use crate::compile_script::lazy_hydration::transform_lazy_hydration_macros;
 use crate::compile_script::props::is_valid_identifier;
 use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
-    TemplateBlockCompileContext, TemplateBlockCompileResult, compile_template_block,
-    compile_template_block_vapor, extract_template_parts, extract_template_parts_full_for_inline,
-    slice_template_parts,
+    TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
+    extract_template_parts, extract_template_parts_full_for_inline, slice_template_parts,
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
@@ -28,10 +28,7 @@ use crate::types::{
     BindingMetadata, BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
     SfcMacroArtifact,
 };
-use vize_atelier_core::{
-    TemplateSyntaxMode,
-    source_atlas::{SourceAtlasFallback, SourceAtlasPlate},
-};
+use vize_atelier_core::TemplateSyntaxMode;
 
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
@@ -45,11 +42,12 @@ use self::output_module::{
     RenderFunctionName, append_component_render_export, append_css_modules_assignment,
     rewrite_client_render_for_sfc_main,
 };
+use self::source_maps::{SourceMapComposition, record_template_source_map_fact};
 use self::styles::compile_styles;
 
 // Re-export ScriptCompileResult for public API
 pub use crate::compile_script::ScriptCompileResult;
-use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profiler};
+use vize_carton::{String, ToCompactString, cstr, profile};
 
 fn create_v_model_reactive_const_warning(
     script_setup: &crate::types::SfcScriptBlock<'_>,
@@ -77,31 +75,6 @@ fn create_standalone_import_warning() -> SfcError {
 
 pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
     matches!(lang, Some("ts" | "tsx"))
-}
-
-#[derive(Clone, Copy)]
-enum SourceMapComposition {
-    Composed,
-    Skipped,
-}
-
-fn record_template_source_map_fact(
-    template_output: &TemplateBlockCompileResult,
-    composition: SourceMapComposition,
-) {
-    if template_output.source_map_fragment().is_none() {
-        return;
-    }
-
-    let profiler = global_profiler();
-    profiler.record_counter("atelier.profile.template_source_map_fragments", 1);
-    profiler.record_counter(SourceAtlasPlate::SourceMap.profile_counter(), 1);
-    if matches!(composition, SourceMapComposition::Skipped) {
-        profiler.record_counter(
-            SourceAtlasFallback::SourceMapCompositionSkipped.profile_counter(),
-            1,
-        );
-    }
 }
 
 fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacroArtifact> {
