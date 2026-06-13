@@ -37,6 +37,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::{GetSpan, Span};
+use vize_carton::cstr;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-deprecated-events-api",
@@ -93,11 +94,16 @@ impl NoDeprecatedEventsApiVisitor<'_> {
     fn push_diagnostic(&mut self, span: Span, method: &str) {
         let start = self.offset as u32 + span.start;
         let end = self.offset as u32 + span.end;
-        let message = format!(
-            "`{method}()` was removed in Vue 3. The instance event-emitter API is no longer available."
-        );
         self.result.add_diagnostic(
-            LintDiagnostic::error(META.name, &message, start, end).with_help(
+            LintDiagnostic::error(
+                META.name,
+                cstr!(
+                    "`{method}()` was removed in Vue 3. The instance event-emitter API is no longer available."
+                ),
+                start,
+                end,
+            )
+            .with_help(
                 "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
             ),
         );
