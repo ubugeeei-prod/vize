@@ -45,6 +45,7 @@ pub(crate) const RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API: &str =
 pub(crate) const RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION: &str =
     "script/no-deprecated-data-object-declaration";
 pub(crate) const RULE_NO_DEPRECATED_EVENTS_API: &str = "script/no-deprecated-events-api";
+pub(crate) const RULE_COMPONENT_OPTIONS_NAME_CASING: &str = "script/component-options-name-casing";
 pub(crate) const RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS: &str =
     "script/no-deprecated-props-default-this";
 
@@ -82,6 +83,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
     RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
     RULE_NO_DEPRECATED_EVENTS_API,
+    RULE_COMPONENT_OPTIONS_NAME_CASING,
     RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS,
 ];
 
@@ -117,5 +119,6 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
     RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
     RULE_NO_DEPRECATED_EVENTS_API,
+    RULE_COMPONENT_OPTIONS_NAME_CASING,
     RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS,
 ];
