@@ -13,9 +13,9 @@ use vize_carton::{Bump, FxHashSet, String};
 use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
-use crate::dom::{VdomCompileOptions, VdomComponent, compile_root_to_vdom};
 use crate::scoped::ScopedStyle;
 use crate::vapor::{VaporCompileOptions, VaporComponent, compile_root_to_vapor};
+use crate::vdom::{VdomCompileOptions, VdomComponent, compile_root_to_vdom};
 use crate::{JsxLang, JsxOutputMode, lower_source};
 
 /// Configuration for mode-aware JSX compilation.
@@ -25,7 +25,7 @@ pub struct JsxCompileConfig {
     /// `"use vue:vapor"` / `"use vue:vdom"` directive.
     pub default_mode: JsxOutputMode,
     /// Options for components compiled to VDOM.
-    pub dom: VdomCompileOptions,
+    pub vdom: VdomCompileOptions,
     /// Options for components compiled to Vapor.
     pub vapor: VaporCompileOptions,
 }
@@ -33,7 +33,7 @@ pub struct JsxCompileConfig {
 /// A compiled component, tagged by the backend it was routed to.
 pub enum JsxComponent {
     /// Compiled to Virtual DOM output.
-    Dom(VdomComponent),
+    Vdom(VdomComponent),
     /// Compiled to Vapor output.
     Vapor(VaporComponent),
 }
@@ -42,7 +42,7 @@ impl JsxComponent {
     /// The enclosing component-function name, if resolved.
     pub fn component_name(&self) -> Option<&str> {
         match self {
-            Self::Dom(component) => component.component_name.as_deref(),
+            Self::Vdom(component) => component.component_name.as_deref(),
             Self::Vapor(component) => component.component_name.as_deref(),
         }
     }
@@ -50,7 +50,7 @@ impl JsxComponent {
     /// The backend this component was compiled with.
     pub fn mode(&self) -> JsxOutputMode {
         match self {
-            Self::Dom(_) => JsxOutputMode::Vdom,
+            Self::Vdom(_) => JsxOutputMode::Vdom,
             Self::Vapor(_) => JsxOutputMode::Vapor,
         }
     }
@@ -58,7 +58,7 @@ impl JsxComponent {
     /// The generated render code.
     pub fn code(&self) -> &str {
         match self {
-            Self::Dom(component) => component.code.as_str(),
+            Self::Vdom(component) => component.code.as_str(),
             Self::Vapor(component) => component.code.as_str(),
         }
     }
@@ -72,7 +72,7 @@ impl JsxComponent {
     /// empty here.
     pub fn preamble(&self) -> &str {
         match self {
-            Self::Dom(component) => component.preamble.as_str(),
+            Self::Vdom(component) => component.preamble.as_str(),
             Self::Vapor(_) => "",
         }
     }
@@ -84,7 +84,7 @@ impl JsxComponent {
     /// so it is always `None` there.
     pub fn map(&self) -> Option<&str> {
         match self {
-            Self::Dom(component) => component.map.as_deref(),
+            Self::Vdom(component) => component.map.as_deref(),
             Self::Vapor(_) => None,
         }
     }
@@ -97,7 +97,7 @@ impl JsxComponent {
     /// rendered elements.
     pub fn scoped_style(&self) -> Option<&ScopedStyle> {
         match self {
-            Self::Dom(component) => component.scoped_style.as_ref(),
+            Self::Vdom(component) => component.scoped_style.as_ref(),
             Self::Vapor(component) => component.scoped_style.as_ref(),
         }
     }
@@ -290,12 +290,12 @@ pub fn compile_jsx(
     for lowered_root in lowered.roots {
         let mode = resolve_mode(lowered_root.mode, config.default_mode);
         let component = match mode {
-            JsxOutputMode::Vdom => JsxComponent::Dom(compile_root_to_vdom(
+            JsxOutputMode::Vdom => JsxComponent::Vdom(compile_root_to_vdom(
                 bump,
                 lowered_root,
                 analysis,
                 is_ts,
-                &config.dom,
+                &config.vdom,
                 &mut diagnostics,
             )),
             JsxOutputMode::Vapor => JsxComponent::Vapor(compile_root_to_vapor(
@@ -388,7 +388,7 @@ mod tests {
     fn source_map_present_only_for_single_component_module() {
         let bump = Bump::new();
         let mut config = JsxCompileConfig::default();
-        config.dom.source_map = true;
+        config.vdom.source_map = true;
 
         let single = compile_jsx(
             &bump,

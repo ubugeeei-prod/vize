@@ -128,7 +128,7 @@ fn build_jsx_wasm_result(
         ..Default::default()
     };
     // Source maps are emitted by the VDOM codegen path; a no-op for Vapor.
-    config.dom.source_map = source_map;
+    config.vdom.source_map = source_map;
 
     let bump = Bump::new();
     let output = jsx_compile(&bump, source, lang, &config);

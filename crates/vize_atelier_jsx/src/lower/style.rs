@@ -19,7 +19,7 @@
 //!
 //! Such an element is **not** rendered as a runtime `<style>` vnode: it is
 //! extracted at compile time, its CSS content captured, and the backends
-//! ([`crate::dom`] / [`crate::vapor`]) run the SFC scoped-CSS rewrite + scope-id
+//! ([`crate::vdom`] / [`crate::vapor`]) run the SFC scoped-CSS rewrite + scope-id
 //! injection over it. This module performs only the detection + extraction; the
 //! scoped transform lives in the backends so it can reuse `vize_atelier_sfc`.
 
