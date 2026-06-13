@@ -41,6 +41,7 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{Expression, Program, Statement};
 use oxc_span::{GetSpan, Span};
+use vize_carton::{CompactString, cstr};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/define-macros-order",
@@ -128,7 +129,7 @@ fn report_out_of_order(macros: &[MacroOccurrence], offset: usize, result: &mut S
             report(
                 occurrence.span,
                 offset,
-                format!(
+                cstr!(
                     "`{expected}` should be declared before `{after}` to follow the \
                      canonical macro order."
                 ),
@@ -156,7 +157,7 @@ fn report_after_non_macro(
             report(
                 occurrence.span,
                 offset,
-                format!(
+                cstr!(
                     "`{name}` should be declared before other statements in \
                      `<script setup>`."
                 ),
@@ -166,7 +167,7 @@ fn report_after_non_macro(
     }
 }
 
-fn report(span: Span, offset: usize, message: String, result: &mut ScriptLintResult) {
+fn report(span: Span, offset: usize, message: CompactString, result: &mut ScriptLintResult) {
     let start = offset as u32 + span.start;
     let end = offset as u32 + span.end;
     result.add_diagnostic(
