@@ -57,6 +57,11 @@ pub(crate) const RULE_NO_REQUIRED_PROP_WITH_DEFAULT: &str = "script/no-required-
 pub(crate) const RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS: &str =
     "script/no-deprecated-props-default-this";
 pub(crate) const RULE_NO_BOOLEAN_DEFAULT: &str = "script/no-boolean-default";
+pub(crate) const RULE_VALID_NEXT_TICK: &str = "script/valid-next-tick";
+pub(crate) const RULE_VALID_DEFINE_OPTIONS: &str = "script/valid-define-options";
+pub(crate) const RULE_DEFINE_PROPS_DESTRUCTURING: &str = "script/define-props-destructuring";
+pub(crate) const RULE_REQUIRE_TYPED_REF: &str = "script/require-typed-ref";
+pub(crate) const RULE_PREFER_DEFINE_OPTIONS: &str = "script/prefer-define-options";
 pub(crate) const RULE_REQUIRE_DEFAULT_PROP: &str = "script/require-default-prop";
 pub(crate) const RULE_REQUIRE_PROP_TYPES: &str = "script/require-prop-types";
 pub(crate) const RULE_NO_RESERVED_PROPS: &str = "script/no-reserved-props";
@@ -107,6 +112,11 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
     RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS,
     RULE_NO_BOOLEAN_DEFAULT,
+    RULE_VALID_NEXT_TICK,
+    RULE_VALID_DEFINE_OPTIONS,
+    RULE_DEFINE_PROPS_DESTRUCTURING,
+    RULE_REQUIRE_TYPED_REF,
+    RULE_PREFER_DEFINE_OPTIONS,
     RULE_REQUIRE_DEFAULT_PROP,
     RULE_REQUIRE_PROP_TYPES,
     RULE_NO_RESERVED_PROPS,
@@ -156,6 +166,11 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
     RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS,
     RULE_NO_BOOLEAN_DEFAULT,
+    RULE_VALID_NEXT_TICK,
+    RULE_VALID_DEFINE_OPTIONS,
+    RULE_DEFINE_PROPS_DESTRUCTURING,
+    RULE_REQUIRE_TYPED_REF,
+    RULE_PREFER_DEFINE_OPTIONS,
     RULE_REQUIRE_DEFAULT_PROP,
     RULE_REQUIRE_PROP_TYPES,
     RULE_NO_RESERVED_PROPS,

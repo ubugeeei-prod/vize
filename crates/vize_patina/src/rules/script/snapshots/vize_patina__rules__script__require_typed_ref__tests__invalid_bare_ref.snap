@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/require_typed_ref.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/require-typed-ref",
+        severity: Warning,
+        message: "This ref() should have an explicit type argument.",
+        start: 36,
+        end: 41,
+        help: Some(
+            "A ref() initialized with no value, `null`, or `undefined` infers `Ref<undefined>`/`Ref<null>`, which disables type-checking. Add a type argument, e.g. `ref<string>()`.",
+        ),
+        labels: [
+            Label {
+                message: "missing type argument",
+                start: 36,
+                end: 41,
+            },
+        ],
+        fix: None,
+    },
+]

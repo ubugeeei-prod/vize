@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/define_props_destructuring.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/define-props-destructuring",
+        severity: Warning,
+        message: "Avoid destructuring the return value of defineProps().",
+        start: 6,
+        end: 18,
+        help: Some(
+            "Assign the props to a single binding (`const props = defineProps(...)`) and access `props.foo` instead of destructuring, which can drop reactivity.",
+        ),
+        labels: [
+            Label {
+                message: "destructured defineProps() result",
+                start: 6,
+                end: 18,
+            },
+        ],
+        fix: None,
+    },
+]

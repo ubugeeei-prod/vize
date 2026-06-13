@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/valid_define_options.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/valid-define-options",
+        severity: Error,
+        message: "defineOptions() has already been called.",
+        start: 31,
+        end: 69,
+        help: Some(
+            "Merge all component options into a single defineOptions() call; only one is allowed per <script setup> block.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

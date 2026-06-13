@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/valid_define_options.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/valid-define-options",
+        severity: Error,
+        message: "'props' is not allowed inside defineOptions().",
+        start: 16,
+        end: 21,
+        help: Some(
+            "Use the dedicated `defineProps()` macro instead of declaring it in defineOptions().",
+        ),
+        labels: [
+            Label {
+                message: "declared in defineOptions()",
+                start: 16,
+                end: 21,
+            },
+        ],
+        fix: None,
+    },
+]

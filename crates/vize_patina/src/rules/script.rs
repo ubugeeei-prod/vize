@@ -6,6 +6,7 @@ mod component_options_name_casing;
 mod define_emits_declaration;
 mod define_macros_order;
 mod define_props_declaration;
+mod define_props_destructuring;
 mod no_arrow_functions_in_watch;
 mod no_async_in_computed;
 mod no_boolean_default;
@@ -32,6 +33,7 @@ mod no_use_computed_property_like_method;
 mod no_with_defaults;
 mod pinia_prefer_store_to_refs;
 mod prefer_computed;
+mod prefer_define_options;
 mod prefer_import_from_vue;
 mod prefer_ref_over_reactive;
 mod prefer_use_attrs;
@@ -42,7 +44,10 @@ mod props_emits;
 mod require_function_return_type;
 mod require_prop_type_constructor;
 mod require_symbol_provide;
+mod require_typed_ref;
 mod return_in_computed_property;
+mod valid_define_options;
+mod valid_next_tick;
 mod vue_router_prefer_named_push;
 mod vue_test_utils_no_html_snapshot;
 
@@ -59,6 +64,7 @@ pub use component_options_name_casing::ComponentOptionsNameCasing;
 pub use define_emits_declaration::DefineEmitsDeclaration;
 pub use define_macros_order::DefineMacrosOrder;
 pub use define_props_declaration::DefinePropsDeclaration;
+pub use define_props_destructuring::DefinePropsDestructuring;
 pub use no_arrow_functions_in_watch::NoArrowFunctionsInWatch;
 pub use no_async_in_computed::NoAsyncInComputed;
 pub use no_boolean_default::NoBooleanDefault;
@@ -85,6 +91,7 @@ pub use no_use_computed_property_like_method::NoUseComputedPropertyLikeMethod;
 pub use no_with_defaults::NoWithDefaults;
 pub use pinia_prefer_store_to_refs::PiniaPreferStoreToRefs;
 pub use prefer_computed::PreferComputed;
+pub use prefer_define_options::PreferDefineOptions;
 pub use prefer_import_from_vue::PreferImportFromVue;
 pub use prefer_ref_over_reactive::PreferRefOverReactive;
 pub use prefer_use_attrs::PreferUseAttrs;
@@ -95,7 +102,10 @@ pub use props_emits::*;
 pub use require_function_return_type::RequireFunctionReturnType;
 pub use require_prop_type_constructor::RequirePropTypeConstructor;
 pub use require_symbol_provide::RequireSymbolProvide;
+pub use require_typed_ref::RequireTypedRef;
 pub use return_in_computed_property::ReturnInComputedProperty;
+pub use valid_define_options::ValidDefineOptions;
+pub use valid_next_tick::ValidNextTick;
 pub use vue_router_prefer_named_push::VueRouterPreferNamedPush;
 pub use vue_test_utils_no_html_snapshot::VueTestUtilsNoHtmlSnapshot;
 
@@ -170,21 +180,9 @@ pub trait ScriptRule: Send + Sync {
         self.check_program(&parsed.program, source, offset, result);
     }
 
-    /// Check an already-parsed script program.
-    ///
-    /// Rules that need an oxc AST implement their visitor logic here, dropping
-    /// their per-rule `Parser::new`, and override [`ScriptRule::uses_ast`] to
-    /// return `true`. The default implementation does nothing so that byte-only
-    /// rules (which override `check`) need not implement it.
-    ///
-    /// The program reference and the AST allocation share a single lifetime
-    /// (`&'a Program<'a>`) so rules can hand out AST node references that live as
-    /// long as the program (required by some rules' binding maps).
-    ///
-    /// * `program` - The parsed oxc program (parsed with [`script_source_type`])
-    /// * `source` - The script block content
-    /// * `offset` - The offset of the script block in the original file
-    /// * `result` - Accumulator for diagnostics
+    /// Check an already-parsed script program. AST-based rules override this
+    /// (and [`ScriptRule::uses_ast`]) to reuse the shared parse from
+    /// [`ScriptLinter::lint`]; byte-only rules leave it as the default no-op.
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
@@ -196,10 +194,8 @@ pub trait ScriptRule: Send + Sync {
     }
 
     /// Whether this rule consumes the oxc AST via [`ScriptRule::check_program`].
-    ///
-    /// Rules that parse the script return `true` so callers can feed them a
-    /// shared, pre-parsed program. Byte-only rules leave this `false` and are
-    /// driven through [`ScriptRule::check`].
+    /// AST rules return `true` to receive a shared parse from
+    /// [`ScriptLinter::lint`]; byte-only rules leave it `false`.
     #[inline]
     fn uses_ast(&self) -> bool {
         false
@@ -256,12 +252,8 @@ impl ScriptLinter {
         }
     }
 
-    /// Create a script linter with Vapor-specific rules enabled
-    ///
-    /// Includes rules that check for patterns not supported in Vapor mode:
-    /// - `no-options-api` - Options API is not supported
-    /// - `no-get-current-instance` - getCurrentInstance() returns null
-    /// - `no-next-tick` - nextTick() should not be relied on
+    /// Create a script linter preloaded with Vapor-specific rules
+    /// (`no-options-api`, `no-get-current-instance`, `no-next-tick`).
     pub fn with_vapor_rules() -> Self {
         Self {
             rules: vec![
