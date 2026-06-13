@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/valid_next_tick.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/valid-next-tick",
+        severity: Warning,
+        message: "The result of this nextTick() call is ignored.",
+        start: 31,
+        end: 41,
+        help: Some(
+            "nextTick() returns a promise that resolves after the DOM updates. `await` it, chain `.then(...)`, or pass a callback (`nextTick(() => {})`); a bare call does nothing useful.",
+        ),
+        labels: [
+            Label {
+                message: "ignored nextTick() result",
+                start: 31,
+                end: 41,
+            },
+        ],
+        fix: None,
+    },
+]

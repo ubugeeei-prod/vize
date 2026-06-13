@@ -560,6 +560,11 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/define-emits-declaration",
     "script/no-use-computed-property-like-method",
     "script/define-props-declaration",
-    "script/no-required-prop-with-default"
+    "script/no-required-prop-with-default",
+    "script/valid-next-tick",
+    "script/valid-define-options",
+    "script/define-props-destructuring",
+    "script/require-typed-ref",
+    "script/prefer-define-options"
   ]
 }
