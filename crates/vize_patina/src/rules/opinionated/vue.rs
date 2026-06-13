@@ -18,6 +18,7 @@ mod prefer_true_attribute_shorthand;
 mod require_component_registration;
 mod scoped_event_names;
 mod slot_name_casing;
+mod this_in_template;
 mod use_unique_element_ids;
 mod use_v_on_exact;
 mod v_bind_style;
@@ -48,6 +49,7 @@ pub use prefer_true_attribute_shorthand::PreferTrueAttributeShorthand;
 pub use require_component_registration::RequireComponentRegistration;
 pub use scoped_event_names::ScopedEventNames;
 pub use slot_name_casing::SlotNameCasing;
+pub use this_in_template::ThisInTemplate;
 pub use use_unique_element_ids::UseUniqueElementIds;
 pub use use_v_on_exact::UseVOnExact;
 pub use v_bind_style::{VBindStyle, VBindStyleOption};
@@ -95,4 +97,5 @@ fn register_shared(registry: &mut RuleRegistry) {
     registry.register(Box::new(NoNegatedVIfCondition));
     registry.register(Box::new(PreferTrueAttributeShorthand));
     registry.register(Box::new(VOnEventHyphenation));
+    registry.register(Box::new(ThisInTemplate));
 }
