@@ -113,8 +113,7 @@ impl Rule for HtmlButtonHasType {
         match static_type_value(element) {
             Some(value) => {
                 if !is_valid_type(value) {
-                    let message =
-                        ctx.t_fmt("vue/html-button-has-type.invalid", &[("type", value)]);
+                    let message = ctx.t_fmt("vue/html-button-has-type.invalid", &[("type", value)]);
                     ctx.warn_with_help(
                         message,
                         &element.loc,
@@ -136,9 +135,12 @@ impl Rule for HtmlButtonHasType {
 /// The value of a static `type` attribute, if present.
 fn static_type_value<'a>(element: &'a ElementNode) -> Option<&'a str> {
     element.props.iter().find_map(|prop| match prop {
-        PropNode::Attribute(attr) if attr.name == "type" => {
-            Some(attr.value.as_ref().map(|v| v.content.as_str()).unwrap_or(""))
-        }
+        PropNode::Attribute(attr) if attr.name == "type" => Some(
+            attr.value
+                .as_ref()
+                .map(|v| v.content.as_str())
+                .unwrap_or(""),
+        ),
         _ => None,
     })
 }
