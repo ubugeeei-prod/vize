@@ -18,7 +18,7 @@ use super::names::{
     RULE_NO_WITH_DEFAULTS, RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED,
     RULE_PREFER_DEFINE_OPTIONS, RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE,
     RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,
-    RULE_REQUIRE_DEFAULT_PROP, RULE_REQUIRE_FUNCTION_RETURN_TYPE,
+    RULE_REQUIRE_DEFAULT_PROP, RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_FUNCTION_RETURN_TYPE,
     RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES, RULE_REQUIRE_SYMBOL_PROVIDE,
     RULE_REQUIRE_TYPED_REF, RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_RETURN_IN_EMITS_VALIDATOR,
     RULE_VALID_DEFINE_OPTIONS, RULE_VALID_NEXT_TICK, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
@@ -39,10 +39,10 @@ use crate::rules::script::{
     NoReservedProps, NoSideEffectsInComputed, NoTopLevelRefInScript, NoUnusedEmitDeclarations,
     NoUseComputedPropertyLikeMethod, NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed,
     PreferDefineOptions, PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId,
-    PreferUseSlots, PreferUseTemplateRef, RequireDefaultProp, RequireFunctionReturnType,
-    RequirePropTypeConstructor, RequirePropTypes, RequireSymbolProvide, RequireTypedRef,
-    ReturnInComputedProperty, ReturnInEmitsValidator, ValidDefineOptions, ValidNextTick,
-    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
+    PreferUseSlots, PreferUseTemplateRef, RequireDefaultProp, RequireExplicitEmits,
+    RequireFunctionReturnType, RequirePropTypeConstructor, RequirePropTypes, RequireSymbolProvide,
+    RequireTypedRef, ReturnInComputedProperty, ReturnInEmitsValidator, ValidDefineOptions,
+    ValidNextTick, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
 };
 
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
@@ -105,4 +105,5 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_NO_RESERVED_PROPS, profile_name: "patina.script_rule.no_reserved_props", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoReservedProps },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_UNUSED_EMIT_DECLARATIONS, profile_name: "patina.script_rule.no_unused_emit_declarations", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoUnusedEmitDeclarations },
     BuiltinScriptRuleEntry { rule_name: RULE_RETURN_IN_EMITS_VALIDATOR, profile_name: "patina.script_rule.return_in_emits_validator", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &ReturnInEmitsValidator },
+    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_EXPLICIT_EMITS, profile_name: "patina.script_rule.require_explicit_emits", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &RequireExplicitEmits },
 ];
