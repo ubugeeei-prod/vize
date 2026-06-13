@@ -174,4 +174,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "オブジェクトを1つにまとめてください。例: :class=\"[{ a }, { b }]\" は :class=\"{ a, b }\" になります。",
         "请将这些对象合并为一个，例如 :class=\"[{ a }, { b }]\" 改为 :class=\"{ a, b }\"。",
     ),
+    // vue/no-deprecated-functional-template
+    (
+        "vue/no-deprecated-functional-template.description",
+        "Disallow the `functional` attribute on the SFC `<template>`",
+        "SFCの`<template>`への`functional`属性を禁止する",
+        "禁止在SFC的`<template>`上使用`functional`属性",
+    ),
+    (
+        "vue/no-deprecated-functional-template.message",
+        "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+        "`<template>`の`functional`属性（関数型SFCテンプレート）はVue 3で削除されました",
+        "`<template>`上的`functional`属性（函数式SFC模板）已在Vue 3中移除",
+    ),
+    (
+        "vue/no-deprecated-functional-template.help",
+        "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+        "`functional`を削除してステートフルなコンポーネントにするか、関数型コンポーネントを通常の関数（レンダー関数やJSXなど）として記述してください。",
+        "请移除`functional`并改用有状态组件，或将函数式组件写成普通函数（例如渲染函数或JSX）。",
+    ),
 ];
