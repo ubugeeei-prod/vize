@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-deprecated-dollar-listeners-api",
+        severity: Error,
+        message: "$listeners was removed in Vue 3 and merged into $attrs",
+        start: 17,
+        end: 32,
+        help: Some(
+            "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

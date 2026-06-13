@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/no_root_v_if.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-root-v-if",
+        severity: Warning,
+        message: "v-if on the single root element can make the whole component render nothing",
+        start: 5,
+        end: 16,
+        help: Some(
+            "Wrap the content in an always-present root element, or use v-show instead of v-if.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
