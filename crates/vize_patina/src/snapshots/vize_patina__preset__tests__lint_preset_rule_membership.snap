@@ -539,7 +539,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-dupe-keys",
     "script/no-side-effects-in-computed-properties",
     "script/no-arrow-functions-in-watch",
-    "script/no-export-in-script-setup"
+    "script/no-export-in-script-setup",
     "script/no-deprecated-events-api"
   ]
 }
