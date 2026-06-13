@@ -30,14 +30,8 @@ use crate::rules::script::{
     NoReactiveDestructure, NoReservedIdentifiers, NoSideEffectsInComputed, NoTopLevelRefInScript,
     NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed, PreferImportFromVue,
     PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef,
-    RequireFunctionReturnType, RequireSymbolProvide, VueRouterPreferNamedPush,
-    NoAsyncInComputed, NoDeepDestructureInProps, NoDupeKeys, NoGetCurrentInstance,
-    NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi, NoReactiveDestructure,
-    NoReservedIdentifiers, NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults,
-    PiniaPreferStoreToRefs, PreferComputed, PreferImportFromVue, PreferRefOverReactive,
-    PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType,
-    RequireSymbolProvide, ReturnInComputedProperty, VueRouterPreferNamedPush,
-    VueTestUtilsNoHtmlSnapshot,
+    RequireFunctionReturnType, RequireSymbolProvide, ReturnInComputedProperty,
+    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
 };
 
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
@@ -256,6 +250,8 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         fixable: false,
         presets: OPINIONATED_SCRIPT_PRESETS,
         rule: &NoArrowFunctionsInWatch,
+    },
+    BuiltinScriptRuleEntry {
         rule_name: RULE_RETURN_IN_COMPUTED_PROPERTY,
         profile_name: "patina.script_rule.return_in_computed_property",
         category: "Script",
