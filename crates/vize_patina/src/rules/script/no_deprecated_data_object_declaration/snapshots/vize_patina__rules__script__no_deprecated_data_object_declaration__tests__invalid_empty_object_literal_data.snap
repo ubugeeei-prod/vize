@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-deprecated-data-object-declaration",
+        severity: Error,
+        message: "Object declaration on `data` is deprecated. Use a function that returns the object instead.",
+        start: 26,
+        end: 28,
+        help: Some(
+            "Vue 3 requires the component `data` option to be a function so each instance gets a fresh state object. Wrap the object in a function, e.g. `data() { return { count: 0 } }`.",
+        ),
+        labels: [
+            Label {
+                message: "`data` is declared as an object literal",
+                start: 26,
+                end: 28,
+            },
+        ],
+        fix: None,
+    },
+]
