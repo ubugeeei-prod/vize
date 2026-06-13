@@ -69,6 +69,13 @@ impl ScriptRule for NoTopLevelRefInScript {
         &META
     }
 
+    // Top-level state in `<script setup>` is fresh per component instance, so it
+    // is the idiomatic pattern there and must not be flagged. Only plain
+    // `<script>` (module scope) leaks reactive state across SSR requests.
+    fn runs_on_script_setup(&self) -> bool {
+        false
+    }
+
     fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
         let bytes = source.as_bytes();
 
