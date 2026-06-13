@@ -1,4 +1,3 @@
-
 use super::ReturnInComputedProperty;
 use crate::rules::script::{ScriptLintResult, ScriptLinter};
 
