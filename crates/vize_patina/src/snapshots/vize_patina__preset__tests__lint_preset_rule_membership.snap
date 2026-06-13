@@ -556,6 +556,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-deprecated-events-api",
     "script/component-options-name-casing",
     "script/require-prop-type-constructor",
+    "script/define-macros-order",
     "script/no-use-computed-property-like-method"
   ]
 }
