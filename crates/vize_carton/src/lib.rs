@@ -49,6 +49,7 @@ pub mod flags;
 pub mod general;
 pub mod hash;
 pub mod i18n;
+mod i18n_supplemental;
 pub mod line_index;
 pub mod lsp;
 pub mod profiler;

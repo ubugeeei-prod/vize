@@ -278,11 +278,11 @@ static GLOBAL_TRANSLATOR: Lazy<Translator> = Lazy::new(|| {
         FxHashMap::default(),
     ];
 
-    // Load embedded translations
+    // Load embedded translations (JSON + Rust-side supplemental entries)
     load_json(&mut messages[0], include_str!("i18n/en.json"));
     load_json(&mut messages[1], include_str!("i18n/ja.json"));
     load_json(&mut messages[2], include_str!("i18n/zh.json"));
-
+    crate::i18n_supplemental::register(&mut messages);
     Translator { messages }
 });
 
