@@ -10,6 +10,27 @@ deprecation contract that backs the entries below.
 
 ## [Unreleased]
 
+## [0.212.0] - 2026-06-13
+
+### Added
+
+- Add the project relationship map and developer source architecture guide (#1604, #1606)
+
+### Changed
+
+- Clarify atelier transform pipeline naming and VDOM/analyzer terminology (#1602, #1607, #1612, #1614)
+- Ban wildcard Rust imports and enforce the rule through linting (#1610)
+
+### Fixed
+
+- Populate Musea inline art props controls and keep Vue type versions user-selectable (#1608, #1611)
+- Preserve Vue component option statics in Canon output (#1615)
+- Isolate Musea example cargo targets for docs and CI (#1603, #1619)
+
+### Performance
+
+- Report compile cache counters and avoid defineComponent return expansion (#1617)
+
 ## [0.211.0] - 2026-06-13
 
 ### Fixed
