@@ -79,6 +79,11 @@ impl TemplateBlockCompileResult {
     pub(crate) fn source_map_fragment(&self) -> Option<&str> {
         self.maps.source_map()
     }
+
+    pub(crate) fn source_map_json(&self) -> Option<serde_json::Value> {
+        self.source_map_fragment()
+            .and_then(|fragment| serde_json::from_str(fragment).ok())
+    }
 }
 
 /// Compile template block

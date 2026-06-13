@@ -1,5 +1,6 @@
 use super::{TemplateBlockCompileContext, compile_template_block};
-use crate::types::{BlockLocation, SfcTemplateBlock, TemplateCompileOptions};
+use crate::types::{BlockLocation, SfcCompileOptions, SfcTemplateBlock, TemplateCompileOptions};
+use crate::{SfcParseOptions, compile_sfc, parse_sfc};
 use std::borrow::Cow;
 
 fn template_block(source: &str) -> SfcTemplateBlock<'_> {
@@ -72,4 +73,41 @@ fn dom_template_carries_source_map_fragment_without_changing_code() {
 
     assert_eq!(parsed["version"], 3);
     assert_eq!(parsed["sources"][0], "template.vue");
+}
+
+#[test]
+fn template_only_sfc_surfaces_template_source_map_when_requested() {
+    let source = "<template><div>hi</div></template>";
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("SFC should parse");
+    let with_map = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            template: TemplateCompileOptions {
+                compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
+                    source_map: true,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    )
+    .expect("template-only SFC should compile");
+    let without_map =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("SFC should compile");
+
+    assert_eq!(
+        with_map.code, without_map.code,
+        "requesting an SFC source map must not change generated code"
+    );
+    assert!(
+        without_map.map.is_none(),
+        "SFC source maps should remain absent by default"
+    );
+
+    let map = with_map
+        .map
+        .expect("template-only SFC should surface a map");
+    assert_eq!(map["version"], 3);
+    assert_eq!(map["sources"][0], "template.vue");
 }

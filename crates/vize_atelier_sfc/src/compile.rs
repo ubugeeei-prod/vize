@@ -322,9 +322,9 @@ fn compile_sfc_inner(
     let has_script = descriptor.script.is_some();
     let has_template = descriptor.template.is_some();
 
-    // Case 1: Template only - just output render function
     if !has_script && !has_script_setup && has_template {
         let template = descriptor.template.as_ref().unwrap();
+        let map;
         let template_result = if is_vapor {
             profile!(
                 "atelier.sfc.template.vapor",
@@ -338,7 +338,6 @@ fn compile_sfc_inner(
                 )
             )
         } else {
-            // Enable hoisting for template-only SFCs (hoisted consts go at module level)
             let mut template_opts = options.template.clone();
             let mut dom_opts = template_opts.compiler_options.take().unwrap_or_default();
             dom_opts.hoist_static = true;
@@ -368,6 +367,7 @@ fn compile_sfc_inner(
 
         match template_result {
             Ok(template_output) => {
+                map = template_output.source_map_json();
                 warnings.extend(template_output.warnings);
                 code = template_output.code;
                 if is_vapor {
@@ -409,7 +409,7 @@ fn compile_sfc_inner(
         return Ok(SfcCompileResult {
             code,
             css,
-            map: None,
+            map,
             errors,
             warnings,
             bindings: None,
