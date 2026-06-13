@@ -97,10 +97,10 @@ enum Reservation {
 
 /// Classify a member name as reserved, if it is.
 fn reservation_for(name: &str) -> Option<Reservation> {
-    if let Some(first) = name.chars().next() {
-        if first == '$' || first == '_' {
-            return Some(Reservation::Prefix(first));
-        }
+    if let Some(first) = name.chars().next()
+        && (first == '$' || first == '_')
+    {
+        return Some(Reservation::Prefix(first));
     }
     if RESERVED_INSTANCE_NAMES.contains(&name) {
         return Some(Reservation::BuiltIn);
