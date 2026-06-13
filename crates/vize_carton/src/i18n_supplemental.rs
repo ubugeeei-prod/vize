@@ -248,4 +248,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。",
         "请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。",
     ),
+    // html/no-duplicate-class
+    (
+        "html/no-duplicate-class.description",
+        "Disallow duplicate class names in a static class attribute",
+        "静的なclass属性内で重複したクラス名を禁止する",
+        "禁止在静态 class 属性中出现重复的类名",
+    ),
+    (
+        "html/no-duplicate-class.message",
+        "Duplicate class name '{name}'",
+        "クラス名 '{name}' が重複しています",
+        "类名 '{name}' 重复",
+    ),
+    (
+        "html/no-duplicate-class.help",
+        "Remove the duplicate occurrence so each class name appears only once in the class attribute.",
+        "重複しているクラス名を削除し、各クラス名がclass属性内で一度だけ現れるようにしてください。",
+        "请删除重复出现的类名，使每个类名在 class 属性中只出现一次。",
+    ),
 ];
