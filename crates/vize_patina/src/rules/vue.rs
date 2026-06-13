@@ -13,6 +13,9 @@
 mod attribute_hyphenation;
 mod attribute_order;
 mod no_child_content;
+mod no_deprecated_scope_attribute;
+mod no_deprecated_slot_attribute;
+mod no_deprecated_slot_scope_attribute;
 mod no_deprecated_v_bind_sync;
 mod no_deprecated_v_on_native_modifier;
 mod no_dupe_v_else_if;
@@ -76,6 +79,9 @@ mod single_style_block;
 pub use crate::rules::opinionated::vue::MultiWordComponentNames;
 pub use crate::rules::opinionated::vue::UseVOnExact;
 pub use no_child_content::NoChildContent;
+pub use no_deprecated_scope_attribute::NoDeprecatedScopeAttribute;
+pub use no_deprecated_slot_attribute::NoDeprecatedSlotAttribute;
+pub use no_deprecated_slot_scope_attribute::NoDeprecatedSlotScopeAttribute;
 pub use no_deprecated_v_bind_sync::NoDeprecatedVBindSync;
 pub use no_deprecated_v_on_native_modifier::NoDeprecatedVOnNativeModifier;
 pub use no_dupe_v_else_if::NoDupeVElseIf;
@@ -165,5 +171,14 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-deprecated-v-bind-sync") {
         registry.register(Box::new(NoDeprecatedVBindSync));
+    }
+    if !registry.has_rule("vue/no-deprecated-slot-attribute") {
+        registry.register(Box::new(NoDeprecatedSlotAttribute));
+    }
+    if !registry.has_rule("vue/no-deprecated-slot-scope-attribute") {
+        registry.register(Box::new(NoDeprecatedSlotScopeAttribute));
+    }
+    if !registry.has_rule("vue/no-deprecated-scope-attribute") {
+        registry.register(Box::new(NoDeprecatedScopeAttribute));
     }
 }

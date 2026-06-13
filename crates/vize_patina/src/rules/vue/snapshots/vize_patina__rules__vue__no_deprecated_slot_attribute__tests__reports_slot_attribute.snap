@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-deprecated-slot-attribute",
+        severity: Error,
+        message: "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+        start: 15,
+        end: 28,
+        help: Some(
+            "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
