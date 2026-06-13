@@ -80,6 +80,7 @@ export const LINT_RULE_NAMES = [
   "script/no-deprecated-events-api",
   "script/no-deprecated-props-default-this",
   "script/no-dupe-keys",
+  "script/no-duplicate-attr-inheritance",
   "script/no-export-in-script-setup",
   "script/no-get-current-instance",
   "script/no-import-compiler-macros",
