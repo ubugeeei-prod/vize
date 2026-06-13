@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_multiple_slot_args/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-multiple-slot-args",
+        severity: Warning,
+        message: "Unexpected spread argument passed to a scoped-slot function.",
+        start: 0,
+        end: 22,
+        help: Some(
+            "A slot function forwards a single \"slot props\" value, so a spread may leak extra values. Pass one object instead, e.g. `slots.default({ ... })`.",
+        ),
+        labels: [
+            Label {
+                message: "a slot receives a single slot-props value",
+                start: 0,
+                end: 22,
+            },
+        ],
+        fix: None,
+    },
+]

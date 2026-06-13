@@ -84,6 +84,7 @@ export const LINT_RULE_NAMES = [
   "script/no-get-current-instance",
   "script/no-import-compiler-macros",
   "script/no-internal-imports",
+  "script/no-multiple-slot-args",
   "script/no-next-tick",
   "script/no-options-api",
   "script/no-potential-component-option-typo",
