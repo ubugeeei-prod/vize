@@ -49,6 +49,7 @@ pub(crate) const RULE_NO_DEPRECATED_EVENTS_API: &str = "script/no-deprecated-eve
 pub(crate) const RULE_COMPONENT_OPTIONS_NAME_CASING: &str = "script/component-options-name-casing";
 pub(crate) const RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR: &str = "script/require-prop-type-constructor";
 pub(crate) const RULE_DEFINE_MACROS_ORDER: &str = "script/define-macros-order";
+pub(crate) const RULE_DEFINE_EMITS_DECLARATION: &str = "script/define-emits-declaration";
 pub(crate) const RULE_NO_REQUIRED_PROP_WITH_DEFAULT: &str = "script/no-required-prop-with-default";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
@@ -89,6 +90,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_COMPONENT_OPTIONS_NAME_CASING,
     RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
     RULE_DEFINE_MACROS_ORDER,
+    RULE_DEFINE_EMITS_DECLARATION,
     RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
 ];
 
@@ -128,5 +130,6 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_COMPONENT_OPTIONS_NAME_CASING,
     RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
     RULE_DEFINE_MACROS_ORDER,
+    RULE_DEFINE_EMITS_DECLARATION,
     RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
 ];

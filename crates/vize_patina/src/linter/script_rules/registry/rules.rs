@@ -3,8 +3,8 @@
 //! rules at the end of their category and mirror the addition in `names.rs`.
 
 use super::names::{
-    RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_DEFINE_MACROS_ORDER, RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
-    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
+    RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_DEFINE_EMITS_DECLARATION, RULE_DEFINE_MACROS_ORDER,
+    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
     RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
     RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API, RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DUPE_KEYS,
     RULE_NO_EXPORT_IN_SCRIPT_SETUP, RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS,
@@ -24,6 +24,17 @@ use super::{
     OPT_IN_SCRIPT_PRESETS,
 };
 use crate::rules::script::{
+    ComponentOptionsNameCasing, DefineEmitsDeclaration, DefineMacrosOrder, NoArrowFunctionsInWatch,
+    NoAsyncInComputed, NoDeepDestructureInProps, NoDeprecatedDataObjectDeclaration,
+    NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi,
+    NoDupeKeys, NoExportInScriptSetup, NoGetCurrentInstance, NoImportCompilerMacros,
+    NoInternalImports, NoNextTick, NoOptionsApi, NoPotentialComponentOptionTypo,
+    NoReactiveDestructure, NoReservedIdentifiers, NoReservedKeys, NoSideEffectsInComputed,
+    NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed,
+    PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots,
+    PreferUseTemplateRef, RequireFunctionReturnType, RequirePropTypeConstructor,
+    RequireSymbolProvide, ReturnInComputedProperty, VueRouterPreferNamedPush,
+    VueTestUtilsNoHtmlSnapshot,
     ComponentOptionsNameCasing, DefineMacrosOrder, NoArrowFunctionsInWatch, NoAsyncInComputed,
     NoDeepDestructureInProps, NoDeprecatedDataObjectDeclaration, NoDeprecatedDollarListenersApi,
     NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi, NoDupeKeys, NoExportInScriptSetup,
@@ -339,6 +350,12 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         rule: &DefineMacrosOrder,
     },
     BuiltinScriptRuleEntry {
+        rule_name: RULE_DEFINE_EMITS_DECLARATION,
+        profile_name: "patina.script_rule.define_emits_declaration",
+        category: "Script",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &DefineEmitsDeclaration,
         rule_name: RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
         profile_name: "patina.script_rule.no_required_prop_with_default",
         category: "Script",
