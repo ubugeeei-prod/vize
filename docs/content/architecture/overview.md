@@ -8,6 +8,55 @@ title: Architecture
 
 Vize is built as a modular Rust workspace where each crate handles a specific concern. The architecture follows a pipeline model, transforming Vue SFC source code through parsing, analysis, and compilation stages.
 
+## Project Relationship Map
+
+The repository is organized like a studio: user-facing surfaces enter through JavaScript packages,
+the shared Rust core shapes Vue source, and specialized tools reuse the same parser and semantic
+model rather than each keeping a private copy of the language.
+
+```mermaid
+graph TD
+    App["Vue apps<br/>real projects"] --> Vite["@vizejs/vite-plugin"]
+    App --> Nuxt["@vizejs/nuxt"]
+    App --> Cli["vize CLI"]
+    Editor["Editors"] --> Maestro["vize_maestro<br/>LSP"]
+    Browser["Playground & docs"] --> Wasm["@vizejs/wasm"]
+    MuseaUi["Musea gallery"] --> MuseaPkg["@vizejs/vite-plugin-musea"]
+    Oxlint["Oxlint"] --> OxlintPkg["oxlint-plugin-vize"]
+
+    Vite --> Vitrine["vize_vitrine<br/>NAPI bridge"]
+    Nuxt --> Vitrine
+    Wasm --> Vitrine
+    MuseaPkg --> Vitrine
+    OxlintPkg --> Vitrine
+    Cli --> Core["Rust workspace"]
+    Vitrine --> Core
+
+    Core --> Armature["vize_armature<br/>parser"]
+    Armature --> Relief["vize_relief<br/>AST"]
+    Relief --> Croquis["vize_croquis<br/>semantic sketch"]
+    Croquis --> Atelier["Atelier compilers"]
+    Atelier --> Dom["vize_atelier_dom"]
+    Atelier --> Vapor["vize_atelier_vapor"]
+    Atelier --> Ssr["vize_atelier_ssr"]
+    Atelier --> Sfc["vize_atelier_sfc"]
+
+    Croquis --> Canon["vize_canon<br/>type checking"]
+    Croquis --> Patina["vize_patina<br/>linting"]
+    Relief --> Glyph["vize_glyph<br/>formatting"]
+    Croquis --> Maestro
+    Relief --> Musea["vize_musea<br/>gallery core"]
+
+    Oxc["OXC"] --> Croquis
+    Corsa["corsa-bind"] --> Canon
+    Corsa --> Maestro
+    Lightning["Lightning CSS"] --> Sfc
+```
+
+This relationship map is about ownership and reuse, not every call edge. The important invariant is
+that parser, AST, and semantic analysis stay shared, while the compiler backends and developer tools
+remain replaceable workshops around that shared language model.
+
 ## Pipeline
 
 ```mermaid
