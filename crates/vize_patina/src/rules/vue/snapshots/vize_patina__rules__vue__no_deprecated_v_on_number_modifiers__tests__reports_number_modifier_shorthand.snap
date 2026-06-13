@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-deprecated-v-on-number-modifiers",
+        severity: Error,
+        message: "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+        start: 14,
+        end: 16,
+        help: Some(
+            "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
