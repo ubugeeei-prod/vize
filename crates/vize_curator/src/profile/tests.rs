@@ -81,6 +81,30 @@ fn profile_report_snapshot() {
     let counters = CounterSummary {
         entries: vec![
             CounterEntry {
+                name: "cache.stats_compile.hits",
+                samples: 1,
+                total: 7,
+                average: 7.0,
+                min: 7,
+                max: 7,
+            },
+            CounterEntry {
+                name: "cache.stats_compile.misses",
+                samples: 1,
+                total: 3,
+                average: 3.0,
+                min: 3,
+                max: 3,
+            },
+            CounterEntry {
+                name: "cache.stats_compile.stores",
+                samples: 1,
+                total: 3,
+                average: 3.0,
+                min: 3,
+                max: 3,
+            },
+            CounterEntry {
                 name: "io.read.bytes",
                 samples: 1,
                 total: 2048,

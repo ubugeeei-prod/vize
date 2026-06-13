@@ -30,6 +30,12 @@ expression: render_profile_report(&report)
   dealloc                  35      48.00 KiB         0  [90mreleased layouts[0m
   net delta        n/a             32.00 KiB         0  profile-window requested minus released
 
+[1mStats compile cache[0m
+[90m  counter                                samples    total        avg         min         max[0m
+  cache.stats_compile.hits                     1           7         7.0           7           7
+  cache.stats_compile.misses                   1           3         3.0           3           3
+  cache.stats_compile.stores                   1           3         3.0           3           3
+
 [1mI/O counters[0m
 [90m  counter                                samples    total        avg         min         max[0m
   io.read.bytes                                1     2.00 KiB        2.00 KiB     2.00 KiB     2.00 KiB

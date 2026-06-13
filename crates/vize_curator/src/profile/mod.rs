@@ -93,6 +93,12 @@ pub fn render_profile_report(report: &ProfileReport<'_>) -> String {
 
     render_strict_audit(&mut out, report);
     render_allocation_table(&mut out, report);
+    render_counter_table(
+        &mut out,
+        report,
+        "Stats compile cache",
+        "cache.stats_compile.",
+    );
     render_counter_table(&mut out, report, "I/O counters", "io.");
     render_counter_table(&mut out, report, "System calls", "syscall.");
     render_phase_table(&mut out, report);

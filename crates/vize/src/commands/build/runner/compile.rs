@@ -85,6 +85,7 @@ pub(super) fn compile_file_stats_with_cache(
             .map(|entries| entries.get(&key).cloned())
             .unwrap_or(None)
     {
+        global_profiler().record_counter("cache.stats_compile.hits", 1);
         return match entry {
             StatsCompileCacheEntry::Success {
                 output_bytes,
@@ -111,6 +112,9 @@ pub(super) fn compile_file_stats_with_cache(
             }),
         };
     }
+    if cache_key.is_some() {
+        global_profiler().record_counter("cache.stats_compile.misses", 1);
+    }
 
     let parse_start = Instant::now();
     let parse_opts = SfcParseOptions {
@@ -123,12 +127,13 @@ pub(super) fn compile_file_stats_with_cache(
             if let Some(key) = cache_key
                 && let Ok(mut entries) = cache.entries.lock()
             {
-                entries
-                    .entry(key)
-                    .or_insert_with(|| StatsCompileCacheEntry::Failure {
+                entries.entry(key).or_insert_with(|| {
+                    global_profiler().record_counter("cache.stats_compile.stores", 1);
+                    StatsCompileCacheEntry::Failure {
                         phase: ErrorPhase::Parse,
                         message: error.message.clone(),
-                    });
+                    }
+                });
             }
             return Err(CompileError {
                 path: path.clone(),
@@ -199,12 +204,13 @@ pub(super) fn compile_file_stats_with_cache(
             if let Some(key) = cache_key
                 && let Ok(mut entries) = cache.entries.lock()
             {
-                entries
-                    .entry(key)
-                    .or_insert_with(|| StatsCompileCacheEntry::Failure {
+                entries.entry(key).or_insert_with(|| {
+                    global_profiler().record_counter("cache.stats_compile.stores", 1);
+                    StatsCompileCacheEntry::Failure {
                         phase: ErrorPhase::Compile,
                         message: error.message.clone(),
-                    });
+                    }
+                });
             }
             return Err(CompileError {
                 path: path.clone(),
@@ -222,14 +228,15 @@ pub(super) fn compile_file_stats_with_cache(
     if let Some(key) = cache_key
         && let Ok(mut entries) = cache.entries.lock()
     {
-        entries
-            .entry(key)
-            .or_insert_with(|| StatsCompileCacheEntry::Success {
+        entries.entry(key).or_insert_with(|| {
+            global_profiler().record_counter("cache.stats_compile.stores", 1);
+            StatsCompileCacheEntry::Success {
                 output_bytes,
                 template_size,
                 script_size,
                 style_count,
-            });
+            }
+        });
     }
 
     Ok((
