@@ -111,6 +111,7 @@ export const LINT_RULE_NAMES = [
   "script/require-prop-types",
   "script/require-symbol-provide",
   "script/require-typed-ref",
+  "script/require-valid-default-prop",
   "script/return-in-computed-property",
   "script/return-in-emits-validator",
   "script/valid-define-options",
