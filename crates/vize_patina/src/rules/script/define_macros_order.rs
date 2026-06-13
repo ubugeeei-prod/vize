@@ -119,11 +119,7 @@ struct MacroOccurrence {
 /// canonical order. We compare every macro against the maximum rank seen so far:
 /// a macro whose rank is *strictly less* than an earlier macro's rank is out of
 /// order (e.g. `defineProps` (rank 2) appearing after `defineEmits` (rank 3)).
-fn report_out_of_order(
-    macros: &[MacroOccurrence],
-    offset: usize,
-    result: &mut ScriptLintResult,
-) {
+fn report_out_of_order(macros: &[MacroOccurrence], offset: usize, result: &mut ScriptLintResult) {
     let mut max_rank_so_far = macros[0].rank;
     for occurrence in &macros[1..] {
         if occurrence.rank < max_rank_so_far {
@@ -196,12 +192,7 @@ fn macro_occurrence(statement: &Statement<'_>) -> Option<(usize, Span)> {
             // reporting on the whole declaration statement.
             decl.declarations
                 .iter()
-                .find_map(|declarator| {
-                    declarator
-                        .init
-                        .as_ref()
-                        .and_then(macro_rank_of_expression)
-                })
+                .find_map(|declarator| declarator.init.as_ref().and_then(macro_rank_of_expression))
                 .map(|rank| (rank, decl.span))
         }
         _ => None,
