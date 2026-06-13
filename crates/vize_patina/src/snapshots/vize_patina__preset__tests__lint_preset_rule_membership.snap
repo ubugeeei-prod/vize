@@ -529,6 +529,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-symbol-provide",
     "script/require-function-return-type",
     "script/no-dupe-keys",
-    "script/no-side-effects-in-computed-properties"
+    "script/no-side-effects-in-computed-properties",
+    "script/no-export-in-script-setup"
   ]
 }

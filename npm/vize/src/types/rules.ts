@@ -67,6 +67,7 @@ export const LINT_RULE_NAMES = [
   "script/no-async-in-computed",
   "script/no-deep-destructure-in-props",
   "script/no-dupe-keys",
+  "script/no-export-in-script-setup",
   "script/no-get-current-instance",
   "script/no-import-compiler-macros",
   "script/no-internal-imports",
