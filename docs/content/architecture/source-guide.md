@@ -13,14 +13,14 @@ diagram, then use this guide to find the implementation files that own a behavio
 Vize keeps most product behavior in the Rust workspace, with JavaScript packages acting as
 distribution and integration layers.
 
-| Path | What lives there |
-| ---- | ---------------- |
+| Path      | What lives there                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------- |
 | `crates/` | Rust crates for parsing, analysis, compilation, linting, formatting, type checking, LSP, CLI, and native bindings |
-| `npm/` | JavaScript packages for Vite, Nuxt, editor extensions, Musea integrations, and published package wrappers |
-| `docs/` | User documentation, architecture notes, release notes, and the docs site theme |
-| `tests/` | Cross-package fixtures, real-world projects, tooling tests, and snapshot governance |
-| `bench/` | Performance comparison scripts and PR benchmark budget enforcement |
-| `tools/` | Repository automation that is not part of the shipped product |
+| `npm/`    | JavaScript packages for Vite, Nuxt, editor extensions, Musea integrations, and published package wrappers         |
+| `docs/`   | User documentation, architecture notes, release notes, and the docs site theme                                    |
+| `tests/`  | Cross-package fixtures, real-world projects, tooling tests, and snapshot governance                               |
+| `bench/`  | Performance comparison scripts and PR benchmark budget enforcement                                                |
+| `tools/`  | Repository automation that is not part of the shipped product                                                     |
 
 When a change crosses directories, the owner is usually the layer that creates the user-visible
 behavior. For example, a compiler output change belongs in `crates/`, even when the repro comes from
@@ -46,35 +46,35 @@ add only the behavior it owns.
 
 ## Crate Entry Points
 
-| Change area | Start here | Then check |
-| ----------- | ---------- | ---------- |
-| Template parsing | `crates/vize_armature/src/lib.rs` | parser fixtures and expected AST snapshots |
-| AST shape and compiler options | `crates/vize_relief/src/lib.rs` | downstream compiler, lint, and formatter callers |
-| Template semantics | `crates/vize_croquis/src/lib.rs` | scope, binding, reactivity, and virtual TypeScript helpers |
-| Shared compiler behavior | `crates/vize_atelier_core/src/lib.rs` | backend-specific atelier crates |
-| Client template output | `crates/vize_atelier_dom/src/lib.rs` | generated code snapshots and runtime fixture tests |
-| Vapor output | `crates/vize_atelier_vapor/src/lib.rs` | Vapor-specific rules and real-world fixture output |
-| SSR output | `crates/vize_atelier_ssr/src/lib.rs` | SSR snapshots, escaping, and hydration behavior |
-| SFC orchestration | `crates/vize_atelier_sfc/src/lib.rs` | script, template, style, HMR, and source-map paths |
-| Lint rules | `crates/vize_patina/src/lib.rs` | rule snapshots and localized diagnostics |
-| Type checking | `crates/vize_canon/src/lib.rs` | generated virtual TS and `corsa-bind` diagnostics |
-| LSP behavior | `crates/vize_maestro/src/lib.rs` | server handlers, virtual documents, and editor smoke tests |
-| Formatting | `crates/vize_glyph/src/lib.rs` | golden formatting snapshots |
-| Native and WASM bindings | `crates/vize_vitrine/src/lib.rs` | npm package wrappers and generated type declarations |
-| CLI behavior | `crates/vize/src/main.rs` | command modules, snapshots, and build/check/lint integration tests |
+| Change area                    | Start here                             | Then check                                                         |
+| ------------------------------ | -------------------------------------- | ------------------------------------------------------------------ |
+| Template parsing               | `crates/vize_armature/src/lib.rs`      | parser fixtures and expected AST snapshots                         |
+| AST shape and compiler options | `crates/vize_relief/src/lib.rs`        | downstream compiler, lint, and formatter callers                   |
+| Template semantics             | `crates/vize_croquis/src/lib.rs`       | scope, binding, reactivity, and virtual TypeScript helpers         |
+| Shared compiler behavior       | `crates/vize_atelier_core/src/lib.rs`  | backend-specific atelier crates                                    |
+| Client template output         | `crates/vize_atelier_dom/src/lib.rs`   | generated code snapshots and runtime fixture tests                 |
+| Vapor output                   | `crates/vize_atelier_vapor/src/lib.rs` | Vapor-specific rules and real-world fixture output                 |
+| SSR output                     | `crates/vize_atelier_ssr/src/lib.rs`   | SSR snapshots, escaping, and hydration behavior                    |
+| SFC orchestration              | `crates/vize_atelier_sfc/src/lib.rs`   | script, template, style, HMR, and source-map paths                 |
+| Lint rules                     | `crates/vize_patina/src/lib.rs`        | rule snapshots and localized diagnostics                           |
+| Type checking                  | `crates/vize_canon/src/lib.rs`         | generated virtual TS and `corsa-bind` diagnostics                  |
+| LSP behavior                   | `crates/vize_maestro/src/lib.rs`       | server handlers, virtual documents, and editor smoke tests         |
+| Formatting                     | `crates/vize_glyph/src/lib.rs`         | golden formatting snapshots                                        |
+| Native and WASM bindings       | `crates/vize_vitrine/src/lib.rs`       | npm package wrappers and generated type declarations               |
+| CLI behavior                   | `crates/vize/src/main.rs`              | command modules, snapshots, and build/check/lint integration tests |
 
 Prefer following the public crate entry point first. Many crates have compact `lib.rs` modules that
 re-export the internal modules a contributor is expected to touch.
 
 ## JavaScript Package Entry Points
 
-| Package | Source entry | Rust boundary |
-| ------- | ------------ | ------------- |
-| `@vizejs/vite-plugin` | `npm/vite-plugin-vize/src/index.ts` | `@vizejs/native` through `vize_vitrine` |
-| `@vizejs/nuxt` | `npm/nuxt/src/index.ts` | Vite plugin options and component integration |
-| `@vizejs/wasm` | generated package around `vize_vitrine` WASM exports | `crates/vize_vitrine/src/wasm` |
-| `@vizejs/vite-plugin-musea` | `npm/musea-nuxt/src/index.ts` and related package code | `vize_musea` APIs exposed through bindings |
-| `oxlint-plugin-vize` | `npm/oxlint-plugin-vize/src/index.ts` | `vize_patina` diagnostics through bindings |
+| Package                     | Source entry                                           | Rust boundary                                 |
+| --------------------------- | ------------------------------------------------------ | --------------------------------------------- |
+| `@vizejs/vite-plugin`       | `npm/vite-plugin-vize/src/index.ts`                    | `@vizejs/native` through `vize_vitrine`       |
+| `@vizejs/nuxt`              | `npm/nuxt/src/index.ts`                                | Vite plugin options and component integration |
+| `@vizejs/wasm`              | generated package around `vize_vitrine` WASM exports   | `crates/vize_vitrine/src/wasm`                |
+| `@vizejs/vite-plugin-musea` | `npm/musea-nuxt/src/index.ts` and related package code | `vize_musea` APIs exposed through bindings    |
+| `oxlint-plugin-vize`        | `npm/oxlint-plugin-vize/src/index.ts`                  | `vize_patina` diagnostics through bindings    |
 
 Use package tests for integration wiring, but keep language semantics in Rust tests. The package
 layer should mostly prove that options, virtual modules, HMR, and native calls are connected.
