@@ -50,8 +50,8 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, ArrowFunctionExpression, BindingPattern, CallExpression,
-    ExportDefaultDeclarationKind, Expression, ObjectExpression, ObjectProperty, ObjectPropertyKind,
-    Program, PropertyKey, Statement,
+    ExportDefaultDeclarationKind, Expression, ObjectExpression, ObjectPropertyKind, Program,
+    PropertyKey, Statement,
 };
 use oxc_span::Span;
 use vize_carton::FxHashMap;
