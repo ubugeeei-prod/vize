@@ -122,11 +122,7 @@ fn branch_kind(el: &ElementNode) -> BranchKind {
         if let PropNode::Directive(dir) = prop {
             match dir.name.as_str() {
                 "if" => {
-                    let negated = dir
-                        .exp
-                        .as_ref()
-                        .map(expression_is_negated)
-                        .unwrap_or(false);
+                    let negated = dir.exp.as_ref().map(expression_is_negated).unwrap_or(false);
                     return BranchKind::If {
                         negated,
                         loc: dir.loc.clone(),
@@ -174,10 +170,8 @@ mod tests {
     #[test]
     fn reports_negated_v_if_with_v_else() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div v-if="!ok">A</div><div v-else>B</div>"#,
-            "App.vue",
-        );
+        let result =
+            linter.lint_template(r#"<div v-if="!ok">A</div><div v-else>B</div>"#, "App.vue");
         assert_eq!(result.warning_count, 1);
     }
 
@@ -194,8 +188,7 @@ mod tests {
     #[test]
     fn allows_negated_v_if_without_v_else() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<div v-if="!ok">A</div>"#, "App.vue");
+        let result = linter.lint_template(r#"<div v-if="!ok">A</div>"#, "App.vue");
         assert_eq!(result.warning_count, 0);
     }
 
@@ -212,10 +205,8 @@ mod tests {
     #[test]
     fn allows_plain_v_if_with_v_else() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div v-if="ok">A</div><div v-else>B</div>"#,
-            "App.vue",
-        );
+        let result =
+            linter.lint_template(r#"<div v-if="ok">A</div><div v-else>B</div>"#, "App.vue");
         assert_eq!(result.warning_count, 0);
     }
 
@@ -252,8 +243,7 @@ mod tests {
     #[test]
     fn dangling_v_else_does_not_panic() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<div v-else>B</div>"#, "App.vue");
+        let result = linter.lint_template(r#"<div v-else>B</div>"#, "App.vue");
         assert_eq!(result.warning_count, 0);
     }
 }
