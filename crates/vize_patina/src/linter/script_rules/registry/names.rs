@@ -28,6 +28,7 @@ pub(crate) const RULE_NO_DEEP_DESTRUCTURE_IN_PROPS: &str = "script/no-deep-destr
 pub(crate) const RULE_NO_INTERNAL_IMPORTS: &str = "script/no-internal-imports";
 pub(crate) const RULE_NO_IMPORT_COMPILER_MACROS: &str = "script/no-import-compiler-macros";
 pub(crate) const RULE_NO_RESERVED_IDENTIFIERS: &str = "script/no-reserved-identifiers";
+pub(crate) const RULE_NO_RESERVED_KEYS: &str = "script/no-reserved-keys";
 pub(crate) const RULE_REQUIRE_SYMBOL_PROVIDE: &str = "script/require-symbol-provide";
 pub(crate) const RULE_REQUIRE_FUNCTION_RETURN_TYPE: &str = "script/require-function-return-type";
 pub(crate) const RULE_NO_DUPE_KEYS: &str = "script/no-dupe-keys";
@@ -46,6 +47,7 @@ pub(crate) const RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION: &str =
     "script/no-deprecated-data-object-declaration";
 pub(crate) const RULE_NO_DEPRECATED_EVENTS_API: &str = "script/no-deprecated-events-api";
 pub(crate) const RULE_COMPONENT_OPTIONS_NAME_CASING: &str = "script/component-options-name-casing";
+pub(crate) const RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR: &str = "script/require-prop-type-constructor";
 pub(crate) const RULE_DEFINE_EMITS_DECLARATION: &str = "script/define-emits-declaration";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
@@ -70,6 +72,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_INTERNAL_IMPORTS,
     RULE_NO_IMPORT_COMPILER_MACROS,
     RULE_NO_RESERVED_IDENTIFIERS,
+    RULE_NO_RESERVED_KEYS,
     RULE_REQUIRE_SYMBOL_PROVIDE,
     RULE_REQUIRE_FUNCTION_RETURN_TYPE,
     RULE_NO_DUPE_KEYS,
@@ -83,6 +86,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
     RULE_NO_DEPRECATED_EVENTS_API,
     RULE_COMPONENT_OPTIONS_NAME_CASING,
+    RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
     RULE_DEFINE_EMITS_DECLARATION,
 ];
 
@@ -106,6 +110,7 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_INTERNAL_IMPORTS,
     RULE_NO_IMPORT_COMPILER_MACROS,
     RULE_NO_RESERVED_IDENTIFIERS,
+    RULE_NO_RESERVED_KEYS,
     RULE_REQUIRE_SYMBOL_PROVIDE,
     RULE_REQUIRE_FUNCTION_RETURN_TYPE,
     RULE_NO_DUPE_KEYS,
@@ -119,5 +124,6 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
     RULE_NO_DEPRECATED_EVENTS_API,
     RULE_COMPONENT_OPTIONS_NAME_CASING,
+    RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
     RULE_DEFINE_EMITS_DECLARATION,
 ];

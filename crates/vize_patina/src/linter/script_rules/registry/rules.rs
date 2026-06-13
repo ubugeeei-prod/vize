@@ -16,13 +16,13 @@ use super::names::{
     RULE_NO_EXPORT_IN_SCRIPT_SETUP, RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS,
     RULE_NO_INTERNAL_IMPORTS, RULE_NO_NEXT_TICK, RULE_NO_OPTIONS_API,
     RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REACTIVE_DESTRUCTURE,
-    RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
+    RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
     RULE_NO_TOP_LEVEL_REF_IN_SCRIPT, RULE_NO_WITH_DEFAULTS, RULE_PINIA_PREFER_STORE_TO_REFS,
     RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE,
     RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,
-    RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_SYMBOL_PROVIDE,
-    RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
+    RULE_REQUIRE_SYMBOL_PROVIDE, RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 use super::{
     BuiltinScriptRuleEntry, ECOSYSTEM_SCRIPT_PRESETS, OPINIONATED_SCRIPT_PRESETS,
@@ -33,11 +33,12 @@ use crate::rules::script::{
     NoDeepDestructureInProps, NoDeprecatedDataObjectDeclaration, NoDeprecatedDollarListenersApi,
     NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi, NoDupeKeys, NoExportInScriptSetup,
     NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi,
-    NoPotentialComponentOptionTypo, NoReactiveDestructure, NoReservedIdentifiers,
+    NoPotentialComponentOptionTypo, NoReactiveDestructure, NoReservedIdentifiers, NoReservedKeys,
     NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs,
     PreferComputed, PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId,
-    PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType, RequireSymbolProvide,
-    ReturnInComputedProperty, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
+    PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType, RequirePropTypeConstructor,
+    RequireSymbolProvide, ReturnInComputedProperty, VueRouterPreferNamedPush,
+    VueTestUtilsNoHtmlSnapshot,
 };
 
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
@@ -218,6 +219,14 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         rule: &NoReservedIdentifiers,
     },
     BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_RESERVED_KEYS,
+        profile_name: "patina.script_rule.no_reserved_keys",
+        category: "Script",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &NoReservedKeys,
+    },
+    BuiltinScriptRuleEntry {
         rule_name: RULE_REQUIRE_SYMBOL_PROVIDE,
         profile_name: "patina.script_rule.require_symbol_provide",
         category: "Script",
@@ -320,6 +329,14 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         fixable: false,
         presets: OPINIONATED_SCRIPT_PRESETS,
         rule: &ComponentOptionsNameCasing,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
+        profile_name: "patina.script_rule.require_prop_type_constructor",
+        category: "Script",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &RequirePropTypeConstructor,
     },
     BuiltinScriptRuleEntry {
         rule_name: RULE_DEFINE_EMITS_DECLARATION,
