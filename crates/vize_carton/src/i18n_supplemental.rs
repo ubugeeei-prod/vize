@@ -6,7 +6,6 @@
 //! were introduced after that baseline register their translations here and
 //! the `i18n` module merges them into the global translator at startup.
 
-mod no_empty_component_block;
 
 use rustc_hash::FxHashMap;
 
@@ -21,7 +20,7 @@ pub(crate) fn register(messages: &mut [MessageMap; 3]) {
         messages[1].insert(key, ja);
         messages[2].insert(key, zh);
     }
-    no_empty_component_block::register(messages);
+    crate::i18n_supplemental_extra::register(messages);
 }
 
 /// Supplemental translation entries: `(key, en, ja, zh)`.
