@@ -343,23 +343,4 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "数値 keyCode 修飾子を名前付きキーに置き換えてください（例: @keyup.13 ではなく @keyup.enter）。",
         "请将数字 keyCode 修饰符替换为具名按键（例如用 @keyup.enter 代替 @keyup.13）。",
     ),
-    // vue/no-root-v-if
-    (
-        "vue/no-root-v-if.description",
-        "Disallow v-if on the single root element of a template",
-        "テンプレートの唯一のルート要素への v-if を禁止する",
-        "禁止在模板的唯一根元素上使用 v-if",
-    ),
-    (
-        "vue/no-root-v-if.message",
-        "v-if on the single root element can make the whole component render nothing",
-        "唯一のルート要素への v-if は、コンポーネント全体が何も描画しなくなる可能性があります",
-        "在唯一根元素上使用 v-if 可能导致整个组件不渲染任何内容",
-    ),
-    (
-        "vue/no-root-v-if.help",
-        "Wrap the content in an always-present root element, or use v-show instead of v-if.",
-        "内容を常に存在するルート要素で囲むか、v-if の代わりに v-show を使用してください。",
-        "请将内容包裹在始终存在的根元素中，或使用 v-show 代替 v-if。",
-    ),
 ];

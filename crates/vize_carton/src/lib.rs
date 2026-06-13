@@ -50,6 +50,7 @@ pub mod general;
 pub mod hash;
 pub mod i18n;
 mod i18n_supplemental;
+mod i18n_supplemental_extra;
 pub mod line_index;
 pub mod lsp;
 pub mod profiler;
