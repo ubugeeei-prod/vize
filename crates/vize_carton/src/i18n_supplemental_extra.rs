@@ -174,4 +174,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "オブジェクトを1つにまとめてください。例: :class=\"[{ a }, { b }]\" は :class=\"{ a, b }\" になります。",
         "请将这些对象合并为一个，例如 :class=\"[{ a }, { b }]\" 改为 :class=\"{ a, b }\"。",
     ),
+    // vue/valid-template-root
+    (
+        "vue/valid-template-root.description",
+        "Enforce a valid `<template>` root for Vue 3 fragment semantics",
+        "Vue 3のフラグメントセマンティクスに対して有効な `<template>` ルートを強制する",
+        "强制 `<template>` 根符合 Vue 3 的片段语义",
+    ),
+    (
+        "vue/valid-template-root.disallowed_root",
+        "`<{tag}>` cannot be used as a root node of the template",
+        "`<{tag}>` はテンプレートのルートノードとして使用できません",
+        "`<{tag}>` 不能用作模板的根节点",
+    ),
+    (
+        "vue/valid-template-root.help",
+        "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node.",
+        "<template> や <slot> をルートノードとして使わず、内容を実要素（例: <div>）で囲んでください。",
+        "请用真实的根元素（例如 <div>）包裹内容，而不要把 <template> 或 <slot> 作为根节点。",
+    ),
 ];

@@ -197,6 +197,7 @@ export const LINT_RULE_NAMES = [
   "vue/v-on-style",
   "vue/v-slot-style",
   "vue/valid-attribute-name",
+  "vue/valid-template-root",
   "vue/valid-v-bind",
   "vue/valid-v-cloak",
   "vue/valid-v-else",

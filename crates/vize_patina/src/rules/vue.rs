@@ -35,6 +35,7 @@ mod require_component_is;
 mod require_scoped_style;
 mod require_v_for_key;
 mod valid_attribute_name;
+mod valid_template_root;
 mod valid_v_bind;
 mod valid_v_cloak;
 mod valid_v_else;
@@ -108,6 +109,7 @@ pub use no_v_text_v_html_on_component::NoVTextVHtmlOnComponent;
 pub use require_component_is::RequireComponentIs;
 pub use require_v_for_key::RequireVForKey;
 pub use valid_attribute_name::ValidAttributeName;
+pub use valid_template_root::ValidTemplateRoot;
 pub use valid_v_bind::ValidVBind;
 pub use valid_v_cloak::ValidVCloak;
 pub use valid_v_else::ValidVElse;
@@ -188,6 +190,7 @@ pub(crate) fn register_valid_directives(registry: &mut crate::rule::RuleRegistry
     registry.register(Box::new(ValidVOnce));
     registry.register(Box::new(ValidVText));
     registry.register(Box::new(ValidVHtml));
+    registry.register(Box::new(ValidTemplateRoot));
 }
 
 /// Register Vue migration rules as explicit opt-in rules.

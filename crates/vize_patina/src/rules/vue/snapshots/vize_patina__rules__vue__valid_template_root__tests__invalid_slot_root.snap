@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/valid_template_root.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/valid-template-root",
+        severity: Error,
+        message: "`<slot>` cannot be used as a root node of the template",
+        start: 0,
+        end: 8,
+        help: Some(
+            "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
