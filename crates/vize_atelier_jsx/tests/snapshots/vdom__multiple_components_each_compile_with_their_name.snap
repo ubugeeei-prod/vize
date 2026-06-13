@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_jsx/tests/dom.rs
+source: crates/vize_atelier_jsx/tests/vdom.rs
 expression: "format!(\"## component 0 preamble\\n{}## component 0 code\\n{}\\n\\n## component 1 preamble\\n{}## component 1 code\\n{}\",\nout.components[0].preamble, out.components[0].code,\nout.components[1].preamble, out.components[1].code)"
 ---
 ## component 0 preamble

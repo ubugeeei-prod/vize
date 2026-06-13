@@ -30,7 +30,6 @@
 
 pub mod compile;
 pub mod diagnostics;
-pub mod dom;
 pub mod lang;
 pub mod lower;
 pub mod mode;
@@ -38,6 +37,7 @@ pub mod parse;
 pub mod scoped;
 pub mod span;
 pub mod vapor;
+pub mod vdom;
 
 mod analyze;
 mod finder;
@@ -51,9 +51,6 @@ use vize_relief::RootNode;
 
 pub use compile::{JsxCompileConfig, JsxCompileOutput, JsxComponent, compile_jsx, resolve_mode};
 pub use diagnostics::{JsxDiagnostic, Severity};
-#[allow(deprecated)]
-pub use dom::{DomCompileOptions, DomComponent, DomOutput, compile_to_dom};
-pub use dom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
 pub use lang::JsxLang;
 pub use lower::Lowerer;
 pub use mode::JsxOutputMode;
@@ -61,6 +58,7 @@ pub use parse::{ParsedModule, parse_module};
 pub use scoped::ScopedStyle;
 pub use span::SpanMapper;
 pub use vapor::{VaporCompileOptions, VaporComponent, VaporOutput, compile_to_vapor};
+pub use vdom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
 
 /// A single lowered render root plus the component metadata recovered from its
 /// enclosing function.

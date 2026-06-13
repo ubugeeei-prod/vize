@@ -177,25 +177,6 @@ pub(crate) fn compile_root_to_vdom(
     }
 }
 
-#[deprecated(note = "use VdomCompileOptions")]
-pub type DomCompileOptions = VdomCompileOptions;
-
-#[deprecated(note = "use VdomComponent")]
-pub type DomComponent = VdomComponent;
-
-#[deprecated(note = "use VdomOutput")]
-pub type DomOutput = VdomOutput;
-
-#[deprecated(note = "use compile_to_vdom")]
-pub fn compile_to_dom(
-    bump: &Bump,
-    source: &str,
-    lang: JsxLang,
-    options: VdomCompileOptions,
-) -> VdomOutput {
-    compile_to_vdom(bump, source, lang, options)
-}
-
 fn compiler_error_to_diagnostic(error: &CompilerError) -> JsxDiagnostic {
     let (start, end) = error
         .loc
