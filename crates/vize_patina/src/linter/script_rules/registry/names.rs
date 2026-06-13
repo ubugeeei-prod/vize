@@ -34,6 +34,7 @@ pub(crate) const RULE_NO_DUPE_KEYS: &str = "script/no-dupe-keys";
 pub(crate) const RULE_NO_SIDE_EFFECTS_IN_COMPUTED: &str =
     "script/no-side-effects-in-computed-properties";
 pub(crate) const RULE_NO_ARROW_FUNCTIONS_IN_WATCH: &str = "script/no-arrow-functions-in-watch";
+pub(crate) const RULE_NO_EXPORT_IN_SCRIPT_SETUP: &str = "script/no-export-in-script-setup";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -62,6 +63,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_DUPE_KEYS,
     RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
     RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
+    RULE_NO_EXPORT_IN_SCRIPT_SETUP,
 ];
 
 #[cfg(test)]
@@ -89,4 +91,5 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_DUPE_KEYS,
     RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
     RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
+    RULE_NO_EXPORT_IN_SCRIPT_SETUP,
 ];
