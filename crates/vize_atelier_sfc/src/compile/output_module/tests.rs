@@ -1,5 +1,7 @@
 use super::*;
 use vize_atelier_core::codegen::{CodegenResult, CodegenSections};
+use vize_atelier_core::rendu::RenduChunk;
+use vize_atelier_core::source_atlas::SourceAtlasTarget;
 
 #[test]
 fn dom_codegen_sections_are_ranges_into_flattened_output() {
@@ -76,4 +78,27 @@ fn ssr_codegen_uses_the_same_flattening_boundary() {
         &code[sections.functions.start..sections.functions.end],
         functions
     );
+}
+
+#[test]
+fn output_module_exposes_borrowed_rendu_plate() {
+    let output = OutputModule {
+        imports: String::from("import { h } from \"vue\"\n"),
+        hoists: String::from("const _hoisted_1 = null\n"),
+        functions: String::from("function render() {\n  return null\n}"),
+        exports: String::from("export default _sfc_main\n"),
+        sections: None,
+        maps: AtelierOutputMaps::from_source_map(Some(String::from("{\"version\":3}"))),
+    };
+
+    let plate = output.as_rendu_plate(SourceAtlasTarget::Dom);
+
+    assert_eq!(plate.target, SourceAtlasTarget::Dom);
+    assert_eq!(plate.chunk(RenduChunk::Imports), output.imports.as_str());
+    assert_eq!(
+        plate.chunk(RenduChunk::Functions),
+        output.functions.as_str()
+    );
+    assert_eq!(plate.source_map, Some("{\"version\":3}"));
+    assert_eq!(plate.module_sections, output.module_sections());
 }

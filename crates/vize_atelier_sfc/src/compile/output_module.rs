@@ -1,29 +1,15 @@
 //! Shared SFC render output assembly.
 
 use crate::types::{CssModuleMapping, css_modules_object_literal};
-use vize_atelier_core::codegen::CodegenResultWithSections;
+use vize_atelier_core::{
+    codegen::CodegenResultWithSections,
+    rendu::{RenduModuleSections, RenduPlate, RenduRange, RenduRenderSections},
+    source_atlas::SourceAtlasTarget,
+};
 use vize_atelier_ssr::SsrCodegenResult;
 use vize_carton::{String, ToCompactString};
 
-/// Byte range in the flattened Atelier output.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub(crate) struct OutputRange {
-    pub(crate) start: usize,
-    pub(crate) end: usize,
-}
-
-impl OutputRange {
-    pub(crate) const fn new(start: usize, end: usize) -> Self {
-        Self { start, end }
-    }
-
-    pub(crate) const fn empty(offset: usize) -> Self {
-        Self {
-            start: offset,
-            end: offset,
-        }
-    }
-}
+pub(crate) type OutputRange = RenduRange;
 
 /// Structural sections of a rendered Atelier module before inline SFC assembly.
 ///
@@ -31,47 +17,7 @@ impl OutputRange {
 /// [`OutputModule::into_code`]. This is the first SFC-side shape of the
 /// proposed `AtelierOutput`: consumers can slice known sections without
 /// scanning generated JavaScript again.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub(crate) struct AtelierOutputSections {
-    /// `import { ... } from "vue"` line(s), trailing newline included.
-    pub(crate) imports: OutputRange,
-    /// Hoisted module-level declarations, one per line.
-    pub(crate) hoisted: OutputRange,
-    /// Component/directive resolution statements inside the render function.
-    pub(crate) assets: OutputRange,
-    /// The root `return` expression of the render function.
-    pub(crate) return_expr: OutputRange,
-}
-
-impl AtelierOutputSections {
-    pub(crate) fn from_dom_codegen(
-        imports_len: usize,
-        preamble_len: usize,
-        function_base_offset: usize,
-        assets: (usize, usize),
-        return_expr: (usize, usize),
-    ) -> Self {
-        Self {
-            imports: OutputRange::new(0, imports_len),
-            hoisted: if preamble_len > imports_len {
-                // DOM codegen inserts one blank-line separator between helper
-                // imports and hoists. Keep the public hoisted section focused
-                // on declarations, matching the legacy line scanner.
-                OutputRange::new(imports_len + 1, preamble_len)
-            } else {
-                OutputRange::empty(preamble_len)
-            },
-            assets: OutputRange::new(
-                function_base_offset + assets.0,
-                function_base_offset + assets.1,
-            ),
-            return_expr: OutputRange::new(
-                function_base_offset + return_expr.0,
-                function_base_offset + return_expr.1,
-            ),
-        }
-    }
-}
+pub(crate) type AtelierOutputSections = RenduRenderSections;
 
 /// Source maps carried with structured Atelier output.
 ///
@@ -97,13 +43,7 @@ impl AtelierOutputMaps {
 /// These ranges describe the chunks owned by [`OutputModule`] itself. Target
 /// Ateliers can layer finer sections, such as DOM render assets and return
 /// expressions, on top of these chunk boundaries.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub(crate) struct AtelierModuleSections {
-    pub(crate) imports: OutputRange,
-    pub(crate) hoists: OutputRange,
-    pub(crate) functions: OutputRange,
-    pub(crate) exports: OutputRange,
-}
+pub(crate) type AtelierModuleSections = RenduModuleSections;
 
 /// The render function a generated SFC component should expose.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -190,19 +130,25 @@ impl OutputModule {
     }
 
     pub(crate) fn module_sections(&self) -> AtelierModuleSections {
-        let imports = OutputRange::new(0, self.imports.len());
-        let hoists = OutputRange::new(imports.end, imports.end + self.hoists.len());
-        let functions_start = hoists.end + 1;
-        let functions = OutputRange::new(functions_start, functions_start + self.functions.len());
-        let exports_start = functions.end + 1;
-        let exports = OutputRange::new(exports_start, exports_start + self.exports.len());
+        AtelierModuleSections::from_chunk_lengths(
+            self.imports.len(),
+            self.hoists.len(),
+            self.functions.len(),
+            self.exports.len(),
+        )
+    }
 
-        AtelierModuleSections {
-            imports,
-            hoists,
-            functions,
-            exports,
-        }
+    #[allow(dead_code)]
+    pub(crate) fn as_rendu_plate(&self, target: SourceAtlasTarget) -> RenduPlate<'_> {
+        RenduPlate::new(
+            target,
+            self.imports.as_str(),
+            self.hoists.as_str(),
+            self.functions.as_str(),
+            self.exports.as_str(),
+        )
+        .with_render_sections(self.sections)
+        .with_source_map(self.maps.source_map())
     }
 
     pub(crate) fn into_code(self) -> String {

@@ -12,6 +12,8 @@
 //! that all other Vize compilers build upon.
 
 pub mod codegen;
+#[doc(hidden)]
+pub mod rendu;
 pub mod runtime_helpers;
 #[doc(hidden)]
 pub mod source_atlas;
