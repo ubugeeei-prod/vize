@@ -331,6 +331,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-negated-v-if-condition",
     "vue/prefer-true-attribute-shorthand",
     "vue/v-on-event-hyphenation",
+    "vue/this-in-template",
     "vapor/no-inline-template",
     "vapor/prefer-static-class",
     "vapor/require-vapor-attribute",
@@ -339,6 +340,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "a11y/placeholder-label-option",
     "a11y/use-list",
     "html/no-duplicate-class",
+    "html/no-dupe-style-properties",
     "type/no-floating-promises",
     "type/no-reactivity-loss",
     "type/no-unsafe-template-binding",
@@ -467,6 +469,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-negated-v-if-condition",
     "vue/prefer-true-attribute-shorthand",
     "vue/v-on-event-hyphenation",
+    "vue/this-in-template",
     "vue/require-component-registration",
     "vapor/no-inline-template",
     "vapor/prefer-static-class",
@@ -476,6 +479,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "a11y/placeholder-label-option",
     "a11y/use-list",
     "html/no-duplicate-class",
+    "html/no-dupe-style-properties",
     "type/no-floating-promises",
     "type/no-reactivity-loss",
     "type/no-unsafe-template-binding",
@@ -532,6 +536,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-function-return-type",
     "script/no-dupe-keys",
     "script/no-side-effects-in-computed-properties",
+    "script/no-arrow-functions-in-watch"
     "script/no-use-computed-property-like-method"
   ]
 }

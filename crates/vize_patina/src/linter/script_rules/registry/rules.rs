@@ -9,9 +9,9 @@
 //! addition in `names.rs`.
 
 use super::names::{
-    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, RULE_NO_DUPE_KEYS,
-    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS,
-    RULE_NO_NEXT_TICK, RULE_NO_OPTIONS_API, RULE_NO_REACTIVE_DESTRUCTURE,
+    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
+    RULE_NO_DUPE_KEYS, RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS,
+    RULE_NO_INTERNAL_IMPORTS, RULE_NO_NEXT_TICK, RULE_NO_OPTIONS_API, RULE_NO_REACTIVE_DESTRUCTURE,
     RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
     RULE_NO_TOP_LEVEL_REF_IN_SCRIPT, RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
     RULE_NO_WITH_DEFAULTS, RULE_PINIA_PREFER_STORE_TO_REFS,
@@ -25,6 +25,13 @@ use super::{
     OPT_IN_SCRIPT_PRESETS,
 };
 use crate::rules::script::{
+    NoArrowFunctionsInWatch, NoAsyncInComputed, NoDeepDestructureInProps, NoDupeKeys,
+    NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi,
+    NoReactiveDestructure, NoReservedIdentifiers, NoSideEffectsInComputed, NoTopLevelRefInScript,
+    NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed, PreferImportFromVue,
+    PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef,
+    RequireFunctionReturnType, RequireSymbolProvide, VueRouterPreferNamedPush,
+    VueTestUtilsNoHtmlSnapshot,
     NoAsyncInComputed, NoDeepDestructureInProps, NoDupeKeys, NoGetCurrentInstance,
     NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi, NoReactiveDestructure,
     NoReservedIdentifiers, NoSideEffectsInComputed, NoTopLevelRefInScript,
@@ -244,6 +251,12 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         rule: &NoSideEffectsInComputed,
     },
     BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
+        profile_name: "patina.script_rule.no_arrow_functions_in_watch",
+        category: "Script",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &NoArrowFunctionsInWatch,
         rule_name: RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
         profile_name: "patina.script_rule.no_use_computed_property_like_method",
         category: "Script",
