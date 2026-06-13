@@ -91,24 +91,27 @@ mod tests {
     #[test]
     fn reports_scope_attribute_on_template() {
         let linter = create_linter();
-        let result = linter
-            .lint_template(r#"<Foo><template scope="props">x</template></Foo>"#, "App.vue");
+        let result = linter.lint_template(
+            r#"<Foo><template scope="props">x</template></Foo>"#,
+            "App.vue",
+        );
         assert_eq!(result.error_count, 1);
     }
 
     #[test]
     fn allows_scope_on_th() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<table><th scope="col">Name</th></table>"#, "App.vue");
+        let result = linter.lint_template(r#"<table><th scope="col">Name</th></table>"#, "App.vue");
         assert_eq!(result.error_count, 0);
     }
 
     #[test]
     fn allows_v_slot() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<Foo><template v-slot="props">x</template></Foo>"#, "App.vue");
+        let result = linter.lint_template(
+            r#"<Foo><template v-slot="props">x</template></Foo>"#,
+            "App.vue",
+        );
         assert_eq!(result.error_count, 0);
     }
 }

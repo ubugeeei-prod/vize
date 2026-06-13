@@ -86,8 +86,10 @@ mod tests {
     #[test]
     fn reports_slot_attribute() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<Foo><template slot="header">x</template></Foo>"#, "App.vue");
+        let result = linter.lint_template(
+            r#"<Foo><template slot="header">x</template></Foo>"#,
+            "App.vue",
+        );
         assert_eq!(result.error_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
     }
@@ -95,8 +97,10 @@ mod tests {
     #[test]
     fn allows_v_slot() {
         let linter = create_linter();
-        let result = linter
-            .lint_template(r#"<Foo><template v-slot:header>x</template></Foo>"#, "App.vue");
+        let result = linter.lint_template(
+            r#"<Foo><template v-slot:header>x</template></Foo>"#,
+            "App.vue",
+        );
         assert_eq!(result.error_count, 0);
     }
 }
