@@ -161,6 +161,19 @@ pub use single_style_block::SingleStyleBlock;
 pub use crate::rules::opinionated::vue::WarnCustomBlock;
 pub use crate::rules::opinionated::vue::WarnCustomDirective;
 
+/// Register the `valid-v-*` directive-shape rules that every preset shares.
+///
+/// These check that built-in directives carry the expected expression,
+/// argument, and modifier shape (e.g. `v-cloak` takes none, `v-text` takes
+/// one). Bundling them here keeps the per-preset registration list short.
+pub(crate) fn register_valid_directives(registry: &mut crate::rule::RuleRegistry) {
+    registry.register(Box::new(ValidVMemo));
+    registry.register(Box::new(ValidVCloak));
+    registry.register(Box::new(ValidVOnce));
+    registry.register(Box::new(ValidVText));
+    registry.register(Box::new(ValidVHtml));
+}
+
 /// Register Vue migration rules as explicit opt-in rules.
 ///
 /// These flag deprecated Vue 2 template syntax that Vue 3 removed. They are
