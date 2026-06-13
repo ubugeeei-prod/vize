@@ -28,7 +28,7 @@ const Comp = () => (
 );
 "#;
 
-fn dom(src: &str, lang: JsxLang) -> vize_atelier_jsx::VdomComponent {
+fn vdom(src: &str, lang: JsxLang) -> vize_atelier_jsx::VdomComponent {
     let bump = Bump::new();
     let out = compile_to_vdom(&bump, src, lang, VdomCompileOptions::default());
     assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
@@ -44,7 +44,7 @@ fn vapor(src: &str) -> vize_atelier_jsx::VaporComponent {
     out.components.into_iter().next().unwrap()
 }
 
-fn dom_snapshot(component: &vize_atelier_jsx::VdomComponent) -> std::string::String {
+fn vdom_snapshot(component: &vize_atelier_jsx::VdomComponent) -> std::string::String {
     let mut snapshot = std::string::String::new();
     writeln!(snapshot, "## code").unwrap();
     snapshot.push_str(component.code.as_str());
@@ -82,9 +82,9 @@ fn vapor_snapshot(component: &vize_atelier_jsx::VaporComponent) -> std::string::
 
 #[test]
 fn vdom_scoped_style_snapshot() {
-    let component = dom(SCOPED, JsxLang::Jsx);
+    let component = vdom(SCOPED, JsxLang::Jsx);
 
-    insta::assert_snapshot!(dom_snapshot(&component));
+    insta::assert_snapshot!(vdom_snapshot(&component));
 }
 
 #[test]
@@ -96,10 +96,10 @@ fn vapor_scoped_style_snapshot() {
 
 #[test]
 fn vdom_without_scoped_style_snapshot() {
-    let component = dom(PLAIN, JsxLang::Jsx);
+    let component = vdom(PLAIN, JsxLang::Jsx);
 
     assert!(component.scoped_style.is_none());
-    insta::assert_snapshot!(dom_snapshot(&component));
+    insta::assert_snapshot!(vdom_snapshot(&component));
 }
 
 #[test]
@@ -111,8 +111,8 @@ fn vapor_without_scoped_style_snapshot() {
 }
 
 #[test]
-fn dom_and_vapor_agree_on_scope_id() {
-    let d = dom(SCOPED, JsxLang::Jsx);
+fn vdom_and_vapor_agree_on_scope_id() {
+    let d = vdom(SCOPED, JsxLang::Jsx);
     let v = vapor(SCOPED);
 
     assert_eq!(
@@ -167,7 +167,7 @@ fn static_scoped_style_has_no_interpolations() {
 #[test]
 fn non_scoped_style_element_still_renders() {
     let src = r#"const C = () => <div><style>{`.x{}`}</style></div>;"#;
-    let component = dom(src, JsxLang::Jsx);
+    let component = vdom(src, JsxLang::Jsx);
 
     assert!(component.scoped_style.is_none());
     insta::assert_snapshot!(component.code.as_str());
@@ -187,7 +187,7 @@ const Comp = (): any => (
   </>
 );
 "#;
-    let component = dom(src, JsxLang::Tsx);
+    let component = vdom(src, JsxLang::Tsx);
 
-    insta::assert_snapshot!(dom_snapshot(&component));
+    insta::assert_snapshot!(vdom_snapshot(&component));
 }

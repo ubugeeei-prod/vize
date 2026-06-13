@@ -2,7 +2,7 @@
 
 mod common;
 
-use common::{dom_code, snapshot_cases, vapor_code};
+use common::{snapshot_cases, vapor_code, vdom_code};
 use vize_atelier_jsx::{
     JsxLang, JsxOutputMode, VaporCompileOptions, VdomCompileOptions, compile_to_vapor,
     compile_to_vdom, lower_source,
@@ -28,7 +28,7 @@ fn tsx_vdom_codegen_matrix() {
     ];
 
     insta::assert_snapshot!(snapshot_cases(&cases, |source| {
-        dom_code(source, JsxLang::Tsx)
+        vdom_code(source, JsxLang::Tsx)
     }));
 }
 
@@ -58,7 +58,7 @@ fn tsx_type_annotation_is_an_error_when_parsed_as_plain_jsx() {
 }
 
 #[test]
-fn default_mode_is_vdom_for_dom_backend() {
+fn default_mode_is_vdom_for_vdom_backend() {
     let bump = Bump::new();
     let out = compile_to_vdom(
         &bump,

@@ -6,7 +6,7 @@
 
 mod common;
 
-use common::{dom_code, snapshot_lang_cases};
+use common::{snapshot_lang_cases, vdom_code};
 use vize_atelier_jsx::{JsxLang, JsxOutputMode, VdomCompileOptions, compile_to_vdom};
 use vize_carton::Bump;
 
@@ -63,7 +63,7 @@ fn vdom_codegen_matrix() {
         ),
     ];
 
-    insta::assert_snapshot!(snapshot_lang_cases(&cases, dom_code));
+    insta::assert_snapshot!(snapshot_lang_cases(&cases, vdom_code));
 }
 
 #[test]

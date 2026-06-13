@@ -1,6 +1,6 @@
 ---
 source: crates/vize_atelier_jsx/tests/dom.rs
-expression: "snapshot_lang_cases(&cases, dom_code)"
+expression: "snapshot_lang_cases(&cases, vdom_code)"
 ---
 ## single element
 ### lang

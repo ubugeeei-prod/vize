@@ -8,7 +8,7 @@
 
 mod common;
 
-use common::{as_directive, dom_code, lower_one, root_element, simple_content};
+use common::{as_directive, lower_one, root_element, simple_content, vdom_code};
 use vize_atelier_jsx::JsxLang;
 use vize_carton::Bump;
 
@@ -25,7 +25,7 @@ fn event_modifier_codegen_snapshot() {
     ];
 
     insta::assert_snapshot!(common::snapshot_cases(&cases, |source| {
-        dom_code(source, JsxLang::Jsx)
+        vdom_code(source, JsxLang::Jsx)
     }));
 }
 

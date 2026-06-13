@@ -5,7 +5,7 @@ expression: component_matrix(&out)
 ## component 0
 name: Some("App")
 mode: Vdom
-variant: dom
+variant: vdom
 code:
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div"))

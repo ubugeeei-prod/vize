@@ -19,7 +19,7 @@ export function render(_ctx) {
 ## component 1
 name: Some("B")
 mode: Vdom
-variant: dom
+variant: vdom
 code:
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("b"))

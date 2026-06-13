@@ -2,7 +2,7 @@
 
 mod common;
 
-use common::{dom_code, snapshot_cases};
+use common::{snapshot_cases, vdom_code};
 use vize_atelier_jsx::JsxLang;
 
 #[test]
@@ -125,6 +125,6 @@ fn vdom_parity_matrix_snapshot() {
     ];
 
     insta::assert_snapshot!(snapshot_cases(&cases, |source| {
-        dom_code(source, JsxLang::Jsx)
+        vdom_code(source, JsxLang::Jsx)
     }));
 }

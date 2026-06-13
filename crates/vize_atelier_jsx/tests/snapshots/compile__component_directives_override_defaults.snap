@@ -21,7 +21,7 @@ export function render(_ctx) {
 ## component 0
 name: Some("Slow")
 mode: Vdom
-variant: dom
+variant: vdom
 code:
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div"))

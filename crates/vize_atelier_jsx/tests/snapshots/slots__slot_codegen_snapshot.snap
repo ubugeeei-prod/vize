@@ -1,6 +1,6 @@
 ---
 source: crates/vize_atelier_jsx/tests/slots.rs
-expression: "common::snapshot_cases(&cases, |source|\n{ common::dom_code(source, JsxLang::Jsx) })"
+expression: "common::snapshot_cases(&cases, |source|\n{ common::vdom_code(source, JsxLang::Jsx) })"
 ---
 ## object child named slots
 ### source

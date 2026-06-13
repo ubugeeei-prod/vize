@@ -52,7 +52,7 @@ pub fn lower_all<'a>(bump: &'a Bump, source: &str) -> LowerOutput<'a> {
 }
 
 /// Compile one component to VDOM render code.
-pub fn dom_code(source: &str, lang: JsxLang) -> vize_carton::String {
+pub fn vdom_code(source: &str, lang: JsxLang) -> vize_carton::String {
     let bump = Bump::new();
     let out = compile_to_vdom(&bump, source, lang, VdomCompileOptions::default());
     assert!(

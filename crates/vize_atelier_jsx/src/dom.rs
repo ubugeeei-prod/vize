@@ -128,7 +128,7 @@ pub(crate) fn compile_root_to_vdom(
         component_name,
         scoped_css,
         // The style interpolation spans are consumed by the type checker
-        // (`vize_canon`), not the DOM scoping backend.
+        // (`vize_canon`), not the VDOM scoping backend.
         scoped_style_exprs: _,
     } = lowered;
 

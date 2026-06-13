@@ -2,7 +2,7 @@
 
 mod common;
 
-use common::{dom_code, snapshot_cases, vapor_code};
+use common::{snapshot_cases, vapor_code, vdom_code};
 use vize_atelier_jsx::JsxLang;
 
 #[test]
@@ -40,7 +40,7 @@ fn vdom_control_flow_matrix() {
     ];
 
     insta::assert_snapshot!(snapshot_cases(&cases, |source| {
-        dom_code(source, JsxLang::Jsx)
+        vdom_code(source, JsxLang::Jsx)
     }));
 }
 

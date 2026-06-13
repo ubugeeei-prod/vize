@@ -40,7 +40,7 @@ fn slot_codegen_snapshot() {
     ];
 
     insta::assert_snapshot!(common::snapshot_cases(&cases, |source| {
-        common::dom_code(source, JsxLang::Jsx)
+        common::vdom_code(source, JsxLang::Jsx)
     }));
 }
 
