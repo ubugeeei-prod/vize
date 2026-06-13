@@ -329,6 +329,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-useless-mustaches",
     "vue/no-useless-v-bind",
     "vue/no-negated-v-if-condition",
+    "vue/no-v-text",
     "vue/prefer-true-attribute-shorthand",
     "vue/v-on-event-hyphenation",
     "vue/this-in-template",
@@ -467,6 +468,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-useless-mustaches",
     "vue/no-useless-v-bind",
     "vue/no-negated-v-if-condition",
+    "vue/no-v-text",
     "vue/prefer-true-attribute-shorthand",
     "vue/v-on-event-hyphenation",
     "vue/this-in-template",
@@ -537,6 +539,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-dupe-keys",
     "script/no-side-effects-in-computed-properties",
     "script/no-arrow-functions-in-watch",
+    "script/no-export-in-script-setup"
     "script/no-use-computed-property-like-method"
   ]
 }
