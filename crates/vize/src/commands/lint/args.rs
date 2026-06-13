@@ -51,6 +51,10 @@ pub struct LintArgs {
     #[arg(long)]
     pub cross_file_tree: bool,
 
+    /// Enable native type-aware lint rules from the active lint configuration.
+    #[arg(long)]
+    pub type_aware: bool,
+
     /// Enable opt-in type-aware reactivity-loss linting through the native checker.
     #[arg(long)]
     pub strict_reactivity: bool,

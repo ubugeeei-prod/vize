@@ -1,7 +1,8 @@
+mod opt_in;
+
 use super::{
     RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS, RULE_NO_UNSAFE_TEMPLATE_BINDING,
-    RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS, has_active_type_aware_rules,
-    lint_sfc_with_corsa,
+    RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS, lint_sfc_with_corsa,
 };
 use crate::{LintPreset, Linter};
 
@@ -17,12 +18,6 @@ fn corsa_available() -> bool {
     }
     session.close();
     true
-}
-
-#[test]
-fn opinionated_preset_enables_native_type_aware_rules() {
-    let linter = Linter::with_preset(LintPreset::Opinionated);
-    assert!(has_active_type_aware_rules(&linter));
 }
 
 #[test]
@@ -1215,7 +1210,7 @@ fn type_aware_diagnostics_snapshot() {
         return;
     }
 
-    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let linter = Linter::with_preset(LintPreset::Opinionated).with_type_aware_lint(true);
     let source = r#"<script setup lang="ts">
 import { ref } from 'vue'
 defineProps(['msg'])

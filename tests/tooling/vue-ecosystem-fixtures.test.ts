@@ -76,6 +76,12 @@ function readRegistry(): FixtureRegistry {
   return readJsonFile<FixtureRegistry>(registryPath);
 }
 
+function readTestsPackage(): { scripts: Record<string, string> } {
+  return readJsonFile<{ scripts: Record<string, string> }>(
+    path.join(root, "tests", "package.json"),
+  );
+}
+
 function parseGitmodules(): Map<string, SubmoduleEntry> {
   const source = fs.readFileSync(path.join(root, ".gitmodules"), "utf8");
   const entries = new Map<string, SubmoduleEntry>();
@@ -179,6 +185,23 @@ test("every registry entry declares the requested tool coverage and diff mode", 
         `${project.id} should use curator compare diffing`,
       );
     }
+  }
+});
+
+test("new UI library fixtures are wired into Vize-wide check and lint lanes", () => {
+  const pkg = readTestsPackage();
+
+  for (const id of ["primevue", "vuetify", "naive-ui"]) {
+    assert.match(
+      pkg.scripts["test:check"],
+      new RegExp(`snapshots/check/${id}\\.ts`),
+      `${id} should run in the app check lane`,
+    );
+    assert.match(
+      pkg.scripts["test:lint"],
+      new RegExp(`snapshots/lint/${id}\\.ts`),
+      `${id} should run in the app lint lane`,
+    );
   }
 });
 

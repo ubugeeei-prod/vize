@@ -158,7 +158,7 @@ pub fn load_compiler_jsx_mode(path: Option<&Path>) -> Option<crate::config::JsxM
 /// parsing and normalizing the same config file twice.
 pub fn load_config_and_linter_with_source(path: Option<&Path>) -> (LoadedConfig, LinterConfig) {
     let loaded = load_raw_config_with_source(path);
-    let linter = loaded.config.linter.clone();
+    let linter = LinterConfig::from(loaded.config.linter.clone());
     let (config, _) = loaded.config.into_config_and_features();
     (
         LoadedConfig {
@@ -177,7 +177,7 @@ pub fn load_config_and_linter_with_features_and_source(
     path: Option<&Path>,
 ) -> (LoadedConfigWithFeatures, LinterConfig) {
     let loaded = load_raw_config_with_source(path);
-    let linter = loaded.config.linter.clone();
+    let linter = LinterConfig::from(loaded.config.linter.clone());
     let (config, features) = loaded.config.into_config_and_features();
     (
         LoadedConfigWithFeatures {
@@ -191,7 +191,7 @@ pub fn load_config_and_linter_with_features_and_source(
 
 /// Load linter-specific configuration from a directory or file path.
 pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
-    load_raw_config_with_source(path).config.linter
+    LinterConfig::from(load_raw_config_with_source(path).config.linter)
 }
 
 fn load_raw_config_with_source(path: Option<&Path>) -> LoadedRawConfig {

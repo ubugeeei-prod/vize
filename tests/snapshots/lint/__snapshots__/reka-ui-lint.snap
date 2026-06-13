@@ -1585,6 +1585,17 @@
     "file": "packages/core/src/Combobox/story/ComboboxCustom.story.vue",
     "messages": [
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 59,
+        "column": 17,
+        "endLine": 62,
+        "endColumn": 18,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1597,7 +1608,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxMultiple.story.vue",
@@ -5047,6 +5058,17 @@
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuAlignment.story.vue",
     "messages": [
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 50,
+        "column": 21,
+        "endLine": 55,
+        "endColumn": 22,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -5138,7 +5160,7 @@
       }
     ],
     "errorCount": 9,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuBasic.story.vue",
@@ -5327,6 +5349,17 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 53,
+        "column": 17,
+        "endLine": 58,
+        "endColumn": 18,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -5418,7 +5451,7 @@
       }
     ],
     "errorCount": 9,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/NavigationMenu/story/_NavigationMenuListItem.vue",
@@ -8710,9 +8743,21 @@
   },
   {
     "file": "packages/core/src/Toolbar/story/Toolbar.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 83,
+        "column": 9,
+        "endLine": 88,
+        "endColumn": 10,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toolbar/story/_Toolbar.vue",
@@ -8727,10 +8772,21 @@
         "endLine": 17,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 78,
+        "column": 5,
+        "endLine": 83,
+        "endColumn": 6,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Tooltip/TooltipArrow.vue",
