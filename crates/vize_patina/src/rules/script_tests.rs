@@ -1,4 +1,3 @@
-
 use super::ScriptLinter;
 
 #[test]
