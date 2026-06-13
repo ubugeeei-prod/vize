@@ -24,6 +24,7 @@
 mod no_arrow_functions_in_watch;
 mod no_async_in_computed;
 mod no_deep_destructure_in_props;
+mod no_deprecated_dollar_scopedslots_api;
 mod no_dupe_keys;
 mod no_get_current_instance;
 mod no_import_compiler_macros;
@@ -60,6 +61,7 @@ use vize_carton::profile;
 pub use no_arrow_functions_in_watch::NoArrowFunctionsInWatch;
 pub use no_async_in_computed::NoAsyncInComputed;
 pub use no_deep_destructure_in_props::NoDeepDestructureInProps;
+pub use no_deprecated_dollar_scopedslots_api::NoDeprecatedDollarScopedSlotsApi;
 pub use no_dupe_keys::NoDupeKeys;
 pub use no_get_current_instance::NoGetCurrentInstance;
 pub use no_import_compiler_macros::NoImportCompilerMacros;
