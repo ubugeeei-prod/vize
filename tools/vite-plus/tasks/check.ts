@@ -26,7 +26,7 @@ const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
 });
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
 const rustClippyCommand = "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports";
-const strictRepoCheckCommand = `node tools/vite-plus/check-warning-budget.mjs -- ${localVp} check`;
+const strictRepoCheckCommand = moonScript("check_warning_budget", "--", localVp, "check");
 const ciVizeAppCheckCommand = [
   runInDirectory(
     "./examples/vite-musea",
