@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/define_emits_declaration.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/define-emits-declaration",
+        severity: Warning,
+        message: "Prefer the type-based defineEmits<{}>() declaration over the runtime/array form",
+        start: 13,
+        end: 24,
+        help: Some(
+            "Use the type-based form: `const emit = defineEmits<{ change: [id: number] }>()`",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
