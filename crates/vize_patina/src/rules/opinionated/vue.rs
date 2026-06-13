@@ -1,4 +1,5 @@
 mod component_name_in_template_casing;
+mod html_button_has_type;
 mod html_self_closing;
 mod multi_word_component_names;
 mod no_boolean_attr_value;
@@ -23,6 +24,7 @@ mod warn_custom_directive;
 use crate::rule::RuleRegistry;
 
 pub use component_name_in_template_casing::ComponentNameInTemplateCasing;
+pub use html_button_has_type::HtmlButtonHasType;
 pub use html_self_closing::HtmlSelfClosing;
 pub use multi_word_component_names::MultiWordComponentNames;
 pub use no_boolean_attr_value::NoBooleanAttrValue;
@@ -60,6 +62,7 @@ fn register_shared(registry: &mut RuleRegistry) {
     registry.register(Box::new(NoTemplateShadow));
     registry.register(Box::new(VBindStyle::default()));
     registry.register(Box::new(HtmlSelfClosing));
+    registry.register(Box::new(HtmlButtonHasType));
     registry.register(Box::new(ScopedEventNames));
     registry.register(Box::new(PreferPropsShorthand));
 

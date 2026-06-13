@@ -204,4 +204,29 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "マスタッシュを素のテキストに置き換えてください（{{ 'x' }} は x になります）。",
         "请将该插值替换为纯文本（{{ 'x' }} 改为 x）。",
     ),
+    // vue/html-button-has-type
+    (
+        "vue/html-button-has-type.description",
+        "Require an explicit valid type on button elements",
+        "button要素に明示的で有効なtypeを必須にする",
+        "要求button元素具有明确且有效的type",
+    ),
+    (
+        "vue/html-button-has-type.missing",
+        "'<button>' is missing a 'type' attribute; add type=\"button\", \"submit\", or \"reset\"",
+        "'<button>' に 'type' 属性がありません。type=\"button\"、\"submit\"、\"reset\" のいずれかを追加してください",
+        "'<button>' 缺少 'type' 属性；请添加 type=\"button\"、\"submit\" 或 \"reset\"",
+    ),
+    (
+        "vue/html-button-has-type.invalid",
+        "'{type}' is not a valid 'type' for '<button>'; use \"button\", \"submit\", or \"reset\"",
+        "'{type}' は '<button>' の有効な 'type' ではありません。\"button\"、\"submit\"、\"reset\" のいずれかを使用してください",
+        "'{type}' 不是 '<button>' 的有效 'type'；请使用 \"button\"、\"submit\" 或 \"reset\"",
+    ),
+    (
+        "vue/html-button-has-type.help",
+        "A '<button>' defaults to type=\"submit\", which submits the enclosing form. Set an explicit type=\"button\", \"submit\", or \"reset\".",
+        "'<button>' の type は既定で \"submit\" となり、囲っているフォームを送信します。明示的に type=\"button\"、\"submit\"、\"reset\" のいずれかを指定してください。",
+        "'<button>' 的 type 默认为 \"submit\"，会提交其所在的表单。请显式设置 type=\"button\"、\"submit\" 或 \"reset\"。",
+    ),
 ];

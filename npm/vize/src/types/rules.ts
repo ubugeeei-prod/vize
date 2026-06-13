@@ -100,6 +100,7 @@ export const LINT_RULE_NAMES = [
   "vue/attribute-order",
   "vue/component-definition-name-casing",
   "vue/component-name-in-template-casing",
+  "vue/html-button-has-type",
   "vue/html-quotes",
   "vue/html-self-closing",
   "vue/multi-word-component-names",
