@@ -1,3 +1,8 @@
-use crate::rule::RuleRegistry;
+mod no_dupe_style_properties;
 
-pub(crate) fn register(_registry: &mut RuleRegistry) {}
+use crate::rule::RuleRegistry;
+use no_dupe_style_properties::NoDupeStyleProperties;
+
+pub(crate) fn register(registry: &mut RuleRegistry) {
+    registry.register(Box::new(NoDupeStyleProperties));
+}
