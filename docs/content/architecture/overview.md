@@ -95,6 +95,17 @@ as rescanning generated JavaScript for known sections, rather than adding anothe
 Patina and other linting paths should not pay to build render-only structures unless a rule
 explicitly needs render semantics.
 
+`AtelierProfile` is the observation layer around this work. It records cheap facts that an Atelier
+already knows while compiling: template and script size, style block count, target Atelier, stats
+cache decisions, and fallback reasons. These facts are reported through `--profile` and
+`vize_curator`; they are not public API and must not add measurable overhead to normal compiler or
+linter paths.
+
+`AtelierFallback` names cases where the preferred workshop cannot finish the piece and Vize uses a
+different path. The first tracked fallback is Vapor SSR, which currently records
+`atelier.fallback.vapor_ssr` when an SSR build requests Vapor and the SFC compiler falls back to
+standard SSR output.
+
 ## Tool Lanes
 
 Beyond compilation, Vize provides additional tools that reuse the same parsing and analysis infrastructure:
@@ -159,6 +170,8 @@ Vize crates are named after **art and sculpture terminology**, reflecting how ea
 | **Rendu**    | /ʁɑ̃.dy/      | Rendered appearance or final treatment of a work         | Internal render semantics before a target compiler finishes the output         |
 | **Atelier**  | /ˌætəlˈjeɪ/  | Artist's workshop where creation happens                 | Compiler workspaces — where code is transformed into its final form            |
 | **AtelierOutput** | — | The arranged work before it leaves the workshop | Structured compiler output before flattening to JavaScript |
+| **AtelierProfile** | — | Studio notes made while the work is in progress | Cheap compiler observations surfaced through profile reports |
+| **AtelierFallback** | — | A change of workshop when the preferred treatment cannot finish | Recorded reason for using a fallback compiler path |
 | **Vitrine**  | /vɪˈtriːn/   | Glass display case in a museum                           | Bindings — a transparent layer that exposes the compiler to external consumers |
 | **Canon**    | /ˈkænən/     | Standard of ideal proportions in classical sculpture     | Type checker — ensures code conforms to the standard of correctness            |
 | **Patina**   | /ˈpætɪnə/    | Aged surface finish that indicates quality and care      | Linter — polishes code by identifying issues that affect quality               |

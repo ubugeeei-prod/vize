@@ -52,6 +52,12 @@ Vize has a built-in **profiling mode**, so you can measure where time goes inste
 - The CLI has it too: `vize check --profile` runs the check through **vize_curator** and prints a
   per-phase profiling report. Use it to capture and share performance numbers from your own
   codebase.
+- `vize build --profile --format stats` is the preferred local view for compiler cost. Its report
+  includes Atelier profile facts, stats-cache decisions, and Atelier fallback counters without
+  changing generated JavaScript output.
+- Treat the profile as a sketch, not a contract: counter names are internal tuning signals, and
+  compiler or linter slowdowns should be verified through the GitHub Actions benchmark lanes before
+  merging hot-path changes.
 
 ## Offer Your Project as a Test Bed
 
