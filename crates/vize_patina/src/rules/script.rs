@@ -49,6 +49,7 @@ mod prefer_use_slots;
 mod prefer_use_template_ref;
 mod require_function_return_type;
 mod require_symbol_provide;
+mod return_in_computed_property;
 mod vue_router_prefer_named_push;
 mod vue_test_utils_no_html_snapshot;
 
@@ -89,6 +90,7 @@ pub use prefer_use_slots::PreferUseSlots;
 pub use prefer_use_template_ref::PreferUseTemplateRef;
 pub use require_function_return_type::RequireFunctionReturnType;
 pub use require_symbol_provide::RequireSymbolProvide;
+pub use return_in_computed_property::ReturnInComputedProperty;
 pub use vue_router_prefer_named_push::VueRouterPreferNamedPush;
 pub use vue_test_utils_no_html_snapshot::VueTestUtilsNoHtmlSnapshot;
 
