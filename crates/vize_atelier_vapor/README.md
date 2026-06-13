@@ -6,7 +6,7 @@
 
 - Vapor-specific IR generation
 - Code generation helpers for direct DOM-oriented updates
-- Shared parser and transform pipeline with the rest of the Vize compiler stack
+- Shared parser and pipeline with the rest of the Vize compiler stack
 
 ## Key Entry Points
 
@@ -17,7 +17,7 @@
 
 ## Related Crates
 
-- `vize_atelier_core` provides shared transforms and parser access
+- `vize_atelier_core` provides shared passes and parser access
 - `vize_atelier_sfc` delegates Vapor template compilation here
 - `vize_patina` includes Vapor-oriented lint rules that align with this backend
 
