@@ -155,4 +155,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "ブロックに意味のある内容を追加するか、ブロックごと削除してください。",
         "请为该块添加有意义的内容，或将其整体删除。",
     ),
+    // vue/no-multiple-objects-in-class
+    (
+        "vue/no-multiple-objects-in-class.description",
+        "Disallow multiple object literals inside a :class array binding",
+        ":class配列バインディング内の複数のオブジェクトリテラルを禁止する",
+        "禁止在:class数组绑定中使用多个对象字面量",
+    ),
+    (
+        "vue/no-multiple-objects-in-class.message",
+        "Multiple object literals in a :class array should be merged into a single object",
+        ":class配列内の複数のオブジェクトリテラルは1つのオブジェクトにまとめるべきです",
+        ":class数组中的多个对象字面量应合并为单个对象",
+    ),
+    (
+        "vue/no-multiple-objects-in-class.help",
+        "Merge the objects into one, e.g. :class=\"[{ a }, { b }]\" becomes :class=\"{ a, b }\".",
+        "オブジェクトを1つにまとめてください。例: :class=\"[{ a }, { b }]\" は :class=\"{ a, b }\" になります。",
+        "请将这些对象合并为一个，例如 :class=\"[{ a }, { b }]\" 改为 :class=\"{ a, b }\"。",
+    ),
 ];
