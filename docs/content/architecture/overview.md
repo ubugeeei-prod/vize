@@ -161,24 +161,24 @@ The gallery UI and dev-server integration for Musea live in the JavaScript packa
 
 Vize crates are named after **art and sculpture terminology**, reflecting how each component shapes and transforms Vue code. This naming system is more than aesthetic — it encodes the role and relationships between crates. See [Philosophy](../philosophy.md) for the full rationale.
 
-| Name         | Origin       | Art Analogy                                              | Technical Role                                                                 |
-| ------------ | ------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **Carton**   | /kɑːˈtɒn/    | Artist's portfolio case — stores and organizes tools     | Shared utilities — the foundational toolbox that every crate depends on        |
-| **Relief**   | /rɪˈliːf/    | Sculptural technique that projects from a flat surface   | The AST — a structured surface that gives shape to raw source code             |
-| **Armature** | /ˈɑːrmətʃər/ | Internal skeleton supporting a sculpture                 | The parser — the structural framework that supports the AST                    |
-| **Croquis**  | /kʁɔ.ki/     | Quick gestural sketch capturing the essence of a subject | Semantic analysis — a quick sketch that captures the meaning of code           |
-| **Rendu**    | /ʁɑ̃.dy/      | Rendered appearance or final treatment of a work         | Internal render semantics before a target compiler finishes the output         |
-| **Atelier**  | /ˌætəlˈjeɪ/  | Artist's workshop where creation happens                 | Compiler workspaces — where code is transformed into its final form            |
-| **AtelierOutput** | — | The arranged work before it leaves the workshop | Structured compiler output before flattening to JavaScript |
-| **AtelierProfile** | — | Studio notes made while the work is in progress | Cheap compiler observations surfaced through profile reports |
-| **AtelierFallback** | — | A change of workshop when the preferred treatment cannot finish | Recorded reason for using a fallback compiler path |
-| **Vitrine**  | /vɪˈtriːn/   | Glass display case in a museum                           | Bindings — a transparent layer that exposes the compiler to external consumers |
-| **Canon**    | /ˈkænən/     | Standard of ideal proportions in classical sculpture     | Type checker — ensures code conforms to the standard of correctness            |
-| **Patina**   | /ˈpætɪnə/    | Aged surface finish that indicates quality and care      | Linter — polishes code by identifying issues that affect quality               |
-| **Glyph**    | /ɡlɪf/       | Carved symbol or letterform with precise proportions     | Formatter — shapes code into consistent, readable letterforms                  |
-| **Maestro**  | /ˈmaɪstroʊ/  | Master conductor who orchestrates an ensemble            | LSP — orchestrates all language features into a unified editor experience      |
-| **Musea**    | /mjuːˈziːə/  | Plural of museum — a space for exhibiting art            | Component gallery — a space for exhibiting and exploring components            |
-| **Fresco**   | /ˈfrɛskoʊ/   | Painting technique applied to wet plaster walls          | TUI framework — painting interfaces onto the terminal surface                  |
+| Name                | Origin       | Art Analogy                                                     | Technical Role                                                                 |
+| ------------------- | ------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Carton**          | /kɑːˈtɒn/    | Artist's portfolio case — stores and organizes tools            | Shared utilities — the foundational toolbox that every crate depends on        |
+| **Relief**          | /rɪˈliːf/    | Sculptural technique that projects from a flat surface          | The AST — a structured surface that gives shape to raw source code             |
+| **Armature**        | /ˈɑːrmətʃər/ | Internal skeleton supporting a sculpture                        | The parser — the structural framework that supports the AST                    |
+| **Croquis**         | /kʁɔ.ki/     | Quick gestural sketch capturing the essence of a subject        | Semantic analysis — a quick sketch that captures the meaning of code           |
+| **Rendu**           | /ʁɑ̃.dy/      | Rendered appearance or final treatment of a work                | Internal render semantics before a target compiler finishes the output         |
+| **Atelier**         | /ˌætəlˈjeɪ/  | Artist's workshop where creation happens                        | Compiler workspaces — where code is transformed into its final form            |
+| **AtelierOutput**   | —            | The arranged work before it leaves the workshop                 | Structured compiler output before flattening to JavaScript                     |
+| **AtelierProfile**  | —            | Studio notes made while the work is in progress                 | Cheap compiler observations surfaced through profile reports                   |
+| **AtelierFallback** | —            | A change of workshop when the preferred treatment cannot finish | Recorded reason for using a fallback compiler path                             |
+| **Vitrine**         | /vɪˈtriːn/   | Glass display case in a museum                                  | Bindings — a transparent layer that exposes the compiler to external consumers |
+| **Canon**           | /ˈkænən/     | Standard of ideal proportions in classical sculpture            | Type checker — ensures code conforms to the standard of correctness            |
+| **Patina**          | /ˈpætɪnə/    | Aged surface finish that indicates quality and care             | Linter — polishes code by identifying issues that affect quality               |
+| **Glyph**           | /ɡlɪf/       | Carved symbol or letterform with precise proportions            | Formatter — shapes code into consistent, readable letterforms                  |
+| **Maestro**         | /ˈmaɪstroʊ/  | Master conductor who orchestrates an ensemble                   | LSP — orchestrates all language features into a unified editor experience      |
+| **Musea**           | /mjuːˈziːə/  | Plural of museum — a space for exhibiting art                   | Component gallery — a space for exhibiting and exploring components            |
+| **Fresco**          | /ˈfrɛskoʊ/   | Painting technique applied to wet plaster walls                 | TUI framework — painting interfaces onto the terminal surface                  |
 
 ### Why Art Terminology?
 
