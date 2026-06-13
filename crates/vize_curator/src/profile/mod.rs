@@ -111,6 +111,7 @@ pub fn render_profile_report(report: &ProfileReport<'_>) -> String {
         "Atelier profile facts",
         "atelier.profile.",
     );
+    render_counter_table(&mut out, report, "Atelier fallbacks", "atelier.fallback.");
     render_counter_table(&mut out, report, "I/O counters", "io.");
     render_counter_table(&mut out, report, "System calls", "syscall.");
     render_phase_table(&mut out, report);

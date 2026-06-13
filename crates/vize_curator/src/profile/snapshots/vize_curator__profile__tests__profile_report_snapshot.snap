@@ -48,6 +48,10 @@ expression: render_profile_report(&report)
   atelier.profile.style_blocks                 2           1         0.5           0           1
   atelier.profile.target.dom                   2           2         1.0           1           1
 
+[1mAtelier fallbacks[0m
+[90m  counter                                samples    total        avg         min         max[0m
+  atelier.fallback.vapor_ssr                   1           1         1.0           1           1
+
 [1mI/O counters[0m
 [90m  counter                                samples    total        avg         min         max[0m
   io.read.bytes                                1     2.00 KiB        2.00 KiB     2.00 KiB     2.00 KiB

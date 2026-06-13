@@ -70,6 +70,49 @@ fn build_stats_profile_reports_compile_cache_counters() {
 }
 
 #[test]
+fn build_profile_reports_atelier_fallback_counters() {
+    let project_root = temp_project_dir("atelier-fallback-counters");
+    write_project_file(
+        &project_root,
+        "src/App.vue",
+        r#"<template><div>{{ count }}</div></template>
+<script setup>
+const count = 1
+</script>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "build",
+            "--format",
+            "stats",
+            "--profile",
+            "--threads",
+            "1",
+            "--ssr",
+            "--vapor",
+            "src/App.vue",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("Atelier fallbacks"), "{stderr}");
+    assert!(stderr.contains("atelier.fallback.vapor_ssr"), "{stderr}");
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
 fn build_resolves_imported_base_interface_props_in_normal_script() {
     let project_root = temp_project_dir("imported-base-interface-props");
     write_project_file(

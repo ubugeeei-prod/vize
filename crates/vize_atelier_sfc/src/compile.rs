@@ -44,7 +44,7 @@ use self::styles::compile_styles;
 
 // Re-export ScriptCompileResult for public API
 pub use crate::compile_script::ScriptCompileResult;
-use vize_carton::{String, ToCompactString, cstr, profile};
+use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 
 fn create_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor) -> SfcError {
     SfcError {
@@ -306,6 +306,7 @@ fn compile_sfc_inner(
     // Vapor components currently render on the client. For SSR we fall back to
     // the standard VDOM compiler and let the client hydrate with Vapor output.
     if descriptor.template.is_some() && options.template.ssr && vapor_requested {
+        global_profiler().record_counter("atelier.fallback.vapor_ssr", 1);
         warnings.push(create_vapor_ssr_fallback_warning(descriptor));
     }
     let is_vapor = !options.template.ssr && vapor_requested;

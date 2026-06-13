@@ -153,6 +153,14 @@ fn profile_report_snapshot() {
                 max: 1,
             },
             CounterEntry {
+                name: "atelier.fallback.vapor_ssr",
+                samples: 1,
+                total: 1,
+                average: 1.0,
+                min: 1,
+                max: 1,
+            },
+            CounterEntry {
                 name: "io.read.bytes",
                 samples: 1,
                 total: 2048,
