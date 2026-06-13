@@ -19,6 +19,7 @@ mod no_deprecated_slot_attribute;
 mod no_deprecated_slot_scope_attribute;
 mod no_deprecated_v_bind_sync;
 mod no_deprecated_v_on_native_modifier;
+mod no_deprecated_v_on_number_modifiers;
 mod no_dupe_v_else_if;
 mod no_duplicate_attributes;
 mod no_reserved_component_names;
@@ -92,6 +93,7 @@ pub use no_deprecated_slot_attribute::NoDeprecatedSlotAttribute;
 pub use no_deprecated_slot_scope_attribute::NoDeprecatedSlotScopeAttribute;
 pub use no_deprecated_v_bind_sync::NoDeprecatedVBindSync;
 pub use no_deprecated_v_on_native_modifier::NoDeprecatedVOnNativeModifier;
+pub use no_deprecated_v_on_number_modifiers::NoDeprecatedVOnNumberModifiers;
 pub use no_dupe_v_else_if::NoDupeVElseIf;
 pub use no_duplicate_attributes::NoDuplicateAttributes;
 pub use no_reserved_component_names::NoReservedComponentNames;
@@ -195,6 +197,9 @@ pub(crate) fn register_valid_directives(registry: &mut crate::rule::RuleRegistry
 pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     if !registry.has_rule("vue/no-deprecated-v-on-native-modifier") {
         registry.register(Box::new(NoDeprecatedVOnNativeModifier));
+    }
+    if !registry.has_rule("vue/no-deprecated-v-on-number-modifiers") {
+        registry.register(Box::new(NoDeprecatedVOnNumberModifiers));
     }
     if !registry.has_rule("vue/no-deprecated-v-bind-sync") {
         registry.register(Box::new(NoDeprecatedVBindSync));
