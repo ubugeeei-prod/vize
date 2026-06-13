@@ -7,6 +7,7 @@
 use vize_carton::config::VueVersion;
 
 /// A demandable plate in the Vize Source Atlas.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum SourceAtlasPlate {
     Sfc,
@@ -40,6 +41,7 @@ impl SourceAtlasPlate {
 }
 
 /// A target lane that may consume atlas plates.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum SourceAtlasTarget {
     Dom,
@@ -59,6 +61,7 @@ impl SourceAtlasTarget {
 }
 
 /// Compatibility coordinate attached to atlas facts.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum SourceAtlasCoordinate {
     Vue(VueVersion),
@@ -91,7 +94,42 @@ impl From<VueVersion> for SourceAtlasCoordinate {
     }
 }
 
+/// A reason Vize could not project one requested atlas plate directly.
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum SourceAtlasFallback {
+    LegacyLineScanner,
+    SourceMapFragmentUnavailable,
+    SourceMapCompositionSkipped,
+    VirtualTsSkipped,
+    UnsupportedVaporShape,
+    VaporSsr,
+    CustomRendererMismatch,
+    LegacySyntaxCompatibility,
+    CacheBypass,
+}
+
+impl SourceAtlasFallback {
+    /// Counter used when this fallback reason is observed.
+    pub const fn profile_counter(self) -> &'static str {
+        match self {
+            Self::LegacyLineScanner => "atelier.fallback.legacy_line_scanner",
+            Self::SourceMapFragmentUnavailable => {
+                "atelier.fallback.source_map.fragment_unavailable"
+            }
+            Self::SourceMapCompositionSkipped => "atelier.fallback.source_map.composition_skipped",
+            Self::VirtualTsSkipped => "atelier.fallback.virtual_ts.skipped",
+            Self::UnsupportedVaporShape => "atelier.fallback.vapor.unsupported_shape",
+            Self::VaporSsr => "atelier.fallback.vapor_ssr",
+            Self::CustomRendererMismatch => "atelier.fallback.custom_renderer_mismatch",
+            Self::LegacySyntaxCompatibility => "atelier.fallback.legacy_syntax_compatibility",
+            Self::CacheBypass => "atelier.fallback.cache_bypass",
+        }
+    }
+}
+
 /// A requested atlas fact, separate from the cost of constructing the plate.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum SourceAtlasRequest {
     Plate(SourceAtlasPlate),
@@ -156,6 +194,18 @@ mod tests {
             SourceAtlasRequest::Coordinate(SourceAtlasCoordinate::from(VueVersion::V2_7))
                 .profile_counter(),
             "atelier.profile.dialect.vue2_7"
+        );
+    }
+
+    #[test]
+    fn fallback_reasons_keep_existing_counter_names_stable() {
+        assert_eq!(
+            SourceAtlasFallback::VaporSsr.profile_counter(),
+            "atelier.fallback.vapor_ssr"
+        );
+        assert_eq!(
+            SourceAtlasFallback::SourceMapCompositionSkipped.profile_counter(),
+            "atelier.fallback.source_map.composition_skipped"
         );
     }
 }
