@@ -10,8 +10,6 @@
 
 use super::names::{
     RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_DEFINE_MACROS_ORDER, RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
-    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
-    RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
     RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_BOOLEAN_DEFAULT, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
     RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
     RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API, RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DUPE_KEYS,
@@ -32,14 +30,14 @@ use super::{
 };
 use crate::rules::script::{
     ComponentOptionsNameCasing, DefineMacrosOrder, NoArrowFunctionsInWatch, NoAsyncInComputed,
-    ComponentOptionsNameCasing, NoArrowFunctionsInWatch, NoAsyncInComputed, NoBooleanDefault,
-    NoDeepDestructureInProps, NoDeprecatedDataObjectDeclaration, NoDeprecatedDollarListenersApi,
-    NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi, NoDupeKeys, NoExportInScriptSetup,
-    NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi,
-    NoPotentialComponentOptionTypo, NoReactiveDestructure, NoReservedIdentifiers, NoReservedKeys,
-    NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs,
-    PreferComputed, PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId,
-    PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType, RequirePropTypeConstructor,
+    NoBooleanDefault, NoDeepDestructureInProps, NoDeprecatedDataObjectDeclaration,
+    NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi,
+    NoDupeKeys, NoExportInScriptSetup, NoGetCurrentInstance, NoImportCompilerMacros,
+    NoInternalImports, NoNextTick, NoOptionsApi, NoPotentialComponentOptionTypo,
+    NoReactiveDestructure, NoReservedIdentifiers, NoReservedKeys, NoSideEffectsInComputed,
+    NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed,
+    PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots,
+    PreferUseTemplateRef, RequireFunctionReturnType, RequirePropTypeConstructor,
     RequireSymbolProvide, ReturnInComputedProperty, VueRouterPreferNamedPush,
     VueTestUtilsNoHtmlSnapshot,
 };
@@ -348,6 +346,8 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         fixable: false,
         presets: OPINIONATED_SCRIPT_PRESETS,
         rule: &DefineMacrosOrder,
+    },
+    BuiltinScriptRuleEntry {
         rule_name: RULE_NO_BOOLEAN_DEFAULT,
         profile_name: "patina.script_rule.no_boolean_default",
         category: "Script",
