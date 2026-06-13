@@ -5,7 +5,7 @@ expression: snapshot
 [
     (
         "App.vue.d.ts",
-        "/// <reference path=\"__vize_helpers.d.ts\" />\nexport interface PublicProps {\n    count: number;\n}\nexport type Props = PublicProps;\nexport type Emits = {};\nexport type Slots = {};\ntype __VizeComponentInstance = {\n    $props: Props;\n    $emit: __EmitFn<Emits>;\n    $slots: Slots;\n};\ndeclare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;\nexport default __vize_component__;\n",
+        "/// <reference path=\"__vize_helpers.d.ts\" />\nexport interface PublicProps {\n    count: number;\n}\nexport type Props = PublicProps;\nexport type Emits = {};\nexport type Slots = {};\ntype __VizeComponentInstance = {\n    $props: Props;\n    $emit: __EmitFn<Emits>;\n    $slots: Slots;\n};\ntype __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;\ntype __VizeVueComponentOptions = Omit<ReturnType<typeof import('vue').defineComponent>, keyof __VizeComponentConstructor>;\ndeclare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions;\nexport default __vize_component__;\n",
     ),
     (
         "__vize_helpers.d.ts",

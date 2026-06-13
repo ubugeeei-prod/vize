@@ -140,5 +140,7 @@ type __VizeComponentInstance = {
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };
-declare const __vize_component__: (new (...args: any[]) => __VizeComponentInstance) & { __vizeEmitProps?: __VizeStaticEmitProps; };
+type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
+type __VizeVueComponentOptions = Omit<ReturnType<typeof import('vue').defineComponent>, keyof __VizeComponentConstructor>;
+declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & { __vizeEmitProps?: __VizeStaticEmitProps; };
 export default __vize_component__;

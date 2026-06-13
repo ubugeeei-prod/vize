@@ -1159,6 +1159,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     } else {
         ts.push_str("};\n");
     }
+    ts.push_str(
+        "type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;\n",
+    );
+    ts.push_str("type __VizeVueComponentOptions = Omit<ReturnType<typeof import('vue').defineComponent>, keyof __VizeComponentConstructor>;\n");
     // For a `<script setup generic="...">` component the construct signature's
     // `$props` collapses `Props<T>` to its constraint, so a parent that extracts
     // props via `typeof Comp extends { new (): { $props } }` cannot infer `T`
@@ -1176,16 +1180,16 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         let generic_names = extract_generic_names(generic);
         append!(
             ts,
-            "declare const __vize_component__: (new (...args: any[]) => __VizeComponentInstance) & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; {emit_props_static} }};\n",
+            "declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; {emit_props_static} }};\n",
         );
     } else if has_emits_for_props {
         append!(
             ts,
-            "declare const __vize_component__: (new (...args: any[]) => __VizeComponentInstance) & {{ {emit_props_static} }};\n",
+            "declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & {{ {emit_props_static} }};\n",
         );
     } else {
         ts.push_str(
-            "declare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;\n",
+            "declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions;\n",
         );
     }
     ts.push_str("export default __vize_component__;\n");

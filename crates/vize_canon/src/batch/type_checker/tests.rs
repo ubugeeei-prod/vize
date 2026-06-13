@@ -1902,6 +1902,57 @@ const props = defineProps<PublicProps>()
 }
 
 #[test]
+fn batch_type_checker_virtual_vue_component_satisfies_storybook_like_meta() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "virtual-vue-component-storybook-meta",
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+defineProps<{
+  title: string
+}>()
+</script>
+
+<template>
+  <h1>{{ title }}</h1>
+</template>
+"#,
+            ),
+            (
+                "src/story.ts",
+                r#"import App from './App.vue'
+
+type StorybookLikeMeta<C extends import('vue').ConcreteComponent> = {
+  component: C
+}
+
+const meta = {
+  component: App,
+} satisfies StorybookLikeMeta<typeof App>
+
+void meta
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+    assert!(
+        snapshot.is_empty(),
+        "virtual Vue components should satisfy Storybook-like component constraints, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_declaration_emit_keeps_paths_alias_imports_in_virtual_project() {
     if resolve_test_tsgo_binary().is_none() {
         return;
