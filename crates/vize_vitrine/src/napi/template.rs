@@ -17,9 +17,9 @@ use vize_carton::Bump;
 use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
 use vize_atelier_core::{
     codegen::generate,
+    lane::{transform, transform_with_template_syntax_quirks},
     options::{CodegenMode, CodegenOptions, ParserOptions, TransformOptions},
     parser::{parse, parse_with_options_and_template_syntax},
-    transform::{transform, transform_with_template_syntax_quirks},
 };
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
 

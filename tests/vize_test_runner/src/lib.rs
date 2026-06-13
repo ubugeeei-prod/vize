@@ -10,9 +10,9 @@ use std::path::{Path, PathBuf};
 use vize_atelier_core::{
     Namespace,
     codegen::generate,
+    lane::transform,
     options::{CodegenMode, CodegenOptions, ParserOptions, TransformOptions},
     parser::parse_with_options,
-    transform::transform,
 };
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};

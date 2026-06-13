@@ -78,23 +78,11 @@ jobs:
     timeout-minutes: 25
     permissions:
       contents: read
-    # One crate per matrix leg so the whole suite runs in parallel (was a
-    # single serial pass over all crates — the slowest non-playground gate)
-    # and so a breaking change is attributed to its crate without waiting for
-    # the rest. `fail-fast: false` keeps every crate reported even after one
-    # fails.
-    #
-    # Each entry flags accidental breaking changes a change itself introduces:
-    # pull requests are compared against their base commit and pushes to main
-    # against the previous main commit, so a PR is never failed for API
-    # changes that already merged. Whether the accumulated delta needs a
-    # version bump is a release-time concern (release tooling owns it), not a
-    # per-PR gate against the crates.io baseline.
-    #
-    # Keep this list in sync with the publishable workspace crates.
-    # `vize_croquis_cf` is intentionally omitted until its first publish so
-    # the registry fallback (used when no baseline rev is available) cannot
-    # hit "not found in registry".
+    # Matrix legs run in parallel and keep breaking changes attributed per crate.
+    # PRs compare against base; pushes compare against the previous main commit.
+    # Conventional breaking markers (`type(scope)!:` / `BREAKING CHANGE:`) are major.
+    # Keep this list in sync with publishable crates. `vize_croquis_cf` is omitted
+    # until first publish so registry fallback cannot hit "not found in registry".
     strategy:
       fail-fast: false
       matrix:
@@ -132,12 +120,23 @@ jobs:
       - name: Check public API SemVer compatibility
         env:
           BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
+          PR_BODY: ${{ github.event_name == 'pull_request' && github.event.pull_request.body || '' }}
+          PR_TITLE: ${{ github.event_name == 'pull_request' && github.event.pull_request.title || '' }}
         run: |
           case "$BASELINE_REV" in 0000000000000000000000000000000000000000) BASELINE_REV="";; esac
-          if [ -n "$BASELINE_REV" ]; then
-            cargo semver-checks check-release --package ${{ matrix.crate }} --baseline-rev "$BASELINE_REV"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            SEMVER_CHANGE_MARKER="$(printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY")"
           else
-            cargo semver-checks check-release --package ${{ matrix.crate }}
+            SEMVER_CHANGE_MARKER="$(git log -1 --format=%B)"
+          fi
+          SEMVER_ARGS=()
+          if printf '%s\n' "$SEMVER_CHANGE_MARKER" | grep -Eq '^[[:alnum:]_-]+(\([^)]+\))?!:|^BREAKING CHANGE:'; then
+            SEMVER_ARGS+=(--release-type major)
+          fi
+          if [ -n "$BASELINE_REV" ]; then
+            cargo semver-checks check-release --package ${{ matrix.crate }} --baseline-rev "$BASELINE_REV" "${SEMVER_ARGS[@]}"
+          else
+            cargo semver-checks check-release --package ${{ matrix.crate }} "${SEMVER_ARGS[@]}"
           fi
 
   security-audit:
