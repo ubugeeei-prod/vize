@@ -6,9 +6,11 @@
 //! were introduced after that baseline register their translations here and
 //! the `i18n` module merges them into the global translator at startup.
 
+mod no_empty_component_block;
+
 use rustc_hash::FxHashMap;
 
-type MessageMap = FxHashMap<&'static str, &'static str>;
+pub(crate) type MessageMap = FxHashMap<&'static str, &'static str>;
 
 /// Insert every supplemental entry into the locale message maps.
 ///
@@ -19,6 +21,7 @@ pub(crate) fn register(messages: &mut [MessageMap; 3]) {
         messages[1].insert(key, ja);
         messages[2].insert(key, zh);
     }
+    no_empty_component_block::register(messages);
 }
 
 /// Supplemental translation entries: `(key, en, ja, zh)`.
@@ -342,24 +345,5 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
         "数値 keyCode 修飾子を名前付きキーに置き換えてください（例: @keyup.13 ではなく @keyup.enter）。",
         "请将数字 keyCode 修饰符替换为具名按键（例如用 @keyup.enter 代替 @keyup.13）。",
-    ),
-    // vue/no-empty-component-block
-    (
-        "vue/no-empty-component-block.description",
-        "Disallow empty SFC blocks such as <template></template>, <script></script>, or <style></style>",
-        "<template></template> や <script></script>、<style></style> などの空のSFCブロックを禁止する",
-        "禁止空的SFC块，例如 <template></template>、<script></script> 或 <style></style>",
-    ),
-    (
-        "vue/no-empty-component-block.message",
-        "The <{block}> block is empty",
-        "<{block}> ブロックが空です",
-        "<{block}> 块为空",
-    ),
-    (
-        "vue/no-empty-component-block.help",
-        "Add meaningful content to the block or remove it entirely.",
-        "ブロックに意味のある内容を追加するか、ブロックごと削除してください。",
-        "请为该块添加有意义的内容，或将其整体删除。",
     ),
 ];
