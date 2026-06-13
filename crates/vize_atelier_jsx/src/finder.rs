@@ -102,7 +102,7 @@ impl RootLowerer<'_, '_, '_, '_> {
     /// prologue, reporting diagnostics for malformed or conflicting directives.
     ///
     /// - A directive that opens with `"use vue:"` but does not name a known mode
-    ///   (e.g. `"use vue:vdomm"`) is almost always a typo, so it is reported as
+    ///   (e.g. `"use vue:vdomx"`) is almost always a typo, so it is reported as
     ///   an error and otherwise ignored.
     /// - Two directives selecting *different* modes in one body conflict; the
     ///   first wins and the later one is reported as an error.

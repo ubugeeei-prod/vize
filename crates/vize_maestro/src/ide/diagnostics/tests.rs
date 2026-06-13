@@ -666,7 +666,7 @@ fn collect_does_not_misdiagnose_valid_vapor_mode_tsx() {
     );
 }
 
-/// A malformed mode directive (`"use vue:vdomm"`, a typo) surfaces as a JSX
+/// A malformed mode directive (`"use vue:vdomx"`, a typo) surfaces as a JSX
 /// compiler error with the exact guidance message.
 #[test]
 fn collect_surfaces_malformed_mode_directive_on_tsx() {
@@ -674,7 +674,7 @@ fn collect_surfaces_malformed_mode_directive_on_tsx() {
     let uri = Url::parse("file:///Typo.tsx").unwrap();
     state.documents.open(
         uri.clone(),
-        "const C = () => {\n  \"use vue:vdomm\";\n  return <div>hi</div>;\n};\n".to_string(),
+        "const C = () => {\n  \"use vue:vdomx\";\n  return <div>hi</div>;\n};\n".to_string(),
         1,
         "typescriptreact".to_string(),
     );
@@ -692,7 +692,7 @@ fn collect_surfaces_malformed_mode_directive_on_tsx() {
     );
     assert_eq!(
         mode_errors[0].message,
-        "unknown JSX mode directive \"use vue:vdomm\": expected \"use vue:vdom\" or \"use vue:vapor\""
+        "unknown JSX mode directive \"use vue:vdomx\": expected \"use vue:vdom\" or \"use vue:vapor\""
     );
     assert_eq!(mode_errors[0].severity, Some(DiagnosticSeverity::ERROR));
     // The squiggle lands on the directive line (line index 1).

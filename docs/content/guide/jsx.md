@@ -248,7 +248,7 @@ The output mode for a component resolves in this order:
 Malformed or conflicting directives are reported rather than silently ignored:
 
 - A directive that begins with `"use vue:"` but does not name a known mode (a typo such as
-  `"use vue:vdomm"`) is a compile error.
+  `"use vue:vdomx"`) is a compile error.
 - Two conflicting mode directives in one component (`"use vue:vapor"` followed by `"use vue:vdom"`)
   are diagnosed; the first directive still wins for the resolved mode.
 - Unrelated prologues such as `"use strict"` are left untouched.

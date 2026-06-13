@@ -1271,7 +1271,7 @@ mod tests {
         let uri = Url::parse("file:///ModeSwitch.tsx").unwrap();
         // A typo'd mode directive (error) plus a `<style scoped>` so the JSX
         // scoped-CSS virtual doc is part of what must be rebuilt.
-        let before = "const C = () => {\n  \"use vue:vdomm\";\n  return (\n    <>\n      <div class=\"box\">hi</div>\n      <style scoped>{`.box { color: red; }`}</style>\n    </>\n  );\n};\n";
+        let before = "const C = () => {\n  \"use vue:vdomx\";\n  return (\n    <>\n      <div class=\"box\">hi</div>\n      <style scoped>{`.box { color: red; }`}</style>\n    </>\n  );\n};\n";
         futures::executor::block_on(server.did_open(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
                 uri: uri.clone(),
@@ -1286,7 +1286,7 @@ mod tests {
         let before_diags = crate::ide::DiagnosticService::collect(&server.state, &uri);
         assert!(
             before_diags.iter().any(|d| d.message
-                == "unknown JSX mode directive \"use vue:vdomm\": expected \"use vue:vdom\" or \"use vue:vapor\""),
+                == "unknown JSX mode directive \"use vue:vdomx\": expected \"use vue:vdom\" or \"use vue:vapor\""),
             "expected the malformed-directive diagnostic before the edit, got: {before_diags:?}"
         );
         assert_eq!(

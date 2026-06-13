@@ -318,7 +318,7 @@ The output mode for a component resolves in this order:
 ### Diagnostics
 
 A directive that begins with `"use vue:"` but does not name a known mode (a typo such as
-`"use vue:vdomm"`) is reported as a compile error rather than silently ignored, and two conflicting
+`"use vue:vdomx"`) is reported as a compile error rather than silently ignored, and two conflicting
 mode directives in one component (`"use vue:vapor"` followed by `"use vue:vdom"`) are likewise
 diagnosed. Unrelated prologues such as `"use strict"` are left untouched.
 

@@ -61,10 +61,10 @@ fn unrelated_prologue_produces_no_diagnostic() {
 
 #[test]
 fn malformed_vue_directive_is_diagnosed() {
-    // A typo'd suffix (`vdomm`) opens with `use vue:` so it is almost certainly
+    // A typo'd suffix (`vdomx`) opens with `use vue:` so it is almost certainly
     // a mistyped mode directive; report it instead of silently ignoring it.
     let bump = Bump::new();
-    let src = "const App = () => { \"use vue:vdomm\"; return <div/>; };";
+    let src = "const App = () => { \"use vue:vdomx\"; return <div/>; };";
     let out = lower_source(&bump, src, JsxLang::Jsx);
     assert!(out.has_errors(), "expected a diagnostic for the typo");
     assert_eq!(out.diagnostics.len(), 1);
@@ -74,7 +74,7 @@ fn malformed_vue_directive_is_diagnosed() {
     assert!(diag.end > diag.start);
     assert_eq!(
         &src[diag.start as usize..diag.end as usize],
-        "\"use vue:vdomm\""
+        "\"use vue:vdomx\""
     );
     // The unknown directive does not select a mode.
     assert_eq!(out.roots.len(), 1);

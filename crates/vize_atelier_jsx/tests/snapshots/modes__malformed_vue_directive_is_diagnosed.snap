@@ -5,7 +5,7 @@ expression: out.diagnostics
 [
     JsxDiagnostic {
         severity: Error,
-        message: "unknown JSX mode directive \"use vue:vdomm\": expected \"use vue:vdom\" or \"use vue:vapor\"",
+        message: "unknown JSX mode directive \"use vue:vdomx\": expected \"use vue:vdom\" or \"use vue:vapor\"",
         start: 20,
         end: 35,
     },

@@ -86,7 +86,7 @@ pub enum DirectiveKind {
     /// A recognized mode directive (`"use vue:vapor"` / `"use vue:vdom"`).
     Mode(JsxOutputMode),
     /// A directive that opens with the Vize `"use vue:"` prefix but does not
-    /// name a known mode (e.g. `"use vue:vdomm"`). The payload is the unknown
+    /// name a known mode (e.g. `"use vue:vdomx"`). The payload is the unknown
     /// suffix after the prefix, for a targeted diagnostic.
     MalformedVue,
     /// A directive unrelated to Vize JSX mode selection (e.g. `"use strict"`),
@@ -98,7 +98,7 @@ pub enum DirectiveKind {
 ///
 /// Distinguishes a recognized mode directive from a *malformed* one — a
 /// directive that begins with `"use vue:"` but does not name a known mode,
-/// which is almost always a typo (`"use vue:vdomm"`, `"use vue:VAPOR"`) and so
+/// which is almost always a typo (`"use vue:vdomx"`, `"use vue:VAPOR"`) and so
 /// should be surfaced — and from an unrelated prologue, which is ignored.
 pub fn classify_directive(directive: &str) -> DirectiveKind {
     if let Some(mode) = JsxOutputMode::from_directive(directive) {
@@ -175,7 +175,7 @@ mod tests {
     fn classify_flags_malformed_vue_directives() {
         // Typos in the suffix are the common case we want to catch.
         assert_eq!(
-            classify_directive("use vue:vdomm"),
+            classify_directive("use vue:vdomx"),
             DirectiveKind::MalformedVue
         );
         assert_eq!(
