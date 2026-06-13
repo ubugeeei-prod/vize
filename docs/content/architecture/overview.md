@@ -35,7 +35,8 @@ graph TD
     Core --> Armature["vize_armature<br/>parser"]
     Armature --> Relief["vize_relief<br/>AST"]
     Relief --> Croquis["vize_croquis<br/>semantic sketch"]
-    Croquis --> Atelier["Atelier compilers"]
+    Croquis --> Rendu["Rendu<br/>render semantics"]
+    Rendu --> Atelier["Atelier compilers"]
     Atelier --> Dom["vize_atelier_dom"]
     Atelier --> Vapor["vize_atelier_vapor"]
     Atelier --> Ssr["vize_atelier_ssr"]
@@ -64,13 +65,15 @@ graph LR
     A[Source .vue] --> B[Armature<br/>Parser]
     B --> C[Relief<br/>AST]
     C --> D[Croquis<br/>Semantic Analysis]
-    D --> E{Atelier}
+    D --> R[Rendu<br/>Render Semantics]
+    R --> E{Atelier}
     E --> F[VDOM Compiler]
     E --> G[Vapor Compiler]
     E --> H[SSR Compiler]
-    F --> I[Output JS]
-    G --> I
-    H --> I
+    F --> O[AtelierOutput]
+    G --> O
+    H --> O
+    O --> I[Output JS]
 ```
 
 ### Stage Details
@@ -79,11 +82,18 @@ graph LR
 2. **Armature** (Parser) — Tokenizes the raw source into a stream of tokens, then parses them into a structured AST. The tokenizer handles Vue-specific syntax: directives (`v-if`, `v-for`, `v-bind`), expression interpolation (`{{ }}`), and SFC block boundaries.
 3. **Relief** (AST) — The intermediate representation. All downstream stages operate on this shared AST, eliminating redundant parsing.
 4. **Croquis** (Semantic Analysis) — Resolves template expressions, tracks variable scopes, detects binding types (setup, data, props, inject), and validates expression correctness. Uses OXC for JavaScript/TypeScript AST parsing.
-5. **Atelier** (Compilation) — Transforms the analyzed AST into JavaScript output. Three backends serve different targets:
+5. **Rendu** (Render Semantics) — A planned internal render-semantic layer that borrows from Relief and Croquis. It should describe only what render backends need: structure, control flow, props, events, slots, hoists, scope IDs, and target capabilities. It is not a public Vitrine API.
+6. **Atelier** (Compilation) — Transforms the analyzed AST or Rendu into JavaScript output. Three backends serve different targets:
    - **VDOM** (`vize_atelier_dom`) — `createVNode`/`h` calls with patch flag optimization and static hoisting
    - **Vapor** (`vize_atelier_vapor`) — Fine-grained reactive code with direct DOM manipulation (no VDOM)
    - **SSR** (`vize_atelier_ssr`) — String concatenation with hydration markers
-6. **Output** — Generated JavaScript code with source maps
+7. **AtelierOutput** (Structured Output) — Imports, hoists, functions, exports, section ranges, and source maps before the final JavaScript string is flattened.
+8. **Output** — Generated JavaScript code with source maps
+
+`Rendu` and `AtelierOutput` are performance-sensitive layers. They must remove repeated work, such
+as rescanning generated JavaScript for known sections, rather than adding another expensive pass.
+Patina and other linting paths should not pay to build render-only structures unless a rule
+explicitly needs render semantics.
 
 ## Tool Lanes
 
@@ -146,7 +156,9 @@ Vize crates are named after **art and sculpture terminology**, reflecting how ea
 | **Relief**   | /rɪˈliːf/    | Sculptural technique that projects from a flat surface   | The AST — a structured surface that gives shape to raw source code             |
 | **Armature** | /ˈɑːrmətʃər/ | Internal skeleton supporting a sculpture                 | The parser — the structural framework that supports the AST                    |
 | **Croquis**  | /kʁɔ.ki/     | Quick gestural sketch capturing the essence of a subject | Semantic analysis — a quick sketch that captures the meaning of code           |
+| **Rendu**    | /ʁɑ̃.dy/      | Rendered appearance or final treatment of a work         | Internal render semantics before a target compiler finishes the output         |
 | **Atelier**  | /ˌætəlˈjeɪ/  | Artist's workshop where creation happens                 | Compiler workspaces — where code is transformed into its final form            |
+| **AtelierOutput** | — | The arranged work before it leaves the workshop | Structured compiler output before flattening to JavaScript |
 | **Vitrine**  | /vɪˈtriːn/   | Glass display case in a museum                           | Bindings — a transparent layer that exposes the compiler to external consumers |
 | **Canon**    | /ˈkænən/     | Standard of ideal proportions in classical sculpture     | Type checker — ensures code conforms to the standard of correctness            |
 | **Patina**   | /ˈpætɪnə/    | Aged surface finish that indicates quality and care      | Linter — polishes code by identifying issues that affect quality               |

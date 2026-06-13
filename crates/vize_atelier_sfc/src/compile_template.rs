@@ -190,25 +190,7 @@ pub(crate) fn compile_template_block(
         });
     }
 
-    // Translate the emission-recorded section offsets into the concatenated
-    // output: `output = preamble + '\n' + code + '\n'`, where `preamble` is
-    // the import statement followed (when hoists exist) by '\n' + hoists.
-    let codegen_result = result.result;
-    let mut output_module =
-        OutputModule::from_render_chunks(codegen_result.preamble, codegen_result.code)
-            .with_source_map(codegen_result.map);
-    let preamble_len = output_module.imports.len();
-    let fn_base = output_module.function_base_offset();
-    let sections = result.sections.map(|s| {
-        AtelierOutputSections::from_dom_codegen(
-            s.imports_len,
-            preamble_len,
-            fn_base,
-            (s.assets_start, s.assets_end),
-            (s.return_expr_start, s.return_expr_end),
-        )
-    });
-    output_module = output_module.with_sections(sections);
+    let output_module = OutputModule::from_dom_codegen(result);
     let sections = output_module.sections;
     let (output, _map) = output_module.into_code_and_map();
 

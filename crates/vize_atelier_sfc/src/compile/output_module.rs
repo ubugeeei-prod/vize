@@ -1,6 +1,7 @@
 //! Shared SFC render output assembly.
 
 use crate::types::{CssModuleMapping, css_modules_object_literal};
+use vize_atelier_core::codegen::CodegenResultWithSections;
 use vize_carton::{String, ToCompactString};
 
 /// Byte range in the flattened Atelier output.
@@ -135,6 +136,23 @@ impl OutputModule {
         }
     }
 
+    pub(crate) fn from_dom_codegen(result: CodegenResultWithSections) -> Self {
+        let codegen_result = result.result;
+        let output = Self::from_render_chunks(codegen_result.preamble, codegen_result.code)
+            .with_source_map(codegen_result.map);
+
+        let output_sections = result.sections.map(|sections| {
+            AtelierOutputSections::from_dom_codegen(
+                sections.imports_len,
+                output.imports.len(),
+                output.function_base_offset(),
+                (sections.assets_start, sections.assets_end),
+                (sections.return_expr_start, sections.return_expr_end),
+            )
+        });
+        output.with_sections(output_sections)
+    }
+
     pub(crate) fn with_sections(mut self, sections: Option<AtelierOutputSections>) -> Self {
         self.sections = sections;
         self
@@ -222,4 +240,61 @@ pub(crate) fn append_component_render_export(
     code.push_str("export default ");
     code.push_str(target);
     code.push('\n');
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use vize_atelier_core::codegen::{CodegenResult, CodegenSections};
+
+    #[test]
+    fn dom_codegen_sections_are_ranges_into_flattened_output() {
+        let imports = String::from("import { openBlock as _openBlock } from \"vue\"\n");
+        let hoists =
+            String::from("const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"div\")\n");
+        let code = String::from(
+            "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n\n  return _openBlock()\n}",
+        );
+        let asset = "const _component_Foo = _resolveComponent(\"Foo\")";
+        let return_expr = "_openBlock()";
+        let assets_start = code.find(asset).expect("asset statement should exist");
+        let return_expr_start = code
+            .find(return_expr)
+            .expect("return expression should exist");
+        let result = CodegenResultWithSections {
+            result: CodegenResult {
+                preamble: {
+                    let mut preamble = imports.clone();
+                    preamble.push('\n');
+                    preamble.push_str(&hoists);
+                    preamble
+                },
+                code,
+                map: Some(String::from("{\"version\":3}")),
+            },
+            sections: Some(CodegenSections {
+                imports_len: imports.len(),
+                assets_start,
+                assets_end: assets_start + asset.len(),
+                return_expr_start,
+                return_expr_end: return_expr_start + return_expr.len(),
+            }),
+        };
+
+        let output = OutputModule::from_dom_codegen(result);
+        let sections = output.sections.expect("DOM sections should be retained");
+        let (code, map) = output.into_code_and_map();
+
+        assert_eq!(map.as_deref(), Some("{\"version\":3}"));
+        assert_eq!(&code[sections.imports.start..sections.imports.end], imports);
+        assert_eq!(&code[sections.hoisted.start..sections.hoisted.end], hoists);
+        assert_eq!(
+            &code[sections.assets.start..sections.assets.end],
+            "const _component_Foo = _resolveComponent(\"Foo\")"
+        );
+        assert_eq!(
+            &code[sections.return_expr.start..sections.return_expr.end],
+            "_openBlock()"
+        );
+    }
 }
