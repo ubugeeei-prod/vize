@@ -252,7 +252,9 @@ fn resolve_object_or_binding<'a>(
     unwrap_object_expression(expression)
 }
 
-fn unwrap_object_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a ObjectExpression<'a>> {
+fn unwrap_object_expression<'a>(
+    expression: &'a Expression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
     match expression {
         Expression::ObjectExpression(object) => Some(object.as_ref()),
         Expression::ParenthesizedExpression(paren) => unwrap_object_expression(&paren.expression),

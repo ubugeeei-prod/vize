@@ -36,8 +36,8 @@
 //! ```
 
 use oxc_ast::ast::{
-    Argument, ArrayExpressionElement, BindingPattern, CallExpression, Expression, ObjectPropertyKind,
-    Program, PropertyKey, Statement, TSLiteral, TSSignature, TSType,
+    Argument, ArrayExpressionElement, BindingPattern, CallExpression, Expression,
+    ObjectPropertyKind, Program, PropertyKey, Statement, TSLiteral, TSSignature, TSType,
 };
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::{GetSpan, Span};
