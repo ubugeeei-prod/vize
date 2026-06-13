@@ -89,6 +89,7 @@ export const LINT_RULE_NAMES = [
   "script/no-reserved-keys",
   "script/no-side-effects-in-computed-properties",
   "script/no-top-level-ref-in-script",
+  "script/no-use-computed-property-like-method",
   "script/no-with-defaults",
   "script/prefer-computed",
   "script/prefer-import-from-vue",
