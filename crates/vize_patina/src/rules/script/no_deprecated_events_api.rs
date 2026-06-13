@@ -127,7 +127,9 @@ fn removed_event_callee<'a>(expression: &'a Expression<'a>) -> Option<(Span, &'s
         Expression::TSSatisfiesExpression(ts_satisfies) => {
             removed_event_callee(&ts_satisfies.expression)
         }
-        Expression::TSNonNullExpression(ts_non_null) => removed_event_callee(&ts_non_null.expression),
+        Expression::TSNonNullExpression(ts_non_null) => {
+            removed_event_callee(&ts_non_null.expression)
+        }
         _ => None,
     }
 }
