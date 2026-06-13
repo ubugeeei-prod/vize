@@ -3,7 +3,7 @@
 //! Transforms elements with v-if, v-else-if, and v-else directives into IfNode.
 
 use crate::transform::TransformContext;
-use crate::*;
+use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper};
 
 /// Check if an element has a v-if directive
 pub fn has_v_if(el: &ElementNode<'_>) -> bool {
@@ -63,7 +63,8 @@ pub fn process_v_if(ctx: &mut TransformContext<'_>) {
 
 #[cfg(test)]
 mod tests {
-    use super::{TemplateChildNode, has_v_else, has_v_else_if, has_v_if};
+    use super::{has_v_else, has_v_else_if, has_v_if};
+    use crate::TemplateChildNode;
     use crate::parser::parse;
     use bumpalo::Bump;
 

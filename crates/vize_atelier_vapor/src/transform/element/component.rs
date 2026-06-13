@@ -1,6 +1,10 @@
 //! Component, slot outlet, dynamic component, and v-model lowering.
 
-use super::*;
+use super::{
+    BlockIRNode, Box, ComponentKind, CreateComponentIRNode, ElementNode, ElementType,
+    ExpressionNode, IRProp, IRSlot, OperationNode, PropNode, SimpleExpressionNode, SourceLocation,
+    String, TemplateChildNode, TransformContext, Vec, transform_children,
+};
 
 /// Transform a component element into a `CreateComponent` operation.
 ///

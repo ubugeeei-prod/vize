@@ -6,7 +6,10 @@ use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData,
 
 use crate::errors::{CompilerError, ErrorCode};
 use crate::options::TransformOptions;
-use crate::*;
+use crate::{
+    CacheExpression, CommentNode, ConstantType, ExpressionNode, JsChildNode, RuntimeHelper,
+    SimpleExpressionNode, SourceLocation, TemplateChildNode,
+};
 
 use super::TransformContext;
 

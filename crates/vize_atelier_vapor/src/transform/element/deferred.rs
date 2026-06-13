@@ -3,8 +3,17 @@
 use crate::ir::{ForIRNode, IfIRNode, InsertNodeIRNode, NegativeBranch};
 
 use super::component::transform_component;
-use super::template::*;
-use super::*;
+use super::template::{
+    generate_element_template, is_static_element, is_template_backed_element,
+    transform_template_ref,
+};
+use super::{
+    BlockIRNode, ChildRefIRNode, ElementNode, ElementType, NextRefIRNode, OperationNode, PropNode,
+    SlotOutletIRNode, String, TemplateChildNode, TransformContext, get_slot_outlet_name,
+    get_slot_outlet_props, transform_children, transform_directive,
+    transform_for_node_deferred_parent, transform_for_node_into_parent,
+    transform_if_node_deferred_parent, transform_if_node_into_parent, transform_text_children,
+};
 
 /// Transform an element that has control flow children (`v-if`/`v-for`).
 ///

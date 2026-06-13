@@ -1,6 +1,6 @@
 //! Shared JavaScript expression and prop-object builders for SSR element codegen.
 
-use super::*;
+use super::{DirectiveNode, ExpressionNode, PropNode, String, ToCompactString, VNodePropEntry};
 
 /// Build an object literal from normalized prop entries.
 pub(super) fn component_props_object(entries: &[VNodePropEntry]) -> String {

@@ -1,6 +1,6 @@
 //! Element-type classification, component detection, and namespace resolution.
 
-use vize_relief::*;
+use vize_relief::{ElementNode, ElementType, Namespace, PropNode};
 
 use super::super::Parser;
 

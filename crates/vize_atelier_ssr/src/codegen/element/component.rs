@@ -1,7 +1,15 @@
 //! Component, built-in component, and scoped slot SSR emission.
 
-use super::props::*;
-use super::*;
+use super::props::{
+    component_prop_entry, component_props_object, is_dynamic_component_tag, is_simple_identifier,
+    is_static_named_prop, is_valid_js_identifier, normalize_prop_entries, quoted_js_string,
+    slot_props_pattern_to_string, transform_bound_prop_key, wrap_call,
+};
+use super::{
+    ComponentSlotChildren, ComponentTemplateSlot, DirectiveNode, ElementNode, ElementType,
+    ExpressionNode, ForNode, FxHashSet, IfNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
+    TemplateChildNode, ToCompactString, VNodePropEntry, cstr, extract_destructure_params,
+};
 
 impl<'a> SsrCodegenContext<'a> {
     /// Emit a component render call, including built-in SSR special cases.

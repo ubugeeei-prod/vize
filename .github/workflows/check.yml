@@ -394,7 +394,7 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Clippy
-        run: cargo clippy --workspace -- -D warnings
+        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test

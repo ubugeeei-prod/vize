@@ -1,7 +1,13 @@
 //! Slot outlet SSR emission and slot prop collection.
 
-use super::props::*;
-use super::*;
+use super::props::{
+    component_prop_entry, component_props_object, normalize_prop_entries, quoted_js_string,
+    static_slot_outlet_prop_key, transform_slot_outlet_bound_prop_key,
+};
+use super::{
+    ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
+    ToCompactString, VNodePropEntry,
+};
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a slot outlet (<slot>)

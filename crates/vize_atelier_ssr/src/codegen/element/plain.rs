@@ -1,7 +1,13 @@
 //! Plain HTML element SSR emission and element-only directives.
 
-use super::props::*;
-use super::*;
+use super::props::{
+    component_prop_entry, component_props_object, is_static_named_prop, merge_prop_values,
+    normalize_prop_entries, quoted_js_string, transform_bound_prop_key, wrap_call,
+};
+use super::{
+    DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
+    ToCompactString, VNodePropEntry, cstr, escape_html_attr,
+};
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a plain HTML element

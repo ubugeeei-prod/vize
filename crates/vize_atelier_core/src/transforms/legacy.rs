@@ -45,7 +45,10 @@
 use vize_armature::legacy::LegacyDialectCapabilities;
 use vize_carton::{Box, Bump, String, Vec};
 
-use crate::*;
+use crate::{
+    DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, SimpleExpressionNode,
+    TemplateChildNode,
+};
 
 /// Desugar Vue 2 template sugar in `root` into Vue 3 equivalents.
 ///

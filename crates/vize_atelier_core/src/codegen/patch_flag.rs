@@ -2,7 +2,7 @@
 
 use super::helpers::camelize;
 use crate::options::{BindingMetadata, BindingType};
-use crate::*;
+use crate::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 use oxc_ast::ast as oxc_ast_types;
 use oxc_parser::Parser;
 use oxc_span::SourceType;

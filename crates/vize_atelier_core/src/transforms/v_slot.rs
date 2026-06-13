@@ -10,7 +10,10 @@ use vize_carton::{String, is_builtin_directive};
 
 use crate::errors::ErrorCode;
 use crate::transform::TransformContext;
-use crate::*;
+use crate::{
+    DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
+    SourceLocation, TemplateChildNode,
+};
 
 /// Check if element has v-slot directive
 pub fn has_v_slot(el: &ElementNode<'_>) -> bool {

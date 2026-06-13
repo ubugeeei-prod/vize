@@ -3,7 +3,7 @@
 //! Transforms v-once directives for one-time rendering.
 
 use crate::transform::TransformContext;
-use crate::*;
+use crate::{ElementNode, PropNode, RuntimeHelper};
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
@@ -53,7 +53,8 @@ pub fn generate_v_once_wrapper(index: usize) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{TemplateChildNode, has_v_once};
+    use super::has_v_once;
+    use crate::TemplateChildNode;
     use crate::parser::parse;
     use bumpalo::Bump;
 

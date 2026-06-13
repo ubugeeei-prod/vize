@@ -6,7 +6,12 @@ use vize_carton::{Box, Bump, String, ToCompactString, Vec, camelize};
 
 use crate::codegen::is_constant_simple_expression;
 use crate::transform::TransformContext;
-use crate::*;
+use crate::{
+    AttributeNode, DirectiveNode, ElementNode, ElementType, ExpressionNode, JsChildNode, Namespace,
+    ObjectExpression, PropNode, Property, PropsExpression, RuntimeHelper, SimpleExpressionNode,
+    SourceLocation, TemplateChildNode, TemplateTextChildNode, TextNode, VNodeCall, VNodeChildren,
+    VNodeTag,
+};
 
 /// Check if a node is fully static (can be hoisted)
 pub fn is_static_node(node: &TemplateChildNode<'_>) -> bool {

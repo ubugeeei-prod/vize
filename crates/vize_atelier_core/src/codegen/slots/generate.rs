@@ -1,7 +1,9 @@
 //! Slots object generation for component children.
 
 use crate::transforms::v_slot::{collect_slots, get_slot_name, has_v_slot};
-use crate::*;
+use crate::{
+    ElementNode, ExpressionNode, ForNode, IfNode, PropNode, RuntimeHelper, TemplateChildNode,
+};
 use vize_carton::String;
 use vize_carton::ToCompactString;
 

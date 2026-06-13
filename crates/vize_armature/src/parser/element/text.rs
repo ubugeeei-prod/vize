@@ -1,7 +1,9 @@
 //! Text, fostered text, and interpolation processing.
 
 use vize_carton::Box;
-use vize_relief::*;
+use vize_relief::{
+    ExpressionNode, InterpolationNode, SimpleExpressionNode, TemplateChildNode, TextNode,
+};
 
 use super::super::Parser;
 

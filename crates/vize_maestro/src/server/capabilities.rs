@@ -1,7 +1,17 @@
 //! LSP server capabilities declaration.
 #![allow(clippy::disallowed_methods)]
 
-use tower_lsp::lsp_types::*;
+use tower_lsp::lsp_types::{
+    CodeActionKind, CodeActionOptions, CodeActionProviderCapability, CodeLensOptions,
+    CompletionOptions, DocumentLinkOptions, FileOperationFilter, FileOperationPattern,
+    FileOperationPatternKind, FileOperationRegistrationOptions, FoldingRangeProviderCapability,
+    HoverProviderCapability, OneOf, RenameOptions, SaveOptions, SemanticTokenModifier,
+    SemanticTokenType, SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
+    SemanticTokensServerCapabilities, ServerCapabilities, TextDocumentSyncCapability,
+    TextDocumentSyncKind, TextDocumentSyncOptions, TextDocumentSyncSaveOptions,
+    WorkDoneProgressOptions, WorkspaceFileOperationsServerCapabilities,
+    WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities,
+};
 
 use super::state::LspFeatureConfig;
 

@@ -2,8 +2,16 @@
 
 use super::super::helpers::collect_for_scoped_params;
 use super::component::{has_slot_directive, slot_template_in_children, template_slot_is_dynamic};
-use super::props::*;
-use super::*;
+use super::props::{
+    component_prop_entry, component_props_object, is_dynamic_component_tag, is_valid_js_identifier,
+    normalize_prop_entries, quoted_js_string, slot_props_pattern_to_string,
+    transform_bound_prop_key, wrap_call,
+};
+use super::{
+    ComponentSlotChildren, ElementNode, ElementType, ExpressionNode, FxHashSet, PropNode,
+    RuntimeHelper, SsrCodegenContext, String, TemplateChildNode, ToCompactString, VNodePropEntry,
+    extract_destructure_params,
+};
 use vize_atelier_core::ForNode;
 
 impl<'a> SsrCodegenContext<'a> {

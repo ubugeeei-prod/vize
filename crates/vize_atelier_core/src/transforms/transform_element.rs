@@ -5,7 +5,7 @@
 use vize_carton::{String, capitalize, is_native_tag};
 
 use crate::transform::TransformContext;
-use crate::*;
+use crate::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode};
 
 /// Resolve element type
 pub fn resolve_element_type<'a>(
