@@ -107,11 +107,11 @@ infrastructure that is not yet wired through this crate. Deferred pending the
 type-checker work in **#1497 / #1502**. The current TSX suite covers _syntax_
 acceptance and type-stripping, not type-driven prop/emit generation.
 
-### Ecosystem testbeds — documented manual workflow
+### Ecosystem references — documented manual workflow
 
 Running the upstream `@vue/babel-plugin-jsx` + `vue-jsx-vapor` reference corpora
-and real-world component-library testbeds requires cloning external repos and
-network access, so it stays out of the fast, offline PR CI lane. It is instead a
+requires cloning external repos and network access, so it stays out of the fast,
+offline PR CI lane. It is instead a
 **documented manual workflow**: a pinned-revision manifest plus an `#[ignore]`d
 coverage smoke.
 
@@ -122,8 +122,11 @@ coverage smoke.
   | --------------------- | ------------------------ | --------------- |
   | @vue/babel-plugin-jsx | `vuejs/babel-plugin-jsx` | `803aab3c…`     |
   | vue-jsx-vapor         | `vuejs/vue-jsx-vapor`    | `25eba175…`     |
-  | Vuetify               | `vuetifyjs/vuetify`      | `e5555ae8…`     |
-  | Naive UI              | `tusen-ai/naive-ui`      | `7a12097e…`     |
+
+Real-world component-library projects such as PrimeVue, Vuetify, and Naive UI
+are tracked by the Vize-wide fixture registry
+(`tests/_fixtures/vue-ecosystem-fixtures.json`) and run through the app e2e
+check/lint lanes.
 
 - **Run it**:
 

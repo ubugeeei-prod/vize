@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-// Offline shape guard for the JSX/TSX ecosystem testbed manifest (the manual
+// Offline shape guard for the JSX/TSX ecosystem reference manifest (the manual
 // ecosystem-coverage workflow for #1491). The smoke that actually clones and
 // compiles these repos lives in the ignored Rust test
 // `crates/vize_atelier_jsx/tests/ecosystem_smoke.rs`; this test only validates
@@ -44,22 +44,21 @@ function readManifest(): Manifest {
   return JSON.parse(fs.readFileSync(manifestPath, "utf8")) as Manifest;
 }
 
-const requiredTestbeds = ["vuetify", "naive-ui"] as const;
 const requiredReferences = ["babel-plugin-jsx", "vue-jsx-vapor"] as const;
 
-test("JSX ecosystem manifest pins the requested testbeds and reference suites", () => {
+test("JSX ecosystem manifest pins the requested reference suites", () => {
   const manifest = readManifest();
   assert.equal(manifest.schemaVersion, 1);
-
-  const testbedIds = new Set(manifest.testbeds.map((entry) => entry.id));
-  for (const id of requiredTestbeds) {
-    assert.ok(testbedIds.has(id), `${id} should be a pinned ecosystem testbed`);
-  }
 
   const referenceIds = new Set(manifest.references.map((entry) => entry.id));
   for (const id of requiredReferences) {
     assert.ok(referenceIds.has(id), `${id} should be a pinned reference suite`);
   }
+});
+
+test("real-world component libraries stay in the Vize-wide fixture registry", () => {
+  const manifest = readManifest();
+  assert.deepEqual(manifest.testbeds, []);
 });
 
 test("every JSX ecosystem entry pins a full-SHA revision, github repo, roots, and extensions", () => {

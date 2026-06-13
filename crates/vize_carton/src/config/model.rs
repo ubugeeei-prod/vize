@@ -23,6 +23,7 @@ pub use formatter::{
 pub use global_types::{GlobalTypeDeclaration, GlobalTypesConfig, RawGlobalTypesConfig};
 pub use language_server::{LanguageServerConfig, LspConfig};
 #[allow(unused_imports)]
+pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};
@@ -118,7 +119,7 @@ pub(crate) struct RawVizeConfig {
     pub formatter: FormatterConfig,
     pub(crate) compiler: RawCompilerConfig,
     pub(crate) vue: RawVueConfig,
-    pub linter: LinterConfig,
+    pub linter: RawLinterConfig,
     #[serde(rename = "typeChecker")]
     type_checker: RawTypeCheckerConfig,
     #[serde(rename = "languageServer")]

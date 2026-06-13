@@ -1200,6 +1200,17 @@
         "help": "Why: Screen readers announce the title to help users understand the iframe content.\nFix:\n  <iframe\n  src=\"https://example.com/video\"\n  title=\"Product demo video\"\n  ></iframe>\nNote: The title should describe the content, not the source."
       },
       {
+        "ruleId": "vue/no-unsandboxed-iframe",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsandboxed-iframe] <iframe> is missing a sandbox attribute",
+        "line": 10,
+        "column": 3,
+        "endLine": 15,
+        "endColumn": 4,
+        "help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs"
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1256,7 +1267,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 7
   },
   {
     "file": "src/components/MkChannelFollowButton.vue",
@@ -3352,6 +3363,17 @@
         "help": "Why: Screen readers announce the title to help users understand the iframe content.\nFix:\n  <iframe\n  src=\"https://example.com/video\"\n  title=\"Product demo video\"\n  ></iframe>\nNote: The title should describe the content, not the source."
       },
       {
+        "ruleId": "vue/no-unsandboxed-iframe",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsandboxed-iframe] <iframe> is missing a sandbox attribute",
+        "line": 35,
+        "column": 9,
+        "endLine": 41,
+        "endColumn": 10,
+        "help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs"
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3419,7 +3441,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 19
+    "warningCount": 20
   },
   {
     "file": "src/components/MkEmojiPicker.section.vue",
@@ -12426,6 +12448,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 39,
+        "column": 31,
+        "endLine": 39,
+        "endColumn": 101,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -12435,6 +12468,17 @@
         "endLine": 39,
         "endColumn": 70,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 40,
+        "column": 41,
+        "endLine": 40,
+        "endColumn": 121,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -12492,6 +12536,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 50,
+        "column": 5,
+        "endLine": 50,
+        "endColumn": 104,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -12526,7 +12581,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 16
+    "warningCount": 19
   },
   {
     "file": "src/components/MkSignupDialog.vue",
@@ -14175,6 +14230,17 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 21,
+        "column": 4,
+        "endLine": 21,
+        "endColumn": 102,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -14187,7 +14253,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 4
+    "warningCount": 5
   },
   {
     "file": "src/components/MkTutorialDialog.vue",
@@ -14292,6 +14358,17 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 133,
+        "column": 10,
+        "endLine": 133,
+        "endColumn": 90,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -14304,7 +14381,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 10
+    "warningCount": 11
   },
   {
     "file": "src/components/MkUpdated.vue",
@@ -17062,6 +17139,17 @@
         "help": "Why: Screen readers announce the title to help users understand the iframe content.\nFix:\n  <iframe\n  src=\"https://example.com/video\"\n  title=\"Product demo video\"\n  ></iframe>\nNote: The title should describe the content, not the source."
       },
       {
+        "ruleId": "vue/no-unsandboxed-iframe",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsandboxed-iframe] <iframe> is missing a sandbox attribute",
+        "line": 16,
+        "column": 5,
+        "endLine": 16,
+        "endColumn": 134,
+        "help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs"
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -17096,7 +17184,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 13
+    "warningCount": 14
   },
   {
     "file": "src/components/form/link.vue",
@@ -19325,6 +19413,28 @@
         "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 24,
+        "column": 43,
+        "endLine": 24,
+        "endColumn": 127,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 70,
+        "column": 7,
+        "endLine": 70,
+        "endColumn": 87,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -19345,6 +19455,17 @@
         "endLine": 71,
         "endColumn": 105,
         "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 74,
+        "column": 7,
+        "endLine": 74,
+        "endColumn": 93,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "a11y/alt-text",
@@ -19369,6 +19490,17 @@
         "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 78,
+        "column": 7,
+        "endLine": 78,
+        "endColumn": 96,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -19389,6 +19521,17 @@
         "endLine": 79,
         "endColumn": 106,
         "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 82,
+        "column": 7,
+        "endLine": 82,
+        "endColumn": 88,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "a11y/alt-text",
@@ -19413,6 +19556,17 @@
         "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 86,
+        "column": 7,
+        "endLine": 86,
+        "endColumn": 91,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -19435,6 +19589,17 @@
         "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 90,
+        "column": 7,
+        "endLine": 90,
+        "endColumn": 90,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -19455,6 +19620,72 @@
         "endLine": 91,
         "endColumn": 106,
         "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 100,
+        "column": 8,
+        "endLine": 100,
+        "endColumn": 123,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 103,
+        "column": 8,
+        "endLine": 103,
+        "endColumn": 124,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 106,
+        "column": 8,
+        "endLine": 106,
+        "endColumn": 108,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 109,
+        "column": 8,
+        "endLine": 109,
+        "endColumn": 119,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 112,
+        "column": 8,
+        "endLine": 112,
+        "endColumn": 147,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 115,
+        "column": 8,
+        "endLine": 115,
+        "endColumn": 122,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "vue/require-v-for-key",
@@ -19513,7 +19744,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 26
+    "warningCount": 39
   },
   {
     "file": "src/pages/about.emojis.vue",
@@ -19737,6 +19968,17 @@
         "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 10,
+        "column": 4,
+        "endLine": 10,
+        "endColumn": 58,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -19826,7 +20068,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 10
   },
   {
     "file": "src/pages/admin-file.vue",
@@ -20521,6 +20763,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 57,
+        "column": 26,
+        "endLine": 57,
+        "endColumn": 109,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -20587,6 +20840,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 111,
+        "column": 8,
+        "endLine": 114,
+        "endColumn": 9,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -20607,6 +20871,17 @@
         "endLine": 135,
         "endColumn": 62,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 144,
+        "column": 26,
+        "endLine": 144,
+        "endColumn": 121,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "vue/no-v-html",
@@ -20632,7 +20907,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 16
+    "warningCount": 19
   },
   {
     "file": "src/pages/admin/branding.vue",
@@ -41887,6 +42162,17 @@
     "file": "src/ui/visitor.vue",
     "messages": [
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 8,
+        "column": 2,
+        "endLine": 8,
+        "endColumn": 138,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -41943,7 +42229,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 5
+    "warningCount": 6
   },
   {
     "file": "src/ui/zen.vue",
@@ -42131,6 +42417,17 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
       {
+        "ruleId": "vue/no-unsandboxed-iframe",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsandboxed-iframe] <iframe> is missing a sandbox attribute",
+        "line": 8,
+        "column": 2,
+        "endLine": 8,
+        "endColumn": 134,
+        "help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs"
+      },
+      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -42143,7 +42440,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 7
   },
   {
     "file": "src/widgets/WidgetAiscript.vue",

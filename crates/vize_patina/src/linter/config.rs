@@ -70,6 +70,8 @@ pub struct Linter {
     pub(crate) script_rules: &'static [&'static str],
     /// Built-in `css/*` rules enabled for this linter.
     pub(crate) css_rules: &'static [&'static str],
+    /// Whether native type-aware lint rules may run.
+    pub(crate) type_aware_enabled: bool,
     /// Lazily initialized native corsa session for type-aware lint.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) native_corsa: Mutex<Option<CorsaTypeAwareSession>>,
@@ -96,6 +98,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             css_rules: builtin_css_rule_names(preset),
+            type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -116,6 +119,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             css_rules: builtin_css_rule_names(preset),
+            type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -136,6 +140,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: ecosystem_builtin_script_rule_names(),
             css_rules: builtin_css_rule_names(LintPreset::Ecosystem),
+            type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -156,6 +161,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: &[],
             css_rules: &[],
+            type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -191,6 +197,9 @@ impl Linter {
             self.script_rules = super::script_rules::all_builtin_script_rule_names();
             self.css_rules = super::css_rules::all_builtin_css_rule_names();
         }
+        if rules.as_ref().is_some_and(|rules| has_type_rule(rules)) {
+            self.type_aware_enabled = true;
+        }
         self.enabled_rules = rules.map(|r| r.into_iter().collect());
         self
     }
@@ -217,6 +226,9 @@ impl Linter {
         if matches!(self.preset, Some(LintPreset::Incremental)) {
             self.registry = RuleRegistry::with_preset(LintPreset::Opinionated);
         }
+        if has_type_rule(&rules) {
+            self.type_aware_enabled = true;
+        }
         self.registry.register_opt_in_rules();
         self.script_rules = super::script_rules::all_builtin_script_rule_names();
         self.css_rules = super::css_rules::all_builtin_css_rule_names();
@@ -236,6 +248,9 @@ impl Linter {
     #[inline]
     pub fn with_rule(mut self, rule: Box<dyn crate::rule::Rule>) -> Self {
         let rule_name = rule.meta().name;
+        if is_type_rule(rule_name) {
+            self.type_aware_enabled = true;
+        }
         if !self.registry.has_rule(rule_name) {
             self.registry.register(rule);
             self.registry.mark_has_exit_element_rules();
@@ -247,6 +262,17 @@ impl Linter {
     #[inline]
     pub fn with_help_level(mut self, level: HelpLevel) -> Self {
         self.help_level = level;
+        self
+    }
+
+    /// Allow native type-aware lint rules to run.
+    ///
+    /// Keeping this separate from rule membership preserves zero-cost defaults:
+    /// presets may contain `type/*` rules, but Patina will not parse SFCs for
+    /// Corsa-backed checks or start Corsa unless hosts explicitly opt in.
+    #[inline]
+    pub fn with_type_aware_lint(mut self, enabled: bool) -> Self {
+        self.type_aware_enabled = enabled;
         self
     }
 
@@ -299,4 +325,12 @@ impl Default for Linter {
     fn default() -> Self {
         Self::new()
     }
+}
+
+fn has_type_rule(rules: &[String]) -> bool {
+    rules.iter().any(|rule| is_type_rule(rule.as_str()))
+}
+
+fn is_type_rule(rule_name: &str) -> bool {
+    rule_name.starts_with("type/")
 }
