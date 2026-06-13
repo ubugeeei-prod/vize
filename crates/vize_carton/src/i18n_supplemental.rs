@@ -286,6 +286,25 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "先頭の '!' を削除し、v-ifとv-elseの分岐の中身を入れ替えてください。",
         "请去掉开头的 '!'，并交换 v-if 与 v-else 分支的内容。",
     ),
+    // vue/v-on-event-hyphenation
+    (
+        "vue/v-on-event-hyphenation.description",
+        "Enforce hyphenation of custom event names in v-on on components",
+        "コンポーネントの v-on におけるカスタムイベント名のハイフネーションを強制する",
+        "强制组件上 v-on 自定义事件名称使用连字符",
+    ),
+    (
+        "vue/v-on-event-hyphenation.message",
+        "Custom event listeners on components should be hyphenated: use '{name}'",
+        "コンポーネントのカスタムイベントリスナーはハイフン区切りにしてください: '{name}' を使用してください",
+        "组件上的自定义事件监听器应使用连字符：请使用 '{name}'",
+    ),
+    (
+        "vue/v-on-event-hyphenation.help",
+        "Rename the listener to kebab-case so it matches the emitted event name.",
+        "発行されるイベント名と一致するように、リスナー名をケバブケースに変更してください。",
+        "请将监听器重命名为 kebab-case，以与发出的事件名称匹配。",
+    ),
     // vue/no-empty-component-block
     (
         "vue/no-empty-component-block.description",
