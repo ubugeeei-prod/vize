@@ -44,6 +44,7 @@ pub(crate) const RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API: &str =
     "script/no-deprecated-dollar-scopedslots-api";
 pub(crate) const RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION: &str =
     "script/no-deprecated-data-object-declaration";
+pub(crate) const RULE_NO_DEPRECATED_EVENTS_API: &str = "script/no-deprecated-events-api";
 pub(crate) const RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD: &str =
     "script/no-use-computed-property-like-method";
 
@@ -80,6 +81,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_RETURN_IN_COMPUTED_PROPERTY,
     RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
     RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
+    RULE_NO_DEPRECATED_EVENTS_API,
     RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
 ];
 
@@ -114,5 +116,6 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_RETURN_IN_COMPUTED_PROPERTY,
     RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
     RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
+    RULE_NO_DEPRECATED_EVENTS_API,
     RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
 ];
