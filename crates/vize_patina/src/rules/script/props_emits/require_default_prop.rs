@@ -51,8 +51,8 @@ use oxc_span::GetSpan;
 
 use vize_carton::CompactString;
 
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use super::props_source::{PropDescriptor, collect_runtime_props};
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {

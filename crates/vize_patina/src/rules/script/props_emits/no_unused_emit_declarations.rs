@@ -44,7 +44,7 @@ use oxc_span::{GetSpan, Span};
 
 use vize_carton::{CompactString, FxHashSet};
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {

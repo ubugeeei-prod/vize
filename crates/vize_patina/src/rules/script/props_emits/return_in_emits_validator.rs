@@ -52,8 +52,8 @@ use oxc_ast::ast::{
 use oxc_ast_visit::Visit;
 use oxc_span::Span;
 
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use super::emits_source::resolve_emits_object;
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
