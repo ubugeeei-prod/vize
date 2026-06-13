@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/return_in_emits_validator/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/return-in-emits-validator",
+        severity: Error,
+        message: "Expected to return a boolean value in this emits validator.",
+        start: 39,
+        end: 113,
+        help: Some(
+            "An emits validator must return whether the payload is valid. Add a `return` that yields a boolean on every path through the validator.",
+        ),
+        labels: [
+            Label {
+                message: "emits validator without a return value",
+                start: 39,
+                end: 113,
+            },
+        ],
+        fix: None,
+    },
+]
