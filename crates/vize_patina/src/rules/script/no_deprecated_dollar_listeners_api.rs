@@ -47,8 +47,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 const DOLLAR_LISTENERS: &str = "$listeners";
 
 const MESSAGE: &str = "$listeners was removed in Vue 3 and merged into $attrs";
-const HELP: &str =
-    "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are \
+const HELP: &str = "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are \
      exposed through $attrs (or useAttrs() in the Composition API).";
 
 /// Disallow the `$listeners` instance property (Vue 3 migration).
@@ -178,7 +177,10 @@ const onClick = attrs.onClick
     #[test]
     fn test_invalid_ctx_dollar_listeners() {
         let linter = create_linter();
-        let result = linter.lint("export default { setup(_, ctx) { return ctx.$listeners } }", 0);
+        let result = linter.lint(
+            "export default { setup(_, ctx) { return ctx.$listeners } }",
+            0,
+        );
         assert_eq!(result.error_count, 1);
     }
 
