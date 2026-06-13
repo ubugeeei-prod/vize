@@ -113,6 +113,7 @@ export const LINT_RULE_NAMES = [
   "script/require-typed-ref",
   "script/return-in-computed-property",
   "script/return-in-emits-validator",
+  "script/valid-define-emits",
   "script/valid-define-options",
   "script/valid-next-tick",
   "ssr/no-browser-globals-in-ssr",

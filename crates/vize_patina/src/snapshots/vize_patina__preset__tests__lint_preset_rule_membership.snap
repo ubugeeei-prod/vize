@@ -572,6 +572,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-prop-types",
     "script/no-reserved-props",
     "script/no-unused-emit-declarations",
-    "script/return-in-emits-validator"
+    "script/return-in-emits-validator",
+    "script/valid-define-emits"
   ]
 }
