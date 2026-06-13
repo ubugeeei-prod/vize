@@ -1,6 +1,6 @@
 ---
 source: crates/vize_atelier_jsx/tests/parity_vdom.rs
-expression: "snapshot_cases(&cases, |source| { dom_code(source, JsxLang::Jsx) })"
+expression: "snapshot_cases(&cases, |source| { vdom_code(source, JsxLang::Jsx) })"
 ---
 ## intrinsic element
 ### source

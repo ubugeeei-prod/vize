@@ -1,8 +1,8 @@
 ---
 source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
-expression: "dom_output_summary(source, &output)"
+expression: "vdom_output_summary(source, &output)"
 ---
-DomOutputSummary {
+VdomOutputSummary {
     diagnostics: [],
     components: [
         RenderComponentSummary {
