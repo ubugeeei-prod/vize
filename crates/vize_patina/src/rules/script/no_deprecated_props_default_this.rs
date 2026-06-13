@@ -60,9 +60,9 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
-    Argument, ArrowFunctionExpression, BindingPattern, CallExpression,
-    ExportDefaultDeclarationKind, Expression, Function, ObjectExpression, ObjectProperty,
-    ObjectPropertyKind, Program, PropertyKey, Statement, ThisExpression,
+    Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression, Function,
+    ObjectExpression, ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement,
+    ThisExpression,
 };
 use oxc_ast_visit::Visit;
 use oxc_span::Span;
