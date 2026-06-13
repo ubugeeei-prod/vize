@@ -17,8 +17,9 @@ use super::names::{
     RULE_NO_TOP_LEVEL_REF_IN_SCRIPT, RULE_NO_WITH_DEFAULTS, RULE_PINIA_PREFER_STORE_TO_REFS,
     RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE,
     RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,
-    RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_SYMBOL_PROVIDE,
-    RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+    RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
+    RULE_REQUIRE_SYMBOL_PROVIDE, RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
     RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 use super::{
@@ -32,8 +33,9 @@ use crate::rules::script::{
     NoPotentialComponentOptionTypo, NoReactiveDestructure, NoReservedIdentifiers,
     NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs,
     PreferComputed, PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId,
-    PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType, RequireSymbolProvide,
-    ReturnInComputedProperty, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
+    PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType, RequirePropTypeConstructor,
+    RequireSymbolProvide, ReturnInComputedProperty, VueRouterPreferNamedPush,
+    VueTestUtilsNoHtmlSnapshot,
 };
 
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
@@ -284,5 +286,13 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         fixable: false,
         presets: OPINIONATED_SCRIPT_PRESETS,
         rule: &ReturnInComputedProperty,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
+        profile_name: "patina.script_rule.require_prop_type_constructor",
+        category: "Script",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &RequirePropTypeConstructor,
     },
 ];

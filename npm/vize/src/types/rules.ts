@@ -90,6 +90,7 @@ export const LINT_RULE_NAMES = [
   "script/prefer-use-slots",
   "script/prefer-use-template-ref",
   "script/require-function-return-type",
+  "script/require-prop-type-constructor",
   "script/require-symbol-provide",
   "script/return-in-computed-property",
   "ssr/no-browser-globals-in-ssr",

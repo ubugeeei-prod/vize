@@ -40,6 +40,8 @@ pub(crate) const RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API: &str =
 pub(crate) const RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO: &str =
     "script/no-potential-component-option-typo";
 pub(crate) const RULE_RETURN_IN_COMPUTED_PROPERTY: &str = "script/return-in-computed-property";
+pub(crate) const RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR: &str =
+    "script/require-prop-type-constructor";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -72,6 +74,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
     RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
     RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
 ];
 
 #[cfg(test)]
@@ -103,4 +106,5 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
     RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
     RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
 ];
