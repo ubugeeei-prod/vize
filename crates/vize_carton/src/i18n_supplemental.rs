@@ -248,4 +248,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。",
         "请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。",
     ),
+    // vue/no-empty-component-block
+    (
+        "vue/no-empty-component-block.description",
+        "Disallow empty SFC blocks such as <template></template>, <script></script>, or <style></style>",
+        "<template></template> や <script></script>、<style></style> などの空のSFCブロックを禁止する",
+        "禁止空的SFC块，例如 <template></template>、<script></script> 或 <style></style>",
+    ),
+    (
+        "vue/no-empty-component-block.message",
+        "The <{block}> block is empty",
+        "<{block}> ブロックが空です",
+        "<{block}> 块为空",
+    ),
+    (
+        "vue/no-empty-component-block.help",
+        "Add meaningful content to the block or remove it entirely.",
+        "ブロックに意味のある内容を追加するか、ブロックごと削除してください。",
+        "请为该块添加有意义的内容，或将其整体删除。",
+    ),
 ];
