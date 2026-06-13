@@ -64,3 +64,8 @@
 	path = tests/_fixtures/_git/naive-ui
 	url = https://github.com/tusen-ai/naive-ui
 	shallow = true
+
+[submodule "tests/_fixtures/_git/directus"]
+	path = tests/_fixtures/_git/directus
+	url = https://github.com/directus/directus
+	shallow = true

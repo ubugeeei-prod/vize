@@ -56,6 +56,7 @@ const requestedFixtures = [
   "primevue",
   "vuetify",
   "naive-ui",
+  "directus",
 ] as const;
 const requiredTypecheckProjects = ["voicevox", "elk", "misskey"] as const;
 const newlyAddedSubmodules = new Set([
@@ -66,6 +67,7 @@ const newlyAddedSubmodules = new Set([
   "primevue",
   "vuetify",
   "naive-ui",
+  "directus",
 ]);
 
 function readJsonFile<T>(filePath: string): T {
@@ -203,6 +205,13 @@ test("new UI library fixtures are wired into Vize-wide check and lint lanes", ()
       `${id} should run in the app lint lane`,
     );
   }
+});
+
+test("Directus fixture is wired into Vize-wide check and lint lanes", () => {
+  const pkg = readTestsPackage();
+
+  assert.match(pkg.scripts["test:check"], /snapshots\/check\/directus\.ts/);
+  assert.match(pkg.scripts["test:lint"], /snapshots\/lint\/directus\.ts/);
 });
 
 test("large typechecker fixtures have performance safeguards and bench wiring", () => {
