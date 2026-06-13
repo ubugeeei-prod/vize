@@ -8,7 +8,9 @@ mod no_script_non_standard_lang;
 mod no_src_attribute;
 mod no_template_lang;
 mod no_template_shadow;
+mod no_useless_v_bind;
 mod prefer_props_shorthand;
+mod prefer_true_attribute_shorthand;
 mod require_component_registration;
 mod scoped_event_names;
 mod use_unique_element_ids;
@@ -29,7 +31,9 @@ pub use no_script_non_standard_lang::NoScriptNonStandardLang;
 pub use no_src_attribute::NoSrcAttribute;
 pub use no_template_lang::NoTemplateLang;
 pub use no_template_shadow::NoTemplateShadow;
+pub use no_useless_v_bind::NoUselessVBind;
 pub use prefer_props_shorthand::PreferPropsShorthand;
+pub use prefer_true_attribute_shorthand::PreferTrueAttributeShorthand;
 pub use require_component_registration::RequireComponentRegistration;
 pub use scoped_event_names::ScopedEventNames;
 pub use use_unique_element_ids::UseUniqueElementIds;
@@ -68,4 +72,6 @@ fn register_shared(registry: &mut RuleRegistry) {
     registry.register(Box::new(WarnCustomBlock));
     registry.register(Box::new(WarnCustomDirective));
     registry.register(Box::new(NoBooleanAttrValue));
+    registry.register(Box::new(NoUselessVBind));
+    registry.register(Box::new(PreferTrueAttributeShorthand));
 }

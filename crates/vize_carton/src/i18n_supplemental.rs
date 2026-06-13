@@ -147,4 +147,42 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "v-htmlディレクティブに式を追加し、引数・修飾子を削除してください",
         "请为v-html指令添加表达式，并移除参数或修饰符",
     ),
+    // vue/no-useless-v-bind
+    (
+        "vue/no-useless-v-bind.description",
+        "Disallow a v-bind whose value is a plain string literal",
+        "値が単なる文字列リテラルのv-bindを禁止する",
+        "禁止值为纯字符串字面量的v-bind",
+    ),
+    (
+        "vue/no-useless-v-bind.message",
+        "Binding ':{name}' to a constant string is unnecessary; use the static attribute '{name}'",
+        "':{name}' に定数文字列をバインドするのは不要です。静的属性 '{name}' を使用してください",
+        "将 ':{name}' 绑定到常量字符串是多余的；请使用静态属性 '{name}'",
+    ),
+    (
+        "vue/no-useless-v-bind.help",
+        "Replace the binding with a static attribute (foo=bar instead of :foo='bar').",
+        "バインディングを静的属性に置き換えてください（:foo='bar' ではなく foo=bar）。",
+        "请将该绑定替换为静态属性（用 foo=bar 代替 :foo='bar'）。",
+    ),
+    // vue/prefer-true-attribute-shorthand
+    (
+        "vue/prefer-true-attribute-shorthand.description",
+        "Prefer the shorthand for a boolean attribute bound to true",
+        "trueをバインドする真偽値属性は省略形を推奨する",
+        "对绑定为true的布尔属性推荐使用简写",
+    ),
+    (
+        "vue/prefer-true-attribute-shorthand.message",
+        "':{name}' bound to true can be written as the shorthand '{name}'",
+        "trueをバインドした ':{name}' は省略形 '{name}' で書けます",
+        "绑定为true的 ':{name}' 可以写成简写 '{name}'",
+    ),
+    (
+        "vue/prefer-true-attribute-shorthand.help",
+        "Drop the ='true' binding and write the attribute name on its own.",
+        "='true' のバインディングを削除し、属性名だけを記述してください。",
+        "去掉 ='true' 绑定，仅写属性名即可。",
+    ),
 ];
