@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/this-in-template",
+        severity: Warning,
+        message: "Unexpected usage of 'this.' in a template expression.",
+        start: 13,
+        end: 27,
+        help: Some(
+            "Remove the 'this.' prefix; Vue resolves template identifiers against the component instance automatically.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
