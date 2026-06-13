@@ -43,9 +43,9 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
-const MESSAGE: &str = "Prefer the type-based `defineProps<{ ... }>()` declaration over the runtime form";
-const HELP: &str =
-    "Move the props to a type argument, e.g. `defineProps<{ count?: number }>()`, \
+const MESSAGE: &str =
+    "Prefer the type-based `defineProps<{ ... }>()` declaration over the runtime form";
+const HELP: &str = "Move the props to a type argument, e.g. `defineProps<{ count?: number }>()`, \
      instead of passing a runtime object/array.";
 
 /// Enforce the type-based defineProps declaration.
