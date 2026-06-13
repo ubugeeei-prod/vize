@@ -136,7 +136,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         if let Some((source, offset)) = script {
             run_builtin_script_rule(entry, source, offset, script_parsed.as_ref(), result);
         }
-        if let Some((source, offset)) = script_setup {
+        if let Some((source, offset)) = script_setup.filter(|_| entry.rule.runs_on_script_setup()) {
             run_builtin_script_rule(entry, source, offset, script_setup_parsed.as_ref(), result);
         }
     }
