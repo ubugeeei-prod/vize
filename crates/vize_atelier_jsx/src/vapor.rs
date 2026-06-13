@@ -1,6 +1,6 @@
 //! Compiling lowered JSX/TSX into Vue Vapor output.
 //!
-//! Like the VDOM backend ([`crate::dom`]), this reuses existing Vize
+//! Like the VDOM backend ([`crate::vdom`]), this reuses existing Vize
 //! infrastructure: the shared lowering produces a
 //! [`RootNode`](vize_relief::RootNode), which is run through
 //! `vize_atelier_core`'s transform (in `vapor: true` mode) and then
