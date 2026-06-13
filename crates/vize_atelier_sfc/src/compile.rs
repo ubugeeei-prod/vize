@@ -18,8 +18,9 @@ use crate::compile_script::lazy_hydration::transform_lazy_hydration_macros;
 use crate::compile_script::props::is_valid_identifier;
 use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
-    TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
-    extract_template_parts, extract_template_parts_full_for_inline, slice_template_parts,
+    TemplateBlockCompileContext, TemplateBlockCompileResult, compile_template_block,
+    compile_template_block_vapor, extract_template_parts, extract_template_parts_full_for_inline,
+    slice_template_parts,
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
@@ -27,7 +28,10 @@ use crate::types::{
     BindingMetadata, BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
     SfcMacroArtifact,
 };
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_atelier_core::{
+    TemplateSyntaxMode,
+    source_atlas::{SourceAtlasFallback, SourceAtlasPlate},
+};
 
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
@@ -73,6 +77,31 @@ fn create_standalone_import_warning() -> SfcError {
 
 pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
     matches!(lang, Some("ts" | "tsx"))
+}
+
+#[derive(Clone, Copy)]
+enum SourceMapComposition {
+    Composed,
+    Skipped,
+}
+
+fn record_template_source_map_fact(
+    template_output: &TemplateBlockCompileResult,
+    composition: SourceMapComposition,
+) {
+    if template_output.source_map_fragment().is_none() {
+        return;
+    }
+
+    let profiler = global_profiler();
+    profiler.record_counter("atelier.profile.template_source_map_fragments", 1);
+    profiler.record_counter(SourceAtlasPlate::SourceMap.profile_counter(), 1);
+    if matches!(composition, SourceMapComposition::Skipped) {
+        profiler.record_counter(
+            SourceAtlasFallback::SourceMapCompositionSkipped.profile_counter(),
+            1,
+        );
+    }
 }
 
 fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacroArtifact> {
@@ -367,6 +396,7 @@ fn compile_sfc_inner(
 
         match template_result {
             Ok(template_output) => {
+                record_template_source_map_fact(&template_output, SourceMapComposition::Composed);
                 map = template_output.source_map_json();
                 warnings.extend(template_output.warnings);
                 code = template_output.code;
@@ -558,6 +588,10 @@ fn compile_sfc_inner(
 
             match template_result {
                 Ok(template_output) => {
+                    record_template_source_map_fact(
+                        &template_output,
+                        SourceMapComposition::Skipped,
+                    );
                     warnings.extend(template_output.warnings);
                     let template_code = template_output.code;
                     // Build output matching Vue's compiler-sfc:
@@ -874,9 +908,7 @@ fn compile_sfc_inner(
     };
 
     if let Some(Ok(template_output)) = &template_result {
-        if template_output.source_map_fragment().is_some() {
-            global_profiler().record_counter("atelier.profile.template_source_map_fragments", 1);
-        }
+        record_template_source_map_fact(template_output, SourceMapComposition::Skipped);
         warnings.extend(template_output.warnings.clone());
     }
 

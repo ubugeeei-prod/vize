@@ -50,6 +50,19 @@ fn compile_with_source_map(source_map: bool) -> super::TemplateBlockCompileResul
     .expect("template should compile")
 }
 
+fn sfc_options_with_source_map() -> SfcCompileOptions {
+    SfcCompileOptions {
+        template: TemplateCompileOptions {
+            compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
+                source_map: true,
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
 #[test]
 fn dom_template_carries_source_map_fragment_without_changing_code() {
     let with_map = compile_with_source_map(true);
@@ -110,4 +123,50 @@ fn template_only_sfc_surfaces_template_source_map_when_requested() {
         .expect("template-only SFC should surface a map");
     assert_eq!(map["version"], 3);
     assert_eq!(map["sources"][0], "template.vue");
+}
+
+#[test]
+fn normal_script_sfc_waits_to_surface_template_map_until_composed() {
+    let source = r#"<template><div>{{ msg }}</div></template>
+<script>
+export default {
+  data() {
+    return { msg: "hi" }
+  }
+}
+</script>"#;
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("SFC should parse");
+    let with_map = compile_sfc(&descriptor, sfc_options_with_source_map()).expect("SFC compiles");
+    let without_map = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("SFC compiles");
+
+    assert_eq!(
+        with_map.code, without_map.code,
+        "requesting a source map must not change assembled SFC code"
+    );
+    assert!(
+        with_map.map.is_none(),
+        "normal script/template assembly must not expose an uncomposed template map"
+    );
+}
+
+#[test]
+fn script_setup_sfc_waits_to_surface_template_map_until_composed() {
+    let source = r#"<template><button @click="inc">{{ count }}</button></template>
+<script setup>
+import { ref } from "vue"
+const count = ref(0)
+const inc = () => count.value++
+</script>"#;
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("SFC should parse");
+    let with_map = compile_sfc(&descriptor, sfc_options_with_source_map()).expect("SFC compiles");
+    let without_map = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("SFC compiles");
+
+    assert_eq!(
+        with_map.code, without_map.code,
+        "requesting a source map must not change inline script setup output"
+    );
+    assert!(
+        with_map.map.is_none(),
+        "inline script setup assembly must not expose an uncomposed template map"
+    );
 }
