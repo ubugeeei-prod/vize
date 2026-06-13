@@ -1,4 +1,4 @@
-use super::analyzer::CrossFileReactivityAnalyzer;
+use super::engine::CrossFileReactivityAnalyzer;
 use super::provide_helpers::{
     provide_key_display, provide_key_identity, provided_value_reactive_kind,
 };

@@ -10,7 +10,7 @@
 //! - Lazy file metadata loading to avoid unnecessary I/O
 //! - Source hashing for change detection without file I/O
 
-use crate::analyzers::cross_file_reactivity::store_detection::{
+use crate::rules::cross_file_reactivity::store_detection::{
     StoreFactories, collect_store_factories,
 };
 use std::path::{Path, PathBuf};

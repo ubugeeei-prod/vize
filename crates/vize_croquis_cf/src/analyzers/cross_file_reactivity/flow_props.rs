@@ -1,4 +1,4 @@
-use super::analyzer::CrossFileReactivityAnalyzer;
+use super::engine::CrossFileReactivityAnalyzer;
 use super::prop_helpers::{
     component_usage_targets_child, imported_aliases_for_child, prop_reactivity_loss,
     reactive_source_from_expression,

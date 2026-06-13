@@ -1,7 +1,7 @@
 use super::CrossFileAnalyzer;
 use super::diagnostics::{dedupe_diagnostics, sort_diagnostics};
 use crate::analyzer::types::{CrossFileResult, CrossFileStats};
-use crate::analyzers;
+use crate::rules;
 
 impl CrossFileAnalyzer {
     /// Run cross-file analysis.
@@ -22,23 +22,23 @@ impl CrossFileAnalyzer {
         let provide_inject_index = self
             .options
             .provide_inject
-            .then(|| analyzers::ProvideInjectIndex::new(&self.registry, &self.graph));
+            .then(|| rules::ProvideInjectIndex::new(&self.registry, &self.graph));
 
-        // Run enabled analyzers
+        // Run enabled rules
         if self.options.fallthrough_attrs {
-            let (info, diags) = analyzers::analyze_fallthrough(&self.registry, &self.graph);
+            let (info, diags) = rules::analyze_fallthrough(&self.registry, &self.graph);
             result.fallthrough_info = info;
             result.diagnostics.extend(diags);
         }
 
         if self.options.component_emits {
-            let (flows, diags) = analyzers::analyze_emits(&self.registry, &self.graph);
+            let (flows, diags) = rules::analyze_emits(&self.registry, &self.graph);
             result.emit_flows = flows;
             result.diagnostics.extend(diags);
         }
 
         if self.options.event_bubbling {
-            let (bubbles, diags) = analyzers::analyze_event_bubbling(&self.registry, &self.graph);
+            let (bubbles, diags) = rules::analyze_event_bubbling(&self.registry, &self.graph);
             result.event_bubbles = bubbles;
             result.diagnostics.extend(diags);
         }
@@ -46,8 +46,8 @@ impl CrossFileAnalyzer {
         if self.options.provide_inject
             && let Some(index) = provide_inject_index.as_ref()
         {
-            let (matches, diags) = analyzers::analyze_provide_inject_with_index(index);
-            result.provide_inject_tree = Some(analyzers::build_provide_inject_tree_with_index(
+            let (matches, diags) = rules::analyze_provide_inject_with_index(index);
+            result.provide_inject_tree = Some(rules::build_provide_inject_tree_with_index(
                 &self.registry,
                 index,
                 &matches,
@@ -57,32 +57,32 @@ impl CrossFileAnalyzer {
         }
 
         if self.options.unique_ids {
-            let (issues, diags) = analyzers::analyze_element_ids(&self.registry);
+            let (issues, diags) = rules::analyze_element_ids(&self.registry);
             result.unique_id_issues = issues;
             result.diagnostics.extend(diags);
         }
 
         if self.options.server_client_boundary || self.options.error_suspense_boundary {
-            let (boundaries, diags) = analyzers::analyze_boundaries(&self.registry, &self.graph);
+            let (boundaries, diags) = rules::analyze_boundaries(&self.registry, &self.graph);
             result.boundaries = boundaries;
             result.diagnostics.extend(diags);
         }
 
         if self.options.reactivity_tracking {
             // Single-file reactivity analysis
-            let (issues, diags) = analyzers::analyze_reactivity(&self.registry, &self.graph);
+            let (issues, diags) = rules::analyze_reactivity(&self.registry, &self.graph);
             result.reactivity_issues = issues;
             result.diagnostics.extend(diags);
 
             // Cross-file reactivity analysis
             let (cross_issues, cross_diags) =
-                analyzers::analyze_cross_file_reactivity(&self.registry, &self.graph);
+                rules::analyze_cross_file_reactivity(&self.registry, &self.graph);
             result.cross_file_reactivity_issues = cross_issues;
             result.diagnostics.extend(cross_diags);
         }
 
         if self.options.race_conditions {
-            let (issues, diags) = analyzers::analyze_race_conditions_with_index(
+            let (issues, diags) = rules::analyze_race_conditions_with_index(
                 &self.registry,
                 &self.graph,
                 provide_inject_index.as_ref(),
@@ -93,21 +93,20 @@ impl CrossFileAnalyzer {
 
         if self.options.setup_context {
             // Setup context violation analysis (CSRP/memory leaks)
-            let (issues, diags) = analyzers::analyze_setup_context(&self.registry, &self.graph);
+            let (issues, diags) = rules::analyze_setup_context(&self.registry, &self.graph);
             result.setup_context_issues = issues;
             result.diagnostics.extend(diags);
         }
 
-        // Static validation analyzers
+        // Static validation rules
         if self.options.component_resolution {
-            let (issues, diags) =
-                analyzers::analyze_component_resolution(&self.registry, &self.graph);
+            let (issues, diags) = rules::analyze_component_resolution(&self.registry, &self.graph);
             result.component_resolution_issues = issues;
             result.diagnostics.extend(diags);
         }
 
         if self.options.props_validation {
-            let (issues, diags) = analyzers::analyze_props_validation(&self.registry, &self.graph);
+            let (issues, diags) = rules::analyze_props_validation(&self.registry, &self.graph);
             result.props_validation_issues = issues;
             result.diagnostics.extend(diags);
         }

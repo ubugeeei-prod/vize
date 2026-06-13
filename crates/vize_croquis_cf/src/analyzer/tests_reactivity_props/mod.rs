@@ -1,5 +1,5 @@
 use super::{CrossFileAnalyzer, CrossFileOptions};
-use crate::analyzers::CrossFileReactivityIssueKind;
+use crate::rules::CrossFileReactivityIssueKind;
 use std::path::Path;
 use vize_carton::{CompactString, SmallVec};
 use vize_croquis::AnalyzerOptions;

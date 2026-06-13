@@ -1,6 +1,6 @@
 //! Diagnostics generation and reporting for cross-file reactivity analysis.
 
-use super::analyzer::CrossFileReactivityAnalyzer;
+use super::engine::CrossFileReactivityAnalyzer;
 use super::types::{CrossFileReactivityIssueKind, ReactivityFlowKind};
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
 use vize_carton::CompactString;

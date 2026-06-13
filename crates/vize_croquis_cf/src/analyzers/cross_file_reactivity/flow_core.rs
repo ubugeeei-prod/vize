@@ -1,4 +1,4 @@
-use super::analyzer::CrossFileReactivityAnalyzer;
+use super::engine::CrossFileReactivityAnalyzer;
 
 impl<'a> CrossFileReactivityAnalyzer<'a> {
     pub(super) fn track_cross_file_flows(&mut self) {

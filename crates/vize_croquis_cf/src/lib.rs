@@ -54,6 +54,7 @@ mod suppression;
 
 // Analyzer implementations
 pub(crate) mod analyzers;
+pub(crate) use analyzers as rules;
 
 // Re-exports
 pub use analyzer::{CrossFileAnalyzer, CrossFileOptions, CrossFileResult, CrossFileStats};

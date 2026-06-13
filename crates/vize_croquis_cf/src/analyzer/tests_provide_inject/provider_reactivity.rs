@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn test_shared_child_reactivity_loss_reports_each_provider_context() {
-    use crate::analyzers::CrossFileReactivityIssueKind;
+    use crate::rules::CrossFileReactivityIssueKind;
 
     let mut analyzer =
         CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
@@ -74,7 +74,7 @@ const { count } = inject('state') as { count: number }"#,
 
 #[test]
 fn test_reactivity_tracking_uses_later_same_component_provide() {
-    use crate::analyzers::CrossFileReactivityIssueKind;
+    use crate::rules::CrossFileReactivityIssueKind;
 
     let mut analyzer =
         CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));

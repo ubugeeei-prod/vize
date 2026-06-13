@@ -24,9 +24,9 @@
 //!                               REACTIVITY LOST!
 //! ```
 
-mod analyzer;
 mod collect;
 mod diagnostics;
+mod engine;
 mod flow_composable;
 mod flow_core;
 mod flow_props;
@@ -39,7 +39,7 @@ mod provide_helpers;
 pub(crate) mod store_detection;
 mod types;
 
-pub use analyzer::CrossFileReactivityAnalyzer;
+pub use engine::CrossFileReactivityAnalyzer;
 pub use types::{
     CrossFileReactiveValue, CrossFileReactivityIssue, CrossFileReactivityIssueKind,
     ReactiveConsumption, ReactiveExposure, ReactiveValueId, ReactivityFlow, ReactivityFlowKind,

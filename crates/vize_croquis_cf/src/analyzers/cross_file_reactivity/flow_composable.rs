@@ -1,4 +1,4 @@
-use super::analyzer::CrossFileReactivityAnalyzer;
+use super::engine::CrossFileReactivityAnalyzer;
 use super::types::{CrossFileReactivityIssue, CrossFileReactivityIssueKind};
 use crate::diagnostics::DiagnosticSeverity;
 use crate::registry::FileId;

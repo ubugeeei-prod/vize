@@ -1,8 +1,8 @@
 //! Types for cross-file analysis.
 
-use super::super::analyzers;
 use super::super::diagnostics::CrossFileDiagnostic;
 use super::super::registry::FileId;
+use super::super::rules;
 
 /// Options for cross-file analysis (opt-in features).
 #[derive(Debug, Clone, Default)]
@@ -184,46 +184,46 @@ pub struct CrossFileResult {
     pub diagnostics: Vec<CrossFileDiagnostic>,
 
     /// Fallthrough attribute information per component.
-    pub fallthrough_info: Vec<analyzers::FallthroughInfo>,
+    pub fallthrough_info: Vec<rules::FallthroughInfo>,
 
     /// Emit flow information.
-    pub emit_flows: Vec<analyzers::EmitFlow>,
+    pub emit_flows: Vec<rules::EmitFlow>,
 
     /// Event bubbling information.
-    pub event_bubbles: Vec<analyzers::EventBubble>,
+    pub event_bubbles: Vec<rules::EventBubble>,
 
     /// Provide/inject matches.
-    pub provide_inject_matches: Vec<analyzers::ProvideInjectMatch>,
+    pub provide_inject_matches: Vec<rules::ProvideInjectMatch>,
 
     /// Provide/inject tree, populated when provide/inject analysis is enabled.
-    pub provide_inject_tree: Option<analyzers::ProvideInjectTree>,
+    pub provide_inject_tree: Option<rules::ProvideInjectTree>,
 
     /// Unique ID issues.
-    pub unique_id_issues: Vec<analyzers::UniqueIdIssue>,
+    pub unique_id_issues: Vec<rules::UniqueIdIssue>,
 
     /// Boundary information.
-    pub boundaries: Vec<analyzers::BoundaryInfo>,
+    pub boundaries: Vec<rules::BoundaryInfo>,
 
     /// Reactivity issues.
-    pub reactivity_issues: Vec<analyzers::ReactivityIssue>,
+    pub reactivity_issues: Vec<rules::ReactivityIssue>,
 
     /// Cross-file reactivity issues.
-    pub cross_file_reactivity_issues: Vec<analyzers::CrossFileReactivityIssue>,
+    pub cross_file_reactivity_issues: Vec<rules::CrossFileReactivityIssue>,
 
     /// Async race-condition issues.
-    pub race_condition_issues: Vec<analyzers::RaceConditionIssue>,
+    pub race_condition_issues: Vec<rules::RaceConditionIssue>,
 
     /// Setup context violations (CSRP/memory leaks).
-    pub setup_context_issues: Vec<analyzers::SetupContextIssue>,
+    pub setup_context_issues: Vec<rules::SetupContextIssue>,
 
     /// Circular dependencies (as paths of file IDs).
     pub circular_deps: Vec<Vec<FileId>>,
 
     /// Component resolution issues.
-    pub component_resolution_issues: Vec<analyzers::ComponentResolutionIssue>,
+    pub component_resolution_issues: Vec<rules::ComponentResolutionIssue>,
 
     /// Props validation issues.
-    pub props_validation_issues: Vec<analyzers::PropsValidationIssue>,
+    pub props_validation_issues: Vec<rules::PropsValidationIssue>,
 
     /// Statistics.
     pub stats: CrossFileStats,
