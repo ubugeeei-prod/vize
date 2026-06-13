@@ -327,6 +327,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/warn-custom-block",
     "vue/warn-custom-directive",
     "vue/no-boolean-attr-value",
+    "vue/no-empty-component-block",
     "vue/no-useless-mustaches",
     "vue/no-root-v-if",
     "vue/no-useless-v-bind",
@@ -468,6 +469,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/warn-custom-block",
     "vue/warn-custom-directive",
     "vue/no-boolean-attr-value",
+    "vue/no-empty-component-block",
     "vue/no-useless-mustaches",
     "vue/no-root-v-if",
     "vue/no-useless-v-bind",
@@ -544,6 +546,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-dupe-keys",
     "script/no-side-effects-in-computed-properties",
     "script/no-arrow-functions-in-watch",
-    "script/no-export-in-script-setup"
+    "script/no-export-in-script-setup",
+    "script/no-deprecated-dollar-listeners-api"
   ]
 }

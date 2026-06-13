@@ -24,6 +24,7 @@
 mod no_arrow_functions_in_watch;
 mod no_async_in_computed;
 mod no_deep_destructure_in_props;
+mod no_deprecated_dollar_listeners_api;
 mod no_dupe_keys;
 mod no_export_in_script_setup;
 mod no_get_current_instance;
@@ -61,6 +62,7 @@ use vize_carton::profile;
 pub use no_arrow_functions_in_watch::NoArrowFunctionsInWatch;
 pub use no_async_in_computed::NoAsyncInComputed;
 pub use no_deep_destructure_in_props::NoDeepDestructureInProps;
+pub use no_deprecated_dollar_listeners_api::NoDeprecatedDollarListenersApi;
 pub use no_dupe_keys::NoDupeKeys;
 pub use no_export_in_script_setup::NoExportInScriptSetup;
 pub use no_get_current_instance::NoGetCurrentInstance;
@@ -327,24 +329,5 @@ impl Default for ScriptLinter {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::ScriptLinter;
-
-    #[test]
-    fn test_has_vue_imports() {
-        assert!(ScriptLinter::has_vue_imports("import { ref } from 'vue'"));
-        assert!(ScriptLinter::has_vue_imports("import { ref } from \"vue\""));
-        assert!(ScriptLinter::has_vue_imports(
-            "import { h } from '@vue/runtime-core'"
-        ));
-        assert!(!ScriptLinter::has_vue_imports("import { foo } from 'bar'"));
-    }
-
-    #[test]
-    fn test_empty_linter() {
-        let linter = ScriptLinter::new();
-        let result = linter.lint("import { ref } from 'vue'", 0);
-        assert_eq!(result.error_count, 0);
-        assert_eq!(result.warning_count, 0);
-    }
-}
+#[path = "script_tests.rs"]
+mod tests;
