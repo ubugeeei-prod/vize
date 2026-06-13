@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-deprecated-router-link-tag-prop",
+        severity: Error,
+        message: "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+        start: 24,
+        end: 36,
+        help: Some(
+            "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
