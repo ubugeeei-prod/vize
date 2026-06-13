@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/require_prop_type_constructor/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/require-prop-type-constructor",
+        severity: Error,
+        message: "Prop type \"Number\" should be a constructor, not a string.",
+        start: 46,
+        end: 54,
+        help: Some(
+            "Use the constructor `Number` (without quotes) as the prop type.",
+        ),
+        labels: [
+            Label {
+                message: "string literal used as a prop type",
+                start: 46,
+                end: 54,
+            },
+        ],
+        fix: None,
+    },
+]
