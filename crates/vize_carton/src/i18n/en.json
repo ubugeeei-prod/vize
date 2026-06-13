@@ -101,7 +101,13 @@
   "vue/no-unsafe-url.static_help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
   "vue/no-unsafe-url.help_href": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url",
   "vue/no-unsafe-url.help_src": "Ensure URLs are sanitized before binding. Use @braintree/sanitize-url for validation",
-  "vue/no-unsafe-url.help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol", "vue/no-template-target-blank.description": "Disallow target=\"_blank\" without rel=\"noopener\"", "vue/no-template-target-blank.message": "Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk", "vue/no-template-target-blank.help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener", "vue/no-unsandboxed-iframe.description": "Require a sandbox attribute on iframe elements", "vue/no-unsandboxed-iframe.message": "<iframe> is missing a sandbox attribute", "vue/no-unsandboxed-iframe.help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs",
+  "vue/no-unsafe-url.help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+  "vue/no-template-target-blank.description": "Disallow target=\"_blank\" without rel=\"noopener\"",
+  "vue/no-template-target-blank.message": "Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+  "vue/no-template-target-blank.help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener",
+  "vue/no-unsandboxed-iframe.description": "Require a sandbox attribute on iframe elements",
+  "vue/no-unsandboxed-iframe.message": "<iframe> is missing a sandbox attribute",
+  "vue/no-unsandboxed-iframe.help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs",
   "vue/no-v-html.description": "Disallow use of v-html to prevent XSS attacks",
   "vue/no-v-html.message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
   "vue/no-v-html.help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
@@ -388,22 +394,16 @@
 
   "html/deprecated-element.message": "<{tag}> is a deprecated HTML element",
   "html/deprecated-element.help": "This element is obsolete per the HTML Living Standard. Use modern HTML elements with CSS for styling instead.",
-
   "html/deprecated-attr.message": "The \"{attr}\" attribute on <{tag}> is deprecated",
   "html/deprecated-attr.help": "Use {suggestion} instead.",
-
   "html/no-consecutive-br.message": "Consecutive <br> elements detected",
   "html/no-consecutive-br.help": "Use <p> elements or CSS margin/padding for spacing instead of multiple <br> tags.",
-
   "html/id-duplication.message": "Duplicate id=\"{id}\" found in template",
   "html/id-duplication.help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById().",
-
   "html/require-datetime.message": "<time> element needs a datetime attribute when content is not a valid datetime string",
   "html/require-datetime.help": "Add a datetime attribute with a machine-readable date/time value, e.g. <time datetime=\"2024-12-25\">Christmas</time>",
-
   "html/no-empty-palpable-content.message": "<{tag}> element is empty but expects visible content",
   "html/no-empty-palpable-content.help": "Add text content, child elements, or use aria-label for accessible content.",
-
   "html/no-duplicate-dt.message": "Duplicate <dt> term \"{term}\" in <dl>",
   "html/no-duplicate-dt.help": "Each term in a definition list should be unique. Combine definitions under a single <dt> or use distinct terms.",
 

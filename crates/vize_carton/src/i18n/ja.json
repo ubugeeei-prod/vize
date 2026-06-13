@@ -101,7 +101,13 @@
   "vue/no-unsafe-url.static_help": "http(s)、相対URL、または実行可能でないdata URLを使用してください。javascript:、vbscript:、text/html data URL、SVG data URLは避けてください",
   "vue/no-unsafe-url.help_href": "<router-link :to=\"...\">を使用するか、@braintree/sanitize-urlでURLをサニタイズすることを検討してください",
   "vue/no-unsafe-url.help_src": "バインディング前にURLがサニタイズされていることを確認してください。検証には@braintree/sanitize-urlを使用してください",
-  "vue/no-unsafe-url.help": "javascript:プロトコルによるXSSを防ぐため、バインディング前にURLをサニタイズしてください", "vue/no-template-target-blank.description": "rel=\"noopener\"のないtarget=\"_blank\"を禁止する", "vue/no-template-target-blank.message": "rel=\"noopener\"またはrel=\"noreferrer\"のないtarget=\"_blank\"はセキュリティリスクです", "vue/no-template-target-blank.help": "新しいタブで開くリンクにはrel=\"noopener\"（またはrel=\"noreferrer\"）を追加し、window.opener経由のリバースタブナビングを防いでください", "vue/no-unsandboxed-iframe.description": "iframe要素にsandbox属性を必須にする", "vue/no-unsandboxed-iframe.message": "<iframe>にsandbox属性がありません", "vue/no-unsandboxed-iframe.help": "sandbox属性（最も制限的にするにはsandbox=\"\"）を追加し、埋め込みコンテンツに必要な権限だけを再付与してください",
+  "vue/no-unsafe-url.help": "javascript:プロトコルによるXSSを防ぐため、バインディング前にURLをサニタイズしてください",
+  "vue/no-template-target-blank.description": "rel=\"noopener\"のないtarget=\"_blank\"を禁止する",
+  "vue/no-template-target-blank.message": "rel=\"noopener\"またはrel=\"noreferrer\"のないtarget=\"_blank\"はセキュリティリスクです",
+  "vue/no-template-target-blank.help": "新しいタブで開くリンクにはrel=\"noopener\"（またはrel=\"noreferrer\"）を追加し、window.opener経由のリバースタブナビングを防いでください",
+  "vue/no-unsandboxed-iframe.description": "iframe要素にsandbox属性を必須にする",
+  "vue/no-unsandboxed-iframe.message": "<iframe>にsandbox属性がありません",
+  "vue/no-unsandboxed-iframe.help": "sandbox属性（最も制限的にするにはsandbox=\"\"）を追加し、埋め込みコンテンツに必要な権限だけを再付与してください",
   "vue/no-v-html.description": "XSS攻撃を防ぐためにv-htmlの使用を禁止する",
   "vue/no-v-html.message": "v-htmlはXSS攻撃につながる可能性があります。ユーザー提供のコンテンツでの使用は避けてください",
   "vue/no-v-html.help": "テキスト補間{{ }}またはサニタイゼーションライブラリの使用を検討してください",
@@ -388,22 +394,16 @@
 
   "html/deprecated-element.message": "<{tag}>は非推奨のHTML要素です",
   "html/deprecated-element.help": "この要素はHTML Living Standardで廃止されています。CSSを使用したモダンなHTML要素を代わりに使用してください。",
-
   "html/deprecated-attr.message": "<{tag}>の\"{attr}\"属性は非推奨です",
   "html/deprecated-attr.help": "代わりに{suggestion}を使用してください。",
-
   "html/no-consecutive-br.message": "連続する<br>要素が検出されました",
   "html/no-consecutive-br.help": "複数の<br>タグの代わりに、<p>要素やCSSのmargin/paddingを使用してください。",
-
   "html/id-duplication.message": "テンプレート内にid=\"{id}\"が重複しています",
   "html/id-duplication.help": "要素のIDはドキュメント内で一意でなければなりません。IDの重複はlabel関連付け、ARIA参照、getElementById()を壊します。",
-
   "html/require-datetime.message": "<time>要素にはコンテンツが有効な日時文字列でない場合、datetime属性が必要です",
   "html/require-datetime.help": "機械可読な日時値を持つdatetime属性を追加してください。例: <time datetime=\"2024-12-25\">クリスマス</time>",
-
   "html/no-empty-palpable-content.message": "<{tag}>要素は空ですが、表示コンテンツが期待されています",
   "html/no-empty-palpable-content.help": "テキストコンテンツ、子要素を追加するか、アクセシブルなコンテンツにはaria-labelを使用してください。",
-
   "html/no-duplicate-dt.message": "<dl>内に重複する<dt>用語「{term}」があります",
   "html/no-duplicate-dt.help": "定義リスト内の各用語は一意であるべきです。1つの<dt>に定義をまとめるか、異なる用語を使用してください。",
 
