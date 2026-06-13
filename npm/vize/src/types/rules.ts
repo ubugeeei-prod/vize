@@ -111,6 +111,7 @@ export const LINT_RULE_NAMES = [
   "vue/mustache-interpolation-spacing",
   "vue/no-boolean-attr-value",
   "vue/no-child-content",
+  "vue/no-deprecated-html-element-is",
   "vue/no-deprecated-router-link-tag-prop",
   "vue/no-deprecated-scope-attribute",
   "vue/no-deprecated-slot-attribute",
