@@ -135,6 +135,7 @@ export const LINT_RULE_NAMES = [
   "vue/no-useless-template-attributes",
   "vue/no-useless-v-bind",
   "vue/no-v-html",
+  "vue/no-v-text",
   "vue/no-v-text-v-html-on-component",
   "vue/permitted-contents",
   "vue/prefer-props-shorthand",
