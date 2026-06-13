@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/require_toggle_inside_transition.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/require-toggle-inside-transition",
+        severity: Error,
+        message: "the element inside `<transition>` is expected to have a toggle such as `v-if`, `v-show`, or a bound `:key`",
+        start: 12,
+        end: 17,
+        help: Some(
+            "Add `v-if`, `v-show`, `v-else`, `v-else-if`, or a bound `:key`, or use a dynamic `<component :is>`; otherwise the element never enters or leaves and the `<transition>` does nothing.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

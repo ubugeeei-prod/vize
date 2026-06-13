@@ -33,6 +33,7 @@ mod no_v_text_v_html_on_component;
 mod prop_name_casing;
 mod require_component_is;
 mod require_scoped_style;
+mod require_toggle_inside_transition;
 mod require_v_for_key;
 mod valid_attribute_name;
 mod valid_v_bind;
@@ -106,6 +107,7 @@ pub use no_use_v_if_with_v_for::NoUseVIfWithVFor;
 pub use no_useless_template_attributes::NoUselessTemplateAttributes;
 pub use no_v_text_v_html_on_component::NoVTextVHtmlOnComponent;
 pub use require_component_is::RequireComponentIs;
+pub use require_toggle_inside_transition::RequireToggleInsideTransition;
 pub use require_v_for_key::RequireVForKey;
 pub use valid_attribute_name::ValidAttributeName;
 pub use valid_v_bind::ValidVBind;
@@ -177,17 +179,21 @@ pub use single_style_block::SingleStyleBlock;
 pub use crate::rules::opinionated::vue::WarnCustomBlock;
 pub use crate::rules::opinionated::vue::WarnCustomDirective;
 
-/// Register the `valid-v-*` directive-shape rules that every preset shares.
+/// Register the shared `v-*` directive correctness rules every preset enables.
 ///
-/// These check that built-in directives carry the expected expression,
+/// Most of these check that built-in directives carry the expected expression,
 /// argument, and modifier shape (e.g. `v-cloak` takes none, `v-text` takes
-/// one). Bundling them here keeps the per-preset registration list short.
+/// one). The bundle also folds in a couple of essential markup checks of the
+/// same class — `<transition>` requiring a toggle on its wrapped element — that
+/// belong with the other essential directive-correctness rules. Bundling them
+/// here keeps the per-preset registration list short.
 pub(crate) fn register_valid_directives(registry: &mut crate::rule::RuleRegistry) {
     registry.register(Box::new(ValidVMemo));
     registry.register(Box::new(ValidVCloak));
     registry.register(Box::new(ValidVOnce));
     registry.register(Box::new(ValidVText));
     registry.register(Box::new(ValidVHtml));
+    registry.register(Box::new(RequireToggleInsideTransition));
 }
 
 /// Register Vue migration rules as explicit opt-in rules.

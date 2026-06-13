@@ -183,6 +183,7 @@ export const LINT_RULE_NAMES = [
   "vue/require-component-is",
   "vue/require-component-registration",
   "vue/require-scoped-style",
+  "vue/require-toggle-inside-transition",
   "vue/require-v-for-key",
   "vue/scoped-event-names",
   "vue/sfc-element-order",

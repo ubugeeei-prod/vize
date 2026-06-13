@@ -174,4 +174,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "オブジェクトを1つにまとめてください。例: :class=\"[{ a }, { b }]\" は :class=\"{ a, b }\" になります。",
         "请将这些对象合并为一个，例如 :class=\"[{ a }, { b }]\" 改为 :class=\"{ a, b }\"。",
     ),
+    // vue/require-toggle-inside-transition
+    (
+        "vue/require-toggle-inside-transition.description",
+        "Require a toggle on the element wrapped by `<transition>`",
+        "`<transition>`で囲む要素にトグルを必須にする",
+        "要求`<transition>`包裹的元素具有切换条件",
+    ),
+    (
+        "vue/require-toggle-inside-transition.message",
+        "the element inside `<transition>` is expected to have a toggle such as `v-if`, `v-show`, or a bound `:key`",
+        "`<transition>`内の要素には`v-if`、`v-show`、またはバインドされた`:key`などのトグルが必要です",
+        "`<transition>`内的元素应具有切换条件，例如`v-if`、`v-show`或绑定的`:key`",
+    ),
+    (
+        "vue/require-toggle-inside-transition.help",
+        "Add `v-if`, `v-show`, `v-else`, `v-else-if`, or a bound `:key`, or use a dynamic `<component :is>`; otherwise the element never enters or leaves and the `<transition>` does nothing.",
+        "`v-if`、`v-show`、`v-else`、`v-else-if`、バインドされた`:key`を追加するか、動的な`<component :is>`を使用してください。そうしないと要素が出入りせず、`<transition>`は何もしません。",
+        "请添加`v-if`、`v-show`、`v-else`、`v-else-if`或绑定的`:key`，或使用动态`<component :is>`；否则元素永远不会进入或离开，`<transition>`将不起作用。",
+    ),
 ];
