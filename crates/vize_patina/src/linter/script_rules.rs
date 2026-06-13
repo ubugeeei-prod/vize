@@ -19,7 +19,10 @@ use registry::{
 use registry::OPT_IN_SCRIPT_RULE_NAMES;
 
 pub fn builtin_script_rules() -> Vec<BuiltinScriptRuleMeta> {
-    BUILTIN_SCRIPT_RULES.iter().map(|entry| entry.meta()).collect()
+    BUILTIN_SCRIPT_RULES
+        .iter()
+        .map(|entry| entry.meta())
+        .collect()
 }
 
 #[inline]
