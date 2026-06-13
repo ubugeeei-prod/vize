@@ -21,8 +21,7 @@ use super::names::{
     RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,
     RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
     RULE_REQUIRE_SYMBOL_PROVIDE, RULE_RETURN_IN_COMPUTED_PROPERTY,
-    RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 use super::{
     BuiltinScriptRuleEntry, ECOSYSTEM_SCRIPT_PRESETS, OPINIONATED_SCRIPT_PRESETS,
@@ -313,6 +312,8 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         fixable: false,
         presets: OPT_IN_SCRIPT_PRESETS,
         rule: &NoDeprecatedEventsApi,
+    },
+    BuiltinScriptRuleEntry {
         rule_name: RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
         profile_name: "patina.script_rule.require_prop_type_constructor",
         category: "Script",
