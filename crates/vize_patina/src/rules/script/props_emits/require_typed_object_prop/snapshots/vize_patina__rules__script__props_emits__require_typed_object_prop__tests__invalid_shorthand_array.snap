@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/require-typed-object-prop",
+        severity: Warning,
+        message: "Prop 'foo' typed as `Array` should have an explicit element type.",
+        start: 36,
+        end: 41,
+        help: Some(
+            "Add an `as PropType<T>` cast, e.g. `Array as PropType<T>`, or use the type-based `defineProps<{ ... }>()` form.",
+        ),
+        labels: [
+            Label {
+                message: "bare `Object`/`Array` constructor used as a prop type",
+                start: 36,
+                end: 41,
+            },
+        ],
+        fix: None,
+    },
+]

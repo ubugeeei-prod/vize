@@ -110,6 +110,7 @@ export const LINT_RULE_NAMES = [
   "script/require-prop-type-constructor",
   "script/require-prop-types",
   "script/require-symbol-provide",
+  "script/require-typed-object-prop",
   "script/require-typed-ref",
   "script/return-in-computed-property",
   "script/return-in-emits-validator",
