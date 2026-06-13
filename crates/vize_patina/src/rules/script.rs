@@ -3,6 +3,7 @@
 //! are **opt-in**: enable them via `[rules.script]` in your configuration.
 
 mod component_options_name_casing;
+mod custom_event_name_casing;
 mod define_emits_declaration;
 mod define_macros_order;
 mod define_props_declaration;
@@ -61,6 +62,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_carton::profile;
 
 pub use component_options_name_casing::ComponentOptionsNameCasing;
+pub use custom_event_name_casing::CustomEventNameCasing;
 pub use define_emits_declaration::DefineEmitsDeclaration;
 pub use define_macros_order::DefineMacrosOrder;
 pub use define_props_declaration::DefinePropsDeclaration;

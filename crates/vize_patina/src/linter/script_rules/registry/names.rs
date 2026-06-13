@@ -67,6 +67,7 @@ pub(crate) const RULE_REQUIRE_PROP_TYPES: &str = "script/require-prop-types";
 pub(crate) const RULE_NO_RESERVED_PROPS: &str = "script/no-reserved-props";
 pub(crate) const RULE_NO_UNUSED_EMIT_DECLARATIONS: &str = "script/no-unused-emit-declarations";
 pub(crate) const RULE_RETURN_IN_EMITS_VALIDATOR: &str = "script/return-in-emits-validator";
+pub(crate) const RULE_CUSTOM_EVENT_NAME_CASING: &str = "script/custom-event-name-casing";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -122,6 +123,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_RESERVED_PROPS,
     RULE_NO_UNUSED_EMIT_DECLARATIONS,
     RULE_RETURN_IN_EMITS_VALIDATOR,
+    RULE_CUSTOM_EVENT_NAME_CASING,
 ];
 
 #[cfg(test)]
@@ -176,4 +178,5 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_RESERVED_PROPS,
     RULE_NO_UNUSED_EMIT_DECLARATIONS,
     RULE_RETURN_IN_EMITS_VALIDATOR,
+    RULE_CUSTOM_EVENT_NAME_CASING,
 ];
