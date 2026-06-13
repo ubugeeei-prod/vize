@@ -72,6 +72,7 @@ pub(crate) fn compile_template_block_vapor(
         code,
         warnings: recoverable_template_warnings(&diagnostics),
         sections: None,
+        module_sections: None,
     })
 }
 

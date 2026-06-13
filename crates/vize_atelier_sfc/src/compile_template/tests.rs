@@ -1,6 +1,8 @@
 //! Tests for template compilation utilities.
 
-use super::extraction::{extract_template_parts, extract_template_parts_full};
+use super::extraction::{
+    extract_template_parts, extract_template_parts_full, slice_template_parts_full,
+};
 use super::string_tracking::{
     StringTrackState, count_braces_outside_strings, count_braces_with_state,
     count_delims_with_state,
@@ -165,6 +167,30 @@ export function ssrRender(_ctx, _push, _parent, _attrs) {
 
     assert_eq!(render_fn_name, "ssrRender");
     insta::assert_debug_snapshot!((&imports, &render_fn));
+}
+
+#[test]
+fn test_slice_template_parts_full_matches_ssr_line_scanner() {
+    use crate::compile::output_module::OutputModule;
+    use vize_atelier_ssr::SsrCodegenResult;
+
+    let output_module = OutputModule::from_ssr_codegen(SsrCodegenResult {
+        preamble: String::from(
+            "import { ssrRenderComponent as _ssrRenderComponent } from \"vue/server-renderer\"\n",
+        )
+        .into(),
+        code: String::from(
+            "export function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_ctx.Foo, null, null, _parent))\n}",
+        )
+        .into(),
+    });
+    let sections = output_module.module_sections();
+    let code = output_module.into_code();
+
+    let sliced = slice_template_parts_full(&code, &sections, "ssrRender");
+    let scanned = extract_template_parts_full(&code);
+
+    assert_eq!(sliced, scanned);
 }
 
 #[test]

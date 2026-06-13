@@ -88,6 +88,19 @@ impl AtelierOutputMaps {
     }
 }
 
+/// Coarse chunk ranges in the flattened Atelier output module.
+///
+/// These ranges describe the chunks owned by [`OutputModule`] itself. Target
+/// Ateliers can layer finer sections, such as DOM render assets and return
+/// expressions, on top of these chunk boundaries.
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub(crate) struct AtelierModuleSections {
+    pub(crate) imports: OutputRange,
+    pub(crate) hoists: OutputRange,
+    pub(crate) functions: OutputRange,
+    pub(crate) exports: OutputRange,
+}
+
 /// The render function a generated SFC component should expose.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub(crate) enum RenderFunctionName {
@@ -169,7 +182,23 @@ impl OutputModule {
     }
 
     pub(crate) fn function_base_offset(&self) -> usize {
-        self.imports.len() + self.hoists.len() + 1
+        self.module_sections().functions.start
+    }
+
+    pub(crate) fn module_sections(&self) -> AtelierModuleSections {
+        let imports = OutputRange::new(0, self.imports.len());
+        let hoists = OutputRange::new(imports.end, imports.end + self.hoists.len());
+        let functions_start = hoists.end + 1;
+        let functions = OutputRange::new(functions_start, functions_start + self.functions.len());
+        let exports_start = functions.end + 1;
+        let exports = OutputRange::new(exports_start, exports_start + self.exports.len());
+
+        AtelierModuleSections {
+            imports,
+            hoists,
+            functions,
+            exports,
+        }
     }
 
     pub(crate) fn into_code(self) -> String {
@@ -313,10 +342,20 @@ mod tests {
                 "export function ssrRender(_ctx, _push) {\n  _push(_ssrInterpolate(_ctx.msg))\n}",
             ),
         });
+        let sections = output.module_sections();
+        let imports = output.imports.clone();
+        let functions = output.functions.clone();
+
+        let code = output.into_code();
 
         assert_eq!(
-            output.into_code(),
+            code,
             "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push) {\n  _push(_ssrInterpolate(_ctx.msg))\n}\n"
+        );
+        assert_eq!(&code[sections.imports.start..sections.imports.end], imports);
+        assert_eq!(
+            &code[sections.functions.start..sections.functions.end],
+            functions
         );
     }
 }

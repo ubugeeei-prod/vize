@@ -19,6 +19,7 @@ use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_cont
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
     extract_template_parts, extract_template_parts_full, slice_template_parts,
+    slice_template_parts_full,
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
@@ -901,7 +902,16 @@ fn compile_sfc_inner(
             if is_vapor || options.template.ssr {
                 let (imports, hoisted, render_fn, render_fn_name) = profile!(
                     "atelier.sfc.template.extract_parts_full",
-                    extract_template_parts_full(template_code)
+                    if options.template.ssr {
+                        match &template_output.module_sections {
+                            Some(sections) => {
+                                slice_template_parts_full(template_code, sections, "ssrRender")
+                            }
+                            None => extract_template_parts_full(template_code),
+                        }
+                    } else {
+                        extract_template_parts_full(template_code)
+                    }
                 );
                 (
                     imports,

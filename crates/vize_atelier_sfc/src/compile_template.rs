@@ -13,22 +13,27 @@ mod tests;
 
 pub(crate) use extraction::{
     extract_template_parts, extract_template_parts_full, slice_template_parts,
+    slice_template_parts_full,
 };
 pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Bump;
 
-use crate::compile::output_module::{AtelierOutputSections, OutputModule};
+use crate::compile::output_module::{AtelierModuleSections, AtelierOutputSections, OutputModule};
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
 
 pub(crate) struct TemplateBlockCompileResult {
     pub(crate) code: String,
     pub(crate) warnings: std::vec::Vec<SfcError>,
     /// Section boundaries of `code`, recorded while the render module was
-    /// emitted. `None` for the SSR/Vapor lanes (they re-scan via
-    /// `extract_template_parts_full`) and for codegen error paths.
+    /// emitted. `None` for SSR/Vapor lanes because these are DOM render-body
+    /// sections, and for codegen error paths.
     pub(crate) sections: Option<AtelierOutputSections>,
+    /// Coarse module chunk boundaries in `code`, recorded by SFC output
+    /// assembly. SSR inline mode can slice these directly instead of scanning
+    /// the flattened module to recover imports and the render function.
+    pub(crate) module_sections: Option<AtelierModuleSections>,
 }
 
 pub(crate) struct TemplateBlockCompileContext<'a> {
@@ -114,11 +119,14 @@ pub(crate) fn compile_template_block(
             });
         }
 
-        let output = OutputModule::from_ssr_codegen(result).into_code();
+        let output_module = OutputModule::from_ssr_codegen(result);
+        let module_sections = output_module.module_sections();
+        let output = output_module.into_code();
         return Ok(TemplateBlockCompileResult {
             code: output,
             warnings: recoverable_template_warnings(&errors),
             sections: None,
+            module_sections: Some(module_sections),
         });
     }
 
@@ -192,12 +200,14 @@ pub(crate) fn compile_template_block(
 
     let output_module = OutputModule::from_dom_codegen(result);
     let sections = output_module.sections;
+    let module_sections = output_module.module_sections();
     let (output, _map) = output_module.into_code_and_map();
 
     Ok(TemplateBlockCompileResult {
         code: output,
         warnings: recoverable_template_warnings(&errors),
         sections,
+        module_sections: Some(module_sections),
     })
 }
 

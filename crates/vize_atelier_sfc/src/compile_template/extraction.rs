@@ -5,7 +5,7 @@ use vize_carton::{String, ToCompactString};
 use super::string_tracking::{
     StringTrackState, count_braces_with_state, count_delims_with_state, count_parens_with_state,
 };
-use crate::compile::output_module::{AtelierOutputSections, OutputRange};
+use crate::compile::output_module::{AtelierModuleSections, AtelierOutputSections, OutputRange};
 
 /// Slice the structural sections out of compiled template code using
 /// emission-recorded byte offsets.
@@ -51,6 +51,33 @@ pub(crate) fn slice_template_parts(
     let render_body = String::new(body);
 
     (imports, hoisted, preamble, render_body, "render")
+}
+
+/// Slice full-module template parts from coarse SFC Atelier output chunks.
+///
+/// This matches [`extract_template_parts_full`] for lanes such as SSR where
+/// `OutputModule` already owns imports and the render function as separate
+/// chunks. It deliberately preserves the line scanner's trailing newline on
+/// the render function because inline script assembly depends on that shape.
+pub(crate) fn slice_template_parts_full(
+    template_code: &str,
+    sections: &AtelierModuleSections,
+    render_fn_name: &'static str,
+) -> (String, String, String, &'static str) {
+    let slice = |range: OutputRange| {
+        template_code
+            .get(range.start..range.end)
+            .unwrap_or_default()
+    };
+
+    let imports = String::new(slice(sections.imports));
+    let hoisted = String::new(slice(sections.hoists));
+    let mut render_fn = String::new(slice(sections.functions));
+    if !render_fn.is_empty() && !render_fn.ends_with('\n') {
+        render_fn.push('\n');
+    }
+
+    (imports, hoisted, render_fn, render_fn_name)
 }
 
 fn is_vapor_template_declaration(line: &str) -> bool {
