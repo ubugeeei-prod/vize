@@ -124,7 +124,7 @@ test("repository JS check enforces the v1 alpha warning budget", () => {
 
   assert.match(
     command,
-    /tools\/vite-plus\/check-warning-budget\.mjs -- \.\/node_modules\/\.bin\/vp check/,
+    /moon run -q --target native - -- -- \.\/node_modules\/\.bin\/vp check < tools\/moon\/scripts\/check_warning_budget\.mbtx/,
   );
 });
 
