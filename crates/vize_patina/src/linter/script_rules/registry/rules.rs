@@ -9,8 +9,8 @@
 //! addition in `names.rs`.
 
 use super::names::{
-    RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED,
-    RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
+    RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
+    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API, RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
     RULE_NO_DUPE_KEYS, RULE_NO_EXPORT_IN_SCRIPT_SETUP, RULE_NO_GET_CURRENT_INSTANCE,
     RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS, RULE_NO_NEXT_TICK,
@@ -28,15 +28,15 @@ use super::{
     OPT_IN_SCRIPT_PRESETS,
 };
 use crate::rules::script::{
-    ComponentOptionsNameCasing, NoArrowFunctionsInWatch, NoAsyncInComputed, NoDeepDestructureInProps,
-    NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDupeKeys,
-    NoExportInScriptSetup, NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports,
-    NoNextTick, NoOptionsApi, NoPotentialComponentOptionTypo, NoReactiveDestructure,
-    NoReservedIdentifiers, NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults,
-    PiniaPreferStoreToRefs, PreferComputed, PreferImportFromVue, PreferRefOverReactive,
-    PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType,
-    RequireSymbolProvide, ReturnInComputedProperty, VueRouterPreferNamedPush,
-    VueTestUtilsNoHtmlSnapshot,
+    ComponentOptionsNameCasing, NoArrowFunctionsInWatch, NoAsyncInComputed,
+    NoDeepDestructureInProps, NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi,
+    NoDupeKeys, NoExportInScriptSetup, NoGetCurrentInstance, NoImportCompilerMacros,
+    NoInternalImports, NoNextTick, NoOptionsApi, NoPotentialComponentOptionTypo,
+    NoReactiveDestructure, NoReservedIdentifiers, NoSideEffectsInComputed, NoTopLevelRefInScript,
+    NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed, PreferImportFromVue,
+    PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef,
+    RequireFunctionReturnType, RequireSymbolProvide, ReturnInComputedProperty,
+    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
 };
 
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
