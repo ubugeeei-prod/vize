@@ -56,7 +56,7 @@ pub fn generate_simple_expression(ctx: &mut CodegenContext, exp: &SimpleExpressi
     } else {
         // Strip TypeScript if needed
         let mut content: String = if ctx.options.is_ts && exp.content.contains(" as ") {
-            crate::transforms::strip_typescript_from_expression(&exp.content)
+            crate::steps::strip_typescript_from_expression(&exp.content)
         } else {
             exp.content.to_compact_string()
         };

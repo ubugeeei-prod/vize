@@ -4,7 +4,7 @@
 
 use vize_carton::{String, capitalize, is_native_tag};
 
-use crate::transform::TransformContext;
+use crate::lane::TransformContext;
 use crate::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode};
 
 /// Resolve element type
@@ -295,8 +295,8 @@ pub enum ChildrenType {
 mod tests {
     use super::{ElementType, resolve_element_type};
     use crate::TemplateChildNode;
+    use crate::lane::TransformContext;
     use crate::parser::parse;
-    use crate::transform::TransformContext;
     use bumpalo::Bump;
 
     #[test]

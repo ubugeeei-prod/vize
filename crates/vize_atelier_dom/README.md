@@ -4,9 +4,9 @@
 
 ## Highlights
 
-- DOM-aware passes for directives such as `v-model`, `v-show`, `v-text`, `v-html`, and `v-on`
+- DOM-aware steps for directives such as `v-model`, `v-show`, `v-text`, `v-html`, and `v-on`
 - Platform-specific namespace handling for HTML, SVG, and MathML
-- Shared parser and pipeline from `vize_atelier_core`
+- Shared parser and transform lane from `vize_atelier_core`
 
 ## Key Entry Points
 
@@ -16,7 +16,7 @@
 
 ## Related Crates
 
-- `vize_atelier_core` provides shared passes and codegen
+- `vize_atelier_core` provides shared steps and codegen
 - `vize_croquis` can be passed in through compiler options for semantic context
 - `vize_atelier_sfc` uses this crate for standard template compilation
 

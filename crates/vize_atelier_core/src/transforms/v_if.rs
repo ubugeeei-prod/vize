@@ -2,7 +2,7 @@
 //!
 //! Transforms elements with v-if, v-else-if, and v-else directives into IfNode.
 
-use crate::transform::TransformContext;
+use crate::lane::TransformContext;
 use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper};
 
 /// Check if an element has a v-if directive

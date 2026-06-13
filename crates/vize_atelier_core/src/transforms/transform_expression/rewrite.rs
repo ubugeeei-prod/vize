@@ -11,7 +11,7 @@ use vize_carton::String;
 
 use crate::SourceLocation;
 use crate::errors::ErrorCode;
-use crate::transform::TransformContext;
+use crate::lane::TransformContext;
 
 use super::{
     collector::IdentifierCollector,
@@ -118,7 +118,7 @@ pub(super) fn report_invalid_expression(
 /// Returns true when `content` parses as a TypeScript expression or program.
 ///
 /// Only consulted on the parse-failure path for `is_ts` templates: when the
-/// TypeScript-stripping pass falls back to the original source, the plain-JS
+/// TypeScript-stripping step falls back to the original source, the plain-JS
 /// parse below can fail even though the expression is valid TypeScript that
 /// the official compiler (babel with the `typescript` plugin) accepts. The
 /// parity rule is that vize must not reject what the official compiler
@@ -152,7 +152,7 @@ pub(crate) fn rewrite_expression(
     _as_params: bool,
 ) -> RewriteResult {
     // Skip parsing for inputs that would overflow the parser stack — return
-    // the original content unchanged so the compile pipeline emits a normal
+    // the original content unchanged so the compile lane emits a normal
     // diagnostic for the surrounding directive instead of aborting. (#956)
     if super::expression_exceeds_max_depth(content) {
         return RewriteResult {

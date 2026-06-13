@@ -1,4 +1,4 @@
-//! Snapshot and assertion tests for the codegen pipeline.
+//! Snapshot and assertion tests for codegen.
 
 use crate::compile;
 
@@ -57,7 +57,7 @@ fn test_codegen_component_name_with_colon_uses_valid_identifier() {
     );
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    crate::transform::transform(
+    crate::lane::transform(
         &allocator,
         &mut root,
         crate::TransformOptions::default(),
@@ -105,7 +105,7 @@ fn test_codegen_inline_setup_ref_component_prop_uses_value() {
         is_script_setup: true,
     };
 
-    crate::transform::transform(
+    crate::lane::transform(
         &allocator,
         &mut root,
         crate::TransformOptions {
@@ -184,12 +184,12 @@ fn test_codegen_numeric_component_v_for_uses_component_block() {
 fn test_codegen_duplicate_attribute_keeps_first_occurrence() {
     // Regression for #958: a `<div id="a" id="b">x</div>` template
     // used to produce a 0-byte module marked as success because the
-    // parser pushed a fatal-looking diagnostic and the SFC pipeline
+    // parser pushed a fatal-looking diagnostic and the SFC lane
     // discarded the template output. Codegen now dedupes by
     // attribute name (Vue parity: first wins); the parser
     // diagnostic is classified as recoverable so downstream
     // continues. The compile macro bails on parse errors, so this
-    // test drives the pipeline by hand.
+    // test drives the lane by hand.
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parser::parse(&allocator, r#"<div id="a" id="b">x</div>"#);
     assert!(
@@ -199,7 +199,7 @@ fn test_codegen_duplicate_attribute_keeps_first_occurrence() {
         "expected a DuplicateAttribute diagnostic, got {errors:?}"
     );
     assert!(errors.iter().all(|e| e.is_recoverable()));
-    crate::transform::transform(
+    crate::lane::transform(
         &allocator,
         &mut root,
         crate::options::TransformOptions::default(),
@@ -460,9 +460,9 @@ fn test_codegen_conditional_named_slot_preserves_implicit_default_slot() {
 
 #[test]
 fn test_codegen_looped_slot_key_and_index_aliases_stay_local_in_dynamic_args() {
+    use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use crate::transform::transform;
     use bumpalo::Bump;
 
     let allocator = Bump::new();
@@ -581,9 +581,9 @@ fn test_codegen_if_branch_mixed_children_wraps_interpolation_in_text_vnode() {
 
 #[test]
 fn test_codegen_v_for_aliases_without_parentheses_stay_local() {
+    use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use crate::transform::transform;
     use bumpalo::Bump;
 
     let allocator = Bump::new();
@@ -629,9 +629,9 @@ fn test_codegen_numeric_template_v_for_uses_fragment() {
 
 #[test]
 fn test_codegen_v_for_scope_handlers_are_not_cached() {
+    use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use crate::transform::transform;
     use bumpalo::Bump;
 
     let allocator = Bump::new();
@@ -664,9 +664,9 @@ fn test_codegen_v_for_scope_handlers_are_not_cached() {
 
 #[test]
 fn test_codegen_merged_v_on_handlers_are_cached() {
+    use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use crate::transform::transform;
     use bumpalo::Bump;
 
     let allocator = Bump::new();
@@ -735,9 +735,9 @@ fn test_codegen_v_on_option_modifier_events_are_not_merged() {
 
 #[test]
 fn test_codegen_scoped_slot_params_stay_local_in_handlers() {
+    use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use crate::transform::transform;
     use bumpalo::Bump;
 
     let allocator = Bump::new();
@@ -808,7 +808,7 @@ fn compile_prefixed(source: &str) -> vize_carton::String {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    crate::transform::transform(
+    crate::lane::transform(
         &allocator,
         &mut root,
         crate::TransformOptions {
@@ -904,9 +904,9 @@ fn test_codegen_static_style_merged_with_dynamic_does_not_split_inside_parens() 
 #[cfg(feature = "legacy")]
 #[test]
 fn test_codegen_v1_triple_mustache_is_raw_unescaped() {
+    use crate::lane::transform;
     use crate::options::{CodegenOptions, ParserOptions, TransformOptions};
     use crate::parser::parse_with_options;
-    use crate::transform::transform;
     use bumpalo::Bump;
     use vize_carton::config::VueVersion;
 
@@ -1042,7 +1042,7 @@ fn compile_with_map(src: &str, filename: &str) -> super::CodegenResult {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    crate::transform::transform(
+    crate::lane::transform(
         &allocator,
         &mut root,
         crate::options::TransformOptions {
@@ -1148,7 +1148,7 @@ fn source_map_does_not_alter_generated_code() {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    crate::transform::transform(
+    crate::lane::transform(
         &allocator,
         &mut root,
         crate::options::TransformOptions {
@@ -1357,7 +1357,7 @@ fn source_map_static_attr_and_text_do_not_alter_generated_code() {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    crate::transform::transform(
+    crate::lane::transform(
         &allocator,
         &mut root,
         crate::options::TransformOptions {

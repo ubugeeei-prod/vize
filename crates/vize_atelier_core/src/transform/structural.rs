@@ -200,7 +200,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
             ));
             // Process expression to add $setup. prefix
             if ctx.options.prefix_identifiers || ctx.options.is_ts {
-                crate::transforms::transform_expression::process_expression(ctx, &raw_exp, false)
+                crate::steps::expression::process_expression(ctx, &raw_exp, false)
             } else {
                 raw_exp
             }
@@ -228,8 +228,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
             && (ctx.options.prefix_identifiers || ctx.options.is_ts)
             && let Some(ref exp) = dir.exp
         {
-            let processed =
-                crate::transforms::transform_expression::process_expression(ctx, exp, false);
+            let processed = crate::steps::expression::process_expression(ctx, exp, false);
             dir.exp = Some(processed);
         }
 
@@ -324,9 +323,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
                 ));
                 // Process expression to add $setup. prefix
                 if ctx.options.prefix_identifiers || ctx.options.is_ts {
-                    crate::transforms::transform_expression::process_expression(
-                        ctx, &raw_exp, false,
-                    )
+                    crate::steps::expression::process_expression(ctx, &raw_exp, false)
                 } else {
                     raw_exp
                 }
@@ -354,8 +351,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
                 && (ctx.options.prefix_identifiers || ctx.options.is_ts)
                 && let Some(ref exp) = dir.exp
             {
-                let processed =
-                    crate::transforms::transform_expression::process_expression(ctx, exp, false);
+                let processed = crate::steps::expression::process_expression(ctx, exp, false);
                 dir.exp = Some(processed);
             }
 
@@ -443,7 +439,7 @@ pub fn transform_v_for<'a>(
         return None;
     };
 
-    let Some(parse_result) = crate::transforms::parse_for_expression_with_options(
+    let Some(parse_result) = crate::steps::parse_for_expression_with_options(
         allocator,
         &exp.content,
         &exp.loc,
@@ -470,7 +466,7 @@ pub fn transform_v_for<'a>(
     // Process source expression with binding-aware identifier prefixing
     // This ensures imports and refs are correctly handled (e.g., _unref(PRESETS) instead of _ctx.PRESETS)
     if ctx.options.prefix_identifiers || ctx.options.is_ts {
-        use crate::transforms::process_expression;
+        use crate::steps::process_expression;
         // Process the source expression through the binding-aware transform
         let processed = process_expression(ctx, &source, false);
         source = processed;
@@ -521,9 +517,9 @@ mod tests {
     use super::super::traverse::traverse_children;
     use super::*;
     use crate::errors::CompilerError;
+    use crate::lane::{ParentNode, TransformContext};
     use crate::options::TransformOptions;
     use crate::parser::parse;
-    use crate::transform::{ParentNode, TransformContext};
 
     fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
         let allocator = Bump::new();

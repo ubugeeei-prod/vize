@@ -1,11 +1,10 @@
-//! Element transformation.
-//!
-//! Handles `ElementNode` transformation dispatch. Template construction,
-//! deferred child wiring, and component lowering live in focused submodules so
-//! each transform path stays independently reviewable.
+//! Element transformation dispatch for Vapor IR lowering.
 
+#[path = "element/component.rs"]
 mod component;
+#[path = "element/deferred.rs"]
 mod deferred;
+#[path = "element/template.rs"]
 mod template;
 
 use vize_carton::{Box, String, Vec, append, cstr};

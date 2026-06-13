@@ -6,7 +6,7 @@
 mod generate;
 pub(crate) mod helpers;
 
-use crate::transforms::v_memo::{get_memo_exp, has_v_memo};
+use crate::steps::v_memo::{get_memo_exp, has_v_memo};
 use crate::{ForNode, RuntimeHelper, TemplateChildNode};
 
 use super::{

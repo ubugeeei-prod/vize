@@ -3,8 +3,8 @@
 use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
 
 use crate::errors::ErrorCode;
-use crate::transforms::transform_expression::process_inline_handler;
-use crate::transforms::v_slot::validate_v_slot_usage;
+use crate::steps::expression::process_inline_handler;
+use crate::steps::v_slot::validate_v_slot_usage;
 use crate::{
     ConstantType, DirectiveNode, ElementNode, ElementType, ExpressionNode, InterpolationNode,
     PropNode, RuntimeHelper, SimpleExpressionNode, SourceLocation,
@@ -136,7 +136,7 @@ fn process_directive_expressions<'a>(
     ctx: &mut TransformContext<'a>,
     el: &mut Box<'a, ElementNode<'a>>,
 ) {
-    use crate::transforms::transform_expression::{process_expression, process_inline_handler};
+    use crate::steps::expression::{process_expression, process_inline_handler};
 
     for prop in el.props.iter_mut() {
         if let PropNode::Directive(dir) = prop {
@@ -214,7 +214,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
             if let PropNode::Directive(dir) = prop
                 && dir.name == "on"
             {
-                crate::transforms::legacy::desugar_v2_v_on_modifiers(dir);
+                crate::steps::legacy::desugar_v2_v_on_modifiers(dir);
             }
         }
     }
@@ -598,7 +598,7 @@ pub fn transform_interpolation<'a>(
 
     // Process the expression to add _ctx. prefix and/or strip TypeScript if needed
     if ctx.options.prefix_identifiers || ctx.options.is_ts {
-        use crate::transforms::transform_expression::process_expression;
+        use crate::steps::expression::process_expression;
         let processed = process_expression(ctx, &interp.content, false);
         interp.content = processed;
     }
@@ -613,9 +613,9 @@ mod tests {
     use crate::{
         PropNode, TemplateChildNode,
         errors::{CompilerError, ErrorCode},
+        lane::{ParentNode, TransformContext, traverse::traverse_children},
         options::TransformOptions,
         parser::parse,
-        transform::{ParentNode, TransformContext, traverse::traverse_children},
     };
 
     fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {

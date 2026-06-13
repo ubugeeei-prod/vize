@@ -15,7 +15,7 @@
 // out-of-crate test harness).
 #![allow(clippy::disallowed_types, clippy::disallowed_macros)]
 
-use vize_atelier_core::{CodegenOptions, TransformOptions, codegen, parser, transform};
+use vize_atelier_core::{CodegenOptions, TransformOptions, codegen, lane, parser};
 use vize_carton::config::VueVersion;
 
 fn compile(input: &str, dialect: VueVersion) -> String {
@@ -28,7 +28,7 @@ fn compile(input: &str, dialect: VueVersion) -> String {
         dialect,
         ..Default::default()
     };
-    transform::transform(&allocator, &mut root, transform_opts, None);
+    lane::transform(&allocator, &mut root, transform_opts, None);
 
     let codegen_opts = CodegenOptions {
         prefix_identifiers: true,

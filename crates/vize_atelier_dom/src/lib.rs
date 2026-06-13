@@ -16,8 +16,7 @@
 mod compile;
 mod namespace;
 pub mod options;
-pub mod transforms;
-pub use transforms as passes;
+pub mod steps;
 
 #[cfg(test)]
 mod tests;
@@ -34,7 +33,7 @@ pub use compile::{
     compile_template_with_vue_parser_quirks_and_hoisted_scope_id,
 };
 pub use options::{DomCompilerOptions, element_checks, event_modifiers};
-pub use transforms::{
+pub use steps::{
     EventModifiers, EventOptions, MouseModifiers, PropagationModifiers, SystemModifiers, V_SHOW,
     V_TEXT, VModelModifiers, generate_html_prop, generate_html_warning, generate_key_guard,
     generate_model_props, generate_modifier_guard, generate_show_directive, generate_show_style,
@@ -45,5 +44,5 @@ pub use transforms::{
 // Re-export core types
 pub use vize_atelier_core::{
     Allocator, CompilerError, ElementNode, Namespace, RootNode, TemplateChildNode, codegen, errors,
-    parser, pipeline, runtime_helpers, tokenizer, transform,
+    lane, parser, runtime_helpers, tokenizer, transform,
 };

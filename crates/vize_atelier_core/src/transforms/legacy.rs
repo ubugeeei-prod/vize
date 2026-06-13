@@ -2,7 +2,7 @@
 //!
 //! Vue 2 carried a handful of template-syntax conveniences that Vue 3 removed in
 //! favor of more explicit forms. This module desugars the high-value, cleanly
-//! bounded subset into their Vue 3 equivalents so the rest of the pipeline only
+//! bounded subset into their Vue 3 equivalents so the rest of the lane only
 //! ever sees modern Vue 3 AST and needs no per-node legacy branches:
 //!
 //! - **`.sync` modifier** — `:foo.sync="bar"` is Vue 2 sugar for a two-way bind.
@@ -25,7 +25,7 @@
 //!   `@keyup.13`) — both surfaces were removed in Vue 3. Unlike the rewrites
 //!   above, this one is applied per v-on directive during element processing
 //!   (see [`desugar_v2_v_on_modifiers`]), gated by
-//!   [`supports_v2_event_sugar`](crate::transform::TransformContext::supports_v2_event_sugar).
+//!   [`supports_v2_event_sugar`](crate::lane::TransformContext::supports_v2_event_sugar).
 //!   `.native` is stripped (Vue 3 lets component listeners fall through to the
 //!   root by default) and numeric keyCodes are rewritten to their Vue 3 key
 //!   names (`13` -> `enter`), so `@keyup.13` behaves like `@keyup.enter`.
@@ -302,15 +302,15 @@ pub(crate) fn desugar_v2_v_on_modifiers(dir: &mut DirectiveNode<'_>) {
 mod tests {
     use super::*;
     use crate::codegen::generate;
+    use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use crate::transform::transform;
     use crate::{SimpleExpressionNode, SourceLocation};
     use vize_armature::legacy::{LegacyDialectCapabilities, LegacyVueVersion};
     use vize_carton::Vec as ArenaVec;
     use vize_carton::config::VueVersion;
 
-    /// Full pipeline (parse -> transform -> codegen) under a given dialect.
+    /// Full lane (parse -> transform -> codegen) under a given dialect.
     fn compile(src: &str, dialect: VueVersion) -> std::string::String {
         let allocator = Bump::new();
         let (mut root, errs) = parse(&allocator, src);

@@ -196,7 +196,7 @@ impl CodegenContext {
 
     /// Take the source-map builder out of the context, if any.
     ///
-    /// Consumed at the end of the pipeline to serialize the map once the full
+    /// Consumed at the end of codegen to serialize the map once the full
     /// code buffer is known.
     pub(super) fn take_map_builder(&mut self) -> Option<SourceMapBuilder> {
         self.map_builder.take()

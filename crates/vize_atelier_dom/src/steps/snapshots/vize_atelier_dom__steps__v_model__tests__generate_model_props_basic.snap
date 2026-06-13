@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_dom/src/transforms/v_model.rs
+source: crates/vize_atelier_dom/src/steps/v_model.rs
 expression: props
 ---
 [

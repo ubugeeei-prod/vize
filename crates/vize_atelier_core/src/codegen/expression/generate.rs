@@ -22,7 +22,7 @@ pub fn generate_simple_expression_with_prefix(ctx: &CodegenContext, content: &st
 /// Check if a string is a member-expression style handler reference.
 /// This includes forms like `_ctx.foo`, `$setup.bar`, and `_unref(store).save`.
 pub fn is_simple_member_expression(s: &str) -> bool {
-    crate::transforms::is_event_handler_reference_expression(s)
+    crate::steps::is_event_handler_reference_expression(s)
 }
 
 /// Check if an event handler expression is an inline handler.
@@ -37,13 +37,11 @@ pub fn is_inline_handler(exp: &ExpressionNode<'_>) -> bool {
 
             let content = simple.loc.source.as_str();
 
-            if crate::transforms::transform_expression::is_function_expression(content) {
+            if crate::steps::expression::is_function_expression(content) {
                 return false;
             }
 
-            if crate::transforms::is_simple_identifier(content)
-                || is_simple_member_expression(content)
-            {
+            if crate::steps::is_simple_identifier(content) || is_simple_member_expression(content) {
                 return false;
             }
 
@@ -78,7 +76,7 @@ pub fn generate_event_handler(
 
                 // Step 1: Strip TypeScript if needed
                 let ts_stripped: String = if ctx.options.is_ts && content.contains(" as ") {
-                    crate::transforms::strip_typescript_from_expression(content)
+                    crate::steps::strip_typescript_from_expression(content)
                 } else {
                     content.clone()
                 };
@@ -97,13 +95,13 @@ pub fn generate_event_handler(
             };
 
             // Check if it's already an arrow function or function expression
-            if crate::transforms::transform_expression::is_function_expression(&processed) {
+            if crate::steps::expression::is_function_expression(&processed) {
                 ctx.push(&processed);
                 return;
             }
 
             // Check if it's a simple identifier or member expression (method name/reference)
-            if crate::transforms::is_simple_identifier(&processed)
+            if crate::steps::is_simple_identifier(&processed)
                 || is_simple_member_expression(&processed)
             {
                 if for_caching {

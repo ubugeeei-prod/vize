@@ -9,7 +9,7 @@ use super::Lowerer;
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// A dynamic (non-static) simple expression whose content is the source
-    /// slice covered by `span`. Vize's later transform passes parse and prefix
+    /// slice covered by `span`. Vize's later transform steps parse and prefix
     /// the identifiers; the lowering layer only needs the raw text + location.
     pub(crate) fn dyn_expr(&self, span: Span) -> ExpressionNode<'a> {
         let loc = self.mapper().location(span);

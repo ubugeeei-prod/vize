@@ -1,15 +1,15 @@
 //! Top-level Vapor compilation entry points.
 //!
-//! Wires together parsing, the core transform pipeline, Vapor IR lowering, and
+//! Wires together parsing, the core transform lane, Vapor IR lowering, and
 //! code generation behind the public `compile_vapor*` functions.
 
 use crate::generate::generate_vapor;
-use crate::pipeline as vapor_pipeline;
+use crate::lower as vapor_lower;
 use vize_atelier_core::{
     CompilerError, Namespace,
+    lane::{transform, transform_with_template_syntax_quirks},
     options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
     parser::parse_with_options_and_template_syntax,
-    pipeline::{transform, transform_with_template_syntax_quirks},
 };
 use vize_carton::{Bump, String};
 
@@ -149,9 +149,9 @@ fn compile_vapor_inner<'a>(
         transform(allocator, &mut root, transform_opts, None);
     }
 
-    // Transform to Vapor IR
+    // Lower to Vapor IR
     let (ir, transform_diagnostics) =
-        vapor_pipeline::transform_to_ir_with_diagnostics(allocator, &root);
+        vapor_lower::transform_to_ir_with_diagnostics(allocator, &root);
 
     // Generate Vapor code
     let result = generate_vapor(&ir, binding_metadata.as_ref());

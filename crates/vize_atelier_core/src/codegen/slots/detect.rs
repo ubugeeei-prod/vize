@@ -1,6 +1,6 @@
 //! Slot detection predicates (which children form slots, dynamic/forwarded checks).
 
-use crate::transforms::v_slot::{collect_slots, has_v_slot};
+use crate::steps::v_slot::{collect_slots, has_v_slot};
 use crate::{ElementNode, ElementType, PropNode, TemplateChildNode};
 
 /// Check if component has slot children that need to be generated as slots object

@@ -5,7 +5,7 @@
 use vize_carton::{Box, Bump, String, ToCompactString, Vec, camelize};
 
 use crate::codegen::is_constant_simple_expression;
-use crate::transform::TransformContext;
+use crate::lane::TransformContext;
 use crate::{
     AttributeNode, DirectiveNode, ElementNode, ElementType, ExpressionNode, JsChildNode, Namespace,
     ObjectExpression, PropNode, Property, PropsExpression, RuntimeHelper, SimpleExpressionNode,
@@ -869,7 +869,7 @@ mod tests {
         let (mut root, _errors) = parse(&allocator, src);
         let mut opts = crate::options::TransformOptions::default();
         opts.hoist_static = true;
-        crate::transform::transform(&allocator, &mut root, opts, None);
+        crate::lane::transform(&allocator, &mut root, opts, None);
         let r = crate::codegen::generate(&root, crate::options::CodegenOptions::default());
         (r.preamble.to_string(), r.code.to_string())
     }

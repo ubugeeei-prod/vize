@@ -2,7 +2,7 @@
 //!
 //! Transforms v-once directives for one-time rendering.
 
-use crate::transform::TransformContext;
+use crate::lane::TransformContext;
 use crate::{ElementNode, PropNode, RuntimeHelper};
 use vize_carton::String;
 use vize_carton::ToCompactString;

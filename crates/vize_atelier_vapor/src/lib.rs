@@ -9,10 +9,8 @@ pub mod compile;
 pub mod generate;
 pub mod generators;
 pub mod ir;
-pub mod transform;
-pub mod transforms;
-pub use transform as pipeline;
-pub use transforms as passes;
+pub mod lower;
+pub mod steps;
 
 #[cfg(test)]
 mod tests;
@@ -49,8 +47,8 @@ pub use ir::{
     PrependNodeIRNode, RootIRNode, SetDynamicPropsIRNode, SetEventIRNode, SetHtmlIRNode,
     SetPropIRNode, SetTemplateRefIRNode, SetTextIRNode, SlotOutletIRNode,
 };
-pub use transform::transform_to_ir;
-pub use transforms::{
+pub use lower::transform_to_ir;
+pub use steps::{
     collect_component_slots, generate_element_template, generate_event_handler,
     generate_model_handler, generate_text_expression, generate_v_show_effect, get_model_arg,
     get_model_event, get_model_modifiers, get_model_value, get_show_condition, get_tag_name,

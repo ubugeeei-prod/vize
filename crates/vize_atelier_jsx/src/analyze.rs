@@ -17,7 +17,7 @@ use vize_croquis::{Croquis, Drawer};
 /// Exposed (re-exported as [`crate::analyze_jsx_program`]) so consumers that
 /// parse the program themselves — e.g. Patina's zero-cost JSX lint path, which
 /// drives rules straight over the OXC AST without lowering — can attach the same
-/// semantic analysis the lowering pipeline produces without a second parse.
+/// semantic analysis the lowering lane produces without a second parse.
 pub fn analyze_program(program: &Program<'_>, source: &str) -> Croquis {
     let result = analyze_script_setup_program(program, source, None);
     let mut croquis = Drawer::new().finish();

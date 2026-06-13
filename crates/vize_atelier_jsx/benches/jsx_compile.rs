@@ -1,7 +1,7 @@
 //! Native Rust benchmarks for JSX/TSX compilation performance.
 //!
 //! Mirrors `vize_atelier_sfc`'s `sfc_compile` bench: most cases measure the
-//! full parse + lower + compile pipeline (the whole call lives inside
+//! full parse + lower + compile lane (the whole call lives inside
 //! `b.iter`, with no parse hoisting), tagged with `Throughput::Bytes` so
 //! criterion reports MB/s.
 //!

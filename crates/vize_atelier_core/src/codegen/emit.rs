@@ -1,6 +1,6 @@
 //! Code generation entry point and runtime-helper ordering.
 //!
-//! Drives the top-level `generate()` pipeline and computes the deduplicated,
+//! Drives the top-level `generate()` entry point and computes the deduplicated,
 //! import-ranked helper list used to build the module preamble.
 
 use crate::{RootNode, RuntimeHelper, TemplateChildNode, options::CodegenOptions};

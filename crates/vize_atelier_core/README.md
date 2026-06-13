@@ -1,24 +1,24 @@
 # vize_atelier_core
 
-`vize_atelier_core` contains the shared pipeline and code generation infrastructure used by the
+`vize_atelier_core` contains the shared transform lane and code generation infrastructure used by the
 DOM, Vapor, and SSR compilers.
 
 ## Highlights
 
-- Core pipeline and pass APIs
+- Core lane and step APIs
 - Shared Vue template code generation
 - Runtime helper resolution
 - Re-exports for the Relief AST and Armature parser APIs
 
 ## Key Entry Points
 
-- `pipeline::transform`
-- `passes`
+- `lane::transform`
+- `steps`
 - `generate`
 - `RuntimeHelpers`
-- `pipeline::TransformContext`
-- `pipeline::DirectiveTransform`
-- `pipeline::NodeTransform`
+- `lane::TransformContext`
+- `lane::DirectiveTransform`
+- `lane::NodeTransform`
 
 ## Related Crates
 

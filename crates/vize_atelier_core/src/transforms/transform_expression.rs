@@ -1,12 +1,14 @@
-//! Expression transform.
-//!
-//! Transforms expressions by prefixing identifiers with `_ctx.` for proper
-//! context binding in the compiled render function (script setup mode).
+//! Expression transform steps for identifier prefixing and TS cleanup.
 
+#[path = "transform_expression/collector.rs"]
 mod collector;
+#[path = "transform_expression/inline_handler.rs"]
 mod inline_handler;
+#[path = "transform_expression/prefix.rs"]
 pub(crate) mod prefix;
+#[path = "transform_expression/rewrite.rs"]
 mod rewrite;
+#[path = "transform_expression/typescript.rs"]
 mod typescript;
 
 use oxc_ast::ast::{ChainElement, Expression};
@@ -14,15 +16,10 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{Box, Bump, String};
 
-/// Maximum bracket nesting depth allowed in a template expression.
+/// Maximum bracket nesting depth allowed before handing source to OXC.
 ///
-/// Mirrors the parser's `MAX_ELEMENT_NESTING_DEPTH = 256`, but for the JS/TS
-/// expression text inside `{{ … }}` / directive values. The oxc parser
-/// recurses for each `(` / `[` / `{` it sees, so a sufficiently nested
-/// expression overflows the native stack and aborts the process — a stack
-/// overflow cannot be caught with `catch_unwind`. The same expression
-/// path is shared by `vize build`, `vize check`, the LSP, the linter,
-/// the formatter, and the Vite dev-server middleware. (#956)
+/// OXC recurses for nested brackets and stack overflow cannot be caught with
+/// `catch_unwind`, so every expression entry point shares this guard. (#956)
 pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 256;
 
 /// Returns the maximum bracket nesting depth in `content`. Only counts
@@ -90,7 +87,7 @@ pub fn expression_exceeds_max_depth(content: &str) -> bool {
     expression_nesting_depth(content) > MAX_EXPRESSION_NESTING_DEPTH
 }
 
-use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, transform::TransformContext};
+use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
 
 pub use inline_handler::process_inline_handler;
 pub use prefix::{is_simple_identifier, prefix_identifiers_in_expression};
@@ -154,7 +151,7 @@ fn rewrite_filters_in_place<'a>(
     ctx: &mut TransformContext<'a>,
     exp: &mut Box<'a, SimpleExpressionNode<'a>>,
 ) -> bool {
-    use crate::transforms::legacy_filters::{filter_name, parse_filters, wrap_filter};
+    use crate::steps::legacy_filters::{filter_name, parse_filters, wrap_filter};
 
     if !ctx.supports_filters() {
         return false;
@@ -286,7 +283,7 @@ pub fn process_expression<'a>(
 ///
 /// Compound expressions are flattened to a [`SimpleExpressionNode`] whose
 /// content is the original source text. This mirrors the strategy used by
-/// [`normalize_expression`] and `transform::context::clone_expression`,
+/// [`normalize_expression`] and `lane::context::clone_expression`,
 /// and avoids the previous behavior of producing a `Compound` node with
 /// an empty `children` list (which silently dropped the expression).
 pub(crate) fn clone_expression<'a>(
@@ -371,8 +368,8 @@ mod tests {
     };
     use crate::{
         CompoundExpressionNode, ExpressionNode, Position, RuntimeHelper, SourceLocation,
+        lane::TransformContext,
         options::{BindingMetadata, BindingType, TransformOptions},
-        transform::TransformContext,
     };
     use vize_carton::{Box, Bump, FxHashMap};
 

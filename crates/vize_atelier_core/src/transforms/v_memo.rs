@@ -5,7 +5,7 @@
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
-use crate::transform::TransformContext;
+use crate::lane::TransformContext;
 use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper};
 
 /// Check if element has v-memo directive

@@ -15,10 +15,8 @@ pub mod codegen;
 pub mod runtime_helpers;
 #[macro_use]
 pub mod test_macros;
-pub mod transform;
-pub mod transforms;
-pub use transform as pipeline;
-pub use transforms as passes;
+pub mod lane;
+pub mod steps;
 
 // Re-export from vize_relief (AST, errors, options)
 pub use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};
@@ -55,14 +53,14 @@ pub use codegen::{
     CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections, generate,
     generate_with_sections,
 };
-pub use runtime_helpers::{RuntimeHelpers, get_vnode_block_helper, get_vnode_helper};
 #[allow(deprecated)]
-pub use transform::{
+pub use lane::{
     DirectiveTransform, DirectiveTransformResult, ExitFn, NodeTransform, ParentNode,
     StructuralDirectiveTransform, TransformContext, transform,
     transform_with_template_syntax_quirks, transform_with_vue_parser_quirks,
 };
-pub use transforms::{
+pub use runtime_helpers::{RuntimeHelpers, get_vnode_block_helper, get_vnode_helper};
+pub use steps::{
     ChildrenType, EventModifiers, MemoInfo, PropItem, SlotInfo, SlotOutletInfo, StaticType,
     TextCallExpression, TextPart, TransformPropsExpression, TransformVNodeCall, VModelModifiers,
     build_element_codegen, build_props, build_text_call, camelize, collect_slots,

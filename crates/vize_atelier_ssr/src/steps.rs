@@ -1,6 +1,6 @@
-//! SSR-specific transforms.
+//! SSR-specific transform steps.
 //!
-//! This module contains SSR-specific transform passes that modify the AST
+//! This module contains SSR-specific transform steps that modify the AST
 //! for optimal SSR code generation.
 
 use vize_atelier_core::{ElementNode, ExpressionNode, PropNode};

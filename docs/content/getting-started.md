@@ -33,9 +33,9 @@ See the [Vite+ docs](https://viteplus.dev/) and the [Installing Dependencies gui
 
 ## What Vize Does
 
-At a high level, Vize is split into a few reusable pipelines:
+At a high level, Vize is split into a few reusable lanes:
 
-| Pipeline          | Package or script                        | What you get                                                                               |
+| Lane              | Package or script                        | What you get                                                                               |
 | ----------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
 | Compile           | `@vizejs/vite-plugin`, `vize:build`      | Rust-native Vue SFC compilation, SSR output, Vapor mode, scoped CSS handling               |
 | Static analysis   | `vize:lint`, `oxlint-plugin-vize`        | Vue template, script, CSS, a11y, SSR, Vapor, Musea, cross-file, and type-aware diagnostics |
@@ -49,7 +49,7 @@ See [Static Analysis](./guide/static-analysis.md) for the lint and type-checking
 [Configuration](./guide/configuration.md) for shared config and compiler options.
 
 Authoring components in JSX/TSX instead of `.vue` SFCs? See the [JSX & TSX](./guide/jsx.md) guide —
-`.jsx`/`.tsx` Vue components compile through the same Rust pipeline.
+`.jsx`/`.tsx` Vue components compile through the same Rust lane.
 
 ## Choose Your Entry Point
 

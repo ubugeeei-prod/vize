@@ -323,7 +323,7 @@ fn is_setup_const_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool
             && !simple.is_static
         {
             let content = simple.content.trim();
-            if crate::transforms::is_simple_identifier(content) {
+            if crate::steps::is_simple_identifier(content) {
                 return ctx
                     .options
                     .binding_metadata

@@ -18,7 +18,7 @@ use vize_carton::String;
 
 use vize_croquis::builtins::is_global_allowed;
 
-use crate::transform::TransformContext;
+use crate::lane::TransformContext;
 
 use super::prefix::get_identifier_prefix;
 

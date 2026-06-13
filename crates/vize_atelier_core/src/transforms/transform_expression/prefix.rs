@@ -10,7 +10,7 @@ use vize_carton::{FxHashSet, String};
 
 use vize_croquis::builtins::is_global_allowed;
 
-use crate::transform::TransformContext;
+use crate::lane::TransformContext;
 
 /// Determine what prefix (if any) an identifier needs.
 ///
@@ -104,7 +104,7 @@ pub fn is_simple_identifier(s: &str) -> bool {
 /// This is a simpler version that doesn't require `TransformContext`.
 pub fn prefix_identifiers_in_expression(content: &str) -> String {
     // Skip parsing for inputs that would overflow the parser stack — return
-    // the original content unchanged so the compile pipeline emits a normal
+    // the original content unchanged so the compile lane emits a normal
     // diagnostic for the surrounding directive instead of aborting. (#956)
     if super::expression_exceeds_max_depth(content) {
         return String::new(content);

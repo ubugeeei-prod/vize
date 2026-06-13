@@ -19,13 +19,12 @@
 pub mod codegen;
 pub mod errors;
 pub mod options;
-pub mod transforms;
-pub use transforms as passes;
+pub mod steps;
 
 pub use codegen::{SsrCodegenContext, SsrCodegenResult};
 pub use errors::SsrErrorCode;
 pub use options::SsrCompilerOptions;
-pub use transforms::{
+pub use steps::{
     get_v_html_exp, get_v_model_exp, get_v_show_exp, get_v_text_exp, has_v_html, has_v_model,
     has_v_show, has_v_text,
 };
@@ -33,14 +32,14 @@ pub use transforms::{
 // Re-export core types
 pub use vize_atelier_core::{
     Allocator, CompilerError, Namespace, RootNode, RuntimeHelper, TemplateChildNode,
-    codegen as core_codegen, errors as core_errors, parser, pipeline, runtime_helpers, tokenizer,
+    codegen as core_codegen, errors as core_errors, lane, parser, runtime_helpers, tokenizer,
     transform,
 };
 
 use vize_atelier_core::{
+    lane::{transform as do_transform, transform_with_template_syntax_quirks},
     options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
     parser::parse_with_options_and_template_syntax,
-    pipeline::{transform as do_transform, transform_with_template_syntax_quirks},
 };
 use vize_carton::{Bump, String, profile};
 

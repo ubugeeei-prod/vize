@@ -5,12 +5,12 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Atelier Core - The core workshop for Vize Vue template parsing, pipeline passes, and code generation"
+description = "Atelier Core - The core workshop for Vize Vue template parsing, transform lanes, and code generation"
 
 [features]
 # Opt-in support for legacy Vue lines (v0.10 / v0.11 / v1 / v2). Off by default
 # so the Vue 3 `vize` binary never compiles it. Enables dialect-gated legacy
-# passes such as Vue 2 pipe filters and the Vue 2 template-sugar pre-pass
+# steps such as Vue 2 pipe filters and the Vue 2 template-sugar pre-step
 # (`.sync`, `slot-scope`/`scope`). Forwards to the `legacy` features of the AST
 # (`vize_relief`) and dialect-capability (`vize_armature`) crates.
 legacy = ["vize_relief/_legacy", "vize_armature/legacy"]

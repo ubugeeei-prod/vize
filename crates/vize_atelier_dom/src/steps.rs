@@ -1,4 +1,4 @@
-//! DOM-specific transforms.
+//! DOM-specific transform steps.
 
 pub mod v_html;
 pub mod v_model;

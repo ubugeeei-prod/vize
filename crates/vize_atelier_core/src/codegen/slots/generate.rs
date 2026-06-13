@@ -1,6 +1,6 @@
 //! Slots object generation for component children.
 
-use crate::transforms::v_slot::{collect_slots, get_slot_name, has_v_slot};
+use crate::steps::v_slot::{collect_slots, get_slot_name, has_v_slot};
 use crate::{
     ElementNode, ExpressionNode, ForNode, IfNode, PropNode, RuntimeHelper, TemplateChildNode,
 };

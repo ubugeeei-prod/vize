@@ -9,7 +9,7 @@ use oxc_span::SourceType;
 use vize_carton::{String, is_builtin_directive};
 
 use crate::errors::ErrorCode;
-use crate::transform::TransformContext;
+use crate::lane::TransformContext;
 use crate::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
     SourceLocation, TemplateChildNode,
@@ -377,10 +377,10 @@ mod tests {
         get_slot_name, get_slot_prop_names, has_v_slot,
     };
     use crate::errors::{CompilerError, ErrorCode};
+    use crate::lane::traverse::traverse_children;
+    use crate::lane::{ParentNode, TransformContext};
     use crate::options::TransformOptions;
     use crate::parser::parse;
-    use crate::transform::traverse::traverse_children;
-    use crate::transform::{ParentNode, TransformContext};
     use bumpalo::Bump;
 
     fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {

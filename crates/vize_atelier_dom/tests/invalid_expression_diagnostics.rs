@@ -19,7 +19,7 @@ use vize_carton::Bump;
 
 fn analyzed_options() -> DomCompilerOptions {
     DomCompilerOptions {
-        // The analyzed (SFC) pipeline always prefixes identifiers; this is
+        // The analyzed (SFC) lane always prefixes identifiers; this is
         // the mode where vue-core parses expressions and reports errors.
         prefix_identifiers: true,
         ..DomCompilerOptions::default()

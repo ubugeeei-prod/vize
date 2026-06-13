@@ -12,8 +12,8 @@
 //! ([`VaporGenerateOptions::jsx_closure`]): free identifiers stay bare instead
 //! of being `_ctx.`-prefixed, matching `vue-jsx-vapor`.
 
+use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
-use vize_atelier_core::transform::transform;
 use vize_atelier_ssr::{SsrCodegenContext, SsrCompilerOptions};
 use vize_atelier_vapor::{VaporGenerateOptions, generate_vapor_with_options, transform_to_ir};
 use vize_carton::{Bump, String};
@@ -27,7 +27,7 @@ use crate::{JsxLang, JsxOutputMode, LoweredRoot, lower_source};
 #[derive(Debug, Clone, Default)]
 pub struct VaporCompileOptions {
     /// Compile in SSR mode. When set, the component is server-rendered: instead
-    /// of the client Vapor IR pipeline, the lowered template is run through
+    /// of the client Vapor IR lowering, the lowered template is run through
     /// `vize_atelier_ssr`'s `ssrRender` codegen and [`VaporComponent::code`]
     /// holds an HTML-string render function (first cut, #1533 — see
     /// [`compile_root_to_vapor_ssr`]).
@@ -124,7 +124,7 @@ pub(crate) fn compile_root_to_vapor(
     // SSR (#1533, first cut): when SSR is requested, the lowered root is the same
     // `vize_relief` `RootNode` the SSR crate consumes, so we run the SSR-flavored
     // core transform and `vize_atelier_ssr`'s `ssrRender` codegen instead of the
-    // client Vapor IR pipeline. This produces an HTML-string render function
+    // client Vapor IR lowering. This produces an HTML-string render function
     // (`_push(`…`)`) covering static elements, static/dynamic attributes, and
     // text interpolation. See `compile_root_to_vapor_ssr` for the deferred scope.
     if options.ssr {

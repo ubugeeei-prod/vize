@@ -6,7 +6,7 @@ title: Architecture
 
 > **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. Internal architecture may change as the project evolves.
 
-Vize is built as a modular Rust workspace where each crate handles a specific concern. The architecture follows a pipeline model, transforming Vue SFC source code through parsing, analysis, and compilation stages.
+Vize is built as a modular Rust workspace where each crate handles a specific concern. The architecture is organized into reusable lanes that carry Vue SFC source through parsing, analysis, and compilation stages.
 
 ## Project Relationship Map
 
@@ -57,7 +57,7 @@ This relationship map is about ownership and reuse, not every call edge. The imp
 that parser, AST, and semantic analysis stay shared, while the compiler backends and developer tools
 remain replaceable workshops around that shared language model.
 
-## Pipeline
+## Lanes
 
 ```mermaid
 graph LR
@@ -85,7 +85,7 @@ graph LR
    - **SSR** (`vize_atelier_ssr`) — String concatenation with hydration markers
 6. **Output** — Generated JavaScript code with source maps
 
-## Tool Pipeline
+## Tool Lanes
 
 Beyond compilation, Vize provides additional tools that reuse the same parsing and analysis infrastructure:
 
@@ -119,7 +119,7 @@ parity, benchmark, and readiness evidence expected for review.
 | AST           | `vize_relief`        | AST node definitions, error types, compiler options    |
 | Parsing       | `vize_armature`      | Tokenizer + recursive descent parser                   |
 | Analysis      | `vize_croquis`       | Semantic analysis, scope tracking, binding detection   |
-| Compilation   | `vize_atelier_core`  | Shared transforms, codegen utilities, source maps      |
+| Compilation   | `vize_atelier_core`  | Shared transform lane, codegen utilities, source maps  |
 | Compilation   | `vize_atelier_dom`   | VDOM code generation                                   |
 | Compilation   | `vize_atelier_vapor` | Vapor mode code generation                             |
 | Compilation   | `vize_atelier_sfc`   | SFC orchestration (script + template + style + HMR)    |
@@ -145,7 +145,7 @@ Vize crates are named after **art and sculpture terminology**, reflecting how ea
 | **Carton**   | /kɑːˈtɒn/    | Artist's portfolio case — stores and organizes tools     | Shared utilities — the foundational toolbox that every crate depends on        |
 | **Relief**   | /rɪˈliːf/    | Sculptural technique that projects from a flat surface   | The AST — a structured surface that gives shape to raw source code             |
 | **Armature** | /ˈɑːrmətʃər/ | Internal skeleton supporting a sculpture                 | The parser — the structural framework that supports the AST                    |
-| **Croquis**  | /kʁɔ.ki/     | Quick gestural sketch capturing the essence of a subject | Semantic analysis — a quick pass that captures the meaning of code             |
+| **Croquis**  | /kʁɔ.ki/     | Quick gestural sketch capturing the essence of a subject | Semantic analysis — a quick sketch that captures the meaning of code           |
 | **Atelier**  | /ˌætəlˈjeɪ/  | Artist's workshop where creation happens                 | Compiler workspaces — where code is transformed into its final form            |
 | **Vitrine**  | /vɪˈtriːn/   | Glass display case in a museum                           | Bindings — a transparent layer that exposes the compiler to external consumers |
 | **Canon**    | /ˈkænən/     | Standard of ideal proportions in classical sculpture     | Type checker — ensures code conforms to the standard of correctness            |

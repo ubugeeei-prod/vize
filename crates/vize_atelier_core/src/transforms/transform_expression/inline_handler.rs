@@ -5,7 +5,7 @@
 
 use vize_carton::{Box, String};
 
-use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, transform::TransformContext};
+use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
 
 use super::{
     clone_expression, is_event_handler_reference_expression, is_function_expression,
@@ -190,8 +190,8 @@ mod tests {
     use super::process_inline_handler;
     use crate::{
         CompoundExpressionNode, ExpressionNode, Position, SourceLocation,
+        lane::TransformContext,
         options::{BindingMetadata, BindingType, TransformOptions},
-        transform::TransformContext,
     };
     use vize_carton::{Box, Bump, FxHashMap};
 

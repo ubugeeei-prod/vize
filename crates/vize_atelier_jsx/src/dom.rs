@@ -3,8 +3,8 @@
 //! This reuses the existing Vize DOM compiler infrastructure rather than a
 //! separate Babel-style emitter: the shared lowering layer produces a
 //! [`RootNode`](vize_relief::RootNode), which is fed straight into
-//! `vize_atelier_core`'s transform and codegen passes — the same passes the SFC
-//! template path uses.
+//! `vize_atelier_core`'s transform lane and codegen entry point — the same
+//! route the SFC template path uses.
 //!
 //! Unlike SFC templates, JSX render functions are real closures over the
 //! component's setup scope, so identifier expressions are **not** prefixed with
@@ -12,8 +12,8 @@
 //! `@vue/babel-plugin-jsx`-shaped output; callers can opt in.
 
 use vize_atelier_core::codegen::generate;
+use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::{CodegenMode, CodegenOptions, TransformOptions};
-use vize_atelier_core::transform::transform;
 // `CodegenMode::Module` is the only supported JSX target: JSX/TSX is authored
 // for bundlers, and the runtime `Function` (with-block) mode emits an empty
 // body under JSX's no-prefix closure model.

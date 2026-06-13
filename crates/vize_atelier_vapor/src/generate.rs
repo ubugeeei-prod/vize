@@ -117,7 +117,7 @@ pub fn generate_vapor_with_options(
         .ok();
     }
 
-    // First pass: collect delegate events
+    // First step: collect delegate events.
     collect_delegate_events(&mut ctx, &ir.block);
 
     // Generate component function body first to collect used helpers
@@ -436,7 +436,7 @@ fn collect_root_if_templates(
 #[cfg(test)]
 mod tests {
     use super::{generate_vapor, setup::escape_template};
-    use crate::transform::transform_to_ir;
+    use crate::lower::transform_to_ir;
     use vize_atelier_core::parser::parse;
     use vize_carton::Bump;
 

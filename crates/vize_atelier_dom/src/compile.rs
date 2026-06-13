@@ -4,13 +4,13 @@ use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
 use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::generate_with_sections,
-    options::{CodegenOptions, ParserOptions, TemplateSyntaxMode, TransformOptions},
-    parser::parse_with_options_and_template_syntax,
-    pipeline::{
+    lane::{
         transform as do_transform, transform_with_hoisted_scope_id,
         transform_with_template_syntax_quirks,
         transform_with_template_syntax_quirks_and_hoisted_scope_id,
     },
+    options::{CodegenOptions, ParserOptions, TemplateSyntaxMode, TransformOptions},
+    parser::parse_with_options_and_template_syntax,
 };
 use vize_carton::{Bump, String, profile};
 use vize_croquis::Croquis;
@@ -199,7 +199,7 @@ fn compile_template_inner_with_sections<'a>(
         );
     }
 
-    // Transform with DOM-specific transforms
+    // Transform with DOM-specific steps.
     // BindingMetadata is passed directly (no string conversion needed)
     let transform_opts = TransformOptions {
         prefix_identifiers: options.prefix_identifiers,

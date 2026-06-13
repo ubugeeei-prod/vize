@@ -6,8 +6,8 @@ title: Crates
 
 > **⚠️ Work in Progress:** Vize is under active development. Crate APIs are still changing.
 
-Vize's Rust workspace is organized around 18 primary crates. Each crate owns one slice of the
-pipeline so parsing, semantic analysis, code generation, linting, formatting, type checking, and
+Vize's Rust workspace is organized around 18 primary crates. Each crate owns one reusable lane so
+parsing, semantic analysis, code generation, linting, formatting, type checking, and
 editor tooling can share the same syntax model.
 
 ## Foundation
@@ -23,7 +23,7 @@ editor tooling can share the same syntax model.
 
 | Crate                | Role                                                          |
 | -------------------- | ------------------------------------------------------------- |
-| `vize_atelier_core`  | Shared transform pipeline and code generation infrastructure  |
+| `vize_atelier_core`  | Shared transform lane and code generation infrastructure      |
 | `vize_atelier_dom`   | VDOM-oriented template compilation                            |
 | `vize_atelier_vapor` | Vapor-mode template compilation                               |
 | `vize_atelier_ssr`   | Server-side rendering template compilation                    |

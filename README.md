@@ -38,7 +38,7 @@
 
 ## What Is Vize?
 
-Vize is a Rust-native toolchain for Vue — one fast, vertically integrated pipeline
+Vize is a Rust-native toolchain for Vue — one fast, vertically integrated lane
 for single-file components. A single shared parser powers compilation, linting, type-checking,
 formatting, and editor tooling, so your whole Vue workflow runs on the same high-performance core
 instead of a patchwork of disconnected tools.

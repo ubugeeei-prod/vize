@@ -1,6 +1,6 @@
 //! Children, text, comment, and interpolation generation functions.
 
-use crate::transforms::hoist_static::is_static_node;
+use crate::steps::hoist_static::is_static_node;
 use crate::{
     CommentNode, ElementNode, InterpolationNode, RuntimeHelper, TemplateChildNode, TextNode,
 };

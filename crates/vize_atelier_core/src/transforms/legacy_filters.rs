@@ -2,7 +2,7 @@
 //!
 //! Legacy-only: filters were removed in Vue 3, where `|` is the bitwise-OR
 //! operator. This module is compiled only behind the `legacy` cargo feature and
-//! is consulted by [`crate::transforms::transform_expression::process_expression`]
+//! is consulted by [`crate::steps::expression::process_expression`]
 //! solely when the resolved dialect advertises
 //! [`supports_filters`](vize_armature::legacy::LegacyDialectCapabilities::supports_filters)
 //! (Vue 2 / 2.7). For every other dialect — and for any build without the
@@ -22,7 +22,7 @@
 
 use vize_carton::String;
 
-use super::transform_expression::is_simple_identifier;
+use super::expression::is_simple_identifier;
 
 /// A parsed Vue 2 filter expression: the base expression and the ordered
 /// filter chain applied to it (outermost last).
