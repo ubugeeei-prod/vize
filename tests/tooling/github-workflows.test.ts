@@ -844,6 +844,16 @@ test("deploy-docs deploy job keeps a full checkout so local actions and scripts 
   assert.doesNotMatch(deployJob, /sparse-checkout:/);
 });
 
+test("deploy-docs isolates musea example cargo checks from the sticky target cache", () => {
+  const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
+  const buildPlaygroundJob = workflowJobBody(workflow, "build-playground");
+
+  assert.match(
+    buildPlaygroundJob,
+    /- name: Build musea-examples\s+env:\s+CARGO_TARGET_DIR:\s*target\/docs-example\s+run: vp run --filter '\.\/examples\/vite-musea' build/,
+  );
+});
+
 test("WASM build jobs install MoonBit before invoking moon run", () => {
   const cases = [
     {

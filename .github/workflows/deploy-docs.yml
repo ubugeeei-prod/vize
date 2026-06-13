@@ -116,6 +116,8 @@ jobs:
         run: vp run --filter './playground' build
 
       - name: Build musea-examples
+        env:
+          CARGO_TARGET_DIR: target/docs-example
         run: vp run --filter './examples/vite-musea' build
 
       - name: Upload playground artifact
