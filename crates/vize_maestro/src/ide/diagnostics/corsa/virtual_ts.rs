@@ -247,7 +247,7 @@ impl DiagnosticService {
     ) -> Option<VirtualTsResult> {
         use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
         use vize_canon::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
-        use vize_croquis::{Analyzer, AnalyzerOptions};
+        use vize_croquis::{Drawer, DrawerOptions};
 
         // Parse as art file to get variant templates
         let art_allocator = vize_carton::Bump::new();
@@ -327,7 +327,7 @@ impl DiagnosticService {
         let (template_ast, _) = vize_armature::parse(&template_allocator, template_content);
 
         // Analyze script + template
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        let mut analyzer = Drawer::with_options(DrawerOptions::full());
         analyzer.analyze_script(script_content);
         analyzer.analyze_template(&template_ast);
 

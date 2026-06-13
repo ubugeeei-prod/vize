@@ -11,8 +11,8 @@
 
 ## Key Entry Points
 
-- `Analyzer`
-- `AnalyzerOptions`
+- `Drawer`
+- `DrawerOptions`
 - `Croquis`
 - `BindingMetadata`
 - `ScopeChain`

@@ -7,7 +7,7 @@ use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation,
     InsertTextFormat, MarkupContent, MarkupKind,
 };
-use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
 use crate::ide::definition::helpers as definition_helpers;
@@ -240,11 +240,11 @@ fn extract_component_metadata(
                 .map(|script| script.content.as_ref())
         })
     {
-        let analyzer_options = AnalyzerOptions {
+        let analyzer_options = DrawerOptions {
             analyze_script: true,
             ..Default::default()
         };
-        let mut analyzer = Analyzer::with_options(analyzer_options);
+        let mut analyzer = Drawer::with_options(analyzer_options);
         if legacy_vue2 {
             analyzer = analyzer.with_legacy_vue2();
         } else if options_api {

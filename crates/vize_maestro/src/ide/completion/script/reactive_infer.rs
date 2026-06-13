@@ -8,7 +8,7 @@
 )]
 
 use vize_croquis::reactivity::ReactiveKind;
-use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_croquis::{Drawer, DrawerOptions};
 
 pub(super) fn reactive_completion_info(
     script_content: &str,
@@ -37,7 +37,7 @@ fn reactive_wrapper_type(kind: ReactiveKind) -> Option<&'static str> {
 }
 
 pub(super) fn reactive_kind_for_name(script_content: &str, name: &str) -> Option<ReactiveKind> {
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions {
+    let mut analyzer = Drawer::with_options(DrawerOptions {
         analyze_script: true,
         ..Default::default()
     });

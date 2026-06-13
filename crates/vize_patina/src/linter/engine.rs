@@ -27,7 +27,7 @@ use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_carton::dialect::{VueDialect, standalone_html_dialect};
 use vize_carton::profile;
-use vize_croquis::{Analyzer, Croquis};
+use vize_croquis::{Croquis, Drawer};
 use vize_relief::RootNode;
 
 use super::config::{LintResult, Linter};
@@ -314,7 +314,7 @@ impl Linter {
             TemplateAnalysis::Precomputed(analysis) => analysis,
             TemplateAnalysis::Lazy => {
                 owned_analysis = profile!("patina.template.croquis", {
-                    let mut analyzer = Analyzer::for_lint();
+                    let mut analyzer = Drawer::for_lint();
                     analyzer.analyze_template(root);
                     analyzer.finish()
                 });

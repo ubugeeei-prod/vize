@@ -22,7 +22,7 @@
 //!     |
 //!     v
 //! +-------------------------------------+
-//! |  vize_croquis::Analyzer             |
+//! |  vize_croquis::Drawer               |
 //! |  - Script analysis (bindings)       |
 //! |  - Template analysis (scopes)       |
 //! |  - Macro tracking (defineProps)     |

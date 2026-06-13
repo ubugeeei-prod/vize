@@ -21,7 +21,7 @@ use tower_lsp::lsp_types::{
     MarkupKind,
 };
 use vize_croquis::ScopeKind;
-use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
 use self::context::{
@@ -92,7 +92,7 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
     if let Some((script_content, script_offset)) =
         script_content_and_offset_for_context(ctx, is_setup)
     {
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions {
+        let mut analyzer = Drawer::with_options(DrawerOptions {
             analyze_script: true,
             ..Default::default()
         });

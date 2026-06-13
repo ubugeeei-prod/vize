@@ -618,7 +618,7 @@ fn sfc_script_declares(content: &str, name: &str) -> bool {
     let Some(script_content) = script_content else {
         return false;
     };
-    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions {
+    let mut analyzer = vize_croquis::Drawer::with_options(vize_croquis::DrawerOptions {
         analyze_script: true,
         ..Default::default()
     });
@@ -727,7 +727,7 @@ fn is_reactive_ref_in_script(content: &str, uri: &tower_lsp::lsp_types::Url, nam
     let Some(ref script_setup) = descriptor.script_setup else {
         return false;
     };
-    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions {
+    let mut analyzer = vize_croquis::Drawer::with_options(vize_croquis::DrawerOptions {
         analyze_script: true,
         ..Default::default()
     });

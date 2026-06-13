@@ -10,7 +10,7 @@ mod script;
 mod template;
 
 use tower_lsp::lsp_types::{InlayHint, Position, Range, Url};
-use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_croquis::{Drawer, DrawerOptions};
 
 use crate::ide::ecosystem;
 use crate::ide::offset_to_position;
@@ -52,13 +52,13 @@ impl InlayHintService {
             );
         }
 
-        // Use vize_croquis analyzer for proper scope analysis
+        // Use the Croquis drawer for proper scope analysis.
         let Some(ref script_setup) = descriptor.script_setup else {
             return hints;
         };
 
         // Analyze the script setup using croquis
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions {
+        let mut analyzer = Drawer::with_options(DrawerOptions {
             analyze_script: true,
             ..Default::default()
         });

@@ -9,7 +9,7 @@
 )]
 
 use tower_lsp::lsp_types::{Hover, HoverContents};
-use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
 #[cfg(feature = "native")]
@@ -133,9 +133,9 @@ impl HoverService {
             .map(|s| s.content.as_ref())
             .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
 
-        // Create analyzer and analyze script
-        let analyzer_options = AnalyzerOptions::full();
-        let mut analyzer = Analyzer::with_options(analyzer_options);
+        // Create a drawer and analyze script.
+        let analyzer_options = DrawerOptions::full();
+        let mut analyzer = Drawer::with_options(analyzer_options);
         if ctx.state.lsp_features().legacy_vue2 {
             analyzer = analyzer.with_legacy_vue2();
         } else if ctx.state.options_api_enabled() {

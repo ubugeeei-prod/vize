@@ -164,7 +164,7 @@ impl WorkspaceSymbolsService {
             return;
         };
 
-        let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions {
+        let mut analyzer = vize_croquis::Drawer::with_options(vize_croquis::DrawerOptions {
             analyze_script: true,
             ..Default::default()
         });

@@ -5,7 +5,7 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range};
-use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
 use super::{IdeContext, helpers};
@@ -513,7 +513,7 @@ pub(crate) fn find_component_definition(
 
     let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
 
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    let mut analyzer = Drawer::with_options(DrawerOptions::full());
 
     if let Some(ref script_setup) = descriptor.script_setup {
         analyzer.analyze_script_setup(&script_setup.content);
@@ -638,7 +638,7 @@ pub(crate) fn find_prop_definition_by_name(
 ) -> Option<GotoDefinitionResponse> {
     let script_setup = descriptor.script_setup.as_ref()?;
 
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions {
+    let mut analyzer = Drawer::with_options(DrawerOptions {
         analyze_script: true,
         ..Default::default()
     });

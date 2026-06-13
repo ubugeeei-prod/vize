@@ -7,13 +7,13 @@
 use crate::types::SfcDescriptor;
 use vize_atelier_core::RootNode;
 use vize_carton::{String, ToCompactString, cstr, profile};
-use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
+use vize_croquis::{Croquis, Drawer, DrawerOptions};
 
 /// Options for descriptor-level Croquis analysis.
 #[derive(Debug, Clone, Copy)]
 pub struct SfcCroquisOptions {
-    /// Low-level analyzer options.
-    pub analyzer_options: AnalyzerOptions,
+    /// Low-level drawer options.
+    pub analyzer_options: DrawerOptions,
     /// Merge `<script>` into the synthetic script used by downstream tools when
     /// a component also has `<script setup>`.
     pub merge_scripts: bool,
@@ -24,7 +24,7 @@ impl SfcCroquisOptions {
     #[inline]
     pub const fn full() -> Self {
         Self {
-            analyzer_options: AnalyzerOptions::full(),
+            analyzer_options: DrawerOptions::full(),
             merge_scripts: true,
         }
     }
@@ -33,7 +33,7 @@ impl SfcCroquisOptions {
     #[inline]
     pub const fn for_lint() -> Self {
         Self {
-            analyzer_options: AnalyzerOptions::for_lint(),
+            analyzer_options: DrawerOptions::for_lint(),
             merge_scripts: true,
         }
     }
@@ -42,7 +42,7 @@ impl SfcCroquisOptions {
     #[inline]
     pub const fn for_compile() -> Self {
         Self {
-            analyzer_options: AnalyzerOptions::for_compile(),
+            analyzer_options: DrawerOptions::for_compile(),
             merge_scripts: true,
         }
     }
@@ -51,7 +51,7 @@ impl SfcCroquisOptions {
     #[inline]
     pub const fn for_declaration() -> Self {
         Self {
-            analyzer_options: AnalyzerOptions {
+            analyzer_options: DrawerOptions {
                 analyze_script: true,
                 analyze_template_scopes: false,
                 track_usage: false,
@@ -131,10 +131,10 @@ pub fn analyze_sfc_descriptor_with_context_legacy_vue2(
     analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, false, true)
 }
 
-/// Apply the Options API / legacy binding-resolution mode to an analyzer.
+/// Apply the Options API / legacy binding-resolution mode to a drawer.
 /// `legacy_vue2` implies Options API resolution and additionally pulls in the
 /// Nuxt 2 globals; `options_api` alone resolves only the Options API bindings.
-fn apply_options_api_mode(analyzer: Analyzer, options_api: bool, legacy_vue2: bool) -> Analyzer {
+fn apply_options_api_mode(analyzer: Drawer, options_api: bool, legacy_vue2: bool) -> Drawer {
     if legacy_vue2 {
         analyzer.with_legacy_vue2()
     } else if options_api {
@@ -203,7 +203,7 @@ fn analyze_sfc_descriptor_resolved_impl(
         merge_resolved_props_into_croquis(&mut summary, descriptor, filename);
     }
     let summary = summary;
-    let analyzer = Analyzer::with_summary(options.analyzer_options, summary, script_analyzed);
+    let analyzer = Drawer::with_summary(options.analyzer_options, summary, script_analyzed);
     let mut analyzer = apply_options_api_mode(analyzer, options_api, legacy_vue2);
 
     if let Some(root) = template_ast {
@@ -255,7 +255,7 @@ fn analyze_scripts(
 
     match (descriptor.script.as_ref(), descriptor.script_setup.as_ref()) {
         (Some(script), Some(script_setup)) if options.merge_scripts => {
-            let plain_analyzer = Analyzer::with_options(options.analyzer_options);
+            let plain_analyzer = Drawer::with_options(options.analyzer_options);
             let mut plain_analyzer =
                 apply_options_api_mode(plain_analyzer, options_api, legacy_vue2);
             profile!(
@@ -264,7 +264,7 @@ fn analyze_scripts(
             );
             let plain = plain_analyzer.finish();
 
-            let setup_analyzer = Analyzer::with_options(options.analyzer_options);
+            let setup_analyzer = Drawer::with_options(options.analyzer_options);
             let mut setup_analyzer =
                 apply_options_api_mode(setup_analyzer, options_api, legacy_vue2);
             let generic = script_setup
@@ -284,7 +284,7 @@ fn analyze_scripts(
             summary
         }
         (_, Some(script_setup)) => {
-            let analyzer = Analyzer::with_options(options.analyzer_options);
+            let analyzer = Drawer::with_options(options.analyzer_options);
             let mut analyzer = apply_options_api_mode(analyzer, options_api, legacy_vue2);
             let generic = script_setup
                 .attrs
@@ -297,7 +297,7 @@ fn analyze_scripts(
             analyzer.finish()
         }
         (Some(script), None) => {
-            let analyzer = Analyzer::with_options(options.analyzer_options);
+            let analyzer = Drawer::with_options(options.analyzer_options);
             let mut analyzer = apply_options_api_mode(analyzer, options_api, legacy_vue2);
             profile!(
                 "atelier.sfc.croquis.script_plain",
