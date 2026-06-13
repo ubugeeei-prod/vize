@@ -3,6 +3,7 @@
 //! are **opt-in**: enable them via `[rules.script]` in your configuration.
 
 mod component_options_name_casing;
+mod define_macros_order;
 mod no_arrow_functions_in_watch;
 mod no_async_in_computed;
 mod no_boolean_default;
@@ -50,6 +51,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_carton::profile;
 
 pub use component_options_name_casing::ComponentOptionsNameCasing;
+pub use define_macros_order::DefineMacrosOrder;
 pub use no_arrow_functions_in_watch::NoArrowFunctionsInWatch;
 pub use no_async_in_computed::NoAsyncInComputed;
 pub use no_boolean_default::NoBooleanDefault;
