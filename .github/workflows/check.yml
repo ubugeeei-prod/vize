@@ -67,11 +67,11 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check JS/TS
         run: vp run --workspace-root check:ci
-
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})
     runs-on: blacksmith-32vcpu-ubuntu-2404

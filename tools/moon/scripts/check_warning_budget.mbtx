@@ -1,0 +1,139 @@
+///|
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/core/string",
+  "moonbitlang/async@0.19.0",
+  "moonbitlang/async@0.19.0/process",
+  "moonbitlang/async@0.19.0/stdio",
+  "moonbitlang/x@0.4.43/sys",
+}
+
+///|
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() { args.push(raw[i]) }
+  args
+}
+
+///|
+fn parse_int(value : StringView) -> Int? {
+  try {
+    Some(@string.parse_int(value))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+async fn print_usage() -> Unit {
+  @stdio.stderr.write(
+    "Usage: moon run --target native - -- -- <command> [args...] < tools/moon/scripts/check_warning_budget.mbtx\n",
+  )
+}
+
+///|
+fn command_args(args : Array[String]) -> Array[String]? {
+  let start = if args.length() > 0 && args[0] == "--" { 1 } else { 0 }
+  if start >= args.length() {
+    return None
+  }
+  let command = []
+  for i in start..<args.length() {
+    command.push(args[i])
+  }
+  Some(command)
+}
+
+///|
+fn strip_ansi(text : String) -> String {
+  let ansi_escape = @string.Regex::unsafe_from_string("\\u{1B}\\[[0-9;]*m")
+  ansi_escape.replace_by(text, _match => "").to_owned()
+}
+
+///|
+fn count_warnings(text : String) -> Int {
+  let warning_summary = @string.Regex::unsafe_from_string(
+    "Found [[:digit:]]+ errors? and ([[:digit:]]+) warnings?",
+  )
+  let mut warning_count = 0
+  for found in warning_summary.find(text) {
+    match found.group(1) {
+      Some(value) =>
+        match parse_int(value) {
+          Some(count) => warning_count = warning_count + count
+          None => ()
+        }
+      None => ()
+    }
+  }
+  warning_count
+}
+
+///|
+fn has_unparsed_warning_marker(text : String) -> Bool {
+  let warning_marker = @string.Regex::unsafe_from_string(
+    "\\bwarn:[[:space:]]+Lint warnings found\\b",
+  )
+  match warning_marker.execute(text) {
+    Some(_) => true
+    None => false
+  }
+}
+
+///|
+async fn print_warning_budget_error(warning_count : Int, has_marker : Bool) -> Unit {
+  if warning_count > 0 {
+    @stdio.stderr.write(
+      "JS/TS warning budget is 0 for v1 alpha CI; found \{warning_count} warnings.\n",
+    )
+  } else if has_marker {
+    @stdio.stderr.write(
+      "JS/TS warning budget is 0 for v1 alpha CI; found unparsed warnings.\n",
+    )
+  }
+}
+
+///|
+async fn run_app() -> Int {
+  let args = match command_args(cli_args()) {
+    Some(args) => args
+    None => {
+      print_usage()
+      return 2
+    }
+  }
+  let command = args[0]
+  let child_args = []
+  for i in 1..<args.length() {
+    child_args.push(args[i])
+  }
+  let (exit_code, stdout_data, stderr_data) = @process.collect_output(
+    command,
+    child_args,
+  )
+  let stdout = stdout_data.text()
+  let stderr = stderr_data.text()
+  if stdout != "" {
+    @stdio.stdout.write(stdout)
+  }
+  if stderr != "" {
+    @stdio.stderr.write(stderr)
+  }
+  if exit_code != 0 {
+    return exit_code
+  }
+  let stripped = strip_ansi(stdout + stderr)
+  let warning_count = count_warnings(stripped)
+  let has_marker = has_unparsed_warning_marker(stripped)
+  if warning_count > 0 || has_marker {
+    print_warning_budget_error(warning_count, has_marker)
+    return 1
+  }
+  0
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}
