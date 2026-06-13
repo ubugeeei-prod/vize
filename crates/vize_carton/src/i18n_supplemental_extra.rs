@@ -40,6 +40,7 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "Write the handler as a method reference (e.g. @click=\"handler\") or an inline function (e.g. @click=\"() => count++\") instead of an inline statement.",
         "ハンドラをインライン文ではなく、メソッド参照（例: @click=\"handler\"）またはインライン関数（例: @click=\"() => count++\"）として記述してください。",
         "请将处理函数写成方法引用（例如 @click=\"handler\"）或内联函数（例如 @click=\"() => count++\"），而不是内联语句。",
+    ),
     // vue/this-in-template
     (
         "vue/this-in-template.description",
