@@ -185,4 +185,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "='true' のバインディングを削除し、属性名だけを記述してください。",
         "去掉 ='true' 绑定，仅写属性名即可。",
     ),
+    // vue/no-useless-mustaches
+    (
+        "vue/no-useless-mustaches.description",
+        "Disallow a mustache interpolation whose expression is a constant string literal",
+        "式が定数文字列リテラルのマスタッシュ補間を禁止する",
+        "禁止表达式为常量字符串字面量的插值表达式",
+    ),
+    (
+        "vue/no-useless-mustaches.message",
+        "Interpolating a constant string is unnecessary; write it as static text",
+        "定数文字列を補間するのは不要です。静的なテキストとして記述してください",
+        "插值常量字符串是多余的；请将其写为静态文本",
+    ),
+    (
+        "vue/no-useless-mustaches.help",
+        "Replace the mustache with the plain text ({{ 'x' }} becomes x).",
+        "マスタッシュを素のテキストに置き換えてください（{{ 'x' }} は x になります）。",
+        "请将该插值替换为纯文本（{{ 'x' }} 改为 x）。",
+    ),
 ];

@@ -132,6 +132,7 @@ export const LINT_RULE_NAMES = [
   "vue/no-unused-properties",
   "vue/no-unused-vars",
   "vue/no-use-v-if-with-v-for",
+  "vue/no-useless-mustaches",
   "vue/no-useless-template-attributes",
   "vue/no-useless-v-bind",
   "vue/no-v-html",
