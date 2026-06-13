@@ -49,14 +49,7 @@ export function usePalette() {
     error.value = null;
     try {
       palette.value = await fetchPalette(artPath);
-      // Initialize values from defaults
-      const initial: Record<string, unknown> = {};
-      for (const control of palette.value.controls) {
-        if (control.default_value !== undefined) {
-          initial[control.name] = control.default_value;
-        }
-      }
-      values.value = initial;
+      values.value = initialValues(palette.value.controls);
       customProps.value = [];
       deletedPaletteProps.value = new Set();
     } catch (e) {
@@ -105,13 +98,7 @@ export function usePalette() {
 
   function resetValues() {
     if (!palette.value) return;
-    const initial: Record<string, unknown> = {};
-    for (const control of palette.value.controls) {
-      if (control.default_value !== undefined) {
-        initial[control.name] = control.default_value;
-      }
-    }
-    values.value = initial;
+    values.value = initialValues(palette.value.controls);
     customProps.value = [];
     deletedPaletteProps.value = new Set();
   }
@@ -133,4 +120,26 @@ export function usePalette() {
     removeProp,
     resetValues,
   };
+}
+
+function initialValues(controls: PaletteControl[]): Record<string, unknown> {
+  const initial: Record<string, unknown> = {};
+  for (const control of controls) {
+    initial[control.name] =
+      control.default_value !== undefined ? control.default_value : fallbackValue(control);
+  }
+  return initial;
+}
+
+function fallbackValue(control: PaletteControl): unknown {
+  if ((control.control === "select" || control.control === "radio") && control.options.length > 0) {
+    return control.options[0].value;
+  }
+  if (control.control === "boolean") return false;
+  if (control.control === "number" || control.control === "range") {
+    return control.range?.min ?? 0;
+  }
+  if (control.control === "array") return [];
+  if (control.control === "object") return {};
+  return "";
 }

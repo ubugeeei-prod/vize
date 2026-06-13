@@ -177,10 +177,10 @@ export interface LinterConfig {
    * Enable linting
    */
   enabled?: boolean;
-  /**
-   * Built-in lint preset
-   */
+  /** Built-in lint preset */
   preset?: "happy-path" | "opinionated" | "essential" | "incremental" | "ecosystem" | "nuxt";
+  /** Enable native type-aware lint rules from the active lint configuration */
+  typeAware?: boolean;
   /**
    * Rules to enable/disable
    */

@@ -305,6 +305,17 @@
     "file": "app/components/account/AccountPaginator.vue",
     "messages": [
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 32,
+        "column": 9,
+        "endLine": 36,
+        "endColumn": 10,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -317,7 +328,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/account/AccountPostsFollowers.vue",
@@ -682,6 +693,17 @@
     "file": "app/components/common/CommonPreviewPrompt.vue",
     "messages": [
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 16,
+        "column": 9,
+        "endLine": 16,
+        "endColumn": 126,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -694,7 +716,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/common/CommonRadio.vue",
@@ -924,6 +946,17 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 28,
+        "column": 7,
+        "endLine": 28,
+        "endColumn": 95,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -933,6 +966,17 @@
         "endLine": 28,
         "endColumn": 95,
         "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 33,
+        "column": 5,
+        "endLine": 33,
+        "endColumn": 94,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "ecosystem/router-link-require-to",
@@ -957,6 +1001,17 @@
         "help": "Add text content, child elements, or use aria-label for accessible content."
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 38,
+        "column": 9,
+        "endLine": 38,
+        "endColumn": 155,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -979,6 +1034,17 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 44,
+        "column": 7,
+        "endLine": 44,
+        "endColumn": 77,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -991,7 +1057,7 @@
       }
     ],
     "errorCount": 4,
-    "warningCount": 3
+    "warningCount": 7
   },
   {
     "file": "app/components/list/Account.vue",
@@ -1313,6 +1379,17 @@
     "file": "app/components/nav/NavFooter.vue",
     "messages": [
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 35,
+        "column": 9,
+        "endLine": 42,
+        "endColumn": 11,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -1324,6 +1401,17 @@
         "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 53,
+        "column": 7,
+        "endLine": 59,
+        "endColumn": 8,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -1333,6 +1421,17 @@
         "endLine": 59,
         "endColumn": 8,
         "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 65,
+        "column": 9,
+        "endLine": 70,
+        "endColumn": 10,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "ecosystem/router-link-require-to",
@@ -1357,6 +1456,17 @@
         "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 86,
+        "column": 7,
+        "endLine": 86,
+        "endColumn": 58,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -1368,6 +1478,17 @@
         "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 90,
+        "column": 7,
+        "endLine": 90,
+        "endColumn": 71,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -1377,6 +1498,17 @@
         "endLine": 90,
         "endColumn": 71,
         "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 94,
+        "column": 7,
+        "endLine": 94,
+        "endColumn": 81,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "ecosystem/router-link-require-to",
@@ -1391,7 +1523,7 @@
       }
     ],
     "errorCount": 6,
-    "warningCount": 1
+    "warningCount": 7
   },
   {
     "file": "app/components/nav/NavLogo.vue",
@@ -1877,6 +2009,17 @@
         "help": "Use CSS border instead."
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 39,
+        "column": 9,
+        "endLine": 39,
+        "endColumn": 123,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -1886,6 +2029,17 @@
         "endLine": 39,
         "endColumn": 123,
         "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 46,
+        "column": 7,
+        "endLine": 46,
+        "endColumn": 129,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "ecosystem/router-link-require-to",
@@ -1900,7 +2054,7 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 1
+    "warningCount": 3
   },
   {
     "file": "app/components/publish/PublishAttachment.vue",
@@ -2483,6 +2637,17 @@
     "file": "app/components/settings/SettingsSponsorsList.vue",
     "messages": [
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 3,
+        "column": 5,
+        "endLine": 3,
+        "endColumn": 59,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -2492,6 +2657,17 @@
         "endLine": 3,
         "endColumn": 59,
         "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 13,
+        "column": 5,
+        "endLine": 13,
+        "endColumn": 61,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "ecosystem/router-link-require-to",
@@ -2506,7 +2682,7 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "app/components/settings/SettingsThemeColors.vue",
@@ -2827,6 +3003,17 @@
     "file": "app/components/status/StatusEmbeddedMedia.vue",
     "messages": [
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 35,
+        "column": 9,
+        "endLine": 35,
+        "endColumn": 119,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -2861,7 +3048,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "app/components/status/StatusEmojiReaction.vue",
@@ -3043,6 +3230,17 @@
     "file": "app/components/status/StatusPreviewGitHub.vue",
     "messages": [
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 99,
+        "column": 11,
+        "endLine": 99,
+        "endColumn": 122,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -3054,6 +3252,17 @@
         "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 105,
+        "column": 11,
+        "endLine": 105,
+        "endColumn": 74,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -3063,6 +3272,17 @@
         "endLine": 105,
         "endColumn": 74,
         "help": "Add to or :to so navigation is explicit and typed-route tooling can infer the target."
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 116,
+        "column": 11,
+        "endLine": 116,
+        "endColumn": 68,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "ecosystem/router-link-require-to",
@@ -3143,7 +3363,7 @@
       }
     ],
     "errorCount": 3,
-    "warningCount": 6
+    "warningCount": 9
   },
   {
     "file": "app/components/status/StatusPreviewStackBlitz.vue",
@@ -3508,6 +3728,17 @@
         "help": "Use CSS border instead."
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 56,
+        "column": 11,
+        "endLine": 60,
+        "endColumn": 12,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -3520,7 +3751,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "app/components/timeline/TimelinePinned.vue",
@@ -3561,6 +3792,17 @@
         "help": "Use CSS border instead."
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 60,
+        "column": 11,
+        "endLine": 64,
+        "endColumn": 12,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -3573,7 +3815,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "app/components/timeline/TimelineSkeleton.vue",
@@ -3735,6 +3977,17 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 170,
+        "column": 11,
+        "endLine": 170,
+        "endColumn": 125,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -3747,7 +4000,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 5
+    "warningCount": 6
   },
   {
     "file": "app/components/user/UserSignInEntry.vue",
@@ -4345,6 +4598,17 @@
     "file": "app/pages/settings/language/index.vue",
     "messages": [
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 33,
+        "column": 9,
+        "endLine": 37,
+        "endColumn": 10,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "ecosystem/router-link-require-to",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 2,
@@ -4357,7 +4621,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/pages/settings/notifications/index.vue",

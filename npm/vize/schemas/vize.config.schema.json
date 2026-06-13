@@ -181,18 +181,18 @@
       "additionalProperties": false
     },
     "LinterConfig": {
-      "description": "Linter options",
       "type": "object",
       "properties": {
         "enabled": {
-          "description": "Enable linting",
           "type": "boolean"
         },
         "preset": {
-          "description": "Built-in lint preset",
           "default": "ecosystem",
           "type": "string",
           "enum": ["happy-path", "opinionated", "essential", "incremental", "ecosystem", "nuxt"]
+        },
+        "typeAware": {
+          "type": "boolean"
         },
         "rules": {
           "description": "Rules to enable/disable",
