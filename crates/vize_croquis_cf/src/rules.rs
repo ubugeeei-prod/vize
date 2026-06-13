@@ -1,6 +1,6 @@
 //! Individual cross-file rules.
 //!
-//! Each analyzer focuses on a specific aspect of cross-file analysis.
+//! Each rule focuses on a specific aspect of cross-file analysis.
 //!
 //! ## Suppression Directives
 //!
