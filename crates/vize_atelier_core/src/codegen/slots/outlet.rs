@@ -1,6 +1,6 @@
 //! Slot outlet (`<slot />`) name and props generation.
 
-use crate::*;
+use crate::{DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper};
 use vize_carton::String;
 
 use super::super::context::CodegenContext;

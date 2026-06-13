@@ -1,6 +1,10 @@
 //! Template string construction, escaping, and template-ref extraction.
 
-use super::*;
+use super::{
+    BlockIRNode, Box, ElementNode, ElementType, ExpressionNode, OperationNode, PropNode,
+    SetTemplateRefIRNode, SimpleExpressionNode, String, TemplateChildNode, TransformContext,
+    append, cstr,
+};
 
 /// Generate element template string (recursively includes static children)
 pub(crate) fn generate_element_template(el: &ElementNode<'_>) -> String {

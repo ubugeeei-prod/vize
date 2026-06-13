@@ -106,7 +106,7 @@ fn merge_env(shell_env: zed::EnvVars, custom_env: Option<HashMap<String, String>
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{CommandSettings, LspSettings, VizeExtension, zed};
 
     #[test]
     fn discovered_binary_defaults_to_lsp() {

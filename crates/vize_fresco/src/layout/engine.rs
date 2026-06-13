@@ -1,7 +1,7 @@
 //! Layout engine using taffy.
 
 use rustc_hash::FxHashMap;
-use taffy::prelude::*;
+use taffy::prelude::{AvailableSpace, Dimension, NodeId, Size, TaffyTree};
 
 use super::{flex::FlexStyle, rect::Rect};
 

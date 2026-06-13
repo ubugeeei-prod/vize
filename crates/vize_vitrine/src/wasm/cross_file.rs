@@ -9,6 +9,25 @@
 
 use super::{to_js_value, utf8_byte_to_utf16_offset};
 use vize_carton::Bump;
+use vize_croquis_cf::CrossFileDiagnosticKind::{
+    ArrayMutationNotTriggering, AsyncBoundaryCrossing, AsyncWithoutSuspense, BrowserApiInSsr,
+    CircularDependency, CircularReactiveDependency, ClosureCapturesReactive,
+    ComposableOutsideSetup, ComputedHasSideEffects, DeepImportChain,
+    DependencyInjectionOutsideSetup, DestructuringBreaksReactivity, DomAccessWithoutNextTick,
+    DuplicateElementId, EventListenerWithoutCleanup, EventModifierIssue, HydrationMismatchRisk,
+    InheritAttrsDisabledUnused, InjectedAsyncMutationRace, LifecycleHookWithoutCleanup,
+    LifecycleOutsideSetup, MissingRequiredProp, MissingSuspenseBoundary, MultiRootMissingAttrs,
+    NonReactiveProvideValue, NonUniqueIdInLoop, ObjectIdentityComparison,
+    PiniaGetterWithoutStoreToRefs, PropTypeMismatch, ProvideInjectTypeMismatch,
+    ProvideInjectWithoutSymbol, ReactiveObjectMutatedAfterEscape, ReactiveReferenceEscapes,
+    ReactiveStateAtModuleScope, ReactiveStateExported, ReactivityOutsideSetup,
+    ReassignmentBreaksReactivity, SetupContextViolation, ShallowReactiveDeepAccess,
+    SpreadBreaksReactivity, SuspenseWithoutFallback, TemplateRefAccessedBeforeMount, ToRawMutation,
+    UncaughtErrorBoundary, UndeclaredEmit, UndeclaredProp, UndefinedSlot, UnhandledEvent,
+    UnmatchedEventListener, UnmatchedInject, UnregisteredComponent, UnresolvedImport, UnusedEmit,
+    UnusedFallthroughAttrs, UnusedProvide, ValueExtractionBreaksReactivity, WatchEffectWithAsync,
+    WatchMutationCanBeComputed, WatcherOutsideSetup,
+};
 use wasm_bindgen::prelude::*;
 
 /// Analyze multiple Vue SFC files for cross-file issues
@@ -325,7 +344,6 @@ fn parse_cross_file_options(options: &JsValue) -> vize_croquis_cf::CrossFileOpti
 
 /// Convert diagnostic kind to string type
 fn diagnostic_kind_to_string(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> &'static str {
-    use vize_croquis_cf::CrossFileDiagnosticKind::*;
     match kind {
         // Fallthrough attributes
         UnusedFallthroughAttrs { .. } => "fallthrough-attrs",
@@ -424,7 +442,6 @@ fn diagnostic_kind_to_string(kind: &vize_croquis_cf::CrossFileDiagnosticKind) ->
 /// Determine if a diagnostic is template-related (uses template offsets)
 /// vs script-related (uses script offsets)
 fn is_template_related_diagnostic(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> bool {
-    use vize_croquis_cf::CrossFileDiagnosticKind::*;
     matches!(
         kind,
         // Template-based diagnostics (positions in template block)
@@ -443,7 +460,6 @@ fn is_template_related_diagnostic(kind: &vize_croquis_cf::CrossFileDiagnosticKin
 /// Determine if a diagnostic should span the entire <template> tag
 /// (uses tag_start and tag_end directly, not relative offsets)
 fn is_template_tag_span_diagnostic(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> bool {
-    use vize_croquis_cf::CrossFileDiagnosticKind::*;
     matches!(
         kind,
         // These diagnostics apply to the entire template, not a specific location

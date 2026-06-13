@@ -5,7 +5,10 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use vize_armature::RootNode;
-use vize_relief::*;
+use vize_relief::{
+    DirectiveNode, ElementNode, ExpressionNode, ForNode, IfNode, InterpolationNode, PropNode,
+    SimpleExpressionNode, SourceLocation, TemplateChildNode,
+};
 
 use super::{MappingData, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage};
 use vize_carton::cstr;

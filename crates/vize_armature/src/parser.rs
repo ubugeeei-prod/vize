@@ -17,9 +17,9 @@ mod tests;
 
 use vize_carton::{Bump, String, Vec};
 use vize_relief::{
+    ElementNode, Namespace, Position, PropNode, RootNode, SourceLocation, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
     options::{ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
-    *,
 };
 
 use crate::tokenizer::Tokenizer;

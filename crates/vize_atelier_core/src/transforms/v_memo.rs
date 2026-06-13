@@ -6,7 +6,7 @@ use vize_carton::String;
 use vize_carton::ToCompactString;
 
 use crate::transform::TransformContext;
-use crate::*;
+use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper};
 
 /// Check if element has v-memo directive
 pub fn has_v_memo(el: &ElementNode<'_>) -> bool {
@@ -95,7 +95,8 @@ pub fn generate_memo_check(deps: &str, cache_index: usize) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{TemplateChildNode, get_memo_deps, has_v_memo};
+    use super::{get_memo_deps, has_v_memo};
+    use crate::TemplateChildNode;
     use crate::parser::parse;
     use bumpalo::Bump;
 

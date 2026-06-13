@@ -5,7 +5,10 @@
 use vize_carton::{Box, Bump};
 
 use crate::transform::TransformContext;
-use crate::*;
+use crate::{
+    ElementNode, ExpressionNode, ForParseResult, Position, PropNode, RuntimeHelper,
+    SimpleExpressionNode, SourceLocation,
+};
 
 /// Check if an element has a v-for directive
 pub fn has_v_for(el: &ElementNode<'_>) -> bool {
@@ -281,9 +284,10 @@ pub fn process_v_for(ctx: &mut TransformContext<'_>) {
 #[cfg(test)]
 mod tests {
     use super::{
-        ExpressionNode, ForParseResult, SourceLocation, TemplateChildNode, has_v_for,
-        parse_for_expression, parse_for_expression_with_options,
+        ExpressionNode, ForParseResult, SourceLocation, has_v_for, parse_for_expression,
+        parse_for_expression_with_options,
     };
+    use crate::TemplateChildNode;
     use crate::parser::parse;
     use bumpalo::Bump;
 

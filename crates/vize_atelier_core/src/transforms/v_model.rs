@@ -5,7 +5,10 @@
 use vize_carton::{Box, String, Vec};
 
 use crate::transform::TransformContext;
-use crate::*;
+use crate::{
+    DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
+    SimpleExpressionNode,
+};
 
 /// v-model modifiers
 #[derive(Debug, Clone, Default)]
@@ -207,9 +210,8 @@ pub fn get_model_event_prop(el: &ElementNode<'_>) -> (&'static str, &'static str
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        SimpleExpressionNode, SourceLocation, String, Vec, parse_model_modifiers, supports_v_model,
-    };
+    use super::{SimpleExpressionNode, String, Vec, parse_model_modifiers, supports_v_model};
+    use crate::SourceLocation;
     use vize_carton::Allocator;
 
     #[test]

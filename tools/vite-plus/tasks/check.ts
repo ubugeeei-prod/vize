@@ -24,6 +24,7 @@ const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
   concurrencyLimit: 1,
 });
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
+const rustClippyCommand = "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports";
 const strictRepoCheckCommand = `node tools/vite-plus/check-warning-budget.mjs -- ${localVp} check`;
 const ciVizeAppCheckCommand = [
   runInDirectory(
@@ -77,7 +78,7 @@ export const checkTasks = defineTasks({
     runInVscodeExtension("pnpm exec tsgo --noEmit", "pnpm exec vp check src vite.config.ts"),
   ),
   "check:editor-extensions": noCacheTask(runTasks("check:vscode-extension", "check:zed-extension")),
-  clippy: task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
+  clippy: task(rustClippyCommand, { input: cacheInputs.rust }),
   fmt: noCacheTask(runTasks("fmt:repo", "fmt:rust", "fmt:js")),
   "fmt:repo": noCacheTask(`${localVp} fmt --write`),
   "fmt:js": noCacheTask(runInPackages("fmt", checkedPackages)),
@@ -86,7 +87,7 @@ export const checkTasks = defineTasks({
   // `vp lint` runs inside a Blacksmith Testbox; `check` stays local.
   lint: noCacheTask(inTestbox(runTask("check"))),
   "lint:fix": noCacheTask(runTask("check:fix")),
-  "lint:rust": task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
+  "lint:rust": task(rustClippyCommand, { input: cacheInputs.rust }),
   "lint:all": noCacheTask(runTasks("lint:rust", "check")),
   "fmt:check": noCacheTask(runTask("check")),
   actrun: noCacheTask(localActrunCommand),

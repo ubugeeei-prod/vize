@@ -5,7 +5,7 @@
 use vize_carton::String;
 
 use crate::transform::TransformContext;
-use crate::*;
+use crate::{DirectiveNode, ExpressionNode, SimpleExpressionNode};
 
 /// Event modifier flags
 #[derive(Debug, Clone, Default)]
@@ -110,9 +110,10 @@ pub fn create_on_name(event: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        EventModifiers, SimpleExpressionNode, SourceLocation, camelize, create_on_name,
-        needs_guard, parse_event_modifiers,
+        EventModifiers, SimpleExpressionNode, camelize, create_on_name, needs_guard,
+        parse_event_modifiers,
     };
+    use crate::SourceLocation;
 
     #[test]
     fn test_parse_modifiers() {

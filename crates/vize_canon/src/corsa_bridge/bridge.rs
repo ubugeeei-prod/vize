@@ -7,7 +7,11 @@ use std::sync::{Arc, Mutex};
 use vize_carton::profiler::{CacheStats, Profiler};
 use vize_carton::{String, cstr};
 
-use super::types::*;
+use super::types::{
+    CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionResponse,
+    LspDefinitionResponse, LspDiagnostic, LspHover, LspLocation, TypeCheckResult,
+    VIRTUAL_URI_SCHEME,
+};
 use crate::corsa_client::CorsaProjectClient;
 
 /// Bridge to Corsa for type checking and editor queries via project sessions.
