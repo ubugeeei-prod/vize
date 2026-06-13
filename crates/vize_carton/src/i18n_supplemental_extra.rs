@@ -41,4 +41,42 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "ハンドラをインライン文ではなく、メソッド参照（例: @click=\"handler\"）またはインライン関数（例: @click=\"() => count++\"）として記述してください。",
         "请将处理函数写成方法引用（例如 @click=\"handler\"）或内联函数（例如 @click=\"() => count++\"），而不是内联语句。",
     ),
+    // vue/this-in-template
+    (
+        "vue/this-in-template.description",
+        "Disallow `this.` in template expressions",
+        "テンプレート式での `this.` を禁止する",
+        "禁止在模板表达式中使用 `this.`",
+    ),
+    (
+        "vue/this-in-template.message",
+        "Unexpected usage of 'this.' in a template expression.",
+        "テンプレート式で予期しない 'this.' が使われています。",
+        "模板表达式中出现了意外的 'this.'。",
+    ),
+    (
+        "vue/this-in-template.help",
+        "Remove the 'this.' prefix; Vue resolves template identifiers against the component instance automatically.",
+        "'this.' を削除してください。Vue はテンプレートの識別子をコンポーネントインスタンスから自動的に解決します。",
+        "请移除 'this.' 前缀；Vue 会自动从组件实例解析模板中的标识符。",
+    ),
+    // html/no-dupe-style-properties
+    (
+        "html/no-dupe-style-properties.description",
+        "Disallow duplicate properties in inline style attributes",
+        "インラインstyle属性内の重複するプロパティを禁止する",
+        "禁止内联 style 属性中出现重复的属性",
+    ),
+    (
+        "html/no-dupe-style-properties.message",
+        "Duplicate property '{property}' in inline style",
+        "インラインstyleにプロパティ '{property}' が重複しています",
+        "内联 style 中存在重复的属性 '{property}'",
+    ),
+    (
+        "html/no-dupe-style-properties.help",
+        "Remove the duplicate declaration. When a property is declared more than once, only the last value applies, so the earlier ones are dead code.",
+        "重複した宣言を削除してください。同じプロパティを複数回宣言しても最後の値だけが適用されるため、それより前の宣言は無効なコードです。",
+        "请删除重复的声明。同一属性多次声明时只有最后一个值生效，因此前面的声明是无效代码。",
+    ),
 ];
