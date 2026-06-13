@@ -323,9 +323,11 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-template-lang",
     "vue/no-src-attribute",
     "vue/no-inline-style",
+    "vue/no-multiple-objects-in-class",
     "vue/warn-custom-block",
     "vue/warn-custom-directive",
     "vue/no-boolean-attr-value",
+    "vue/no-empty-component-block",
     "vue/no-useless-mustaches",
     "vue/no-root-v-if",
     "vue/no-useless-v-bind",
@@ -463,9 +465,11 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-template-lang",
     "vue/no-src-attribute",
     "vue/no-inline-style",
+    "vue/no-multiple-objects-in-class",
     "vue/warn-custom-block",
     "vue/warn-custom-directive",
     "vue/no-boolean-attr-value",
+    "vue/no-empty-component-block",
     "vue/no-useless-mustaches",
     "vue/no-root-v-if",
     "vue/no-useless-v-bind",
@@ -544,6 +548,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-arrow-functions-in-watch",
     "script/no-export-in-script-setup",
     "script/no-deprecated-dollar-listeners-api",
+    "script/no-potential-component-option-typo"
     "script/no-deprecated-events-api"
   ]
 }

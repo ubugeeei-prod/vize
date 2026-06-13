@@ -37,6 +37,8 @@ pub(crate) const RULE_NO_ARROW_FUNCTIONS_IN_WATCH: &str = "script/no-arrow-funct
 pub(crate) const RULE_NO_EXPORT_IN_SCRIPT_SETUP: &str = "script/no-export-in-script-setup";
 pub(crate) const RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API: &str =
     "script/no-deprecated-dollar-listeners-api";
+pub(crate) const RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO: &str =
+    "script/no-potential-component-option-typo";
 pub(crate) const RULE_NO_DEPRECATED_EVENTS_API: &str = "script/no-deprecated-events-api";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
@@ -68,6 +70,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
     RULE_NO_EXPORT_IN_SCRIPT_SETUP,
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
+    RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
     RULE_NO_DEPRECATED_EVENTS_API,
 ];
 
@@ -98,5 +101,6 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
     RULE_NO_EXPORT_IN_SCRIPT_SETUP,
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
+    RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
     RULE_NO_DEPRECATED_EVENTS_API,
 ];
