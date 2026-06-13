@@ -70,6 +70,7 @@ const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 ];
 
 const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
+    "vue/no-unused-refs",
     "vue/sfc-element-order",
     "vue/require-scoped-style",
     "vue/single-style-block",
@@ -258,7 +259,6 @@ impl Linter {
         if let Some(descriptor) = env.sfc_descriptor {
             ctx.set_sfc_descriptor(descriptor);
         }
-        #[cfg(not(target_arch = "wasm32"))]
         #[cfg(not(target_arch = "wasm32"))]
         let has_analysis = analysis.is_some();
         if let Some(analysis) = analysis {
