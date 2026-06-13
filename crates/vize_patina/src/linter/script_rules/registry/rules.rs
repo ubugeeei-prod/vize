@@ -28,20 +28,14 @@ use super::{
 };
 use crate::rules::script::{
     NoArrowFunctionsInWatch, NoAsyncInComputed, NoDeepDestructureInProps,
-    NoDeprecatedDollarListenersApi, NoDupeKeys, NoExportInScriptSetup, NoGetCurrentInstance,
-    NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi,
-    NoPotentialComponentOptionTypo, NoReactiveDestructure, NoReservedIdentifiers,
-    NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs,
-    PreferComputed, PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId,
-    PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType, RequireSymbolProvide,
-    ReturnInComputedProperty, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
     NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDupeKeys,
     NoExportInScriptSetup, NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports,
     NoNextTick, NoOptionsApi, NoPotentialComponentOptionTypo, NoReactiveDestructure,
     NoReservedIdentifiers, NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults,
     PiniaPreferStoreToRefs, PreferComputed, PreferImportFromVue, PreferRefOverReactive,
     PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType,
-    RequireSymbolProvide, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
+    RequireSymbolProvide, ReturnInComputedProperty, VueRouterPreferNamedPush,
+    VueTestUtilsNoHtmlSnapshot,
 };
 
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
@@ -292,6 +286,8 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         fixable: false,
         presets: OPINIONATED_SCRIPT_PRESETS,
         rule: &ReturnInComputedProperty,
+    },
+    BuiltinScriptRuleEntry {
         rule_name: RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
         profile_name: "patina.script_rule.no_deprecated_dollar_scopedslots_api",
         category: "Script",
