@@ -33,6 +33,7 @@ pub(crate) const RULE_REQUIRE_FUNCTION_RETURN_TYPE: &str = "script/require-funct
 pub(crate) const RULE_NO_DUPE_KEYS: &str = "script/no-dupe-keys";
 pub(crate) const RULE_NO_SIDE_EFFECTS_IN_COMPUTED: &str =
     "script/no-side-effects-in-computed-properties";
+pub(crate) const RULE_NO_ARROW_FUNCTIONS_IN_WATCH: &str = "script/no-arrow-functions-in-watch";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -60,6 +61,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_REQUIRE_FUNCTION_RETURN_TYPE,
     RULE_NO_DUPE_KEYS,
     RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
+    RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
 ];
 
 #[cfg(test)]
@@ -86,4 +88,5 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_REQUIRE_FUNCTION_RETURN_TYPE,
     RULE_NO_DUPE_KEYS,
     RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
+    RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
 ];
