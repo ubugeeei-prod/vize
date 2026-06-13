@@ -23,6 +23,20 @@ pub enum SourceAtlasPlate {
 }
 
 impl SourceAtlasPlate {
+    /// Known plates in stable observation order.
+    pub const KNOWN: [Self; 10] = [
+        Self::Sfc,
+        Self::Template,
+        Self::Script,
+        Self::Style,
+        Self::Relief,
+        Self::Croquis,
+        Self::VirtualTs,
+        Self::Rendu,
+        Self::AtelierOutput,
+        Self::SourceMap,
+    ];
+
     /// Counter used when a product lane requests or observes this plate.
     pub const fn profile_counter(self) -> &'static str {
         match self {
@@ -37,6 +51,56 @@ impl SourceAtlasPlate {
             Self::AtelierOutput => "atelier.profile.plate.atelier_output",
             Self::SourceMap => "atelier.profile.plate.source_map",
         }
+    }
+
+    const fn bit(self) -> u16 {
+        match self {
+            Self::Sfc => 1 << 0,
+            Self::Template => 1 << 1,
+            Self::Script => 1 << 2,
+            Self::Style => 1 << 3,
+            Self::Relief => 1 << 4,
+            Self::Croquis => 1 << 5,
+            Self::VirtualTs => 1 << 6,
+            Self::Rendu => 1 << 7,
+            Self::AtelierOutput => 1 << 8,
+            Self::SourceMap => 1 << 9,
+        }
+    }
+}
+
+/// A compact set of requested Source Atlas plates.
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash)]
+pub struct SourceAtlasPlateSet {
+    bits: u16,
+}
+
+impl SourceAtlasPlateSet {
+    pub const fn empty() -> Self {
+        Self { bits: 0 }
+    }
+
+    pub const fn from_plate(plate: SourceAtlasPlate) -> Self {
+        Self { bits: plate.bit() }
+    }
+
+    pub const fn with(mut self, plate: SourceAtlasPlate) -> Self {
+        self.bits |= plate.bit();
+        self
+    }
+
+    pub const fn contains(self, plate: SourceAtlasPlate) -> bool {
+        (self.bits & plate.bit()) != 0
+    }
+
+    pub const fn is_empty(self) -> bool {
+        self.bits == 0
+    }
+
+    pub fn iter(self) -> impl Iterator<Item = SourceAtlasPlate> {
+        SourceAtlasPlate::KNOWN
+            .into_iter()
+            .filter(move |plate| self.contains(*plate))
     }
 }
 
@@ -194,6 +258,29 @@ mod tests {
             SourceAtlasRequest::Coordinate(SourceAtlasCoordinate::from(VueVersion::V2_7))
                 .profile_counter(),
             "atelier.profile.dialect.vue2_7"
+        );
+    }
+
+    #[test]
+    fn plate_sets_deduplicate_and_iterate_in_known_order() {
+        let set = SourceAtlasPlateSet::empty()
+            .with(SourceAtlasPlate::SourceMap)
+            .with(SourceAtlasPlate::Sfc)
+            .with(SourceAtlasPlate::SourceMap)
+            .with(SourceAtlasPlate::VirtualTs);
+
+        assert!(set.contains(SourceAtlasPlate::Sfc));
+        assert!(set.contains(SourceAtlasPlate::SourceMap));
+        assert!(!set.contains(SourceAtlasPlate::Rendu));
+
+        let plates: std::vec::Vec<_> = set.iter().collect();
+        assert_eq!(
+            plates,
+            [
+                SourceAtlasPlate::Sfc,
+                SourceAtlasPlate::VirtualTs,
+                SourceAtlasPlate::SourceMap,
+            ]
         );
     }
 
