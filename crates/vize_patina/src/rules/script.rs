@@ -197,6 +197,12 @@ pub trait ScriptRule: Send + Sync {
     fn uses_ast(&self) -> bool {
         false
     }
+
+    /// Whether this rule runs against `<script setup>` blocks (defaults to `true`).
+    #[inline]
+    fn runs_on_script_setup(&self) -> bool {
+        true
+    }
 }
 
 /// Linter for script blocks
