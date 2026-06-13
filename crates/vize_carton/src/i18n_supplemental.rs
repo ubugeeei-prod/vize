@@ -343,23 +343,4 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "数値 keyCode 修飾子を名前付きキーに置き換えてください（例: @keyup.13 ではなく @keyup.enter）。",
         "请将数字 keyCode 修饰符替换为具名按键（例如用 @keyup.enter 代替 @keyup.13）。",
     ),
-    // vue/no-deprecated-html-element-is
-    (
-        "vue/no-deprecated-html-element-is.description",
-        "Disallow the `is` attribute on native HTML elements",
-        "ネイティブHTML要素への`is`属性を禁止する",
-        "禁止在原生HTML元素上使用`is`属性",
-    ),
-    (
-        "vue/no-deprecated-html-element-is.message",
-        "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
-        "ネイティブHTML要素の`is`属性（コンポーネント置換）はVue 3で削除されました",
-        "原生HTML元素上的`is`属性（组件替换）已在Vue 3中移除",
-    ),
-    (
-        "vue/no-deprecated-html-element-is.help",
-        "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
-        "動的コンポーネントには`<component :is=\"...\">`を使うか、カスタマイズされた組み込み要素には値に`vue:`を付けてください（例: `is=\"vue:MyComponent\"`）。",
-        "对于动态组件请使用`<component :is=\"...\">`，对于定制内置元素请在值前加`vue:`前缀（例如 `is=\"vue:MyComponent\"`）。",
-    ),
 ];
