@@ -42,7 +42,8 @@ fn build_stats_profile_reports_compile_cache_counters() {
             "--profile",
             "--threads",
             "1",
-            "src/*.vue",
+            "src/App.vue",
+            "src/Foo.vue",
         ])
         .output()
         .unwrap();
