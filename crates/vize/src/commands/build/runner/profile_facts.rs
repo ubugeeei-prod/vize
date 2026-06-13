@@ -1,6 +1,6 @@
 //! Profile facts recorded around per-file SFC compilation.
 
-use vize_carton::config::VueVersion;
+use vize_atelier_core::source_atlas::{SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasTarget};
 use vize_carton::profiler::global_profiler;
 
 use super::cache::StatsCompileCacheDecision;
@@ -33,20 +33,35 @@ pub(super) fn record_atelier_profile_facts(
     );
     profiler.record_counter("atelier.profile.has_scoped_style", u64::from(has_scoped));
     profiler.record_counter("atelier.profile.is_ts", u64::from(is_ts));
-    profiler.record_counter("atelier.profile.source.sfc", 1);
+    profiler.record_counter(SourceAtlasPlate::Sfc.profile_counter(), 1);
     profiler.record_counter(
-        "atelier.profile.source.template",
+        SourceAtlasPlate::Template.profile_counter(),
         u64::from(template_size > 0),
     );
-    profiler.record_counter("atelier.profile.source.script", u64::from(script_size > 0));
-    profiler.record_counter("atelier.profile.source.style", u64::from(style_count > 0));
-    profiler.record_counter("atelier.profile.target.ssr", u64::from(settings.ssr));
-    profiler.record_counter("atelier.profile.target.vapor", u64::from(settings.vapor));
     profiler.record_counter(
-        "atelier.profile.target.dom",
+        SourceAtlasPlate::Script.profile_counter(),
+        u64::from(script_size > 0),
+    );
+    profiler.record_counter(
+        SourceAtlasPlate::Style.profile_counter(),
+        u64::from(style_count > 0),
+    );
+    profiler.record_counter(
+        SourceAtlasTarget::Ssr.profile_counter(),
+        u64::from(settings.ssr),
+    );
+    profiler.record_counter(
+        SourceAtlasTarget::Vapor.profile_counter(),
+        u64::from(settings.vapor),
+    );
+    profiler.record_counter(
+        SourceAtlasTarget::Dom.profile_counter(),
         u64::from(!settings.ssr && !settings.vapor),
     );
-    profiler.record_counter(dialect_counter_name(settings.dialect), 1);
+    profiler.record_counter(
+        SourceAtlasCoordinate::from(settings.dialect).profile_counter(),
+        1,
+    );
 }
 
 pub(super) fn record_atelier_cache_decision(
@@ -73,26 +88,16 @@ fn usize_to_counter(value: usize) -> u64 {
     value.try_into().unwrap_or(u64::MAX)
 }
 
-fn dialect_counter_name(dialect: VueVersion) -> &'static str {
-    match dialect {
-        VueVersion::V3 => "atelier.profile.dialect.vue3",
-        VueVersion::V2_7 => "atelier.profile.dialect.vue2_7",
-        VueVersion::V2 => "atelier.profile.dialect.vue2",
-        VueVersion::V1 => "atelier.profile.dialect.vue1",
-        VueVersion::V0_11 => "atelier.profile.dialect.vue0_11",
-        VueVersion::V0_10 => "atelier.profile.dialect.vue0_10",
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use vize_carton::config::VueVersion;
 
     #[test]
     fn dialect_counter_names_cover_all_config_versions() {
         let names: std::vec::Vec<_> = VueVersion::ALL
             .into_iter()
-            .map(dialect_counter_name)
+            .map(|version| SourceAtlasCoordinate::from(version).profile_counter())
             .collect();
 
         assert_eq!(

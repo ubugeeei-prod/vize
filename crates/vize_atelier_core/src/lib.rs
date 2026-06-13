@@ -13,6 +13,8 @@
 
 pub mod codegen;
 pub mod runtime_helpers;
+#[doc(hidden)]
+pub mod source_atlas;
 #[macro_use]
 pub mod test_macros;
 pub mod lane;
