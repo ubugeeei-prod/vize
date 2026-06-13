@@ -44,8 +44,7 @@ use vize_carton::FxHashSet;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/valid-define-emits",
-    description:
-        "Enforce valid defineEmits() usage (no type+runtime args, no local references, single call)",
+    description: "Enforce valid defineEmits() usage (no type+runtime args, no local references, single call)",
     default_severity: Severity::Error,
 };
 
