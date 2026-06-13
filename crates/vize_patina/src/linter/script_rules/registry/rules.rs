@@ -4,6 +4,20 @@
 
 use super::names::{
     RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_DEFINE_EMITS_DECLARATION, RULE_DEFINE_MACROS_ORDER,
+    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
+    RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
+    RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API, RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DUPE_KEYS,
+    RULE_NO_EXPORT_IN_SCRIPT_SETUP, RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS,
+    RULE_NO_INTERNAL_IMPORTS, RULE_NO_NEXT_TICK, RULE_NO_OPTIONS_API,
+    RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REACTIVE_DESTRUCTURE,
+    RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
+    RULE_NO_TOP_LEVEL_REF_IN_SCRIPT, RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
+    RULE_NO_WITH_DEFAULTS, RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED,
+    RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE, RULE_PREFER_USE_ATTRS,
+    RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,
+    RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
+    RULE_REQUIRE_SYMBOL_PROVIDE, RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
     RULE_DEFINE_PROPS_DECLARATION, RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED,
     RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API, RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
@@ -24,6 +38,13 @@ use super::{
     OPT_IN_SCRIPT_PRESETS,
 };
 use crate::rules::script::{
+    ComponentOptionsNameCasing, DefineEmitsDeclaration, DefineMacrosOrder, NoArrowFunctionsInWatch,
+    NoAsyncInComputed, NoDeepDestructureInProps, NoDeprecatedDataObjectDeclaration,
+    NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi,
+    NoDupeKeys, NoExportInScriptSetup, NoGetCurrentInstance, NoImportCompilerMacros,
+    NoInternalImports, NoNextTick, NoOptionsApi, NoPotentialComponentOptionTypo,
+    NoReactiveDestructure, NoReservedIdentifiers, NoReservedKeys, NoSideEffectsInComputed,
+    NoTopLevelRefInScript, NoUseComputedPropertyLikeMethod, NoWithDefaults, PiniaPreferStoreToRefs,
     ComponentOptionsNameCasing, DefineEmitsDeclaration, DefineMacrosOrder, DefinePropsDeclaration,
     NoArrowFunctionsInWatch, NoAsyncInComputed, NoDeepDestructureInProps,
     NoDeprecatedDataObjectDeclaration, NoDeprecatedDollarListenersApi,
@@ -82,5 +103,6 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, profile_name: "patina.script_rule.require_prop_type_constructor", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &RequirePropTypeConstructor },
     BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_MACROS_ORDER, profile_name: "patina.script_rule.define_macros_order", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &DefineMacrosOrder },
     BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_EMITS_DECLARATION, profile_name: "patina.script_rule.define_emits_declaration", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &DefineEmitsDeclaration },
+    BuiltinScriptRuleEntry { rule_name: RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, profile_name: "patina.script_rule.no_use_computed_property_like_method", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoUseComputedPropertyLikeMethod },
     BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_PROPS_DECLARATION, profile_name: "patina.script_rule.define_props_declaration", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &DefinePropsDeclaration },
 ];
