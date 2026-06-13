@@ -248,4 +248,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。",
         "请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。",
     ),
+    // vue/v-on-event-hyphenation
+    (
+        "vue/v-on-event-hyphenation.description",
+        "Enforce hyphenation of custom event names in v-on on components",
+        "コンポーネントの v-on におけるカスタムイベント名のハイフネーションを強制する",
+        "强制组件上 v-on 自定义事件名称使用连字符",
+    ),
+    (
+        "vue/v-on-event-hyphenation.message",
+        "Custom event listeners on components should be hyphenated: use '{name}'",
+        "コンポーネントのカスタムイベントリスナーはハイフン区切りにしてください: '{name}' を使用してください",
+        "组件上的自定义事件监听器应使用连字符：请使用 '{name}'",
+    ),
+    (
+        "vue/v-on-event-hyphenation.help",
+        "Rename the listener to kebab-case so it matches the emitted event name.",
+        "発行されるイベント名と一致するように、リスナー名をケバブケースに変更してください。",
+        "请将监听器重命名为 kebab-case，以与发出的事件名称匹配。",
+    ),
 ];
