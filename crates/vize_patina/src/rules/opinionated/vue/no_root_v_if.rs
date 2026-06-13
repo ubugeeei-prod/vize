@@ -164,10 +164,7 @@ mod tests {
     #[test]
     fn test_valid_nested_v_if() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div><p v-if="show">content</p></div>"#,
-            "test.vue",
-        );
+        let result = linter.lint_template(r#"<div><p v-if="show">content</p></div>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
 
@@ -183,10 +180,8 @@ mod tests {
         let linter = create_linter();
         // Multiple root elements: v-if pairs with v-else, so the component
         // always renders something. This rule should not fire.
-        let result = linter.lint_template(
-            r#"<div v-if="show">a</div><div v-else>b</div>"#,
-            "test.vue",
-        );
+        let result =
+            linter.lint_template(r#"<div v-if="show">a</div><div v-else>b</div>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
 
