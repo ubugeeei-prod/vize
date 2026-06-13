@@ -114,6 +114,7 @@ export const LINT_RULE_NAMES = [
   "vue/no-deprecated-slot-scope-attribute",
   "vue/no-deprecated-v-bind-sync",
   "vue/no-deprecated-v-on-native-modifier",
+  "vue/no-deprecated-v-on-number-modifiers",
   "vue/no-dupe-v-else-if",
   "vue/no-duplicate-attributes",
   "vue/no-inline-style",
