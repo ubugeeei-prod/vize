@@ -5,6 +5,9 @@
 use super::names::{
     RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_DEFINE_EMITS_DECLARATION, RULE_DEFINE_MACROS_ORDER,
     RULE_DEFINE_PROPS_DECLARATION, RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED,
+    RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
+    RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API, RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
+    RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DUPE_KEYS,
     RULE_NO_BOOLEAN_DEFAULT, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
     RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
     RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API, RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DUPE_KEYS,
@@ -29,15 +32,15 @@ use crate::rules::script::{
     ComponentOptionsNameCasing, DefineEmitsDeclaration, DefineMacrosOrder, DefinePropsDeclaration,
     NoArrowFunctionsInWatch, NoAsyncInComputed, NoBooleanDefault, NoDeepDestructureInProps,
     NoDeprecatedDataObjectDeclaration, NoDeprecatedDollarListenersApi,
-    NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi, NoDupeKeys, NoExportInScriptSetup,
-    NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi,
-    NoPotentialComponentOptionTypo, NoReactiveDestructure, NoRequiredPropWithDefault,
-    NoReservedIdentifiers, NoReservedKeys, NoSideEffectsInComputed, NoTopLevelRefInScript,
-    NoUseComputedPropertyLikeMethod, NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed,
-    PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots,
-    PreferUseTemplateRef, RequireFunctionReturnType, RequirePropTypeConstructor,
-    RequireSymbolProvide, ReturnInComputedProperty, VueRouterPreferNamedPush,
-    VueTestUtilsNoHtmlSnapshot,
+    NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi, NoDeprecatedPropsDefaultThis,
+    NoDupeKeys, NoExportInScriptSetup, NoGetCurrentInstance, NoImportCompilerMacros,
+    NoInternalImports, NoNextTick, NoOptionsApi, NoPotentialComponentOptionTypo,
+    NoReactiveDestructure, NoRequiredPropWithDefault, NoReservedIdentifiers, NoReservedKeys,
+    NoSideEffectsInComputed, NoTopLevelRefInScript, NoUseComputedPropertyLikeMethod,
+    NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed, PreferImportFromVue,
+    PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef,
+    RequireFunctionReturnType, RequirePropTypeConstructor, RequireSymbolProvide,
+    ReturnInComputedProperty, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
 };
 
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
@@ -88,5 +91,6 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, profile_name: "patina.script_rule.no_use_computed_property_like_method", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoUseComputedPropertyLikeMethod },
     BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_PROPS_DECLARATION, profile_name: "patina.script_rule.define_props_declaration", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &DefinePropsDeclaration },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_REQUIRED_PROP_WITH_DEFAULT, profile_name: "patina.script_rule.no_required_prop_with_default", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoRequiredPropWithDefault },
+    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, profile_name: "patina.script_rule.no_deprecated_props_default_this", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoDeprecatedPropsDefaultThis },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_BOOLEAN_DEFAULT, profile_name: "patina.script_rule.no_boolean_default", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoBooleanDefault },
 ];

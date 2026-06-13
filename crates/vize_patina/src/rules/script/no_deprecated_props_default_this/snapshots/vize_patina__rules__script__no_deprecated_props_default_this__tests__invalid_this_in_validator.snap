@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_deprecated_props_default_this/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-deprecated-props-default-this",
+        severity: Error,
+        message: "Unexpected `this` in a prop default/validator function.",
+        start: 97,
+        end: 101,
+        help: Some(
+            "Vue 3 no longer binds the component instance as `this` in a prop default or validator function. Use the raw props argument (`default(props) { ... }`) or move the logic into the component's setup/data.",
+        ),
+        labels: [
+            Label {
+                message: "`this` is not the component instance here",
+                start: 97,
+                end: 101,
+            },
+        ],
+        fix: None,
+    },
+]
