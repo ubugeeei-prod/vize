@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_export_in_script_setup.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-export-in-script-setup",
+        severity: Error,
+        message: "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+        start: 48,
+        end: 87,
+        help: Some(
+            "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+        ),
+        labels: [
+            Label {
+                message: "named export",
+                start: 48,
+                end: 87,
+            },
+        ],
+        fix: None,
+    },
+]
