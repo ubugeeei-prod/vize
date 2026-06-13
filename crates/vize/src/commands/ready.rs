@@ -74,6 +74,7 @@ pub fn run(args: ReadyArgs) {
         preset: "ecosystem".into(),
         cross_file: false,
         cross_file_tree: false,
+        type_aware: false,
         strict_reactivity: false,
         profile: false,
         slow_threshold: 100,

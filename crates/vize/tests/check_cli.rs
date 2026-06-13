@@ -1790,6 +1790,7 @@ loadData()
             "lint",
             "--preset",
             "opinionated",
+            "--type-aware",
             "--help-level",
             "none",
             "src/App.vue",
@@ -1804,7 +1805,6 @@ loadData()
         "{stdout}"
     );
     assert!(stdout.contains("__missing_lint_corsa__"), "{stdout}");
-
     let _ = std::fs::remove_dir_all(&project_root);
 }
 

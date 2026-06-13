@@ -185,6 +185,69 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "='true' のバインディングを削除し、属性名だけを記述してください。",
         "去掉 ='true' 绑定，仅写属性名即可。",
     ),
+    // vue/no-useless-mustaches
+    (
+        "vue/no-useless-mustaches.description",
+        "Disallow a mustache interpolation whose expression is a constant string literal",
+        "式が定数文字列リテラルのマスタッシュ補間を禁止する",
+        "禁止表达式为常量字符串字面量的插值表达式",
+    ),
+    (
+        "vue/no-useless-mustaches.message",
+        "Interpolating a constant string is unnecessary; write it as static text",
+        "定数文字列を補間するのは不要です。静的なテキストとして記述してください",
+        "插值常量字符串是多余的；请将其写为静态文本",
+    ),
+    (
+        "vue/no-useless-mustaches.help",
+        "Replace the mustache with the plain text ({{ 'x' }} becomes x).",
+        "マスタッシュを素のテキストに置き換えてください（{{ 'x' }} は x になります）。",
+        "请将该插值替换为纯文本（{{ 'x' }} 改为 x）。",
+    ),
+    // vue/html-button-has-type
+    (
+        "vue/html-button-has-type.description",
+        "Require an explicit valid type on button elements",
+        "button要素に明示的で有効なtypeを必須にする",
+        "要求button元素具有明确且有效的type",
+    ),
+    (
+        "vue/html-button-has-type.missing",
+        "'<button>' is missing a 'type' attribute; add type=\"button\", \"submit\", or \"reset\"",
+        "'<button>' に 'type' 属性がありません。type=\"button\"、\"submit\"、\"reset\" のいずれかを追加してください",
+        "'<button>' 缺少 'type' 属性；请添加 type=\"button\"、\"submit\" 或 \"reset\"",
+    ),
+    (
+        "vue/html-button-has-type.invalid",
+        "'{type}' is not a valid 'type' for '<button>'; use \"button\", \"submit\", or \"reset\"",
+        "'{type}' は '<button>' の有効な 'type' ではありません。\"button\"、\"submit\"、\"reset\" のいずれかを使用してください",
+        "'{type}' 不是 '<button>' 的有效 'type'；请使用 \"button\"、\"submit\" 或 \"reset\"",
+    ),
+    (
+        "vue/html-button-has-type.help",
+        "A '<button>' defaults to type=\"submit\", which submits the enclosing form. Set an explicit type=\"button\", \"submit\", or \"reset\".",
+        "'<button>' の type は既定で \"submit\" となり、囲っているフォームを送信します。明示的に type=\"button\"、\"submit\"、\"reset\" のいずれかを指定してください。",
+        "'<button>' 的 type 默认为 \"submit\"，会提交其所在的表单。请显式设置 type=\"button\"、\"submit\" 或 \"reset\"。",
+    ),
+    // vue/slot-name-casing
+    (
+        "vue/slot-name-casing.description",
+        "Enforce kebab-case for named slots used via v-slot",
+        "v-slotで使用する名前付きスロットにケバブケースを強制する",
+        "强制通过v-slot使用的具名插槽采用短横线命名",
+    ),
+    (
+        "vue/slot-name-casing.message",
+        "Slot name '{name}' should be kebab-case",
+        "スロット名 '{name}' はケバブケースにしてください",
+        "插槽名称 '{name}' 应使用短横线命名",
+    ),
+    (
+        "vue/slot-name-casing.help",
+        "Rename the slot to kebab-case, e.g. '#my-slot' instead of '#mySlot' or '#my_slot'.",
+        "スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。",
+        "请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。",
+    ),
     // vue/no-deprecated-v-on-number-modifiers
     (
         "vue/no-deprecated-v-on-number-modifiers.description",
