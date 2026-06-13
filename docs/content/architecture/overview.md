@@ -8,6 +8,12 @@ title: Architecture
 
 Vize is built as a modular Rust workspace where each crate handles a specific concern. The architecture is organized into reusable lanes that carry Vue SFC source through parsing, analysis, and compilation stages.
 
+For the new multi-source / multi-target architecture, see the
+[Source Atlas](./source-atlas.md). That page is the design contract for treating
+SFC blocks, templates, JSX/TSX, Virtual TS, DOM/VDOM, SSR, Vapor, linting,
+typechecking, editor features, and source maps as demand-shaped plates rather
+than one mandatory transform pipeline.
+
 ## Project Relationship Map
 
 The repository is organized like a studio: user-facing surfaces enter through JavaScript packages,
@@ -105,6 +111,8 @@ linter paths.
 different path. The first tracked fallback is Vapor SSR, which currently records
 `atelier.fallback.vapor_ssr` when an SSR build requests Vapor and the SFC compiler falls back to
 standard SSR output.
+
+The broader atlas design is documented in [Source Atlas](./source-atlas.md).
 
 ## Tool Lanes
 

@@ -249,6 +249,7 @@ void test("applyNavigationOrder keeps developer architecture pages together", ()
     ["/architecture/overview", "Architecture"],
     ["/architecture/crates", "Crates"],
     ["/architecture/source-guide", "Source Guide"],
+    ["/architecture/source-atlas", "Source Atlas"],
     ["/architecture/language-engineering-practices", "Language Engineering Practices"],
     ["/architecture/performance", "Performance"],
   ]);
@@ -262,6 +263,7 @@ void test("applyNavigationOrder keeps developer architecture pages together", ()
         "Architecture Overview",
         "Crates",
         "Source Guide",
+        "Source Atlas",
         "Language Engineering",
         "Performance",
       ],
