@@ -99,6 +99,12 @@ pub fn render_profile_report(report: &ProfileReport<'_>) -> String {
         "Stats compile cache",
         "cache.stats_compile.",
     );
+    render_counter_table(
+        &mut out,
+        report,
+        "Atelier profile facts",
+        "atelier.profile.",
+    );
     render_counter_table(&mut out, report, "I/O counters", "io.");
     render_counter_table(&mut out, report, "System calls", "syscall.");
     render_phase_table(&mut out, report);

@@ -163,10 +163,18 @@ pub(super) fn compile_file_stats_with_cache(
             .map(|s| s.content.len())
             .unwrap_or(0);
     let style_count = descriptor.styles.len();
-
-    let compile_start = Instant::now();
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     let is_ts = matches!(settings.script_ext, ScriptExtension::Preserve);
+    record_atelier_profile_facts(
+        settings,
+        template_size,
+        script_size,
+        style_count,
+        has_scoped,
+        is_ts,
+    );
+
+    let compile_start = Instant::now();
     let compile_opts = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),
@@ -332,11 +340,19 @@ pub(super) fn compile_file_with_profile(
             .map(|s| s.content.len())
             .unwrap_or(0);
     let style_count = descriptor.styles.len();
+    let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
+    let is_ts = matches!(settings.script_ext, ScriptExtension::Preserve);
+    record_atelier_profile_facts(
+        settings,
+        template_size,
+        script_size,
+        style_count,
+        has_scoped,
+        is_ts,
+    );
 
     // Compile
     let compile_start = Instant::now();
-    let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
-    let is_ts = matches!(settings.script_ext, ScriptExtension::Preserve);
     let compile_opts = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),
@@ -403,4 +419,34 @@ pub(super) fn compile_file_with_profile(
     };
 
     Ok((output, profile))
+}
+
+fn record_atelier_profile_facts(
+    settings: CompileFileSettings,
+    template_size: usize,
+    script_size: usize,
+    style_count: usize,
+    has_scoped: bool,
+    is_ts: bool,
+) {
+    if !settings.record_profile_totals {
+        return;
+    }
+
+    let profiler = global_profiler();
+    profiler.record_counter("atelier.profile.template_bytes", usize_to_counter(template_size));
+    profiler.record_counter("atelier.profile.script_bytes", usize_to_counter(script_size));
+    profiler.record_counter("atelier.profile.style_blocks", usize_to_counter(style_count));
+    profiler.record_counter("atelier.profile.has_scoped_style", u64::from(has_scoped));
+    profiler.record_counter("atelier.profile.is_ts", u64::from(is_ts));
+    profiler.record_counter("atelier.profile.target.ssr", u64::from(settings.ssr));
+    profiler.record_counter("atelier.profile.target.vapor", u64::from(settings.vapor));
+    profiler.record_counter(
+        "atelier.profile.target.dom",
+        u64::from(!settings.ssr && !settings.vapor),
+    );
+}
+
+fn usize_to_counter(value: usize) -> u64 {
+    value.try_into().unwrap_or(u64::MAX)
 }
