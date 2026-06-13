@@ -1,0 +1,244 @@
+//! The ordered table of built-in script rules.
+//!
+//! To add a rule, import its type below, add a configured `static <NAME>_RULE`
+//! instance if it needs parameters (otherwise reference the unit struct
+//! directly), then append a [`BuiltinScriptRuleEntry`] to
+//! [`BUILTIN_SCRIPT_RULES`]. Existing entry order is load-bearing: the first
+//! three rules are always-on and the order fixes default diagnostic ordering,
+//! so append new rules at the end of their category grouping and mirror the
+//! addition in `names.rs`.
+
+use super::names::{
+    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, RULE_NO_DUPE_KEYS,
+    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS,
+    RULE_NO_NEXT_TICK, RULE_NO_OPTIONS_API, RULE_NO_REACTIVE_DESTRUCTURE,
+    RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
+    RULE_NO_TOP_LEVEL_REF_IN_SCRIPT, RULE_NO_WITH_DEFAULTS, RULE_PINIA_PREFER_STORE_TO_REFS,
+    RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE,
+    RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,
+    RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_SYMBOL_PROVIDE,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+};
+use super::{
+    BuiltinScriptRuleEntry, ECOSYSTEM_SCRIPT_PRESETS, OPINIONATED_SCRIPT_PRESETS,
+    OPT_IN_SCRIPT_PRESETS,
+};
+use crate::rules::script::{
+    NoAsyncInComputed, NoDeepDestructureInProps, NoDupeKeys, NoGetCurrentInstance,
+    NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi, NoReactiveDestructure,
+    NoReservedIdentifiers, NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults,
+    PiniaPreferStoreToRefs, PreferComputed, PreferImportFromVue, PreferRefOverReactive,
+    PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType,
+    RequireSymbolProvide, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
+};
+
+static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
+    NoDeepDestructureInProps { max_depth: 1 };
+
+/// The full ordered set of built-in script rules.
+///
+/// The original 6 engine-reachable rules stay first so existing default
+/// diagnostic ordering is preserved. The remaining script rules follow as
+/// opt-in built-ins and are reachable through explicit rule selection.
+pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScriptRuleEntry] = &[
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_OPTIONS_API,
+        profile_name: "patina.script_rule.no_options_api",
+        category: "Vapor",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &NoOptionsApi,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_GET_CURRENT_INSTANCE,
+        profile_name: "patina.script_rule.no_get_current_instance",
+        category: "Vapor",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &NoGetCurrentInstance,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_NEXT_TICK,
+        profile_name: "patina.script_rule.no_next_tick",
+        category: "Vapor",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &NoNextTick,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PINIA_PREFER_STORE_TO_REFS,
+        profile_name: "patina.script_rule.pinia_prefer_store_to_refs",
+        category: "Ecosystem",
+        fixable: false,
+        presets: ECOSYSTEM_SCRIPT_PRESETS,
+        rule: &PiniaPreferStoreToRefs,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+        profile_name: "patina.script_rule.vue_router_prefer_named_push",
+        category: "Ecosystem",
+        fixable: false,
+        presets: ECOSYSTEM_SCRIPT_PRESETS,
+        rule: &VueRouterPreferNamedPush,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+        profile_name: "patina.script_rule.vue_test_utils_no_html_snapshot",
+        category: "Ecosystem",
+        fixable: false,
+        presets: ECOSYSTEM_SCRIPT_PRESETS,
+        rule: &VueTestUtilsNoHtmlSnapshot,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_COMPUTED,
+        profile_name: "patina.script_rule.prefer_computed",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &PreferComputed,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_ASYNC_IN_COMPUTED,
+        profile_name: "patina.script_rule.no_async_in_computed",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoAsyncInComputed,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_REACTIVE_DESTRUCTURE,
+        profile_name: "patina.script_rule.no_reactive_destructure",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoReactiveDestructure,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,
+        profile_name: "patina.script_rule.no_top_level_ref_in_script",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoTopLevelRefInScript,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_REF_OVER_REACTIVE,
+        profile_name: "patina.script_rule.prefer_ref_over_reactive",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &PreferRefOverReactive,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_USE_TEMPLATE_REF,
+        profile_name: "patina.script_rule.prefer_use_template_ref",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &PreferUseTemplateRef,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_USE_SLOTS,
+        profile_name: "patina.script_rule.prefer_use_slots",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &PreferUseSlots,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_USE_ATTRS,
+        profile_name: "patina.script_rule.prefer_use_attrs",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &PreferUseAttrs,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_USE_ID,
+        profile_name: "patina.script_rule.prefer_use_id",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &PreferUseId,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_PREFER_IMPORT_FROM_VUE,
+        profile_name: "patina.script_rule.prefer_import_from_vue",
+        category: "Script",
+        fixable: true,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &PreferImportFromVue,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_WITH_DEFAULTS,
+        profile_name: "patina.script_rule.no_with_defaults",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoWithDefaults,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
+        profile_name: "patina.script_rule.no_deep_destructure_in_props",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NO_DEEP_DESTRUCTURE_IN_PROPS_RULE,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_INTERNAL_IMPORTS,
+        profile_name: "patina.script_rule.no_internal_imports",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoInternalImports,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_IMPORT_COMPILER_MACROS,
+        profile_name: "patina.script_rule.no_import_compiler_macros",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoImportCompilerMacros,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_RESERVED_IDENTIFIERS,
+        profile_name: "patina.script_rule.no_reserved_identifiers",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoReservedIdentifiers,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_REQUIRE_SYMBOL_PROVIDE,
+        profile_name: "patina.script_rule.require_symbol_provide",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &RequireSymbolProvide,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_REQUIRE_FUNCTION_RETURN_TYPE,
+        profile_name: "patina.script_rule.require_function_return_type",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &RequireFunctionReturnType,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_DUPE_KEYS,
+        profile_name: "patina.script_rule.no_dupe_keys",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoDupeKeys,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
+        profile_name: "patina.script_rule.no_side_effects_in_computed",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoSideEffectsInComputed,
+    },
+];

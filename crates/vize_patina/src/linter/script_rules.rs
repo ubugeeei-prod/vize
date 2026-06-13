@@ -1,353 +1,28 @@
 use super::{LintResult, Linter};
-use crate::rules::script::{
-    NoAsyncInComputed, NoDeepDestructureInProps, NoDupeKeys, NoGetCurrentInstance,
-    NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi, NoReactiveDestructure,
-    NoReservedIdentifiers, NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults,
-    PiniaPreferStoreToRefs, PreferComputed, PreferImportFromVue, PreferRefOverReactive,
-    PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType,
-    RequireSymbolProvide, ScriptRule, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
-    script_source_type,
-};
+use crate::rules::script::{ScriptLintResult, script_source_type};
 use memchr::memmem;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 use vize_carton::profile;
 
-/// A built-in script rule paired with its registry name and profiling label.
-///
-/// AST-based rules share a single oxc parse per script block. Byte-based rules
-/// run directly against the source via [`ScriptRule::check`].
-struct BuiltinScriptRuleEntry {
-    rule_name: &'static str,
-    profile_name: &'static str,
-    category: &'static str,
-    fixable: bool,
-    presets: &'static [&'static str],
-    rule: &'static (dyn ScriptRule + 'static),
-}
+mod registry;
 
-impl BuiltinScriptRuleEntry {
-    #[inline]
-    fn meta(&self) -> BuiltinScriptRuleMeta {
-        let meta = self.rule.meta();
-        BuiltinScriptRuleMeta {
-            name: meta.name,
-            description: meta.description,
-            category: self.category,
-            fixable: self.fixable,
-            default_severity: meta.default_severity,
-            presets: self.presets,
-        }
-    }
-}
-
-const BUILTIN_SCRIPT_RULE_COUNT: usize = 25;
-static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
-    NoDeepDestructureInProps { max_depth: 1 };
-
-/// The full ordered set of built-in script rules.
-///
-/// The original 6 engine-reachable rules stay first so existing default
-/// diagnostic ordering is preserved. The remaining script rules follow as
-/// opt-in built-ins and are reachable through explicit rule selection.
-static BUILTIN_SCRIPT_RULES: [BuiltinScriptRuleEntry; BUILTIN_SCRIPT_RULE_COUNT] = [
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_OPTIONS_API,
-        profile_name: "patina.script_rule.no_options_api",
-        category: "Vapor",
-        fixable: false,
-        presets: OPINIONATED_SCRIPT_PRESETS,
-        rule: &NoOptionsApi,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_GET_CURRENT_INSTANCE,
-        profile_name: "patina.script_rule.no_get_current_instance",
-        category: "Vapor",
-        fixable: false,
-        presets: OPINIONATED_SCRIPT_PRESETS,
-        rule: &NoGetCurrentInstance,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_NEXT_TICK,
-        profile_name: "patina.script_rule.no_next_tick",
-        category: "Vapor",
-        fixable: false,
-        presets: OPINIONATED_SCRIPT_PRESETS,
-        rule: &NoNextTick,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_PINIA_PREFER_STORE_TO_REFS,
-        profile_name: "patina.script_rule.pinia_prefer_store_to_refs",
-        category: "Ecosystem",
-        fixable: false,
-        presets: ECOSYSTEM_SCRIPT_PRESETS,
-        rule: &PiniaPreferStoreToRefs,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-        profile_name: "patina.script_rule.vue_router_prefer_named_push",
-        category: "Ecosystem",
-        fixable: false,
-        presets: ECOSYSTEM_SCRIPT_PRESETS,
-        rule: &VueRouterPreferNamedPush,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
-        profile_name: "patina.script_rule.vue_test_utils_no_html_snapshot",
-        category: "Ecosystem",
-        fixable: false,
-        presets: ECOSYSTEM_SCRIPT_PRESETS,
-        rule: &VueTestUtilsNoHtmlSnapshot,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_PREFER_COMPUTED,
-        profile_name: "patina.script_rule.prefer_computed",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &PreferComputed,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_ASYNC_IN_COMPUTED,
-        profile_name: "patina.script_rule.no_async_in_computed",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &NoAsyncInComputed,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_REACTIVE_DESTRUCTURE,
-        profile_name: "patina.script_rule.no_reactive_destructure",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &NoReactiveDestructure,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,
-        profile_name: "patina.script_rule.no_top_level_ref_in_script",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &NoTopLevelRefInScript,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_PREFER_REF_OVER_REACTIVE,
-        profile_name: "patina.script_rule.prefer_ref_over_reactive",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &PreferRefOverReactive,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_PREFER_USE_TEMPLATE_REF,
-        profile_name: "patina.script_rule.prefer_use_template_ref",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &PreferUseTemplateRef,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_PREFER_USE_SLOTS,
-        profile_name: "patina.script_rule.prefer_use_slots",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &PreferUseSlots,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_PREFER_USE_ATTRS,
-        profile_name: "patina.script_rule.prefer_use_attrs",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &PreferUseAttrs,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_PREFER_USE_ID,
-        profile_name: "patina.script_rule.prefer_use_id",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &PreferUseId,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_PREFER_IMPORT_FROM_VUE,
-        profile_name: "patina.script_rule.prefer_import_from_vue",
-        category: "Script",
-        fixable: true,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &PreferImportFromVue,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_WITH_DEFAULTS,
-        profile_name: "patina.script_rule.no_with_defaults",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &NoWithDefaults,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
-        profile_name: "patina.script_rule.no_deep_destructure_in_props",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &NO_DEEP_DESTRUCTURE_IN_PROPS_RULE,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_INTERNAL_IMPORTS,
-        profile_name: "patina.script_rule.no_internal_imports",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &NoInternalImports,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_IMPORT_COMPILER_MACROS,
-        profile_name: "patina.script_rule.no_import_compiler_macros",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &NoImportCompilerMacros,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_RESERVED_IDENTIFIERS,
-        profile_name: "patina.script_rule.no_reserved_identifiers",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &NoReservedIdentifiers,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_REQUIRE_SYMBOL_PROVIDE,
-        profile_name: "patina.script_rule.require_symbol_provide",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &RequireSymbolProvide,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_REQUIRE_FUNCTION_RETURN_TYPE,
-        profile_name: "patina.script_rule.require_function_return_type",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &RequireFunctionReturnType,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_DUPE_KEYS,
-        profile_name: "patina.script_rule.no_dupe_keys",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &NoDupeKeys,
-    },
-    BuiltinScriptRuleEntry {
-        rule_name: RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
-        profile_name: "patina.script_rule.no_side_effects_in_computed",
-        category: "Script",
-        fixable: false,
-        presets: OPT_IN_SCRIPT_PRESETS,
-        rule: &NoSideEffectsInComputed,
-    },
-];
-
-pub(crate) const RULE_NO_OPTIONS_API: &str = "script/no-options-api";
-pub(crate) const RULE_NO_GET_CURRENT_INSTANCE: &str = "script/no-get-current-instance";
-pub(crate) const RULE_NO_NEXT_TICK: &str = "script/no-next-tick";
-pub(crate) const RULE_PINIA_PREFER_STORE_TO_REFS: &str = "ecosystem/pinia-prefer-store-to-refs";
-pub(crate) const RULE_VUE_ROUTER_PREFER_NAMED_PUSH: &str = "ecosystem/vue-router-prefer-named-push";
-pub(crate) const RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT: &str =
-    "ecosystem/vue-test-utils-no-html-snapshot";
-pub(crate) const RULE_PREFER_COMPUTED: &str = "script/prefer-computed";
-pub(crate) const RULE_NO_ASYNC_IN_COMPUTED: &str = "script/no-async-in-computed";
-pub(crate) const RULE_NO_REACTIVE_DESTRUCTURE: &str = "script/no-reactive-destructure";
-pub(crate) const RULE_NO_TOP_LEVEL_REF_IN_SCRIPT: &str = "script/no-top-level-ref-in-script";
-pub(crate) const RULE_PREFER_REF_OVER_REACTIVE: &str = "script/prefer-ref-over-reactive";
-pub(crate) const RULE_PREFER_USE_TEMPLATE_REF: &str = "script/prefer-use-template-ref";
-pub(crate) const RULE_PREFER_USE_SLOTS: &str = "script/prefer-use-slots";
-pub(crate) const RULE_PREFER_USE_ATTRS: &str = "script/prefer-use-attrs";
-pub(crate) const RULE_PREFER_USE_ID: &str = "script/prefer-use-id";
-pub(crate) const RULE_PREFER_IMPORT_FROM_VUE: &str = "script/prefer-import-from-vue";
-pub(crate) const RULE_NO_WITH_DEFAULTS: &str = "script/no-with-defaults";
-pub(crate) const RULE_NO_DEEP_DESTRUCTURE_IN_PROPS: &str = "script/no-deep-destructure-in-props";
-pub(crate) const RULE_NO_INTERNAL_IMPORTS: &str = "script/no-internal-imports";
-pub(crate) const RULE_NO_IMPORT_COMPILER_MACROS: &str = "script/no-import-compiler-macros";
-pub(crate) const RULE_NO_RESERVED_IDENTIFIERS: &str = "script/no-reserved-identifiers";
-pub(crate) const RULE_REQUIRE_SYMBOL_PROVIDE: &str = "script/require-symbol-provide";
-pub(crate) const RULE_REQUIRE_FUNCTION_RETURN_TYPE: &str = "script/require-function-return-type";
-pub(crate) const RULE_NO_DUPE_KEYS: &str = "script/no-dupe-keys";
-pub(crate) const RULE_NO_SIDE_EFFECTS_IN_COMPUTED: &str =
-    "script/no-side-effects-in-computed-properties";
-const OPINIONATED_SCRIPT_PRESETS: &[&str] = &["opinionated", "nuxt"];
-const ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &["ecosystem"];
-const OPT_IN_SCRIPT_PRESETS: &[&str] = &[];
-const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
-    RULE_NO_OPTIONS_API,
-    RULE_NO_GET_CURRENT_INSTANCE,
-    RULE_NO_NEXT_TICK,
-    RULE_PINIA_PREFER_STORE_TO_REFS,
-    RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+pub use registry::BuiltinScriptRuleMeta;
+use registry::{
+    ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
+    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
     RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
-    RULE_PREFER_COMPUTED,
-    RULE_NO_ASYNC_IN_COMPUTED,
-    RULE_NO_REACTIVE_DESTRUCTURE,
-    RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,
-    RULE_PREFER_REF_OVER_REACTIVE,
-    RULE_PREFER_USE_TEMPLATE_REF,
-    RULE_PREFER_USE_SLOTS,
-    RULE_PREFER_USE_ATTRS,
-    RULE_PREFER_USE_ID,
-    RULE_PREFER_IMPORT_FROM_VUE,
-    RULE_NO_WITH_DEFAULTS,
-    RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
-    RULE_NO_INTERNAL_IMPORTS,
-    RULE_NO_IMPORT_COMPILER_MACROS,
-    RULE_NO_RESERVED_IDENTIFIERS,
-    RULE_REQUIRE_SYMBOL_PROVIDE,
-    RULE_REQUIRE_FUNCTION_RETURN_TYPE,
-    RULE_NO_DUPE_KEYS,
-    RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
-];
+};
+
 #[cfg(test)]
-const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
-    RULE_PINIA_PREFER_STORE_TO_REFS,
-    RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
-    RULE_PREFER_COMPUTED,
-    RULE_NO_ASYNC_IN_COMPUTED,
-    RULE_NO_REACTIVE_DESTRUCTURE,
-    RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,
-    RULE_PREFER_REF_OVER_REACTIVE,
-    RULE_PREFER_USE_TEMPLATE_REF,
-    RULE_PREFER_USE_SLOTS,
-    RULE_PREFER_USE_ATTRS,
-    RULE_PREFER_USE_ID,
-    RULE_PREFER_IMPORT_FROM_VUE,
-    RULE_NO_WITH_DEFAULTS,
-    RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
-    RULE_NO_INTERNAL_IMPORTS,
-    RULE_NO_IMPORT_COMPILER_MACROS,
-    RULE_NO_RESERVED_IDENTIFIERS,
-    RULE_REQUIRE_SYMBOL_PROVIDE,
-    RULE_REQUIRE_FUNCTION_RETURN_TYPE,
-    RULE_NO_DUPE_KEYS,
-    RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
-];
+use registry::OPT_IN_SCRIPT_RULE_NAMES;
 
-pub struct BuiltinScriptRuleMeta {
-    pub name: &'static str,
-    pub description: &'static str,
-    pub category: &'static str,
-    pub fixable: bool,
-    pub default_severity: crate::Severity,
-    pub presets: &'static [&'static str],
-}
-
-pub fn builtin_script_rules() -> [BuiltinScriptRuleMeta; BUILTIN_SCRIPT_RULE_COUNT] {
-    std::array::from_fn(|index| BUILTIN_SCRIPT_RULES[index].meta())
+pub fn builtin_script_rules() -> Vec<BuiltinScriptRuleMeta> {
+    BUILTIN_SCRIPT_RULES
+        .iter()
+        .map(|entry| entry.meta())
+        .collect()
 }
 
 #[inline]
@@ -378,35 +53,9 @@ fn active_builtin_script_rule_entries(
 }
 
 fn builtin_script_rule_entry(rule_name: &str) -> Option<&'static BuiltinScriptRuleEntry> {
-    let index = match rule_name {
-        RULE_NO_OPTIONS_API => 0,
-        RULE_NO_GET_CURRENT_INSTANCE => 1,
-        RULE_NO_NEXT_TICK => 2,
-        RULE_PINIA_PREFER_STORE_TO_REFS => 3,
-        RULE_VUE_ROUTER_PREFER_NAMED_PUSH => 4,
-        RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT => 5,
-        RULE_PREFER_COMPUTED => 6,
-        RULE_NO_ASYNC_IN_COMPUTED => 7,
-        RULE_NO_REACTIVE_DESTRUCTURE => 8,
-        RULE_NO_TOP_LEVEL_REF_IN_SCRIPT => 9,
-        RULE_PREFER_REF_OVER_REACTIVE => 10,
-        RULE_PREFER_USE_TEMPLATE_REF => 11,
-        RULE_PREFER_USE_SLOTS => 12,
-        RULE_PREFER_USE_ATTRS => 13,
-        RULE_PREFER_USE_ID => 14,
-        RULE_PREFER_IMPORT_FROM_VUE => 15,
-        RULE_NO_WITH_DEFAULTS => 16,
-        RULE_NO_DEEP_DESTRUCTURE_IN_PROPS => 17,
-        RULE_NO_INTERNAL_IMPORTS => 18,
-        RULE_NO_IMPORT_COMPILER_MACROS => 19,
-        RULE_NO_RESERVED_IDENTIFIERS => 20,
-        RULE_REQUIRE_SYMBOL_PROVIDE => 21,
-        RULE_REQUIRE_FUNCTION_RETURN_TYPE => 22,
-        RULE_NO_DUPE_KEYS => 23,
-        RULE_NO_SIDE_EFFECTS_IN_COMPUTED => 24,
-        _ => return None,
-    };
-    Some(&BUILTIN_SCRIPT_RULES[index])
+    BUILTIN_SCRIPT_RULES
+        .iter()
+        .find(|entry| entry.rule_name == rule_name)
 }
 
 #[inline]
@@ -522,7 +171,7 @@ fn run_builtin_script_rule(
     if !script_rule_may_match(entry.rule_name, source) {
         return;
     }
-    let mut lint = crate::rules::script::ScriptLintResult::default();
+    let mut lint = ScriptLintResult::default();
     if entry.rule.uses_ast() {
         let Some(parsed) = parsed else {
             return;
@@ -559,10 +208,7 @@ pub(crate) fn append_builtin_script_diagnostics_from_html(
     }
 }
 
-fn merge_script_result(
-    result: &mut LintResult,
-    script_result: crate::rules::script::ScriptLintResult,
-) {
+fn merge_script_result(result: &mut LintResult, script_result: ScriptLintResult) {
     result.error_count += script_result.error_count;
     result.warning_count += script_result.warning_count;
     result.diagnostics.extend(script_result.diagnostics);
