@@ -71,6 +71,7 @@ export const LINT_RULE_NAMES = [
   "script/define-props-declaration",
   "script/no-arrow-functions-in-watch",
   "script/no-async-in-computed",
+  "script/no-boolean-default",
   "script/no-deep-destructure-in-props",
   "script/no-deprecated-data-object-declaration",
   "script/no-deprecated-dollar-listeners-api",
