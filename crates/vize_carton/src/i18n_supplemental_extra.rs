@@ -174,4 +174,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "オブジェクトを1つにまとめてください。例: :class=\"[{ a }, { b }]\" は :class=\"{ a, b }\" になります。",
         "请将这些对象合并为一个，例如 :class=\"[{ a }, { b }]\" 改为 :class=\"{ a, b }\"。",
     ),
+    // vue/no-bare-strings-in-template
+    (
+        "vue/no-bare-strings-in-template.description",
+        "Disallow raw human-readable text in the template that should be internationalized",
+        "国際化すべきテンプレート内の生の人間可読テキストを禁止する",
+        "禁止在模板中使用应当国际化的原始可读文本",
+    ),
+    (
+        "vue/no-bare-strings-in-template.message",
+        "Raw text should be wrapped in a translation function instead of being written directly in the template",
+        "生のテキストはテンプレートに直接書くのではなく、翻訳関数で囲んでください",
+        "原始文本应使用翻译函数包裹，而不是直接写在模板中",
+    ),
+    (
+        "vue/no-bare-strings-in-template.help",
+        "Move the text into a translation function, e.g. {{ $t('key') }} for content or :title=\"$t('key')\" for an attribute.",
+        "テキストを翻訳関数に移してください。例: 内容には {{ $t('key') }}、属性には :title=\"$t('key')\" を使用します。",
+        "请将文本移入翻译函数，例如内容使用 {{ $t('key') }}，属性使用 :title=\"$t('key')\"。",
+    ),
 ];

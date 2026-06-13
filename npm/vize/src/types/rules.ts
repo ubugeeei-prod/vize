@@ -135,6 +135,7 @@ export const LINT_RULE_NAMES = [
   "vue/html-self-closing",
   "vue/multi-word-component-names",
   "vue/mustache-interpolation-spacing",
+  "vue/no-bare-strings-in-template",
   "vue/no-boolean-attr-value",
   "vue/no-child-content",
   "vue/no-deprecated-html-element-is",

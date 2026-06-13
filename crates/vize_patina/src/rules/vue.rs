@@ -12,6 +12,7 @@
 // Essential rules
 mod attribute_hyphenation;
 mod attribute_order;
+mod no_bare_strings_in_template;
 mod no_child_content;
 mod no_deprecated_html_element_is;
 mod no_deprecated_router_link_tag_prop;
@@ -87,6 +88,7 @@ mod single_style_block;
 // Essential rules exports
 pub use crate::rules::opinionated::vue::MultiWordComponentNames;
 pub use crate::rules::opinionated::vue::UseVOnExact;
+pub use no_bare_strings_in_template::NoBareStringsInTemplate;
 pub use no_child_content::NoChildContent;
 pub use no_deprecated_html_element_is::NoDeprecatedHtmlElementIs;
 pub use no_deprecated_router_link_tag_prop::NoDeprecatedRouterLinkTagProp;
@@ -220,5 +222,8 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-deprecated-router-link-tag-prop") {
         registry.register(Box::new(NoDeprecatedRouterLinkTagProp));
+    }
+    if !registry.has_rule("vue/no-bare-strings-in-template") {
+        registry.register(Box::new(NoBareStringsInTemplate));
     }
 }
