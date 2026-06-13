@@ -166,8 +166,10 @@ mod tests {
         // A single top-level object whose value is an object must not be
         // miscounted as two.
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<div :class="[{ a: { nested: true } }]"></div>"#, "App.vue");
+        let result = linter.lint_template(
+            r#"<div :class="[{ a: { nested: true } }]"></div>"#,
+            "App.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 
