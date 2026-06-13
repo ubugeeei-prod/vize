@@ -134,7 +134,7 @@ fn compile_jsx_impl(
     // Surface a v3 source map when requested. The flag only affects the VDOM
     // codegen path (the Vapor backend does not emit a map yet); enabling it is a
     // no-op for Vapor output.
-    config.dom.source_map = opts.source_map.unwrap_or(false);
+    config.vdom.source_map = opts.source_map.unwrap_or(false);
 
     let bump = Bump::new();
     let output = jsx_compile(&bump, &source, lang, &config);

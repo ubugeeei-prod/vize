@@ -198,7 +198,7 @@ fn stateful_destructured_component_snapshots() {
         STATEFUL_DESTRUCTURED_TSX,
         JsxLang::Tsx,
     );
-    assert_dom_snapshot(
+    assert_vdom_snapshot(
         "stateful_destructured_component",
         STATEFUL_DESTRUCTURED_TSX,
         JsxLang::Tsx,
@@ -218,7 +218,7 @@ fn directives_slots_svg_and_spreads_snapshots() {
         DIRECTIVES_SLOTS_SVG_JSX,
         JsxLang::Jsx,
     );
-    assert_dom_snapshot(
+    assert_vdom_snapshot(
         "directives_slots_svg_and_spreads",
         DIRECTIVES_SLOTS_SVG_JSX,
         JsxLang::Jsx,
@@ -228,7 +228,7 @@ fn directives_slots_svg_and_spreads_snapshots() {
 #[test]
 fn tsx_syntax_edge_snapshots() {
     assert_lower_snapshot("tsx_syntax_edges", TSX_SYNTAX_EDGES, JsxLang::Tsx);
-    assert_dom_snapshot("tsx_syntax_edges", TSX_SYNTAX_EDGES, JsxLang::Tsx);
+    assert_vdom_snapshot("tsx_syntax_edges", TSX_SYNTAX_EDGES, JsxLang::Tsx);
     assert_vapor_snapshot(
         "tsx_syntax_edges",
         TSX_SYNTAX_EDGES,
@@ -244,7 +244,7 @@ fn scoped_style_snapshots() {
         SCOPED_STYLE_EXTRACTION,
         JsxLang::Jsx,
     );
-    assert_dom_snapshot(
+    assert_vdom_snapshot(
         "scoped_style_extraction",
         SCOPED_STYLE_EXTRACTION,
         JsxLang::Jsx,
@@ -264,7 +264,7 @@ fn scoped_style_interpolation_escape_hatch_snapshots() {
         SCOPED_STYLE_INTERPOLATION_ESCAPE_HATCH,
         JsxLang::Jsx,
     );
-    assert_dom_snapshot(
+    assert_vdom_snapshot(
         "scoped_style_interpolation_escape_hatch",
         SCOPED_STYLE_INTERPOLATION_ESCAPE_HATCH,
         JsxLang::Jsx,
@@ -278,7 +278,7 @@ fn fragment_whitespace_text_snapshots() {
         FRAGMENT_WHITESPACE_TEXT,
         JsxLang::Jsx,
     );
-    assert_dom_snapshot(
+    assert_vdom_snapshot(
         "fragment_whitespace_text",
         FRAGMENT_WHITESPACE_TEXT,
         JsxLang::Jsx,
@@ -363,10 +363,10 @@ fn assert_lower_snapshot(name: &str, source: &str, lang: JsxLang) {
     insta::assert_debug_snapshot!(format!("{name}_lower"), lower_summary(source, &output));
 }
 
-fn assert_dom_snapshot(name: &str, source: &str, lang: JsxLang) {
+fn assert_vdom_snapshot(name: &str, source: &str, lang: JsxLang) {
     let bump = Bump::new();
     let output = compile_to_vdom(&bump, source, lang, VdomCompileOptions::default());
-    insta::assert_debug_snapshot!(format!("{name}_dom"), dom_output_summary(source, &output));
+    insta::assert_debug_snapshot!(format!("{name}_vdom"), vdom_output_summary(source, &output));
 }
 
 fn assert_vapor_snapshot(name: &str, source: &str, lang: JsxLang, options: VaporCompileOptions) {
@@ -544,8 +544,8 @@ fn compound_summary(compound: &vize_relief::CompoundExpressionNode<'_>) -> Strin
     out
 }
 
-fn dom_output_summary<'a>(source: &'a str, output: &'a VdomOutput) -> DomOutputSummary<'a> {
-    DomOutputSummary {
+fn vdom_output_summary<'a>(source: &'a str, output: &'a VdomOutput) -> VdomOutputSummary<'a> {
+    VdomOutputSummary {
         diagnostics: diagnostics_summary(source, &output.diagnostics),
         components: output
             .components
@@ -600,7 +600,7 @@ fn compile_output_summary<'a>(
             .components
             .iter()
             .map(|component| match component {
-                JsxComponent::Dom(component) => RenderComponentSummary {
+                JsxComponent::Vdom(component) => RenderComponentSummary {
                     name: component.component_name.as_ref().map(|name| name.as_str()),
                     mode: "Vdom".to_string(),
                     preamble: Some(component.preamble.as_str()),
@@ -773,7 +773,7 @@ struct DiagnosticSummary {
 
 #[allow(dead_code)]
 #[derive(Debug)]
-struct DomOutputSummary<'a> {
+struct VdomOutputSummary<'a> {
     diagnostics: Vec<DiagnosticSummary>,
     components: Vec<RenderComponentSummary<'a>>,
 }
