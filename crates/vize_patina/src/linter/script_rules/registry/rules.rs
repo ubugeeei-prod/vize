@@ -3,6 +3,7 @@
 //! rules at the end of their category and mirror the addition in `names.rs`.
 
 use super::names::{
+    RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_DEFINE_EMITS_DECLARATION, RULE_DEFINE_MACROS_ORDER,
     RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_DEFINE_MACROS_ORDER, RULE_DEFINE_PROPS_DECLARATION,
     RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
     RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
@@ -23,6 +24,7 @@ use super::{
     OPT_IN_SCRIPT_PRESETS,
 };
 use crate::rules::script::{
+    ComponentOptionsNameCasing, DefineEmitsDeclaration, DefineMacrosOrder, NoArrowFunctionsInWatch,
     ComponentOptionsNameCasing, DefineMacrosOrder, DefinePropsDeclaration, NoArrowFunctionsInWatch,
     NoAsyncInComputed, NoDeepDestructureInProps, NoDeprecatedDataObjectDeclaration,
     NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi,
@@ -339,6 +341,12 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         rule: &DefineMacrosOrder,
     },
     BuiltinScriptRuleEntry {
+        rule_name: RULE_DEFINE_EMITS_DECLARATION,
+        profile_name: "patina.script_rule.define_emits_declaration",
+        category: "Script",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &DefineEmitsDeclaration,
         rule_name: RULE_DEFINE_PROPS_DECLARATION,
         profile_name: "patina.script_rule.define_props_declaration",
         category: "Script",
