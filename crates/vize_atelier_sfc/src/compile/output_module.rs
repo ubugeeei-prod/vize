@@ -2,6 +2,7 @@
 
 use crate::types::{CssModuleMapping, css_modules_object_literal};
 use vize_atelier_core::codegen::CodegenResultWithSections;
+use vize_atelier_ssr::SsrCodegenResult;
 use vize_carton::{String, ToCompactString};
 
 /// Byte range in the flattened Atelier output.
@@ -134,6 +135,10 @@ impl OutputModule {
             functions,
             ..Self::default()
         }
+    }
+
+    pub(crate) fn from_ssr_codegen(result: SsrCodegenResult) -> Self {
+        Self::from_render_chunks(result.preamble, result.code)
     }
 
     pub(crate) fn from_dom_codegen(result: CodegenResultWithSections) -> Self {
@@ -295,6 +300,23 @@ mod tests {
         assert_eq!(
             &code[sections.return_expr.start..sections.return_expr.end],
             "_openBlock()"
+        );
+    }
+
+    #[test]
+    fn ssr_codegen_uses_the_same_flattening_boundary() {
+        let output = OutputModule::from_ssr_codegen(SsrCodegenResult {
+            preamble: String::from(
+                "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n",
+            ),
+            code: String::from(
+                "export function ssrRender(_ctx, _push) {\n  _push(_ssrInterpolate(_ctx.msg))\n}",
+            ),
+        });
+
+        assert_eq!(
+            output.into_code(),
+            "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push) {\n  _push(_ssrInterpolate(_ctx.msg))\n}\n"
         );
     }
 }

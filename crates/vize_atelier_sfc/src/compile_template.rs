@@ -114,7 +114,7 @@ pub(crate) fn compile_template_block(
             });
         }
 
-        let output = OutputModule::from_render_chunks(result.preamble, result.code).into_code();
+        let output = OutputModule::from_ssr_codegen(result).into_code();
         return Ok(TemplateBlockCompileResult {
             code: output,
             warnings: recoverable_template_warnings(&errors),
