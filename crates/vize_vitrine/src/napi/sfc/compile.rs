@@ -13,6 +13,14 @@ pub fn compile_sfc(
     source: String,
     options: Option<SfcCompileOptionsNapi>,
 ) -> Result<SfcCompileResultNapi> {
+    compile_sfc_impl(source, options)
+        .map_err(|message| napi::Error::new(Status::InvalidArg, message))
+}
+
+fn compile_sfc_impl(
+    source: String,
+    options: Option<SfcCompileOptionsNapi>,
+) -> std::result::Result<SfcCompileResultNapi, String> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
         TemplateCompileOptions,
@@ -36,6 +44,7 @@ pub fn compile_sfc(
             return Ok(SfcCompileResultNapi {
                 code: String::new(),
                 css: None,
+                map: None,
                 errors: vec![e.message.into()],
                 warnings: vec![],
                 template_hash: None,
@@ -57,8 +66,8 @@ pub fn compile_sfc(
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
-    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
-        .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
+    let source_map = opts.source_map.unwrap_or(false);
+    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())?;
     let standalone = opts.mode.as_deref() == Some("function");
     let external_scope_id: Option<vize_carton::CompactString> = opts
         .scope_id
@@ -74,6 +83,7 @@ pub fn compile_sfc(
         };
         Some(vize_atelier_dom::DomCompilerOptions {
             scope_id,
+            source_map,
             ..Default::default()
         })
     };
@@ -114,6 +124,7 @@ pub fn compile_sfc(
         Ok(result) => Ok(SfcCompileResultNapi {
             code: result.code.into(),
             css: result.css.map(Into::into),
+            map: result.map.map(|map| map.to_string()),
             errors: result
                 .errors
                 .into_iter()
@@ -135,6 +146,7 @@ pub fn compile_sfc(
         Err(e) => Ok(SfcCompileResultNapi {
             code: String::new(),
             css: None,
+            map: None,
             errors: vec![e.message.into()],
             warnings: vec![],
             template_hash,
@@ -145,5 +157,41 @@ pub fn compile_sfc(
             custom_blocks,
             macro_artifacts: vec![],
         }),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sfc_compile_result_surfaces_template_source_map_when_requested() {
+        let source = "<template><p>{{ msg }}</p></template>\n";
+        let base_options = SfcCompileOptionsNapi {
+            filename: Some("template.vue".to_string()),
+            ..Default::default()
+        };
+
+        let without = compile_sfc_impl(source.to_string(), Some(base_options)).expect("compile");
+        assert!(without.errors.is_empty(), "errors: {:?}", without.errors);
+        assert!(without.map.is_none(), "no map unless requested");
+
+        let with = compile_sfc_impl(
+            source.to_string(),
+            Some(SfcCompileOptionsNapi {
+                filename: Some("template.vue".to_string()),
+                source_map: Some(true),
+                ..Default::default()
+            }),
+        )
+        .expect("compile");
+
+        assert!(with.errors.is_empty(), "errors: {:?}", with.errors);
+        let map = with.map.expect("a map is surfaced when requested");
+        assert!(map.contains("\"version\":3"), "v3 source map: {map}");
+        assert!(
+            map.contains("template.vue"),
+            "map carries the source filename: {map}"
+        );
     }
 }

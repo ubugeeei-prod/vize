@@ -84,6 +84,9 @@ pub struct SfcCompileOptionsNapi {
 pub struct SfcCompileResultNapi {
     pub code: String,
     pub css: Option<String>,
+    /// v3 source map JSON for `code`, present only when the active SFC backend
+    /// can preserve a correctly framed map and `sourceMap` was requested.
+    pub map: Option<String>,
     pub errors: Vec<String>,
     pub warnings: Vec<String>,
     pub template_hash: Option<String>,

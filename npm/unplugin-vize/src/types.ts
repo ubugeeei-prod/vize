@@ -66,6 +66,11 @@ export interface MacroArtifact {
 export interface SfcCompileResultNapi {
   code: string;
   css?: string;
+  /**
+   * v3 source map (JSON) for `code`, present only when `sourceMap` was requested
+   * and the active SFC backend can preserve a correctly framed map.
+   */
+  map?: string;
   errors: string[];
   warnings: string[];
   templateHash?: string;
