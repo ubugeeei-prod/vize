@@ -1,4 +1,4 @@
-//! VDom code generation.
+//! VDOM code generation.
 //!
 //! This module generates JavaScript render function code from the transformed AST.
 

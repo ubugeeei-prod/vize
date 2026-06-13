@@ -51,7 +51,9 @@ use vize_relief::RootNode;
 
 pub use compile::{JsxCompileConfig, JsxCompileOutput, JsxComponent, compile_jsx, resolve_mode};
 pub use diagnostics::{JsxDiagnostic, Severity};
+#[allow(deprecated)]
 pub use dom::{DomCompileOptions, DomComponent, DomOutput, compile_to_dom};
+pub use dom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
 pub use lang::JsxLang;
 pub use lower::Lowerer;
 pub use mode::JsxOutputMode;
@@ -75,7 +77,7 @@ pub struct LoweredRoot<'a> {
     /// Raw (un-rewritten) CSS of the component's `<style scoped>` block(s),
     /// extracted from the markup and removed from the rendered children
     /// (#1495). `None` when the component had no `<style scoped>`. The backends
-    /// ([`compile_to_dom`] / [`compile_to_vapor`]) run the scoped-CSS rewrite +
+    /// ([`compile_to_vdom`] / [`compile_to_vapor`]) run the scoped-CSS rewrite +
     /// scope-id generation over this and expose the result on the compiled
     /// component.
     pub scoped_css: Option<String>,

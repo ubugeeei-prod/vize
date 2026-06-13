@@ -30,7 +30,7 @@ use crate::{JsxLang, JsxOutputMode, LoweredRoot, lower_source};
 /// Defaults keep `@vue/babel-plugin-jsx`-shaped output: no static hoisting, no
 /// handler caching, no source map.
 #[derive(Debug, Clone, Default)]
-pub struct DomCompileOptions {
+pub struct VdomCompileOptions {
     /// Hoist static subtrees out of the render function.
     pub hoist_static: bool,
     /// Cache inline event handlers.
@@ -40,7 +40,7 @@ pub struct DomCompileOptions {
 }
 
 /// One compiled component render expression.
-pub struct DomComponent {
+pub struct VdomComponent {
     /// Enclosing component-function name, if resolved.
     pub component_name: Option<String>,
     /// Resolved output mode (defaults to [`JsxOutputMode::Vdom`]).
@@ -50,7 +50,7 @@ pub struct DomComponent {
     /// Import/preamble section for runtime helpers.
     pub preamble: String,
     /// v3 source map (JSON) mapping the generated render code back to the JSX
-    /// source, emitted only when [`DomCompileOptions::source_map`] is set
+    /// source, emitted only when [`VdomCompileOptions::source_map`] is set
     /// (#1533). `None` otherwise. The map's `mappings` cover the render
     /// expression; it does not account for a prepended preamble, so a consumer
     /// that inlines the preamble must offset accordingly (the bindings surface
@@ -65,14 +65,14 @@ pub struct DomComponent {
 }
 
 /// Result of compiling a JSX/TSX module to VDOM.
-pub struct DomOutput {
+pub struct VdomOutput {
     /// One entry per outermost JSX render root, in source order.
-    pub components: Vec<DomComponent>,
+    pub components: Vec<VdomComponent>,
     /// Parse, lowering, and transform diagnostics.
     pub diagnostics: Vec<JsxDiagnostic>,
 }
 
-impl DomOutput {
+impl VdomOutput {
     /// Whether any error-severity diagnostic was produced.
     pub fn has_errors(&self) -> bool {
         self.diagnostics.iter().any(JsxDiagnostic::is_error)
@@ -80,12 +80,12 @@ impl DomOutput {
 }
 
 /// Compile a JSX/TSX module into Vue VDOM render functions.
-pub fn compile_to_dom(
+pub fn compile_to_vdom(
     bump: &Bump,
     source: &str,
     lang: JsxLang,
-    options: DomCompileOptions,
-) -> DomOutput {
+    options: VdomCompileOptions,
+) -> VdomOutput {
     let lowered = lower_source(bump, source, lang);
     let mut diagnostics = lowered.diagnostics;
     let is_ts = lang.is_typescript();
@@ -95,7 +95,7 @@ pub fn compile_to_dom(
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {
-        components.push(compile_root_to_dom(
+        components.push(compile_root_to_vdom(
             bump,
             lowered_root,
             analysis,
@@ -105,23 +105,23 @@ pub fn compile_to_dom(
         ));
     }
 
-    DomOutput {
+    VdomOutput {
         components,
         diagnostics,
     }
 }
 
-/// Compile a single already-lowered root to a VDOM [`DomComponent`], appending
-/// any transform diagnostics. Shared by [`compile_to_dom`] and the mode-aware
+/// Compile a single already-lowered root to a VDOM [`VdomComponent`], appending
+/// any transform diagnostics. Shared by [`compile_to_vdom`] and the mode-aware
 /// dispatcher in [`crate::compile`].
-pub(crate) fn compile_root_to_dom(
+pub(crate) fn compile_root_to_vdom(
     bump: &Bump,
     lowered: LoweredRoot,
     analysis: &Croquis,
     is_ts: bool,
-    options: &DomCompileOptions,
+    options: &VdomCompileOptions,
     diagnostics: &mut Vec<JsxDiagnostic>,
-) -> DomComponent {
+) -> VdomComponent {
     let LoweredRoot {
         mut root,
         mode,
@@ -167,7 +167,7 @@ pub(crate) fn compile_root_to_dom(
     };
     let result = generate(&root, codegen_opts);
 
-    DomComponent {
+    VdomComponent {
         component_name,
         mode: mode.unwrap_or(JsxOutputMode::Vdom),
         code: result.code,
@@ -175,6 +175,25 @@ pub(crate) fn compile_root_to_dom(
         map: result.map,
         scoped_style,
     }
+}
+
+#[deprecated(note = "use VdomCompileOptions")]
+pub type DomCompileOptions = VdomCompileOptions;
+
+#[deprecated(note = "use VdomComponent")]
+pub type DomComponent = VdomComponent;
+
+#[deprecated(note = "use VdomOutput")]
+pub type DomOutput = VdomOutput;
+
+#[deprecated(note = "use compile_to_vdom")]
+pub fn compile_to_dom(
+    bump: &Bump,
+    source: &str,
+    lang: JsxLang,
+    options: VdomCompileOptions,
+) -> VdomOutput {
+    compile_to_vdom(bump, source, lang, options)
 }
 
 fn compiler_error_to_diagnostic(error: &CompilerError) -> JsxDiagnostic {

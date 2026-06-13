@@ -13,7 +13,7 @@
 //! - `jsx_croquis_analyze` — Croquis semantic analysis (binding/scope/
 //!   reactivity) over an already-parsed program, isolated from lowering and
 //!   codegen so this group moves only when the analysis itself does.
-//! - `jsx_compile_dom` / `jsx_compile_vapor` / `jsx_compile_mode_aware` —
+//! - `jsx_compile_vdom` / `jsx_compile_vapor` / `jsx_compile_mode_aware` —
 //!   VDOM / Vapor backend codegen.
 //! - (Patina rule traversal lives in `vize_patina`'s `jsx_lint` group.)
 //!
@@ -23,8 +23,8 @@ use std::hint::black_box;
 
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use vize_atelier_jsx::{
-    DomCompileOptions, JsxCompileConfig, JsxLang, VaporCompileOptions, analyze_jsx_program,
-    compile_jsx, compile_to_dom, compile_to_vapor, lower_source, parse_module,
+    JsxCompileConfig, JsxLang, VaporCompileOptions, VdomCompileOptions, analyze_jsx_program,
+    compile_jsx, compile_to_vapor, compile_to_vdom, lower_source, parse_module,
 };
 use vize_carton::Bump;
 
@@ -125,18 +125,18 @@ fn bench_croquis_analyze(c: &mut Criterion) {
     group.finish();
 }
 
-fn bench_compile_dom(c: &mut Criterion) {
-    let mut group = c.benchmark_group("jsx_compile_dom");
+fn bench_compile_vdom(c: &mut Criterion) {
+    let mut group = c.benchmark_group("jsx_compile_vdom");
     for &(name, source, lang) in CASES {
         group.throughput(Throughput::Bytes(source.len() as u64));
         group.bench_function(name, |b| {
             b.iter(|| {
                 let bump = Bump::new();
-                let out = compile_to_dom(
+                let out = compile_to_vdom(
                     &bump,
                     black_box(source),
                     black_box(lang),
-                    DomCompileOptions::default(),
+                    VdomCompileOptions::default(),
                 );
                 black_box(out);
             });
@@ -185,7 +185,7 @@ criterion_group!(
     benches,
     bench_lower,
     bench_croquis_analyze,
-    bench_compile_dom,
+    bench_compile_vdom,
     bench_compile_vapor,
     bench_compile_mode_aware,
 );

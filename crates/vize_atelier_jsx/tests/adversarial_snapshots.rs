@@ -9,9 +9,9 @@ use std::fmt::Write as _;
 use std::ops::Range;
 
 use vize_atelier_jsx::{
-    DomCompileOptions, DomOutput, JsxCompileConfig, JsxCompileOutput, JsxComponent, JsxDiagnostic,
-    JsxLang, JsxOutputMode, LowerOutput, VaporCompileOptions, VaporOutput, compile_jsx,
-    compile_to_dom, compile_to_vapor, lower_source,
+    JsxCompileConfig, JsxCompileOutput, JsxComponent, JsxDiagnostic, JsxLang, JsxOutputMode,
+    LowerOutput, VaporCompileOptions, VaporOutput, VdomCompileOptions, VdomOutput, compile_jsx,
+    compile_to_vapor, compile_to_vdom, lower_source,
 };
 use vize_carton::Bump;
 use vize_relief::{
@@ -365,7 +365,7 @@ fn assert_lower_snapshot(name: &str, source: &str, lang: JsxLang) {
 
 fn assert_dom_snapshot(name: &str, source: &str, lang: JsxLang) {
     let bump = Bump::new();
-    let output = compile_to_dom(&bump, source, lang, DomCompileOptions::default());
+    let output = compile_to_vdom(&bump, source, lang, VdomCompileOptions::default());
     insta::assert_debug_snapshot!(format!("{name}_dom"), dom_output_summary(source, &output));
 }
 
@@ -544,7 +544,7 @@ fn compound_summary(compound: &vize_relief::CompoundExpressionNode<'_>) -> Strin
     out
 }
 
-fn dom_output_summary<'a>(source: &'a str, output: &'a DomOutput) -> DomOutputSummary<'a> {
+fn dom_output_summary<'a>(source: &'a str, output: &'a VdomOutput) -> DomOutputSummary<'a> {
     DomOutputSummary {
         diagnostics: diagnostics_summary(source, &output.diagnostics),
         components: output

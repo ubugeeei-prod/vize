@@ -6,8 +6,8 @@
 
 use std::fmt::Write as _;
 use vize_atelier_jsx::{
-    DomCompileOptions, JsxLang, LowerOutput, VaporCompileOptions, compile_to_dom, compile_to_vapor,
-    lower_source,
+    JsxLang, LowerOutput, VaporCompileOptions, VdomCompileOptions, compile_to_vapor,
+    compile_to_vdom, lower_source,
 };
 use vize_carton::Bump;
 use vize_relief::{
@@ -54,7 +54,7 @@ pub fn lower_all<'a>(bump: &'a Bump, source: &str) -> LowerOutput<'a> {
 /// Compile one component to VDOM render code.
 pub fn dom_code(source: &str, lang: JsxLang) -> vize_carton::String {
     let bump = Bump::new();
-    let out = compile_to_dom(&bump, source, lang, DomCompileOptions::default());
+    let out = compile_to_vdom(&bump, source, lang, VdomCompileOptions::default());
     assert!(
         !out.has_errors(),
         "unexpected diagnostics: {:?}",

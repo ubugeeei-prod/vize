@@ -2,7 +2,8 @@
 
 use std::fmt::Write as _;
 use vize_atelier_jsx::{
-    DomCompileOptions, JsxLang, VaporCompileOptions, compile_to_dom, compile_to_vapor, lower_source,
+    JsxLang, VaporCompileOptions, VdomCompileOptions, compile_to_vapor, compile_to_vdom,
+    lower_source,
 };
 use vize_carton::Bump;
 
@@ -27,9 +28,9 @@ const Comp = () => (
 );
 "#;
 
-fn dom(src: &str, lang: JsxLang) -> vize_atelier_jsx::DomComponent {
+fn dom(src: &str, lang: JsxLang) -> vize_atelier_jsx::VdomComponent {
     let bump = Bump::new();
-    let out = compile_to_dom(&bump, src, lang, DomCompileOptions::default());
+    let out = compile_to_vdom(&bump, src, lang, VdomCompileOptions::default());
     assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
     assert_eq!(out.components.len(), 1, "expected one component");
     out.components.into_iter().next().unwrap()
@@ -43,7 +44,7 @@ fn vapor(src: &str) -> vize_atelier_jsx::VaporComponent {
     out.components.into_iter().next().unwrap()
 }
 
-fn dom_snapshot(component: &vize_atelier_jsx::DomComponent) -> std::string::String {
+fn dom_snapshot(component: &vize_atelier_jsx::VdomComponent) -> std::string::String {
     let mut snapshot = std::string::String::new();
     writeln!(snapshot, "## code").unwrap();
     snapshot.push_str(component.code.as_str());

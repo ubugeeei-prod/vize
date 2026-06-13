@@ -7,7 +7,7 @@
 mod common;
 
 use common::{dom_code, snapshot_lang_cases};
-use vize_atelier_jsx::{DomCompileOptions, JsxLang, JsxOutputMode, compile_to_dom};
+use vize_atelier_jsx::{JsxLang, JsxOutputMode, VdomCompileOptions, compile_to_vdom};
 use vize_carton::Bump;
 
 #[test]
@@ -69,11 +69,11 @@ fn vdom_codegen_matrix() {
 #[test]
 fn multiple_components_each_compile_with_their_name() {
     let bump = Bump::new();
-    let out = compile_to_dom(
+    let out = compile_to_vdom(
         &bump,
         "const A = () => <a/>;\nconst B = () => <b/>;",
         JsxLang::Jsx,
-        DomCompileOptions::default(),
+        VdomCompileOptions::default(),
     );
 
     assert_eq!(out.components.len(), 2);
@@ -91,11 +91,11 @@ fn multiple_components_each_compile_with_their_name() {
 #[test]
 fn mode_defaults_to_vdom() {
     let bump = Bump::new();
-    let out = compile_to_dom(
+    let out = compile_to_vdom(
         &bump,
         "const A = () => <div/>;",
         JsxLang::Jsx,
-        DomCompileOptions::default(),
+        VdomCompileOptions::default(),
     );
 
     assert_eq!(out.components[0].mode, JsxOutputMode::Vdom);
@@ -104,11 +104,11 @@ fn mode_defaults_to_vdom() {
 #[test]
 fn vapor_directive_is_recorded_on_the_component() {
     let bump = Bump::new();
-    let out = compile_to_dom(
+    let out = compile_to_vdom(
         &bump,
         "const A = () => { \"use vue:vapor\"; return <div/>; };",
         JsxLang::Jsx,
-        DomCompileOptions::default(),
+        VdomCompileOptions::default(),
     );
 
     assert_eq!(out.components[0].mode, JsxOutputMode::Vapor);
@@ -117,11 +117,11 @@ fn vapor_directive_is_recorded_on_the_component() {
 #[test]
 fn preamble_imports_runtime_helpers() {
     let bump = Bump::new();
-    let out = compile_to_dom(
+    let out = compile_to_vdom(
         &bump,
         "const A = () => <div>{x}</div>;",
         JsxLang::Jsx,
-        DomCompileOptions::default(),
+        VdomCompileOptions::default(),
     );
 
     insta::assert_snapshot!(out.components[0].preamble.as_str());

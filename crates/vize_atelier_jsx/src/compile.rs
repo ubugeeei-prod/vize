@@ -13,7 +13,7 @@ use vize_carton::{Bump, FxHashSet, String};
 use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
-use crate::dom::{DomCompileOptions, DomComponent, compile_root_to_dom};
+use crate::dom::{VdomCompileOptions, VdomComponent, compile_root_to_vdom};
 use crate::scoped::ScopedStyle;
 use crate::vapor::{VaporCompileOptions, VaporComponent, compile_root_to_vapor};
 use crate::{JsxLang, JsxOutputMode, lower_source};
@@ -25,7 +25,7 @@ pub struct JsxCompileConfig {
     /// `"use vue:vapor"` / `"use vue:vdom"` directive.
     pub default_mode: JsxOutputMode,
     /// Options for components compiled to VDOM.
-    pub dom: DomCompileOptions,
+    pub dom: VdomCompileOptions,
     /// Options for components compiled to Vapor.
     pub vapor: VaporCompileOptions,
 }
@@ -33,7 +33,7 @@ pub struct JsxCompileConfig {
 /// A compiled component, tagged by the backend it was routed to.
 pub enum JsxComponent {
     /// Compiled to Virtual DOM output.
-    Dom(DomComponent),
+    Dom(VdomComponent),
     /// Compiled to Vapor output.
     Vapor(VaporComponent),
 }
@@ -79,7 +79,7 @@ impl JsxComponent {
 
     /// The v3 source map (JSON) for the component's render code, present only
     /// when source-map emission was requested via
-    /// [`DomCompileOptions::source_map`](crate::DomCompileOptions::source_map)
+    /// [`VdomCompileOptions::source_map`](crate::VdomCompileOptions::source_map)
     /// (#1533). VDOM output carries it; the Vapor backend does not emit one yet,
     /// so it is always `None` there.
     pub fn map(&self) -> Option<&str> {
@@ -290,7 +290,7 @@ pub fn compile_jsx(
     for lowered_root in lowered.roots {
         let mode = resolve_mode(lowered_root.mode, config.default_mode);
         let component = match mode {
-            JsxOutputMode::Vdom => JsxComponent::Dom(compile_root_to_dom(
+            JsxOutputMode::Vdom => JsxComponent::Dom(compile_root_to_vdom(
                 bump,
                 lowered_root,
                 analysis,

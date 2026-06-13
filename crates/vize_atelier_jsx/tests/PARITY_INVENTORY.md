@@ -16,7 +16,7 @@ Suites are split so a failure points at the correct backend:
 
 | Suite        | File                    | Backend            | Passing | Ignored |
 | ------------ | ----------------------- | ------------------ | ------- | ------- |
-| VDOM parity  | `tests/parity_vdom.rs`  | `compile_to_dom`   | 41      | 2       |
+| VDOM parity  | `tests/parity_vdom.rs`  | `compile_to_vdom`  | 41      | 2       |
 | Vapor parity | `tests/parity_vapor.rs` | `compile_to_vapor` | 24      | 0       |
 | TSX + modes  | `tests/parity_tsx.rs`   | both               | 10      | 0       |
 
@@ -153,12 +153,12 @@ four are A/B-compared (base vs head) in the `criterion-ab` GitHub Actions lane
 runs both the `vize_atelier_jsx` `jsx_compile` and the `vize_patina`
 `markup_ir_bench` targets:
 
-| Dimension             | Bench group(s)                                                   | Bench file                                | Measures                                           |
-| --------------------- | ---------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------- |
-| Parser / lowering     | `jsx_lower`                                                      | `vize_atelier_jsx/benches/jsx_compile.rs` | parse + lower to the shared relief IR              |
-| Croquis analysis      | `jsx_croquis_analyze`                                            | `vize_atelier_jsx/benches/jsx_compile.rs` | binding/scope/reactivity, isolated (parse hoisted) |
-| Patina rule traversal | `jsx_lint`                                                       | `vize_patina/benches/markup_ir_bench.rs`  | `Linter::lint_jsx` IR path vs lowering fallback    |
-| VDOM / Vapor codegen  | `jsx_compile_dom`, `jsx_compile_vapor`, `jsx_compile_mode_aware` | `vize_atelier_jsx/benches/jsx_compile.rs` | backend codegen for each output mode               |
+| Dimension             | Bench group(s)                                                    | Bench file                                | Measures                                           |
+| --------------------- | ----------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------- |
+| Parser / lowering     | `jsx_lower`                                                       | `vize_atelier_jsx/benches/jsx_compile.rs` | parse + lower to the shared relief IR              |
+| Croquis analysis      | `jsx_croquis_analyze`                                             | `vize_atelier_jsx/benches/jsx_compile.rs` | binding/scope/reactivity, isolated (parse hoisted) |
+| Patina rule traversal | `jsx_lint`                                                        | `vize_patina/benches/markup_ir_bench.rs`  | `Linter::lint_jsx` IR path vs lowering fallback    |
+| VDOM / Vapor codegen  | `jsx_compile_vdom`, `jsx_compile_vapor`, `jsx_compile_mode_aware` | `vize_atelier_jsx/benches/jsx_compile.rs` | backend codegen for each output mode               |
 
 **Regression threshold.** The lane is report-only by default (criterion is noisy
 on shared runners). The documented JSX regression threshold is **10%**: setting

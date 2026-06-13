@@ -22,7 +22,7 @@
  * Documented JSX regression threshold (#1501): the four JSX cost dimensions —
  * parser/lowering (`jsx_lower`), Croquis semantic analysis
  * (`jsx_croquis_analyze`), Patina rule traversal (`jsx_lint`), and VDOM/Vapor
- * codegen (`jsx_compile_dom` / `jsx_compile_vapor` / `jsx_compile_mode_aware`) —
+ * codegen (`jsx_compile_vdom` / `jsx_compile_vapor` / `jsx_compile_mode_aware`) —
  * are all A/B-compared here. When the gate is enabled, run with
  * `--threshold 10`: a +10% median regression on any of these ids fails the run.
  * 10% sits above the run-to-run jitter we observe for these microsecond-scale

@@ -4,8 +4,8 @@ mod common;
 
 use common::{dom_code, snapshot_cases, vapor_code};
 use vize_atelier_jsx::{
-    DomCompileOptions, JsxLang, JsxOutputMode, VaporCompileOptions, compile_to_dom,
-    compile_to_vapor, lower_source,
+    JsxLang, JsxOutputMode, VaporCompileOptions, VdomCompileOptions, compile_to_vapor,
+    compile_to_vdom, lower_source,
 };
 use vize_carton::Bump;
 
@@ -60,11 +60,11 @@ fn tsx_type_annotation_is_an_error_when_parsed_as_plain_jsx() {
 #[test]
 fn default_mode_is_vdom_for_dom_backend() {
     let bump = Bump::new();
-    let out = compile_to_dom(
+    let out = compile_to_vdom(
         &bump,
         "const A = () => <div/>;",
         JsxLang::Tsx,
-        DomCompileOptions::default(),
+        VdomCompileOptions::default(),
     );
 
     assert_eq!(out.components[0].mode, JsxOutputMode::Vdom);
@@ -73,11 +73,11 @@ fn default_mode_is_vdom_for_dom_backend() {
 #[test]
 fn use_vue_vapor_directive_is_surfaced_on_component_mode() {
     let bump = Bump::new();
-    let out = compile_to_dom(
+    let out = compile_to_vdom(
         &bump,
         "const A = () => { \"use vue:vapor\"; return <div/>; };",
         JsxLang::Tsx,
-        DomCompileOptions::default(),
+        VdomCompileOptions::default(),
     );
 
     assert_eq!(out.components[0].mode, JsxOutputMode::Vapor);
