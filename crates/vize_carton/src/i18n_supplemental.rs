@@ -248,6 +248,63 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。",
         "请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。",
     ),
+    // vue/no-deprecated-router-link-tag-prop
+    (
+        "vue/no-deprecated-router-link-tag-prop.description",
+        "Disallow the deprecated `tag` prop on <router-link>",
+        "<router-link> の非推奨な `tag` プロパティを禁止する",
+        "禁止 <router-link> 上已弃用的 `tag` 属性",
+    ),
+    (
+        "vue/no-deprecated-router-link-tag-prop.message",
+        "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+        "`<router-link>` の `tag` プロパティは Vue Router 4 で削除されました。代わりに v-slot API を使用してください",
+        "`<router-link>` 上的 `tag` 属性已在 Vue Router 4 中移除；请改用 v-slot API",
+    ),
+    (
+        "vue/no-deprecated-router-link-tag-prop.help",
+        "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+        "`tag` プロパティを削除し、`v-slot`（`href`・`navigate`・`isActive` を公開します）を使って要素を自分でレンダリングしてください。",
+        "请移除 `tag` 属性，并使用 `v-slot`（它会暴露 `href`、`navigate` 和 `isActive`）自行渲染元素。",
+    ),
+    // vue/no-negated-v-if-condition
+    (
+        "vue/no-negated-v-if-condition.description",
+        "Disallow a negated v-if condition when the chain has a v-else",
+        "v-elseを伴う連鎖で否定されたv-if条件を禁止する",
+        "当存在v-else分支时，禁止使用取反的v-if条件",
+    ),
+    (
+        "vue/no-negated-v-if-condition.message",
+        "Avoid a negated v-if condition when there is a v-else; swap the branches instead",
+        "v-elseがある場合は否定されたv-if条件を避け、分岐を入れ替えてください",
+        "存在v-else时应避免使用取反的v-if条件；请改为交换两个分支",
+    ),
+    (
+        "vue/no-negated-v-if-condition.help",
+        "Remove the leading '!' and swap the v-if and v-else branch contents.",
+        "先頭の '!' を削除し、v-ifとv-elseの分岐の中身を入れ替えてください。",
+        "请去掉开头的 '!'，并交换 v-if 与 v-else 分支的内容。",
+    ),
+    // vue/v-on-event-hyphenation
+    (
+        "vue/v-on-event-hyphenation.description",
+        "Enforce hyphenation of custom event names in v-on on components",
+        "コンポーネントの v-on におけるカスタムイベント名のハイフネーションを強制する",
+        "强制组件上 v-on 自定义事件名称使用连字符",
+    ),
+    (
+        "vue/v-on-event-hyphenation.message",
+        "Custom event listeners on components should be hyphenated: use '{name}'",
+        "コンポーネントのカスタムイベントリスナーはハイフン区切りにしてください: '{name}' を使用してください",
+        "组件上的自定义事件监听器应使用连字符：请使用 '{name}'",
+    ),
+    (
+        "vue/v-on-event-hyphenation.help",
+        "Rename the listener to kebab-case so it matches the emitted event name.",
+        "発行されるイベント名と一致するように、リスナー名をケバブケースに変更してください。",
+        "请将监听器重命名为 kebab-case，以与发出的事件名称匹配。",
+    ),
     // html/no-dupe-style-properties
     (
         "html/no-dupe-style-properties.description",
