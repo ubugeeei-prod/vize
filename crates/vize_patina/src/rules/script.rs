@@ -1,25 +1,6 @@
-//! Script-level lint rules for Vue.js SFC files.
-//!
-//! These rules check TypeScript/JavaScript code in `<script>` and `<script setup>` blocks.
-//! Rules in this module are **opt-in** and disabled by default.
-//!
-//! ## Enabling Script Rules
-//!
-//! Script rules can be enabled in your configuration:
-//!
-//! ```toml
-//! [rules.script]
-//! "prefer-import-from-vue" = "warn"
-//! "no-internal-imports" = "error"
-//! ```
-//!
-//! ## Vapor Mode Rules
-//!
-//! These rules help with Vapor mode compatibility (Vue 3.6+):
-//!
-//! - `script/no-options-api` - Disallow Options API patterns
-//! - `script/no-get-current-instance` - Disallow getCurrentInstance() calls
-//! - `script/no-next-tick` - Disallow nextTick() scheduling
+//! Script-level lint rules for Vue.js SFC files. These rules check
+//! TypeScript/JavaScript code in `<script>` and `<script setup>` blocks and
+//! are **opt-in**: enable them via `[rules.script]` in your configuration.
 
 mod component_options_name_casing;
 mod define_emits_declaration;
