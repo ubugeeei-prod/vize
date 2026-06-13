@@ -6,7 +6,6 @@ fn create_linter() -> ScriptLinter {
     linter.add_rule(Box::new(NoDeprecatedPropsDefaultThis));
     linter
 }
-
 #[test]
 fn test_valid_default_uses_props_argument() {
     let source = r#"
@@ -109,8 +108,7 @@ export default {
 
 #[test]
 fn test_valid_this_in_nested_function_rebinds() {
-    // A non-arrow nested function gets its own `this`, so `this` there is not
-    // the (absent) component instance of the default factory.
+    // A non-arrow nested function gets its own `this`.
     let source = r#"
 export default {
   props: {

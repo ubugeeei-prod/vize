@@ -1,21 +1,17 @@
 //! script/no-deprecated-props-default-this
 //!
 //! Disallow accessing `this` inside a prop `default` or `validator` function.
-//!
-//! In Vue 2 a prop `default` factory and a `validator` were invoked with `this`
-//! bound to the (pre-creation) component instance, so it was common to derive a
-//! default from another prop via `this.*`. In Vue 3 these functions no longer
-//! receive the component instance: the `default`/`validator` is called as a
-//! plain function, so `this` is `undefined` (in a module's strict-mode scope)
-//! and any `this.*` access is a bug. Vue 3 instead passes the raw props as the
-//! first argument to the `default` factory.
+//! In Vue 2 these functions ran with `this` bound to the (pre-creation)
+//! component instance, so deriving a default via `this.*` was common. In Vue 3
+//! they are called as plain functions, so `this` is `undefined` and any
+//! `this.*` access is a bug; Vue 3 passes the raw props as the first argument
+//! to the `default` factory instead.
 //!
 //! This is a Vue 2 -> 3 migration rule, scoped to the Options API object-form
-//! `props` option (mirroring `no-dupe-keys`' resolution). For every prop whose
-//! declaration is an object, the `default` and `validator` properties are
-//! inspected when they are functions (a regular `function` or an arrow). Either
-//! way, a `this` reference at the function's own `this`-scope is reported, and
-//! nested regular functions (which rebind `this`) are not traversed.
+//! `props` option. For each object-form prop, the `default` and `validator`
+//! functions (regular or arrow) are inspected, and a `this.*` reference at the
+//! function's own `this`-scope is reported; nested regular functions (which
+//! rebind `this`) are not traversed.
 //!
 //! ## Examples
 //!
