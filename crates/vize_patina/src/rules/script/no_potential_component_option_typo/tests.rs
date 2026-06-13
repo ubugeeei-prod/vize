@@ -1,4 +1,3 @@
-
 use super::NoPotentialComponentOptionTypo;
 use crate::rules::script::ScriptLinter;
 
