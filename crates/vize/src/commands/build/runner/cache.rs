@@ -16,8 +16,8 @@ use crate::commands::build::config::ErrorPhase;
 /// `component_name_len` is part of the key because generated `__name` text
 /// affects byte counts even when the actual component name is otherwise
 /// irrelevant to stats. The actual name is deliberately not stored in the key;
-/// `should_cache_stats_compile` rejects cases where the source can observe the
-/// specific component name through self-component resolution.
+/// [`classify_stats_compile_cache`] rejects cases where the source can observe
+/// the specific component name through self-component resolution.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub(super) struct StatsCompileCacheKey {
     /// Fast content fingerprint used to group identical generated benchmark bodies.
@@ -61,6 +61,20 @@ pub(super) struct StatsCompileCache {
     pub(super) entries: Mutex<FxHashMap<StatsCompileCacheKey, StatsCompileCacheEntry>>,
 }
 
+/// Cache decision for one stats-only compile candidate.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(super) enum StatsCompileCacheDecision {
+    Cacheable,
+    BypassSelfComponentExact,
+    BypassSelfComponentKebab,
+}
+
+impl StatsCompileCacheDecision {
+    pub(super) fn is_cacheable(self) -> bool {
+        matches!(self, Self::Cacheable)
+    }
+}
+
 /// Returns whether a source can reuse another file's stats-only compile result.
 ///
 /// Filename-derived output is mostly byte-count stable: generated scope IDs are
@@ -69,13 +83,23 @@ pub(super) struct StatsCompileCache {
 /// component name, changing the filename can change whether that tag is treated
 /// as a component, which can alter helper usage and generated code shape. Those
 /// cases are compiled normally.
-pub(super) fn should_cache_stats_compile(source: &str, component_name: &str) -> bool {
+pub(super) fn classify_stats_compile_cache(
+    source: &str,
+    component_name: &str,
+) -> StatsCompileCacheDecision {
     if component_name.is_empty() {
-        return true;
+        return StatsCompileCacheDecision::Cacheable;
     }
 
-    !source.contains(component_name)
-        && !source.contains(component_name_to_kebab_case(component_name).as_str())
+    if source.contains(component_name) {
+        return StatsCompileCacheDecision::BypassSelfComponentExact;
+    }
+
+    if source.contains(component_name_to_kebab_case(component_name).as_str()) {
+        return StatsCompileCacheDecision::BypassSelfComponentKebab;
+    }
+
+    StatsCompileCacheDecision::Cacheable
 }
 
 /// Converts a PascalCase filename stem to the kebab-case spelling Vue templates use.
@@ -96,4 +120,33 @@ fn component_name_to_kebab_case(component_name: &str) -> String {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{StatsCompileCacheDecision, classify_stats_compile_cache};
+
+    #[test]
+    fn stats_compile_cache_classifies_cacheable_sources() {
+        assert_eq!(
+            classify_stats_compile_cache("<template><div /></template>", "App"),
+            StatsCompileCacheDecision::Cacheable
+        );
+        assert_eq!(
+            classify_stats_compile_cache("<template><div /></template>", ""),
+            StatsCompileCacheDecision::Cacheable
+        );
+    }
+
+    #[test]
+    fn stats_compile_cache_classifies_self_component_bypasses() {
+        assert_eq!(
+            classify_stats_compile_cache("<template><App /></template>", "App"),
+            StatsCompileCacheDecision::BypassSelfComponentExact
+        );
+        assert_eq!(
+            classify_stats_compile_cache("<template><app-card /></template>", "AppCard"),
+            StatsCompileCacheDecision::BypassSelfComponentKebab
+        );
+    }
 }

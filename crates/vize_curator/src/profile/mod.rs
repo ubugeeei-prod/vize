@@ -102,6 +102,12 @@ pub fn render_profile_report(report: &ProfileReport<'_>) -> String {
     render_counter_table(
         &mut out,
         report,
+        "Atelier cache decisions",
+        "atelier.cache.",
+    );
+    render_counter_table(
+        &mut out,
+        report,
         "Atelier profile facts",
         "atelier.profile.",
     );

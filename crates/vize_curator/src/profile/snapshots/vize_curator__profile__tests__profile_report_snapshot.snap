@@ -36,6 +36,11 @@ expression: render_profile_report(&report)
   cache.stats_compile.misses                   1           3         3.0           3           3
   cache.stats_compile.stores                   1           3         3.0           3           3
 
+[1mAtelier cache decisions[0m
+[90m  counter                                samples    total        avg         min         max[0m
+  atelier.cache.stats_compile.eligible         2           2         1.0           1           1
+  atelier.cache.stats_compile.bypass.self_kebab       1           1         1.0           1           1
+
 [1mAtelier profile facts[0m
 [90m  counter                                samples    total        avg         min         max[0m
   atelier.profile.template_bytes               2     1.50 KiB       768.0 B       512 B     1.00 KiB

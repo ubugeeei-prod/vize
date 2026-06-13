@@ -23,7 +23,8 @@ use crate::commands::build::config::{
 };
 
 use super::cache::{
-    StatsCompileCache, StatsCompileCacheEntry, StatsCompileCacheKey, should_cache_stats_compile,
+    StatsCompileCache, StatsCompileCacheDecision, StatsCompileCacheEntry, StatsCompileCacheKey,
+    classify_stats_compile_cache,
 };
 use super::settings::CompileFileSettings;
 
@@ -70,13 +71,14 @@ pub(super) fn compile_file_stats_with_cache(
         .into();
     let source_id = path.to_string_lossy().as_ref().to_compact_string();
     let component_name = path.file_stem().and_then(|n| n.to_str()).unwrap_or("");
-    let cache_key =
-        should_cache_stats_compile(&source, component_name).then(|| StatsCompileCacheKey {
-            source_hash: hash_str(&source),
-            source_len: file_size,
-            component_name_len: component_name.len(),
-            settings: settings.cache_bits(),
-        });
+    let cache_decision = classify_stats_compile_cache(&source, component_name);
+    record_atelier_cache_decision(settings, cache_decision);
+    let cache_key = cache_decision.is_cacheable().then(|| StatsCompileCacheKey {
+        source_hash: hash_str(&source),
+        source_len: file_size,
+        component_name_len: component_name.len(),
+        settings: settings.cache_bits(),
+    });
 
     if let Some(key) = cache_key
         && let Some(entry) = cache
@@ -434,9 +436,18 @@ fn record_atelier_profile_facts(
     }
 
     let profiler = global_profiler();
-    profiler.record_counter("atelier.profile.template_bytes", usize_to_counter(template_size));
-    profiler.record_counter("atelier.profile.script_bytes", usize_to_counter(script_size));
-    profiler.record_counter("atelier.profile.style_blocks", usize_to_counter(style_count));
+    profiler.record_counter(
+        "atelier.profile.template_bytes",
+        usize_to_counter(template_size),
+    );
+    profiler.record_counter(
+        "atelier.profile.script_bytes",
+        usize_to_counter(script_size),
+    );
+    profiler.record_counter(
+        "atelier.profile.style_blocks",
+        usize_to_counter(style_count),
+    );
     profiler.record_counter("atelier.profile.has_scoped_style", u64::from(has_scoped));
     profiler.record_counter("atelier.profile.is_ts", u64::from(is_ts));
     profiler.record_counter("atelier.profile.target.ssr", u64::from(settings.ssr));
@@ -445,6 +456,26 @@ fn record_atelier_profile_facts(
         "atelier.profile.target.dom",
         u64::from(!settings.ssr && !settings.vapor),
     );
+}
+
+fn record_atelier_cache_decision(
+    settings: CompileFileSettings,
+    decision: StatsCompileCacheDecision,
+) {
+    if !settings.record_profile_totals {
+        return;
+    }
+
+    let name = match decision {
+        StatsCompileCacheDecision::Cacheable => "atelier.cache.stats_compile.eligible",
+        StatsCompileCacheDecision::BypassSelfComponentExact => {
+            "atelier.cache.stats_compile.bypass.self_exact"
+        }
+        StatsCompileCacheDecision::BypassSelfComponentKebab => {
+            "atelier.cache.stats_compile.bypass.self_kebab"
+        }
+    };
+    global_profiler().record_counter(name, 1);
 }
 
 fn usize_to_counter(value: usize) -> u64 {

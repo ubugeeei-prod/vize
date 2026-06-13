@@ -60,6 +60,11 @@ fn build_stats_profile_reports_compile_cache_counters() {
     assert!(stderr.contains("cache.stats_compile.hits"), "{stderr}");
     assert!(stderr.contains("cache.stats_compile.misses"), "{stderr}");
     assert!(stderr.contains("cache.stats_compile.stores"), "{stderr}");
+    assert!(stderr.contains("Atelier cache decisions"), "{stderr}");
+    assert!(
+        stderr.contains("atelier.cache.stats_compile.eligible"),
+        "{stderr}"
+    );
 
     let _ = fs::remove_dir_all(project_root);
 }
