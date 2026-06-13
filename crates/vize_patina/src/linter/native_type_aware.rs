@@ -34,6 +34,10 @@ pub(crate) const TYPE_AWARE_RULES: &[&str] = &[
 ];
 
 pub(crate) fn has_active_type_aware_rules(linter: &Linter) -> bool {
+    if !linter.type_aware_enabled {
+        return false;
+    }
+
     TYPE_AWARE_RULES
         .iter()
         .copied()

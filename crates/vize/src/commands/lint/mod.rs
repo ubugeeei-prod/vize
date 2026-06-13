@@ -9,9 +9,9 @@ mod tests;
 
 pub use args::LintArgs;
 
+use crate::profile_support;
 use collect::{collect_lint_files, is_standalone_html_path, resolve_lint_config_path};
 use cross_file::{build_cross_file_lint_output, merge_lint_result};
-
 use rayon::prelude::*;
 use std::fs;
 use std::io::Write;
@@ -21,13 +21,11 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use std::time::Instant;
 use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profiler};
-use vize_patina::{
-    HelpLevel, JsxLang, LintPreset, Linter, OutputFormat, format_results, format_summary,
-};
-
-use crate::profile_support;
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
+};
+use vize_patina::{
+    HelpLevel, JsxLang, LintPreset, Linter, OutputFormat, format_results, format_summary,
 };
 
 pub fn run(args: LintArgs) {
@@ -77,7 +75,6 @@ pub fn run(args: LintArgs) {
         .type_checker
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
-
     // Collect .vue, standalone .html, and JSX/TSX files using glob patterns or directory walking
     let collect_start = Instant::now();
     let files = collect_lint_files(&args.patterns);
@@ -101,10 +98,13 @@ pub fn run(args: LintArgs) {
         .as_deref()
         .unwrap_or(args.preset.as_str());
     let preset = LintPreset::parse(preset_name).unwrap_or_default();
+    let type_aware_enabled =
+        args.type_aware || args.strict_reactivity || linter_config.type_aware_lint_enabled();
     let mut linter = Linter::with_preset(preset)
         .with_additional_rules(linter_config.enabled_rules())
         .with_disabled_rules(linter_config.disabled_rules())
-        .with_help_level(help_level);
+        .with_help_level(help_level)
+        .with_type_aware_lint(type_aware_enabled);
     #[cfg(not(target_arch = "wasm32"))]
     {
         linter = linter.with_corsa_path(configured_corsa_path);
