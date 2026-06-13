@@ -120,6 +120,7 @@ export const LINT_RULE_NAMES = [
   "vue/no-lone-template",
   "vue/no-multi-spaces",
   "vue/no-mutating-props",
+  "vue/no-negated-v-if-condition",
   "vue/no-preprocessor-lang",
   "vue/no-reserved-component-names",
   "vue/no-script-non-standard-lang",
