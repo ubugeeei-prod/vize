@@ -174,4 +174,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "オブジェクトを1つにまとめてください。例: :class=\"[{ a }, { b }]\" は :class=\"{ a, b }\" になります。",
         "请将这些对象合并为一个，例如 :class=\"[{ a }, { b }]\" 改为 :class=\"{ a, b }\"。",
     ),
+    // vue/no-array-index-key
+    (
+        "vue/no-array-index-key.description",
+        "Disallow using the v-for index variable directly as the :key",
+        "v-forのインデックス変数をそのまま :key に使うことを禁止する",
+        "禁止直接将 v-for 的索引变量用作 :key",
+    ),
+    (
+        "vue/no-array-index-key.message",
+        "Do not use the v-for index as :key; use a stable, unique identifier instead",
+        "v-forのインデックスを :key に使わないでください。安定した一意の識別子を使用してください",
+        "请勿将 v-for 的索引用作 :key；请改用稳定且唯一的标识符",
+    ),
+    (
+        "vue/no-array-index-key.help",
+        "Bind :key to a stable id from the item (e.g. :key=\"item.id\"). The index changes when the list is reordered or filtered, so Vue reuses the wrong element state.",
+        ":key には項目の安定したid（例: :key=\"item.id\"）をバインドしてください。リストの並べ替えやフィルタリングでインデックスは変化するため、Vueが誤った要素の状態を再利用してしまいます。",
+        "请将 :key 绑定到项目中稳定的 id（例如 :key=\"item.id\"）。当列表被重新排序或过滤时索引会变化，导致 Vue 复用错误的元素状态。",
+    ),
 ];

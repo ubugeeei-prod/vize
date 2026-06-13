@@ -2,6 +2,7 @@ mod component_name_in_template_casing;
 mod html_button_has_type;
 mod html_self_closing;
 mod multi_word_component_names;
+mod no_array_index_key;
 mod no_boolean_attr_value;
 mod no_empty_component_block;
 mod no_inline_style;
@@ -36,6 +37,7 @@ pub use component_name_in_template_casing::ComponentNameInTemplateCasing;
 pub use html_button_has_type::HtmlButtonHasType;
 pub use html_self_closing::HtmlSelfClosing;
 pub use multi_word_component_names::MultiWordComponentNames;
+pub use no_array_index_key::NoArrayIndexKey;
 pub use no_boolean_attr_value::NoBooleanAttrValue;
 pub use no_empty_component_block::NoEmptyComponentBlock;
 pub use no_inline_style::NoInlineStyle;
@@ -107,4 +109,5 @@ fn register_shared(registry: &mut RuleRegistry) {
     registry.register(Box::new(PreferTrueAttributeShorthand));
     registry.register(Box::new(VOnEventHyphenation));
     registry.register(Box::new(ThisInTemplate));
+    registry.register(Box::new(NoArrayIndexKey));
 }
