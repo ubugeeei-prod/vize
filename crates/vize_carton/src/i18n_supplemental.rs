@@ -248,4 +248,23 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。",
         "请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。",
     ),
+    // vue/no-deprecated-router-link-tag-prop
+    (
+        "vue/no-deprecated-router-link-tag-prop.description",
+        "Disallow the deprecated `tag` prop on <router-link>",
+        "<router-link> の非推奨な `tag` プロパティを禁止する",
+        "禁止 <router-link> 上已弃用的 `tag` 属性",
+    ),
+    (
+        "vue/no-deprecated-router-link-tag-prop.message",
+        "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+        "`<router-link>` の `tag` プロパティは Vue Router 4 で削除されました。代わりに v-slot API を使用してください",
+        "`<router-link>` 上的 `tag` 属性已在 Vue Router 4 中移除；请改用 v-slot API",
+    ),
+    (
+        "vue/no-deprecated-router-link-tag-prop.help",
+        "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+        "`tag` プロパティを削除し、`v-slot`（`href`・`navigate`・`isActive` を公開します）を使って要素を自分でレンダリングしてください。",
+        "请移除 `tag` 属性，并使用 `v-slot`（它会暴露 `href`、`navigate` 和 `isActive`）自行渲染元素。",
+    ),
 ];

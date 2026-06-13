@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-deprecated-router-link-tag-prop",
+        severity: Error,
+        message: "vue/no-deprecated-router-link-tag-prop.message",
+        start: 24,
+        end: 36,
+        help: Some(
+            "vue/no-deprecated-router-link-tag-prop.help",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
