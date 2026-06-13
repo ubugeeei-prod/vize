@@ -134,8 +134,10 @@ impl Rule for NoEmptyComponentBlock {
         let messages: Vec<_> = empty_blocks
             .iter()
             .map(|block| {
-                let message =
-                    ctx.t_fmt("vue/no-empty-component-block.message", &[("block", block.kind)]);
+                let message = ctx.t_fmt(
+                    "vue/no-empty-component-block.message",
+                    &[("block", block.kind)],
+                );
                 (message, block.start, block.end)
             })
             .collect();
