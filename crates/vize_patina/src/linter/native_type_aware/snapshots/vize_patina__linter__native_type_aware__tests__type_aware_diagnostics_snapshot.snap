@@ -1,9 +1,17 @@
 ---
 source: crates/vize_patina/src/linter/native_type_aware/tests.rs
-assertion_line: 305
 expression: diagnostics
 ---
 [
+    (
+        "vue/html-button-has-type",
+        "'<button>' is missing a 'type' attribute; add type=\"button\", \"submit\", or \"reset\"",
+        372,
+        402,
+        Some(
+            "A '<button>' defaults to type=\"submit\", which submits the enclosing form. Set an explicit type=\"button\", \"submit\", or \"reset\".",
+        ),
+    ),
     (
         "type/require-typed-props",
         "Prop should have a type definition",

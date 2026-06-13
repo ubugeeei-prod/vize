@@ -1,9 +1,9 @@
-//! JSX/TSX ecosystem testbed smoke (the ecosystem-CI portion of #1489 / #1491).
+//! JSX/TSX ecosystem reference smoke (the ecosystem-CI portion of #1489 / #1491).
 //!
 //! A manual, network-gated coverage run over upstream JSX reference suites
-//! (`@vue/babel-plugin-jsx`, `vue-jsx-vapor`) and real-world component libraries
-//! (Vuetify, Naive UI), each pinned by full commit SHA in
-//! `tests/ecosystem/testbeds.json`.
+//! (`@vue/babel-plugin-jsx`, `vue-jsx-vapor`), each pinned by full commit SHA in
+//! `tests/ecosystem/testbeds.json`. Real-world component-library testbeds are
+//! owned by the Vize-wide app e2e fixture registry under `tests/_fixtures/`.
 //!
 //! It is `#[ignore]`d so PR CI stays fast and offline; run it explicitly:
 //!
@@ -164,7 +164,7 @@ fn jsx_ecosystem_coverage_smoke() {
     let mut total_files = 0usize;
     let mut total_panicked = 0usize;
 
-    eprintln!("\nJSX ecosystem coverage smoke (lower_source over pinned testbeds)\n");
+    eprintln!("\nJSX ecosystem coverage smoke (lower_source over pinned references)\n");
     eprintln!(
         "{:<22} {:>7} {:>7} {:>11} {:>9}",
         "testbed", "files", "clean", "w/diag", "PANIC"

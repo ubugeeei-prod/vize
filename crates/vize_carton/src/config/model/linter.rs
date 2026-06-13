@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{FxHashMap, String};
 
+const TYPE_AWARE_LINT_MARKER: &str = "__vize_internal/type-aware-lint";
+
 /// Per-rule lint severity.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -20,6 +22,15 @@ pub struct LinterConfig {
     pub enabled: bool,
     pub preset: Option<String>,
     pub rules: FxHashMap<String, LintRuleSeverity>,
+}
+
+/// Raw linter config with unstable config-only switches.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub(crate) struct RawLinterConfig {
+    #[serde(flatten)]
+    config: LinterConfig,
+    type_aware: bool,
 }
 
 impl LinterConfig {
@@ -39,12 +50,32 @@ impl LinterConfig {
             .unwrap_or(false)
     }
 
+    /// Whether native type-aware lint should run.
+    ///
+    /// The config-only `typeAware` switch enables preset-provided type-aware
+    /// rules. An explicitly enabled `type/*` rule also counts as an opt-in.
+    pub fn type_aware_lint_enabled(&self) -> bool {
+        self.rules.contains_key(TYPE_AWARE_LINT_MARKER)
+            || self.rules.iter().any(|(rule, severity)| {
+                is_public_rule(rule)
+                    && rule.starts_with("type/")
+                    && !matches!(severity, LintRuleSeverity::Off)
+            })
+    }
+
+    fn enable_type_aware_lint(&mut self) {
+        self.rules
+            .insert(TYPE_AWARE_LINT_MARKER.into(), LintRuleSeverity::Warn);
+    }
+
     /// Rule names explicitly disabled by config.
     pub fn disabled_rules(&self) -> Vec<String> {
         let mut rules = self
             .rules
             .iter()
-            .filter(|(_, severity)| matches!(severity, LintRuleSeverity::Off))
+            .filter(|(rule, severity)| {
+                is_public_rule(rule) && matches!(severity, LintRuleSeverity::Off)
+            })
             .map(|(rule, _)| rule.clone())
             .collect::<Vec<_>>();
         rules.sort();
@@ -56,7 +87,9 @@ impl LinterConfig {
         let mut rules = self
             .rules
             .iter()
-            .filter(|(_, severity)| !matches!(severity, LintRuleSeverity::Off))
+            .filter(|(rule, severity)| {
+                is_public_rule(rule) && !matches!(severity, LintRuleSeverity::Off)
+            })
             .map(|(rule, _)| rule.clone())
             .collect::<Vec<_>>();
         rules.sort();
@@ -71,5 +104,68 @@ impl Default for LinterConfig {
             preset: None,
             rules: FxHashMap::default(),
         }
+    }
+}
+
+impl From<RawLinterConfig> for LinterConfig {
+    fn from(raw: RawLinterConfig) -> Self {
+        let mut config = raw.config;
+        if raw.type_aware {
+            config.enable_type_aware_lint();
+        }
+        config
+    }
+}
+
+fn is_public_rule(rule: &str) -> bool {
+    rule != TYPE_AWARE_LINT_MARKER
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{LintRuleSeverity, LinterConfig, RawLinterConfig};
+
+    #[test]
+    fn type_aware_lint_defaults_to_disabled() {
+        assert!(!LinterConfig::default().type_aware_lint_enabled());
+    }
+
+    #[test]
+    fn type_aware_lint_can_be_enabled_as_a_group() {
+        let mut config = LinterConfig::default();
+        config.enable_type_aware_lint();
+
+        assert!(config.type_aware_lint_enabled());
+        assert!(config.enabled_rules().is_empty());
+    }
+
+    #[test]
+    fn raw_type_aware_deserializes_as_group_opt_in() {
+        let raw = serde_json::from_str::<RawLinterConfig>(r#"{ "typeAware": true }"#).unwrap();
+        let config = LinterConfig::from(raw);
+
+        assert!(config.type_aware_lint_enabled());
+        assert!(config.enabled_rules().is_empty());
+    }
+
+    #[test]
+    fn enabled_type_rule_counts_as_type_aware_opt_in() {
+        let mut config = LinterConfig::default();
+        config.rules.insert(
+            "type/no-unsafe-template-binding".into(),
+            LintRuleSeverity::Warn,
+        );
+
+        assert!(config.type_aware_lint_enabled());
+    }
+
+    #[test]
+    fn disabled_type_rule_does_not_opt_in() {
+        let mut config = LinterConfig::default();
+        config
+            .rules
+            .insert("type/no-reactivity-loss".into(), LintRuleSeverity::Off);
+
+        assert!(!config.type_aware_lint_enabled());
     }
 }
