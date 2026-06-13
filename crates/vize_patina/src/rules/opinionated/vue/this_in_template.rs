@@ -225,8 +225,10 @@ mod tests {
     #[test]
     fn test_invalid_this_in_event_handler() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<button @click="this.handleClick()"></button>"#, "test.vue");
+        let result = linter.lint_template(
+            r#"<button @click="this.handleClick()"></button>"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 1);
     }
 
