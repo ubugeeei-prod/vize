@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-v-text",
+        severity: Warning,
+        message: "Avoid the 'v-text' directive; use mustache interpolation {{ }} for text content instead",
+        start: 5,
+        end: 21,
+        help: Some(
+            "Replace `v-text=\"expr\"` with mustache interpolation in the element's content (e.g. `<div>{{ expr }}</div>`).",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
