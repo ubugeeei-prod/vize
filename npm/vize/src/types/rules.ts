@@ -68,6 +68,7 @@ export const LINT_RULE_NAMES = [
   "script/component-options-name-casing",
   "script/define-emits-declaration",
   "script/define-macros-order",
+  "script/define-props-declaration",
   "script/no-arrow-functions-in-watch",
   "script/no-async-in-computed",
   "script/no-deep-destructure-in-props",
