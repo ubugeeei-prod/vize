@@ -284,6 +284,10 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::SingleStyleBlock));
         registry.register(Box::new(crate::rules::vue::NoUselessTemplateAttributes));
         registry.register(Box::new(crate::rules::vue::ValidVMemo));
+        registry.register(Box::new(crate::rules::vue::ValidVCloak));
+        registry.register(Box::new(crate::rules::vue::ValidVOnce));
+        registry.register(Box::new(crate::rules::vue::ValidVText));
+        registry.register(Box::new(crate::rules::vue::ValidVHtml));
         registry.register(Box::new(crate::rules::vapor::NoVueLifecycleEvents));
 
         // Security rules.
@@ -387,6 +391,10 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::RequireComponentIs));
         registry.register(Box::new(crate::rules::vue::NoUselessTemplateAttributes));
         registry.register(Box::new(crate::rules::vue::ValidVMemo));
+        registry.register(Box::new(crate::rules::vue::ValidVCloak));
+        registry.register(Box::new(crate::rules::vue::ValidVOnce));
+        registry.register(Box::new(crate::rules::vue::ValidVText));
+        registry.register(Box::new(crate::rules::vue::ValidVHtml));
         registry.register(Box::new(crate::rules::vue::UseVOnExact));
 
         // Security Rules

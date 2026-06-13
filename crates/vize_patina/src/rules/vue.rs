@@ -30,14 +30,18 @@ mod require_scoped_style;
 mod require_v_for_key;
 mod valid_attribute_name;
 mod valid_v_bind;
+mod valid_v_cloak;
 mod valid_v_else;
 mod valid_v_for;
+mod valid_v_html;
 mod valid_v_if;
 mod valid_v_memo;
 mod valid_v_model;
 mod valid_v_on;
+mod valid_v_once;
 mod valid_v_show;
 mod valid_v_slot;
+mod valid_v_text;
 
 // Strongly recommended rules
 mod component_definition_name_casing;
@@ -91,14 +95,18 @@ pub use require_component_is::RequireComponentIs;
 pub use require_v_for_key::RequireVForKey;
 pub use valid_attribute_name::ValidAttributeName;
 pub use valid_v_bind::ValidVBind;
+pub use valid_v_cloak::ValidVCloak;
 pub use valid_v_else::ValidVElse;
 pub use valid_v_for::ValidVFor;
+pub use valid_v_html::ValidVHtml;
 pub use valid_v_if::ValidVIf;
 pub use valid_v_memo::ValidVMemo;
 pub use valid_v_model::ValidVModel;
 pub use valid_v_on::ValidVOn;
+pub use valid_v_once::ValidVOnce;
 pub use valid_v_show::ValidVShow;
 pub use valid_v_slot::ValidVSlot;
+pub use valid_v_text::ValidVText;
 
 // Strongly recommended rules exports
 pub use crate::rules::opinionated::vue::HtmlSelfClosing;
