@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_reserved_keys.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-reserved-keys",
+        severity: Error,
+        message: "Reserved key '$el'",
+        start: 28,
+        end: 33,
+        help: Some(
+            "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+        ),
+        labels: [
+            Label {
+                message: "props key starts with reserved '$'",
+                start: 28,
+                end: 33,
+            },
+        ],
+        fix: None,
+    },
+]
