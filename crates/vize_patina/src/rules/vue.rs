@@ -51,7 +51,9 @@ mod v_slot_style;
 // Most implementations live under rules::opinionated::vue and are re-exported here.
 
 // Security rules
+mod no_template_target_blank;
 mod no_unsafe_url;
+mod no_unsandboxed_iframe;
 mod no_v_html;
 
 // Semantic analysis rules (require Croquis)
@@ -124,7 +126,9 @@ pub use no_lone_template::NoLoneTemplate;
 pub use sfc_element_order::SfcElementOrder;
 
 // Security rules exports
+pub use no_template_target_blank::NoTemplateTargetBlank;
 pub use no_unsafe_url::NoUnsafeUrl;
+pub use no_unsandboxed_iframe::NoUnsandboxedIframe;
 pub use no_v_html::NoVHtml;
 
 // Semantic analysis rules exports

@@ -289,6 +289,8 @@ impl RuleRegistry {
         // Security rules.
         registry.register(Box::new(crate::rules::vue::NoVHtml));
         registry.register(Box::new(crate::rules::vue::NoUnsafeUrl));
+        registry.register(Box::new(crate::rules::vue::NoTemplateTargetBlank));
+        registry.register(Box::new(crate::rules::vue::NoUnsandboxedIframe));
 
         // Accessibility rules with broadly applicable guidance.
         registry.register(Box::new(crate::rules::a11y::ImgAlt));
