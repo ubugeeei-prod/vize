@@ -9,6 +9,12 @@
 //! addition in `names.rs`.
 
 use super::names::{
+    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
+    RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
+    RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API, RULE_NO_DUPE_KEYS, RULE_NO_EXPORT_IN_SCRIPT_SETUP,
+    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS,
+    RULE_NO_NEXT_TICK, RULE_NO_OPTIONS_API, RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
+    RULE_NO_REACTIVE_DESTRUCTURE, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
     RULE_DEFINE_PROPS_DECLARATION, RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED,
     RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API, RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
@@ -28,6 +34,15 @@ use super::{
     OPT_IN_SCRIPT_PRESETS,
 };
 use crate::rules::script::{
+    NoArrowFunctionsInWatch, NoAsyncInComputed, NoDeepDestructureInProps,
+    NoDeprecatedDataObjectDeclaration, NoDeprecatedDollarListenersApi,
+    NoDeprecatedDollarScopedSlotsApi, NoDupeKeys, NoExportInScriptSetup, NoGetCurrentInstance,
+    NoImportCompilerMacros, NoInternalImports, NoNextTick, NoOptionsApi,
+    NoPotentialComponentOptionTypo, NoReactiveDestructure, NoReservedIdentifiers,
+    NoSideEffectsInComputed, NoTopLevelRefInScript, NoWithDefaults, PiniaPreferStoreToRefs,
+    PreferComputed, PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId,
+    PreferUseSlots, PreferUseTemplateRef, RequireFunctionReturnType, RequireSymbolProvide,
+    ReturnInComputedProperty, VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
     DefinePropsDeclaration, NoArrowFunctionsInWatch, NoAsyncInComputed, NoDeepDestructureInProps,
     NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDupeKeys,
     NoExportInScriptSetup, NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports,
@@ -297,6 +312,12 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         rule: &NoDeprecatedDollarScopedSlotsApi,
     },
     BuiltinScriptRuleEntry {
+        rule_name: RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
+        profile_name: "patina.script_rule.no_deprecated_data_object_declaration",
+        category: "Script",
+        fixable: false,
+        presets: OPT_IN_SCRIPT_PRESETS,
+        rule: &NoDeprecatedDataObjectDeclaration,
         rule_name: RULE_DEFINE_PROPS_DECLARATION,
         profile_name: "patina.script_rule.define_props_declaration",
         category: "Script",
