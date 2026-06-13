@@ -40,6 +40,8 @@ pub(crate) const RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API: &str =
 pub(crate) const RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO: &str =
     "script/no-potential-component-option-typo";
 pub(crate) const RULE_RETURN_IN_COMPUTED_PROPERTY: &str = "script/return-in-computed-property";
+pub(crate) const RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API: &str =
+    "script/no-deprecated-dollar-scopedslots-api";
 pub(crate) const RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD: &str =
     "script/no-use-computed-property-like-method";
 
@@ -74,6 +76,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
     RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
     RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
     RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
 ];
 
@@ -106,5 +109,6 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
     RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
     RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
     RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
 ];

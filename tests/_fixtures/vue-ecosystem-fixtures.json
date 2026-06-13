@@ -1,13 +1,6 @@
 {
   "schemaVersion": 1,
-  "requiredToolCoverage": [
-    "compiler",
-    "linter",
-    "typechecker",
-    "formatter",
-    "syntax-highlighter",
-    "lsp"
-  ],
+  "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "projects": [
     {
       "id": "vue-vben-admin",
@@ -246,6 +239,19 @@
         "hangTimeoutMs": 300000,
         "maxFalsePositiveRatio": 0.05
       }
+    },
+    {
+      "id": "directus",
+      "displayName": "Directus",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/directus",
+      "repository": "https://github.com/directus/directus",
+      "revision": "e0444f46909d530c4af243313a5320571992a30c",
+      "license": { "spdx": "LicenseRef-MSCL-1.0-GPL", "files": ["license", "app/license"] },
+      "vueGlobs": ["app/src/**/*.vue"],
+      "tsconfig": "app/tsconfig.json",
+      "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+      "diff": "e2e-vrt"
     },
     {
       "id": "voicevox",
