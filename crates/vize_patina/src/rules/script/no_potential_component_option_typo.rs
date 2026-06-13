@@ -26,16 +26,47 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 /// lifecycle hooks. A top-level key matching one of these is never flagged.
 const KNOWN_OPTIONS: &[&str] = &[
     // Asset / composition options.
-    "name", "components", "directives", "mixins", "extends", "provide", "inject",
+    "name",
+    "components",
+    "directives",
+    "mixins",
+    "extends",
+    "provide",
+    "inject",
     // State / behavior / rendering options.
-    "props", "emits", "data", "computed", "methods", "watch", "expose", "setup", "render",
+    "props",
+    "emits",
+    "data",
+    "computed",
+    "methods",
+    "watch",
+    "expose",
+    "setup",
+    "render",
     "template",
     // Less-common-but-valid options that sit close to others (avoids false positives).
-    "inheritAttrs", "model", "delimiters", "compilerOptions", "__name",
+    "inheritAttrs",
+    "model",
+    "delimiters",
+    "compilerOptions",
+    "__name",
     // Lifecycle hooks.
-    "beforeCreate", "created", "beforeMount", "mounted", "beforeUpdate", "updated",
-    "beforeUnmount", "unmounted", "beforeDestroy", "destroyed", "activated", "deactivated",
-    "errorCaptured", "renderTracked", "renderTriggered", "serverPrefetch",
+    "beforeCreate",
+    "created",
+    "beforeMount",
+    "mounted",
+    "beforeUpdate",
+    "updated",
+    "beforeUnmount",
+    "unmounted",
+    "beforeDestroy",
+    "destroyed",
+    "activated",
+    "deactivated",
+    "errorCaptured",
+    "renderTracked",
+    "renderTriggered",
+    "serverPrefetch",
 ];
 
 /// Flag likely typos in component option names.
