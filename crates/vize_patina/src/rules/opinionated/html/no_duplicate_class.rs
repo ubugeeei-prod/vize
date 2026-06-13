@@ -101,8 +101,7 @@ mod tests {
     #[test]
     fn test_valid_dynamic_class_ignored() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<div :class="['btn', 'btn']">x</div>"#, "test.vue");
+        let result = linter.lint_template(r#"<div :class="['btn', 'btn']">x</div>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
 
@@ -116,8 +115,7 @@ mod tests {
     #[test]
     fn test_invalid_two_distinct_duplicates() {
         let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<div class="a a b b">x</div>"#, "test.vue");
+        let result = linter.lint_template(r#"<div class="a a b b">x</div>"#, "test.vue");
         assert_eq!(result.warning_count, 2);
     }
 
