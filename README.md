@@ -103,6 +103,9 @@ Special thanks to:
   production adoption
   ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20),
   [write-up](https://www.n13u.dev/ja/blog/detail/nYZKQ3UmslmWfXaP)).
+- yamanoku for accessibility-focused feedback around Vize and for using the project in the Vue Fes
+  Japan speaker-site migration documented in the v-tokyo Meetup #25 LT notes
+  ([write-up](https://scrapbox.io/yamanoku/%E3%81%A8%E3%81%82%E3%82%8B%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8Ckingnize%E3%81%95%E3%82%8C%E3%82%8B%E3%81%BE%E3%81%A7%EF%BD%9ENuxt%E3%81%8B%E3%82%89vuerend_%26_Vize%E3%81%B8)).
 - [sevenc-nanashi](https://github.com/sevenc-nanashi) for using the
   [VOICEVOX](https://github.com/VOICEVOX/voicevox) editor (~26k lines of Vue across 128 SFCs) as a
   real-world target for improving compiler precision
