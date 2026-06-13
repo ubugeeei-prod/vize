@@ -1166,6 +1166,21 @@ const count = 1
 }
 
 #[test]
+fn test_type_check_recoverable_template_repair_keeps_dependent_diagnostics() {
+    let source = r#"<script setup lang="ts">
+const count = 1
+</script>
+<template>
+  <span />
+  {{ missing }}
+</template>"#;
+    let options = SfcTypeCheckOptions::new("test.vue");
+    let result = type_check_sfc(source, &options);
+
+    insta::assert_debug_snapshot!(stable_snapshot_result(result));
+}
+
+#[test]
 fn test_type_check_malformed_script_setup_reports_parse_error_without_noise() {
     let source = r#"<script setup lang="ts">
 const count =

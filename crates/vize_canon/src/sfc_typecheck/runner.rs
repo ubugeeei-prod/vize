@@ -117,32 +117,37 @@ fn type_check_sfc_impl(
     let (template_offset, template_ast) = if let Some(ref template) = descriptor.template {
         let template_offset = template.loc.start as u32;
         let (root, errors) = parse(&allocator, &template.content);
-        if errors.is_empty() {
-            (template_offset, Some(root))
-        } else {
-            has_template_parse_errors = true;
-            for error in errors {
-                let (start, end) = error
-                    .loc
-                    .as_ref()
-                    .map(|loc| {
-                        (
-                            template_offset + loc.start.offset,
-                            template_offset + loc.end.offset,
-                        )
-                    })
-                    .unwrap_or((template_offset, template_offset));
-                result.add_diagnostic(SfcTypeDiagnostic {
-                    severity: SfcTypeSeverity::Error,
-                    message: cstr!("Template parse error: {}", error.message),
-                    start,
-                    end: end.max(start + 1),
-                    code: Some("template-parse-error".into()),
-                    help: None,
-                    related: Vec::new(),
-                });
+        let mut hard_template_error = false;
+        for error in errors {
+            if error.is_recoverable() {
+                continue;
             }
+            hard_template_error = true;
+            let (start, end) = error
+                .loc
+                .as_ref()
+                .map(|loc| {
+                    (
+                        template_offset + loc.start.offset,
+                        template_offset + loc.end.offset,
+                    )
+                })
+                .unwrap_or((template_offset, template_offset));
+            result.add_diagnostic(SfcTypeDiagnostic {
+                severity: SfcTypeSeverity::Error,
+                message: cstr!("Template parse error: {}", error.message),
+                start,
+                end: end.max(start + 1),
+                code: Some("template-parse-error".into()),
+                help: None,
+                related: Vec::new(),
+            });
+        }
+        if hard_template_error {
+            has_template_parse_errors = true;
             (template_offset, None)
+        } else {
+            (template_offset, Some(root))
         }
     } else {
         (0, None)

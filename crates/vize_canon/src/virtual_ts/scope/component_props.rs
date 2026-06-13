@@ -198,6 +198,7 @@ pub(super) fn generate_component_props(
             summary,
             components_by_scope: &components_by_scope,
             children_map: ctx.children_map,
+            vfor_enclosing_guards: ctx.vfor_enclosing_guards,
             template_prop_names: ctx.template_prop_names,
             template_offset: ctx.template_offset,
         };
@@ -233,16 +234,26 @@ fn generate_closure_component_props_recursive(
 
     match scope.data() {
         ScopeData::VFor(data) => {
+            let enclosing_guard = ctx.vfor_enclosing_guards.get(&scope_id).map(String::as_str);
+            let (loop_indent, vfor_inner_indent) = if enclosing_guard.is_some() {
+                (cstr!("{indent}  "), cstr!("{inner_indent}  "))
+            } else {
+                (String::from(indent), inner_indent.clone())
+            };
+            if let Some(guard) = enclosing_guard {
+                append!(*ts, "{indent}if ({guard}) {{\n");
+            }
+
             append_v_for_comment(
                 ts,
-                indent,
+                &loop_indent,
                 "Component props in v-for scope",
                 data.value_alias.as_str(),
                 data.source.as_str(),
             );
             emit_v_for_loop_open(
                 ts,
-                indent,
+                &loop_indent,
                 data.value_alias.as_str(),
                 data.key_alias.as_deref(),
                 data.index_alias.as_deref(),
@@ -251,13 +262,13 @@ fn generate_closure_component_props_recursive(
 
             // Mark v-for variables as used to avoid TS6133
             for value in &data.value_bindings {
-                append!(*ts, "{inner_indent}void {value};\n");
+                append!(*ts, "{vfor_inner_indent}void {value};\n");
             }
             if let Some(ref key) = data.key_alias {
-                append!(*ts, "{inner_indent}void {key};\n");
+                append!(*ts, "{vfor_inner_indent}void {key};\n");
             }
             if let Some(ref index) = data.index_alias {
-                append!(*ts, "{inner_indent}void {index};\n");
+                append!(*ts, "{vfor_inner_indent}void {index};\n");
             }
 
             // Emit component prop checks for this scope
@@ -272,7 +283,7 @@ fn generate_closure_component_props_recursive(
                             idx,
                             ctx.template_prop_names,
                             ctx.template_offset,
-                            &inner_indent,
+                            &vfor_inner_indent,
                         )
                     );
                 }
@@ -291,15 +302,18 @@ fn generate_closure_component_props_recursive(
                                 mappings,
                                 ctx,
                                 child_scope,
-                                &inner_indent,
+                                &vfor_inner_indent,
                             )
                         );
                     }
                 }
             }
 
-            ts.push_str(indent);
+            ts.push_str(&loop_indent);
             ts.push_str("});\n");
+            if enclosing_guard.is_some() {
+                append!(*ts, "{indent}}}\n");
+            }
         }
         ScopeData::VSlot(data) => {
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");

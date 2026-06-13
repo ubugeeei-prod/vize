@@ -1134,8 +1134,7 @@ fn test_vfor_source_nested_in_vif_is_wrapped_for_narrowing() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
     let script = r#"const elems = { a: [1], b: ["a"] } as const;
-const key = "a" as "a" | "b";
-"#;
+const key = "a" as "a" | "b";"#;
     let template = r#"<div v-if="key === 'b'">
   <button v-for="value in elems[key]" :key="value">{{ value }}</button>
 </div>"#;
@@ -1149,22 +1148,9 @@ const key = "a" as "a" | "b";
     let summary = analyzer.finish();
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
-    let code = output.code.as_str();
-
-    let vfor_pos = code
-        .find("__vForList(elems[key])")
-        .expect("expected the v-for loop over `elems[key]` to be emitted");
-
-    // The enclosing v-if guard must open *before* the v-for source is evaluated.
-    let guard_open = code[..vfor_pos]
-        .rfind("if ((key === 'b')) {")
-        .expect("expected the enclosing v-if guard to wrap the v-for loop");
-
-    // Nothing should close that `if` block between the guard open and the loop.
-    let between = &code[guard_open..vfor_pos];
-    assert!(
-        !between.contains("\n}\n") && !between.contains("});\n"),
-        "v-for source `elems[key]` must be emitted inside the enclosing `if (key === 'b')` block, got:\n{code}"
+    assert_virtual_ts_snapshot(
+        "virtual_ts_vfor_source_nested_in_vif_is_wrapped_for_narrowing",
+        output.code.as_str(),
     );
 }
 
@@ -1177,8 +1163,7 @@ fn test_vfor_with_nested_vif_in_body_is_not_wrapped() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
     let script = r#"const items = [1, 2, 3];
-const show = true;
-"#;
+const show = true;"#;
     let template = r#"<ul>
   <li v-for="item in items" :key="item">
     <span v-if="show">{{ item }}</span>
@@ -1194,29 +1179,9 @@ const show = true;
     let summary = analyzer.finish();
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
-    let code = output.code.as_str();
-
-    let vfor_pos = code
-        .find("__vForList(items)")
-        .expect("expected the v-for loop over `items` to be emitted");
-
-    // The line that opens the loop must not be wrapped: no `if (` should open on
-    // the v-for comment / loop line. Look at the line immediately preceding the
-    // loop's `__vForList` to ensure it is the v-for comment, not an `if (`.
-    let line_start = code[..vfor_pos].rfind('\n').map_or(0, |idx| idx + 1);
-    let loop_indent = &code[line_start..vfor_pos];
-    assert!(
-        loop_indent.trim().is_empty(),
-        "v-for loop should start a line, got prefix {loop_indent:?}\n{code}"
-    );
-    // The nested v-if narrowing for `show` must still appear, but only *inside*
-    // the forEach body (after the loop opens), never wrapping the loop itself.
-    let show_guard = code
-        .find("if ((show))")
-        .expect("expected the nested v-if `show` narrowing inside the loop body");
-    assert!(
-        show_guard > vfor_pos,
-        "nested v-if `show` must be emitted inside the loop body, not around it\n{code}"
+    assert_virtual_ts_snapshot(
+        "virtual_ts_vfor_with_nested_vif_in_body_is_not_wrapped",
+        output.code.as_str(),
     );
 }
 
@@ -1879,6 +1844,39 @@ const todos = ref([{ id: 1, text: 'Hello' }])
 
     assert_virtual_ts_snapshot(
         "virtual_ts_vfor_component_props_in_scope",
+        output.code.as_str(),
+    );
+}
+
+#[test]
+fn test_vfor_component_props_source_nested_in_vif_is_wrapped_for_narrowing() {
+    // Regression for #1565: component prop checks have their own v-for loop.
+    // That loop must receive the same enclosing v-if wrapper as template
+    // expression checks so the v-for source (`elems[key]`) is evaluated under
+    // the narrowed `key === 'b'` type.
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import Test from "./test.vue";
+const elems = { a: [1], b: ["a"] } as const;
+const key = "a" as "a" | "b";"#;
+    let template = r#"<div v-if="key === 'b'">
+  <button v-for="value in elems[key]" :key="value">
+    <Test :value1="value" />
+  </button>
+</div>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert_virtual_ts_snapshot(
+        "virtual_ts_vfor_component_props_source_nested_in_vif_is_wrapped_for_narrowing",
         output.code.as_str(),
     );
 }

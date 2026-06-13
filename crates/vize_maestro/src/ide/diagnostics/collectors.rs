@@ -335,6 +335,12 @@ impl DiagnosticService {
                     line_index.line_col(absolute_start_offset as usize);
                 let (end_line, end_character) = line_index.line_col(absolute_end_offset as usize);
 
+                let severity = if error.is_recoverable() {
+                    DiagnosticSeverity::WARNING
+                } else {
+                    DiagnosticSeverity::ERROR
+                };
+
                 Some(Diagnostic {
                     range: Range {
                         start: Position {
@@ -346,7 +352,7 @@ impl DiagnosticService {
                             character: end_character,
                         },
                     },
-                    severity: Some(DiagnosticSeverity::ERROR),
+                    severity: Some(severity),
                     code: Some(NumberOrString::Number(error.code as i32)),
                     source: Some(sources::TEMPLATE_PARSER.to_string()),
                     #[allow(clippy::disallowed_methods)]

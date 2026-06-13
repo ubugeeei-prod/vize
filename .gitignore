@@ -44,6 +44,7 @@ zed-vize-extension.tar.gz
 # Benchmark input/output files
 bench/__in__/
 bench/__out__/
+dialect-guard-out/
 
 # Logs
 *.log

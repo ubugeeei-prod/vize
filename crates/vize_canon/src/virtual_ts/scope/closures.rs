@@ -68,6 +68,26 @@ pub(crate) fn generate_scope_closures(
             children_map
         });
 
+    let vfor_enclosing_guards: FxHashMap<u32, String> =
+        profile!("canon.virtual_ts.vfor_enclosing_guards", {
+            if !check_options.check_template_bindings {
+                FxHashMap::default()
+            } else {
+                summary
+                    .scopes
+                    .iter()
+                    .filter(|scope| matches!(scope.kind, ScopeKind::VFor))
+                    .filter_map(|scope| {
+                        let scope_id = scope.id.as_u32();
+                        expressions_by_scope
+                            .get(&scope_id)
+                            .and_then(|exprs| common_vif_guard_prefix(exprs))
+                            .map(|guard| (scope_id, guard))
+                    })
+                    .collect()
+            }
+        });
+
     // Determine which scopes are nested inside a closure scope (VFor/VSlot).
     // These will be generated recursively inside their parent, not at top level.
     let nested_scope_ids: FxHashSet<ScopeId> =
@@ -167,6 +187,7 @@ pub(crate) fn generate_scope_closures(
                 &ComponentPropsContext {
                     summary,
                     children_map: &children_map,
+                    vfor_enclosing_guards: &vfor_enclosing_guards,
                     template_prop_names,
                     template_offset,
                     options: virtual_ts_options,

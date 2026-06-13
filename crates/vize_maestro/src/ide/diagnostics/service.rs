@@ -128,13 +128,13 @@ impl DiagnosticService {
         // lint/type/Corsa diagnostics.
         let script_diags =
             Self::collect_script_diagnostics(uri, &content, &descriptor, &line_index);
-        let has_script_parse_error = !script_diags.is_empty();
+        let has_script_parse_error = has_error_severity_diagnostic(&script_diags);
         tracing::info!("collect: script parser diagnostics: {}", script_diags.len());
         diagnostics.extend(script_diags);
 
         let template_diags =
             Self::collect_template_diagnostics(uri, &content, &descriptor, &line_index);
-        let has_template_parse_error = !template_diags.is_empty();
+        let has_template_parse_error = has_error_severity_diagnostic(&template_diags);
         tracing::info!(
             "collect: template parser diagnostics: {}",
             template_diags.len()
@@ -270,10 +270,12 @@ impl DiagnosticService {
         let Ok(descriptor) = Self::parse_sfc_for_collect(uri, &content) else {
             return diagnostics;
         };
-        let has_block_parse_error =
-            !Self::collect_script_diagnostics(uri, &content, &descriptor, &line_index).is_empty()
-                || !Self::collect_template_diagnostics(uri, &content, &descriptor, &line_index)
-                    .is_empty();
+        let script_diags =
+            Self::collect_script_diagnostics(uri, &content, &descriptor, &line_index);
+        let template_diags =
+            Self::collect_template_diagnostics(uri, &content, &descriptor, &line_index);
+        let has_block_parse_error = has_error_severity_diagnostic(&script_diags)
+            || has_error_severity_diagnostic(&template_diags);
         if has_block_parse_error {
             return diagnostics;
         }
@@ -387,6 +389,12 @@ impl DiagnosticService {
             ..Default::default()
         }
     }
+}
+
+fn has_error_severity_diagnostic(diagnostics: &[Diagnostic]) -> bool {
+    diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.severity == Some(DiagnosticSeverity::ERROR))
 }
 
 /// Build the hint diagnostic surfaced when LSP type checking is requested

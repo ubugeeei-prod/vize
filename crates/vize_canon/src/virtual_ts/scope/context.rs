@@ -31,6 +31,7 @@ pub(crate) struct VForPropsContext<'a> {
     pub(crate) summary: &'a Croquis,
     pub(crate) components_by_scope: &'a FxHashMap<u32, Vec<(usize, &'a ComponentUsage)>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
+    pub(crate) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
 }
@@ -53,6 +54,7 @@ pub(super) struct EventHandlerExprContext<'a> {
 pub(super) struct ComponentPropsContext<'a> {
     pub(super) summary: &'a Croquis,
     pub(super) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
+    pub(super) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(super) template_prop_names: &'a FxHashSet<String>,
     pub(super) template_offset: u32,
     pub(super) options: &'a VirtualTsOptions,

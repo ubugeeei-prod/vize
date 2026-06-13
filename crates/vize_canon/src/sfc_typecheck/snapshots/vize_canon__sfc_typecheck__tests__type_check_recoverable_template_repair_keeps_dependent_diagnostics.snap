@@ -1,0 +1,27 @@
+---
+source: crates/vize_canon/src/sfc_typecheck/tests.rs
+expression: stable_snapshot_result(result)
+---
+SfcTypeCheckResult {
+    diagnostics: [
+        SfcTypeDiagnostic {
+            severity: Error,
+            message: "Undefined reference 'missing' in template expression",
+            start: 78,
+            end: 85,
+            code: Some(
+                "undefined-binding",
+            ),
+            help: Some(
+                "Make sure 'missing' is defined in script setup or imported",
+            ),
+            related: [],
+        },
+    ],
+    virtual_ts: None,
+    error_count: 1,
+    warning_count: 0,
+    analysis_time_ms: Some(
+        0.0,
+    ),
+}

@@ -15,6 +15,7 @@ const IGNORED_DIRS = new Set([
   ".vite",
   "coverage",
   "dist",
+  "dialect-guard-out",
   "node_modules",
   "playwright-report",
   "target",

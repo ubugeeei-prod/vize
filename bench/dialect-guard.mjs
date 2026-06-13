@@ -11,9 +11,11 @@
  *      the ON binary must produce exactly the Vue 3 output; any divergence means
  *      legacy code leaked into the default path.
  *
- *   2. A/B timing — time the OFF vs ON binary on the corpus and fail if the ON
- *      build regresses the Vue 3 hot path past `--threshold` (default 2%). The
- *      feature is meant to add code behind a flag, not slow the default binary.
+ *   2. Paired A/B timing — time the OFF vs ON binary on the corpus in
+ *      alternating pairs and fail if the ON build regresses the Vue 3 hot path
+ *      past `--threshold` (default 2%) and the absolute paired delta is at
+ *      least `--min-regression-ms` (default 5ms). The feature is meant to add
+ *      code behind a flag, not slow the default binary.
  *
  * HONEST STATUS: the `legacy` feature is still largely a stub today, so the
  * codegen-identity assertion is currently expected to pass trivially and the A/B
@@ -32,6 +34,7 @@ import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
 
 const DEFAULT_THRESHOLD_PERCENT = 2;
+const DEFAULT_MIN_REGRESSION_MS = 5;
 const DEFAULT_RUNS = 5;
 const DEFAULT_WARMUPS = 1;
 
@@ -75,6 +78,11 @@ function parseNonNegativeInt(value, fallback) {
 function parsePositiveFloat(value, fallback) {
   const parsed = Number.parseFloat(value ?? "");
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseNonNegativeFloat(value, fallback) {
+  const parsed = Number.parseFloat(value ?? "");
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
 function median(values) {
@@ -177,17 +185,52 @@ function compileCorpus(bin, inputDir, outDir) {
   });
 }
 
-function timeCorpus(bin, inputDir, outDir, { runs, warmups }) {
-  const samples = [];
+function timeCompile(bin, inputDir, outDir) {
+  const start = performance.now();
+  compileCorpus(bin, inputDir, outDir);
+  return performance.now() - start;
+}
+
+function timeCorpusPair(offBin, onBin, inputDir, { offOut, onOut, runs, warmups }) {
+  const offSamples = [];
+  const onSamples = [];
+  const ratios = [];
+  const deltas = [];
+
   for (let i = 0; i < warmups; i++) {
-    compileCorpus(bin, inputDir, outDir);
+    if (i % 2 === 0) {
+      compileCorpus(offBin, inputDir, offOut);
+      compileCorpus(onBin, inputDir, onOut);
+    } else {
+      compileCorpus(onBin, inputDir, onOut);
+      compileCorpus(offBin, inputDir, offOut);
+    }
   }
+
   for (let i = 0; i < runs; i++) {
-    const start = performance.now();
-    compileCorpus(bin, inputDir, outDir);
-    samples.push(performance.now() - start);
+    let offMs;
+    let onMs;
+    if (i % 2 === 0) {
+      offMs = timeCompile(offBin, inputDir, offOut);
+      onMs = timeCompile(onBin, inputDir, onOut);
+    } else {
+      onMs = timeCompile(onBin, inputDir, onOut);
+      offMs = timeCompile(offBin, inputDir, offOut);
+    }
+    offSamples.push(offMs);
+    onSamples.push(onMs);
+    if (offMs > 0) {
+      ratios.push(onMs / offMs);
+    }
+    deltas.push(onMs - offMs);
   }
-  return samples;
+
+  return {
+    offSamples,
+    onSamples,
+    ratio: ratios.length > 0 ? median(ratios) : Number.NaN,
+    deltaMs: deltas.length > 0 ? median(deltas) : Number.NaN,
+  };
 }
 
 export function main(argv = process.argv.slice(2)) {
@@ -197,6 +240,10 @@ export function main(argv = process.argv.slice(2)) {
   const onBin = resolve(requireArg(args, "on-bin"));
   const outRoot = resolve(args["out-dir"] ?? "dialect-guard-out");
   const threshold = parsePositiveFloat(args.threshold, DEFAULT_THRESHOLD_PERCENT);
+  const minRegressionMs = parseNonNegativeFloat(
+    args["min-regression-ms"],
+    DEFAULT_MIN_REGRESSION_MS,
+  );
   const runs = parsePositiveInt(args.runs, DEFAULT_RUNS);
   const warmups = parseNonNegativeInt(args.warmups, DEFAULT_WARMUPS);
 
@@ -222,19 +269,26 @@ export function main(argv = process.argv.slice(2)) {
   const identical = differences.length === 0;
 
   // --- 2. A/B timing -------------------------------------------------------
-  const offSamples = timeCorpus(offBin, inputDir, offOut, { runs, warmups });
-  const onSamples = timeCorpus(onBin, inputDir, onOut, { runs, warmups });
+  const { offSamples, onSamples, ratio, deltaMs } = timeCorpusPair(offBin, onBin, inputDir, {
+    offOut,
+    onOut,
+    runs,
+    warmups,
+  });
   const offMs = median(offSamples);
   const onMs = median(onSamples);
-  const ratio = offMs === 0 ? Number.NaN : onMs / offMs;
   const changePercent = Number.isFinite(ratio) ? (ratio - 1) * 100 : Number.NaN;
-  const regressed = Number.isFinite(changePercent) && changePercent >= threshold;
+  const regressed =
+    Number.isFinite(changePercent) &&
+    Number.isFinite(deltaMs) &&
+    changePercent >= threshold &&
+    deltaMs >= minRegressionMs;
 
   const lines = [];
   lines.push("## Dialect Guard (legacy feature)");
   lines.push("");
   lines.push(
-    `Vue 3 corpus compiled with the \`legacy\` feature OFF vs ON. Codegen must stay byte-identical and the default path must not regress past ${threshold}%.`,
+    `Vue 3 corpus compiled with the \`legacy\` feature OFF vs ON. Codegen must stay byte-identical and the default path must not regress past ${threshold}% with an absolute paired delta of ${minRegressionMs}ms or more.`,
   );
   lines.push("");
   lines.push("| Check | Result |");
@@ -243,9 +297,9 @@ export function main(argv = process.argv.slice(2)) {
   const offDigest = offHash.digest.slice(0, 12);
   lines.push(`| Codegen identity (OFF digest \`${offDigest}\`) | ${identityCell} |`);
   const deltaCell = Number.isFinite(changePercent)
-    ? `${changePercent >= 0 ? "+" : ""}${changePercent.toFixed(2)}%`
+    ? `${changePercent >= 0 ? "+" : ""}${changePercent.toFixed(2)}% / ${deltaMs >= 0 ? "+" : ""}${deltaMs.toFixed(1)}ms`
     : "n/a";
-  const timingLabel = `A/B timing (OFF ${offMs.toFixed(1)}ms to ON ${onMs.toFixed(1)}ms)`;
+  const timingLabel = `Paired A/B timing (OFF median ${offMs.toFixed(1)}ms to ON median ${onMs.toFixed(1)}ms)`;
   lines.push(`| ${timingLabel} | ${deltaCell} ${regressed ? "regression" : "ok"} |`);
   if (!identical) {
     lines.push("");
@@ -270,7 +324,7 @@ export function main(argv = process.argv.slice(2)) {
     process.exitCode = 1;
   } else if (regressed) {
     console.error(
-      `Dialect guard failed: legacy ON regressed the Vue 3 compile path by ${changePercent.toFixed(2)}% (threshold ${threshold}%).`,
+      `Dialect guard failed: legacy ON regressed the Vue 3 compile path by ${changePercent.toFixed(2)}% / ${deltaMs.toFixed(1)}ms (threshold ${threshold}% and ${minRegressionMs}ms).`,
     );
     process.exitCode = 1;
   }

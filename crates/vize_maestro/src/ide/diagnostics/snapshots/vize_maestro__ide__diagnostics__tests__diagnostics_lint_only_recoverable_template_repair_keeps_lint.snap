@@ -1,0 +1,24 @@
+---
+source: crates/vize_maestro/src/ide/diagnostics/tests.rs
+expression: diagnostic_snapshots(diagnostics)
+---
+[
+    DiagnosticSnapshot {
+        source: Some(
+            "vize/lint",
+        ),
+        severity: Some(
+            "warning",
+        ),
+        code: Some(
+            "vue/sfc-element-order",
+        ),
+        message: "<script> should come before <template>\n\nHelp: Recommended order: <script> -> <template> -> <style>",
+        range: (
+            3,
+            0,
+            5,
+            9,
+        ),
+    },
+]

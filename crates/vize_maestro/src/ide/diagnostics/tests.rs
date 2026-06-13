@@ -6,6 +6,16 @@ use super::{DiagnosticBuilder, DiagnosticService, Severity, offset_to_line_col, 
 use crate::server::ServerState;
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Url};
 
+#[derive(Debug)]
+#[allow(dead_code)]
+struct DiagnosticSnapshot {
+    source: Option<String>,
+    severity: Option<&'static str>,
+    code: Option<String>,
+    message: String,
+    range: (u32, u32, u32, u32),
+}
+
 fn state_with_lsp_diagnostics(lint: bool, typecheck: bool) -> ServerState {
     let state = ServerState::new();
     state.apply_lsp_initialization_options(Some(&serde_json::json!({
@@ -21,6 +31,50 @@ fn state_with_ecosystem_diagnostics() -> ServerState {
         "ecosystem": true
     })));
     state
+}
+
+fn diagnostic_snapshots(diagnostics: &[Diagnostic]) -> Vec<DiagnosticSnapshot> {
+    diagnostics
+        .iter()
+        .map(|diagnostic| DiagnosticSnapshot {
+            source: diagnostic.source.clone(),
+            severity: severity_label(diagnostic.severity),
+            code: diagnostic.code.as_ref().map(|code| match code {
+                NumberOrString::Number(code) => code.to_string(),
+                NumberOrString::String(code) => code.clone(),
+            }),
+            message: diagnostic.message.clone(),
+            range: (
+                diagnostic.range.start.line,
+                diagnostic.range.start.character,
+                diagnostic.range.end.line,
+                diagnostic.range.end.character,
+            ),
+        })
+        .collect()
+}
+
+fn severity_label(severity: Option<DiagnosticSeverity>) -> Option<&'static str> {
+    let severity = severity?;
+    if severity == DiagnosticSeverity::ERROR {
+        Some("error")
+    } else if severity == DiagnosticSeverity::WARNING {
+        Some("warning")
+    } else if severity == DiagnosticSeverity::INFORMATION {
+        Some("information")
+    } else if severity == DiagnosticSeverity::HINT {
+        Some("hint")
+    } else {
+        Some("unknown")
+    }
+}
+
+fn assert_diagnostics_snapshot(name: &str, diagnostics: &[Diagnostic]) {
+    insta::with_settings!({
+        snapshot_path => "snapshots"
+    }, {
+        insta::assert_debug_snapshot!(name, diagnostic_snapshots(diagnostics));
+    });
 }
 
 #[test]
@@ -781,6 +835,59 @@ fn collect_lint_only_short_circuits_on_parse_error() {
 
     assert_eq!(lint_only, lint_subset(&full));
     assert!(lint_only.is_empty());
+}
+
+#[test]
+fn collect_keeps_dependent_diagnostics_after_recoverable_template_repair() {
+    let state = state_with_lsp_diagnostics(true, true);
+    let uri = Url::parse("file:///RecoverableTemplateRepair.vue").unwrap();
+    state.documents.open(
+        uri.clone(),
+        r#"<template>
+  <span />
+  {{ missing }}
+</template>
+<script setup lang="ts">
+const count = 1
+</script>
+"#
+        .to_string(),
+        1,
+        "vue".to_string(),
+    );
+
+    let diagnostics = DiagnosticService::collect(&state, &uri);
+
+    assert_diagnostics_snapshot(
+        "diagnostics_recoverable_template_repair_keeps_dependent",
+        &diagnostics,
+    );
+}
+
+#[test]
+fn collect_lint_only_keeps_lint_after_recoverable_template_repair() {
+    let state = state_with_lsp_diagnostics(true, true);
+    let uri = Url::parse("file:///RecoverableTemplateRepairLintOnly.vue").unwrap();
+    state.documents.open(
+        uri.clone(),
+        r#"<template>
+  <span />
+</template>
+<script setup lang="ts">
+const count = 1;
+</script>
+"#
+        .to_string(),
+        1,
+        "vue".to_string(),
+    );
+
+    let diagnostics = DiagnosticService::collect_lint_only(&state, &uri);
+
+    assert_diagnostics_snapshot(
+        "diagnostics_lint_only_recoverable_template_repair_keeps_lint",
+        &diagnostics,
+    );
 }
 
 #[test]

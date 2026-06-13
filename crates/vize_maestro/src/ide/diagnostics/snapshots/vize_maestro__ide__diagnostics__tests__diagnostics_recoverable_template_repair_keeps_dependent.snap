@@ -1,0 +1,60 @@
+---
+source: crates/vize_maestro/src/ide/diagnostics/tests.rs
+expression: diagnostic_snapshots(diagnostics)
+---
+[
+    DiagnosticSnapshot {
+        source: Some(
+            "vize/template",
+        ),
+        severity: Some(
+            "warning",
+        ),
+        code: Some(
+            "1000",
+        ),
+        message: "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+        range: (
+            1,
+            2,
+            1,
+            10,
+        ),
+    },
+    DiagnosticSnapshot {
+        source: Some(
+            "vize/lint",
+        ),
+        severity: Some(
+            "warning",
+        ),
+        code: Some(
+            "vue/sfc-element-order",
+        ),
+        message: "<script> should come before <template>\n\nHelp: Recommended order: <script> -> <template> -> <style>",
+        range: (
+            4,
+            0,
+            6,
+            9,
+        ),
+    },
+    DiagnosticSnapshot {
+        source: Some(
+            "vize/types",
+        ),
+        severity: Some(
+            "error",
+        ),
+        code: Some(
+            "undefined-binding",
+        ),
+        message: "Undefined reference 'missing' in template expression\n\nHelp: Make sure 'missing' is defined in script setup or imported",
+        range: (
+            2,
+            5,
+            2,
+            12,
+        ),
+    },
+]

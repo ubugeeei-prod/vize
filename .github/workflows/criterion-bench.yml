@@ -32,7 +32,8 @@ env:
   # a hard gate that fails on a +10% median regression, no code change needed.
   CRITERION_AB_THRESHOLD: ""
   # The dialect-guard corpus is small so the legacy OFF/ON binaries compile it
-  # quickly; identity is exact, and the A/B timing tolerates a 2% delta.
+  # quickly; identity is exact, and the A/B timing tolerates a 2% delta once the
+  # paired median delta is large enough to exceed CI millisecond-scale jitter.
   DIALECT_GUARD_FILE_COUNT: 400
   DIALECT_GUARD_THRESHOLD_PERCENT: 2
 
