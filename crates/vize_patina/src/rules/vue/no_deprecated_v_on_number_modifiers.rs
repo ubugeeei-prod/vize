@@ -174,10 +174,8 @@ mod tests {
         // petite-vue still understands numeric keyCode modifiers; never flag it
         // there.
         let linter = create_linter();
-        let result = linter.lint_standalone_html(
-            &petite_doc(r#"<input @keyup.13="submit">"#),
-            "index.html",
-        );
+        let result =
+            linter.lint_standalone_html(&petite_doc(r#"<input @keyup.13="submit">"#), "index.html");
         assert_eq!(result.error_count, 0);
     }
 }
