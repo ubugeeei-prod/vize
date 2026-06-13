@@ -57,6 +57,7 @@ export const LINT_RULE_NAMES = [
   "html/deprecated-element",
   "html/id-duplication",
   "html/no-consecutive-br",
+  "html/no-duplicate-class",
   "html/no-duplicate-dt",
   "html/no-empty-palpable-content",
   "html/require-datetime",
