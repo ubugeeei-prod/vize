@@ -1,0 +1,349 @@
+///|
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/core/string",
+  "moonbitlang/async@0.19.0",
+  "moonbitlang/async@0.19.0/process",
+  "moonbitlang/x@0.4.43/fs" @xfs,
+  "moonbitlang/x@0.4.43/sys",
+}
+
+///|
+struct SourceFile {
+  path : String
+  lines : Int
+}
+
+///|
+struct CheckFailure {
+  path : String
+  lines : Int
+  base_lines : Int?
+  reason : String
+}
+
+///|
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() { args.push(raw[i]) }
+  args
+}
+
+///|
+fn parse_int(value : String) -> Int? {
+  try {
+    Some(@string.parse_int(value))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+fn read_file_to_string(path : String) -> String? {
+  try {
+    Some(@xfs.read_file_to_string(path))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+fn line_count(content : String) -> Int {
+  if content == "" {
+    return 0
+  }
+  let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
+  if content.has_suffix("\n") {
+    lines.length() - 1
+  } else {
+    lines.length()
+  }
+}
+
+///|
+fn has_any_suffix(path : String, suffixes : Array[String]) -> Bool {
+  for suffix in suffixes {
+    if path.has_suffix(suffix) {
+      return true
+    }
+  }
+  false
+}
+
+///|
+fn has_path_segment(path : String, segment : String) -> Bool {
+  path.has_prefix(segment + "/") || path.contains("/" + segment + "/")
+}
+
+///|
+fn is_source_path(path : String) -> Bool {
+  has_any_suffix(
+    path,
+    [
+      ".rs", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts",
+      ".cts", ".vue", ".css", ".scss", ".html", ".pkl", ".mbt", ".mbtx",
+      ".scm", ".lua", ".json", ".toml", ".yaml", ".yml", ".md",
+    ],
+  )
+}
+
+///|
+fn is_excluded_path(path : String) -> Bool {
+  path.has_suffix("Cargo.lock") ||
+  path.has_suffix("pnpm-lock.yaml") ||
+  path.has_suffix(".lock") ||
+  path.contains(".min.") ||
+  has_path_segment(path, "_fixtures") || has_path_segment(path, "__fixtures__") ||
+  has_path_segment(path, "fixtures") || has_path_segment(path, "__snapshots__") ||
+  has_path_segment(path, "snapshots") || has_path_segment(path, "dist") ||
+  has_path_segment(path, "target") || has_path_segment(path, "node_modules") ||
+  has_path_segment(path, "vendor") || has_path_segment(path, "generated") ||
+  has_path_segment(path, "__generated__") ||
+  has_path_segment(path, "playwright-report") || has_path_segment(path, "coverage")
+}
+
+///|
+fn compare_source_files(a : SourceFile, b : SourceFile) -> Int {
+  if a.lines == b.lines {
+    a.path.lexical_compare(b.path)
+  } else if a.lines > b.lines {
+    -1
+  } else {
+    1
+  }
+}
+
+///|
+fn compare_failures(a : CheckFailure, b : CheckFailure) -> Int {
+  if a.lines == b.lines {
+    a.path.lexical_compare(b.path)
+  } else if a.lines > b.lines {
+    -1
+  } else {
+    1
+  }
+}
+
+///|
+fn collect_current_files(paths : Array[String]) -> Array[SourceFile] {
+  let files = []
+  for path in paths {
+    if !is_source_path(path) || is_excluded_path(path) {
+      continue
+    }
+    match read_file_to_string(path) {
+      Some(content) =>
+        files.push(SourceFile::{ path, lines: line_count(content) })
+      None => ()
+    }
+  }
+  files.sort_by(compare_source_files)
+  files
+}
+
+///|
+async fn tracked_paths() -> Array[String]? {
+  let (exit_code, output) = @process.collect_stdout("git", ["ls-files"])
+  if exit_code != 0 {
+    return None
+  }
+  Some(output.text().split("\n").map(view => view.to_owned()).collect())
+}
+
+///|
+async fn git_ref_exists(ref_name : String) -> Bool {
+  if ref_name == "" {
+    return false
+  }
+  let (exit_code, _, _) = @process.collect_output(
+    "git",
+    ["rev-parse", "--verify", "\{ref_name}^{commit}"],
+  )
+  exit_code == 0
+}
+
+///|
+async fn base_file_lines(base_ref : String, path : String) -> Int? {
+  let (exit_code, output) = @process.collect_stdout("git", ["show", "\{base_ref}:\{path}"])
+  if exit_code != 0 {
+    return None
+  }
+  Some(line_count(output.text()))
+}
+
+///|
+async fn collect_failures(
+  files : Array[SourceFile],
+  max_lines : Int,
+  base_ref : String,
+) -> Array[CheckFailure] {
+  let failures = []
+  for file in files {
+    if file.lines <= max_lines {
+      continue
+    }
+    let base_lines = base_file_lines(base_ref, file.path)
+    match base_lines {
+      None =>
+        failures.push(
+          CheckFailure::{
+            path: file.path,
+            lines: file.lines,
+            base_lines,
+            reason: "new file exceeds limit",
+          },
+        )
+      Some(lines) =>
+        if lines <= max_lines {
+          failures.push(
+            CheckFailure::{
+              path: file.path,
+              lines: file.lines,
+              base_lines,
+              reason: "crossed limit",
+            },
+          )
+        } else if file.lines > lines {
+          failures.push(
+            CheckFailure::{
+              path: file.path,
+              lines: file.lines,
+              base_lines,
+              reason: "over-limit file grew",
+            },
+          )
+        }
+    }
+  }
+  failures.sort_by(compare_failures)
+  failures
+}
+
+///|
+fn print_inventory(files : Array[SourceFile], max_lines : Int, limit : Int) -> Unit {
+  let over_limit = files.filter(file => file.lines > max_lines)
+  println("Source files scanned: \{files.length()}")
+  println("Files over \{max_lines} lines: \{over_limit.length()}")
+  println("")
+  println("| Lines | Path |")
+  println("| ---: | --- |")
+  let mut printed = 0
+  for file in over_limit {
+    if printed >= limit {
+      break
+    }
+    println("| \{file.lines} | `\{file.path}` |")
+    printed = printed + 1
+  }
+}
+
+///|
+fn print_failures(failures : Array[CheckFailure]) -> Unit {
+  println("| Lines | Base | Reason | Path |")
+  println("| ---: | ---: | --- | --- |")
+  for failure in failures {
+    let base = match failure.base_lines {
+      Some(lines) => "\{lines}"
+      None => "-"
+    }
+    println("| \{failure.lines} | \{base} | \{failure.reason} | `\{failure.path}` |")
+  }
+}
+
+///|
+async fn run_app() -> Int {
+  let args = cli_args()
+  let mut max_lines = 350
+  let mut limit = 50
+  let mut check = false
+  let mut base_ref = ""
+  let mut i = 0
+  while i < args.length() {
+    match args[i] {
+      "--check" => check = true
+      "--max-lines" => {
+        guard i + 1 < args.length() else {
+          println("Missing value for --max-lines")
+          return 1
+        }
+        max_lines = match parse_int(args[i + 1]) {
+          Some(value) => value
+          None => {
+            println("Invalid --max-lines value: \{args[i + 1]}")
+            return 1
+          }
+        }
+        i = i + 1
+      }
+      "--limit" => {
+        guard i + 1 < args.length() else {
+          println("Missing value for --limit")
+          return 1
+        }
+        limit = match parse_int(args[i + 1]) {
+          Some(value) => value
+          None => {
+            println("Invalid --limit value: \{args[i + 1]}")
+            return 1
+          }
+        }
+        i = i + 1
+      }
+      "--base-ref" => {
+        guard i + 1 < args.length() else {
+          println("Missing value for --base-ref")
+          return 1
+        }
+        base_ref = args[i + 1]
+        i = i + 1
+      }
+      "--help" => {
+        println(
+          "Usage: moon run --target native - -- [--check --base-ref <ref>] [--max-lines 350] [--limit 50] < tools/moon/scripts/source_file_lengths.mbtx",
+        )
+        return 0
+      }
+      value => {
+        println("Unknown argument: \{value}")
+        return 1
+      }
+    }
+    i = i + 1
+  }
+
+  let paths = match tracked_paths() {
+    Some(paths) => paths
+    None => {
+      println("Failed to read tracked files with git ls-files")
+      return 1
+    }
+  }
+  let files = collect_current_files(paths)
+  print_inventory(files, max_lines, limit)
+
+  if !check {
+    return 0
+  }
+  if !(git_ref_exists(base_ref)) {
+    println("")
+    println("No comparable base ref found; inventory completed without enforcing growth.")
+    return 0
+  }
+
+  let failures = collect_failures(files, max_lines, base_ref)
+  println("")
+  println("Compared with \{base_ref}.")
+  if failures.is_empty() {
+    println("No new or grown files exceed \{max_lines} lines.")
+    return 0
+  }
+  println("Files requiring action:")
+  print_failures(failures)
+  1
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

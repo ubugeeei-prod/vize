@@ -91,6 +91,24 @@ For language-facing work, follow the evidence matrix in
 [Language Engineering Practices](./language-engineering-practices.md). For crate responsibilities
 and package mapping, use the [Crate Reference](./crates.md).
 
+## Source Length
+
+Aim to keep handwritten source files at 350 lines or less. The repository still has historical
+exceptions, so the first guard is incremental: a pull request should not add a new over-limit file,
+push an under-limit file past the limit, or grow an existing over-limit file.
+
+Run the inventory locally with:
+
+```sh
+vp run --workspace-root source:lengths
+```
+
+The `test:scripts` GitHub Actions job runs the same MoonBit tool in check mode against the pull
+request base commit. Generated files, snapshots, fixtures, lockfiles, vendor output, coverage output,
+and build directories are excluded from the source inventory. When an existing exception needs work,
+prefer splitting by ownership boundary first: helpers, fixtures, snapshots, and command handlers
+usually make better extraction targets than shared data structures.
+
 ## Reading Generated Output
 
 Compiler and tool changes are reviewed through generated artifacts. Treat these outputs as the

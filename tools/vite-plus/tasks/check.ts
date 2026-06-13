@@ -8,6 +8,7 @@ import {
 import {
   defineTasks,
   localVp,
+  moonScript,
   noCacheTask,
   runInDirectory,
   runInPackages,
@@ -69,6 +70,7 @@ export const checkTasks = defineTasks({
   "check:ci:vize-apps": noCacheTask(ciVizeAppCheckCommand),
   // v1 alpha release branches keep a zero-warning budget for repo-wide JS/TS checks.
   "check:repo": noCacheTask(strictRepoCheckCommand),
+  "source:lengths": noCacheTask(moonScript("source_file_lengths")),
   // The oxlint example intentionally exits non-zero for its default lint script,
   // so CI checks every package except that runnable failure-case fixture.
   "check:ci": noCacheTask(`${runTask("check:repo")} && ${ciPackageCheckCommand}`),
