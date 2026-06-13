@@ -67,6 +67,7 @@ export const LINT_RULE_NAMES = [
   "petite-vue/valid-v-scope",
   "script/no-arrow-functions-in-watch",
   "script/no-async-in-computed",
+  "script/no-boolean-default",
   "script/no-deep-destructure-in-props",
   "script/no-deprecated-dollar-listeners-api",
   "script/no-dupe-keys",

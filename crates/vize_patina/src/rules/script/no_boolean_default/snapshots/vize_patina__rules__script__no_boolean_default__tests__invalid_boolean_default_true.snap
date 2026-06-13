@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_boolean_default/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-boolean-default",
+        severity: Warning,
+        message: "Unexpected default on a Boolean prop.",
+        start: 60,
+        end: 73,
+        help: Some(
+            "HTML boolean attributes and Vue Boolean props already default to `false`; remove this `default` (an explicit `default: true` is especially confusing).",
+        ),
+        labels: [
+            Label {
+                message: "Boolean props already default to false",
+                start: 60,
+                end: 73,
+            },
+        ],
+        fix: None,
+    },
+]
