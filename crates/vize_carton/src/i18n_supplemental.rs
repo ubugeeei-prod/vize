@@ -267,6 +267,25 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "`tag` プロパティを削除し、`v-slot`（`href`・`navigate`・`isActive` を公開します）を使って要素を自分でレンダリングしてください。",
         "请移除 `tag` 属性，并使用 `v-slot`（它会暴露 `href`、`navigate` 和 `isActive`）自行渲染元素。",
     ),
+    // vue/no-negated-v-if-condition
+    (
+        "vue/no-negated-v-if-condition.description",
+        "Disallow a negated v-if condition when the chain has a v-else",
+        "v-elseを伴う連鎖で否定されたv-if条件を禁止する",
+        "当存在v-else分支时，禁止使用取反的v-if条件",
+    ),
+    (
+        "vue/no-negated-v-if-condition.message",
+        "Avoid a negated v-if condition when there is a v-else; swap the branches instead",
+        "v-elseがある場合は否定されたv-if条件を避け、分岐を入れ替えてください",
+        "存在v-else时应避免使用取反的v-if条件；请改为交换两个分支",
+    ),
+    (
+        "vue/no-negated-v-if-condition.help",
+        "Remove the leading '!' and swap the v-if and v-else branch contents.",
+        "先頭の '!' を削除し、v-ifとv-elseの分岐の中身を入れ替えてください。",
+        "请去掉开头的 '!'，并交换 v-if 与 v-else 分支的内容。",
+    ),
     // vue/no-v-text
     (
         "vue/no-v-text.description",
