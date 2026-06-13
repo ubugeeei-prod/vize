@@ -9,7 +9,8 @@
 //! addition in `names.rs`.
 
 use super::names::{
-    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
+    RULE_DEFINE_PROPS_DECLARATION, RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED,
+    RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
     RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API, RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
     RULE_NO_DUPE_KEYS, RULE_NO_EXPORT_IN_SCRIPT_SETUP, RULE_NO_GET_CURRENT_INSTANCE,
     RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS, RULE_NO_NEXT_TICK,
@@ -27,7 +28,7 @@ use super::{
     OPT_IN_SCRIPT_PRESETS,
 };
 use crate::rules::script::{
-    NoArrowFunctionsInWatch, NoAsyncInComputed, NoDeepDestructureInProps,
+    DefinePropsDeclaration, NoArrowFunctionsInWatch, NoAsyncInComputed, NoDeepDestructureInProps,
     NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDupeKeys,
     NoExportInScriptSetup, NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports,
     NoNextTick, NoOptionsApi, NoPotentialComponentOptionTypo, NoReactiveDestructure,
@@ -294,5 +295,13 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
         fixable: false,
         presets: OPT_IN_SCRIPT_PRESETS,
         rule: &NoDeprecatedDollarScopedSlotsApi,
+    },
+    BuiltinScriptRuleEntry {
+        rule_name: RULE_DEFINE_PROPS_DECLARATION,
+        profile_name: "patina.script_rule.define_props_declaration",
+        category: "Script",
+        fixable: false,
+        presets: OPINIONATED_SCRIPT_PRESETS,
+        rule: &DefinePropsDeclaration,
     },
 ];
