@@ -10,8 +10,11 @@ deprecation contract that backs the entries below.
 
 ## [Unreleased]
 
+## [0.211.0] - 2026-06-13
+
 ### Fixed
 
+- Isolate Deploy docs Musea example cargo checks from the shared sticky target cache (#1568)
 - Skip cross-platform entrypoint assertion in fresh-install smoke (#506) ([9682241](https://github.com/ubugeeei/vize/commit/9682241bbc4eeaa4c8f40d18e041de16fd04963e))
 - Install deps for coverage jobs ([27abd35](https://github.com/ubugeeei/vize/commit/27abd356046bd18ba5af02f1f08c0cb050f98904))
 - Keep glob minimatch ranges compatible ([c1f88c6](https://github.com/ubugeeei/vize/commit/c1f88c69d903e30b9cd9fb8f5e329051dbb8688e))
