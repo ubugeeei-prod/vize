@@ -41,10 +41,10 @@ use crate::rules::script::{
     NoTopLevelRefInScript, NoUnusedEmitDeclarations, NoUseComputedPropertyLikeMethod,
     NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed, PreferDefineOptions,
     PreferImportFromVue, PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots,
-    PreferUseTemplateRef, RequireDefaultProp, RequireFunctionReturnType, RequirePropTypeConstructor,
-    RequirePropTypes, RequireSymbolProvide, RequireTypedRef, ReturnInComputedProperty,
-    ReturnInEmitsValidator, ValidDefineOptions, ValidNextTick, VueRouterPreferNamedPush,
-    VueTestUtilsNoHtmlSnapshot,
+    PreferUseTemplateRef, RequireDefaultProp, RequireFunctionReturnType,
+    RequirePropTypeConstructor, RequirePropTypes, RequireSymbolProvide, RequireTypedRef,
+    ReturnInComputedProperty, ReturnInEmitsValidator, ValidDefineOptions, ValidNextTick,
+    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
 };
 
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
