@@ -2,50 +2,38 @@
 //!
 //! Disallow `export` statements inside `<script setup>`.
 //!
-//! A `<script setup>` block is compiled into the component's `setup()`
-//! function: every top-level binding is automatically exposed to the template,
-//! and the block itself is not a real ES module that anything imports. A
-//! top-level `export` there is therefore invalid / meaningless — the Vue SFC
-//! compiler rejects it. To expose bindings to a parent component (via template
-//! refs) use [`defineExpose()`](https://vuejs.org/api/sfc-script-setup.html#defineexpose)
-//! instead.
+//! A `<script setup>` block is compiled into the component's `setup()` function:
+//! every top-level binding is automatically exposed to the template, and the
+//! block itself is not a real ES module. A top-level `export` there is therefore
+//! meaningless and the Vue SFC compiler rejects it. To expose bindings to a
+//! parent component use [`defineExpose()`](https://vuejs.org/api/sfc-script-setup.html#defineexpose).
 //!
-//! This rule only applies to `<script setup>`; a normal `<script>` block legitimately
-//! uses `export default { ... }` (and named exports), so to avoid flagging those
-//! the rule first confirms the block is a `<script setup>` by the presence of a
+//! A normal `<script>` block legitimately uses `export default { ... }`, so the
+//! rule first confirms the block is a `<script setup>` by the presence of a
 //! compiler macro (`defineProps`, `defineEmits`, `defineExpose`, `defineOptions`,
-//! `defineSlots`, `defineModel`, `withDefaults`) or a top-level `await`, which are
-//! only valid inside `<script setup>`.
+//! `defineSlots`, `defineModel`, `withDefaults`) or a top-level `await`, both of
+//! which are only valid inside `<script setup>`.
 //!
-//! ## Examples
-//!
-//! ### Invalid
+//! ## Invalid
 //! ```vue
 //! <script setup>
 //! const props = defineProps<{ count: number }>()
-//!
-//! // Invalid: `<script setup>` is compiled into setup(); this export is meaningless.
-//! export const helper = () => props.count * 2
+//! export const helper = () => props.count * 2 // meaningless in setup
 //! export default {} // also invalid
 //! </script>
 //! ```
 //!
-//! ### Valid
+//! ## Valid
 //! ```vue
 //! <script setup>
 //! const props = defineProps<{ count: number }>()
-//!
 //! const helper = () => props.count * 2
-//!
-//! // Expose bindings to a parent through a template ref instead of `export`.
 //! defineExpose({ helper })
 //! </script>
 //!
 //! <script>
 //! // A normal <script> block may export the component options.
-//! export default {
-//!   name: 'MyComponent'
-//! }
+//! export default { name: 'MyComponent' }
 //! </script>
 //! ```
 
