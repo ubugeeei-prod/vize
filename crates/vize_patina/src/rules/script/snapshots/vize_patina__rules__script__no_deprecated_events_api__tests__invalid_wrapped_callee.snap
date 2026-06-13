@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/no_deprecated_events_api.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-deprecated-events-api",
+        severity: Error,
+        message: "`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
+        start: 1,
+        end: 9,
+        help: Some(
+            "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
