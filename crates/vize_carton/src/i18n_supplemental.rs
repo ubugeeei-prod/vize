@@ -6,10 +6,9 @@
 //! were introduced after that baseline register their translations here and
 //! the `i18n` module merges them into the global translator at startup.
 
-
 use rustc_hash::FxHashMap;
 
-pub(crate) type MessageMap = FxHashMap<&'static str, &'static str>;
+type MessageMap = FxHashMap<&'static str, &'static str>;
 
 /// Insert every supplemental entry into the locale message maps.
 ///
