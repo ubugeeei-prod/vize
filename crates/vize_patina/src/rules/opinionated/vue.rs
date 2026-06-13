@@ -4,6 +4,7 @@ mod multi_word_component_names;
 mod no_boolean_attr_value;
 mod no_inline_style;
 mod no_preprocessor_lang;
+mod no_root_v_if;
 mod no_script_non_standard_lang;
 mod no_src_attribute;
 mod no_template_lang;
@@ -27,6 +28,7 @@ pub use multi_word_component_names::MultiWordComponentNames;
 pub use no_boolean_attr_value::NoBooleanAttrValue;
 pub use no_inline_style::NoInlineStyle;
 pub use no_preprocessor_lang::NoPreprocessorLang;
+pub use no_root_v_if::NoRootVIf;
 pub use no_script_non_standard_lang::NoScriptNonStandardLang;
 pub use no_src_attribute::NoSrcAttribute;
 pub use no_template_lang::NoTemplateLang;
@@ -72,6 +74,7 @@ fn register_shared(registry: &mut RuleRegistry) {
     registry.register(Box::new(WarnCustomBlock));
     registry.register(Box::new(WarnCustomDirective));
     registry.register(Box::new(NoBooleanAttrValue));
+    registry.register(Box::new(NoRootVIf));
     registry.register(Box::new(NoUselessVBind));
     registry.register(Box::new(PreferTrueAttributeShorthand));
 }

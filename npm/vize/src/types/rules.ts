@@ -119,6 +119,7 @@ export const LINT_RULE_NAMES = [
   "vue/no-mutating-props",
   "vue/no-preprocessor-lang",
   "vue/no-reserved-component-names",
+  "vue/no-root-v-if",
   "vue/no-script-non-standard-lang",
   "vue/no-src-attribute",
   "vue/no-template-key",
