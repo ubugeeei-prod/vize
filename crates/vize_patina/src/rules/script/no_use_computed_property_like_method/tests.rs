@@ -1,4 +1,3 @@
-
 use super::NoUseComputedPropertyLikeMethod;
 use crate::rules::script::ScriptLinter;
 
