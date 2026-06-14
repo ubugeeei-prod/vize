@@ -427,6 +427,7 @@ const isRootSelected = ref(false)
             vize_atelier_core::TemplateSyntaxMode::Standard,
         )
         .expect("template compile should succeed");
+        let render_body = template_output.body_parts_for_inline().unwrap().render_body;
         let template_code = template_output.code;
         assert!(
             template_code.contains("!selectedFolders.value.some((f) => f.id === folder.value.id)"),
@@ -438,8 +439,6 @@ const isRootSelected = ref(false)
             "unexpected template code:\n{}",
             template_code
         );
-        let (_imports, _hoisted, _preamble, render_body, _render_fn_name) =
-            crate::compile_template::extract_template_parts(&template_code);
         assert!(
             render_body.contains("!selectedFolders.value.some((f) => f.id === folder.value.id)"),
             "unexpected render body:\n{}",

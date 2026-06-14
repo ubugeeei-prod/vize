@@ -225,8 +225,8 @@ fn transform_vapor_template_module(
     functions.push_str("}\n");
 
     // Vapor assembly preserves the blank separator before the render function,
-    // but that separator is not part of the hoist section: the legacy scanner
-    // ignores blank lines, and inline assembly expects the same shape.
+    // but that separator is not part of the hoist section. Inline assembly
+    // expects hoists to contain only movable module declarations.
     let module_sections = vapor_module_sections(
         imports.len(),
         hoists.len(),

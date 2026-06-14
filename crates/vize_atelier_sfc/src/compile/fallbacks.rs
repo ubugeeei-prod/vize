@@ -17,9 +17,8 @@ pub(super) fn push_vapor_ssr_fallback_warning(
 /// Fallback facts are intentionally cheaper and narrower than diagnostics:
 /// they are profile observations about how a lane finished its work. A caller
 /// should emit a user-facing warning only when the fallback changes semantics or
-/// target support, such as Vapor SSR. Silent structural fallbacks, such as the
-/// legacy template line scanner, are still recorded here so #1634 migrations can
-/// prove that normal paths no longer depend on them.
+/// target support, such as Vapor SSR. Missing `AtelierOutput` sections are no
+/// longer profile fallbacks; they are internal contract errors.
 pub(super) fn record_atelier_fallback(fallback: SourceAtlasFallback) {
     global_profiler().record_counter(fallback.profile_counter(), 1);
 }

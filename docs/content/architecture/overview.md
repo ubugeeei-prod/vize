@@ -103,9 +103,9 @@ explicitly needs render semantics.
 
 The current canary wiring applies that rule inside SFC inline assembly. DOM output carries fine
 render sections for script-setup render-body insertion, while SSR and Vapor output carry coarser
-module sections for imports, hoists, and full render functions. The legacy generated-code line
-scanner remains as a compatibility fallback only when an output plate lacks sections, and that path
-is recorded as `atelier.fallback.legacy_line_scanner`.
+module sections for imports, hoists, and full render functions. A successful template output that
+lacks the required section plate is now an internal compiler error, so SFC inline assembly no longer
+recovers structure by scanning generated JavaScript.
 
 `AtelierProfile` is the observation layer around this work. It records cheap facts that an Atelier
 already knows while compiling: template and script size, style block count, target Atelier, stats

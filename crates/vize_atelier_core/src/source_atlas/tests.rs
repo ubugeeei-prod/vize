@@ -119,16 +119,16 @@ fn fallback_reasons_keep_existing_counter_names_stable() {
 fn fallback_sets_deduplicate_and_iterate_in_known_order() {
     let set = SourceAtlasFallbackSet::empty()
         .with(SourceAtlasFallback::CacheBypass)
-        .with(SourceAtlasFallback::LegacyLineScanner)
+        .with(SourceAtlasFallback::SourceMapCompositionSkipped)
         .with(SourceAtlasFallback::CacheBypass);
 
-    assert!(set.contains(SourceAtlasFallback::LegacyLineScanner));
+    assert!(set.contains(SourceAtlasFallback::SourceMapCompositionSkipped));
     assert!(set.contains(SourceAtlasFallback::CacheBypass));
     assert!(!set.contains(SourceAtlasFallback::VaporSsr));
     assert_eq!(
         set.iter().collect::<std::vec::Vec<_>>(),
         [
-            SourceAtlasFallback::LegacyLineScanner,
+            SourceAtlasFallback::SourceMapCompositionSkipped,
             SourceAtlasFallback::CacheBypass,
         ]
     );
@@ -141,7 +141,7 @@ fn registry_carries_lane_requests_and_fallbacks() {
         .with_plate(SourceAtlasPlate::Rendu)
         .with_target(SourceAtlasTarget::Ssr)
         .with_coordinate(SourceAtlasCoordinate::from(VueVersion::V3))
-        .with_fallback(SourceAtlasFallback::LegacyLineScanner);
+        .with_fallback(SourceAtlasFallback::SourceMapCompositionSkipped);
 
     assert_eq!(
         registry.lane.profile_counter(),
@@ -153,7 +153,7 @@ fn registry_carries_lane_requests_and_fallbacks() {
     assert!(
         registry
             .fallbacks
-            .contains(SourceAtlasFallback::LegacyLineScanner)
+            .contains(SourceAtlasFallback::SourceMapCompositionSkipped)
     );
 
     let mut requests = std::vec::Vec::new();

@@ -1,25 +1,17 @@
-//! Tests for template compilation utilities.
+//! Tests for template compilation utilities that are shared by SFC assembly.
 
-use super::extraction::{extract_template_parts, extract_template_parts_full};
 use super::string_tracking::{
     StringTrackState, count_braces_outside_strings, count_braces_with_state,
     count_delims_with_state,
 };
 use super::vapor::{add_scope_id_to_template, transform_vapor_template_output};
-use crate::types::{BlockLocation, SfcTemplateBlock};
+use super::{TemplateBlockCompileContext, compile_template_block};
+use crate::types::{BindingMetadata, BlockLocation, SfcTemplateBlock, TemplateCompileOptions};
 use std::borrow::Cow;
 
-#[test]
-fn test_add_scope_id_to_template() {
-    let input = r#"const t0 = _template("<div class='container'>Hello</div>")"#;
-    let result = add_scope_id_to_template(input, "data-v-abc123");
-    insta::assert_snapshot!(result.as_str());
-}
-
-#[test]
-fn test_transform_vapor_template_output_current_render_format() {
-    let template = SfcTemplateBlock {
-        content: Cow::Borrowed("<div>{{ msg }}</div>"),
+fn template(content: &'static str) -> SfcTemplateBlock<'static> {
+    SfcTemplateBlock {
+        content: Cow::Borrowed(content),
         loc: BlockLocation {
             start: 0,
             end: 0,
@@ -33,8 +25,18 @@ fn test_transform_vapor_template_output_current_render_format() {
         lang: None,
         src: None,
         attrs: Default::default(),
-    };
+    }
+}
 
+#[test]
+fn test_add_scope_id_to_template() {
+    let input = r#"const t0 = _template("<div class='container'>Hello</div>")"#;
+    let result = add_scope_id_to_template(input, "data-v-abc123");
+    insta::assert_snapshot!(result.as_str());
+}
+
+#[test]
+fn test_transform_vapor_template_output_current_render_format() {
     let vapor_code = r#"import { template as _template } from 'vue/vapor';
 const t0 = _template("<div> </div>", true)
 
@@ -43,384 +45,93 @@ export function render(_ctx) {
   return n0
 }"#;
 
-    let result = transform_vapor_template_output(vapor_code, None, &template, None)
-        .expect("current Vapor output should be transformed");
+    let result =
+        transform_vapor_template_output(vapor_code, None, &template("<div>{{ msg }}</div>"), None)
+            .expect("current Vapor output should be transformed");
 
     insta::assert_snapshot!(result.as_str());
 }
 
-// --- count_braces_outside_strings tests ---
-
 #[test]
-fn test_count_braces_normal() {
+fn count_braces_ignores_string_like_braces() {
     assert_eq!(count_braces_outside_strings("{ a: 1 }"), 0);
     assert_eq!(count_braces_outside_strings("{"), 1);
     assert_eq!(count_braces_outside_strings("}"), -1);
-    assert_eq!(count_braces_outside_strings("{ { }"), 1);
-}
-
-#[test]
-fn test_count_braces_ignores_string_braces() {
     assert_eq!(
         count_braces_outside_strings("_toDisplayString(isArray.value ? ']' : '}')"),
         0
     );
     assert_eq!(count_braces_outside_strings(r#"var x = "{";"#), 0);
     assert_eq!(count_braces_outside_strings("var x = `{`;"), 0);
-}
-
-#[test]
-fn test_count_braces_mixed_string_and_code() {
-    assert_eq!(count_braces_outside_strings("if (x) { var s = '}'"), 1);
-}
-
-#[test]
-fn test_count_braces_escaped_quotes() {
     assert_eq!(count_braces_outside_strings(r"var x = '\'' + '}'"), 0);
 }
 
 #[test]
-fn test_extract_template_parts_full_brace_in_string() {
-    let template_code = r#"import { toDisplayString as _toDisplayString } from 'vue'
-
-export function render(_ctx, _cache) {
-  return _toDisplayString(isArray.value ? ']' : '}')
-}"#;
-
-    let (imports, _hoisted, render_fn, render_fn_name) = extract_template_parts_full(template_code);
-
-    assert_eq!(render_fn_name, "render");
-    insta::assert_debug_snapshot!((&imports, &render_fn));
-    let trimmed = render_fn.trim();
-    assert!(
-        trimmed.ends_with('}'),
-        "Render function should end with closing brace. Got:\n{}",
-        render_fn
-    );
-}
-
-#[test]
-fn test_extract_template_parts_basic() {
-    let template_code = r#"import { createVNode as _createVNode } from 'vue'
-
-const _hoisted_1 = { class: "test" }
-
-export function render(_ctx, _cache) {
-  return _createVNode("div", _hoisted_1, "Hello")
-}"#;
-
-    let (imports, hoisted, _preamble, render_body, render_fn_name) =
-        extract_template_parts(template_code);
-
-    assert_eq!(render_fn_name, "render");
-    insta::assert_debug_snapshot!((&imports, &hoisted, &render_body));
-}
-
-#[test]
-fn test_extract_template_parts_vapor_template_declarations() {
-    let template_code = r#"import { template as _template, renderEffect as _renderEffect, setText as _setText } from 'vue'
-
-const t0 = _template("<div> </div>", true)
-
-function render(_ctx, $props, $emit, $attrs, $slots) {
-  const n0 = t0()
-  _renderEffect(() => _setText(n0, _ctx.msg))
-  return n0
-}"#;
-
-    let (_imports, hoisted, _preamble, render_body, render_fn_name) =
-        extract_template_parts(template_code);
-
-    assert_eq!(render_fn_name, "render");
-    insta::assert_debug_snapshot!((&hoisted, &render_body));
-}
-
-#[test]
-fn test_extract_template_parts_full_preserves_vapor_top_level_side_effects() {
-    let template_code = r#"import { delegateEvents as _delegateEvents, template as _template } from 'vue'
-
-const t0 = _template("<button>ok</button>", true)
-_delegateEvents("click")
-
-function render(_ctx, $props, $emit, $attrs, $slots) {
-  const n0 = t0()
-  return n0
-}"#;
-
-    let (_imports, hoisted, render_fn, render_fn_name) = extract_template_parts_full(template_code);
-
-    assert_eq!(render_fn_name, "render");
-    insta::assert_debug_snapshot!((&hoisted, &render_fn));
-}
-
-#[test]
-fn test_extract_template_parts_full_ssr_render_function() {
-    let template_code = r#"import { ssrRenderComponent as _ssrRenderComponent } from "vue/server-renderer"
-
-export function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(_ssrRenderComponent(_ctx.Foo, null, null, _parent))
-}"#;
-
-    let (imports, _hoisted, render_fn, render_fn_name) = extract_template_parts_full(template_code);
-
-    assert_eq!(render_fn_name, "ssrRender");
-    insta::assert_debug_snapshot!((&imports, &render_fn));
-}
-
-#[test]
-fn test_extract_template_parts_ssr_preserves_render_name_without_inline_body() {
-    let template_code = r#"import { ssrRenderComponent as _ssrRenderComponent } from "vue/server-renderer"
-
-export function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(_ssrRenderComponent(_ctx.Foo, null, null, _parent))
-}"#;
-
-    let (_imports, _hoisted, _preamble, render_body, render_fn_name) =
-        extract_template_parts(template_code);
-
-    assert_eq!(render_fn_name, "ssrRender");
-    assert!(
-        render_body.is_empty(),
-        "SSR render functions should stay separate instead of being inlined. Got:\n{}",
-        render_body
-    );
-}
-
-// --- Multiline template literal tests ---
-
-#[test]
-fn test_count_braces_multiline_template_literal() {
+fn count_braces_tracks_multiline_template_expression_state() {
     let mut state = StringTrackState::default();
 
-    let line1 = r#"}, _toDisplayString(`${t("key")}: v${ver.major}.${"#;
-    let count1 = count_braces_with_state(line1, &mut state);
-    assert_eq!(count1, -1, "Line 1 brace count");
+    let count1 = count_braces_with_state(
+        r#"}, _toDisplayString(`${t("key")}: v${ver.major}.${"#,
+        &mut state,
+    );
+    assert_eq!(count1, -1);
     assert!(
         !state.template_expr_brace_stack.is_empty(),
-        "Should be inside template expression after line 1"
+        "line 1 should leave the scanner inside a template expression"
     );
 
-    let line2 = "            ver.minor";
-    let count2 = count_braces_with_state(line2, &mut state);
-    assert_eq!(count2, 0, "Line 2 brace count");
+    let count2 = count_braces_with_state("            ver.minor", &mut state);
+    assert_eq!(count2, 0);
 
-    let line3 = r##"          }`) + "\n      ", 1 /* TEXT */)))"##;
-    let count3 = count_braces_with_state(line3, &mut state);
-    assert_eq!(count3, 0, "Line 3 brace count");
-    assert!(!state.in_string, "Should be outside string after line 3");
-    assert!(
-        state.template_expr_brace_stack.is_empty(),
-        "Template expression stack should be empty"
+    let count3 = count_braces_with_state(
+        r##"          }`) + "\n      ", 1 /* TEXT */)))"##,
+        &mut state,
     );
-
+    assert_eq!(count3, 0);
+    assert!(!state.in_string);
+    assert!(state.template_expr_brace_stack.is_empty());
     assert_eq!(count1 + count2 + count3, -1);
 }
 
 #[test]
-fn test_extract_template_parts_multiline_template_literal() {
-    let template_code = r#"import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createCommentVNode as _createCommentVNode } from "vue"
+fn count_braces_tracks_nested_template_literals() {
+    let cases = [
+        r#"x = `outer ${`inner ${x}`} end`"#,
+        r#"x = `${items.map(x => ({ name: x })).join()}`"#,
+        r#"if (x) { var s = "}" + '{' }"#,
+    ];
 
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (show.value)
-    ? (_openBlock(), _createElementBlock("div", {
-      key: 0,
-      class: "outer"
-    }, [
-      _createElementVNode("div", { class: "inner" }, [
-        (ver.value)
-          ? (_openBlock(), _createElementBlock("span", { key: 0 }, "\n        " + _toDisplayString(`${t("key")}: v${ver.value.major}.${
-            ver.value.minor
-          }`) + "\n      ", 1 /* TEXT */))
-          : (_openBlock(), _createElementBlock("span", { key: 1 }, "no"))
-      ])
-    ]))
-    : _createCommentVNode("v-if", true)
-}"#;
-
-    let (_imports, _hoisted, _preamble, render_body, _render_fn_name) =
-        extract_template_parts(template_code);
-
-    insta::assert_snapshot!(render_body.as_str());
+    for case in cases {
+        let mut state = StringTrackState::default();
+        let count = count_braces_with_state(case, &mut state);
+        assert_eq!(count, 0, "case should be balanced: {case}");
+        assert!(!state.in_string, "case should close strings: {case}");
+    }
 }
 
 #[test]
-fn test_extract_template_parts_full_multiline_template_literal() {
-    let template_code = r#"import { toDisplayString as _toDisplayString } from 'vue'
-
-export function render(_ctx, _cache) {
-  return _toDisplayString(`${t("key")}: v${ver.major}.${
-    ver.minor
-  }`)
-}"#;
-
-    let (_imports, _hoisted, render_fn, _render_fn_name) =
-        extract_template_parts_full(template_code);
-
-    insta::assert_snapshot!(render_fn.as_str());
-    let trimmed = render_fn.trim();
-    assert!(
-        trimmed.ends_with('}'),
-        "Render function should end with closing brace. Got:\n{}",
-        render_fn
-    );
-}
-
-// --- Generalized template literal / string tracking tests ---
-
-#[test]
-fn test_count_braces_template_literal_with_nested_object() {
+fn count_braces_tracks_state_across_many_lines() {
     let mut state = StringTrackState::default();
-    let line = r#"x = `result: ${fn({a: 1, b: {c: 2}})}`"#;
-    let count = count_braces_with_state(line, &mut state);
-    assert_eq!(
-        count, 0,
-        "Braces inside template expression should be balanced"
-    );
-    assert!(!state.in_string, "Template literal should be closed");
-}
-
-#[test]
-fn test_count_braces_nested_template_literals() {
-    let mut state = StringTrackState::default();
-    let line = r#"x = `outer ${`inner ${x}`} end`"#;
-    let count = count_braces_with_state(line, &mut state);
-    assert_eq!(
-        count, 0,
-        "Nested template literals should not affect brace count"
-    );
-    assert!(!state.in_string, "All template literals should be closed");
-}
-
-#[test]
-fn test_count_braces_multiline_template_expr_with_object() {
-    let mut state = StringTrackState::default();
-
-    let line1 = r#"x = `value: ${fn({"#;
-    let c1 = count_braces_with_state(line1, &mut state);
-    assert_eq!(
-        c1, 1,
-        "Line 1: object literal brace inside template expression"
-    );
-
-    let line2 = r#"  key: val"#;
-    let c2 = count_braces_with_state(line2, &mut state);
-    assert_eq!(c2, 0, "Line 2: no braces");
-
-    let line3 = r#"})}`"#;
-    let c3 = count_braces_with_state(line3, &mut state);
-    assert_eq!(c3, -1, "Line 3: closing object brace");
-    assert!(!state.in_string, "Template literal should be closed");
-    assert_eq!(c1 + c2 + c3, 0, "Total should be balanced");
-}
-
-#[test]
-fn test_count_braces_template_literal_with_arrow_function() {
-    let mut state = StringTrackState::default();
-    let line = r#"x = `${items.map(x => ({ name: x })).join()}`"#;
-    let count = count_braces_with_state(line, &mut state);
-    assert_eq!(count, 0);
-    assert!(!state.in_string);
-}
-
-#[test]
-fn test_count_braces_state_across_many_lines() {
-    let mut state = StringTrackState::default();
-
-    let c1 = count_braces_with_state("function render() {", &mut state);
-    assert_eq!(c1, 1);
-
-    let c2 = count_braces_with_state(r#"  return _toDisplayString(`${fn({"#, &mut state);
-    assert_eq!(c2, 1, "Object literal brace inside template expression");
-
-    let c3 = count_braces_with_state("    key: val,", &mut state);
-    assert_eq!(c3, 0);
-
-    let c4 = count_braces_with_state("    nested: {", &mut state);
-    assert_eq!(c4, 1, "Nested brace inside template expression");
-
-    let c5 = count_braces_with_state("      deep: true", &mut state);
-    assert_eq!(c5, 0);
-
-    let c6 = count_braces_with_state("    }", &mut state);
-    assert_eq!(c6, -1, "Closing nested brace inside template expression");
-
-    let c7 = count_braces_with_state(r#"  })}`)"#, &mut state);
-    assert_eq!(c7, -1, "Closing outer object brace");
-
-    let c8 = count_braces_with_state("}", &mut state);
-    assert_eq!(c8, -1);
-
-    assert_eq!(
-        c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8,
-        0,
-        "Total: function opens and closes"
-    );
+    let mut total = 0;
+    for line in [
+        "function render() {",
+        r#"  return _toDisplayString(`${fn({"#,
+        "    key: val,",
+        "    nested: {",
+        "      deep: true",
+        "    }",
+        r#"  })}`)"#,
+        "}",
+    ] {
+        total += count_braces_with_state(line, &mut state);
+    }
+    assert_eq!(total, 0);
     assert!(!state.in_string);
     assert!(state.template_expr_brace_stack.is_empty());
 }
 
 #[test]
-fn test_count_braces_regular_strings_with_braces() {
-    let mut state = StringTrackState::default();
-
-    let line = r#"if (x) { var s = "}" + '{' }"#;
-    let count = count_braces_with_state(line, &mut state);
-    assert_eq!(count, 0, "Braces inside regular strings should be ignored");
-}
-
-#[test]
-fn test_extract_template_parts_deeply_nested_multiline() {
-    let template_code = r#"import { toDisplayString as _toDisplayString, createElementBlock as _createElementBlock, openBlock as _openBlock, createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode } from "vue"
-
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (cond.value)
-    ? (_openBlock(), _createElementBlock("div", { key: 0 }, [
-        _createElementVNode("p", null, _toDisplayString(`${items.value.map(x => ({
-          name: x.name,
-          label: `${x.prefix}-${
-            x.suffix
-          }`
-        })).length} items`)),
-        _createElementVNode("span", null, "after")
-      ]))
-    : _createCommentVNode("v-if", true)
-}"#;
-
-    let (_imports, _hoisted, _preamble, render_body, _render_fn_name) =
-        extract_template_parts(template_code);
-
-    insta::assert_snapshot!(render_body.as_str());
-}
-
-#[test]
-fn test_extract_template_parts_full_deeply_nested_multiline() {
-    let template_code = r#"import { toDisplayString as _toDisplayString } from "vue"
-
-export function render(_ctx, _cache) {
-  return _toDisplayString(`${items.map(x => ({
-    name: x.name,
-    value: `nested-${
-      x.value
-    }`
-  })).length} items`)
-}"#;
-
-    let (_imports, _hoisted, render_fn, _render_fn_name) =
-        extract_template_parts_full(template_code);
-
-    let trimmed = render_fn.trim();
-    assert!(
-        trimmed.ends_with('}'),
-        "Render function should end with closing brace. Got:\n{}",
-        render_fn
-    );
-    insta::assert_snapshot!(render_fn.as_str());
-}
-
-/// Net delimiter depth must equal zero for a balanced object literal that spans lines,
-/// treating `{} [] ()` uniformly and ignoring delimiters inside strings.
-#[test]
-fn test_count_delims_with_state_multiline_object() {
+fn count_delims_tracks_multiline_object_literal() {
     let mut state = StringTrackState::default();
     let mut depth = 0;
     depth += count_delims_with_state("const _hoisted_1 = { style: {", &mut state);
@@ -430,126 +141,42 @@ fn test_count_delims_with_state_multiline_object() {
     depth += count_delims_with_state("  content: '({[',", &mut state);
     assert_eq!(depth, 2, "delimiters inside strings must not affect depth");
     depth += count_delims_with_state("} }", &mut state);
-    assert_eq!(depth, 0, "declaration is balanced after the closing line");
+    assert_eq!(depth, 0);
 }
 
-/// Regression for the `<script setup>` inline path truncating a multi-line hoisted
-/// object literal at its first newline (producing invalid JS). The whole declaration
-/// must be collected into `hoisted` intact, with balanced braces.
 #[test]
-fn test_extract_template_parts_multiline_hoisted_object() {
-    let template_code = r#"import { createElementVNode as _createElementVNode } from "vue"
-
-const _hoisted_1 = { style: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  objectFit: 'cover',
-} }
-
-export function render(_ctx, _cache) {
-  return _createElementVNode("img", _hoisted_1)
-}"#;
-
-    let (_imports, hoisted, _preamble, render_body, render_fn_name) =
-        extract_template_parts(template_code);
-
-    assert_eq!(render_fn_name, "render");
-    assert!(
-        hoisted.contains("objectFit: 'cover'"),
-        "continuation lines of the hoisted const must be preserved, got:\n{hoisted}"
-    );
-    let opens = hoisted.matches('{').count();
-    let closes = hoisted.matches('}').count();
-    assert_eq!(opens, closes, "hoisted braces must be balanced:\n{hoisted}");
-    assert!(
-        render_body.contains("_hoisted_1"),
-        "render body should still reference the hoist"
-    );
-}
-
-/// Same regression for the vapor/ssr extraction path.
-#[test]
-fn test_extract_template_parts_full_multiline_hoisted_object() {
-    let template_code = r#"import { createElementVNode as _createElementVNode } from "vue"
-
-const _hoisted_1 = { style: {
-  position: 'absolute',
-  objectFit: 'cover',
-} }
-
-export function render(_ctx, _cache) {
-  return _createElementVNode("img", _hoisted_1)
-}"#;
-
-    let (_imports, hoisted, render_fn, render_fn_name) = extract_template_parts_full(template_code);
-
-    assert_eq!(render_fn_name, "render");
-    assert!(
-        hoisted.contains("objectFit: 'cover'"),
-        "continuation lines of the hoisted const must be preserved, got:\n{hoisted}"
-    );
-    let opens = hoisted.matches('{').count();
-    let closes = hoisted.matches('}').count();
-    assert_eq!(opens, closes, "hoisted braces must be balanced:\n{hoisted}");
-    assert!(
-        render_fn.trim().ends_with('}'),
-        "render function should remain intact:\n{render_fn}"
-    );
-}
-
-// --- slice_template_parts equivalence tests ---
-
-/// The emission-recorded section offsets must reproduce exactly what the
-/// line scanner extracts, for every shape of generated render module the
-/// inline SFC path can produce.
-#[test]
-fn test_slice_template_parts_matches_line_scanner() {
-    use super::extraction::slice_template_parts;
-    use super::{TemplateBlockCompileContext, compile_template_block};
-    use crate::types::{BindingMetadata, TemplateCompileOptions};
-
+fn dom_inline_parts_are_sliced_from_sections_for_template_matrix() {
     let templates = [
-        // Plain element + interpolation
-        "<div>{{ msg }}</div>",
-        // Static-only content (hoistable, may need no assets)
-        "<div><img style=\"position: absolute; top: 0\" alt=\"x\"></div>",
-        // Unresolved component + directive => asset preamble lines
-        "<MyWidget v-focus>{{ count + 1 }}</MyWidget>",
-        // Root-level v-if/v-else => multi-line ternary return
-        "<div v-if=\"shown\">a</div>\n<span v-else>b</span>",
-        // Multi-root fragment
-        "<header>h</header>\n<footer>f</footer>",
-        // v-for with nested interpolation
-        "<ul><li v-for=\"item in items\" :key=\"item.id\">{{ item.name }}</li></ul>",
-        // Slot outlet root
-        "<slot name=\"body\" :row=\"row\" />",
-        // Event handlers (cached) + v-model
-        "<input v-model=\"text\" @keyup.enter=\"submit($event)\">",
-        // Plain text root
-        "hello",
+        ("<div>{{ msg }}</div>", "_toDisplayString"),
+        (
+            "<div><img style=\"position: absolute; top: 0\" alt=\"x\"></div>",
+            "_createElementVNode",
+        ),
+        (
+            "<MyWidget v-focus>{{ count + 1 }}</MyWidget>",
+            "_withDirectives",
+        ),
+        (
+            "<div v-if=\"shown\">a</div>\n<span v-else>b</span>",
+            "_ctx.shown",
+        ),
+        ("<header>h</header>\n<footer>f</footer>", "_Fragment"),
+        (
+            "<ul><li v-for=\"item in items\" :key=\"item.id\">{{ item.name }}</li></ul>",
+            "_renderList",
+        ),
+        ("<slot name=\"body\" :row=\"row\" />", "_renderSlot"),
+        (
+            "<input v-model=\"text\" @keyup.enter=\"submit($event)\">",
+            "_vModelText",
+        ),
+        ("hello", "\"hello\""),
     ];
 
-    for source in templates {
-        let template = SfcTemplateBlock {
-            content: Cow::Borrowed(source),
-            loc: BlockLocation {
-                start: 0,
-                end: 0,
-                tag_start: 0,
-                tag_end: 0,
-                start_line: 1,
-                start_column: 1,
-                end_line: 1,
-                end_column: 1,
-            },
-            lang: None,
-            src: None,
-            attrs: Default::default(),
-        };
+    for (source, expected_body_fragment) in templates {
         let bindings = BindingMetadata::default();
         let result = compile_template_block(
-            &template,
+            &template(source),
             &TemplateCompileOptions::default(),
             TemplateBlockCompileContext {
                 scope_id: "abc123",
@@ -565,16 +192,25 @@ fn test_slice_template_parts_matches_line_scanner() {
         )
         .expect("template should compile");
 
-        let sections = result
-            .sections
-            .expect("DOM lane must record section offsets");
-        let sliced = slice_template_parts(&result.code, &sections);
-        let scanned = extract_template_parts(&result.code);
-
-        assert_eq!(
-            sliced, scanned,
-            "sliced sections must match the line scanner for template:\n{source}\n\ngenerated code:\n{}",
+        assert!(
+            result.sections.is_some(),
+            "DOM output must record fine sections for template:\n{source}\n\n{}",
             result.code
+        );
+        let parts = result
+            .body_parts_for_inline()
+            .expect("sectioned DOM output should slice inline parts");
+
+        assert_eq!(parts.render_fn_name, "render");
+        assert!(
+            parts.imports.contains("from 'vue'") || parts.imports.contains("from \"vue\""),
+            "imports should come from the recorded imports section:\n{}",
+            parts.imports
+        );
+        assert!(
+            parts.render_body.contains(expected_body_fragment),
+            "render body should contain `{expected_body_fragment}` for template:\n{source}\n\nbody:\n{}",
+            parts.render_body
         );
     }
 }

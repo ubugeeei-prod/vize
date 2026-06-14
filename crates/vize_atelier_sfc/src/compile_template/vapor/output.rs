@@ -25,8 +25,8 @@ pub(super) struct VaporTemplateModule {
 /// Build coarse module sections for normalized Vapor output.
 ///
 /// The blank separator before the render function is intentionally outside the
-/// hoist range. That preserves the historical inline shape, where scanner-based
-/// recovery ignored blank lines between template declarations and `render`.
+/// hoist range. Inline assembly moves hoists as declarations, while the
+/// separator remains a formatting boundary in the flattened output.
 pub(super) fn vapor_module_sections(
     imports_len: usize,
     hoists_len: usize,

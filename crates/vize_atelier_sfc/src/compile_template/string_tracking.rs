@@ -4,8 +4,6 @@
 //! block comments, and `${...}` expressions when counting braces and
 //! parentheses in JavaScript/TypeScript code.
 
-use vize_carton::String;
-
 /// State for tracking string/template literal/comment context across multiple lines.
 /// Required because template literals (backtick strings) and block comments can span
 /// multiple lines, and `${...}` expressions within template literals contain code-mode
@@ -45,9 +43,9 @@ impl Default for StringTrackState {
 /// string literals, block comments, and template literal `${...}` expressions.
 /// State is carried across lines to handle multiline template literals and comments.
 ///
-/// The template extraction path feeds this one line at a time so it can avoid
-/// reparsing generated JS just to find render-function boundaries. The scanner
-/// is byte-oriented and mutates the shared state instead of allocating per line.
+/// The Vapor SFC adapter feeds current Vapor output through this one line at a
+/// time while normalizing the render signature. Section-first SFC inline
+/// extraction does not use this helper.
 pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) -> i32 {
     let mut count: i32 = 0;
     let bytes = line.as_bytes();
@@ -171,6 +169,7 @@ pub(super) fn count_braces_outside_strings(line: &str) -> i32 {
 /// This complements [`count_braces_with_state`] (which only counts `{}`). Hoisted consts
 /// can wrap their value in any of object/array/paren delimiters, so the extractor needs
 /// the combined depth to know where a multi-line declaration actually ends.
+#[cfg(test)]
 pub(super) fn count_delims_with_state(line: &str, state: &mut StringTrackState) -> i32 {
     let mut count: i32 = 0;
     let bytes = line.as_bytes();
@@ -271,187 +270,4 @@ pub(super) fn count_delims_with_state(line: &str, state: &mut StringTrackState) 
     }
 
     count
-}
-
-/// Count net paren depth change (( minus )) in a line, properly tracking
-/// string literals, block comments, and template literal `${...}` expressions.
-/// State is carried across lines to handle multiline template literals and comments.
-pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) -> i32 {
-    let mut count: i32 = 0;
-    let bytes = line.as_bytes();
-    let len = bytes.len();
-    let mut i = 0;
-
-    while i < len {
-        let ch = bytes[i];
-
-        if state.escape {
-            state.escape = false;
-            i += 1;
-            continue;
-        }
-
-        // Inside a block comment: skip everything until */
-        if state.in_block_comment {
-            if ch == b'*' && i + 1 < len && bytes[i + 1] == b'/' {
-                state.in_block_comment = false;
-                i += 2; // Skip both * and /
-                continue;
-            }
-            i += 1;
-            continue;
-        }
-
-        if state.in_string {
-            if ch == b'\\' {
-                state.escape = true;
-                i += 1;
-                continue;
-            }
-
-            if state.string_char == b'`' {
-                if ch == b'`' {
-                    state.in_string = false;
-                } else if ch == b'$' && i + 1 < len && bytes[i + 1] == b'{' {
-                    state.in_string = false;
-                    state.template_expr_brace_stack.push(0);
-                    i += 2;
-                    continue;
-                }
-            } else if ch == state.string_char {
-                state.in_string = false;
-            }
-        } else {
-            // Not in string - we're in code mode
-            match ch {
-                b'/' if i + 1 < len && bytes[i + 1] == b'*' => {
-                    // Enter block comment /*
-                    state.in_block_comment = true;
-                    i += 2; // Skip both / and *
-                    continue;
-                }
-                b'/' if i + 1 < len && bytes[i + 1] == b'/' => {
-                    // Line comment // -- skip rest of line
-                    break;
-                }
-                b'\'' | b'"' => {
-                    state.in_string = true;
-                    state.string_char = ch;
-                }
-                b'`' => {
-                    state.in_string = true;
-                    state.string_char = b'`';
-                }
-                b'{' => {
-                    // Track braces for template expression depth even though we're counting parens
-                    if let Some(depth) = state.template_expr_brace_stack.last_mut() {
-                        *depth += 1;
-                    }
-                }
-                b'}' => {
-                    if let Some(&depth) = state.template_expr_brace_stack.last() {
-                        if depth == 0 {
-                            state.template_expr_brace_stack.pop();
-                            state.in_string = true;
-                            state.string_char = b'`';
-                            i += 1;
-                            continue;
-                        } else {
-                            if let Some(depth) = state.template_expr_brace_stack.last_mut() {
-                                *depth -= 1;
-                            }
-                        }
-                    }
-                }
-                b'(' => {
-                    count += 1;
-                }
-                b')' => {
-                    count -= 1;
-                }
-                _ => {}
-            }
-        }
-
-        i += 1;
-    }
-
-    count
-}
-
-/// Compact render body by removing unnecessary line breaks inside function calls and arrays
-#[allow(dead_code)]
-pub(super) fn compact_render_body(render_body: &str) -> String {
-    let mut result = String::default();
-    let mut chars = render_body.chars().peekable();
-    let mut paren_depth: i32 = 0;
-    let mut bracket_depth: i32 = 0;
-    let mut brace_depth: i32 = 0;
-    let mut in_string = false;
-    let mut string_char = '\0';
-    let mut in_template = false;
-
-    while let Some(ch) = chars.next() {
-        match ch {
-            '"' | '\'' if !in_template => {
-                if !in_string {
-                    in_string = true;
-                    string_char = ch;
-                } else if string_char == ch {
-                    in_string = false;
-                }
-                result.push(ch);
-            }
-            '`' => {
-                in_template = !in_template;
-                result.push(ch);
-            }
-            '(' if !in_string && !in_template => {
-                paren_depth += 1;
-                result.push(ch);
-            }
-            ')' if !in_string && !in_template => {
-                paren_depth = paren_depth.saturating_sub(1);
-                result.push(ch);
-            }
-            '[' if !in_string && !in_template => {
-                bracket_depth += 1;
-                result.push(ch);
-            }
-            ']' if !in_string && !in_template => {
-                bracket_depth = bracket_depth.saturating_sub(1);
-                result.push(ch);
-            }
-            '{' if !in_string && !in_template => {
-                brace_depth += 1;
-                result.push(ch);
-            }
-            '}' if !in_string && !in_template => {
-                brace_depth = brace_depth.saturating_sub(1);
-                result.push(ch);
-            }
-            '\n' => {
-                // If inside braces (block bodies), keep newlines to preserve statement separation
-                if brace_depth > 0 && !in_string && !in_template {
-                    result.push('\n');
-                } else if (paren_depth > 0 || bracket_depth > 0) && !in_string && !in_template {
-                    result.push(' ');
-                    // Skip following whitespace
-                    while let Some(&next_ch) = chars.peek() {
-                        if next_ch.is_whitespace() && next_ch != '\n' {
-                            chars.next();
-                        } else {
-                            break;
-                        }
-                    }
-                } else {
-                    // Keep newline outside of function calls/arrays or inside strings
-                    result.push(ch);
-                }
-            }
-            _ => result.push(ch),
-        }
-    }
-
-    result
 }

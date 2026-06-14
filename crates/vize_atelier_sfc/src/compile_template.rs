@@ -16,8 +16,6 @@ mod parts_tests;
 #[cfg(test)]
 mod tests;
 
-#[cfg(test)]
-pub(crate) use extraction::extract_template_parts;
 pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::{
@@ -38,8 +36,8 @@ use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileO
 /// compiler surfaces byte-equivalent JS today. The important canary contract is
 /// that the flattened string is no longer the only source of truth: DOM, SSR,
 /// and Vapor producers attach section marks that inline SFC assembly can slice
-/// directly. If a future lane cannot provide those marks, the caller must treat
-/// string recovery as `SourceAtlasFallback::LegacyLineScanner`.
+/// directly. A successful output that lacks its required section plate is an
+/// internal compiler error, not a prompt to scan generated JavaScript.
 pub(crate) struct TemplateBlockCompileResult {
     pub(crate) code: String,
     pub(crate) warnings: std::vec::Vec<SfcError>,
@@ -60,7 +58,7 @@ pub(crate) struct TemplateBlockCompileResult {
     /// These ranges describe imports, hoists, render functions, and exports in
     /// the final module string. SSR and Vapor inline modes use them to slice the
     /// complete render function from `AtelierOutput`, preserving the exact
-    /// output bytes while dropping the legacy line scanner from the normal path.
+    /// output bytes without recovering structure from generated JavaScript.
     pub(crate) module_sections: Option<AtelierModuleSections>,
     /// Template source-map fragments carried by the Atelier output boundary.
     ///

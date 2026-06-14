@@ -32,7 +32,7 @@ use vize_atelier_core::TemplateSyntaxMode;
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
 };
-use self::fallbacks::{push_vapor_ssr_fallback_warning, record_atelier_fallback};
+use self::fallbacks::push_vapor_ssr_fallback_warning;
 use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
 };
@@ -901,10 +901,7 @@ fn compile_sfc_inner(
                 let parts = profile!(
                     "atelier.sfc.template.extract_parts_full",
                     template_output.full_parts_for_inline(render_fn_name)
-                );
-                if let Some(fallback) = parts.fallback {
-                    record_atelier_fallback(fallback);
-                }
+                )?;
                 (
                     parts.imports,
                     parts.hoisted,
@@ -917,10 +914,7 @@ fn compile_sfc_inner(
                 let parts = profile!(
                     "atelier.sfc.template.extract_parts",
                     template_output.body_parts_for_inline()
-                );
-                if let Some(fallback) = parts.fallback {
-                    record_atelier_fallback(fallback);
-                }
+                )?;
                 (
                     parts.imports,
                     parts.hoisted,

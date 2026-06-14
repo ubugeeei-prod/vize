@@ -94,7 +94,8 @@ impl RenduRenderSections {
             hoisted: if preamble_len > imports_len {
                 // DOM codegen inserts one blank-line separator between helper
                 // imports and hoists. Keep the hoisted section focused on
-                // declarations, matching the legacy line scanner.
+                // declarations so inline assembly receives only movable
+                // template artifacts.
                 RenduRange::new(imports_len + 1, preamble_len)
             } else {
                 RenduRange::empty(preamble_len)

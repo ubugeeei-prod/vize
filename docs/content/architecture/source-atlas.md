@@ -59,9 +59,8 @@ Current `canary` state:
 - `TemplateBlockCompileResult` now owns the section-first extraction API used by
   SFC inline assembly. DOM script-setup assembly slices
   `AtelierOutputSections`; SSR and Vapor inline assembly slice
-  `AtelierModuleSections`. The legacy line scanner remains only as an explicit
-  `SourceAtlasFallback::LegacyLineScanner` compatibility path for outputs that
-  do not yet carry sections.
+  `AtelierModuleSections`. Missing sections are internal compiler errors, not a
+  compatibility path that scans generated JavaScript.
 - Vapor's SFC adapter now registers module sections for imports, template
   declarations, and the render function. This keeps Vapor's target-specific IR
   intact while still letting the shared SFC assembly layer avoid rescanning
@@ -206,8 +205,7 @@ flat string. It should carry:
 - fallback and profile marks.
 
 The purpose is to avoid recovering known structure by scanning generated code.
-Line scanning is a legacy fallback. New code should register sections and map
-fragments while emitting.
+New code must register sections and map fragments while emitting.
 
 The canary rule is now executable in SFC inline assembly:
 
@@ -217,9 +215,9 @@ The canary rule is now executable in SFC inline assembly:
   `ssrRender` function.
 - Vapor inline mode uses module sections emitted by the SFC Vapor adapter for
   imports, template declarations, and the full `render` function.
-- If a future output does not provide these sections, the compiler may still
-  scan the generated string for compatibility, but it must record
-  `atelier.fallback.legacy_line_scanner`.
+- If a future output does not provide these sections, inline SFC assembly
+  returns `TEMPLATE_SECTION_ERROR` instead of recovering by generated-code
+  scanning.
 
 ## Source Maps
 
@@ -283,7 +281,6 @@ Profile facts should cover:
 
 Fallback facts should cover:
 
-- legacy line scanner used;
 - source-map fragment unavailable;
 - map composition skipped;
 - Virtual TS projection skipped;
