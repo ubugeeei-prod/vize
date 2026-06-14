@@ -71,6 +71,14 @@ Current `canary` state:
   registration view. Full SFC map composition remains a separate plate, but
   skipped composition is now observable through the `SourceMap` registry lane
   instead of implicit.
+- Follow-up tracks #1692-#1698 build on this foundation without new hot-path
+  cost: `PlateFamily` classifies plates/targets;
+  `SourceAtlasCoordinate::compatibility_fallback` reports pre-v3 lines as
+  `LegacySyntaxCompatibility`; `RenduCapability` / `vapor_route_fallback` let the
+  Vapor lane consume shared facts and record `UnsupportedVaporShape`;
+  fragment-less source maps report `SourceMapFragmentUnavailable`; and
+  `render_fallback_report` / `render_registry_report` make fallbacks and plate
+  requests explainable.
 
 ## Why An Atlas
 
@@ -103,12 +111,6 @@ needs them.
 | Target     | DOM/VDOM, SSR, Vapor, inclusion Vapor, JSX/TSX emit, diagnostics, source maps                       | Ateliers, Vitrine packages                | Target-specific work stays in its Atelier                        |
 | Finish     | AtelierOutput, diagnostics, maps, profile artifacts, Vitrine payloads                               | SFC, Vitrine, packages, CLI               | Structured before flattening; no string rescans when data exists |
 
-These families are a typed atlas fact: `PlateFamily` classifies every
-`SourceAtlasPlate` and `SourceAtlasTarget`, so a lane can reason about cost
-rules (for example "Patina does not pay for Render plates") without hard-coding
-each plate. The implementation track is
-[#1692](https://github.com/ubugeeei-prod/vize/issues/1692).
-
 ## Version Coordinate
 
 Every plate can carry a version coordinate when it matters. Vize should resolve
@@ -126,11 +128,7 @@ consume the same capability facts.
 
 The version coordinate is a capability fact, not a new global mode that every
 crate rediscovers. If Patina, Canon, Maestro, and the Ateliers disagree about a
-dialect, that is an atlas bug. The coordinate is resolved once and then asked
-for its own compatibility: `SourceAtlasCoordinate::compatibility_fallback`
-returns `LegacySyntaxCompatibility` for any pre-v3 line, so a lane records the
-degraded path as a fallback fact instead of silently downgrading. The
-implementation track is
+dialect, that is an atlas bug. The implementation track is
 [#1698](https://github.com/ubugeeei-prod/vize/issues/1698).
 
 ## Demand-Shaped Lanes
@@ -191,21 +189,13 @@ The initial vocabulary should stay small:
 - `RenduOp<'a>`: element, component, text, comment, interpolation, HTML, prop,
   event, directive, slot outlet, `if`, `for`, fragment, or hoist reference.
 - `RenduExprRef<'a>`: borrowed expression material from Relief, OXC, or Croquis.
-- `RenduCapabilities`: the set of target facts for DOM, SSR, Vapor, custom
-  renderers, and versioned syntax support.
-- `RenduCapability`: one such fact, so a target Atelier can ask
-  `capabilities.supports(RenduCapability::Vapor)` (or iterate present facts with
-  `visit_facts`) instead of reading the raw bitset.
+- `RenduCapabilities`: target facts for DOM, SSR, Vapor, custom renderers, and
+  versioned syntax support.
 - `walk_rendu_ops`: allocation-free traversal for lanes that need render
   semantics before a persistent arena plate is justified.
 
 Vapor should keep its dedicated IR where it earns its keep. The clean route is
 `Rendu -> Vapor IR -> Vapor output`, not deleting Vapor's target-specific plan.
-The Vapor lane consumes shared capability facts rather than re-deriving rules
-inline: `RenduCapabilities::vapor_route_fallback` reports the Vapor SSR mismatch
-as `VaporSsr`, and a template shape Vapor cannot lower is recorded as
-`UnsupportedVaporShape` so the mismatch is observable. The implementation track
-is [#1697](https://github.com/ubugeeei-prod/vize/issues/1697).
 
 ## AtelierOutput
 
@@ -254,11 +244,7 @@ graph LR
 The invariant is that a map fragment should be carried as long as the bridge is
 still correct. If a later stage changes line offsets or concatenates sections
 without composition, Vize must either compose the map or record why the map was
-omitted. Template-only DOM output composes its fragment as the final SFC map;
-inline script+template output defers composition with
-`SourceMapCompositionSkipped`; and a lane that produces no fragment at all
-(SSR/Vapor, or DOM without source maps) records
-`SourceMapFragmentUnavailable` instead of dropping the intent silently.
+omitted.
 
 Required registration facts:
 
@@ -301,12 +287,6 @@ Profile facts should cover:
 - final output byte count;
 - cache hit, miss, and bypass reasons.
 
-Any lane can render which plates it requested with `render_registry_report`,
-which turns the registry it already built into a `lane` / `requests` /
-`fallbacks` view. This is how compiler, linter, typecheck, and source-map lanes
-observe their own plate requests without each reinventing a report, and without
-forcing a plate to be built just to be counted.
-
 Fallback facts should cover:
 
 - source-map fragment unavailable;
@@ -320,13 +300,6 @@ Fallback facts should cover:
 
 Fallback names should stay Vize-native. Use `AtelierFallback`, not deopt, even
 when the engineering idea is inspired by V8.
-
-Each reason is a first-class fact, not just a counter name:
-`SourceAtlasFallback::description` explains it, `from_profile_counter` resolves a
-recorded counter back to the typed reason, and `render_fallback_report` turns an
-observed set into an explainable `counter — description` report so a tool can
-say why it took a fallback without parsing output. The implementation track is
-[#1694](https://github.com/ubugeeei-prod/vize/issues/1694).
 
 ## Performance Guardrails
 
