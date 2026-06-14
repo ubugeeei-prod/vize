@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-bare-strings-in-template",
+        severity: Warning,
+        message: "Raw text should be wrapped in a translation function instead of being written directly in the template",
+        start: 5,
+        end: 10,
+        help: Some(
+            "Move the text into a translation function, e.g. {{ $t('key') }} for content or :title=\"$t('key')\" for an attribute.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

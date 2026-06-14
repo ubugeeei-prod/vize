@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-v-for-template-key-on-child",
+        severity: Error,
+        message: "the `key` for a `<template v-for>` must be on the `<template>`, not on its child",
+        start: 37,
+        end: 51,
+        help: Some(
+            "Move the `:key` up onto the `<template v-for>` element. In Vue 3 the key lives on the template, not the child (the reverse of Vue 2).",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

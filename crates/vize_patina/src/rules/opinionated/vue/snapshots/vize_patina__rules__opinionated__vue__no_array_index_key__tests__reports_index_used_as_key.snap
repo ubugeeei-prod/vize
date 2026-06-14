@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-array-index-key",
+        severity: Warning,
+        message: "Do not use the v-for index as :key; use a stable, unique identifier instead",
+        start: 34,
+        end: 46,
+        help: Some(
+            "Bind :key to a stable id from the item (e.g. :key=\"item.id\"). The index changes when the list is reordered or filtered, so Vue reuses the wrong element state.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

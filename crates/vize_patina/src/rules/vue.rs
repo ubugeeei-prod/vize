@@ -12,6 +12,7 @@
 // Essential rules
 mod attribute_hyphenation;
 mod attribute_order;
+mod no_bare_strings_in_template;
 mod no_child_content;
 mod no_deprecated_html_element_is;
 mod no_deprecated_router_link_tag_prop;
@@ -29,12 +30,15 @@ mod no_textarea_mustache;
 mod no_unused_vars;
 mod no_use_v_if_with_v_for;
 mod no_useless_template_attributes;
+mod no_v_for_template_key_on_child;
 mod no_v_text_v_html_on_component;
 mod prop_name_casing;
 mod require_component_is;
 mod require_scoped_style;
+mod require_toggle_inside_transition;
 mod require_v_for_key;
 mod valid_attribute_name;
+mod valid_template_root;
 mod valid_v_bind;
 mod valid_v_cloak;
 mod valid_v_else;
@@ -87,6 +91,7 @@ mod single_style_block;
 // Essential rules exports
 pub use crate::rules::opinionated::vue::MultiWordComponentNames;
 pub use crate::rules::opinionated::vue::UseVOnExact;
+pub use no_bare_strings_in_template::NoBareStringsInTemplate;
 pub use no_child_content::NoChildContent;
 pub use no_deprecated_html_element_is::NoDeprecatedHtmlElementIs;
 pub use no_deprecated_router_link_tag_prop::NoDeprecatedRouterLinkTagProp;
@@ -104,10 +109,13 @@ pub use no_textarea_mustache::NoTextareaMustache;
 pub use no_unused_vars::NoUnusedVars;
 pub use no_use_v_if_with_v_for::NoUseVIfWithVFor;
 pub use no_useless_template_attributes::NoUselessTemplateAttributes;
+pub use no_v_for_template_key_on_child::NoVForTemplateKeyOnChild;
 pub use no_v_text_v_html_on_component::NoVTextVHtmlOnComponent;
 pub use require_component_is::RequireComponentIs;
+pub use require_toggle_inside_transition::RequireToggleInsideTransition;
 pub use require_v_for_key::RequireVForKey;
 pub use valid_attribute_name::ValidAttributeName;
+pub use valid_template_root::ValidTemplateRoot;
 pub use valid_v_bind::ValidVBind;
 pub use valid_v_cloak::ValidVCloak;
 pub use valid_v_else::ValidVElse;
@@ -177,17 +185,24 @@ pub use single_style_block::SingleStyleBlock;
 pub use crate::rules::opinionated::vue::WarnCustomBlock;
 pub use crate::rules::opinionated::vue::WarnCustomDirective;
 
-/// Register the `valid-v-*` directive-shape rules that every preset shares.
+/// Register the shared `v-*` directive correctness rules every preset enables.
 ///
-/// These check that built-in directives carry the expected expression,
+/// Most of these check that built-in directives carry the expected expression,
 /// argument, and modifier shape (e.g. `v-cloak` takes none, `v-text` takes
-/// one). Bundling them here keeps the per-preset registration list short.
+/// one). The bundle also folds in a few essential markup checks of the same
+/// class — `v-for` key placement, `<transition>` requiring a toggle on its
+/// wrapped element, and a valid single template root — that belong with the
+/// other essential directive-correctness rules. Bundling them here keeps the
+/// per-preset registration list short.
 pub(crate) fn register_valid_directives(registry: &mut crate::rule::RuleRegistry) {
     registry.register(Box::new(ValidVMemo));
     registry.register(Box::new(ValidVCloak));
     registry.register(Box::new(ValidVOnce));
     registry.register(Box::new(ValidVText));
     registry.register(Box::new(ValidVHtml));
+    registry.register(Box::new(NoVForTemplateKeyOnChild));
+    registry.register(Box::new(RequireToggleInsideTransition));
+    registry.register(Box::new(ValidTemplateRoot));
 }
 
 /// Register Vue migration rules as explicit opt-in rules.
@@ -220,5 +235,8 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-deprecated-router-link-tag-prop") {
         registry.register(Box::new(NoDeprecatedRouterLinkTagProp));
+    }
+    if !registry.has_rule("vue/no-bare-strings-in-template") {
+        registry.register(Box::new(NoBareStringsInTemplate));
     }
 }
