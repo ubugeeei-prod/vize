@@ -1,7 +1,8 @@
 //! Profile facts recorded around per-file SFC compilation.
 
 use vize_atelier_core::source_atlas::{
-    SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasRoute, SourceAtlasSource, SourceAtlasTarget,
+    SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasRegistry, SourceAtlasSource,
+    SourceAtlasTarget,
 };
 use vize_carton::profiler::global_profiler;
 
@@ -35,8 +36,8 @@ pub(super) fn record_atelier_profile_facts(
     );
     profiler.record_counter("atelier.profile.has_scoped_style", u64::from(has_scoped));
     profiler.record_counter("atelier.profile.is_ts", u64::from(is_ts));
-    record_source_atlas_route(
-        SourceAtlasRoute::empty()
+    record_source_atlas_registry(
+        SourceAtlasRegistry::compiler()
             .with_source(SourceAtlasSource::Sfc)
             .with_plate(SourceAtlasPlate::Sfc)
             .with_target(SourceAtlasTarget::Sfc)
@@ -78,13 +79,13 @@ fn usize_to_counter(value: usize) -> u64 {
     value.try_into().unwrap_or(u64::MAX)
 }
 
-trait SourceAtlasRouteProfileExt {
+trait SourceAtlasRegistryProfileExt {
     fn with_source_if(self, enabled: bool, source: SourceAtlasSource) -> Self;
     fn with_plate_if(self, enabled: bool, plate: SourceAtlasPlate) -> Self;
     fn with_target_if(self, enabled: bool, target: SourceAtlasTarget) -> Self;
 }
 
-impl SourceAtlasRouteProfileExt for SourceAtlasRoute {
+impl SourceAtlasRegistryProfileExt for SourceAtlasRegistry {
     fn with_source_if(self, enabled: bool, source: SourceAtlasSource) -> Self {
         if enabled {
             self.with_source(source)
@@ -118,8 +119,10 @@ fn source_atlas_script_source(is_ts: bool) -> SourceAtlasSource {
     }
 }
 
-fn record_source_atlas_route(route: SourceAtlasRoute) {
+fn record_source_atlas_registry(registry: SourceAtlasRegistry) {
+    let route = registry.route;
     let profiler = global_profiler();
+    profiler.record_counter(registry.lane.profile_counter(), 1);
     for source in route.sources.iter() {
         profiler.record_counter(source.profile_counter(), 1);
     }
@@ -151,6 +154,9 @@ fn record_source_atlas_route(route: SourceAtlasRoute) {
     }
     if let Some(coordinate) = route.coordinate {
         profiler.record_counter(coordinate.profile_counter(), 1);
+    }
+    for fallback in registry.fallbacks.iter() {
+        profiler.record_counter(fallback.profile_counter(), 1);
     }
 }
 

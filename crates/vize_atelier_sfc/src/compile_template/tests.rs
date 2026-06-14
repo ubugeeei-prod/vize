@@ -1,13 +1,17 @@
 //! Tests for template compilation utilities.
 
+use super::TemplateBlockCompileResult;
 use super::extraction::{extract_template_parts, extract_template_parts_full};
 use super::string_tracking::{
     StringTrackState, count_braces_outside_strings, count_braces_with_state,
     count_delims_with_state,
 };
 use super::vapor::{add_scope_id_to_template, transform_vapor_template_output};
+use crate::compile::output_module::AtelierOutputMaps;
 use crate::types::{BlockLocation, SfcTemplateBlock};
 use std::borrow::Cow;
+use vize_atelier_core::source_atlas::SourceAtlasFallback;
+use vize_carton::String;
 
 #[test]
 fn test_add_scope_id_to_template() {
@@ -570,11 +574,160 @@ fn test_slice_template_parts_matches_line_scanner() {
             .expect("DOM lane must record section offsets");
         let sliced = slice_template_parts(&result.code, &sections);
         let scanned = extract_template_parts(&result.code);
+        let parts = result.body_parts_for_inline();
+
+        assert_eq!(parts.fallback, None);
 
         assert_eq!(
             sliced, scanned,
             "sliced sections must match the line scanner for template:\n{source}\n\ngenerated code:\n{}",
             result.code
         );
+        assert_eq!(
+            (
+                parts.imports,
+                parts.hoisted,
+                parts.preamble,
+                parts.render_body,
+                parts.render_fn_name,
+            ),
+            scanned,
+            "inline body extraction should use recorded sections for template:\n{source}\n\ngenerated code:\n{}",
+            result.code
+        );
     }
+}
+
+#[test]
+fn vapor_compile_records_module_sections_for_inline_extraction() {
+    use super::compile_template_block_vapor;
+    use crate::types::BindingMetadata;
+
+    let template = SfcTemplateBlock {
+        content: Cow::Borrowed("<button>{{ label }}</button>"),
+        loc: BlockLocation {
+            start: 0,
+            end: 0,
+            tag_start: 0,
+            tag_end: 0,
+            start_line: 1,
+            start_column: 1,
+            end_line: 1,
+            end_column: 1,
+        },
+        lang: None,
+        src: None,
+        attrs: Default::default(),
+    };
+    let bindings = BindingMetadata::default();
+    let result = compile_template_block_vapor(
+        &template,
+        "abc123",
+        true,
+        Some(&bindings),
+        false,
+        vize_atelier_core::TemplateSyntaxMode::Standard,
+    )
+    .expect("vapor template should compile");
+
+    assert!(
+        result.module_sections.is_some(),
+        "Vapor output should carry module sections for inline assembly"
+    );
+    let parts = result.full_parts_for_inline("render");
+    assert_eq!(parts.fallback, None);
+    assert!(parts.imports.contains("from 'vue'") || parts.imports.contains("from \"vue\""));
+    assert!(parts.hoisted.contains("_template("));
+    assert!(parts.render_fn.contains("function render("));
+    assert_eq!(parts.render_fn_name, "render");
+}
+
+#[test]
+fn ssr_compile_records_module_sections_for_inline_extraction() {
+    use super::{TemplateBlockCompileContext, compile_template_block};
+    use crate::types::TemplateCompileOptions;
+
+    let template = SfcTemplateBlock {
+        content: Cow::Borrowed("<MyWidget :count=\"count\">{{ label }}</MyWidget>"),
+        loc: BlockLocation {
+            start: 0,
+            end: 0,
+            tag_start: 0,
+            tag_end: 0,
+            start_line: 1,
+            start_column: 1,
+            end_line: 1,
+            end_column: 1,
+        },
+        lang: None,
+        src: None,
+        attrs: Default::default(),
+    };
+    let options = TemplateCompileOptions {
+        ssr: true,
+        ..Default::default()
+    };
+
+    let result = compile_template_block(
+        &template,
+        &options,
+        TemplateBlockCompileContext {
+            scope_id: "abc123",
+            apply_scope_id: false,
+            has_scoped: false,
+            is_ts: false,
+            inline: true,
+            component_name: Some("SsrComp"),
+            bindings: None,
+            croquis: None,
+        },
+        vize_atelier_core::TemplateSyntaxMode::Standard,
+    )
+    .expect("SSR template should compile");
+
+    assert!(
+        result.module_sections.is_some(),
+        "SSR output should carry module sections for inline assembly"
+    );
+    let parts = result.full_parts_for_inline("ssrRender");
+    assert_eq!(parts.fallback, None);
+    assert!(parts.imports.contains("vue/server-renderer"));
+    assert!(
+        parts.render_fn.contains("function ssrRender(")
+            || parts.render_fn.contains("export function ssrRender(")
+    );
+    assert_eq!(parts.render_fn_name, "ssrRender");
+}
+
+#[test]
+fn inline_extraction_reports_legacy_scanner_only_without_sections() {
+    let output = TemplateBlockCompileResult {
+        code: String::from(
+            r#"import { createVNode as _createVNode } from 'vue'
+
+const _hoisted_1 = { class: "test" }
+
+export function render(_ctx, _cache) {
+  return _createVNode("div", _hoisted_1, "Hello")
+}"#,
+        ),
+        warnings: std::vec::Vec::new(),
+        sections: None,
+        module_sections: None,
+        maps: AtelierOutputMaps::default(),
+    };
+
+    let body_parts = output.body_parts_for_inline();
+    assert_eq!(
+        body_parts.fallback,
+        Some(SourceAtlasFallback::LegacyLineScanner)
+    );
+    assert_eq!(body_parts.render_fn_name, "render");
+
+    let full_parts = output.full_parts_for_inline("render");
+    assert_eq!(
+        full_parts.fallback,
+        Some(SourceAtlasFallback::LegacyLineScanner)
+    );
+    assert_eq!(full_parts.render_fn_name, "render");
 }

@@ -1,17 +1,30 @@
 //! Vapor mode template compilation.
 
 use super::string_tracking::{StringTrackState, count_braces_with_state};
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_atelier_core::{TemplateSyntaxMode, rendu::RenduRange};
 use vize_atelier_vapor::{
     VaporCompilerOptions, compile_vapor_with_template_syntax_and_diagnostics,
 };
 use vize_carton::{Bump, String, ToCompactString};
 
 use crate::{
-    compile::output_module::AtelierOutputMaps,
+    compile::output_module::{AtelierModuleSections, AtelierOutputMaps},
     compile_template::{TemplateBlockCompileResult, recoverable_template_warnings},
     types::{BindingMetadata, SfcError, SfcTemplateBlock},
 };
+
+/// Vapor template output after the SFC adapter has normalized imports, hoists,
+/// and the render function.
+///
+/// Vapor already has its own target-specific planning layer, so the canary does
+/// not force it into DOM's fine render-body sections. The shared contract here
+/// is the coarser `AtelierModuleSections`: inline SFC assembly can slice the
+/// imports, template declarations, and full render function without invoking
+/// the legacy line scanner.
+struct VaporTemplateModule {
+    code: String,
+    module_sections: AtelierModuleSections,
+}
 
 /// Compile template block using Vapor mode
 pub(crate) fn compile_template_block_vapor(
@@ -62,7 +75,7 @@ pub(crate) fn compile_template_block_vapor(
         String::default()
     };
 
-    let code = transform_vapor_template_output(
+    let output = transform_vapor_template_module(
         &result.code,
         has_scoped.then_some(scope_attr.as_str()),
         template,
@@ -70,10 +83,10 @@ pub(crate) fn compile_template_block_vapor(
     )?;
 
     Ok(TemplateBlockCompileResult {
-        code,
+        code: output.code,
         warnings: recoverable_template_warnings(&diagnostics),
         sections: None,
-        module_sections: None,
+        module_sections: Some(output.module_sections),
         maps: AtelierOutputMaps::default(),
     })
 }
@@ -126,22 +139,38 @@ fn is_render_signature(line: &str) -> bool {
         || trimmed.starts_with("export default")
 }
 
+#[cfg(test)]
 pub(super) fn transform_vapor_template_output(
     code: &str,
     scope_attr: Option<&str>,
     template: &SfcTemplateBlock,
     bindings: Option<&BindingMetadata>,
 ) -> Result<String, SfcError> {
+    transform_vapor_template_module(code, scope_attr, template, bindings).map(|module| module.code)
+}
+
+fn transform_vapor_template_module(
+    code: &str,
+    scope_attr: Option<&str>,
+    template: &SfcTemplateBlock,
+    bindings: Option<&BindingMetadata>,
+) -> Result<VaporTemplateModule, SfcError> {
     let lines: Vec<&str> = code.lines().collect();
-    let mut output = String::default();
+    let mut imports = String::default();
+    let mut hoists = String::default();
+    let mut functions = String::default();
+    let mut pending_separator = String::default();
     let mut index = 0usize;
 
+    // Import normalization stays in the adapter because Vapor currently emits
+    // from `vue/vapor`, while SFC output expects the runtime surface to be
+    // attached through the same `vue` import family as the other Ateliers.
     while index < lines.len() {
         let line = lines[index];
         let trimmed = line.trim();
         if trimmed.starts_with("import ") {
-            output.push_str(&rewrite_vapor_import(line));
-            output.push('\n');
+            imports.push_str(&rewrite_vapor_import(line));
+            imports.push('\n');
             index += 1;
             continue;
         }
@@ -161,16 +190,29 @@ pub(super) fn transform_vapor_template_output(
             break;
         }
 
+        if trimmed.is_empty() {
+            pending_separator.push_str(line);
+            pending_separator.push('\n');
+            index += 1;
+            continue;
+        }
+
+        hoists.push_str(&pending_separator);
+        pending_separator.clear();
+
+        // Everything before the render signature is module-level material:
+        // template declarations, delegate event calls, and any target-specific
+        // planning statements that must remain outside the render closure.
         if trimmed.starts_with("const t") && trimmed.contains("_template(") {
             if let Some(scope_id) = scope_attr {
-                output.push_str(&add_scope_id_to_template(line, scope_id));
+                hoists.push_str(&add_scope_id_to_template(line, scope_id));
             } else {
-                output.push_str(line);
+                hoists.push_str(line);
             }
-            output.push('\n');
+            hoists.push('\n');
         } else {
-            output.push_str(line);
-            output.push('\n');
+            hoists.push_str(line);
+            hoists.push('\n');
         }
         index += 1;
     }
@@ -183,7 +225,7 @@ pub(super) fn transform_vapor_template_output(
         });
     }
 
-    output.push_str("function render(_ctx, $props, $emit, $attrs, $slots) {\n");
+    functions.push_str("function render(_ctx, $props, $emit, $attrs, $slots) {\n");
 
     let mut brace_state = StringTrackState::default();
     let mut brace_depth = count_braces_with_state(lines[index], &mut brace_state);
@@ -194,19 +236,59 @@ pub(super) fn transform_vapor_template_output(
         let next_depth = brace_depth + count_braces_with_state(line, &mut brace_state);
         if !(next_depth == 0 && line.trim() == "}") {
             if let Some(rewritten) = rewrite_bound_component_resolution(line, bindings) {
-                output.push_str(&rewritten);
+                functions.push_str(&rewritten);
             } else {
-                output.push_str(line);
+                functions.push_str(line);
             }
-            output.push('\n');
+            functions.push('\n');
         }
         brace_depth = next_depth;
         index += 1;
     }
 
-    output.push_str("}\n");
+    functions.push_str("}\n");
 
-    Ok(output)
+    // Vapor assembly preserves the blank separator before the render function,
+    // but that separator is not part of the hoist section: the legacy scanner
+    // ignores blank lines, and inline assembly expects the same shape.
+    let module_sections = vapor_module_sections(
+        imports.len(),
+        hoists.len(),
+        pending_separator.len(),
+        functions.len(),
+    );
+    let mut module_code = String::with_capacity(
+        imports.len() + hoists.len() + pending_separator.len() + functions.len(),
+    );
+    module_code.push_str(&imports);
+    module_code.push_str(&hoists);
+    module_code.push_str(&pending_separator);
+    module_code.push_str(&functions);
+
+    Ok(VaporTemplateModule {
+        code: module_code,
+        module_sections,
+    })
+}
+
+fn vapor_module_sections(
+    imports_len: usize,
+    hoists_len: usize,
+    separator_len: usize,
+    functions_len: usize,
+) -> AtelierModuleSections {
+    let imports = RenduRange::new(0, imports_len);
+    let hoists = RenduRange::new(imports.end, imports.end + hoists_len);
+    let functions_start = hoists.end + separator_len;
+    let functions = RenduRange::new(functions_start, functions_start + functions_len);
+    let exports = RenduRange::empty(functions.end);
+
+    AtelierModuleSections {
+        imports,
+        hoists,
+        functions,
+        exports,
+    }
 }
 
 fn rewrite_bound_component_resolution(

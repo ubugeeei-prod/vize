@@ -2,17 +2,28 @@
 
 use crate::compile_template::TemplateBlockCompileResult;
 use vize_atelier_core::{
-    source_atlas::{SourceAtlasFallback, SourceAtlasPlate, SourceAtlasTarget},
+    source_atlas::{SourceAtlasFallback, SourceAtlasRegistry},
     source_map::{SourceMapRegistration, SourceMapRegistrationState},
 };
 use vize_carton::profiler::global_profiler;
 
 #[derive(Clone, Copy)]
 pub(crate) enum SourceMapComposition {
+    /// The map fragment can be surfaced as the final SFC map for this compile
+    /// shape.
     Composed,
+    /// The map fragment is still valid but cannot be surfaced until a later
+    /// script/template/style composition plate exists.
     Skipped,
 }
 
+/// Record the template source-map plate requested by SFC output assembly.
+///
+/// This function does not compose maps. It observes the map fragment and the
+/// generated Rendu range already attached to `TemplateBlockCompileResult`,
+/// then records that registration through the Source Atlas `SourceMap` lane.
+/// That makes skipped composition visible without forcing normal compile or
+/// lint paths to pay for a full source-map composition pass.
 pub(crate) fn record_template_source_map_fact(
     template_output: &TemplateBlockCompileResult,
     composition: SourceMapComposition,
@@ -23,15 +34,32 @@ pub(crate) fn record_template_source_map_fact(
 
     let profiler = global_profiler();
     profiler.record_counter("atelier.profile.template_source_map_fragments", 1);
-    profiler.record_counter(SourceAtlasPlate::SourceMap.profile_counter(), 1);
-    profiler.record_counter(SourceAtlasTarget::SourceMap.profile_counter(), 1);
+    let mut registry = SourceAtlasRegistry::source_map().with_route(registration.route);
+    if let Some(fallback) = registration.fallback() {
+        registry = registry.with_fallback(fallback);
+    }
+    record_source_map_registry(registry);
     profiler.record_counter("atelier.profile.source_map.registrations", 1);
     profiler.record_counter(
         "atelier.profile.source_map.generated_bytes",
         usize_to_counter(registration.generated_len()),
     );
     profiler.record_counter(registration.section.profile_counter(), 1);
-    if let Some(fallback) = registration.fallback() {
+}
+
+/// Emit the common Source Atlas counters for a source-map registration.
+///
+/// Keeping this helper lane-shaped matters for #1634: source maps are not a
+/// codegen afterthought. They are a requested plate with the same source,
+/// target, coordinate, and fallback vocabulary as compiler, linter, and
+/// typechecker lanes.
+fn record_source_map_registry(registry: SourceAtlasRegistry) {
+    let profiler = global_profiler();
+    profiler.record_counter(registry.lane.profile_counter(), 1);
+    registry.visit_requests(|request| {
+        profiler.record_counter(request.profile_counter(), 1);
+    });
+    for fallback in registry.fallbacks.iter() {
         profiler.record_counter(fallback.profile_counter(), 1);
     }
 }

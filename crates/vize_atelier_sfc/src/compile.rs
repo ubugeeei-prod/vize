@@ -20,7 +20,6 @@ use crate::compile_script::props::is_valid_identifier;
 use crate::compile_script::{TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
-    extract_template_parts, extract_template_parts_full_for_inline, slice_template_parts,
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
@@ -33,7 +32,7 @@ use vize_atelier_core::TemplateSyntaxMode;
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
 };
-use self::fallbacks::push_vapor_ssr_fallback_warning;
+use self::fallbacks::{push_vapor_ssr_fallback_warning, record_atelier_fallback};
 use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
 };
@@ -895,37 +894,41 @@ fn compile_sfc_inner(
         render_body,
     ) = match &template_result {
         Some(Ok(template_output)) => {
-            let template_code = &template_output.code;
             if is_vapor || options.template.ssr {
-                let (imports, hoisted, render_fn, render_fn_name) = profile!(
+                let parts = profile!(
                     "atelier.sfc.template.extract_parts_full",
-                    extract_template_parts_full_for_inline(template_output, options.template.ssr)
+                    template_output.full_parts_for_inline(if options.template.ssr {
+                        "ssrRender"
+                    } else {
+                        "render"
+                    })
                 );
+                if let Some(fallback) = parts.fallback {
+                    record_atelier_fallback(fallback);
+                }
                 (
-                    imports,
-                    hoisted,
-                    render_fn,
-                    render_fn_name,
+                    parts.imports,
+                    parts.hoisted,
+                    parts.render_fn,
+                    parts.render_fn_name,
                     String::default(),
                     String::default(),
                 )
             } else {
-                let (imports, hoisted, preamble, body, render_fn_name) = profile!(
+                let parts = profile!(
                     "atelier.sfc.template.extract_parts",
-                    match &template_output.sections {
-                        // Emission-recorded offsets: slice the sections out
-                        // directly instead of re-scanning the module.
-                        Some(sections) => slice_template_parts(template_code, sections),
-                        None => extract_template_parts(template_code),
-                    }
+                    template_output.body_parts_for_inline()
                 );
+                if let Some(fallback) = parts.fallback {
+                    record_atelier_fallback(fallback);
+                }
                 (
-                    imports,
-                    hoisted,
+                    parts.imports,
+                    parts.hoisted,
                     String::default(),
-                    render_fn_name,
-                    preamble,
-                    body,
+                    parts.render_fn_name,
+                    parts.preamble,
+                    parts.render_body,
                 )
             }
         }

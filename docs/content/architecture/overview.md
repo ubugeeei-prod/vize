@@ -101,11 +101,17 @@ as rescanning generated JavaScript for known sections, rather than adding anothe
 Patina and other linting paths should not pay to build render-only structures unless a rule
 explicitly needs render semantics.
 
+The current canary wiring applies that rule inside SFC inline assembly. DOM output carries fine
+render sections for script-setup render-body insertion, while SSR and Vapor output carry coarser
+module sections for imports, hoists, and full render functions. The legacy generated-code line
+scanner remains as a compatibility fallback only when an output plate lacks sections, and that path
+is recorded as `atelier.fallback.legacy_line_scanner`.
+
 `AtelierProfile` is the observation layer around this work. It records cheap facts that an Atelier
 already knows while compiling: template and script size, style block count, target Atelier, stats
-cache decisions, and fallback reasons. These facts are reported through `--profile` and
-`vize_curator`; they are not public API and must not add measurable overhead to normal compiler or
-linter paths.
+cache decisions, requested Source Atlas lane, and fallback reasons. These facts are reported through
+`--profile` and `vize_curator`; they are not public API and must not add measurable overhead to
+normal compiler or linter paths.
 
 `AtelierFallback` names cases where the preferred workshop cannot finish the piece and Vize uses a
 different path. The first tracked fallback is Vapor SSR, which currently records

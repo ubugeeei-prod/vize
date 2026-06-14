@@ -8,8 +8,20 @@ pub(super) fn push_vapor_ssr_fallback_warning(
     descriptor: &SfcDescriptor,
     warnings: &mut Vec<SfcError>,
 ) {
-    global_profiler().record_counter(SourceAtlasFallback::VaporSsr.profile_counter(), 1);
+    record_atelier_fallback(SourceAtlasFallback::VaporSsr);
     warnings.push(create_vapor_ssr_fallback_warning(descriptor));
+}
+
+/// Record an Atelier fallback fact without changing compiler output.
+///
+/// Fallback facts are intentionally cheaper and narrower than diagnostics:
+/// they are profile observations about how a lane finished its work. A caller
+/// should emit a user-facing warning only when the fallback changes semantics or
+/// target support, such as Vapor SSR. Silent structural fallbacks, such as the
+/// legacy template line scanner, are still recorded here so #1634 migrations can
+/// prove that normal paths no longer depend on them.
+pub(super) fn record_atelier_fallback(fallback: SourceAtlasFallback) {
+    global_profiler().record_counter(fallback.profile_counter(), 1);
 }
 
 fn create_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor) -> SfcError {

@@ -13,12 +13,14 @@ mod map_tests;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use extraction::{extract_template_parts, slice_template_parts};
+#[cfg(test)]
+pub(crate) use extraction::extract_template_parts;
 pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::{
     TemplateSyntaxMode,
     rendu::RenduRange,
+    source_atlas::SourceAtlasFallback,
     source_map::{SourceMapRegistration, SourceMapRegistrationState},
 };
 use vize_carton::Bump;
@@ -28,16 +30,35 @@ use crate::compile::output_module::{
 };
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
 
+/// Structured template output returned from one Atelier lane.
+///
+/// `code` is still the flattened JavaScript module because the public SFC
+/// compiler surfaces byte-equivalent JS today. The important canary contract is
+/// that the flattened string is no longer the only source of truth: DOM, SSR,
+/// and Vapor producers attach section marks that inline SFC assembly can slice
+/// directly. If a future lane cannot provide those marks, the caller must treat
+/// string recovery as `SourceAtlasFallback::LegacyLineScanner`.
 pub(crate) struct TemplateBlockCompileResult {
     pub(crate) code: String,
     pub(crate) warnings: std::vec::Vec<SfcError>,
     /// Section boundaries of `code`, recorded while the render module was
-    /// emitted. `None` for SSR/Vapor lanes because these are DOM render-body
-    /// sections, and for codegen error paths.
+    /// emitted.
+    ///
+    /// These are fine-grained DOM render-body sections: helper imports,
+    /// hoisted declarations, asset-resolution statements, and the returned
+    /// expression. Script-setup inline mode uses them to recover the render body
+    /// without scanning generated JavaScript line by line.
+    ///
+    /// `None` is expected for SSR and Vapor, which use coarse module sections
+    /// instead, and for error paths where no trustworthy output plate exists.
     pub(crate) sections: Option<AtelierOutputSections>,
     /// Coarse module chunk boundaries in `code`, recorded by SFC output
-    /// assembly. SSR inline mode can slice these directly instead of scanning
-    /// the flattened module to recover imports and the render function.
+    /// assembly.
+    ///
+    /// These ranges describe imports, hoists, render functions, and exports in
+    /// the final module string. SSR and Vapor inline modes use them to slice the
+    /// complete render function from `AtelierOutput`, preserving the exact
+    /// output bytes while dropping the legacy line scanner from the normal path.
     pub(crate) module_sections: Option<AtelierModuleSections>,
     /// Template source-map fragments carried by the Atelier output boundary.
     ///
@@ -46,6 +67,48 @@ pub(crate) struct TemplateBlockCompileResult {
     /// fragment here prevents the DOM Atelier map from being discarded before
     /// that composition stage exists.
     pub(crate) maps: AtelierOutputMaps,
+}
+
+/// Full render-function pieces used by SSR and Vapor inline SFC assembly.
+///
+/// This shape mirrors the old scanner tuple, but carries the extra fallback
+/// reason. The tuple compatibility keeps existing assembly code small while the
+/// source atlas learns whether a lane was served by registered output sections
+/// or by the legacy recovery scanner.
+pub(crate) struct TemplateFullParts {
+    /// Module imports that must remain at the top of the final SFC module.
+    pub(crate) imports: String,
+    /// Module-level helper/template declarations emitted before the render
+    /// function.
+    pub(crate) hoisted: String,
+    /// The complete render function body, including its signature and closing
+    /// brace.
+    pub(crate) render_fn: String,
+    /// Name exported by the target Atelier, normally `render` or `ssrRender`.
+    pub(crate) render_fn_name: &'static str,
+    /// Legacy recovery reason when the output did not carry module sections.
+    pub(crate) fallback: Option<SourceAtlasFallback>,
+}
+
+/// Inline client-render pieces used by `<script setup>` assembly.
+///
+/// DOM inline mode inserts template imports, hoists, asset preamble statements,
+/// and the returned render expression into the generated setup function. These
+/// fields are sliced from `AtelierOutputSections` whenever possible so the
+/// compiler does not rediscover known structure from a flattened JS string.
+pub(crate) struct TemplateBodyParts {
+    /// Module imports required by the template render body.
+    pub(crate) imports: String,
+    /// Static vnode declarations and other hoisted render artifacts.
+    pub(crate) hoisted: String,
+    /// Component/directive resolution statements that must run inside setup.
+    pub(crate) preamble: String,
+    /// The expression returned by the render function.
+    pub(crate) render_body: String,
+    /// Name emitted by the target Atelier. Client inline mode expects `render`.
+    pub(crate) render_fn_name: &'static str,
+    /// Legacy recovery reason when the output did not carry fine sections.
+    pub(crate) fallback: Option<SourceAtlasFallback>,
 }
 
 pub(crate) struct TemplateBlockCompileContext<'a> {
@@ -62,24 +125,92 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) croquis: Option<vize_croquis::analysis::Croquis>,
 }
 
-pub(crate) fn extract_template_parts_full_for_inline(
-    template_output: &TemplateBlockCompileResult,
-    is_ssr: bool,
-) -> (String, String, String, &'static str) {
-    let template_code = &template_output.code;
-    if is_ssr {
-        return match &template_output.module_sections {
+impl TemplateBlockCompileResult {
+    /// Return full render-function parts for lanes that cannot inline only the
+    /// returned expression.
+    ///
+    /// SSR and Vapor need the whole render function in script-setup mode. The
+    /// preferred path slices `module_sections` recorded by `OutputModule` or the
+    /// Vapor adapter. Only hand-built or legacy outputs without those ranges
+    /// fall back to the scanner, and that fallback is surfaced to the caller so
+    /// the Source Atlas profile can record it.
+    pub(crate) fn full_parts_for_inline(&self, render_fn_name: &'static str) -> TemplateFullParts {
+        let template_code = &self.code;
+        let (imports, hoisted, render_fn, render_fn_name, fallback) = match &self.module_sections {
             Some(sections) => {
-                extraction::slice_template_parts_full(template_code, sections, "ssrRender")
+                let (imports, hoisted, render_fn, render_fn_name) =
+                    extraction::slice_template_parts_full(template_code, sections, render_fn_name);
+                (imports, hoisted, render_fn, render_fn_name, None)
             }
-            None => extraction::extract_template_parts_full(template_code),
+            None => {
+                let (imports, hoisted, render_fn, render_fn_name) =
+                    extraction::extract_template_parts_full(template_code);
+                (
+                    imports,
+                    hoisted,
+                    render_fn,
+                    render_fn_name,
+                    Some(SourceAtlasFallback::LegacyLineScanner),
+                )
+            }
         };
+
+        TemplateFullParts {
+            imports,
+            hoisted,
+            render_fn,
+            render_fn_name,
+            fallback,
+        }
     }
 
-    extraction::extract_template_parts_full(template_code)
-}
+    /// Return render-body parts for client `<script setup>` inline assembly.
+    ///
+    /// This is the section-first replacement for the old direct
+    /// `extract_template_parts` call. DOM codegen records precise byte ranges
+    /// while emitting, so the normal path is a set of string slices plus tiny
+    /// trimming of asset statements. The old scanner remains only as a
+    /// compatibility fallback for outputs that do not yet carry sections.
+    pub(crate) fn body_parts_for_inline(&self) -> TemplateBodyParts {
+        let template_code = &self.code;
+        let (imports, hoisted, preamble, render_body, render_fn_name, fallback) =
+            match &self.sections {
+                Some(sections) => {
+                    let (imports, hoisted, preamble, render_body, render_fn_name) =
+                        extraction::slice_template_parts(template_code, sections);
+                    (
+                        imports,
+                        hoisted,
+                        preamble,
+                        render_body,
+                        render_fn_name,
+                        None,
+                    )
+                }
+                None => {
+                    let (imports, hoisted, preamble, render_body, render_fn_name) =
+                        extraction::extract_template_parts(template_code);
+                    (
+                        imports,
+                        hoisted,
+                        preamble,
+                        render_body,
+                        render_fn_name,
+                        Some(SourceAtlasFallback::LegacyLineScanner),
+                    )
+                }
+            };
 
-impl TemplateBlockCompileResult {
+        TemplateBodyParts {
+            imports,
+            hoisted,
+            preamble,
+            render_body,
+            render_fn_name,
+            fallback,
+        }
+    }
+
     pub(crate) fn source_map_fragment(&self) -> Option<&str> {
         self.maps.source_map()
     }

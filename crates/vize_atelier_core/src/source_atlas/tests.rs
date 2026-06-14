@@ -114,3 +114,114 @@ fn fallback_reasons_keep_existing_counter_names_stable() {
         "atelier.fallback.source_map.composition_skipped"
     );
 }
+
+#[test]
+fn fallback_sets_deduplicate_and_iterate_in_known_order() {
+    let set = SourceAtlasFallbackSet::empty()
+        .with(SourceAtlasFallback::CacheBypass)
+        .with(SourceAtlasFallback::LegacyLineScanner)
+        .with(SourceAtlasFallback::CacheBypass);
+
+    assert!(set.contains(SourceAtlasFallback::LegacyLineScanner));
+    assert!(set.contains(SourceAtlasFallback::CacheBypass));
+    assert!(!set.contains(SourceAtlasFallback::VaporSsr));
+    assert_eq!(
+        set.iter().collect::<std::vec::Vec<_>>(),
+        [
+            SourceAtlasFallback::LegacyLineScanner,
+            SourceAtlasFallback::CacheBypass,
+        ]
+    );
+}
+
+#[test]
+fn registry_carries_lane_requests_and_fallbacks() {
+    let registry = SourceAtlasRegistry::compiler()
+        .with_source(SourceAtlasSource::Sfc)
+        .with_plate(SourceAtlasPlate::Rendu)
+        .with_target(SourceAtlasTarget::Ssr)
+        .with_coordinate(SourceAtlasCoordinate::from(VueVersion::V3))
+        .with_fallback(SourceAtlasFallback::LegacyLineScanner);
+
+    assert_eq!(
+        registry.lane.profile_counter(),
+        "atelier.profile.lane.compiler"
+    );
+    assert!(registry.route.sources.contains(SourceAtlasSource::Sfc));
+    assert!(registry.route.plates.contains(SourceAtlasPlate::Rendu));
+    assert!(registry.route.targets.contains(SourceAtlasTarget::Ssr));
+    assert!(
+        registry
+            .fallbacks
+            .contains(SourceAtlasFallback::LegacyLineScanner)
+    );
+
+    let mut requests = std::vec::Vec::new();
+    registry.visit_requests(|request| requests.push(request.profile_counter()));
+    assert_eq!(
+        requests,
+        [
+            "atelier.profile.input.sfc",
+            "atelier.profile.plate.rendu",
+            "atelier.profile.target.ssr",
+            "atelier.profile.dialect.vue3",
+        ]
+    );
+}
+
+#[test]
+fn registry_route_builder_keeps_existing_requests() {
+    let registry = SourceAtlasRegistry::typecheck()
+        .with_source(SourceAtlasSource::Sfc)
+        .with_target(SourceAtlasTarget::VirtualTs)
+        .with_plate(SourceAtlasPlate::VirtualTs)
+        .with_source(SourceAtlasSource::Ts)
+        .with_plate(SourceAtlasPlate::Croquis);
+
+    assert_eq!(
+        registry.lane.profile_counter(),
+        "atelier.profile.lane.typecheck"
+    );
+    assert!(registry.route.sources.contains(SourceAtlasSource::Sfc));
+    assert!(registry.route.sources.contains(SourceAtlasSource::Ts));
+    assert!(
+        registry
+            .route
+            .targets
+            .contains(SourceAtlasTarget::VirtualTs)
+    );
+    assert!(registry.route.plates.contains(SourceAtlasPlate::VirtualTs));
+    assert!(registry.route.plates.contains(SourceAtlasPlate::Croquis));
+}
+
+#[test]
+fn source_map_registry_records_deferred_composition_as_lane_fallback() {
+    let registry = SourceAtlasRegistry::source_map()
+        .with_source(SourceAtlasSource::VueTemplate)
+        .with_plate(SourceAtlasPlate::SourceMap)
+        .with_target(SourceAtlasTarget::SourceMap)
+        .with_fallback(SourceAtlasFallback::SourceMapCompositionSkipped);
+
+    assert_eq!(
+        registry.lane.profile_counter(),
+        "atelier.profile.lane.source_map"
+    );
+    assert!(
+        registry
+            .route
+            .sources
+            .contains(SourceAtlasSource::VueTemplate)
+    );
+    assert!(registry.route.plates.contains(SourceAtlasPlate::SourceMap));
+    assert!(
+        registry
+            .route
+            .targets
+            .contains(SourceAtlasTarget::SourceMap)
+    );
+    assert!(
+        registry
+            .fallbacks
+            .contains(SourceAtlasFallback::SourceMapCompositionSkipped)
+    );
+}

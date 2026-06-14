@@ -4,8 +4,12 @@
 //! without implying that every plate must be built. Keep this layer `Copy`,
 //! allocation-free, and cheap enough to thread through profile/fallback facts.
 
+mod fallback;
+mod registry;
 mod route;
 
+pub use fallback::{SourceAtlasFallback, SourceAtlasFallbackSet};
+pub use registry::{SourceAtlasLane, SourceAtlasRegistry};
 pub use route::{SourceAtlasRoute, SourceAtlasSource, SourceAtlasSourceSet, SourceAtlasTargetSet};
 
 use vize_carton::config::VueVersion;
@@ -190,40 +194,6 @@ impl SourceAtlasCoordinate {
 impl From<VueVersion> for SourceAtlasCoordinate {
     fn from(version: VueVersion) -> Self {
         Self::from_vue_version(version)
-    }
-}
-
-/// A reason Vize could not project one requested atlas plate directly.
-#[non_exhaustive]
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub enum SourceAtlasFallback {
-    LegacyLineScanner,
-    SourceMapFragmentUnavailable,
-    SourceMapCompositionSkipped,
-    VirtualTsSkipped,
-    UnsupportedVaporShape,
-    VaporSsr,
-    CustomRendererMismatch,
-    LegacySyntaxCompatibility,
-    CacheBypass,
-}
-
-impl SourceAtlasFallback {
-    /// Counter used when this fallback reason is observed.
-    pub const fn profile_counter(self) -> &'static str {
-        match self {
-            Self::LegacyLineScanner => "atelier.fallback.legacy_line_scanner",
-            Self::SourceMapFragmentUnavailable => {
-                "atelier.fallback.source_map.fragment_unavailable"
-            }
-            Self::SourceMapCompositionSkipped => "atelier.fallback.source_map.composition_skipped",
-            Self::VirtualTsSkipped => "atelier.fallback.virtual_ts.skipped",
-            Self::UnsupportedVaporShape => "atelier.fallback.vapor.unsupported_shape",
-            Self::VaporSsr => "atelier.fallback.vapor_ssr",
-            Self::CustomRendererMismatch => "atelier.fallback.custom_renderer_mismatch",
-            Self::LegacySyntaxCompatibility => "atelier.fallback.legacy_syntax_compatibility",
-            Self::CacheBypass => "atelier.fallback.cache_bypass",
-        }
     }
 }
 

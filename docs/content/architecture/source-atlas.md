@@ -43,21 +43,35 @@ The canary implementation backlog is split into reviewable plates:
 
 Current `canary` state:
 
-- `SourceAtlasRoute` names the multi-source, multi-target request surface and
-  is used by build profile facts:
+- `SourceAtlasRoute` names the multi-source, multi-target request surface, and
+  `SourceAtlasRegistry` attaches that route to a product lane such as compiler,
+  typecheck, or source-map registration:
   sources such as SFC, template, script, style, JS, TS, JSX, and TSX can be
   paired with targets such as SFC, DOM/VDOM, SSR, Vapor, Virtual TS,
-  diagnostics, source maps, and Vitrine.
+  diagnostics, source maps, and Vitrine. Build profile facts now record through
+  the compiler registry while preserving the existing 0/1 samples for legacy
+  SFC profile reports.
 - `RenduRoot`, `RenduBlock`, `RenduOp`, and `RenduExprRef` provide the first
   borrowed render-semantic plate. `walk_rendu_ops` can stream transformed Relief
   trees as Rendu operations without allocating a persistent render IR, while
   `RenduPlate` keeps the structured output chunks and section ranges already
   emitted by the Ateliers.
+- `TemplateBlockCompileResult` now owns the section-first extraction API used by
+  SFC inline assembly. DOM script-setup assembly slices
+  `AtelierOutputSections`; SSR and Vapor inline assembly slice
+  `AtelierModuleSections`. The legacy line scanner remains only as an explicit
+  `SourceAtlasFallback::LegacyLineScanner` compatibility path for outputs that
+  do not yet carry sections.
+- Vapor's SFC adapter now registers module sections for imports, template
+  declarations, and the render function. This keeps Vapor's target-specific IR
+  intact while still letting the shared SFC assembly layer avoid rescanning
+  flattened JavaScript.
 - `SourceMapRegistration` records template map fragments as source-map
   registration marks with generated Rendu ranges, section identity, and
   composition state. `TemplateBlockCompileResult` exposes this as a borrowed
   registration view. Full SFC map composition remains a separate plate, but
-  skipped composition is now observable instead of implicit.
+  skipped composition is now observable through the `SourceMap` registry lane
+  instead of implicit.
 
 ## Why An Atlas
 
@@ -194,6 +208,18 @@ flat string. It should carry:
 The purpose is to avoid recovering known structure by scanning generated code.
 Line scanning is a legacy fallback. New code should register sections and map
 fragments while emitting.
+
+The canary rule is now executable in SFC inline assembly:
+
+- DOM inline mode uses fine render sections for imports, hoists, asset preamble
+  statements, and the returned expression.
+- SSR inline mode uses module sections for imports, hoists, and the full
+  `ssrRender` function.
+- Vapor inline mode uses module sections emitted by the SFC Vapor adapter for
+  imports, template declarations, and the full `render` function.
+- If a future output does not provide these sections, the compiler may still
+  scan the generated string for compatibility, but it must record
+  `atelier.fallback.legacy_line_scanner`.
 
 ## Source Maps
 
