@@ -167,6 +167,44 @@ mod tests {
     }
 
     #[test]
+    fn for_walk_preserves_value_key_and_index_aliases_from_parsed_source() {
+        let allocator = Allocator::default();
+        let bump = allocator.as_bump();
+        let (mut root, errors) = parse(
+            bump,
+            "<li v-for=\"(item, key, index) in items\">{{ item }}</li>",
+        );
+        assert!(errors.is_empty());
+        let diagnostics = transform(bump, &mut root, TransformOptions::default(), None);
+        assert!(diagnostics.is_empty());
+
+        let mut for_aliases = None;
+        walk_rendu_ops(&root, |op| {
+            if let RenduOp::For {
+                source,
+                value,
+                key,
+                index,
+                ..
+            } = op
+            {
+                for_aliases = Some((
+                    source.text(),
+                    value.map(RenduExprRef::text),
+                    key.map(RenduExprRef::text),
+                    index.map(RenduExprRef::text),
+                ));
+            }
+        });
+
+        assert_eq!(
+            for_aliases,
+            Some(("items", Some("item"), Some("key"), Some("index"))),
+            "v-for aliases should survive parse -> transform -> Rendu walk"
+        );
+    }
+
+    #[test]
     fn walks_transformed_control_flow_as_structured_rendu() {
         let allocator = Allocator::default();
         let bump = allocator.as_bump();
