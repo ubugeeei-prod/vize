@@ -30,63 +30,70 @@ export function generatePreviewHtml(
   <title>${escapeHtml(art.metadata.title)} - ${escapeHtml(variant.name)}</title>
   <script type="module" src="${base}/@vite/client"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --musea-preview-padding: clamp(1rem, 2vw, 1.5rem);
+    @layer musea-preview {
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      :root {
+        --musea-preview-padding: clamp(1rem, 2vw, 1.5rem);
+      }
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #ffffff;
+        padding: var(--musea-preview-padding);
+        overflow: auto;
+      }
+      .musea-variant {
+        width: 100%;
+        min-height: calc(100vh - (var(--musea-preview-padding) * 2));
+      }
+      .musea-error {
+        color: #dc2626;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 1rem;
+        font-size: 0.875rem;
+        max-width: 400px;
+      }
+      .musea-error-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      .musea-error pre {
+        font-family: monospace;
+        font-size: 0.75rem;
+        white-space: pre-wrap;
+        word-break: break-all;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: #fff;
+        border-radius: 4px;
+      }
+      .musea-loading {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+      .musea-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #e5e7eb;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: musea-preview-spin 0.8s linear infinite;
+      }
     }
-    html, body {
-      width: 100%;
-      height: 100%;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #ffffff;
-      padding: var(--musea-preview-padding);
-      overflow: auto;
-    }
-    .musea-variant {
-      width: 100%;
-      min-height: calc(100vh - (var(--musea-preview-padding) * 2));
-    }
-    .musea-error {
-      color: #dc2626;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      border-radius: 8px;
-      padding: 1rem;
-      font-size: 0.875rem;
-      max-width: 400px;
-    }
-    .musea-error-title {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-    .musea-error pre {
-      font-family: monospace;
-      font-size: 0.75rem;
-      white-space: pre-wrap;
-      word-break: break-all;
-      margin-top: 0.5rem;
-      padding: 0.5rem;
-      background: #fff;
-      border-radius: 4px;
-    }
-    .musea-loading {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: #6b7280;
-      font-size: 0.875rem;
-    }
-    .musea-spinner {
-      width: 20px;
-      height: 20px;
-      border: 2px solid #e5e7eb;
-      border-top-color: #3b82f6;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes musea-preview-spin { to { transform: rotate(360deg); } }
 
     /* Musea Addons: Checkerboard background for transparent mode */
     .musea-bg-checkerboard {

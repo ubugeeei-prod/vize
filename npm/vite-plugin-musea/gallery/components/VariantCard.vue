@@ -196,7 +196,8 @@ const window = globalThis.window;
 }
 
 .variant-preview {
-  aspect-ratio: 16 / 7;
+  aspect-ratio: 16 / 9;
+  min-height: clamp(260px, 36vw, 560px);
   background: var(--musea-bg-tertiary);
   display: flex;
   align-items: center;
@@ -208,13 +209,13 @@ const window = globalThis.window;
 
 .variant-preview.viewport-mode {
   aspect-ratio: unset;
-  min-height: 200px;
-  max-height: 350px;
+  min-height: 260px;
+  max-height: min(70vh, 720px);
   overflow: auto;
 }
 
 .variant-preview iframe {
-  width: 70%;
+  width: 100%;
   height: 100%;
   max-width: 100%;
   max-height: 100%;

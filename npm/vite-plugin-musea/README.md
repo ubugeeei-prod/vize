@@ -175,6 +175,9 @@ export default function setup(app: App) {
 }
 ```
 
+Musea's preview scaffold styles are emitted in a low-priority cascade layer, so layered CSS from
+frameworks such as Tailwind v4 can still override them when loaded through `previewCss`.
+
 ## Design Tokens
 
 Expose a Style Dictionary-compatible token file in the gallery:
