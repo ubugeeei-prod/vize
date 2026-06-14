@@ -6,6 +6,7 @@
 mod art_script;
 mod binding;
 mod block;
+mod inline_art;
 
 #[cfg(test)]
 mod tests;
@@ -24,11 +25,14 @@ use super::{
 };
 
 pub use art_script::{
-    ArtScriptChunk, ArtScriptSetupParts, analyze_art_script_setup, find_define_art_component_name,
+    ArtScriptChunk, ArtScriptSetupParts, ArtTargetComponent, analyze_art_script_setup,
+    art_target_component_from_source, find_define_art_component_name,
+    find_define_art_target_component,
 };
 pub use block::{
     ArtCursorPosition, ArtVariantInfo, BlockType, find_art_block_at_offset, find_block_at_offset,
 };
+pub(crate) use inline_art::inline_art_variants;
 
 /// Virtual code generator for SFC files.
 ///

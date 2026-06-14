@@ -36,7 +36,7 @@ function sendTokenMutationError(e: unknown, sendError: SendError): void {
     return;
   }
 
-  if (e instanceof Error && /token path/i.test(e.message)) {
+  if (e instanceof Error && /(token path|token editing)/i.test(e.message)) {
     sendError(e.message, 400);
     return;
   }

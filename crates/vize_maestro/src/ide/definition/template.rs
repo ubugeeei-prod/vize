@@ -1,7 +1,4 @@
-//! Template definition lookup.
-//!
-//! Handles go-to-definition for template expressions, component tags,
-//! and prop references.
+//! Template go-to-definition for expressions, component tags, and props.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range};
@@ -506,14 +503,17 @@ pub(crate) fn find_component_definition(
     ctx: &IdeContext<'_>,
     tag_name: &str,
 ) -> Option<GotoDefinitionResponse> {
+    if tag_name == "Self" {
+        return super::inline_art::self_component_definition(ctx);
+    }
+
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: ctx.uri.path().to_string().into(),
         ..Default::default()
     };
 
-    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
-
     let mut analyzer = Drawer::with_options(DrawerOptions::full());
+    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
 
     if let Some(ref script_setup) = descriptor.script_setup {
         analyzer.analyze_script_setup(&script_setup.content);

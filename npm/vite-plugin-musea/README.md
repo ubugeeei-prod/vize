@@ -91,6 +91,26 @@ and the metadata shown in the gallery. Prefer a relative component path string; 
 removed and Musea generates the component import. The Musea language server uses the same source
 for path completion, missing-file diagnostics, go-to-definition, and prop/slot inference.
 
+## TypeScript and Editor Setup
+
+Add the client types once, usually in `src/env.d.ts`:
+
+```ts
+/// <reference types="@vizejs/vite-plugin-musea/client" />
+```
+
+If your project type-checks `.art.vue` files with Volar or `vue-tsc`, include the extension in
+`tsconfig.json`:
+
+```json
+{
+  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.art.vue"],
+  "vueCompilerOptions": {
+    "extensions": [".vue", ".art.vue"]
+  }
+}
+```
+
 Root `<script setup>` state is variant-local by default, so each variant gets its own refs,
 computed values, and composable calls:
 
@@ -164,6 +184,28 @@ musea({
   tokensPath: "src/tokens.json",
 });
 ```
+
+Tailwind v4 theme variables can also be used as the token source:
+
+```css
+/* src/styles/main.css */
+@import "tailwindcss";
+
+@theme {
+  --color-brand: oklch(70.5% 0.213 47.604);
+  --color-accent: var(--color-brand);
+  --spacing-card: 1.5rem;
+}
+```
+
+```ts
+musea({
+  tokensPath: "src/styles/main.css",
+});
+```
+
+`tokensPath` reads tokens for the gallery and token APIs. Use `previewCss` separately when that
+CSS file should also be loaded inside component preview iframes.
 
 ## Commands
 

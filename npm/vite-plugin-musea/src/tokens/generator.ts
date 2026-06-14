@@ -13,7 +13,8 @@ import { parseTokens } from "./parser.js";
 import { tokenNative } from "./native.js";
 import { escapeHtml } from "../utils.js";
 
-const SAFE_CSS_COLOR_PATTERN = /^(?:#[0-9a-fA-F]{3,8}|(?:rgb|hsl)a?\(\s*[-+.\d,%\s]+\))$/;
+const SAFE_CSS_COLOR_PATTERN =
+  /^(?:#[0-9a-fA-F]{3,8}|(?:rgb|hsl)a?\(\s*[-+.\d,%\s/]+\)|(?:oklch|oklab|lab|lch)\(\s*[-+.\d,%\s/]+\))$/;
 const DANGEROUS_PROTOCOL_PATTERN = /\b(javascript|vbscript):/gi;
 
 function escapeTokenText(value: string): string {

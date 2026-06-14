@@ -27,7 +27,8 @@
   "files": [
     "dist",
     "dist/gallery",
-    "bin"
+    "bin",
+    "client.d.ts"
   ],
   "type": "module",
   "main": "./dist/index.mjs",
@@ -36,6 +37,9 @@
     ".": {
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.mts"
+    },
+    "./client": {
+      "types": "./client.d.ts"
     },
     "./vrt": {
       "import": "./dist/vrt.mjs",

@@ -15,7 +15,7 @@ use tower_lsp::lsp_types::{
 #[cfg(feature = "native")]
 use vize_canon::{CorsaBridge, LspCompletionItem, LspDocumentation};
 
-use super::{is_inside_html_comment, script, style, template};
+use super::{is_inside_html_comment, script, service_inline_art, style, template};
 #[cfg(feature = "native")]
 use crate::ide::corsa_support;
 use crate::ide::{IdeContext, ecosystem};
@@ -56,9 +56,8 @@ impl super::CompletionService {
             };
         }
 
-        // Check if cursor is inside <art> block in a regular .vue file
         if matches!(ctx.block_type, Some(BlockType::Art(_))) {
-            return template::complete_inline_art(ctx);
+            return service_inline_art::complete(ctx);
         }
 
         if ctx.state.lsp_features().ecosystem {
@@ -137,9 +136,8 @@ impl super::CompletionService {
             };
         }
 
-        // Check if cursor is inside <art> block in a regular .vue file
         if matches!(ctx.block_type, Some(BlockType::Art(_))) {
-            return template::complete_inline_art(ctx);
+            return service_inline_art::complete_with_corsa(ctx, corsa_bridge).await;
         }
 
         if ctx.state.lsp_features().ecosystem {
@@ -203,7 +201,7 @@ impl super::CompletionService {
 
     /// Get completions for an art variant template with Corsa.
     #[cfg(feature = "native")]
-    async fn complete_art_variant_with_corsa(
+    pub(super) async fn complete_art_variant_with_corsa(
         ctx: &IdeContext<'_>,
         info: &crate::virtual_code::ArtVariantInfo,
         bridge: &CorsaBridge,

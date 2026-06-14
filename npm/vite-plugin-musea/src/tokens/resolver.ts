@@ -6,9 +6,12 @@
  */
 
 import fs from "node:fs";
+import path from "node:path";
 
 import type { DesignToken, TokenCategory } from "./parser.js";
 import { normalizeCategories, nullRecord, tokenNative } from "./native.js";
+
+const JSON_TOKEN_EXTENSIONS = new Set([".json", ".tokens.json"]);
 
 // Re-export usage scanning and normalization from usage
 export { normalizeTokenValue, scanTokenUsage } from "./usage.js";
@@ -75,6 +78,9 @@ export function resolveReferences(
  * Read raw JSON token file.
  */
 export async function readRawTokenFile(tokensPath: string): Promise<Record<string, unknown>> {
+  if (!isJsonTokenPath(tokensPath)) {
+    throw new Error("Token editing is only supported for JSON token files");
+  }
   const content = await fs.promises.readFile(tokensPath, "utf-8");
   return JSON.parse(content) as Record<string, unknown>;
 }
@@ -86,9 +92,16 @@ export async function writeRawTokenFile(
   tokensPath: string,
   data: Record<string, unknown>,
 ): Promise<void> {
+  if (!isJsonTokenPath(tokensPath)) {
+    throw new Error("Token editing is only supported for JSON token files");
+  }
   const tmpPath = tokensPath + ".tmp";
   await fs.promises.writeFile(tmpPath, JSON.stringify(data, null, 2) + "\n", "utf-8");
   await fs.promises.rename(tmpPath, tokensPath);
+}
+
+function isJsonTokenPath(tokensPath: string): boolean {
+  return JSON_TOKEN_EXTENSIONS.has(path.extname(tokensPath)) || tokensPath.endsWith(".tokens.json");
 }
 
 /**

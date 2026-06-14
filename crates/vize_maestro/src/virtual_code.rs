@@ -34,10 +34,12 @@ mod source_map;
 mod style_code;
 mod template_code;
 
+pub(crate) use generator::inline_art_variants;
 pub use generator::{
-    ArtCursorPosition, ArtScriptChunk, ArtScriptSetupParts, ArtVariantInfo,
+    ArtCursorPosition, ArtScriptChunk, ArtScriptSetupParts, ArtTargetComponent, ArtVariantInfo,
     BatchVirtualCodeGenerator, BlockType, VirtualCodeGenerator, analyze_art_script_setup,
-    find_art_block_at_offset, find_block_at_offset, find_define_art_component_name,
+    art_target_component_from_source, find_art_block_at_offset, find_block_at_offset,
+    find_define_art_component_name, find_define_art_target_component,
 };
 pub use script_code::{ScriptCodeGenerator, extract_simple_bindings};
 pub use source_map::{MappingData, MappingFeatures, SourceMap, SourceMapping};
@@ -145,15 +147,15 @@ impl VirtualDocuments {
     /// Get all virtual documents as a vector.
     pub fn all(&self) -> Vec<&VirtualDocument> {
         let mut docs = Vec::new();
-        if self.art_templates.is_empty() {
-            if let Some(ref t) = self.template {
-                docs.push(t);
-            }
-        } else {
-            for art_template in &self.art_templates {
-                if let Some(template) = art_template.as_ref() {
-                    docs.push(template);
-                }
+        let template_uri = self.template.as_ref().map(|template| template.uri.as_str());
+        if let Some(ref t) = self.template {
+            docs.push(t);
+        }
+        for art_template in &self.art_templates {
+            if let Some(template) = art_template.as_ref()
+                && Some(template.uri.as_str()) != template_uri
+            {
+                docs.push(template);
             }
         }
         if let Some(ref s) = self.script {

@@ -13,6 +13,7 @@ mod dispatch;
 mod items;
 mod script;
 mod service;
+mod service_inline_art;
 mod style;
 pub(crate) mod template;
 

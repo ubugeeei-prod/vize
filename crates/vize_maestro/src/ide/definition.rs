@@ -5,9 +5,9 @@
 //! - Component usages -> component definitions
 //! - Import statements -> imported files
 //! - Real definitions from Corsa (when available)
-
 pub mod bindings;
 pub(crate) mod helpers;
+mod inline_art;
 pub(crate) mod script;
 mod service;
 mod template;

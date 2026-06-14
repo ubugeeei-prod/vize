@@ -39,7 +39,8 @@ impl ServerState {
         };
 
         let base_uri = uri.path();
-        let virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
+        let mut virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
+        add_inline_art_template_virtual_docs(&mut virtual_docs, &descriptor, base_uri);
         self.virtual_docs_cache.insert(uri.clone(), virtual_docs);
     }
 
@@ -183,6 +184,57 @@ impl ServerState {
         &self,
     ) -> &DashMap<PathBuf, crate::ide::completion::template::CachedComponentMetadata> {
         &self.component_metadata_cache
+    }
+}
+
+fn add_inline_art_template_virtual_docs(
+    docs: &mut VirtualDocuments,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    base_uri: &str,
+) {
+    use crate::virtual_code::TemplateCodeGenerator;
+
+    let source = descriptor.source.as_ref();
+    let mut variant_index = docs.art_templates.len();
+
+    for custom in &descriptor.custom_blocks {
+        if custom.block_type != "art" {
+            continue;
+        }
+
+        let variants =
+            crate::virtual_code::inline_art_variants(custom.content.as_ref(), custom.loc.start);
+        if variants.is_empty() {
+            continue;
+        }
+
+        docs.art_templates
+            .resize(docs.art_templates.len() + variants.len(), None);
+
+        for variant in variants {
+            let current_variant_index = variant_index;
+            variant_index += 1;
+
+            let Some(template_content) = source.get(variant.template_start..variant.template_end)
+            else {
+                continue;
+            };
+            if template_content.trim().is_empty() {
+                continue;
+            }
+
+            let template_allocator = vize_carton::Bump::new();
+            let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
+
+            let mut template_gen = TemplateCodeGenerator::new();
+            template_gen.set_block_offset(variant.template_start as u32);
+            let mut template_doc = template_gen.generate(&ast, template_content);
+            template_doc.uri =
+                vize_carton::cstr!("{base_uri}.art_variant_{current_variant_index}.template.ts")
+                    .to_string();
+
+            docs.art_templates[current_variant_index] = Some(template_doc);
+        }
     }
 }
 

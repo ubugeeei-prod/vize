@@ -17,12 +17,23 @@ pub struct ArtScriptChunk {
 pub struct ArtScriptSetupParts {
     /// The inferred component tag from `defineArt(...)`, if present.
     pub component_name: Option<String>,
+    /// The component source from `defineArt(...)`, if present.
+    pub component_source: Option<String>,
     /// Whether the setup body should be isolated per variant.
     pub isolate: bool,
     /// Imports that are safe to keep at module level for generated variant setup functions.
     pub shared_imports: Vec<ArtScriptChunk>,
     /// Top-level setup code used as variant-local state.
     pub isolated_body: Vec<ArtScriptChunk>,
+}
+
+/// Component target declared by art metadata.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ArtTargetComponent {
+    /// Template binding name used for the target component.
+    pub name: String,
+    /// Import source of the target component.
+    pub source: String,
 }
 
 impl ArtScriptSetupParts {
@@ -47,10 +58,10 @@ pub fn analyze_art_script_setup(
     isolate: bool,
 ) -> ArtScriptSetupParts {
     let parsed = vize_croquis::script_parser::parse_script_setup(script);
-    let component_name = parsed
-        .macros
-        .define_art()
-        .map(|art| art.component_name.to_string());
+    let define_art = parsed.macros.define_art();
+    let component_name = define_art.map(|art| art.component_name.to_string());
+    let component_source =
+        define_art.and_then(|art| art.component_source.as_ref().map(ToString::to_string));
     let define_art_range = parsed
         .macros
         .define_art_call()
@@ -95,6 +106,7 @@ pub fn analyze_art_script_setup(
 
     ArtScriptSetupParts {
         component_name,
+        component_source,
         isolate,
         shared_imports,
         isolated_body,
@@ -107,6 +119,60 @@ pub fn find_define_art_component_name(script: &str) -> Option<String> {
         .macros
         .define_art()
         .map(|art| art.component_name.to_string())
+}
+
+/// Find the component target inferred from `defineArt(...)`.
+pub fn find_define_art_target_component(script: &str) -> Option<ArtTargetComponent> {
+    let parsed = vize_croquis::script_parser::parse_script_setup(script);
+    let art = parsed.macros.define_art()?;
+    let source = art.component_source.as_ref()?;
+    Some(ArtTargetComponent {
+        name: art.component_name.to_string(),
+        source: source.to_string(),
+    })
+}
+
+/// Infer the component target from a legacy `<art component="...">` source.
+pub fn art_target_component_from_source(source: &str) -> Option<ArtTargetComponent> {
+    let name = component_name_from_source(source);
+    if source.trim().is_empty() {
+        return None;
+    }
+    Some(ArtTargetComponent {
+        name,
+        source: source.to_string(),
+    })
+}
+
+fn component_name_from_source(source: &str) -> String {
+    let without_query = source.split(['?', '#']).next().unwrap_or(source);
+    let filename = without_query
+        .rsplit(['/', '\\'])
+        .next()
+        .filter(|name| !name.is_empty())
+        .unwrap_or("Component");
+    let stem = filename
+        .rsplit_once('.')
+        .map_or(filename, |(name, _extension)| name);
+
+    let mut component_name = String::new();
+    for segment in stem.split(|ch: char| !ch.is_ascii_alphanumeric()) {
+        if segment.is_empty() {
+            continue;
+        }
+
+        let mut chars = segment.chars();
+        if let Some(first) = chars.next() {
+            component_name.push(first.to_ascii_uppercase());
+            component_name.extend(chars);
+        }
+    }
+
+    if component_name.is_empty() {
+        "Component".to_string()
+    } else {
+        component_name
+    }
 }
 
 fn split_top_level_statements(script: &str, source_start: usize) -> Vec<ArtScriptChunk> {

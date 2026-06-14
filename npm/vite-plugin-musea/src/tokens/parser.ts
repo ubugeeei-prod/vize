@@ -5,6 +5,7 @@
  */
 
 import { normalizeCategories, tokenNative } from "./native.js";
+import { isTailwindTokenPath, parseTailwindTokens } from "./tailwind.js";
 
 /**
  * Design token value.
@@ -45,7 +46,7 @@ export interface StyleDictionaryOutput {
  */
 export interface StyleDictionaryConfig {
   /**
-   * Path to tokens JSON/JS file or directory.
+   * Path to tokens JSON file/directory or Tailwind CSS theme file.
    */
   tokensPath: string;
 
@@ -73,8 +74,11 @@ export interface StyleDictionaryConfig {
 export type TokenTransform = (token: DesignToken, path: string[]) => DesignToken;
 
 /**
- * Parse Style Dictionary tokens file or directory.
+ * Parse Style Dictionary tokens file/directory or Tailwind CSS theme variables.
  */
 export async function parseTokens(tokensPath: string): Promise<TokenCategory[]> {
+  if (await isTailwindTokenPath(tokensPath)) {
+    return parseTailwindTokens(tokensPath);
+  }
   return normalizeCategories(tokenNative().parseDesignTokensFromPath(tokensPath));
 }

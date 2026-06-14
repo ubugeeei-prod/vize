@@ -9,6 +9,7 @@ import {
   buildTokenMap,
   deleteTokenAtPath,
   resolveReferences,
+  scanTokenUsage,
   setTokenAtPath,
 } from "./tokens/resolver.ts";
 
@@ -85,6 +86,82 @@ void test("token parsing keeps prototype-like token names as data", async () => 
     assert.equal(Object.getPrototypeOf(tokenMap), null);
     assert.equal(tokenMap["color.__proto__"]?.value, "#fff");
     assert.equal(({} as Record<string, unknown>).value, undefined);
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+void test("parseTokens reads Tailwind CSS theme variables", async () => {
+  const tempDir = await makeAgentTempDir();
+  const cssPath = path.join(tempDir, "main.css");
+
+  try {
+    await fs.promises.writeFile(
+      cssPath,
+      `
+@import "tailwindcss";
+
+@theme {
+  --color-brand: oklch(70.5% 0.213 47.604);
+  --color-accent: var(--color-brand);
+  --spacing-card: 1.5rem;
+  --font-weight-semibold: 600;
+}
+`,
+      "utf-8",
+    );
+
+    const categories = await parseTokens(cssPath);
+    const tokenMap = buildTokenMap(categories);
+    resolveReferences(categories, tokenMap);
+    const resolvedTokenMap = buildTokenMap(categories);
+
+    assert.equal(resolvedTokenMap["color.brand"]?.value, "oklch(70.5% 0.213 47.604)");
+    assert.equal(resolvedTokenMap["color.accent"]?.$reference, "color.brand");
+    assert.equal(resolvedTokenMap["color.accent"]?.$resolvedValue, "oklch(70.5% 0.213 47.604)");
+    assert.equal(resolvedTokenMap["spacing.card"]?.value, "1.5rem");
+    assert.equal(resolvedTokenMap["typography.fontweight.semibold"]?.value, "600");
+    assert.equal(resolvedTokenMap["color.brand"]?.attributes?.tailwindVariable, "--color-brand");
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+void test("scanTokenUsage matches Tailwind CSS variable usage", async () => {
+  const tempDir = await makeAgentTempDir();
+  const artPath = path.join(tempDir, "Button.art.vue");
+  const tokenMap = {
+    "color.brand": {
+      value: "oklch(70.5% 0.213 47.604)",
+      type: "color",
+      attributes: { tailwindVariable: "--color-brand" },
+    },
+  };
+  try {
+    await fs.promises.writeFile(
+      artPath,
+      `
+<art><variant name="Default"><button /></variant></art>
+<style>
+.button {
+  color: var(--color-brand);
+}
+</style>
+`,
+      "utf-8",
+    );
+
+    const artFiles = new Map([
+      [
+        artPath,
+        {
+          path: artPath,
+          metadata: { title: "Button", category: "UI" },
+        },
+      ],
+    ]);
+    const usage = scanTokenUsage(artFiles, tokenMap);
+    assert.equal(usage["color.brand"]?.[0]?.matches[0]?.property, "color");
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }

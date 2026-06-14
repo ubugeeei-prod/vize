@@ -33,6 +33,7 @@ export {
 } from "./resolver.js";
 
 export { generateTokensHtml, generateTokensMarkdown, processStyleDictionary } from "./generator.js";
+export { isTailwindTokenPath, parseTailwindTokens } from "./tailwind.js";
 
 import { processStyleDictionary } from "./generator.js";
 export default processStyleDictionary;

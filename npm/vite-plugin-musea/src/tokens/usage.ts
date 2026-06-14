@@ -54,6 +54,17 @@ export function scanTokenUsage(
     } else {
       valueLookup.set(normalized, [tokenPath]);
     }
+
+    const tailwindVariable = token.attributes?.tailwindVariable;
+    if (typeof tailwindVariable === "string") {
+      const normalizedVariable = normalizeTokenValue(`var(${tailwindVariable})`);
+      const variableMatches = valueLookup.get(normalizedVariable);
+      if (variableMatches) {
+        variableMatches.push(tokenPath);
+      } else {
+        valueLookup.set(normalizedVariable, [tokenPath]);
+      }
+    }
   }
 
   const usageMap: TokenUsageMap = {};

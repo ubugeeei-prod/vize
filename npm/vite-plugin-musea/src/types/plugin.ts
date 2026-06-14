@@ -85,9 +85,9 @@ export interface MuseaOptions {
   vrt?: VrtOptions;
 
   /**
-   * Path to Style Dictionary tokens JSON file or directory.
-   * Supports standard Style Dictionary format.
-   * @example 'src/tokens.json' or 'src/tokens/'
+   * Path to a Style Dictionary tokens JSON file/directory or Tailwind CSS theme file.
+   * Supports standard Style Dictionary format and Tailwind v4 `@theme` CSS variables.
+   * @example 'src/tokens.json', 'src/tokens/', or 'src/styles/main.css'
    */
   tokensPath?: string;
 

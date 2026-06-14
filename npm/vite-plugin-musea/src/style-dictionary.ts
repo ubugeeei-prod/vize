@@ -35,6 +35,7 @@ export {
   generateTokensMarkdown,
   processStyleDictionary,
 } from "./tokens/generator.js";
+export { isTailwindTokenPath, parseTailwindTokens } from "./tokens/tailwind.js";
 
 import { processStyleDictionary } from "./tokens/generator.js";
 export default processStyleDictionary;

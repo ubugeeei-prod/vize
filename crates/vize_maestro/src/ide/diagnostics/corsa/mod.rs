@@ -5,9 +5,12 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 mod collect;
+mod collect_virtual;
 mod mapping;
 mod message;
 mod virtual_ts;
+mod virtual_ts_art;
+mod virtual_ts_inline_art;
 
 #[cfg(test)]
 mod tests;

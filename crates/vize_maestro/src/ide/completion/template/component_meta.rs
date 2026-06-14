@@ -1,7 +1,9 @@
-//! Imported-component metadata: prop/slot extraction, caching, and the
-//! prop/slot completion items surfaced inside an opening component tag.
+//! Imported-component metadata, caching, and prop/slot completion items.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    sync::Arc,
+};
 
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation,
@@ -73,16 +75,13 @@ pub(crate) struct ComponentMetadata {
     slots: Vec<ComponentSlot>,
 }
 
-/// Cached, parsed metadata for an imported component file, keyed in
-/// [`crate::server::ServerState`] by resolved path. The `len` + `modified`
-/// file stamp invalidates the entry when the component file changes on disk,
-/// so completion doesn't re-read + re-parse + re-analyze the same component on
-/// every keystroke inside an opening tag.
+/// Cached metadata for an imported component, keyed by resolved path.
+/// `len` + `modified` invalidate the entry when the file changes on disk.
 #[derive(Clone)]
 pub(crate) struct CachedComponentMetadata {
     pub len: u64,
     pub modified: Option<std::time::SystemTime>,
-    pub metadata: std::sync::Arc<ComponentMetadata>,
+    pub metadata: Arc<ComponentMetadata>,
 }
 
 #[derive(Debug, Clone)]
@@ -108,10 +107,11 @@ struct ComponentSlot {
     props_type: Option<String>,
 }
 
-fn component_metadata(
-    ctx: &IdeContext,
-    component_name: &str,
-) -> Option<std::sync::Arc<ComponentMetadata>> {
+fn component_metadata(ctx: &IdeContext, component_name: &str) -> Option<Arc<ComponentMetadata>> {
+    if let Some(metadata) = super::self_component::metadata(ctx, component_name) {
+        return Some(metadata);
+    }
+
     let mut names = vec![component_name.to_string()];
     let pascal = kebab_to_pascal(component_name);
     if !names.iter().any(|name| name == &pascal) {
@@ -141,7 +141,7 @@ fn component_metadata(
 pub(super) fn cached_component_metadata(
     ctx: &IdeContext,
     resolved: &std::path::Path,
-) -> Option<std::sync::Arc<ComponentMetadata>> {
+) -> Option<Arc<ComponentMetadata>> {
     let cache = ctx.state.component_metadata_cache();
     let (len, modified) = std::fs::metadata(resolved)
         .map(|meta| (meta.len(), meta.modified().ok()))
@@ -155,7 +155,7 @@ pub(super) fn cached_component_metadata(
     }
 
     let component_content = std::fs::read_to_string(resolved).ok()?;
-    let metadata = std::sync::Arc::new(extract_component_metadata(
+    let metadata = Arc::new(extract_component_metadata(
         &component_content,
         &resolved.to_string_lossy(),
         ctx.state.options_api_enabled(),

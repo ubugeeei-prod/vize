@@ -98,3 +98,83 @@ fn editor_virtual_ts_rewrites_dot_vue_imports() {
         "alias specifier must not appear in relative_vue_imports",
     );
 }
+
+#[test]
+fn editor_virtual_ts_for_inline_art_binds_self_to_host_props() {
+    use crate::DiagnosticService;
+    use tower_lsp::lsp_types::Url;
+
+    let uri = Url::parse("file:///tmp/Button.vue").expect("parse uri");
+    let content = r#"<script setup lang="ts">
+defineProps<{ variant?: "primary" | "secondary" }>();
+</script>
+
+<template><button /></template>
+
+<art>
+  <variant name="Primary" default>
+    <Self :variant="123" />
+  </variant>
+</art>"#;
+
+    let results =
+        DiagnosticService::generate_virtual_ts_for_inline_art_variants(&uri, content, false, false);
+
+    assert_eq!(results.len(), 1);
+    let (_, result) = &results[0];
+    assert!(
+        result
+            .code
+            .contains("declare const Self: { new (): { $props: Props } };"),
+        "expected Self component binding, got:\n{}",
+        result.code,
+    );
+    assert!(
+        result.code.contains("type __Self_Props_0 = typeof Self"),
+        "expected Self prop checks, got:\n{}",
+        result.code,
+    );
+}
+
+#[test]
+fn editor_virtual_ts_for_art_imports_define_art_target_component() {
+    use crate::DiagnosticService;
+    use tower_lsp::lsp_types::Url;
+
+    let uri = Url::parse("file:///tmp/Button.art.vue").expect("parse uri");
+    let content = r#"<script setup lang="ts">
+defineArt("./Button.vue", { title: "Button" });
+</script>
+
+<art>
+  <variant name="Primary" default>
+    <Button :variant="123" />
+  </variant>
+</art>"#;
+
+    let result = DiagnosticService::generate_virtual_ts_for_art(&uri, content)
+        .expect("virtual TS generated");
+
+    assert!(
+        result
+            .code
+            .contains("import __VizeArtTarget_Button from \"./Button.vue.ts\";"),
+        "expected defineArt component import, got:\n{}",
+        result.code,
+    );
+    assert!(
+        result
+            .relative_vue_imports
+            .iter()
+            .any(|s| s == "./Button.vue"),
+        "expected ./Button.vue to be overlaid, got {:?}",
+        result.relative_vue_imports,
+    );
+    assert!(
+        result
+            .code
+            .contains("type __Button_Props_0 = typeof Button"),
+        "expected Button prop checks, got:\n{}",
+        result.code,
+    );
+}

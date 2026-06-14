@@ -13,6 +13,7 @@ mod bindings;
 mod component_meta;
 mod components;
 mod directives;
+mod self_component;
 mod tag_context;
 mod ts_parse;
 
