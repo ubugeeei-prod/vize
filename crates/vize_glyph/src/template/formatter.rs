@@ -9,7 +9,10 @@ use memchr::memchr3;
 use vize_carton::{String, ToCompactString};
 
 use super::{
-    attributes::{ParsedAttribute, render_attribute, sort_attributes},
+    attributes::{
+        ParsedAttribute, render_attribute, should_use_multiline_attrs, sort_attributes,
+        write_rendered_attributes,
+    },
     directives::normalize_attribute,
     helpers::{
         find_bytes, is_tag_name_char, is_void_element_str, is_whitespace, parse_closing_tag,
@@ -130,8 +133,14 @@ impl<'a> TemplateFormatter<'a> {
                         let mut rendered: Vec<String> = Vec::with_capacity(sorted_attrs.len());
                         rendered.extend(sorted_attrs.iter().map(render_attribute));
 
-                        let use_multiline =
-                            self.should_use_multiline_attrs(&tag_name, &rendered, depth);
+                        let use_multiline = should_use_multiline_attrs(
+                            self.options,
+                            &tag_name,
+                            &sorted_attrs,
+                            &rendered,
+                            depth,
+                            self.indent,
+                        );
 
                         if use_multiline {
                             let max_per_line = self
@@ -140,21 +149,15 @@ impl<'a> TemplateFormatter<'a> {
                                 .unwrap_or(1) // default 1 when multiline
                                 .max(1) as usize;
 
-                            let mut line_count = 0;
-                            for attr in &rendered {
-                                if line_count == 0 {
-                                    // Start a new attribute line
-                                    output.extend_from_slice(self.newline);
-                                    self.write_indent(&mut output, depth + 1);
-                                } else {
-                                    output.push(b' ');
-                                }
-                                output.extend_from_slice(attr.as_bytes());
-                                line_count += 1;
-                                if line_count >= max_per_line {
-                                    line_count = 0;
-                                }
-                            }
+                            write_rendered_attributes(
+                                &mut output,
+                                &sorted_attrs,
+                                &rendered,
+                                self.newline,
+                                self.indent,
+                                depth + 1,
+                                max_per_line,
+                            );
                             if !self.options.bracket_same_line {
                                 output.extend_from_slice(self.newline);
                                 self.write_indent(&mut output, depth);
@@ -469,43 +472,6 @@ impl<'a> TemplateFormatter<'a> {
         output.extend_from_slice(self.newline);
     }
 
-    /// Determine whether attributes should be rendered in multiline mode.
-    ///
-    /// Takes the pre-rendered attribute strings so each attribute is rendered
-    /// exactly once on the common path (shared with the emission loop).
-    fn should_use_multiline_attrs(
-        &self,
-        tag_name: &str,
-        rendered: &[String],
-        depth: usize,
-    ) -> bool {
-        if rendered.len() <= 1 {
-            return false;
-        }
-
-        // Explicit max_attributes_per_line takes priority
-        if let Some(max) = self.options.max_attributes_per_line {
-            return rendered.len() > max as usize;
-        }
-
-        // single_attribute_per_line
-        if self.options.single_attribute_per_line {
-            return true;
-        }
-
-        // Check if all attributes on one line would exceed print_width
-        let indent_len = self.indent.len() * depth;
-        let tag_len = 1 + tag_name.len(); // '<' + tag_name
-        let attrs_len: usize = rendered
-            .iter()
-            .map(|a| 1 + a.len()) // ' ' + attr
-            .sum();
-        let closing_len = 1; // '>'
-        let total = indent_len + tag_len + attrs_len + closing_len;
-
-        total > self.options.print_width as usize
-    }
-
     /// Parse an opening tag into structured attributes.
     fn parse_opening_tag(
         &self,
@@ -677,7 +643,8 @@ impl<'a> TemplateFormatter<'a> {
         };
 
         // Normalize directives and determine priority
-        let (name, value, priority) = normalize_attribute(&raw_name, value, self.options);
+        let (name, value, priority, indent_multiline_value) =
+            normalize_attribute(&raw_name, value, self.options);
 
         (
             Some(ParsedAttribute {
@@ -685,6 +652,7 @@ impl<'a> TemplateFormatter<'a> {
                 value,
                 priority,
                 original_index: index,
+                indent_multiline_value,
             }),
             pos,
         )
