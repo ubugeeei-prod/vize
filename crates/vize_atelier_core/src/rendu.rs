@@ -1,9 +1,16 @@
 //! Internal Rendu plate vocabulary.
 //!
-//! Rendu is the rendered plate of an atelier: emitted code, its structural
-//! registration marks, and optional source-map material. The view borrows
-//! existing buffers so a tool can observe output shape without forcing another
-//! render or flattening pass.
+//! Rendu is the rendered plate of an atelier: render-semantic operations first,
+//! then output registration marks and optional source-map material. All views
+//! borrow existing buffers so a tool can observe output shape without forcing
+//! another render or flattening pass.
+
+mod semantic;
+
+pub use semantic::{
+    RenduBlock, RenduCapabilities, RenduElementKind, RenduExprRef, RenduOp, RenduRoot, RenduSource,
+    RenduSpan,
+};
 
 use crate::source_atlas::SourceAtlasTarget;
 

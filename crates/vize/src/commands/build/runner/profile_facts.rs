@@ -1,6 +1,8 @@
 //! Profile facts recorded around per-file SFC compilation.
 
-use vize_atelier_core::source_atlas::{SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasTarget};
+use vize_atelier_core::source_atlas::{
+    SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasSource, SourceAtlasTarget,
+};
 use vize_carton::profiler::global_profiler;
 
 use super::cache::StatsCompileCacheDecision;
@@ -33,6 +35,7 @@ pub(super) fn record_atelier_profile_facts(
     );
     profiler.record_counter("atelier.profile.has_scoped_style", u64::from(has_scoped));
     profiler.record_counter("atelier.profile.is_ts", u64::from(is_ts));
+    profiler.record_counter(SourceAtlasSource::Sfc.profile_counter(), 1);
     profiler.record_counter(SourceAtlasPlate::Sfc.profile_counter(), 1);
     profiler.record_counter(
         SourceAtlasPlate::Template.profile_counter(),
@@ -46,6 +49,7 @@ pub(super) fn record_atelier_profile_facts(
         SourceAtlasPlate::Style.profile_counter(),
         u64::from(style_count > 0),
     );
+    profiler.record_counter(SourceAtlasTarget::Sfc.profile_counter(), 1);
     profiler.record_counter(
         SourceAtlasTarget::Ssr.profile_counter(),
         u64::from(settings.ssr),
@@ -53,6 +57,10 @@ pub(super) fn record_atelier_profile_facts(
     profiler.record_counter(
         SourceAtlasTarget::Vapor.profile_counter(),
         u64::from(settings.vapor),
+    );
+    profiler.record_counter(
+        SourceAtlasTarget::Vdom.profile_counter(),
+        u64::from(!settings.ssr && !settings.vapor),
     );
     profiler.record_counter(
         SourceAtlasTarget::Dom.profile_counter(),
@@ -110,6 +118,26 @@ mod tests {
                 "atelier.profile.dialect.vue0_11",
                 "atelier.profile.dialect.vue0_10",
             ]
+        );
+    }
+
+    #[test]
+    fn source_and_target_counter_names_are_stable() {
+        assert_eq!(
+            SourceAtlasSource::Sfc.profile_counter(),
+            "atelier.profile.input.sfc"
+        );
+        assert_eq!(
+            SourceAtlasTarget::Vdom.profile_counter(),
+            "atelier.profile.target.vdom"
+        );
+        assert_eq!(
+            SourceAtlasTarget::Sfc.profile_counter(),
+            "atelier.profile.target.sfc"
+        );
+        assert_eq!(
+            SourceAtlasTarget::Tsx.profile_counter(),
+            "atelier.profile.target.tsx"
         );
     }
 }

@@ -17,6 +17,8 @@ pub mod rendu;
 pub mod runtime_helpers;
 #[doc(hidden)]
 pub mod source_atlas;
+#[doc(hidden)]
+pub mod source_map;
 #[macro_use]
 pub mod test_macros;
 pub mod lane;

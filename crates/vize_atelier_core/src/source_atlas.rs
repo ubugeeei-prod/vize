@@ -4,6 +4,10 @@
 //! without implying that every plate must be built. Keep this layer `Copy`,
 //! allocation-free, and cheap enough to thread through profile/fallback facts.
 
+mod route;
+
+pub use route::{SourceAtlasRoute, SourceAtlasSource, SourceAtlasSourceSet, SourceAtlasTargetSet};
+
 use vize_carton::config::VueVersion;
 
 /// A demandable plate in the Vize Source Atlas.
@@ -109,8 +113,16 @@ impl SourceAtlasPlateSet {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum SourceAtlasTarget {
     Dom,
+    Vdom,
+    Sfc,
     Ssr,
     Vapor,
+    Jsx,
+    Tsx,
+    VirtualTs,
+    Diagnostics,
+    SourceMap,
+    Vitrine,
 }
 
 impl SourceAtlasTarget {
@@ -118,8 +130,16 @@ impl SourceAtlasTarget {
     pub const fn profile_counter(self) -> &'static str {
         match self {
             Self::Dom => "atelier.profile.target.dom",
+            Self::Vdom => "atelier.profile.target.vdom",
+            Self::Sfc => "atelier.profile.target.sfc",
             Self::Ssr => "atelier.profile.target.ssr",
             Self::Vapor => "atelier.profile.target.vapor",
+            Self::Jsx => "atelier.profile.target.jsx",
+            Self::Tsx => "atelier.profile.target.tsx",
+            Self::VirtualTs => "atelier.profile.target.virtual_ts",
+            Self::Diagnostics => "atelier.profile.target.diagnostics",
+            Self::SourceMap => "atelier.profile.target.source_map",
+            Self::Vitrine => "atelier.profile.target.vitrine",
         }
     }
 }
@@ -196,6 +216,7 @@ impl SourceAtlasFallback {
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum SourceAtlasRequest {
+    Source(SourceAtlasSource),
     Plate(SourceAtlasPlate),
     Target(SourceAtlasTarget),
     Coordinate(SourceAtlasCoordinate),
@@ -205,6 +226,7 @@ impl SourceAtlasRequest {
     /// Counter used to observe this request in profile output.
     pub const fn profile_counter(self) -> &'static str {
         match self {
+            Self::Source(source) => source.profile_counter(),
             Self::Plate(plate) => plate.profile_counter(),
             Self::Target(target) => target.profile_counter(),
             Self::Coordinate(coordinate) => coordinate.profile_counter(),
@@ -247,6 +269,10 @@ mod tests {
     #[test]
     fn requests_delegate_to_their_plate_family() {
         assert_eq!(
+            SourceAtlasRequest::Source(SourceAtlasSource::Tsx).profile_counter(),
+            "atelier.profile.input.tsx"
+        );
+        assert_eq!(
             SourceAtlasRequest::Plate(SourceAtlasPlate::Rendu).profile_counter(),
             "atelier.profile.plate.rendu"
         );
@@ -282,6 +308,28 @@ mod tests {
                 SourceAtlasPlate::SourceMap,
             ]
         );
+    }
+
+    #[test]
+    fn routes_capture_multi_source_and_multi_target_lanes() {
+        let route = SourceAtlasRoute::empty()
+            .with_source(SourceAtlasSource::Sfc)
+            .with_source(SourceAtlasSource::Tsx)
+            .with_target(SourceAtlasTarget::Sfc)
+            .with_target(SourceAtlasTarget::Vdom)
+            .with_target(SourceAtlasTarget::Ssr)
+            .with_target(SourceAtlasTarget::Tsx)
+            .with_plate(SourceAtlasPlate::Croquis)
+            .with_plate(SourceAtlasPlate::Rendu)
+            .with_coordinate(SourceAtlasCoordinate::Vapor);
+
+        assert!(route.sources.contains(SourceAtlasSource::Sfc));
+        assert!(route.sources.contains(SourceAtlasSource::Tsx));
+        assert!(route.targets.contains(SourceAtlasTarget::Ssr));
+        assert!(route.targets.contains(SourceAtlasTarget::Vdom));
+        assert!(route.targets.contains(SourceAtlasTarget::Tsx));
+        assert!(route.plates.contains(SourceAtlasPlate::Rendu));
+        assert_eq!(route.coordinate, Some(SourceAtlasCoordinate::Vapor));
     }
 
     #[test]
