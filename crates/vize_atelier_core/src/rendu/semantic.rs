@@ -1,7 +1,8 @@
 //! Borrowed render-semantic Rendu vocabulary.
 
 use crate::{
-    ElementType, ExpressionNode, SourceLocation, TemplateChildNode, TextCallContent,
+    AttributeNode, DirectiveNode, ElementType, ExpressionNode, PropNode, SourceLocation,
+    TemplateChildNode, TextCallContent,
     source_atlas::{SourceAtlasCoordinate, SourceAtlasTarget, SourceAtlasTargetSet},
 };
 
@@ -98,6 +99,20 @@ pub enum RenduOp<'a> {
         kind: RenduElementKind,
         span: RenduSpan,
     },
+    /// A static attribute on the nearest preceding `Element` op.
+    Attribute {
+        name: &'a str,
+        value: Option<&'a str>,
+        span: RenduSpan,
+    },
+    /// A directive (`v-bind`/`v-on`/`v-model`/custom) on the nearest preceding
+    /// `Element` op. Modifiers are not yet carried; see #1695 follow-up.
+    Directive {
+        name: &'a str,
+        arg: Option<RenduExprRef<'a>>,
+        exp: Option<RenduExprRef<'a>>,
+        span: RenduSpan,
+    },
     Text {
         content: &'a str,
         span: RenduSpan,
@@ -141,6 +156,31 @@ pub enum RenduOp<'a> {
 }
 
 impl<'a> RenduOp<'a> {
+    /// Build the render op for an element prop (static attribute or directive).
+    pub fn from_prop(prop: &'a PropNode<'a>) -> Self {
+        match prop {
+            PropNode::Attribute(attr) => Self::from_attribute(attr),
+            PropNode::Directive(directive) => Self::from_directive(directive),
+        }
+    }
+
+    fn from_attribute(attr: &'a AttributeNode) -> Self {
+        Self::Attribute {
+            name: attr.name.as_str(),
+            value: attr.value.as_ref().map(|text| text.content.as_str()),
+            span: RenduSpan::from_location(&attr.loc),
+        }
+    }
+
+    fn from_directive(directive: &'a DirectiveNode<'a>) -> Self {
+        Self::Directive {
+            name: directive.name.as_str(),
+            arg: directive.arg.as_ref().map(RenduExprRef::from_expression),
+            exp: directive.exp.as_ref().map(RenduExprRef::from_expression),
+            span: RenduSpan::from_location(&directive.loc),
+        }
+    }
+
     pub fn from_template_child(child: &'a TemplateChildNode<'a>) -> Self {
         match child {
             TemplateChildNode::Element(element) => Self::Element {

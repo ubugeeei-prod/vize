@@ -45,6 +45,11 @@ fn walk_child<'a>(child: &'a TemplateChildNode<'a>, visit: &mut impl FnMut(Rendu
     visit(RenduOp::from_template_child(child));
     match child {
         TemplateChildNode::Element(element) => {
+            // Props attach to the nearest preceding Element op, emitted before
+            // the element's children so the run is unambiguous.
+            for prop in element.props.iter() {
+                visit(RenduOp::from_prop(prop));
+            }
             for child in element.children.iter() {
                 walk_child(child, visit);
             }
@@ -164,6 +169,40 @@ mod tests {
         let summary = summarize_rendu_ops(&root);
         assert_eq!(summary.operations, 4);
         assert_eq!(summary.max_depth, 2);
+    }
+
+    #[test]
+    fn element_props_surface_as_attribute_and_directive_ops() {
+        let allocator = Allocator::default();
+        let bump = allocator.as_bump();
+        let (root, errors) = parse(
+            bump,
+            "<button id=\"b\" :class=\"cls\" @click=\"onClick\">X</button>",
+        );
+        assert!(errors.is_empty());
+
+        let mut ops = std::vec::Vec::new();
+        walk_rendu_ops(&root, |op| ops.push(op));
+
+        // Element op first, then its props in source order, then the text child.
+        assert!(matches!(ops[0], RenduOp::Element { tag: "button", .. }));
+        assert!(matches!(
+            ops[1],
+            RenduOp::Attribute {
+                name: "id",
+                value: Some("b"),
+                ..
+            }
+        ));
+        assert!(matches!(ops[2], RenduOp::Directive { name: "bind", .. }));
+        assert!(matches!(ops[3], RenduOp::Directive { name: "on", .. }));
+        assert!(matches!(ops[4], RenduOp::Text { content: "X", .. }));
+
+        // The bind directive carries its arg ("class") and expression ("cls").
+        if let RenduOp::Directive { arg, exp, .. } = ops[2] {
+            assert_eq!(arg.map(RenduExprRef::text), Some("class"));
+            assert_eq!(exp.map(RenduExprRef::text), Some("cls"));
+        }
     }
 
     #[test]
