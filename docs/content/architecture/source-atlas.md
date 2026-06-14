@@ -43,16 +43,20 @@ The canary implementation backlog is split into reviewable plates:
 
 Current `canary` state:
 
-- `SourceAtlasRoute` names the multi-source, multi-target request surface:
+- `SourceAtlasRoute` names the multi-source, multi-target request surface and
+  is used by build profile facts:
   sources such as SFC, template, script, style, JS, TS, JSX, and TSX can be
   paired with targets such as SFC, DOM/VDOM, SSR, Vapor, Virtual TS,
   diagnostics, source maps, and Vitrine.
 - `RenduRoot`, `RenduBlock`, `RenduOp`, and `RenduExprRef` provide the first
-  borrowed render-semantic plate, while `RenduPlate` keeps the structured
-  output chunks and section ranges already emitted by the Ateliers.
+  borrowed render-semantic plate. `walk_rendu_ops` can stream transformed Relief
+  trees as Rendu operations without allocating a persistent render IR, while
+  `RenduPlate` keeps the structured output chunks and section ranges already
+  emitted by the Ateliers.
 - `SourceMapRegistration` records template map fragments as source-map
   registration marks with generated Rendu ranges, section identity, and
-  composition state. Full SFC map composition remains a separate plate, but
+  composition state. `TemplateBlockCompileResult` exposes this as a borrowed
+  registration view. Full SFC map composition remains a separate plate, but
   skipped composition is now observable instead of implicit.
 
 ## Why An Atlas
@@ -166,6 +170,8 @@ The initial vocabulary should stay small:
 - `RenduExprRef<'a>`: borrowed expression material from Relief, OXC, or Croquis.
 - `RenduCapabilities`: target facts for DOM, SSR, Vapor, custom renderers, and
   versioned syntax support.
+- `walk_rendu_ops`: allocation-free traversal for lanes that need render
+  semantics before a persistent arena plate is justified.
 
 Vapor should keep its dedicated IR where it earns its keep. The clean route is
 `Rendu -> Vapor IR -> Vapor output`, not deleting Vapor's target-specific plan.
@@ -219,9 +225,9 @@ Required registration facts:
 
 The first canary registration is intentionally narrow: template map fragments
 are registered as `SourceMapRegistration` values covering the generated render
-function range. Composed template-only maps and deferred script/template maps
-share the same registration mark, so Vize can later compose SFC maps without
-rescanning generated JavaScript.
+function range through `TemplateBlockCompileResult`. Composed template-only maps
+and deferred script/template maps share the same registration mark, so Vize can
+later compose SFC maps without rescanning generated JavaScript.
 
 Source-map work is allowed to cost more only when `sourceMap` or an explicit
 debug/profile lane requests it. The normal compiler and linter paths must remain

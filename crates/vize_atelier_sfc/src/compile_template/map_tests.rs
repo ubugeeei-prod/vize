@@ -2,6 +2,7 @@ use super::{TemplateBlockCompileContext, compile_template_block};
 use crate::types::{BlockLocation, SfcCompileOptions, SfcTemplateBlock, TemplateCompileOptions};
 use crate::{SfcParseOptions, compile_sfc, parse_sfc};
 use std::borrow::Cow;
+use vize_atelier_core::source_map::SourceMapRegistrationState;
 
 fn template_block(source: &str) -> SfcTemplateBlock<'_> {
     SfcTemplateBlock {
@@ -86,6 +87,23 @@ fn dom_template_carries_source_map_fragment_without_changing_code() {
 
     assert_eq!(parsed["version"], 3);
     assert_eq!(parsed["sources"][0], "template.vue");
+}
+
+#[test]
+fn dom_template_exposes_source_map_registration_mark() {
+    let with_map = compile_with_source_map(true);
+    let registration = with_map
+        .source_map_registration(SourceMapRegistrationState::Composed)
+        .expect("source-map registration should be available");
+    let functions = with_map
+        .module_sections
+        .expect("DOM template output should carry module sections")
+        .functions;
+
+    assert_eq!(registration.generated, functions);
+    assert_eq!(registration.source_name, Some("template.vue"));
+    assert!(registration.has_fragment());
+    assert!(registration.is_composed());
 }
 
 #[test]

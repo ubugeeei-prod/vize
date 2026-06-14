@@ -16,7 +16,11 @@ mod tests;
 pub(crate) use extraction::{extract_template_parts, slice_template_parts};
 pub(crate) use vapor::compile_template_block_vapor;
 
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_atelier_core::{
+    TemplateSyntaxMode,
+    rendu::RenduRange,
+    source_map::{SourceMapRegistration, SourceMapRegistrationState},
+};
 use vize_carton::Bump;
 
 use crate::compile::output_module::{
@@ -80,9 +84,30 @@ impl TemplateBlockCompileResult {
         self.maps.source_map()
     }
 
+    pub(crate) fn source_map_registration(
+        &self,
+        state: SourceMapRegistrationState,
+    ) -> Option<SourceMapRegistration<'_>> {
+        let fragment = self.source_map_fragment()?;
+        Some(
+            SourceMapRegistration::for_template_fragment(
+                self.source_map_generated_range(),
+                fragment,
+                state,
+            )
+            .with_source_name("template.vue"),
+        )
+    }
+
     pub(crate) fn source_map_json(&self) -> Option<serde_json::Value> {
         self.source_map_fragment()
             .and_then(|fragment| serde_json::from_str(fragment).ok())
+    }
+
+    fn source_map_generated_range(&self) -> RenduRange {
+        self.module_sections
+            .map(|sections| sections.functions)
+            .unwrap_or_else(|| RenduRange::new(0, self.code.len()))
     }
 }
 

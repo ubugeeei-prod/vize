@@ -127,6 +127,12 @@ impl SourceAtlasTargetSet {
     pub const fn is_empty(self) -> bool {
         self.bits == 0
     }
+
+    pub fn iter(self) -> impl Iterator<Item = SourceAtlasTarget> {
+        SourceAtlasTarget::KNOWN
+            .into_iter()
+            .filter(move |target| self.contains(*target))
+    }
 }
 
 /// A cheap route request through the Source Atlas.

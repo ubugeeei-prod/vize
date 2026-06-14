@@ -88,7 +88,7 @@ graph LR
 2. **Armature** (Parser) — Tokenizes the raw source into a stream of tokens, then parses them into a structured AST. The tokenizer handles Vue-specific syntax: directives (`v-if`, `v-for`, `v-bind`), expression interpolation (`{{ }}`), and SFC block boundaries.
 3. **Relief** (AST) — The intermediate representation. All downstream stages operate on this shared AST, eliminating redundant parsing.
 4. **Croquis** (Semantic Analysis) — Resolves template expressions, tracks variable scopes, detects binding types (setup, data, props, inject), and validates expression correctness. Uses OXC for JavaScript/TypeScript AST parsing.
-5. **Rendu** (Render Semantics) — A planned internal render-semantic layer that borrows from Relief and Croquis. It should describe only what render backends need: structure, control flow, props, events, slots, hoists, scope IDs, and target capabilities. It is not a public Vitrine API.
+5. **Rendu** (Render Semantics) — An internal render-semantic layer that borrows from Relief and Croquis. The canary implementation starts with allocation-free Relief walking plus borrowed semantic/output views. It should describe only what render backends need: structure, control flow, props, events, slots, hoists, scope IDs, and target capabilities. It is not a public Vitrine API.
 6. **Atelier** (Compilation) — Transforms the analyzed AST or Rendu into JavaScript output. Three backends serve different targets:
    - **VDOM** (`vize_atelier_dom`) — `createVNode`/`h` calls with patch flag optimization and static hoisting
    - **Vapor** (`vize_atelier_vapor`) — Fine-grained reactive code with direct DOM manipulation (no VDOM)

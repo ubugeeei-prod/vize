@@ -1,7 +1,7 @@
 //! Profile facts recorded around per-file SFC compilation.
 
 use vize_atelier_core::source_atlas::{
-    SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasSource, SourceAtlasTarget,
+    SourceAtlasCoordinate, SourceAtlasPlate, SourceAtlasRoute, SourceAtlasSource, SourceAtlasTarget,
 };
 use vize_carton::profiler::global_profiler;
 
@@ -35,40 +35,22 @@ pub(super) fn record_atelier_profile_facts(
     );
     profiler.record_counter("atelier.profile.has_scoped_style", u64::from(has_scoped));
     profiler.record_counter("atelier.profile.is_ts", u64::from(is_ts));
-    profiler.record_counter(SourceAtlasSource::Sfc.profile_counter(), 1);
-    profiler.record_counter(SourceAtlasPlate::Sfc.profile_counter(), 1);
-    profiler.record_counter(
-        SourceAtlasPlate::Template.profile_counter(),
-        u64::from(template_size > 0),
-    );
-    profiler.record_counter(
-        SourceAtlasPlate::Script.profile_counter(),
-        u64::from(script_size > 0),
-    );
-    profiler.record_counter(
-        SourceAtlasPlate::Style.profile_counter(),
-        u64::from(style_count > 0),
-    );
-    profiler.record_counter(SourceAtlasTarget::Sfc.profile_counter(), 1);
-    profiler.record_counter(
-        SourceAtlasTarget::Ssr.profile_counter(),
-        u64::from(settings.ssr),
-    );
-    profiler.record_counter(
-        SourceAtlasTarget::Vapor.profile_counter(),
-        u64::from(settings.vapor),
-    );
-    profiler.record_counter(
-        SourceAtlasTarget::Vdom.profile_counter(),
-        u64::from(!settings.ssr && !settings.vapor),
-    );
-    profiler.record_counter(
-        SourceAtlasTarget::Dom.profile_counter(),
-        u64::from(!settings.ssr && !settings.vapor),
-    );
-    profiler.record_counter(
-        SourceAtlasCoordinate::from(settings.dialect).profile_counter(),
-        1,
+    record_source_atlas_route(
+        SourceAtlasRoute::empty()
+            .with_source(SourceAtlasSource::Sfc)
+            .with_plate(SourceAtlasPlate::Sfc)
+            .with_target(SourceAtlasTarget::Sfc)
+            .with_coordinate(SourceAtlasCoordinate::from(settings.dialect))
+            .with_source_if(template_size > 0, SourceAtlasSource::VueTemplate)
+            .with_source_if(script_size > 0, source_atlas_script_source(is_ts))
+            .with_source_if(style_count > 0, SourceAtlasSource::Style)
+            .with_plate_if(template_size > 0, SourceAtlasPlate::Template)
+            .with_plate_if(script_size > 0, SourceAtlasPlate::Script)
+            .with_plate_if(style_count > 0, SourceAtlasPlate::Style)
+            .with_target_if(settings.ssr, SourceAtlasTarget::Ssr)
+            .with_target_if(settings.vapor, SourceAtlasTarget::Vapor)
+            .with_target_if(!settings.ssr && !settings.vapor, SourceAtlasTarget::Vdom)
+            .with_target_if(!settings.ssr && !settings.vapor, SourceAtlasTarget::Dom),
     );
 }
 
@@ -94,6 +76,120 @@ pub(super) fn record_atelier_cache_decision(
 
 fn usize_to_counter(value: usize) -> u64 {
     value.try_into().unwrap_or(u64::MAX)
+}
+
+trait SourceAtlasRouteProfileExt {
+    fn with_source_if(self, enabled: bool, source: SourceAtlasSource) -> Self;
+    fn with_plate_if(self, enabled: bool, plate: SourceAtlasPlate) -> Self;
+    fn with_target_if(self, enabled: bool, target: SourceAtlasTarget) -> Self;
+}
+
+impl SourceAtlasRouteProfileExt for SourceAtlasRoute {
+    fn with_source_if(self, enabled: bool, source: SourceAtlasSource) -> Self {
+        if enabled {
+            self.with_source(source)
+        } else {
+            self
+        }
+    }
+
+    fn with_plate_if(self, enabled: bool, plate: SourceAtlasPlate) -> Self {
+        if enabled {
+            self.with_plate(plate)
+        } else {
+            self
+        }
+    }
+
+    fn with_target_if(self, enabled: bool, target: SourceAtlasTarget) -> Self {
+        if enabled {
+            self.with_target(target)
+        } else {
+            self
+        }
+    }
+}
+
+fn source_atlas_script_source(is_ts: bool) -> SourceAtlasSource {
+    if is_ts {
+        SourceAtlasSource::Ts
+    } else {
+        SourceAtlasSource::Js
+    }
+}
+
+fn record_source_atlas_route(route: SourceAtlasRoute) {
+    let profiler = global_profiler();
+    for source in route.sources.iter() {
+        profiler.record_counter(source.profile_counter(), 1);
+    }
+    for plate in LEGACY_OBSERVED_PLATES {
+        profiler.record_counter(
+            plate.profile_counter(),
+            u64::from(route.plates.contains(plate)),
+        );
+    }
+    for plate in route
+        .plates
+        .iter()
+        .filter(|plate| !is_legacy_observed_plate(*plate))
+    {
+        profiler.record_counter(plate.profile_counter(), 1);
+    }
+    for target in LEGACY_OBSERVED_TARGETS {
+        profiler.record_counter(
+            target.profile_counter(),
+            u64::from(route.targets.contains(target)),
+        );
+    }
+    for target in route
+        .targets
+        .iter()
+        .filter(|target| !is_legacy_observed_target(*target))
+    {
+        profiler.record_counter(target.profile_counter(), 1);
+    }
+    if let Some(coordinate) = route.coordinate {
+        profiler.record_counter(coordinate.profile_counter(), 1);
+    }
+}
+
+// These counters intentionally keep 0/1 samples so existing profile reports
+// preserve their per-file averages while future atlas lanes remain active-only.
+const LEGACY_OBSERVED_PLATES: [SourceAtlasPlate; 4] = [
+    SourceAtlasPlate::Sfc,
+    SourceAtlasPlate::Template,
+    SourceAtlasPlate::Script,
+    SourceAtlasPlate::Style,
+];
+
+const LEGACY_OBSERVED_TARGETS: [SourceAtlasTarget; 5] = [
+    SourceAtlasTarget::Sfc,
+    SourceAtlasTarget::Ssr,
+    SourceAtlasTarget::Vapor,
+    SourceAtlasTarget::Vdom,
+    SourceAtlasTarget::Dom,
+];
+
+fn is_legacy_observed_plate(plate: SourceAtlasPlate) -> bool {
+    matches!(
+        plate,
+        SourceAtlasPlate::Sfc
+            | SourceAtlasPlate::Template
+            | SourceAtlasPlate::Script
+            | SourceAtlasPlate::Style
+    )
+}
+
+fn is_legacy_observed_target(target: SourceAtlasTarget) -> bool {
+    matches!(
+        target,
+        SourceAtlasTarget::Sfc
+            | SourceAtlasTarget::Ssr
+            | SourceAtlasTarget::Vapor
+            | SourceAtlasTarget::Vdom
+            | SourceAtlasTarget::Dom
+    )
 }
 
 #[cfg(test)]

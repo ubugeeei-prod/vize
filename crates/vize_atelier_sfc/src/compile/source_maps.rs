@@ -2,7 +2,6 @@
 
 use crate::compile_template::TemplateBlockCompileResult;
 use vize_atelier_core::{
-    rendu::RenduRange,
     source_atlas::{SourceAtlasFallback, SourceAtlasPlate, SourceAtlasTarget},
     source_map::{SourceMapRegistration, SourceMapRegistrationState},
 };
@@ -41,15 +40,7 @@ fn template_source_map_registration(
     template_output: &TemplateBlockCompileResult,
     composition: SourceMapComposition,
 ) -> Option<SourceMapRegistration<'_>> {
-    let fragment = template_output.source_map_fragment()?;
-    Some(
-        SourceMapRegistration::for_template_fragment(
-            template_source_map_range(template_output),
-            fragment,
-            source_map_registration_state(composition),
-        )
-        .with_source_name("template.vue"),
-    )
+    template_output.source_map_registration(source_map_registration_state(composition))
 }
 
 fn source_map_registration_state(composition: SourceMapComposition) -> SourceMapRegistrationState {
@@ -59,13 +50,6 @@ fn source_map_registration_state(composition: SourceMapComposition) -> SourceMap
             SourceMapRegistrationState::Deferred(SourceAtlasFallback::SourceMapCompositionSkipped)
         }
     }
-}
-
-fn template_source_map_range(template_output: &TemplateBlockCompileResult) -> RenduRange {
-    template_output
-        .module_sections
-        .map(|sections| sections.functions)
-        .unwrap_or_else(|| RenduRange::new(0, template_output.code.len()))
 }
 
 fn usize_to_counter(value: usize) -> u64 {
