@@ -60,6 +60,13 @@ impl<'a> RenduExprRef<'a> {
             ExpressionNode::Compound(compound) => Self::Relief(compound.loc.source.as_str()),
         }
     }
+
+    /// The borrowed source text of this expression, regardless of origin.
+    pub const fn text(self) -> &'a str {
+        match self {
+            Self::Relief(text) | Self::Oxc(text) | Self::Croquis(text) => text,
+        }
+    }
 }
 
 /// Element-like render operation kind.
@@ -112,6 +119,12 @@ pub enum RenduOp<'a> {
     },
     For {
         source: RenduExprRef<'a>,
+        /// `v-for="value in source"` value alias, if present.
+        value: Option<RenduExprRef<'a>>,
+        /// `v-for="(value, key) in source"` key alias, if present.
+        key: Option<RenduExprRef<'a>>,
+        /// `v-for="(value, key, index) in source"` index alias, if present.
+        index: Option<RenduExprRef<'a>>,
         span: RenduSpan,
     },
     TextCall {
@@ -156,6 +169,12 @@ impl<'a> RenduOp<'a> {
             },
             TemplateChildNode::For(node) => Self::For {
                 source: RenduExprRef::from_expression(&node.source),
+                value: node.value_alias.as_ref().map(RenduExprRef::from_expression),
+                key: node.key_alias.as_ref().map(RenduExprRef::from_expression),
+                index: node
+                    .object_index_alias
+                    .as_ref()
+                    .map(RenduExprRef::from_expression),
                 span: RenduSpan::from_location(&node.loc),
             },
             TemplateChildNode::TextCall(node) => Self::TextCall {
@@ -251,85 +270,5 @@ impl<'a> RenduRoot<'a> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::{
-        AllocBox, Allocator, ElementNode, Position, SimpleExpressionNode, SourceLocation, TextNode,
-    };
-
-    fn loc(source: &str, start: u32, end: u32) -> SourceLocation {
-        SourceLocation::new(
-            Position::new(start, 1, start + 1),
-            Position::new(end, 1, end + 1),
-            source,
-        )
-    }
-
-    #[test]
-    fn classifies_relief_template_children_as_rendu_ops() {
-        let allocator = Allocator::default();
-        let bump = allocator.as_bump();
-
-        let element = TemplateChildNode::Element(AllocBox::new_in(
-            ElementNode::new(bump, "MyButton", loc("<MyButton />", 0, 12)),
-            bump,
-        ));
-        let text = TemplateChildNode::Text(AllocBox::new_in(
-            TextNode::new("Save", loc("Save", 13, 17)),
-            bump,
-        ));
-
-        assert_eq!(
-            RenduOp::from_template_child(&element),
-            RenduOp::Element {
-                tag: "MyButton",
-                kind: RenduElementKind::Element,
-                span: RenduSpan::new(0, 12),
-            }
-        );
-        assert_eq!(
-            RenduOp::from_template_child(&text),
-            RenduOp::Text {
-                content: "Save",
-                span: RenduSpan::new(13, 17),
-            }
-        );
-    }
-
-    #[test]
-    fn roots_carry_target_and_dialect_capability_facts() {
-        let op = RenduOp::HoistRef { index: 1 };
-        let ops = [op];
-        let root = RenduRoot::new(
-            RenduSource::named("App.vue", "<div />"),
-            RenduBlock::new(&ops),
-            RenduCapabilities::empty()
-                .with_target(SourceAtlasTarget::Vdom)
-                .with_target(SourceAtlasTarget::Ssr)
-                .with_coordinate(SourceAtlasCoordinate::Vapor),
-        );
-
-        assert_eq!(root.source.filename, Some("App.vue"));
-        assert!(!root.entry.is_empty());
-        assert!(root.capabilities.targets.contains(SourceAtlasTarget::Vdom));
-        assert!(root.capabilities.targets.contains(SourceAtlasTarget::Ssr));
-        assert_eq!(
-            root.capabilities.coordinate,
-            Some(SourceAtlasCoordinate::Vapor)
-        );
-    }
-
-    #[test]
-    fn expression_refs_borrow_relief_expression_text() {
-        let allocator = Allocator::default();
-        let expression = ExpressionNode::Simple(AllocBox::new_in(
-            SimpleExpressionNode::new("count + 1", false, loc("count + 1", 0, 9)),
-            allocator.as_bump(),
-        ));
-
-        assert_eq!(
-            RenduExprRef::from_expression(&expression),
-            RenduExprRef::Relief("count + 1")
-        );
-    }
-}
+#[path = "semantic_tests.rs"]
+mod tests;
