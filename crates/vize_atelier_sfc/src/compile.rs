@@ -5,7 +5,7 @@
 //! is delegated to specialized modules.
 
 mod bindings;
-mod fallbacks;
+pub(crate) mod fallbacks;
 mod helpers;
 mod normal_script;
 pub(crate) mod output_module;
@@ -32,7 +32,7 @@ use vize_atelier_core::TemplateSyntaxMode;
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
 };
-use self::fallbacks::push_vapor_ssr_fallback_warning;
+use self::fallbacks::apply_vapor_ssr_fallback;
 use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
 };
@@ -295,8 +295,8 @@ fn compile_sfc_inner(
 
     // Vapor components currently render on the client. For SSR we fall back to
     // the standard VDOM compiler and let the client hydrate with Vapor output.
-    if descriptor.template.is_some() && options.template.ssr && vapor_requested {
-        push_vapor_ssr_fallback_warning(descriptor, &mut warnings);
+    if descriptor.template.is_some() {
+        apply_vapor_ssr_fallback(descriptor, &options, vapor_requested, &mut warnings);
     }
     let is_vapor = !options.template.ssr && vapor_requested;
 

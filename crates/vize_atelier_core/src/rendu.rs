@@ -5,9 +5,11 @@
 //! borrow existing buffers so a tool can observe output shape without forcing
 //! another render or flattening pass.
 
+mod capability;
 mod semantic;
 mod walk;
 
+pub use capability::RenduCapability;
 pub use semantic::{
     RenduBlock, RenduCapabilities, RenduElementKind, RenduExprRef, RenduOp, RenduRoot, RenduSource,
     RenduSpan,
