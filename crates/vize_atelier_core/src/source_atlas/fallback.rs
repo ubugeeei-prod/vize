@@ -58,6 +58,44 @@ impl SourceAtlasFallback {
         }
     }
 
+    /// A short, human-facing explanation of why this fallback was taken.
+    ///
+    /// This is what turns a fallback counter into a first-class fact: a tool can
+    /// show *why* it stayed on a legacy bridge or omitted a map without a
+    /// developer reconstructing the decision from output strings.
+    pub const fn description(self) -> &'static str {
+        match self {
+            Self::SourceMapFragmentUnavailable => {
+                "the producing Atelier emitted no source-map fragment to register"
+            }
+            Self::SourceMapCompositionSkipped => {
+                "a valid map fragment exists but full SFC composition was deferred"
+            }
+            Self::VirtualTsSkipped => "Virtual TS was not needed or not produced for this source",
+            Self::UnsupportedVaporShape => {
+                "the template shape is outside the current Vapor capability set"
+            }
+            Self::VaporSsr => "Vapor SSR is unimplemented, so standard SSR output was used",
+            Self::CustomRendererMismatch => {
+                "the selected target Atelier could not satisfy the custom renderer request"
+            }
+            Self::LegacySyntaxCompatibility => "a pre-Vue-3 dialect required a compatibility path",
+            Self::CacheBypass => "a cacheable lane intentionally bypassed cache reuse",
+        }
+    }
+
+    /// Resolve a profile counter name back to its fallback fact.
+    ///
+    /// Lets a report consumer (such as the curator profile renderer) annotate a
+    /// recorded counter with the typed reason and its [`description`].
+    ///
+    /// [`description`]: Self::description
+    pub fn from_profile_counter(counter: &str) -> Option<Self> {
+        Self::KNOWN
+            .into_iter()
+            .find(|fallback| fallback.profile_counter() == counter)
+    }
+
     const fn bit(self) -> u16 {
         match self {
             Self::SourceMapFragmentUnavailable => 1 << 0,
@@ -112,5 +150,30 @@ impl SourceAtlasFallbackSet {
         SourceAtlasFallback::KNOWN
             .into_iter()
             .filter(move |fallback| self.contains(*fallback))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reasons_round_trip_through_their_counter_and_carry_a_description() {
+        for fallback in SourceAtlasFallback::KNOWN {
+            // The counter name resolves back to the same typed reason.
+            assert_eq!(
+                SourceAtlasFallback::from_profile_counter(fallback.profile_counter()),
+                Some(fallback)
+            );
+            // Every reason explains itself.
+            assert!(
+                !fallback.description().is_empty(),
+                "{fallback:?} should describe itself"
+            );
+        }
+        assert_eq!(
+            SourceAtlasFallback::from_profile_counter("atelier.fallback.not_a_real_reason"),
+            None
+        );
     }
 }

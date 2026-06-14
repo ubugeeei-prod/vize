@@ -6,13 +6,67 @@
 
 mod fallback;
 mod registry;
+mod report;
 mod route;
 
 pub use fallback::{SourceAtlasFallback, SourceAtlasFallbackSet};
 pub use registry::{SourceAtlasLane, SourceAtlasRegistry};
+pub use report::{render_fallback_legend, render_fallback_report, render_registry_report};
 pub use route::{SourceAtlasRoute, SourceAtlasSource, SourceAtlasSourceSet, SourceAtlasTargetSet};
 
 use vize_carton::config::VueVersion;
+
+/// The family a Source Atlas plate or target belongs to.
+///
+/// Families group plates by the job they do in the toolchain, matching the
+/// `Plate Families` table in `docs/content/architecture/source-atlas.md`.
+/// Classifying a plate by family lets a lane reason about cost rules (for
+/// example "Patina does not pay for Render plates") without hard-coding each
+/// plate individually.
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum PlateFamily {
+    /// Source files and blocks: SFC, template, script, setup, style, JSX/TSX.
+    Source,
+    /// Source-faithful syntax surfaces such as Relief and OXC AST refs.
+    Syntax,
+    /// Shared semantic study: Croquis bindings, scopes, directives, deps.
+    Semantic,
+    /// Tool-facing projections such as Virtual TS or inspector views.
+    Projection,
+    /// Render semantics: the Rendu plate.
+    Render,
+    /// Target product surfaces: DOM/VDOM, SSR, Vapor, JSX/TSX emit.
+    Target,
+    /// Finishing artifacts: AtelierOutput, maps, diagnostics, payloads.
+    Finish,
+}
+
+impl PlateFamily {
+    /// Known families in stable observation order.
+    pub const KNOWN: [Self; 7] = [
+        Self::Source,
+        Self::Syntax,
+        Self::Semantic,
+        Self::Projection,
+        Self::Render,
+        Self::Target,
+        Self::Finish,
+    ];
+
+    /// Counter used when a lane observes work in this family.
+    pub const fn profile_counter(self) -> &'static str {
+        match self {
+            Self::Source => "atelier.profile.family.source",
+            Self::Syntax => "atelier.profile.family.syntax",
+            Self::Semantic => "atelier.profile.family.semantic",
+            Self::Projection => "atelier.profile.family.projection",
+            Self::Render => "atelier.profile.family.render",
+            Self::Target => "atelier.profile.family.target",
+            Self::Finish => "atelier.profile.family.finish",
+        }
+    }
+}
 
 /// A demandable plate in the Vize Source Atlas.
 #[non_exhaustive]
@@ -58,6 +112,18 @@ impl SourceAtlasPlate {
             Self::Rendu => "atelier.profile.plate.rendu",
             Self::AtelierOutput => "atelier.profile.plate.atelier_output",
             Self::SourceMap => "atelier.profile.plate.source_map",
+        }
+    }
+
+    /// The plate family this plate belongs to.
+    pub const fn family(self) -> PlateFamily {
+        match self {
+            Self::Sfc | Self::Template | Self::Script | Self::Style => PlateFamily::Source,
+            Self::Relief => PlateFamily::Syntax,
+            Self::Croquis => PlateFamily::Semantic,
+            Self::VirtualTs => PlateFamily::Projection,
+            Self::Rendu => PlateFamily::Render,
+            Self::AtelierOutput | Self::SourceMap => PlateFamily::Finish,
         }
     }
 
@@ -161,6 +227,11 @@ impl SourceAtlasTarget {
             Self::Vitrine => "atelier.profile.target.vitrine",
         }
     }
+
+    /// Targets always belong to the `Target` plate family.
+    pub const fn family(self) -> PlateFamily {
+        PlateFamily::Target
+    }
 }
 
 /// Compatibility coordinate attached to atlas facts.
@@ -187,6 +258,29 @@ impl SourceAtlasCoordinate {
             Self::Vue(VueVersion::V0_11) => "atelier.profile.dialect.vue0_11",
             Self::Vue(VueVersion::V0_10) => "atelier.profile.dialect.vue0_10",
             Self::Vapor => "atelier.profile.capability.vapor",
+        }
+    }
+
+    /// Whether this coordinate names a degraded (pre-Vue-3) compatibility line.
+    ///
+    /// Resolving the coordinate once and asking it here keeps every lane in
+    /// agreement about which dialect is legacy, rather than each crate
+    /// rediscovering the rule.
+    pub const fn is_legacy(self) -> bool {
+        matches!(self, Self::Vue(version) if version.is_legacy())
+    }
+
+    /// The compatibility fallback this coordinate implies, if any.
+    ///
+    /// Legacy Vue dialects require a compatibility path, which lanes record as
+    /// [`SourceAtlasFallback::LegacySyntaxCompatibility`] so degraded
+    /// compilation stays observable instead of silent. Vue 3 and the Vapor
+    /// capability layer imply no fallback.
+    pub const fn compatibility_fallback(self) -> Option<SourceAtlasFallback> {
+        if self.is_legacy() {
+            Some(SourceAtlasFallback::LegacySyntaxCompatibility)
+        } else {
+            None
         }
     }
 }

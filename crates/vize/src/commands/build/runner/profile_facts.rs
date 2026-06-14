@@ -36,12 +36,16 @@ pub(super) fn record_atelier_profile_facts(
     );
     profiler.record_counter("atelier.profile.has_scoped_style", u64::from(has_scoped));
     profiler.record_counter("atelier.profile.is_ts", u64::from(is_ts));
+    // Resolve the dialect coordinate once, then let it report its own
+    // compatibility fallback so legacy lines stay observable instead of silent.
+    let coordinate = SourceAtlasCoordinate::from(settings.dialect);
     record_source_atlas_registry(
         SourceAtlasRegistry::compiler()
             .with_source(SourceAtlasSource::Sfc)
             .with_plate(SourceAtlasPlate::Sfc)
             .with_target(SourceAtlasTarget::Sfc)
-            .with_coordinate(SourceAtlasCoordinate::from(settings.dialect))
+            .with_coordinate(coordinate)
+            .with_optional_fallback(coordinate.compatibility_fallback())
             .with_source_if(template_size > 0, SourceAtlasSource::VueTemplate)
             .with_source_if(script_size > 0, source_atlas_script_source(is_ts))
             .with_source_if(style_count > 0, SourceAtlasSource::Style)

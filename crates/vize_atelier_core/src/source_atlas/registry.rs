@@ -129,6 +129,17 @@ impl SourceAtlasRegistry {
         self
     }
 
+    /// Record a fallback only when one was observed.
+    ///
+    /// Convenient for facts derived from a coordinate, e.g.
+    /// `with_optional_fallback(coordinate.compatibility_fallback())`.
+    pub const fn with_optional_fallback(self, fallback: Option<SourceAtlasFallback>) -> Self {
+        match fallback {
+            Some(fallback) => self.with_fallback(fallback),
+            None => self,
+        }
+    }
+
     /// Visit the requested source, plate, target, and coordinate facts in
     /// stable profile order.
     pub fn visit_requests(self, mut visit: impl FnMut(SourceAtlasRequest)) {

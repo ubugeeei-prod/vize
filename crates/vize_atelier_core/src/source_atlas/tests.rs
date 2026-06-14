@@ -29,6 +29,112 @@ fn vapor_is_a_capability_coordinate_not_a_vue_version() {
 }
 
 #[test]
+fn plates_classify_into_their_atlas_family() {
+    use PlateFamily::*;
+    use SourceAtlasPlate::*;
+
+    let pairs = [
+        (Sfc, Source),
+        (Template, Source),
+        (Script, Source),
+        (Style, Source),
+        (Relief, Syntax),
+        (Croquis, Semantic),
+        (VirtualTs, Projection),
+        (Rendu, Render),
+        (AtelierOutput, Finish),
+        (SourceMap, Finish),
+    ];
+
+    for (plate, family) in pairs {
+        assert_eq!(plate.family(), family, "{plate:?} should map to {family:?}");
+    }
+}
+
+#[test]
+fn every_known_plate_has_a_family_and_targets_are_target_family() {
+    // Each known plate resolves to one of the seven families.
+    for plate in SourceAtlasPlate::KNOWN {
+        assert!(PlateFamily::KNOWN.contains(&plate.family()));
+    }
+    // Every target lane belongs to the Target family.
+    for target in SourceAtlasTarget::KNOWN {
+        assert_eq!(target.family(), PlateFamily::Target);
+    }
+}
+
+#[test]
+fn plate_family_counters_are_stable() {
+    let counters: std::vec::Vec<_> = PlateFamily::KNOWN
+        .into_iter()
+        .map(PlateFamily::profile_counter)
+        .collect();
+
+    assert_eq!(
+        counters,
+        [
+            "atelier.profile.family.source",
+            "atelier.profile.family.syntax",
+            "atelier.profile.family.semantic",
+            "atelier.profile.family.projection",
+            "atelier.profile.family.render",
+            "atelier.profile.family.target",
+            "atelier.profile.family.finish",
+        ]
+    );
+}
+
+#[test]
+fn legacy_coordinates_report_a_compatibility_fallback() {
+    // Vue 3 and the Vapor capability layer are not legacy.
+    assert!(!SourceAtlasCoordinate::from(VueVersion::V3).is_legacy());
+    assert!(!SourceAtlasCoordinate::Vapor.is_legacy());
+    assert_eq!(
+        SourceAtlasCoordinate::from(VueVersion::V3).compatibility_fallback(),
+        None
+    );
+    assert_eq!(SourceAtlasCoordinate::Vapor.compatibility_fallback(), None);
+
+    // Every pre-Vue-3 line is legacy and reports the same fallback fact.
+    for version in [
+        VueVersion::V2_7,
+        VueVersion::V2,
+        VueVersion::V1,
+        VueVersion::V0_11,
+        VueVersion::V0_10,
+    ] {
+        let coordinate = SourceAtlasCoordinate::from(version);
+        assert!(coordinate.is_legacy(), "{version:?} should be legacy");
+        assert_eq!(
+            coordinate.compatibility_fallback(),
+            Some(SourceAtlasFallback::LegacySyntaxCompatibility),
+            "{version:?} should report a compatibility fallback"
+        );
+    }
+}
+
+#[test]
+fn registry_records_optional_compatibility_fallback() {
+    let legacy = SourceAtlasRegistry::compiler()
+        .with_coordinate(SourceAtlasCoordinate::from(VueVersion::V2))
+        .with_optional_fallback(
+            SourceAtlasCoordinate::from(VueVersion::V2).compatibility_fallback(),
+        );
+    assert!(
+        legacy
+            .fallbacks
+            .contains(SourceAtlasFallback::LegacySyntaxCompatibility)
+    );
+
+    let modern = SourceAtlasRegistry::compiler()
+        .with_coordinate(SourceAtlasCoordinate::from(VueVersion::V3))
+        .with_optional_fallback(
+            SourceAtlasCoordinate::from(VueVersion::V3).compatibility_fallback(),
+        );
+    assert!(modern.fallbacks.is_empty());
+}
+
+#[test]
 fn requests_delegate_to_their_plate_family() {
     assert_eq!(
         SourceAtlasRequest::Source(SourceAtlasSource::Tsx).profile_counter(),
