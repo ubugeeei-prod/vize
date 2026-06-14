@@ -3,6 +3,7 @@
 //! are **opt-in**: enable them via `[rules.script]` in your configuration.
 
 mod component_options_name_casing;
+mod custom_event_name_casing;
 mod define_emits_declaration;
 mod define_macros_order;
 mod define_props_declaration;
@@ -17,14 +18,17 @@ mod no_deprecated_dollar_scopedslots_api;
 mod no_deprecated_events_api;
 mod no_deprecated_props_default_this;
 mod no_dupe_keys;
+mod no_duplicate_attr_inheritance;
 mod no_export_in_script_setup;
 mod no_get_current_instance;
 mod no_import_compiler_macros;
 mod no_internal_imports;
+mod no_multiple_slot_args;
 mod no_next_tick;
 mod no_options_api;
 mod no_potential_component_option_typo;
 mod no_reactive_destructure;
+mod no_ref_as_operand;
 mod no_reserved_identifiers;
 mod no_reserved_keys;
 mod no_side_effects_in_computed;
@@ -41,12 +45,15 @@ mod prefer_use_id;
 mod prefer_use_slots;
 mod prefer_use_template_ref;
 mod props_emits;
+mod require_explicit_slots;
 mod require_function_return_type;
 mod require_prop_type_constructor;
 mod require_symbol_provide;
 mod require_typed_ref;
 mod return_in_computed_property;
+mod valid_define_emits;
 mod valid_define_options;
+mod valid_define_props;
 mod valid_next_tick;
 mod vue_router_prefer_named_push;
 mod vue_test_utils_no_html_snapshot;
@@ -61,6 +68,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_carton::profile;
 
 pub use component_options_name_casing::ComponentOptionsNameCasing;
+pub use custom_event_name_casing::CustomEventNameCasing;
 pub use define_emits_declaration::DefineEmitsDeclaration;
 pub use define_macros_order::DefineMacrosOrder;
 pub use define_props_declaration::DefinePropsDeclaration;
@@ -75,14 +83,17 @@ pub use no_deprecated_dollar_scopedslots_api::NoDeprecatedDollarScopedSlotsApi;
 pub use no_deprecated_events_api::NoDeprecatedEventsApi;
 pub use no_deprecated_props_default_this::NoDeprecatedPropsDefaultThis;
 pub use no_dupe_keys::NoDupeKeys;
+pub use no_duplicate_attr_inheritance::NoDuplicateAttrInheritance;
 pub use no_export_in_script_setup::NoExportInScriptSetup;
 pub use no_get_current_instance::NoGetCurrentInstance;
 pub use no_import_compiler_macros::NoImportCompilerMacros;
 pub use no_internal_imports::NoInternalImports;
+pub use no_multiple_slot_args::NoMultipleSlotArgs;
 pub use no_next_tick::NoNextTick;
 pub use no_options_api::NoOptionsApi;
 pub use no_potential_component_option_typo::NoPotentialComponentOptionTypo;
 pub use no_reactive_destructure::NoReactiveDestructure;
+pub use no_ref_as_operand::NoRefAsOperand;
 pub use no_reserved_identifiers::NoReservedIdentifiers;
 pub use no_reserved_keys::NoReservedKeys;
 pub use no_side_effects_in_computed::NoSideEffectsInComputed;
@@ -99,12 +110,15 @@ pub use prefer_use_id::PreferUseId;
 pub use prefer_use_slots::PreferUseSlots;
 pub use prefer_use_template_ref::PreferUseTemplateRef;
 pub use props_emits::*;
+pub use require_explicit_slots::RequireExplicitSlots;
 pub use require_function_return_type::RequireFunctionReturnType;
 pub use require_prop_type_constructor::RequirePropTypeConstructor;
 pub use require_symbol_provide::RequireSymbolProvide;
 pub use require_typed_ref::RequireTypedRef;
 pub use return_in_computed_property::ReturnInComputedProperty;
+pub use valid_define_emits::ValidDefineEmits;
 pub use valid_define_options::ValidDefineOptions;
+pub use valid_define_props::ValidDefineProps;
 pub use valid_next_tick::ValidNextTick;
 pub use vue_router_prefer_named_push::VueRouterPreferNamedPush;
 pub use vue_test_utils_no_html_snapshot::VueTestUtilsNoHtmlSnapshot;
@@ -160,17 +174,13 @@ pub trait ScriptRule: Send + Sync {
     /// Get rule metadata
     fn meta(&self) -> &'static ScriptRuleMeta;
 
-    /// Check the script content.
+    /// Check the script content (`source`) at the given `offset`, accumulating
+    /// diagnostics into `result`.
     ///
     /// This is a thin wrapper that parses the source once and delegates to
-    /// [`ScriptRule::check_program`]. Rules that rely on an oxc parse should
-    /// override `check_program` instead so a shared parse can be reused by
-    /// [`ScriptLinter::lint`]. Rules that operate purely on the raw bytes (no
-    /// oxc AST) override `check` directly and leave `check_program` empty.
-    ///
-    /// * `source` - The script block content
-    /// * `offset` - The offset of the script block in the original file
-    /// * `result` - Accumulator for diagnostics
+    /// [`ScriptRule::check_program`]. Rules that rely on an oxc parse override
+    /// `check_program` instead so a shared parse can be reused by
+    /// [`ScriptLinter::lint`]; byte-only rules override `check` directly.
     fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, source, script_source_type()).parse();
@@ -194,8 +204,7 @@ pub trait ScriptRule: Send + Sync {
     }
 
     /// Whether this rule consumes the oxc AST via [`ScriptRule::check_program`].
-    /// AST rules return `true` to receive a shared parse from
-    /// [`ScriptLinter::lint`]; byte-only rules leave it `false`.
+    /// AST rules return `true` to receive a shared parse; byte-only rules `false`.
     #[inline]
     fn uses_ast(&self) -> bool {
         false
@@ -269,13 +278,12 @@ impl ScriptLinter {
         self.rules.push(rule);
     }
 
-    /// Lint a script block
+    /// Lint a script block.
     ///
     /// AST-based rules share a **single** oxc parse of the source (one
     /// [`Allocator`] + one [`Program`]) via [`ScriptRule::check_program`],
-    /// collapsing what used to be N redundant parses (one per rule) into one.
-    /// Byte-only rules continue to scan the raw source directly via
-    /// [`ScriptRule::check`].
+    /// collapsing N redundant per-rule parses into one. Byte-only rules scan
+    /// the raw source directly via [`ScriptRule::check`].
     pub fn lint(&self, source: &str, offset: usize) -> ScriptLintResult {
         let mut result = ScriptLintResult::default();
 

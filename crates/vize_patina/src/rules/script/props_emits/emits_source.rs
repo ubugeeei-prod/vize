@@ -1,18 +1,25 @@
-//! Shared resolution of the Options API `emits` declaration object for the
-//! `script/*` emits rules.
+//! Shared resolution of the Options API `emits` declaration for the `script/*`
+//! emits rules.
 //!
-//! Resolves the object form of the `emits` option
-//! (`export default { emits: { ... } }` / `defineComponent({ emits: { ... } })`
-//! / a same-file identifier bound to such an object). The array form
-//! (`emits: ['submit']`) and type-based declarations carry no validator
-//! functions, so only the object form is returned.
+//! Resolves the `emits` option from an `export default { ... }` /
+//! `defineComponent({ ... })` / same-file identifier-bound options object.
+//! [`resolve_emits_object`] returns only the object form (the only form that
+//! carries validator functions); [`resolve_emits_declaration`] returns either
+//! the array or the object form, for rules that need the full declared name set.
 
 use oxc_ast::ast::{
-    Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
-    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
+    Argument, ArrayExpression, BindingPattern, CallExpression, ExportDefaultDeclarationKind,
+    Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 
 use vize_carton::FxHashMap;
+
+/// The Options API `emits` option in either declared runtime form. The type
+/// (`defineEmits<...>`) and bare-identifier forms are not represented here.
+pub(super) enum EmitsDeclaration<'a> {
+    Array(&'a ArrayExpression<'a>),
+    Object(&'a ObjectExpression<'a>),
+}
 
 /// The Options API `emits` option as an object literal, if declared in object
 /// form. Resolves `export default` / `defineComponent(...)` / identifier-bound
@@ -23,6 +30,37 @@ pub(super) fn resolve_emits_object<'a>(
     let bindings = collect_object_bindings(program);
     let options = resolve_options_object(program, &bindings)?;
     option_emits_object(options, &bindings)
+}
+
+/// The Options API `emits` option as an array or object literal. Resolves the
+/// same options-object forms as [`resolve_emits_object`], and additionally
+/// recognizes the array form (`emits: ['submit']`). An identifier-bound object
+/// value is resolved; other shapes yield `None`.
+pub(super) fn resolve_emits_declaration<'a>(
+    program: &'a Program<'a>,
+) -> Option<EmitsDeclaration<'a>> {
+    let bindings = collect_object_bindings(program);
+    let options = resolve_options_object(program, &bindings)?;
+    option_emits_declaration(options, &bindings)
+}
+
+/// The `emits` option's value as an array or object literal.
+fn option_emits_declaration<'a>(
+    options: &'a ObjectExpression<'a>,
+    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) -> Option<EmitsDeclaration<'a>> {
+    options.properties.iter().find_map(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return None;
+        };
+        if property.computed || property_key_name(&property.key) != Some("emits") {
+            return None;
+        }
+        if let Some(array) = unwrap_array_expression(&property.value) {
+            return Some(EmitsDeclaration::Array(array));
+        }
+        resolve_object_or_binding(&property.value, bindings).map(EmitsDeclaration::Object)
+    })
 }
 
 /// The `emits` option's value as an object literal, resolving an
@@ -139,6 +177,17 @@ fn unwrap_object_expression<'a>(
         Expression::TSAsExpression(ts) => unwrap_object_expression(&ts.expression),
         Expression::TSSatisfiesExpression(ts) => unwrap_object_expression(&ts.expression),
         Expression::TSNonNullExpression(ts) => unwrap_object_expression(&ts.expression),
+        _ => None,
+    }
+}
+
+fn unwrap_array_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a ArrayExpression<'a>> {
+    match expression {
+        Expression::ArrayExpression(array) => Some(array.as_ref()),
+        Expression::ParenthesizedExpression(paren) => unwrap_array_expression(&paren.expression),
+        Expression::TSAsExpression(ts) => unwrap_array_expression(&ts.expression),
+        Expression::TSSatisfiesExpression(ts) => unwrap_array_expression(&ts.expression),
+        Expression::TSNonNullExpression(ts) => unwrap_array_expression(&ts.expression),
         _ => None,
     }
 }

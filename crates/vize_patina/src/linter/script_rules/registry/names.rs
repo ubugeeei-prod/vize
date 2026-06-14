@@ -67,6 +67,16 @@ pub(crate) const RULE_REQUIRE_PROP_TYPES: &str = "script/require-prop-types";
 pub(crate) const RULE_NO_RESERVED_PROPS: &str = "script/no-reserved-props";
 pub(crate) const RULE_NO_UNUSED_EMIT_DECLARATIONS: &str = "script/no-unused-emit-declarations";
 pub(crate) const RULE_RETURN_IN_EMITS_VALIDATOR: &str = "script/return-in-emits-validator";
+pub(crate) const RULE_VALID_DEFINE_PROPS: &str = "script/valid-define-props";
+pub(crate) const RULE_VALID_DEFINE_EMITS: &str = "script/valid-define-emits";
+pub(crate) const RULE_REQUIRE_VALID_DEFAULT_PROP: &str = "script/require-valid-default-prop";
+pub(crate) const RULE_REQUIRE_TYPED_OBJECT_PROP: &str = "script/require-typed-object-prop";
+pub(crate) const RULE_CUSTOM_EVENT_NAME_CASING: &str = "script/custom-event-name-casing";
+pub(crate) const RULE_NO_REF_AS_OPERAND: &str = "script/no-ref-as-operand";
+pub(crate) const RULE_REQUIRE_EXPLICIT_SLOTS: &str = "script/require-explicit-slots";
+pub(crate) const RULE_NO_DUPLICATE_ATTR_INHERITANCE: &str = "script/no-duplicate-attr-inheritance";
+pub(crate) const RULE_NO_MULTIPLE_SLOT_ARGS: &str = "script/no-multiple-slot-args";
+pub(crate) const RULE_REQUIRE_EXPLICIT_EMITS: &str = "script/require-explicit-emits";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -122,6 +132,16 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_RESERVED_PROPS,
     RULE_NO_UNUSED_EMIT_DECLARATIONS,
     RULE_RETURN_IN_EMITS_VALIDATOR,
+    RULE_VALID_DEFINE_PROPS,
+    RULE_VALID_DEFINE_EMITS,
+    RULE_REQUIRE_VALID_DEFAULT_PROP,
+    RULE_REQUIRE_TYPED_OBJECT_PROP,
+    RULE_CUSTOM_EVENT_NAME_CASING,
+    RULE_NO_REF_AS_OPERAND,
+    RULE_REQUIRE_EXPLICIT_SLOTS,
+    RULE_NO_DUPLICATE_ATTR_INHERITANCE,
+    RULE_NO_MULTIPLE_SLOT_ARGS,
+    RULE_REQUIRE_EXPLICIT_EMITS,
 ];
 
 #[cfg(test)]
@@ -176,4 +196,14 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_RESERVED_PROPS,
     RULE_NO_UNUSED_EMIT_DECLARATIONS,
     RULE_RETURN_IN_EMITS_VALIDATOR,
+    RULE_VALID_DEFINE_PROPS,
+    RULE_VALID_DEFINE_EMITS,
+    RULE_REQUIRE_VALID_DEFAULT_PROP,
+    RULE_REQUIRE_TYPED_OBJECT_PROP,
+    RULE_CUSTOM_EVENT_NAME_CASING,
+    RULE_NO_REF_AS_OPERAND,
+    RULE_REQUIRE_EXPLICIT_SLOTS,
+    RULE_NO_DUPLICATE_ATTR_INHERITANCE,
+    RULE_NO_MULTIPLE_SLOT_ARGS,
+    RULE_REQUIRE_EXPLICIT_EMITS,
 ];

@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-duplicate-attr-inheritance",
+        severity: Warning,
+        message: "`inheritAttrs: true` is redundant because it is the default.",
+        start: 30,
+        end: 34,
+        help: Some(
+            "Remove `inheritAttrs: true`: attribute inheritance is already on by default. Keep this option only to opt out with `inheritAttrs: false` (for example when forwarding `$attrs` manually with `v-bind=\"$attrs\"`).",
+        ),
+        labels: [
+            Label {
+                message: "redundant default",
+                start: 30,
+                end: 34,
+            },
+        ],
+        fix: None,
+    },
+]

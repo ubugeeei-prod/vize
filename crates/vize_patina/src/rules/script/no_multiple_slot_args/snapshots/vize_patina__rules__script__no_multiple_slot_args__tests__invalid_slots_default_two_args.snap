@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_multiple_slot_args/tests.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-multiple-slot-args",
+        severity: Warning,
+        message: "Unexpected multiple arguments passed to a scoped-slot function.",
+        start: 0,
+        end: 23,
+        help: Some(
+            "A slot function forwards a single \"slot props\" value. Pass one object instead, e.g. `slots.default({ a, b })`.",
+        ),
+        labels: [
+            Label {
+                message: "only the first argument reaches the slot",
+                start: 0,
+                end: 23,
+            },
+        ],
+        fix: None,
+    },
+]

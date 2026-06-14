@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/valid_define_emits.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/valid-define-emits",
+        severity: Error,
+        message: "defineEmits() cannot accept both a type argument and a runtime argument.",
+        start: 0,
+        end: 30,
+        help: Some(
+            "Declare emitted events either with the type argument (`defineEmits<{ change: [id: number] }>()`) or with a runtime argument (`defineEmits(['change'])`), not both.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
