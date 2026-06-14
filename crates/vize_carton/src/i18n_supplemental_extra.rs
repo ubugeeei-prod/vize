@@ -269,4 +269,42 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "テキストを翻訳関数に移してください。例: 内容には {{ $t('key') }}、属性には :title=\"$t('key')\" を使用します。",
         "请将文本移入翻译函数，例如内容使用 {{ $t('key') }}，属性使用 :title=\"$t('key')\"。",
     ),
+    // vue/no-deprecated-filter
+    (
+        "vue/no-deprecated-filter.description",
+        "Disallow deprecated Vue 2 filter syntax (the `|` pipe)",
+        "非推奨の Vue 2 フィルター構文（`|` パイプ）を禁止する",
+        "禁止已废弃的 Vue 2 过滤器语法（`|` 管道符）",
+    ),
+    (
+        "vue/no-deprecated-filter.message",
+        "Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "フィルターは Vue 3 で削除されました。'|' フィルターをメソッド呼び出しまたは算出プロパティに置き換えてください",
+        "过滤器已在 Vue 3 中移除；请将 '|' 过滤器替换为方法调用或计算属性",
+    ),
+    (
+        "vue/no-deprecated-filter.help",
+        "Replace the filter with a method call or computed property (e.g. {{ capitalize(message) }} instead of {{ message | capitalize }}).",
+        "フィルターをメソッド呼び出しまたは算出プロパティに置き換えてください（例: {{ message | capitalize }} ではなく {{ capitalize(message) }}）。",
+        "请将过滤器替换为方法调用或计算属性（例如用 {{ capitalize(message) }} 代替 {{ message | capitalize }}）。",
+    ),
+    // vue/no-deprecated-functional-template
+    (
+        "vue/no-deprecated-functional-template.description",
+        "Disallow the `functional` attribute on the SFC `<template>`",
+        "SFCの`<template>`への`functional`属性を禁止する",
+        "禁止在SFC的`<template>`上使用`functional`属性",
+    ),
+    (
+        "vue/no-deprecated-functional-template.message",
+        "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+        "`<template>`の`functional`属性（関数型SFCテンプレート）はVue 3で削除されました",
+        "`<template>`上的`functional`属性（函数式SFC模板）已在Vue 3中移除",
+    ),
+    (
+        "vue/no-deprecated-functional-template.help",
+        "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+        "`functional`を削除してステートフルなコンポーネントにするか、関数型コンポーネントを通常の関数（レンダー関数やJSXなど）として記述してください。",
+        "请移除`functional`并改用有状态组件，或将函数式组件写成普通函数（例如渲染函数或JSX）。",
+    ),
 ];
