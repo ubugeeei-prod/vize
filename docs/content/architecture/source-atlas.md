@@ -315,40 +315,9 @@ Compiler and linter performance regressions are blockers.
 
 ## Implementation Order
 
-1. Finish the canary `AtelierOutput` foundation:
-   - structured imports, hoists, functions, exports, sections, and map fragments;
-   - byte-equivalent output;
-   - old-scanner vs section equivalence tests;
-   - benchmark-neutral Actions result.
-2. Define a private `SourceAtlas` note and skeleton
-   ([#1692](https://github.com/ubugeeei-prod/vize/issues/1692)):
-   - registered source plates;
-   - plate request enum;
-   - version coordinate;
-   - no default construction on hot paths.
-3. Add version-coordinate facts
-   ([#1698](https://github.com/ubugeeei-prod/vize/issues/1698)):
-   - `v0`, `v1`, `v2`, `v2.7`, `v3`, and Vapor capability;
-   - one source of truth for Patina, Canon, Maestro, and Ateliers;
-   - compatibility fallback reasons.
-4. Add a private `Rendu` skeleton in `vize_atelier_core`
-   ([#1695](https://github.com/ubugeeei-prod/vize/issues/1695)):
-   - borrowed refs;
-   - structured operations;
-   - capability facts;
-   - no backend switch yet.
-5. Move Vue template DOM output through Rendu behind equivalence tests.
-6. Move SSR assembly onto `AtelierOutput`.
-7. Connect Vapor as `Rendu -> Vapor IR -> Vapor output`
-   ([#1697](https://github.com/ubugeeei-prod/vize/issues/1697)).
-8. Connect JSX/TSX lowering where semantics match
-   ([#1579](https://github.com/ubugeeei-prod/vize/issues/1579),
-   [#1580](https://github.com/ubugeeei-prod/vize/issues/1580)).
-9. Remove render/codegen responsibilities from Relief only after replacement
-   paths are benchmark-neutral.
-10. Promote source-map composition from template-only fragments to full SFC
-    output once section composition is correct
-    ([#1696](https://github.com/ubugeeei-prod/vize/issues/1696)).
+The issue-backed tracks above are the implementation order. Each slice must
+preserve byte-equivalent output and pass benchmark gates before another risky
+plate is stacked.
 
 ## Review Rules
 

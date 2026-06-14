@@ -1,30 +1,23 @@
 //! Vapor mode template compilation.
 
+mod output;
+
+use output::{
+    VaporTemplateModule, is_render_signature, rewrite_vapor_import, vapor_module_sections,
+};
+
 use super::string_tracking::{StringTrackState, count_braces_with_state};
-use vize_atelier_core::{TemplateSyntaxMode, rendu::RenduRange};
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_vapor::{
     VaporCompilerOptions, compile_vapor_with_template_syntax_and_diagnostics,
 };
 use vize_carton::{Bump, String, ToCompactString};
 
 use crate::{
-    compile::output_module::{AtelierModuleSections, AtelierOutputMaps},
+    compile::output_module::AtelierOutputMaps,
     compile_template::{TemplateBlockCompileResult, recoverable_template_warnings},
     types::{BindingMetadata, SfcError, SfcTemplateBlock},
 };
-
-/// Vapor template output after the SFC adapter has normalized imports, hoists,
-/// and the render function.
-///
-/// Vapor already has its own target-specific planning layer, so the canary does
-/// not force it into DOM's fine render-body sections. The shared contract here
-/// is the coarser `AtelierModuleSections`: inline SFC assembly can slice the
-/// imports, template declarations, and full render function without invoking
-/// the legacy line scanner.
-struct VaporTemplateModule {
-    code: String,
-    module_sections: AtelierModuleSections,
-}
 
 /// Compile template block using Vapor mode
 pub(crate) fn compile_template_block_vapor(
@@ -120,23 +113,6 @@ pub(super) fn add_scope_id_to_template(template_line: &str, scope_id: &str) -> S
         }
     }
     template_line.to_compact_string()
-}
-
-fn rewrite_vapor_import(line: &str) -> String {
-    if line.contains("'vue/vapor'") {
-        line.replace("'vue/vapor'", "'vue'").into()
-    } else if line.contains("\"vue/vapor\"") {
-        line.replace("\"vue/vapor\"", "\"vue\"").into()
-    } else {
-        line.to_compact_string()
-    }
-}
-
-fn is_render_signature(line: &str) -> bool {
-    let trimmed = line.trim();
-    trimmed.starts_with("export function render(")
-        || trimmed.starts_with("function render(")
-        || trimmed.starts_with("export default")
 }
 
 #[cfg(test)]
@@ -269,26 +245,6 @@ fn transform_vapor_template_module(
         code: module_code,
         module_sections,
     })
-}
-
-fn vapor_module_sections(
-    imports_len: usize,
-    hoists_len: usize,
-    separator_len: usize,
-    functions_len: usize,
-) -> AtelierModuleSections {
-    let imports = RenduRange::new(0, imports_len);
-    let hoists = RenduRange::new(imports.end, imports.end + hoists_len);
-    let functions_start = hoists.end + separator_len;
-    let functions = RenduRange::new(functions_start, functions_start + functions_len);
-    let exports = RenduRange::empty(functions.end);
-
-    AtelierModuleSections {
-        imports,
-        hoists,
-        functions,
-        exports,
-    }
 }
 
 fn rewrite_bound_component_resolution(

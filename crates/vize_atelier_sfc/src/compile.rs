@@ -878,12 +878,10 @@ fn compile_sfc_inner(
     } else {
         None
     };
-
     if let Some(Ok(template_output)) = &template_result {
         record_template_source_map_fact(template_output, SourceMapComposition::Skipped);
         warnings.extend(template_output.warnings.clone());
     }
-
     // Extract template parts for inline mode (imports, hoisted, preamble, render_body)
     let (
         template_imports,
@@ -895,13 +893,14 @@ fn compile_sfc_inner(
     ) = match &template_result {
         Some(Ok(template_output)) => {
             if is_vapor || options.template.ssr {
+                let render_fn_name = if options.template.ssr {
+                    "ssrRender"
+                } else {
+                    "render"
+                };
                 let parts = profile!(
                     "atelier.sfc.template.extract_parts_full",
-                    template_output.full_parts_for_inline(if options.template.ssr {
-                        "ssrRender"
-                    } else {
-                        "render"
-                    })
+                    template_output.full_parts_for_inline(render_fn_name)
                 );
                 if let Some(fallback) = parts.fallback {
                     record_atelier_fallback(fallback);
