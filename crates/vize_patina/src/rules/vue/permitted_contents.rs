@@ -205,8 +205,10 @@ impl Rule for PermittedContents {
             ctx.error(message, &element.loc);
         }
 
-        // 3 & 4. Required children: check if parent constrains direct children
-        if let Some(parent) = ctx.parent_element() {
+        // 3 & 4. Required children: check if parent constrains direct children.
+        // A custom component is exempt — its rendered root element is unknown, so
+        // `<ul><MyItem /></ul>` (where `MyItem` renders an `<li>`) is valid.
+        if !is_unknown_component && let Some(parent) = ctx.parent_element() {
             let parent_tag = content_model_tag(parent.tag.as_str());
             if let Some(allowed) = required_children(parent_tag)
                 && !allowed.contains(&tag)
@@ -253,6 +255,22 @@ mod tests {
     fn test_valid_list_with_li() {
         let linter = create_linter();
         let result = linter.lint_template_rules_only(r#"<ul><li>item</li></ul>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_list_with_component_child() {
+        // A custom component inside <ul> is exempt: it typically renders an <li>.
+        let linter = create_linter();
+        let result = linter.lint_template_rules_only(r#"<ul><MyItem :key="1" /></ul>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_table_with_component_child() {
+        // A custom component inside <table> is exempt: it typically renders a <tr>.
+        let linter = create_linter();
+        let result = linter.lint_template_rules_only(r#"<table><MyRow /></table>"#, "test.vue");
         assert_eq!(result.error_count, 0);
     }
 
@@ -416,10 +434,12 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_unknown_component_in_ul() {
+    fn test_valid_unknown_component_in_ul() {
+        // Components are skipped — they can render anything, including an <li>
+        // (consistent with `test_valid_component_in_any_context`).
         let linter = create_linter();
         let result = linter.lint_template_rules_only(r#"<ul><MyItem /></ul>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
