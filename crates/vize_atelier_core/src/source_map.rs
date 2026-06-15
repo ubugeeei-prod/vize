@@ -127,6 +127,65 @@ impl<'a> SourceMapRegistration<'a> {
     }
 }
 
+/// Outcome of composing an SFC source map from registered output sections.
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum SfcMapComposition<'a> {
+    /// A single template-render fragment is the whole generated map, so it can
+    /// be surfaced directly as the SFC source map.
+    Composed(&'a str),
+    /// Composition is valid but deferred to a later script/template/style
+    /// assembly plate.
+    Deferred(SourceAtlasFallback),
+    /// No registered fragment was available to compose.
+    Omitted(SourceAtlasFallback),
+}
+
+impl<'a> SfcMapComposition<'a> {
+    /// The composed map, when composition succeeded.
+    pub const fn composed_map(self) -> Option<&'a str> {
+        match self {
+            Self::Composed(map) => Some(map),
+            Self::Deferred(_) | Self::Omitted(_) => None,
+        }
+    }
+
+    /// The fallback reason recorded for a deferred or omitted composition.
+    pub const fn fallback(self) -> Option<SourceAtlasFallback> {
+        match self {
+            Self::Composed(_) => None,
+            Self::Deferred(reason) | Self::Omitted(reason) => Some(reason),
+        }
+    }
+}
+
+/// Decide whether registered sections compose into one SFC source map.
+///
+/// This is the single authority for the composition rule, instead of each
+/// caller hand-deciding composed-vs-skipped. Composition is only correct today
+/// for a single template-render fragment that covers the whole module (a
+/// template-only SFC): then the fragment *is* the final map. A module that also
+/// registers script/style sections still needs a composition plate and is
+/// reported as [`Deferred`](SfcMapComposition::Deferred); a module with no
+/// fragment is [`Omitted`](SfcMapComposition::Omitted). It composes from
+/// already-registered sections and never rescans generated JavaScript.
+pub fn compose_sfc_source_map<'a>(
+    registrations: &[SourceMapRegistration<'a>],
+) -> SfcMapComposition<'a> {
+    let mut with_fragment = registrations.iter().filter(|reg| reg.has_fragment());
+    let Some(first) = with_fragment.next() else {
+        return SfcMapComposition::Omitted(SourceAtlasFallback::SourceMapFragmentUnavailable);
+    };
+    // A lone template-render fragment is the entire module map.
+    if with_fragment.next().is_none()
+        && matches!(first.section, SourceMapRegistrationSection::TemplateRender)
+        && let Some(fragment) = first.fragment
+    {
+        return SfcMapComposition::Composed(fragment);
+    }
+    SfcMapComposition::Deferred(SourceAtlasFallback::SourceMapCompositionSkipped)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -175,6 +234,58 @@ mod tests {
         assert!(!registration.is_composed());
         assert_eq!(
             registration.fallback(),
+            Some(SourceAtlasFallback::SourceMapCompositionSkipped)
+        );
+    }
+
+    fn template_fragment(fragment: &str) -> SourceMapRegistration<'_> {
+        SourceMapRegistration::for_template_fragment(
+            RenduRange::new(0, 20),
+            fragment,
+            SourceMapRegistrationState::Composed,
+        )
+    }
+
+    fn script_fragment(fragment: &str) -> SourceMapRegistration<'_> {
+        SourceMapRegistration::new(
+            SourceAtlasRoute::empty().with_source(SourceAtlasSource::Script),
+            SourceMapRegistrationSection::Script,
+            RenduRange::new(0, 10),
+            Some(fragment),
+            SourceMapRegistrationState::Composed,
+        )
+    }
+
+    #[test]
+    fn a_lone_template_fragment_composes_into_the_module_map() {
+        let regs = [template_fragment("{\"version\":3}")];
+        let composition = compose_sfc_source_map(&regs);
+        assert_eq!(composition.composed_map(), Some("{\"version\":3}"));
+        assert_eq!(composition.fallback(), None);
+    }
+
+    #[test]
+    fn no_registered_fragment_is_an_omitted_composition() {
+        let composition = compose_sfc_source_map(&[]);
+        assert_eq!(composition.composed_map(), None);
+        assert_eq!(
+            composition.fallback(),
+            Some(SourceAtlasFallback::SourceMapFragmentUnavailable)
+        );
+    }
+
+    #[test]
+    fn template_plus_script_fragments_defer_composition() {
+        // Two sections still need a real composition plate, so the rule reports
+        // a deferred composition rather than surfacing a half-composed map.
+        let regs = [
+            template_fragment("{\"version\":3,\"file\":\"t\"}"),
+            script_fragment("{\"version\":3,\"file\":\"s\"}"),
+        ];
+        let composition = compose_sfc_source_map(&regs);
+        assert_eq!(composition.composed_map(), None);
+        assert_eq!(
+            composition.fallback(),
             Some(SourceAtlasFallback::SourceMapCompositionSkipped)
         );
     }

@@ -211,4 +211,37 @@ mod tests {
             Some(SourceAtlasFallback::SourceMapCompositionSkipped)
         );
     }
+
+    #[test]
+    fn template_only_registration_composes_into_a_module_map() {
+        use vize_atelier_core::source_map::compose_sfc_source_map;
+
+        // A template-only SFC registers a single template-render fragment, so
+        // the shared composition authority surfaces it as the whole module map.
+        let output = template_result_with_map();
+        let registration = output
+            .source_map_registration(SourceMapRegistrationState::Composed)
+            .expect("template fragment should register");
+
+        let composition = compose_sfc_source_map(&[registration]);
+        assert_eq!(composition.composed_map(), Some("{\"version\":3}"));
+        assert_eq!(composition.fallback(), None);
+    }
+
+    #[test]
+    fn a_template_without_a_fragment_omits_composition() {
+        use vize_atelier_core::source_map::compose_sfc_source_map;
+
+        let output = template_result_without_map();
+        let composition = match output.source_map_registration(SourceMapRegistrationState::Composed)
+        {
+            Some(registration) => compose_sfc_source_map(&[registration]),
+            None => compose_sfc_source_map(&[]),
+        };
+        assert_eq!(composition.composed_map(), None);
+        assert_eq!(
+            composition.fallback(),
+            Some(SourceAtlasFallback::SourceMapFragmentUnavailable)
+        );
+    }
 }
