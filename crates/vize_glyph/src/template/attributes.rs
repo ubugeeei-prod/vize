@@ -161,9 +161,10 @@ pub(crate) fn should_use_multiline_attrs(
     depth: usize,
     indent: &[u8],
 ) -> bool {
-    if attrs.iter().zip(rendered).any(|(attr, rendered)| {
-        attr.indent_multiline_value && rendered_attribute_is_multiline(rendered)
-    }) {
+    if rendered
+        .iter()
+        .any(|rendered| rendered_attribute_is_multiline(rendered))
+    {
         return true;
     }
 

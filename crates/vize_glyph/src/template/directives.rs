@@ -83,14 +83,67 @@ fn format_directive_value(name: &str, value: &str, options: &FormatOptions) -> (
         return (format_v_for_expression(trimmed), false);
     }
 
+    let decoded = decode_expression_attribute_entities(trimmed);
+    let expression = decoded.as_deref().unwrap_or(trimmed);
+
     // Try to format as JS expression via oxc_formatter
-    match script::format_js_expression(trimmed, options) {
+    match script::format_js_expression(expression, options) {
         Some(formatted) => {
             let indent_multiline_value = formatted.contains('\n');
             (formatted, indent_multiline_value)
         }
         None => (value.to_compact_string(), false),
     }
+}
+
+fn decode_expression_attribute_entities(value: &str) -> Option<std::string::String> {
+    if !value.contains('&') {
+        return None;
+    }
+
+    let mut decoded = std::string::String::with_capacity(value.len());
+    let mut changed = false;
+    let mut rest = value;
+    while !rest.is_empty() {
+        if let Some(tail) = rest.strip_prefix("&quot;") {
+            decoded.push('"');
+            rest = tail;
+            changed = true;
+        } else if let Some(tail) = rest
+            .strip_prefix("&#34;")
+            .or_else(|| rest.strip_prefix("&#x22;"))
+            .or_else(|| rest.strip_prefix("&#X22;"))
+        {
+            decoded.push('"');
+            rest = tail;
+            changed = true;
+        } else if let Some(tail) = rest.strip_prefix("&apos;") {
+            decoded.push('\'');
+            rest = tail;
+            changed = true;
+        } else if let Some(tail) = rest
+            .strip_prefix("&#39;")
+            .or_else(|| rest.strip_prefix("&#x27;"))
+            .or_else(|| rest.strip_prefix("&#X27;"))
+        {
+            decoded.push('\'');
+            rest = tail;
+            changed = true;
+        } else if let Some(tail) = rest.strip_prefix("&amp;") {
+            decoded.push('&');
+            rest = tail;
+            changed = true;
+        } else {
+            let ch = rest
+                .chars()
+                .next()
+                .expect("non-empty string must have a next char");
+            decoded.push(ch);
+            rest = &rest[ch.len_utf8()..];
+        }
+    }
+
+    changed.then_some(decoded)
 }
 
 /// Format `v-for` expression: normalize spacing in `(item, index) in items`.

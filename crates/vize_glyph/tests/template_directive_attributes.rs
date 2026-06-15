@@ -46,3 +46,28 @@ fn sfc_multiline_directive_attribute_keeps_template_indent() {
     );
     assert_eq!(first.code, second.code);
 }
+
+#[test]
+fn sfc_single_multiline_directive_attribute_is_idempotent() {
+    let source = r#"<template>
+  <label
+    :style="props.reverseOrder
+      ? 'grid-template-areas: \'toggle . label-text\''
+      : 'grid-template-areas: \'label-text . toggle\''"
+  >
+  </label>
+</template>
+"#;
+    let options = FormatOptions::default();
+    let first = format_sfc(source, &options).unwrap();
+    let second = format_sfc(&first.code, &options).unwrap();
+    let third = format_sfc(&second.code, &options).unwrap();
+
+    assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+    assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+    assert!(
+        first.code.contains("\n    :style="),
+        "single multiline attribute should stay on its own line:\n{}",
+        first.code
+    );
+}
