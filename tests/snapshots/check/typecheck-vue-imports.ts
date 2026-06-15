@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 
-import { requireVizeAndCorsaBins, typecheckVueImportsApp } from "../../_helpers/apps.ts";
+import { requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
+import { typecheckVueImportsApp } from "../../_helpers/fixture-apps.ts";
 import { runCrashFreeVizeCheck } from "../_helpers/realworld.ts";
 
 const app = typecheckVueImportsApp;

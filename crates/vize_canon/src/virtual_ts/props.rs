@@ -1,7 +1,4 @@
-//! Props type generation for virtual TypeScript.
-//!
-//! Generates `Props` type definitions and template-level prop variable
-//! declarations from Vue SFC macro analysis.
+mod setup_scoped;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey};
@@ -16,6 +13,8 @@ use vize_croquis::Croquis;
 use vize_croquis::macros::{MacroKind, ModelDefinition};
 
 use super::helpers::{is_reserved_identifier, to_safe_identifier};
+use setup_scoped::props_type_ref;
+pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
 
 #[inline]
 fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool {
@@ -293,17 +292,6 @@ pub(crate) enum OptionsApiPropsSource {
     Names(Vec<String>),
 }
 
-/// Props type emission mode for `defineProps<T>()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum PropsTypeEmission {
-    /// Emit `export type Props = ...` in module scope before `__setup()`.
-    Module,
-    /// Keep the concrete props type inside `__setup()` and export it through
-    /// `ReturnType<typeof __setup>`. This is needed when `T` references a
-    /// setup-scope value via `typeof`.
-    DeferredToSetup,
-}
-
 /// Generate Props type definition at module level.
 /// When `generic_param` is present (e.g., `"T extends Foo, P extends Bar"`),
 /// the Props type is emitted with generic parameters: `export type Props<T, P> = ...;`
@@ -344,8 +332,6 @@ pub(crate) fn generate_props_type(
     ts.push_str("// ========== Exported Types ==========\n");
 
     if emission == PropsTypeEmission::DeferredToSetup && define_props_type_args.is_some() {
-        // The concrete type is emitted inside `__setup()` after user script
-        // declarations, then exported from `ReturnType<typeof __setup>`.
     } else if props_already_defined {
         // User defined Props, no need to re-export
     } else if let Some(type_args) = define_props_type_args {
@@ -384,33 +370,6 @@ pub(crate) fn generate_props_type(
     }
 
     ts.push('\n');
-}
-
-/// Emit the setup-local props type artifact used when the `defineProps<T>()`
-/// type argument can only resolve inside `__setup()`.
-pub(crate) fn generate_setup_scoped_props_artifact(ts: &mut String, summary: &Croquis) {
-    let Some(type_args) = summary
-        .macros
-        .define_props()
-        .and_then(|m| m.type_args.as_ref())
-    else {
-        return;
-    };
-    let inner_type = type_args
-        .strip_prefix('<')
-        .and_then(|s| s.strip_suffix('>'))
-        .unwrap_or(type_args.as_str());
-    let models = summary.macros.models();
-
-    ts.push_str("\n  // Setup-scoped props type artifact\n");
-    if models.is_empty() {
-        append!(*ts, "  type __VizeSetupProps = {inner_type};\n");
-    } else {
-        append!(*ts, "  type __VizeSetupProps = {inner_type} & ");
-        append_model_props_type_literal(ts, models);
-        ts.push_str(";\n");
-    }
-    ts.push_str("  const __vize_setup_props = undefined as unknown as __VizeSetupProps;\n");
 }
 
 /// Emit a real `export type Props` for an Options API component, derived from
@@ -457,17 +416,7 @@ pub(crate) fn generate_props_variables(
         .define_props()
         .and_then(|m| m.type_args.as_ref());
 
-    // Build Props type reference with generic names (strip constraints)
-    let props_type_ref = props_type_ref_override
-        .map(String::from)
-        .unwrap_or_else(|| {
-            generic_param
-                .map(|g| {
-                    let names = extract_generic_names(g);
-                    cstr!("Props<{names}>")
-                })
-                .unwrap_or_else(|| "Props".into())
-        });
+    let props_type_ref = props_type_ref(generic_param, props_type_ref_override);
     let mut defaulted_prop_names = collect_with_defaults_default_names(summary);
     for model in models {
         if model.default_value.is_some() {

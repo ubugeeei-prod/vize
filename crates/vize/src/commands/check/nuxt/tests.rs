@@ -17,9 +17,7 @@ use super::stubs::declared_name;
 
 #[test]
 fn warns_only_when_generated_nuxt_types_are_missing() {
-    // Generated `.nuxt` types present -> accurate checking, no warning.
     assert!(missing_generated_types_warning(true).is_none());
-    // Missing -> degraded `any`-stub fallback, warn with remediation.
     let message =
         missing_generated_types_warning(false).expect("missing generated types must warn");
     assert!(message.contains("nuxi prepare"));
@@ -495,7 +493,6 @@ export {}
         options.auto_import_stubs
     );
 
-    // Without generated artifacts the any-ladder remains the last resort.
     let fallback_root = unique_case_dir("nuxt-fallback-without-generated");
     let _ = std::fs::remove_dir_all(&fallback_root);
     std::fs::create_dir_all(&fallback_root).unwrap();

@@ -4,14 +4,13 @@ import {
   classComponentApp,
   compilerMacrosApp,
   ecosystemProductsApp,
-  genericBuildApp,
   nuxtParityApp,
   optionsApiApp,
   requireVizeAndCorsaBins,
   stylePreprocessorsApp,
   typecheckErrorsApp,
-  typecheckVueImportsApp,
 } from "../../_helpers/apps.ts";
+import { genericBuildApp, typecheckVueImportsApp } from "../../_helpers/fixture-apps.ts";
 import { runVizeCheckWithInjectedTypeError } from "../_helpers/realworld.ts";
 
 const fixtureApps = [
