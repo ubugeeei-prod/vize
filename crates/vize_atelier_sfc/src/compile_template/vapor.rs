@@ -7,14 +7,14 @@ use output::{
 };
 
 use super::string_tracking::{StringTrackState, count_braces_with_state};
-use vize_atelier_core::{TemplateSyntaxMode, source_atlas::SourceAtlasFallback};
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_vapor::{
     VaporCompilerOptions, compile_vapor_with_template_syntax_and_diagnostics,
 };
 use vize_carton::{Bump, String, ToCompactString};
 
 use crate::{
-    compile::fallbacks::record_atelier_fallback,
+    compile::fallbacks::record_unsupported_vapor_shape,
     compile::output_module::AtelierOutputMaps,
     compile_template::{TemplateBlockCompileResult, recoverable_template_warnings},
     types::{BindingMetadata, SfcError, SfcTemplateBlock},
@@ -49,9 +49,9 @@ pub(crate) fn compile_template_block_vapor(
     );
 
     if !result.error_messages.is_empty() {
-        // Vapor could not lower this template shape: record the mismatch as an
-        // observable atlas fallback before surfacing the hard error.
-        record_atelier_fallback(SourceAtlasFallback::UnsupportedVaporShape);
+        // Vapor could not lower this template shape: record the shared
+        // unsupported-shape fallback before surfacing the hard error.
+        record_unsupported_vapor_shape();
         let mut message = String::from("Vapor template compilation errors: ");
         use std::fmt::Write as _;
         let _ = write!(&mut message, "{:?}", result.error_messages);

@@ -42,6 +42,18 @@ pub(crate) fn record_atelier_fallback(fallback: SourceAtlasFallback) {
     global_profiler().record_counter(fallback.profile_counter(), 1);
 }
 
+/// Record that the Vapor Atelier could not lower a template shape.
+///
+/// Routes the decision through the shared `RenduCapabilities::vapor_support`
+/// gate so the unsupported-shape fallback is reported the same way every Vapor
+/// lane reports it, instead of naming the fallback variant inline.
+pub(crate) fn record_unsupported_vapor_shape() {
+    let vapor = RenduCapabilities::empty().with_target(SourceAtlasTarget::Vapor);
+    if let Some(fallback) = vapor.vapor_support(false).fallback() {
+        record_atelier_fallback(fallback);
+    }
+}
+
 fn create_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor) -> SfcError {
     SfcError {
         message: "SFC Vapor SSR is not supported yet; falling back to standard SSR output."

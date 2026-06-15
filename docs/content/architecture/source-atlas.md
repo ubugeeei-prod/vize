@@ -74,7 +74,7 @@ Current `canary` state:
 - Follow-up tracks #1692-#1698 build on this foundation without new hot-path
   cost: `PlateFamily`/`PlateFamilySet` keep lint/editor lanes render-free;
   `SourceAtlasCoordinate::compatibility_fallback` reports pre-v3 lines as
-  `LegacySyntaxCompatibility`; `RenduCapability` / `vapor_route_fallback` let the
+  `LegacySyntaxCompatibility`; `RenduCapability` / `VaporSupport` let the
   Vapor lane consume shared facts and record `UnsupportedVaporShape`;
   fragment-less source maps report `SourceMapFragmentUnavailable`; and
   `render_fallback_report` / `render_registry_report` make fallbacks and plate
