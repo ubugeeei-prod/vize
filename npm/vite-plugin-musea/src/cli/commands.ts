@@ -9,9 +9,14 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { MuseaVrtRunner, generateVrtReport, generateVrtJsonReport } from "../vrt.js";
+import type { VrtSummary } from "../vrt.js";
 import type { ArtFileInfo, VrtOptions } from "../types/index.js";
 
 import type { CliOptions } from "./index.js";
+
+export function hasCiBlockingVrtResult(summary: VrtSummary): boolean {
+  return summary.failed > 0 || summary.skipped > 0;
+}
 
 export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Promise<void> {
   const totalVariants = artFiles.reduce(
@@ -119,8 +124,8 @@ export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Prom
       console.log(`  HTML report: ${htmlPath}\n`);
     }
 
-    // CI mode - exit with error if failures
-    if (options.ci && summary.failed > 0) {
+    // CI mode - exit with error if visual diffs or capture/runtime errors occurred.
+    if (options.ci && hasCiBlockingVrtResult(summary)) {
       console.log("  CI mode: Exiting with error due to failures\n");
       process.exit(1);
     }
