@@ -126,9 +126,9 @@ consume the same capability facts.
 | `v3`       | Modern Vue 3 behavior                                         | all current compiler, linter, typechecker, and editor lanes |
 | `vapor`    | Vapor target capability layer, not a Vue version by itself    | Rendu, Vapor Atelier, fallback reporting                    |
 
-The version coordinate is a capability fact, not a new global mode that every
-crate rediscovers. If Patina, Canon, Maestro, and the Ateliers disagree about a
-dialect, that is an atlas bug. The implementation track is
+The version coordinate is a capability fact, not a global mode every crate
+rediscovers; `SourceAtlasCoordinate::era()` is the shared era shorthand and
+folds the two Vue 0.x lines into one `v0`. The implementation track is
 [#1698](https://github.com/ubugeeei-prod/vize/issues/1698).
 
 ## Demand-Shaped Lanes
