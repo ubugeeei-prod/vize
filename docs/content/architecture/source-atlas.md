@@ -257,9 +257,9 @@ Required registration facts:
 
 The first canary registration is intentionally narrow: template map fragments
 are registered as `SourceMapRegistration` values covering the generated render
-function range through `TemplateBlockCompileResult`. Composed template-only maps
-and deferred script/template maps share the same registration mark, so Vize can
-later compose SFC maps without rescanning generated JavaScript.
+function range through `TemplateBlockCompileResult`. `compose_sfc_source_map`
+is the single authority that turns those registered sections into a composed
+template-only map or a deferred/omitted reason, without rescanning JavaScript.
 
 Source-map work is allowed to cost more only when `sourceMap` or an explicit
 debug/profile lane requests it. The normal compiler and linter paths must remain
