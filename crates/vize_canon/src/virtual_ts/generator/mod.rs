@@ -10,7 +10,9 @@ mod spans;
 
 use vize_croquis::{BindingType, Croquis, ScopeData, ScopeKind};
 
-use self::generics::{generic_injection_point, references_any_identifier};
+use self::generics::{
+    generic_injection_point, is_ident_byte, references_any_identifier, skip_ascii_ws,
+};
 use self::imports::{
     collect_imported_names, emit_global_component_stubs, emit_reference_type_directives,
     extract_declared_name,
@@ -30,9 +32,9 @@ use super::{
         generate_template_context, to_safe_identifier,
     },
     props::{
-        OptionsApiPropsSource, add_generic_defaults, collect_template_prop_names,
-        extract_generic_names, generate_props_type, generate_props_variables,
-        strip_const_modifiers,
+        OptionsApiPropsSource, PropsTypeEmission, add_generic_defaults,
+        collect_template_prop_names, extract_generic_names, generate_props_type,
+        generate_props_variables, generate_setup_scoped_props_artifact, strip_const_modifiers,
     },
     scope::{ScopeGenerationOptions, generate_scope_closures},
     types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
@@ -89,6 +91,89 @@ pub fn generate_virtual_ts_with_offsets(
         options,
         VirtualTsGenerationOptions::default(),
     )
+}
+
+fn is_identifier_start_byte(b: u8) -> bool {
+    b == b'_' || b == b'$' || b.is_ascii_alphabetic()
+}
+
+fn collect_typeof_root_identifiers(source: &str) -> Vec<&str> {
+    let bytes = source.as_bytes();
+    let mut idents = Vec::new();
+    let mut from = 0usize;
+
+    while let Some(rel) = source[from..].find("typeof") {
+        let at = from + rel;
+        let before_ok = at == 0 || !is_ident_byte(bytes[at - 1]);
+        let after_keyword = at + "typeof".len();
+        let after_ok = after_keyword >= bytes.len() || !is_ident_byte(bytes[after_keyword]);
+        if !before_ok || !after_ok {
+            from = after_keyword;
+            continue;
+        }
+
+        let ident_start = skip_ascii_ws(bytes, after_keyword);
+        if ident_start >= bytes.len() || !is_identifier_start_byte(bytes[ident_start]) {
+            from = after_keyword;
+            continue;
+        }
+
+        let mut ident_end = ident_start + 1;
+        while ident_end < bytes.len() && is_ident_byte(bytes[ident_end]) {
+            ident_end += 1;
+        }
+
+        let ident = &source[ident_start..ident_end];
+        if ident != "import" {
+            idents.push(ident);
+        }
+        from = ident_end;
+    }
+
+    idents
+}
+
+fn binding_is_import(summary: &Croquis, name: &str) -> bool {
+    summary.binding_spans.get(name).is_some_and(|(start, end)| {
+        summary
+            .import_statements
+            .iter()
+            .any(|imp| *start >= imp.start && *end <= imp.end)
+    })
+}
+
+fn is_setup_value_binding(summary: &Croquis, name: &str) -> bool {
+    summary.bindings.bindings.contains_key(name) && !binding_is_import(summary, name)
+}
+
+fn define_props_type_requires_setup_scope(summary: &Croquis) -> bool {
+    let Some(type_args) = summary
+        .macros
+        .define_props()
+        .and_then(|m| m.type_args.as_ref())
+    else {
+        return false;
+    };
+    let inner_type = type_args
+        .strip_prefix('<')
+        .and_then(|s| s.strip_suffix('>'))
+        .unwrap_or(type_args.as_str());
+
+    if collect_typeof_root_identifiers(inner_type)
+        .into_iter()
+        .any(|name| is_setup_value_binding(summary, name))
+    {
+        return true;
+    }
+
+    let non_hoisted_type_names: Vec<String> = summary
+        .type_exports
+        .iter()
+        .filter(|te| !te.hoisted)
+        .map(|te| te.name.as_str().into())
+        .collect();
+    !non_hoisted_type_names.is_empty()
+        && references_any_identifier(inner_type, &non_hoisted_type_names)
 }
 
 /// Generate virtual TypeScript with Vue 3 Options API binding resolution
@@ -465,9 +550,30 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         } else {
             None
         };
+    let defer_setup_props_type = define_props_type_requires_setup_scope(summary);
+    let module_scope_declares_props = summary
+        .type_exports
+        .iter()
+        .any(|te| te.hoisted && te.name.as_str() == "Props");
+    let component_props_type_ref = if defer_setup_props_type && module_scope_declares_props {
+        "__VizeResolvedProps"
+    } else {
+        "Props"
+    };
+    let props_type_emission = if defer_setup_props_type {
+        PropsTypeEmission::DeferredToSetup
+    } else {
+        PropsTypeEmission::Module
+    };
     profile!(
         "canon.virtual_ts.generate_props_type",
-        generate_props_type(&mut ts, summary, generic_param, options_api_props.as_ref())
+        generate_props_type(
+            &mut ts,
+            summary,
+            generic_param,
+            options_api_props.as_ref(),
+            props_type_emission,
+        )
     );
 
     // Setup scope: function that contains setup helpers and script content
@@ -730,6 +836,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         });
     }
 
+    if defer_setup_props_type {
+        profile!(
+            "canon.virtual_ts.generate_setup_scoped_props_artifact",
+            generate_setup_scoped_props_artifact(&mut ts, summary)
+        );
+    }
+
     // Template scope (nested inside setup)
     if template_ast.is_some() {
         profile!("canon.virtual_ts.emit_template_scope", {
@@ -801,7 +914,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // Props are available in template as variables
             profile!(
                 "canon.virtual_ts.generate_props_variables",
-                generate_props_variables(&mut ts, summary, generic_param)
+                generate_props_variables(
+                    &mut ts,
+                    summary,
+                    generic_param,
+                    defer_setup_props_type.then_some("__VizeSetupProps"),
+                )
             );
             if options_api {
                 profile!(
@@ -995,6 +1113,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // extracted at module level while keeping each runtime expression in setup
     // scope, where script-setup bindings are defined.
     let mut setup_return_fields = Vec::new();
+    if defer_setup_props_type {
+        setup_return_fields.push("__vize_setup_props");
+    }
     if let Some(expose) = summary.macros.define_expose()
         && expose.type_args.is_none()
         && let Some(runtime_args) = expose.runtime_args.as_ref()
@@ -1020,6 +1141,18 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
     ts.push_str("__setup();\n\n");
+
+    if defer_setup_props_type {
+        if module_scope_declares_props {
+            ts.push_str(
+                "type __VizeResolvedProps = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
+            );
+        } else {
+            ts.push_str(
+                "export type Props = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
+            );
+        }
+    }
 
     // Emits type
     let emits_already_defined = summary
@@ -1148,9 +1281,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str("// ========== Default Export ==========\n");
     ts.push_str("type __VizeComponentInstance = {\n");
     if has_emits_for_props {
-        ts.push_str("  $props: Props & __EmitProps<Emits>;\n");
+        append!(
+            ts,
+            "  $props: {component_props_type_ref} & __EmitProps<Emits>;\n"
+        );
     } else {
-        ts.push_str("  $props: Props;\n");
+        append!(ts, "  $props: {component_props_type_ref};\n");
     }
     ts.push_str("  $emit: __EmitFn<Emits>;\n");
     ts.push_str("  $slots: Slots;\n");
@@ -1198,7 +1334,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     } else {
         ""
     };
-    if let Some(generic) = generic_param {
+    if let Some(generic) = generic_param.filter(|_| !defer_setup_props_type) {
         let generic_decl = add_generic_defaults(generic);
         let generic_names = extract_generic_names(generic);
         append!(

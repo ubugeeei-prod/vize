@@ -293,6 +293,17 @@ pub(crate) enum OptionsApiPropsSource {
     Names(Vec<String>),
 }
 
+/// Props type emission mode for `defineProps<T>()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum PropsTypeEmission {
+    /// Emit `export type Props = ...` in module scope before `__setup()`.
+    Module,
+    /// Keep the concrete props type inside `__setup()` and export it through
+    /// `ReturnType<typeof __setup>`. This is needed when `T` references a
+    /// setup-scope value via `typeof`.
+    DeferredToSetup,
+}
+
 /// Generate Props type definition at module level.
 /// When `generic_param` is present (e.g., `"T extends Foo, P extends Bar"`),
 /// the Props type is emitted with generic parameters: `export type Props<T, P> = ...;`
@@ -306,6 +317,7 @@ pub(crate) fn generate_props_type(
     summary: &Croquis,
     generic_param: Option<&str>,
     options_api_props: Option<&OptionsApiPropsSource>,
+    emission: PropsTypeEmission,
 ) {
     let props = summary.macros.props();
     let has_props = !props.is_empty();
@@ -331,7 +343,10 @@ pub(crate) fn generate_props_type(
 
     ts.push_str("// ========== Exported Types ==========\n");
 
-    if props_already_defined {
+    if emission == PropsTypeEmission::DeferredToSetup && define_props_type_args.is_some() {
+        // The concrete type is emitted inside `__setup()` after user script
+        // declarations, then exported from `ReturnType<typeof __setup>`.
+    } else if props_already_defined {
         // User defined Props, no need to re-export
     } else if let Some(type_args) = define_props_type_args {
         let inner_type = type_args
@@ -371,6 +386,33 @@ pub(crate) fn generate_props_type(
     ts.push('\n');
 }
 
+/// Emit the setup-local props type artifact used when the `defineProps<T>()`
+/// type argument can only resolve inside `__setup()`.
+pub(crate) fn generate_setup_scoped_props_artifact(ts: &mut String, summary: &Croquis) {
+    let Some(type_args) = summary
+        .macros
+        .define_props()
+        .and_then(|m| m.type_args.as_ref())
+    else {
+        return;
+    };
+    let inner_type = type_args
+        .strip_prefix('<')
+        .and_then(|s| s.strip_suffix('>'))
+        .unwrap_or(type_args.as_str());
+    let models = summary.macros.models();
+
+    ts.push_str("\n  // Setup-scoped props type artifact\n");
+    if models.is_empty() {
+        append!(*ts, "  type __VizeSetupProps = {inner_type};\n");
+    } else {
+        append!(*ts, "  type __VizeSetupProps = {inner_type} & ");
+        append_model_props_type_literal(ts, models);
+        ts.push_str(";\n");
+    }
+    ts.push_str("  const __vize_setup_props = undefined as unknown as __VizeSetupProps;\n");
+}
+
 /// Emit a real `export type Props` for an Options API component, derived from
 /// its runtime `props:` option. The object form reuses the shared
 /// `__RuntimePropShape<...>` mapped type (the same machinery `defineProps`
@@ -404,6 +446,7 @@ pub(crate) fn generate_props_variables(
     ts: &mut String,
     summary: &Croquis,
     generic_param: Option<&str>,
+    props_type_ref_override: Option<&str>,
 ) {
     let props = summary.macros.props();
     let has_props = !props.is_empty();
@@ -415,12 +458,16 @@ pub(crate) fn generate_props_variables(
         .and_then(|m| m.type_args.as_ref());
 
     // Build Props type reference with generic names (strip constraints)
-    let props_type_ref = generic_param
-        .map(|g| {
-            let names = extract_generic_names(g);
-            cstr!("Props<{names}>")
-        })
-        .unwrap_or_else(|| "Props".into());
+    let props_type_ref = props_type_ref_override
+        .map(String::from)
+        .unwrap_or_else(|| {
+            generic_param
+                .map(|g| {
+                    let names = extract_generic_names(g);
+                    cstr!("Props<{names}>")
+                })
+                .unwrap_or_else(|| "Props".into())
+        });
     let mut defaulted_prop_names = collect_with_defaults_default_names(summary);
     for model in models {
         if model.default_value.is_some() {

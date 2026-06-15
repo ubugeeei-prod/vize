@@ -527,7 +527,7 @@ fn detects_module_fallbacks_from_nuxt_config() {
         project_root.join("nuxt.config.ts"),
         r#"
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/i18n', '@vueuse/nuxt', '@nuxtjs/color-mode', 'nuxt-og-image'],
+  modules: ['@nuxtjs/i18n', '@nuxt/content', '@vueuse/nuxt', '@nuxtjs/color-mode', 'nuxt-og-image', 'motion-v/nuxt'],
 })
 "#,
     )
@@ -539,10 +539,13 @@ export default defineNuxtConfig({
     for expected in [
         "declare function useI18n():",
         "declare function useLocalePath<T = any",
+        "declare function useLocaleHead<T = any",
+        "declare function queryCollection<T = any",
         "declare function useClipboard<T = any",
         "declare function useScrollLock<T = any",
         "declare function useColorMode():",
         "declare function defineOgImageComponent<T = any",
+        "declare module \"motion-v\"",
     ] {
         assert!(
             options

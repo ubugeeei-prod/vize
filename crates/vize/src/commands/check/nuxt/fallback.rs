@@ -93,12 +93,22 @@ pub(super) fn collect_module_fallback_stubs(
         push_stub(
             stubs,
             seen_names,
-            "declare function useI18n(): ({ locale: { value: string }; locales: (Array<{ code: string; name?: string; dir?: any }> & { value: Array<{ code: string; name?: string; dir?: any }> }); t: (...args: any[]) => any } & Record<string, any>);"
+            "declare function useI18n(): ({ locale: Ref<string>; locales: Ref<Array<{ code: string; name?: string; dir?: any }>>; setLocale: (locale: string) => any; t: (...args: any[]) => any } & Record<string, any>);"
                 .into(),
         );
         push_generic_function_stub(stubs, seen_names, "useLocalePath");
+        push_generic_function_stub(stubs, seen_names, "useLocaleHead");
         push_generic_function_stub(stubs, seen_names, "$t");
         stubs.push("declare module \"@nuxtjs/i18n\" { export type Directions = any; }".into());
+    }
+
+    if modules.might_include(&["@nuxt/content"]) {
+        push_stub(
+            stubs,
+            seen_names,
+            "declare function queryCollection<T = any>(collection: string): ({ all(): Promise<T[]>; first(): Promise<T | null>; path(path: string): any; where(...args: any[]): any; order(...args: any[]): any; limit(...args: any[]): any } & Record<string, any>);"
+                .into(),
+        );
     }
 
     if modules.might_include(&["@vueuse/nuxt"]) {
@@ -132,6 +142,13 @@ pub(super) fn collect_module_fallback_stubs(
 
     if modules.might_include(&["nuxt-og-image"]) {
         push_generic_function_stub(stubs, seen_names, "defineOgImageComponent");
+    }
+
+    if modules.might_include(&["motion-v/nuxt"]) {
+        stubs.push(
+            "declare module \"motion-v\" { export const motion: Record<string, any>; export const AnimatePresence: any; }"
+                .into(),
+        );
     }
 }
 
@@ -349,12 +366,12 @@ fn fallback_value_stubs() -> Vec<String> {
         "declare function definePageMeta(meta: any): void;".into(),
         "declare function defineRouteRules(rules: any): void;".into(),
         "declare function useSeoMeta(meta: any): void;".into(),
-        "declare function useFetch<T = any>(url: string | (() => string), options?: any): any;".into(),
-        "declare function useAsyncData<T = any>(handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),
-        "declare function useAsyncData<T = any>(key: string, handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),
-        "declare function useLazyFetch<T = any>(url: string | (() => string), options?: any): any;".into(),
-        "declare function useLazyAsyncData<T = any>(handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),
-        "declare function useLazyAsyncData<T = any>(key: string, handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),
+        "declare function useFetch<T = any>(url: string | (() => string), options?: any): ({ data: Ref<T | null>; pending: Ref<boolean>; error: Ref<any>; refresh: () => Promise<void> } & Record<string, any>);".into(),
+        "declare function useAsyncData<T = any>(handler: (...args: any[]) => T | Promise<T>, options?: any): ({ data: Ref<T | null>; pending: Ref<boolean>; error: Ref<any>; refresh: () => Promise<void> } & Record<string, any>);".into(),
+        "declare function useAsyncData<T = any>(key: string, handler: (...args: any[]) => T | Promise<T>, options?: any): ({ data: Ref<T | null>; pending: Ref<boolean>; error: Ref<any>; refresh: () => Promise<void> } & Record<string, any>);".into(),
+        "declare function useLazyFetch<T = any>(url: string | (() => string), options?: any): ({ data: Ref<T | null>; pending: Ref<boolean>; error: Ref<any>; refresh: () => Promise<void> } & Record<string, any>);".into(),
+        "declare function useLazyAsyncData<T = any>(handler: (...args: any[]) => T | Promise<T>, options?: any): ({ data: Ref<T | null>; pending: Ref<boolean>; error: Ref<any>; refresh: () => Promise<void> } & Record<string, any>);".into(),
+        "declare function useLazyAsyncData<T = any>(key: string, handler: (...args: any[]) => T | Promise<T>, options?: any): ({ data: Ref<T | null>; pending: Ref<boolean>; error: Ref<any>; refresh: () => Promise<void> } & Record<string, any>);".into(),
         "declare function navigateTo(to: string | any, options?: any): any;".into(),
         "declare function createError(input: string | { statusCode?: number; statusMessage?: string; message?: string; data?: any; fatal?: boolean }): any;".into(),
         "declare function showError(error: any): any;".into(),
@@ -364,6 +381,7 @@ fn fallback_value_stubs() -> Vec<String> {
         "declare function useAppConfig(): any;".into(),
         "declare function useState<T = any>(key: string, init?: () => T): Ref<T>;".into(),
         "declare function useCookie<T = any>(name: string, options?: any): Ref<T>;".into(),
+        "declare function useHead(input: () => { titleTemplate?: (titleChunk?: string) => any; [key: string]: any }): void;".into(),
         "declare function useHead(input: { titleTemplate?: (titleChunk?: string) => any; [key: string]: any }): void;".into(),
         "declare function useHead(input: any): void;".into(),
         "declare function useRequestHeaders(headers?: string[]): Record<string, string>;".into(),

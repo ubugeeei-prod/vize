@@ -51,6 +51,58 @@ const count: string = 0;
 }
 
 #[test]
+fn check_define_props_typeof_setup_binding_resolves_in_setup_scope() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "define-props-typeof-setup-binding",
+        &[(
+            "src/App.vue",
+            r#"<template></template>
+
+<script setup lang="ts">
+const someDefinition = {
+  foo: 'fooVal',
+} as const;
+
+type SomeGenericType<T extends Record<string, unknown>> = {
+  baz: string;
+  items: T;
+};
+
+const props = defineProps<SomeGenericType<typeof someDefinition>>();
+void props;
+</script>
+"#,
+        )],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", ".", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["errorCount"], 0, "{stdout}");
+    assert!(
+        !stdout.contains("Cannot find name 'someDefinition'"),
+        "{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_json_reports_ts_importing_vue_errors() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
