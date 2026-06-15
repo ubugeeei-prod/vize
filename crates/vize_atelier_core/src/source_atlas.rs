@@ -5,6 +5,7 @@
 //! allocation-free, and cheap enough to thread through profile/fallback facts.
 
 mod coordinate;
+mod croquis;
 mod fallback;
 mod family;
 mod registry;
@@ -12,6 +13,7 @@ mod report;
 mod route;
 
 pub use coordinate::SourceAtlasCoordinate;
+pub use croquis::{CroquisFact, CroquisFactSet};
 pub use fallback::{SourceAtlasFallback, SourceAtlasFallbackSet};
 pub use family::{PlateFamily, PlateFamilySet};
 pub use registry::{SourceAtlasLane, SourceAtlasRegistry};
