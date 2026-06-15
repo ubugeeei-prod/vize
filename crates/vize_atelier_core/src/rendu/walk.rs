@@ -269,4 +269,34 @@ mod tests {
         assert_eq!(branches, 2);
         assert_eq!(elements, 2);
     }
+
+    #[test]
+    fn directive_ops_carry_their_modifiers() {
+        let allocator = Allocator::default();
+        let bump = allocator.as_bump();
+        let (root, errors) = parse(bump, "<button @click.stop.prevent=\"onClick\">X</button>");
+        assert!(errors.is_empty());
+
+        let mut modifiers = None;
+        walk_rendu_ops(&root, |op| {
+            if let RenduOp::Directive {
+                name: "on",
+                modifiers: mods,
+                ..
+            } = op
+            {
+                modifiers = Some(mods);
+            }
+        });
+
+        let mods = modifiers.expect("v-on directive op");
+        assert_eq!(mods.len(), 2);
+        assert!(mods.contains("stop"));
+        assert!(mods.contains("prevent"));
+        assert!(!mods.contains("capture"));
+        assert_eq!(
+            mods.names().collect::<std::vec::Vec<_>>(),
+            ["stop", "prevent"]
+        );
+    }
 }

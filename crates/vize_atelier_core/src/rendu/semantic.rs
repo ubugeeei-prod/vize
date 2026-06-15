@@ -1,6 +1,6 @@
 //! Borrowed render-semantic Rendu vocabulary.
 
-use super::model::{RenduElementKind, RenduExprRef, RenduSource, RenduSpan};
+use super::model::{RenduElementKind, RenduExprRef, RenduModifiers, RenduSource, RenduSpan};
 use crate::{
     AttributeNode, DirectiveNode, PropNode, TemplateChildNode, TextCallContent,
     source_atlas::{SourceAtlasCoordinate, SourceAtlasTarget, SourceAtlasTargetSet},
@@ -22,11 +22,12 @@ pub enum RenduOp<'a> {
         span: RenduSpan,
     },
     /// A directive (`v-bind`/`v-on`/`v-model`/custom) on the nearest preceding
-    /// `Element` op. Modifiers are not yet carried; see #1695 follow-up.
+    /// `Element` op, with its modifiers (`.stop`, `.camel`, ...).
     Directive {
         name: &'a str,
         arg: Option<RenduExprRef<'a>>,
         exp: Option<RenduExprRef<'a>>,
+        modifiers: RenduModifiers<'a>,
         span: RenduSpan,
     },
     Text {
@@ -98,6 +99,7 @@ impl<'a> RenduOp<'a> {
             name: directive.name.as_str(),
             arg: directive.arg.as_ref().map(RenduExprRef::from_expression),
             exp: directive.exp.as_ref().map(RenduExprRef::from_expression),
+            modifiers: RenduModifiers::new(directive.modifiers.as_slice()),
             span: RenduSpan::from_location(&directive.loc),
         }
     }
