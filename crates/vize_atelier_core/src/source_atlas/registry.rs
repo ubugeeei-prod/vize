@@ -203,6 +203,20 @@ impl SourceAtlasRegistry {
     pub fn is_render_free(self) -> bool {
         !self.requests_render()
     }
+
+    /// Request the Virtual TS projection — a `Projection`-family plate built
+    /// only for typecheck/editor lanes (Canon/Maestro), never for compiler-only
+    /// lanes. Pairs the `VirtualTs` plate with the `VirtualTs` target so the
+    /// request reads as "project Virtual TS", not "emit a render target".
+    pub const fn with_virtual_ts(self) -> Self {
+        self.with_plate(SourceAtlasPlate::VirtualTs)
+            .with_target(SourceAtlasTarget::VirtualTs)
+    }
+
+    /// Whether this lane requested a projection-family plate (e.g. Virtual TS).
+    pub fn requests_projection(self) -> bool {
+        self.touches_family(PlateFamily::Projection)
+    }
 }
 
 #[cfg(test)]
@@ -261,5 +275,35 @@ mod tests {
             SourceAtlasRegistry::language_server().lane,
             SourceAtlasLane::LanguageServer
         );
+    }
+
+    #[test]
+    fn typecheck_lane_requesting_virtual_ts_is_a_render_free_projection() {
+        let typecheck = SourceAtlasRegistry::typecheck()
+            .with_source(SourceAtlasSource::Sfc)
+            .with_plate(SourceAtlasPlate::Croquis)
+            .with_virtual_ts();
+
+        assert!(typecheck.requests_projection());
+        assert!(typecheck.touches_family(PlateFamily::Projection));
+        // A typecheck/editor projection never builds render semantics.
+        assert!(typecheck.is_render_free());
+
+        let route = typecheck.route;
+        assert!(route.targets.contains(SourceAtlasTarget::VirtualTs));
+        assert!(route.plates.contains(SourceAtlasPlate::VirtualTs));
+    }
+
+    #[test]
+    fn a_lane_that_skips_virtual_ts_records_the_skip_fallback() {
+        // A lane that could produce Virtual TS but does not need it records the
+        // skip as an observable fallback rather than a silent gap.
+        let registry = SourceAtlasRegistry::typecheck()
+            .with_source(SourceAtlasSource::Sfc)
+            .with_optional_fallback(Some(SourceAtlasFallback::VirtualTsSkipped));
+
+        assert!(!registry.requests_projection());
+        let fallbacks = registry.fallbacks;
+        assert!(fallbacks.contains(SourceAtlasFallback::VirtualTsSkipped));
     }
 }
