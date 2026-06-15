@@ -64,6 +64,26 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
 }));
 ```
 
+## Vue Type Resolution
+
+Vize does not pin Vue's type surface from the published `vize` package. `vize check`, the language
+server, and package commands resolve `vue`, `@vue/compiler-sfc`, and related ambient types from the
+project being analyzed. That keeps Vue 3 patch, minor, and prerelease choices under the consuming
+project's control instead of forcing the version used to build Vize itself.
+
+For predictable type checking:
+
+- declare the Vue version you support in the user project, not through Vize package internals;
+- keep `vue`, `@vue/compiler-sfc`, and any framework integration such as Nuxt aligned in that
+  project;
+- run `vize check` from the project root or set `typeChecker.tsconfig` to the target package
+  `tsconfig`;
+- use `typeChecker.corsaPath` only to select the checker binary, not to override Vue type versions.
+
+If a project intentionally supports multiple Vue ranges, test each range in that project's package
+matrix. Vize should follow the active dependency graph for each install rather than carrying a
+hard-coded Vue type path.
+
 ## Experimental Flat Entries
 
 Monorepos can describe root defaults and package-scoped overrides with `entries`. Plain object
