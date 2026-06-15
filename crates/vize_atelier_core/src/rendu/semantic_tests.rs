@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    AllocBox, AllocVec, Allocator, ElementNode, ForNode, ForParseResult, Position,
+    AllocBox, AllocVec, Allocator, ElementNode, ExpressionNode, ForNode, ForParseResult, Position,
     SimpleExpressionNode, SourceLocation, TextNode,
 };
 

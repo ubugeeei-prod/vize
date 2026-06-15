@@ -6,14 +6,13 @@
 //! another render or flattening pass.
 
 mod capability;
+mod model;
 mod semantic;
 mod walk;
 
 pub use capability::RenduCapability;
-pub use semantic::{
-    RenduBlock, RenduCapabilities, RenduElementKind, RenduExprRef, RenduOp, RenduRoot, RenduSource,
-    RenduSpan,
-};
+pub use model::{RenduElementKind, RenduExprRef, RenduSource, RenduSpan};
+pub use semantic::{RenduBlock, RenduCapabilities, RenduOp, RenduRoot};
 pub use walk::{RenduWalkSummary, summarize_rendu_ops, walk_rendu_ops};
 
 use crate::source_atlas::SourceAtlasTarget;
