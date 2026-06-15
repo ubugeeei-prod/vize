@@ -2,7 +2,7 @@
 //! refs, and element classification. Kept separate from the operation vocabulary
 //! in `semantic.rs` so each file stays focused and under the source-length guard.
 
-use crate::{ElementType, ExpressionNode, Position, SourceLocation};
+use crate::{ElementType, ExpressionNode, Position, SimpleExpressionNode, SourceLocation};
 
 /// Source span carried by Rendu operations.
 ///
@@ -143,3 +143,52 @@ impl From<ElementType> for RenduElementKind {
         }
     }
 }
+
+/// Borrowed directive modifiers (`.stop`, `.prevent`, `.camel`, ...).
+///
+/// Carries a directive's modifier expressions without owning them. Equality is
+/// by modifier *name* (the expression `content`), matching [`RenduExprRef`]'s
+/// by-text equality, so an op holding `RenduModifiers` can still be `Copy + Eq`.
+#[derive(Debug, Clone, Copy)]
+pub struct RenduModifiers<'a> {
+    modifiers: &'a [SimpleExpressionNode<'a>],
+}
+
+impl<'a> RenduModifiers<'a> {
+    pub const fn new(modifiers: &'a [SimpleExpressionNode<'a>]) -> Self {
+        Self { modifiers }
+    }
+
+    /// An empty modifier set, for ops with no directive modifiers.
+    pub const fn empty() -> Self {
+        Self { modifiers: &[] }
+    }
+
+    pub const fn is_empty(self) -> bool {
+        self.modifiers.is_empty()
+    }
+
+    pub const fn len(self) -> usize {
+        self.modifiers.len()
+    }
+
+    /// The modifier names in source order.
+    pub fn names(self) -> impl Iterator<Item = &'a str> {
+        self.modifiers
+            .iter()
+            .map(|modifier| modifier.content.as_str())
+    }
+
+    /// Whether a modifier with the given name is present.
+    pub fn contains(self, name: &str) -> bool {
+        self.names().any(|present| present == name)
+    }
+}
+
+impl PartialEq for RenduModifiers<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.len() == other.len() && self.names().zip(other.names()).all(|(a, b)| a == b)
+    }
+}
+
+impl Eq for RenduModifiers<'_> {}
