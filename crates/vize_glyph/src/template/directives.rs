@@ -96,12 +96,12 @@ fn format_directive_value(name: &str, value: &str, options: &FormatOptions) -> (
     }
 }
 
-fn decode_expression_attribute_entities(value: &str) -> Option<std::string::String> {
+fn decode_expression_attribute_entities(value: &str) -> Option<String> {
     if !value.contains('&') {
         return None;
     }
 
-    let mut decoded = std::string::String::with_capacity(value.len());
+    let mut decoded = String::with_capacity(value.len());
     let mut changed = false;
     let mut rest = value;
     while !rest.is_empty() {
