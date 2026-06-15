@@ -9,6 +9,7 @@ mod emit;
 mod expression;
 mod generate;
 mod helpers;
+mod interpolation;
 mod node;
 mod patch_flag;
 mod props;

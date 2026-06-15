@@ -1,12 +1,12 @@
 //! Children, text, comment, and interpolation generation functions.
 
 use crate::steps::hoist_static::is_static_node;
-use crate::{ElementNode, InterpolationNode, Position, RuntimeHelper, TemplateChildNode};
+use crate::{ElementNode, Position, RuntimeHelper, TemplateChildNode};
 
 use super::context::CodegenContext;
 use super::element::helpers::{child_namespace, has_renderable_props};
-use super::expression::generate_expression;
 use super::helpers::escape_js_string;
+use super::interpolation::push_interpolation_value;
 use super::node::generate_node;
 use super::props::generate_props;
 use vize_carton::ToCompactString;
@@ -343,30 +343,4 @@ pub fn generate_comment(ctx: &mut CodegenContext, content: &str, start: &Positio
     ctx.record_mapping(start);
     ctx.push(&escape_js_string(content));
     ctx.push("\")");
-}
-
-/// Emit an interpolation as a value expression.
-///
-/// A plain `{{ expr }}` is escaped through `_toDisplayString(expr)`. A Vue 1.x
-/// raw-HTML interpolation (`{{{ expr }}}`, the pre-Vue-2 `v-html` equivalent;
-/// only producible behind the `legacy` feature) renders unescaped, so the bare
-/// expression is emitted without the wrapper. Shared by every child-codegen
-/// path so the raw flag is honored consistently.
-pub fn push_interpolation_value(ctx: &mut CodegenContext, interp: &InterpolationNode<'_>) {
-    #[cfg(feature = "legacy")]
-    if interp.raw {
-        generate_expression(ctx, &interp.content);
-        return;
-    }
-    let helper = ctx.helper(RuntimeHelper::ToDisplayString);
-    ctx.use_helper(RuntimeHelper::ToDisplayString);
-    ctx.push(helper);
-    ctx.push("(");
-    generate_expression(ctx, &interp.content);
-    ctx.push(")");
-}
-
-/// Generate interpolation
-pub fn generate_interpolation(ctx: &mut CodegenContext, interp: &InterpolationNode<'_>) {
-    push_interpolation_value(ctx, interp);
 }

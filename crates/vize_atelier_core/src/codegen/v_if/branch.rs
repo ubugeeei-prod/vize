@@ -11,7 +11,7 @@ use vize_carton::ToCompactString;
 
 use super::{
     super::{
-        children::{generate_children_force_array, is_directive_comment, push_interpolation_value},
+        children::{generate_children_force_array, is_directive_comment},
         context::CodegenContext,
         element::{
             generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
@@ -23,6 +23,7 @@ use super::{
         },
         expression::generate_expression,
         helpers::{escape_js_string, is_builtin_component, to_valid_asset_identifier},
+        interpolation::push_interpolation_value,
         node::generate_node,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,

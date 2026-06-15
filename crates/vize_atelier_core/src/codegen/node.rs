@@ -3,9 +3,10 @@
 use crate::TemplateChildNode;
 use crate::rendu::RenduOp;
 
-use super::children::{generate_comment, generate_interpolation, generate_text};
+use super::children::{generate_comment, generate_text};
 use super::context::CodegenContext;
 use super::element::generate_element;
+use super::interpolation::emit_interpolation_value;
 use super::v_for::generate_for;
 use super::v_if::generate_if;
 use vize_carton::ToCompactString;
@@ -39,9 +40,12 @@ pub fn generate_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
                 generate_comment(ctx, content, &span.start);
             }
         }
-        RenduOp::Interpolation { .. } => {
-            if let TemplateChildNode::Interpolation(interp) = node {
-                generate_interpolation(ctx, interp);
+        // Interpolations emit from the Rendu op's expression node and raw flag.
+        RenduOp::Interpolation {
+            expression, raw, ..
+        } => {
+            if let Some(content) = expression.node() {
+                emit_interpolation_value(ctx, content, raw);
             }
         }
         RenduOp::If { .. } => {

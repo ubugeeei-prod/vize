@@ -41,6 +41,9 @@ pub enum RenduOp<'a> {
     },
     Interpolation {
         expression: RenduExprRef<'a>,
+        /// Raw (unescaped) interpolation — legacy `{{{ expr }}}`; always `false`
+        /// for modern Vue.
+        raw: bool,
         span: RenduSpan,
     },
     If {
@@ -117,6 +120,10 @@ impl<'a> RenduOp<'a> {
             },
             TemplateChildNode::Interpolation(interpolation) => Self::Interpolation {
                 expression: RenduExprRef::from_expression(&interpolation.content),
+                #[cfg(feature = "legacy")]
+                raw: interpolation.raw,
+                #[cfg(not(feature = "legacy"))]
+                raw: false,
                 span: RenduSpan::from_location(&interpolation.loc),
             },
             TemplateChildNode::If(node) => Self::If {

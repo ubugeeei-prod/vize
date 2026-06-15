@@ -6,10 +6,10 @@
 use crate::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode};
 
 use super::super::{
-    children::push_interpolation_value,
     context::CodegenContext,
     expression::generate_expression,
     helpers::{escape_js_string, to_valid_asset_identifier},
+    interpolation::push_interpolation_value,
     node::generate_node,
     patch_flag::{calculate_element_patch_info, patch_flag_name},
     props::is_supported_directive,
