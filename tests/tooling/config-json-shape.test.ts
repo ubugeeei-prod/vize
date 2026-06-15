@@ -82,3 +82,34 @@ test("nested null values are stripped from object config", async () => {
     entries: [{ formatter: { printWidth: 5 } }],
   });
 });
+
+test("type-aware lint opt-in is exposed across config artifacts", () => {
+  const schema = JSON.parse(
+    fs.readFileSync(path.join("npm", "vize", "schemas", "vize.config.schema.json"), "utf8"),
+  ) as {
+    definitions: {
+      LinterConfig: {
+        properties: Record<string, { type?: string; description?: string }>;
+      };
+    };
+  };
+  const generatedTypes = fs.readFileSync(
+    path.join("npm", "vize", "src", "types", "generated.ts"),
+    "utf8",
+  );
+  const pklLinterConfig = fs.readFileSync(
+    path.join("npm", "vize", "pkl", "LinterConfig.pkl"),
+    "utf8",
+  );
+  const pklCompatConfig = fs.readFileSync(path.join("npm", "vize", "pkl", "vize.pkl"), "utf8");
+  const pklSchemaGenerator = fs.readFileSync(
+    path.join("npm", "vize", "pkl", "jsonschema", "generate.pkl"),
+    "utf8",
+  );
+
+  assert.equal(schema.definitions.LinterConfig.properties.typeAware.type, "boolean");
+  assert.match(generatedTypes, /typeAware\?: boolean;/);
+  assert.match(pklLinterConfig, /typeAware: Boolean = false/);
+  assert.match(pklCompatConfig, /typeAware: Boolean\? = null/);
+  assert.match(pklSchemaGenerator, /\["typeAware"\] = new JsonSchema/);
+});

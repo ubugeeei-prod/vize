@@ -14,6 +14,9 @@ class LinterConfig {
   /// Built-in lint preset.
   preset: LintPreset = "ecosystem"
 
+  /// Enable native type-aware lint rules from the active lint configuration.
+  typeAware: Boolean = false
+
   /// Rules to enable/disable.
   rules: Mapping<String, RuleSeverity> = new Mapping {}
 

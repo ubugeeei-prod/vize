@@ -2,19 +2,15 @@
 ///
 /// Usage: pkl eval -f json pkl/jsonschema/generate.pkl
 module vize.jsonschema.generate
-
 import "@json_schema/JsonSchema.pkl"
-
 local ruleSeverityEnum: JsonSchema = new JsonSchema {
   type = "string"
   enum = new Listing { "off"; "warn"; "error" }
 }
-
 local lintPresetEnum: JsonSchema = new JsonSchema {
   type = "string"
   enum = new Listing { "happy-path"; "opinionated"; "essential"; "incremental"; "ecosystem"; "nuxt" }
 }
-
 local stringListDef: JsonSchema = new JsonSchema {
   type = "array"
   items = new JsonSchema { type = "string" }
@@ -155,6 +151,10 @@ local linterConfigDef: JsonSchema = new JsonSchema {
       enum = lintPresetEnum.enum
       description = "Built-in lint preset"
       default = "happy-path"
+    }
+    ["typeAware"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable native type-aware lint rules from the active lint configuration"
     }
     ["rules"] = new JsonSchema {
       type = "object"

@@ -47,6 +47,7 @@ class VitePluginConfig {
 class LinterConfig {
   enabled: Boolean? = null
   preset: LintPreset? = null
+  typeAware: Boolean? = null
   rules: Mapping<String, RuleSeverity>? = null
   categories: Mapping<String, RuleSeverity>? = null
 }
