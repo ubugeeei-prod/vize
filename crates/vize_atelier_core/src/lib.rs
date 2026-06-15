@@ -11,6 +11,8 @@
 //! `vize_atelier_core` provides the foundational infrastructure
 //! that all other Vize compilers build upon.
 
+#[doc(hidden)]
+pub mod atelier_output;
 pub mod codegen;
 #[doc(hidden)]
 pub mod rendu;
