@@ -294,32 +294,17 @@ vp dev --host 0.0.0.0
 vp exec musea-vrt --base-url http://localhost:5173 --ci --json
 ```
 
-The workflow is:
+The workflow: commit baselines under the snapshot directory, run `musea-vrt --ci --json` against a
+running dev server, then inspect `vrt-report.json`/`vrt-report.html` plus `snapshots/current` and
+`snapshots/diff` on failure. Re-run with `--update` (or `approve` for selected variants) for
+intentional changes, and run `clean` after removing art files so stale baselines do not hide gaps.
+`--ci` exits non-zero for visual diffs and for preview/capture errors (missing route, browser
+failure, selector timeout); new baselines are reported as `new`, so run `--update` locally first.
 
-1. Commit the baseline images under the configured snapshot directory.
-2. Run `musea-vrt --ci --json` in CI against a running Musea dev server.
-3. Inspect `vrt-report.json`, `vrt-report.html`, `snapshots/current`, and `snapshots/diff` when a
-   run fails.
-4. Re-run locally with `--update`, or use `approve` for selected variants, when the visual change is
-   intentional.
-5. Run `clean` after removing art files or variants so stale baselines do not hide coverage gaps.
-
-`--ci` exits non-zero for visual diffs and for preview/capture errors such as a missing route,
-browser failure, or selector timeout. New baselines are reported as `new`; use `--update` locally
-before depending on those variants in CI.
-
-The example app wires the Playwright-native VRT path as well:
-
-```bash
-cd examples/vite-musea
-vp run test:vrt
-vp run test:vrt:update
-```
-
-Its Playwright config stores screenshots in `e2e/vrt/__snapshots__`, failure artifacts in
-`e2e/vrt/test-results`, and an HTML report in `playwright-report`. GitHub Actions uploads those
-artifacts on failure so reviewers can inspect the baseline, current, and diff images without
-reproducing the run locally.
+The example app also wires the Playwright-native VRT path (`examples/vite-musea`, run via
+`vp run test:vrt` / `vp run test:vrt:update`). Snapshots live in `e2e/vrt/__snapshots__`, failure
+artifacts in `e2e/vrt/test-results`, and the HTML report in `playwright-report`; GitHub Actions
+uploads them on failure so reviewers can inspect the baseline, current, and diff images.
 
 ## Generate Art Files
 
