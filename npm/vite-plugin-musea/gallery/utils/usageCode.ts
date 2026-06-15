@@ -51,11 +51,12 @@ export function importDeclaresName(line: string, name: string): boolean {
 }
 
 export function parenBalance(line: string): number {
-  return [...line].reduce((balance, char) => {
-    if (char === "(") return balance + 1;
-    if (char === ")") return balance - 1;
-    return balance;
-  }, 0);
+  let balance = 0;
+  for (const char of line) {
+    if (char === "(") balance += 1;
+    else if (char === ")") balance -= 1;
+  }
+  return balance;
 }
 
 export function indentUsage(code: string): string {
