@@ -162,6 +162,55 @@ impl<'a> RenduOp<'a> {
             TemplateChildNode::Hoisted(index) => Self::HoistRef { index: *index },
         }
     }
+
+    /// The source span this operation covers, if it carries one.
+    ///
+    /// Every operation except a [`HoistRef`](Self::HoistRef) — which only points
+    /// at a module-level hoist index — carries a span, so a backend can emit
+    /// source-mapped output straight from the Rendu op without reaching back
+    /// into the Relief node.
+    pub fn span(self) -> Option<RenduSpan> {
+        match self {
+            Self::Element { span, .. }
+            | Self::Attribute { span, .. }
+            | Self::Directive { span, .. }
+            | Self::Text { span, .. }
+            | Self::Comment { span, .. }
+            | Self::Interpolation { span, .. }
+            | Self::If { span }
+            | Self::IfBranch { span, .. }
+            | Self::For { span, .. }
+            | Self::TextCall { span, .. }
+            | Self::CompoundExpression { span, .. } => Some(span),
+            Self::HoistRef { .. } => None,
+        }
+    }
+
+    /// The single dominant borrowed expression this operation renders, if any.
+    ///
+    /// Returns the one expression for ops that have a clear primary
+    /// (interpolation content, a `v-for` source, an `if`-branch condition, a
+    /// compound expression, a text-call expression). Ops that carry several
+    /// expressions (a directive's arg and exp, a `v-for`'s aliases) or none
+    /// (elements, static text) return `None`; read those fields directly.
+    pub fn primary_expr(self) -> Option<RenduExprRef<'a>> {
+        match self {
+            Self::Interpolation { expression, .. }
+            | Self::CompoundExpression { expression, .. } => Some(expression),
+            Self::For { source, .. } => Some(source),
+            Self::IfBranch { condition, .. } => condition,
+            Self::TextCall { content, .. } => content,
+            _ => None,
+        }
+    }
+
+    /// Whether this operation is structured control flow (`if`, branch, `for`).
+    pub const fn is_control_flow(self) -> bool {
+        matches!(
+            self,
+            Self::If { .. } | Self::IfBranch { .. } | Self::For { .. }
+        )
+    }
 }
 
 /// Ordered render operations.
@@ -177,6 +226,11 @@ impl<'a> RenduBlock<'a> {
 
     pub const fn is_empty(self) -> bool {
         self.ops.is_empty()
+    }
+
+    /// Number of render operations in this block.
+    pub const fn len(self) -> usize {
+        self.ops.len()
     }
 }
 
