@@ -2361,7 +2361,7 @@ fn link_or_stub_package(
 
 fn package_link_source(source: &Path, package: &str) -> PathBuf {
     if package == "vue" {
-        std::fs::canonicalize(source).unwrap_or_else(|_| source.to_path_buf())
+        vize_carton::path::canonicalize_non_verbatim(source)
     } else {
         source.to_path_buf()
     }

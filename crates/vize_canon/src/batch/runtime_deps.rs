@@ -281,7 +281,7 @@ fn resolve_package(project_root: &Path, package: &str) -> Option<PathBuf> {
 }
 
 fn package_link_source(source: &Path) -> PathBuf {
-    std::fs::canonicalize(source).unwrap_or_else(|_| source.to_path_buf())
+    vize_carton::path::canonicalize_non_verbatim(source)
 }
 
 fn resolve_explicit_package_env(name: &str) -> Option<PathBuf> {

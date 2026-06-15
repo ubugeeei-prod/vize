@@ -26,7 +26,7 @@ impl CanonicalPathCache {
         if let Some(cached) = self.cache.get(path) {
             return cached.clone();
         }
-        let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+        let canonical = vize_carton::path::canonicalize_non_verbatim(path);
         self.cache.insert(path.to_path_buf(), canonical.clone());
         canonical
     }
@@ -44,7 +44,10 @@ mod tests {
 
         let mut cache = CanonicalPathCache::default();
         let canonical = cache.canonicalize(&file);
-        assert_eq!(canonical, file.canonicalize().unwrap());
+        assert_eq!(
+            canonical,
+            vize_carton::path::canonicalize_non_verbatim(&file)
+        );
         // Cached lookups return the same result.
         assert_eq!(cache.canonicalize(&file), canonical);
 

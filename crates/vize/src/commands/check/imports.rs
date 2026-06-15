@@ -268,7 +268,7 @@ fn cstr_index(ext: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    use vize_carton::path::canonicalize_non_verbatim;
     fn write(dir: &Path, rel: &str, contents: &str) -> PathBuf {
         let path = dir.join(rel);
         if let Some(parent) = path.parent() {
@@ -308,7 +308,7 @@ mod tests {
             false,
         );
 
-        let canon = |p: &Path| p.canonicalize().unwrap();
+        let canon = canonicalize_non_verbatim;
         assert_eq!(discovered, vec![canon(&types), canon(&child), canon(&util)]);
 
         let _ = std::fs::remove_dir_all(&root);
@@ -360,7 +360,7 @@ mod tests {
         );
 
         assert_eq!(disabled, Vec::<PathBuf>::new());
-        assert_eq!(enabled, vec![panel.canonicalize().unwrap()]);
+        assert_eq!(enabled, vec![canonicalize_non_verbatim(&panel)]);
 
         let _ = std::fs::remove_dir_all(&root);
     }

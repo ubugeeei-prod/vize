@@ -5,7 +5,7 @@
 use super::{TsconfigInputCache, load_tsconfig_declaration_options, resolve_extended_tsconfig};
 use std::fs;
 use std::path::{Path, PathBuf};
-use vize_carton::cstr;
+use vize_carton::{cstr, path::canonicalize_non_verbatim};
 
 // Each call uses a fresh run-scoped cache, mirroring how an actual `vize
 // check` run constructs one `TsconfigInputCache` per invocation.
@@ -1053,7 +1053,7 @@ fn owner_resolution_returns_root_for_no_supported_files() {
     let root = case_dir.join("tsconfig.json");
     fs::write(&root, r#"{ "include": ["src/**/*.ts"] }"#).unwrap();
 
-    let normalized_root = root.canonicalize().unwrap_or(root.clone());
+    let normalized_root = canonicalize_non_verbatim(&root);
 
     // Empty file list -> root.
     assert_eq!(
@@ -1091,7 +1091,7 @@ fn owner_resolution_falls_back_to_root_when_files_span_projects() {
 
     let owner = resolve_tsconfig_for_files(Some(&root), &[a_file, b_file]);
 
-    assert_eq!(owner, Some(root.canonicalize().unwrap_or(root.clone())));
+    assert_eq!(owner, Some(canonicalize_non_verbatim(&root)));
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -1113,7 +1113,7 @@ fn owner_resolution_falls_back_to_root_for_an_unowned_file() {
 
     let owner = resolve_tsconfig_for_files(Some(&root), &[unowned]);
 
-    assert_eq!(owner, Some(root.canonicalize().unwrap_or(root.clone())));
+    assert_eq!(owner, Some(canonicalize_non_verbatim(&root)));
 
     let _ = fs::remove_dir_all(&case_dir);
 }

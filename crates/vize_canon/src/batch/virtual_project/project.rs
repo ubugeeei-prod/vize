@@ -23,9 +23,7 @@ use super::build::{
 impl VirtualProject {
     /// Create a new virtual project.
     pub fn new(project_root: &Path) -> CorsaResult<Self> {
-        let project_root = project_root
-            .canonicalize()
-            .unwrap_or_else(|_| project_root.to_path_buf());
+        let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
         let virtual_root = project_root
             .join("node_modules")
             .join(".vize")
@@ -57,7 +55,7 @@ impl VirtualProject {
 
     /// Set the tsconfig path to extend.
     pub fn set_tsconfig_path(&mut self, tsconfig_path: Option<PathBuf>) {
-        self.tsconfig_path = tsconfig_path;
+        self.tsconfig_path = tsconfig_path.map(vize_carton::path::normalize_windows_verbatim_path);
         self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
     }
 

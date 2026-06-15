@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::cstr;
 mod tsconfig_native_options;
+mod windows_paths;
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -81,7 +82,6 @@ fn test_virtual_project_new() {
     fs::create_dir_all(&case_dir).unwrap();
 
     let project = VirtualProject::new(&case_dir).unwrap();
-
     assert_eq!(project.project_root(), case_dir.as_path());
     assert!(project.virtual_root().ends_with("node_modules/.vize/canon"));
 

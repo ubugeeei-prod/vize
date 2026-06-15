@@ -231,9 +231,7 @@ fn load_tsconfig_type_packages(
     tsconfig_path: &Path,
     seen: &mut FxHashSet<PathBuf>,
 ) -> Option<Vec<String>> {
-    let resolved = tsconfig_path
-        .canonicalize()
-        .unwrap_or_else(|_| tsconfig_path.to_path_buf());
+    let resolved = vize_carton::path::canonicalize_non_verbatim(tsconfig_path);
     if !seen.insert(resolved.clone()) {
         return None;
     }
@@ -415,15 +413,13 @@ fn push_declaration_entry_candidate(candidates: &mut Vec<PathBuf>, path: PathBuf
 }
 
 fn collect_package_declaration_graph(entry: &Path, package_root: &Path) -> Vec<PathBuf> {
-    let package_root = package_root
-        .canonicalize()
-        .unwrap_or_else(|_| package_root.to_path_buf());
+    let package_root = vize_carton::path::canonicalize_non_verbatim(package_root);
     let mut files = Vec::new();
     let mut seen = FxHashSet::default();
     let mut queue = vec![entry.to_path_buf()];
 
     while let Some(path) = queue.pop() {
-        let path = path.canonicalize().unwrap_or(path);
+        let path = vize_carton::path::canonicalize_non_verbatim(&path);
         if !seen.insert(path.clone()) {
             continue;
         }
@@ -437,7 +433,7 @@ fn collect_package_declaration_graph(entry: &Path, package_root: &Path) -> Vec<P
         };
         for reference in content.lines().filter_map(reference_path_attribute) {
             let referenced = base_dir.join(reference);
-            let referenced = referenced.canonicalize().unwrap_or(referenced);
+            let referenced = vize_carton::path::canonicalize_non_verbatim(&referenced);
             if referenced.starts_with(&package_root)
                 && is_declaration_path(&referenced)
                 && referenced.is_file()

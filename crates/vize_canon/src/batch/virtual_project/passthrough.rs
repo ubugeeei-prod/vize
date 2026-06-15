@@ -132,5 +132,5 @@ fn append_json_extension(base: &Path) -> PathBuf {
 }
 
 fn normalize_existing_path(path: &Path) -> PathBuf {
-    path.canonicalize().unwrap_or_else(|_| path.to_path_buf())
+    vize_carton::path::canonicalize_non_verbatim(path)
 }

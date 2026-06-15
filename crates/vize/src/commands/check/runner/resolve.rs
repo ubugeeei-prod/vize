@@ -52,9 +52,7 @@ pub(super) fn resolve_project_root(
         } else {
             cwd.join(tsconfig)
         };
-        let tsconfig_dir = tsconfig_path
-            .canonicalize()
-            .unwrap_or(tsconfig_path)
+        let tsconfig_dir = vize_carton::path::canonicalize_non_verbatim(&tsconfig_path)
             .parent()
             .map(|parent| parent.to_path_buf())
             .unwrap_or_else(|| cwd.to_path_buf());
@@ -88,7 +86,7 @@ pub(super) fn resolve_tsconfig_path(
         } else {
             cwd.join(tsconfig)
         };
-        return Some(tsconfig_path.canonicalize().unwrap_or(tsconfig_path));
+        return Some(vize_carton::path::canonicalize_non_verbatim(&tsconfig_path));
     }
 
     let candidate = project_root.join("tsconfig.json");

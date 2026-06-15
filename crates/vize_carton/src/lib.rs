@@ -54,6 +54,7 @@ mod i18n_supplemental_extra;
 mod i18n_supplemental_extra2;
 pub mod line_index;
 pub mod lsp;
+pub mod path;
 pub mod profiler;
 pub mod source_range;
 pub mod string_builder;

@@ -135,7 +135,7 @@ impl BatchTypeChecker {
         let mut project = project;
         project.set_tsconfig_path(options.tsconfig_path);
         project.set_virtual_ts_options(options.virtual_ts_options);
-        let executor = CorsaExecutor::with_corsa_path(project_root, corsa_path)?;
+        let executor = CorsaExecutor::with_corsa_path(project.project_root(), corsa_path)?;
 
         Ok(Self {
             project,

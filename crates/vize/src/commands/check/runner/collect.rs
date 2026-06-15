@@ -231,7 +231,7 @@ fn strip_leading_current_dir(value: &str) -> String {
 }
 
 fn normalize_input_path(path: &Path) -> PathBuf {
-    path.canonicalize().unwrap_or_else(|_| path.to_path_buf())
+    vize_carton::path::canonicalize_non_verbatim(path)
 }
 
 fn normalize_walked_path(root: &Path, normalized_root: &Path, path: &Path) -> PathBuf {

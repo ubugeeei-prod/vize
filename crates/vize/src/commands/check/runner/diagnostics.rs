@@ -234,13 +234,11 @@ fn normalize_requested_virtual_ts_path(cwd: &Path, path: &Path) -> PathBuf {
     } else {
         cwd.join(path)
     };
-    absolute.canonicalize().unwrap_or(absolute)
+    vize_carton::path::canonicalize_non_verbatim(&absolute)
 }
 
 fn paths_refer_to_same_file(candidate_path: &Path, requested_path: &Path) -> bool {
-    let candidate_path = candidate_path
-        .canonicalize()
-        .unwrap_or_else(|_| candidate_path.to_path_buf());
+    let candidate_path = vize_carton::path::canonicalize_non_verbatim(candidate_path);
     candidate_path == requested_path
 }
 

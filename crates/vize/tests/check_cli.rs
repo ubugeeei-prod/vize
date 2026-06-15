@@ -4,7 +4,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use vize_carton::cstr;
+use vize_carton::{cstr, path::canonicalize_non_verbatim};
 
 #[test]
 fn check_json_reports_type_errors_via_project_typechecker() {
@@ -370,7 +370,6 @@ import { message } from '../shared'
     )
     .unwrap();
     let source_arg = source_file.to_string_lossy().into_owned();
-
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&cwd)
         .env("CORSA_PATH", corsa_path)
@@ -389,7 +388,6 @@ import { message } from '../shared'
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
         panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
     });
-
     assert_eq!(
         output.status.code(),
         Some(0),
@@ -400,7 +398,9 @@ import { message } from '../shared'
         json["errorCount"], 0,
         "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
-    let expected_file = source_file.canonicalize().unwrap().display().to_string();
+    let expected_file = canonicalize_non_verbatim(&source_file)
+        .display()
+        .to_string();
     assert_eq!(
         json["files"][0]["file"], expected_file,
         "stdout:\n{stdout}\nstderr:\n{stderr}"
@@ -3661,7 +3661,7 @@ fn recv_lsp_matching(
 }
 
 fn file_uri(path: &Path) -> std::string::String {
-    let path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    let path = canonicalize_non_verbatim(path);
     let path = path.to_string_lossy().replace('\\', "/");
     let prefix = if path.starts_with('/') {
         "file://"
@@ -3910,7 +3910,7 @@ fn link_or_stub_package(
 
 fn package_link_source(source: &Path, package: &str) -> std::path::PathBuf {
     if package == "vue" {
-        std::fs::canonicalize(source).unwrap_or_else(|_| source.to_path_buf())
+        canonicalize_non_verbatim(source)
     } else {
         source.to_path_buf()
     }

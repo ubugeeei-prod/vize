@@ -97,9 +97,7 @@ fn load_tsconfig_paths_for_wrapper_inner(
     wrapper_dir: &Path,
     seen: &mut FxHashSet<PathBuf>,
 ) -> Result<JsonObject, std::io::Error> {
-    let resolved = tsconfig_path
-        .canonicalize()
-        .unwrap_or_else(|_| tsconfig_path.to_path_buf());
+    let resolved = vize_carton::path::canonicalize_non_verbatim(tsconfig_path);
     if !seen.insert(resolved.clone()) {
         return Ok(Map::new());
     }
