@@ -72,9 +72,9 @@ Current `canary` state:
   skipped composition is now observable through the `SourceMap` registry lane
   instead of implicit.
 - Follow-up tracks #1692-#1698 build on this foundation without new hot-path
-  cost: `PlateFamily` classifies plates/targets;
+  cost: `PlateFamily`/`PlateFamilySet` keep lint/editor lanes render-free;
   `SourceAtlasCoordinate::compatibility_fallback` reports pre-v3 lines as
-  `LegacySyntaxCompatibility`; `RenduCapability` / `vapor_route_fallback` let the
+  `LegacySyntaxCompatibility`; `RenduCapability` / `VaporSupport` let the
   Vapor lane consume shared facts and record `UnsupportedVaporShape`;
   fragment-less source maps report `SourceMapFragmentUnavailable`; and
   `render_fallback_report` / `render_registry_report` make fallbacks and plate
@@ -126,9 +126,9 @@ consume the same capability facts.
 | `v3`       | Modern Vue 3 behavior                                         | all current compiler, linter, typechecker, and editor lanes |
 | `vapor`    | Vapor target capability layer, not a Vue version by itself    | Rendu, Vapor Atelier, fallback reporting                    |
 
-The version coordinate is a capability fact, not a new global mode that every
-crate rediscovers. If Patina, Canon, Maestro, and the Ateliers disagree about a
-dialect, that is an atlas bug. The implementation track is
+The version coordinate is a capability fact, not a global mode every crate
+rediscovers; `SourceAtlasCoordinate::era()` is the shared era shorthand and
+folds the two Vue 0.x lines into one `v0`. The implementation track is
 [#1698](https://github.com/ubugeeei-prod/vize/issues/1698).
 
 ## Demand-Shaped Lanes
@@ -257,9 +257,9 @@ Required registration facts:
 
 The first canary registration is intentionally narrow: template map fragments
 are registered as `SourceMapRegistration` values covering the generated render
-function range through `TemplateBlockCompileResult`. Composed template-only maps
-and deferred script/template maps share the same registration mark, so Vize can
-later compose SFC maps without rescanning generated JavaScript.
+function range through `TemplateBlockCompileResult`. `compose_sfc_source_map`
+is the single authority that turns those registered sections into a composed
+template-only map or a deferred/omitted reason, without rescanning JavaScript.
 
 Source-map work is allowed to cost more only when `sourceMap` or an explicit
 debug/profile lane requests it. The normal compiler and linter paths must remain

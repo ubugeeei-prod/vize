@@ -17,6 +17,23 @@
 //!   - Server/Client Boundaries: Identify SSR hydration boundary issues
 //!   - Error/Suspense Boundaries: Track error and async handling scopes
 //!
+//! ## Naming
+//!
+//! "Analysis" and "analyzer" are kept distinct on purpose, so a symbol's name
+//! tells you whether it is a driver, a pass, or data:
+//!
+//! - an **`*Analyzer`** (e.g. [`CrossFileAnalyzer`]) is a *driver*: it owns
+//!   state, accepts files and options, and runs passes;
+//! - an **`analyze_*`** free function is one *pass* over already-collected
+//!   facts;
+//! - the produced *data* is a result type — [`CrossFileResult`] here, and the
+//!   `*Analysis` facts (such as `SfcCroquisAnalysis`/`NodeAnalysis`) for
+//!   single-file Croquis — never an `Analyzer`.
+//!
+//! New code keeps drivers as `*Analyzer`, passes as `analyze_*`, and data as a
+//! result/analysis type; renames toward this rule land as small,
+//! compatibility-aware steps so snapshots and public APIs stay stable.
+//!
 //! ## Usage
 //!
 //! ```ignore

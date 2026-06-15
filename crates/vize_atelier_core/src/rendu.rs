@@ -10,8 +10,8 @@ mod model;
 mod semantic;
 mod walk;
 
-pub use capability::RenduCapability;
-pub use model::{RenduElementKind, RenduExprRef, RenduSource, RenduSpan};
+pub use capability::{RenduCapability, VaporPlan, VaporSupport};
+pub use model::{RenduElementKind, RenduExprRef, RenduModifiers, RenduSource, RenduSpan};
 pub use semantic::{RenduBlock, RenduCapabilities, RenduOp, RenduRoot};
 pub use walk::{RenduWalkSummary, summarize_rendu_ops, walk_rendu_ops};
 
