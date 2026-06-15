@@ -1,25 +1,39 @@
 //! Borrowed render-semantic Rendu vocabulary.
 
 use crate::{
-    AttributeNode, DirectiveNode, ElementType, ExpressionNode, PropNode, SourceLocation,
+    AttributeNode, DirectiveNode, ElementType, ExpressionNode, Position, PropNode, SourceLocation,
     TemplateChildNode, TextCallContent,
     source_atlas::{SourceAtlasCoordinate, SourceAtlasTarget, SourceAtlasTargetSet},
 };
 
 /// Source span carried by Rendu operations.
+///
+/// Carries full source [`Position`]s (offset/line/column) so a backend can emit
+/// source-mapped output straight from Rendu without reaching back into the
+/// Relief node.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash)]
 pub struct RenduSpan {
-    pub start: u32,
-    pub end: u32,
+    pub start: Position,
+    pub end: Position,
 }
 
 impl RenduSpan {
-    pub const fn new(start: u32, end: u32) -> Self {
+    pub const fn new(start: Position, end: Position) -> Self {
         Self { start, end }
     }
 
-    pub fn from_location(loc: &SourceLocation) -> Self {
-        Self::new(loc.start.offset, loc.end.offset)
+    pub const fn from_location(loc: &SourceLocation) -> Self {
+        Self::new(loc.start, loc.end)
+    }
+
+    /// Byte offset of the span start.
+    pub const fn start_offset(self) -> u32 {
+        self.start.offset
+    }
+
+    /// Byte offset of the span end.
+    pub const fn end_offset(self) -> u32 {
+        self.end.offset
     }
 }
 
@@ -119,6 +133,8 @@ pub enum RenduOp<'a> {
     },
     Comment {
         content: &'a str,
+        /// Whether this is a `@vize:` directive comment (stripped from output).
+        is_directive: bool,
         span: RenduSpan,
     },
     Interpolation {
@@ -194,6 +210,7 @@ impl<'a> RenduOp<'a> {
             },
             TemplateChildNode::Comment(comment) => Self::Comment {
                 content: comment.content.as_str(),
+                is_directive: comment.directive.is_some(),
                 span: RenduSpan::from_location(&comment.loc),
             },
             TemplateChildNode::Interpolation(interpolation) => Self::Interpolation {

@@ -38,14 +38,14 @@ fn classifies_relief_template_children_as_rendu_ops() {
         RenduOp::Element {
             tag: "MyButton",
             kind: RenduElementKind::Element,
-            span: RenduSpan::new(0, 12),
+            span: RenduSpan::new(Position::new(0, 1, 1), Position::new(12, 1, 13)),
         }
     );
     assert_eq!(
         RenduOp::from_template_child(&text),
         RenduOp::Text {
             content: "Save",
-            span: RenduSpan::new(13, 17),
+            span: RenduSpan::new(Position::new(13, 1, 14), Position::new(17, 1, 18)),
         }
     );
 }

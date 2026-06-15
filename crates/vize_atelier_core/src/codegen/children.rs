@@ -1,9 +1,7 @@
 //! Children, text, comment, and interpolation generation functions.
 
 use crate::steps::hoist_static::is_static_node;
-use crate::{
-    CommentNode, ElementNode, InterpolationNode, RuntimeHelper, TemplateChildNode, TextNode,
-};
+use crate::{ElementNode, InterpolationNode, Position, RuntimeHelper, TemplateChildNode};
 
 use super::context::CodegenContext;
 use super::element::helpers::{child_namespace, has_renderable_props};
@@ -315,19 +313,19 @@ fn generate_cached_static_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>, 
 }
 
 /// Generate text node
-pub fn generate_text(ctx: &mut CodegenContext, text: &TextNode) {
+pub fn generate_text(ctx: &mut CodegenContext, content: &str, start: &Position) {
     let helper = ctx.helper(RuntimeHelper::CreateText);
     ctx.use_helper(RuntimeHelper::CreateText);
     ctx.push(helper);
     // Single space text: _createTextVNode() with no args (Vue convention)
-    if text.content == " " {
+    if content == " " {
         ctx.push("()");
     } else {
         ctx.push("(\"");
         // Anchor the generated string literal back to the text node's source
         // position, just inside the opening quote. No-op without `source_map`.
-        ctx.record_mapping(&text.loc.start);
-        ctx.push(&escape_js_string(&text.content));
+        ctx.record_mapping(start);
+        ctx.push(&escape_js_string(content));
         ctx.push("\")");
     }
 }
@@ -335,19 +333,15 @@ pub fn generate_text(ctx: &mut CodegenContext, text: &TextNode) {
 /// Generate comment node
 ///
 /// Directive comments (`@vize:` prefix) are stripped from output.
-pub fn generate_comment(ctx: &mut CodegenContext, comment: &CommentNode) {
-    // Strip @vize: directive comments from build output
-    if comment.directive.is_some() {
-        return;
-    }
+pub fn generate_comment(ctx: &mut CodegenContext, content: &str, start: &Position) {
     let helper = ctx.helper(RuntimeHelper::CreateComment);
     ctx.use_helper(RuntimeHelper::CreateComment);
     ctx.push(helper);
     ctx.push("(\"");
     // Anchor the generated comment string back to the comment node's source
     // position, just inside the opening quote. No-op without `source_map`.
-    ctx.record_mapping(&comment.loc.start);
-    ctx.push(&escape_js_string(&comment.content));
+    ctx.record_mapping(start);
+    ctx.push(&escape_js_string(content));
     ctx.push("\")");
 }
 

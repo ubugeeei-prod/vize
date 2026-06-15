@@ -24,14 +24,19 @@ pub fn generate_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
                 generate_element(ctx, el);
             }
         }
-        RenduOp::Text { .. } => {
-            if let TemplateChildNode::Text(text) = node {
-                generate_text(ctx, text);
-            }
+        // Text and comments are now emitted entirely from the Rendu op — the
+        // Relief node is no longer read for these.
+        RenduOp::Text { content, span } => {
+            generate_text(ctx, content, &span.start);
         }
-        RenduOp::Comment { .. } => {
-            if let TemplateChildNode::Comment(comment) = node {
-                generate_comment(ctx, comment);
+        RenduOp::Comment {
+            content,
+            is_directive,
+            span,
+        } => {
+            // `@vize:` directive comments are stripped from build output.
+            if !is_directive {
+                generate_comment(ctx, content, &span.start);
             }
         }
         RenduOp::Interpolation { .. } => {
