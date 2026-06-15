@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_unstable_nested_components.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-unstable-nested-components",
+        severity: Warning,
+        message: "Do not define a component inside setup or render.",
+        start: 48,
+        end: 82,
+        help: Some(
+            "Move the component definition to module scope so the child component keeps a stable identity across setup/render executions.",
+        ),
+        labels: [
+            Label {
+                message: "nested component definition",
+                start: 48,
+                end: 82,
+            },
+        ],
+        fix: None,
+    },
+]

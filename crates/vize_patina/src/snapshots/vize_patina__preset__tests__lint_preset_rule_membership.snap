@@ -51,6 +51,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-unsafe-url",
     "vue/no-template-target-blank",
     "vue/no-unsandboxed-iframe",
+    "vue/no-invalid-html-attribute",
     "a11y/img-alt",
     "a11y/anchor-has-content",
     "a11y/heading-has-content",
@@ -186,6 +187,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-unsafe-url",
     "vue/no-template-target-blank",
     "vue/no-unsandboxed-iframe",
+    "vue/no-invalid-html-attribute",
     "a11y/img-alt",
     "a11y/anchor-has-content",
     "a11y/heading-has-content",
@@ -277,6 +279,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-unsafe-url",
     "vue/no-template-target-blank",
     "vue/no-unsandboxed-iframe",
+    "vue/no-invalid-html-attribute",
     "a11y/img-alt",
     "a11y/anchor-has-content",
     "a11y/heading-has-content",
@@ -424,6 +427,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-unsafe-url",
     "vue/no-template-target-blank",
     "vue/no-unsandboxed-iframe",
+    "vue/no-invalid-html-attribute",
     "a11y/img-alt",
     "a11y/anchor-has-content",
     "a11y/heading-has-content",
@@ -604,6 +608,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-explicit-slots",
     "script/no-duplicate-attr-inheritance",
     "script/no-multiple-slot-args",
-    "script/require-explicit-emits"
+    "script/require-explicit-emits",
+    "script/no-unstable-nested-components"
   ]
 }
