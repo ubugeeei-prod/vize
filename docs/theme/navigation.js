@@ -40,6 +40,7 @@ const vizeDocsNavigation = (() => {
     ["/stability", "Stability"],
     ["/credits", "Credits"],
     ["/guide/configuration", "Configuration"],
+    ["/guide/workflows", "User Workflows"],
     ["/guide/jsx", "JSX & TSX"],
     ["/guide/troubleshooting", "Troubleshooting"],
     ["/guide/cli", "CLI"],
@@ -88,6 +89,7 @@ const vizeDocsNavigation = (() => {
       paths: [
         "/guide/vite-plugin",
         "/integrations/nuxt",
+        "/guide/workflows",
         "/guide/configuration",
         "/guide/jsx",
         "/guide/troubleshooting",
