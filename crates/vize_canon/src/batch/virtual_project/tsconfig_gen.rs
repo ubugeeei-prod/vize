@@ -483,6 +483,7 @@ fn normalize_native_removed_options(options: &mut Map<std::string::String, Value
     }
 }
 
+#[allow(clippy::disallowed_types)]
 fn compiler_option_string<'a>(
     options: &'a Map<std::string::String, Value>,
     name: &str,
@@ -495,6 +496,7 @@ fn ascii_lowercase(value: &str) -> std::string::String {
     value.to_ascii_lowercase()
 }
 
+#[allow(clippy::disallowed_types)]
 fn module_supports_bundler_resolution(options: &Map<std::string::String, Value>) -> bool {
     compiler_option_string(options, "module")
         .map(ascii_lowercase)
