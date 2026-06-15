@@ -121,6 +121,21 @@ void props;
         !stdout.contains("Cannot find name 'someDefinition'"),
         "{stdout}"
     );
+    let virtual_ts = json["files"][0]["virtualTs"]
+        .as_str()
+        .expect("check JSON should include generated Virtual TS");
+    assert!(
+        virtual_ts.contains("type __VizeSetupProps = SomeGenericType<typeof someDefinition>;"),
+        "{virtual_ts}"
+    );
+    let module_scope = virtual_ts
+        .split("// ========== Setup Scope ==========")
+        .next()
+        .unwrap_or(virtual_ts);
+    assert!(
+        !module_scope.contains("typeof someDefinition"),
+        "setup binding leaked into module scope:\n{virtual_ts}"
+    );
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
