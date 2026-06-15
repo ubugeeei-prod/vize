@@ -129,3 +129,85 @@ fn for_ops_carry_value_key_and_index_aliases_losslessly() {
         other => panic!("expected RenduOp::For, got {other:?}"),
     }
 }
+
+#[test]
+fn element_kinds_report_exactly_one_classification() {
+    assert!(RenduElementKind::Component.is_component());
+    assert!(RenduElementKind::SlotOutlet.is_slot_outlet());
+    assert!(RenduElementKind::Template.is_template());
+    assert!(RenduElementKind::Element.is_plain_element());
+
+    for kind in [
+        RenduElementKind::Element,
+        RenduElementKind::Component,
+        RenduElementKind::SlotOutlet,
+        RenduElementKind::Template,
+    ] {
+        let flags = [
+            kind.is_plain_element(),
+            kind.is_component(),
+            kind.is_slot_outlet(),
+            kind.is_template(),
+        ];
+        assert_eq!(flags.iter().filter(|on| **on).count(), 1, "{kind:?}");
+    }
+}
+
+#[test]
+fn span_is_present_for_every_op_except_hoist_refs() {
+    let allocator = Allocator::default();
+    let bump = allocator.as_bump();
+    let text =
+        TemplateChildNode::Text(AllocBox::new_in(TextNode::new("hi", loc("hi", 0, 2)), bump));
+
+    assert_eq!(
+        RenduOp::from_template_child(&text).span(),
+        Some(RenduSpan::new(
+            Position::new(0, 1, 1),
+            Position::new(2, 1, 3)
+        ))
+    );
+    // A hoist reference points only at a module index, so it has no span.
+    assert_eq!(RenduOp::HoistRef { index: 0 }.span(), None);
+}
+
+#[test]
+fn primary_expr_and_control_flow_classify_ops() {
+    let interpolation = RenduOp::Interpolation {
+        expression: RenduExprRef::Relief("count"),
+        raw: false,
+        span: RenduSpan::default(),
+    };
+    assert_eq!(
+        interpolation.primary_expr().map(RenduExprRef::text),
+        Some("count")
+    );
+    assert!(!interpolation.is_control_flow());
+
+    let if_op = RenduOp::If {
+        span: RenduSpan::default(),
+    };
+    assert!(if_op.is_control_flow());
+    // `if` itself carries no condition expression; its branches do.
+    assert!(if_op.primary_expr().is_none());
+
+    let element = RenduOp::Element {
+        tag: "div",
+        kind: RenduElementKind::Element,
+        span: RenduSpan::default(),
+    };
+    assert!(element.primary_expr().is_none());
+    assert!(!element.is_control_flow());
+}
+
+#[test]
+fn blocks_report_their_operation_count() {
+    let ops = [
+        RenduOp::HoistRef { index: 0 },
+        RenduOp::HoistRef { index: 1 },
+    ];
+    let block = RenduBlock::new(&ops);
+    assert_eq!(block.len(), 2);
+    assert!(!block.is_empty());
+    assert!(RenduBlock::new(&[]).is_empty());
+}

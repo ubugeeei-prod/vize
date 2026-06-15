@@ -110,6 +110,29 @@ pub enum RenduElementKind {
     Template,
 }
 
+impl RenduElementKind {
+    /// Whether this is a user component rather than a plain host element.
+    pub const fn is_component(self) -> bool {
+        matches!(self, Self::Component)
+    }
+
+    /// Whether this is a `<slot>` outlet.
+    pub const fn is_slot_outlet(self) -> bool {
+        matches!(self, Self::SlotOutlet)
+    }
+
+    /// Whether this is a `<template>` fragment wrapper.
+    pub const fn is_template(self) -> bool {
+        matches!(self, Self::Template)
+    }
+
+    /// Whether this is a plain host element (not a component, slot, or
+    /// template).
+    pub const fn is_plain_element(self) -> bool {
+        matches!(self, Self::Element)
+    }
+}
+
 impl From<ElementType> for RenduElementKind {
     fn from(kind: ElementType) -> Self {
         match kind {
