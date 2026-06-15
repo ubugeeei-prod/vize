@@ -57,6 +57,26 @@ impl VaporSupport {
     }
 }
 
+/// The Vapor lane's lowering decision, derived from shared Rendu facts.
+///
+/// Turns a [`VaporSupport`] classification into the concrete output route the
+/// Vapor lane should take, so `Rendu -> Vapor IR -> Vapor output` starts from
+/// one shared decision rather than re-inspecting the route inside the Atelier.
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub struct VaporPlan {
+    pub support: VaporSupport,
+    /// The atlas target the lane should actually emit: `Vapor` when renderable,
+    /// `Ssr` when the route degrades, `None` when the shape is unsupported.
+    pub emit_target: Option<SourceAtlasTarget>,
+}
+
+impl VaporPlan {
+    /// The fallback this plan records, if any (mirrors its `support`).
+    pub const fn fallback(self) -> Option<SourceAtlasFallback> {
+        self.support.fallback()
+    }
+}
+
 impl RenduCapabilities {
     /// Whether a single capability fact holds for this set.
     pub fn supports(self, capability: RenduCapability) -> bool {
@@ -102,6 +122,25 @@ impl RenduCapabilities {
             VaporSupport::DegradesToSsr
         } else {
             VaporSupport::Renderable
+        }
+    }
+
+    /// The Vapor lowering decision for this capability set.
+    ///
+    /// Resolves [`vapor_support`](Self::vapor_support) into a concrete output
+    /// route: emit Vapor when renderable, fall back to the SSR target when the
+    /// route degrades, and emit nothing when the shape is unsupported. This is
+    /// the shared entry point a Vapor lane consumes for `Rendu -> Vapor IR`.
+    pub fn vapor_plan(self, shape_renderable: bool) -> VaporPlan {
+        let support = self.vapor_support(shape_renderable);
+        let emit_target = match support {
+            VaporSupport::Renderable => Some(SourceAtlasTarget::Vapor),
+            VaporSupport::DegradesToSsr => Some(SourceAtlasTarget::Ssr),
+            VaporSupport::Unsupported => None,
+        };
+        VaporPlan {
+            support,
+            emit_target,
         }
     }
 
@@ -225,5 +264,31 @@ mod tests {
         let mut count = 0usize;
         RenduCapabilities::empty().visit_facts(|_| count += 1);
         assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn vapor_plan_routes_to_an_emit_target_or_none() {
+        let vapor = RenduCapabilities::empty().with_target(SourceAtlasTarget::Vapor);
+
+        // Renderable Vapor → emit the Vapor target, no fallback.
+        let renderable = vapor.vapor_plan(true);
+        assert_eq!(renderable.support, VaporSupport::Renderable);
+        assert_eq!(renderable.emit_target, Some(SourceAtlasTarget::Vapor));
+        assert_eq!(renderable.fallback(), None);
+
+        // Vapor + SSR → degrade to the SSR target with a VaporSsr fallback.
+        let degraded = vapor.with_target(SourceAtlasTarget::Ssr).vapor_plan(true);
+        assert_eq!(degraded.support, VaporSupport::DegradesToSsr);
+        assert_eq!(degraded.emit_target, Some(SourceAtlasTarget::Ssr));
+        assert_eq!(degraded.fallback(), Some(SourceAtlasFallback::VaporSsr));
+
+        // Unsupported shape → no emit target.
+        let unsupported = vapor.vapor_plan(false);
+        assert_eq!(unsupported.support, VaporSupport::Unsupported);
+        assert_eq!(unsupported.emit_target, None);
+        assert_eq!(
+            unsupported.fallback(),
+            Some(SourceAtlasFallback::UnsupportedVaporShape)
+        );
     }
 }
