@@ -6,6 +6,40 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
+const completeCheckSnapshotTests = [
+  "ant-design-vue",
+  "compiler-macros",
+  "ecosystem-products",
+  "elk",
+  "misskey",
+  "npmx",
+  "nuxt-ui",
+  "reka-ui",
+  "style-preprocessors",
+  "typecheck-errors",
+  "vuefes",
+].sort();
+
+const assertionOnlyCheckTests = {
+  "class-component": "class-component vue-tsc parity has known upstream-noisy diagnostics",
+  directus: "real-world smoke lane is too large for a deterministic complete baseline",
+  "element-plus": "real-world smoke lane is too large for a deterministic complete baseline",
+  "frontend-phpcon": "real-world smoke lane is too large for a deterministic complete baseline",
+  "generic-build": "generic build fixture asserts targeted compiler behavior",
+  hoppscotch: "real-world smoke lane is too large for a deterministic complete baseline",
+  "naive-ui": "real-world smoke lane is too large for a deterministic complete baseline",
+  "nuxt-parity": "parity lane asserts focused framework behavior",
+  "options-api": "options-api fixture asserts focused parity behavior",
+  primevue: "covered by the complete ecosystem-products baseline",
+  "toolchain-parity": "parity lane asserts focused vue-tsc agreement",
+  "typecheck-vue-imports": "fixture asserts focused import-resolution behavior",
+  voicevox: "real-world smoke lane is too large for a deterministic complete baseline",
+  "vue-vben-admin": "real-world smoke lane is too large for a deterministic complete baseline",
+  vuetify: "real-world smoke lane is too large for a deterministic complete baseline",
+  "zz-intentional-errors-fixtures": "intentional-error aggregate asserts diagnostic presence",
+  "zz-intentional-errors-realworld": "intentional-error aggregate asserts diagnostic presence",
+} satisfies Record<string, string>;
+
 function snapshotFiles(...segments: string[]): string[] {
   const directory = path.join(root, ...segments);
   return fs
@@ -18,6 +52,33 @@ function snapshotFiles(...segments: string[]): string[] {
 function readJsonSnapshot(file: string): unknown {
   return JSON.parse(fs.readFileSync(file, "utf8"));
 }
+
+function checkSnapshotTestNames(): string[] {
+  return fs
+    .readdirSync(path.join(root, "tests", "snapshots", "check"))
+    .filter((file) => file.endsWith(".ts"))
+    .map((file) => file.replace(/\.ts$/, ""))
+    .sort();
+}
+
+test("check snapshot tests declare whether they use complete baselines", () => {
+  const complete = completeCheckSnapshotTests;
+  const assertionOnly = Object.keys(assertionOnlyCheckTests).sort();
+  const declared = [...complete, ...assertionOnly].sort();
+  assert.deepEqual(declared, checkSnapshotTestNames());
+
+  for (const [name, reason] of Object.entries(assertionOnlyCheckTests)) {
+    assert.ok(reason.length >= 20, `${name}: assertion-only reason should be explicit`);
+  }
+
+  for (const name of complete) {
+    const source = fs.readFileSync(
+      path.join(root, "tests", "snapshots", "check", `${name}.ts`),
+      "utf8",
+    );
+    assert.match(source, /assertSnapshot\(/, `${name}: expected a complete snapshot assertion`);
+  }
+});
 
 test("check snapshots are complete JSON baselines", () => {
   for (const snapshot of snapshotFiles("tests", "snapshots", "check", "__snapshots__")) {
