@@ -211,6 +211,20 @@ pub(crate) fn register_valid_directives(registry: &mut crate::rule::RuleRegistry
     registry.register(Box::new(ValidTemplateRoot));
 }
 
+/// Register the default-preset security rules in one call.
+///
+/// These flag template-shaped attack surface (raw `v-html`, unsafe URL
+/// schemes, untrusted `target="_blank"`, unsandboxed iframes, and statically
+/// invalid HTML attributes). Bundling them here keeps the per-preset
+/// registration list short.
+pub(crate) fn register_security(registry: &mut crate::rule::RuleRegistry) {
+    registry.register(Box::new(NoVHtml));
+    registry.register(Box::new(NoUnsafeUrl));
+    registry.register(Box::new(NoTemplateTargetBlank));
+    registry.register(Box::new(NoUnsandboxedIframe));
+    registry.register(Box::new(NoInvalidHtmlAttribute));
+}
+
 /// Register Vue migration rules as explicit opt-in rules.
 ///
 /// These flag deprecated Vue 2 template syntax that Vue 3 removed. They are

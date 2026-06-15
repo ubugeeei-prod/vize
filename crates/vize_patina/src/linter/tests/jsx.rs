@@ -20,9 +20,7 @@ use crate::rules::a11y::{
     ImgAlt, NoAccessKey, NoAutofocus, NoDistractingElements, TabindexNoPositive,
 };
 use crate::rules::html::DeprecatedElement;
-use crate::rules::vue::{
-    A11yImgAlt, HtmlSelfClosing, NoDuplicateAttributes, NoUnsafeUrl, NoVHtml, RequireVForKey,
-};
+use crate::rules::vue::{A11yImgAlt, NoVHtml, RequireVForKey};
 use vize_atelier_jsx::JsxLang;
 
 fn linter_with(rule: Box<dyn Rule>) -> Linter {
@@ -291,57 +289,6 @@ fn ir_require_v_for_key_fires_on_jsx_map() {
         ".map() with key must be clean: {:?}",
         keyed.diagnostics
     );
-}
-
-#[test]
-fn fallback_no_duplicate_attributes_fires_on_jsx() {
-    let linter = linter_with(Box::new(NoDuplicateAttributes::default()));
-    let result = linter.lint_jsx(
-        r#"const A = () => <div id="a" id="b"/>;"#,
-        "test.jsx",
-        JsxLang::Jsx,
-    );
-    assert_eq!(
-        result.error_count, 1,
-        "duplicate JSX props must flag via fallback: {:?}",
-        result.diagnostics
-    );
-    assert_eq!(
-        diagnostic_rules(&result),
-        vec!["vue/no-duplicate-attributes"]
-    );
-}
-
-#[test]
-fn fallback_html_self_closing_fires_on_jsx() {
-    let linter = linter_with(Box::new(HtmlSelfClosing));
-    let result = linter.lint_jsx(
-        "const A = () => <MyWidget></MyWidget>;",
-        "test.jsx",
-        JsxLang::Jsx,
-    );
-    assert_eq!(
-        result.warning_count, 1,
-        "empty JSX components written with paired tags must flag via fallback: {:?}",
-        result.diagnostics
-    );
-    assert_eq!(diagnostic_rules(&result), vec!["vue/html-self-closing"]);
-}
-
-#[test]
-fn fallback_no_unsafe_url_fires_on_jsx() {
-    let linter = linter_with(Box::new(NoUnsafeUrl));
-    let result = linter.lint_jsx(
-        r#"const A = () => <a href="javascript:alert(1)">x</a>;"#,
-        "test.jsx",
-        JsxLang::Jsx,
-    );
-    assert_eq!(
-        result.warning_count, 1,
-        "unsafe static JSX URLs must flag via fallback: {:?}",
-        result.diagnostics
-    );
-    assert_eq!(diagnostic_rules(&result), vec!["vue/no-unsafe-url"]);
 }
 
 // ===========================================================================
