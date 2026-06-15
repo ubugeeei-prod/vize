@@ -31,6 +31,8 @@ const {
   loading,
   error,
   values,
+  customProps,
+  deletedPaletteProps,
   allControls,
   mergedValues,
   customPropNames,
@@ -40,6 +42,8 @@ const {
   addProp,
   removeProp,
   resetValues,
+  saveValues,
+  clearSavedValues,
 } = usePalette();
 const { getArt } = useArts();
 
@@ -51,6 +55,7 @@ const art = computed(() => getArt(props.artPath));
 
 // Mode toggle
 const controlsMode = ref<"controls" | "code">("controls");
+const saveStatus = ref<"idle" | "saved">("idle");
 
 // Code mode state
 const codeEditorContent = ref("");
@@ -85,6 +90,14 @@ watch(
     const iframe = iframeRef.value;
     if (!iframe || !iframeReady.value) return;
     sendMessage(iframe, "musea:set-props", { props: newValues });
+  },
+  { deep: true },
+);
+
+watch(
+  [values, customProps, deletedPaletteProps],
+  () => {
+    saveStatus.value = "idle";
   },
   { deep: true },
 );
@@ -164,12 +177,19 @@ onUnmounted(() => {
 
 function onResetValues() {
   resetValues();
+  clearSavedValues(props.artPath);
   slotContent.value = {};
   controlsMode.value = "controls";
+  saveStatus.value = "idle";
   const iframe = iframeRef.value;
   if (!iframe || !iframeReady.value) return;
   sendMessage(iframe, "musea:set-props", { props: mergedValues.value });
   sendMessage(iframe, "musea:set-slots", { slots: {} });
+}
+
+function onSaveValues() {
+  saveValues(props.artPath);
+  saveStatus.value = "saved";
 }
 
 function onSlotsUpdate(slots: Record<string, string>) {
@@ -449,6 +469,14 @@ const controlKindOptions = [
                 </button>
               </div>
               <button type="button" class="props-reset" @click="onResetValues">Reset</button>
+              <button
+                type="button"
+                class="props-save"
+                :class="{ saved: saveStatus === 'saved' }"
+                @click="onSaveValues"
+              >
+                {{ saveStatus === "saved" ? "Saved" : "Save" }}
+              </button>
             </div>
           </div>
 
@@ -745,7 +773,8 @@ const controlKindOptions = [
   color: var(--musea-text);
 }
 
-.props-reset {
+.props-reset,
+.props-save {
   background: var(--musea-bg-tertiary);
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-sm);
@@ -756,9 +785,15 @@ const controlKindOptions = [
   transition: all var(--musea-transition);
 }
 
-.props-reset:hover {
+.props-reset:hover,
+.props-save:hover {
   border-color: var(--musea-text-muted);
   color: var(--musea-text);
+}
+
+.props-save.saved {
+  border-color: var(--musea-accent);
+  color: var(--musea-accent);
 }
 
 .props-grid {

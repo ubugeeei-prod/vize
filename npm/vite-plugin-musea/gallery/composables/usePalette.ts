@@ -1,12 +1,15 @@
 import { ref, computed } from "vue";
 import type { PaletteApiResponse, PaletteControl } from "../api";
 import { fetchPalette } from "../api";
-
-export interface CustomProp {
-  name: string;
-  control: string;
-  default_value: unknown;
-}
+import {
+  PALETTE_STATE_VERSION,
+  clearSavedPaletteState,
+  initialPaletteValues,
+  readSavedPaletteState,
+  restorePaletteState,
+  writeSavedPaletteState,
+  type CustomProp,
+} from "./paletteState";
 
 export function usePalette() {
   const palette = ref<PaletteApiResponse | null>(null);
@@ -49,9 +52,17 @@ export function usePalette() {
     error.value = null;
     try {
       palette.value = await fetchPalette(artPath);
-      values.value = initialValues(palette.value.controls);
-      customProps.value = [];
-      deletedPaletteProps.value = new Set();
+      const saved = readSavedPaletteState(artPath);
+      if (saved) {
+        const restored = restorePaletteState(palette.value.controls, saved);
+        values.value = restored.values;
+        customProps.value = restored.customProps;
+        deletedPaletteProps.value = restored.deletedPaletteProps;
+      } else {
+        values.value = initialPaletteValues(palette.value.controls);
+        customProps.value = [];
+        deletedPaletteProps.value = new Set();
+      }
     } catch (e) {
       error.value = e instanceof Error ? e.message : String(e);
       palette.value = null;
@@ -98,9 +109,22 @@ export function usePalette() {
 
   function resetValues() {
     if (!palette.value) return;
-    values.value = initialValues(palette.value.controls);
+    values.value = initialPaletteValues(palette.value.controls);
     customProps.value = [];
     deletedPaletteProps.value = new Set();
+  }
+
+  function saveValues(artPath: string) {
+    writeSavedPaletteState(artPath, {
+      version: PALETTE_STATE_VERSION,
+      values: values.value,
+      customProps: customProps.value,
+      deletedPaletteProps: [...deletedPaletteProps.value],
+    });
+  }
+
+  function clearSavedValues(artPath: string) {
+    clearSavedPaletteState(artPath);
   }
 
   return {
@@ -119,27 +143,7 @@ export function usePalette() {
     addProp,
     removeProp,
     resetValues,
+    saveValues,
+    clearSavedValues,
   };
-}
-
-function initialValues(controls: PaletteControl[]): Record<string, unknown> {
-  const initial: Record<string, unknown> = {};
-  for (const control of controls) {
-    initial[control.name] =
-      control.default_value !== undefined ? control.default_value : fallbackValue(control);
-  }
-  return initial;
-}
-
-function fallbackValue(control: PaletteControl): unknown {
-  if ((control.control === "select" || control.control === "radio") && control.options.length > 0) {
-    return control.options[0].value;
-  }
-  if (control.control === "boolean") return false;
-  if (control.control === "number" || control.control === "range") {
-    return control.range?.min ?? 0;
-  }
-  if (control.control === "array") return [];
-  if (control.control === "object") return {};
-  return "";
 }
