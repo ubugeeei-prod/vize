@@ -57,21 +57,32 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoUnsafeUrl;
 
-/// Attributes that can be exploited with unsafe URLs
-const UNSAFE_URL_ATTRS: &[&str] = &[
-    "href",
-    "xlink:href",
-    "src",
-    "srcset",
-    "action",
-    "formaction",
-    "data",
-];
+/// Attributes that are URL-bearing on any element (the name implies a URL even
+/// on a custom component).
+const GLOBAL_URL_ATTRS: &[&str] = &["href", "xlink:href", "src", "srcset"];
 
-fn is_url_attr(name: &str) -> bool {
-    UNSAFE_URL_ATTRS
+/// Attributes that are URL-bearing only on specific HTML elements. On any other
+/// element — a `<div>`, or a custom component — they are ordinary props (for
+/// example `<MyComponent :data="rows" />`), so treating them as URLs there is a
+/// false positive.
+fn is_element_scoped_url_attr(name: &str, tag: &str) -> bool {
+    if name.eq_ignore_ascii_case("data") {
+        // `<object data="…">` is the only element where `data` is a URL.
+        tag.eq_ignore_ascii_case("object")
+    } else if name.eq_ignore_ascii_case("action") {
+        tag.eq_ignore_ascii_case("form")
+    } else if name.eq_ignore_ascii_case("formaction") {
+        tag.eq_ignore_ascii_case("button") || tag.eq_ignore_ascii_case("input")
+    } else {
+        false
+    }
+}
+
+fn is_url_attr_on(name: &str, tag: &str) -> bool {
+    GLOBAL_URL_ATTRS
         .iter()
         .any(|attr| name.eq_ignore_ascii_case(attr))
+        || is_element_scoped_url_attr(name, tag)
 }
 
 fn is_router_link_tag(tag: &str) -> bool {
@@ -164,7 +175,7 @@ impl Rule for NoUnsafeUrl {
             };
 
             let attr_name = attr.name.as_str();
-            if !is_url_attr(attr_name) {
+            if !is_url_attr_on(attr_name, element.tag.as_str()) {
                 continue;
             }
 
@@ -207,7 +218,7 @@ impl Rule for NoUnsafeUrl {
         };
 
         // Check if this is a potentially unsafe attribute
-        if !is_url_attr(attr_name) {
+        if !is_url_attr_on(attr_name, element.tag.as_str()) {
             return;
         }
 
@@ -384,6 +395,38 @@ mod tests {
     fn test_valid_class_binding() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :class="classes"></div>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_warns_dynamic_object_data() {
+        // `data` is a URL attribute on <object>.
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<object :data="url"></object>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_allows_dynamic_data_prop_on_plain_element() {
+        // `data` is not a URL attribute on a <div>; it is a plain attribute.
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div :data="rows"></div>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_allows_dynamic_data_prop_on_component() {
+        // `:data` on a custom component is an ordinary prop, not a URL.
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<MyComponent :data="rows" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_allows_dynamic_action_prop_on_component() {
+        // `:action` on a component is a prop; it is a URL only on <form>.
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<MyForm :action="doThing" />"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
 }
