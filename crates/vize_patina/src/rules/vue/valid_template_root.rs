@@ -5,10 +5,13 @@
 //! Vue 3 templates compile to a fragment, so multiple root nodes and
 //! `v-if` / `v-else-if` / `v-else` roots are all valid and are **not** flagged.
 //!
-//! The one construct that is still invalid regardless of fragment semantics is
-//! a `<template>` or `<slot>` element standing in as a root node: neither is a
-//! real renderable element, so neither can be a root. This rule reports a
-//! root-level `<template>` or `<slot>`.
+//! Under Vue 3 fragment semantics a root `<slot>` renders the slot content (the
+//! canonical Nuxt `<template><slot/></template>` layout) and a root `<template>`
+//! carrying a structural directive (`v-if`/`v-else-if`/`v-else`/`v-for`) is a
+//! valid fragment. Both render and are accepted by the compiler, so neither is
+//! flagged. The one construct this rule still reports is a *bare* `<template>`
+//! root — a directive-less wrapper that only nests its children one level
+//! deeper for no effect.
 //!
 //! ## Scope note
 //!
@@ -26,11 +29,6 @@
 //! ### Invalid
 //! ```vue
 //! <template>
-//!   <slot />
-//! </template>
-//! ```
-//! ```vue
-//! <template>
 //!   <template>content</template>
 //! </template>
 //! ```
@@ -39,6 +37,16 @@
 //! ```vue
 //! <template>
 //!   <div>content</div>
+//! </template>
+//! ```
+//! ```vue
+//! <template>
+//!   <slot />
+//! </template>
+//! ```
+//! ```vue
+//! <template>
+//!   <template v-if="ok"><div>a</div></template>
 //! </template>
 //! ```
 //! ```vue
@@ -57,7 +65,19 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{RootNode, TemplateChildNode};
+use vize_relief::{ElementNode, PropNode, RootNode, TemplateChildNode};
+
+/// Structural directives that turn a `<template>` root into a real Vue 3
+/// fragment (its children render in its place).
+fn has_fragment_directive(element: &ElementNode) -> bool {
+    element.props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Directive(directive)
+                if matches!(directive.name.as_str(), "if" | "else-if" | "else" | "for")
+        )
+    })
+}
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-template-root",
@@ -77,12 +97,18 @@ impl Rule for ValidTemplateRoot {
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         for child in &root.children {
-            // A `<template>` or `<slot>` is not a renderable element, so it
-            // cannot stand in as a root node. Other root elements — and text or
-            // interpolation roots — are valid fragment content under Vue 3.
+            // Under Vue 3 fragment semantics a `<slot>` root renders the slot
+            // content (the canonical Nuxt `<template><slot/></template>` layout)
+            // and a `<template>` root carrying a structural directive
+            // (`v-if`/`v-else-if`/`v-else`/`v-for`) is a valid fragment. Both
+            // render and are accepted by the compiler, so neither is flagged.
+            //
+            // The one residual case is a *bare* `<template>` root with no
+            // structural directive: an inert wrapper that only nests its
+            // children one level deeper for no effect.
             if let TemplateChildNode::Element(element) = child {
                 let tag = element.tag.as_str();
-                if matches!(tag, "template" | "slot") {
+                if tag == "template" && !has_fragment_directive(element) {
                     ctx.error_with_help(
                         ctx.t_fmt("vue/valid-template-root.disallowed_root", &[("tag", tag)]),
                         &element.loc,
@@ -155,28 +181,50 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_slot_root() {
+    fn test_valid_slot_root() {
+        // `<template><slot/></template>` is the canonical Nuxt layout and renders
+        // the slot content under Vue 3 fragment semantics.
         let linter = create_linter();
         let result = linter.lint_template(r#"<slot />"#, "test.vue");
-        assert_eq!(result.error_count, 1);
-        assert_eq!(result.diagnostics[0].rule_name, "vue/valid-template-root");
-        insta::assert_debug_snapshot!(result.diagnostics);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
-    fn test_invalid_template_root() {
+    fn test_valid_slot_root_among_siblings() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div>a</div><slot />"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_template_fragment_root() {
+        // A `<template>` root carrying a structural directive is a valid Vue 3
+        // fragment (e.g. the common `<template v-if>` / `<template v-else>` pair).
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<template v-if="ok"><div>a</div></template><template v-else><div>b</div></template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_template_for_root() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<template v-for="x in xs" :key="x"><li>{{ x }}</li></template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_bare_template_root() {
+        // A bare `<template>` root with no structural directive is an inert
+        // wrapper and is still reported.
         let linter = create_linter();
         let result = linter.lint_template(r#"<template><div>content</div></template>"#, "test.vue");
         assert_eq!(result.error_count, 1);
         assert_eq!(result.diagnostics[0].rule_name, "vue/valid-template-root");
-    }
-
-    #[test]
-    fn test_invalid_slot_root_among_siblings() {
-        // Each root is checked independently; the `<slot>` root is reported even
-        // when a valid element sits beside it.
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>a</div><slot />"#, "test.vue");
-        assert_eq!(result.error_count, 1);
     }
 }
