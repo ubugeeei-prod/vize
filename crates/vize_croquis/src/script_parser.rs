@@ -35,3 +35,6 @@ pub use result::{ScriptParseResult, ScriptParserOptions};
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod props_destructure_tests;

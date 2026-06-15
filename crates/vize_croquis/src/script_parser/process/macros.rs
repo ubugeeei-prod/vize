@@ -445,9 +445,9 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .map(CompactString::new)
                             .unwrap_or_else(|| CompactString::new(&local_name));
 
-                        // Extract default value if present (assignment pattern)
-                        let default_value = if prop.shorthand {
-                            // Check if the value is an assignment pattern with default
+                        // Extract default value if present (assignment pattern), including
+                        // renamed destructures such as `{ source: local = fallback }`.
+                        let default_value =
                             if let BindingPattern::AssignmentPattern(assign) = &prop.value {
                                 Some(CompactString::new(
                                     &source[assign.right.span().start as usize
@@ -455,10 +455,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                                 ))
                             } else {
                                 None
-                            }
-                        } else {
-                            None
-                        };
+                            };
 
                         destructure.insert(key, CompactString::new(&local_name), default_value);
                     }
