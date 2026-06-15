@@ -61,28 +61,47 @@ impl<'a> RenduSource<'a> {
 }
 
 /// Borrowed expression material that a Rendu operation may reference.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+///
+/// `Node` carries the real Relief [`ExpressionNode`] (for identifier prefixing,
+/// `is_static`, ...); equality is by source text across all variants.
+#[derive(Debug, Clone, Copy)]
 pub enum RenduExprRef<'a> {
     Relief(&'a str),
     Oxc(&'a str),
     Croquis(&'a str),
+    Node(&'a ExpressionNode<'a>),
 }
 
 impl<'a> RenduExprRef<'a> {
-    pub fn from_expression(expression: &'a ExpressionNode<'a>) -> Self {
-        match expression {
-            ExpressionNode::Simple(simple) => Self::Relief(simple.content.as_str()),
-            ExpressionNode::Compound(compound) => Self::Relief(compound.loc.source.as_str()),
-        }
+    pub const fn from_expression(expression: &'a ExpressionNode<'a>) -> Self {
+        Self::Node(expression)
     }
 
     /// The borrowed source text of this expression, regardless of origin.
-    pub const fn text(self) -> &'a str {
+    pub fn text(self) -> &'a str {
         match self {
             Self::Relief(text) | Self::Oxc(text) | Self::Croquis(text) => text,
+            Self::Node(ExpressionNode::Simple(simple)) => simple.content.as_str(),
+            Self::Node(ExpressionNode::Compound(compound)) => compound.loc.source.as_str(),
+        }
+    }
+
+    /// The underlying Relief expression node, when this ref carries one.
+    pub const fn node(self) -> Option<&'a ExpressionNode<'a>> {
+        match self {
+            Self::Node(expression) => Some(expression),
+            _ => None,
         }
     }
 }
+
+impl PartialEq for RenduExprRef<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.text() == other.text()
+    }
+}
+
+impl Eq for RenduExprRef<'_> {}
 
 /// Element-like render operation kind.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]

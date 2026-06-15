@@ -79,10 +79,15 @@ fn expression_refs_borrow_relief_expression_text() {
     let expression = simple(allocator.as_bump(), "count + 1");
 
     let expr_ref = RenduExprRef::from_expression(&expression);
+    // Equality is by source text, so the borrowed node and a string ref naming
+    // the same expression compare equal.
     assert_eq!(expr_ref, RenduExprRef::Relief("count + 1"));
     // The text accessor returns the borrowed source regardless of origin.
     assert_eq!(expr_ref.text(), "count + 1");
     assert_eq!(RenduExprRef::Oxc("a.b").text(), "a.b");
+    // `from_expression` carries the real Relief node, reachable via `node()`.
+    assert!(expr_ref.node().is_some());
+    assert!(RenduExprRef::Relief("count + 1").node().is_none());
 }
 
 #[test]
