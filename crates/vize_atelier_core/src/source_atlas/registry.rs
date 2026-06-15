@@ -1,8 +1,9 @@
 //! Cheap Source Atlas request notes.
 
 use super::{
-    SourceAtlasCoordinate, SourceAtlasFallback, SourceAtlasFallbackSet, SourceAtlasPlate,
-    SourceAtlasRequest, SourceAtlasRoute, SourceAtlasSource, SourceAtlasTarget,
+    PlateFamily, PlateFamilySet, SourceAtlasCoordinate, SourceAtlasFallback,
+    SourceAtlasFallbackSet, SourceAtlasPlate, SourceAtlasRequest, SourceAtlasRoute,
+    SourceAtlasSource, SourceAtlasTarget,
 };
 
 /// Product lane that requested atlas facts.
@@ -93,6 +94,21 @@ impl SourceAtlasRegistry {
         Self::new(SourceAtlasLane::Typecheck)
     }
 
+    /// Start a linter-lane request.
+    pub const fn linter() -> Self {
+        Self::new(SourceAtlasLane::Linter)
+    }
+
+    /// Start a formatter-lane request.
+    pub const fn formatter() -> Self {
+        Self::new(SourceAtlasLane::Formatter)
+    }
+
+    /// Start a language-server-lane request.
+    pub const fn language_server() -> Self {
+        Self::new(SourceAtlasLane::LanguageServer)
+    }
+
     /// Replace the current route with a prebuilt route.
     pub const fn with_route(mut self, route: SourceAtlasRoute) -> Self {
         self.route = route;
@@ -155,5 +171,95 @@ impl SourceAtlasRegistry {
         if let Some(coordinate) = self.route.coordinate {
             visit(SourceAtlasRequest::Coordinate(coordinate));
         }
+    }
+
+    /// The plate families this lane's requests touch.
+    ///
+    /// Folded from facts the lane already recorded, so the cost-rule question
+    /// "did this lane reach a Render plate?" stays a cheap set lookup rather
+    /// than new analysis.
+    pub fn families(self) -> PlateFamilySet {
+        let mut families = PlateFamilySet::empty();
+        self.visit_requests(|request| families = families.with(request.family()));
+        families
+    }
+
+    /// Whether this lane's requests touch the given plate family.
+    pub fn touches_family(self, family: PlateFamily) -> bool {
+        self.families().contains(family)
+    }
+
+    /// Whether this lane requested any render-family plate.
+    ///
+    /// The guardrail in `docs/content/architecture/source-atlas.md` is that
+    /// lint, format, and editor lanes stay render-free unless a feature
+    /// explicitly asks for render semantics; this is the cheap check that
+    /// guardrail is expressed through.
+    pub fn requests_render(self) -> bool {
+        self.touches_family(PlateFamily::Render)
+    }
+
+    /// Whether this lane avoided the Render plate family entirely.
+    pub fn is_render_free(self) -> bool {
+        !self.requests_render()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use vize_carton::config::VueVersion;
+
+    #[test]
+    fn linter_lane_requesting_only_semantics_stays_render_free() {
+        // Patina asks for source-faithful syntax and semantic facts, never
+        // render semantics. This is the guardrail "lint-only runs do not build
+        // Rendu", expressed as a cheap family check over the route the lane
+        // already built.
+        let linter = SourceAtlasRegistry::linter()
+            .with_source(SourceAtlasSource::Sfc)
+            .with_plate(SourceAtlasPlate::Relief)
+            .with_plate(SourceAtlasPlate::Croquis)
+            .with_coordinate(SourceAtlasCoordinate::from(VueVersion::V3));
+
+        let families = linter.families();
+        assert!(families.contains(PlateFamily::Source));
+        assert!(families.contains(PlateFamily::Syntax));
+        assert!(families.contains(PlateFamily::Semantic));
+        assert!(!families.contains(PlateFamily::Render));
+
+        assert!(linter.is_render_free());
+        assert!(!linter.requests_render());
+        assert!(!linter.touches_family(PlateFamily::Projection));
+    }
+
+    #[test]
+    fn compiler_render_route_touches_render_target_and_finish_families() {
+        // A render compile that demands the Rendu plate and emits DOM plus a
+        // source map touches the render, target, and finish families together.
+        let compiler = SourceAtlasRegistry::compiler()
+            .with_source(SourceAtlasSource::VueTemplate)
+            .with_plate(SourceAtlasPlate::Rendu)
+            .with_plate(SourceAtlasPlate::SourceMap)
+            .with_target(SourceAtlasTarget::Dom);
+
+        assert!(compiler.requests_render());
+        assert!(compiler.touches_family(PlateFamily::Render));
+        assert!(compiler.touches_family(PlateFamily::Target));
+        assert!(compiler.touches_family(PlateFamily::Finish));
+        assert!(!compiler.touches_family(PlateFamily::Projection));
+    }
+
+    #[test]
+    fn lane_constructors_name_their_product_lane() {
+        assert_eq!(SourceAtlasRegistry::linter().lane, SourceAtlasLane::Linter);
+        assert_eq!(
+            SourceAtlasRegistry::formatter().lane,
+            SourceAtlasLane::Formatter
+        );
+        assert_eq!(
+            SourceAtlasRegistry::language_server().lane,
+            SourceAtlasLane::LanguageServer
+        );
     }
 }

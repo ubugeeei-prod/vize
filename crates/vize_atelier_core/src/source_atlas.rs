@@ -5,68 +5,18 @@
 //! allocation-free, and cheap enough to thread through profile/fallback facts.
 
 mod fallback;
+mod family;
 mod registry;
 mod report;
 mod route;
 
 pub use fallback::{SourceAtlasFallback, SourceAtlasFallbackSet};
+pub use family::{PlateFamily, PlateFamilySet};
 pub use registry::{SourceAtlasLane, SourceAtlasRegistry};
 pub use report::{render_fallback_legend, render_fallback_report, render_registry_report};
 pub use route::{SourceAtlasRoute, SourceAtlasSource, SourceAtlasSourceSet, SourceAtlasTargetSet};
 
 use vize_carton::config::VueVersion;
-
-/// The family a Source Atlas plate or target belongs to.
-///
-/// Families group plates by the job they do in the toolchain, matching the
-/// `Plate Families` table in `docs/content/architecture/source-atlas.md`.
-/// Classifying a plate by family lets a lane reason about cost rules (for
-/// example "Patina does not pay for Render plates") without hard-coding each
-/// plate individually.
-#[non_exhaustive]
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub enum PlateFamily {
-    /// Source files and blocks: SFC, template, script, setup, style, JSX/TSX.
-    Source,
-    /// Source-faithful syntax surfaces such as Relief and OXC AST refs.
-    Syntax,
-    /// Shared semantic study: Croquis bindings, scopes, directives, deps.
-    Semantic,
-    /// Tool-facing projections such as Virtual TS or inspector views.
-    Projection,
-    /// Render semantics: the Rendu plate.
-    Render,
-    /// Target product surfaces: DOM/VDOM, SSR, Vapor, JSX/TSX emit.
-    Target,
-    /// Finishing artifacts: AtelierOutput, maps, diagnostics, payloads.
-    Finish,
-}
-
-impl PlateFamily {
-    /// Known families in stable observation order.
-    pub const KNOWN: [Self; 7] = [
-        Self::Source,
-        Self::Syntax,
-        Self::Semantic,
-        Self::Projection,
-        Self::Render,
-        Self::Target,
-        Self::Finish,
-    ];
-
-    /// Counter used when a lane observes work in this family.
-    pub const fn profile_counter(self) -> &'static str {
-        match self {
-            Self::Source => "atelier.profile.family.source",
-            Self::Syntax => "atelier.profile.family.syntax",
-            Self::Semantic => "atelier.profile.family.semantic",
-            Self::Projection => "atelier.profile.family.projection",
-            Self::Render => "atelier.profile.family.render",
-            Self::Target => "atelier.profile.family.target",
-            Self::Finish => "atelier.profile.family.finish",
-        }
-    }
-}
 
 /// A demandable plate in the Vize Source Atlas.
 #[non_exhaustive]
@@ -309,6 +259,21 @@ impl SourceAtlasRequest {
             Self::Plate(plate) => plate.profile_counter(),
             Self::Target(target) => target.profile_counter(),
             Self::Coordinate(coordinate) => coordinate.profile_counter(),
+        }
+    }
+
+    /// The plate family this request belongs to.
+    ///
+    /// A version/dialect coordinate is a [`PlateFamily::Semantic`] fact (it
+    /// lives with bindings and directives in the `Plate Families` table), so a
+    /// lane that only attaches a coordinate is not treated as touching a Render
+    /// plate.
+    pub const fn family(self) -> PlateFamily {
+        match self {
+            Self::Source(_) => PlateFamily::Source,
+            Self::Plate(plate) => plate.family(),
+            Self::Target(_) => PlateFamily::Target,
+            Self::Coordinate(_) => PlateFamily::Semantic,
         }
     }
 }

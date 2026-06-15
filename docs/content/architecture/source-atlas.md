@@ -72,7 +72,7 @@ Current `canary` state:
   skipped composition is now observable through the `SourceMap` registry lane
   instead of implicit.
 - Follow-up tracks #1692-#1698 build on this foundation without new hot-path
-  cost: `PlateFamily` classifies plates/targets;
+  cost: `PlateFamily`/`PlateFamilySet` keep lint/editor lanes render-free;
   `SourceAtlasCoordinate::compatibility_fallback` reports pre-v3 lines as
   `LegacySyntaxCompatibility`; `RenduCapability` / `vapor_route_fallback` let the
   Vapor lane consume shared facts and record `UnsupportedVaporShape`;
