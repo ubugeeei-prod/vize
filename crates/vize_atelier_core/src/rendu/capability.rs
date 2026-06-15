@@ -24,6 +24,39 @@ pub enum RenduCapability {
     VersionedSyntax(SourceAtlasCoordinate),
 }
 
+/// How a Vapor render route resolves for a capability set.
+///
+/// This is the shared classification the Vapor lane consumes and fallback
+/// reporting agrees with, so `Rendu -> Vapor IR -> Vapor output` does not
+/// re-derive the route rule inline.
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum VaporSupport {
+    /// The shape renders on the Vapor target as-is.
+    Renderable,
+    /// Vapor was requested together with SSR; the SFC compiler degrades to the
+    /// standard SSR Atelier because Vapor SSR is unimplemented.
+    DegradesToSsr,
+    /// The template shape is outside the current Vapor capability set.
+    Unsupported,
+}
+
+impl VaporSupport {
+    /// The atlas fallback this Vapor outcome records, if any.
+    pub const fn fallback(self) -> Option<SourceAtlasFallback> {
+        match self {
+            Self::Renderable => None,
+            Self::DegradesToSsr => Some(SourceAtlasFallback::VaporSsr),
+            Self::Unsupported => Some(SourceAtlasFallback::UnsupportedVaporShape),
+        }
+    }
+
+    /// Whether the Vapor target renders this shape without degrading.
+    pub const fn is_renderable(self) -> bool {
+        matches!(self, Self::Renderable)
+    }
+}
+
 impl RenduCapabilities {
     /// Whether a single capability fact holds for this set.
     pub fn supports(self, capability: RenduCapability) -> bool {
@@ -51,6 +84,24 @@ impl RenduCapabilities {
             Some(SourceAtlasFallback::VaporSsr)
         } else {
             None
+        }
+    }
+
+    /// Classify how a Vapor render route resolves for this capability set.
+    ///
+    /// `shape_renderable` is whether the Vapor Atelier could lower the template
+    /// shape (Vapor reports this by succeeding or failing). The single rule:
+    /// an unrenderable shape is [`VaporSupport::Unsupported`], a Vapor+SSR route
+    /// degrades to standard SSR ([`VaporSupport::DegradesToSsr`]), and anything
+    /// else is [`VaporSupport::Renderable`]. The Vapor lane and `AtelierFallback`
+    /// reporting consume this instead of re-deriving the rule.
+    pub fn vapor_support(self, shape_renderable: bool) -> VaporSupport {
+        if !shape_renderable {
+            VaporSupport::Unsupported
+        } else if self.vapor_route_fallback() == Some(SourceAtlasFallback::VaporSsr) {
+            VaporSupport::DegradesToSsr
+        } else {
+            VaporSupport::Renderable
         }
     }
 
@@ -118,6 +169,32 @@ mod tests {
         assert_eq!(vapor_only.vapor_route_fallback(), None);
         let ssr_only = RenduCapabilities::empty().with_target(SourceAtlasTarget::Ssr);
         assert_eq!(ssr_only.vapor_route_fallback(), None);
+    }
+
+    #[test]
+    fn vapor_support_classifies_renderable_degraded_and_unsupported() {
+        let vapor = RenduCapabilities::empty().with_target(SourceAtlasTarget::Vapor);
+        // A renderable Vapor-only shape needs no fallback.
+        assert_eq!(vapor.vapor_support(true), VaporSupport::Renderable);
+        assert!(vapor.vapor_support(true).is_renderable());
+        assert_eq!(vapor.vapor_support(true).fallback(), None);
+
+        // An unrenderable shape reports UnsupportedVaporShape regardless of route.
+        assert_eq!(vapor.vapor_support(false), VaporSupport::Unsupported);
+        assert_eq!(
+            vapor.vapor_support(false).fallback(),
+            Some(SourceAtlasFallback::UnsupportedVaporShape)
+        );
+
+        // Vapor + SSR degrades to standard SSR even when the shape renders.
+        let vapor_ssr = vapor.with_target(SourceAtlasTarget::Ssr);
+        assert_eq!(vapor_ssr.vapor_support(true), VaporSupport::DegradesToSsr);
+        assert_eq!(
+            vapor_ssr.vapor_support(true).fallback(),
+            Some(SourceAtlasFallback::VaporSsr)
+        );
+        // An unrenderable shape wins over the route degrade.
+        assert_eq!(vapor_ssr.vapor_support(false), VaporSupport::Unsupported);
     }
 
     #[test]
