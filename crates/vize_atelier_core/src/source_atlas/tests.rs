@@ -1,4 +1,5 @@
 use super::*;
+use vize_carton::config::VueVersion;
 
 #[test]
 fn vue_coordinates_reuse_config_version_order() {

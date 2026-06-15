@@ -4,19 +4,19 @@
 //! without implying that every plate must be built. Keep this layer `Copy`,
 //! allocation-free, and cheap enough to thread through profile/fallback facts.
 
+mod coordinate;
 mod fallback;
 mod family;
 mod registry;
 mod report;
 mod route;
 
+pub use coordinate::SourceAtlasCoordinate;
 pub use fallback::{SourceAtlasFallback, SourceAtlasFallbackSet};
 pub use family::{PlateFamily, PlateFamilySet};
 pub use registry::{SourceAtlasLane, SourceAtlasRegistry};
 pub use report::{render_fallback_legend, render_fallback_report, render_registry_report};
 pub use route::{SourceAtlasRoute, SourceAtlasSource, SourceAtlasSourceSet, SourceAtlasTargetSet};
-
-use vize_carton::config::VueVersion;
 
 /// A demandable plate in the Vize Source Atlas.
 #[non_exhaustive]
@@ -181,63 +181,6 @@ impl SourceAtlasTarget {
     /// Targets always belong to the `Target` plate family.
     pub const fn family(self) -> PlateFamily {
         PlateFamily::Target
-    }
-}
-
-/// Compatibility coordinate attached to atlas facts.
-#[non_exhaustive]
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub enum SourceAtlasCoordinate {
-    Vue(VueVersion),
-    Vapor,
-}
-
-impl SourceAtlasCoordinate {
-    /// Build a coordinate from the configured Vue language version.
-    pub const fn from_vue_version(version: VueVersion) -> Self {
-        Self::Vue(version)
-    }
-
-    /// Counter used when this compatibility coordinate is active.
-    pub const fn profile_counter(self) -> &'static str {
-        match self {
-            Self::Vue(VueVersion::V3) => "atelier.profile.dialect.vue3",
-            Self::Vue(VueVersion::V2_7) => "atelier.profile.dialect.vue2_7",
-            Self::Vue(VueVersion::V2) => "atelier.profile.dialect.vue2",
-            Self::Vue(VueVersion::V1) => "atelier.profile.dialect.vue1",
-            Self::Vue(VueVersion::V0_11) => "atelier.profile.dialect.vue0_11",
-            Self::Vue(VueVersion::V0_10) => "atelier.profile.dialect.vue0_10",
-            Self::Vapor => "atelier.profile.capability.vapor",
-        }
-    }
-
-    /// Whether this coordinate names a degraded (pre-Vue-3) compatibility line.
-    ///
-    /// Resolving the coordinate once and asking it here keeps every lane in
-    /// agreement about which dialect is legacy, rather than each crate
-    /// rediscovering the rule.
-    pub const fn is_legacy(self) -> bool {
-        matches!(self, Self::Vue(version) if version.is_legacy())
-    }
-
-    /// The compatibility fallback this coordinate implies, if any.
-    ///
-    /// Legacy Vue dialects require a compatibility path, which lanes record as
-    /// [`SourceAtlasFallback::LegacySyntaxCompatibility`] so degraded
-    /// compilation stays observable instead of silent. Vue 3 and the Vapor
-    /// capability layer imply no fallback.
-    pub const fn compatibility_fallback(self) -> Option<SourceAtlasFallback> {
-        if self.is_legacy() {
-            Some(SourceAtlasFallback::LegacySyntaxCompatibility)
-        } else {
-            None
-        }
-    }
-}
-
-impl From<VueVersion> for SourceAtlasCoordinate {
-    fn from(version: VueVersion) -> Self {
-        Self::from_vue_version(version)
     }
 }
 
