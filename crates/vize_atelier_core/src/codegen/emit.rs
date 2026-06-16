@@ -9,7 +9,8 @@ use vize_carton::profile;
 use super::children::is_directive_comment;
 use super::context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};
 use super::element::generate_root_node;
-use super::generate::{collect_hoist_helpers, generate_hoists};
+use super::generate::generate_hoists;
+use super::hoist_helpers::collect_hoist_helpers;
 use super::node::generate_node;
 use super::root::{
     generate_assets, generate_function_signature, generate_preamble_from_helpers,
