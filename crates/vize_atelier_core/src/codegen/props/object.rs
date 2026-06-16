@@ -3,6 +3,7 @@
 //! Split out of `generate.rs` to keep each props-codegen file under the
 //! source-length guard so render-semantic (Rendu) reroutes have room to land.
 
+use crate::rendu::RenduOp;
 use crate::{ExpressionNode, PropNode};
 use vize_relief::options::BindingType;
 
@@ -146,32 +147,38 @@ pub(super) fn generate_props_object_inner(
                     if needs_ref_for {
                         ctx.push("ref_for: true, ");
                     }
-                    // Normal attribute output
-                    let needs_quotes = !is_valid_js_identifier(&attr.name);
+                    // Normal attribute output, lowered through the Rendu op
+                    // (#1756): name, value, and their source spans are read from
+                    // `RenduOp::Attribute`, not the Relief node.
+                    let RenduOp::Attribute { name, name_span, value: attr_value, value_span, .. } =
+                        RenduOp::from_prop(prop)
+                    else {
+                        unreachable!("matched PropNode::Attribute");
+                    };
+                    let needs_quotes = !is_valid_js_identifier(name);
                     if needs_quotes {
                         ctx.push("\"");
                     }
-                    // Anchor the generated prop key back to the attribute name in
-                    // source, recording the symbol so it lands in the v3 `names`
-                    // array. No-op without `source_map`.
-                    ctx.record_mapping_named(&attr.name_loc.start, &attr.name);
-                    ctx.push(&attr.name);
+                    // Anchor the prop key back to the attribute name (no-op
+                    // without `source_map`); records the symbol for the v3
+                    // `names` array.
+                    ctx.record_mapping_named(&name_span.start, name);
+                    ctx.push(name);
                     if needs_quotes {
                         ctx.push("\"");
                     }
                     ctx.push(": ");
-                    if let Some(value) = &attr.value {
-                        // In inline mode, ref="refName" should reference a mutable/setup-ref
-                        // binding. Other bindings (notably props) are still string refs.
+                    if let Some(attr_value) = attr_value {
+                        // In inline mode, ref="refName" references a mutable/setup-ref
+                        // binding. Other bindings (notably props) are string refs.
                         if should_ref_runtime_binding {
-                            ctx.push(&value.content);
+                            ctx.push(attr_value);
                         } else {
                             ctx.push("\"");
-                            // Anchor the generated value literal back to the
-                            // attribute value, just inside the opening quote.
-                            // No-op without `source_map`.
-                            ctx.record_mapping(&value.loc.start);
-                            ctx.push(&escape_js_string(&value.content));
+                            if let Some(span) = value_span {
+                                ctx.record_mapping(&span.start);
+                            }
+                            ctx.push(&escape_js_string(attr_value));
                             ctx.push("\"");
                         }
                     } else {
