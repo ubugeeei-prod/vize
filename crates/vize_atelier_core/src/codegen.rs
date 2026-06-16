@@ -16,6 +16,7 @@ mod interpolation;
 mod node;
 mod patch_flag;
 mod patch_flag_expr;
+mod patch_flag_inner;
 mod props;
 mod root;
 mod slots;
