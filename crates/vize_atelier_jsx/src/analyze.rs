@@ -8,7 +8,6 @@
 //! [`SourceType`]: oxc_span::SourceType
 
 use oxc_ast::ast::Program;
-use vize_croquis::script_parser::analyze_script_setup_program;
 use vize_croquis::{Croquis, Drawer};
 
 /// Analyze a parsed JSX/TSX program, returning the Croquis binding metadata,
@@ -19,8 +18,7 @@ use vize_croquis::{Croquis, Drawer};
 /// drives rules straight over the OXC AST without lowering — can attach the same
 /// semantic analysis the lowering lane produces without a second parse.
 pub fn analyze_program(program: &Program<'_>, source: &str) -> Croquis {
-    let result = analyze_script_setup_program(program, source, None);
-    let mut croquis = Drawer::new().finish();
-    result.apply_to_croquis(&mut croquis);
-    croquis
+    let mut drawer = Drawer::for_compile();
+    drawer.draw_script_setup_program(program, source, None);
+    drawer.finish()
 }

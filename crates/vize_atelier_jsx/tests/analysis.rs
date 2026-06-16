@@ -2,18 +2,22 @@
 
 mod common;
 
-use vize_atelier_jsx::{JsxLang, lower_source};
+use vize_atelier_jsx::{JsxLang, analyze_jsx_program, lower_source, parse_module};
 use vize_carton::Bump;
+use vize_croquis::BindingMetadata;
 use vize_relief::BindingType;
 
-fn sorted_bindings(out: &vize_atelier_jsx::LowerOutput<'_>) -> Vec<(String, BindingType)> {
-    let mut bindings: Vec<_> = out
-        .bindings()
+fn sorted_binding_entries(bindings: &BindingMetadata) -> Vec<(String, BindingType)> {
+    let mut entries: Vec<_> = bindings
         .iter()
         .map(|(name, binding_type)| (name.to_owned(), binding_type))
         .collect();
-    bindings.sort_by(|left, right| left.0.cmp(&right.0));
-    bindings
+    entries.sort_by(|left, right| left.0.cmp(&right.0));
+    entries
+}
+
+fn sorted_bindings(out: &vize_atelier_jsx::LowerOutput<'_>) -> Vec<(String, BindingType)> {
+    sorted_binding_entries(out.bindings())
 }
 
 #[test]
@@ -71,5 +75,35 @@ fn undefined_binding_is_absent() {
     assert_eq!(
         sorted_bindings(&out),
         vec![("C".to_owned(), BindingType::SetupConst)]
+    );
+}
+
+#[test]
+fn parse_free_croquis_analysis_matches_lowering_analysis() {
+    let source = r#"
+        import { ref } from 'vue';
+        const count = ref(0);
+        const props = defineProps<{ label: string }>();
+        const C = (): JSX.Element => <span>{props.label}{count.value}</span>;
+    "#;
+
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = parse_module(&allocator, source, JsxLang::Tsx);
+    assert!(
+        parsed.diagnostics.is_empty(),
+        "parse diagnostics: {:?}",
+        parsed.diagnostics
+    );
+
+    let analyzed = analyze_jsx_program(&parsed.program, source);
+    let bump = Bump::new();
+    let lowered = lower_source(&bump, source, JsxLang::Tsx);
+    assert!(!lowered.has_errors(), "{:?}", lowered.diagnostics);
+
+    assert!(analyzed.bindings.is_ref("count"));
+    assert!(analyzed.bindings.contains("props"));
+    assert_eq!(
+        sorted_binding_entries(&analyzed.bindings),
+        sorted_bindings(&lowered)
     );
 }
