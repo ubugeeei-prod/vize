@@ -17,6 +17,8 @@ pub mod codegen;
 #[doc(hidden)]
 pub mod render_ir;
 #[doc(hidden)]
+pub mod render_ir_ssr;
+#[doc(hidden)]
 pub mod rendu;
 pub mod runtime_helpers;
 #[doc(hidden)]
@@ -36,13 +38,15 @@ pub use vize_relief::options::{
 };
 // Render/codegen IR types — relocated out of vize_relief into this crate (#1760).
 pub use render_ir::{
-    ArrayElement, ArrayExpression, AssignmentExpression, BlockStatement, BlockStatementBody,
-    CacheExpression, CallArgument, CallExpression, Callee, ConditionalExpression,
-    DirectiveArgumentNode, DirectiveArguments, DynamicProps, FunctionBody, FunctionExpression,
-    FunctionParam, FunctionParams, FunctionReturns, IfStatement, IfStatementAlternate, JsChildNode,
-    ObjectExpression, Property, PropsExpression, ReturnStatement, ReturnValue, SequenceExpression,
-    SlotsExpression, TemplateLiteral, TemplateLiteralElement, TemplateTextChildNode, VNodeCall,
+    ArrayElement, ArrayExpression, CacheExpression, CallArgument, CallExpression, Callee,
+    ConditionalExpression, DirectiveArgumentNode, DirectiveArguments, DynamicProps, FunctionBody,
+    FunctionExpression, FunctionParam, FunctionParams, FunctionReturns, JsChildNode,
+    ObjectExpression, Property, PropsExpression, SlotsExpression, TemplateTextChildNode, VNodeCall,
     VNodeChildren, VNodeTag,
+};
+pub use render_ir_ssr::{
+    AssignmentExpression, BlockStatement, BlockStatementBody, IfStatement, IfStatementAlternate,
+    ReturnStatement, ReturnValue, SequenceExpression, TemplateLiteral, TemplateLiteralElement,
 };
 pub use vize_relief::{
     AttributeNode, CommentNode, CompoundExpressionChild, CompoundExpressionNode, ConstantType,
