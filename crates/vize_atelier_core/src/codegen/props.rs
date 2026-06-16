@@ -5,6 +5,7 @@ mod events;
 mod generate;
 mod object;
 mod scan;
+mod von_vmodel;
 
 use crate::{PropNode, RuntimeHelper};
 
