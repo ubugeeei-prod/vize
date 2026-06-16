@@ -574,16 +574,6 @@
     "file": "app/pages/event/index.vue",
     "messages": [
       {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <EventSpeakerCard> is not allowed as a direct child of <ul>",
-        "line": 112,
-        "column": 13,
-        "endLine": 112,
-        "endColumn": 105
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -604,19 +594,9 @@
         "endLine": 138,
         "endColumn": 85,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <EventSpeakerCard> is not allowed as a direct child of <ul>",
-        "line": 154,
-        "column": 13,
-        "endLine": 154,
-        "endColumn": 114
       }
     ],
-    "errorCount": 2,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -870,39 +850,8 @@
   },
   {
     "file": "app/pages/speaker/index.vue",
-    "messages": [
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <SpeakerCard> is not allowed as a direct child of <ul>",
-        "line": 75,
-        "column": 9,
-        "endLine": 80,
-        "endColumn": 11
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <SpeakerCard> is not allowed as a direct child of <ul>",
-        "line": 87,
-        "column": 9,
-        "endLine": 92,
-        "endColumn": 11
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <SpeakerCard> is not allowed as a direct child of <ul>",
-        "line": 100,
-        "column": 9,
-        "endLine": 100,
-        "endColumn": 96
-      }
-    ],
-    "errorCount": 3,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -983,19 +932,8 @@
   },
   {
     "file": "app/pages/store/index.vue",
-    "messages": [
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <StoreItemCard> is not allowed as a direct child of <ul>",
-        "line": 52,
-        "column": 13,
-        "endLine": 56,
-        "endColumn": 15
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -1206,56 +1144,6 @@
     "file": "app/pages/timetable/index.vue",
     "messages": [
       {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <TimetableHead> is not allowed as a direct child of <tr>",
-        "line": 83,
-        "column": 15,
-        "endLine": 83,
-        "endColumn": 87
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <TimetableHead> is not allowed as a direct child of <tr>",
-        "line": 84,
-        "column": 15,
-        "endLine": 84,
-        "endColumn": 83
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <TimetableHead> is not allowed as a direct child of <tr>",
-        "line": 85,
-        "column": 15,
-        "endLine": 85,
-        "endColumn": 85
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <TimetableHead> is not allowed as a direct child of <tr>",
-        "line": 86,
-        "column": 15,
-        "endLine": 86,
-        "endColumn": 86
-      },
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <TimetableCell> is not allowed as a direct child of <tr>",
-        "line": 91,
-        "column": 15,
-        "endLine": 96,
-        "endColumn": 17
-      },
-      {
         "ruleId": "vue/no-v-for-template-key-on-child",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -1300,7 +1188,7 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
-    "errorCount": 6,
+    "errorCount": 1,
     "warningCount": 3
   },
   {

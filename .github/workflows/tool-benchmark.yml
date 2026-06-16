@@ -40,11 +40,10 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
   schedule:
-    # Weekly ratchet: a full tool benchmark is far too heavy (75 min) to run on
-    # every push to main, so a scheduled run refreshes the committed baseline
-    # snapshot (bench/results/tool-benchmark-latest.json) on a fixed cadence.
-    # This stops sub-threshold drift from accumulating silently between the
-    # manual workflow_dispatch refreshes the snapshot was previously limited to.
+    # A full tool benchmark is far too heavy (75 min) to run on every push to
+    # main, so a scheduled run publishes benchmark artifacts on a fixed cadence.
+    # Committed baseline refreshes must go through a non-main branch because
+    # main is protected by required status checks.
     - cron: "41 5 * * 1"
 
 concurrency:
@@ -181,7 +180,7 @@ jobs:
     name: tool-benchmark-commit
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
-    if: ${{ ((github.event_name == 'workflow_dispatch' && inputs.commit_results) || github.event_name == 'schedule') && startsWith(github.ref, 'refs/heads/') }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.commit_results && startsWith(github.ref, 'refs/heads/') && github.ref_name != 'main' }}
     needs:
       - tool-benchmark
     permissions:

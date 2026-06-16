@@ -362,38 +362,14 @@
   },
   {
     "file": "app/components/aria/AriaLog.vue",
-    "messages": [
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<slot>` cannot be used as a root node of the template",
-        "line": 25,
-        "column": 3,
-        "endLine": 25,
-        "endColumn": 11,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "app/components/aria/AriaStatus.vue",
-    "messages": [
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<slot>` cannot be used as a root node of the template",
-        "line": 17,
-        "column": 3,
-        "endLine": 17,
-        "endColumn": 11,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -447,17 +423,6 @@
     "file": "app/components/command/CommandPanel.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
-        "line": 217,
-        "column": 34,
-        "endLine": 217,
-        "endColumn": 39,
-        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -490,7 +455,7 @@
       }
     ],
     "errorCount": 3,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/common/AnimateNumber.vue",
@@ -1254,20 +1219,8 @@
   },
   {
     "file": "app/components/modal/ModalContainer.vue",
-    "messages": [
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 57,
-        "column": 3,
-        "endLine": 57,
-        "endColumn": 31,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -1610,20 +1563,8 @@
   },
   {
     "file": "app/components/nav/NavUser.vue",
-    "messages": [
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 21,
-        "column": 3,
-        "endLine": 21,
-        "endColumn": 20,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -1833,17 +1774,6 @@
     "file": "app/components/nav/button/Search.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 7,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "ecosystem/vue-router-prefer-named-link",
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 1,
@@ -1855,7 +1785,7 @@
         "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -2397,20 +2327,8 @@
   },
   {
     "file": "app/components/publish/PublishWidgetList.vue",
-    "messages": [
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 32,
-        "column": 3,
-        "endLine": 32,
-        "endColumn": 46,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3446,17 +3364,6 @@
     "file": "app/components/status/StatusQuote.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 50,
-        "column": 3,
-        "endLine": 50,
-        "endColumn": 33,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "html/deprecated-attr",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
@@ -3567,7 +3474,7 @@
         "help": "Use CSS border instead."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 10
   },
   {
@@ -3638,17 +3545,6 @@
     "file": "app/components/status/StatusSpoiler.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<slot>` cannot be used as a root node of the template",
-        "line": 45,
-        "column": 3,
-        "endLine": 45,
-        "endColumn": 46,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "html/deprecated-attr",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
@@ -3660,7 +3556,7 @@
         "help": "Use CSS border instead."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -3689,20 +3585,8 @@
   },
   {
     "file": "app/components/status/edit/StatusEditIndicator.vue",
-    "messages": [
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 14,
-        "column": 3,
-        "endLine": 14,
-        "endColumn": 29,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -4201,20 +4085,8 @@
   },
   {
     "file": "app/layouts/none.vue",
-    "messages": [
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<slot>` cannot be used as a root node of the template",
-        "line": 2,
-        "column": 3,
-        "endLine": 2,
-        "endColumn": 11,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -4254,38 +4126,14 @@
   },
   {
     "file": "app/pages/[[server]]/@[account]/index/followers.vue",
-    "messages": [
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 21,
-        "column": 3,
-        "endLine": 21,
-        "endColumn": 30,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
     "file": "app/pages/[[server]]/@[account]/index/following.vue",
-    "messages": [
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 21,
-        "column": 3,
-        "endLine": 21,
-        "endColumn": 30,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -4516,20 +4364,8 @@
   },
   {
     "file": "app/pages/[[server]]/search.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 25,
-        "column": 11,
-        "endLine": 25,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {

@@ -304,20 +304,8 @@
   },
   {
     "file": "app/components/Button/Base.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 37,
-        "column": 11,
-        "endLine": 37,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -1114,17 +1102,6 @@
     "file": "app/components/Input/Base.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 37,
-        "column": 11,
-        "endLine": 37,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1147,7 +1124,7 @@
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -1172,17 +1149,6 @@
     "file": "app/components/Link/Base.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 72,
-        "column": 11,
-        "endLine": 72,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1194,7 +1160,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -1598,21 +1564,10 @@
         "endLine": 160,
         "endColumn": 41,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
-        "line": 172,
-        "column": 11,
-        "endLine": 172,
-        "endColumn": 26,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/Package/ListControls.vue",
@@ -1908,17 +1863,6 @@
     "file": "app/components/Package/Table.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Table' is a reserved HTML element name and cannot be used as a component name",
-        "line": 112,
-        "column": 11,
-        "endLine": 112,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "a11y/no-redundant-roles",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1985,7 +1929,7 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 6
   },
   {
@@ -2732,17 +2676,6 @@
     "file": "app/components/Select/Base.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 12,
-        "column": 11,
-        "endLine": 12,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2754,7 +2687,7 @@
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -3027,20 +2960,8 @@
   },
   {
     "file": "app/components/Tooltip/Base.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 47,
-        "column": 11,
-        "endLine": 47,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3288,20 +3209,8 @@
   },
   {
     "file": "app/components/diff/Table.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Table' is a reserved HTML element name and cannot be used as a component name",
-        "line": 18,
-        "column": 11,
-        "endLine": 18,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -3988,17 +3897,6 @@
     "file": "app/pages/search.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 560,
-        "column": 11,
-        "endLine": 560,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4032,7 +3930,7 @@
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 3
   },
   {

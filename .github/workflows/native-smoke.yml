@@ -61,7 +61,11 @@ jobs:
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
         with:
           arch: ${{ matrix.msvc_arch }}
+      # MoonBit's native installer does not support Darwin x64. This matrix
+      # target only builds and smokes the Rust/N-API native package, so keep
+      # darwin-x64 covered without installing MoonBit.
       - uses: ./.github/actions/setup-moonbit
+        if: matrix.target != 'darwin-x64'
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: runner.os == 'Linux'
@@ -151,7 +155,10 @@ jobs:
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
         with:
           arch: ${{ matrix.platform.msvc_arch }}
+      # MoonBit's native installer does not support Darwin x64. This matrix
+      # target does not invoke moon because npm/vize is packed directly below.
       - uses: ./.github/actions/setup-moonbit
+        if: matrix.platform.target != 'darwin-x64'
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: runner.os == 'Linux'

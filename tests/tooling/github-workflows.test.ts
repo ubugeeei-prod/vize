@@ -612,11 +612,11 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
     /node bench\/comment-pr\.mjs --body tool-benchmark-summary\.md --comment-key "\$BENCHMARK_COMMENT_KEY"/,
   );
 
-  // The snapshot commit job fires on a manual dispatch with commit_results set
-  // OR on the weekly scheduled ratchet, but never for tags (refs/heads guard).
+  // The snapshot commit job only fires on manual non-main branches; scheduled
+  // main runs publish artifacts without trying to push back.
   assert.match(
     commitJob,
-    /if:\s*\$\{\{\s*\(\(github\.event_name == 'workflow_dispatch' && inputs\.commit_results\) \|\| github\.event_name == 'schedule'\) && startsWith\(github\.ref, 'refs\/heads\/'\)\s*\}\}/,
+    /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && inputs\.commit_results && startsWith\(github\.ref, 'refs\/heads\/'\) && github\.ref_name != 'main'\s*\}\}/,
   );
   assert.match(commitJob, /contents:\s*write/);
   assert.match(commitJob, /docs\/content\/architecture\/performance-blacksmith\.md/);
@@ -626,12 +626,11 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   assert.doesNotMatch(commitJob, /codex/i);
 });
 
-test("tool benchmark workflow ratchets the committed snapshot on a scheduled cadence", () => {
+test("tool benchmark workflow publishes scheduled artifacts without pushing to protected main", () => {
   const workflow = readRepoFile(".github", "workflows", "tool-benchmark.yml");
 
-  // A weekly cron refreshes bench/results/tool-benchmark-latest.json on main so
-  // sub-threshold drift cannot accumulate between manual dispatches. A full run
-  // on every push is too heavy (the job is capped at 75 minutes).
+  // A weekly cron keeps benchmark artifacts fresh without directly refreshing
+  // bench/results/tool-benchmark-latest.json from the protected main branch.
   assert.match(workflow, /\n  schedule:\n/);
   assert.match(workflow, /- cron:\s*"41 5 \* \* 1"/);
 });

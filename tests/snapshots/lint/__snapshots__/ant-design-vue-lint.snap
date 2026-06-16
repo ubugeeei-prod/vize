@@ -226,20 +226,8 @@
   },
   {
     "file": "components/alert/demo/style.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'style' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -959,17 +947,6 @@
     "file": "components/badge/demo/link.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'link' is a reserved HTML element name and cannot be used as a component name",
-        "line": 18,
-        "column": 11,
-        "endLine": 18,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "a11y/anchor-has-content",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -992,7 +969,7 @@
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -1033,20 +1010,8 @@
   },
   {
     "file": "components/badge/demo/title.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'title' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -1472,17 +1437,6 @@
     "file": "components/calendar/demo/select.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'select' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1494,7 +1448,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -1667,17 +1621,6 @@
     "file": "components/card/demo/meta.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'meta' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1689,7 +1632,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -2233,17 +2176,6 @@
     "file": "components/cascader/demo/search.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 20,
-        "column": 11,
-        "endLine": 20,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2255,7 +2187,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -3341,17 +3273,6 @@
     "file": "components/date-picker/demo/time.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'time' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3363,7 +3284,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -4551,21 +4472,9 @@
   },
   {
     "file": "components/flex/demo/wrap.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Variable 'item' is defined by v-for but never used",
-        "line": 21,
-        "column": 22,
-        "endLine": 21,
-        "endColumn": 26,
-        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "components/float-button/demo/back-top.vue",
@@ -4690,105 +4599,6 @@
     "file": "components/float-button/demo/index.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 2,
-        "column": 3,
-        "endLine": 2,
-        "endColumn": 49,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 5,
-        "column": 3,
-        "endLine": 5,
-        "endColumn": 47,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 8,
-        "column": 3,
-        "endLine": 8,
-        "endColumn": 48,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 11,
-        "column": 3,
-        "endLine": 11,
-        "endColumn": 54,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 14,
-        "column": 3,
-        "endLine": 14,
-        "endColumn": 67,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 17,
-        "column": 3,
-        "endLine": 17,
-        "endColumn": 60,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 20,
-        "column": 3,
-        "endLine": 20,
-        "endColumn": 52,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 23,
-        "column": 3,
-        "endLine": 23,
-        "endColumn": 50,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 26,
-        "column": 3,
-        "endLine": 26,
-        "endColumn": 48,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4800,7 +4610,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 9,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -5842,17 +5652,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 21,
-        "column": 3,
-        "endLine": 21,
-        "endColumn": 45,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "vue/no-v-for-template-key-on-child",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -5875,7 +5674,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 2,
+    "errorCount": 1,
     "warningCount": 2
   },
   {
@@ -6531,17 +6330,6 @@
     "file": "components/input/demo/textarea.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'textarea' is a reserved HTML element name and cannot be used as a component name",
-        "line": 18,
-        "column": 11,
-        "endLine": 18,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -6553,7 +6341,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -6928,39 +6716,6 @@
     "file": "components/layout/demo/index.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 2,
-        "column": 3,
-        "endLine": 2,
-        "endColumn": 49,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 5,
-        "column": 3,
-        "endLine": 5,
-        "endColumn": 55,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 8,
-        "column": 3,
-        "endLine": 8,
-        "endColumn": 48,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -6972,7 +6727,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 3,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -7330,17 +7085,6 @@
     "file": "components/mentions/demo/form.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'form' is a reserved HTML element name and cannot be used as a component name",
-        "line": 18,
-        "column": 11,
-        "endLine": 18,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -7352,7 +7096,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -8035,17 +7779,6 @@
     "file": "components/modal/demo/footer.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'footer' is a reserved HTML element name and cannot be used as a component name",
-        "line": 23,
-        "column": 11,
-        "endLine": 23,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8057,7 +7790,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -9296,21 +9029,9 @@
   },
   {
     "file": "components/progress/demo/format.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Slot prop 'percent' from slot 'format' is defined but never used",
-        "line": 24,
-        "column": 17,
-        "endLine": 24,
-        "endColumn": 24,
-        "help": "Consider removing unused slot props or prefix with underscore"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "components/progress/demo/gradient-line.vue",
@@ -9445,17 +9166,6 @@
     "file": "components/qrcode/demo/base.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 17,
-        "column": 11,
-        "endLine": 17,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "html/deprecated-attr",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
@@ -9478,7 +9188,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -10602,17 +10312,6 @@
     "file": "components/select/demo/optgroup.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'optgroup' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -10624,7 +10323,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -10725,17 +10424,6 @@
     "file": "components/select/demo/search.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -10747,7 +10435,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -11067,17 +10755,6 @@
     "file": "components/slider/demo/mark.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'mark' is a reserved HTML element name and cannot be used as a component name",
-        "line": 18,
-        "column": 11,
-        "endLine": 18,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -11089,7 +10766,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -11241,17 +10918,6 @@
     "file": "components/space/demo/base.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'base' is a reserved HTML element name and cannot be used as a component name",
-        "line": 20,
-        "column": 11,
-        "endLine": 20,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -11263,7 +10929,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -11923,17 +11589,6 @@
     "file": "components/steps/demo/nav.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'nav' is a reserved HTML element name and cannot be used as a component name",
-        "line": 18,
-        "column": 11,
-        "endLine": 18,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -11945,7 +11600,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -11970,17 +11625,6 @@
     "file": "components/steps/demo/progress.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'progress' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -11992,7 +11636,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -12855,17 +12499,6 @@
     "file": "components/table/demo/head.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'head' is a reserved HTML element name and cannot be used as a component name",
-        "line": 27,
-        "column": 11,
-        "endLine": 27,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -12877,7 +12510,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -13338,15 +12971,15 @@
     "file": "components/table/demo/summary.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
+        "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'summary' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 140,
+        "column": 1,
+        "endLine": 140,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
       },
       {
         "ruleId": "vue/sfc-element-order",
@@ -13358,36 +12991,14 @@
         "endLine": 138,
         "endColumn": 10,
         "help": "Recommended order: <script> -> <template> -> <style>"
-      },
-      {
-        "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 140,
-        "column": 1,
-        "endLine": 140,
-        "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
     "file": "components/table/demo/template.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'template' is a reserved HTML element name and cannot be used as a component name",
-        "line": 27,
-        "column": 11,
-        "endLine": 27,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -13422,7 +13033,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 3
   },
   {
@@ -13785,17 +13396,6 @@
     "file": "components/tag/demo/control.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 20,
-        "column": 3,
-        "endLine": 20,
-        "endColumn": 59,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -13807,7 +13407,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -13825,17 +13425,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 21,
-        "column": 3,
-        "endLine": 21,
-        "endColumn": 50,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -13847,7 +13436,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 2
   },
   {
@@ -14258,17 +13847,6 @@
     "file": "components/timeline/demo/label.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'label' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -14280,7 +13858,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -14726,17 +14304,6 @@
     "file": "components/transfer/demo/search.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -14748,7 +14315,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -15054,17 +14621,6 @@
     "file": "components/tree/demo/search.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -15076,7 +14632,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -15524,20 +15080,8 @@
   },
   {
     "file": "components/typography/demo/title.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'title' is a reserved HTML element name and cannot be used as a component name",
-        "line": 17,
-        "column": 11,
-        "endLine": 17,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -16171,17 +15715,6 @@
     "file": "site/src/SiteToken.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<slot>` cannot be used as a root node of the template",
-        "line": 2,
-        "column": 3,
-        "endLine": 2,
-        "endColumn": 9,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -16193,7 +15726,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -16250,17 +15783,6 @@
   {
     "file": "site/src/components/DemoBox.vue",
     "messages": [
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 2,
-        "column": 3,
-        "endLine": 2,
-        "endColumn": 29,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
       {
         "ruleId": "vue/no-unsandboxed-iframe",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -16449,7 +15971,7 @@
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 17
   },
   {
@@ -16865,17 +16387,6 @@
     "file": "site/src/layouts/Footer.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Footer' is a reserved HTML element name and cannot be used as a component name",
-        "line": 1,
-        "column": 11,
-        "endLine": 1,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -16986,23 +16497,12 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 10
   },
   {
     "file": "site/src/layouts/Iframe.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Iframe' is a reserved HTML element name and cannot be used as a component name",
-        "line": 1,
-        "column": 11,
-        "endLine": 1,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -17015,23 +16515,12 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
     "file": "site/src/layouts/Menu.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Menu' is a reserved HTML element name and cannot be used as a component name",
-        "line": 1,
-        "column": 11,
-        "endLine": 1,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/no-v-for-template-key-on-child",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -17077,7 +16566,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 2,
+    "errorCount": 1,
     "warningCount": 3
   },
   {
@@ -17266,39 +16755,6 @@
     "file": "site/src/layouts/header/Menu.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'Menu' is a reserved HTML element name and cannot be used as a component name",
-        "line": 1,
-        "column": 11,
-        "endLine": 1,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 3,
-        "column": 3,
-        "endLine": 3,
-        "endColumn": 29,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 6,
-        "column": 3,
-        "endLine": 6,
-        "endColumn": 20,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -17310,7 +16766,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 3,
+    "errorCount": 0,
     "warningCount": 1
   },
   {

@@ -8764,17 +8764,6 @@
     "file": "src/components/MkNoteMediaGrid.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 7,
-        "column": 1,
-        "endLine": 7,
-        "endColumn": 38,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -8874,7 +8863,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 9
   },
   {
@@ -14617,17 +14606,6 @@
     "file": "src/components/MkUrlPreview.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 7,
-        "column": 1,
-        "endLine": 7,
-        "endColumn": 46,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "a11y/iframe-has-title",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -14648,17 +14626,6 @@
         "endLine": 18,
         "endColumn": 41,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<template>` cannot be used as a root node of the template",
-        "line": 29,
-        "column": 1,
-        "endLine": 29,
-        "endColumn": 48,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
       },
       {
         "ruleId": "a11y/iframe-has-title",
@@ -14749,7 +14716,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 2,
+    "errorCount": 0,
     "warningCount": 10
   },
   {
@@ -17267,17 +17234,6 @@
     "file": "src/components/form/link.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'link' is a reserved HTML element name and cannot be used as a component name",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -17311,23 +17267,12 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 3
   },
   {
     "file": "src/components/form/section.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'section' is a reserved HTML element name and cannot be used as a component name",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -17340,23 +17285,12 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
     "file": "src/components/form/slot.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'slot' is a reserved HTML element name and cannot be used as a component name",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
       {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -17391,7 +17325,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 3
   },
   {
@@ -18456,17 +18390,6 @@
     "file": "src/components/global/SearchIcon.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<slot>` cannot be used as a root node of the template",
-        "line": 7,
-        "column": 1,
-        "endLine": 7,
-        "endColumn": 7,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -18478,24 +18401,13 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
     "file": "src/components/global/SearchLabel.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<slot>` cannot be used as a root node of the template",
-        "line": 7,
-        "column": 1,
-        "endLine": 7,
-        "endColumn": 7,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -18507,7 +18419,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -18532,17 +18444,6 @@
     "file": "src/components/global/SearchText.vue",
     "messages": [
       {
-        "ruleId": "vue/valid-template-root",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/valid-template-root] `<slot>` cannot be used as a root node of the template",
-        "line": 7,
-        "column": 1,
-        "endLine": 7,
-        "endColumn": 7,
-        "help": "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node."
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -18554,7 +18455,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -21330,17 +21231,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
-        "line": 21,
-        "column": 15,
-        "endLine": 21,
-        "endColumn": 32,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -21375,22 +21265,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "src/pages/admin/custom-emojis-manager.logs.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
-        "line": 15,
-        "column": 6,
-        "endLine": 15,
-        "endColumn": 26,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
       {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -21404,22 +21283,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/pages/admin/custom-emojis-manager.register.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
-        "line": 42,
-        "column": 5,
-        "endLine": 42,
-        "endColumn": 22,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
       {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -21433,7 +21301,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/pages/admin/custom-emojis-manager.remote.vue",
@@ -21527,17 +21395,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
-        "line": 115,
-        "column": 15,
-        "endLine": 115,
-        "endColumn": 32,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -21583,7 +21440,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 13
+    "warningCount": 12
   },
   {
     "file": "src/pages/admin/custom-emojis-manager2.vue",
@@ -23742,28 +23599,6 @@
     "file": "src/pages/admin/overview.federation.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
-        "line": 13,
-        "column": 11,
-        "endLine": 13,
-        "endColumn": 40,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
-        "line": 18,
-        "column": 11,
-        "endLine": 18,
-        "endColumn": 40,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -23776,7 +23611,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "src/pages/admin/overview.heatmap.vue",
@@ -32178,17 +32013,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
-        "line": 60,
-        "column": 87,
-        "endLine": 60,
-        "endColumn": 101,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -32201,7 +32025,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 16
+    "warningCount": 15
   },
   {
     "file": "src/pages/qr.show.vue",
@@ -33493,17 +33317,6 @@
     "file": "src/pages/search.vue",
     "messages": [
       {
-        "ruleId": "vue/no-reserved-component-names",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the component to avoid using reserved names"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -33515,7 +33328,7 @@
         "help": "Recommended order: <script> -> <template> -> <style>"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
