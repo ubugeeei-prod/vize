@@ -3,6 +3,7 @@
 //! Generates slot objects for component children.
 
 mod children;
+mod create_slots;
 mod detect;
 mod generate;
 mod outlet;
