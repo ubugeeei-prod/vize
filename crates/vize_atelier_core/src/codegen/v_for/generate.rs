@@ -5,11 +5,12 @@
 
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
+    rendu::RenduChildren,
     steps::v_memo::{get_memo_exp, has_v_memo},
 };
 
 use super::super::{
-    children::{generate_children, generate_children_force_array, is_directive_comment},
+    children::{emit_children_array_body, generate_children, generate_children_force_array},
     context::CodegenContext,
     element::helpers::{child_namespace, is_dynamic_component, is_is_prop},
     element::{
@@ -449,13 +450,9 @@ fn generate_for_slot_outlet(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     generate_slot_outlet_name(ctx, el);
 
     let has_slot_props = has_slot_outlet_props(el);
-    let filtered: Vec<_> = el
-        .children
-        .iter()
-        .filter(|c| !is_directive_comment(c))
-        .collect();
+    let has_rendered_children = RenduChildren::new(&el.children).rendered().next().is_some();
 
-    if !filtered.is_empty() {
+    if has_rendered_children {
         if has_slot_props {
             ctx.push(", ");
             generate_slot_outlet_props(ctx, el);
@@ -464,13 +461,7 @@ fn generate_for_slot_outlet(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         }
         ctx.push(", () => [");
         ctx.indent();
-        for (i, child) in filtered.iter().enumerate() {
-            if i > 0 {
-                ctx.push(",");
-            }
-            ctx.newline();
-            generate_node(ctx, child);
-        }
+        emit_children_array_body(ctx, &el.children);
         ctx.deindent();
         ctx.newline();
         ctx.push("])");
