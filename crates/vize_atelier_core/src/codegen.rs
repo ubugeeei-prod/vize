@@ -20,6 +20,7 @@ mod props;
 mod root;
 mod slots;
 mod source_map;
+mod static_element;
 mod v_for;
 mod v_if;
 
