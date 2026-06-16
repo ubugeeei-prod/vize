@@ -2,6 +2,7 @@
 //!
 //! Generates slot objects for component children.
 
+mod children;
 mod detect;
 mod generate;
 mod outlet;
