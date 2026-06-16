@@ -2,7 +2,7 @@
 
 use super::model::{RenduElementKind, RenduExprRef, RenduModifiers, RenduSource, RenduSpan};
 use crate::{
-    AttributeNode, DirectiveNode, PropNode, TemplateChildNode, TextCallContent,
+    AttributeNode, DirectiveNode, ElementNode, PropNode, TemplateChildNode, TextCallContent,
     source_atlas::{SourceAtlasCoordinate, SourceAtlasTarget, SourceAtlasTargetSet},
 };
 
@@ -89,6 +89,15 @@ impl<'a> RenduOp<'a> {
         match prop {
             PropNode::Attribute(attr) => Self::from_attribute(attr),
             PropNode::Directive(directive) => Self::from_directive(directive),
+        }
+    }
+
+    /// Build the element render op for an element node (tag, kind, span).
+    pub fn from_element(element: &'a ElementNode<'a>) -> Self {
+        Self::Element {
+            tag: element.tag.as_str(),
+            kind: element.tag_type.into(),
+            span: RenduSpan::from_location(&element.loc),
         }
     }
 
