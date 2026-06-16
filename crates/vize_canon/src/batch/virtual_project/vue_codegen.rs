@@ -44,14 +44,11 @@ pub(super) struct VueCodegenOptions {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
-    /// Configured Vue dialect (default [`VueVersion::V3`]); plumbing only today.
+    pub(super) ref_unwrap_helper: &'static str,
     pub(super) dialect: vize_carton::config::VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
-    /// Whether the shared preamble (ImportMeta augmentation + helper types) is
-    /// hoisted to a program-wide ambient `.d.ts`. The batch path materializes
-    /// `SHARED_HELPERS_FILE` and lists it in every tsconfig, so it hoists
-    /// (`true`); the single-document Corsa socket session has no such shared
-    /// file and must keep the preamble inline (`false`).
+    /// Hoist shared helpers to the batch ambient `.d.ts`; socket sessions keep
+    /// them inline because they do not materialize that file.
     pub(super) hoist_shared_preamble: bool,
 }
 
@@ -202,6 +199,7 @@ pub(super) fn generate_vue_virtual_ts(
                 preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
                 options_api: codegen_options.options_api,
                 legacy_vue2: codegen_options.legacy_vue2,
+                ref_unwrap_helper: codegen_options.ref_unwrap_helper,
                 template_syntax_quirks: matches!(
                     codegen_options.template_syntax,
                     TemplateSyntaxMode::Quirks

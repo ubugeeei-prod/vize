@@ -7,6 +7,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::cstr;
+mod ref_arity;
 mod tsconfig_native_options;
 mod windows_paths;
 fn unique_case_dir(name: &str) -> PathBuf {
@@ -307,71 +308,6 @@ defineProps<{
     assert!(project.find_by_original(&vue_path).is_some());
 
     let _ = fs::remove_dir_all(&case_dir);
-}
-
-#[test]
-fn test_configured_dialect_drives_dialect_aware_instance_typing() {
-    // Issue #1392: a configured non-default Vue dialect (`vue.version`) is
-    // threaded through `set_dialect` into virtual-TS generation and now drives
-    // dialect-aware template instance typing. A Vue 2 dialect augments the
-    // template context with Vue 2-only public-instance members (`$listeners`,
-    // `$children`, ...) so legacy templates type-check, while the default Vue 3
-    // dialect stays byte-identical to before.
-    let vue_content = r#"<script setup lang="ts">
-defineProps<{
-  test: string
-}>()
-</script>
-
-<template>
-  <div>{{ test }}</div>
-</template>
-"#;
-
-    let v3_dir = unique_case_dir("dialect-default-v3");
-    let _ = fs::remove_dir_all(&v3_dir);
-    let v3_src = v3_dir.join("src");
-    fs::create_dir_all(&v3_src).unwrap();
-    let v3_path = v3_src.join("App.vue");
-    fs::write(&v3_path, vue_content).unwrap();
-
-    let mut default_project = VirtualProject::new(&v3_dir).unwrap();
-    // No `set_dialect` call: the default is Vue 3.
-    default_project.register_path(&v3_path).unwrap();
-    let default_content = default_project
-        .find_by_original(&v3_path)
-        .unwrap()
-        .content
-        .clone();
-
-    let v2_dir = unique_case_dir("dialect-v2");
-    let _ = fs::remove_dir_all(&v2_dir);
-    let v2_src = v2_dir.join("src");
-    fs::create_dir_all(&v2_src).unwrap();
-    let v2_path = v2_src.join("App.vue");
-    fs::write(&v2_path, vue_content).unwrap();
-
-    let mut v2_project = VirtualProject::new(&v2_dir).unwrap();
-    v2_project.set_dialect(vize_carton::config::VueVersion::V2);
-    v2_project.register_path(&v2_path).unwrap();
-    let v2_content = v2_project
-        .find_by_original(&v2_path)
-        .unwrap()
-        .content
-        .clone();
-
-    insta::assert_snapshot!(
-        "dialect_default_v3",
-        snapshot_text(default_content.as_str())
-    );
-    insta::assert_snapshot!("dialect_v2", snapshot_text(v2_content.as_str()));
-    assert_ne!(
-        v2_content, default_content,
-        "Vue 2 dialect output must differ from default Vue 3 output"
-    );
-
-    let _ = fs::remove_dir_all(&v3_dir);
-    let _ = fs::remove_dir_all(&v2_dir);
 }
 
 #[test]

@@ -1,8 +1,7 @@
 //! Type definitions for virtual TypeScript generation.
 
 use std::ops::Range;
-use vize_carton::String;
-use vize_carton::config::VueVersion;
+use vize_carton::{String, config::VueVersion};
 
 /// A mapping from generated virtual TS position to SFC source position.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -105,20 +104,34 @@ impl Default for VirtualTsCheckOptions {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+pub(crate) const VUE3_REF_UNWRAP_HELPER: &str =
+    "    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;\n";
+
+pub(crate) const VUE2_REF_UNWRAP_HELPER: &str =
+    "    type __U<T> = T extends import('vue').Ref<infer V> ? V : T;\n";
+
+pub(crate) const fn ref_unwrap_helper_for(legacy_vue2: bool, dialect: VueVersion) -> &'static str {
+    if legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7) {
+        VUE2_REF_UNWRAP_HELPER
+    } else {
+        VUE3_REF_UNWRAP_HELPER
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 pub(crate) struct VirtualTsGenerationOptions {
     pub(crate) check_options: VirtualTsCheckOptions,
     /// Configured Vue dialect for this project (default [`VueVersion::V3`]).
     ///
     /// Threaded from `vue.version` in `vize.config` through the check runner so
-    /// canon can later emit dialect-aware instance types (e.g. a Vue 2 `this`
-    /// shape). Plumbing only today: the generator carries it but does not branch
-    /// on it yet, so default-V3 output stays byte-identical.
+    /// canon can emit dialect-aware virtual TypeScript while keeping default-V3
+    /// output byte-identical.
     pub(crate) dialect: VueVersion,
     /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
     pub(crate) options_api: bool,
     /// Legacy Vue 2.7 / Nuxt 2 (implies `options_api` plus Nuxt 2 globals).
     pub(crate) legacy_vue2: bool,
+    pub(crate) ref_unwrap_helper: &'static str,
     /// Preserve Vue parser compatibility semantics when generating template
     /// type checks.
     pub(crate) template_syntax_quirks: bool,
@@ -132,6 +145,21 @@ pub(crate) struct VirtualTsGenerationOptions {
     /// TypeScript program. Off by default so standalone single-document
     /// consumers keep self-contained output.
     pub(crate) hoist_shared_preamble: bool,
+}
+
+impl Default for VirtualTsGenerationOptions {
+    fn default() -> Self {
+        Self {
+            check_options: VirtualTsCheckOptions::default(),
+            dialect: VueVersion::default(),
+            options_api: false,
+            legacy_vue2: false,
+            ref_unwrap_helper: VUE3_REF_UNWRAP_HELPER,
+            template_syntax_quirks: false,
+            preserve_unused_diagnostics: false,
+            hoist_shared_preamble: false,
+        }
+    }
 }
 
 /// Default plugin globals.

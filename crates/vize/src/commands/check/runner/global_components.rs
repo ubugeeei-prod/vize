@@ -66,9 +66,8 @@ pub(super) fn build_virtual_ts_options(
 /// Resolve the configured Vue dialect for canon's virtual-TS generation.
 ///
 /// `vue.version` is optional in `vize.config`; an unset value means the default
-/// Vue 3 dialect. Plumbing only today (issue #1392): the resolved dialect is
-/// threaded into canon so it can later emit dialect-aware instance types, but it
-/// does not change generated output yet.
+/// Vue 3 dialect. The resolved dialect is threaded into canon so generated
+/// virtual TS can use dialect-aware instance and helper types.
 pub(super) fn dialect_from_features(
     vue_version: Option<crate::config::VueVersion>,
 ) -> crate::config::VueVersion {

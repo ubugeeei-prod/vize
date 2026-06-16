@@ -43,12 +43,10 @@ pub(super) struct VirtualBuildContext<'a> {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
-    /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). When
-    /// `false` (default), `.jsx`/`.tsx` are passed to TypeScript verbatim
-    /// (React passthrough); when `true`, they route through the Vize JSX
-    /// virtual-TS path.
+    pub(super) ref_unwrap_helper: &'static str,
+    /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497).
+    /// Otherwise JSX/TSX files pass through to TypeScript verbatim.
     pub(super) jsx_typecheck: bool,
-    /// Configured Vue dialect (default [`VueVersion::V3`]); plumbing only today.
     pub(super) dialect: vize_carton::config::VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) rewriter: &'a ImportRewriter,
@@ -138,6 +136,7 @@ pub(super) fn build_vue_registered_file(
                 preserve_unused_diagnostics: context.preserve_unused_diagnostics,
                 options_api: context.options_api,
                 legacy_vue2: context.legacy_vue2,
+                ref_unwrap_helper: context.ref_unwrap_helper,
                 dialect: context.dialect,
                 template_syntax: context.template_syntax,
                 hoist_shared_preamble: true,

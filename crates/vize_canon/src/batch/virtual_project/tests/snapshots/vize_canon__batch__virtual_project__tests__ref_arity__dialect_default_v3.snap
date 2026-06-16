@@ -1,6 +1,6 @@
 ---
-source: crates/vize_canon/src/batch/virtual_project/tests.rs
-expression: snapshot_text(v2_content.as_str())
+source: crates/vize_canon/src/batch/virtual_project/tests/ref_arity.rs
+expression: snapshot_text(default_content.as_str())
 ---
 /// <reference lib="es2022" />
 /// <reference lib="dom" />
@@ -12,6 +12,7 @@ expression: snapshot_text(v2_content.as_str())
 
 // Shared preamble hoisted to the program-wide __vize_helpers.d.ts
 // ========== Module Scope (imports) ==========
+import { ref } from 'vue'
 
 // ========== Exported Types ==========
 export type Props = {
@@ -33,14 +34,22 @@ function __setup() {
 
   // User setup code
 
+
   defineProps<{
     test: string
   }>()
 
-  // @vize-map: 1097:1143 -> 0:35
+  const count = ref(0)
+
+  // @vize-map: 1123:1198 -> 0:84
 
   // ========== Template Scope (inherits from setup) ==========
+  // Ref type captures (before template scope shadows them)
+  type __R_count = typeof count;
   ;(function __template() {
+    // Auto-unwrap Vue refs in template scope
+    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;
+    var count: __U<__R_count> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = undefined as unknown as __Ctx;
@@ -48,19 +57,7 @@ function __setup() {
     const $slots = __ctx.$slots;
     const $refs = __ctx.$refs;
     const $emit = __ctx.$emit;
-    // Vue 2 instance members (not on Vue 3 ComponentPublicInstance)
-    const $listeners = undefined as any;
-    const $children = undefined as any;
-    const $scopedSlots = undefined as any;
-    const $on = undefined as any;
-    const $off = undefined as any;
-    const $once = undefined as any;
-    const $set = undefined as any;
-    const $delete = undefined as any;
-    const $createElement = undefined as any;
-    const _c = undefined as any;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
-    void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
@@ -70,10 +67,12 @@ function __setup() {
   void test;
 
   void (test); // Interpolation
-  // @vize-map: expr -> 91:95
+  // @vize-map: expr -> 140:144
+  void (count); // Interpolation
+  // @vize-map: expr -> 151:156
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void test;
+  void count; void ref; void test;
   })();
 }
 

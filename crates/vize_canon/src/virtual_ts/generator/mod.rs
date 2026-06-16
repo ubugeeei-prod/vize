@@ -129,6 +129,7 @@ pub fn generate_virtual_ts_with_offsets_legacy_vue2(
         options,
         VirtualTsGenerationOptions {
             legacy_vue2: true,
+            ref_unwrap_helper: crate::virtual_ts::VUE2_REF_UNWRAP_HELPER,
             ..Default::default()
         },
     )
@@ -144,11 +145,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     generation_options: VirtualTsGenerationOptions,
 ) -> VirtualTsOutput {
     let check_options = generation_options.check_options;
-    // Configured Vue dialect, used to emit dialect-aware template instance
-    // typing (e.g. a Vue 2 `this`/template shape with `$listeners`,
+    // Configured Vue dialect, used to emit dialect-aware template instance typing
+    // (e.g. a Vue 2 `this`/template shape with `$listeners`,
     // `$children`, `$on`, ... that Vue 3's `ComponentPublicInstance` lacks).
     // Vue 3 (the default) is unaffected: its output stays byte-identical.
     let dialect = generation_options.dialect;
+    let ref_unwrap_helper = generation_options.ref_unwrap_helper;
     let legacy_vue2 = generation_options.legacy_vue2;
     let options_api = generation_options.options_api || legacy_vue2;
     let hoist_shared_preamble = generation_options.hoist_shared_preamble;
@@ -784,9 +786,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // `var` allows reassignment (Vue templates can assign to refs).
             if !ref_bindings.is_empty() {
                 ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
-                ts.push_str(
-                    "    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;\n",
-                );
+                ts.push_str(ref_unwrap_helper);
                 for name in &ref_bindings {
                     append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
                 }
