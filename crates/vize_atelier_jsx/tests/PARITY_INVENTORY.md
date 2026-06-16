@@ -32,18 +32,18 @@ JSX/TSX intentionally parses with OXC in the JSX dialect, then hands the parsed
 binding, scope, macro, import, reactivity, and virtual-TS metadata owned by
 Croquis while allowing JSX syntax to remain valid.
 
-| JSX surface                    | Croquis reuse point                                      | Coverage / measurement                                      |
-| ------------------------------ | -------------------------------------------------------- | ----------------------------------------------------------- |
-| Script semantic analysis       | `Drawer::draw_script_setup_program` over the parsed OXC `Program` | `tests/analysis.rs`, `jsx_croquis_analyze` criterion group |
-| Backend transform metadata     | `LowerOutput.analysis` shared with VDOM, Vapor, SSR, Canon, and Patina | `tests/compile.rs`, `tests/vdom.rs`, `tests/vapor.rs`      |
-| Template expression identifiers | Core transform consumes the Croquis binding metadata instead of JSX-specific binding inference | backend parity snapshots                                    |
+| JSX surface                     | Croquis reuse point                                                                            | Coverage / measurement                                     |
+| ------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Script semantic analysis        | `Drawer::draw_script_setup_program` over the parsed OXC `Program`                              | `tests/analysis.rs`, `jsx_croquis_analyze` criterion group |
+| Backend transform metadata      | `LowerOutput.analysis` shared with VDOM, Vapor, SSR, Canon, and Patina                         | `tests/compile.rs`, `tests/vdom.rs`, `tests/vapor.rs`      |
+| Template expression identifiers | Core transform consumes the Croquis binding metadata instead of JSX-specific binding inference | backend parity snapshots                                   |
 
 Intentional divergences:
 
-| Surface                  | Reason |
-| ------------------------ | ------ |
-| JSX component tag classification | Vue template analysis treats unknown lowercase tags as components in some contexts; JSX follows the Babel/Vue JSX convention where lowercase element names are intrinsic/custom elements and capitalized/member names are components. |
-| `.map(...)` control flow lowering | The JSX source is already an OXC callback AST, so alias spans come directly from callback parameter patterns instead of reserializing through Croquis's string-based `v-for` parser. |
+| Surface                           | Reason                                                                                                                                                                                                                                |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| JSX component tag classification  | Vue template analysis treats unknown lowercase tags as components in some contexts; JSX follows the Babel/Vue JSX convention where lowercase element names are intrinsic/custom elements and capitalized/member names are components. |
+| `.map(...)` control flow lowering | The JSX source is already an OXC callback AST, so alias spans come directly from callback parameter patterns instead of reserializing through Croquis's string-based `v-for` parser.                                                  |
 
 ## Covered categories
 
