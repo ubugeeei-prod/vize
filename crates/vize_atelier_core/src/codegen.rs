@@ -7,6 +7,7 @@ mod children_static;
 mod context;
 mod element;
 mod emit;
+mod escape;
 mod expression;
 mod generate;
 mod helpers;
