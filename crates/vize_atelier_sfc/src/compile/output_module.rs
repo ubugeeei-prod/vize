@@ -96,7 +96,20 @@ impl OutputModule {
     }
 
     pub(crate) fn from_ssr_codegen(result: SsrCodegenResult) -> Self {
-        Self::from_render_chunks(result.preamble, result.code)
+        // Assemble SSR through the shared AtelierOutput finishing plate (#1758):
+        // the SSR result declares its own finish-plate structure (preamble →
+        // imports, code → functions) via `into_atelier_output`, and the output
+        // module is built from those owned sections rather than a bespoke
+        // positional pairing. The sections move straight through — byte-for-byte
+        // and allocation-equivalent to the previous `from_render_chunks` call.
+        let output = result.into_atelier_output();
+        Self {
+            imports: output.imports,
+            hoists: output.hoists,
+            functions: output.functions,
+            exports: output.exports,
+            ..Self::default()
+        }
     }
 
     pub(crate) fn from_dom_codegen(result: CodegenResultWithSections) -> Self {
