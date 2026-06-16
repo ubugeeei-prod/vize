@@ -13,6 +13,7 @@ mod helpers;
 mod interpolation;
 mod node;
 mod patch_flag;
+mod patch_flag_expr;
 mod props;
 mod root;
 mod slots;
