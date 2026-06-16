@@ -28,7 +28,7 @@ fn test_transform_pascal_case_dynamic_component() {
     let (mut root, errors) = parse(&allocator, r#"<Component :is="current" />"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    transform(&allocator, &mut root, TransformOptions::default(), None);
+    let _ = transform(&allocator, &mut root, TransformOptions::default(), None);
 
     assert!(
         !root
@@ -62,7 +62,7 @@ fn test_transform_v_for_rejects_unmatched_edge_parens_by_default() {
     let (mut root, errors) = parse(&allocator, r#"<div v-for="item) in items"></div>"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    transform(&allocator, &mut root, TransformOptions::default(), None);
+    let _ = transform(&allocator, &mut root, TransformOptions::default(), None);
 
     assert!(
         !matches!(&root.children[0], crate::TemplateChildNode::For(_)),
@@ -76,7 +76,12 @@ fn test_transform_v_for_template_syntax_quirks_accepts_unmatched_edge_parens() {
     let (mut root, errors) = parse(&allocator, r#"<div v-for="item) in items"></div>"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    transform_with_template_syntax_quirks(&allocator, &mut root, TransformOptions::default(), None);
+    let _ = transform_with_template_syntax_quirks(
+        &allocator,
+        &mut root,
+        TransformOptions::default(),
+        None,
+    );
 
     match &root.children[0] {
         crate::TemplateChildNode::For(for_node) => match &for_node.value_alias {
@@ -95,7 +100,7 @@ fn test_v_if_creates_if_node() {
     let (mut root, errors) = parse(&allocator, r#"<div v-if="show">visible</div>"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    transform(&allocator, &mut root, TransformOptions::default(), None);
+    let _ = transform(&allocator, &mut root, TransformOptions::default(), None);
 
     // After transform, root should have 1 child: an IfNode
     assert_eq!(
@@ -124,7 +129,7 @@ fn test_v_if_else_creates_branches() {
     );
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    transform(&allocator, &mut root, TransformOptions::default(), None);
+    let _ = transform(&allocator, &mut root, TransformOptions::default(), None);
 
     // After transform, should have 1 IfNode with 2 branches
     assert_eq!(
@@ -161,7 +166,7 @@ fn test_v_for_creates_for_node() {
     let (mut root, errors) = parse(&allocator, r#"<div v-for="item in items">{{ item }}</div>"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    transform(&allocator, &mut root, TransformOptions::default(), None);
+    let _ = transform(&allocator, &mut root, TransformOptions::default(), None);
 
     // After transform, root should have 1 child: a ForNode
     assert_eq!(
@@ -196,8 +201,8 @@ fn test_v_for_creates_for_node() {
 fn test_codegen_v_if() {
     let allocator = Bump::new();
     let (mut root, _) = parse(&allocator, r#"<div v-if="show">visible</div>"#);
-    transform(&allocator, &mut root, TransformOptions::default(), None);
+    let _t = transform(&allocator, &mut root, TransformOptions::default(), None);
 
-    let result = generate(&root, CodegenOptions::default());
+    let result = generate(&root, &_t.hoists, CodegenOptions::default());
     insta::assert_snapshot!(result.code.as_str());
 }

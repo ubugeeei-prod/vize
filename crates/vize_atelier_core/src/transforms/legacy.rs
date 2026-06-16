@@ -319,8 +319,8 @@ mod tests {
             dialect,
             ..Default::default()
         };
-        transform(&allocator, &mut root, opts, None);
-        generate(&root, CodegenOptions::default())
+        let transformed = transform(&allocator, &mut root, opts, None);
+        generate(&root, &transformed.hoists, CodegenOptions::default())
             .code
             .as_str()
             .to_owned()

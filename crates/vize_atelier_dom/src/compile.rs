@@ -253,7 +253,7 @@ fn compile_template_inner_with_sections<'a>(
     // parse errors instead of dropping them — the official compiler reports
     // both through the same `errors` channel.
     let mut errors = errors.to_vec();
-    errors.extend(transform_errors);
+    errors.extend(transform_errors.errors);
 
     // Codegen
     let codegen_opts = CodegenOptions {
@@ -270,7 +270,7 @@ fn compile_template_inner_with_sections<'a>(
     };
     let codegen_result = profile!(
         "atelier.dom.template.codegen",
-        generate_with_sections(&root, codegen_opts)
+        generate_with_sections(&root, &transform_errors.hoists, codegen_opts)
     );
 
     (root, errors, codegen_result)

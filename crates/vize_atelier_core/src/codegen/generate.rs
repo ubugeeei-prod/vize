@@ -4,8 +4,8 @@
 //! VNode calls, props expressions, and children to byte output.
 
 use crate::{
-    DynamicProps, ExpressionNode, JsChildNode, PropsExpression, RootNode, RuntimeHelper,
-    TemplateChildNode, TemplateTextChildNode, VNodeCall, VNodeChildren, VNodeTag,
+    DynamicProps, ExpressionNode, JsChildNode, PropsExpression, RuntimeHelper, TemplateChildNode,
+    TemplateTextChildNode, VNodeCall, VNodeChildren, VNodeTag,
 };
 
 use super::{context::CodegenContext, helpers::escape_js_string};
@@ -13,10 +13,10 @@ use vize_carton::String;
 use vize_carton::ToCompactString;
 
 /// Generate hoisted variable declarations.
-pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> String {
+pub(super) fn generate_hoists(ctx: &CodegenContext, hoists: &[Option<JsChildNode<'_>>]) -> String {
     let mut hoists_code = String::default();
 
-    for (i, hoist) in root.hoists.iter().enumerate() {
+    for (i, hoist) in hoists.iter().enumerate() {
         if let Some(node) = hoist {
             hoists_code.push_str("const _hoisted_");
             hoists_code.push_str((i + 1).to_compact_string().as_str());
@@ -37,8 +37,11 @@ pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> Stri
 ///
 /// Since `generate_hoists()` takes `&CodegenContext` (immutable), helpers used in hoisted
 /// VNodes are not tracked via `use_helper()`. This function pre-scans hoists to collect them.
-pub(super) fn collect_hoist_helpers(root: &RootNode<'_>, helpers: &mut Vec<RuntimeHelper>) {
-    for node in root.hoists.iter().flatten() {
+pub(super) fn collect_hoist_helpers(
+    hoists: &[Option<JsChildNode<'_>>],
+    helpers: &mut Vec<RuntimeHelper>,
+) {
+    for node in hoists.iter().flatten() {
         collect_helpers_from_js_child_node(node, helpers);
     }
 }

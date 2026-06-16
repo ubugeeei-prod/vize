@@ -3,7 +3,7 @@
 //! Drives the top-level `generate()` entry point and computes the deduplicated,
 //! import-ranked helper list used to build the module preamble.
 
-use crate::{RootNode, RuntimeHelper, TemplateChildNode, options::CodegenOptions};
+use crate::{JsChildNode, RootNode, RuntimeHelper, TemplateChildNode, options::CodegenOptions};
 use vize_carton::profile;
 
 use super::children::is_directive_comment;
@@ -17,17 +17,26 @@ use super::root::{
 };
 
 /// Generate code from root AST.
-pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
-    generate_with_sections(root, options).into_result()
+pub fn generate(
+    root: &RootNode<'_>,
+    hoists: &[Option<JsChildNode<'_>>],
+    options: CodegenOptions,
+) -> CodegenResult {
+    generate_with_sections(root, hoists, options).into_result()
 }
 
 /// Generate code from root AST and return emission-recorded section boundaries.
+///
+/// `hoists` are the render-IR nodes lifted out by the transform (previously
+/// read from `RootNode.hoists`); they are threaded in explicitly so the source
+/// AST no longer carries the codegen `JsChildNode` type (#1760).
 pub fn generate_with_sections(
     root: &RootNode<'_>,
+    hoists: &[Option<JsChildNode<'_>>],
     options: CodegenOptions,
 ) -> CodegenResultWithSections {
     let mut ctx = CodegenContext::new(options);
-    ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();
+    ctx.static_cache = ctx.options.inline || !hoists.is_empty();
     let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
         .children
         .iter()
@@ -119,7 +128,7 @@ pub fn generate_with_sections(
     // so helpers used in hoisted VNodes aren't tracked via use_helper(). Pre-scan them here.
     profile!(
         "atelier.codegen.collect_hoist_helpers",
-        collect_hoist_helpers(root, &mut all_helpers)
+        collect_hoist_helpers(hoists, &mut all_helpers)
     );
     all_helper_bits = retain_unique_helpers(&mut all_helpers);
 
@@ -142,7 +151,7 @@ pub fn generate_with_sections(
     let imports_len = preamble.len();
 
     // Generate hoisted variable declarations (appended to preamble)
-    let hoists_code = profile!("atelier.codegen.hoists", generate_hoists(&ctx, root));
+    let hoists_code = profile!("atelier.codegen.hoists", generate_hoists(&ctx, hoists));
     if !hoists_code.is_empty() {
         preamble.push('\n');
         preamble.push_str(&hoists_code);

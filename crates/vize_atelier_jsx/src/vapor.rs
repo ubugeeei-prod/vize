@@ -141,7 +141,7 @@ pub(crate) fn compile_root_to_vapor(
         binding_metadata: None,
         ..Default::default()
     };
-    transform(bump, &mut root, transform_opts, Some(analysis));
+    let _ = transform(bump, &mut root, transform_opts, Some(analysis));
 
     let ir = transform_to_ir(bump, &root);
     let generated =
@@ -202,7 +202,7 @@ fn compile_root_to_vapor_ssr<'a>(
         binding_metadata: None,
         ..Default::default()
     };
-    transform(bump, &mut root, transform_opts, Some(analysis));
+    let _ = transform(bump, &mut root, transform_opts, Some(analysis));
 
     // The scope id is already embedded in the SSR options so `ssrRender` emits
     // the `data-v-<hash>` attribute inline, matching the SFC SSR scope path

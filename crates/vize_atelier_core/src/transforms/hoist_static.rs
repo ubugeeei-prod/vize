@@ -867,8 +867,9 @@ mod tests {
         let (mut root, _errors) = parse(&allocator, src);
         let mut opts = crate::options::TransformOptions::default();
         opts.hoist_static = true;
-        crate::lane::transform(&allocator, &mut root, opts, None);
-        let r = crate::codegen::generate(&root, crate::options::CodegenOptions::default());
+        let _t = crate::lane::transform(&allocator, &mut root, opts, None);
+        let r =
+            crate::codegen::generate(&root, &_t.hoists, crate::options::CodegenOptions::default());
         (r.preamble.to_string(), r.code.to_string())
     }
 

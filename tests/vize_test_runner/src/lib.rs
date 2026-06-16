@@ -223,7 +223,7 @@ pub fn compile_vdom(input: &str, options: &TestOptions) -> String {
         ssr: options.ssr.unwrap_or(false),
         ..Default::default()
     };
-    transform(&allocator, &mut root, transform_opts, None);
+    let transformed = transform(&allocator, &mut root, transform_opts, None);
 
     let codegen_opts = CodegenOptions {
         mode: CodegenMode::Module,
@@ -231,7 +231,7 @@ pub fn compile_vdom(input: &str, options: &TestOptions) -> String {
         cache_handlers: options.cache_handlers.unwrap_or(false),
         ..Default::default()
     };
-    let result = generate(&root, codegen_opts);
+    let result = generate(&root, &transformed.hoists, codegen_opts);
 
     // Combine preamble and code like Vue does
     let preamble = result.preamble.trim();

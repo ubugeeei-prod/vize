@@ -28,13 +28,13 @@ fn compile(input: &str, dialect: VueVersion) -> String {
         dialect,
         ..Default::default()
     };
-    lane::transform(&allocator, &mut root, transform_opts, None);
+    let _t = lane::transform(&allocator, &mut root, transform_opts, None);
 
     let codegen_opts = CodegenOptions {
         prefix_identifiers: true,
         ..Default::default()
     };
-    let result = codegen::generate(&root, codegen_opts);
+    let result = codegen::generate(&root, &_t.hoists, codegen_opts);
     let mut out = String::with_capacity(result.preamble.len() + result.code.len() + 1);
     out.push_str(result.preamble.as_str());
     out.push('\n');

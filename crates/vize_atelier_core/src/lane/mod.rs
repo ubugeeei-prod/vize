@@ -152,6 +152,21 @@ impl<'a> ParentNode<'a> {
     }
 }
 
+/// The output of a transform pass: collected diagnostics and the hoisted
+/// render-IR nodes.
+///
+/// `hoists` was previously stored on `RootNode.hoists`; carrying it here keeps
+/// the render/codegen `JsChildNode` type out of the source AST (#1760). The
+/// `#[must_use]` makes callers thread the hoists into codegen rather than
+/// dropping them, which would silently lose hoisted vnodes.
+#[must_use]
+pub struct TransformResult<'a> {
+    /// Diagnostics collected during the transform.
+    pub errors: std::vec::Vec<CompilerError>,
+    /// Hoisted render-IR nodes, indexed by `TemplateChildNode::Hoisted`.
+    pub hoists: Vec<'a, Option<JsChildNode<'a>>>,
+}
+
 /// Transform the root AST node.
 ///
 /// Returns the diagnostics collected during the transform (e.g. invalid
@@ -162,7 +177,7 @@ pub fn transform<'a>(
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
-) -> std::vec::Vec<CompilerError> {
+) -> TransformResult<'a> {
     transform_inner(allocator, root, options, analysis, false, None)
 }
 
@@ -172,7 +187,7 @@ pub fn transform_with_template_syntax_quirks<'a>(
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
-) -> std::vec::Vec<CompilerError> {
+) -> TransformResult<'a> {
     transform_inner(allocator, root, options, analysis, true, None)
 }
 
@@ -183,7 +198,7 @@ pub fn transform_with_vue_parser_quirks<'a>(
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
-) -> std::vec::Vec<CompilerError> {
+) -> TransformResult<'a> {
     transform_with_template_syntax_quirks(allocator, root, options, analysis)
 }
 
@@ -195,7 +210,7 @@ pub fn transform_with_hoisted_scope_id<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
     hoisted_scope_id: Option<String>,
-) -> std::vec::Vec<CompilerError> {
+) -> TransformResult<'a> {
     transform_inner(allocator, root, options, analysis, false, hoisted_scope_id)
 }
 
@@ -207,7 +222,7 @@ pub fn transform_with_template_syntax_quirks_and_hoisted_scope_id<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
     hoisted_scope_id: Option<String>,
-) -> std::vec::Vec<CompilerError> {
+) -> TransformResult<'a> {
     transform_inner(allocator, root, options, analysis, true, hoisted_scope_id)
 }
 
@@ -220,7 +235,7 @@ pub fn transform_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
     hoisted_scope_id: Option<String>,
-) -> std::vec::Vec<CompilerError> {
+) -> TransformResult<'a> {
     transform_with_template_syntax_quirks_and_hoisted_scope_id(
         allocator,
         root,
@@ -237,7 +252,7 @@ fn transform_inner<'a>(
     analysis: Option<&'a Croquis>,
     template_syntax_quirks: bool,
     hoisted_scope_id: Option<String>,
-) -> std::vec::Vec<CompilerError> {
+) -> TransformResult<'a> {
     let source = root.source.clone();
     let mut ctx = if let Some(analysis) = analysis {
         TransformContext::with_analysis_and_template_syntax_quirks(
@@ -304,14 +319,13 @@ fn transform_inner<'a>(
     for filter in ctx.filters.into_iter() {
         root.filters.push(filter);
     }
-    // Transfer hoisted nodes to root
-    for hoist in ctx.hoists.into_iter() {
-        root.hoists.push(hoist);
-    }
     root.temps = ctx.temps;
     root.transformed = true;
 
-    ctx.errors
+    TransformResult {
+        errors: ctx.errors,
+        hoists: ctx.hoists,
+    }
 }
 
 fn register_root_helpers<'a>(ctx: &mut TransformContext<'a>, root: &mut RootNode<'a>) {

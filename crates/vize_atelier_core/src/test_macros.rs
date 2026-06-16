@@ -209,7 +209,7 @@ macro_rules! assert_transform {
         let allocator = bumpalo::Bump::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-        $crate::lane::transform(&allocator, &mut root, $crate::options::TransformOptions::default(), None);
+        let _ = $crate::lane::transform(&allocator, &mut root, $crate::options::TransformOptions::default(), None);
         assert!(root.transformed, "Expected root to be transformed");
         $(
             assert!(
@@ -223,7 +223,7 @@ macro_rules! assert_transform {
         let allocator = bumpalo::Bump::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-        $crate::lane::transform(&allocator, &mut root, $crate::options::TransformOptions::default(), None);
+        let _ = $crate::lane::transform(&allocator, &mut root, $crate::options::TransformOptions::default(), None);
         $(
             assert!(
                 root.components.iter().any(|c| c.as_str() == $comp),
@@ -272,13 +272,17 @@ macro_rules! assert_codegen {
         let allocator = bumpalo::Bump::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-        $crate::lane::transform(
+        let __transformed = $crate::lane::transform(
             &allocator,
             &mut root,
             $crate::options::TransformOptions::default(),
             None,
         );
-        let result = $crate::codegen::generate(&root, $crate::options::CodegenOptions::default());
+        let result = $crate::codegen::generate(
+            &root,
+            &__transformed.hoists,
+            $crate::options::CodegenOptions::default(),
+        );
         insta::assert_snapshot!(result.code.as_str());
         result
     }};
@@ -291,26 +295,30 @@ macro_rules! compile {
         let allocator = bumpalo::Bump::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-        $crate::lane::transform(
+        let __transformed = $crate::lane::transform(
             &allocator,
             &mut root,
             $crate::options::TransformOptions::default(),
             None,
         );
-        $crate::codegen::generate(&root, $crate::options::CodegenOptions::default())
+        $crate::codegen::generate(
+            &root,
+            &__transformed.hoists,
+            $crate::options::CodegenOptions::default(),
+        )
     }};
 
     ($input:expr, $options:expr) => {{
         let allocator = bumpalo::Bump::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-        $crate::lane::transform(
+        let __transformed = $crate::lane::transform(
             &allocator,
             &mut root,
             $crate::options::TransformOptions::default(),
             None,
         );
-        $crate::codegen::generate(&root, $options)
+        $crate::codegen::generate(&root, &__transformed.hoists, $options)
     }};
 }
 
