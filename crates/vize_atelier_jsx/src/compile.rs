@@ -9,15 +9,18 @@
 //! routed to the backend its resolved mode selects, so a single file may mix
 //! VDOM and Vapor components.
 
+mod component;
+
 use vize_carton::{Bump, FxHashSet, String};
 use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
-use crate::scoped::ScopedStyle;
-use crate::ssr::{SsrComponent, compile_lowered_root_to_ssr};
-use crate::vapor::{VaporCompileOptions, VaporComponent, compile_root_to_vapor};
-use crate::vdom::{VdomCompileOptions, VdomComponent, compile_root_to_vdom};
+use crate::ssr::compile_lowered_root_to_ssr;
+use crate::vapor::{VaporCompileOptions, compile_root_to_vapor};
+use crate::vdom::{VdomCompileOptions, compile_root_to_vdom};
 use crate::{JsxLang, JsxOutputMode, lower_source};
+
+pub use component::JsxComponent;
 
 /// Configuration for mode-aware JSX compilation.
 #[derive(Debug, Clone, Default)]
@@ -35,86 +38,6 @@ pub struct JsxCompileConfig {
     pub vdom: VdomCompileOptions,
     /// Options for components compiled to Vapor.
     pub vapor: VaporCompileOptions,
-}
-
-/// A compiled component, tagged by the backend it was routed to.
-pub enum JsxComponent {
-    /// Compiled to Virtual DOM output.
-    Vdom(VdomComponent),
-    /// Compiled to Vapor output.
-    Vapor(VaporComponent),
-    /// Compiled to SSR output.
-    Ssr(SsrComponent),
-}
-
-impl JsxComponent {
-    /// The enclosing component-function name, if resolved.
-    pub fn component_name(&self) -> Option<&str> {
-        match self {
-            Self::Vdom(component) => component.component_name.as_deref(),
-            Self::Vapor(component) => component.component_name.as_deref(),
-            Self::Ssr(component) => component.component_name.as_deref(),
-        }
-    }
-
-    /// The resolved client output mode for this component.
-    pub fn mode(&self) -> JsxOutputMode {
-        match self {
-            Self::Vdom(_) => JsxOutputMode::Vdom,
-            Self::Vapor(_) => JsxOutputMode::Vapor,
-            Self::Ssr(component) => component.mode,
-        }
-    }
-
-    /// The generated render code.
-    pub fn code(&self) -> &str {
-        match self {
-            Self::Vdom(component) => component.code.as_str(),
-            Self::Vapor(component) => component.code.as_str(),
-            Self::Ssr(component) => component.code.as_str(),
-        }
-    }
-
-    /// The import/preamble section for the component's runtime helpers.
-    ///
-    /// VDOM output keeps its `import { … } from "vue"` preamble structurally
-    /// separate from [`code`](Self::code), so a binding can hoist and dedupe it
-    /// across a module's components. The Vapor backend instead inlines its
-    /// imports into `code` (mirroring the SFC Vapor path), so its preamble is
-    /// empty here.
-    pub fn preamble(&self) -> &str {
-        match self {
-            Self::Vdom(component) => component.preamble.as_str(),
-            Self::Vapor(_) => "",
-            Self::Ssr(_) => "",
-        }
-    }
-
-    /// The v3 source map (JSON) for the component's render code, present only
-    /// when source-map emission was requested via
-    /// [`VdomCompileOptions::source_map`](crate::VdomCompileOptions::source_map)
-    /// (#1533). VDOM output carries it; the Vapor backend does not emit one yet,
-    /// so it is always `None` there.
-    pub fn map(&self) -> Option<&str> {
-        match self {
-            Self::Vdom(component) => component.map.as_deref(),
-            Self::Vapor(_) | Self::Ssr(_) => None,
-        }
-    }
-
-    /// The component's extracted `<style scoped>` block (#1495): the generated
-    /// scope id plus the scoped-rewritten CSS, with the `data-v-<hash>`
-    /// attribute already applied to the selectors. `None` when the component had
-    /// no `<style scoped>`. A bundler integration emits this CSS through the same
-    /// path SFC styles use (#1533); the scope id is already injected into the
-    /// rendered elements.
-    pub fn scoped_style(&self) -> Option<&ScopedStyle> {
-        match self {
-            Self::Vdom(component) => component.scoped_style.as_ref(),
-            Self::Vapor(component) => component.scoped_style.as_ref(),
-            Self::Ssr(component) => component.scoped_style.as_ref(),
-        }
-    }
 }
 
 /// Result of mode-aware JSX/TSX compilation.
