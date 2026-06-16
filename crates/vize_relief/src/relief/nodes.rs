@@ -6,7 +6,7 @@
 use vize_carton::{Box, Bump, String, Vec};
 
 use super::{
-    ForNode, IfBranchNode, IfNode, ImportItem, JsChildNode, RuntimeHelper, TextCallNode,
+    ForNode, IfBranchNode, IfNode, ImportItem, RuntimeHelper, TextCallNode,
     core::{NodeType, STUB_LOCATION, SourceLocation},
     elements::{CommentNode, ElementNode, InterpolationNode, TextNode},
     expressions::CompoundExpressionNode,
@@ -32,7 +32,6 @@ pub struct RootNode<'a> {
     /// feature heuristic skips `_`-prefixed features — byte-identical.
     #[cfg(feature = "_legacy")]
     pub filters: Vec<'a, String>,
-    pub hoists: Vec<'a, Option<JsChildNode<'a>>>,
     pub imports: Vec<'a, ImportItem<'a>>,
     pub temps: u32,
     pub source: String,
@@ -49,7 +48,6 @@ impl<'a> RootNode<'a> {
             directives: Vec::new_in(allocator),
             #[cfg(feature = "_legacy")]
             filters: Vec::new_in(allocator),
-            hoists: Vec::new_in(allocator),
             imports: Vec::new_in(allocator),
             temps: 0,
             source: source.into(),

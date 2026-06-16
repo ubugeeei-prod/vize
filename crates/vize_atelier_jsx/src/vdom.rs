@@ -150,8 +150,8 @@ pub(crate) fn compile_root_to_vdom(
         binding_metadata: None,
         ..Default::default()
     };
-    let errors = transform(bump, &mut root, transform_opts, Some(analysis));
-    diagnostics.extend(errors.iter().map(compiler_error_to_diagnostic));
+    let transformed = transform(bump, &mut root, transform_opts, Some(analysis));
+    diagnostics.extend(transformed.errors.iter().map(compiler_error_to_diagnostic));
 
     let codegen_opts = CodegenOptions {
         mode: CodegenMode::Module,
@@ -165,7 +165,7 @@ pub(crate) fn compile_root_to_vdom(
         scope_id: scoped_style.as_ref().map(|style| style.scope_id.clone()),
         ..Default::default()
     };
-    let result = generate(&root, codegen_opts);
+    let result = generate(&root, &transformed.hoists, codegen_opts);
 
     VdomComponent {
         component_name,

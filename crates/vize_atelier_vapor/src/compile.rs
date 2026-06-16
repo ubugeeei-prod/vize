@@ -143,11 +143,13 @@ fn compile_vapor_inner<'a>(
         custom_renderer: options.custom_renderer,
         ..Default::default()
     };
-    if template_syntax.is_quirks() {
-        transform_with_template_syntax_quirks(allocator, &mut root, transform_opts, None);
+    // Vapor lowers its own IR and does not use the shared hoists, so the
+    // transform result (diagnostics + hoists) is intentionally dropped (#1760).
+    let _ = if template_syntax.is_quirks() {
+        transform_with_template_syntax_quirks(allocator, &mut root, transform_opts, None)
     } else {
-        transform(allocator, &mut root, transform_opts, None);
-    }
+        transform(allocator, &mut root, transform_opts, None)
+    };
 
     // Lower to Vapor IR
     let (ir, transform_diagnostics) =

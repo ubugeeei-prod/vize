@@ -150,7 +150,9 @@ fn compile_ssr_inner<'a>(
     // parse errors instead of dropping them — same channel as the DOM
     // compiler.
     let mut errors = errors.to_vec();
-    errors.extend(transform_errors);
+    // SSR runs its own codegen (no shared hoists), so only the diagnostics are
+    // threaded; the transform's hoists are unused here (#1760).
+    errors.extend(transform_errors.errors);
 
     // SSR codegen
     let codegen_ctx = SsrCodegenContext::new(allocator, &codegen_options);

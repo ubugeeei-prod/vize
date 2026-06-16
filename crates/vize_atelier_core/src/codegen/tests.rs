@@ -57,13 +57,17 @@ fn test_codegen_component_name_with_colon_uses_valid_identifier() {
     );
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    crate::lane::transform(
+    let _t = crate::lane::transform(
         &allocator,
         &mut root,
         crate::TransformOptions::default(),
         None,
     );
-    let output = result_output(&super::generate(&root, crate::CodegenOptions::default()));
+    let output = result_output(&super::generate(
+        &root,
+        &_t.hoists,
+        crate::CodegenOptions::default(),
+    ));
 
     // Vue encodes non-word characters by char code (`:` -> 58), matching
     // `toValidAssetId` (issue #4422).
@@ -105,7 +109,7 @@ fn test_codegen_inline_setup_ref_component_prop_uses_value() {
         is_script_setup: true,
     };
 
-    crate::lane::transform(
+    let _t = crate::lane::transform(
         &allocator,
         &mut root,
         crate::TransformOptions {
@@ -119,6 +123,7 @@ fn test_codegen_inline_setup_ref_component_prop_uses_value() {
 
     let output = result_output(&super::generate(
         &root,
+        &_t.hoists,
         crate::CodegenOptions {
             prefix_identifiers: true,
             inline: true,
@@ -199,13 +204,14 @@ fn test_codegen_duplicate_attribute_keeps_first_occurrence() {
         "expected a DuplicateAttribute diagnostic, got {errors:?}"
     );
     assert!(errors.iter().all(|e| e.is_recoverable()));
-    crate::lane::transform(
+    let _t = crate::lane::transform(
         &allocator,
         &mut root,
         crate::options::TransformOptions::default(),
         None,
     );
-    let result = crate::codegen::generate(&root, crate::options::CodegenOptions::default());
+    let result =
+        crate::codegen::generate(&root, &_t.hoists, crate::options::CodegenOptions::default());
     assert!(!result.code.is_empty(), "compiled output must not be empty");
     assert!(
         result.code.contains(r#"id: "a""#),
@@ -478,7 +484,7 @@ fn test_codegen_looped_slot_key_and_index_aliases_stay_local_in_dynamic_args() {
 </Comp>"#,
     );
 
-    transform(
+    let _t = transform(
         &allocator,
         &mut root,
         TransformOptions {
@@ -490,6 +496,7 @@ fn test_codegen_looped_slot_key_and_index_aliases_stay_local_in_dynamic_args() {
 
     let result = super::generate(
         &root,
+        &_t.hoists,
         CodegenOptions {
             prefix_identifiers: true,
             ..Default::default()
@@ -592,7 +599,7 @@ fn test_codegen_v_for_aliases_without_parentheses_stay_local() {
         r#"<div><template v-for="item, index of items" :key="index"><UserCard :user="item" :data-index="index" /></template></div>"#,
     );
 
-    transform(
+    let _t = transform(
         &allocator,
         &mut root,
         TransformOptions {
@@ -604,6 +611,7 @@ fn test_codegen_v_for_aliases_without_parentheses_stay_local() {
 
     let result = super::generate(
         &root,
+        &_t.hoists,
         CodegenOptions {
             prefix_identifiers: true,
             ..Default::default()
@@ -640,7 +648,7 @@ fn test_codegen_v_for_scope_handlers_are_not_cached() {
         r#"<button v-for="tab in tabs" :key="tab.id" @click="select(tab)">{{ tab.label }}</button>"#,
     );
 
-    transform(
+    let _t = transform(
         &allocator,
         &mut root,
         TransformOptions {
@@ -652,6 +660,7 @@ fn test_codegen_v_for_scope_handlers_are_not_cached() {
 
     let result = super::generate(
         &root,
+        &_t.hoists,
         CodegenOptions {
             prefix_identifiers: true,
             cache_handlers: true,
@@ -675,7 +684,7 @@ fn test_codegen_merged_v_on_handlers_are_cached() {
         r#"<div @click="() => x++" @click.stop="() => y++"></div>"#,
     );
 
-    transform(
+    let _t = transform(
         &allocator,
         &mut root,
         TransformOptions {
@@ -687,6 +696,7 @@ fn test_codegen_merged_v_on_handlers_are_cached() {
 
     let result = super::generate(
         &root,
+        &_t.hoists,
         CodegenOptions {
             prefix_identifiers: true,
             cache_handlers: true,
@@ -751,7 +761,7 @@ fn test_codegen_scoped_slot_params_stay_local_in_handlers() {
 </CommonPaginator>"#,
     );
 
-    transform(
+    let _t = transform(
         &allocator,
         &mut root,
         TransformOptions {
@@ -763,6 +773,7 @@ fn test_codegen_scoped_slot_params_stay_local_in_handlers() {
 
     let result = super::generate(
         &root,
+        &_t.hoists,
         CodegenOptions {
             prefix_identifiers: true,
             cache_handlers: true,
@@ -808,7 +819,7 @@ fn compile_prefixed(source: &str) -> vize_carton::String {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    crate::lane::transform(
+    let _t = crate::lane::transform(
         &allocator,
         &mut root,
         crate::TransformOptions {
@@ -819,6 +830,7 @@ fn compile_prefixed(source: &str) -> vize_carton::String {
     );
     result_output(&super::generate(
         &root,
+        &_t.hoists,
         crate::CodegenOptions {
             prefix_identifiers: true,
             ..Default::default()
@@ -916,7 +928,7 @@ fn test_codegen_v1_triple_mustache_is_raw_unescaped() {
     let (mut root, errors) = parse_with_options(&allocator, "<div>{{{ rawHtml }}}</div>", options);
     assert!(errors.is_empty(), "Parse errors: {errors:?}");
 
-    transform(
+    let _t = transform(
         &allocator,
         &mut root,
         TransformOptions {
@@ -925,7 +937,7 @@ fn test_codegen_v1_triple_mustache_is_raw_unescaped() {
         },
         None,
     );
-    let result = super::generate(&root, CodegenOptions::default());
+    let result = super::generate(&root, &_t.hoists, CodegenOptions::default());
 
     // Raw interpolation: the expression is emitted directly, never escaped.
     assert!(
@@ -1042,7 +1054,7 @@ fn compile_with_map(src: &str, filename: &str) -> super::CodegenResult {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    crate::lane::transform(
+    let _t = crate::lane::transform(
         &allocator,
         &mut root,
         crate::options::TransformOptions {
@@ -1053,6 +1065,7 @@ fn compile_with_map(src: &str, filename: &str) -> super::CodegenResult {
     );
     super::generate(
         &root,
+        &_t.hoists,
         crate::options::CodegenOptions {
             prefix_identifiers: true,
             source_map: true,
@@ -1148,7 +1161,7 @@ fn source_map_does_not_alter_generated_code() {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    crate::lane::transform(
+    let _t = crate::lane::transform(
         &allocator,
         &mut root,
         crate::options::TransformOptions {
@@ -1159,6 +1172,7 @@ fn source_map_does_not_alter_generated_code() {
     );
     let without_map = super::generate(
         &root,
+        &_t.hoists,
         crate::options::CodegenOptions {
             prefix_identifiers: true,
             source_map: false,
@@ -1357,7 +1371,7 @@ fn source_map_static_attr_and_text_do_not_alter_generated_code() {
     let allocator = bumpalo::Bump::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-    crate::lane::transform(
+    let _t = crate::lane::transform(
         &allocator,
         &mut root,
         crate::options::TransformOptions {
@@ -1368,6 +1382,7 @@ fn source_map_static_attr_and_text_do_not_alter_generated_code() {
     );
     let without_map = super::generate(
         &root,
+        &_t.hoists,
         crate::options::CodegenOptions {
             prefix_identifiers: true,
             source_map: false,

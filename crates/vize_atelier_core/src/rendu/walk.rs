@@ -215,7 +215,7 @@ mod tests {
         );
         assert!(errors.is_empty());
         let diagnostics = transform(bump, &mut root, TransformOptions::default(), None);
-        assert!(diagnostics.is_empty());
+        assert!(diagnostics.errors.is_empty());
 
         let mut for_aliases = None;
         walk_rendu_ops(&root, |op| {
@@ -250,7 +250,7 @@ mod tests {
         let (mut root, errors) = parse(bump, "<div v-if=\"ok\">A</div><p v-else>B</p>");
         assert!(errors.is_empty());
         let diagnostics = transform(bump, &mut root, TransformOptions::default(), None);
-        assert!(diagnostics.is_empty());
+        assert!(diagnostics.errors.is_empty());
 
         let mut has_if = false;
         let mut branches = 0;
