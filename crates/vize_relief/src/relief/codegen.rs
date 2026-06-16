@@ -1,7 +1,7 @@
 //! Code generation AST node types.
 //!
-//! Contains VNodeCall, JavaScript expression nodes, SSR codegen nodes,
-//! and all types used during code generation from the template AST.
+//! `VNodeCall`, JS expression nodes, and SSR codegen nodes — render/codegen
+//! types slated to move out of Relief into Rendu/Atelier (#1760, #1634).
 
 use vize_carton::{Box, Bump, PatchFlags, String, Vec};
 
