@@ -3,10 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const root = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../..",
-);
+export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
 export function normalizeRepoText(content: string): string {
   return content.replace(/\r\n?/g, "\n");
