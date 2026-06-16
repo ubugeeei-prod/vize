@@ -5,6 +5,7 @@
 
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
+    rendu::RenduChildren,
     steps::v_memo::{get_memo_exp, has_v_memo},
 };
 
@@ -14,7 +15,7 @@ use super::{
         context::CodegenContext,
         expression::generate_expression,
         helpers::{is_builtin_component, to_valid_asset_identifier},
-        node::generate_node,
+        node::{dispatch_rendu_op, generate_node},
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
@@ -429,21 +430,19 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             }
         }
         ElementType::Template => {
-            // Template elements render their children directly
-            let filtered: Vec<_> = el
-                .children
-                .iter()
-                .filter(|c| !is_directive_comment(c))
-                .collect();
-            if filtered.len() == 1 {
-                generate_node(ctx, filtered[0]);
+            // Template elements render their children directly, driven by the
+            // Rendu op stream rather than the Relief child list (#1756).
+            let rendered: Vec<_> = RenduChildren::new(&el.children).rendered().collect();
+            if rendered.len() == 1 {
+                let (op, node) = rendered[0];
+                dispatch_rendu_op(ctx, op, node);
             } else {
                 ctx.push("[");
-                for (i, child) in filtered.iter().enumerate() {
+                for (i, &(op, node)) in rendered.iter().enumerate() {
                     if i > 0 {
                         ctx.push(", ");
                     }
-                    generate_node(ctx, child);
+                    dispatch_rendu_op(ctx, op, node);
                 }
                 ctx.push("]");
             }

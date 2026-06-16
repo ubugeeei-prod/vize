@@ -6,11 +6,13 @@
 //! another render or flattening pass.
 
 mod capability;
+mod children;
 mod model;
 mod semantic;
 mod walk;
 
 pub use capability::{RenduCapability, VaporPlan, VaporSupport};
+pub use children::RenduChildren;
 pub use model::{RenduElementKind, RenduExprRef, RenduModifiers, RenduSource, RenduSpan};
 pub use semantic::{RenduBlock, RenduCapabilities, RenduOp, RenduRoot};
 pub use walk::{RenduWalkSummary, summarize_rendu_ops, walk_rendu_ops};
