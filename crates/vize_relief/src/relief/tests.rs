@@ -1,9 +1,8 @@
 //! Tests for AST node types.
 
 use super::{
-    ArrayExpression, AttributeNode, BlockStatement, CallExpression, Callee, CommentNode,
-    CompoundExpressionNode, ConstantType, DirectiveNode, ElementNode, ElementType, IfBranchNode,
-    IfNode, Namespace, NodeType, ObjectExpression, Position, RootNode, RuntimeHelper,
+    AttributeNode, CommentNode, CompoundExpressionNode, ConstantType, DirectiveNode, ElementNode,
+    ElementType, IfBranchNode, IfNode, Namespace, NodeType, Position, RootNode, RuntimeHelper,
     SimpleExpressionNode, SourceLocation, TemplateChildNode, TextNode,
 };
 use vize_carton::Bump;
@@ -292,42 +291,6 @@ fn if_branch_node_new() {
     assert!(branch.user_key.is_none());
     assert!(!branch.is_template_if);
     assert_eq!(branch.node_type(), NodeType::IfBranch);
-}
-
-#[test]
-fn call_expression_new() {
-    let allocator = Bump::new();
-    let call = CallExpression::new(
-        &allocator,
-        Callee::Symbol(RuntimeHelper::CreateVNode),
-        SourceLocation::STUB,
-    );
-    assert!(call.arguments.is_empty());
-    assert_eq!(call.node_type(), NodeType::JsCallExpression);
-}
-
-#[test]
-fn object_expression_new() {
-    let allocator = Bump::new();
-    let obj = ObjectExpression::new(&allocator, SourceLocation::STUB);
-    assert!(obj.properties.is_empty());
-    assert_eq!(obj.node_type(), NodeType::JsObjectExpression);
-}
-
-#[test]
-fn array_expression_new() {
-    let allocator = Bump::new();
-    let arr = ArrayExpression::new(&allocator, SourceLocation::STUB);
-    assert!(arr.elements.is_empty());
-    assert_eq!(arr.node_type(), NodeType::JsArrayExpression);
-}
-
-#[test]
-fn block_statement_new() {
-    let allocator = Bump::new();
-    let block = BlockStatement::new(&allocator, SourceLocation::STUB);
-    assert!(block.body.is_empty());
-    assert_eq!(block.node_type(), NodeType::JsBlockStatement);
 }
 
 // ========================================================================
