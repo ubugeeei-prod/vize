@@ -1,5 +1,6 @@
 //! Children, text, comment, and interpolation generation functions.
 
+use crate::rendu::RenduOp;
 use crate::steps::hoist_static::is_static_node;
 use crate::{ElementNode, Position, RuntimeHelper, TemplateChildNode};
 
@@ -22,9 +23,21 @@ pub fn generate_children_force_array(ctx: &mut CodegenContext, children: &[Templ
 }
 
 /// Check if a child node is a directive comment that should be stripped.
+///
+/// Classified through the Rendu plate rather than matching the Relief variant
+/// directly: `RenduOp::Comment` already carries the `is_directive` fact, so the
+/// children traversal reads the same render-semantic classification DOM node
+/// dispatch uses. Byte-for-byte equivalent — `is_directive` is exactly
+/// `comment.directive.is_some()`.
 #[inline]
 pub(crate) fn is_directive_comment(child: &TemplateChildNode<'_>) -> bool {
-    matches!(child, TemplateChildNode::Comment(c) if c.directive.is_some())
+    matches!(
+        RenduOp::from_template_child(child),
+        RenduOp::Comment {
+            is_directive: true,
+            ..
+        }
+    )
 }
 
 fn generate_children_inner(
