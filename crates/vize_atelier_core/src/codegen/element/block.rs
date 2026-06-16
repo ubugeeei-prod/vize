@@ -8,11 +8,10 @@ use crate::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper};
 
 use super::{
     super::{
-        children::{generate_children, generate_children_force_array, is_directive_comment},
+        children::{emit_children_array_body, generate_children, generate_children_force_array},
         context::CodegenContext,
         expression::generate_expression,
         helpers::{is_builtin_component, to_valid_asset_identifier},
-        node::generate_node,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
@@ -104,18 +103,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(", {}, () => [");
             }
             ctx.indent();
-            let filtered: Vec<_> = el
-                .children
-                .iter()
-                .filter(|c| !is_directive_comment(c))
-                .collect();
-            for (i, child) in filtered.iter().enumerate() {
-                if i > 0 {
-                    ctx.push(",");
-                }
-                ctx.newline();
-                generate_node(ctx, child);
-            }
+            emit_children_array_body(ctx, &el.children);
             ctx.deindent();
             ctx.newline();
             ctx.push("])");
@@ -379,18 +367,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 // (whitespace-only children are skipped to match Vue's behavior)
                 ctx.push(", [");
                 ctx.indent();
-                let filtered: Vec<_> = el
-                    .children
-                    .iter()
-                    .filter(|c| !is_directive_comment(c))
-                    .collect();
-                for (i, child) in filtered.iter().enumerate() {
-                    if i > 0 {
-                        ctx.push(",");
-                    }
-                    ctx.newline();
-                    generate_node(ctx, child);
-                }
+                emit_children_array_body(ctx, &el.children);
                 ctx.deindent();
                 ctx.newline();
                 ctx.push("]");
@@ -457,18 +434,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 }
                 ctx.push(", () => [");
                 ctx.indent();
-                let filtered: Vec<_> = el
-                    .children
-                    .iter()
-                    .filter(|c| !is_directive_comment(c))
-                    .collect();
-                for (i, child) in filtered.iter().enumerate() {
-                    if i > 0 {
-                        ctx.push(",");
-                    }
-                    ctx.newline();
-                    generate_node(ctx, child);
-                }
+                emit_children_array_body(ctx, &el.children);
                 ctx.deindent();
                 ctx.newline();
                 ctx.push("])");
