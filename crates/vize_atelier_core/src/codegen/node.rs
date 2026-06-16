@@ -13,13 +13,28 @@ use vize_carton::ToCompactString;
 
 /// Generate node code.
 ///
-/// Dispatch flows through the Rendu render-IR classification
-/// ([`RenduOp::from_template_child`]) rather than matching Relief variants
-/// directly: this is the first seam where DOM codegen consumes Rendu. Output is
-/// byte-for-byte unchanged — the concrete Relief node is still read for the
-/// details Rendu does not yet carry (props, source positions, hoist bodies).
+/// Classifies the node through the Rendu render-IR
+/// ([`RenduOp::from_template_child`]) and dispatches via [`dispatch_rendu_op`].
+/// Output is byte-for-byte unchanged.
 pub fn generate_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
-    match RenduOp::from_template_child(node) {
+    dispatch_rendu_op(ctx, RenduOp::from_template_child(node), node);
+}
+
+/// Emit one already-classified Rendu op.
+///
+/// Split from [`generate_node`] so a caller that already holds the op — a child
+/// iterator walking the Rendu stream — can dispatch without re-running
+/// [`RenduOp::from_template_child`]. This is the seam for driving structural
+/// emission from the Rendu op stream (#1756): the concrete Relief `node` is
+/// still read for the details Rendu does not yet carry (element props, hoist
+/// bodies, control-flow subtrees), so output is byte-for-byte identical to
+/// matching the op inline.
+pub(crate) fn dispatch_rendu_op<'a>(
+    ctx: &mut CodegenContext,
+    op: RenduOp<'a>,
+    node: &'a TemplateChildNode<'a>,
+) {
+    match op {
         RenduOp::Element { .. } => {
             if let TemplateChildNode::Element(el) = node {
                 generate_element(ctx, el);
