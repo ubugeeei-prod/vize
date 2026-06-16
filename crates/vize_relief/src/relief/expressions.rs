@@ -7,7 +7,6 @@ use vize_carton::{Box, Bump, String, Vec};
 
 use super::{
     RuntimeHelper,
-    codegen::JsChildNode,
     core::{ConstantType, NodeType, SourceLocation},
     elements::{InterpolationNode, TextNode},
 };
@@ -37,8 +36,6 @@ pub struct SimpleExpressionNode<'a> {
     pub loc: SourceLocation,
     /// Parsed JavaScript AST (None = simple identifier, Some = parsed expression)
     pub js_ast: Option<JsExpression<'a>>,
-    /// Hoisted node reference
-    pub hoisted: Option<Box<'a, JsChildNode<'a>>>,
     /// Identifiers declared in this expression
     pub identifiers: Option<Vec<'a, String>>,
     /// Whether this is a handler key
@@ -59,7 +56,6 @@ impl<'a> SimpleExpressionNode<'a> {
             },
             loc,
             js_ast: None,
-            hoisted: None,
             identifiers: None,
             is_handler_key: false,
             is_ref_transformed: false,
