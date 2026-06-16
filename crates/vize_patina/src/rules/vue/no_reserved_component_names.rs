@@ -132,6 +132,17 @@ impl NoReservedComponentNames {
         offset: usize,
         findings: &mut Vec<ComponentNameFinding>,
     ) {
+        // A finding here requires a default-exported component options object
+        // carrying a `name` property. Skip the oxc parse entirely when either
+        // token is absent so the common case (no Options API `name`) stays a
+        // cheap byte scan instead of a full parse per file.
+        let bytes = source.as_bytes();
+        if memchr::memmem::find(bytes, b"export default").is_none()
+            || memchr::memmem::find(bytes, b"name").is_none()
+        {
+            return;
+        }
+
         let allocator = OxcAllocator::default();
         let parsed = Parser::new(&allocator, source, script_source_type()).parse();
         if parsed.panicked || !parsed.errors.is_empty() {
@@ -151,6 +162,13 @@ impl NoReservedComponentNames {
         offset: usize,
         findings: &mut Vec<ComponentNameFinding>,
     ) {
+        // The only `<script setup>` source of an explicit component name is
+        // `defineOptions({ name })`. Without that call there is nothing to
+        // flag, so avoid parsing files that never reference it.
+        if memchr::memmem::find(source.as_bytes(), b"defineOptions").is_none() {
+            return;
+        }
+
         let allocator = OxcAllocator::default();
         let parsed = Parser::new(&allocator, source, script_source_type()).parse();
         if parsed.panicked || !parsed.errors.is_empty() {
