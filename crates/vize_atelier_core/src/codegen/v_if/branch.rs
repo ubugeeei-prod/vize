@@ -6,12 +6,13 @@
 use crate::{
     ElementNode, ElementType, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper,
     TemplateChildNode,
+    rendu::RenduChildren,
 };
 use vize_carton::ToCompactString;
 
 use super::{
     super::{
-        children::{generate_children_force_array, is_directive_comment},
+        children::generate_children_force_array,
         context::CodegenContext,
         element::{
             generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
@@ -24,7 +25,7 @@ use super::{
         expression::generate_expression,
         helpers::{escape_js_string, is_builtin_component, to_valid_asset_identifier},
         interpolation::push_interpolation_value,
-        node::generate_node,
+        node::dispatch_rendu_op,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
@@ -122,16 +123,11 @@ fn generate_if_branch_slot(
 
     if !el.children.is_empty() {
         ctx.push(", () => [");
-        let filtered: Vec<_> = el
-            .children
-            .iter()
-            .filter(|c| !is_directive_comment(c))
-            .collect();
-        for (i, child) in filtered.iter().enumerate() {
+        for (i, (op, node)) in RenduChildren::new(&el.children).rendered().enumerate() {
             if i > 0 {
                 ctx.push(",");
             }
-            generate_node(ctx, child);
+            dispatch_rendu_op(ctx, op, node);
         }
         ctx.push("]");
     }
@@ -330,16 +326,11 @@ fn generate_if_branch_component(
     } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
         // Teleport passes children as an array, not a slot object.
         ctx.push(", [");
-        let filtered: Vec<_> = el
-            .children
-            .iter()
-            .filter(|c| !is_directive_comment(c))
-            .collect();
-        for (i, child) in filtered.iter().enumerate() {
+        for (i, (op, node)) in RenduChildren::new(&el.children).rendered().enumerate() {
             if i > 0 {
                 ctx.push(",");
             }
-            generate_node(ctx, child);
+            dispatch_rendu_op(ctx, op, node);
         }
         ctx.push("]");
     } else if has_patch_info {
