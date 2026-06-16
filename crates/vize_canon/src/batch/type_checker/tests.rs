@@ -1,6 +1,4 @@
-use super::{
-    BatchTypeChecker, BatchTypeCheckerOptions, DeclarationEmitOptions, Diagnostic, TypeCheckResult,
-};
+use super::{BatchTypeChecker, DeclarationEmitOptions};
 use crate::batch::TypeChecker;
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 use corsa::{
@@ -11,25 +9,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::{String, cstr};
 
-#[test]
-fn test_type_check_result() {
-    let mut result = TypeCheckResult::default();
-    assert!(!result.has_errors());
-    assert_eq!(result.error_count(), 0);
-
-    result.diagnostics.push(Diagnostic {
-        file: PathBuf::from("test.vue"),
-        line: 0,
-        column: 0,
-        message: "error".into(),
-        code: Some(2304),
-        severity: 1,
-        block_type: None,
-    });
-
-    assert!(result.has_errors());
-    assert_eq!(result.error_count(), 1);
-}
+mod emit_object_recursion;
 
 #[test]
 fn test_batch_type_checker_scan() {
@@ -1816,60 +1796,6 @@ void props
 }
 
 #[test]
-fn batch_type_checker_reports_runtime_emit_object_instance_props_recursion() {
-    let Some(corsa_path) = resolve_test_tsgo_binary().or_else(resolve_workspace_tsgo_wrapper)
-    else {
-        return;
-    };
-    let project_root = create_project_case(
-        "runtime-emit-object-instance-props-recursion",
-        &[
-            (
-                "src/Test.vue",
-                r#"<template></template>
-<script setup lang="ts">
-const emit = defineEmits({
-  test: (value1: string, value2: number) => {
-    console.log(value1, value2);
-  },
-});
-</script>
-"#,
-            ),
-            (
-                "src/test.ts",
-                r#"import Test from "./Test.vue";
-
-type TestProps = InstanceType<typeof Test>["$props"];
-void (null as unknown as TestProps);
-"#,
-            ),
-        ],
-    );
-
-    let mut checker = BatchTypeChecker::with_options_and_corsa_path(
-        &project_root,
-        BatchTypeCheckerOptions::default(),
-        Some(corsa_path.as_path()),
-    )
-    .expect("batch checker should initialize with explicit tsgo");
-    checker.scan_project().expect("project should scan");
-    let result = checker.check_project().expect("project should check");
-    let snapshot = diagnostic_snapshot(project_root.as_path(), result.diagnostics);
-
-    assert!(
-        snapshot.iter().any(|(file, code, message)| {
-            file == "src/test.ts"
-                && *code == Some(2589)
-                && message.contains("Type instantiation is excessively deep")
-        }),
-        "expected TS2589 in the TS consumer, got: {snapshot:?}"
-    );
-
-    let _ = std::fs::remove_dir_all(&project_root);
-}
-
-#[test]
 fn batch_type_checker_snapshots_ambient_dts_global_usage() {
     if resolve_test_tsgo_binary().is_none() {
         return;
@@ -2166,14 +2092,8 @@ fn snapshot_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Opti
     checker.scan_project().ok()?;
     let result = checker.check_project().ok()?;
 
-    Some(diagnostic_snapshot(project_root, result.diagnostics))
-}
-
-fn diagnostic_snapshot(
-    project_root: &Path,
-    diagnostics: Vec<Diagnostic>,
-) -> Vec<(String, Option<u32>, String)> {
-    let mut snapshot: Vec<_> = diagnostics
+    let mut snapshot: Vec<_> = result
+        .diagnostics
         .into_iter()
         .map(|diagnostic| {
             (
@@ -2195,7 +2115,7 @@ fn diagnostic_snapshot(
         })
         .collect();
     snapshot.sort();
-    snapshot
+    Some(snapshot)
 }
 
 fn corsa_type_mismatch_snapshot(
@@ -2310,14 +2230,6 @@ fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     }
 
     vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
-}
-
-fn resolve_workspace_tsgo_wrapper() -> Option<PathBuf> {
-    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)?;
-    let wrapper = workspace_root.join("node_modules/.bin/tsgo");
-    wrapper.exists().then_some(wrapper)
 }
 
 fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
