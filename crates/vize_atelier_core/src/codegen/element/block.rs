@@ -4,7 +4,7 @@
 //! `createElementBlock()` / `createBlock()` for efficient patching.
 
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};
-use crate::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper};
+use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper, rendu::RenduElementKind};
 
 use super::{
     super::{
@@ -86,7 +86,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     }
 
     // Slots are not blocks - handle them separately
-    if el.tag_type == ElementType::Slot {
+    if RenduElementKind::from(el.tag_type).is_slot_outlet() {
         let helper = ctx.helper(RuntimeHelper::RenderSlot);
         ctx.use_helper(RuntimeHelper::RenderSlot);
         ctx.push(helper);
@@ -125,7 +125,8 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     }
 
     // v-memo on components: use createVNode without block wrapper
-    let is_memo_component = memo_cache_index.is_some() && el.tag_type == ElementType::Component;
+    let is_memo_component =
+        memo_cache_index.is_some() && RenduElementKind::from(el.tag_type).is_component();
 
     if !is_memo_component {
         // Track helpers for preamble
@@ -137,8 +138,8 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.push("(), ");
     }
 
-    match el.tag_type {
-        ElementType::Element => {
+    match RenduElementKind::from(el.tag_type) {
+        RenduElementKind::Element => {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
             ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
             ctx.push("(\"");
@@ -237,7 +238,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 generate_vshow_closing(ctx, el);
             }
         }
-        ElementType::Component => {
+        RenduElementKind::Component => {
             if is_memo_component {
                 ctx.use_helper(RuntimeHelper::CreateVNode);
                 ctx.push(ctx.helper(RuntimeHelper::CreateVNode));
@@ -415,7 +416,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 generate_vshow_closing(ctx, el);
             }
         }
-        ElementType::Slot => {
+        RenduElementKind::SlotOutlet => {
             // Slots don't use blocks - use renderSlot directly
             let helper = ctx.helper(RuntimeHelper::RenderSlot);
             ctx.use_helper(RuntimeHelper::RenderSlot);
@@ -446,7 +447,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(")");
             }
         }
-        ElementType::Template => {
+        RenduElementKind::Template => {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
             ctx.use_helper(RuntimeHelper::Fragment);
             ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
