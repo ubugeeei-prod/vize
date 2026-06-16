@@ -3,6 +3,7 @@
 //! This module generates JavaScript render function code from the transformed AST.
 
 mod children;
+mod children_static;
 mod context;
 mod element;
 mod emit;
