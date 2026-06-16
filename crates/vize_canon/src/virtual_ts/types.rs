@@ -104,7 +104,7 @@ impl Default for VirtualTsCheckOptions {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct VirtualTsGenerationOptions {
     pub(crate) check_options: VirtualTsCheckOptions,
     /// Configured Vue dialect for this project (default [`VueVersion::V3`]).
@@ -130,20 +130,6 @@ pub(crate) struct VirtualTsGenerationOptions {
     /// TypeScript program. Off by default so standalone single-document
     /// consumers keep self-contained output.
     pub(crate) hoist_shared_preamble: bool,
-}
-
-impl Default for VirtualTsGenerationOptions {
-    fn default() -> Self {
-        Self {
-            check_options: VirtualTsCheckOptions::default(),
-            dialect: VueVersion::default(),
-            options_api: false,
-            legacy_vue2: false,
-            template_syntax_quirks: false,
-            preserve_unused_diagnostics: false,
-            hoist_shared_preamble: false,
-        }
-    }
 }
 
 /// Default plugin globals.
