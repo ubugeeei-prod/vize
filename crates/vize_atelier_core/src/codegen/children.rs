@@ -1,6 +1,6 @@
 //! Children, text, comment, and interpolation generation functions.
 
-use crate::rendu::RenduOp;
+use crate::rendu::{RenduChildren, RenduOp};
 use crate::{Position, RuntimeHelper, TemplateChildNode, TextNode};
 
 use super::children_static::{
@@ -10,7 +10,7 @@ use super::children_static::{
 use super::context::CodegenContext;
 use super::helpers::escape_js_string;
 use super::interpolation::push_interpolation_value;
-use super::node::generate_node;
+use super::node::{dispatch_rendu_op, generate_node};
 
 /// Generate children array
 pub fn generate_children(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
@@ -20,6 +20,27 @@ pub fn generate_children(ctx: &mut CodegenContext, children: &[TemplateChildNode
 /// Generate children, forcing array form with createTextVNode (for withDirectives elements)
 pub fn generate_children_force_array(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
     generate_children_inner(ctx, children, true);
+}
+
+/// Emit `,`-separated, newline-prefixed children into an already-open array,
+/// driven by the Rendu op stream (#1756).
+///
+/// The caller emits the surrounding `[` / `]` and manages indentation; each
+/// child is dispatched via [`dispatch_rendu_op`] from its op. Directive
+/// comments are skipped, exactly as the previous `is_directive_comment` filter
+/// did, so component/slot fallback bodies emit the same child set in the same
+/// order.
+pub(crate) fn emit_children_array_body(
+    ctx: &mut CodegenContext,
+    children: &[TemplateChildNode<'_>],
+) {
+    for (i, (op, node)) in RenduChildren::new(children).rendered().enumerate() {
+        if i > 0 {
+            ctx.push(",");
+        }
+        ctx.newline();
+        dispatch_rendu_op(ctx, op, node);
+    }
 }
 
 /// Check if a child node is a directive comment that should be stripped.
