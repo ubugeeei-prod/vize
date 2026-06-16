@@ -5,6 +5,7 @@
 //! and props object construction with key management.
 
 mod branch;
+mod branch_component;
 mod generate;
 
 use crate::{IfBranchNode, IfNode, PropNode, RuntimeHelper};
