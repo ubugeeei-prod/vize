@@ -93,10 +93,11 @@ fn generate_children_inner(
     children: &[TemplateChildNode<'_>],
     force_array: bool,
 ) {
-    // Filter out directive comments — they are invisible to codegen
-    let effective: Vec<&TemplateChildNode<'_>> = children
-        .iter()
-        .filter(|c| !is_directive_comment(c))
+    // Source the children from the Rendu stream; `rendered()` skips directive
+    // comments, which are invisible to codegen (#1756).
+    let effective: Vec<&TemplateChildNode<'_>> = RenduChildren::new(children)
+        .rendered()
+        .map(|(_, node)| node)
         .collect();
 
     if effective.is_empty() {
