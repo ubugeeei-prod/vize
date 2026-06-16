@@ -6,6 +6,7 @@
 
 mod branch;
 mod branch_component;
+mod branch_fragment;
 mod generate;
 
 use crate::{IfBranchNode, IfNode, PropNode, RuntimeHelper};
