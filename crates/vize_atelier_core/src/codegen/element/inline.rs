@@ -5,7 +5,7 @@
 
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
-    rendu::RenduChildren,
+    rendu::{RenduChildren, RenduElementKind},
     steps::v_memo::{get_memo_exp, has_v_memo},
 };
 
@@ -85,8 +85,8 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         None
     };
 
-    match el.tag_type {
-        ElementType::Element => {
+    match RenduElementKind::from(el.tag_type) {
+        RenduElementKind::Element => {
             // Check for custom directives.
             // Inline children need the same withDirectives wrapping as block roots.
             let has_custom_dirs = has_custom_directives(el);
@@ -196,7 +196,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 generate_vshow_closing(ctx, el);
             }
         }
-        ElementType::Component => {
+        RenduElementKind::Component => {
             let has_custom_dirs = has_custom_directives(el);
             if has_custom_dirs {
                 ctx.use_helper(RuntimeHelper::WithDirectives);
@@ -370,7 +370,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 generate_vshow_closing(ctx, el);
             }
         }
-        ElementType::Slot => {
+        RenduElementKind::SlotOutlet => {
             let helper = ctx.helper(RuntimeHelper::RenderSlot);
             ctx.use_helper(RuntimeHelper::RenderSlot);
             ctx.push(helper);
@@ -407,7 +407,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(")");
             }
         }
-        ElementType::Template => {
+        RenduElementKind::Template => {
             // Template elements render their children directly, driven by the
             // Rendu op stream rather than the Relief child list (#1756).
             let rendered: Vec<_> = RenduChildren::new(&el.children).rendered().collect();
