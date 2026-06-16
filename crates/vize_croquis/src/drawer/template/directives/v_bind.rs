@@ -92,7 +92,7 @@ impl Drawer {
                         scope_vars.push(param.clone());
                     }
 
-                    if self.options.detect_undefined && self.script_drawn {
+                    if self.options.detect_undefined {
                         profile!(
                             "croquis.template.v_bind.refs",
                             self.check_expression_refs(exp, scope_vars)
@@ -104,7 +104,7 @@ impl Drawer {
                     }
 
                     self.croquis.scopes.exit_scope();
-                } else if self.options.detect_undefined && self.script_drawn {
+                } else if self.options.detect_undefined {
                     profile!(
                         "croquis.template.v_bind.refs",
                         self.check_expression_refs(exp, scope_vars)

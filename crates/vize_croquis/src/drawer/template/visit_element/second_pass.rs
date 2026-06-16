@@ -54,7 +54,7 @@ impl Drawer {
         scope_vars: &[CompactString],
     ) {
         profile!("croquis.template.element.undefined_refs", {
-            if !self.options.detect_undefined || !self.script_drawn {
+            if !self.options.detect_undefined {
                 return;
             }
 

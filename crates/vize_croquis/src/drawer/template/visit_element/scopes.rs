@@ -1,5 +1,5 @@
 use crate::drawer::Drawer;
-use crate::drawer::helpers::{ConditionalKind, VForScopeAliases};
+use crate::drawer::helpers::{ConditionalKind, VForScopeAliases, extract_identifiers_oxc};
 use crate::scope::{ParamNames, VForScopeData, VSlotScopeData};
 use vize_carton::{CompactString, SmallVec};
 use vize_relief::ElementNode;
@@ -96,6 +96,10 @@ impl Drawer {
             return 0;
         }
 
+        if self.options.detect_undefined {
+            self.mark_v_for_source_scope_refs(aliases.source.as_str());
+        }
+
         self.croquis.scopes.enter_v_for_scope(
             VForScopeData {
                 value_alias: aliases.value_pattern,
@@ -123,6 +127,15 @@ impl Drawer {
         }
 
         count
+    }
+
+    fn mark_v_for_source_scope_refs(&mut self, source: &str) {
+        for ident in extract_identifiers_oxc(source) {
+            let name = ident.as_str();
+            if self.croquis.scopes.is_defined(name) {
+                self.croquis.scopes.mark_used(name);
+            }
+        }
     }
 
     pub(super) fn exit_element_for_scope(

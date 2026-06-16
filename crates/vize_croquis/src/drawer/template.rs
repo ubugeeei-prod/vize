@@ -120,7 +120,7 @@ impl Drawer {
                             },
                         );
                     }
-                    if self.options.detect_undefined && self.script_drawn {
+                    if self.options.detect_undefined {
                         self.check_expression_refs(&interp.content, scope_vars);
                     }
                 })
