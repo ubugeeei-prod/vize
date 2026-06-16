@@ -4,9 +4,8 @@
 //! component, element, template fragment, and regular fragment rendering.
 
 use crate::{
-    ElementNode, ElementType, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper,
-    TemplateChildNode,
-    rendu::RenduChildren,
+    ElementNode, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper, TemplateChildNode,
+    rendu::{RenduChildren, RenduElementKind},
 };
 use vize_carton::ToCompactString;
 
@@ -52,15 +51,15 @@ pub(super) fn generate_if_branch(
         match &branch.children[0] {
             TemplateChildNode::Element(el) => {
                 // Check if it's a template element - treat as fragment
-                if el.tag_type == ElementType::Template {
+                if RenduElementKind::from(el.tag_type).is_template() {
                     // Template with single child -> unwrap to single element
                     if el.children.len() == 1
                         && let TemplateChildNode::Element(inner) = &el.children[0]
                     {
                         // Check if inner element is a component
-                        if inner.tag_type == ElementType::Component {
+                        if RenduElementKind::from(inner.tag_type).is_component() {
                             generate_if_branch_component(ctx, inner, branch, branch_index);
-                        } else if inner.tag_type == ElementType::Slot {
+                        } else if RenduElementKind::from(inner.tag_type).is_slot_outlet() {
                             generate_if_branch_slot(ctx, inner, branch, branch_index);
                         } else {
                             generate_if_branch_element(ctx, inner, branch, branch_index);
@@ -69,10 +68,10 @@ pub(super) fn generate_if_branch(
                     }
                     // Template with multiple children -> fragment
                     generate_if_branch_template_fragment(ctx, &el.children, branch, branch_index);
-                } else if el.tag_type == ElementType::Component {
+                } else if RenduElementKind::from(el.tag_type).is_component() {
                     // Component
                     generate_if_branch_component(ctx, el, branch, branch_index);
-                } else if el.tag_type == ElementType::Slot {
+                } else if RenduElementKind::from(el.tag_type).is_slot_outlet() {
                     generate_if_branch_slot(ctx, el, branch, branch_index);
                 } else {
                     // Regular element
