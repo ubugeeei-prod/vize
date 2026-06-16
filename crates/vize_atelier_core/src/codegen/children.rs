@@ -40,6 +40,18 @@ pub(crate) fn is_directive_comment(child: &TemplateChildNode<'_>) -> bool {
     )
 }
 
+/// Check if a child renders as inline text (a text literal or interpolation),
+/// classified through the Rendu plate (#1756) — reads `RenduOp::Text` /
+/// `RenduOp::Interpolation` so text-run grouping uses the same render-semantic
+/// classification the node dispatch does. Byte-equivalent.
+#[inline]
+fn is_text_like(child: &TemplateChildNode<'_>) -> bool {
+    matches!(
+        RenduOp::from_template_child(child),
+        RenduOp::Text { .. } | RenduOp::Interpolation { .. }
+    )
+}
+
 /// Emit a quoted text literal through the Rendu plate.
 ///
 /// The text content and its source anchor are read from `RenduOp::Text`
@@ -87,12 +99,7 @@ fn generate_children_inner(
     }
 
     // Check if all children are text/interpolation - if so, use string concatenation (unless forced to array)
-    let all_text_or_interp = effective.iter().all(|child| {
-        matches!(
-            child,
-            TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-        )
-    });
+    let all_text_or_interp = effective.iter().all(|child| is_text_like(child));
 
     if !force_array && all_text_or_interp {
         // Generate concatenated expression: "text" + _toDisplayString(expr) + "more"
@@ -133,20 +140,10 @@ fn generate_children_inner(
     let mut i = 0;
     let mut first_output = true;
     while i < effective.len() {
-        let is_text_like = matches!(
-            effective[i],
-            TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-        );
-
-        if is_text_like {
+        if is_text_like(effective[i]) {
             // Find the run of consecutive text/interpolation nodes
             let start = i;
-            while i < effective.len()
-                && matches!(
-                    effective[i],
-                    TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-                )
-            {
+            while i < effective.len() && is_text_like(effective[i]) {
                 i += 1;
             }
             let run = &effective[start..i];
