@@ -1,6 +1,16 @@
 //! Type definitions for semantic tokens.
 //!
 //! Defines token types, modifiers, and internal token representation.
+//!
+//! Naming convention (#1761): these are **LSP display tokens** — an
+//! editor-highlight projection, not a parser-grade token stream. `TokenType`
+//! and `AbsoluteToken` describe how a span is *shown*, so they intentionally do
+//! not imply compiler tokens. The same rule holds for the other display
+//! surfaces (Musea `DesignToken`, the playground highlighter): keep display
+//! tokens named for their surface, and reserve a parser-grade name such as
+//! `ArmatureEvent` for real tokenizer/parser events if Vize ever exposes them.
+//! The #1761 audit found the existing display-token names already follow this
+//! rule, so no rename is needed; this note codifies the convention.
 
 use tower_lsp::lsp_types::{SemanticTokenModifier, SemanticTokenType};
 
