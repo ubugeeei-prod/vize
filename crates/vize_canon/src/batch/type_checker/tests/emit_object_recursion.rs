@@ -63,6 +63,7 @@ void (null as unknown as TestProps);
         Some(corsa_path.as_path()),
     )
     .expect("batch checker should initialize with explicit tsgo");
+    checker.set_server_count(Some(1));
     checker.scan_project().expect("project should scan");
     let result = checker.check_project().expect("project should check");
 
