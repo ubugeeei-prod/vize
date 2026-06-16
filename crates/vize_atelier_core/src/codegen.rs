@@ -11,6 +11,7 @@ mod escape;
 mod expression;
 mod generate;
 mod helpers;
+mod hoist_helpers;
 mod interpolation;
 mod node;
 mod patch_flag;
