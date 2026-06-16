@@ -14,7 +14,6 @@
 
 use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
-use vize_atelier_ssr::{SsrCodegenContext, SsrCompilerOptions};
 use vize_atelier_vapor::{VaporGenerateOptions, generate_vapor_with_options, transform_to_ir};
 use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
@@ -29,8 +28,7 @@ pub struct VaporCompileOptions {
     /// Compile in SSR mode. When set, the component is server-rendered: instead
     /// of the client Vapor IR lowering, the lowered template is run through
     /// `vize_atelier_ssr`'s `ssrRender` codegen and [`VaporComponent::code`]
-    /// holds an HTML-string render function (first cut, #1533 — see
-    /// [`compile_root_to_vapor_ssr`]).
+    /// holds an HTML-string render function.
     pub ssr: bool,
 }
 
@@ -103,6 +101,18 @@ pub(crate) fn compile_root_to_vapor(
     analysis: &Croquis,
     options: &VaporCompileOptions,
 ) -> VaporComponent {
+    if options.ssr {
+        let ssr =
+            crate::ssr::compile_lowered_root_to_ssr(bump, lowered, analysis, JsxOutputMode::Vapor);
+        return VaporComponent {
+            component_name: ssr.component_name,
+            mode: ssr.mode,
+            code: ssr.code,
+            templates: Vec::new(),
+            scoped_style: ssr.scoped_style,
+        };
+    }
+
     let LoweredRoot {
         mut root,
         mode,
@@ -120,16 +130,6 @@ pub(crate) fn compile_root_to_vapor(
     // `data-v-<hash>` attribute is injected into those strings post-generation.
     let scoped_style =
         scoped_css.map(|css| build_scoped_style(component_name.as_deref(), css.as_str()));
-
-    // SSR (#1533, first cut): when SSR is requested, the lowered root is the same
-    // `vize_relief` `RootNode` the SSR crate consumes, so we run the SSR-flavored
-    // core transform and `vize_atelier_ssr`'s `ssrRender` codegen instead of the
-    // client Vapor IR lowering. This produces an HTML-string render function
-    // (`_push(`…`)`) covering static elements, static/dynamic attributes, and
-    // text interpolation. See `compile_root_to_vapor_ssr` for the deferred scope.
-    if options.ssr {
-        return compile_root_to_vapor_ssr(bump, root, analysis, mode, component_name, scoped_style);
-    }
 
     let transform_opts = TransformOptions {
         // JSX render fns close over the setup scope; don't prefix `_ctx.`.
@@ -158,77 +158,6 @@ pub(crate) fn compile_root_to_vapor(
         mode: mode.unwrap_or(JsxOutputMode::Vapor),
         code,
         templates,
-        scoped_style,
-    }
-}
-
-/// First-cut JSX/TSX -> Vapor **SSR** render codegen (#1533).
-///
-/// Reuses [`vize_atelier_ssr`] end to end: the lowered [`RootNode`] is run
-/// through the SSR-flavored core transform (the same options
-/// `vize_atelier_ssr::compile_ssr` uses) and then `SsrCodegenContext`, which
-/// emits an `ssrRender(_ctx, _push, _parent, _attrs)` function that server-
-/// renders the component to an HTML string via `_push(`…`)`.
-///
-/// Identifiers stay **bare** (no `_ctx.` prefix) to match the JSX closure model
-/// the client Vapor path documents: a JSX component is a plain function whose
-/// render — client or server — closes over the setup scope. The generated
-/// `code` is the SSR preamble (`@vue/server-renderer` / `vue` imports) followed
-/// by the render function, mirroring the shape of the client Vapor `code`.
-///
-/// Implemented subset: static elements, static + dynamic (`v-bind`) attributes,
-/// dynamic class/style, and text interpolation. Control flow (`v-if`/`v-for`),
-/// slots, nested components, and `renderToString` runtime wiring flow through
-/// the shared SSR codegen too but are **not** part of this first cut's tested
-/// contract — see the PR's "Deferred" section.
-fn compile_root_to_vapor_ssr<'a>(
-    bump: &'a Bump,
-    mut root: vize_atelier_core::RootNode<'a>,
-    analysis: &'a Croquis,
-    mode: Option<JsxOutputMode>,
-    component_name: Option<String>,
-    scoped_style: Option<ScopedStyle>,
-) -> VaporComponent {
-    let transform_opts = TransformOptions {
-        // JSX render fns close over the setup scope; keep identifiers bare so the
-        // SSR render function references the closure's bindings directly (no
-        // `_ctx.` prefix), consistent with the client Vapor path above.
-        prefix_identifiers: false,
-        // SSR transforms disable DOM-only optimizations (hoisting, handler
-        // caching) and desugar directives for string output instead of vnodes.
-        hoist_static: false,
-        cache_handlers: false,
-        ssr: true,
-        binding_metadata: None,
-        ..Default::default()
-    };
-    transform(bump, &mut root, transform_opts, Some(analysis));
-
-    // The scope id is already embedded in the SSR options so `ssrRender` emits
-    // the `data-v-<hash>` attribute inline, matching the SFC SSR scope path
-    // (no post-generation string injection needed, unlike the client templates).
-    let ssr_options = SsrCompilerOptions {
-        component_name: component_name.clone(),
-        scope_id: scoped_style.as_ref().map(|style| style.scope_id.clone()),
-        ..SsrCompilerOptions::default()
-    };
-    let generated = SsrCodegenContext::new(bump, &ssr_options).generate(&root);
-
-    // Combine preamble (imports) + render function into a single module, mirroring
-    // the client Vapor `code` field which also inlines its imports.
-    let mut code = generated.preamble;
-    if !code.is_empty() && !generated.code.is_empty() {
-        code.push('\n');
-    }
-    code.push_str(&generated.code);
-
-    VaporComponent {
-        component_name,
-        mode: mode.unwrap_or(JsxOutputMode::Vapor),
-        code,
-        // SSR output is a single HTML-string render function; the client-only
-        // static `_template("…")` strings do not apply.
-        templates: Vec::new(),
         scoped_style,
     }
 }

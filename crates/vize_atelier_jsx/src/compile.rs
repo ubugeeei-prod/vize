@@ -14,6 +14,7 @@ use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::scoped::ScopedStyle;
+use crate::ssr::{SsrComponent, compile_lowered_root_to_ssr};
 use crate::vapor::{VaporCompileOptions, VaporComponent, compile_root_to_vapor};
 use crate::vdom::{VdomCompileOptions, VdomComponent, compile_root_to_vdom};
 use crate::{JsxLang, JsxOutputMode, lower_source};
@@ -24,6 +25,12 @@ pub struct JsxCompileConfig {
     /// Default output mode applied to components without an explicit
     /// `"use vue:vapor"` / `"use vue:vdom"` directive.
     pub default_mode: JsxOutputMode,
+    /// Emit server-side render functions instead of client VDOM/Vapor code.
+    ///
+    /// The resolved VDOM/Vapor mode is still recorded on each component as
+    /// client-hydration metadata, but code generation is routed through the
+    /// shared SSR backend.
+    pub ssr: bool,
     /// Options for components compiled to VDOM.
     pub vdom: VdomCompileOptions,
     /// Options for components compiled to Vapor.
@@ -36,6 +43,8 @@ pub enum JsxComponent {
     Vdom(VdomComponent),
     /// Compiled to Vapor output.
     Vapor(VaporComponent),
+    /// Compiled to SSR output.
+    Ssr(SsrComponent),
 }
 
 impl JsxComponent {
@@ -44,14 +53,16 @@ impl JsxComponent {
         match self {
             Self::Vdom(component) => component.component_name.as_deref(),
             Self::Vapor(component) => component.component_name.as_deref(),
+            Self::Ssr(component) => component.component_name.as_deref(),
         }
     }
 
-    /// The backend this component was compiled with.
+    /// The resolved client output mode for this component.
     pub fn mode(&self) -> JsxOutputMode {
         match self {
             Self::Vdom(_) => JsxOutputMode::Vdom,
             Self::Vapor(_) => JsxOutputMode::Vapor,
+            Self::Ssr(component) => component.mode,
         }
     }
 
@@ -60,6 +71,7 @@ impl JsxComponent {
         match self {
             Self::Vdom(component) => component.code.as_str(),
             Self::Vapor(component) => component.code.as_str(),
+            Self::Ssr(component) => component.code.as_str(),
         }
     }
 
@@ -74,6 +86,7 @@ impl JsxComponent {
         match self {
             Self::Vdom(component) => component.preamble.as_str(),
             Self::Vapor(_) => "",
+            Self::Ssr(_) => "",
         }
     }
 
@@ -85,7 +98,7 @@ impl JsxComponent {
     pub fn map(&self) -> Option<&str> {
         match self {
             Self::Vdom(component) => component.map.as_deref(),
-            Self::Vapor(_) => None,
+            Self::Vapor(_) | Self::Ssr(_) => None,
         }
     }
 
@@ -99,6 +112,7 @@ impl JsxComponent {
         match self {
             Self::Vdom(component) => component.scoped_style.as_ref(),
             Self::Vapor(component) => component.scoped_style.as_ref(),
+            Self::Ssr(component) => component.scoped_style.as_ref(),
         }
     }
 }
@@ -126,8 +140,8 @@ impl JsxCompileOutput {
     /// treat JSX/TSX output the same way (#1533). The per-component VDOM
     /// preambles (`import { … } from "vue"`) are merged into one import per
     /// source so concatenating several components never redeclares a helper
-    /// binding; Vapor components inline their own imports into `code` and report
-    /// an empty preamble, so they pass through untouched.
+    /// binding; Vapor and SSR components inline their own imports into `code`
+    /// and report an empty preamble, so they pass through untouched.
     pub fn module_code(&self) -> String {
         let preamble = merge_preambles(self.components.iter().map(JsxComponent::preamble));
 
@@ -288,22 +302,31 @@ pub fn compile_jsx(
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {
-        let mode = resolve_mode(lowered_root.mode, config.default_mode);
-        let component = match mode {
-            JsxOutputMode::Vdom => JsxComponent::Vdom(compile_root_to_vdom(
+        let component = if config.ssr {
+            JsxComponent::Ssr(compile_lowered_root_to_ssr(
                 bump,
                 lowered_root,
                 analysis,
-                is_ts,
-                &config.vdom,
-                &mut diagnostics,
-            )),
-            JsxOutputMode::Vapor => JsxComponent::Vapor(compile_root_to_vapor(
-                bump,
-                lowered_root,
-                analysis,
-                &config.vapor,
-            )),
+                config.default_mode,
+            ))
+        } else {
+            let mode = resolve_mode(lowered_root.mode, config.default_mode);
+            match mode {
+                JsxOutputMode::Vdom => JsxComponent::Vdom(compile_root_to_vdom(
+                    bump,
+                    lowered_root,
+                    analysis,
+                    is_ts,
+                    &config.vdom,
+                    &mut diagnostics,
+                )),
+                JsxOutputMode::Vapor => JsxComponent::Vapor(compile_root_to_vapor(
+                    bump,
+                    lowered_root,
+                    analysis,
+                    &config.vapor,
+                )),
+            }
         };
         components.push(component);
     }

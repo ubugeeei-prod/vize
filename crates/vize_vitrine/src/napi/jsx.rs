@@ -9,6 +9,8 @@
 //! Mode selection follows the project's `compiler.jsxMode` config: the explicit
 //! `jsxMode` string (`"vdom"` / `"vapor"`) wins when present; otherwise the
 //! legacy `vapor` bool applies for back-compat; otherwise the default is VDOM.
+//! When `ssr` is true, that mode is kept as client-hydration metadata while
+//! generated code is routed through JSX SSR output.
 //!
 //! FFI boundary code: uses std types for JavaScript interop.
 #![allow(
@@ -42,6 +44,8 @@ pub struct JsxCompileOptionsNapi {
     /// result's `map` carries the map JSON; when `false` (default), `map` is
     /// `null` and no mapping work is done (#1533).
     pub source_map: Option<bool>,
+    /// Emit SSR render code instead of client render code.
+    pub ssr: Option<bool>,
 }
 
 /// A JSX component's extracted `<style scoped>` block, surfaced to the bundler
@@ -131,9 +135,9 @@ fn compile_jsx_impl(
         default_mode,
         ..Default::default()
     };
-    // Surface a v3 source map when requested. The flag only affects the VDOM
-    // codegen path (the Vapor backend does not emit a map yet); enabling it is a
-    // no-op for Vapor output.
+    config.ssr = opts.ssr.unwrap_or(false);
+    // Surface a v3 source map when requested. The flag only affects client VDOM
+    // codegen; enabling it is a no-op for Vapor and SSR output.
     config.vdom.source_map = opts.source_map.unwrap_or(false);
 
     let bump = Bump::new();
@@ -295,5 +299,30 @@ mod tests {
         assert!(with.errors.is_empty(), "errors: {:?}", with.errors);
         let map = with.map.expect("a map is surfaced when requested");
         assert!(map.contains("\"version\":3"), "v3 source map: {map}");
+    }
+
+    #[test]
+    fn jsx_compile_result_supports_ssr_output() {
+        let result = compile_jsx_impl(
+            "const App = () => <div>{message}</div>;".to_string(),
+            Some(JsxCompileOptionsNapi {
+                ssr: Some(true),
+                source_map: Some(true),
+                ..Default::default()
+            }),
+        );
+
+        assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
+        assert!(
+            result.code.contains("function ssrRender"),
+            "{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("@vue/server-renderer"),
+            "{}",
+            result.code
+        );
+        assert!(result.map.is_none(), "SSR output has no source map yet");
     }
 }

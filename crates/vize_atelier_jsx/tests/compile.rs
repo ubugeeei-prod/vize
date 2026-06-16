@@ -34,6 +34,7 @@ fn component_variant(component: &JsxComponent) -> &'static str {
     match component {
         JsxComponent::Vdom(_) => "vdom",
         JsxComponent::Vapor(_) => "vapor",
+        JsxComponent::Ssr(_) => "ssr",
     }
 }
 
@@ -103,6 +104,22 @@ fn one_module_can_mix_vdom_and_vapor_components() {
     let out = compile(src, &JsxCompileConfig::default());
 
     assert_eq!(out.components.len(), 2);
+    insta::assert_snapshot!(component_matrix(&out));
+}
+
+#[test]
+fn ssr_config_routes_components_to_ssr_and_preserves_client_mode_metadata() {
+    let config = JsxCompileConfig {
+        ssr: true,
+        ..Default::default()
+    };
+    let src = "const A = () => <a>{msg}</a>;\n\
+               const B = () => { \"use vue:vapor\"; return <b/>; };";
+    let out = compile(src, &config);
+
+    assert_eq!(out.components.len(), 2);
+    assert_eq!(out.components[0].mode(), JsxOutputMode::Vdom);
+    assert_eq!(out.components[1].mode(), JsxOutputMode::Vapor);
     insta::assert_snapshot!(component_matrix(&out));
 }
 

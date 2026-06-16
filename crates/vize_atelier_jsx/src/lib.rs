@@ -36,6 +36,7 @@ pub mod mode;
 pub mod parse;
 pub mod scoped;
 pub mod span;
+pub mod ssr;
 pub mod vapor;
 pub mod vdom;
 
@@ -57,6 +58,7 @@ pub use mode::JsxOutputMode;
 pub use parse::{ParsedModule, parse_module};
 pub use scoped::ScopedStyle;
 pub use span::SpanMapper;
+pub use ssr::{SsrCompileOptions, SsrComponent, SsrOutput, compile_to_ssr};
 pub use vapor::{VaporCompileOptions, VaporComponent, VaporOutput, compile_to_vapor};
 pub use vdom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
 

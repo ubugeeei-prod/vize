@@ -626,6 +626,17 @@ fn compile_output_summary<'a>(
                         .as_ref()
                         .map(ScopedStyleSummary::from),
                 },
+                JsxComponent::Ssr(component) => RenderComponentSummary {
+                    name: component.component_name.as_ref().map(|name| name.as_str()),
+                    mode: "Ssr".to_string(),
+                    preamble: None,
+                    code: component.code.as_str(),
+                    templates: Vec::new(),
+                    scoped_style: component
+                        .scoped_style
+                        .as_ref()
+                        .map(ScopedStyleSummary::from),
+                },
             })
             .collect(),
     }
