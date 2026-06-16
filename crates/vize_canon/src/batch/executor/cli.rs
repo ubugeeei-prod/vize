@@ -9,6 +9,7 @@ use crate::batch::executor::diagnostics::{
     DiagnosticMapper, dedup_diagnostics, relative_module_resolves_on_disk, should_skip_diagnostic,
     should_skip_original_diagnostic,
 };
+use vize_carton::path::canonicalize_non_verbatim;
 use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
 
@@ -675,11 +676,38 @@ fn is_cli_diagnostic_line(line: &str) -> bool {
 
 fn normalize_cli_path(path: &str, virtual_root: &Path) -> PathBuf {
     let path = PathBuf::from(path);
-    if path.is_absolute() {
-        path
+    let path = if path.is_absolute() {
+        normalize_path_lexically(path.as_path())
     } else {
-        virtual_root.join(path)
+        normalize_path_lexically(virtual_root.join(path).as_path())
+    };
+
+    if path.exists() {
+        let canonical_path = canonicalize_non_verbatim(path.as_path());
+        let canonical_root = canonicalize_non_verbatim(virtual_root);
+        if let Ok(relative) = canonical_path.strip_prefix(canonical_root.as_path()) {
+            return virtual_root.join(relative);
+        }
+        canonical_path
+    } else {
+        path
     }
+}
+
+fn normalize_path_lexically(path: &Path) -> PathBuf {
+    let mut normalized = PathBuf::new();
+    for component in path.components() {
+        match component {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                if !normalized.pop() && !normalized.has_root() {
+                    normalized.push(component.as_os_str());
+                }
+            }
+            _ => normalized.push(component.as_os_str()),
+        }
+    }
+    normalized
 }
 
 fn output_message(output: &Output) -> String {
@@ -874,6 +902,32 @@ mod tests {
         let mut diagnostics = Vec::new();
         let mut mapper = DiagnosticMapper::new(&project);
         parse_cli_diagnostics(output.as_str(), &project, &mut mapper, &mut diagnostics);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].file, source);
+        assert_eq!(diagnostics[0].line, 0);
+        assert_eq!(diagnostics[0].column, 6);
+        assert_eq!(diagnostics[0].code, Some(2322));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn parses_cli_diagnostics_with_relative_dotdot_paths() {
+        let case_dir = unique_case_dir("diagnostics-dotdot");
+        let _ = fs::remove_dir_all(&case_dir);
+        let source = case_dir.join("src").join("main.ts");
+        fs::create_dir_all(source.parent().unwrap()).unwrap();
+        fs::write(&source, "const value: number = 'x';\n").unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&source).unwrap();
+        project.materialize().unwrap();
+
+        let output = "src/../src/main.ts(1,7): error TS2322: Type 'string' is not assignable to type 'number'.";
+        let mut diagnostics = Vec::new();
+        let mut mapper = DiagnosticMapper::new(&project);
+        parse_cli_diagnostics(output, &project, &mut mapper, &mut diagnostics);
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].file, source);
