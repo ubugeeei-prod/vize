@@ -15,6 +15,8 @@
 pub mod atelier_output;
 pub mod codegen;
 #[doc(hidden)]
+pub mod render_ir;
+#[doc(hidden)]
 pub mod rendu;
 pub mod runtime_helpers;
 #[doc(hidden)]
@@ -32,19 +34,22 @@ pub use vize_relief::options::{
     BindingMetadata, BindingType, CodegenMode, CodegenOptions, CompilerOptions, ParseMode,
     ParserOptions, TemplateSyntaxMode, TextMode, TransformOptions, WhitespaceStrategy,
 };
+// Render/codegen IR types — relocated out of vize_relief into this crate (#1760).
+pub use render_ir::{
+    ArrayElement, ArrayExpression, AssignmentExpression, BlockStatement, BlockStatementBody,
+    CacheExpression, CallArgument, CallExpression, Callee, ConditionalExpression,
+    DirectiveArgumentNode, DirectiveArguments, DynamicProps, FunctionBody, FunctionExpression,
+    FunctionParam, FunctionParams, FunctionReturns, IfStatement, IfStatementAlternate, JsChildNode,
+    ObjectExpression, Property, PropsExpression, ReturnStatement, ReturnValue, SequenceExpression,
+    SlotsExpression, TemplateLiteral, TemplateLiteralElement, TemplateTextChildNode, VNodeCall,
+    VNodeChildren, VNodeTag,
+};
 pub use vize_relief::{
-    ArrayElement, ArrayExpression, AssignmentExpression, AttributeNode, BlockStatement,
-    BlockStatementBody, CacheExpression, CallArgument, CallExpression, Callee, CommentNode,
-    CompoundExpressionChild, CompoundExpressionNode, ConditionalExpression, ConstantType,
-    DirectiveArgumentNode, DirectiveArguments, DirectiveNode, DynamicProps, ElementNode,
-    ElementType, ExpressionNode, ForNode, ForParseResult, FunctionBody, FunctionExpression,
-    FunctionParam, FunctionParams, FunctionReturns, IfBranchNode, IfNode, IfStatement,
-    IfStatementAlternate, ImportItem, InterpolationNode, JsChildNode, JsExpression, Namespace,
-    NodeType, ObjectExpression, Position, PropNode, Property, PropsExpression, ReturnStatement,
-    ReturnValue, RootNode, RuntimeHelper, SequenceExpression, SimpleExpressionNode,
-    SlotsExpression, SourceLocation, TemplateChildNode, TemplateLiteral, TemplateLiteralElement,
-    TemplateTextChildNode, TextCallContent, TextCallNode, TextNode, VNodeCall, VNodeChildren,
-    VNodeTag,
+    AttributeNode, CommentNode, CompoundExpressionChild, CompoundExpressionNode, ConstantType,
+    DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, ForParseResult, IfBranchNode,
+    IfNode, ImportItem, InterpolationNode, JsExpression, Namespace, NodeType, Position, PropNode,
+    RootNode, RuntimeHelper, SimpleExpressionNode, SourceLocation, TemplateChildNode,
+    TextCallContent, TextCallNode, TextNode,
 };
 pub use vize_relief::{errors, options};
 

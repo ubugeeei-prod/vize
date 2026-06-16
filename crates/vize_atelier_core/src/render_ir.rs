@@ -1,15 +1,16 @@
-//! Code generation AST node types.
+//! Render/codegen IR node types.
 //!
-//! `VNodeCall`, JS expression nodes, and SSR codegen nodes — render/codegen
-//! types slated to move out of Relief into Rendu/Atelier (#1760, #1634).
+//! `VNodeCall`, the JS expression nodes, and the SSR statement nodes — the
+//! render/codegen IR, relocated out of the `vize_relief` source AST into the
+//! atelier so the source AST no longer carries codegen types (#1760, #1634).
+//! The borrowed Relief nodes these reference (expressions, text, interpolation)
+//! still live in `vize_relief`.
 
 use vize_carton::{Box, Bump, PatchFlags, String, Vec};
 
-use super::{
-    RuntimeHelper,
-    core::{NodeType, SourceLocation},
-    expressions::{CompoundExpressionNode, ExpressionNode, SimpleExpressionNode},
-    nodes::TemplateChildNode,
+use vize_relief::{
+    CompoundExpressionNode, ExpressionNode, InterpolationNode, NodeType, RuntimeHelper,
+    SimpleExpressionNode, SourceLocation, TemplateChildNode, TextNode,
 };
 
 /// VNode call expression
@@ -55,8 +56,8 @@ pub enum VNodeChildren<'a> {
 /// Template text child node
 #[derive(Debug)]
 pub enum TemplateTextChildNode<'a> {
-    Text(Box<'a, super::elements::TextNode>),
-    Interpolation(Box<'a, super::elements::InterpolationNode<'a>>),
+    Text(Box<'a, TextNode>),
+    Interpolation(Box<'a, InterpolationNode<'a>>),
     Compound(Box<'a, CompoundExpressionNode<'a>>),
 }
 
