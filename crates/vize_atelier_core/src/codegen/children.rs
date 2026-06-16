@@ -2,7 +2,7 @@
 
 use crate::rendu::RenduOp;
 use crate::steps::hoist_static::is_static_node;
-use crate::{ElementNode, Position, RuntimeHelper, TemplateChildNode};
+use crate::{ElementNode, Position, RuntimeHelper, TemplateChildNode, TextNode};
 
 use super::context::CodegenContext;
 use super::element::helpers::{child_namespace, has_renderable_props};
@@ -40,6 +40,21 @@ pub(crate) fn is_directive_comment(child: &TemplateChildNode<'_>) -> bool {
     )
 }
 
+/// Emit a quoted text literal through the Rendu plate.
+///
+/// The text content and its source anchor are read from `RenduOp::Text`
+/// (#1756) rather than the Relief node. Byte-for-byte equivalent — the op
+/// borrows `text.content` and `text.loc`.
+fn emit_text_literal(ctx: &mut CodegenContext, text: &TextNode) {
+    let RenduOp::Text { content, span } = RenduOp::from_text(text) else {
+        unreachable!("from_text returns a Text op");
+    };
+    ctx.push("\"");
+    ctx.record_mapping(&span.start);
+    ctx.push(&escape_js_string(content));
+    ctx.push("\"");
+}
+
 fn generate_children_inner(
     ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
@@ -60,12 +75,7 @@ fn generate_children_inner(
     if !force_array && effective.len() == 1 {
         match effective[0] {
             TemplateChildNode::Text(text) => {
-                ctx.push("\"");
-                // Anchor the inlined text literal back to its source position,
-                // just inside the opening quote. No-op without `source_map`.
-                ctx.record_mapping(&text.loc.start);
-                ctx.push(&escape_js_string(&text.content));
-                ctx.push("\"");
+                emit_text_literal(ctx, text);
                 return;
             }
             TemplateChildNode::Interpolation(interp) => {
@@ -92,12 +102,7 @@ fn generate_children_inner(
             }
             match child {
                 TemplateChildNode::Text(text) => {
-                    ctx.push("\"");
-                    // Anchor each concatenated text fragment back to its own
-                    // source position. No-op without `source_map`.
-                    ctx.record_mapping(&text.loc.start);
-                    ctx.push(&escape_js_string(&text.content));
-                    ctx.push("\"");
+                    emit_text_literal(ctx, text);
                 }
                 TemplateChildNode::Interpolation(interp) => {
                     push_interpolation_value(ctx, interp);
@@ -181,12 +186,7 @@ fn generate_children_inner(
                     }
                     match child {
                         TemplateChildNode::Text(text) => {
-                            ctx.push("\"");
-                            // Anchor each merged text fragment back to its own
-                            // source position. No-op without `source_map`.
-                            ctx.record_mapping(&text.loc.start);
-                            ctx.push(&escape_js_string(&text.content));
-                            ctx.push("\"");
+                            emit_text_literal(ctx, text);
                         }
                         TemplateChildNode::Interpolation(interp) => {
                             push_interpolation_value(ctx, interp);
@@ -202,12 +202,7 @@ fn generate_children_inner(
                         ctx.push(" + ");
                     }
                     if let TemplateChildNode::Text(text) = child {
-                        ctx.push("\"");
-                        // Anchor each text fragment back to its own source
-                        // position. No-op without `source_map`.
-                        ctx.record_mapping(&text.loc.start);
-                        ctx.push(&escape_js_string(&text.content));
-                        ctx.push("\"");
+                        emit_text_literal(ctx, text);
                     }
                 }
                 ctx.push(")");

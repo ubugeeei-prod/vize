@@ -3,6 +3,7 @@
 use super::model::{RenduElementKind, RenduExprRef, RenduModifiers, RenduSource, RenduSpan};
 use crate::{
     AttributeNode, DirectiveNode, ElementNode, PropNode, TemplateChildNode, TextCallContent,
+    TextNode,
     source_atlas::{SourceAtlasCoordinate, SourceAtlasTarget, SourceAtlasTargetSet},
 };
 
@@ -98,6 +99,14 @@ impl<'a> RenduOp<'a> {
             tag: element.tag.as_str(),
             kind: element.tag_type.into(),
             span: RenduSpan::from_location(&element.loc),
+        }
+    }
+
+    /// Build the text render op for a text node (content, span).
+    pub fn from_text(text: &'a TextNode) -> Self {
+        Self::Text {
+            content: text.content.as_str(),
+            span: RenduSpan::from_location(&text.loc),
         }
     }
 
