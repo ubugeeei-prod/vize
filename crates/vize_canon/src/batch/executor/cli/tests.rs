@@ -208,3 +208,45 @@ fn parses_cli_diagnostics_with_relative_dotdot_paths() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn parses_materialized_tsconfig_diagnostics_as_project_level_errors() {
+    let case_dir = unique_case_dir("diagnostics-tsconfig");
+    let _ = fs::remove_dir_all(&case_dir);
+    let source = case_dir.join("src").join("main.ts");
+    fs::create_dir_all(source.parent().unwrap()).unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+    fs::write(&source, "const value: number = 1;\n").unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_path(&source).unwrap();
+    project.materialize().unwrap();
+
+    let output =
+        "tsconfig.json(5,25): error TS5108: Option 'moduleResolution=node10' has been removed.";
+    let mut diagnostics = Vec::new();
+    let mut mapper = DiagnosticMapper::new(&project);
+    parse_cli_diagnostics(output, &project, &mut mapper, &mut diagnostics);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].file, case_dir.join("tsconfig.json"));
+    assert_eq!(diagnostics[0].line, 0);
+    assert_eq!(diagnostics[0].column, 0);
+    assert_eq!(diagnostics[0].code, Some(5108));
+    assert_eq!(diagnostics[0].severity, 1);
+    assert!(
+        diagnostics[0].message.contains("moduleResolution=node10"),
+        "{diagnostics:#?}"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

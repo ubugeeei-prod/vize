@@ -13,6 +13,8 @@ use vize_carton::path::canonicalize_non_verbatim;
 use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
 
+mod project_diagnostics;
+
 pub(super) fn check_with_cli(
     corsa_path: &Path,
     project: &VirtualProject,
@@ -525,7 +527,7 @@ fn parse_cli_diagnostics(
         // user-actionable problems — tsc and vue-tsc report them and the
         // runtime may skip the semantic pass because of them — so they are
         // attributed to the project's tsconfig instead of being dropped.
-        if let Some(diagnostic) = parse_global_diagnostic_line(line, project) {
+        if let Some(diagnostic) = project_diagnostics::global(line, project) {
             diagnostics.push(diagnostic);
             continue;
         }
@@ -543,33 +545,6 @@ fn parse_cli_diagnostics(
         last.message.push('\n');
         last.message.push_str(line);
     }
-}
-
-/// Parse a file-less project-level diagnostic such as
-/// `error TS2688: Cannot find type definition file for 'vite/client'.`
-fn parse_global_diagnostic_line(line: &str, project: &VirtualProject) -> Option<Diagnostic> {
-    let (severity, rest) = line.split_once(' ')?;
-    let severity = match severity {
-        "error" => 1,
-        "warning" => 2,
-        "info" => 3,
-        _ => return None,
-    };
-    let (code, message) = rest.split_once(": ")?;
-    let code = code.strip_prefix("TS")?.parse::<u32>().ok()?;
-    if should_skip_diagnostic(Some(code), message) {
-        return None;
-    }
-
-    Some(Diagnostic {
-        file: project.project_diagnostics_anchor(),
-        line: 0,
-        column: 0,
-        message: message.into(),
-        code: Some(code),
-        severity,
-        block_type: None,
-    })
 }
 
 fn parse_cli_diagnostic_line(
@@ -604,6 +579,12 @@ fn parse_cli_diagnostic_line(
     }
 
     let virtual_path = normalize_cli_path(path, project.virtual_root());
+    if let Some(diagnostic) =
+        project_diagnostics::config(&virtual_path, project, message, code, severity)
+    {
+        return Some(diagnostic);
+    }
+
     let original = mapper.map_to_original(&virtual_path, line, column)?;
     if should_skip_original_diagnostic(code, &original) {
         return None;
