@@ -26,9 +26,9 @@ use super::{
         generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
     },
     helpers::{
-        child_namespace, has_custom_directives, has_renderable_props, has_vmodel_directive,
-        has_vshow_directive, is_dynamic_component, is_is_prop, is_renderable_prop,
-        is_whitespace_or_comment,
+        child_namespace, emit_element_tag, has_custom_directives, has_renderable_props,
+        has_vmodel_directive, has_vshow_directive, is_dynamic_component, is_is_prop,
+        is_renderable_prop, is_whitespace_or_comment,
     },
     v_once::generate_v_once_element,
 };
@@ -154,10 +154,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
             ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
             ctx.push("(\"");
-            // Anchor the generated tag-name string back to the element's source
-            // position (the `<` of the open tag). No-op without `source_map`.
-            ctx.record_mapping(&el.loc.start);
-            ctx.push(&el.tag);
+            emit_element_tag(ctx, el);
             ctx.push("\"");
 
             // Calculate patch flag and dynamic props

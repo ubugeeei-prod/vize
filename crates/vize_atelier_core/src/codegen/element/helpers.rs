@@ -3,6 +3,7 @@
 //! Utility functions for checking element properties like directives,
 //! renderable props, and special element types.
 
+use crate::rendu::RenduOp;
 use crate::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
 };
@@ -12,6 +13,21 @@ use super::super::{
     context::CodegenContext, node::generate_node, props::is_supported_directive,
     v_for::generate_for, v_if::generate_if,
 };
+
+/// Emit a plain element's tag name through the Rendu plate.
+///
+/// The tag string and its source anchor are read from `RenduOp::Element`
+/// (#1756) rather than the Relief node, so DOM tag emission shares the
+/// render-semantic op. Byte-equivalent — the op borrows `el.tag` and `el.loc`.
+pub(super) fn emit_element_tag(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    let RenduOp::Element { tag, span, .. } = RenduOp::from_element(el) else {
+        unreachable!("from_element returns an Element op");
+    };
+    // Anchor the tag-name string back to the element's source position (the `<`
+    // of the open tag). No-op without `source_map`.
+    ctx.record_mapping(&span.start);
+    ctx.push(tag);
+}
 
 /// Check if element has v-once directive
 pub fn has_v_once(el: &ElementNode<'_>) -> bool {
