@@ -3,6 +3,7 @@
 mod directives;
 mod events;
 mod generate;
+mod object;
 mod scan;
 
 use crate::{PropNode, RuntimeHelper};
