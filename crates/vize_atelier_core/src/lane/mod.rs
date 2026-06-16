@@ -11,15 +11,15 @@ pub mod structural;
 #[path = "../transform/traverse.rs"]
 pub mod traverse;
 
-use vize_carton::{Box, Bump, SmallVec, String, Vec, profile};
+use vize_carton::{Bump, SmallVec, String, Vec, profile};
 use vize_croquis::{Croquis, ScopeChain};
 
 use crate::errors::CompilerError;
 use crate::options::TransformOptions;
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{
-    CacheExpression, DirectiveNode, ElementNode, ForNode, IfBranchNode, IfNode, JsChildNode,
-    PropNode, RootNode, RuntimeHelper, TemplateChildNode,
+    DirectiveNode, ElementNode, ForNode, IfBranchNode, IfNode, JsChildNode, PropNode, RootNode,
+    RuntimeHelper, TemplateChildNode,
 };
 
 use traverse::traverse_children;
@@ -84,8 +84,6 @@ pub struct TransformContext<'a> {
     pub(crate) filters: std::vec::Vec<String>,
     /// Hoisted expressions
     pub hoists: Vec<'a, Option<JsChildNode<'a>>>,
-    /// Cached expressions
-    pub cached: Vec<'a, Option<Box<'a, CacheExpression<'a>>>>,
     /// Temp variable count
     pub temps: u32,
     /// Scope chain for tracking variable visibility

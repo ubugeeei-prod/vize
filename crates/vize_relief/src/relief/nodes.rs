@@ -7,7 +7,6 @@ use vize_carton::{Box, Bump, String, Vec};
 
 use super::{
     ForNode, IfBranchNode, IfNode, ImportItem, JsChildNode, RuntimeHelper, TextCallNode,
-    codegen::CacheExpression,
     core::{NodeType, STUB_LOCATION, SourceLocation},
     elements::{CommentNode, ElementNode, InterpolationNode, TextNode},
     expressions::CompoundExpressionNode,
@@ -35,7 +34,6 @@ pub struct RootNode<'a> {
     pub filters: Vec<'a, String>,
     pub hoists: Vec<'a, Option<JsChildNode<'a>>>,
     pub imports: Vec<'a, ImportItem<'a>>,
-    pub cached: Vec<'a, Option<Box<'a, CacheExpression<'a>>>>,
     pub temps: u32,
     pub source: String,
     pub loc: SourceLocation,
@@ -53,7 +51,6 @@ impl<'a> RootNode<'a> {
             filters: Vec::new_in(allocator),
             hoists: Vec::new_in(allocator),
             imports: Vec::new_in(allocator),
-            cached: Vec::new_in(allocator),
             temps: 0,
             source: source.into(),
             loc: SourceLocation::STUB,

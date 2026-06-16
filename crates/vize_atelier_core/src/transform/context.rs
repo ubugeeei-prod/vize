@@ -7,8 +7,8 @@ use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData,
 use crate::errors::{CompilerError, ErrorCode};
 use crate::options::TransformOptions;
 use crate::{
-    CacheExpression, CommentNode, ConstantType, ExpressionNode, JsChildNode, RuntimeHelper,
-    SimpleExpressionNode, SourceLocation, TemplateChildNode,
+    CommentNode, ConstantType, ExpressionNode, JsChildNode, RuntimeHelper, SimpleExpressionNode,
+    SourceLocation, TemplateChildNode,
 };
 
 use super::TransformContext;
@@ -42,7 +42,6 @@ impl<'a> TransformContext<'a> {
             #[cfg(feature = "legacy")]
             filters: std::vec::Vec::new(),
             hoists: vize_carton::Vec::new_in(allocator),
-            cached: vize_carton::Vec::new_in(allocator),
             temps: 0,
             scope_chain: vize_croquis::ScopeChain::new(),
             scoped_slots: 0,
@@ -417,14 +416,6 @@ impl<'a> TransformContext<'a> {
     pub fn hoist(&mut self, node: JsChildNode<'a>) -> usize {
         let index = self.hoists.len();
         self.hoists.push(Some(node));
-        index
-    }
-
-    /// Cache an expression
-    pub fn cache(&mut self, exp: CacheExpression<'a>) -> usize {
-        let index = self.cached.len();
-        let boxed = Box::new_in(exp, self.allocator);
-        self.cached.push(Some(boxed));
         index
     }
 
