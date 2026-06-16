@@ -16,9 +16,15 @@ pub enum RenduOp<'a> {
         span: RenduSpan,
     },
     /// A static attribute on the nearest preceding `Element` op.
+    ///
+    /// `name_span`/`value_span` carry the source positions of the name and
+    /// value separately so a backend can source-map the emitted prop key and
+    /// value literal straight from the op.
     Attribute {
         name: &'a str,
+        name_span: RenduSpan,
         value: Option<&'a str>,
+        value_span: Option<RenduSpan>,
         span: RenduSpan,
     },
     /// A directive (`v-bind`/`v-on`/`v-model`/custom) on the nearest preceding
@@ -89,7 +95,12 @@ impl<'a> RenduOp<'a> {
     fn from_attribute(attr: &'a AttributeNode) -> Self {
         Self::Attribute {
             name: attr.name.as_str(),
+            name_span: RenduSpan::from_location(&attr.name_loc),
             value: attr.value.as_ref().map(|text| text.content.as_str()),
+            value_span: attr
+                .value
+                .as_ref()
+                .map(|text| RenduSpan::from_location(&text.loc)),
             span: RenduSpan::from_location(&attr.loc),
         }
     }

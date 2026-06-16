@@ -1,5 +1,6 @@
 //! Main props generation logic.
 
+use crate::rendu::RenduOp;
 use crate::{ExpressionNode, PropNode, RuntimeHelper};
 use vize_relief::options::BindingType;
 
@@ -263,12 +264,12 @@ fn try_generate_static_attrs(
 
     let mut first = true;
     for prop in unique_props {
-        let PropNode::Attribute(attr) = prop else {
-            // Panic path by invariant: the preflight `all(Attribute)` check above
-            // has already rejected directive props. Reaching this arm would mean
-            // `props` was mutated while iterating, which is impossible through the
-            // shared slice used by codegen.
-            unreachable!("checked above");
+        // Lower static-prop emission through the Rendu plate (#1756): name,
+        // value, and source spans come from `RenduOp::Attribute`, not Relief.
+        let RenduOp::Attribute { name, name_span, value, value_span, .. } =
+            RenduOp::from_prop(prop)
+        else {
+            unreachable!("checked above: all props are attributes");
         };
 
         if !first {
@@ -281,25 +282,24 @@ fn try_generate_static_attrs(
         }
         first = false;
 
-        let needs_quotes = !is_valid_js_identifier(&attr.name);
+        let needs_quotes = !is_valid_js_identifier(name);
         if needs_quotes {
             ctx.push("\"");
         }
-        // Anchor the generated prop key back to the attribute name in source,
-        // recording the symbol so it lands in the v3 `names` array. No-op
-        // without `source_map`.
-        ctx.record_mapping_named(&attr.name_loc.start, &attr.name);
-        ctx.push(&attr.name);
+        // Anchor the prop key back to the attribute name (no-op without
+        // `source_map`); records the symbol for the v3 `names` array.
+        ctx.record_mapping_named(&name_span.start, name);
+        ctx.push(name);
         if needs_quotes {
             ctx.push("\"");
         }
         ctx.push(": ");
-        if let Some(value) = &attr.value {
+        if let Some(value) = value {
             ctx.push("\"");
-            // Anchor the generated value literal back to the attribute value in
-            // source, just inside the opening quote. No-op without `source_map`.
-            ctx.record_mapping(&value.loc.start);
-            ctx.push(&escape_js_string(&value.content));
+            if let Some(span) = value_span {
+                ctx.record_mapping(&span.start);
+            }
+            ctx.push(&escape_js_string(value));
             ctx.push("\"");
         } else {
             ctx.push("\"\"");
