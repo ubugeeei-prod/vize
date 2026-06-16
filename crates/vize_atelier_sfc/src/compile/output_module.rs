@@ -2,6 +2,7 @@
 
 use crate::types::{CssModuleMapping, css_modules_object_literal};
 use vize_atelier_core::{
+    atelier_output::AtelierOutput,
     codegen::CodegenResultWithSections,
     rendu::{RenduModuleSections, RenduPlate, RenduRange, RenduRenderSections},
     source_atlas::SourceAtlasTarget,
@@ -166,14 +167,12 @@ impl OutputModule {
         functions: String,
         exports: String,
     ) -> String {
-        let mut code = String::default();
-        code.push_str(&imports);
-        code.push_str(&hoists);
-        code.push('\n');
-        code.push_str(&functions);
-        code.push('\n');
-        code.push_str(&exports);
-        code
+        // Flatten through the shared core `AtelierOutput` plate so SFC, SSR, and
+        // DOM output all use one flattening authority (imports+hoists adjacent,
+        // a newline before functions and before exports) instead of each
+        // re-implementing the layout. Byte-for-byte identical to the previous
+        // inline assembly.
+        AtelierOutput::new(imports, hoists, functions, exports).flatten()
     }
 }
 
