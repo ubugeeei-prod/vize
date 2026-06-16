@@ -26,6 +26,10 @@ fn test_type_check_result() {
 }
 
 #[test]
+#[cfg_attr(
+    coverage,
+    ignore = "validated by normal test runs; Corsa TS2589 output is unstable under full llvm-cov"
+)]
 fn batch_type_checker_reports_runtime_emit_object_instance_props_recursion() {
     let Some(corsa_path) = resolve_test_tsgo_binary().or_else(resolve_workspace_tsgo_wrapper)
     else {
