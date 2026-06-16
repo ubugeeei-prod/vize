@@ -19,6 +19,7 @@
 pub mod codegen;
 pub mod errors;
 pub mod options;
+mod output_plate;
 pub mod steps;
 
 pub use codegen::{SsrCodegenContext, SsrCodegenResult};
