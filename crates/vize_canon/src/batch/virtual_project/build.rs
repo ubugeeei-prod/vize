@@ -43,7 +43,6 @@ pub(super) struct VirtualBuildContext<'a> {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
-    pub(super) ref_unwrap_helper: &'static str,
     /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497).
     /// Otherwise JSX/TSX files pass through to TypeScript verbatim.
     pub(super) jsx_typecheck: bool,
@@ -136,7 +135,6 @@ pub(super) fn build_vue_registered_file(
                 preserve_unused_diagnostics: context.preserve_unused_diagnostics,
                 options_api: context.options_api,
                 legacy_vue2: context.legacy_vue2,
-                ref_unwrap_helper: context.ref_unwrap_helper,
                 dialect: context.dialect,
                 template_syntax: context.template_syntax,
                 hoist_shared_preamble: true,

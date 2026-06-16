@@ -25,6 +25,5 @@ pub use generator::{
 };
 pub use helpers::{DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME};
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping};
-pub(crate) use types::{VUE2_REF_UNWRAP_HELPER, ref_unwrap_helper_for};
 #[cfg(any(test, feature = "native"))]
 pub(crate) use types::{VirtualTsCheckOptions, VirtualTsGenerationOptions};

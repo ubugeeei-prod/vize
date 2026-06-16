@@ -82,7 +82,7 @@ function __setup() {
   type __R_item = typeof item;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;
+    type __U<T> = T extends import('vue').Ref ? T['value'] : T;
     var item: __U<__R_item> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = import('vue').ComponentPublicInstance;

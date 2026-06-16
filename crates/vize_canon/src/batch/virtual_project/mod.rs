@@ -107,10 +107,9 @@ pub struct VirtualProject {
 
     /// Configured Vue dialect from `vue.version` (default [`VueVersion::V3`]).
     ///
-    /// Threaded into virtual-TS generation for dialect-aware Vue instance and
-    /// helper typing while keeping default-V3 output stable.
+    /// Threaded into virtual-TS generation for dialect-aware Vue instance
+    /// typing.
     dialect: vize_carton::config::VueVersion,
-    ref_unwrap_helper: &'static str,
 
     /// Template syntax compatibility used when parsing SFC templates.
     template_syntax: TemplateSyntaxMode,

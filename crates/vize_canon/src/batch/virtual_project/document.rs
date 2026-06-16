@@ -9,9 +9,7 @@ use vize_carton::{String as CompactString, ToCompactString};
 
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::{ImportRewriter, ImportSourceMap};
-use crate::virtual_ts::{
-    VirtualTsCheckOptions, VirtualTsOptions, VizeMapping, ref_unwrap_helper_for,
-};
+use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
 use super::build::{descriptor_uses_jsx_script, virtual_ts_options_for_descriptor};
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
@@ -92,10 +90,6 @@ pub fn generate_vue_document_virtual_ts_with_options(
             options_api: document_options.options_api,
             legacy_vue2: document_options.legacy_vue2,
             dialect: vize_carton::config::VueVersion::default(),
-            ref_unwrap_helper: ref_unwrap_helper_for(
-                document_options.legacy_vue2,
-                vize_carton::config::VueVersion::default(),
-            ),
             template_syntax: TemplateSyntaxMode::default(),
             hoist_shared_preamble,
         },

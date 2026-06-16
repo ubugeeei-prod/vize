@@ -2,10 +2,12 @@ use std::fs;
 
 use super::{VirtualProject, snapshot_text, unique_case_dir};
 
+const REF_UNWRAP_HELPER: &str = "type __U<T> = T extends import('vue').Ref ? T['value'] : T;";
+
 #[test]
-fn configured_dialect_drives_dialect_aware_instance_typing() {
-    // Issue #1392/#1802: Vue 2.7 augments template context and uses
-    // single-arg Ref<T> matching, while default Vue 3 keeps Ref<T, S>.
+fn configured_dialect_drives_instance_typing_without_ref_arity() {
+    // Issue #1392/#1802: Vue 2.7 augments template context, but ref unwrapping
+    // must follow the user's installed Vue types instead of encoding an arity.
     let vue_content = r#"<script setup lang="ts">
 import { ref } from 'vue'
 
@@ -57,8 +59,12 @@ const count = ref(0)
         snapshot_text(default_content.as_str())
     );
     insta::assert_snapshot!("dialect_v2", snapshot_text(v2_content.as_str()));
-    assert!(default_content.contains("Ref<infer V, any>"));
-    assert!(v2_content.contains("Ref<infer V>"));
+    assert!(default_content.contains(REF_UNWRAP_HELPER));
+    assert!(v2_content.contains(REF_UNWRAP_HELPER));
+    assert!(!default_content.contains("Ref<infer"));
+    assert!(!v2_content.contains("Ref<infer"));
+    assert!(v2_content.contains("$listeners"));
+    assert!(!default_content.contains("$listeners"));
     assert!(!v2_content.contains("Ref<infer V, any>"));
     assert_ne!(v2_content, default_content);
 
@@ -67,8 +73,9 @@ const count = ref(0)
 }
 
 #[test]
-fn legacy_vue2_ref_unwrap_uses_vue2_ref_arity() {
-    // Issue #1802: `typeChecker.legacyVue2` must not emit Vue 3.4+ Ref<T, S>.
+fn legacy_vue2_ref_unwrap_uses_installed_vue_types() {
+    // Issue #1802: `typeChecker.legacyVue2` must not emit Vue-version-specific
+    // Ref<T, S> or Ref<T> arity in virtual TS.
     let case_dir = unique_case_dir("legacy-vue2-ref-unwrapped");
     let _ = fs::remove_dir_all(&case_dir);
     let src_dir = case_dir.join("src");
@@ -91,7 +98,8 @@ const count = ref(0)
     project.register_path(&vue_path).unwrap();
     let content = project.find_by_original(&vue_path).unwrap().content.clone();
 
-    assert!(content.contains("Ref<infer V>"));
+    assert!(content.contains(REF_UNWRAP_HELPER));
+    assert!(!content.contains("Ref<infer"));
     assert!(!content.contains("Ref<infer V, any>"));
 
     let _ = fs::remove_dir_all(&case_dir);

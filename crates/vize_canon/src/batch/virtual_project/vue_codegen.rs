@@ -44,7 +44,6 @@ pub(super) struct VueCodegenOptions {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
-    pub(super) ref_unwrap_helper: &'static str,
     pub(super) dialect: vize_carton::config::VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
     /// Hoist shared helpers to the batch ambient `.d.ts`; socket sessions keep
@@ -199,7 +198,6 @@ pub(super) fn generate_vue_virtual_ts(
                 preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
                 options_api: codegen_options.options_api,
                 legacy_vue2: codegen_options.legacy_vue2,
-                ref_unwrap_helper: codegen_options.ref_unwrap_helper,
                 template_syntax_quirks: matches!(
                     codegen_options.template_syntax,
                     TemplateSyntaxMode::Quirks

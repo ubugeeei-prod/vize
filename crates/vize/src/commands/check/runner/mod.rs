@@ -101,7 +101,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         .and_then(|path| crate::config::load_compiler_template_syntax(Some(path)));
     // Configured Vue dialect (`vue.version`). Defaults to Vue 3 when unset.
     // Threaded into canon's virtual-TS generation for dialect-aware instance
-    // and helper typing.
+    // typing.
     let dialect = dialect_from_features(loaded_config.features.vue_version);
     // Vue 3 Options API binding resolution is officially supported and is a
     // standard-build opt-in (not the `legacy` feature).

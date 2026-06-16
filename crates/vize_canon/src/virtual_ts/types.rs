@@ -104,20 +104,6 @@ impl Default for VirtualTsCheckOptions {
     }
 }
 
-pub(crate) const VUE3_REF_UNWRAP_HELPER: &str =
-    "    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;\n";
-
-pub(crate) const VUE2_REF_UNWRAP_HELPER: &str =
-    "    type __U<T> = T extends import('vue').Ref<infer V> ? V : T;\n";
-
-pub(crate) const fn ref_unwrap_helper_for(legacy_vue2: bool, dialect: VueVersion) -> &'static str {
-    if legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7) {
-        VUE2_REF_UNWRAP_HELPER
-    } else {
-        VUE3_REF_UNWRAP_HELPER
-    }
-}
-
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct VirtualTsGenerationOptions {
     pub(crate) check_options: VirtualTsCheckOptions,
@@ -131,7 +117,6 @@ pub(crate) struct VirtualTsGenerationOptions {
     pub(crate) options_api: bool,
     /// Legacy Vue 2.7 / Nuxt 2 (implies `options_api` plus Nuxt 2 globals).
     pub(crate) legacy_vue2: bool,
-    pub(crate) ref_unwrap_helper: &'static str,
     /// Preserve Vue parser compatibility semantics when generating template
     /// type checks.
     pub(crate) template_syntax_quirks: bool,
@@ -154,7 +139,6 @@ impl Default for VirtualTsGenerationOptions {
             dialect: VueVersion::default(),
             options_api: false,
             legacy_vue2: false,
-            ref_unwrap_helper: VUE3_REF_UNWRAP_HELPER,
             template_syntax_quirks: false,
             preserve_unused_diagnostics: false,
             hoist_shared_preamble: false,

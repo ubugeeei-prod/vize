@@ -86,7 +86,7 @@ function __setup() {
   type __R_text = typeof text;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;
+    type __U<T> = T extends import('vue').Ref ? T['value'] : T;
     var checked: __U<__R_checked> = undefined as any;
     var selected: __U<__R_selected> = undefined as any;
     var text: __U<__R_text> = undefined as any;

@@ -197,7 +197,7 @@ impl BatchTypeChecker {
     /// [`VueVersion::V3`](vize_carton::config::VueVersion::V3)).
     ///
     /// Threaded into virtual-TS generation so canon can emit dialect-aware
-    /// instance and helper types while the default V3 path stays stable.
+    /// instance types.
     pub fn set_dialect(&mut self, dialect: vize_carton::config::VueVersion) {
         self.project.set_dialect(dialect);
     }

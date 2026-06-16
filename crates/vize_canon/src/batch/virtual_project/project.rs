@@ -12,7 +12,7 @@ use vize_carton::{FxHashMap, profile};
 
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::ImportRewriter;
-use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, ref_unwrap_helper_for};
+use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 use super::VirtualProject;
 use super::build::{
@@ -40,10 +40,6 @@ impl VirtualProject {
             legacy_vue2: false,
             jsx_typecheck: false,
             dialect: vize_carton::config::VueVersion::default(),
-            ref_unwrap_helper: ref_unwrap_helper_for(
-                false,
-                vize_carton::config::VueVersion::default(),
-            ),
             template_syntax: TemplateSyntaxMode::default(),
             virtual_files: FxHashMap::default(),
             passthrough_files: FxHashMap::default(),
@@ -78,7 +74,6 @@ impl VirtualProject {
 
     pub(crate) fn set_legacy_vue2(&mut self, enabled: bool) {
         self.legacy_vue2 = enabled;
-        self.sync_ref_unwrap_helper();
     }
 
     /// Enable opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497).
@@ -92,15 +87,10 @@ impl VirtualProject {
     /// typing while keeping default-V3 output stable.
     pub(crate) fn set_dialect(&mut self, dialect: vize_carton::config::VueVersion) {
         self.dialect = dialect;
-        self.sync_ref_unwrap_helper();
     }
 
     pub(crate) fn set_template_syntax(&mut self, template_syntax: TemplateSyntaxMode) {
         self.template_syntax = template_syntax;
-    }
-
-    fn sync_ref_unwrap_helper(&mut self) {
-        self.ref_unwrap_helper = ref_unwrap_helper_for(self.legacy_vue2, self.dialect);
     }
 
     /// Get the project root.
@@ -132,7 +122,6 @@ impl VirtualProject {
                 preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
-                ref_unwrap_helper: self.ref_unwrap_helper,
                 jsx_typecheck: self.jsx_typecheck,
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
@@ -180,7 +169,6 @@ impl VirtualProject {
             preserve_unused_diagnostics,
             options_api: self.options_api,
             legacy_vue2: self.legacy_vue2,
-            ref_unwrap_helper: self.ref_unwrap_helper,
             jsx_typecheck: self.jsx_typecheck,
             dialect: self.dialect,
             template_syntax: self.template_syntax,
@@ -215,7 +203,6 @@ impl VirtualProject {
                 preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
-                ref_unwrap_helper: self.ref_unwrap_helper,
                 jsx_typecheck: self.jsx_typecheck,
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,

@@ -86,7 +86,7 @@ function __setup() {
   type __R_status = typeof status;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;
+    type __U<T> = T extends import('vue').Ref ? T['value'] : T;
     var data: __U<__R_data> = undefined as any;
     var message: __U<__R_message> = undefined as any;
     var status: __U<__R_status> = undefined as any;
