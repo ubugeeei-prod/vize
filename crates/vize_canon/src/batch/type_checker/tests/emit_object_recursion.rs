@@ -4,6 +4,7 @@ use super::{create_project_case, relative_path, resolve_test_tsgo_binary};
 use crate::batch::Diagnostic;
 use crate::batch::TypeChecker;
 use crate::batch::type_checker::{BatchTypeChecker, BatchTypeCheckerOptions, TypeCheckResult};
+use vize_carton::cstr;
 
 #[test]
 fn test_type_check_result() {
@@ -82,6 +83,100 @@ void (null as unknown as TestProps);
         found,
         "expected TS2589 in the TS consumer, got: {:?}",
         result.diagnostics
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_unwraps_options_api_setup_return_refs() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "options-api-setup-return-ref",
+        &[(
+            "src/App.vue",
+            r#"<script lang="ts">
+import { defineComponent, ref } from 'vue'
+
+export default defineComponent({
+  setup() {
+    const count = ref(0)
+    return { count }
+  },
+})
+</script>
+
+<template>
+  <div>{{ count.toFixed(true) }}</div>
+</template>
+"#,
+        )],
+    );
+
+    if !project_root.join("node_modules/vue/dist").exists() {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    }
+
+    let mut checker = match BatchTypeChecker::new(&project_root) {
+        Ok(checker) => checker,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+    checker.enable_options_api();
+    if checker.scan_project().is_err() {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    }
+    let result = match checker.check_project() {
+        Ok(result) => result,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+
+    let snapshot: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            (
+                relative_path(&project_root, &diagnostic.file),
+                diagnostic.code,
+                cstr!(
+                    "{}:{}:{} {}",
+                    diagnostic.line + 1,
+                    diagnostic.column + 1,
+                    match diagnostic.severity {
+                        1 => "error",
+                        2 => "warning",
+                        3 => "info",
+                        _ => "hint",
+                    },
+                    diagnostic.message
+                ),
+            )
+        })
+        .collect();
+
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/App.vue" && *code == Some(2345) && message.contains("boolean")
+        }),
+        "expected Options API setup ref return to unwrap to number in the template: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            file != "src/App.vue"
+                || !matches!(*code, Some(2304 | 2339))
+                || (!message.contains("count") && !message.contains("toFixed"))
+        }),
+        "setup return should not produce missing-binding/member false positives: {snapshot:#?}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

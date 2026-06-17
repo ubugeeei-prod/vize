@@ -4,8 +4,9 @@ mod options_api;
 mod options_api_support;
 mod setup_props;
 mod spans;
+mod template_refs;
 
-use vize_croquis::{BindingType, Croquis, ScopeData, ScopeKind};
+use vize_croquis::{Croquis, ScopeData, ScopeKind};
 
 use self::generics::{generic_injection_point, references_any_identifier};
 use self::imports::{
@@ -19,8 +20,9 @@ use self::options_api::{
 use self::setup_props::SetupPropsPlan;
 use self::spans::{
     DEFINE_COMPONENT_HELPER, DEFINE_COMPONENT_REF, collect_template_referenced_names,
-    is_local_setup_binding, merge_overlapping_spans, rewrite_export_default_for_module_scope,
+    merge_overlapping_spans, rewrite_export_default_for_module_scope,
 };
+use self::template_refs::TemplateRefUnwraps;
 use super::{
     helpers::{
         EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, IMPORT_META_AUGMENTATION,
@@ -35,8 +37,6 @@ use super::{
     types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
 };
 use vize_carton::{FxHashMap, FxHashSet, String, append, cstr, profile};
-
-const REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends import('vue').Ref ? T['value'] : T;\n";
 
 /// Generate virtual TypeScript from Vue SFC analysis.
 ///
@@ -736,44 +736,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         profile!("canon.virtual_ts.emit_template_scope", {
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
 
-            // Collect ref bindings for auto-unwrapping in template
-            let mut ref_bindings: Vec<&str> =
-                if let Some(template_referenced_names) = template_referenced_names.as_ref() {
-                    summary
-                        .bindings
-                        .bindings
-                        .iter()
-                        .filter(|(name, _)| template_referenced_names.contains(name.as_str()))
-                        .filter(|(name, binding_type)| {
-                            summary.reactivity.needs_value_access(name.as_str())
-                                || matches!(binding_type, BindingType::SetupMaybeRef)
-                                    && is_local_setup_binding(summary, name.as_str())
-                        })
-                        .map(|(name, _)| name.as_str())
-                        .collect()
-                } else {
-                    summary
-                        .bindings
-                        .bindings
-                        .iter()
-                        .filter(|(name, binding_type)| {
-                            summary.reactivity.needs_value_access(name.as_str())
-                                || matches!(binding_type, BindingType::SetupMaybeRef)
-                                    && is_local_setup_binding(summary, name.as_str())
-                        })
-                        .map(|(name, _)| name.as_str())
-                        .collect()
-                };
-            ref_bindings.sort_unstable();
-
-            // Capture ref types BEFORE template scope to avoid circular references.
-            // `typeof count` here refers to the setup-scope Ref<number>.
-            if !ref_bindings.is_empty() {
-                ts.push_str("  // Ref type captures (before template scope shadows them)\n");
-                for name in &ref_bindings {
-                    append!(ts, "  type __R_{name} = typeof {name};\n");
-                }
-            }
+            let template_ref_unwraps = TemplateRefUnwraps::collect(
+                summary,
+                options_api,
+                template_referenced_names.as_ref(),
+            );
+            template_ref_unwraps.emit_type_captures(&mut ts);
 
             // Semicolon prevents ASI issues when user script doesn't end with `;`
             // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
@@ -781,13 +749,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
             // Shadow ref bindings with unwrapped types.
             // `var` allows reassignment (Vue templates can assign to refs).
-            if !ref_bindings.is_empty() {
-                ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
-                ts.push_str(REF_UNWRAP_HELPER);
-                for name in &ref_bindings {
-                    append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
-                }
-            }
+            template_ref_unwraps.emit_template_variables(&mut ts);
 
             // Vue template context (available in template expressions)
             let template_context = profile!(
