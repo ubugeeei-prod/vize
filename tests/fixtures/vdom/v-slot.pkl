@@ -34,6 +34,10 @@ cases {
     input = "<MyComponent><template #header>H</template><template #footer>F</template></MyComponent>"
   }
   new {
+    name = "dotted named slots"
+    input = #"<MyComponent><template #item.alpha="{ value }">{{ value }}</template><template #item.beta="{ value }">{{ value }}</template><template #item.gamma="{ item }">{{ item }}</template></MyComponent>"#
+  }
+  new {
     name = "named slot with default"
     input = "<MyComponent><template #header>Header</template>Default content</MyComponent>"
   }

@@ -29,27 +29,26 @@ fn find_v_slot<'a, 'b>(el: &'b ElementNode<'a>) -> Option<&'b DirectiveNode<'a>>
     })
 }
 
-/// Get slot name from v-slot directive
-/// For dynamic slots, returns the raw source (without _ctx. prefix)
-/// For static slots, returns the content
+/// Get the v-slot name; dynamic slots return raw source without `_ctx.` prefix.
 pub fn get_slot_name(dir: &DirectiveNode<'_>) -> String {
-    dir.arg
-        .as_ref()
-        .map(|arg| match arg {
-            ExpressionNode::Simple(exp) => {
-                if exp.is_static {
-                    exp.content.clone()
-                } else {
-                    // For dynamic slot names, use raw source to avoid double _ctx. prefix
-                    exp.loc.source.clone()
-                }
-            }
-            ExpressionNode::Compound(exp) => exp.loc.source.clone(),
-        })
-        .unwrap_or_else(|| String::new("default"))
+    match dir.arg.as_ref() {
+        Some(ExpressionNode::Simple(exp)) if exp.is_static => {
+            static_slot_name_with_modifiers(exp.content.clone(), dir)
+        }
+        Some(ExpressionNode::Simple(exp)) => exp.loc.source.clone(),
+        Some(ExpressionNode::Compound(exp)) => exp.loc.source.clone(),
+        None => static_slot_name_with_modifiers(String::new("default"), dir),
+    }
 }
 
-/// Get slot props expression as string from v-slot directive
+fn static_slot_name_with_modifiers(mut name: String, dir: &DirectiveNode<'_>) -> String {
+    for modifier in dir.modifiers.iter() {
+        name.push('.');
+        name.push_str(modifier.content.as_str());
+    }
+    name
+}
+
 pub fn get_slot_props_string(dir: &DirectiveNode<'_>) -> Option<String> {
     dir.exp.as_ref().map(|exp| match exp {
         ExpressionNode::Simple(s) => s.content.clone(),
@@ -57,7 +56,6 @@ pub fn get_slot_props_string(dir: &DirectiveNode<'_>) -> Option<String> {
     })
 }
 
-/// Extract slot prop names from a v-slot expression.
 pub fn get_slot_prop_names(dir: &DirectiveNode<'_>) -> Vec<String> {
     get_slot_props_string(dir)
         .map(|pattern| extract_slot_prop_names(pattern.as_str()))
