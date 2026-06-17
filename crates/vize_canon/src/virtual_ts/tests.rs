@@ -6,6 +6,7 @@ use super::{
 };
 
 mod define_props_scope;
+mod no_check_template_bindings;
 mod options_api_props_spread;
 mod vif_chain;
 fn assert_virtual_ts_snapshot(name: &str, value: &str) {
@@ -1002,40 +1003,6 @@ const wrong = 'not a number'
 
     assert!(!output.code.contains("__vize_prop_check"));
     assert!(!output.code.contains("type __Child_Props_0"));
-}
-
-#[test]
-fn test_check_template_bindings_option_disables_template_expressions() {
-    use vize_croquis::{Analyzer, AnalyzerOptions};
-
-    let script = "const message = 'hello'\n";
-    let template = r#"<div>{{ message }}</div>"#;
-
-    let allocator = vize_carton::Bump::new();
-    let (root, _) = vize_armature::parse(&allocator, template);
-
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-    analyzer.analyze_script_setup(script);
-    analyzer.analyze_template(&root);
-    let summary = analyzer.finish();
-
-    let output = generate_virtual_ts_with_offsets_and_checks(
-        &summary,
-        Some(script),
-        Some(&root),
-        0,
-        0,
-        &VirtualTsOptions::default(),
-        VirtualTsGenerationOptions {
-            check_options: VirtualTsCheckOptions {
-                check_template_bindings: false,
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-    );
-
-    assert!(!output.code.contains("void (message);"));
 }
 
 #[test]

@@ -732,7 +732,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     setup_props_plan.emit_artifact(&mut ts, summary);
 
     // Template scope (nested inside setup)
-    if template_ast.is_some() {
+    if template_ast.is_some() && check_options.check_template_bindings {
         profile!("canon.virtual_ts.emit_template_scope", {
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
 
