@@ -6,6 +6,9 @@ use super::{
     String, TemplateChildNode, TransformContext, Vec, transform_children,
 };
 
+#[path = "component/slots.rs"]
+mod slots;
+
 /// Transform a component element into a `CreateComponent` operation.
 ///
 /// This handles slot collection, built-in component kinds, dynamic components,
@@ -227,16 +230,7 @@ pub(super) fn transform_component<'a>(
                         if let PropNode::Directive(dir) = prop
                             && dir.name.as_str() == "slot"
                         {
-                            let (slot_name, is_static_name) = if let Some(ref arg) = dir.arg {
-                                match arg {
-                                    ExpressionNode::Simple(exp) => {
-                                        (exp.content.clone(), exp.is_static)
-                                    }
-                                    _ => (String::from("default"), true),
-                                }
-                            } else {
-                                (String::from("default"), true)
-                            };
+                            let (slot_name, is_static_name) = slots::resolve_named_slot(dir);
                             if !is_static_name {
                                 has_dynamic_slot = true;
                             }
