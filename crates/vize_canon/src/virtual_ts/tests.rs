@@ -4,6 +4,8 @@ use super::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_and_checks, generate_virtual_ts_with_offsets_options_api,
 };
+use vize_carton::config::VueVersion;
+
 mod define_props_scope;
 mod no_check_template_bindings;
 mod options_api_props_spread;
@@ -25,10 +27,7 @@ fn test_vue_setup_helpers_are_actual_functions() {
 #[test]
 fn test_vue_template_context() {
     // Template context should contain Vue instance properties
-    let ctx = generate_template_context(
-        &VirtualTsOptions::default(),
-        vize_carton::config::VueVersion::V3,
-    );
+    let ctx = generate_template_context(&VirtualTsOptions::default(), VueVersion::V3, false);
     assert_virtual_ts_snapshot("virtual_ts_vue_template_context", ctx.as_str());
 }
 
@@ -36,10 +35,7 @@ fn test_vue_template_context() {
 fn test_vue_template_context_v3_default_is_unchanged() {
     // The default Vue 3 dialect must emit the exact same context as the
     // dialect-unaware default — no Vue 2-only members leak into Vue 3.
-    let v3 = generate_template_context(
-        &VirtualTsOptions::default(),
-        vize_carton::config::VueVersion::V3,
-    );
+    let v3 = generate_template_context(&VirtualTsOptions::default(), VueVersion::V3, false);
     assert!(!v3.contains("$listeners"));
     assert!(!v3.contains("$children"));
     assert!(!v3.contains("$scopedSlots"));
@@ -52,10 +48,8 @@ fn test_vue_template_context_v2_dialect_adds_vue2_members() {
     // A Vue 2 dialect augments the template context with Vue 2-only public
     // instance members so legacy templates ($listeners, $children, the
     // $on/$off/$once emitter, $set/$delete, $createElement, ...) type-check.
-    let v2 = generate_template_context(
-        &VirtualTsOptions::default(),
-        vize_carton::config::VueVersion::V2,
-    );
+    let v2 = generate_template_context(&VirtualTsOptions::default(), VueVersion::V2, false);
+    assert!(!v2.contains("import('vue').ComponentPublicInstance"));
     for member in [
         "$listeners",
         "$children",
@@ -78,17 +72,11 @@ fn test_vue_template_context_v2_dialect_adds_vue2_members() {
         );
     }
     // Vue 2.7 shares the same template-instance shape.
-    let v2_7 = generate_template_context(
-        &VirtualTsOptions::default(),
-        vize_carton::config::VueVersion::V2_7,
-    );
+    let v2_7 = generate_template_context(&VirtualTsOptions::default(), VueVersion::V2_7, false);
     assert!(v2_7.contains("const $listeners = undefined as any;"));
 
     // Vue 3 must NOT contain any of these (byte-identical to before).
-    let v3 = generate_template_context(
-        &VirtualTsOptions::default(),
-        vize_carton::config::VueVersion::V3,
-    );
+    let v3 = generate_template_context(&VirtualTsOptions::default(), VueVersion::V3, false);
     assert!(!v3.contains("$listeners"));
     assert!(!v3.contains("$createElement"));
 }
@@ -111,7 +99,7 @@ fn test_vue_template_context_with_globals() {
         ],
         ..Default::default()
     };
-    let ctx = generate_template_context(&options, vize_carton::config::VueVersion::V3);
+    let ctx = generate_template_context(&options, VueVersion::V3, false);
     assert_virtual_ts_snapshot("virtual_ts_vue_template_context_with_globals", ctx.as_str());
 }
 

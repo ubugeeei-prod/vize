@@ -259,28 +259,25 @@ const VUE2_INSTANCE_MEMBERS: &[&str] = &[
 
 /// Generate Vue template context declarations dynamically.
 ///
-/// Derives `$`-prefixed globals from `ComponentPublicInstance` so that
-/// type resolution is delegated to Corsa via Vue's type system
-/// (including `ComponentCustomProperties` augmentations from plugins).
-///
-/// When `dialect` is a Vue 2 line (`V2` / `V2_7`), the context is additionally
-/// augmented with Vue 2-only public-instance members (see
-/// [`VUE2_INSTANCE_MEMBERS`]) so legacy templates do not false-error. Vue 3
-/// (the default) emits the exact same output as before — byte-identical.
-pub(crate) fn generate_template_context(options: &VirtualTsOptions, dialect: VueVersion) -> String {
+/// Uses Vue's `ComponentPublicInstance` for Vue 3. In legacy Vue 2 mode, emits
+/// a structural fallback because Vue 2.6 does not export that Vue 3 helper type.
+pub(crate) fn generate_template_context(
+    options: &VirtualTsOptions,
+    dialect: VueVersion,
+    legacy_vue2: bool,
+) -> String {
     let mut ctx = String::default();
 
     let needs_global_helper =
         !options.template_globals.is_empty() || !options.css_modules.is_empty();
 
-    // Vue 2 / 2.7 share a template dialect whose public instance still exposes
-    // members removed in Vue 3 (`$listeners`, `$children`, the `$on`/`$off`/
-    // `$once` event emitter, `$set`/`$delete`, `$createElement`, ...).
-    let vue2_dialect = matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
-
     // Instance type + conditional accessor helper
-    ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n");
-    ctx.push_str("    type __Ctx = import('vue').ComponentPublicInstance;\n");
+    let vue2_dialect = legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
+    if vue2_dialect {
+        ctx.push_str("    // Vue template context (Vue 2-compatible structural fallback)\n    type __Ctx = { $attrs: Record<string, unknown>; $slots: Record<string, unknown>; $refs: Record<string, any>; $emit: (...args: any[]) => void; };\n");
+    } else {
+        ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n    type __Ctx = import('vue').ComponentPublicInstance;\n");
+    }
     if needs_global_helper {
         ctx.push_str("    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? __Ctx[K] : F;\n");
     }

@@ -2,7 +2,9 @@ use std::fs;
 
 use super::{VirtualProject, snapshot_text, unique_case_dir};
 
-const REF_UNWRAP_HELPER: &str = "type __U<T> = T extends import('vue').Ref ? T['value'] : T;";
+const MODERN_REF_UNWRAP_HELPER: &str =
+    "type __U<T> = T extends import('vue').Ref ? T['value'] : T;";
+const LEGACY_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: infer __V } ? __V : T;";
 
 #[test]
 fn configured_dialect_drives_instance_typing_without_ref_arity() {
@@ -59,13 +61,15 @@ const count = ref(0)
         snapshot_text(default_content.as_str())
     );
     insta::assert_snapshot!("dialect_v2", snapshot_text(v2_content.as_str()));
-    assert!(default_content.contains(REF_UNWRAP_HELPER));
-    assert!(v2_content.contains(REF_UNWRAP_HELPER));
+    assert!(default_content.contains(MODERN_REF_UNWRAP_HELPER));
+    assert!(v2_content.contains(LEGACY_REF_UNWRAP_HELPER));
     assert!(!default_content.contains("Ref<infer"));
     assert!(!v2_content.contains("Ref<infer"));
     assert!(v2_content.contains("$listeners"));
     assert!(!default_content.contains("$listeners"));
     assert!(!v2_content.contains("Ref<infer V, any>"));
+    assert!(!v2_content.contains("import('vue').Ref"));
+    assert!(!v2_content.contains("import('vue').ComponentPublicInstance"));
     assert_ne!(v2_content, default_content);
 
     let _ = fs::remove_dir_all(&v3_dir);
@@ -98,9 +102,80 @@ const count = ref(0)
     project.register_path(&vue_path).unwrap();
     let content = project.find_by_original(&vue_path).unwrap().content.clone();
 
-    assert!(content.contains(REF_UNWRAP_HELPER));
+    assert!(content.contains(LEGACY_REF_UNWRAP_HELPER));
     assert!(!content.contains("Ref<infer"));
     assert!(!content.contains("Ref<infer V, any>"));
+    assert!(!content.contains("import('vue').Ref"));
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn legacy_vue2_virtual_ts_avoids_vue3_only_helper_exports() {
+    let case_dir = unique_case_dir("legacy-vue2-no-vue3-helpers");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+    let setup_path = src_dir.join("Setup.vue");
+    let options_path = src_dir.join("Options.vue");
+    fs::write(
+        &setup_path,
+        r#"<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue'
+
+const count = ref(0)
+const input = useTemplateRef<HTMLInputElement>('input')
+</script>
+
+<template>
+  <span>{{ count }} {{ input }}</span>
+</template>
+"#,
+    )
+    .unwrap();
+    fs::write(
+        &options_path,
+        r#"<script lang="ts">
+export default {
+  data() {
+    return { count: 0 }
+  },
+}
+</script>
+
+<template>
+  <span>{{ count }}</span>
+</template>
+"#,
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.set_legacy_vue2(true);
+    project.register_path(&setup_path).unwrap();
+    project.register_path(&options_path).unwrap();
+
+    let setup_content = project
+        .find_by_original(&setup_path)
+        .unwrap()
+        .content
+        .clone();
+    let options_content = project
+        .find_by_original(&options_path)
+        .unwrap()
+        .content
+        .clone();
+    assert!(setup_content.contains(LEGACY_REF_UNWRAP_HELPER));
+    for content in [setup_content.as_str(), options_content.as_str()] {
+        assert!(!content.contains("import('vue').Ref"));
+        assert!(!content.contains("import('vue').ShallowRef"));
+        assert!(!content.contains("import('vue').ComponentPublicInstance"));
+        assert!(!content.contains("import('vue').defineComponent"));
+    }
+    assert!(options_content.contains("declare function __vizeDefineComponent<T>(options: T): T;"));
+
+    project.materialize().unwrap();
+    assert!(!project.virtual_root().join("__vize_helpers.d.ts").exists());
 
     let _ = fs::remove_dir_all(&case_dir);
 }

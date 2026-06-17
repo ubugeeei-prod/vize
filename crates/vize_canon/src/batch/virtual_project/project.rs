@@ -89,6 +89,14 @@ impl VirtualProject {
         self.dialect = dialect;
     }
 
+    pub(super) fn uses_shared_helpers(&self) -> bool {
+        !self.legacy_vue2
+            && !matches!(
+                self.dialect,
+                vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
+            )
+    }
+
     pub(crate) fn set_template_syntax(&mut self, template_syntax: TemplateSyntaxMode) {
         self.template_syntax = template_syntax;
     }
