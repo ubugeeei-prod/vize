@@ -10,19 +10,11 @@ use vize_carton::cstr;
 use super::super::dts::rewrite_relative_specifier;
 use super::detect_nuxt_auto_imports;
 use super::fallback::{fallback_stub_strings, parse_nuxt_config_modules};
-use super::missing_generated_types_warning;
 use super::parsing::{parse_export_names, parse_module_specifier};
 use super::plugins::extract_plugin_provide_keys_from_source;
 use super::stubs::declared_name;
 
-#[test]
-fn warns_only_when_generated_nuxt_types_are_missing() {
-    assert!(missing_generated_types_warning(true).is_none());
-    let message =
-        missing_generated_types_warning(false).expect("missing generated types must warn");
-    assert!(message.contains("nuxi prepare"));
-    assert!(message.contains("`any`"));
-}
+mod build_dir;
 
 #[test]
 fn parses_module_export_lines() {

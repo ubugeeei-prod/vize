@@ -1,6 +1,6 @@
-//! Detection driven by Nuxt's generated `.nuxt` type artifacts.
+//! Detection driven by Nuxt's generated type artifacts.
 
-use std::{fs, path::Path};
+use std::path::Path;
 
 use ignore::WalkBuilder;
 use vize_canon::virtual_ts::{TemplateGlobal, VirtualTsOptions};
@@ -10,6 +10,7 @@ use super::super::dts::{
     parse_declared_global_values, parse_interface_members_with_rewritten_imports,
     rewrite_relative_specifier,
 };
+use super::generated_dir::NuxtGeneratedDir;
 use super::parsing::{
     normalize_component_binding_name, parse_export_names, parse_module_specifier,
 };
@@ -17,15 +18,16 @@ use super::stubs::{push_declared_const, tracked_read_to_string};
 
 pub(super) fn collect_generated_stubs(
     cwd: &Path,
+    generated_dir: &NuxtGeneratedDir,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
 ) -> bool {
-    let nuxt_types_dir = cwd.join(".nuxt/types");
+    let nuxt_types_dir = generated_dir.types_dir();
     let mut found_import_manifest = false;
 
     if nuxt_types_dir.exists() {
-        let walker = WalkBuilder::new(&nuxt_types_dir)
+        let walker = WalkBuilder::new(nuxt_types_dir.as_path())
             .hidden(false)
             .standard_filters(false)
             .build();
@@ -74,14 +76,20 @@ pub(super) fn collect_generated_stubs(
         }
     }
 
-    collect_root_generated_global_stubs(cwd, stubs, seen_names);
-    collect_root_generated_component_stubs(cwd, stubs, seen_names, external_template_bindings);
+    collect_root_generated_global_stubs(cwd, generated_dir, stubs, seen_names);
+    collect_root_generated_component_stubs(
+        cwd,
+        generated_dir,
+        stubs,
+        seen_names,
+        external_template_bindings,
+    );
 
     if found_import_manifest {
         return true;
     }
 
-    let imports_path = cwd.join(".nuxt/imports.d.ts");
+    let imports_path = generated_dir.imports_path();
     if !imports_path.exists() {
         return false;
     }
@@ -133,10 +141,11 @@ pub(super) fn collect_generated_stubs(
 
 fn collect_root_generated_global_stubs(
     cwd: &Path,
+    generated_dir: &NuxtGeneratedDir,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
 ) {
-    for path in root_generated_dts_files(cwd) {
+    for path in generated_dir.root_dts_files() {
         if let Ok(values) = parse_declared_global_values(path.as_path()) {
             for (name, type_annotation) in values {
                 push_generated_declared_const(
@@ -274,11 +283,12 @@ fn module_path_exists(path: &Path) -> bool {
 
 fn collect_root_generated_component_stubs(
     cwd: &Path,
+    generated_dir: &NuxtGeneratedDir,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
 ) {
-    for path in root_generated_dts_files(cwd) {
+    for path in generated_dir.root_dts_files() {
         collect_global_component_stubs(
             cwd,
             path.as_path(),
@@ -287,25 +297,6 @@ fn collect_root_generated_component_stubs(
             external_template_bindings,
         );
     }
-}
-
-fn root_generated_dts_files(cwd: &Path) -> Vec<std::path::PathBuf> {
-    let nuxt_dir = cwd.join(".nuxt");
-    let Ok(entries) = fs::read_dir(&nuxt_dir) else {
-        return Vec::new();
-    };
-
-    entries
-        .flatten()
-        .map(|entry| entry.path())
-        .filter(|path| {
-            path.is_file()
-                && path
-                    .file_name()
-                    .and_then(|name| name.to_str())
-                    .is_some_and(|name| name.ends_with(".d.ts"))
-        })
-        .collect()
 }
 
 fn collect_global_component_stubs(
@@ -333,7 +324,7 @@ fn collect_global_component_stubs(
 }
 
 pub(super) fn collect_generated_template_globals(
-    cwd: &Path,
+    generated_dir: &NuxtGeneratedDir,
     options: &mut VirtualTsOptions,
     seen_auto_imports: &FxHashSet<String>,
 ) {
@@ -343,7 +334,7 @@ pub(super) fn collect_generated_template_globals(
         .map(|global| global.name.clone())
         .collect::<FxHashSet<_>>();
 
-    for path in generated_dts_files(cwd) {
+    for path in generated_dir.dts_files() {
         let Ok(members) = parse_interface_members_with_rewritten_imports(
             path.as_path(),
             "interface ComponentCustomProperties",
@@ -365,29 +356,6 @@ pub(super) fn collect_generated_template_globals(
     if seen_auto_imports.contains("useI18n") || seen_auto_imports.contains("useLocalePath") {
         collect_i18n_template_globals(options, &mut seen_globals);
     }
-}
-
-fn generated_dts_files(cwd: &Path) -> Vec<std::path::PathBuf> {
-    let mut files = root_generated_dts_files(cwd);
-    let nuxt_types_dir = cwd.join(".nuxt/types");
-    if nuxt_types_dir.exists() {
-        let walker = WalkBuilder::new(&nuxt_types_dir)
-            .hidden(false)
-            .standard_filters(false)
-            .build();
-
-        for entry in walker.flatten() {
-            let path = entry.path();
-            let is_dts = path
-                .file_name()
-                .and_then(|name| name.to_str())
-                .is_some_and(|name| name.ends_with(".d.ts"));
-            if path.is_file() && is_dts {
-                files.push(path.to_path_buf());
-            }
-        }
-    }
-    files
 }
 
 fn collect_i18n_template_globals(

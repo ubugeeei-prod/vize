@@ -10,18 +10,16 @@ mod fallback_values;
 use std::path::Path;
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectExpression, Statement};
+use oxc_ast::ast::{ArrayExpressionElement, Expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, ToCompactString};
 
 use super::parsing::{
-    extract_call_expression_from_export, extract_expression, extract_object_expression,
-    find_object_property,
+    default_export_config_object, extract_expression, find_object_property, nuxt_config_source,
 };
 use super::stubs::{
     declared_name, push_generic_function_stub, push_named_overload_stubs, push_stub,
-    tracked_read_to_string,
 };
 use fallback_values::fallback_value_stubs;
 
@@ -38,7 +36,7 @@ pub(super) fn collect_fallback_stubs(
         &mut fallback_names,
     );
     // The hardcoded `any` ladder silently weakens checking, so only inject it
-    // when the project has no generated `.nuxt` import manifest to rely on.
+    // when the project has no generated Nuxt import manifest to rely on.
     if !has_generated_imports {
         push_fallback_stub_group(
             fallback_value_stubs(),
@@ -249,47 +247,6 @@ pub(super) fn parse_nuxt_config_modules(config_source: &str) -> NuxtConfigModule
         }
     }
     resolved
-}
-
-/// Finds the config object behind the default export, looking through the
-/// `defineNuxtConfig(...)` wrapper as well as parenthesized/`as`/`satisfies`
-/// wrappers on either form. Returns `None` for anything else (identifier
-/// references, unknown wrapper calls, missing default export), which callers
-/// treat as an unresolved module list.
-fn default_export_config_object<'a>(
-    statements: &'a [Statement<'a>],
-) -> Option<&'a ObjectExpression<'a>> {
-    let export = statements.iter().find_map(|statement| match statement {
-        Statement::ExportDefaultDeclaration(export) => Some(export),
-        _ => None,
-    })?;
-
-    if let Some(call) = extract_call_expression_from_export(&export.declaration) {
-        if !matches!(&call.callee, Expression::Identifier(callee) if callee.name == "defineNuxtConfig")
-        {
-            return None;
-        }
-        return call
-            .arguments
-            .first()
-            .and_then(|argument| argument.as_expression())
-            .and_then(extract_object_expression);
-    }
-
-    export
-        .declaration
-        .as_expression()
-        .and_then(extract_object_expression)
-}
-
-pub(super) fn nuxt_config_source(cwd: &Path) -> String {
-    for file_name in ["nuxt.config.ts", "nuxt.config.js", "nuxt.config.mts"] {
-        let path = cwd.join(file_name);
-        if let Ok(source) = tracked_read_to_string(path.as_path()) {
-            return source.into();
-        }
-    }
-    String::default()
 }
 
 #[cfg(test)]
