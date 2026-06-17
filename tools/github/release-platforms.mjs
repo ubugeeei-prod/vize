@@ -26,7 +26,7 @@ export const cliReleasePlatforms = [
     archive: "vize-aarch64-apple-darwin.tar.gz",
   },
   {
-    host: "blacksmith-32vcpu-windows-2025",
+    host: "windows-2025",
     target: "x86_64-pc-windows-msvc",
     archive: "vize-x86_64-pc-windows-msvc.zip",
   },
@@ -59,7 +59,7 @@ export const nativeReleasePlatforms = [
     cross_compile: false,
   },
   {
-    host: "blacksmith-32vcpu-windows-2025",
+    host: "windows-2025",
     target: "x86_64-pc-windows-msvc",
     cross_compile: false,
   },
