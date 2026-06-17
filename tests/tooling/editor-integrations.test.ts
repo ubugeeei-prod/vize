@@ -272,35 +272,35 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   );
   assert.match(
     ' :[activeKey as keyof Props].prop="makeValue<User>() as User"',
-    new RegExp(directivePatterns[2]?.begin ?? ""),
+    new RegExp(directivePatterns[1]?.begin ?? ""),
   );
   assert.match(
     ' @[eventName as keyof Emits].stop="handler($event as MouseEvent)"',
-    new RegExp(directivePatterns[4]?.begin ?? ""),
+    new RegExp(directivePatterns[2]?.begin ?? ""),
   );
   assert.match(
     ' #[slotName as keyof Slots]="slotProps as SlotProps"',
-    new RegExp(directivePatterns[6]?.begin ?? ""),
+    new RegExp(directivePatterns[3]?.begin ?? ""),
   );
   for (const pattern of directivePatterns) {
     assert.equal(pattern.contentName, "meta.embedded.expression.vue");
-    assert.equal(pattern.patterns?.[0]?.include, "source.ts#expression");
+    assert.equal(pattern.patterns?.[0]?.include, "#vue-ts-expression");
   }
   assert.equal(
     directivePatterns[0]?.beginCaptures?.["5"]?.patterns?.[0]?.include,
-    "source.ts#expression",
+    "#vue-ts-expression",
+  );
+  assert.equal(
+    directivePatterns[1]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
+    "#vue-ts-expression",
   );
   assert.equal(
     directivePatterns[2]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
-    "source.ts#expression",
+    "#vue-ts-expression",
   );
   assert.equal(
-    directivePatterns[4]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
-    "source.ts#expression",
-  );
-  assert.equal(
-    directivePatterns[6]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
-    "source.ts#expression",
+    directivePatterns[3]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
+    "#vue-ts-expression",
   );
   assert.equal(repository["vue-interpolation"]?.patterns?.[0]?.include, "source.ts#expression");
   assert.equal(repository["vue-template-pug"]?.patterns?.[1]?.patterns?.[0]?.include, "text.pug");
@@ -311,7 +311,7 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   );
   assert.equal(
     repository["vue-generic-attribute"]?.patterns?.[0]?.patterns?.[0]?.include,
-    "source.ts#type-inner",
+    "#vue-ts-type",
   );
   assert.match(
     'generic="T extends Record<string, unknown> = Foo<User>"',
@@ -324,11 +324,11 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   );
   assert.equal(
     valueLessDirectivePatterns[1]?.captures?.["5"]?.patterns?.[0]?.include,
-    "source.ts#expression",
+    "#vue-ts-expression",
   );
   assert.equal(
     valueLessDirectivePatterns[2]?.captures?.["4"]?.patterns?.[0]?.include,
-    "source.ts#expression",
+    "#vue-ts-expression",
   );
   assert.match(
     '<i18n message="a > b" lang="json">',

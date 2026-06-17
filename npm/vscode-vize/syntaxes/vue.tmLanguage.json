@@ -69,13 +69,19 @@
       "endCaptures": {
         "0": { "name": "punctuation.definition.tag.end.html" }
       },
-      "patterns": [{ "include": "#vue-tag-attributes" }]
+      "patterns": [
+        { "include": "#vue-directive-attributes" },
+        { "include": "#vue-directives" },
+        { "include": "#vue-tag-attributes" }
+      ]
     },
     "vue-template-content": {
       "begin": "(?<=>)",
       "end": "(?=</template>)",
       "patterns": [
+        { "include": "#vue-comments" },
         { "include": "#vue-interpolation" },
+        { "include": "#vue-template" },
         { "include": "#vue-directives" },
         { "include": "#html-tags" },
         { "include": "#html-entities" }
@@ -93,6 +99,79 @@
       "name": "meta.embedded.expression.vue",
       "patterns": [{ "include": "source.ts#expression" }]
     },
+    "vue-ts-expression": {
+      "patterns": [
+        { "include": "#vue-ts-comments" },
+        { "include": "#vue-ts-strings" },
+        { "include": "#vue-ts-generic-call" },
+        {
+          "match": "\\b([A-Za-z_$][\\w$]*)(?=\\s*\\()",
+          "captures": { "1": { "name": "entity.name.function.ts" } }
+        },
+        { "match": "\\b(as|satisfies)\\b", "name": "keyword.control.as.ts" },
+        {
+          "match": "\\b(keyof|typeof|infer|extends|in|of|instanceof|new|await)\\b",
+          "name": "keyword.operator.expression.ts"
+        },
+        { "match": "\\b(true|false|null|undefined)\\b", "name": "constant.language.ts" },
+        { "match": "\\b\\d+(?:\\.\\d+)?\\b", "name": "constant.numeric.ts" },
+        { "match": "\\b[A-Z][\\w$]*\\b", "name": "entity.name.type.ts" },
+        { "match": "\\b[A-Za-z_$][\\w$]*\\b", "name": "variable.other.readwrite.ts" },
+        { "match": "[{}()\\[\\].,?:+\\-*/%&|!~=<>]+", "name": "keyword.operator.ts" }
+      ]
+    },
+    "vue-ts-type": {
+      "patterns": [
+        { "include": "#vue-ts-comments" },
+        { "include": "#vue-ts-strings" },
+        { "include": "#vue-ts-type-arguments" },
+        {
+          "match": "\\b(extends|keyof|typeof|infer|readonly|in|out)\\b",
+          "name": "keyword.operator.type.ts"
+        },
+        { "match": "\\b[A-Za-z_$][\\w$]*\\b", "name": "entity.name.type.ts" },
+        { "match": "[{}()\\[\\].,?:+\\-*/%&|!~=<>]+", "name": "keyword.operator.type.ts" }
+      ]
+    },
+    "vue-ts-generic-call": {
+      "begin": "\\b([A-Za-z_$][\\w$]*)(\\s*<)",
+      "beginCaptures": {
+        "1": { "name": "entity.name.function.ts" },
+        "2": { "name": "punctuation.definition.typeparameters.begin.ts" }
+      },
+      "end": ">",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.typeparameters.end.ts" }
+      },
+      "name": "meta.type.parameters.ts",
+      "patterns": [{ "include": "#vue-ts-type" }]
+    },
+    "vue-ts-type-arguments": {
+      "begin": "\\b([A-Za-z_$][\\w$]*)(\\s*<)",
+      "beginCaptures": {
+        "1": { "name": "entity.name.type.ts" },
+        "2": { "name": "punctuation.definition.typeparameters.begin.ts" }
+      },
+      "end": ">",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.typeparameters.end.ts" }
+      },
+      "name": "meta.type.parameters.ts",
+      "patterns": [{ "include": "#vue-ts-type" }]
+    },
+    "vue-ts-comments": {
+      "patterns": [
+        { "begin": "/\\*", "end": "\\*/", "name": "comment.block.ts" },
+        { "begin": "//", "end": "$", "name": "comment.line.double-slash.ts" }
+      ]
+    },
+    "vue-ts-strings": {
+      "patterns": [
+        { "begin": "`", "end": "`", "name": "string.quoted.template.ts" },
+        { "begin": "\"", "end": "\"", "name": "string.quoted.double.ts" },
+        { "begin": "'", "end": "'", "name": "string.quoted.single.ts" }
+      ]
+    },
     "vue-directives": {
       "patterns": [
         {
@@ -108,7 +187,7 @@
             "4": { "name": "punctuation.section.brackets.begin.vue" },
             "5": {
               "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
+              "patterns": [{ "include": "#vue-ts-expression" }]
             },
             "6": { "name": "punctuation.section.brackets.end.vue" }
           }
@@ -121,7 +200,7 @@
             "3": { "name": "punctuation.section.brackets.begin.vue" },
             "4": {
               "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
+              "patterns": [{ "include": "#vue-ts-expression" }]
             },
             "5": { "name": "punctuation.section.brackets.end.vue" }
           }
@@ -134,7 +213,7 @@
             "3": { "name": "punctuation.section.brackets.begin.vue" },
             "4": {
               "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
+              "patterns": [{ "include": "#vue-ts-expression" }]
             },
             "5": { "name": "punctuation.section.brackets.end.vue" }
           }
@@ -147,7 +226,7 @@
             "3": { "name": "punctuation.section.brackets.begin.vue" },
             "4": {
               "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
+              "patterns": [{ "include": "#vue-ts-expression" }]
             },
             "5": { "name": "punctuation.section.brackets.end.vue" }
           }
@@ -269,32 +348,18 @@
     "vue-generic-attribute": {
       "patterns": [
         {
-          "begin": "\\b(generic)\\b\\s*(=)\\s*(\")",
+          "begin": "\\b(generic)\\b\\s*(=)\\s*([\"'])",
           "beginCaptures": {
             "1": { "name": "entity.other.attribute-name.html" },
             "2": { "name": "punctuation.separator.key-value.html" },
             "3": { "name": "punctuation.definition.string.begin.html" }
           },
-          "end": "(\")",
+          "end": "(\\3)",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.html" }
           },
           "contentName": "meta.embedded.type.typescript",
-          "patterns": [{ "include": "source.ts#type-inner" }]
-        },
-        {
-          "begin": "\\b(generic)\\b\\s*(=)\\s*(')",
-          "beginCaptures": {
-            "1": { "name": "entity.other.attribute-name.html" },
-            "2": { "name": "punctuation.separator.key-value.html" },
-            "3": { "name": "punctuation.definition.string.begin.html" }
-          },
-          "end": "(')",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.html" }
-          },
-          "contentName": "meta.embedded.type.typescript",
-          "patterns": [{ "include": "source.ts#type-inner" }]
+          "patterns": [{ "include": "#vue-ts-type" }]
         }
       ]
     },
@@ -573,8 +638,7 @@
     "vue-directive-attributes": {
       "patterns": [
         {
-          "comment": "v-* directive with double-quoted expression",
-          "begin": "(?<!\\S)(v-[a-zA-Z0-9_-]+)(?:(:)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\])))?((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*(\")",
+          "begin": "(?<!\\S)(v-[a-zA-Z0-9_-]+)(?:(:)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\])))?((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*([\"'])",
           "beginCaptures": {
             "1": { "name": "keyword.control.directive.vue" },
             "2": { "name": "punctuation.definition.directive.vue" },
@@ -582,181 +646,85 @@
             "4": { "name": "punctuation.section.brackets.begin.vue" },
             "5": {
               "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
+              "patterns": [{ "include": "#vue-ts-expression" }]
             },
             "6": { "name": "punctuation.section.brackets.end.vue" },
             "7": { "name": "storage.modifier.directive.vue" },
             "8": { "name": "punctuation.separator.key-value.html" },
             "9": { "name": "punctuation.definition.string.begin.html" }
           },
-          "end": "(\")",
+          "end": "(\\9)",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.html" }
           },
           "contentName": "meta.embedded.expression.vue",
-          "patterns": [{ "include": "source.ts#expression" }]
+          "patterns": [{ "include": "#vue-ts-expression" }]
         },
         {
-          "comment": "v-* directive with single-quoted expression",
-          "begin": "(?<!\\S)(v-[a-zA-Z0-9_-]+)(?:(:)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\])))?((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*(')",
-          "beginCaptures": {
-            "1": { "name": "keyword.control.directive.vue" },
-            "2": { "name": "punctuation.definition.directive.vue" },
-            "3": { "name": "entity.other.attribute-name.directive.argument.vue" },
-            "4": { "name": "punctuation.section.brackets.begin.vue" },
-            "5": {
-              "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
-            },
-            "6": { "name": "punctuation.section.brackets.end.vue" },
-            "7": { "name": "storage.modifier.directive.vue" },
-            "8": { "name": "punctuation.separator.key-value.html" },
-            "9": { "name": "punctuation.definition.string.begin.html" }
-          },
-          "end": "(')",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.html" }
-          },
-          "contentName": "meta.embedded.expression.vue",
-          "patterns": [{ "include": "source.ts#expression" }]
-        },
-        {
-          "comment": ":prop shorthand with double-quoted expression",
-          "begin": "(?<!\\S)(:)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*(\")",
+          "begin": "(?<!\\S)(:)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*([\"'])",
           "beginCaptures": {
             "1": { "name": "punctuation.definition.directive.vue" },
             "2": { "name": "entity.other.attribute-name.binding.vue" },
             "3": { "name": "punctuation.section.brackets.begin.vue" },
             "4": {
               "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
+              "patterns": [{ "include": "#vue-ts-expression" }]
             },
             "5": { "name": "punctuation.section.brackets.end.vue" },
             "6": { "name": "storage.modifier.directive.vue" },
             "7": { "name": "punctuation.separator.key-value.html" },
             "8": { "name": "punctuation.definition.string.begin.html" }
           },
-          "end": "(\")",
+          "end": "(\\8)",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.html" }
           },
           "contentName": "meta.embedded.expression.vue",
-          "patterns": [{ "include": "source.ts#expression" }]
+          "patterns": [{ "include": "#vue-ts-expression" }]
         },
         {
-          "comment": ":prop shorthand with single-quoted expression",
-          "begin": "(?<!\\S)(:)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*(')",
-          "beginCaptures": {
-            "1": { "name": "punctuation.definition.directive.vue" },
-            "2": { "name": "entity.other.attribute-name.binding.vue" },
-            "3": { "name": "punctuation.section.brackets.begin.vue" },
-            "4": {
-              "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
-            },
-            "5": { "name": "punctuation.section.brackets.end.vue" },
-            "6": { "name": "storage.modifier.directive.vue" },
-            "7": { "name": "punctuation.separator.key-value.html" },
-            "8": { "name": "punctuation.definition.string.begin.html" }
-          },
-          "end": "(')",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.html" }
-          },
-          "contentName": "meta.embedded.expression.vue",
-          "patterns": [{ "include": "source.ts#expression" }]
-        },
-        {
-          "comment": "@event shorthand with double-quoted expression",
-          "begin": "(?<!\\S)(@)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*(\")",
+          "begin": "(?<!\\S)(@)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*([\"'])",
           "beginCaptures": {
             "1": { "name": "punctuation.definition.directive.vue" },
             "2": { "name": "entity.other.attribute-name.event.vue" },
             "3": { "name": "punctuation.section.brackets.begin.vue" },
             "4": {
               "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
+              "patterns": [{ "include": "#vue-ts-expression" }]
             },
             "5": { "name": "punctuation.section.brackets.end.vue" },
             "6": { "name": "storage.modifier.directive.vue" },
             "7": { "name": "punctuation.separator.key-value.html" },
             "8": { "name": "punctuation.definition.string.begin.html" }
           },
-          "end": "(\")",
+          "end": "(\\8)",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.html" }
           },
           "contentName": "meta.embedded.expression.vue",
-          "patterns": [{ "include": "source.ts#expression" }]
+          "patterns": [{ "include": "#vue-ts-expression" }]
         },
         {
-          "comment": "@event shorthand with single-quoted expression",
-          "begin": "(?<!\\S)(@)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*(')",
-          "beginCaptures": {
-            "1": { "name": "punctuation.definition.directive.vue" },
-            "2": { "name": "entity.other.attribute-name.event.vue" },
-            "3": { "name": "punctuation.section.brackets.begin.vue" },
-            "4": {
-              "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
-            },
-            "5": { "name": "punctuation.section.brackets.end.vue" },
-            "6": { "name": "storage.modifier.directive.vue" },
-            "7": { "name": "punctuation.separator.key-value.html" },
-            "8": { "name": "punctuation.definition.string.begin.html" }
-          },
-          "end": "(')",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.html" }
-          },
-          "contentName": "meta.embedded.expression.vue",
-          "patterns": [{ "include": "source.ts#expression" }]
-        },
-        {
-          "comment": "#slot shorthand with double-quoted expression",
-          "begin": "(?<!\\S)(#)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*(\")",
+          "begin": "(?<!\\S)(#)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*([\"'])",
           "beginCaptures": {
             "1": { "name": "punctuation.definition.directive.vue" },
             "2": { "name": "entity.other.attribute-name.slot.vue" },
             "3": { "name": "punctuation.section.brackets.begin.vue" },
             "4": {
               "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
+              "patterns": [{ "include": "#vue-ts-expression" }]
             },
             "5": { "name": "punctuation.section.brackets.end.vue" },
             "6": { "name": "storage.modifier.directive.vue" },
             "7": { "name": "punctuation.separator.key-value.html" },
             "8": { "name": "punctuation.definition.string.begin.html" }
           },
-          "end": "(\")",
+          "end": "(\\8)",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.html" }
           },
           "contentName": "meta.embedded.expression.vue",
-          "patterns": [{ "include": "source.ts#expression" }]
-        },
-        {
-          "comment": "#slot shorthand with single-quoted expression",
-          "begin": "(?<!\\S)(#)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*(')",
-          "beginCaptures": {
-            "1": { "name": "punctuation.definition.directive.vue" },
-            "2": { "name": "entity.other.attribute-name.slot.vue" },
-            "3": { "name": "punctuation.section.brackets.begin.vue" },
-            "4": {
-              "name": "meta.embedded.expression.vue",
-              "patterns": [{ "include": "source.ts#expression" }]
-            },
-            "5": { "name": "punctuation.section.brackets.end.vue" },
-            "6": { "name": "storage.modifier.directive.vue" },
-            "7": { "name": "punctuation.separator.key-value.html" },
-            "8": { "name": "punctuation.definition.string.begin.html" }
-          },
-          "end": "(')",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.html" }
-          },
-          "contentName": "meta.embedded.expression.vue",
-          "patterns": [{ "include": "source.ts#expression" }]
+          "patterns": [{ "include": "#vue-ts-expression" }]
         }
       ]
     },
