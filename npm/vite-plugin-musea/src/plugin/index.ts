@@ -39,6 +39,7 @@ import {
   type VirtualModuleState,
 } from "./virtual.js";
 import { shouldApplyMuseaPlugin } from "./apply.js";
+import { watchMuseaArtFiles } from "./watch.js";
 
 function extractArtTagAttributes(source: string): Record<string, string | true> {
   const artTagMatch = source.match(/<art\b([\s\S]*?)>/i);
@@ -205,7 +206,6 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
 
     configureServer(devServer) {
       server = devServer;
-      devServer.watcher.add(scanRoots);
 
       // Register gallery SPA, preview, and art module middleware
       registerMiddleware(devServer, {
@@ -310,8 +310,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       console.log(`[musea] Found ${files.length} art files`);
 
       if (server) {
-        server.watcher.add(scanRoots);
-        server.watcher.add(files);
+        watchMuseaArtFiles(server.watcher, files);
       }
 
       for (const file of files) {
