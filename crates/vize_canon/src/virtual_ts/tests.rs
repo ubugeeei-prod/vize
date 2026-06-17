@@ -6,8 +6,8 @@ use super::{
 };
 
 mod define_props_scope;
+mod options_api_props_spread;
 mod vif_chain;
-
 fn assert_virtual_ts_snapshot(name: &str, value: &str) {
     insta::with_settings!({
         snapshot_path => "../../snapshots"

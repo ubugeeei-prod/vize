@@ -92,17 +92,26 @@ pub(super) fn define_props_type_requires_setup_scope(summary: &Croquis) -> bool 
 
 pub(super) struct SetupPropsPlan {
     defer: bool,
+    defer_options_api_props: bool,
     module_scope_declares_props: bool,
 }
 
 impl SetupPropsPlan {
-    pub(super) fn new(summary: &Croquis) -> Self {
+    pub(super) fn new(
+        summary: &Croquis,
+        options_api_props: Option<&OptionsApiPropsSource>,
+    ) -> Self {
+        let module_scope_declares_props = summary
+            .type_exports
+            .iter()
+            .any(|te| te.hoisted && te.name.as_str() == "Props");
         Self {
             defer: define_props_type_requires_setup_scope(summary),
-            module_scope_declares_props: summary
-                .type_exports
-                .iter()
-                .any(|te| te.hoisted && te.name.as_str() == "Props"),
+            defer_options_api_props: !module_scope_declares_props
+                && options_api_props.is_some_and(|source| {
+                    matches!(source, OptionsApiPropsSource::DeferredObject(_))
+                }),
+            module_scope_declares_props,
         }
     }
 
@@ -174,19 +183,47 @@ impl SetupPropsPlan {
         if self.defer {
             fields.push("__vize_setup_props");
         }
+        if self.defer_options_api_props {
+            fields.push("__vize_options_props");
+        }
     }
 
-    pub(super) fn emit_module_export(&self, ts: &mut String) {
-        if !self.defer {
+    pub(super) fn emit_options_api_artifact(
+        &self,
+        mut ts: &mut String,
+        options_api_props: Option<&OptionsApiPropsSource>,
+    ) {
+        let Some(OptionsApiPropsSource::DeferredObject(source)) = options_api_props else {
+            return;
+        };
+        if self.module_scope_declares_props {
             return;
         }
-        if self.module_scope_declares_props {
+        append!(ts, "\n  const __vize_options_props = ({source});\n");
+    }
+
+    pub(super) fn emit_module_export(
+        &self,
+        ts: &mut String,
+        options_api_props: Option<&OptionsApiPropsSource>,
+    ) {
+        if self.defer {
+            if self.module_scope_declares_props {
+                ts.push_str(
+                    "type __VizeResolvedProps = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
+                );
+            } else {
+                ts.push_str(
+                    "export type Props = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
+                );
+            }
+        } else if matches!(
+            options_api_props,
+            Some(OptionsApiPropsSource::DeferredObject(_))
+        ) && !self.module_scope_declares_props
+        {
             ts.push_str(
-                "type __VizeResolvedProps = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
-            );
-        } else {
-            ts.push_str(
-                "export type Props = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];\n\n",
+                "export type Props = __RuntimePropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;\n\n",
             );
         }
     }

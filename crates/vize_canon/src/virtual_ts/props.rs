@@ -282,13 +282,11 @@ fn append_model_props_type_literal(ts: &mut String, models: &[ModelDefinition]) 
     ts.push('}');
 }
 
-/// Source of an Options API `props:` option, used to emit a real `export type
-/// Props` for plain `<script>` (Options API) components. `Object` is a raw
-/// runtime props object literal (`{ initial: Number, ... }`) fed to
-/// `__RuntimePropShape<...>`; `Names` is the array form (`['a', 'b']`) which
-/// carries no runtime type info and is emitted as optional `unknown` members.
+/// Runtime `props:` source for Options API `export type Props` emission.
+/// `DeferredObject` is routed through setup scope for value-only object syntax.
 pub(crate) enum OptionsApiPropsSource {
     Object(String),
+    DeferredObject(String),
     Names(Vec<String>),
 }
 
@@ -389,6 +387,7 @@ fn emit_options_api_props_type(
                 "export type Props{generic_decl} = __RuntimePropShape<{source}>;\n"
             );
         }
+        OptionsApiPropsSource::DeferredObject(_) => {}
         OptionsApiPropsSource::Names(names) => {
             append!(*ts, "export type Props{generic_decl} = {{\n");
             for name in names {

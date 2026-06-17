@@ -10,6 +10,9 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_croquis::{BindingType, Croquis};
 
+use super::options_api_support::{
+    extend_options_api_descriptor_names, is_safe_value_identifier, props_source_from_object,
+};
 use crate::virtual_ts::types::VirtualTsOptions;
 use vize_carton::CompactString;
 use vize_carton::FxHashSet;
@@ -116,6 +119,7 @@ pub(super) fn generate_options_api_bridge(mut ts: &mut String, summary: &Croquis
             }
         })
         .collect();
+    extend_options_api_descriptor_names(&mut names, summary);
     names.sort_unstable();
     names.dedup();
 
@@ -546,7 +550,7 @@ fn options_api_props_from_expression(
     match expression {
         Expression::ObjectExpression(object) => {
             let source = source_slice(script, object.span())?;
-            Some(OptionsApiPropsSource::Object(String::from(source)))
+            Some(props_source_from_object(object, source))
         }
         Expression::ArrayExpression(array) => {
             let mut names = Vec::new();
@@ -741,15 +745,4 @@ fn safe_identifier(name: &str) -> String {
         result.push('_');
     }
     result
-}
-
-fn is_safe_value_identifier(name: &str) -> bool {
-    let mut chars = name.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-    if !(first.is_ascii_alphabetic() || first == '_' || first == '$') {
-        return false;
-    }
-    chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
 }

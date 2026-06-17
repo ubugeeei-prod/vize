@@ -1,6 +1,7 @@
 mod generics;
 mod imports;
 mod options_api;
+mod options_api_support;
 mod setup_props;
 mod spans;
 
@@ -33,10 +34,7 @@ use super::{
     scope::{ScopeGenerationOptions, generate_scope_closures},
     types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
 };
-use vize_carton::append;
-use vize_carton::cstr;
-use vize_carton::profile;
-use vize_carton::{FxHashMap, FxHashSet, String};
+use vize_carton::{FxHashMap, FxHashSet, String, append, cstr, profile};
 
 const REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends import('vue').Ref ? T['value'] : T;\n";
 
@@ -461,7 +459,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         } else {
             None
         };
-    let setup_props_plan = SetupPropsPlan::new(summary);
+    let setup_props_plan = SetupPropsPlan::new(summary, options_api_props.as_ref());
     profile!("canon.virtual_ts.generate_props_type", {
         setup_props_plan.generate_props_type(
             &mut ts,
@@ -1011,6 +1009,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         setup_return_fields.push("__vize_emit_options");
         setup_return_fields.push("__vize_emits");
     }
+    setup_props_plan.emit_options_api_artifact(&mut ts, options_api_props.as_ref());
     if !setup_return_fields.is_empty() {
         append!(ts, "\n  return {{ {} }};\n", setup_return_fields.join(", "));
     }
@@ -1022,7 +1021,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str("// Invoke setup to verify types\n");
     ts.push_str("__setup();\n\n");
 
-    setup_props_plan.emit_module_export(&mut ts);
+    setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
 
     // Emits type
     let emits_already_defined = summary

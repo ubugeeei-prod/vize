@@ -33,7 +33,7 @@
       "dompurify": "3.4.10",
       "esbuild": "0.28.1",
       "h3": "1.15.11",
-      "hono": "4.12.21",
+      "hono": "4.12.25",
       "launch-editor": "2.14.1",
       "nanotar": "0.3.0",
       "nitropack": "2.13.4",
