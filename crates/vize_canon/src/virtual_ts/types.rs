@@ -1,7 +1,7 @@
 //! Type definitions for virtual TypeScript generation.
 
 use std::ops::Range;
-use vize_carton::{String, config::VueVersion};
+use vize_carton::{FxHashSet, String, config::VueVersion};
 
 /// A mapping from generated virtual TS position to SFC source position.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -105,7 +105,7 @@ impl Default for VirtualTsCheckOptions {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub(crate) struct VirtualTsGenerationOptions {
+pub(crate) struct VirtualTsGenerationOptions<'a> {
     pub(crate) check_options: VirtualTsCheckOptions,
     /// Configured Vue dialect for this project (default [`VueVersion::V3`]).
     ///
@@ -123,6 +123,10 @@ pub(crate) struct VirtualTsGenerationOptions {
     /// Preserve TypeScript's user-authored unused local/import diagnostics by
     /// avoiding broad synthetic setup-binding references.
     pub(crate) preserve_unused_diagnostics: bool,
+    /// Extra names referenced by template-like custom blocks. Used only by
+    /// unused-local preservation so non-template blocks can mark setup
+    /// bindings as read without opting into full template type checks.
+    pub(crate) extra_template_referenced_names: Option<&'a FxHashSet<String>>,
     /// Hoist the shared preamble (ImportMeta augmentation, type helpers, and
     /// compiler-macro signatures) out of the generated module. Callers that
     /// enable this must make the shared ambient helpers file

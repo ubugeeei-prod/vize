@@ -24,6 +24,7 @@ use super::source_map::CompositeSourceMap;
 use super::{Diagnostic, SfcBlockType};
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
+mod art_usage;
 mod build;
 mod document;
 pub use document::{
@@ -36,6 +37,7 @@ mod mapping;
 mod materialize;
 mod passthrough;
 mod project;
+mod setup_props;
 mod tsconfig_gen;
 mod tsconfig_paths;
 mod vue_codegen;

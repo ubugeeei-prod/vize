@@ -10,7 +10,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::{String, cstr};
 mod emit_object_recursion;
 mod generic_component_listener_payload;
-
+mod no_unused;
 #[test]
 fn test_batch_type_checker_scan() {
     let project_root = unique_case_dir("scan");

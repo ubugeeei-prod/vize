@@ -1,13 +1,40 @@
 //! Span collection/merging, template-referenced-name discovery, and
 //! `export default` rewriting used while assembling the virtual TypeScript.
 
+use vize_atelier_sfc::script::resolve_template_used_identifiers;
+use vize_carton::{FxHashSet, String};
 use vize_croquis::{Croquis, ScopeData};
 
-use vize_carton::FxHashSet;
-use vize_carton::String;
+pub(super) fn preserved_template_usage(
+    summary: &Croquis,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
+    generation_options: crate::virtual_ts::types::VirtualTsGenerationOptions<'_>,
+) -> (Option<FxHashSet<String>>, bool) {
+    let names = generation_options.preserve_unused_diagnostics.then(|| {
+        collect_template_referenced_names(
+            summary,
+            template_ast,
+            generation_options.extra_template_referenced_names,
+        )
+    });
+    let has_scope = template_ast.is_some() || names.as_ref().is_some_and(|names| !names.is_empty());
+    (names, has_scope)
+}
 
-pub(super) fn collect_template_referenced_names(summary: &Croquis) -> FxHashSet<String> {
+fn collect_template_referenced_names(
+    summary: &Croquis,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
+    extra_template_referenced_names: Option<&FxHashSet<String>>,
+) -> FxHashSet<String> {
     let mut names = FxHashSet::default();
+
+    if let Some(template_ast) = template_ast {
+        names.extend(resolve_template_used_identifiers(template_ast).used_ids);
+    }
+
+    if let Some(extra_names) = extra_template_referenced_names {
+        names.extend(extra_names.iter().cloned());
+    }
 
     for expression in &summary.template_expressions {
         collect_expression_identifiers(&mut names, expression.content.as_str());

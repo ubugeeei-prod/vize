@@ -4,10 +4,10 @@ use super::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_and_checks, generate_virtual_ts_with_offsets_options_api,
 };
-
 mod define_props_scope;
 mod no_check_template_bindings;
 mod options_api_props_spread;
+mod unused_refs;
 mod vif_chain;
 fn assert_virtual_ts_snapshot(name: &str, value: &str) {
     insta::with_settings!({

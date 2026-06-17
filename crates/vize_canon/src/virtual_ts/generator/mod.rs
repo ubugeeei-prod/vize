@@ -21,8 +21,8 @@ use self::options_api::{
 };
 use self::setup_props::SetupPropsPlan;
 use self::spans::{
-    DEFINE_COMPONENT_HELPER, DEFINE_COMPONENT_REF, collect_template_referenced_names,
-    merge_overlapping_spans, rewrite_export_default_for_module_scope,
+    DEFINE_COMPONENT_HELPER, DEFINE_COMPONENT_REF, merge_overlapping_spans,
+    preserved_template_usage, rewrite_export_default_for_module_scope,
 };
 use self::template_refs::TemplateRefUnwraps;
 use super::{
@@ -142,7 +142,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     script_offset: u32,
     template_offset: u32,
     options: &VirtualTsOptions,
-    generation_options: VirtualTsGenerationOptions,
+    generation_options: VirtualTsGenerationOptions<'_>,
 ) -> VirtualTsOutput {
     let check_options = generation_options.check_options;
     // Configured Vue dialect, used to emit dialect-aware template instance typing
@@ -155,8 +155,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
-    let template_referenced_names =
-        preserve_unused_diagnostics.then(|| collect_template_referenced_names(summary));
+    let (template_referenced_names, has_template_scope) =
+        preserved_template_usage(summary, template_ast, generation_options);
     let reference_setup_bindings_comment = if preserve_unused_diagnostics {
         "Reference setup bindings used by template generation"
     } else {
@@ -733,7 +733,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     setup_props_plan.emit_artifact(&mut ts, summary);
 
     // Template scope (nested inside setup)
-    if template_ast.is_some() && check_options.check_template_bindings {
+    if has_template_scope && check_options.check_template_bindings {
         profile!("canon.virtual_ts.emit_template_scope", {
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
 
