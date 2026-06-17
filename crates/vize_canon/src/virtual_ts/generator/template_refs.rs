@@ -1,12 +1,12 @@
 //! Template ref and Options API setup-return unwrapping.
 
+use vize_carton::config::VueVersion;
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis, OptionGroup};
 
+use super::legacy_vue2::ref_unwrap_helper;
 use super::options_api_support::is_safe_value_identifier;
 use super::spans::is_local_setup_binding;
-
-const REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends import('vue').Ref ? T['value'] : T;\n";
 
 pub(super) struct TemplateRefUnwraps {
     setup_bindings: Vec<String>,
@@ -77,13 +77,18 @@ impl TemplateRefUnwraps {
         }
     }
 
-    pub(super) fn emit_template_variables(&self, mut ts: &mut String) {
+    pub(super) fn emit_template_variables(
+        &self,
+        mut ts: &mut String,
+        legacy_vue2: bool,
+        dialect: VueVersion,
+    ) {
         if self.setup_bindings.is_empty() && self.options_api_setup_bindings.is_empty() {
             return;
         }
 
         ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
-        ts.push_str(REF_UNWRAP_HELPER);
+        ts.push_str(ref_unwrap_helper(legacy_vue2, dialect));
         for name in &self.setup_bindings {
             append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
         }

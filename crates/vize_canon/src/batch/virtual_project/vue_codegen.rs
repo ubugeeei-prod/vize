@@ -5,6 +5,7 @@
 
 use std::path::Path;
 
+use vize_carton::config::VueVersion;
 use vize_carton::{Bump, FxHashSet, String as CompactString, cstr, profile};
 
 use vize_atelier_core::{
@@ -44,7 +45,7 @@ pub(super) struct VueCodegenOptions {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
-    pub(super) dialect: vize_carton::config::VueVersion,
+    pub(super) dialect: VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
     /// Hoist shared helpers to the batch ambient `.d.ts`; socket sessions keep
     /// them inline because they do not materialize that file.
@@ -183,6 +184,9 @@ pub(super) fn generate_vue_virtual_ts(
         augment_type_based_props_from_script_context(&mut croquis, descriptor, path)
     );
 
+    let hoist_shared_preamble = codegen_options.hoist_shared_preamble
+        && !codegen_options.legacy_vue2
+        && !matches!(codegen_options.dialect, VueVersion::V2 | VueVersion::V2_7);
     let output = profile!(
         "canon.virtual_ts.generate",
         generate_virtual_ts_with_offsets_and_checks(
@@ -202,11 +206,7 @@ pub(super) fn generate_vue_virtual_ts(
                     codegen_options.template_syntax,
                     TemplateSyntaxMode::Quirks
                 ),
-                // The virtual project materializes SHARED_HELPERS_FILE and
-                // lists it in every generated tsconfig, so per-file output
-                // drops the duplicated preamble. The single-document Corsa
-                // socket path has no shared file and keeps it inline.
-                hoist_shared_preamble: codegen_options.hoist_shared_preamble,
+                hoist_shared_preamble,
             },
         )
     );

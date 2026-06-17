@@ -100,10 +100,12 @@ impl VirtualProject {
             self.write_vue_module_stubs()
         )?;
 
-        profile!(
-            "canon.project.write_shared_helpers",
-            self.write_shared_helpers()
-        )?;
+        if self.uses_shared_helpers() {
+            profile!(
+                "canon.project.write_shared_helpers",
+                self.write_shared_helpers()
+            )?;
+        }
 
         profile!(
             "canon.project.write_tsconfig",
@@ -179,7 +181,9 @@ impl VirtualProject {
             files.insert(self.virtual_root.join(AUTO_IMPORT_STUBS_FILE));
         }
         files.insert(self.virtual_root.join(VUE_MODULE_STUBS_FILE));
-        files.insert(self.virtual_root.join(SHARED_HELPERS_FILE));
+        if self.uses_shared_helpers() {
+            files.insert(self.virtual_root.join(SHARED_HELPERS_FILE));
+        }
         files.insert(self.virtual_root.join("tsconfig.json"));
         files
     }

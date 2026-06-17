@@ -256,9 +256,9 @@ impl VirtualProject {
             includes.push(AUTO_IMPORT_STUBS_FILE.into());
         }
         includes.push(VUE_MODULE_STUBS_FILE.into());
-        // Every program (full and per-shard) must see the hoisted preamble
-        // declarations exactly once.
-        includes.push(SHARED_HELPERS_FILE.into());
+        if self.uses_shared_helpers() {
+            includes.push(SHARED_HELPERS_FILE.into());
+        }
         includes.sort();
         includes
     }
