@@ -8,14 +8,13 @@ use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
 
-use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind, naming::to_pascal_case};
+use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind};
 
 use crate::virtual_ts::expressions::generate_expressions;
-use crate::virtual_ts::helpers::{
-    get_dom_event_type, to_safe_identifier, to_safe_identifier_fragment,
-};
+use crate::virtual_ts::helpers::{get_dom_event_type, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
+use super::component_events::generate_component_event_types;
 use super::component_props::generate_component_props;
 use super::context::{
     ComponentPropsContext, EventHandlerExprContext, ScopeGenContext, ScopeGenerationOptions,
@@ -348,70 +347,20 @@ fn generate_scope_node(
         ScopeData::EventHandler(data) if ctx.check_options.check_emits => {
             append!(*ts, "\n{indent}// @{} handler\n", data.event_name);
 
-            let safe_event_name = to_safe_identifier(data.event_name.as_str());
-
-            if let Some(ref component_name) = data.target_component {
-                let component_ref = to_safe_identifier(component_name.as_str());
-                let component_type_name = to_safe_identifier_fragment(component_name.as_str());
-                let pascal_event = to_pascal_case(data.event_name.as_str());
-                let on_handler = cstr!("on{pascal_event}");
-
-                let prop_key = if on_handler.contains(':') {
-                    cstr!("\"{}\"", on_handler.as_str())
-                } else {
-                    on_handler
-                };
-
-                // Type alias (block-scoped in TypeScript)
-                // Include scope_id to deduplicate when same component+event appears multiple times
-                append!(
-                    *ts,
-                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_prop_args = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }}\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}  ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}  : typeof {component_ref} extends (props: infer __P) => any\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}    ? __P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
-                );
-                append!(*ts, "{indent}    : unknown[];\n");
-                append!(
-                    *ts,
-                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_emit_args = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }}\n",
-                );
-                append!(
-                    *ts,
-                    "{indent}  ? __EP extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]\n",
-                );
-                append!(*ts, "{indent}  : unknown[];\n");
-                append!(
-                    *ts,
-                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_args = unknown[] extends __{component_type_name}_{scope_id}_{safe_event_name}_prop_args ? __{component_type_name}_{scope_id}_{safe_event_name}_emit_args : __{component_type_name}_{scope_id}_{safe_event_name}_prop_args;\n",
-                );
-                if ctx.template_syntax_quirks {
-                    let fallback_event = get_dom_event_type(data.event_name.as_str());
-                    append!(
-                        *ts,
-                        "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = __{component_type_name}_{scope_id}_{safe_event_name}_args extends [] ? any : unknown[] extends __{component_type_name}_{scope_id}_{safe_event_name}_args ? {fallback_event} : __{component_type_name}_{scope_id}_{safe_event_name}_args[0];\n",
-                    );
-                } else {
-                    append!(
-                        *ts,
-                        "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = __{component_type_name}_{scope_id}_{safe_event_name}_args extends [] ? any : __{component_type_name}_{scope_id}_{safe_event_name}_args[0];\n",
-                    );
-                }
-
-                let event_type =
-                    cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
-                let args_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_args");
-                let listener_type =
-                    cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
+            if data.target_component.is_some() {
+                let event_types = generate_component_event_types(
+                    ts,
+                    ctx.summary,
+                    data,
+                    scope,
+                    ctx.template_prop_names,
+                    ctx.template_syntax_quirks,
+                    indent,
+                )
+                .expect("component event handler should have a target component");
+                let event_type = event_types.event_type;
+                let args_type = event_types.args_type;
+                let listener_type = event_types.listener_type;
                 // Type the listener against the FULL emit argument tuple so
                 // multi-arg emits keep every parameter (#1512). When the emit
                 // signature stays unresolved (`unknown[]`, e.g. a fallthrough

@@ -8,8 +8,8 @@ use corsa::{
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::{String, cstr};
-
 mod emit_object_recursion;
+mod generic_component_listener_payload;
 
 #[test]
 fn test_batch_type_checker_scan() {

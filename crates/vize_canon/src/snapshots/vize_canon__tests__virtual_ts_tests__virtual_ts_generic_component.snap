@@ -132,7 +132,7 @@ function __setup<T extends string | number>() {
 // Invoke setup to verify types
 __setup();
 
-export type Emits = {
+export type Emits<T extends string | number = any> = {
   (e: 'select', item: T): void
 };
 export type Slots = {};
@@ -179,5 +179,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & { __vizeCheck: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => void; __vizeEmitProps?: __VizeStaticEmitProps; };
+declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & { __vizeCheck: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => void; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; };
 export default __vize_component__;

@@ -1,3 +1,4 @@
+mod emits;
 mod generics;
 mod imports;
 mod options_api;
@@ -7,6 +8,7 @@ mod spans;
 
 use vize_croquis::{BindingType, Croquis, ScopeData, ScopeKind};
 
+use self::emits::{emit_emit_props_helper, emit_emits_type};
 use self::generics::{generic_injection_point, references_any_identifier};
 use self::imports::{
     collect_imported_names, emit_global_component_stubs, emit_reference_type_directives,
@@ -23,9 +25,8 @@ use self::spans::{
 };
 use super::{
     helpers::{
-        EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, IMPORT_META_AUGMENTATION,
-        SETUP_SCOPE_HELPER_NAMES, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED, VUE_TYPE_HELPERS,
-        generate_template_context, to_safe_identifier,
+        IMPORT_META_AUGMENTATION, SETUP_SCOPE_HELPER_NAMES, VUE_SETUP_HELPERS,
+        VUE_SETUP_HELPERS_HOISTED, VUE_TYPE_HELPERS, generate_template_context, to_safe_identifier,
     },
     props::{
         OptionsApiPropsSource, add_generic_defaults, collect_template_prop_names,
@@ -1023,73 +1024,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
 
-    // Emits type
-    let emits_already_defined = summary
-        .type_exports
-        .iter()
-        .any(|te| te.name.as_str() == "Emits");
-    let define_emits_type_args = summary
-        .macros
-        .define_emits()
-        .and_then(|call| call.type_args.as_ref());
-    let models = summary.macros.models();
-    let has_model_emits = !models.is_empty();
-    let has_emits_for_props = emits_already_defined
-        || define_emits_type_args.is_some()
-        || define_emits_runtime_args.is_some()
-        || !summary.macros.emits().is_empty()
-        || has_model_emits;
-    if !emits_already_defined {
-        if let Some(type_args) = define_emits_type_args {
-            let inner_type = type_args
-                .strip_prefix('<')
-                .and_then(|s| s.strip_suffix('>'))
-                .unwrap_or(type_args.as_str());
-            if has_model_emits {
-                append!(ts, "export type Emits = {inner_type} & {{\n");
-                for model in models {
-                    let name = model.name.as_str();
-                    let payload = model.model_type.as_deref().unwrap_or("unknown");
-                    append!(ts, "  \"update:{name}\": [value: {payload}];\n");
-                }
-                ts.push_str("};\n");
-            } else {
-                append!(ts, "export type Emits = {inner_type};\n");
-            }
-        } else if define_emits_runtime_args.is_some() {
-            ts.push_str(
-                "export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]",
-            );
-            for model in models {
-                let name = model.name.as_str();
-                let payload = model.model_type.as_deref().unwrap_or("unknown");
-                append!(
-                    ts,
-                    " & ((event: \"update:{name}\", value: {payload}) => void)"
-                );
-            }
-            ts.push_str(";\n");
-        } else if !summary.macros.emits().is_empty() || has_model_emits {
-            ts.push_str("export type Emits = {\n");
-            let mut emitted_names: FxHashSet<String> = FxHashSet::default();
-            for emit in summary.macros.emits() {
-                let payload = emit.payload_type.as_deref().unwrap_or("any[]");
-                append!(ts, "  \"{}\": {payload};\n", emit.name);
-                emitted_names.insert(emit.name.as_str().into());
-            }
-            for model in models {
-                let event_name = cstr!("update:{}", model.name);
-                if emitted_names.contains(event_name.as_str()) {
-                    continue;
-                }
-                let payload = model.model_type.as_deref().unwrap_or("unknown");
-                append!(ts, "  \"{event_name}\": [value: {payload}];\n");
-            }
-            ts.push_str("};\n");
-        } else {
-            ts.push_str("export type Emits = {};\n");
-        }
-    }
+    let emits_info = emit_emits_type(
+        &mut ts,
+        summary,
+        generic_param,
+        define_emits_runtime_args.is_some(),
+    );
 
     // Slots type
     let slots_type_args = summary
@@ -1128,28 +1068,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     }
     ts.push('\n');
 
-    if has_emits_for_props {
-        // The overload helpers are file-independent; in hoisted mode the one
-        // copy in the ambient helpers file serves the whole program. The
-        // `__EmitProps` alias stays per-file in both modes: it dereferences
-        // `import('vue').EmitsToProps` (Vue >= 3.3 only), so it must remain
-        // scoped to components that actually declare emits.
-        if !hoist_shared_preamble {
-            ts.push_str(EMIT_OVERLOAD_HELPERS);
-        }
-        ts.push_str(EMIT_PROPS_HELPER);
-        ts.push('\n');
-        if define_emits_runtime_args.is_some() {
-            ts.push_str("type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emit_options\"]>;\n\n");
-        } else {
-            ts.push_str("type __VizeStaticEmitProps = __EmitProps<Emits>;\n\n");
-        }
-    }
+    emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble);
 
     // Default export
     ts.push_str("// ========== Default Export ==========\n");
     ts.push_str("type __VizeComponentInstance = {\n");
-    setup_props_plan.emit_component_props_field(&mut ts, has_emits_for_props);
+    setup_props_plan.emit_component_props_field(&mut ts, emits_info.has_emits_for_props);
     ts.push_str("  $emit: __EmitFn<Emits>;\n");
     ts.push_str("  $slots: Slots;\n");
     if has_exposed_type {
@@ -1191,19 +1115,22 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // the default export so the parent can invoke it with the assembled props
     // object and let TypeScript infer `T` from the call (see #775). Non-generic
     // components keep the plain construct signature unchanged.
-    let emit_props_static = if has_emits_for_props {
-        "__vizeEmitProps?: __VizeStaticEmitProps;"
-    } else {
-        ""
-    };
+    let emit_props_static = emits_info.static_emit_props_field();
     if let Some(generic) = setup_props_plan.generic_param(generic_param) {
         let generic_decl = add_generic_defaults(generic);
         let generic_names = extract_generic_names(generic);
+        let emit_props_resolver =
+            emits_info.generic_emit_props_resolver_field(&generic_decl, generic_names.as_str());
+        let emit_props_separator = if emit_props_resolver.is_empty() {
+            ""
+        } else {
+            " "
+        };
         append!(
             ts,
-            "declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; {emit_props_static} }};\n",
+            "declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; {emit_props_static}{emit_props_separator}{emit_props_resolver} }};\n",
         );
-    } else if has_emits_for_props {
+    } else if emits_info.has_emits_for_props {
         append!(
             ts,
             "declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & {{ {emit_props_static} }};\n",

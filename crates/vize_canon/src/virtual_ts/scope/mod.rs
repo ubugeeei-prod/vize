@@ -5,6 +5,7 @@
 //! tree-based generation so nested scopes are properly contained.
 
 mod closures;
+mod component_events;
 mod component_props;
 mod context;
 mod emit;
