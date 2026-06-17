@@ -132,10 +132,10 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         eprintln!("[vize] Skipping check because typeChecker.enabled is false in vize.config.");
         return;
     }
-    let effective_tsconfig = args
-        .tsconfig
-        .clone()
-        .or_else(|| config.type_checker.tsconfig.as_ref().map(PathBuf::from));
+    let effective_tsconfig = args.tsconfig.clone().or_else(|| {
+        let candidate = config.type_checker.tsconfig.as_deref()?;
+        Some(resolve_from_config_dir(config_dir, candidate))
+    });
     let effective_corsa_path = args.corsa_path.as_ref().map(PathBuf::from).or_else(|| {
         config
             .type_checker

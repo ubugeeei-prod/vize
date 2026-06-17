@@ -131,6 +131,12 @@ mod tests {
         insta::assert_snapshot!("cli_check_help", command_help("check"));
     }
 
+    #[cfg(feature = "glyph")]
+    #[test]
+    fn ready_help_snapshot() {
+        insta::assert_snapshot!("cli_ready_help", command_help("ready"));
+    }
+
     #[test]
     fn clean_help_snapshot() {
         insta::assert_snapshot!("cli_clean_help", command_help("clean"));
