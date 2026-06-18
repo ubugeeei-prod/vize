@@ -2,8 +2,9 @@
 
 use super::{
     build_cross_file_lint_output, collect::collect_lint_files, should_render_lint_details,
+    write_all_retry,
 };
-use std::{fs, path::Path};
+use std::{fs, io, io::Write, path::Path};
 use vize_patina::{LintPreset, LintResult, Linter, OutputFormat};
 
 fn result_for_file<'a>(results: &'a [LintResult], file_name: &str) -> &'a LintResult {
@@ -52,6 +53,39 @@ fn report_formats_render_in_quiet_mode() {
     assert!(should_render_lint_details(OutputFormat::Markdown, true));
     assert!(should_render_lint_details(OutputFormat::Html, true));
     assert!(should_render_lint_details(OutputFormat::Agent, true));
+}
+
+#[test]
+fn stdout_writer_retries_temporary_would_block() {
+    struct WouldBlockOnce {
+        attempts: usize,
+        bytes: Vec<u8>,
+    }
+
+    impl Write for WouldBlockOnce {
+        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+            self.attempts += 1;
+            if self.attempts == 1 {
+                return Err(io::Error::from(io::ErrorKind::WouldBlock));
+            }
+            self.bytes.extend_from_slice(buf);
+            Ok(buf.len())
+        }
+
+        fn flush(&mut self) -> io::Result<()> {
+            Ok(())
+        }
+    }
+
+    let mut writer = WouldBlockOnce {
+        attempts: 0,
+        bytes: Vec::new(),
+    };
+
+    write_all_retry(&mut writer, b"lint output").unwrap();
+
+    assert_eq!(writer.bytes, b"lint output");
+    assert_eq!(writer.attempts, 2);
 }
 
 #[test]

@@ -14,7 +14,7 @@ use collect::{collect_lint_files, is_standalone_html_path, resolve_lint_config_p
 use cross_file::{build_cross_file_lint_output, merge_lint_result};
 use rayon::prelude::*;
 use std::fs;
-use std::io::Write;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -249,7 +249,7 @@ pub fn run(args: LintArgs) {
             format_results(&lint_results, &sources, format)
         );
         if !output.trim().is_empty() {
-            print!("{}", output);
+            write_stdout(output.as_bytes());
         }
     }
     let output_time = output_start.elapsed();
@@ -267,15 +267,18 @@ pub fn run(args: LintArgs) {
     // Print summary
     let elapsed = start.elapsed();
     if format == OutputFormat::Text {
-        println!(
-            "\n{}",
-            format_summary(total_errors, total_warnings, files.len())
+        write_stdout(
+            cstr!(
+                "\n{}\n",
+                format_summary(total_errors, total_warnings, files.len())
+            )
+            .as_bytes(),
         );
-        println!("Linted {} files in {:.4?}", files.len(), elapsed);
+        write_stdout(cstr!("Linted {} files in {:.4?}\n", files.len(), elapsed).as_bytes());
         if args.cross_file_tree
             && let Some(tree) = cross_file_tree.as_deref()
         {
-            println!("\n{tree}");
+            write_stdout(cstr!("\n{tree}\n").as_bytes());
         }
     }
 
@@ -398,6 +401,59 @@ pub fn run(args: LintArgs) {
         eprintln!("\nToo many warnings ({} > max {})", total_warnings, max);
         std::process::exit(1);
     }
+}
+
+fn write_stdout(bytes: &[u8]) {
+    let mut stdout = io::stdout().lock();
+    if let Err(error) = write_all_retry(&mut stdout, bytes) {
+        handle_stdout_error(error);
+    }
+}
+
+fn write_all_retry<W: Write>(writer: &mut W, bytes: &[u8]) -> io::Result<()> {
+    const MAX_CONSECUTIVE_WOULD_BLOCK: usize = 1024;
+
+    let mut written = 0;
+    let mut would_block_count = 0;
+    while written < bytes.len() {
+        match writer.write(&bytes[written..]) {
+            Ok(0) => {
+                return Err(io::Error::new(
+                    io::ErrorKind::WriteZero,
+                    "failed to write lint output",
+                ));
+            }
+            Ok(count) => {
+                written += count;
+                would_block_count = 0;
+            }
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    io::ErrorKind::Interrupted | io::ErrorKind::WouldBlock
+                ) =>
+            {
+                would_block_count += usize::from(error.kind() == io::ErrorKind::WouldBlock);
+                if would_block_count > MAX_CONSECUTIVE_WOULD_BLOCK {
+                    return Err(error);
+                }
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+    Ok(())
+}
+
+fn handle_stdout_error(error: io::Error) -> ! {
+    if error.kind() == io::ErrorKind::BrokenPipe {
+        std::process::exit(0);
+    }
+    eprintln!(
+        "\x1b[31mError:\x1b[0m failed to write lint output: {}",
+        error
+    );
+    std::process::exit(1);
 }
 
 fn jsx_lang_for_path(path: &Path) -> Option<JsxLang> {
