@@ -543,35 +543,3 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
 
     result
 }
-
-/// Strip `_ctx.` prefix for identifiers that are slot/v-for parameters.
-pub(crate) fn strip_ctx_for_slot_params(ctx: &CodegenContext, content: &str) -> String {
-    let mut result = String::with_capacity(content.len());
-    let bytes = content.as_bytes();
-    let prefix = b"_ctx.";
-    let mut i = 0;
-
-    while i < bytes.len() {
-        if i + prefix.len() <= bytes.len() && &bytes[i..i + prefix.len()] == prefix {
-            let start = i + prefix.len();
-            let mut end = start;
-            while end < bytes.len()
-                && (bytes[end].is_ascii_alphanumeric() || bytes[end] == b'_' || bytes[end] == b'$')
-            {
-                end += 1;
-            }
-            let ident = &content[start..end];
-            if !ident.is_empty() && ctx.is_slot_param(ident) {
-                result.push_str(ident);
-                i = end;
-            } else {
-                result.push_str("_ctx.");
-                i = start;
-            }
-        } else {
-            result.push(bytes[i] as char);
-            i += 1;
-        }
-    }
-    result
-}

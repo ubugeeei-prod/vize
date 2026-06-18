@@ -8,7 +8,8 @@ use crate::{CompoundExpressionChild, ExpressionNode};
 use super::{
     super::context::CodegenContext,
     generate_simple_expression,
-    helpers::{prefix_identifiers_with_context, strip_ctx_for_slot_params},
+    helpers::prefix_identifiers_with_context,
+    scope_prefix::{contains_slot_param_scope_prefix, strip_scope_prefixes_for_slot_params},
 };
 use vize_carton::String;
 
@@ -88,8 +89,9 @@ pub fn generate_event_handler(
                     ts_stripped
                 }
             };
-            let processed = if ctx.has_slot_params() && processed.contains("_ctx.") {
-                strip_ctx_for_slot_params(ctx, &processed)
+            let processed = if ctx.has_slot_params() && contains_slot_param_scope_prefix(&processed)
+            {
+                strip_scope_prefixes_for_slot_params(ctx, &processed)
             } else {
                 processed
             };
