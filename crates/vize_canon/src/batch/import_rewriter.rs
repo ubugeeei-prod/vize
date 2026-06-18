@@ -86,7 +86,8 @@ impl ImportRewriter {
         source_type: SourceType,
         roots: (&std::path::Path, &std::path::Path),
     ) -> RewriteResult {
-        if !source.contains(".vue") {
+        let project_root = roots.0.to_string_lossy();
+        if !source.contains(".vue") && !source.contains(project_root.as_ref()) {
             return RewriteResult {
                 code: source.to_compact_string(),
                 source_map: ImportSourceMap::empty(),
@@ -252,16 +253,22 @@ impl ImportRewriter {
         path: &str,
         roots: (&std::path::Path, &std::path::Path),
     ) -> Option<String> {
-        if !path.ends_with(".vue") {
-            return None;
-        }
         let candidate = std::path::Path::new(path);
         if candidate.is_absolute()
             && let Ok(relative) = candidate.strip_prefix(roots.0)
+            && is_rewritable_project_specifier(relative)
         {
-            return Some(cstr!("{}.ts", roots.1.join(relative).display()));
+            let mut rewritten = cstr!("{}", roots.1.join(relative).display());
+            if path.ends_with(".vue") {
+                rewritten.push_str(".ts");
+            }
+            return Some(rewritten);
         }
-        Some(cstr!("{path}.ts"))
+        if path.ends_with(".vue") {
+            Some(cstr!("{path}.ts"))
+        } else {
+            None
+        }
     }
 
     fn rewrite_declaration_specifier(&self, path: &str) -> Option<String> {
@@ -272,6 +279,24 @@ impl ImportRewriter {
         }
         None
     }
+}
+
+fn is_rewritable_project_specifier(path: &std::path::Path) -> bool {
+    if path
+        .components()
+        .next()
+        .is_some_and(|component| component.as_os_str() == "node_modules")
+    {
+        return false;
+    }
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_none_or(|extension| {
+            matches!(
+                extension,
+                "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
+            )
+        })
 }
 
 impl Default for ImportRewriter {
@@ -302,143 +327,5 @@ impl<'a> Visit<'a> for DynamicImportCollector {
             ));
         }
         walk::walk_import_expression(self, expr);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::ImportRewriter;
-    use oxc_span::SourceType;
-    use std::path::Path;
-
-    #[test]
-    fn test_rewrite_default_import() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"import App from './App.vue';"#;
-        let result = rewriter.rewrite(source, SourceType::ts());
-
-        assert_eq!(result.code, r#"import App from './App.vue.ts';"#);
-    }
-
-    #[test]
-    fn test_rewrite_named_import() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"import { helper, type Props } from './helper.vue';"#;
-        let result = rewriter.rewrite(source, SourceType::ts());
-
-        assert_eq!(
-            result.code,
-            r#"import { helper, type Props } from './helper.vue.ts';"#
-        );
-    }
-
-    #[test]
-    fn test_rewrite_side_effect_import() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"import './global.vue';"#;
-        let result = rewriter.rewrite(source, SourceType::ts());
-
-        assert_eq!(result.code, r#"import './global.vue.ts';"#);
-    }
-
-    #[test]
-    fn test_no_rewrite_npm_import() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"import { ref } from 'vue';"#;
-        let result = rewriter.rewrite(source, SourceType::ts());
-
-        assert_eq!(result.code, r#"import { ref } from 'vue';"#);
-    }
-
-    #[test]
-    fn test_rewrite_alias_import() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"import App, { type Props } from '@/App.vue';"#;
-        let result = rewriter.rewrite(source, SourceType::ts());
-
-        assert_eq!(
-            result.code,
-            r#"import App, { type Props } from '@/App.vue.ts';"#
-        );
-    }
-
-    #[test]
-    fn test_rewrite_absolute_export_from_for_virtual_project() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"export * from '/p/src/App.vue';"#;
-        let roots = (Path::new("/p"), Path::new("/p/v"));
-        let result = rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots);
-        assert_eq!(result.code, r#"export * from '/p/v/src/App.vue.ts';"#);
-    }
-
-    #[test]
-    fn test_rewrite_dynamic_import() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"const App = () => import('./App.vue');"#;
-        let result = rewriter.rewrite(source, SourceType::ts());
-
-        assert_eq!(result.code, r#"const App = () => import('./App.vue.ts');"#);
-    }
-
-    #[test]
-    fn test_rewrite_parent_path() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"import Parent from '../Parent.vue';"#;
-        let result = rewriter.rewrite(source, SourceType::ts());
-
-        assert_eq!(result.code, r#"import Parent from '../Parent.vue.ts';"#);
-    }
-
-    #[test]
-    fn test_source_map_offset() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"import App from './App.vue';
-import { ref } from 'vue';
-const x = 1;"#;
-        let result = rewriter.rewrite(source, SourceType::ts());
-
-        // .vue -> .vue.ts adds 3 characters
-        // Position after the rewrite should map back correctly
-        let virtual_offset = 30; // After the first import
-        let original_offset = result.source_map.get_original_offset(virtual_offset);
-
-        // The adjustment is +3 (.ts added), so virtual - 3 = original
-        assert!(original_offset < virtual_offset);
-    }
-
-    #[test]
-    fn test_collect_relative_vue_specifiers() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"import App from './App.vue';
-import Sibling from '../shared/Sibling.vue';
-import Aliased from '@/Aliased.vue';
-import { ref } from 'vue';
-import Lazy from './App.vue';
-const Lazy2 = () => import('./Lazy.vue');
-export { default as Re } from './Re.vue';
-"#;
-        let mut found = rewriter.collect_relative_vue_specifiers(source, SourceType::ts());
-        found.sort();
-        // Aliased and bare specifiers are intentionally excluded.
-        assert_eq!(
-            found.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
-            [
-                "../shared/Sibling.vue",
-                "./App.vue",
-                "./Lazy.vue",
-                "./Re.vue"
-            ]
-        );
-    }
-
-    #[test]
-    fn test_multiple_rewrites() {
-        let rewriter = ImportRewriter::new();
-        let source = r#"import App from './App.vue';
-import Child from './Child.vue';
-import { ref } from 'vue';"#;
-        let result = rewriter.rewrite(source, SourceType::ts());
-
-        insta::assert_snapshot!(result.code.as_str());
     }
 }

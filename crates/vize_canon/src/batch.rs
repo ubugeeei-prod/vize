@@ -8,6 +8,8 @@
 mod error;
 mod executor;
 mod import_rewriter;
+#[cfg(test)]
+mod import_rewriter_tests;
 mod materialize_fs;
 mod materialize_lock;
 mod runtime_deps;

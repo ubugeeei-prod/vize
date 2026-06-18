@@ -59,6 +59,8 @@ pub(super) fn collect_transitive_local_imports(
         for specifier in extract_import_specifiers(&source) {
             let resolved = if is_relative_specifier(&specifier) {
                 resolve_relative_import(dir, &specifier, canonical_paths, include_jsx)
+            } else if Path::new(specifier.as_str()).is_absolute() {
+                resolve_import_base(Path::new(specifier.as_str()), canonical_paths, include_jsx)
             } else {
                 aliases.and_then(|aliases| {
                     aliases.resolve(

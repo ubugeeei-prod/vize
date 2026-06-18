@@ -72,6 +72,39 @@ fn ignores_bare_and_missing_specifiers() {
 }
 
 #[test]
+fn collects_absolute_project_imports_transitively() {
+    let root = std::env::temp_dir().join(cstr!("vize-imports-abs-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src")).unwrap();
+    let schema = write(
+        &root,
+        "types/codegen/schema.ts",
+        "export enum DisplayKind { List = 'List' }\n",
+    );
+    let schema_specifier = schema.with_extension("");
+    let entry = write(
+        &root,
+        "src/entry.ts",
+        &format!(
+            "import type {{ DisplayKind }} from '{}'\nexport type Props = {{ kind: DisplayKind }}\n",
+            schema_specifier.display()
+        ),
+    );
+
+    let discovered = collect_transitive_local_imports(
+        &[entry],
+        &root,
+        &mut CanonicalPathCache::default(),
+        false,
+        None,
+    );
+
+    assert_eq!(discovered, vec![canonicalize_non_verbatim(&schema)]);
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn collects_current_directory_index_imports() {
     let root = std::env::temp_dir().join(cstr!("vize-imports-dot-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&root);
