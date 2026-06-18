@@ -93,10 +93,11 @@ pub fn run(args: LintArgs) {
         "short" => HelpLevel::Short,
         _ => HelpLevel::Full,
     };
-    let preset_name = linter_config
+    let preset_name = args
         .preset
         .as_deref()
-        .unwrap_or(args.preset.as_str());
+        .or(linter_config.preset.as_deref())
+        .unwrap_or("ecosystem");
     let preset = LintPreset::parse(preset_name).unwrap_or_default();
     let type_aware_enabled =
         args.type_aware || args.strict_reactivity || linter_config.type_aware_lint_enabled();
@@ -224,7 +225,6 @@ pub fn run(args: LintArgs) {
         .map(|(_, _, _, result)| result.warning_count)
         .sum();
 
-    // Format and print results
     let output_start = Instant::now();
     if render_details {
         let lint_results: Vec<_> = profile!(
@@ -366,7 +366,7 @@ pub fn run(args: LintArgs) {
             files.len(),
             total_errors,
             total_warnings,
-            args.preset
+            preset_name
         );
         let report = ProfileReport {
             title: "lint",

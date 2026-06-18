@@ -158,7 +158,7 @@ pub fn load_compiler_jsx_mode(path: Option<&Path>) -> Option<crate::config::JsxM
 /// parsing and normalizing the same config file twice.
 pub fn load_config_and_linter_with_source(path: Option<&Path>) -> (LoadedConfig, LinterConfig) {
     let loaded = load_raw_config_with_source(path);
-    let linter = LinterConfig::from(loaded.config.linter.clone());
+    let linter = load_linter_from_raw_config(&loaded.config);
     let (config, _) = loaded.config.into_config_and_features();
     (
         LoadedConfig {
@@ -177,7 +177,7 @@ pub fn load_config_and_linter_with_features_and_source(
     path: Option<&Path>,
 ) -> (LoadedConfigWithFeatures, LinterConfig) {
     let loaded = load_raw_config_with_source(path);
-    let linter = LinterConfig::from(loaded.config.linter.clone());
+    let linter = load_linter_from_raw_config(&loaded.config);
     let (config, features) = loaded.config.into_config_and_features();
     (
         LoadedConfigWithFeatures {
@@ -191,7 +191,34 @@ pub fn load_config_and_linter_with_features_and_source(
 
 /// Load linter-specific configuration from a directory or file path.
 pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
-    LinterConfig::from(load_raw_config_with_source(path).config.linter)
+    let loaded = load_raw_config_with_source(path);
+    load_linter_from_raw_config(&loaded.config)
+}
+
+fn load_linter_from_raw_config(config: &RawVizeConfig) -> LinterConfig {
+    let mut linter = LinterConfig::from(config.linter.clone());
+    if linter.preset.is_none() {
+        linter.preset = common_entry_linter_preset(config);
+    }
+    linter
+}
+
+fn common_entry_linter_preset(config: &RawVizeConfig) -> Option<crate::String> {
+    let mut common_preset: Option<crate::String> = None;
+    for entry in config.entries.as_deref().unwrap_or_default() {
+        let entry_linter = LinterConfig::from(entry.linter.clone());
+        let Some(entry_preset) = entry_linter.preset else {
+            continue;
+        };
+        if common_preset
+            .as_ref()
+            .is_some_and(|preset| preset.as_str() != entry_preset.as_str())
+        {
+            return None;
+        }
+        common_preset = Some(entry_preset);
+    }
+    common_preset
 }
 
 fn load_raw_config_with_source(path: Option<&Path>) -> LoadedRawConfig {

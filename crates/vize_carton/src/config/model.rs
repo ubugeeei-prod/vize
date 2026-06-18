@@ -126,12 +126,19 @@ pub(crate) struct RawVizeConfig {
     language_server: RawLanguageServerConfig,
     #[serde(rename = "globalTypes")]
     pub global_types: RawGlobalTypesConfig,
+    pub entries: Option<Vec<RawConfigEntry>>,
     #[serde(rename = "check")]
     legacy_check: Option<LegacyCheckConfig>,
     #[serde(rename = "fmt")]
     legacy_formatter: Option<FormatterConfig>,
     #[serde(rename = "lsp")]
     legacy_lsp: Option<RawLanguageServerConfig>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub(crate) struct RawConfigEntry {
+    pub linter: RawLinterConfig,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -179,6 +186,7 @@ impl RawVizeConfig {
             type_checker: raw_type_checker,
             language_server: raw_language_server,
             global_types,
+            entries: _,
             legacy_check,
             legacy_formatter,
             legacy_lsp,

@@ -210,6 +210,48 @@ export default {
 }
 
 #[test]
+fn load_linter_config_uses_common_entry_preset() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+  "entries": [
+    { "name": "app", "files": ["components/**/*.vue"], "linter": { "preset": "incremental" } },
+    { "name": "design-system", "basePath": "design-system", "files": ["src/**/*.vue"], "linter": { "preset": "incremental" } }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let (_, loaded_linter) = load_config_and_linter_with_source(Some(&config_path));
+    let linter = load_linter_config(Some(&config_path));
+
+    assert_eq!(loaded_linter.preset.as_deref(), Some("incremental"));
+    assert_eq!(linter.preset.as_deref(), Some("incremental"));
+}
+
+#[test]
+fn load_linter_config_keeps_root_preset_over_entry_preset() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+  "linter": { "preset": "nuxt" },
+  "entries": [
+    { "files": ["components/**/*.vue"], "linter": { "preset": "incremental" } }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let linter = load_linter_config(Some(&config_path));
+
+    assert_eq!(linter.preset.as_deref(), Some("nuxt"));
+}
+
+#[test]
 fn load_config_uses_relative_typescript_file_path() {
     let cwd = std::env::current_dir().unwrap();
     let case_dir = cwd
