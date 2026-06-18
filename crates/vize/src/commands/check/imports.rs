@@ -1,18 +1,15 @@
-//! Transitive resolution of relative source imports for explicit `vize check`
-//! subsets.
+//! Transitive resolution of source imports for explicit `vize check` subsets.
 //!
 //! `vize check src/App.vue` registers only the requested files in the virtual
-//! project, so a relative import like `import { Foo } from './types'` cannot see
-//! the sibling's real types and degrades to `any` (or surfaces a false
-//! `TS2307`). `tsc`/`vue-tsc` load the whole reachable program instead. This
-//! module walks the relative-import graph from the requested files and returns
-//! the additional on-disk source files to register, so cross-file types resolve
-//! precisely — analogous to the ambient-`.d.ts` pull-in in the runner.
+//! project, so a sibling import like `./types` or `~/components/Foo.vue` cannot
+//! see the real types and can surface false `TS2307`. This module walks the
+//! reachable graph and returns on-disk source files to register.
 
 use std::path::{Path, PathBuf};
 
 use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
+use super::imports_aliases::PathAliasResolver;
 use super::path_cache::CanonicalPathCache;
 
 /// Source extensions whose imports carry TypeScript types worth pulling into the
@@ -33,6 +30,7 @@ pub(super) fn collect_transitive_local_imports(
     cwd: &Path,
     canonical_paths: &mut CanonicalPathCache,
     include_jsx: bool,
+    aliases: Option<&PathAliasResolver>,
 ) -> Vec<PathBuf> {
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut queue: Vec<PathBuf> = Vec::new();
@@ -58,10 +56,20 @@ pub(super) fn collect_transitive_local_imports(
         // Scan the raw file text directly — the byte scanner only reacts to
         // `import`/`from` string operands, so an SFC's `<template>`/`<style>`
         // are inert and no `.vue` parse is needed on this hot path.
-        for specifier in extract_relative_specifiers(&source) {
-            let Some(resolved) =
+        for specifier in extract_import_specifiers(&source) {
+            let resolved = if is_relative_specifier(&specifier) {
                 resolve_relative_import(dir, &specifier, canonical_paths, include_jsx)
-            else {
+            } else {
+                aliases.and_then(|aliases| {
+                    aliases.resolve(
+                        &specifier,
+                        canonical_paths,
+                        include_jsx,
+                        resolve_import_base,
+                    )
+                })
+            };
+            let Some(resolved) = resolved else {
                 continue;
             };
             // Never register an ambient declaration file — its `declare module`
@@ -94,15 +102,14 @@ fn absolutize(
     Some(canonical_paths.canonicalize(&joined))
 }
 
-/// Collect the relative (`./`, `../`) module specifiers of `source`'s `import` /
-/// `export … from` / dynamic-`import(...)` statements.
+/// Collect module specifiers of `source`'s import/export/dynamic-imports.
 ///
 /// This is a deliberately lightweight byte scan rather than a full parse: the
 /// transitive walk runs on every checked file, so an AST per file regressed the
 /// benchmark. Over-matching (e.g. an import-like fragment inside a string) is
 /// harmless because each specifier is resolved against the filesystem and only
 /// real source files are registered.
-fn extract_relative_specifiers(source: &str) -> Vec<String> {
+fn extract_import_specifiers(source: &str) -> Vec<String> {
     let bytes = source.as_bytes();
     let len = bytes.len();
     let mut specifiers = Vec::new();
@@ -139,9 +146,7 @@ fn extract_relative_specifiers(source: &str) -> Vec<String> {
             }
             if k < len {
                 let specifier = &source[start..k];
-                if is_relative_specifier(specifier) {
-                    specifiers.push(specifier.to_compact_string());
-                }
+                specifiers.push(specifier.to_compact_string());
                 i = k + 1;
                 continue;
             }
@@ -181,21 +186,27 @@ fn resolve_relative_import(
     canonical_paths: &mut CanonicalPathCache,
     include_jsx: bool,
 ) -> Option<PathBuf> {
-    let base = dir.join(specifier);
+    resolve_import_base(&dir.join(specifier), canonical_paths, include_jsx)
+}
 
+pub(super) fn resolve_import_base(
+    base: &Path,
+    canonical_paths: &mut CanonicalPathCache,
+    include_jsx: bool,
+) -> Option<PathBuf> {
     // 1. The specifier already points at an existing source file.
-    if has_source_extension(&base, include_jsx) && base.is_file() {
-        return Some(canonical_paths.canonicalize(&base));
+    if has_source_extension(base, include_jsx) && base.is_file() {
+        return Some(canonical_paths.canonicalize(base));
     }
 
     // 2. A `.js`/`.mjs`/`.cjs` specifier resolving to its `.ts`/`.tsx` sibling.
-    if let Some(rewritten) = rewrite_js_to_ts(&base, canonical_paths) {
+    if let Some(rewritten) = rewrite_js_to_ts(base, canonical_paths) {
         return Some(rewritten);
     }
 
     // 3. Append a source extension: `./types` → `./types.ts`.
     for ext in resolve_extensions(include_jsx) {
-        let candidate = append_extension(&base, ext);
+        let candidate = append_extension(base, ext);
         if candidate.is_file() {
             return Some(canonical_paths.canonicalize(&candidate));
         }
@@ -261,107 +272,10 @@ fn append_extension(base: &Path, ext: &str) -> PathBuf {
     }
 }
 
+#[cfg(test)]
+#[path = "imports_tests.rs"]
+mod tests;
+
 fn cstr_index(ext: &str) -> String {
     cstr!("index{ext}")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use vize_carton::path::canonicalize_non_verbatim;
-    fn write(dir: &Path, rel: &str, contents: &str) -> PathBuf {
-        let path = dir.join(rel);
-        if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent).unwrap();
-        }
-        std::fs::write(&path, contents).unwrap();
-        path
-    }
-
-    #[test]
-    fn collects_relative_ts_and_vue_imports_transitively() {
-        let root = std::env::temp_dir().join(cstr!("vize-imports-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&root);
-        std::fs::create_dir_all(root.join("src")).unwrap();
-
-        let app = write(
-            &root,
-            "src/App.vue",
-            "<script setup lang=\"ts\">\nimport type { Sibling } from './types'\nimport Child from './Child.vue'\nconst x: Sibling = { a: 1 }\n</script>\n<template><Child /></template>\n",
-        );
-        let types = write(
-            &root,
-            "src/types.ts",
-            "export interface Sibling { a: number }\n",
-        );
-        let child = write(
-            &root,
-            "src/Child.vue",
-            "<script setup lang=\"ts\">\nimport { helper } from './nested/util'\n</script>\n<template><div /></template>\n",
-        );
-        let util = write(&root, "src/nested/util.ts", "export const helper = 1\n");
-
-        let discovered = collect_transitive_local_imports(
-            std::slice::from_ref(&app),
-            &root,
-            &mut CanonicalPathCache::default(),
-            false,
-        );
-
-        let canon = canonicalize_non_verbatim;
-        assert_eq!(discovered, vec![canon(&types), canon(&child), canon(&util)]);
-
-        let _ = std::fs::remove_dir_all(&root);
-    }
-
-    #[test]
-    fn ignores_bare_and_missing_specifiers() {
-        let root = std::env::temp_dir().join(cstr!("vize-imports-bare-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&root);
-        std::fs::create_dir_all(&root).unwrap();
-
-        let entry = write(
-            &root,
-            "entry.ts",
-            "import { ref } from 'vue'\nimport { gone } from './missing'\nexport const a = ref(0)\nvoid gone\n",
-        );
-
-        let discovered = collect_transitive_local_imports(
-            &[entry],
-            &root,
-            &mut CanonicalPathCache::default(),
-            false,
-        );
-        assert!(discovered.is_empty());
-
-        let _ = std::fs::remove_dir_all(&root);
-    }
-
-    #[test]
-    fn jsx_imports_are_resolved_only_when_jsx_typecheck_is_enabled() {
-        let root = std::env::temp_dir().join(cstr!("vize-imports-jsx-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&root);
-        std::fs::create_dir_all(root.join("src")).unwrap();
-
-        let entry = write(&root, "src/entry.tsx", "import './Panel.jsx'\n");
-        let panel = write(&root, "src/Panel.jsx", "const Panel = () => <div />\n");
-
-        let disabled = collect_transitive_local_imports(
-            &[entry.clone()],
-            &root,
-            &mut CanonicalPathCache::default(),
-            false,
-        );
-        let enabled = collect_transitive_local_imports(
-            &[entry],
-            &root,
-            &mut CanonicalPathCache::default(),
-            true,
-        );
-
-        assert_eq!(disabled, Vec::<PathBuf>::new());
-        assert_eq!(enabled, vec![canonicalize_non_verbatim(&panel)]);
-
-        let _ = std::fs::remove_dir_all(&root);
-    }
 }

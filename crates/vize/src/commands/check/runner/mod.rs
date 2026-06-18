@@ -207,19 +207,18 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         return;
     }
 
-    // An explicit subset only registers the requested files, so a relative
-    // import (`import { Foo } from './types'`) cannot see its sibling's real
-    // types and degrades to `any`. Register the transitive closure of relative
-    // source imports — analogous to the ambient pull-in below — so cross-file
-    // types resolve precisely, the way tsc/vue-tsc load the reachable program.
-    // Do this before root resolution so cwd-external files without tsconfig can
-    // still choose a materialization root covering all registered source files.
+    // Explicit subsets need reachable source imports registered so cross-file
+    // types resolve like tsc/vue-tsc. Run this before root resolution so
+    // cwd-external files can still choose a covering materialization root.
     if !args.patterns.is_empty() {
+        let aliases =
+            super::imports_aliases::PathAliasResolver::from_tsconfig(tsconfig_path.as_deref());
         for path in super::imports::collect_transitive_local_imports(
             &files,
             &cwd,
             &mut canonical_paths,
             jsx_typecheck,
+            Some(&aliases),
         ) {
             if !files.contains(&path) {
                 files.push(path);

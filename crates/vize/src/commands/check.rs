@@ -5,6 +5,7 @@
 
 mod dts;
 mod imports;
+mod imports_aliases;
 mod nuxt;
 mod path_cache;
 mod reporting;
