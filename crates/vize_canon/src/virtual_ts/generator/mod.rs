@@ -10,6 +10,8 @@ mod template_refs;
 
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
 
+pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
+
 use self::emits::{emit_emit_props_helper, emit_emits_type};
 use self::generics::{generic_injection_point, references_any_identifier};
 use self::imports::{
@@ -107,29 +109,6 @@ pub fn generate_virtual_ts_with_offsets_options_api(
         options,
         VirtualTsGenerationOptions {
             options_api: true,
-            ..Default::default()
-        },
-    )
-}
-
-/// Generate virtual TypeScript with Vue 2.7 / Nuxt 2 compatibility enabled.
-pub fn generate_virtual_ts_with_offsets_legacy_vue2(
-    summary: &Croquis,
-    script_content: Option<&str>,
-    template_ast: Option<&vize_relief::RootNode<'_>>,
-    script_offset: u32,
-    template_offset: u32,
-    options: &VirtualTsOptions,
-) -> VirtualTsOutput {
-    generate_virtual_ts_with_offsets_and_checks(
-        summary,
-        script_content,
-        template_ast,
-        script_offset,
-        template_offset,
-        options,
-        VirtualTsGenerationOptions {
-            legacy_vue2: true,
             ..Default::default()
         },
     )

@@ -1,6 +1,9 @@
 use vize_carton::config::VueVersion;
+use vize_croquis::Croquis;
 
 use super::super::helpers::VUE_TYPE_HELPERS;
+use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput};
+use super::generate_virtual_ts_with_offsets_and_checks;
 use super::spans::DEFINE_COMPONENT_HELPER;
 
 const LEGACY_VUE_TYPE_HELPERS: &str = r#"type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
@@ -55,4 +58,27 @@ pub(super) fn define_component_helper(legacy_vue2: bool, dialect: VueVersion) ->
     } else {
         DEFINE_COMPONENT_HELPER
     }
+}
+
+/// Generate virtual TypeScript with Vue 2.7 / Nuxt 2 compatibility enabled.
+pub fn generate_virtual_ts_with_offsets_legacy_vue2(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+) -> VirtualTsOutput {
+    generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsGenerationOptions {
+            legacy_vue2: true,
+            ..Default::default()
+        },
+    )
 }
