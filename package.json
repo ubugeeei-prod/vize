@@ -30,7 +30,7 @@
       "@unhead/vue": "2.1.15",
       "defu": "6.1.7",
       "devalue": "5.8.1",
-      "dompurify": "3.4.10",
+      "dompurify": "3.4.11",
       "esbuild": "0.28.1",
       "h3": "1.15.11",
       "hono": "4.12.25",
