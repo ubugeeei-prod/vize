@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/batch/virtual_project/tests.rs
-assertion_line: 891
 expression: helpers_content.as_str()
 ---
 // ============================================
@@ -50,6 +49,8 @@ type __VizeOverloadParameters<T extends (...args: any[]) => any> = Parameters<__
 type __VizeIsStringLiteral<T> = T extends string ? string extends T ? false : true : false;
 type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };
 type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});
+type __VizeCamelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<__VizeCamelize<Tail>>}` : S;
+type __VizeHandlerKey<K extends string> = `on${Capitalize<__VizeCamelize<K>>}`;
 
 // Compiler-macro signatures (aliased inside each module's __setup() scope)
 declare function __vize_defineProps<_T = unknown>(): _T;
