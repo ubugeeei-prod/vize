@@ -126,3 +126,42 @@ defineProps<WidgetProps>();
         output.code
     );
 }
+
+#[test]
+fn test_define_props_local_type_alias_is_visible_to_hoisted_props() {
+    let script = r#"type FormViewState = 'input' | 'confirm' | 'complete';
+
+interface Props {
+  formViewState: FormViewState;
+}
+
+const props = defineProps<Props>();
+"#;
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    let summary = analyzer.finish();
+
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+    let (module_scope, setup_and_after) = output
+        .code
+        .split_once("// ========== Setup Scope ==========")
+        .expect("setup scope marker present");
+
+    assert!(
+        module_scope.contains("type FormViewState = 'input' | 'confirm' | 'complete';"),
+        "local type alias should be emitted before hoisted Props:\n{}",
+        output.code
+    );
+    assert!(
+        module_scope.contains("interface Props {\n  formViewState: FormViewState;\n}"),
+        "hoisted Props should retain the local alias reference:\n{}",
+        output.code
+    );
+    assert!(
+        !setup_and_after.contains("type __VizeSetupProps"),
+        "plain local type aliases should not force setup-scoped Props:\n{}",
+        output.code
+    );
+}
