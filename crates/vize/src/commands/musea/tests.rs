@@ -50,11 +50,11 @@ fn serve_plan_defaults_to_vite_dev_with_gallery_route() {
 }
 
 #[test]
-fn serve_plan_supports_vite_build() {
+fn serve_plan_rejects_static_build_with_actionable_message() {
     let temp = tempfile::tempdir().unwrap();
-    let vite_bin = write_vite_bin(temp.path());
+    write_vite_bin(temp.path());
 
-    let plan = create_serve_plan(
+    let error = create_serve_plan(
         &ServeArgs {
             build: true,
             open: true,
@@ -62,10 +62,11 @@ fn serve_plan_supports_vite_build() {
         },
         temp.path(),
     )
-    .unwrap();
+    .unwrap_err();
 
-    assert_eq!(plan.program, vite_bin);
-    assert_eq!(plan.args, ["build"]);
+    assert!(error.contains("static gallery build is not supported yet"));
+    assert!(error.contains("without emitting `.art.vue` gallery content"));
+    assert!(error.contains("Storybook/static fallback"));
 }
 
 #[test]

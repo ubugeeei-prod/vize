@@ -156,22 +156,22 @@ fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> 
         }
         None => PathBuf::from("vite"),
     };
-    let mut vite_args = if args.build {
-        vec![cstr!("build")]
-    } else {
-        vec![
-            cstr!("dev"),
-            cstr!("--host"),
-            args.host.clone(),
-            cstr!("--port"),
-            args.port.to_compact_string(),
-        ]
-    };
-    if args.open && !args.build {
-        vite_args.push(cstr!("--open"));
-        vite_args.push(cstr!("/__musea__"));
+    if args.build {
+        return Err(cstr!(
+            "vize musea: static gallery build is not supported yet.\n  The Vite-backed Musea gallery is served by dev middleware, so `vite build` can exit successfully without emitting `.art.vue` gallery content.\n  Use `vize musea serve` for the dev gallery or keep a Storybook/static fallback until Musea static export is available."
+        ));
     }
-    if args.strict_port && !args.build {
+    let mut vite_args = vec![
+        cstr!("dev"),
+        cstr!("--host"),
+        args.host.clone(),
+        cstr!("--port"),
+        args.port.to_compact_string(),
+    ];
+    if args.open {
+        vite_args.extend([cstr!("--open"), cstr!("/__musea__")]);
+    }
+    if args.strict_port {
         vite_args.push(cstr!("--strictPort"));
     }
 
