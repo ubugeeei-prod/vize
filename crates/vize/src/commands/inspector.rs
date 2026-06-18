@@ -23,6 +23,8 @@ use vize_atelier_sfc::{
 use vize_carton::{String, ToCompactString};
 use vize_curator::inspector as curator_inspector;
 
+mod compare_error;
+
 #[derive(Debug, Clone, Copy, ValueEnum, Default, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum InspectorOutputFormat {
@@ -558,9 +560,7 @@ fn run_official_compiler_for_compare(
 
     if !output.status.success() {
         let stderr = std::str::from_utf8(&output.stderr).unwrap_or("<stderr is not valid UTF-8>");
-        eprintln!(
-            "--format compare requires @vue/compiler-sfc in the current project or Vize workspace dev dependencies.\n{stderr}"
-        );
+        eprintln!("{}", compare_error::official_compiler_error_message(stderr));
         std::process::exit(output.status.code().unwrap_or(1));
     }
 
