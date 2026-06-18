@@ -1,7 +1,7 @@
 //! Tests for SFC type checking.
 
 #![cfg(test)]
-
+mod emit_props;
 #[cfg(feature = "legacy")]
 use super::type_check_sfc_with_legacy_vue2;
 use super::{
