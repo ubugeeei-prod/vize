@@ -1,3 +1,4 @@
+mod anchors;
 mod emits;
 mod generics;
 mod imports;
@@ -8,11 +9,12 @@ mod script_module;
 mod setup_props;
 mod spans;
 mod template_refs;
+use self::anchors::emit_setup_binding_anchors;
 use self::emits::{emit_emit_props_helper, emit_emits_type};
 use self::generics::{generic_injection_point, references_any_identifier};
 use self::imports::{
-    collect_imported_names, collect_setup_binding_anchor_names, emit_global_component_stubs,
-    emit_reference_type_directives, extract_declared_name,
+    collect_imported_names, emit_global_component_stubs, emit_reference_type_directives,
+    extract_declared_name,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::options_api::{
@@ -820,81 +822,32 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
             // In projects that opt into unused-local diagnostics, this list is
             // narrowed to template-referenced names so user TS6133 can surface.
-            if !summary.bindings.bindings.is_empty() {
-                let mut first = true;
-                let binding_names = profile!(
-                    "canon.virtual_ts.collect_setup_binding_anchor_names",
-                    collect_setup_binding_anchor_names(
-                        summary,
-                        script_content,
-                        template_referenced_names.as_ref()
-                    )
-                );
-                if !binding_names.is_empty() {
-                    append!(ts, "\n  // {reference_setup_bindings_comment}\n  ");
-                }
-                for name in binding_names {
-                    // Skip bindings that are JS keywords or would cause syntax errors
-                    if matches!(
-                        name,
-                        "default"
-                            | "class"
-                            | "new"
-                            | "delete"
-                            | "void"
-                            | "typeof"
-                            | "in"
-                            | "instanceof"
-                            | "return"
-                            | "switch"
-                            | "case"
-                            | "break"
-                            | "continue"
-                            | "throw"
-                            | "try"
-                            | "catch"
-                            | "finally"
-                            | "if"
-                            | "else"
-                            | "for"
-                            | "while"
-                            | "do"
-                            | "with"
-                            | "var"
-                            | "let"
-                            | "const"
-                            | "function"
-                            | "this"
-                            | "super"
-                            | "import"
-                            | "export"
-                            | "yield"
-                            | "await"
-                            | "async"
-                            | "static"
-                            | "enum"
-                            | "implements"
-                            | "interface"
-                            | "package"
-                            | "private"
-                            | "protected"
-                            | "public"
-                    ) {
-                        continue;
-                    }
-                    if !first {
-                        ts.push(' ');
-                    }
-                    append!(ts, "void {name};");
-                    first = false;
-                }
-                if !first {
-                    ts.push('\n');
-                }
-            }
+            profile!(
+                "canon.virtual_ts.emit_setup_binding_anchors",
+                emit_setup_binding_anchors(
+                    &mut ts,
+                    summary,
+                    script_content,
+                    template_referenced_names.as_ref(),
+                    reference_setup_bindings_comment,
+                )
+            );
 
             ts.push_str("  })();\n");
         });
+    }
+
+    if has_template_scope && !check_options.check_template_bindings && preserve_unused_diagnostics {
+        profile!(
+            "canon.virtual_ts.emit_no_check_template_binding_anchors",
+            emit_setup_binding_anchors(
+                &mut ts,
+                summary,
+                script_content,
+                template_referenced_names.as_ref(),
+                reference_setup_bindings_comment,
+            )
+        );
     }
 
     // Reference props destructure bindings at setup scope level.

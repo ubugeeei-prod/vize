@@ -1,7 +1,8 @@
 use super::{
-    create_project_case_without_node_modules, resolve_test_tsgo_binary,
-    snapshot_project_diagnostics,
+    BatchTypeChecker, TypeChecker, create_project_case_without_node_modules, relative_path,
+    resolve_test_tsgo_binary, snapshot_project_diagnostics,
 };
+use vize_carton::cstr;
 
 #[test]
 fn batch_type_checker_marks_art_bindings_as_used_with_no_unused_locals() {
@@ -60,6 +61,90 @@ function handleSubmit() {}
 }
 
 #[test]
+fn no_check_template_bindings_still_marks_template_bindings_as_used() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "no-check-template-bindings-no-unused-locals",
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+
+const isLoading = false
+function confirmDialog() {}
+const unusedLocal = 1
+</script>
+
+<template>
+  <Child :busy="isLoading" @save="confirmDialog" />
+  {{ missingItems }}
+</template>
+"#,
+            ),
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineProps<{ busy?: boolean }>()
+defineEmits<{ save: [] }>()
+</script>
+
+<template><button /></template>
+"#,
+            ),
+        ],
+    );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noUnusedLocals": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+
+    let Some(snapshot) = snapshot_project_diagnostics_without_template_checks(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/App.vue"
+                && *code == Some(6133)
+                && (message.contains("Child")
+                    || message.contains("isLoading")
+                    || message.contains("confirmDialog")))
+        }),
+        "template bindings should not report TS6133, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/App.vue" && *code == Some(6133) && message.contains("unusedLocal")
+        }),
+        "unreferenced script bindings should still report TS6133, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/App.vue" && *code == Some(2304) && message.contains("missingItems"))
+        }),
+        "template binding diagnostics should stay disabled, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_does_not_report_default_export_alias_as_unused() {
     if resolve_test_tsgo_binary().is_none() {
         return;
@@ -111,4 +196,38 @@ export default {
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
+}
+
+fn snapshot_project_diagnostics_without_template_checks(
+    project_root: &std::path::Path,
+) -> Option<Vec<(vize_carton::String, Option<u32>, vize_carton::String)>> {
+    let mut checker = BatchTypeChecker::new(project_root).ok()?;
+    checker.set_virtual_ts_checks(true, false, true);
+    checker.scan_project().ok()?;
+    let result = checker.check_project().ok()?;
+
+    let mut snapshot: Vec<_> = result
+        .diagnostics
+        .into_iter()
+        .map(|diagnostic| {
+            (
+                relative_path(project_root, &diagnostic.file),
+                diagnostic.code,
+                cstr!(
+                    "{}:{}:{} {}",
+                    diagnostic.line + 1,
+                    diagnostic.column + 1,
+                    match diagnostic.severity {
+                        1 => "error",
+                        2 => "warning",
+                        3 => "info",
+                        _ => "hint",
+                    },
+                    diagnostic.message
+                ),
+            )
+        })
+        .collect();
+    snapshot.sort();
+    Some(snapshot)
 }
