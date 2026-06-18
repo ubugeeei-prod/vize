@@ -10,6 +10,7 @@ use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicUsize, Ordering},
 };
+use vize_carton::path::canonicalize_non_verbatim;
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
@@ -22,6 +23,65 @@ fn unique_case_dir(name: &str) -> PathBuf {
             "check-runner-{name}-{}-{case_id}",
             std::process::id()
         ))
+}
+
+#[test]
+fn default_tsconfig_run_registers_transitive_imports_outside_include_for_type_resolution() {
+    let project_root = unique_case_dir("default-transitive-imports");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("inside")).unwrap();
+    std::fs::create_dir_all(project_root.join("outside")).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["inside/**/*.ts"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("inside/use.ts"),
+        r#"import { ITEMS } from '../outside/lib'
+
+export const r = ITEMS.map(({ code, name }) => `${code}:${name}`)
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("outside/lib.ts"),
+        "export const ITEMS = [{ code: 'en', name: 'English' }, { code: 'ru', name: 'Russian' }]\n",
+    )
+    .unwrap();
+
+    let mut tsconfig_input_cache = super::TsconfigInputCache::default();
+    let mut canonical_paths = super::CanonicalPathCache::default();
+    let (files, reported_files) = super::collect_default_run_files(
+        &project_root,
+        &project_root,
+        Some(&project_root.join("tsconfig.json")),
+        false,
+        &mut tsconfig_input_cache,
+        &mut canonical_paths,
+    );
+
+    let included_file = canonicalize_non_verbatim(&project_root.join("inside/use.ts"));
+    let transitive_file = canonicalize_non_verbatim(&project_root.join("outside/lib.ts"));
+
+    assert!(files.contains(&included_file));
+    assert!(files.contains(&transitive_file));
+    assert!(reported_files.contains(&included_file));
+    assert!(
+        !reported_files.contains(&transitive_file),
+        "outside-include imports are registered for types, not reported"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
 }
 
 #[test]

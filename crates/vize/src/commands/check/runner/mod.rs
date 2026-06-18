@@ -62,6 +62,59 @@ pub(crate) use socket::run_with_socket;
 #[allow(clippy::disallowed_types)]
 type JsonObject = Map<std::string::String, Value>;
 
+fn collect_default_run_files(
+    project_root: &Path,
+    cwd: &Path,
+    tsconfig_path: Option<&Path>,
+    include_jsx: bool,
+    tsconfig_input_cache: &mut TsconfigInputCache,
+    canonical_paths: &mut CanonicalPathCache,
+) -> (Vec<PathBuf>, FxHashSet<PathBuf>) {
+    let mut files = collect_default_check_files(
+        project_root,
+        tsconfig_path,
+        include_jsx,
+        tsconfig_input_cache,
+    );
+    let reported_files = canonical_file_set(&files, canonical_paths);
+    register_transitive_local_imports(&mut files, cwd, tsconfig_path, include_jsx, canonical_paths);
+
+    (files, reported_files)
+}
+
+fn canonical_file_set(
+    files: &[PathBuf],
+    canonical_paths: &mut CanonicalPathCache,
+) -> FxHashSet<PathBuf> {
+    files
+        .iter()
+        .map(|path| canonical_paths.canonicalize(path))
+        .collect()
+}
+
+fn register_transitive_local_imports(
+    files: &mut Vec<PathBuf>,
+    cwd: &Path,
+    tsconfig_path: Option<&Path>,
+    include_jsx: bool,
+    canonical_paths: &mut CanonicalPathCache,
+) {
+    let aliases = super::imports_aliases::PathAliasResolver::from_tsconfig(tsconfig_path);
+    for path in super::imports::collect_transitive_local_imports(
+        files,
+        cwd,
+        canonical_paths,
+        include_jsx,
+        Some(&aliases),
+    ) {
+        if !files.contains(&path) {
+            files.push(path);
+        }
+    }
+    files.sort();
+    files.dedup();
+}
+
 /// Run type checking directly with a materialized Corsa project.
 pub(crate) fn run_direct(args: &CheckArgs) {
     use super::nuxt;
@@ -156,38 +209,34 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut tsconfig_input_cache = TsconfigInputCache::default();
     let mut canonical_paths = CanonicalPathCache::default();
     let collect_start = Instant::now();
-    let mut files = if args.patterns.is_empty() {
-        collect_default_check_files(
+    let (mut files, explicit_files, reported_files): (
+        Vec<PathBuf>,
+        Vec<PathBuf>,
+        FxHashSet<PathBuf>,
+    ) = if args.patterns.is_empty() {
+        let (files, reported_files) = collect_default_run_files(
             &project_root,
+            &cwd,
             tsconfig_path.as_deref(),
             jsx_typecheck,
             &mut tsconfig_input_cache,
-        )
+            &mut canonical_paths,
+        );
+        (files, Vec::new(), reported_files)
     } else {
-        collect_check_files(&args.patterns, jsx_typecheck)
-    };
-    let explicit_files = if args.patterns.is_empty() {
-        Vec::new()
-    } else {
-        files.clone()
+        let mut files = collect_check_files(&args.patterns, jsx_typecheck);
+        let explicit_files = files.clone();
+        let reported_files = canonical_file_set(&files, &mut canonical_paths);
+        register_transitive_local_imports(
+            &mut files,
+            &cwd,
+            tsconfig_path.as_deref(),
+            jsx_typecheck,
+            &mut canonical_paths,
+        );
+        (files, explicit_files, reported_files)
     };
     let collect_time = collect_start.elapsed();
-
-    // For an explicit subset, only the requested files' diagnostics are
-    // reported: ambient `.d.ts` and transitively-registered relative imports are
-    // pulled into the program solely so cross-file types resolve, not to surface
-    // diagnostics for files the user did not ask about. `None` reports every
-    // registered file (the default full-project run).
-    let reported_files: Option<FxHashSet<PathBuf>> = if args.patterns.is_empty() {
-        None
-    } else {
-        Some(
-            files
-                .iter()
-                .map(|path| canonical_paths.canonicalize(path))
-                .collect(),
-        )
-    };
 
     if files.is_empty() {
         if args.format == "json" {
@@ -207,26 +256,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         return;
     }
 
-    // Explicit subsets need reachable source imports registered so cross-file
-    // types resolve like tsc/vue-tsc. Run this before root resolution so
-    // cwd-external files can still choose a covering materialization root.
-    if !args.patterns.is_empty() {
-        let aliases =
-            super::imports_aliases::PathAliasResolver::from_tsconfig(tsconfig_path.as_deref());
-        for path in super::imports::collect_transitive_local_imports(
-            &files,
-            &cwd,
-            &mut canonical_paths,
-            jsx_typecheck,
-            Some(&aliases),
-        ) {
-            if !files.contains(&path) {
-                files.push(path);
-            }
-        }
-        files.sort();
-        files.dedup();
-    }
+    // Reachable source imports are registered before root resolution so
+    // cwd-external files can still choose a covering materialization root. Only
+    // original inputs are reported; transitive files exist to resolve types.
     let validate_inputs = !args.patterns.is_empty() && tsconfig_path.is_some();
     exit_if_inputs_outside_root(&explicit_input_root, &files, validate_inputs);
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
