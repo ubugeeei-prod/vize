@@ -308,7 +308,7 @@ export function loadHook(
         currentBase,
       );
     }
-    return "";
+    return null;
   }
 
   if (
