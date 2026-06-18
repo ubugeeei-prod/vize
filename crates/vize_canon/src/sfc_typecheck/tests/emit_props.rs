@@ -21,7 +21,11 @@ defineEmits<{
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("as `on${Capitalize<K>}`"),
+        virtual_ts.contains("type __VizeCamelize<S extends string>"),
+        "{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains("as __VizeHandlerKey<K>"),
         "{virtual_ts}"
     );
 }
