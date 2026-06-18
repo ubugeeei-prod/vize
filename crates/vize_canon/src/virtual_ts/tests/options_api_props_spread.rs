@@ -127,3 +127,52 @@ export default defineComponent({
         output.code
     );
 }
+
+#[test]
+fn test_options_api_props_with_type_cast_defers_to_setup_scope() {
+    let script = r#"import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
+
+type BreadcrumbsItem = { label: string }
+
+export default defineComponent({
+    props: {
+        breadcrumbs: {
+            type: Array as PropType<BreadcrumbsItem[]>,
+            required: true,
+        },
+    },
+})
+"#;
+    let summary = analyze_options_api_script(script);
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        !output
+            .code
+            .contains("export type Props = __RuntimePropShape<{\n        breadcrumbs:"),
+        "type-cast props must not be emitted directly in type position:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("const __vize_options_props = ({\n        breadcrumbs:"),
+        "type-cast props should stay in setup scope as a value:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains(
+            "export type Props = __RuntimePropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+        ),
+        "Props should be derived from the setup-scoped runtime props artifact:\n{}",
+        output.code
+    );
+}
