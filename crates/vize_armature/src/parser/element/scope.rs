@@ -1,9 +1,10 @@
 //! "In body" start-tag handling: implicit end-tag closing and HTML scopes
 //! (`<a>`/`<button>`/`<li>`/`<dt>`/`<dd>`/`<option>`/`<optgroup>`/`<p>`).
 
-use vize_relief::{ElementNode, ElementType};
+use vize_relief::ElementNode;
 
 use super::super::Parser;
+use super::is_html_tree_element;
 
 impl<'a> Parser<'a> {
     pub(super) fn handle_in_body_start_tag(&mut self, tag: &str, offset: usize) {
@@ -80,13 +81,18 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn find_last_open_element_index(&self, tags: &[&str]) -> Option<usize> {
-        (0..self.stack.len())
-            .rev()
-            .find(|&i| Self::tag_in(self.stack[i].element.tag.as_str(), tags))
+        (0..self.stack.len()).rev().find(|&i| {
+            is_html_tree_element(&self.stack[i].element)
+                && Self::tag_in(self.stack[i].element.tag.as_str(), tags)
+        })
     }
 
     fn find_open_li_element_in_list_item_scope(&self) -> Option<usize> {
         for i in (0..self.stack.len()).rev() {
+            if !is_html_tree_element(&self.stack[i].element) {
+                return None;
+            }
+
             let tag = self.stack[i].element.tag.as_str();
             if tag.eq_ignore_ascii_case("li") {
                 return Some(i);
@@ -101,6 +107,10 @@ impl<'a> Parser<'a> {
 
     fn find_open_p_element_in_button_scope(&self) -> Option<usize> {
         for i in (0..self.stack.len()).rev() {
+            if !is_html_tree_element(&self.stack[i].element) {
+                return None;
+            }
+
             let tag = self.stack[i].element.tag.as_str();
             if tag.eq_ignore_ascii_case("p") {
                 return Some(i);
@@ -108,9 +118,7 @@ impl<'a> Parser<'a> {
             // Components and structural `<template>` blocks (the latter is also
             // a button-scope boundary in the HTML spec) confine `<p>`
             // auto-closing, so stop the search rather than reaching across them.
-            if self.stack[i].element.tag_type != ElementType::Element
-                || Self::is_button_scope_boundary(tag)
-            {
+            if Self::is_button_scope_boundary(tag) {
                 return None;
             }
         }
@@ -142,7 +150,9 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn should_ignore_start_tag(&self, element: &ElementNode<'a>) -> bool {
-        element.tag.eq_ignore_ascii_case("form") && self.open_form_count > 0
+        is_html_tree_element(element)
+            && element.tag.eq_ignore_ascii_case("form")
+            && self.open_form_count > 0
     }
 
     pub(in crate::parser) fn can_omit_end_tag(tag: &str) -> bool {

@@ -24,8 +24,8 @@ use vize_relief::{
 
 use crate::tokenizer::Tokenizer;
 
-use callbacks::ParserCallbacks;
-use whitespace::condense_whitespace;
+use element::{note_html_tree_element_close, note_html_tree_element_open};
+use {callbacks::ParserCallbacks, whitespace::condense_whitespace};
 
 /// Parser context for building AST
 pub struct Parser<'a> {
@@ -339,46 +339,14 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn push_stack_entry(&mut self, entry: ParserStackEntry<'a>) {
-        self.note_stack_tag_open(entry.element.tag.as_str());
+        note_html_tree_element_open(self, &entry.element);
         self.stack.push(entry);
     }
 
     pub(super) fn pop_stack_entry(&mut self) -> Option<ParserStackEntry<'a>> {
         let entry = self.stack.pop()?;
-        self.note_stack_tag_close(entry.element.tag.as_str());
+        note_html_tree_element_close(self, &entry.element);
         Some(entry)
-    }
-
-    fn note_stack_tag_open(&mut self, tag: &str) {
-        match tag.len() {
-            1 if tag.eq_ignore_ascii_case("p") => self.open_p_count += 1,
-            1 if tag.eq_ignore_ascii_case("a") => self.open_a_count += 1,
-            4 if tag.eq_ignore_ascii_case("form") => self.open_form_count += 1,
-            5 if tag.eq_ignore_ascii_case("table") => self.open_table_count += 1,
-            6 if tag.eq_ignore_ascii_case("button") => self.open_button_count += 1,
-            _ => {}
-        }
-    }
-
-    fn note_stack_tag_close(&mut self, tag: &str) {
-        match tag.len() {
-            1 if tag.eq_ignore_ascii_case("p") => {
-                self.open_p_count = self.open_p_count.saturating_sub(1);
-            }
-            1 if tag.eq_ignore_ascii_case("a") => {
-                self.open_a_count = self.open_a_count.saturating_sub(1);
-            }
-            4 if tag.eq_ignore_ascii_case("form") => {
-                self.open_form_count = self.open_form_count.saturating_sub(1);
-            }
-            5 if tag.eq_ignore_ascii_case("table") => {
-                self.open_table_count = self.open_table_count.saturating_sub(1);
-            }
-            6 if tag.eq_ignore_ascii_case("button") => {
-                self.open_button_count = self.open_button_count.saturating_sub(1);
-            }
-            _ => {}
-        }
     }
 
     /// Handle unclosed elements at end of parsing

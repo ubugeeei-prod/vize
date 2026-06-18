@@ -4,6 +4,7 @@ use vize_carton::Vec;
 use vize_relief::ElementNode;
 
 use super::super::{Parser, ParserStackEntry, StackInsertion};
+use super::is_html_tree_element;
 
 impl<'a> Parser<'a> {
     pub(in crate::parser) fn nearest_table_index(&self) -> Option<usize> {
@@ -11,9 +12,10 @@ impl<'a> Parser<'a> {
             return None;
         }
 
-        (0..self.stack.len())
-            .rev()
-            .find(|&i| self.stack[i].element.tag.eq_ignore_ascii_case("table"))
+        (0..self.stack.len()).rev().find(|&i| {
+            is_html_tree_element(&self.stack[i].element)
+                && self.stack[i].element.tag.eq_ignore_ascii_case("table")
+        })
     }
 
     pub(super) fn should_foster_text(&self, content: &str) -> bool {
@@ -37,6 +39,10 @@ impl<'a> Parser<'a> {
         };
 
         for entry in self.stack.iter().skip(table_index + 1) {
+            if !is_html_tree_element(&entry.element) {
+                return false;
+            }
+
             if entry.insertion == StackInsertion::Fostered
                 || Self::tag_in(entry.element.tag.as_str(), &["caption", "td", "th"])
             {
