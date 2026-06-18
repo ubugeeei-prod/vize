@@ -5,7 +5,10 @@
 
 #![allow(clippy::disallowed_macros)]
 
+mod script_context;
+
 use crate::types::{ArtDescriptor, ArtVariant, CsfOutput};
+use script_context::{CsfScriptContext, collect_script_context};
 use vize_carton::{String, ToCompactString, append, cstr};
 
 /// Transform an Art descriptor to Storybook CSF 3.0 format.
@@ -29,10 +32,16 @@ use vize_carton::{String, ToCompactString, append, cstr};
 /// ```
 pub fn transform_to_csf(art: &ArtDescriptor<'_>) -> CsfOutput {
     let mut output = String::default();
+    let script_context = collect_script_context(art);
 
     // Generate imports
-    output.push_str(&generate_imports(art));
+    output.push_str(&generate_imports(art, &script_context));
     output.push('\n');
+
+    if !script_context.setup_code.is_empty() {
+        output.push_str(&script_context.setup_code);
+        output.push_str("\n\n");
+    }
 
     // Generate meta (default export)
     output.push_str(&generate_meta(art));
@@ -40,7 +49,7 @@ pub fn transform_to_csf(art: &ArtDescriptor<'_>) -> CsfOutput {
 
     // Generate stories (named exports)
     for variant in &art.variants {
-        output.push_str(&generate_story(variant, art));
+        output.push_str(&generate_story(variant, &script_context));
         output.push('\n');
     }
 
@@ -59,7 +68,7 @@ pub fn transform_to_csf(art: &ArtDescriptor<'_>) -> CsfOutput {
 }
 
 /// Generate import statements.
-fn generate_imports(art: &ArtDescriptor<'_>) -> String {
+fn generate_imports(art: &ArtDescriptor<'_>, script_context: &CsfScriptContext) -> String {
     let mut imports = String::default();
 
     // Import from Storybook
@@ -70,16 +79,8 @@ fn generate_imports(art: &ArtDescriptor<'_>) -> String {
 
     append!(imports, "import Component from '{component_path}';\n");
 
-    // Add script imports if present
-    if let Some(script) = &art.script_setup {
-        // Extract imports from script setup
-        for line in script.content.lines() {
-            let trimmed = line.trim();
-            if trimmed.starts_with("import ") && !trimmed.contains("Component") {
-                imports.push_str(trimmed);
-                imports.push('\n');
-            }
-        }
+    if !script_context.imports.is_empty() {
+        imports.push_str(&script_context.imports);
     }
 
     imports
@@ -133,7 +134,7 @@ fn generate_meta(art: &ArtDescriptor<'_>) -> String {
 }
 
 /// Generate a story (named export) from a variant.
-fn generate_story(variant: &ArtVariant<'_>, _art: &ArtDescriptor<'_>) -> String {
+fn generate_story(variant: &ArtVariant<'_>, script_context: &CsfScriptContext) -> String {
     let mut story = String::default();
 
     // Convert variant name to PascalCase for export name
@@ -160,7 +161,15 @@ fn generate_story(variant: &ArtVariant<'_>, _art: &ArtDescriptor<'_>) -> String 
     story.push_str("  render: (args) => ({\n");
     story.push_str("    components: { Component },\n");
     story.push_str("    setup() {\n");
-    story.push_str("      return { args };\n");
+    if script_context.setup_bindings.is_empty() {
+        story.push_str("      return { args };\n");
+    } else {
+        append!(
+            story,
+            "      return {{ args, {} }};\n",
+            script_context.setup_bindings.join(", ")
+        );
+    }
     story.push_str("    },\n");
 
     // Use the variant's template
@@ -222,85 +231,4 @@ fn escape_template(s: &str) -> String {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{escape_string, escape_template, to_pascal_case, transform_to_csf};
-    use crate::parse::parse_art;
-    use crate::types::ArtParseOptions;
-    use vize_carton::Bump;
-
-    #[test]
-    fn test_transform_simple() {
-        let allocator = Bump::new();
-        let source = r#"
-<art title="Button" component="./Button.vue">
-  <variant name="Primary" default>
-    <Button variant="primary">Click me</Button>
-  </variant>
-</art>
-"#;
-
-        let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
-        let csf = transform_to_csf(&art);
-
-        insta::assert_debug_snapshot!(csf);
-    }
-
-    #[test]
-    fn test_transform_with_category() {
-        let allocator = Bump::new();
-        let source = r#"
-<art title="Button" category="atoms" component="./Button.vue">
-  <variant name="Default">
-    <Button>Click</Button>
-  </variant>
-</art>
-"#;
-
-        let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
-        let csf = transform_to_csf(&art);
-
-        insta::assert_debug_snapshot!(csf);
-    }
-
-    #[test]
-    fn test_transform_multiple_variants() {
-        let allocator = Bump::new();
-        let source = r#"
-<art title="Button" component="./Button.vue">
-  <variant name="Primary">
-    <Button variant="primary">Primary</Button>
-  </variant>
-  <variant name="Secondary">
-    <Button variant="secondary">Secondary</Button>
-  </variant>
-</art>
-"#;
-
-        let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
-        let csf = transform_to_csf(&art);
-
-        insta::assert_debug_snapshot!(csf);
-    }
-
-    #[test]
-    fn test_to_pascal_case() {
-        assert_eq!(to_pascal_case("primary"), "Primary");
-        assert_eq!(to_pascal_case("with icon"), "WithIcon");
-        assert_eq!(to_pascal_case("my-button"), "MyButton");
-        assert_eq!(to_pascal_case("my_button"), "MyButton");
-    }
-
-    #[test]
-    fn test_escape_string() {
-        assert_eq!(escape_string("hello"), "hello");
-        assert_eq!(escape_string("it's"), "it\\'s");
-        assert_eq!(escape_string("line\nbreak"), "line\\nbreak");
-    }
-
-    #[test]
-    fn test_escape_template() {
-        assert_eq!(escape_template("hello"), "hello");
-        assert_eq!(escape_template("`code`"), "\\`code\\`");
-        assert_eq!(escape_template("${var}"), "\\${var}");
-    }
-}
+mod tests;
