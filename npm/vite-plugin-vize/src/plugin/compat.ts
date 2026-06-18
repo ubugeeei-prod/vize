@@ -1,5 +1,4 @@
 import type { Plugin, TransformResult } from "vite";
-import { transformWithOxc } from "vite";
 import { createRequire } from "node:module";
 import { classifyVitePluginRequest } from "@vizejs/native";
 
@@ -14,6 +13,7 @@ import { compileFile } from "../compiler.ts";
 import { generateOutput } from "../utils/index.ts";
 import { scopeCssForPipeline } from "../utils/css.ts";
 import { applyDefineReplacements } from "../transform.ts";
+import { transformVirtualTypeScript } from "./vite-transform.ts";
 
 export function createVueCompatPlugin(state: VizePluginState): Plugin {
   let compilerSfc: unknown = null;
@@ -135,7 +135,7 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
             filePath: id,
           });
 
-          const result = await transformWithOxc(output, id, { lang: "ts", sourcemap: false });
+          const result = await transformVirtualTypeScript(output, id);
           const defines = transformOptions?.ssr ? state.serverViteDefine : state.clientViteDefine;
           let transformed = result.code;
           if (Object.keys(defines).length > 0) {

@@ -3,7 +3,6 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { classifyVitePluginRequest } from "@vizejs/native";
 import type { TransformResult } from "vite";
-import { transformWithOxc } from "vite";
 
 import {
   getCompileOptionsForRequest,
@@ -31,6 +30,7 @@ import {
   rewriteImportMetaGlobBase,
   rewriteStaticAssetUrls,
 } from "../transform.ts";
+import { transformVirtualTypeScript } from "./vite-transform.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -500,10 +500,7 @@ export async function transformHook(
       ? (request.strippedVirtualPath ?? "")
       : (request.vizeVirtualPath ?? pluginVisibleVirtualPath ?? "");
     try {
-      const result = await transformWithOxc(code, realPath, {
-        lang: "ts",
-        sourcemap: false,
-      });
+      const result = await transformVirtualTypeScript(code, realPath);
       const defines = getVirtualModuleDefines(state, options?.ssr ?? false);
       let transformed = result.code;
       transformed = applyDefineReplacements(transformed, defines);

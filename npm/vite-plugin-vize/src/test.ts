@@ -12,4 +12,5 @@ import "./plugin/resolve-vue-runtime.test.ts";
 import "./plugin/resolve.test.ts";
 import "./plugin/state.test.ts";
 import "./plugin/unocss.test.ts";
+import "./plugin/vite-transform.test.ts";
 import "./virtual.test.ts";
