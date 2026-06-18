@@ -14,6 +14,7 @@ mod parsing;
 mod plugins;
 mod source_scan;
 mod stubs;
+mod tsconfig_aliases;
 mod virtual_modules;
 
 #[cfg(test)]
@@ -25,6 +26,7 @@ use generated_dir::resolve_nuxt_generated_dir;
 use plugins::collect_plugin_injection_stubs;
 use source_scan::{collect_source_auto_import_stubs, collect_source_type_auto_import_stubs};
 use stubs::{declared_name, is_template_component_binding};
+use tsconfig_aliases::collect_explicit_virtual_module_aliases;
 use virtual_modules::{collect_fallback_module_stubs, collect_fallback_path_aliases};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -33,9 +35,18 @@ pub(in crate::commands::check) struct NuxtPathAlias {
     pub(in crate::commands::check) targets: Vec<String>,
 }
 
+#[cfg(test)]
 pub(in crate::commands::check) fn detect_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
+) -> Vec<NuxtPathAlias> {
+    detect(options, cwd, None)
+}
+
+pub(in crate::commands::check) fn detect(
+    options: &mut VirtualTsOptions,
+    cwd: &Path,
+    tsconfig_path: Option<&Path>,
 ) -> Vec<NuxtPathAlias> {
     if !is_nuxt_project(cwd) {
         return Vec::new();
@@ -78,7 +89,8 @@ pub(in crate::commands::check) fn detect_nuxt_auto_imports(
         collect_source_auto_import_stubs(cwd, &mut collected, &mut seen_names);
         collect_source_type_auto_import_stubs(cwd, &mut collected);
     }
-    collect_fallback_module_stubs(cwd, &mut collected);
+    let explicit_aliases = collect_explicit_virtual_module_aliases(tsconfig_path);
+    collect_fallback_module_stubs(cwd, &mut collected, &explicit_aliases);
     let path_aliases = collect_fallback_path_aliases(cwd, &generated_dir);
     collect_generated_template_globals(&generated_dir, options, &seen_names);
 

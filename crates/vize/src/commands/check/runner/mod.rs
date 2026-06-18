@@ -261,9 +261,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         files.sort();
         files.dedup();
     }
-
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
-    let nuxt_path_aliases = nuxt::detect_nuxt_auto_imports(&mut virtual_ts_options, &project_root);
+    let tsconfig = program_tsconfig_path.as_deref();
+    let nuxt_path_aliases = nuxt::detect(&mut virtual_ts_options, &project_root, tsconfig);
     collect_project_global_component_stubs(
         &mut virtual_ts_options,
         &files,

@@ -17,7 +17,11 @@ use super::parsing::{is_ts_identifier, source_type_for_path, source_type_for_scr
 use super::stubs::tracked_read_to_string;
 use crate::commands::check::tsconfig_inputs::parse_jsonc_value;
 
-pub(super) fn collect_fallback_module_stubs(cwd: &Path, stubs: &mut Vec<String>) {
+pub(super) fn collect_fallback_module_stubs(
+    cwd: &Path,
+    stubs: &mut Vec<String>,
+    explicit_aliases: &FxHashSet<String>,
+) {
     let imports = collect_nuxt_virtual_module_imports(cwd);
     if imports.is_empty() {
         return;
@@ -26,6 +30,9 @@ pub(super) fn collect_fallback_module_stubs(cwd: &Path, stubs: &mut Vec<String>)
     let mut modules: Vec<_> = imports.into_iter().collect();
     modules.sort_by(|left, right| left.0.cmp(&right.0));
     for (module, imports) in modules {
+        if explicit_aliases.contains(module.as_str()) {
+            continue;
+        }
         if let Some(stub) = render_module_stub(module.as_str(), &imports) {
             stubs.push(stub);
         }
