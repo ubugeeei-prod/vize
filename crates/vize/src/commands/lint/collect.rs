@@ -65,7 +65,7 @@ fn add_lint_file(path: &Path, files: &mut Vec<PathBuf>, seen: &mut FxHashSet<Pat
 fn is_lintable_path(path: &Path) -> bool {
     matches!(
         path.extension().and_then(|extension| extension.to_str()),
-        Some("vue" | "html" | "htm" | "jsx" | "tsx")
+        Some("vue" | "html" | "htm" | "js" | "mjs" | "cjs" | "ts" | "mts" | "cts" | "jsx" | "tsx",)
     )
 }
 
@@ -73,6 +73,13 @@ pub(super) fn is_standalone_html_path(path: &Path) -> bool {
     matches!(
         path.extension().and_then(|extension| extension.to_str()),
         Some("html" | "htm")
+    )
+}
+
+pub(super) fn is_plain_script_path(path: &Path) -> bool {
+    matches!(
+        path.extension().and_then(|extension| extension.to_str()),
+        Some("js" | "mjs" | "cjs" | "ts" | "mts" | "cts")
     )
 }
 
@@ -161,5 +168,39 @@ fn lint_glob_match_options() -> MatchOptions {
         case_sensitive: true,
         require_literal_separator: true,
         require_literal_leading_dot: false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::collect_lint_files;
+    use std::fs;
+
+    #[test]
+    fn collection_includes_vue_html_scripts_and_jsx() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("src");
+        fs::create_dir_all(&src).unwrap();
+        fs::write(src.join("App.vue"), "").unwrap();
+        fs::write(src.join("index.html"), "").unwrap();
+        fs::write(src.join("config.js"), "").unwrap();
+        fs::write(src.join("store.ts"), "").unwrap();
+        fs::write(src.join("Panel.jsx"), "").unwrap();
+        fs::write(src.join("Widget.tsx"), "").unwrap();
+        fs::write(src.join("notes.md"), "").unwrap();
+
+        let files = collect_lint_files(&[src.display().to_string().into()]);
+
+        assert_eq!(
+            files,
+            vec![
+                src.join("App.vue"),
+                src.join("Panel.jsx"),
+                src.join("Widget.tsx"),
+                src.join("config.js"),
+                src.join("index.html"),
+                src.join("store.ts")
+            ]
+        );
     }
 }

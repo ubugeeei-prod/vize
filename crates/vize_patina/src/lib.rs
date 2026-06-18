@@ -139,6 +139,11 @@ pub fn lint_jsx(source: &str, filename: &str, lang: JsxLang) -> LintResult {
     Linter::new().lint_jsx(source, filename, lang)
 }
 
+/// Lint plain JavaScript/TypeScript source with default script rules.
+pub fn lint_script(source: &str, filename: &str) -> LintResult {
+    Linter::new().lint_script(source, filename)
+}
+
 #[cfg(test)]
 mod tests {
     use super::lint;

@@ -7,8 +7,20 @@ use vize_carton::String;
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct LintArgs {
-    /// Glob pattern(s) to match .vue, standalone .html, .jsx, or .tsx files
-    #[arg(default_values = ["./**/*.vue", "./**/*.html", "./**/*.htm", "./**/*.jsx", "./**/*.tsx"])]
+    /// Glob pattern(s) to match .vue, standalone .html, .js, .ts, .jsx, or .tsx files
+    #[arg(default_values = [
+        "./**/*.vue",
+        "./**/*.html",
+        "./**/*.htm",
+        "./**/*.js",
+        "./**/*.mjs",
+        "./**/*.cjs",
+        "./**/*.ts",
+        "./**/*.mts",
+        "./**/*.cts",
+        "./**/*.jsx",
+        "./**/*.tsx"
+    ])]
     pub patterns: Vec<String>,
 
     /// Automatically fix problems (not yet implemented)

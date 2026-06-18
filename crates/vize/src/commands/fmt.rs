@@ -1,4 +1,4 @@
-//! Format command - High-performance Vue, JSX, and TSX formatting using vize_glyph
+//! Format command - High-performance Vue and script formatting using vize_glyph
 
 #![allow(clippy::disallowed_macros)]
 
@@ -30,7 +30,7 @@ use ignores::load_fmt_ignore_set;
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct FmtArgs {
-    /// Glob pattern(s) to match .vue, .jsx, and .tsx files
+    /// Glob pattern(s) to match .vue, .js, .ts, .jsx, and .tsx files
     #[arg(default_values_t = default_fmt_patterns())]
     pub patterns: Vec<String>,
 
@@ -113,7 +113,7 @@ pub fn run(args: FmtArgs) {
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
-        eprintln!("No .vue, .jsx, or .tsx files found matching the patterns");
+        eprintln!("No .vue, .js, .ts, .jsx, or .tsx files found matching the patterns");
         return;
     }
 
@@ -372,6 +372,12 @@ fn build_format_options(args: &FmtArgs) -> FormatOptions {
 fn default_fmt_patterns() -> Vec<std::string::String> {
     vec![
         "./**/*.vue".into(),
+        "./**/*.js".into(),
+        "./**/*.mjs".into(),
+        "./**/*.cjs".into(),
+        "./**/*.ts".into(),
+        "./**/*.mts".into(),
+        "./**/*.cts".into(),
         "./**/*.jsx".into(),
         "./**/*.tsx".into(),
     ]
@@ -477,41 +483,31 @@ fn format_file_source(
     options: &FormatOptions,
     allocator: &Allocator,
 ) -> Result<FormatResult, vize_glyph::FormatError> {
-    match path.extension().and_then(|extension| extension.to_str()) {
-        Some("jsx") => {
-            let code = profile!(
-                "cli.fmt.file.format_jsx",
-                format_script_with_source_type(
-                    source,
-                    options,
-                    allocator,
-                    SourceType::jsx().with_module(true),
-                )
-            )?;
-            Ok(FormatResult {
-                changed: code.as_str() != source,
-                code,
-            })
-        }
-        Some("tsx") => {
-            let code = profile!(
-                "cli.fmt.file.format_tsx",
-                format_script_with_source_type(
-                    source,
-                    options,
-                    allocator,
-                    SourceType::tsx().with_module(true),
-                )
-            )?;
-            Ok(FormatResult {
-                changed: code.as_str() != source,
-                code,
-            })
-        }
-        _ => profile!(
-            "cli.fmt.file.format_sfc",
-            format_sfc_with_allocator(source, options, allocator)
-        ),
+    if let Some(source_type) = script_source_type_for_path(path) {
+        let code = profile!(
+            "cli.fmt.file.format_script",
+            format_script_with_source_type(source, options, allocator, source_type)
+        )?;
+        return Ok(FormatResult {
+            changed: code.as_str() != source,
+            code,
+        });
+    }
+
+    profile!(
+        "cli.fmt.file.format_sfc",
+        format_sfc_with_allocator(source, options, allocator)
+    )
+}
+
+fn script_source_type_for_path(path: &Path) -> Option<SourceType> {
+    let extension = path.extension().and_then(|extension| extension.to_str())?;
+    match extension {
+        "js" | "mjs" | "cjs" => Some(SourceType::from_path("module.js").ok()?.with_module(true)),
+        "ts" | "mts" | "cts" => Some(SourceType::from_path("module.ts").ok()?.with_module(true)),
+        "jsx" => Some(SourceType::jsx().with_module(true)),
+        "tsx" => Some(SourceType::tsx().with_module(true)),
+        _ => None,
     }
 }
 

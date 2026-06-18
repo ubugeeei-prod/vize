@@ -221,7 +221,7 @@ fn merge_script_result(result: &mut LintResult, script_result: ScriptLintResult)
 /// byte prefilter, runs into its own [`ScriptLintResult`], and is merged in the
 /// original rule order. Active AST rules share one oxc parse; byte rules run
 /// directly against the source.
-fn append_builtin_script_rules_for_source(
+pub(crate) fn append_builtin_script_rules_for_source(
     linter: &Linter,
     source: &str,
     offset: usize,

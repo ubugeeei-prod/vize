@@ -81,6 +81,18 @@ fn should_walk_with_gitignore(pattern: &str) -> bool {
             | "./**/*.jsx"
             | "**/*.tsx"
             | "./**/*.tsx"
+            | "**/*.js"
+            | "./**/*.js"
+            | "**/*.mjs"
+            | "./**/*.mjs"
+            | "**/*.cjs"
+            | "./**/*.cjs"
+            | "**/*.ts"
+            | "./**/*.ts"
+            | "**/*.mts"
+            | "./**/*.mts"
+            | "**/*.cts"
+            | "./**/*.cts"
     )
 }
 
@@ -143,7 +155,12 @@ fn normalize_fmt_pattern(pattern: &str) -> vize_carton::String {
 fn is_format_target(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| matches!(extension, "vue" | "jsx" | "tsx"))
+        .is_some_and(|extension| {
+            matches!(
+                extension,
+                "vue" | "jsx" | "tsx" | "js" | "mjs" | "cjs" | "ts" | "mts" | "cts"
+            )
+        })
 }
 
 #[inline]
@@ -228,15 +245,18 @@ mod tests {
     }
 
     #[test]
-    fn collect_files_matches_vue_jsx_and_tsx() {
+    fn collect_files_matches_vue_scripts_and_jsx() {
         let root = unique_case_dir("format-targets");
         let src = root.join("src");
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&src).unwrap();
         fs::write(src.join("App.vue"), "<template><div/></template>").unwrap();
+        fs::write(src.join("config.js"), "export default {}").unwrap();
         fs::write(src.join("Panel.jsx"), "const Panel=()=> <div />").unwrap();
+        fs::write(src.join("store.ts"), "export const count=0").unwrap();
         fs::write(src.join("Widget.tsx"), "const Widget=()=> <div />").unwrap();
-        fs::write(src.join("types.ts"), "export type Widget = {}").unwrap();
+        fs::write(src.join("types.d.ts"), "export type Widget = {}").unwrap();
+        fs::write(src.join("notes.md"), "# notes").unwrap();
 
         let pattern = root.to_string_lossy().into_owned();
         let files = collect_files(&[pattern], None);
@@ -247,7 +267,10 @@ mod tests {
             vec![
                 src.join("App.vue"),
                 src.join("Panel.jsx"),
-                src.join("Widget.tsx")
+                src.join("Widget.tsx"),
+                src.join("config.js"),
+                src.join("store.ts"),
+                src.join("types.d.ts")
             ]
         );
     }

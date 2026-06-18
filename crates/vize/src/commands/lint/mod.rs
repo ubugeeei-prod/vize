@@ -1,4 +1,4 @@
-//! Lint command - Lint Vue SFC files
+//! Lint command - Lint Vue and script files
 
 mod args;
 mod collect;
@@ -11,8 +11,10 @@ mod tests;
 pub use args::LintArgs;
 
 use crate::profile_support;
-use collect::{collect_lint_files, is_standalone_html_path, resolve_lint_config_path};
-use cross_file::{build_cross_file_lint_output, merge_lint_result};
+use collect::{
+    collect_lint_files, is_plain_script_path, is_standalone_html_path, resolve_lint_config_path,
+};
+use cross_file::apply_sfc_cross_file_lint;
 use rayon::prelude::*;
 use std::fs;
 use std::io::Write;
@@ -78,14 +80,14 @@ pub fn run(args: LintArgs) {
         .type_checker
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
-    // Collect .vue, standalone .html, and JSX/TSX files using glob patterns or directory walking
+    // Collect lintable files using glob patterns or directory walking.
     let collect_start = Instant::now();
     let files = collect_lint_files(&args.patterns);
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
         eprintln!(
-            "No .vue, .html, .jsx, or .tsx files found matching patterns: {:?}",
+            "No .vue, .html, .js, .ts, .jsx, or .tsx files found matching patterns: {:?}",
             args.patterns
         );
         return;
@@ -135,10 +137,10 @@ pub fn run(args: LintArgs) {
         .filter_map(|path| {
             let file_start = args.profile.then(Instant::now);
             let read_start = args.profile.then(Instant::now);
-            let source = match profile!("cli.lint.file.read", fs::read_to_string(path)) {
-                Ok(s) => {
-                    global_profiler().record_fs_read_to_string(s.len());
-                    s
+            let source: String = match profile!("cli.lint.file.read", fs::read_to_string(path)) {
+                Ok(source) => {
+                    global_profiler().record_fs_read_to_string(source.len());
+                    source.into()
                 }
                 Err(e) => {
                     global_profiler().record_fs_read_to_string_failure();
@@ -155,6 +157,8 @@ pub fn run(args: LintArgs) {
             let result = profile!("cli.lint.file.lint", {
                 if is_standalone_html_path(path) {
                     linter.lint_standalone_html(&source, &filename)
+                } else if is_plain_script_path(path) {
+                    linter.lint_script(&source, &filename)
                 } else if let Some(lang) = jsx_lang_for_path(path) {
                     linter.lint_jsx(&source, &filename, lang)
                 } else {
@@ -197,23 +201,10 @@ pub fn run(args: LintArgs) {
     let cross_file_enabled = args.cross_file || args.cross_file_tree;
     let cross_file_start = args.profile.then(Instant::now);
     if cross_file_enabled {
-        let cross_file_inputs: Vec<_> = results
-            .iter()
-            .map(|(path, _, source, _)| (path.clone(), source.as_str()))
-            .collect();
-        let cross_file_output = profile!(
+        cross_file_tree = profile!(
             "cli.lint.cross_file.build",
-            build_cross_file_lint_output(&cross_file_inputs, help_level, args.cross_file_tree)
+            apply_sfc_cross_file_lint(&mut results, help_level, args.cross_file_tree)
         );
-        cross_file_tree = cross_file_output.provide_inject_tree;
-
-        profile!("cli.lint.cross_file.merge", {
-            for (index, cross_result) in cross_file_output.results.into_iter().enumerate() {
-                if let Some((_, _, _, result)) = results.get_mut(index) {
-                    merge_lint_result(result, cross_result);
-                }
-            }
-        });
     }
     let cross_file_time = cross_file_start
         .map(|start| start.elapsed())

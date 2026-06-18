@@ -20,10 +20,42 @@ pub(super) struct CrossFileLintOutput {
     pub(super) provide_inject_tree: Option<String>,
 }
 
+pub(super) type CliLintFileResult = (PathBuf, String, String, LintResult);
+
 #[derive(Clone, Copy, Debug, Default)]
 struct CrossFileSourceOffsets {
     script: u32,
     template: u32,
+}
+
+pub(super) fn apply_sfc_cross_file_lint(
+    results: &mut [CliLintFileResult],
+    help_level: HelpLevel,
+    include_tree: bool,
+) -> Option<String> {
+    let targets: Vec<_> = results
+        .iter()
+        .enumerate()
+        .filter(|(_, (path, _, _, _))| is_sfc_cross_file_target(path))
+        .map(|(index, _)| index)
+        .collect();
+    let inputs: Vec<_> = targets
+        .iter()
+        .map(|index| {
+            let (path, _, source, _) = &results[*index];
+            (path.clone(), source.clone())
+        })
+        .collect();
+    let output = build_cross_file_lint_output(&inputs, help_level, include_tree);
+    let tree = output.provide_inject_tree;
+
+    for (target_index, cross_result) in targets.into_iter().zip(output.results) {
+        if let Some((_, _, _, result)) = results.get_mut(target_index) {
+            merge_lint_result(result, cross_result);
+        }
+    }
+
+    tree
 }
 
 pub(super) fn build_cross_file_lint_output<S: AsRef<str>>(
@@ -157,6 +189,13 @@ fn analyze_sfc_for_cross_file(
     };
 
     Some((analysis, offsets))
+}
+
+fn is_sfc_cross_file_target(path: &Path) -> bool {
+    matches!(
+        path.extension().and_then(|extension| extension.to_str()),
+        Some("vue")
+    )
 }
 
 fn cross_file_diagnostic_to_lint(
