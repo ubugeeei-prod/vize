@@ -9,14 +9,26 @@ use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
 use vize_carton::{FxHashSet, String};
 
+use super::ignores::CheckIgnoreSet;
+
 const TARGET_DIR: &str = "target";
 const NODE_MODULES_DIR: &str = "node_modules";
 const VIZE_CACHE_DIR: &str = ".vize";
 
+#[cfg(test)]
 #[allow(clippy::disallowed_types)]
 pub(super) fn collect_check_files(
     patterns: &[std::string::String],
     include_jsx: bool,
+) -> Vec<PathBuf> {
+    collect_check_files_with_ignores(patterns, include_jsx, None)
+}
+
+#[allow(clippy::disallowed_types)]
+pub(super) fn collect_check_files_with_ignores(
+    patterns: &[std::string::String],
+    include_jsx: bool,
+    ignore_set: Option<&CheckIgnoreSet>,
 ) -> Vec<PathBuf> {
     let mut files = Vec::new();
     let mut seen = FxHashSet::default();
@@ -27,6 +39,7 @@ pub(super) fn collect_check_files(
             if candidate.is_file() {
                 let candidate = normalize_input_path(&candidate);
                 if is_supported_check_file(&candidate, include_jsx)
+                    && !is_ignored(&candidate, ignore_set)
                     && seen.insert(candidate.clone())
                 {
                     files.push(candidate);
@@ -34,7 +47,7 @@ pub(super) fn collect_check_files(
                 continue;
             }
             if candidate.is_dir() {
-                collect_from_dir(&candidate, &mut files, &mut seen, include_jsx);
+                collect_from_dir(&candidate, &mut files, &mut seen, include_jsx, ignore_set);
                 continue;
             }
         }
@@ -47,6 +60,7 @@ pub(super) fn collect_check_files(
             &mut seen,
             include_jsx,
             matcher.as_ref(),
+            ignore_set,
         );
     }
 
@@ -75,7 +89,9 @@ pub(super) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf
                 continue;
             }
             if candidate.is_dir() {
-                collect_from_dir_filtered(&candidate, &mut files, &mut seen, true, false, None);
+                collect_from_dir_filtered(
+                    &candidate, &mut files, &mut seen, true, false, None, None,
+                );
                 continue;
             }
         }
@@ -89,6 +105,7 @@ pub(super) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf
             true,
             false,
             matcher.as_ref(),
+            None,
         );
     }
 
@@ -101,8 +118,9 @@ fn collect_from_dir(
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
     include_jsx: bool,
+    ignore_set: Option<&CheckIgnoreSet>,
 ) {
-    collect_from_dir_with_matcher(dir, files, seen, include_jsx, None);
+    collect_from_dir_with_matcher(dir, files, seen, include_jsx, None, ignore_set);
 }
 
 fn collect_from_dir_with_matcher(
@@ -111,8 +129,9 @@ fn collect_from_dir_with_matcher(
     seen: &mut FxHashSet<PathBuf>,
     include_jsx: bool,
     matcher: Option<&InputGlob>,
+    ignore_set: Option<&CheckIgnoreSet>,
 ) {
-    collect_from_dir_filtered(dir, files, seen, false, include_jsx, matcher);
+    collect_from_dir_filtered(dir, files, seen, false, include_jsx, matcher, ignore_set);
 }
 
 fn collect_from_dir_filtered(
@@ -122,6 +141,7 @@ fn collect_from_dir_filtered(
     vue_only: bool,
     include_jsx: bool,
     matcher: Option<&InputGlob>,
+    ignore_set: Option<&CheckIgnoreSet>,
 ) {
     // Walk with the `ignore` crate so repository-level ignore rules prune whole
     // subtrees before we test patterns. The root path is canonicalized once and
@@ -145,6 +165,7 @@ fn collect_from_dir_filtered(
                     && is_supported_collect_file(path, vue_only, include_jsx)
                     && matcher.is_none_or(|matcher| matcher.matches(path))
                     && (!skip_generated || !is_generated_path(path))
+                    && !is_ignored(path, ignore_set)
                     && let Ok(mut collected) = collected.lock()
                 {
                     collected.push(normalize_walked_path(dir, &normalized_dir, path));
@@ -164,6 +185,10 @@ fn collect_from_dir_filtered(
     }
 }
 
+fn is_ignored(path: &Path, ignore_set: Option<&CheckIgnoreSet>) -> bool {
+    ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(path))
+}
+
 fn base_dir_from_pattern(pattern: &str) -> PathBuf {
     let glob_start = pattern.find(['*', '?', '[', '{']).unwrap_or(pattern.len());
     let prefix = &pattern[..glob_start];
@@ -181,14 +206,14 @@ fn base_dir_from_pattern(pattern: &str) -> PathBuf {
     }
 }
 
-struct InputGlob {
+pub(super) struct InputGlob {
     pattern: Pattern,
     cwd: PathBuf,
     absolute: bool,
 }
 
 impl InputGlob {
-    fn new(pattern: &str) -> Option<Self> {
+    pub(super) fn new(pattern: &str) -> Option<Self> {
         let normalized = normalize_glob_pattern(pattern);
         let absolute = Path::new(normalized.as_str()).is_absolute();
         Pattern::new(normalized.as_str()).ok().map(|pattern| Self {
@@ -198,7 +223,7 @@ impl InputGlob {
         })
     }
 
-    fn matches(&self, path: &Path) -> bool {
+    pub(super) fn matches(&self, path: &Path) -> bool {
         let candidate = if self.absolute {
             let absolute = if path.is_absolute() {
                 path.to_path_buf()
@@ -310,137 +335,5 @@ fn glob_match_options() -> MatchOptions {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{base_dir_from_pattern, collect_check_files, collect_vue_files};
-    use std::fs;
-    use std::path::{Path, PathBuf};
-    use vize_carton::cstr;
-
-    fn unique_case_dir(name: &str) -> PathBuf {
-        static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
-            std::sync::atomic::AtomicUsize::new(0);
-        let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("target")
-            .join("vize-tests")
-            .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
-    }
-
-    #[test]
-    fn base_dir_from_glob_patterns() {
-        assert_eq!(
-            base_dir_from_pattern("./src/**/*.vue"),
-            PathBuf::from("./src")
-        );
-        assert_eq!(base_dir_from_pattern("."), PathBuf::from("."));
-    }
-
-    #[test]
-    fn collect_check_files_includes_ts_and_vue_and_dts() {
-        let case_dir = unique_case_dir("collect-check");
-        let _ = fs::remove_dir_all(&case_dir);
-        fs::create_dir_all(case_dir.join("src")).unwrap();
-        fs::write(case_dir.join("src/App.vue"), "").unwrap();
-        fs::write(case_dir.join("src/Component.jsx"), "").unwrap();
-        fs::write(case_dir.join("src/main.ts"), "").unwrap();
-        fs::write(case_dir.join("src/env.d.ts"), "").unwrap();
-        fs::write(case_dir.join("src/skip.js"), "").unwrap();
-
-        let files = collect_check_files(&vec![case_dir.display().to_string()], false);
-
-        assert_eq!(
-            files,
-            vec![
-                case_dir.join("src/App.vue"),
-                case_dir.join("src/env.d.ts"),
-                case_dir.join("src/main.ts"),
-            ]
-        );
-
-        let _ = fs::remove_dir_all(&case_dir);
-    }
-
-    #[test]
-    fn collect_check_files_includes_jsx_only_when_enabled() {
-        let case_dir = unique_case_dir("collect-check-jsx");
-        let _ = fs::remove_dir_all(&case_dir);
-        fs::create_dir_all(case_dir.join("src")).unwrap();
-        fs::write(case_dir.join("src/App.jsx"), "").unwrap();
-        fs::write(case_dir.join("src/App.tsx"), "").unwrap();
-        fs::write(case_dir.join("src/skip.js"), "").unwrap();
-
-        let files = collect_check_files(&vec![case_dir.display().to_string()], true);
-
-        assert_eq!(
-            files,
-            vec![case_dir.join("src/App.jsx"), case_dir.join("src/App.tsx")]
-        );
-
-        let _ = fs::remove_dir_all(&case_dir);
-    }
-
-    #[test]
-    fn collect_check_files_filters_quoted_globs() {
-        let case_dir = unique_case_dir("collect-check-glob");
-        let _ = fs::remove_dir_all(&case_dir);
-        fs::create_dir_all(case_dir.join("src/nested")).unwrap();
-        fs::write(case_dir.join("src/App.vue"), "").unwrap();
-        fs::write(case_dir.join("src/main.ts"), "").unwrap();
-        fs::write(case_dir.join("src/nested/View.vue"), "").unwrap();
-        fs::write(case_dir.join("src/nested/model.ts"), "").unwrap();
-
-        let files = collect_check_files(
-            &vec![case_dir.join("src/**/*.vue").display().to_string()],
-            false,
-        );
-
-        assert_eq!(
-            files,
-            vec![
-                case_dir.join("src/App.vue"),
-                case_dir.join("src/nested/View.vue"),
-            ]
-        );
-
-        let _ = fs::remove_dir_all(&case_dir);
-    }
-
-    #[test]
-    fn collect_vue_files_stays_vue_only() {
-        let case_dir = unique_case_dir("collect-vue");
-        let _ = fs::remove_dir_all(&case_dir);
-        fs::create_dir_all(case_dir.join("src")).unwrap();
-        fs::write(case_dir.join("src/App.vue"), "").unwrap();
-        fs::write(case_dir.join("src/main.ts"), "").unwrap();
-
-        let files = collect_vue_files(&vec![case_dir.display().to_string()]);
-
-        assert_eq!(files, vec![case_dir.join("src/App.vue")]);
-
-        let _ = fs::remove_dir_all(&case_dir);
-    }
-
-    #[test]
-    fn collect_vue_files_filters_quoted_globs() {
-        let case_dir = unique_case_dir("collect-vue-glob");
-        let _ = fs::remove_dir_all(&case_dir);
-        fs::create_dir_all(case_dir.join("src/nested")).unwrap();
-        fs::write(case_dir.join("src/App.vue"), "").unwrap();
-        fs::write(case_dir.join("src/nested/View.vue"), "").unwrap();
-        fs::write(case_dir.join("src/nested/Skip.vue"), "").unwrap();
-
-        let files = collect_vue_files(&vec![
-            case_dir.join("src/nested/*.vue").display().to_string(),
-        ]);
-
-        assert_eq!(
-            files,
-            vec![
-                case_dir.join("src/nested/Skip.vue"),
-                case_dir.join("src/nested/View.vue"),
-            ]
-        );
-
-        let _ = fs::remove_dir_all(&case_dir);
-    }
-}
+#[path = "collect_tests.rs"]
+mod tests;

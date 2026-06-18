@@ -1,8 +1,7 @@
 //! Check command execution logic.
 //!
-//! The direct runner delegates to `vize_canon`'s project-backed Corsa type
-//! checker so Vue SFCs, TypeScript sources, ambient declarations, and emitted
-//! `.d.ts` output all share the same virtual project.
+//! The direct runner delegates to `vize_canon`'s project-backed Corsa type checker so Vue SFCs,
+//! TypeScript sources, ambient declarations, and emitted declarations share one virtual project.
 
 #![allow(clippy::disallowed_macros)]
 use std::{
@@ -31,13 +30,14 @@ use super::{
 mod collect;
 mod diagnostics;
 mod global_components;
+mod ignores;
 mod nuxt_tsconfig;
 mod resolve;
 #[cfg(unix)]
 mod socket;
 #[cfg(test)]
 mod tests;
-use collect::collect_check_files;
+use collect::collect_check_files_with_ignores;
 use diagnostics::{
     emit_json_output, is_reported, is_suppressed_false_positive, render_diagnostics,
     save_virtual_ts_targets, write_profile_virtual_ts,
@@ -46,6 +46,7 @@ use global_components::{
     build_virtual_ts_options, collect_project_global_component_stubs, dialect_from_features,
     template_syntax_mode,
 };
+use ignores::{load_check_ignore_set, retain_unignored};
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
 #[cfg(test)]
 use nuxt_tsconfig::write_nuxt_fallback_tsconfig;
@@ -149,22 +150,21 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
     let explicit_input_root = explicit_input_root(&project_root, &cwd);
-    // Run-scoped caches: tsconfig chains are parsed (and their include/exclude
-    // globs compiled) once per run, and each unique path is canonicalized at
-    // most once across reported-file bookkeeping, diagnostic filtering, and
-    // transitive import resolution.
     let mut tsconfig_input_cache = TsconfigInputCache::default();
     let mut canonical_paths = CanonicalPathCache::default();
+    let check_ignore_set = load_check_ignore_set(args, config_dir);
     let collect_start = Instant::now();
     let mut files = if args.patterns.is_empty() {
-        collect_default_check_files(
+        let mut files = collect_default_check_files(
             &project_root,
             tsconfig_path.as_deref(),
             jsx_typecheck,
             &mut tsconfig_input_cache,
-        )
+        );
+        retain_unignored(&mut files, check_ignore_set.as_ref());
+        files
     } else {
-        collect_check_files(&args.patterns, jsx_typecheck)
+        collect_check_files_with_ignores(&args.patterns, jsx_typecheck, check_ignore_set.as_ref())
     };
     let explicit_files = if args.patterns.is_empty() {
         Vec::new()
