@@ -43,6 +43,15 @@ pub(crate) fn extract_script_sections_from_program(
     content: &str,
     is_ts: bool,
 ) -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
+    extract_script_sections_from_program_with_options(program, content, is_ts, false)
+}
+
+pub(crate) fn extract_script_sections_from_program_with_options(
+    program: &Program<'_>,
+    content: &str,
+    is_ts: bool,
+    preserve_runtime_erased_macros: bool,
+) -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
     let mut user_imports = Vec::new();
     let mut setup_lines = Vec::new();
     let mut ts_declarations = Vec::new();
@@ -63,7 +72,12 @@ pub(crate) fn extract_script_sections_from_program(
         pending_gap.push_str(&content[prev_end..start]);
 
         let slice = &content[start..end];
-        match classify_statement(stmt, slice, &runtime_bindings) {
+        match classify_statement(
+            stmt,
+            slice,
+            &runtime_bindings,
+            preserve_runtime_erased_macros,
+        ) {
             StatementBucket::Import => {
                 let mut segment = std::mem::take(&mut pending_gap);
                 segment.push_str(slice);
@@ -99,6 +113,7 @@ fn classify_statement(
     stmt: &Statement<'_>,
     slice: &str,
     runtime_bindings: &FxHashSet<String>,
+    preserve_runtime_erased_macros: bool,
 ) -> StatementBucket {
     let trimmed = slice.trim_start();
 
@@ -129,9 +144,9 @@ fn classify_statement(
             }
         }
         Statement::ExpressionStatement(expr_stmt) => {
-            if unwrap_call_expression(&expr_stmt.expression)
-                .is_some_and(|call| is_macro_call(call, runtime_bindings))
-            {
+            if unwrap_call_expression(&expr_stmt.expression).is_some_and(|call| {
+                is_macro_call(call, runtime_bindings, preserve_runtime_erased_macros)
+            }) {
                 StatementBucket::Macro
             } else {
                 StatementBucket::Setup
@@ -142,7 +157,9 @@ fn classify_statement(
                 decl.init
                     .as_ref()
                     .and_then(unwrap_call_expression)
-                    .is_some_and(|call| is_macro_call(call, runtime_bindings))
+                    .is_some_and(|call| {
+                        is_macro_call(call, runtime_bindings, preserve_runtime_erased_macros)
+                    })
             }) {
                 StatementBucket::Macro
             } else {
@@ -173,12 +190,15 @@ fn unwrap_call_expression<'a>(
 fn is_macro_call(
     call: &oxc_ast::ast::CallExpression<'_>,
     runtime_bindings: &FxHashSet<String>,
+    preserve_runtime_erased_macros: bool,
 ) -> bool {
     match &call.callee {
         Expression::Identifier(id) => {
             let name = id.name.as_str();
             is_builtin_macro(name)
-                || (is_runtime_erased_macro(name) && !runtime_bindings.contains(name))
+                || (!preserve_runtime_erased_macros
+                    && is_runtime_erased_macro(name)
+                    && !runtime_bindings.contains(name))
         }
         _ => false,
     }

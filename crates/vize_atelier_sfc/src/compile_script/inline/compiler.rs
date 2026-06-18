@@ -24,6 +24,7 @@ use crate::types::{CssModuleMapping, SfcError};
 use super::super::function_mode::contains_top_level_await;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
 use super::super::props::validate_props_destructure_default_types;
+use super::super::statement_sections::extract_script_sections_from_program_with_options;
 use super::super::{ScriptCompileResult, TemplateParts};
 use body::compile_script_setup_inline_body;
 use parser::parse_script_content;
@@ -95,9 +96,18 @@ pub(crate) fn compile_script_setup_inline_with_context(
     // Extract user imports and setup lines from script content once; await detection
     // and output assembly share the same split. `setup_program` (when provided
     // by the parse-once pipeline) skips re-parsing `content` here.
+    let preserve_runtime_erased_macros = css_vars_id.ends_with(".art.vue");
     let (user_imports, setup_lines, ts_declarations) = profile!(
         "atelier.script_inline.parse_sections",
-        parse_script_content(content, is_ts, setup_program)
+        if preserve_runtime_erased_macros {
+            setup_program
+                .and_then(|program| {
+                    extract_script_sections_from_program_with_options(program, content, is_ts, true)
+                })
+                .unwrap_or_else(|| parse_script_content(content, is_ts, setup_program))
+        } else {
+            parse_script_content(content, is_ts, setup_program)
+        }
     );
     let setup_code: String = setup_lines.join("\n").into();
 
