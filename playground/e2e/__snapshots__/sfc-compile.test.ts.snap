@@ -8,14 +8,14 @@ exports[`SFC Compilation > Basic SFC > should compile template-only SFC 1`] = `
 
 exports[`SFC Compilation > SSR Mode > should keep custom renderer intrinsics as elements while preserving imported lowercase bindings 1`] = `
 {
-  "dom": "import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
+  "dom": "import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, unref as _unref } from "vue";
 import { Primitive } from "@tresjs/core";
 const visible = true;
 export default {
   __name: "anonymous",
   setup(__props) {
     return (_ctx, _cache) => {
-      return _openBlock(), _createElementBlock("mesh", null, [visible ? (_openBlock(), _createElementBlock("group", { key: 0 }, [_createVNode(Primitive)])) : _createCommentVNode("v-if", true)]);
+      return _openBlock(), _createElementBlock("mesh", null, [visible ? (_openBlock(), _createElementBlock("group", { key: 0 }, [_createVNode(_unref(Primitive))])) : _createCommentVNode("v-if", true)]);
     };
   }
 };",
@@ -53,14 +53,14 @@ export default {
 
 exports[`SFC Compilation > SSR Mode > should resolve dotted component tags through setup member bindings in both DOM and SSR output 1`] = `
 {
-  "dom": "import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+  "dom": "import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, unref as _unref, withCtx as _withCtx } from "vue";
 import { Form, Input } from "ant-design-vue";
 export default {
   __name: "anonymous",
   setup(__props) {
     return (_ctx, _cache) => {
-      return _openBlock(), _createBlock(Form.Item, { label: "Teacher" }, {
-        default: _withCtx(() => [_createVNode(Input)]),
+      return _openBlock(), _createBlock(_unref(Form).Item, { label: "Teacher" }, {
+        default: _withCtx(() => [_createVNode(_unref(Input))]),
         _: 1
       });
     };

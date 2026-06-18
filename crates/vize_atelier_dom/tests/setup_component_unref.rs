@@ -32,16 +32,29 @@ fn inline_setup_ref_component_tag_uses_unref() {
 
     let (_, errors, result) = compile_template_with_options(
         &allocator,
-        r#"<div><Menu>hello</Menu><Menu v-if="show" /><Menu v-for="item in items" :key="item" /></div>"#,
+        r#"<div><Menu>hello</Menu><Menu v-if="show" /><Menu v-for="item in items" :key="item" /><Menu v-once /><Menu.Item /></div>"#,
         options,
     );
 
     assert!(errors.is_empty(), "Errors: {:?}", errors);
     let full = full_output(&result.preamble, &result.code);
     assert!(full.contains("unref as _unref"), "{full}");
+    assert_eq!(
+        full.matches("_unref(Menu").count(),
+        5,
+        "every setup ref component tag path should be unref'd:\n{full}"
+    );
     assert!(
         full.contains("_createBlock(_unref(Menu)") || full.contains("_createVNode(_unref(Menu)"),
         "setup ref component tags must be unref'd:\n{full}"
+    );
+    assert!(
+        full.contains("_createVNode(_unref(Menu))"),
+        "v-once component tags must be unref'd:\n{full}"
+    );
+    assert!(
+        full.contains("_unref(Menu).Item"),
+        "dotted setup ref component tags must unref the base binding:\n{full}"
     );
     assert!(
         !full.contains("_createBlock(Menu") && !full.contains("_createVNode(Menu"),
