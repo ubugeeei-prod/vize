@@ -30,6 +30,11 @@ use vize_patina::{
 
 pub fn run(args: LintArgs) {
     let start = Instant::now();
+    if args.fix {
+        eprintln!("\x1b[31mError:\x1b[0m `vize lint --fix` is not supported yet.");
+        eprintln!("Remove `--fix` or run Vize lint without automatic fixes.");
+        std::process::exit(2);
+    }
     if let Some(path) = args.config.as_deref()
         && !args.no_config
         && let Err(error) = crate::config::validate_explicit_config_path(path)
@@ -272,11 +277,6 @@ pub fn run(args: LintArgs) {
         {
             println!("\n{tree}");
         }
-    }
-
-    // Fix mode warning
-    if args.fix {
-        eprintln!("\nNote: --fix is not yet implemented");
     }
 
     if args.profile {
