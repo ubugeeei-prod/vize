@@ -70,10 +70,9 @@ macro_rules! vue_type_helpers_text {
 /// Emit-overload helper text shared between the per-file embedded emission and
 /// the hoisted ambient helpers file. Each line ends with `\n`.
 ///
-/// Deliberately excludes `__EmitProps`: that alias dereferences
-/// `import('vue').EmitsToProps`, which only exists on Vue >= 3.3, so it stays
-/// per-file and is only emitted for components that actually declare emits —
-/// exactly as before hoisting.
+/// Deliberately excludes `__EmitProps`: that alias is emitted per-file and only
+/// for components that actually declare emits, so it stays out of the shared
+/// hoisted helper text, exactly as before hoisting.
 macro_rules! emit_overload_helpers_text {
     () => {
         concat!(

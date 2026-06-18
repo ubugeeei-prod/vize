@@ -132,7 +132,7 @@ type __VizeOverloadParameters<T extends (...args: any[]) => any> = Parameters<__
 type __VizeIsStringLiteral<T> = T extends string ? string extends T ? false : true : false;
 type __VizeParametersToFns<T extends any[]> = { [K in T[0]]: __VizeIsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };
 type __EmitOptions<T> = { [K in keyof __EmitShape<T> & string]: (...args: __EmitArgs<__EmitShape<T>, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});
-type __EmitProps<T> = import('vue').EmitsToProps<__EmitOptions<T>>;
+type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
 
 type __VizeStaticEmitProps = __EmitProps<Emits>;
 
