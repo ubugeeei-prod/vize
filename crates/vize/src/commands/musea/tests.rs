@@ -58,6 +58,7 @@ fn serve_plan_supports_vite_build() {
         &ServeArgs {
             build: true,
             open: true,
+            strict_port: true,
             ..ServeArgs::default()
         },
         temp.path(),
