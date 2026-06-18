@@ -4,6 +4,7 @@ mod imports;
 mod legacy_vue2;
 mod options_api;
 mod options_api_support;
+mod script_module;
 mod setup_props;
 mod spans;
 mod template_refs;
@@ -190,6 +191,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .scopes
         .iter()
         .any(|scope| matches!(scope.kind, ScopeKind::NonScriptSetup));
+    let named_value_exports = self::script_module::collect_normal_script_named_value_exports(
+        script_content,
+        has_script_setup,
+        has_plain_script_scope,
+    );
 
     // Classify the main `<script>` default export in one parse. A plain
     // `export default { ... }` (Options API shape) gets wrapped with Vue's
@@ -227,7 +233,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             module_spans.push((imp.start, imp.end));
         }
         if let Some(script) = script_content {
-            module_spans.extend(collect_line_module_import_spans(script));
+            module_spans.extend(self::script_module::collect_line_module_import_spans(
+                script,
+            ));
         }
         for re in &summary.re_exports {
             module_spans.push((re.start, re.end));
@@ -924,22 +932,25 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Return runtime-derived type artifacts from __setup() so their types can be
     // extracted at module level while keeping each runtime expression in setup
     // scope, where script-setup bindings are defined.
-    let mut setup_return_fields = Vec::new();
-    setup_props_plan.push_return_field(&mut setup_return_fields);
+    let mut setup_return_fields: Vec<String> = Vec::new();
+    self::script_module::push_setup_return_fields(&named_value_exports, &mut setup_return_fields);
+    let mut setup_artifact_return_fields = Vec::new();
+    setup_props_plan.push_return_field(&mut setup_artifact_return_fields);
+    setup_return_fields.extend(setup_artifact_return_fields.into_iter().map(String::from));
     if let Some(expose) = summary.macros.define_expose()
         && expose.type_args.is_none()
         && let Some(runtime_args) = expose.runtime_args.as_ref()
     {
         append!(ts, "\n  const __vize_exposed = ({runtime_args});\n");
-        setup_return_fields.push("__vize_exposed");
+        setup_return_fields.push("__vize_exposed".into());
     }
     if let Some(runtime_args) = define_emits_runtime_args {
         append!(
             ts,
             "\n  const __vize_emit_options = ({runtime_args});\n  const __vize_emits = defineEmits(__vize_emit_options);\n"
         );
-        setup_return_fields.push("__vize_emit_options");
-        setup_return_fields.push("__vize_emits");
+        setup_return_fields.push("__vize_emit_options".into());
+        setup_return_fields.push("__vize_emits".into());
     }
     setup_props_plan.emit_options_api_artifact(&mut ts, options_api_props.as_ref());
     if !setup_return_fields.is_empty() {
@@ -951,7 +962,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
-    ts.push_str("__setup();\n\n");
+    self::script_module::emit_setup_invocation_and_exports(&mut ts, &named_value_exports);
 
     setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
 
@@ -1074,25 +1085,4 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str("export default __vize_component__;\n");
 
     VirtualTsOutput { code: ts, mappings }
-}
-
-fn collect_line_module_import_spans(script: &str) -> Vec<(u32, u32)> {
-    let mut spans = Vec::new();
-    let mut offset = 0usize;
-    for raw_line in script.split_inclusive('\n') {
-        let line = raw_line.strip_suffix('\n').unwrap_or(raw_line);
-        let line = line.strip_suffix('\r').unwrap_or(line);
-        let trimmed = line.trim_start();
-        if trimmed.starts_with("import ")
-            || trimmed.starts_with("import\t")
-            || (trimmed.starts_with("export ")
-                && (trimmed.contains(" from ") || trimmed.starts_with("export type ")))
-        {
-            let start = offset + (line.len() - line.trim_start().len());
-            let end = offset + line.len();
-            spans.push((start as u32, end as u32));
-        }
-        offset += raw_line.len();
-    }
-    spans
 }
