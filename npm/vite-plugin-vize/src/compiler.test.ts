@@ -625,8 +625,8 @@ const antDesignDomCompiled = compileFile(
 
 assert.match(
   antDesignDomCompiled.code,
-  /_create(?:Block|VNode)\(Form\.Item/,
-  "DOM builds should compile dotted component tags to direct setup member expressions",
+  /_create(?:Block|VNode)\(_unref\(Form\)\.Item/,
+  "DOM builds should unref dotted setup maybe-ref component tags (named imports), matching Vue",
 );
 assert.doesNotMatch(
   antDesignDomCompiled.code,
