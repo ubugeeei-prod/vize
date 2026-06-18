@@ -308,13 +308,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 // Check for built-in components (Teleport, KeepAlive, Suspense)
                 ctx.use_helper(builtin);
                 ctx.push(ctx.helper(builtin));
-            } else if let Some(binding_name) = ctx.resolve_component_binding_name(&el.tag) {
-                // In inline mode, components are directly in scope (imported at module level)
-                // In function mode, use $setup.ComponentName to access setup bindings
-                if !ctx.options.inline {
-                    ctx.push("$setup.");
-                }
-                ctx.push(&binding_name);
+            } else if ctx.push_component_binding_tag(&el.tag) {
             } else {
                 ctx.push(&to_valid_asset_identifier("component", &el.tag));
             }

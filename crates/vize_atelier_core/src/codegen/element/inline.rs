@@ -263,11 +263,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             } else if let Some(builtin) = is_builtin_component(&el.tag) {
                 ctx.use_helper(builtin);
                 ctx.push(ctx.helper(builtin));
-            } else if let Some(binding_name) = ctx.resolve_component_binding_name(&el.tag) {
-                if !ctx.options.inline {
-                    ctx.push("$setup.");
-                }
-                ctx.push(&binding_name);
+            } else if ctx.push_component_binding_tag(&el.tag) {
             } else {
                 ctx.push(&to_valid_asset_identifier("component", &el.tag));
             }
