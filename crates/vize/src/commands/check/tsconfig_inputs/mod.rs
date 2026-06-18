@@ -28,7 +28,10 @@ pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};
 pub(super) use loader::{read_extends_entries, resolve_extended_tsconfig};
 pub(crate) use spec::TsconfigDeclarationOptions;
 
-use collect::{collect_supported_files_with_options, explicit_hidden_include_roots};
+use collect::{
+    collect_supported_files_for_include_roots, collect_supported_files_with_options,
+    explicit_hidden_include_roots,
+};
 use glob::{default_exclude_specs, normalize_input_path};
 use loader::collect_tsconfig_project_paths;
 use matching::{
@@ -100,8 +103,7 @@ fn collect_default_check_files_for_tsconfig(
 
     for file in &spec.files {
         let resolved = normalize_input_path(&file.resolve());
-        if resolved.starts_with(project_root)
-            && resolved.is_file()
+        if resolved.is_file()
             && is_supported_check_file_with_options(&resolved, SupportedFileOptions { include_jsx })
             && !is_nuxt_import_manifest_path(&resolved)
             && seen.insert(resolved.clone())
@@ -134,7 +136,7 @@ fn collect_default_check_files_for_tsconfig(
     };
 
     if !includes.is_empty() {
-        let collected = collect_supported_files_with_options(
+        let collected = collect_supported_files_for_include_roots(
             project_root,
             includes,
             excludes,

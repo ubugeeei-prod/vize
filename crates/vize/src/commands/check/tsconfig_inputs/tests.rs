@@ -933,21 +933,21 @@ fn files_entry_with_unsupported_extension_is_dropped() {
 }
 
 #[test]
-fn files_entry_outside_project_root_is_dropped() {
-    let case_dir = unique_case_dir("tsconfig-files-outside-root");
+fn parent_relative_tsconfig_entries_are_collected() {
+    let case_dir = unique_case_dir("tsconfig-parent-relative-inputs");
     let _ = fs::remove_dir_all(&case_dir);
-    let app_dir = case_dir.join("app");
-    fs::create_dir_all(&app_dir).unwrap();
-    fs::write(case_dir.join("sibling.ts"), "export const s = true").unwrap();
-    fs::write(
-        app_dir.join("tsconfig.json"),
-        r#"{ "files": ["../sibling.ts"] }"#,
-    )
-    .unwrap();
-
-    let files = collect_default_check_files(&app_dir, Some(&app_dir.join("tsconfig.json")));
-
-    assert_eq!(files, Vec::<PathBuf>::new());
+    let generated_dir = case_dir.join(".generated");
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::create_dir_all(&generated_dir).unwrap();
+    fs::write(case_dir.join("src/bad.ts"), "export const bad = true").unwrap();
+    for (name, json) in [
+        ("files.json", r#"{ "files": ["../src/bad.ts"] }"#),
+        ("include.json", r#"{ "include": ["../src/**/*.ts"] }"#),
+    ] {
+        fs::write(generated_dir.join(name), json).unwrap();
+        let files = collect_default_check_files(&generated_dir, Some(&generated_dir.join(name)));
+        assert_eq!(relative_paths(&case_dir, &files), vec!["src/bad.ts"]);
+    }
 
     let _ = fs::remove_dir_all(&case_dir);
 }

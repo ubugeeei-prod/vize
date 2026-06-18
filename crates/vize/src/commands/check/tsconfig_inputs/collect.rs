@@ -64,6 +64,40 @@ pub(super) fn collect_supported_files_with_options(
     collected
 }
 
+pub(super) fn collect_supported_files_for_include_roots(
+    project_root: &Path,
+    includes: &[GlobSpec],
+    excludes: &[GlobSpec],
+    options: FileCollectionOptions,
+) -> Vec<PathBuf> {
+    let normalized_project_root = normalize_input_path(project_root);
+    let mut roots = vec![normalized_project_root.clone()];
+    let mut seen_roots = FxHashSet::default();
+    seen_roots.insert(normalized_project_root.clone());
+
+    for include in includes {
+        let root = normalize_input_path(&include.base_dir);
+        if root.is_dir()
+            && !root.starts_with(&normalized_project_root)
+            && seen_roots.insert(root.clone())
+        {
+            roots.push(root);
+        }
+    }
+
+    let mut files = Vec::new();
+    let mut seen_files = FxHashSet::default();
+    for root in roots {
+        for path in collect_supported_files_with_options(&root, includes, excludes, options) {
+            if seen_files.insert(path.clone()) {
+                files.push(path);
+            }
+        }
+    }
+    files.sort();
+    files
+}
+
 pub(super) fn explicit_hidden_include_roots(
     project_root: &Path,
     includes: &[GlobSpec],
