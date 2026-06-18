@@ -3,9 +3,9 @@
 //! source consumed by Corsa. Parse/compile errors are surfaced as diagnostics
 //! and replaced with a typed fallback module.
 
-use vize_carton::config::VueVersion;
-use vize_carton::{Bump, FxHashSet, String as CompactString, cstr, profile};
 use std::path::Path;
+use vize_carton::config::VueVersion;
+use vize_carton::{Bump, String as CompactString, cstr, profile};
 
 use vize_atelier_core::{
     ParserOptions, TemplateSyntaxMode, parser::parse_with_options_and_template_syntax,
