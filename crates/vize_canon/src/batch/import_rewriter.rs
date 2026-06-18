@@ -1,7 +1,4 @@
 //! Import rewriter for transforming .vue imports to .vue.ts.
-//!
-//! This module uses oxc to parse TypeScript/JavaScript files and rewrite
-//! import paths that reference .vue files to .vue.ts.
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, Statement};
@@ -13,42 +10,32 @@ use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_carton::cstr;
 
-/// Offset adjustment for source map.
 #[derive(Debug, Clone)]
 pub struct OffsetAdjustment {
-    /// Original offset before rewrite.
     pub original_offset: u32,
-    /// Adjustment amount (positive = added chars, negative = removed chars).
     pub adjustment: i32,
 }
 
-/// Result of import rewriting.
 #[derive(Debug)]
 pub struct RewriteResult {
-    /// Rewritten code.
     pub code: String,
-    /// Source map for position translation.
     pub source_map: ImportSourceMap,
 }
 
-/// Source map for import rewrites.
 #[derive(Debug, Default)]
 pub struct ImportSourceMap {
     adjustments: Vec<OffsetAdjustment>,
 }
 
 impl ImportSourceMap {
-    /// Create a new import source map.
     pub fn new(adjustments: Vec<OffsetAdjustment>) -> Self {
         Self { adjustments }
     }
 
-    /// Create an empty source map.
     pub fn empty() -> Self {
         Self::default()
     }
 
-    /// Get the original offset from a virtual offset.
     pub fn get_original_offset(&self, virtual_offset: u32) -> u32 {
         let mut cumulative: i32 = 0;
         for adj in &self.adjustments {
@@ -61,7 +48,6 @@ impl ImportSourceMap {
         (virtual_offset as i32 - cumulative) as u32
     }
 
-    /// Get the virtual offset from an original offset.
     pub fn get_virtual_offset(&self, original_offset: u32) -> u32 {
         let mut cumulative: i32 = 0;
         for adj in &self.adjustments {
@@ -74,16 +60,13 @@ impl ImportSourceMap {
     }
 }
 
-/// Import rewriter that transforms .vue imports to .vue.ts.
 pub struct ImportRewriter;
 
 impl ImportRewriter {
-    /// Create a new import rewriter.
     pub fn new() -> Self {
         Self
     }
 
-    /// Rewrite imports in the given source code.
     pub fn rewrite(&self, source: &str, source_type: SourceType) -> RewriteResult {
         if !source.contains(".vue") {
             return RewriteResult {
@@ -97,7 +80,24 @@ impl ImportRewriter {
         })
     }
 
-    /// Rewrite emitted declaration imports back to `.vue` specifiers.
+    pub fn rewrite_for_virtual_project(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        roots: (&std::path::Path, &std::path::Path),
+    ) -> RewriteResult {
+        if !source.contains(".vue") {
+            return RewriteResult {
+                code: source.to_compact_string(),
+                source_map: ImportSourceMap::empty(),
+            };
+        }
+
+        self.rewrite_with(source, source_type, |path| {
+            self.rewrite_virtual_project_specifier(path, roots)
+        })
+    }
+
     pub fn rewrite_declaration_specifiers(
         &self,
         source: &str,
@@ -130,7 +130,6 @@ impl ImportRewriter {
 
         let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
 
-        // Collect import/export rewrites
         for stmt in &result.program.body {
             match stmt {
                 Statement::ImportDeclaration(decl) => {
@@ -162,7 +161,6 @@ impl ImportRewriter {
             }
         }
 
-        // Collect dynamic imports
         let mut collector = DynamicImportCollector::new();
         collector.visit_program(&result.program);
         for (start, end, path) in collector.imports {
@@ -171,7 +169,6 @@ impl ImportRewriter {
             }
         }
 
-        // Sort by offset descending (process from end to start)
         rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
         let mut output = source.to_compact_string();
@@ -189,7 +186,6 @@ impl ImportRewriter {
             });
         }
 
-        // Reverse to get ascending order
         adjustments.reverse();
 
         RewriteResult {
@@ -198,12 +194,6 @@ impl ImportRewriter {
         }
     }
 
-    /// Collect relative `.vue` import specifiers (those starting with `./`
-    /// or `../`) from the source. The editor's Corsa session uses this to
-    /// enumerate siblings whose virtual `.vue.ts` mirrors must be overlaid
-    /// for relative resolution to succeed; alias and bare specifiers are
-    /// excluded because they are handled by tsconfig `paths` and the ambient
-    /// `*.vue.ts` declaration respectively. See issue #752.
     pub fn collect_relative_vue_specifiers(
         &self,
         source: &str,
@@ -249,18 +239,29 @@ impl ImportRewriter {
         specifiers
     }
 
-    /// Rewrite a module specifier if it's a .vue import.
     fn rewrite_module_specifier(&self, path: &str) -> Option<String> {
-        // Rewrite every `.vue` import to `.vue.ts` so Corsa resolves the
-        // generated virtual module. Relative imports (`./Foo.vue`) map directly
-        // inside the mirror; tsconfig path-alias imports (`@/Foo.vue`) resolve
-        // through the mirror-anchored `paths` of the virtual tsconfig. Missing
-        // relative specifiers still surface as TS2307.
         if path.ends_with(".vue") {
             Some(cstr!("{path}.ts"))
         } else {
             None
         }
+    }
+
+    fn rewrite_virtual_project_specifier(
+        &self,
+        path: &str,
+        roots: (&std::path::Path, &std::path::Path),
+    ) -> Option<String> {
+        if !path.ends_with(".vue") {
+            return None;
+        }
+        let candidate = std::path::Path::new(path);
+        if candidate.is_absolute()
+            && let Ok(relative) = candidate.strip_prefix(roots.0)
+        {
+            return Some(cstr!("{}.ts", roots.1.join(relative).display()));
+        }
+        Some(cstr!("{path}.ts"))
     }
 
     fn rewrite_declaration_specifier(&self, path: &str) -> Option<String> {
@@ -279,7 +280,6 @@ impl Default for ImportRewriter {
     }
 }
 
-/// Visitor to collect dynamic imports.
 struct DynamicImportCollector {
     imports: Vec<(u32, u32, String)>,
 }
@@ -294,11 +294,10 @@ impl DynamicImportCollector {
 
 impl<'a> Visit<'a> for DynamicImportCollector {
     fn visit_import_expression(&mut self, expr: &oxc_ast::ast::ImportExpression<'a>) {
-        // Check if the source is a string literal
         if let Expression::StringLiteral(lit) = &expr.source {
             self.imports.push((
-                lit.span.start + 1, // +1 to skip opening quote
-                lit.span.end - 1,   // -1 to skip closing quote
+                lit.span.start + 1,
+                lit.span.end - 1,
                 lit.value.as_str().into(),
             ));
         }
@@ -310,6 +309,7 @@ impl<'a> Visit<'a> for DynamicImportCollector {
 mod tests {
     use super::ImportRewriter;
     use oxc_span::SourceType;
+    use std::path::Path;
 
     #[test]
     fn test_rewrite_default_import() {
@@ -363,15 +363,12 @@ mod tests {
     }
 
     #[test]
-    fn test_rewrite_export_from() {
+    fn test_rewrite_absolute_export_from_for_virtual_project() {
         let rewriter = ImportRewriter::new();
-        let source = r#"export { default as App } from './App.vue';"#;
-        let result = rewriter.rewrite(source, SourceType::ts());
-
-        assert_eq!(
-            result.code,
-            r#"export { default as App } from './App.vue.ts';"#
-        );
+        let source = r#"export * from '/p/src/App.vue';"#;
+        let roots = (Path::new("/p"), Path::new("/p/v"));
+        let result = rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots);
+        assert_eq!(result.code, r#"export * from '/p/v/src/App.vue.ts';"#);
     }
 
     #[test]

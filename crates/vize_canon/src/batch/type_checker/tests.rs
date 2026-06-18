@@ -1608,10 +1608,7 @@ export interface BaseProps {
 <template><div></div></template>
 "#,
             ),
-            (
-                "src/index.ts",
-                r#"export { type BaseProps } from "./Base.vue";"#,
-            ),
+            ("src/index.ts", r#"export * from "./Base.vue";"#),
             (
                 "src/Child.vue",
                 r#"<script setup lang="ts">

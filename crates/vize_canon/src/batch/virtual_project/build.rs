@@ -269,7 +269,7 @@ pub(super) fn build_script_registered_file(
 ) -> CorsaResult<RegisteredFile> {
     let rewritten = profile!(
         "canon.import.rewrite.script",
-        rewriter.rewrite(content, source_type)
+        rewriter.rewrite_for_virtual_project(content, source_type, (project_root, virtual_root))
     );
     let virtual_path = mirrored_virtual_path(project_root, virtual_root, path)?;
 

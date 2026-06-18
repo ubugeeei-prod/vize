@@ -504,7 +504,7 @@ export interface BaseProps {
 <template><div></div></template>"#,
     )
     .unwrap();
-    fs::write(&index, r#"export { type BaseProps } from "./Base.vue";"#).unwrap();
+    fs::write(&index, format!(r#"export * from "{}";"#, base.display())).unwrap();
     fs::write(
         &child,
         r#"<script setup lang="ts">
