@@ -70,6 +70,7 @@ pub struct BuiltinScriptRuleMeta {
     pub presets: &'static [&'static str],
 }
 
+const OPINIONATED_ONLY_SCRIPT_PRESETS: &[&str] = &["opinionated"];
 const OPINIONATED_SCRIPT_PRESETS: &[&str] = &["opinionated", "nuxt"];
 const ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &["ecosystem"];
 const OPT_IN_SCRIPT_PRESETS: &[&str] = &[];

@@ -82,6 +82,11 @@ if (import.meta.vitest) {
       expect(configs.opinionatedWithTypeAware["vize/type/require-typed-props"]).toBe("warn");
     });
 
+    it("keeps Options API allowed in the Nuxt preset", () => {
+      expect(configs.nuxt["vize/script/no-options-api"]).toBeUndefined();
+      expect(configs.opinionated["vize/script/no-options-api"]).toBe("error");
+    });
+
     it("keeps ecosystem rules out of non-ecosystem presets until explicitly selected", () => {
       expect(configs.recommended["vize/ecosystem/router-link-require-to"]).toBeUndefined();
       expect(configs.nuxt["vize/ecosystem/nuxt-prefer-nuxt-link"]).toBeUndefined();

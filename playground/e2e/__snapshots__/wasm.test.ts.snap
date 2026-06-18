@@ -16,7 +16,6 @@ exports[`WASM Module > should expose lint rules with preset membership 1`] = `
   ],
   "noOptionsApi": [
     "opinionated",
-    "nuxt",
   ],
   "requireVForKey": [
     "essential",

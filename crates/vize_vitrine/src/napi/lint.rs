@@ -554,7 +554,7 @@ mod tests {
             .find(|rule| rule.name == "script/no-options-api")
             .expect("script/no-options-api should be exposed");
 
-        assert_eq!(no_options_api.presets, vec!["opinionated", "nuxt"]);
+        assert_eq!(no_options_api.presets, vec!["opinionated"]);
         assert_eq!(no_options_api.default_severity, "error");
     }
 

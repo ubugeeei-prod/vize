@@ -66,7 +66,7 @@
 //! - `vapor/prefer-static-class` - Prefer static class over dynamic binding
 //! - `vapor/no-inline-template` - Disallow deprecated inline-template
 //!
-//! Script rules (enabled by opinionated / nuxt presets, or opt-in manually):
+//! Script rules (enabled by opinionated presets, or opt-in manually):
 //! - `script/no-options-api` - Disallow Options API patterns (Vapor is Composition-only)
 //! - `script/no-get-current-instance` - Disallow getCurrentInstance() (returns null in Vapor)
 //! - `script/no-next-tick` - Disallow nextTick() scheduling in Vapor-oriented code

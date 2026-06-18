@@ -60,16 +60,19 @@ const ECOSYSTEM_SCRIPT_RULE_NAMES: &[&str] = &[
     "ecosystem/vue-router-prefer-named-push",
     "ecosystem/vue-test-utils-no-html-snapshot",
 ];
+const OPINIONATED_SCRIPT_RULE_NAMES: &[&str] = &[
+    "script/no-options-api",
+    "script/no-get-current-instance",
+    "script/no-next-tick",
+];
+const NUXT_SCRIPT_RULE_NAMES: &[&str] = &["script/no-get-current-instance", "script/no-next-tick"];
 
 pub(crate) const fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {
     match preset {
         LintPreset::HappyPath | LintPreset::Essential | LintPreset::Incremental => &[],
         LintPreset::Ecosystem => ECOSYSTEM_SCRIPT_RULE_NAMES,
-        LintPreset::Opinionated | LintPreset::Nuxt => &[
-            "script/no-options-api",
-            "script/no-get-current-instance",
-            "script/no-next-tick",
-        ],
+        LintPreset::Opinionated => OPINIONATED_SCRIPT_RULE_NAMES,
+        LintPreset::Nuxt => NUXT_SCRIPT_RULE_NAMES,
     }
 }
 
@@ -212,6 +215,9 @@ mod tests {
         assert!(
             super::builtin_script_rule_names(LintPreset::Opinionated)
                 .contains(&"script/no-options-api")
+        );
+        assert!(
+            !super::builtin_script_rule_names(LintPreset::Nuxt).contains(&"script/no-options-api")
         );
         assert!(
             super::builtin_script_rule_names(LintPreset::Opinionated)
