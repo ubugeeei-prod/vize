@@ -10,6 +10,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::{String, cstr};
 mod emit_object_recursion;
 mod generic_component_listener_payload;
+mod no_check_props;
 mod no_unused;
 #[test]
 fn test_batch_type_checker_scan() {
@@ -17,7 +18,6 @@ fn test_batch_type_checker_scan() {
     let _ = std::fs::remove_dir_all(&project_root);
     let src_dir = project_root.join("src");
     std::fs::create_dir_all(&src_dir).unwrap();
-
     let vue_content = r#"<template>
   <div>{{ message }}</div>
 </template>

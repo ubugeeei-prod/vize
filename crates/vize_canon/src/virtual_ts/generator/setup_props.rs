@@ -144,8 +144,15 @@ impl SetupPropsPlan {
         ts: &mut String,
         summary: &Croquis,
         generic_param: Option<&str>,
+        check_props: bool,
     ) {
-        generate_props_variables(ts, summary, generic_param, self.template_props_type_ref());
+        generate_props_variables(
+            ts,
+            summary,
+            generic_param,
+            self.template_props_type_ref(),
+            check_props,
+        );
     }
 
     pub(super) fn template_props_type_ref(&self) -> Option<&'static str> {

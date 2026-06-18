@@ -7,17 +7,13 @@ mod options_api_support;
 mod setup_props;
 mod spans;
 mod template_refs;
-
-use vize_croquis::{Croquis, ScopeData, ScopeKind};
-
-pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
-
 use self::emits::{emit_emit_props_helper, emit_emits_type};
 use self::generics::{generic_injection_point, references_any_identifier};
 use self::imports::{
     collect_imported_names, collect_setup_binding_anchor_names, emit_global_component_stubs,
     emit_reference_type_directives, extract_declared_name,
 };
+pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::options_api::{
     find_default_export_targets, find_options_api_props, generate_options_api_bridge,
     generate_options_api_variables,
@@ -40,7 +36,7 @@ use super::{
     types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
 };
 use vize_carton::{FxHashMap, FxHashSet, String, append, cstr, profile};
-
+use vize_croquis::{Croquis, ScopeData, ScopeKind};
 /// Generate virtual TypeScript from Vue SFC analysis.
 ///
 /// The generated TypeScript uses proper scope hierarchy:
@@ -64,7 +60,6 @@ pub fn generate_virtual_ts(
         &VirtualTsOptions::default(),
     )
 }
-
 /// Generate virtual TypeScript with explicit script and template offsets.
 ///
 /// `script_offset` is the byte offset of the script content within the SFC file.
@@ -89,7 +84,6 @@ pub fn generate_virtual_ts_with_offsets(
         VirtualTsGenerationOptions::default(),
     )
 }
-
 /// Generate virtual TypeScript with Vue 3 Options API binding resolution
 /// enabled (opt-in, standard build — no `legacy` feature required).
 pub fn generate_virtual_ts_with_offsets_options_api(
@@ -124,6 +118,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     generation_options: VirtualTsGenerationOptions<'_>,
 ) -> VirtualTsOutput {
     let check_options = generation_options.check_options;
+    let check_props = check_options.check_props;
     // Configured Vue dialect, used to emit dialect-aware template instance typing
     // (e.g. a Vue 2 `this`/template shape with `$listeners`,
     // `$children`, `$on`, ... that Vue 3's `ComponentPublicInstance` lacks).
@@ -741,7 +736,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
             // Props are available in template as variables
             profile!("canon.virtual_ts.generate_props_variables", {
-                setup_props_plan.generate_props_variables(&mut ts, summary, generic_param)
+                setup_props_plan.generate_props_variables(
+                    &mut ts,
+                    summary,
+                    generic_param,
+                    check_props,
+                )
             });
             if options_api {
                 profile!(

@@ -1,9 +1,11 @@
 mod setup_scoped;
-
+use super::helpers::{is_reserved_identifier, to_safe_identifier};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use setup_scoped::props_type_ref;
+pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
@@ -11,11 +13,6 @@ use vize_carton::cstr;
 use vize_croquis::BindingType;
 use vize_croquis::Croquis;
 use vize_croquis::macros::{MacroKind, ModelDefinition};
-
-use super::helpers::{is_reserved_identifier, to_safe_identifier};
-use setup_scoped::props_type_ref;
-pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
-
 #[inline]
 fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool {
     if summary
@@ -26,13 +23,11 @@ fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool
     {
         return true;
     }
-
     summary
         .bindings
         .get(prop_name)
         .is_some_and(|binding_type| !matches!(binding_type, BindingType::Props))
 }
-
 fn emit_template_prop_binding(
     ts: &mut String,
     props_type_ref: &str,
@@ -50,7 +45,6 @@ fn emit_template_prop_binding(
     }
     append!(*ts, "  void {binding_name};\n");
 }
-
 fn emit_keyed_template_prop_binding(
     ts: &mut String,
     props_type_ref: &str,
@@ -71,7 +65,14 @@ fn emit_keyed_template_prop_binding(
     }
     append!(*ts, "  void {binding_name};\n");
 }
-
+fn emit_unchecked_template_prop_binding(ts: &mut String, prop_name: &str) {
+    let binding_name = to_safe_identifier(prop_name);
+    append!(
+        *ts,
+        "  const {binding_name} = (props as Record<string, unknown>)[\"{prop_name}\"];\n"
+    );
+    append!(*ts, "  void {binding_name};\n");
+}
 fn can_emit_keyed_template_prop_binding(prop_name: &str) -> bool {
     let mut chars = prop_name.chars();
     let Some(first) = chars.next() else {
@@ -82,7 +83,6 @@ fn can_emit_keyed_template_prop_binding(prop_name: &str) -> bool {
         && !prop_name.starts_with('$')
         && !is_reserved_identifier(prop_name)
 }
-
 fn collect_keyed_template_prop_names(
     summary: &Croquis,
     emitted_names: &FxHashSet<String>,
@@ -98,12 +98,10 @@ fn collect_keyed_template_prop_names(
         }
         names.insert(name.into());
     }
-
     let mut names: Vec<String> = names.into_iter().collect();
     names.sort_unstable();
     names
 }
-
 fn should_emit_keyed_template_prop_bindings(
     summary: &Croquis,
     type_name: &str,
@@ -115,16 +113,13 @@ fn should_emit_keyed_template_prop_bindings(
     if is_plain_inline_type_literal(type_name) {
         return false;
     }
-
     let base_name = strip_generic_params(type_name).trim();
     if let Some(body) = summary.types.definitions().resolve(base_name) {
         return has_top_level_type_operator(body.as_str())
             || (emitted_names.is_empty() && !is_plain_inline_type_literal(body.as_str()));
     }
-
     emitted_names.is_empty() && !summary.types.definitions().is_defined(base_name)
 }
-
 fn is_plain_inline_type_literal(type_name: &str) -> bool {
     let type_name = type_name.trim();
     if !type_name.starts_with('{') {
@@ -405,6 +400,7 @@ pub(crate) fn generate_props_variables(
     summary: &Croquis,
     generic_param: Option<&str>,
     props_type_ref_override: Option<&str>,
+    check_props: bool,
 ) {
     let props = summary.macros.props();
     let has_props = !props.is_empty();
@@ -477,12 +473,16 @@ pub(crate) fn generate_props_variables(
 
             if should_emit_keyed_template_prop_bindings(summary, type_name, &emitted_names) {
                 for name in collect_keyed_template_prop_names(summary, &emitted_names) {
-                    emit_keyed_template_prop_binding(
-                        ts,
-                        template_props_type_ref.as_str(),
-                        name.as_str(),
-                        defaulted_prop_names.contains(&name),
-                    );
+                    if check_props {
+                        emit_keyed_template_prop_binding(
+                            ts,
+                            template_props_type_ref.as_str(),
+                            name.as_str(),
+                            defaulted_prop_names.contains(&name),
+                        );
+                    } else {
+                        emit_unchecked_template_prop_binding(ts, name.as_str());
+                    }
                 }
             }
         }
