@@ -138,7 +138,15 @@ pub(crate) struct RawVizeConfig {
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub(crate) struct RawConfigEntry {
+    pub base_path: Option<String>,
+    pub ignores: Vec<String>,
     pub linter: RawLinterConfig,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConfigEntryIgnore {
+    pub base_path: Option<String>,
+    pub pattern: String,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]

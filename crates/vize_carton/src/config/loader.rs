@@ -17,7 +17,9 @@ use std::path::{Path, PathBuf};
 use discovery::{resolve_dir_path, resolve_file_path};
 use parse::{parse_raw_config_file, try_parse_raw_candidate};
 
-use super::model::{ConfigFeatureFlags, LinterConfig, RawVizeConfig, VizeConfig};
+use super::model::{
+    ConfigEntryIgnore, ConfigFeatureFlags, LinterConfig, RawVizeConfig, VizeConfig,
+};
 
 const CONFIG_FILE_NAMES: [&str; 5] = [
     "vize.config.pkl",
@@ -45,6 +47,12 @@ pub struct LoadedConfigWithFeatures {
     pub source_path: Option<PathBuf>,
     /// Auxiliary feature flags parsed from config keys.
     pub features: ConfigFeatureFlags,
+}
+
+#[derive(Debug, Clone)]
+pub struct LoadedConfigEntryIgnores {
+    pub ignores: Vec<ConfigEntryIgnore>,
+    pub source_path: Option<PathBuf>,
 }
 
 struct LoadedRawConfig {
@@ -193,6 +201,31 @@ pub fn load_config_and_linter_with_features_and_source(
 pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
     let loaded = load_raw_config_with_source(path);
     load_linter_from_raw_config(&loaded.config)
+}
+
+pub fn load_config_entry_ignores_with_source(path: Option<&Path>) -> LoadedConfigEntryIgnores {
+    let loaded = load_raw_config_with_source(path);
+    let ignores = loaded
+        .config
+        .entries
+        .as_deref()
+        .unwrap_or_default()
+        .iter()
+        .flat_map(|entry| {
+            entry
+                .ignores
+                .iter()
+                .cloned()
+                .map(|pattern| ConfigEntryIgnore {
+                    base_path: entry.base_path.clone(),
+                    pattern,
+                })
+        })
+        .collect();
+    LoadedConfigEntryIgnores {
+        ignores,
+        source_path: loaded.source_path,
+    }
 }
 
 fn load_linter_from_raw_config(config: &RawVizeConfig) -> LinterConfig {
