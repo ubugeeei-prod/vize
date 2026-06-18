@@ -37,7 +37,7 @@ mod resolve;
 mod socket;
 #[cfg(test)]
 mod tests;
-use collect::collect_check_files_with_ignores;
+use collect::{collect_check_files_with_ignores, path_is_inside_root};
 use diagnostics::{
     emit_json_output, is_reported, is_suppressed_false_positive, render_diagnostics,
     save_virtual_ts_targets, write_profile_virtual_ts,
@@ -207,9 +207,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         return;
     }
 
-    // Explicit subsets need reachable source imports registered so cross-file
-    // types resolve like tsc/vue-tsc. Run this before root resolution so
-    // cwd-external files can still choose a covering materialization root.
+    let validate_inputs = !args.patterns.is_empty() && tsconfig_path.is_some();
     if !args.patterns.is_empty() {
         let aliases =
             super::imports_aliases::PathAliasResolver::from_tsconfig(tsconfig_path.as_deref());
@@ -220,14 +218,15 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             jsx_typecheck,
             Some(&aliases),
         ) {
-            if !files.contains(&path) {
+            if (!validate_inputs || path_is_inside_root(&explicit_input_root, &path))
+                && !files.contains(&path)
+            {
                 files.push(path);
             }
         }
         files.sort();
         files.dedup();
     }
-    let validate_inputs = !args.patterns.is_empty() && tsconfig_path.is_some();
     exit_if_inputs_outside_root(&explicit_input_root, &files, validate_inputs);
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
     let tsconfig_path =

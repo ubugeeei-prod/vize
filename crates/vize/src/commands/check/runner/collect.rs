@@ -259,6 +259,12 @@ fn normalize_input_path(path: &Path) -> PathBuf {
     vize_carton::path::canonicalize_non_verbatim(path)
 }
 
+pub(super) fn path_is_inside_root(root: &Path, path: &Path) -> bool {
+    let root = normalize_input_path(root);
+    let path = normalize_input_path(path);
+    path.starts_with(root)
+}
+
 fn normalize_walked_path(root: &Path, normalized_root: &Path, path: &Path) -> PathBuf {
     // Avoid a canonicalize syscall per walked file; normalize the root once.
     path.strip_prefix(root)

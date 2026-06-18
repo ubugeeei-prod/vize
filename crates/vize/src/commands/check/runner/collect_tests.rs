@@ -1,6 +1,11 @@
 use super::super::ignores::CheckIgnoreSet;
 use super::{
-    base_dir_from_pattern, collect_check_files, collect_check_files_with_ignores, collect_vue_files,
+    base_dir_from_pattern, collect_check_files, collect_check_files_with_ignores,
+    collect_vue_files, path_is_inside_root,
+};
+use crate::commands::check::{
+    imports::collect_transitive_local_imports, imports_aliases::PathAliasResolver,
+    path_cache::CanonicalPathCache,
 };
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -13,6 +18,15 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .join("target")
         .join("vize-tests")
         .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
+}
+
+fn write_file(root: &Path, rel: &str, contents: &str) -> PathBuf {
+    let path = root.join(rel);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).unwrap();
+    }
+    fs::write(&path, contents).unwrap();
+    path
 }
 
 #[test]
@@ -140,6 +154,66 @@ fn collect_check_files_applies_entry_ignores() {
     assert!(explicit.is_empty());
 
     let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn path_root_filter_drops_alias_imports_outside_package_cwd() {
+    let workspace = unique_case_dir("package-transitive-alias-root");
+    let _ = fs::remove_dir_all(&workspace);
+    fs::create_dir_all(&workspace).unwrap();
+    fs::write(
+        workspace.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "~/*": ["*"] }
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+    let root_only = write_file(
+        &workspace,
+        "src/generated/tecack/custom.ts",
+        "export const rootOnly = 'root';\n",
+    );
+
+    let package_root = workspace.join("devtools");
+    fs::create_dir_all(&package_root).unwrap();
+    fs::write(
+        package_root.join("tsconfig.json"),
+        r#"{
+  "extends": "../tsconfig.json",
+  "include": ["src/**/*.vue", "src/**/*.ts"]
+}"#,
+    )
+    .unwrap();
+    let app = write_file(
+        &package_root,
+        "src/App.vue",
+        r#"<script setup lang="ts">
+import { rootOnly } from "~/src/generated/tecack/custom";
+void rootOnly;
+</script>
+"#,
+    );
+
+    let aliases = PathAliasResolver::from_tsconfig(Some(&package_root.join("tsconfig.json")));
+    let discovered = collect_transitive_local_imports(
+        std::slice::from_ref(&app),
+        &package_root,
+        &mut CanonicalPathCache::default(),
+        false,
+        Some(&aliases),
+    );
+
+    assert_eq!(discovered, vec![root_only.canonicalize().unwrap()]);
+    assert!(
+        !path_is_inside_root(&package_root, &discovered[0]),
+        "root app import leaked into package inputs"
+    );
+
+    let _ = fs::remove_dir_all(&workspace);
 }
 
 #[test]

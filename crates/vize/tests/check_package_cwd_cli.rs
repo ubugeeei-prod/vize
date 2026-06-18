@@ -76,6 +76,10 @@ fn check_from_package_cwd_uses_package_local_tsconfig_inputs() {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["*"]
+    },
     "noEmit": true
   },
   "include": ["src/**/*"]
@@ -84,7 +88,7 @@ fn check_from_package_cwd_uses_package_local_tsconfig_inputs() {
     write_file(
         &workspace,
         "src/generated/tecack/custom.ts",
-        "export const rootOnly: string = 1;\n",
+        "export const rootOnly: string = 'root';\n",
     );
 
     let package_root = workspace.join("devtools");
@@ -99,6 +103,7 @@ fn check_from_package_cwd_uses_package_local_tsconfig_inputs() {
     "moduleResolution": "bundler",
     "noEmit": true
   },
+  "extends": "../tsconfig.json",
   "include": ["src/**/*.ts", "src/**/*.vue"]
 }"#,
     );
@@ -106,7 +111,10 @@ fn check_from_package_cwd_uses_package_local_tsconfig_inputs() {
         &package_root,
         "src/App.vue",
         r#"<script setup lang="ts">
+import { rootOnly } from "~/src/generated/tecack/custom";
+
 const msg: string = "ok";
+void rootOnly;
 </script>
 
 <template>{{ msg }}</template>
