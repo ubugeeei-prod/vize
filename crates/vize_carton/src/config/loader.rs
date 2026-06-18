@@ -205,7 +205,17 @@ pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
 
 pub fn load_config_entry_ignores_with_source(path: Option<&Path>) -> LoadedConfigEntryIgnores {
     let loaded = load_raw_config_with_source(path);
-    let ignores = loaded
+    let top_level_ignores =
+        loaded
+            .config
+            .ignores
+            .iter()
+            .cloned()
+            .map(|pattern| ConfigEntryIgnore {
+                base_path: None,
+                pattern,
+            });
+    let entry_ignores = loaded
         .config
         .entries
         .as_deref()
@@ -221,7 +231,8 @@ pub fn load_config_entry_ignores_with_source(path: Option<&Path>) -> LoadedConfi
                     pattern,
                 })
         })
-        .collect();
+        .collect::<Vec<_>>();
+    let ignores = top_level_ignores.chain(entry_ignores).collect();
     LoadedConfigEntryIgnores {
         ignores,
         source_path: loaded.source_path,

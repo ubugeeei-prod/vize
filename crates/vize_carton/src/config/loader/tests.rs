@@ -258,6 +258,7 @@ fn load_config_entry_ignores_preserves_base_paths() {
     std::fs::write(
         &config_path,
         r#"{
+  "ignores": ["src/generated.ts"],
   "entries": [
     { "name": "app", "ignores": ["components/Legacy.vue"] },
     { "name": "design", "basePath": "design-system", "ignores": ["src/Fixture.vue"] }
@@ -269,14 +270,16 @@ fn load_config_entry_ignores_preserves_base_paths() {
     let loaded = load_config_entry_ignores_with_source(Some(&config_path));
 
     assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
-    assert_eq!(loaded.ignores.len(), 2);
+    assert_eq!(loaded.ignores.len(), 3);
     assert_eq!(loaded.ignores[0].base_path, None);
-    assert_eq!(loaded.ignores[0].pattern.as_str(), "components/Legacy.vue");
+    assert_eq!(loaded.ignores[0].pattern.as_str(), "src/generated.ts");
+    assert_eq!(loaded.ignores[1].base_path, None);
+    assert_eq!(loaded.ignores[1].pattern.as_str(), "components/Legacy.vue");
     assert_eq!(
-        loaded.ignores[1].base_path.as_deref(),
+        loaded.ignores[2].base_path.as_deref(),
         Some("design-system")
     );
-    assert_eq!(loaded.ignores[1].pattern.as_str(), "src/Fixture.vue");
+    assert_eq!(loaded.ignores[2].pattern.as_str(), "src/Fixture.vue");
 }
 
 #[test]

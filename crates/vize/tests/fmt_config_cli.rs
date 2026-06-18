@@ -86,3 +86,46 @@ fn fmt_check_fails_when_explicit_patterns_match_no_files() {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("No .vue, .js, .ts, .jsx, or .tsx files found"));
 }
+
+#[test]
+fn fmt_check_honors_top_level_ignores_during_directory_discovery() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "vize.config.json",
+        r#"{
+  "ignores": [
+    "src/generated/schema.ts",
+    "src/framework/static/sw.js"
+  ]
+}"#,
+    );
+    write_project_file(
+        project.path(),
+        "src/App.vue",
+        "<template><div>{{msg}}</div></template>\n<script setup lang=\"ts\">const msg=1</script>\n",
+    );
+    write_project_file(
+        project.path(),
+        "src/generated/schema.ts",
+        "export   const schema={value:1}\n",
+    );
+    write_project_file(
+        project.path(),
+        "src/framework/static/sw.js",
+        "self.addEventListener('install',()=>{})\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args(["fmt", "--config", "vize.config.json", "--check", "src"])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("Found 1 file(s)"), "{stderr}");
+    assert!(stderr.contains("Would reformat: src/App.vue"), "{stderr}");
+    assert!(!stderr.contains("src/generated/schema.ts"), "{stderr}");
+    assert!(!stderr.contains("src/framework/static/sw.js"), "{stderr}");
+}
