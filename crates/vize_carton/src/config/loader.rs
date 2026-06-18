@@ -205,16 +205,17 @@ pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
 
 pub fn load_config_entry_ignores_with_source(path: Option<&Path>) -> LoadedConfigEntryIgnores {
     let loaded = load_raw_config_with_source(path);
-    let top_level_ignores =
-        loaded
-            .config
-            .ignores
-            .iter()
-            .cloned()
-            .map(|pattern| ConfigEntryIgnore {
-                base_path: None,
-                pattern,
-            });
+    let top_level_ignores = loaded
+        .config
+        .ignores
+        .as_deref()
+        .unwrap_or_default()
+        .iter()
+        .cloned()
+        .map(|pattern| ConfigEntryIgnore {
+            base_path: None,
+            pattern,
+        });
     let entry_ignores = loaded
         .config
         .entries
@@ -224,6 +225,8 @@ pub fn load_config_entry_ignores_with_source(path: Option<&Path>) -> LoadedConfi
         .flat_map(|entry| {
             entry
                 .ignores
+                .as_deref()
+                .unwrap_or_default()
                 .iter()
                 .cloned()
                 .map(|pattern| ConfigEntryIgnore {

@@ -1,8 +1,8 @@
 #![allow(clippy::disallowed_macros)]
 
 use vize_carton::config::{
-    VueVersion, load_config, load_config_with_features_and_source, load_config_with_source,
-    validate_explicit_config_path,
+    VueVersion, load_config, load_config_entry_ignores_with_source,
+    load_config_with_features_and_source, load_config_with_source, validate_explicit_config_path,
 };
 
 #[test]
@@ -33,6 +33,44 @@ typeChecker {
     let config = load_config(Some(dir.path()));
 
     insta::assert_snapshot!(serde_json::to_string_pretty(&config).unwrap());
+}
+
+#[test]
+fn loads_pkl_top_level_and_entry_ignores() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.pkl");
+    install_pkl_modules(dir.path());
+    std::fs::write(
+        &config_path,
+        r#"
+amends "node_modules/vize/pkl/VizeConfig.pkl"
+
+ignores = new Listing {
+  "src/generated.ts"
+}
+
+entries = new Listing {
+  new ConfigEntry {
+    name = "app"
+    ignores = new Listing { "components/Legacy.vue" }
+  }
+  new ConfigEntry {
+    name = "design"
+    basePath = "design-system"
+  }
+}
+"#,
+    )
+    .unwrap();
+
+    let loaded = load_config_entry_ignores_with_source(Some(&config_path));
+
+    assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
+    assert_eq!(loaded.ignores.len(), 2);
+    assert_eq!(loaded.ignores[0].base_path, None);
+    assert_eq!(loaded.ignores[0].pattern.as_str(), "src/generated.ts");
+    assert_eq!(loaded.ignores[1].base_path, None);
+    assert_eq!(loaded.ignores[1].pattern.as_str(), "components/Legacy.vue");
 }
 
 #[test]
