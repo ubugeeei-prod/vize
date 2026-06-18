@@ -10,6 +10,6 @@ void test("musea plugin remains active during Vite serve outside test mode", () 
   assert.equal(shouldApplyMuseaPlugin({ command: "serve", mode: "development" }), true);
 });
 
-void test("musea plugin is inactive during production builds", () => {
-  assert.equal(shouldApplyMuseaPlugin({ command: "build", mode: "production" }), false);
+void test("musea plugin remains active during production builds", () => {
+  assert.equal(shouldApplyMuseaPlugin({ command: "build", mode: "production" }), true);
 });
