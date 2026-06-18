@@ -658,23 +658,22 @@ async function resolveProjectVueRuntime(
     return null;
   }
 
-  const pnpmHoistedEntry = resolveVueBundlerEntryFromPnpmHoist(state, id, viteImporter);
-  if (pnpmHoistedEntry) {
-    state.logger.log(`resolveId: resolved project pnpm-hoisted Vue runtime to ${pnpmHoistedEntry}`);
-    return pnpmHoistedEntry;
-  }
-
   try {
     const resolved = await resolveWithVite(ctx, state, id, viteImporter, { skipSelf: true });
-    if (resolved && !isOptimizedVueDependency(resolved.id)) {
+    if (resolved && isOptimizedVueDependency(resolved.id)) return null;
+    if (resolved) {
       const projectLocalEntry = resolveProjectLocalPnpmVueRuntime(state, resolved.id);
       if (projectLocalEntry) {
         state.logger.log(`resolveId: resolved project-local Vue runtime to ${projectLocalEntry}`);
         return projectLocalEntry;
       }
     }
-  } catch {
-    // Fall back to Node resolution below.
+  } catch {}
+
+  const pnpmHoistedEntry = resolveVueBundlerEntryFromPnpmHoist(state, id, viteImporter);
+  if (pnpmHoistedEntry) {
+    state.logger.log(`resolveId: resolved project pnpm-hoisted Vue runtime to ${pnpmHoistedEntry}`);
+    return pnpmHoistedEntry;
   }
 
   const importerLocalEntry = resolveVueBundlerEntryWithNode(state, id, viteImporter);
