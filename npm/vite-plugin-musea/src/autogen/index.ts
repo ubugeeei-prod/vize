@@ -11,6 +11,13 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { extractPropsSimple, generateMinimalArt, generateArtFileJs } from "./fallback.js";
+import {
+  fromNativeOutput,
+  toNativeAutogenConfig,
+  toNativePropDefinitions,
+  type NativeAutogenOutput,
+  type NativePropDefinition,
+} from "./native-shape.js";
 
 /**
  * Autogen configuration options.
@@ -63,35 +70,20 @@ export interface AutogenOutput {
 interface NativeAutogen {
   generateVariants?: (
     componentPath: string,
-    props: Array<{
-      name: string;
-      prop_type: string;
-      required: boolean;
-      default_value?: unknown;
-    }>,
-    config?: {
-      max_variants?: number;
-      include_default?: boolean;
-      include_boolean_toggles?: boolean;
-      include_enum_variants?: boolean;
-      include_boundary_values?: boolean;
-      include_empty_strings?: boolean;
-    },
-  ) => {
-    variants: Array<{
-      name: string;
-      is_default: boolean;
-      props: Record<string, unknown>;
-      description?: string;
-    }>;
-    art_file_content: string;
-    component_name: string;
-  };
+    props: NativePropDefinition[],
+    config?: ReturnType<typeof toNativeAutogenConfig>,
+  ) => NativeAutogenOutput;
   analyzeSfc?: (
     source: string,
     options?: { filename?: string },
   ) => {
-    props: Array<{ name: string; type: string; required: boolean; default_value?: unknown }>;
+    props: Array<{
+      name: string;
+      type: string;
+      required: boolean;
+      defaultValue?: unknown;
+      default_value?: unknown;
+    }>;
     emits: string[];
   };
 }
@@ -135,7 +127,7 @@ export async function generateArtFile(
       name: p.name,
       propType: p.type,
       required: p.required,
-      defaultValue: p.default_value,
+      defaultValue: p.defaultValue ?? p.default_value,
     }));
   } else {
     // Fallback: simple regex-based prop extraction
@@ -155,33 +147,14 @@ export async function generateArtFile(
 
   // Use native variant generation if available
   if (binding.generateVariants) {
-    const nativeProps = props.map((p) => ({
-      name: p.name,
-      prop_type: p.propType,
-      required: p.required,
-      default_value: p.defaultValue,
-    }));
-
     const relPath = `./${path.basename(componentPath)}`;
-    const result = binding.generateVariants(relPath, nativeProps, {
-      max_variants: options.maxVariants,
-      include_default: options.includeDefault,
-      include_boolean_toggles: options.includeBooleanToggles,
-      include_enum_variants: options.includeEnumVariants,
-      include_boundary_values: options.includeBoundaryValues,
-      include_empty_strings: options.includeEmptyStrings,
-    });
+    const result = binding.generateVariants(
+      relPath,
+      toNativePropDefinitions(props),
+      toNativeAutogenConfig(options),
+    );
 
-    return {
-      variants: result.variants.map((v) => ({
-        name: v.name,
-        isDefault: v.is_default,
-        props: v.props,
-        description: v.description,
-      })),
-      artFileContent: result.art_file_content,
-      componentName: result.component_name,
-    };
+    return fromNativeOutput(result);
   }
 
   // Fallback: JS-based generation
