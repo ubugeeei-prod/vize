@@ -2,6 +2,7 @@
 //!
 //! Uses arena allocation and zero-copy techniques for maximum performance.
 
+mod custom_block;
 mod raw_mask;
 
 use crate::error::FormatError;
@@ -126,9 +127,7 @@ impl<'a> GlyphFormatter<'a> {
                 Block::Style(style) => {
                     self.format_style_block_fast(&mut output, style)?;
                 }
-                Block::Custom(block) => {
-                    self.format_custom_block_fast(&mut output, block)?;
-                }
+                Block::Custom(block) => custom_block::format(&mut output, block, self.options)?,
             }
         }
 
@@ -327,27 +326,6 @@ impl<'a> GlyphFormatter<'a> {
         }
 
         output.extend_from_slice(b"</style>");
-
-        Ok(())
-    }
-
-    /// Format a custom block using byte operations
-    #[inline]
-    fn format_custom_block_fast(
-        &self,
-        output: &mut Vec<u8>,
-        block: &vize_atelier_sfc::SfcCustomBlock<'_>,
-    ) -> Result<(), FormatError> {
-        output.push(b'<');
-        output.extend_from_slice(block.block_type.as_bytes());
-        write_remaining_attrs(output, &block.attrs, &[]);
-        output.push(b'>');
-        output.extend_from_slice(self.options.newline_bytes());
-        output.extend_from_slice(block.content.trim().as_bytes());
-        output.extend_from_slice(self.options.newline_bytes());
-        output.extend_from_slice(b"</");
-        output.extend_from_slice(block.block_type.as_bytes());
-        output.push(b'>');
 
         Ok(())
     }
