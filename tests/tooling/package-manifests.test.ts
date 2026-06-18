@@ -150,14 +150,14 @@ test("vite plugin publishes TypeScript client types for Vue imports", () => {
   };
   const typeEntry = readRepoFile("npm/vite-plugin-vize/index.d.mts");
   const clientTypes = readRepoFile("npm/vite-plugin-vize/client.d.ts");
-
+  const files = packageJson.files ?? [];
   assert.equal(packageJson.types, "./index.d.mts");
   assert.deepEqual(packageJson.exports?.["."], {
     types: "./index.d.mts",
     import: "./dist/index.mjs",
     default: "./dist/index.mjs",
   });
-  assert.ok(packageJson.files?.includes("client.d.ts") && packageJson.files?.includes("index.d.mts"));
+  assert.ok(files.includes("client.d.ts") && files.includes("index.d.mts"));
   assert.match(typeEntry, /import "\.\/client\.d\.ts"/);
   assert.match(typeEntry, /from "\.\/dist\/index\.mjs"/);
   assert.match(clientTypes, /declare module "\*\.vue"/);
