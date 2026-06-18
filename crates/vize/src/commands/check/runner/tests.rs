@@ -110,7 +110,7 @@ fn resolves_monorepo_root_for_files_spanning_package_tsconfigs() {
 }
 
 #[test]
-fn resolves_package_root_for_files_inside_one_package() {
+fn resolves_package_root_for_relative_tsconfig_inside_one_package() {
     let project_root = unique_case_dir("package-root");
     let _ = std::fs::remove_dir_all(&project_root);
     let app_dir = project_root.join("packages/app");
@@ -121,10 +121,9 @@ fn resolves_package_root_for_files_inside_one_package() {
     for file in &files {
         std::fs::write(file, "").unwrap();
     }
-
-    let resolved_root = resolve_project_root(None, &project_root, &files);
-    let resolved_tsconfig = resolve_tsconfig_path(None, &project_root, &resolved_root, &files);
-
+    let tsconfig = Path::new("tsconfig.json");
+    let resolved_root = resolve_project_root(Some(tsconfig), &app_dir, &files);
+    let resolved_tsconfig = resolve_tsconfig_path(Some(tsconfig), &app_dir, &resolved_root, &files);
     assert_eq!(resolved_root, app_dir);
     assert_eq!(resolved_tsconfig, Some(resolved_root.join("tsconfig.json")));
 
