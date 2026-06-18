@@ -1,3 +1,9 @@
+//! Regression test for type-only import value anchoring in virtual TS (#1867).
+//!
+//! Kept as its own crate-root test module (declared in `lib.rs`) rather than in
+//! `tests.rs`: that file is already over the 350-line source-length limit, so
+//! adding to it trips the source-length guard. Keep new cases here instead.
+
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 
 #[test]

@@ -83,6 +83,9 @@ pub mod typecheck_service;
 #[cfg(all(test, feature = "native"))]
 mod tests;
 
+#[cfg(all(test, feature = "native"))]
+mod type_only_import_anchors;
+
 pub use checker::TypeChecker;
 pub use context::{Binding, BindingKind, Import, Prop, TypeContext};
 pub use diagnostic::{TypeDiagnostic, TypeErrorCode, TypeSeverity};

@@ -1,7 +1,5 @@
 //! Snapshot tests for vize_canon.
 
-mod type_only_import_anchors;
-
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
 mod virtual_ts_tests {
