@@ -155,6 +155,7 @@ test("vite plugin publishes TypeScript client types for Vue imports", () => {
   assert.deepEqual(packageJson.exports?.["."], {
     types: "./index.d.mts",
     import: "./dist/index.mjs",
+    default: "./dist/index.mjs",
   });
   assert.ok(packageJson.files?.includes("client.d.ts"));
   assert.ok(packageJson.files?.includes("index.d.mts"));
