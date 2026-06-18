@@ -347,6 +347,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         span_relative_expr,
                     );
                     ts.push_str(&text);
+                    ts.push_str("void __default__;\n");
                 } else {
                     ts.push_str(text);
                 }
@@ -468,15 +469,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // causing src_byte_offset drift that incorrectly skips user code.
             let mut src_byte_offset: usize = 0; // offset within script content
             let mut module_span_index = 0usize;
-            // Script-absolute offset right after the wrapped options object's
-            // closing brace; the matching `)` for the `defineComponent(` wrap
-            // opened on an earlier line is inserted there.
+            // Script-absolute offset right after the wrapped options object.
             let mut pending_wrap_close: Option<usize> = None;
-            // A class default export (class component) keeps its decorators on
-            // a real class declaration; the `const __default__ = <Name>` alias
-            // is appended once the class body closes. Holds `(class_end, name)`
-            // (script-absolute end offset + class identifier).
+            // Deferred class-component alias: `(class_end, name)`.
             let mut pending_class_alias: Option<(usize, &str)> = None;
+            let mut emitted_default_alias = false;
 
             // Check if script uses import.meta and add a polyfill variable.
             // This avoids TS1343 when module is not set to es2020+.
@@ -539,6 +536,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     .strip_prefix("export default")
                     .filter(|rest| rest.chars().next().is_none_or(char::is_whitespace))
                 {
+                    emitted_default_alias = true;
                     let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
                     // A class default export (the class-component shape) stays
                     // a real class declaration so `@Component()` decorators
@@ -683,10 +681,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 append!(ts, "  const __default__ = {name};\n");
             }
             if pending_wrap_close.take().is_some() {
-                // Defensive: the line carrying the wrapped object's closing
-                // brace was never emitted; close the `defineComponent(` call
+                // Defensive: if the object close was never emitted, close the `defineComponent(`
                 // so the generated module stays parseable.
                 ts.push_str("  )\n");
+            }
+            if emitted_default_alias {
+                ts.push_str("  void __default__;\n");
             }
             let script_gen_end = ts.len();
             append!(
