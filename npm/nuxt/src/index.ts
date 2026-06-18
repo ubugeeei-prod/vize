@@ -1,13 +1,3 @@
-/**
- * @vizejs/nuxt - Nuxt module for Vize
- *
- * Provides:
- * - Compiler: Vue SFC compilation via Vite plugin
- * - Musea: Component gallery with Nuxt mock support
- * - Linter: `vize lint` CLI command (via `vize` bin)
- * - Type Checker: `vize check` CLI command (via `vize` bin)
- */
-
 import {
   addServerPlugin,
   addVitePlugin,
@@ -20,6 +10,7 @@ import vize from "@vizejs/vite-plugin";
 import { musea } from "@vizejs/vite-plugin-musea";
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
 import { injectNuxtI18nHelpers } from "./i18n";
+import { appendMuseaArtComponentIgnore } from "./musea-components";
 import type { VizeNuxtCompilerOptions, VizeNuxtOptions } from "./options";
 import {
   resolveNuxtBridgeOptions,
@@ -290,6 +281,8 @@ export default defineNuxtModule<VizeNuxtOptions>({
     const devOptions = resolveNuxtDevOptions(options.dev);
     const museaOptions = resolveNuxtMuseaOptions(options.musea);
     const unocssOptions = resolveNuxtUnoCssOptions(options.unocss);
+
+    if (museaOptions !== false) nuxt.hook("components:dirs", appendMuseaArtComponentIgnore);
 
     // Compiler
     const compilerOptions = resolveNuxtCompilerOptions(

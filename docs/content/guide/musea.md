@@ -189,7 +189,8 @@ src/components/Button.vue
 src/components/Button.art.vue
 ```
 
-Use a separate `stories` or `art` directory when a design system owns many cross-cutting examples:
+Use a separate `stories` or `art` directory when a design system owns many cross-cutting examples,
+or when Nuxt component auto-discovery scans the component directory:
 
 ```txt
 src/components/Button.vue

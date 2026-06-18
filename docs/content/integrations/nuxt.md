@@ -174,6 +174,31 @@ export default defineNuxtConfig({
 
 When configured, the Musea gallery is available at `/__musea__/` during development.
 
+### Art File Placement
+
+Nuxt component auto-discovery scans `.vue` files inside configured component directories. Because
+Musea art files also end in `.vue`, keep `*.art.vue` files outside those directories in Nuxt
+projects and point Musea at that location:
+
+```txt
+app/components/Tag.vue
+stories/shared/Tag.art.vue
+```
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    musea: {
+      include: ["stories/**/*.art.vue"],
+    },
+  },
+});
+```
+
+When Musea is enabled through `@vizejs/nuxt`, the module also excludes `**/*.art.vue` from Nuxt's
+component scanner so colocated legacy files do not reach Nuxt's webpack or Vite component pipeline.
+
 ### Preview Setup for Nuxt
 
 Nuxt projects often use features that need to be mocked in the Musea preview environment (vue-i18n, NuxtLink, useNuxtApp, etc.):
