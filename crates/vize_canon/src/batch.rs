@@ -9,6 +9,7 @@ mod error;
 mod executor;
 mod import_rewriter;
 mod materialize_fs;
+mod materialize_lock;
 mod runtime_deps;
 mod source_map;
 mod type_checker;

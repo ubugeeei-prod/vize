@@ -9,6 +9,7 @@ use std::process::Command;
 
 use super::error::{CorsaError, CorsaNotFoundError, CorsaResult};
 use super::import_rewriter::ImportRewriter;
+use super::materialize_lock::MaterializeLock;
 use super::type_checker::{
     DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput, TypeCheckResult,
 };
@@ -41,9 +42,8 @@ pub struct CorsaExecutor {
 }
 
 impl CorsaExecutor {
-    /// Create a new executor by finding a local or global Corsa executable.
-    pub fn new(project_root: &Path) -> Result<Self, CorsaNotFoundError> {
-        Self::with_corsa_path(project_root, None)
+    pub fn new(root: &Path) -> Result<Self, CorsaNotFoundError> {
+        Self::with_corsa_path(root, None)
     }
 
     /// Create a new executor with an optional explicit Corsa executable path.
@@ -65,13 +65,10 @@ impl CorsaExecutor {
         }
     }
 
-    /// Get the resolved executable path.
     pub fn corsa_path(&self) -> &Path {
         &self.corsa_path
     }
 
-    /// Run type checking on the virtual project with an auto-tuned number of
-    /// parallel Corsa CLI processes.
     pub fn check(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {
         self.check_with_servers(project, None)
     }
@@ -84,6 +81,7 @@ impl CorsaExecutor {
         project: &VirtualProject,
         servers: Option<usize>,
     ) -> CorsaResult<TypeCheckResult> {
+        let _materialize_lock = MaterializeLock::acquire(project.virtual_root())?;
         profile!("canon.executor.materialize", project.materialize())?;
 
         let servers = servers.unwrap_or_else(|| auto_server_count(project));
@@ -167,6 +165,7 @@ impl CorsaExecutor {
         project: &VirtualProject,
         options: &DeclarationEmitOptions,
     ) -> CorsaResult<DeclarationEmitResult> {
+        let _materialize_lock = MaterializeLock::acquire(project.virtual_root())?;
         profile!("canon.executor.materialize_dts", project.materialize())?;
         let config_path = profile!(
             "canon.project.dts_tsconfig",
