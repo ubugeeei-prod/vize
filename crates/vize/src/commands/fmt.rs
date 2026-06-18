@@ -369,7 +369,7 @@ fn build_format_options(args: &FmtArgs) -> FormatOptions {
     if let Some(v) = args.normalize_directive_shorthands {
         opts.normalize_directive_shorthands = v;
     }
-
+    opts.skip_script_stabilization = !args.write;
     opts
 }
 

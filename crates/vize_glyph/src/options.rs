@@ -101,6 +101,17 @@ pub struct FormatOptions {
     /// When false, blocks are preserved in their original source order.
     #[serde(default = "default_true")]
     pub sort_blocks: bool,
+
+    /// Skip the `<script>` idempotence stabilization pass (default: false).
+    ///
+    /// When false (the default), script blocks are formatted to a stable fixed
+    /// point (an extra oxc pass) so written output is idempotent. `fmt --check`
+    /// only needs to know whether a file is *already* formatted, which a single
+    /// pass detects correctly, so the CLI sets this for `--check`/dry runs to
+    /// avoid a redundant parse+format of every script block. This is an internal
+    /// runtime flag, never sourced from or written to user config.
+    #[serde(skip)]
+    pub skip_script_stabilization: bool,
 }
 
 impl Default for FormatOptions {
@@ -127,6 +138,7 @@ impl Default for FormatOptions {
             attribute_groups: None,
             normalize_directive_shorthands: true,
             sort_blocks: true,
+            skip_script_stabilization: false,
         }
     }
 }

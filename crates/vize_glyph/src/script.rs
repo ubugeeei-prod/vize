@@ -80,6 +80,12 @@ pub(crate) fn format_script_content_stable(
 ) -> Option<String> {
     let first =
         format_script_content_with_source_type(source, options, allocator, source_type).ok()?;
+    // Skip the second (idempotence) pass when the caller only needs change
+    // detection (`fmt --check`), or when the first pass was already a no-op:
+    // the input is then a fixed point, so re-formatting cannot change it.
+    if options.skip_script_stabilization || first.trim_end() == source.trim_end() {
+        return Some(first);
+    }
     format_script_content_with_source_type(first.as_str(), options, allocator, source_type)
         .ok()
         .or(Some(first))
