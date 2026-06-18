@@ -23,9 +23,11 @@ use vize_curator::profile::{
 
 mod files;
 mod ignores;
+mod patterns;
 
 use files::collect_files;
 use ignores::load_fmt_ignore_set;
+use patterns::{default_fmt_patterns, has_explicit_patterns};
 
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
@@ -114,6 +116,9 @@ pub fn run(args: FmtArgs) {
 
     if files.is_empty() {
         eprintln!("No .vue, .js, .ts, .jsx, or .tsx files found matching the patterns");
+        if has_explicit_patterns(&args.patterns) {
+            std::process::exit(1);
+        }
         return;
     }
 
@@ -366,21 +371,6 @@ fn build_format_options(args: &FmtArgs) -> FormatOptions {
     }
 
     opts
-}
-
-#[allow(clippy::disallowed_types)]
-fn default_fmt_patterns() -> Vec<std::string::String> {
-    vec![
-        "./**/*.vue".into(),
-        "./**/*.js".into(),
-        "./**/*.mjs".into(),
-        "./**/*.cjs".into(),
-        "./**/*.ts".into(),
-        "./**/*.mts".into(),
-        "./**/*.cts".into(),
-        "./**/*.jsx".into(),
-        "./**/*.tsx".into(),
-    ]
 }
 
 #[inline]
