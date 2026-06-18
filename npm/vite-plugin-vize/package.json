@@ -32,7 +32,8 @@
   "exports": {
     ".": {
       "types": "./index.d.mts",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     }
   },
   "publishConfig": {
