@@ -17,7 +17,7 @@ use crate::{
 use std::path::PathBuf;
 #[cfg(not(target_arch = "wasm32"))]
 use std::sync::Mutex;
-use vize_carton::{FxHashSet, String, i18n::Locale};
+use vize_carton::{FxHashSet, String, config::VueVersion, i18n::Locale};
 
 /// Lint result for a single file.
 #[derive(Debug, Clone)]
@@ -241,6 +241,16 @@ impl Linter {
     #[inline]
     pub fn with_disabled_rules(mut self, rules: Vec<String>) -> Self {
         self.disabled_rules = rules.into_iter().collect();
+        self
+    }
+
+    /// Apply project-wide Vue dialect compatibility to lint rules.
+    #[inline]
+    pub fn with_vue_version(mut self, version: Option<VueVersion>) -> Self {
+        if version.is_some_and(VueVersion::is_legacy) {
+            self.disabled_rules
+                .insert(String::from("vue/no-v-for-template-key-on-child"));
+        }
         self
     }
 

@@ -52,25 +52,24 @@ pub fn run(args: LintArgs) {
     let render_details = should_render_lint_details(format, args.quiet);
     crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    // Load the shared config and linter section from the same raw parse. The
-    // lint command is often used in watch/CI loops, so avoiding a second config
-    // evaluation keeps startup overhead out of the per-run profile.
     let (loaded_config, linter_config) = if args.no_config {
         (
-            crate::config::LoadedConfig {
+            crate::config::LoadedConfigWithFeatures {
                 config: crate::config::VizeConfig::default(),
                 source_path: None,
+                features: crate::config::ConfigFeatureFlags::default(),
             },
             crate::config::LinterConfig::default(),
         )
     } else {
-        crate::config::load_config_and_linter_with_source(args.config.as_deref())
+        crate::config::load_config_and_linter_with_features_and_source(args.config.as_deref())
     };
     let config_dir = loaded_config
         .source_path
         .as_deref()
         .and_then(Path::parent)
         .unwrap_or(cwd.as_path());
+    let vue_version = loaded_config.features.vue_version;
     let config = loaded_config.config;
     if !linter_config.enabled {
         eprintln!("[vize] Skipping lint because linter.enabled is false in vize.config.");
@@ -110,7 +109,8 @@ pub fn run(args: LintArgs) {
         .with_additional_rules(linter_config.enabled_rules())
         .with_disabled_rules(linter_config.disabled_rules())
         .with_help_level(help_level)
-        .with_type_aware_lint(type_aware_enabled);
+        .with_type_aware_lint(type_aware_enabled)
+        .with_vue_version(vue_version);
     #[cfg(not(target_arch = "wasm32"))]
     {
         linter = linter.with_corsa_path(configured_corsa_path);

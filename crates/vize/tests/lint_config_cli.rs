@@ -93,3 +93,47 @@ const noop = () => {}
 
     let _ = fs::remove_dir_all(project_root);
 }
+
+#[test]
+fn lint_vue2_config_allows_template_v_for_key_on_child() {
+    let project_root = temp_project_dir("vue2-v-for-child-key");
+    let sfc = r#"<script setup>
+const items = [{ id: 1, name: 'One' }]
+</script>
+
+<template>
+  <template v-for="item in items">
+    <div :key="item.id">{{ item.name }}</div>
+  </template>
+</template>
+"#;
+    write_project_file(&project_root, "src/App.vue", sfc);
+    write_project_file(
+        &project_root,
+        "vize.config.json",
+        r#"{ "vue": { "version": "2" } }"#,
+    );
+
+    let vue3 = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--no-config", "src/App.vue"])
+        .output()
+        .unwrap();
+    assert!(!vue3.status.success());
+    let stdout = String::from_utf8_lossy(&vue3.stdout);
+    assert!(stdout.contains("vue/no-v-for-template-key-on-child"));
+
+    let vue2 = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--config", "vize.config.json", "src/App.vue"])
+        .output()
+        .unwrap();
+    assert!(
+        vue2.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&vue2.stdout),
+        String::from_utf8_lossy(&vue2.stderr)
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}

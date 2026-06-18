@@ -97,6 +97,7 @@ mod tests {
     use super::NoVForTemplateKeyOnChild;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
+    use vize_carton::config::VueVersion;
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
@@ -175,6 +176,16 @@ mod tests {
         // attribute is left to other rules.
         let result = linter.lint_template(
             r#"<template v-for="item in items"><div key="static">{{ item }}</div></template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn vue2_allows_key_on_template_v_for_child() {
+        let linter = create_linter().with_vue_version(Some(VueVersion::V2));
+        let result = linter.lint_template(
+            r#"<template v-for="item in items"><div :key="item.id">{{ item }}</div></template>"#,
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
