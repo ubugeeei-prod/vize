@@ -309,12 +309,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.use_helper(builtin);
                 ctx.push(ctx.helper(builtin));
             } else if let Some(binding_name) = ctx.resolve_component_binding_name(&el.tag) {
-                // In inline mode, components are directly in scope (imported at module level)
-                // In function mode, use $setup.ComponentName to access setup bindings
-                if !ctx.options.inline {
-                    ctx.push("$setup.");
-                }
-                ctx.push(&binding_name);
+                ctx.push_component_binding_name(&binding_name);
             } else {
                 ctx.push(&to_valid_asset_identifier("component", &el.tag));
             }

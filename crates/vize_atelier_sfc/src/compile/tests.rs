@@ -1440,6 +1440,37 @@ var c = 3
 }
 
 #[test]
+fn test_script_setup_computed_component_tag_uses_unref() {
+    let input = r#"
+<script setup>
+import { computed } from 'vue'
+const Menu = computed(() => ({ render: () => null }))
+</script>
+
+<template>
+  <Menu>hello</Menu>
+</template>
+"#;
+
+    let descriptor = parse_sfc(input, SfcParseOptions::default()).unwrap();
+
+    let mut compile_opts = SfcCompileOptions::default();
+    compile_opts.script.id = Some("test.vue".to_compact_string());
+    let result = compile_sfc(&descriptor, compile_opts).unwrap();
+
+    assert!(
+        result.code.contains("_createBlock(_unref(Menu)"),
+        "{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("_createBlock(Menu"),
+        "{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_extract_normal_script_content() {
     let input = r#"import type { NuxtRoute } from "@typed-router";
 import { useBreakpoint } from "./_utils";

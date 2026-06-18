@@ -228,10 +228,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         ctx.use_helper(builtin);
                         ctx.push(ctx.helper(builtin));
                     } else if let Some(binding_name) = ctx.resolve_component_binding_name(&el.tag) {
-                        if !ctx.options.inline {
-                            ctx.push("$setup.");
-                        }
-                        ctx.push(&binding_name);
+                        ctx.push_component_binding_name(&binding_name);
                     } else {
                         ctx.push(&to_valid_asset_identifier("component", &el.tag));
                     }

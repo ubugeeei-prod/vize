@@ -1,6 +1,6 @@
 //! Code generation context and result types.
 
-use crate::options::CodegenOptions;
+use crate::options::{BindingType, CodegenOptions};
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, Position, RuntimeHelper};
 
@@ -358,6 +358,37 @@ impl CodegenContext {
         }
 
         resolve_base(component)
+    }
+
+    /// Emit a component tag that resolves to a script-setup binding.
+    pub fn push_component_binding_name(&mut self, binding_name: &str) {
+        if !self.options.inline {
+            self.push("$setup.");
+            self.push(binding_name);
+            return;
+        }
+
+        let (base, suffix) = binding_name.split_once('.').unwrap_or((binding_name, ""));
+        let needs_unref = self
+            .options
+            .binding_metadata
+            .as_ref()
+            .and_then(|metadata| metadata.bindings.get(base))
+            .is_some_and(|binding_type| matches!(binding_type, BindingType::SetupRef));
+
+        if needs_unref {
+            self.use_helper(RuntimeHelper::Unref);
+            self.push(self.helper(RuntimeHelper::Unref));
+            self.push("(");
+            self.push(base);
+            self.push(")");
+            if !suffix.is_empty() {
+                self.push(".");
+                self.push(suffix);
+            }
+        } else {
+            self.push(binding_name);
+        }
     }
 
     /// Push string to buffer (alias for `push`, compatible with `appends!`/`append!` macros)
