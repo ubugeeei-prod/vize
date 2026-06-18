@@ -16,7 +16,6 @@ use self::imports::{
     collect_imported_names, emit_global_component_stubs, emit_reference_type_directives,
     extract_declared_name,
 };
-use self::legacy_vue2::{define_component_helper, vue_type_helpers};
 use self::options_api::{
     find_default_export_targets, find_options_api_props, generate_options_api_bridge,
     generate_options_api_variables,
@@ -26,7 +25,6 @@ use self::spans::{
     DEFINE_COMPONENT_REF, collect_template_referenced_names, merge_overlapping_spans,
     rewrite_export_default_for_module_scope,
 };
-use self::template_refs::TemplateRefUnwraps;
 use super::{
     helpers::{
         IMPORT_META_AUGMENTATION, SETUP_SCOPE_HELPER_NAMES, VUE_SETUP_HELPERS,
@@ -206,7 +204,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // are accessible from `export type Props = ...` outside __setup().
     ts.push_str("// ========== Module Scope (imports) ==========\n");
     if !hoist_shared_preamble {
-        ts.push_str(vue_type_helpers(legacy_vue2, dialect));
+        ts.push_str(legacy_vue2::vue_type_helpers(legacy_vue2, dialect));
         ts.push('\n');
     }
 
@@ -242,7 +240,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let default_export_class = default_export_targets.class;
     let default_export_expr = default_export_targets.expr;
     if default_export_object.is_some() {
-        ts.push_str(define_component_helper(legacy_vue2, dialect));
+        ts.push_str(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
 
     // Collect all module-level statement spans from croquis analysis once and
@@ -739,7 +737,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         profile!("canon.virtual_ts.emit_template_scope", {
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
 
-            let template_ref_unwraps = TemplateRefUnwraps::collect(
+            let template_ref_unwraps = template_refs::TemplateRefUnwraps::collect(
                 summary,
                 options_api,
                 template_referenced_names.as_ref(),
