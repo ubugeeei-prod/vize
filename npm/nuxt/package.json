@@ -50,7 +50,6 @@
   },
   "dependencies": {
     "@nuxt/kit": "catalog:integrations",
-    "@vizejs/musea-nuxt": "workspace:*",
     "@vizejs/vite-plugin": "workspace:*",
     "@vizejs/vite-plugin-musea": "workspace:*",
     "vize": "workspace:*"

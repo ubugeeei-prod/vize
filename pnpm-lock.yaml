@@ -467,9 +467,6 @@ importers:
       '@nuxt/kit':
         specifier: catalog:integrations
         version: 4.4.8(magicast@0.5.2)
-      '@vizejs/musea-nuxt':
-        specifier: workspace:*
-        version: link:../musea-nuxt
       '@vizejs/vite-plugin':
         specifier: workspace:*
         version: link:../vite-plugin-vize

@@ -1,5 +1,4 @@
 import type { MuseaOptions } from "@vizejs/vite-plugin-musea";
-import type { NuxtMuseaOptions } from "@vizejs/musea-nuxt";
 import type {
   VizeNuxtCompilerCompatibilityOptions,
   VizeNuxtCompilerOptions,
@@ -121,6 +120,24 @@ export interface VizeNuxtDevOptions {
    * @default true
    */
   stylesheetLinks?: boolean;
+}
+
+export interface NuxtMuseaOptions {
+  route?: {
+    path?: string;
+    name?: string;
+    params?: Record<string, string>;
+    query?: Record<string, string>;
+    hash?: string;
+    fullPath?: string;
+    meta?: Record<string, unknown>;
+  };
+  runtimeConfig?: {
+    public?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+  fetchMocks?: Record<string, unknown>;
+  stateMocks?: Record<string, unknown>;
 }
 
 export interface VizeNuxtOptions {

@@ -583,8 +583,8 @@ export default defineNuxtModule<VizeNuxtOptions>({
 
 // Re-export types for convenience
 export type { MuseaOptions } from "@vizejs/vite-plugin-musea";
-export type { NuxtMuseaOptions } from "@vizejs/musea-nuxt";
 export type {
+  NuxtMuseaOptions,
   VizeNuxtBridgeOptions,
   VizeNuxtCompilerCompatibilityOptions,
   VizeNuxtCompatibilityOptions,
