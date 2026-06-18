@@ -4,7 +4,7 @@ use std::path::Path;
 
 use ignore::WalkBuilder;
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, Expression, ObjectExpression, Statement};
+use oxc_ast::ast::{Argument, BindingPattern, Expression, ObjectExpression, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, cstr};
@@ -63,6 +63,8 @@ pub(super) fn collect_plugin_injection_stubs(
             .into(),
     );
 
+    stubs.push(render_nuxt_injection_context_stub(&plugin_keys));
+
     for key in plugin_keys {
         let injected_name = if key.starts_with('$') {
             key
@@ -75,6 +77,31 @@ pub(super) fn collect_plugin_injection_stubs(
             cstr!("declare const {injected_name}: __VizeNuxtInjection<'{injected_name}'>;"),
         );
     }
+}
+
+fn render_nuxt_injection_context_stub(plugin_keys: &[String]) -> String {
+    let mut stub = String::from("interface __VizeNuxtInjectedProperties {\n");
+    for key in plugin_keys {
+        let injected_name = if key.starts_with('$') {
+            key.clone()
+        } else {
+            cstr!("${key}")
+        };
+        stub.push_str("  ");
+        stub.push_str(injected_name.as_str());
+        stub.push_str(": __VizeNuxtInjection<'");
+        stub.push_str(injected_name.as_str());
+        stub.push_str("'>;\n");
+    }
+    stub.push_str("}\n");
+    stub.push_str("declare module \"@nuxt/types\" {\n");
+    stub.push_str("  interface Context extends __VizeNuxtInjectedProperties {}\n");
+    stub.push_str("  interface NuxtAppOptions extends __VizeNuxtInjectedProperties {}\n");
+    stub.push_str("}\n");
+    stub.push_str("declare module \"@nuxtjs/composition-api\" {\n");
+    stub.push_str("  interface UseContextReturn extends __VizeNuxtInjectedProperties {}\n");
+    stub.push_str("}\n");
+    stub
 }
 
 pub(super) fn extract_plugin_provide_keys_from_source(source: &str) -> Vec<String> {
@@ -111,14 +138,106 @@ fn collect_plugin_keys_from_argument(arg: &Argument<'_>, keys: &mut Vec<String>)
     match arg {
         Argument::ObjectExpression(object) => collect_plugin_keys_from_object(object, keys),
         Argument::ArrowFunctionExpression(arrow) => {
+            if let Some(inject_name) = nuxt2_inject_param_name(&arrow.params) {
+                collect_plugin_keys_from_nuxt2_inject_calls(
+                    &arrow.body.statements,
+                    inject_name,
+                    keys,
+                );
+            }
             collect_plugin_keys_from_function_body(&arrow.body.statements, keys)
         }
         Argument::FunctionExpression(function) => {
+            if let Some(inject_name) = nuxt2_inject_param_name(&function.params)
+                && let Some(body) = &function.body
+            {
+                collect_plugin_keys_from_nuxt2_inject_calls(&body.statements, inject_name, keys);
+            }
             if let Some(body) = &function.body {
                 collect_plugin_keys_from_function_body(&body.statements, keys);
             }
         }
         _ => {}
+    }
+}
+
+fn nuxt2_inject_param_name<'a>(params: &'a oxc_ast::ast::FormalParameters<'a>) -> Option<&'a str> {
+    let param = params.items.get(1)?;
+    binding_identifier_name(&param.pattern)
+}
+
+fn binding_identifier_name<'a>(pattern: &'a BindingPattern<'a>) -> Option<&'a str> {
+    match pattern {
+        BindingPattern::BindingIdentifier(identifier) => Some(identifier.name.as_str()),
+        _ => None,
+    }
+}
+
+fn collect_plugin_keys_from_nuxt2_inject_calls<'a>(
+    statements: &'a oxc_allocator::Vec<'a, Statement<'a>>,
+    inject_name: &str,
+    keys: &mut Vec<String>,
+) {
+    for statement in statements {
+        let Statement::ExpressionStatement(expr) = statement else {
+            continue;
+        };
+        collect_plugin_key_from_nuxt2_inject_expression(&expr.expression, inject_name, keys);
+    }
+}
+
+fn collect_plugin_key_from_nuxt2_inject_expression(
+    expression: &Expression<'_>,
+    inject_name: &str,
+    keys: &mut Vec<String>,
+) {
+    match expression {
+        Expression::CallExpression(call) => {
+            let Expression::Identifier(callee) = &call.callee else {
+                return;
+            };
+            if callee.name.as_str() != inject_name {
+                return;
+            }
+            if let Some(key) = call.arguments.first().and_then(inject_key_from_argument) {
+                keys.push(key);
+            }
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            collect_plugin_key_from_nuxt2_inject_expression(
+                &parenthesized.expression,
+                inject_name,
+                keys,
+            );
+        }
+        Expression::TSAsExpression(ts_as) => {
+            collect_plugin_key_from_nuxt2_inject_expression(&ts_as.expression, inject_name, keys);
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            collect_plugin_key_from_nuxt2_inject_expression(
+                &ts_satisfies.expression,
+                inject_name,
+                keys,
+            );
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            collect_plugin_key_from_nuxt2_inject_expression(
+                &ts_non_null.expression,
+                inject_name,
+                keys,
+            );
+        }
+        _ => {}
+    }
+}
+
+fn inject_key_from_argument(argument: &Argument<'_>) -> Option<String> {
+    match argument {
+        Argument::StringLiteral(literal) => Some(literal.value.as_str().into()),
+        Argument::TemplateLiteral(template) => {
+            template.single_quasi().map(|value| value.as_str().into())
+        }
+        _ => None,
     }
 }
 
@@ -159,5 +278,32 @@ fn collect_plugin_keys_from_object(object: &ObjectExpression<'_>, keys: &mut Vec
             }
             _ => {}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{extract_plugin_provide_keys_from_source, render_nuxt_injection_context_stub};
+
+    #[test]
+    fn extracts_nuxt2_inject_keys_from_callback_plugin() {
+        let source = r#"
+export default defineNuxtPlugin((_context, register) => {
+  register('logger', { info(message) { return message.length } })
+  register(`auth`, {})
+})
+"#;
+
+        let keys = extract_plugin_provide_keys_from_source(source);
+        assert_eq!(keys, vec!["logger", "auth"]);
+    }
+
+    #[test]
+    fn renders_use_context_injection_augmentations() {
+        let stub = render_nuxt_injection_context_stub(&["logger".into()]);
+
+        assert!(stub.contains("$logger: __VizeNuxtInjection<'$logger'>;"));
+        assert!(stub.contains("interface Context extends __VizeNuxtInjectedProperties"));
+        assert!(stub.contains("interface UseContextReturn extends __VizeNuxtInjectedProperties"));
     }
 }
