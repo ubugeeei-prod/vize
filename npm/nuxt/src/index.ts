@@ -1,7 +1,6 @@
 import {
   addServerPlugin,
   addVitePlugin,
-  createResolver,
   defineNuxtModule,
   getNuxtVersion,
   isNuxt2,
@@ -17,6 +16,7 @@ import {
   resolveNuxtMuseaOptions,
   resolveNuxtUnoCssOptions,
 } from "./options";
+import { createNuxtModuleResolver } from "./resolver";
 import {
   buildNuxtDevAssetBase,
   isVizeGeneratedVueModuleId,
@@ -268,7 +268,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
     },
   },
   async setup(options, nuxt) {
-    const resolver = createResolver(import.meta.url);
+    const resolver = createNuxtModuleResolver();
     const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
     const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
     const nuxtWithBuilderOptions = nuxt as NuxtWithBuilderOptions;
