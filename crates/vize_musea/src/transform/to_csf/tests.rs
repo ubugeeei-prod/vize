@@ -3,14 +3,9 @@ use crate::parse::parse_art;
 use crate::types::ArtParseOptions;
 use vize_carton::Bump;
 
-fn transform(source: &str) -> crate::types::CsfOutput {
-    let allocator = Bump::new();
-    let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
-    transform_to_csf(&art)
-}
-
 #[test]
-fn transform_simple() {
+fn test_transform_simple() {
+    let allocator = Bump::new();
     let source = r#"
 <art title="Button" component="./Button.vue">
   <variant name="Primary" default>
@@ -19,13 +14,15 @@ fn transform_simple() {
 </art>
 "#;
 
-    insta::with_settings!({ snapshot_path => "../snapshots" }, {
-        insta::assert_debug_snapshot!("transform_simple", transform(source));
-    });
+    let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
+    let csf = transform_to_csf(&art);
+
+    insta::assert_debug_snapshot!(csf);
 }
 
 #[test]
-fn transform_with_category() {
+fn test_transform_with_category() {
+    let allocator = Bump::new();
     let source = r#"
 <art title="Button" category="atoms" component="./Button.vue">
   <variant name="Default">
@@ -34,13 +31,15 @@ fn transform_with_category() {
 </art>
 "#;
 
-    insta::with_settings!({ snapshot_path => "../snapshots" }, {
-        insta::assert_debug_snapshot!("transform_with_category", transform(source));
-    });
+    let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
+    let csf = transform_to_csf(&art);
+
+    insta::assert_debug_snapshot!(csf);
 }
 
 #[test]
-fn transform_multiple_variants() {
+fn test_transform_multiple_variants() {
+    let allocator = Bump::new();
     let source = r#"
 <art title="Button" component="./Button.vue">
   <variant name="Primary">
@@ -52,29 +51,32 @@ fn transform_multiple_variants() {
 </art>
 "#;
 
-    insta::with_settings!({ snapshot_path => "../snapshots" }, {
-        insta::assert_debug_snapshot!("transform_multiple_variants", transform(source));
-    });
+    let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
+    let csf = transform_to_csf(&art);
+
+    insta::assert_debug_snapshot!(csf);
 }
 
 #[test]
-fn transform_preserves_script_context_for_storybook() {
+fn test_transform_preserves_script_setup_fixtures() {
+    let allocator = Bump::new();
     let source = r#"
 <script setup lang="ts">
+import MoshiDetailCard from './MoshiDetailCard.vue';
 import {
   base,
   preparing,
   finished,
-} from "./fixtures";
-import type { FixtureShape } from "./types";
-
-const notSucceeded: FixtureShape = { id: "not-succeeded" };
+  notSucceeded,
+} from './fixtures';
 
 defineArt("./MoshiDetailCard.vue", {
-  title: "MoshiDetailCard",
+  title: "Moshi Detail Card",
   category: "Features/MoshiDetail",
   tags: ["moshi", "detail"],
 });
+
+const localFixture = { id: "local" };
 </script>
 
 <art>
@@ -82,33 +84,23 @@ defineArt("./MoshiDetailCard.vue", {
     <MoshiDetailCard :moshi-with-student="base" />
   </variant>
   <variant name="Preparing">
-    <MoshiDetailCard :moshi-with-student="preparing" />
-  </variant>
-  <variant name="Finished">
-    <MoshiDetailCard :moshi-with-student="finished" />
-  </variant>
-  <variant name="Not Succeeded">
-    <MoshiDetailCard :moshi-with-student="notSucceeded" />
+    <MoshiDetailCard :moshi-with-student="preparing" :fallback="localFixture" />
   </variant>
 </art>
 "#;
 
-    let csf = transform(source);
+    let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
+    let csf = transform_to_csf(&art);
 
-    assert!(
-        csf.code
-            .contains("import {\n  base,\n  preparing,\n  finished,\n} from \"./fixtures\";")
-    );
-    assert!(
-        csf.code
-            .contains("import type { FixtureShape } from \"./types\";")
-    );
-    assert!(csf.code.contains("const notSucceeded: FixtureShape"));
-    assert!(!csf.code.contains("defineArt("));
-    assert!(
-        csf.code
-            .contains("return { args, base, finished, notSucceeded, preparing };")
-    );
+    assert!(csf.code.contains(
+        "import {\n  base,\n  preparing,\n  finished,\n  notSucceeded,\n} from './fixtures';"
+    ));
+    assert!(!csf.code.contains("import {\n\nconst"));
+    assert!(!csf.code.contains("defineArt"));
+    assert!(csf.code.contains("const localFixture = { id: \"local\" };"));
+    assert!(csf.code.contains(
+        "return { args, MoshiDetailCard, base, finished, localFixture, notSucceeded, preparing };"
+    ));
 }
 
 #[test]
