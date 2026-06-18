@@ -10,6 +10,28 @@ fn write_vite_bin(root: &Path) -> PathBuf {
     vite_bin
 }
 
+fn write_musea_vite_setup(root: &Path) {
+    fs::write(
+        root.join("package.json"),
+        r#"{
+  "devDependencies": {
+    "@vizejs/vite-plugin-musea": "0.236.0"
+  }
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        root.join("vite.config.ts"),
+        r#"import { musea } from "@vizejs/vite-plugin-musea";
+
+export default {
+  plugins: [musea()],
+};
+"#,
+    )
+    .unwrap();
+}
+
 #[test]
 fn resolves_vite_binary_from_project_ancestors() {
     let temp = tempfile::tempdir().unwrap();
@@ -24,6 +46,7 @@ fn resolves_vite_binary_from_project_ancestors() {
 fn serve_plan_defaults_to_vite_dev_with_gallery_route() {
     let temp = tempfile::tempdir().unwrap();
     let vite_bin = write_vite_bin(temp.path());
+    write_musea_vite_setup(temp.path());
 
     let plan = create_serve_plan(
         &ServeArgs {
@@ -47,6 +70,24 @@ fn serve_plan_defaults_to_vite_dev_with_gallery_route() {
             "/__musea__"
         ]
     );
+}
+
+#[test]
+fn serve_plan_rejects_missing_musea_vite_plugin_setup() {
+    let temp = tempfile::tempdir().unwrap();
+    write_vite_bin(temp.path());
+    fs::write(
+        temp.path().join("vite.config.ts"),
+        "export default { plugins: [] }",
+    )
+    .unwrap();
+
+    let error = create_serve_plan(&ServeArgs::default(), temp.path()).unwrap_err();
+
+    assert!(error.contains("Musea is not configured for this Vite project"));
+    assert!(error.contains("@vizejs/vite-plugin-musea"));
+    assert!(error.contains("dependency: missing"));
+    assert!(error.contains("does not import or call musea()"));
 }
 
 #[test]
@@ -74,6 +115,7 @@ fn serve_plan_rejects_static_build_with_actionable_message() {
 fn serve_plan_supports_strict_port_alias_for_vite() {
     let temp = tempfile::tempdir().unwrap();
     let vite_bin = write_vite_bin(temp.path());
+    write_musea_vite_setup(temp.path());
 
     let plan = create_serve_plan(
         &ServeArgs {
