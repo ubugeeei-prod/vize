@@ -625,8 +625,8 @@ const antDesignDomCompiled = compileFile(
 
 assert.match(
   antDesignDomCompiled.code,
-  /_create(?:Block|VNode)\(Form\.Item/,
-  "DOM builds should compile dotted component tags to direct setup member expressions",
+  /(?=[\s\S]*_create(?:Block|VNode)\(_unref\(Form\)\.Item)(?=[\s\S]*_create(?:Block|VNode)\(_unref\(Input\))/,
+  "DOM builds should unref setup component tags while preserving member access",
 );
 assert.doesNotMatch(
   antDesignDomCompiled.code,
