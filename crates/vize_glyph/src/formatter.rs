@@ -188,13 +188,13 @@ impl<'a> GlyphFormatter<'a> {
         let trimmed = block.content.trim();
         let source_type =
             script::source_type_for_script_lang(block.lang.as_ref().map(|lang| lang.as_ref()));
-        let formatted_content = script::format_script_content_with_source_type(
+        let formatted_content = script::format_script_content_stable(
             trimmed,
             self.options,
             self.allocator,
             source_type,
         )
-        .unwrap_or_else(|_| trimmed.to_compact_string());
+        .unwrap_or_else(|| trimmed.to_compact_string());
 
         // Build the opening tag using byte operations
         output.extend_from_slice(b"<script");

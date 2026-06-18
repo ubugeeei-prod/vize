@@ -2,12 +2,13 @@
 ///
 /// Lines inside `<pre>`, `<textarea>`, `v-pre`, multi-line comments, and
 /// literal multi-line attribute values are raw. Directive expression
-/// continuation lines are formatter output, so they still get SFC indentation.
+/// continuation lines are formatter output, so they still get SFC indentation
+/// unless the value starts on the following line and was preserved verbatim.
 pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
     let mut mask = vec![false; lines.len()];
     let mut depth_stack: Vec<&'static str> = Vec::new();
     let mut in_tag = false;
-    let mut open_quote: Option<(u8, bool)> = None;
+    let mut open_quote: Option<OpenQuote> = None;
     let mut pending_raw_tag: Option<&'static str> = None;
     let mut in_comment = false;
     const TAGS: [(&str, &str, &str); 2] = [
@@ -16,7 +17,10 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
     ];
 
     for (i, line) in lines.iter().enumerate() {
-        if !depth_stack.is_empty() || open_quote.is_some_and(|(_, raw)| raw) || in_comment {
+        if !depth_stack.is_empty()
+            || open_quote.is_some_and(OpenQuote::marks_line_raw)
+            || in_comment
+        {
             mask[i] = true;
         }
 
@@ -32,8 +36,18 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
                 }
                 continue;
             }
-            if let Some((quote, _)) = open_quote {
-                if bytes[cursor] == quote {
+            if let Some(mut quote) = open_quote {
+                if quote.directive
+                    && !quote.raw
+                    && bytes[cursor] == b'`'
+                    && !is_escaped(bytes, cursor)
+                {
+                    quote.in_template_literal = !quote.in_template_literal;
+                    open_quote = Some(quote);
+                    cursor += 1;
+                    continue;
+                }
+                if bytes[cursor] == quote.quote && !quote.in_template_literal {
                     open_quote = None;
                 }
                 cursor += 1;
@@ -42,7 +56,7 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
             if in_tag {
                 match bytes[cursor] {
                     b'"' | b'\'' => {
-                        open_quote = Some((bytes[cursor], literal_attr_quote(bytes, cursor)));
+                        open_quote = Some(OpenQuote::new(bytes, cursor));
                     }
                     b'>' => {
                         in_tag = false;
@@ -104,7 +118,52 @@ pub(super) fn compute_raw_line_mask(lines: &[&[u8]]) -> Vec<bool> {
 }
 
 fn literal_attr_quote(line: &[u8], quote_pos: usize) -> bool {
-    attr_name_before_quote(line, quote_pos).is_none_or(|name| !directive_expr_attr(name))
+    attr_name_before_quote(line, quote_pos).is_none_or(|name| {
+        !directive_expr_attr(name) || verbatim_multiline_directive_attr(name, line, quote_pos)
+    })
+}
+
+#[derive(Clone, Copy)]
+struct OpenQuote {
+    quote: u8,
+    raw: bool,
+    directive: bool,
+    in_template_literal: bool,
+}
+
+impl OpenQuote {
+    fn new(line: &[u8], quote_pos: usize) -> Self {
+        let attr_name = attr_name_before_quote(line, quote_pos);
+        Self {
+            quote: line[quote_pos],
+            raw: literal_attr_quote(line, quote_pos),
+            directive: attr_name.is_some_and(directive_expr_attr),
+            in_template_literal: false,
+        }
+    }
+
+    fn marks_line_raw(self) -> bool {
+        self.raw || self.in_template_literal
+    }
+}
+
+fn verbatim_multiline_directive_attr(name: &[u8], line: &[u8], quote_pos: usize) -> bool {
+    name == b"v-for" || value_starts_on_following_line(line, quote_pos)
+}
+
+fn value_starts_on_following_line(line: &[u8], quote_pos: usize) -> bool {
+    line.get(quote_pos + 1..)
+        .is_none_or(|tail| tail.iter().all(|b| matches!(b, b' ' | b'\t' | b'\r')))
+}
+
+fn is_escaped(line: &[u8], pos: usize) -> bool {
+    let mut backslashes = 0;
+    let mut cursor = pos;
+    while cursor > 0 && line[cursor - 1] == b'\\' {
+        backslashes += 1;
+        cursor -= 1;
+    }
+    backslashes % 2 == 1
 }
 
 fn attr_name_before_quote(line: &[u8], quote_pos: usize) -> Option<&[u8]> {

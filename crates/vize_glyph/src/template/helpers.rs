@@ -61,3 +61,26 @@ pub(crate) fn is_void_element_str(tag: &str) -> bool {
     ];
     matches!(tag.len(), 2..=6) && VOID_ELEMENTS.iter().any(|v| tag.eq_ignore_ascii_case(v))
 }
+
+pub(crate) fn template_literal_state_after_line_from(
+    mut in_template_literal: bool,
+    line: &str,
+) -> bool {
+    let bytes = line.as_bytes();
+    for (index, byte) in bytes.iter().enumerate() {
+        if *byte == b'`' && !is_escaped(bytes, index) {
+            in_template_literal = !in_template_literal;
+        }
+    }
+    in_template_literal
+}
+
+fn is_escaped(line: &[u8], pos: usize) -> bool {
+    let mut backslashes = 0;
+    let mut cursor = pos;
+    while cursor > 0 && line[cursor - 1] == b'\\' {
+        backslashes += 1;
+        cursor -= 1;
+    }
+    backslashes % 2 == 1
+}

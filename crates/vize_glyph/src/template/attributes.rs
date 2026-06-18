@@ -1,10 +1,7 @@
-//! Attribute parsing, sorting, and rendering.
-//!
-//! Provides the `ParsedAttribute` type and functions for sorting attributes
-//! according to Vue style guide order, plus rendering them back to strings.
-
 use crate::options::{AttributeSortOrder, FormatOptions};
 use vize_carton::{String, ToCompactString};
+
+use super::helpers::template_literal_state_after_line_from;
 
 /// Parsed attribute with structured information for sorting and rendering.
 #[derive(Debug, Clone)]
@@ -17,7 +14,6 @@ pub(crate) struct ParsedAttribute {
     pub(crate) priority: u8,
     /// Original index in the source for stable sorting
     pub(crate) original_index: usize,
-    /// Whether multiline value lines should be indented from the attribute line.
     pub(crate) indent_multiline_value: bool,
 }
 
@@ -232,8 +228,11 @@ fn write_rendered_attribute(
     indent_continuation: bool,
 ) {
     let mut lines = attr.split('\n');
+    let mut in_template_literal = false;
     if let Some(first) = lines.next() {
-        output.extend_from_slice(first.trim_end_matches('\r').as_bytes());
+        let first = first.trim_end_matches('\r');
+        output.extend_from_slice(first.as_bytes());
+        in_template_literal = template_literal_state_after_line_from(false, first);
     }
 
     for line in lines {
@@ -241,7 +240,14 @@ fn write_rendered_attribute(
         if indent_continuation {
             write_indent(output, indent, continuation_depth);
         }
-        output.extend_from_slice(line.trim_end_matches('\r').as_bytes());
+        let line = line.trim_end_matches('\r');
+        let line = if indent_continuation && in_template_literal {
+            line.trim_start()
+        } else {
+            line
+        };
+        output.extend_from_slice(line.as_bytes());
+        in_template_literal = template_literal_state_after_line_from(in_template_literal, line);
     }
 }
 

@@ -72,6 +72,19 @@ pub fn format_script_content_with_source_type(
     Ok(formatted.into())
 }
 
+pub(crate) fn format_script_content_stable(
+    source: &str,
+    options: &FormatOptions,
+    allocator: &Allocator,
+    source_type: SourceType,
+) -> Option<String> {
+    let first =
+        format_script_content_with_source_type(source, options, allocator, source_type).ok()?;
+    format_script_content_with_source_type(first.as_str(), options, allocator, source_type)
+        .ok()
+        .or(Some(first))
+}
+
 pub(crate) fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {
     match lang {
         Some("jsx") => SourceType::jsx().with_module(true),

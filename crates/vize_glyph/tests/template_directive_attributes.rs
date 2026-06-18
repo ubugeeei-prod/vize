@@ -71,3 +71,70 @@ fn sfc_single_multiline_directive_attribute_is_idempotent() {
         first.code
     );
 }
+
+#[test]
+fn sfc_verbatim_multiline_directive_attribute_is_idempotent() {
+    let source = r#"<template>
+  <QBtn
+    @click.stop="
+      selectWord(key);
+      editWord();
+    "
+  />
+</template>
+"#;
+    let options = FormatOptions::default();
+    let first = format_sfc(source, &options).unwrap();
+    let second = format_sfc(&first.code, &options).unwrap();
+    let third = format_sfc(&second.code, &options).unwrap();
+
+    assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+    assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+}
+
+#[test]
+fn sfc_multiline_v_for_collection_is_idempotent() {
+    let source = r#"<template>
+  <template
+    v-for="(engineId, engineIndex) in sortedEngineInfos.map(
+      (engineInfo) => engineInfo.uuid,
+    )"
+    :key="engineIndex"
+  >
+    <span>{{ engineId }}</span>
+  </template>
+</template>
+"#;
+    let options = FormatOptions::default();
+    let first = format_sfc(source, &options).unwrap();
+    let second = format_sfc(&first.code, &options).unwrap();
+    let third = format_sfc(&second.code, &options).unwrap();
+
+    assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+    assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+}
+
+#[test]
+fn sfc_multiline_template_literal_directive_attribute_is_idempotent() {
+    let source = r#"<template>
+  <NuxtLink
+    :class="isSmallScreen
+      ? `
+        w-full
+        px5 sm:mxa
+      `
+      : `
+        w-fit rounded-3
+        px2 mx3 sm:mxa
+      `"
+  />
+</template>
+"#;
+    let options = FormatOptions::default();
+    let first = format_sfc(source, &options).unwrap();
+    let second = format_sfc(&first.code, &options).unwrap();
+    let third = format_sfc(&second.code, &options).unwrap();
+
+    assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+    assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+}
