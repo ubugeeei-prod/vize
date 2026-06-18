@@ -15,8 +15,8 @@ pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::emits::{emit_emit_props_helper, emit_emits_type};
 use self::generics::{generic_injection_point, references_any_identifier};
 use self::imports::{
-    collect_imported_names, emit_global_component_stubs, emit_reference_type_directives,
-    extract_declared_name,
+    collect_imported_names, collect_setup_binding_anchor_names, emit_global_component_stubs,
+    emit_reference_type_directives, extract_declared_name,
 };
 use self::options_api::{
     find_default_export_targets, find_options_api_props, generate_options_api_bridge,
@@ -814,24 +814,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // narrowed to template-referenced names so user TS6133 can surface.
             if !summary.bindings.bindings.is_empty() {
                 let mut first = true;
-                let mut binding_names: Vec<&str> =
-                    if let Some(template_referenced_names) = template_referenced_names.as_ref() {
-                        summary
-                            .bindings
-                            .bindings
-                            .keys()
-                            .map(|name| name.as_str())
-                            .filter(|name| template_referenced_names.contains(*name))
-                            .collect()
-                    } else {
-                        summary
-                            .bindings
-                            .bindings
-                            .keys()
-                            .map(|name| name.as_str())
-                            .collect()
-                    };
-                binding_names.sort_unstable();
+                let binding_names = profile!(
+                    "canon.virtual_ts.collect_setup_binding_anchor_names",
+                    collect_setup_binding_anchor_names(
+                        summary,
+                        script_content,
+                        template_referenced_names.as_ref()
+                    )
+                );
                 if !binding_names.is_empty() {
                     append!(ts, "\n  // {reference_setup_bindings_comment}\n  ");
                 }
