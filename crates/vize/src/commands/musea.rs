@@ -208,34 +208,11 @@ fn is_nuxt_project_root(root: &Path) -> bool {
     ["nuxt.config.ts", "nuxt.config.mts", "nuxt.config.js"]
         .into_iter()
         .any(|file_name| root.join(file_name).exists())
-        || package_json_has_dependency(root, "nuxt")
-}
-
-fn package_json_has_dependency(root: &Path, dependency: &str) -> bool {
-    let Ok(content) = fs::read_to_string(root.join("package.json")) else {
-        return false;
-    };
-    let Ok(value) = serde_json::from_str::<serde_json::Value>(&content) else {
-        return false;
-    };
-
-    [
-        "dependencies",
-        "devDependencies",
-        "peerDependencies",
-        "optionalDependencies",
-    ]
-    .into_iter()
-    .any(|section| {
-        value
-            .get(section)
-            .and_then(serde_json::Value::as_object)
-            .is_some_and(|dependencies| dependencies.contains_key(dependency))
-    })
+        || setup::package_json_has_dependency(root, "nuxt")
 }
 
 fn has_vize_nuxt_integration(root: &Path) -> bool {
-    package_json_has_dependency(root, "@vizejs/nuxt")
+    setup::package_json_has_dependency(root, "@vizejs/nuxt")
         || root
             .join("node_modules")
             .join("@vizejs")

@@ -1,4 +1,3 @@
-use super::package_json_has_dependency;
 use std::fs;
 use std::path::{Path, PathBuf};
 use vize_carton::{String, cstr};
@@ -66,4 +65,27 @@ fn vite_config_mentions_musea(path: &Path) -> bool {
         return false;
     };
     content.contains(MUSEA_VITE_PLUGIN) || content.contains("musea(")
+}
+
+pub(super) fn package_json_has_dependency(root: &Path, dependency: &str) -> bool {
+    let Ok(content) = fs::read_to_string(root.join("package.json")) else {
+        return false;
+    };
+    let Ok(value) = serde_json::from_str::<serde_json::Value>(&content) else {
+        return false;
+    };
+
+    [
+        "dependencies",
+        "devDependencies",
+        "peerDependencies",
+        "optionalDependencies",
+    ]
+    .into_iter()
+    .any(|section| {
+        value
+            .get(section)
+            .and_then(serde_json::Value::as_object)
+            .is_some_and(|dependencies| dependencies.contains_key(dependency))
+    })
 }
