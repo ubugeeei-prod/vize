@@ -174,7 +174,7 @@ fn is_identifier_byte(byte: u8) -> bool {
 }
 
 fn is_relative_specifier(specifier: &str) -> bool {
-    specifier.starts_with("./") || specifier.starts_with("../")
+    matches!(specifier, "." | "..") || specifier.starts_with("./") || specifier.starts_with("../")
 }
 
 /// Resolve a relative module specifier against `dir` to an existing on-disk

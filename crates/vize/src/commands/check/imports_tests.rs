@@ -72,6 +72,42 @@ fn ignores_bare_and_missing_specifiers() {
 }
 
 #[test]
+fn collects_current_directory_index_imports() {
+    let root = std::env::temp_dir().join(cstr!("vize-imports-dot-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src/meter")).unwrap();
+
+    let entry = write(
+        &root,
+        "src/meter/AfMeterBar.vue",
+        r#"<script setup lang="ts">
+import { calcPercentage } from "."
+
+const percent = calcPercentage(2, 4)
+void percent
+</script>
+"#,
+    );
+    let index = write(
+        &root,
+        "src/meter/index.ts",
+        "export const calcPercentage = (num: number, max: number) => num / max\n",
+    );
+
+    let discovered = collect_transitive_local_imports(
+        &[entry],
+        &root,
+        &mut CanonicalPathCache::default(),
+        false,
+        None,
+    );
+
+    assert_eq!(discovered, vec![canonicalize_non_verbatim(&index)]);
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn jsx_imports_are_resolved_only_when_jsx_typecheck_is_enabled() {
     let root = std::env::temp_dir().join(cstr!("vize-imports-jsx-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&root);
