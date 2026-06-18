@@ -3,7 +3,7 @@
 use clap::{Args, Subcommand};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 use vize_carton::{String, ToCompactString, cstr};
 
 #[derive(Args)]
@@ -36,12 +36,16 @@ pub struct ServeArgs {
     pub host: String,
 
     /// Stories directory
-    #[arg(short, long)]
+    #[arg(short, long, hide = true)]
     pub stories: Option<PathBuf>,
 
     /// Open browser automatically
     #[arg(long)]
     pub open: bool,
+
+    /// Fail instead of trying another port when the selected port is unavailable
+    #[arg(long, visible_alias = "strictPort")]
+    pub strict_port: bool,
 
     /// Run `vite build` instead of `vite dev`
     #[arg(long)]
@@ -55,6 +59,7 @@ impl Default for ServeArgs {
             host: cstr!("localhost"),
             stories: None,
             open: false,
+            strict_port: false,
             build: false,
         }
     }
@@ -109,6 +114,9 @@ fn run_serve(args: ServeArgs) {
 
     let status = Command::new(&plan.program)
         .args(plan.args.iter().map(|arg| arg.as_str()))
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
         .status();
     match status {
         Ok(status) => {
@@ -162,6 +170,9 @@ fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> 
     if args.open && !args.build {
         vite_args.push(cstr!("--open"));
         vite_args.push(cstr!("/__musea__"));
+    }
+    if args.strict_port && !args.build {
+        vite_args.push(cstr!("--strictPort"));
     }
 
     Ok(ServePlan {
@@ -348,121 +359,4 @@ export default defineConfig({
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{ServeArgs, create_serve_plan, resolve_vite_binary, vite_bin_names};
-    use std::fs;
-    use std::path::{Path, PathBuf};
-
-    fn write_vite_bin(root: &Path) -> PathBuf {
-        let bin_dir = root.join("node_modules").join(".bin");
-        fs::create_dir_all(&bin_dir).unwrap();
-        let vite_bin = bin_dir.join(vite_bin_names()[0]);
-        fs::write(&vite_bin, "").unwrap();
-        vite_bin
-    }
-
-    #[test]
-    fn resolves_vite_binary_from_project_ancestors() {
-        let temp = tempfile::tempdir().unwrap();
-        let vite_bin = write_vite_bin(temp.path());
-        let nested = temp.path().join("packages").join("app");
-        fs::create_dir_all(&nested).unwrap();
-
-        assert_eq!(resolve_vite_binary(&nested), Some(vite_bin));
-    }
-
-    #[test]
-    fn serve_plan_defaults_to_vite_dev_with_gallery_route() {
-        let temp = tempfile::tempdir().unwrap();
-        let vite_bin = write_vite_bin(temp.path());
-
-        let plan = create_serve_plan(
-            &ServeArgs {
-                open: true,
-                ..ServeArgs::default()
-            },
-            temp.path(),
-        )
-        .unwrap();
-
-        assert_eq!(plan.program, vite_bin);
-        assert_eq!(
-            plan.args,
-            [
-                "dev",
-                "--host",
-                "localhost",
-                "--port",
-                "6006",
-                "--open",
-                "/__musea__"
-            ]
-        );
-    }
-
-    #[test]
-    fn serve_plan_supports_vite_build() {
-        let temp = tempfile::tempdir().unwrap();
-        let vite_bin = write_vite_bin(temp.path());
-
-        let plan = create_serve_plan(
-            &ServeArgs {
-                build: true,
-                open: true,
-                ..ServeArgs::default()
-            },
-            temp.path(),
-        )
-        .unwrap();
-
-        assert_eq!(plan.program, vite_bin);
-        assert_eq!(plan.args, ["build"]);
-    }
-
-    #[test]
-    fn serve_plan_rejects_nuxt_project_without_direct_vite() {
-        let temp = tempfile::tempdir().unwrap();
-        fs::write(temp.path().join("nuxt.config.ts"), "export default {}").unwrap();
-        fs::write(
-            temp.path().join("package.json"),
-            r#"{
-  "dependencies": {
-    "@vizejs/nuxt": "0.162.0",
-    "nuxt": "4.3.1"
-  }
-}"#,
-        )
-        .unwrap();
-
-        let error = create_serve_plan(
-            &ServeArgs {
-                build: true,
-                ..ServeArgs::default()
-            },
-            temp.path(),
-        )
-        .unwrap_err();
-
-        assert!(error.contains("detected a Nuxt project"));
-        assert!(error.contains("standalone `vize musea` command only runs direct Vite projects"));
-        assert!(error.contains("nuxi build"));
-        assert!(error.contains("/__musea__/"));
-    }
-
-    #[test]
-    fn serve_plan_rejects_silent_stories_option() {
-        let temp = tempfile::tempdir().unwrap();
-        write_vite_bin(temp.path());
-
-        let error = create_serve_plan(
-            &ServeArgs {
-                stories: Some(PathBuf::from("stories")),
-                ..ServeArgs::default()
-            },
-            temp.path(),
-        )
-        .unwrap_err();
-
-        assert!(error.contains("--stories is not supported"));
-    }
-}
+mod tests;
