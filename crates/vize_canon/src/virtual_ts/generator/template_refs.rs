@@ -1,11 +1,8 @@
-//! Template ref and Options API setup-return unwrapping.
-
 use vize_carton::config::VueVersion;
 use vize_carton::{FxHashSet, String, append};
-use vize_croquis::{BindingType, Croquis, OptionGroup};
+use vize_croquis::{BindingType, Croquis};
 
 use super::legacy_vue2::ref_unwrap_helper;
-use super::options_api_support::is_safe_value_identifier;
 use super::spans::is_local_setup_binding;
 
 pub(super) struct TemplateRefUnwraps {
@@ -18,13 +15,15 @@ impl TemplateRefUnwraps {
         summary: &Croquis,
         options_api: bool,
         template_referenced_names: Option<&FxHashSet<String>>,
+        script_content: Option<&str>,
     ) -> Self {
-        let mut options_api_setup_bindings =
-            collect_options_api_setup_bindings(summary, options_api);
-        if let Some(template_referenced_names) = template_referenced_names {
-            options_api_setup_bindings
-                .retain(|name| template_referenced_names.contains(name.as_str()));
-        }
+        let options_api_setup_bindings =
+            crate::options_api_setup_spread::collect_template_setup_bindings(
+                summary,
+                options_api,
+                template_referenced_names,
+                script_content,
+            );
         let options_api_setup_binding_names: FxHashSet<&str> = options_api_setup_bindings
             .iter()
             .map(|name| name.as_str())
@@ -96,30 +95,4 @@ impl TemplateRefUnwraps {
             append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
         }
     }
-}
-
-fn collect_options_api_setup_bindings(summary: &Croquis, options_api: bool) -> Vec<String> {
-    if !options_api || summary.bindings.is_script_setup {
-        return Vec::new();
-    }
-
-    let Some(descriptor) = summary.options_descriptor.as_ref() else {
-        return Vec::new();
-    };
-
-    let mut names: Vec<String> = descriptor
-        .members_in(OptionGroup::Setup)
-        .map(|member| member.name.as_str())
-        .filter(|name| {
-            is_safe_value_identifier(name)
-                && matches!(
-                    summary.bindings.get(name),
-                    Some(BindingType::SetupMaybeRef | BindingType::SetupRef)
-                )
-        })
-        .map(String::from)
-        .collect();
-    names.sort_unstable();
-    names.dedup();
-    names
 }

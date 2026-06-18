@@ -714,7 +714,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     }
 
     setup_props_plan.emit_artifact(&mut ts, summary);
-
     // Template scope (nested inside setup)
     if has_template_scope && check_options.check_template_bindings {
         profile!("canon.virtual_ts.emit_template_scope", {
@@ -724,6 +723,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 summary,
                 options_api,
                 template_referenced_names.as_ref(),
+                script_content,
             );
             template_ref_unwraps.emit_type_captures(&mut ts);
 

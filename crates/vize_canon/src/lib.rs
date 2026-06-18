@@ -50,6 +50,7 @@ mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;
 pub mod intelligence;
+mod options_api_setup_spread;
 mod script_parse;
 pub mod sfc_typecheck;
 pub mod source_map;
@@ -64,7 +65,6 @@ pub mod legacy;
 // Batch type checking module (requires native feature)
 #[cfg(feature = "native")]
 pub mod batch;
-
 #[cfg(feature = "native")]
 pub mod corsa_bridge;
 

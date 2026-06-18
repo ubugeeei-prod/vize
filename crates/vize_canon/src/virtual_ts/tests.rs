@@ -9,6 +9,7 @@ use vize_carton::config::VueVersion;
 mod define_props_scope;
 mod no_check_template_bindings;
 mod options_api_props_spread;
+mod options_api_setup_spread;
 mod unused_refs;
 mod vif_chain;
 fn assert_virtual_ts_snapshot(name: &str, value: &str) {
@@ -26,7 +27,6 @@ fn test_vue_setup_helpers_are_actual_functions() {
 
 #[test]
 fn test_vue_template_context() {
-    // Template context should contain Vue instance properties
     let ctx = generate_template_context(&VirtualTsOptions::default(), VueVersion::V3, false);
     assert_virtual_ts_snapshot("virtual_ts_vue_template_context", ctx.as_str());
 }

@@ -4,11 +4,11 @@
 mod emit_props;
 #[cfg(feature = "legacy")]
 mod options_api_required_props;
+mod options_api_setup_spread;
 use super::{
     SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity, type_check_sfc,
     type_check_sfc_with_options_api,
 };
-
 fn stable_snapshot_result(mut result: SfcTypeCheckResult) -> SfcTypeCheckResult {
     if result.analysis_time_ms.is_some() {
         result.analysis_time_ms = Some(0.0);
