@@ -8,9 +8,9 @@ Usage: fmt [OPTIONS] [PATTERNS]...
 
 Arguments:
   [PATTERNS]...
-          Glob pattern(s) to match .vue, .jsx, and .tsx files
+          Glob pattern(s) to match .vue, .js, .ts, .jsx, and .tsx files
 
-          [default: ./**/*.vue ./**/*.jsx ./**/*.tsx]
+          [default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx]
 
 Options:
       --check
