@@ -5,7 +5,6 @@
 //! `.d.ts` output all share the same virtual project.
 
 #![allow(clippy::disallowed_macros)]
-
 use std::{
     path::{Path, PathBuf},
     time::{Duration, Instant},
@@ -29,7 +28,6 @@ use super::{
         resolve_tsconfig_for_files,
     },
 };
-
 mod collect;
 mod diagnostics;
 mod global_components;
@@ -39,7 +37,6 @@ mod resolve;
 mod socket;
 #[cfg(test)]
 mod tests;
-
 use collect::collect_check_files;
 use diagnostics::{
     emit_json_output, is_reported, is_suppressed_false_positive, render_diagnostics,
@@ -53,7 +50,8 @@ use nuxt_tsconfig::resolve_checker_tsconfig_path;
 #[cfg(test)]
 use nuxt_tsconfig::write_nuxt_fallback_tsconfig;
 use resolve::{
-    display_path, resolve_declaration_emit_options, resolve_from_config_dir, resolve_project_root,
+    display_path, exit_if_inputs_outside_root, explicit_input_root,
+    resolve_declaration_emit_options, resolve_from_config_dir, resolve_project_root,
     resolve_tsconfig_path, validate_corsa_server_count,
 };
 #[cfg(test)]
@@ -150,6 +148,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
+    let explicit_input_root = explicit_input_root(&project_root, &cwd);
     // Run-scoped caches: tsconfig chains are parsed (and their include/exclude
     // globs compiled) once per run, and each unique path is canonicalized at
     // most once across reported-file bookkeeping, diagnostic filtering, and
@@ -229,7 +228,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         files.sort();
         files.dedup();
     }
-
+    let validate_inputs = !args.patterns.is_empty() && tsconfig_path.is_some();
+    exit_if_inputs_outside_root(&explicit_input_root, &files, validate_inputs);
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);

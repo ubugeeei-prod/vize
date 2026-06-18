@@ -107,6 +107,41 @@ pub(super) fn resolve_tsconfig_path(
     None
 }
 
+pub(super) fn explicit_input_root(project_root: &Path, cwd: &Path) -> PathBuf {
+    let cwd = vize_carton::path::canonicalize_non_verbatim(cwd);
+    if project_root.starts_with(&cwd) {
+        cwd
+    } else {
+        project_root.to_path_buf()
+    }
+}
+
+pub(super) fn exit_if_inputs_outside_root(root: &Path, files: &[PathBuf], enabled: bool) {
+    if !enabled {
+        return;
+    }
+    if let Err(error) = validate_explicit_inputs_in_root(root, files) {
+        eprintln!("\x1b[31mError:\x1b[0m {error}");
+        std::process::exit(1);
+    }
+}
+
+fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<(), String> {
+    let root = vize_carton::path::canonicalize_non_verbatim(root);
+    for file in files {
+        let path = vize_carton::path::canonicalize_non_verbatim(file);
+        if !path.starts_with(&root) {
+            return Err(format!(
+                "explicit check input `{}` is outside project root `{}`.",
+                path.display(),
+                root.display()
+            )
+            .into());
+        }
+    }
+    Ok(())
+}
+
 pub(super) fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
     let mut current = if path.is_dir() {
         Some(path)
