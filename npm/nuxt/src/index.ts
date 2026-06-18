@@ -6,8 +6,6 @@ import {
   getNuxtVersion,
   isNuxt2,
 } from "@nuxt/kit";
-import vize from "@vizejs/vite-plugin";
-import { musea } from "@vizejs/vite-plugin-musea";
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
 import { injectNuxtI18nHelpers } from "./i18n";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
@@ -269,7 +267,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
       route: { path: "/" },
     },
   },
-  setup(options, nuxt) {
+  async setup(options, nuxt) {
     const resolver = createResolver(import.meta.url);
     const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
     const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
@@ -297,6 +295,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
     );
     const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
     if (compilerOptions !== false) {
+      const { default: vize } = await import("@vizejs/vite-plugin");
       nuxt.options.vite ||= {};
       nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
       nuxt.options.vite.plugins.push(vize(compilerOptions));
@@ -562,6 +561,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
     // via Nuxt's own Vite plugins. Adding nuxtMusea globally would shadow
     // Nuxt's #imports resolution and break the app.
     if (museaOptions !== false && supportsViteCompiler) {
+      const { musea } = await import("@vizejs/vite-plugin-musea");
       const museaBasePath =
         "basePath" in museaOptions
           ? ((museaOptions as Record<string, unknown>).basePath as string)
