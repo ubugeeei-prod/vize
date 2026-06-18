@@ -136,7 +136,7 @@ fn extract_emits_from_object(
     }
 }
 
-pub(super) fn extract_runtime_emit_payload_type(
+pub(in crate::script_parser) fn extract_runtime_emit_payload_type(
     value: &Expression<'_>,
     source: &str,
 ) -> Option<CompactString> {

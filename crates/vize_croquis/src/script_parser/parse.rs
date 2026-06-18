@@ -194,6 +194,7 @@ pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> 
     process::collect_options_api_component_metadata(
         &mut result,
         &ret.program,
+        source,
         options.options_api,
         options.legacy_vue2,
     );

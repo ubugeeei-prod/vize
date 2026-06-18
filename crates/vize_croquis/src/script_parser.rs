@@ -38,3 +38,6 @@ mod tests;
 
 #[cfg(test)]
 mod props_destructure_tests;
+
+#[cfg(test)]
+mod options_api_emits_tests;
