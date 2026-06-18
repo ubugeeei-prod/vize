@@ -36,6 +36,7 @@ impl MaterializeLock {
         let file = fs::OpenOptions::new()
             .create(true)
             .read(true)
+            .truncate(false)
             .write(true)
             .open(&path)?;
         lock_file(&file)?;
