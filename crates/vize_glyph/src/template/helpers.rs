@@ -41,7 +41,7 @@ pub(crate) fn parse_closing_tag(source: &[u8], start: usize) -> Option<(String, 
 /// Check if a byte is a valid tag name character.
 #[inline(always)]
 pub(crate) fn is_tag_name_char(b: u8) -> bool {
-    matches!(b, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'-' | b'_' | b':')
+    matches!(b, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'-' | b'_' | b':' | b'.')
 }
 
 /// Check if a byte is whitespace.
