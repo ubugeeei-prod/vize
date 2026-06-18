@@ -157,8 +157,7 @@ test("vite plugin publishes TypeScript client types for Vue imports", () => {
     import: "./dist/index.mjs",
     default: "./dist/index.mjs",
   });
-  assert.ok(packageJson.files?.includes("client.d.ts"));
-  assert.ok(packageJson.files?.includes("index.d.mts"));
+  assert.ok(packageJson.files?.includes("client.d.ts") && packageJson.files?.includes("index.d.mts"));
   assert.match(typeEntry, /import "\.\/client\.d\.ts"/);
   assert.match(typeEntry, /from "\.\/dist\/index\.mjs"/);
   assert.match(clientTypes, /declare module "\*\.vue"/);
