@@ -4,6 +4,7 @@ mod generics;
 mod imports;
 mod legacy_vue2;
 mod options_api;
+mod options_api_props_identifiers;
 mod options_api_support;
 mod script_module;
 mod setup_props;
@@ -21,6 +22,7 @@ use self::options_api::{
     find_default_export_targets, find_options_api_props, generate_options_api_bridge,
     generate_options_api_variables,
 };
+use self::options_api_props_identifiers::PropsConstAssertions;
 use self::setup_props::SetupPropsPlan;
 use self::spans::{
     DEFINE_COMPONENT_REF, merge_overlapping_spans, preserved_template_usage,
@@ -41,11 +43,6 @@ use super::{
 use vize_carton::{FxHashMap, FxHashSet, String, append, cstr, profile};
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
 /// Generate virtual TypeScript from Vue SFC analysis.
-///
-/// The generated TypeScript uses proper scope hierarchy:
-/// 1. Module scope: imports only
-/// 2. Setup scope (__setup function): compiler macros + script content
-/// 3. Template scope (nested in setup): template expressions
 ///
 /// This ensures compiler macros like defineProps are ONLY valid in setup scope.
 pub fn generate_virtual_ts(
@@ -224,7 +221,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     if default_export_object.is_some() {
         ts.push_str(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
-
     // Collect all module-level statement spans from croquis analysis once and
     // keep them sorted. Later script-body emission advances an index through
     // this list, so each source line checks only the overlapping tail instead
@@ -479,6 +475,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // causing src_byte_offset drift that incorrectly skips user code.
             let mut src_byte_offset: usize = 0; // offset within script content
             let mut module_span_index = 0usize;
+            let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
             // Script-absolute offset right after the wrapped options object.
             let mut pending_wrap_close: Option<usize> = None;
             // Deferred class-component alias: `(class_end, name)`.
@@ -539,6 +536,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     }
                     pending_wrap_close = None;
                 }
+
+                props_const_assertions.splice_output_line(&mut output_line, line_start);
 
                 // Strip `export` from non-import lines inside setup scope
                 let trimmed_line = output_line.trim_start();

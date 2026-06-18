@@ -3,7 +3,7 @@
 #![cfg(test)]
 mod emit_props;
 #[cfg(feature = "legacy")]
-use super::type_check_sfc_with_legacy_vue2;
+mod options_api_required_props;
 use super::{
     SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity, type_check_sfc,
     type_check_sfc_with_options_api,
@@ -691,7 +691,7 @@ export default {
     );
 
     let options = SfcTypeCheckOptions::new("Legacy.vue");
-    let legacy_result = type_check_sfc_with_legacy_vue2(source, &options);
+    let legacy_result = super::type_check_sfc_with_legacy_vue2(source, &options);
     assert!(
         !legacy_result
             .diagnostics

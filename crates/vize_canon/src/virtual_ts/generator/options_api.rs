@@ -14,10 +14,7 @@ use super::options_api_support::{
     extend_options_api_descriptor_names, is_safe_value_identifier, props_source_from_object,
 };
 use crate::virtual_ts::types::VirtualTsOptions;
-use vize_carton::CompactString;
-use vize_carton::FxHashSet;
-use vize_carton::String;
-use vize_carton::append;
+use vize_carton::{CompactString, FxHashSet, String, append};
 
 // Emit declarations for Options API template bindings
 // (`data`/`computed`/`methods`/`inject`/`setup`/`props`, plus any Nuxt 2 globals
@@ -520,9 +517,9 @@ use crate::virtual_ts::props::OptionsApiPropsSource;
 ///
 /// Returns `None` when there is no resolvable component options object or no
 /// `props:` option (or it is an unrecognized expression form). Object and array
-/// literals are recognized directly; an identifier whose initializer object can
-/// be resolved is not chased here because the runtime prop ctors would not be in
-/// scope inside the emitted `__RuntimePropShape<...>` reference.
+/// literals are recognized directly. Identifier props are deferred through setup
+/// scope so local/imported runtime prop declarations stay in value position
+/// before `__RuntimePropShape<...>` reads them.
 ///
 /// The result feeds canon's real `export type Props` for Options API
 /// components: object form maps through the shared `__RuntimePropShape<...>`
@@ -561,6 +558,8 @@ fn options_api_props_from_expression(
             }
             (!names.is_empty()).then_some(OptionsApiPropsSource::Names(names))
         }
+        Expression::Identifier(identifier) => is_safe_value_identifier(identifier.name.as_str())
+            .then(|| OptionsApiPropsSource::DeferredObject(String::from(identifier.name.as_str()))),
         Expression::ParenthesizedExpression(parenthesized) => {
             options_api_props_from_expression(script, &parenthesized.expression)
         }
@@ -577,7 +576,7 @@ fn options_api_props_from_expression(
     }
 }
 
-fn option_expression_property<'a>(
+pub(super) fn option_expression_property<'a>(
     object: &'a ObjectExpression<'a>,
     key_name: &str,
 ) -> Option<&'a Expression<'a>> {
@@ -592,7 +591,7 @@ fn option_expression_property<'a>(
     })
 }
 
-fn component_options_from_program<'a>(
+pub(super) fn component_options_from_program<'a>(
     program: &'a Program<'a>,
 ) -> Option<&'a ObjectExpression<'a>> {
     program.body.iter().find_map(|statement| {

@@ -129,6 +129,61 @@ export default defineComponent({
 }
 
 #[test]
+fn test_options_api_props_identifier_preserves_required_literals_in_setup_scope() {
+    let script = r#"import { defineComponent, type PropType } from 'vue'
+
+const componentProps = {
+    items: {
+        type: Array as PropType<Array<{ id: string }>>,
+        required: true,
+    },
+}
+
+export default defineComponent({
+    props: componentProps,
+    setup(props) {
+        props.items.findIndex((item) => item.id)
+        return {}
+    },
+})
+"#;
+    let summary = analyze_options_api_script(script);
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        output.code.contains("const componentProps = {"),
+        "local props object should remain in setup scope:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("} as const"),
+        "local props object should preserve `required: true` as a literal:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("const __vize_options_props = (componentProps);"),
+        "identifier props should be captured as a setup-scoped runtime value:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains(
+            "export type Props = __RuntimePropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+        ),
+        "Props should be derived from the setup-scoped identifier props artifact:\n{}",
+        output.code
+    );
+}
+
+#[test]
 fn test_options_api_props_with_type_cast_defers_to_setup_scope() {
     let script = r#"import { defineComponent } from 'vue'
 import type { PropType } from 'vue'
