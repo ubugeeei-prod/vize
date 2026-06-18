@@ -1,20 +1,7 @@
-/**
- * Main Musea Vite plugin implementation.
- *
- * Contains the `musea()` factory function that creates the Vite plugin,
- * including dev server middleware, config resolution, and build-start scanning.
- *
- * Virtual module hooks (resolveId / load / handleHotUpdate) are extracted into
- * `virtual.ts`.
- *
- * Middleware and API route logic is extracted into:
- * - `server-middleware.ts` -- gallery SPA, preview, art module serving
- * - `api-routes.ts` -- REST API endpoints for gallery UI
- */
-
 import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
 import { transformWithEsbuild } from "vite";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { vizeConfigStore } from "@vizejs/vite-plugin";
 
@@ -40,6 +27,23 @@ import {
 } from "./virtual.js";
 import { shouldApplyMuseaPlugin } from "./apply.js";
 import { watchMuseaArtFiles } from "./watch.js";
+import {
+  emitStaticGallery,
+  isMuseaStaticBuild,
+  loadStaticRuntimeModule,
+  museaStaticBuildConfig,
+  resolveStaticRuntimeId,
+} from "../static-export.js";
+
+const require = createRequire(import.meta.url);
+
+function resolveVueRuntimeCompiler(): string {
+  try {
+    return require.resolve("vue/dist/vue.esm-bundler.js");
+  } catch {
+    return "vue/dist/vue.esm-bundler.js";
+  }
+}
 
 function extractArtTagAttributes(source: string): Record<string, string | true> {
   const artTagMatch = source.match(/<art\b([\s\S]*?)>/i);
@@ -104,9 +108,6 @@ function extractStyleBlocks(source: string): string[] {
   return styles;
 }
 
-/**
- * Create Musea Vite plugin.
- */
 export function musea(options: MuseaOptions = {}): Plugin[] {
   let include = options.include ?? ["**/*.art.vue"];
   let exclude = options.exclude ?? ["node_modules/**", "dist/**"];
@@ -127,7 +128,6 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   let resolvedPreviewSetup: string | null = null;
   let scanRoots: string[] = [];
 
-  // Shared state for virtual module hooks
   const virtualState: VirtualModuleState = {
     basePath,
     get inlineArt() {
@@ -142,12 +142,10 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     processArtFile,
   };
 
-  // Create virtual module hooks
-  const resolveId = createResolveId(virtualState);
-  const load = createLoad(virtualState);
+  const virtualResolveId = createResolveId(virtualState);
+  const virtualLoad = createLoad(virtualState);
   const handleHotUpdate = createHandleHotUpdate(virtualState);
 
-  // Main plugin
   const mainPlugin: Plugin = {
     name: "vite-plugin-musea",
     enforce: "pre",
@@ -156,25 +154,22 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     },
 
     config() {
-      // Add Vue alias for runtime template compilation
-      // This is needed because variant templates are compiled at runtime
       return {
         resolve: {
           alias: {
-            vue: "vue/dist/vue.esm-bundler.js",
+            vue: resolveVueRuntimeCompiler(),
           },
         },
+        ...(isMuseaStaticBuild() ? museaStaticBuildConfig() : {}),
       };
     },
 
     configResolved(resolvedConfig) {
       config = resolvedConfig;
 
-      // Merge musea config from vize.config.ts (plugin args > config file > defaults)
       const vizeConfig = vizeConfigStore.get(resolvedConfig.root);
       if (vizeConfig?.musea) {
         const mc = vizeConfig.musea;
-        // Only apply config file values when plugin options were not explicitly set
         if (!options.include && mc.include) include = mc.include;
         if (!options.exclude && mc.exclude) exclude = mc.exclude;
         if (!options.basePath && mc.basePath) basePath = mc.basePath;
@@ -183,22 +178,18 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         if (options.inlineArt === undefined && mc.inlineArt !== undefined) inlineArt = mc.inlineArt;
       }
 
-      // Update virtualState.basePath in case it changed from config resolution
       virtualState.basePath = basePath;
 
-      // Resolve previewCss paths to absolute paths
       resolvedPreviewCss = previewCss.map((cssPath) =>
         path.isAbsolute(cssPath) ? cssPath : path.resolve(resolvedConfig.root, cssPath),
       );
 
-      // Resolve previewSetup path
       if (previewSetup) {
         resolvedPreviewSetup = path.isAbsolute(previewSetup)
           ? previewSetup
           : path.resolve(resolvedConfig.root, previewSetup);
       }
 
-      // Update shared state references after resolution
       virtualState.resolvedPreviewCss = resolvedPreviewCss;
       virtualState.resolvedPreviewSetup = resolvedPreviewSetup;
       scanRoots = resolveScanRoots(resolvedConfig.root, include);
@@ -207,7 +198,6 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     configureServer(devServer) {
       server = devServer;
 
-      // Register gallery SPA, preview, and art module middleware
       registerMiddleware(devServer, {
         basePath,
         devSessionToken,
@@ -218,7 +208,6 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         resolvedPreviewSetup,
       });
 
-      // Register API endpoints
       devServer.middlewares.use(
         `${basePath}/api`,
         createApiMiddleware({
@@ -235,13 +224,11 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         }),
       );
 
-      // Watch for Art file changes
       devServer.watcher.on("change", async (file) => {
         if (file.endsWith(".art.vue") && shouldProcess(file, include, exclude, config.root)) {
           await processArtFile(file);
           console.log(`[musea] Reloaded: ${path.relative(config.root, file)}`);
         }
-        // Inline art: re-check .vue files on change
         if (inlineArt && file.endsWith(".vue") && !file.endsWith(".art.vue")) {
           const hadArt = artFiles.has(file);
           const source = await fs.promises.readFile(file, "utf-8");
@@ -260,7 +247,6 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           await processArtFile(file);
           console.log(`[musea] Added: ${path.relative(config.root, file)}`);
         }
-        // Inline art: check new .vue files
         if (inlineArt && file.endsWith(".vue") && !file.endsWith(".art.vue")) {
           const source = await fs.promises.readFile(file, "utf-8");
           if (source.includes("<art")) {
@@ -277,14 +263,12 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         }
       });
 
-      // Print Musea gallery URL after server starts
       return () => {
         devServer.httpServer?.once("listening", () => {
           const address = devServer.httpServer?.address();
           if (address && typeof address === "object") {
             const protocol = devServer.config.server.https ? "https" : "http";
             const rawHost = address.address;
-            // Normalize IPv6/IPv4 localhost addresses to "localhost"
             const host =
               rawHost === "::" ||
               rawHost === "::1" ||
@@ -303,7 +287,6 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     },
 
     async buildStart() {
-      // Scan for Art files
       console.log(`[musea] config.root: ${config.root}, include: ${JSON.stringify(include)}`);
       const files = await scanArtFiles(config.root, include, exclude, inlineArt);
 
@@ -317,14 +300,31 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         await processArtFile(file);
       }
 
-      // Generate Storybook CSF if enabled
       if (storybookCompat) {
         await generateStorybookFiles(artFiles, config.root, storybookOutDir);
       }
     },
 
-    resolveId,
-    load,
+    resolveId(id) {
+      return resolveStaticRuntimeId(id) ?? virtualResolveId(id);
+    },
+    load(id) {
+      return loadStaticRuntimeModule(id, artFiles) ?? virtualLoad(id);
+    },
+    async generateBundle(_options, bundle) {
+      if (!isMuseaStaticBuild()) return;
+      await emitStaticGallery((asset) => void this.emitFile(asset), bundle, {
+        config,
+        artFiles,
+        scanRoots,
+        tokensPath,
+        basePath,
+        resolvedPreviewCss,
+        resolvedPreviewSetup,
+        devSessionToken,
+        themeConfig,
+      });
+    },
     async transform(code, id) {
       if (!id.includes("?musea-virtual")) {
         return null;
@@ -350,8 +350,6 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     handleHotUpdate,
   };
 
-  // Helper functions scoped to this plugin instance
-
   async function processArtFile(filePath: string): Promise<void> {
     try {
       const source = await fs.promises.readFile(filePath, "utf-8");
@@ -359,7 +357,6 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       const parsed = binding.parseArt(source, { filename: filePath });
       const customMetadata = extractCustomArtMetadata(source);
 
-      // Skip files with no variants (e.g. .vue files without <art> block)
       if (!parsed.variants || parsed.variants.length === 0) return;
 
       const isInline = !filePath.endsWith(".art.vue");

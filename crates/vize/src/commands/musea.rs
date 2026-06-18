@@ -1,5 +1,3 @@
-//! Musea command - Component gallery server
-
 mod setup;
 
 use clap::{Args, Subcommand};
@@ -38,7 +36,6 @@ pub struct ServeArgs {
     #[arg(long, default_value = "localhost")]
     pub host: String,
 
-    /// Stories directory
     #[arg(short, long, hide = true)]
     pub stories: Option<PathBuf>,
 
@@ -103,7 +100,8 @@ fn run_serve(args: ServeArgs) {
         }
     };
 
-    eprintln!("vize musea: starting Vite-backed component gallery...");
+    let action = if args.build { " build" } else { "" };
+    eprintln!("vize musea: starting Vite-backed gallery{}...", action);
     eprintln!(
         "  command: {} {}",
         plan.program.display(),
@@ -113,10 +111,19 @@ fn run_serve(args: ServeArgs) {
             .collect::<Vec<_>>()
             .join(" ")
     );
-    eprintln!("  route: configure @vizejs/vite-plugin-musea in Vite and open /__musea__");
+    if args.build {
+        eprintln!("  output: Musea static gallery entry is emitted under /__musea__/");
+    } else {
+        eprintln!("  route: configure @vizejs/vite-plugin-musea in Vite and open /__musea__");
+    }
 
     let status = Command::new(&plan.program)
         .args(plan.args.iter().map(|arg| arg.as_str()))
+        .envs(
+            plan.env
+                .iter()
+                .map(|item| (item.0.as_str(), item.1.as_str())),
+        )
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
@@ -142,6 +149,7 @@ fn run_serve(args: ServeArgs) {
 struct ServePlan {
     program: PathBuf,
     args: Vec<String>,
+    env: Vec<(String, String)>,
 }
 
 fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> {
@@ -159,12 +167,15 @@ fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> 
         }
         None => PathBuf::from("vite"),
     };
-    if args.build {
-        return Err(cstr!(
-            "vize musea: static gallery build is not supported yet.\n  The Vite-backed Musea gallery is served by dev middleware, so `vite build` can exit successfully without emitting `.art.vue` gallery content.\n  Use `vize musea serve` for the dev gallery or keep a Storybook/static fallback until Musea static export is available."
-        ));
-    }
     validate_direct_vite_musea_setup(cwd)?;
+    if args.build {
+        return Ok(ServePlan {
+            program,
+            args: vec![cstr!("build")],
+            env: vec![(cstr!("VIZE_MUSEA_STATIC_BUILD"), cstr!("1"))],
+        });
+    }
+
     let mut vite_args = vec![
         cstr!("dev"),
         cstr!("--host"),
@@ -182,13 +193,14 @@ fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> 
     Ok(ServePlan {
         program,
         args: vite_args,
+        env: Vec::new(),
     })
 }
 
 fn resolve_vite_binary(cwd: &Path) -> Option<PathBuf> {
     for ancestor in cwd.ancestors() {
         let bin_dir = ancestor.join("node_modules").join(".bin");
-        for name in vite_bin_names() {
+        for name in VITE_BIN_NAMES {
             let candidate = bin_dir.join(name);
             if candidate.is_file() {
                 return Some(candidate);
@@ -239,14 +251,10 @@ fn nuxt_musea_message(root: &Path, build: bool) -> String {
 }
 
 #[cfg(windows)]
-fn vite_bin_names() -> &'static [&'static str] {
-    &["vite.cmd", "vite.ps1", "vite"]
-}
+const VITE_BIN_NAMES: &[&str] = &["vite.cmd", "vite.ps1", "vite"];
 
 #[cfg(not(windows))]
-fn vite_bin_names() -> &'static [&'static str] {
-    &["vite"]
-}
+const VITE_BIN_NAMES: &[&str] = &["vite"];
 
 fn run_new(args: NewArgs) {
     let target_dir = args.path.unwrap_or_else(|| PathBuf::from("."));
@@ -266,14 +274,12 @@ fn run_new(args: NewArgs) {
         project_name
     );
 
-    // Create art directory structure
     let stories_dir = target_dir.join("stories");
     if let Err(e) = fs::create_dir_all(&stories_dir) {
         eprintln!("vize musea new: failed to create stories directory: {}", e);
         std::process::exit(1);
     }
 
-    // Create example art file
     let example_story = stories_dir.join("Button.art.vue");
     let example_content = r#"<script setup lang="ts">
 defineArt("../src/Button.vue", {
@@ -312,7 +318,6 @@ defineArt("../src/Button.vue", {
         std::process::exit(1);
     }
 
-    // Create vize.config.ts
     let config_path = target_dir.join("vize.config.ts");
     if !config_path.exists() {
         let config_content = r#"import { defineConfig } from "vize";

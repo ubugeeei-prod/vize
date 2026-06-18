@@ -1,4 +1,16 @@
 import type { ArtFileInfo } from "../src/types/index.js";
+import {
+  emptyA11y,
+  emptyDocs,
+  emptyPalette,
+  emptyTokens,
+  fetchStaticDetail,
+  fetchStaticPayload,
+  getStaticPreviewUrl,
+  isStaticGallery,
+  joinBasePath,
+  staticMutationError,
+} from "./staticApi";
 
 export interface PaletteControl {
   name: string;
@@ -65,7 +77,7 @@ function mutationHeaders(): HeadersInit {
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(basePath + url);
+  const res = await fetch(joinBasePath(url));
   if (!res.ok) {
     throw new Error(`API error: ${res.status} ${res.statusText}`);
   }
@@ -73,39 +85,58 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 export async function fetchArts(): Promise<ArtFileInfo[]> {
+  if (isStaticGallery) return (await fetchStaticPayload()).arts;
   return fetchJson<ArtFileInfo[]>("/api/arts");
 }
 
 export async function fetchArt(artPath: string): Promise<ArtFileInfo> {
+  if (isStaticGallery) {
+    const art = (await fetchStaticPayload()).arts.find((item) => item.path === artPath);
+    if (!art) throw new Error(`Art not found: ${artPath}`);
+    return art;
+  }
   return fetchJson<ArtFileInfo>(`/api/arts/${encodeURIComponent(artPath)}`);
 }
 
 export async function fetchPalette(artPath: string): Promise<PaletteApiResponse> {
+  if (isStaticGallery) return (await fetchStaticDetail(artPath)).palette ?? emptyPalette();
   return fetchJson<PaletteApiResponse>(`/api/arts/${encodeURIComponent(artPath)}/palette`);
 }
 
 export async function fetchAnalysis(artPath: string): Promise<AnalysisApiResponse> {
+  if (isStaticGallery) {
+    return (await fetchStaticDetail(artPath)).analysis ?? { props: [], emits: [] };
+  }
   return fetchJson<AnalysisApiResponse>(`/api/arts/${encodeURIComponent(artPath)}/analysis`);
 }
 
 export async function fetchDocs(artPath: string): Promise<DocApiResponse> {
+  if (isStaticGallery) return (await fetchStaticDetail(artPath)).docs ?? emptyDocs();
   return fetchJson<DocApiResponse>(`/api/arts/${encodeURIComponent(artPath)}/docs`);
 }
 
 export async function fetchA11y(artPath: string, variantName: string): Promise<A11yApiResponse> {
+  if (isStaticGallery) {
+    return (await fetchStaticDetail(artPath)).a11y?.[variantName] ?? emptyA11y();
+  }
   return fetchJson<A11yApiResponse>(
     `/api/arts/${encodeURIComponent(artPath)}/variants/${encodeURIComponent(variantName)}/a11y`,
   );
 }
 
 export function getPreviewUrl(artPath: string, variantName: string): string {
-  return `${basePath}/preview?art=${encodeURIComponent(artPath)}&variant=${encodeURIComponent(variantName)}`;
+  if (isStaticGallery) {
+    const preview = getStaticPreviewUrl(artPath, variantName);
+    if (preview) return preview;
+  }
+  const art = encodeURIComponent(artPath);
+  const variant = encodeURIComponent(variantName);
+  return `${joinBasePath("/preview")}?art=${art}&variant=${variant}`;
 }
 
 export function getBasePath(): string {
   return basePath;
 }
-
 export interface VrtResult {
   artPath: string;
   variantName: string;
@@ -178,6 +209,7 @@ export interface TokenMutationResponse {
 }
 
 export async function fetchTokens(): Promise<TokensApiResponse> {
+  if (isStaticGallery) return (await fetchStaticPayload()).tokens ?? emptyTokens();
   return fetchJson<TokensApiResponse>("/api/tokens");
 }
 
@@ -185,7 +217,8 @@ export async function createToken(
   tokenPath: string,
   token: Omit<DesignToken, "$resolvedValue">,
 ): Promise<TokenMutationResponse> {
-  const res = await fetch(basePath + "/api/tokens", {
+  if (isStaticGallery) throw staticMutationError();
+  const res = await fetch(joinBasePath("/api/tokens"), {
     method: "POST",
     headers: mutationHeaders(),
     body: JSON.stringify({ path: tokenPath, token }),
@@ -201,7 +234,8 @@ export async function updateToken(
   tokenPath: string,
   token: Omit<DesignToken, "$resolvedValue">,
 ): Promise<TokenMutationResponse> {
-  const res = await fetch(basePath + "/api/tokens", {
+  if (isStaticGallery) throw staticMutationError();
+  const res = await fetch(joinBasePath("/api/tokens"), {
     method: "PUT",
     headers: mutationHeaders(),
     body: JSON.stringify({ path: tokenPath, token }),
@@ -214,7 +248,8 @@ export async function updateToken(
 }
 
 export async function deleteToken(tokenPath: string): Promise<TokenMutationResponse> {
-  const res = await fetch(basePath + "/api/tokens", {
+  if (isStaticGallery) throw staticMutationError();
+  const res = await fetch(joinBasePath("/api/tokens"), {
     method: "DELETE",
     headers: mutationHeaders(),
     body: JSON.stringify({ path: tokenPath }),
@@ -248,10 +283,14 @@ export interface ArtSourceResponse {
 }
 
 export async function fetchTokenUsage(): Promise<TokenUsageMap> {
+  if (isStaticGallery) return (await fetchStaticPayload()).tokenUsage ?? {};
   return fetchJson<TokenUsageMap>("/api/tokens/usage");
 }
 
 export async function fetchArtSource(artPath: string): Promise<ArtSourceResponse> {
+  if (isStaticGallery) {
+    return (await fetchStaticDetail(artPath)).source ?? { source: "", path: artPath };
+  }
   return fetchJson<ArtSourceResponse>(`/api/arts/${encodeURIComponent(artPath)}/source`);
 }
 
@@ -259,7 +298,8 @@ export async function updateArtSource(
   artPath: string,
   source: string,
 ): Promise<{ success: boolean }> {
-  const res = await fetch(basePath + `/api/arts/${encodeURIComponent(artPath)}/source`, {
+  if (isStaticGallery) throw staticMutationError();
+  const res = await fetch(joinBasePath(`/api/arts/${encodeURIComponent(artPath)}/source`), {
     method: "PUT",
     headers: mutationHeaders(),
     body: JSON.stringify({ source }),
@@ -272,7 +312,8 @@ export async function updateArtSource(
 }
 
 export async function runVrt(artPath?: string, updateSnapshots?: boolean): Promise<VrtApiResponse> {
-  const res = await fetch(basePath + "/api/run-vrt", {
+  if (isStaticGallery) throw staticMutationError();
+  const res = await fetch(joinBasePath("/api/run-vrt"), {
     method: "POST",
     headers: mutationHeaders(),
     body: JSON.stringify({ artPath, updateSnapshots }),

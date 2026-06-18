@@ -1,11 +1,11 @@
-use super::{ServeArgs, create_serve_plan, resolve_vite_binary, vite_bin_names};
+use super::{ServeArgs, VITE_BIN_NAMES, create_serve_plan, resolve_vite_binary};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 fn write_vite_bin(root: &Path) -> PathBuf {
     let bin_dir = root.join("node_modules").join(".bin");
     fs::create_dir_all(&bin_dir).unwrap();
-    let vite_bin = bin_dir.join(vite_bin_names()[0]);
+    let vite_bin = bin_dir.join(VITE_BIN_NAMES[0]);
     fs::write(&vite_bin, "").unwrap();
     vite_bin
 }
@@ -91,11 +91,12 @@ fn serve_plan_rejects_missing_musea_vite_plugin_setup() {
 }
 
 #[test]
-fn serve_plan_rejects_static_build_with_actionable_message() {
+fn serve_plan_runs_static_build_with_musea_environment() {
     let temp = tempfile::tempdir().unwrap();
-    write_vite_bin(temp.path());
+    let vite_bin = write_vite_bin(temp.path());
+    write_musea_vite_setup(temp.path());
 
-    let error = create_serve_plan(
+    let plan = create_serve_plan(
         &ServeArgs {
             build: true,
             open: true,
@@ -104,11 +105,11 @@ fn serve_plan_rejects_static_build_with_actionable_message() {
         },
         temp.path(),
     )
-    .unwrap_err();
+    .unwrap();
 
-    assert!(error.contains("static gallery build is not supported yet"));
-    assert!(error.contains("without emitting `.art.vue` gallery content"));
-    assert!(error.contains("Storybook/static fallback"));
+    assert_eq!(plan.program, vite_bin);
+    assert_eq!(plan.args, ["build"]);
+    assert_eq!(plan.env, [("VIZE_MUSEA_STATIC_BUILD".into(), "1".into())]);
 }
 
 #[test]

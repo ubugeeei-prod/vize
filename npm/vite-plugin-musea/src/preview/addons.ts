@@ -254,7 +254,8 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
             // Dynamically load axe-core from local vendor route if not already loaded
             if (!window.axe) {
               const script = document.createElement('script');
-              const _basePath = location.pathname.replace(/\\/preview$/, '');
+              const _basePath = window.__MUSEA_BASE_PATH__
+                || location.pathname.replace(/\\/preview(?:\\/[^/]+\\.html)?$/, '');
               script.src = _basePath + '/vendor/axe-core.min.js';
               await new Promise((resolve, reject) => {
                 script.onload = resolve;
