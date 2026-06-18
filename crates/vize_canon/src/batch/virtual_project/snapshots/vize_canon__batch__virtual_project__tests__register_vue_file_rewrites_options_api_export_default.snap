@@ -37,7 +37,8 @@ function __setup() {
     name: "OptionsApi",
   });
   
-  // @vize-map: 1120:1199 -> 0:100
+  void __default__;
+  // @vize-map: 1120:1219 -> 0:100
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
