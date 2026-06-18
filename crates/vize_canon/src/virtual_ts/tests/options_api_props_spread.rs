@@ -134,11 +134,16 @@ fn test_options_api_props_with_type_cast_defers_to_setup_scope() {
 import type { PropType } from 'vue'
 
 type BreadcrumbsItem = { label: string }
+type SelectedExamSubject = { id: string } | null
 
 export default defineComponent({
     props: {
         breadcrumbs: {
             type: Array as PropType<BreadcrumbsItem[]>,
+            required: true,
+        },
+        selectedExamSubject: {
+            type: Object as PropType<SelectedExamSubject>,
             required: true,
         },
     },
@@ -157,7 +162,7 @@ export default defineComponent({
     assert!(
         !output
             .code
-            .contains("export type Props = __RuntimePropShape<{\n        breadcrumbs:"),
+            .contains("export type Props = __RuntimePropShape<{"),
         "type-cast props must not be emitted directly in type position:\n{}",
         output.code
     );
