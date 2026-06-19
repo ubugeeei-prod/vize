@@ -926,11 +926,6 @@ export async function resolveIdHook(
       state.logger.log(`resolveId: skipping vitepress-plugin-llms style import ${id}`);
       return null;
     }
-    const handleNodeModules = state.mergedOptions.handleNodeModulesVue ?? true;
-    if (!handleNodeModules && request.path.includes("node_modules")) {
-      state.logger.log(`resolveId: skipping node_modules style import ${id}`);
-      return null;
-    }
     return `${request.normalizedFsId ?? id}${request.styleVirtualSuffix}`;
   }
 
