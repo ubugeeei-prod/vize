@@ -1,7 +1,10 @@
 use super::{
-    bootstrap::resolve_corsa_executable, paths::resolve_temp_dir_base,
-    session::build_session_document_uri, utils::convert_diagnostics,
+    bootstrap::resolve_corsa_executable,
+    paths::resolve_temp_dir_base,
+    session::{build_session_document_uri, materialize_session_document},
+    utils::convert_diagnostics,
 };
+use crate::file_uri::path_to_file_uri;
 use lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range};
 use std::{
     fs,
@@ -172,4 +175,41 @@ fn normalizes_explicit_wrapper_path_to_native_binary() {
             .to_string_lossy()
             .into_owned()
     );
+}
+
+#[test]
+fn keeps_encoded_vue_virtual_overlay_uri_at_real_path_inside_project() {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let project = std::env::temp_dir().join(format!(
+        "vize-canon-session-uri-eq={}-{}",
+        std::process::id(),
+        nonce
+    ));
+    let components = project.join("src/components");
+    std::fs::create_dir_all(&components).unwrap();
+    let real = components.join("Button.vue");
+    std::fs::write(&real, "<template><div /></template>").unwrap();
+
+    let virtual_path = components.join("Button.vue.ts");
+    let uri = path_to_file_uri(&virtual_path);
+    assert!(
+        uri.contains("%3D"),
+        "test workspace path must exercise file URI encoding: {uri}"
+    );
+
+    let mapped = build_session_document_uri(&uri, &project, true);
+    assert_eq!(
+        mapped, uri,
+        "encoded in-project overlay URI must stay stable"
+    );
+    assert!(
+        materialize_session_document(&uri, &mapped, "export {};").is_none(),
+        "stable overlay URIs must not materialize sibling files"
+    );
+    assert!(!virtual_path.exists());
+
+    let _ = std::fs::remove_dir_all(project);
 }

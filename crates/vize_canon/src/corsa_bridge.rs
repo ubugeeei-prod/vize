@@ -19,8 +19,10 @@ pub use types::{
 mod tests {
     use super::{
         CorsaBridgeConfig, LspDiagnostic, LspPosition, LspRange, TypeCheckResult,
-        VIRTUAL_URI_SCHEME,
+        VIRTUAL_URI_SCHEME, bridge,
     };
+    use crate::file_uri::path_to_file_uri;
+    use std::path::Path;
     use vize_carton::cstr;
 
     #[test]
@@ -66,5 +68,15 @@ mod tests {
         assert!(config.working_dir.is_none());
         assert_eq!(config.timeout_ms, 30000);
         assert!(!config.enable_profiling);
+    }
+
+    #[test]
+    fn normalizes_absolute_paths_with_file_uri_encoding() {
+        let path = Path::new("/workspace/app=demo/src/App.vue.ts");
+
+        assert_eq!(
+            bridge::normalize_document_uri(path.to_str().unwrap()),
+            path_to_file_uri(path)
+        );
     }
 }

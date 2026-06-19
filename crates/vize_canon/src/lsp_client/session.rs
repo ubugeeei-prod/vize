@@ -502,8 +502,8 @@ pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u
 mod tests {
     use super::{
         api_mode_for_executable, build_session_document_uri, line_character_to_utf16_offset,
-        materialize_session_document, overlay_changes_error_is_unsupported, path_to_file_uri,
-        should_retry_json_rpc, uri_document_identifier,
+        overlay_changes_error_is_unsupported, path_to_file_uri, should_retry_json_rpc,
+        uri_document_identifier,
     };
     use corsa::CorsaError;
     use corsa::api::{ApiMode, DocumentIdentifier};
@@ -538,43 +538,6 @@ mod tests {
         let outside_uri = path_to_file_uri(&outside);
         let mapped_outside = build_session_document_uri(&outside_uri, &project, true);
         assert_ne!(mapped_outside, outside_uri);
-
-        let _ = std::fs::remove_dir_all(project);
-    }
-
-    #[test]
-    fn keeps_encoded_vue_virtual_overlay_uri_at_real_path_inside_project() {
-        let nonce = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let project = std::env::temp_dir().join(format!(
-            "vize-canon-session-uri-eq={}-{}",
-            std::process::id(),
-            nonce
-        ));
-        let components = project.join("src/components");
-        std::fs::create_dir_all(&components).unwrap();
-        let real = components.join("Button.vue");
-        std::fs::write(&real, "<template><div /></template>").unwrap();
-
-        let virtual_path = components.join("Button.vue.ts");
-        let uri = path_to_file_uri(&virtual_path);
-        assert!(
-            uri.contains("%3D"),
-            "test workspace path must exercise file URI encoding: {uri}"
-        );
-
-        let mapped = build_session_document_uri(&uri, &project, true);
-        assert_eq!(
-            mapped, uri,
-            "encoded in-project overlay URI must stay stable"
-        );
-        assert!(
-            materialize_session_document(&uri, &mapped, "export {};").is_none(),
-            "stable overlay URIs must not materialize sibling files"
-        );
-        assert!(!virtual_path.exists());
 
         let _ = std::fs::remove_dir_all(project);
     }

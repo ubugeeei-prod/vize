@@ -1,7 +1,6 @@
 //! Core Corsa bridge implementation backed by `corsa-bind`.
 
 use serde_json::Value;
-use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 #[allow(clippy::disallowed_types)]
 use std::sync::{Arc, Mutex};
@@ -14,7 +13,6 @@ use super::types::{
     VIRTUAL_URI_SCHEME,
 };
 use crate::corsa_client::CorsaProjectClient;
-use crate::file_uri::path_to_file_uri;
 
 /// Bridge to Corsa for type checking and editor queries via project sessions.
 #[allow(clippy::disallowed_types)]
@@ -531,11 +529,11 @@ impl BatchTypeChecker {
     }
 }
 
-fn normalize_document_uri(name: &str) -> String {
+pub(super) fn normalize_document_uri(name: &str) -> String {
     if name.starts_with("file://") {
         name.into()
     } else if name.starts_with('/') {
-        path_to_file_uri(Path::new(name))
+        crate::file_uri::path_to_file_uri(std::path::Path::new(name))
     } else {
         cstr!("{VIRTUAL_URI_SCHEME}://{name}")
     }
@@ -573,21 +571,4 @@ fn lock_client<'a>(
     client
         .lock()
         .map_err(|_| CorsaBridgeError::CommunicationError("Corsa client lock poisoned".into()))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::normalize_document_uri;
-    use crate::file_uri::path_to_file_uri;
-    use std::path::Path;
-
-    #[test]
-    fn normalizes_absolute_paths_with_file_uri_encoding() {
-        let path = Path::new("/workspace/app=demo/src/App.vue.ts");
-
-        assert_eq!(
-            normalize_document_uri(path.to_str().unwrap()),
-            path_to_file_uri(path)
-        );
-    }
 }
