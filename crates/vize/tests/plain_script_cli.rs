@@ -40,6 +40,75 @@ fn fmt_check_supports_plain_ts_inputs() {
 }
 
 #[test]
+fn fmt_write_stabilizes_plain_ts_until_fixed_point() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "app/features/authSignup/use.ts",
+        r#"import { z } from "zod"
+
+const schema = z.object({
+  confirmCode: z
+    .string()
+    .regex(/^\d{6}$/, {
+      message: t("form.validation.exactDigits", {
+        target: t("form.field.confirmCode.label"),
+        digits: 6,
+      }),
+    }),
+})
+"#,
+    );
+    write_project_file(
+        project.path(),
+        "app/features/layout/position.ts",
+        r#"function getSlotPosition(slotName: string): { style: { left: string, top: string, width: string, height: string }, inPortal: boolean } | null {
+  return null
+}
+"#,
+    );
+
+    let write = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args([
+            "fmt",
+            "--no-config",
+            "--write",
+            "app/features/authSignup/use.ts",
+            "app/features/layout/position.ts",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(write.status.code(), Some(0), "{}", output_details(&write));
+
+    let check = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args([
+            "fmt",
+            "--no-config",
+            "--check",
+            "app/features/authSignup/use.ts",
+            "app/features/layout/position.ts",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(check.status.code(), Some(0), "{}", output_details(&check));
+
+    let formatted =
+        fs::read_to_string(project.path().join("app/features/authSignup/use.ts")).unwrap();
+    assert!(
+        formatted.contains("confirmCode: z.string().regex(/^\\d{6}$/, {"),
+        "first write must produce the fixed point used by the second write"
+    );
+    let formatted =
+        fs::read_to_string(project.path().join("app/features/layout/position.ts")).unwrap();
+    assert!(
+        formatted.starts_with("function getSlotPosition(slotName: string): {"),
+        "plain TS files must use the same fixed point as SFC script blocks"
+    );
+}
+
+#[test]
 fn lint_supports_plain_ts_inputs() {
     let project = tempfile::tempdir().unwrap();
     write_project_file(

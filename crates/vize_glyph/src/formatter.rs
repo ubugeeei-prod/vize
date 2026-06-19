@@ -194,7 +194,7 @@ impl<'a> GlyphFormatter<'a> {
             self.allocator,
             source_type,
         )
-        .unwrap_or_else(|| trimmed.to_compact_string());
+        .unwrap_or_else(|_| trimmed.to_compact_string());
 
         // Build the opening tag using byte operations
         output.extend_from_slice(b"<script");

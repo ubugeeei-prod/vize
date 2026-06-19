@@ -80,7 +80,7 @@ pub fn format_sfc_with_allocator(
 #[inline]
 pub fn format_script(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
     let allocator = Allocator::with_capacity(source.len() * 2);
-    script::format_script_content(source, options, &allocator)
+    script::format_ts_script_content_stable(source, options, &allocator)
 }
 
 /// Format only script content with an explicit JavaScript/TypeScript source type.
@@ -91,7 +91,7 @@ pub fn format_script_with_source_type(
     allocator: &Allocator,
     source_type: oxc_span::SourceType,
 ) -> Result<String, FormatError> {
-    script::format_script_content_with_source_type(source, options, allocator, source_type)
+    script::format_script_content_stable(source, options, allocator, source_type)
 }
 
 /// Format only the template content

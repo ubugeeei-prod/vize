@@ -11,10 +11,13 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{Allocator, String, ToCompactString};
 
+const MAX_SCRIPT_STABILIZATION_PASSES: usize = 6;
+
 /// Format JavaScript/TypeScript content using oxc_formatter
 ///
 /// Uses arena allocation for efficient memory management.
 #[inline]
+#[cfg(test)]
 pub fn format_script_content(
     source: &str,
     options: &FormatOptions,
@@ -77,18 +80,46 @@ pub(crate) fn format_script_content_stable(
     options: &FormatOptions,
     allocator: &Allocator,
     source_type: SourceType,
-) -> Option<String> {
-    let first =
-        format_script_content_with_source_type(source, options, allocator, source_type).ok()?;
+) -> Result<String, FormatError> {
+    let mut current =
+        format_script_content_with_source_type(source, options, allocator, source_type)?;
     // Skip the second (idempotence) pass when the caller only needs change
     // detection (`fmt --check`), or when the first pass was already a no-op:
     // the input is then a fixed point, so re-formatting cannot change it.
-    if options.skip_script_stabilization || first.trim_end() == source.trim_end() {
-        return Some(first);
+    if options.skip_script_stabilization || current.trim_end() == source.trim_end() {
+        return Ok(current);
     }
-    format_script_content_with_source_type(first.as_str(), options, allocator, source_type)
-        .ok()
-        .or(Some(first))
+
+    for _ in 1..MAX_SCRIPT_STABILIZATION_PASSES {
+        let next = match format_script_content_with_source_type(
+            current.as_str(),
+            options,
+            allocator,
+            source_type,
+        ) {
+            Ok(next) => next,
+            Err(_) => return Ok(current),
+        };
+        if next.trim_end() == current.trim_end() {
+            return Ok(next);
+        }
+        current = next;
+    }
+
+    Ok(current)
+}
+
+pub(crate) fn format_ts_script_content_stable(
+    source: &str,
+    options: &FormatOptions,
+    allocator: &Allocator,
+) -> Result<String, FormatError> {
+    format_script_content_stable(
+        source,
+        options,
+        allocator,
+        SourceType::ts().with_module(true),
+    )
 }
 
 pub(crate) fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {
