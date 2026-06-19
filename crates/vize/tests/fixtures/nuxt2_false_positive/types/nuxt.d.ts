@@ -4,8 +4,10 @@ declare module "@nuxt/types" {
 }
 
 declare module "@nuxtjs/composition-api" {
-  export interface UseContextReturn
-    extends Omit<import("@nuxt/types").Context, "route" | "query" | "from" | "params"> {}
+  export interface UseContextReturn extends Omit<
+    import("@nuxt/types").Context,
+    "route" | "query" | "from" | "params"
+  > {}
   export function useContext(): UseContextReturn;
 }
 

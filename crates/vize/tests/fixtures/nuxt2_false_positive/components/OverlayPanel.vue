@@ -1,16 +1,16 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent } from "vue";
 
 export default defineComponent({
   emits: {
-    'update:is-opened-overlay-loading': (_value: boolean) => true,
+    "update:is-opened-overlay-loading": (_value: boolean) => true,
   },
   methods: {
     close() {
-      this.$emit('update:is-opened-overlay-loading', false)
+      this.$emit("update:is-opened-overlay-loading", false);
     },
   },
-})
+});
 </script>
 
 <template>

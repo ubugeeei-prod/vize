@@ -1,7 +1,7 @@
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue'
+import { defineComponent, type PropType } from "vue";
 
-export type Folder = { id: string; label: string }
+export type Folder = { id: string; label: string };
 
 export default defineComponent({
   props: {
@@ -11,18 +11,18 @@ export default defineComponent({
     },
   },
   emits: {
-    'click-folder': (_folder: Folder) => true,
-    'input:math-key': (_key: string) => true,
+    "click-folder": (_folder: Folder) => true,
+    "input:math-key": (_key: string) => true,
   },
   methods: {
     clickFirst() {
-      this.$emit('click-folder', this.folders[0])
+      this.$emit("click-folder", this.folders[0]);
     },
     inputKey() {
-      this.$emit('input:math-key', 'plus')
+      this.$emit("input:math-key", "plus");
     },
   },
-})
+});
 </script>
 
 <template>
