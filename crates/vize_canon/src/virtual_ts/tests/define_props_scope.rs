@@ -165,3 +165,106 @@ const props = defineProps<Props>();
         output.code
     );
 }
+
+#[test]
+fn test_define_props_transitive_typeof_alias_stays_with_props_interface() {
+    let script = r#"import { pickProperties } from '~/src/shared/objectOperationUtil';
+import { FormViewStateEnum as _FormViewStateEnum } from '~/src/domain/models/form';
+
+const FormViewStateEnum = pickProperties(_FormViewStateEnum, [
+  _FormViewStateEnum.TextbookSelection_OtherStudentTextbook,
+  _FormViewStateEnum.DetailForm_OtherStudentTextbook,
+]);
+
+type FormViewState = (typeof FormViewStateEnum)[keyof typeof FormViewStateEnum];
+
+interface Props {
+  formViewState: FormViewState;
+  updateStepperStateToTextbookInput: (s: FormViewState) => void;
+}
+
+const props = defineProps<Props>();
+"#;
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    let summary = analyzer.finish();
+
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+    let (module_scope, setup_and_after) = output
+        .code
+        .split_once("// ========== Setup Scope ==========")
+        .expect("setup scope marker present");
+
+    assert!(
+        !module_scope.contains("interface Props")
+            && !module_scope.contains("type FormViewState =")
+            && !module_scope.contains("formViewState: FormViewState"),
+        "setup-derived type aliases must not leak into module scope:\n{}",
+        output.code
+    );
+    assert!(
+        setup_and_after.contains(
+            "type FormViewState = (typeof FormViewStateEnum)[keyof typeof FormViewStateEnum];"
+        ),
+        "setup scope must retain the local alias derived from the local const:\n{}",
+        output.code
+    );
+    assert!(
+        setup_and_after.contains("interface Props {")
+            && setup_and_after.contains("formViewState: FormViewState;")
+            && setup_and_after
+                .contains("updateStepperStateToTextbookInput: (s: FormViewState) => void;"),
+        "Props must stay in the same setup scope as the alias it references:\n{}",
+        output.code
+    );
+    assert!(
+        setup_and_after.contains("type __VizeSetupProps = Props;"),
+        "defineProps<Props>() must resolve through the setup-local Props artifact:\n{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_setup_local_type_alias_is_emitted_before_ref_type_usage() {
+    let script = r#"import { ref } from 'vue';
+
+const DialogOpenStatusEnum = {
+  None: 'None',
+  Confirm: 'Confirm',
+} as const;
+
+type DialogOpenStatus = (typeof DialogOpenStatusEnum)[keyof typeof DialogOpenStatusEnum];
+
+const dialogOpenStatus = ref<DialogOpenStatus>(DialogOpenStatusEnum.None);
+"#;
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    let summary = analyzer.finish();
+
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+    let (module_scope, setup_and_after) = output
+        .code
+        .split_once("// ========== Setup Scope ==========")
+        .expect("setup scope marker present");
+
+    assert!(
+        !module_scope.contains("DialogOpenStatus"),
+        "setup-local type alias must not be emitted where its const is missing:\n{}",
+        output.code
+    );
+    let alias_at = setup_and_after
+        .find("type DialogOpenStatus = (typeof DialogOpenStatusEnum)")
+        .expect("setup scope should contain DialogOpenStatus alias");
+    let usage_at = setup_and_after
+        .find("ref<DialogOpenStatus>(DialogOpenStatusEnum.None)")
+        .expect("setup scope should contain ref typed with DialogOpenStatus");
+    assert!(
+        alias_at < usage_at,
+        "local alias must be emitted before same-scope type usage:\n{}",
+        output.code
+    );
+}

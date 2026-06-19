@@ -16,6 +16,7 @@ use crate::provide::ProvideInjectTracker;
 use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
 use crate::scope::ScopeChain;
+use crate::script_parser::typeof_refs::TypeDependencyRefs;
 use crate::setup_context::SetupContextTracker;
 use crate::types::TypeResolver;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
@@ -110,6 +111,11 @@ pub struct ScriptParseResult {
     /// setup-scope values they depend on. Pushed to in lockstep with
     /// `type_exports` via `record_type_export`.
     pub(crate) type_export_typeof_refs: Vec<FxHashSet<CompactString>>,
+    /// Local type/interface identifiers referenced by each `type_exports`
+    /// entry, indexed in parallel with `type_exports`. Used with
+    /// `type_export_typeof_refs` to propagate setup-scope demotion through
+    /// aliases such as `Props -> FormViewState -> typeof FormViewStateEnum`.
+    pub(crate) type_export_type_refs: Vec<FxHashSet<CompactString>>,
     /// Static runtime object literal metadata available to macro spread args.
     pub(crate) runtime_object_literals: FxHashMap<CompactString, RuntimeObjectLiteral>,
     /// Authoritative Options API options-object descriptor, when resolved.
@@ -155,17 +161,14 @@ impl ScriptParseResult {
         }
     }
 
-    /// Record a `TypeExport` together with the `typeof` value-identifier
-    /// references found in its body. Must be the only call site that pushes
-    /// to `type_exports` so the two vectors stay in lockstep for
+    /// Record a `TypeExport` together with type/value dependency references
+    /// found in its body. Must be the only call site that pushes to
+    /// `type_exports` so the parallel dependency vectors stay in lockstep for
     /// `resolve_type_export_hoisting`.
-    pub(crate) fn record_type_export(
-        &mut self,
-        export: TypeExport,
-        typeof_refs: FxHashSet<CompactString>,
-    ) {
+    pub(crate) fn record_type_export(&mut self, export: TypeExport, refs: TypeDependencyRefs) {
         self.type_exports.push(export);
-        self.type_export_typeof_refs.push(typeof_refs);
+        self.type_export_typeof_refs.push(refs.typeof_value_refs);
+        self.type_export_type_refs.push(refs.type_refs);
     }
 
     /// Demote `TypeExport::hoisted` to `false` for any type whose body
@@ -178,7 +181,7 @@ impl ScriptParseResult {
     /// reference is left as hoisted: the import is visible from the module
     /// scope where the type lands.
     pub(crate) fn resolve_type_export_hoisting(&mut self) {
-        if self.type_export_typeof_refs.is_empty() {
+        if self.type_exports.is_empty() {
             return;
         }
 
@@ -201,6 +204,31 @@ impl ScriptParseResult {
             });
             if touches_setup_value && let Some(te) = self.type_exports.get_mut(idx) {
                 te.hoisted = false;
+            }
+        }
+
+        let mut non_hoisted_type_names: FxHashSet<CompactString> = self
+            .type_exports
+            .iter()
+            .filter(|te| !te.hoisted)
+            .map(|te| te.name.clone())
+            .collect();
+        let mut changed = true;
+        while changed {
+            changed = false;
+            for idx in 0..self.type_exports.len() {
+                if !self.type_exports[idx].hoisted {
+                    continue;
+                }
+
+                let refs_non_hoisted_type = self.type_export_type_refs[idx]
+                    .iter()
+                    .any(|name| non_hoisted_type_names.contains(name));
+                if refs_non_hoisted_type {
+                    non_hoisted_type_names.insert(self.type_exports[idx].name.clone());
+                    self.type_exports[idx].hoisted = false;
+                    changed = true;
+                }
             }
         }
     }
