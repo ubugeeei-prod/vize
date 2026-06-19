@@ -1,6 +1,8 @@
 use glob::glob;
 use std::path::{Path, PathBuf};
 
+use vize_carton::{String, cstr};
+
 use super::patterns::has_explicit_patterns;
 use super::{FmtArgs, files::FmtPattern};
 use crate::config;
@@ -35,9 +37,9 @@ impl FmtEntryFileSet {
         &self,
         patterns: &[std::string::String],
     ) -> Vec<std::string::String> {
-        let mut expanded = Vec::new();
+        let mut expanded: Vec<String> = Vec::new();
         for pattern in patterns {
-            push_unique(&mut expanded, pattern.clone());
+            push_unique(&mut expanded, pattern.as_str().into());
             if local_pattern_has_match(pattern) {
                 continue;
             }
@@ -46,6 +48,9 @@ impl FmtEntryFileSet {
             }
         }
         expanded
+            .into_iter()
+            .map(|s| std::string::String::from(s.as_str()))
+            .collect()
     }
 }
 
@@ -73,7 +78,7 @@ pub(super) fn load_fmt_entry_file_set(args: &FmtArgs) -> Option<FmtEntryFileSet>
 
 struct FmtEntryFileScope {
     base_dir: PathBuf,
-    base_prefix: Option<std::string::String>,
+    base_prefix: Option<String>,
     files: Vec<EntryFilePattern>,
 }
 
@@ -95,7 +100,7 @@ impl FmtEntryFileScope {
         })
     }
 
-    fn expand_missing_pattern(&self, pattern: &str, expanded: &mut Vec<std::string::String>) {
+    fn expand_missing_pattern(&self, pattern: &str, expanded: &mut Vec<String>) {
         let normalized = normalize_pattern_text(pattern);
         let pattern_path = Path::new(pattern);
         if pattern_path.is_absolute() {
@@ -119,7 +124,7 @@ impl FmtEntryFileScope {
 
     fn entry_relative_from_root_pattern<'a>(&self, pattern: &'a str) -> Option<&'a str> {
         let base_prefix = self.base_prefix.as_ref()?;
-        if pattern == base_prefix {
+        if pattern == base_prefix.as_str() {
             return Some(".");
         }
         pattern
@@ -142,7 +147,7 @@ impl FmtEntryFileScope {
         if is_format_target(path) {
             return self.files.iter().any(|file| file.matcher.matches(path));
         }
-        let directory_prefix = format!("{}/", normalized.trim_end_matches('/'));
+        let directory_prefix = cstr!("{}/", normalized.trim_end_matches('/'));
         self.files
             .iter()
             .any(|file| file.raw == normalized || file.raw.starts_with(directory_prefix.as_str()))
@@ -150,7 +155,7 @@ impl FmtEntryFileScope {
 }
 
 struct EntryFilePattern {
-    raw: std::string::String,
+    raw: String,
     matcher: FmtPattern,
 }
 
@@ -173,7 +178,7 @@ fn resolve_base_dir(base_path: Option<&str>, config_dir: &Path) -> PathBuf {
     }
 }
 
-fn normalize_base_prefix(base_path: Option<&str>) -> Option<std::string::String> {
+fn normalize_base_prefix(base_path: Option<&str>) -> Option<String> {
     let mut base = normalize_pattern_text(base_path?);
     while let Some(stripped) = base.strip_prefix("./") {
         base = stripped.into();
@@ -218,30 +223,30 @@ fn static_prefix_before_glob(pattern: &str) -> &str {
         .unwrap_or("")
 }
 
-fn strip_prefix_text(path: &Path, base: &Path) -> Option<std::string::String> {
+fn strip_prefix_text(path: &Path, base: &Path) -> Option<String> {
     path.strip_prefix(base).ok().map(normalize_path_text)
 }
 
-fn join_pattern(base: &Path, pattern: &str) -> std::string::String {
+fn join_pattern(base: &Path, pattern: &str) -> String {
     if pattern == "." {
         return normalize_path_text(base);
     }
     normalize_path_text(&base.join(pattern))
 }
 
-fn normalize_pattern_text(pattern: &str) -> std::string::String {
-    let mut normalized = pattern.replace('\\', "/");
+fn normalize_pattern_text(pattern: &str) -> String {
+    let mut normalized: String = pattern.replace('\\', "/").into();
     while let Some(stripped) = normalized.strip_prefix("./") {
         normalized = stripped.into();
     }
     normalized
 }
 
-fn normalize_path_text(path: &Path) -> std::string::String {
-    path.to_string_lossy().replace('\\', "/")
+fn normalize_path_text(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/").into()
 }
 
-fn push_unique(patterns: &mut Vec<std::string::String>, pattern: std::string::String) {
+fn push_unique(patterns: &mut Vec<String>, pattern: String) {
     if !patterns.iter().any(|existing| existing == &pattern) {
         patterns.push(pattern);
     }
