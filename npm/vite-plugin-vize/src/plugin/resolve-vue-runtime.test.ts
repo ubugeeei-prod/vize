@@ -5,6 +5,7 @@ import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
 import { resolveIdHook } from "./resolve.ts";
+import { toVirtualId } from "../virtual.ts";
 
 const testRoot = fs.mkdtempSync(
   path.join(fs.realpathSync(os.tmpdir()), "vize-vue-runtime-resolve-"),
@@ -102,5 +103,61 @@ function createState(root: string): VizePluginState {
     resolved,
     null,
     "Dev Vue imports from dependencies should stay with Vite's optimized runtime to avoid duplicate Vue instances",
+  );
+}
+
+{
+  const projectRoot = fs.mkdtempSync(path.join(testRoot, "dev-source-vue-peer-runtime-"));
+  writeFixtureFile(
+    path.join(projectRoot, "package.json"),
+    JSON.stringify({ name: "resolve-fixture", private: true }, null, 2),
+  );
+  const mainImporter = path.join(projectRoot, "src", "main.ts");
+  const sfcImporter = path.join(projectRoot, "src", "PageOne.vue");
+  const routerPackage = path.join(projectRoot, "node_modules", "vue-router");
+  const routerEntry = path.join(routerPackage, "dist", "vue-router.js");
+
+  writeFixtureFile(mainImporter, "import { createRouter } from 'vue-router';");
+  writeFixtureFile(
+    sfcImporter,
+    "<script setup>import { useRouteQuery } from '@vueuse/router'</script>",
+  );
+  writeFixtureFile(
+    path.join(routerPackage, "package.json"),
+    JSON.stringify(
+      {
+        name: "vue-router",
+        exports: {
+          ".": {
+            import: "./dist/vue-router.js",
+            require: "./dist/vue-router.js",
+          },
+          "./package.json": "./package.json",
+        },
+        main: "dist/vue-router.js",
+      },
+      null,
+      2,
+    ),
+  );
+  writeFixtureFile(routerEntry, "export const createRouter = () => null;");
+
+  const state = createState(projectRoot);
+
+  assert.equal(
+    await resolveIdHook({ resolve: async () => null }, state, "vue-router", mainImporter, undefined),
+    null,
+    "Dev source imports of Vue peer runtimes should stay bare so Vite optimizes vue-router consistently with dependent packages",
+  );
+  assert.equal(
+    await resolveIdHook(
+      { resolve: async () => null },
+      state,
+      "vue-router",
+      toVirtualId(sfcImporter),
+      undefined,
+    ),
+    null,
+    "Dev source SFC imports of Vue peer runtimes should not bypass Vite's dependency optimizer",
   );
 }
