@@ -99,6 +99,7 @@ pub(super) fn collect_setup_binding_anchor_names<'a>(
     template_referenced_names: Option<&FxHashSet<String>>,
 ) -> Vec<&'a str> {
     let type_only_imported_names = collect_type_only_imported_names(summary, script_content);
+    let const_enum_names = script_content.map(super::script_module::collect_const_enum_names);
     let mut template_value_names: FxHashSet<&str> = summary
         .used_components
         .iter()
@@ -129,8 +130,11 @@ pub(super) fn collect_setup_binding_anchor_names<'a>(
             .collect()
     };
     binding_names.retain(|name| {
-        !contains_compact_name(&type_only_imported_names, name)
-            || template_value_names.contains(name)
+        const_enum_names
+            .as_ref()
+            .is_none_or(|names| !contains_compact_name(names, name))
+            && (!contains_compact_name(&type_only_imported_names, name)
+                || template_value_names.contains(name))
     });
     binding_names.sort_unstable();
     binding_names
@@ -304,7 +308,6 @@ pub(super) fn extract_declared_name(stub: &str) -> Option<&str> {
 fn extract_import_names(import_text: &str) -> Vec<&str> {
     let mut names = Vec::new();
 
-    // Find the content between { and }
     if let Some(brace_start) = import_text.find('{') {
         if let Some(brace_end) = import_text.find('}') {
             let inner = &import_text[brace_start + 1..brace_end];
@@ -313,14 +316,12 @@ fn extract_import_names(import_text: &str) -> Vec<&str> {
                 if part.is_empty() || part.starts_with("//") || part.starts_with("type ") {
                     continue;
                 }
-                // Handle "name as alias" -> use alias
                 if let Some(as_pos) = part.find(" as ") {
                     let alias = part[as_pos + 4..].trim();
                     if !alias.is_empty() {
                         names.push(alias);
                     }
                 } else {
-                    // Simple name (strip \r for CRLF files)
                     let name = part.strip_suffix('\r').unwrap_or(part);
                     if !name.is_empty() && name.chars().all(|c| c.is_alphanumeric() || c == '_') {
                         names.push(name);

@@ -27,8 +27,10 @@ declare function __vForList<T>(source: Iterable<T> | undefined | null): readonly
 declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];"#;
 const LEGACY_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends { value: infer __V } ? __V : T;\n";
-const MODERN_REF_UNWRAP_HELPER: &str =
-    "    type __U<T> = T extends import('vue').Ref ? T['value'] : T;\n";
+const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
+    type __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? string : T extends number ? number : T extends boolean ? boolean : T;
+    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
+"#;
 const LEGACY_DEFINE_COMPONENT_HELPER: &str =
     "declare function __vizeDefineComponent<T>(options: T): T;\n";
 pub(super) const LEGACY_COMPONENT_INSTANCE_HELPER: &str = r#"type __VizeVue2ComponentInstance = {

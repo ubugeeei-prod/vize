@@ -82,7 +82,9 @@ function __setup() {
   type __R_items = typeof items;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends import('vue').Ref ? T['value'] : T;
+    type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
+    type __VizeWidenTemplateRef<T> = __VizeIsUnion<T> extends true ? T : T extends string ? string : T extends number ? number : T extends boolean ? boolean : T;
+    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
     var items: __U<__R_items> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = import('vue').ComponentPublicInstance;

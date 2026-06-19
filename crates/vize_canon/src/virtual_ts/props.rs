@@ -1,4 +1,5 @@
 mod setup_scoped;
+mod template_bindings;
 use super::helpers::{is_reserved_identifier, to_safe_identifier};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey};
@@ -6,28 +7,14 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use setup_scoped::props_type_ref;
 pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
+use template_bindings::should_skip_template_prop_binding;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_croquis::BindingType;
 use vize_croquis::Croquis;
 use vize_croquis::macros::{MacroKind, ModelDefinition};
-#[inline]
-fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool {
-    if summary
-        .macros
-        .props_destructure()
-        .and_then(|destructure| destructure.get(prop_name))
-        .is_some()
-    {
-        return true;
-    }
-    summary
-        .bindings
-        .get(prop_name)
-        .is_some_and(|binding_type| !matches!(binding_type, BindingType::Props))
-}
+
 fn emit_template_prop_binding(
     ts: &mut String,
     props_type_ref: &str,
