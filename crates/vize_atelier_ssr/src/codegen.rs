@@ -8,7 +8,7 @@ pub(crate) mod helpers;
 mod scope_prefix;
 
 use crate::options::SsrCompilerOptions;
-use vize_atelier_core::{RootNode, RuntimeHelper, TemplateChildNode};
+use vize_atelier_core::{BindingType, RootNode, RuntimeHelper, TemplateChildNode};
 use vize_carton::{Bump, FxHashSet, SmallVec, String, ToCompactString, camelize, capitalize};
 
 /// SSR codegen result
@@ -27,6 +27,12 @@ pub(crate) enum TemplatePart {
     Static(String),
     /// Dynamic expression
     Dynamic(String),
+}
+
+struct ComponentBinding {
+    name: String,
+    binding_type: BindingType,
+    suffix: Option<String>,
 }
 
 /// SSR codegen context
@@ -226,37 +232,68 @@ impl<'a> SsrCodegenContext<'a> {
         self.core_helpers.insert(helper);
     }
 
-    pub(crate) fn resolve_component_binding_name(&self, component: &str) -> Option<String> {
-        let metadata = self.options.binding_metadata.as_ref()?;
+    pub(crate) fn resolve_component_binding_expr(&mut self, component: &str) -> Option<String> {
+        let binding = self.resolve_component_binding(component)?;
+        let needs_unref = self.options.inline
+            && matches!(
+                binding.binding_type,
+                BindingType::SetupLet | BindingType::SetupMaybeRef | BindingType::SetupRef
+            );
+        let mut resolved = String::default();
 
+        if needs_unref {
+            self.use_core_helper(RuntimeHelper::Unref);
+            resolved.push_str("_unref(");
+        } else if !self.options.inline {
+            resolved.push_str("$setup.");
+        }
+        resolved.push_str(binding.name.as_str());
+        if needs_unref {
+            resolved.push(')');
+        }
+        if let Some(suffix) = binding.suffix {
+            resolved.push('.');
+            resolved.push_str(suffix.as_str());
+        }
+
+        Some(resolved)
+    }
+
+    fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {
+        let metadata = self.options.binding_metadata.as_ref()?;
         let resolve_base = |name: &str| {
-            if metadata.bindings.contains_key(name) {
-                return Some(name.to_compact_string());
+            if let Some(binding_type) = metadata.bindings.get(name) {
+                return Some((name.to_compact_string(), *binding_type));
             }
 
             let camel = camelize(name);
-            if metadata.bindings.contains_key(camel.as_str()) {
-                return Some(camel);
+            if let Some(binding_type) = metadata.bindings.get(camel.as_str()) {
+                return Some((camel, *binding_type));
             }
 
             let pascal = capitalize(camel.as_str());
-            if metadata.bindings.contains_key(pascal.as_str()) {
-                return Some(pascal);
+            if let Some(binding_type) = metadata.bindings.get(pascal.as_str()) {
+                return Some((pascal, *binding_type));
             }
 
             None
         };
 
         if let Some((base, suffix)) = component.split_once('.') {
-            let resolved_base = resolve_base(base)?;
-            let mut resolved = String::with_capacity(resolved_base.len() + suffix.len() + 1);
-            resolved.push_str(resolved_base.as_str());
-            resolved.push('.');
-            resolved.push_str(suffix);
-            return Some(resolved);
+            let (name, binding_type) = resolve_base(base)?;
+            return Some(ComponentBinding {
+                name,
+                binding_type,
+                suffix: Some(suffix.to_compact_string()),
+            });
         }
 
-        resolve_base(component)
+        let (name, binding_type) = resolve_base(component)?;
+        Some(ComponentBinding {
+            name,
+            binding_type,
+            suffix: None,
+        })
     }
 
     pub(crate) fn is_self_component_reference(&self, component: &str) -> bool {

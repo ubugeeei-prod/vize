@@ -43,7 +43,7 @@ impl<'a> SsrCodegenContext<'a> {
         let setup_binding = if is_dynamic_component {
             None
         } else {
-            self.resolve_component_binding_name(tag)
+            self.resolve_component_binding_expr(tag)
         };
         let props = self.build_component_props(el, false, is_dynamic_component);
         let props = self.with_scope_id_prop(props);
@@ -56,11 +56,8 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.push_indent();
         self.push("_push(_ssrRenderComponent(");
-        if let Some(binding_name) = setup_binding.as_deref() {
-            if !self.options.inline {
-                self.push("$setup.");
-            }
-            self.push(binding_name);
+        if let Some(binding_expr) = setup_binding.as_deref() {
+            self.push(binding_expr);
         } else {
             self.use_core_helper(RuntimeHelper::ResolveComponent);
             self.push("_resolveComponent(\"");

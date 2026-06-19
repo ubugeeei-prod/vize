@@ -157,6 +157,60 @@ fn collect_check_files_applies_entry_ignores() {
 }
 
 #[test]
+fn collect_check_files_normalizes_entry_ignore_paths_and_duplicates() {
+    let case_dir = unique_case_dir("collect-check-entry-ignore-paths");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src/nested")).unwrap();
+    fs::create_dir_all(case_dir.join("packages/admin/src")).unwrap();
+    let app = write_file(&case_dir, "src/App.vue", "");
+    let nested = write_file(&case_dir, "src/nested/Panel.vue", "");
+    write_file(&case_dir, "src/Ignored.vue", "");
+    write_file(&case_dir, "src/nested/Ignored.vue", "");
+    write_file(&case_dir, "packages/admin/src/Ignored.vue", "");
+    let admin_page = write_file(&case_dir, "packages/admin/src/Page.vue", "");
+
+    let ignore_set = CheckIgnoreSet::new(
+        &[
+            crate::config::ConfigEntryIgnore {
+                base_path: None,
+                pattern: case_dir
+                    .join("src/Ignored.vue")
+                    .to_string_lossy()
+                    .into_owned()
+                    .into(),
+            },
+            crate::config::ConfigEntryIgnore {
+                base_path: None,
+                pattern: "src/nested/Ignored.vue".into(),
+            },
+            crate::config::ConfigEntryIgnore {
+                base_path: Some("packages/admin".into()),
+                pattern: "src\\Ignored.vue".into(),
+            },
+        ],
+        &case_dir,
+    );
+
+    let files = collect_check_files_with_ignores(
+        &vec![
+            case_dir.join("src").display().to_string(),
+            case_dir.join("src/./App.vue").display().to_string(),
+            case_dir.join("packages/admin/src").display().to_string(),
+            case_dir
+                .join("packages/admin/src/Ignored.vue")
+                .display()
+                .to_string(),
+        ],
+        false,
+        ignore_set.as_ref(),
+    );
+
+    assert_eq!(files, vec![admin_page, app, nested]);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn path_root_filter_drops_alias_imports_outside_package_cwd() {
     let workspace = unique_case_dir("package-transitive-alias-root");
     let _ = fs::remove_dir_all(&workspace);

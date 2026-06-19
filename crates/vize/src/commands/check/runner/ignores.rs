@@ -41,7 +41,11 @@ pub(super) fn retain_unignored(files: &mut Vec<PathBuf>, ignore_set: Option<&Che
 fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: &Path) -> PathBuf {
     let pattern = Path::new(ignore.pattern.as_str());
     if pattern.is_absolute() {
-        return pattern.to_path_buf();
+        return if pattern.exists() {
+            vize_carton::path::canonicalize_non_verbatim(pattern)
+        } else {
+            pattern.to_path_buf()
+        };
     }
 
     let config_dir = absolute_config_dir(config_dir);

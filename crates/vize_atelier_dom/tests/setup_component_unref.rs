@@ -61,3 +61,104 @@ fn inline_setup_ref_component_tag_uses_unref() {
         "raw ref component tag must not be emitted:\n{full}"
     );
 }
+
+fn component_call_targets(source: &str) -> Vec<String> {
+    let mut targets = Vec::new();
+    for marker in ["_createVNode(", "_createBlock("] {
+        let mut offset = 0;
+        while let Some(index) = source[offset..].find(marker) {
+            let start = offset + index + marker.len();
+            let Some(target) = first_call_arg(&source[start..]) else {
+                break;
+            };
+            if !target.starts_with('"') {
+                targets.push(target);
+            }
+            offset = start;
+        }
+    }
+    targets
+}
+
+fn first_call_arg(source: &str) -> Option<String> {
+    let mut depth = 0i32;
+    for (index, ch) in source.char_indices() {
+        match ch {
+            '(' => depth += 1,
+            ')' if depth == 0 => return Some(source[..index].trim().into()),
+            ')' => depth -= 1,
+            ',' if depth == 0 => return Some(source[..index].trim().into()),
+            _ => {}
+        }
+    }
+    None
+}
+
+fn binding_matrix() -> BindingMetadata {
+    let mut bindings = FxHashMap::default();
+    bindings.insert("RefMenu".into(), BindingType::SetupRef);
+    bindings.insert("MaybeMenu".into(), BindingType::SetupMaybeRef);
+    bindings.insert("LetMenu".into(), BindingType::SetupLet);
+    bindings.insert("ImportedMenu".into(), BindingType::SetupConst);
+    bindings.insert("ShallowMenu".into(), BindingType::SetupRef);
+    bindings.insert("lowercaseWidget".into(), BindingType::SetupConst);
+    BindingMetadata {
+        bindings,
+        props_aliases: FxHashMap::default(),
+        is_script_setup: true,
+    }
+}
+
+#[test]
+fn setup_component_tag_binding_matrix_matches_dom_modes() {
+    let allocator = Bump::new();
+    let source = r#"<RefMenu /><MaybeMenu /><LetMenu /><ImportedMenu /><ShallowMenu /><lowercase-widget /><RefMenu.Item />"#;
+
+    let inline_options = DomCompilerOptions {
+        mode: CodegenMode::Module,
+        prefix_identifiers: true,
+        inline: true,
+        binding_metadata: Some(binding_matrix()),
+        ..Default::default()
+    };
+    let (_, inline_errors, inline_result) =
+        compile_template_with_options(&allocator, source, inline_options);
+    assert_eq!(inline_errors.len(), 0);
+    let inline = full_output(&inline_result.preamble, &inline_result.code);
+    assert_eq!(
+        component_call_targets(&inline),
+        vec![
+            "_unref(RefMenu)",
+            "_unref(MaybeMenu)",
+            "_unref(LetMenu)",
+            "ImportedMenu",
+            "_unref(ShallowMenu)",
+            "lowercaseWidget",
+            "_unref(RefMenu).Item",
+        ]
+    );
+
+    let function_options = DomCompilerOptions {
+        mode: CodegenMode::Function,
+        prefix_identifiers: true,
+        inline: false,
+        binding_metadata: Some(binding_matrix()),
+        ..Default::default()
+    };
+    let (_, function_errors, function_result) =
+        compile_template_with_options(&allocator, source, function_options);
+    assert_eq!(function_errors.len(), 0);
+    let function = full_output(&function_result.preamble, &function_result.code);
+    assert_eq!(
+        component_call_targets(&function),
+        vec![
+            "$setup.RefMenu",
+            "$setup.MaybeMenu",
+            "$setup.LetMenu",
+            "$setup.ImportedMenu",
+            "$setup.ShallowMenu",
+            "$setup.lowercaseWidget",
+            "$setup.RefMenu.Item",
+        ]
+    );
+}

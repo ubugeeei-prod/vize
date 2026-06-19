@@ -76,7 +76,7 @@ pub(super) fn collect_transitive_local_imports(
             };
             // Never register an ambient declaration file — its `declare module`
             // statements would shadow real modules as a program root.
-            if is_declaration_file(&resolved) {
+            if is_declaration_file(&resolved) || is_node_modules_path(&resolved) {
                 continue;
             }
             if visited.insert(resolved.clone()) {
@@ -246,6 +246,11 @@ fn is_declaration_file(path: &Path) -> bool {
         .is_some_and(|name| {
             name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
         })
+}
+
+fn is_node_modules_path(path: &Path) -> bool {
+    path.components()
+        .any(|component| component.as_os_str() == std::ffi::OsStr::new("node_modules"))
 }
 
 fn has_source_extension(path: &Path, include_jsx: bool) -> bool {

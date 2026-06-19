@@ -179,13 +179,8 @@ impl<'a> SsrCodegenContext<'a> {
             return self.dynamic_component_callee(el);
         }
 
-        if let Some(binding_name) = self.resolve_component_binding_name(&el.tag) {
-            let mut out = String::default();
-            if !self.options.inline {
-                out.push_str("$setup.");
-            }
-            out.push_str(&binding_name);
-            return out;
+        if let Some(binding_expr) = self.resolve_component_binding_expr(&el.tag) {
+            return binding_expr;
         }
 
         self.use_core_helper(RuntimeHelper::ResolveComponent);

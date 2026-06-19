@@ -169,3 +169,120 @@ fn jsx_imports_are_resolved_only_when_jsx_typecheck_is_enabled() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+#[test]
+fn collects_project_import_graph_edges_without_package_boundaries() {
+    let root = std::env::temp_dir().join(cstr!("vize-imports-matrix-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src")).unwrap();
+    std::fs::create_dir_all(root.join("node_modules/pkg")).unwrap();
+    std::fs::write(
+        root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["src/*"],
+      "@root/*": ["*"]
+    }
+  }
+}"#,
+    )
+    .unwrap();
+
+    let entry = write(
+        &root,
+        "src/entry.ts",
+        r#"import { fromSrcRoot } from "~/lib";
+import { fromProjectRoot } from "@root/shared/root";
+import type { PanelProps } from "~/components/Panel.vue";
+import { widget } from "~/components/Widget";
+import { cycleA } from "~/cycles/a";
+import { jsAlias } from "~/js-alias.js";
+import { ignoredPackage } from "pkg";
+import { ignoredMissing } from "@root/node_modules/pkg/index";
+
+void fromSrcRoot;
+void fromProjectRoot;
+void widget;
+void cycleA;
+void jsAlias;
+void ignoredPackage;
+void ignoredMissing;
+type _PanelProps = PanelProps;
+"#,
+    );
+    let lib = write(
+        &root,
+        "src/lib/index.ts",
+        r#"export { leaf } from "./leaf";
+export const fromSrcRoot = leaf;
+"#,
+    );
+    let root_shared = write(
+        &root,
+        "shared/root.ts",
+        "export const fromProjectRoot = 'root';\n",
+    );
+    let panel = write(
+        &root,
+        "src/components/Panel.vue",
+        r#"<script setup lang="ts">
+export interface PanelProps {
+  title: string;
+}
+</script>
+"#,
+    );
+    let widget = write(
+        &root,
+        "src/components/Widget.tsx",
+        "export const widget = () => null;\n",
+    );
+    let cycle_a = write(
+        &root,
+        "src/cycles/a.ts",
+        r#"import { cycleB } from "./b";
+export const cycleA = cycleB;
+"#,
+    );
+    let js_alias = write(&root, "src/js-alias.ts", "export const jsAlias = true;\n");
+    let leaf = write(&root, "src/lib/leaf.ts", "export const leaf = 1;\n");
+    let cycle_b = write(
+        &root,
+        "src/cycles/b.ts",
+        r#"import { cycleA } from "./a";
+export const cycleB = cycleA;
+"#,
+    );
+    write(
+        &root,
+        "node_modules/pkg/index.ts",
+        "export const ignoredPackage = 1;\n",
+    );
+
+    let aliases = PathAliasResolver::from_tsconfig(Some(&root.join("tsconfig.json")));
+    let discovered = collect_transitive_local_imports(
+        std::slice::from_ref(&entry),
+        &root,
+        &mut CanonicalPathCache::default(),
+        true,
+        Some(&aliases),
+    );
+
+    assert_eq!(
+        discovered,
+        vec![
+            canonicalize_non_verbatim(&lib),
+            canonicalize_non_verbatim(&root_shared),
+            canonicalize_non_verbatim(&panel),
+            canonicalize_non_verbatim(&widget),
+            canonicalize_non_verbatim(&cycle_a),
+            canonicalize_non_verbatim(&js_alias),
+            canonicalize_non_verbatim(&cycle_b),
+            canonicalize_non_verbatim(&leaf),
+        ]
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
