@@ -49,6 +49,46 @@ function withWorkspace<T>(run: (dir: string) => T): T {
 }
 
 const UNFORMATTED = "<template><div   /></template>\n";
+const COMPLEX_NUXT_TEMPLATE = `<template>
+  <HeaderTop
+    v-if="studyInfo && currentQuestion"
+    :breadcrumbs="[
+      { label: purpose.name, to: \`/purposes/\${purpose.id}\` },
+      { label: studyInfo.title, to: \`/purposes/\${purpose.id}/studies/\${studyInfo.id}\` },
+    ]"
+    :class="[
+      isOpen ? 'bg-paper border-rule' : 'bg-mute border-transparent',
+      currentQuestion.status === 'answered'
+        ? 'text-success'
+        : currentQuestion.status === 'skipped'
+          ? 'text-warning'
+          : 'text-ink',
+    ]"
+    :progress="{
+      current: questionIndex + 1,
+      total: questions.length,
+      label: \`\${questionIndex + 1}/\${questions.length}\`,
+    }"
+    @click:next="() => moveQuestion({
+      purposeId: purpose.id,
+      studyInfoId: studyInfo.id,
+      questionId: currentQuestion.id,
+    })"
+  >
+    <template #actions="{ disabled, submit }">
+      <button
+        :disabled="disabled || loading"
+        @click="submit({
+          answerStatus: currentQuestion.status,
+          selectedIds: selectedChoices.map((choice) => choice.id),
+        })"
+      >
+        Next
+      </button>
+    </template>
+  </HeaderTop>
+</template>
+`;
 
 test("vize fmt --help documents the check/write contract and default pattern", () => {
   const result = spawnSync(VIZE.command, [...VIZE.prefix, "fmt", "--help"], {
@@ -85,6 +125,20 @@ test("vize fmt --write rewrites the file so a follow-up --check passes", () => {
     assert.notEqual(rewritten, UNFORMATTED);
 
     const recheck = runFmt(["--check", "Rewrite.vue"], dir);
+    assert.equal(recheck.status, 0, `${recheck.stdout}\n${recheck.stderr}`);
+  });
+});
+
+test("vize fmt --write and --check converge on complex unsorted Vue templates", () => {
+  withWorkspace((dir) => {
+    const file = path.join(dir, "HeaderTop.vue");
+    fs.writeFileSync(file, COMPLEX_NUXT_TEMPLATE, "utf8");
+
+    const options = ["--no-config", "--print-width", "120", "--sort-attributes", "false"];
+    const write = runFmt([...options, "--write", "HeaderTop.vue"], dir);
+    assert.equal(write.status, 0, `${write.stdout}\n${write.stderr}`);
+
+    const recheck = runFmt([...options, "--check", "HeaderTop.vue"], dir);
     assert.equal(recheck.status, 0, `${recheck.stdout}\n${recheck.stderr}`);
   });
 });

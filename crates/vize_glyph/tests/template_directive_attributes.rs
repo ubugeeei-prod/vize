@@ -138,3 +138,58 @@ fn sfc_multiline_template_literal_directive_attribute_is_idempotent() {
     assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
     assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
 }
+
+#[test]
+fn sfc_complex_nuxt_template_converges_with_unsorted_attributes() {
+    let source = r#"<template>
+  <HeaderTop
+    v-if="studyInfo && currentQuestion"
+    :breadcrumbs="[
+      { label: purpose.name, to: `/purposes/${purpose.id}` },
+      { label: studyInfo.title, to: `/purposes/${purpose.id}/studies/${studyInfo.id}` },
+    ]"
+    :class="[
+      isOpen ? 'bg-paper border-rule' : 'bg-mute border-transparent',
+      currentQuestion.status === 'answered'
+        ? 'text-success'
+        : currentQuestion.status === 'skipped'
+          ? 'text-warning'
+          : 'text-ink',
+    ]"
+    :progress="{
+      current: questionIndex + 1,
+      total: questions.length,
+      label: `${questionIndex + 1}/${questions.length}`,
+    }"
+    @click:next="() => moveQuestion({
+      purposeId: purpose.id,
+      studyInfoId: studyInfo.id,
+      questionId: currentQuestion.id,
+    })"
+  >
+    <template #actions="{ disabled, submit }">
+      <button
+        :disabled="disabled || loading"
+        @click="submit({
+          answerStatus: currentQuestion.status,
+          selectedIds: selectedChoices.map((choice) => choice.id),
+        })"
+      >
+        Next
+      </button>
+    </template>
+  </HeaderTop>
+</template>
+"#;
+    let options = FormatOptions {
+        print_width: 120,
+        sort_attributes: false,
+        ..FormatOptions::default()
+    };
+    let first = format_sfc(source, &options).unwrap();
+    let second = format_sfc(&first.code, &options).unwrap();
+    let third = format_sfc(&second.code, &options).unwrap();
+
+    assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
+    assert_eq!(second.code, third.code, "fmt must stay at its fixed point");
+}
