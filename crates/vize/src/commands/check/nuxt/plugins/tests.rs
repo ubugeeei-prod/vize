@@ -11,11 +11,13 @@ fn scans_src_app_plugins_for_nuxt2_injections() {
     std::fs::write(
         plugin_dir.join("logger.ts"),
         r#"export default (_context, inject) => {
-  inject("logger", {
-    info(message) {
-      return message.length;
-    },
-  });
+  if (true) {
+    inject("logger", {
+      info(message) {
+        return message.length;
+      },
+    });
+  }
 };
 "#,
     )

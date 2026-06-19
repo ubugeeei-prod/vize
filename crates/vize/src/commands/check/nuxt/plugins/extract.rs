@@ -150,10 +150,64 @@ fn collect_plugin_keys_from_nuxt2_inject_calls<'a>(
     keys: &mut Vec<String>,
 ) {
     for statement in statements {
-        let Statement::ExpressionStatement(expr) = statement else {
-            continue;
-        };
-        collect_plugin_key_from_nuxt2_inject_expression(&expr.expression, inject_name, keys);
+        collect_plugin_keys_from_nuxt2_inject_statement(statement, inject_name, keys);
+    }
+}
+
+fn collect_plugin_keys_from_nuxt2_inject_statement(
+    statement: &Statement<'_>,
+    inject_name: &str,
+    keys: &mut Vec<String>,
+) {
+    match statement {
+        Statement::ExpressionStatement(expr) => {
+            collect_plugin_key_from_nuxt2_inject_expression(&expr.expression, inject_name, keys);
+        }
+        Statement::BlockStatement(block) => {
+            collect_plugin_keys_from_nuxt2_inject_calls(&block.body, inject_name, keys);
+        }
+        Statement::IfStatement(if_stmt) => {
+            collect_plugin_keys_from_nuxt2_inject_statement(&if_stmt.consequent, inject_name, keys);
+            if let Some(alternate) = &if_stmt.alternate {
+                collect_plugin_keys_from_nuxt2_inject_statement(alternate, inject_name, keys);
+            }
+        }
+        Statement::DoWhileStatement(do_while) => {
+            collect_plugin_keys_from_nuxt2_inject_statement(&do_while.body, inject_name, keys);
+        }
+        Statement::ForInStatement(for_in) => {
+            collect_plugin_keys_from_nuxt2_inject_statement(&for_in.body, inject_name, keys);
+        }
+        Statement::ForOfStatement(for_of) => {
+            collect_plugin_keys_from_nuxt2_inject_statement(&for_of.body, inject_name, keys);
+        }
+        Statement::ForStatement(for_stmt) => {
+            collect_plugin_keys_from_nuxt2_inject_statement(&for_stmt.body, inject_name, keys);
+        }
+        Statement::LabeledStatement(labeled) => {
+            collect_plugin_keys_from_nuxt2_inject_statement(&labeled.body, inject_name, keys);
+        }
+        Statement::SwitchStatement(switch_stmt) => {
+            for case in &switch_stmt.cases {
+                collect_plugin_keys_from_nuxt2_inject_calls(&case.consequent, inject_name, keys);
+            }
+        }
+        Statement::TryStatement(try_stmt) => {
+            collect_plugin_keys_from_nuxt2_inject_calls(&try_stmt.block.body, inject_name, keys);
+            if let Some(handler) = &try_stmt.handler {
+                collect_plugin_keys_from_nuxt2_inject_calls(&handler.body.body, inject_name, keys);
+            }
+            if let Some(finalizer) = &try_stmt.finalizer {
+                collect_plugin_keys_from_nuxt2_inject_calls(&finalizer.body, inject_name, keys);
+            }
+        }
+        Statement::WhileStatement(while_stmt) => {
+            collect_plugin_keys_from_nuxt2_inject_statement(&while_stmt.body, inject_name, keys);
+        }
+        Statement::WithStatement(with_stmt) => {
+            collect_plugin_keys_from_nuxt2_inject_statement(&with_stmt.body, inject_name, keys);
+        }
+        _ => {}
     }
 }
 
@@ -261,7 +315,9 @@ mod tests {
         let source = r#"
 export default defineNuxtPlugin((_context, register) => {
   register('logger', { info(message) { return message.length } })
-  register(`auth`, {})
+  if (true) {
+    register(`auth`, {})
+  }
 })
 "#;
 
@@ -274,7 +330,9 @@ export default defineNuxtPlugin((_context, register) => {
         let source = r#"
 export default (_context, inject) => {
   inject('logger', { info(message) { return message.length } })
-  inject(`auth`, {})
+  if (true) {
+    inject(`auth`, {})
+  }
 }
 "#;
 
