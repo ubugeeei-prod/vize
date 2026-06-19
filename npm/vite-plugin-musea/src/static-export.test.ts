@@ -41,7 +41,8 @@ void test("static runtime keeps discovered preview modules reachable", () => {
   const code = loadStaticRuntimeModule("\0musea-static-runtime", new Map([[art.path, art]]));
 
   assert.ok(code);
-  assert.match(code, /loadMuseaPreview/);
+  assert.match(code, /\bexport\s+async\s+function\s+loadMuseaPreview\b/);
+  assert.match(code, /window\.__MUSEA_LOAD_PREVIEW__\s*=\s*loadMuseaPreview/);
   assert.match(code, /virtual:musea-preview:\/repo\/src\/Button\.art\.vue:Default/);
   assert.equal(loadStaticRuntimeModule(VIRTUAL_STATIC_RUNTIME, new Map()), null);
 });
@@ -224,7 +225,8 @@ function plainScripts(html: string): string[] {
 }
 
 function previewRuntimeSpecifier(html: string): string {
-  const imports = [...html.matchAll(/import\s+\{\s*loadMuseaPreview\s*\}\s+from\s+("[^"]+")/g)];
+  assert.doesNotMatch(html, /import\s+\{\s*loadMuseaPreview\s*\}\s+from/);
+  const imports = [...html.matchAll(/import\s+("[^"]+");/g)];
   assert.equal(imports.length, 1);
   return JSON.parse(imports[0]![1]!) as string;
 }

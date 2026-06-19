@@ -28,10 +28,10 @@ import {
 import { shouldApplyMuseaPlugin } from "./apply.js";
 import { watchMuseaArtFiles } from "./watch.js";
 import {
+  applyMuseaStaticBuildInput,
   emitStaticGallery,
   isMuseaStaticBuild,
   loadStaticRuntimeModule,
-  museaStaticBuildConfig,
   resolveStaticRuntimeId,
 } from "../static-export.js";
 
@@ -160,10 +160,10 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
             vue: resolveVueRuntimeCompiler(),
           },
         },
-        ...(isMuseaStaticBuild() ? museaStaticBuildConfig() : {}),
       };
     },
 
+    options: applyMuseaStaticBuildInput,
     configResolved(resolvedConfig) {
       config = resolvedConfig;
 

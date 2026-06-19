@@ -19,8 +19,11 @@ export const MUSEA_STATIC_BUILD_ENV = "VIZE_MUSEA_STATIC_BUILD";
 export const VIRTUAL_STATIC_RUNTIME = "virtual:musea-static-runtime";
 
 const RESOLVED_STATIC_RUNTIME = "\0musea-static-runtime";
+const STATIC_RUNTIME_INPUT_NAME = "musea-static-runtime";
+const STATIC_USER_INPUT_NAME = "musea-static-entry";
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
+export type StaticBuildInput = string | readonly string[] | Record<string, string> | undefined;
 type OutputBundle = Record<string, OutputChunk | { type: string; fileName: string }>;
 type OutputChunk = {
   type: "chunk";
@@ -37,11 +40,36 @@ export function isMuseaStaticBuild(): boolean {
   return process.env[MUSEA_STATIC_BUILD_ENV] === "1";
 }
 
-export function museaStaticBuildConfig(): { build: { rollupOptions: { input: object } } } {
+export function museaStaticBuildInput(input: StaticBuildInput): Record<string, string> {
+  const entries: Record<string, string> = {};
+
+  if (typeof input === "string") {
+    entries[STATIC_USER_INPUT_NAME] = input;
+  } else if (Array.isArray(input)) {
+    input.forEach((value, index) => {
+      entries[`${STATIC_USER_INPUT_NAME}-${index + 1}`] = value;
+    });
+  } else if (input) {
+    Object.assign(entries, input);
+  }
+
+  entries[STATIC_RUNTIME_INPUT_NAME] = VIRTUAL_STATIC_RUNTIME;
+  return entries;
+}
+
+export function applyMuseaStaticBuildInput(options: { input?: unknown }): null {
+  if (!isMuseaStaticBuild()) return null;
+  options.input = museaStaticBuildInput(options.input as StaticBuildInput);
+  return null;
+}
+
+export function museaStaticBuildConfig(input?: StaticBuildInput): {
+  build: { rollupOptions: { input: Record<string, string> } };
+} {
   return {
     build: {
       rollupOptions: {
-        input: { "musea-static-runtime": VIRTUAL_STATIC_RUNTIME },
+        input: museaStaticBuildInput(input),
       },
     },
   };
@@ -207,8 +235,14 @@ function generateStaticPreviewHtml(
     <div class="musea-loading">Loading component...</div>
   </div>
   <script type="module">
-    import { loadMuseaPreview } from ${JSON.stringify(runtimeUrl)};
-    loadMuseaPreview(${JSON.stringify(previewId)}).catch((error) => {
+    import ${JSON.stringify(runtimeUrl)};
+    Promise.resolve().then(() => {
+      const loadMuseaPreview = window.__MUSEA_LOAD_PREVIEW__;
+      if (typeof loadMuseaPreview !== "function") {
+        throw new Error("Musea preview runtime failed to load");
+      }
+      return loadMuseaPreview(${JSON.stringify(previewId)});
+    }).catch((error) => {
       const el = document.getElementById("app");
       if (el) el.textContent = error instanceof Error ? error.message : String(error);
     });
