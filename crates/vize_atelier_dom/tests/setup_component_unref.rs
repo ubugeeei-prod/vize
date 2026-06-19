@@ -38,27 +38,15 @@ fn inline_setup_ref_component_tag_uses_unref() {
 
     assert!(errors.is_empty(), "Errors: {:?}", errors);
     let full = full_output(&result.preamble, &result.code);
-    assert!(full.contains("unref as _unref"), "{full}");
     assert_eq!(
-        full.matches("_unref(Menu").count(),
-        5,
-        "every setup ref component tag path should be unref'd:\n{full}"
-    );
-    assert!(
-        full.contains("_createBlock(_unref(Menu)") || full.contains("_createVNode(_unref(Menu)"),
-        "setup ref component tags must be unref'd:\n{full}"
-    );
-    assert!(
-        full.contains("_createVNode(_unref(Menu))"),
-        "v-once component tags must be unref'd:\n{full}"
-    );
-    assert!(
-        full.contains("_unref(Menu).Item"),
-        "dotted setup ref component tags must unref the base binding:\n{full}"
-    );
-    assert!(
-        !full.contains("_createBlock(Menu") && !full.contains("_createVNode(Menu"),
-        "raw ref component tag must not be emitted:\n{full}"
+        component_call_targets(&full),
+        vec![
+            "_unref(Menu)",
+            "_unref(Menu)",
+            "_unref(Menu).Item",
+            "_unref(Menu)",
+            "_unref(Menu)",
+        ]
     );
 }
 

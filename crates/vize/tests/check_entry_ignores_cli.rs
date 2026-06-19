@@ -4,6 +4,9 @@ use vize_carton::cstr;
 
 #[test]
 fn check_config_entry_ignores_explicit_inputs() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
     let project_root = create_cli_project(
         "entry-ignore-explicit-check",
         &[
@@ -27,6 +30,7 @@ const count: string = 0;
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
         .args([
             "check",
             "--config",
@@ -57,6 +61,9 @@ const count: string = 0;
 
 #[test]
 fn check_config_entry_ignores_default_and_explicit_path_matrix() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
     let project_root = create_cli_project(
         "entry-ignore-path-matrix",
         &[
@@ -112,6 +119,7 @@ const count: string = 0;
 
     let all = run_check_json(
         &project_root,
+        &corsa_path,
         &["check", "--config", "vize.config.json", "--format", "json"],
     );
     assert_json_files(&all, &[("src/App.vue", 0)]);
@@ -125,6 +133,7 @@ const count: string = 0;
     for ignored_input in ignored_inputs {
         let json = run_check_json(
             &project_root,
+            &corsa_path,
             &[
                 "check",
                 "--config",
@@ -141,9 +150,10 @@ const count: string = 0;
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
-fn run_check_json(project_root: &Path, args: &[&str]) -> serde_json::Value {
+fn run_check_json(project_root: &Path, corsa_path: &str, args: &[&str]) -> serde_json::Value {
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(project_root)
+        .env("CORSA_PATH", corsa_path)
         .args(args)
         .output()
         .unwrap();
@@ -202,6 +212,26 @@ fn link_workspace_node_modules(project_root: &Path) {
     std::os::unix::fs::symlink(source, target).unwrap();
     #[cfg(windows)]
     std::os::windows::fs::symlink_dir(source, target).unwrap();
+}
+
+fn resolve_test_corsa_path() -> Option<String> {
+    if let Some(path) = std::env::var_os("CORSA_PATH") {
+        let path = std::path::PathBuf::from(path);
+        if path.exists() {
+            return Some(path.display().to_string());
+        }
+    }
+
+    let workspace_root = workspace_root();
+    let sibling_cache = workspace_root.parent()?.join("corsa-bind/.cache/tsgo");
+    if sibling_cache.exists() {
+        return Some(sibling_cache.display().to_string());
+    }
+
+    let workspace_bin = workspace_root.join("node_modules/.bin/tsgo");
+    workspace_bin
+        .exists()
+        .then(|| workspace_bin.display().to_string())
 }
 
 fn create_cli_project(name: &str, files: &[(&str, &str)]) -> std::path::PathBuf {
