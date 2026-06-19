@@ -93,6 +93,17 @@ fn v_effect_references_resolve_against_v_scope() {
 }
 
 #[test]
+fn component_v_bind_arg_is_not_an_undefined_template_ref() {
+    let undefined = undefined_refs_with_empty_script(
+        r#"<AfsButton v-if="interaction?.to" :to="interaction.to">{{ interaction.text }}</AfsButton>"#,
+    );
+    assert!(
+        !undefined.iter().any(|n| n == "to"),
+        "component prop names must not be template refs: {undefined:?}"
+    );
+}
+
+#[test]
 fn nested_v_scope_shadows_outer() {
     use vize_armature::parse;
     use vize_carton::Bump;

@@ -1,7 +1,7 @@
 //! Tests for SFC type checking.
-
 #![cfg(test)]
 mod emit_props;
+mod optional_chain_props;
 #[cfg(feature = "legacy")]
 mod options_api_required_props;
 mod options_api_setup_spread;

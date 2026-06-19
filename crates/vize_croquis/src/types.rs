@@ -206,6 +206,7 @@ impl TypeResolver {
         let mut properties = Vec::new();
         let mut depth = 0;
         let mut current = String::default();
+        let mut prev = '\0';
 
         for c in content.chars() {
             match c {
@@ -213,7 +214,11 @@ impl TypeResolver {
                     depth += 1;
                     current.push(c);
                 }
-                '}' | '>' | ')' | ']' => {
+                '}' | ')' | ']' => {
+                    depth -= 1;
+                    current.push(c);
+                }
+                '>' if prev != '=' => {
                     depth -= 1;
                     current.push(c);
                 }
@@ -225,6 +230,7 @@ impl TypeResolver {
                 }
                 _ => current.push(c),
             }
+            prev = c;
         }
 
         // Process last segment
@@ -357,64 +363,4 @@ fn is_valid_identifier(s: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{TypeDefinitions, TypeResolver};
-
-    #[test]
-    fn test_extract_inline_props() {
-        let resolver = TypeResolver::new();
-        let props = resolver.extract_properties("{ msg: string, count?: number }");
-
-        assert_eq!(props.len(), 2);
-        assert_eq!(props[0].name.as_str(), "msg");
-        assert!(!props[0].optional);
-        assert_eq!(props[1].name.as_str(), "count");
-        assert!(props[1].optional);
-    }
-
-    #[test]
-    fn test_extract_props_from_reference() {
-        let mut resolver = TypeResolver::new();
-        resolver.add_interface("Props", "{ foo: string; bar: number }");
-
-        let props = resolver.extract_properties("Props");
-        assert_eq!(props.len(), 2);
-        assert_eq!(props[0].name.as_str(), "foo");
-        assert_eq!(props[1].name.as_str(), "bar");
-    }
-
-    #[test]
-    fn test_extract_emits_call_signature() {
-        let resolver = TypeResolver::new();
-        let emits =
-            resolver.extract_emits("{ (e: 'click'): void; (e: 'update', value: number): void }");
-
-        assert_eq!(emits.len(), 2);
-        assert_eq!(emits[0].as_str(), "click");
-        assert_eq!(emits[1].as_str(), "update");
-    }
-
-    #[test]
-    fn test_extract_emits_object_type() {
-        let resolver = TypeResolver::new();
-        let emits = resolver.extract_emits("{ click: []; update: [value: number] }");
-
-        assert_eq!(emits.len(), 2);
-        assert_eq!(emits[0].as_str(), "click");
-        assert_eq!(emits[1].as_str(), "update");
-    }
-
-    #[test]
-    fn test_type_definitions() {
-        let mut defs = TypeDefinitions::new();
-        defs.add_interface("Props", "{ msg: string }");
-        defs.add_type_alias("Count", "number");
-
-        assert!(defs.is_defined("Props"));
-        assert!(defs.is_defined("Count"));
-        assert!(!defs.is_defined("Unknown"));
-
-        assert!(defs.resolve("Props").is_some());
-        assert!(defs.resolve("Count").is_some());
-    }
-}
+mod tests;
