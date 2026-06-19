@@ -115,6 +115,9 @@ impl Default for ConfigFeatureFlags {
 pub(crate) struct RawVizeConfig {
     #[serde(rename = "$schema")]
     pub schema: Option<String>,
+    #[serde(rename = "basePath")]
+    pub base_path: Option<String>,
+    pub files: Option<Vec<String>>,
     pub dialect: Option<VueDialect>,
     pub formatter: FormatterConfig,
     pub(crate) compiler: RawCompilerConfig,
@@ -140,6 +143,7 @@ pub(crate) struct RawVizeConfig {
 #[serde(default, rename_all = "camelCase")]
 pub(crate) struct RawConfigEntry {
     pub base_path: Option<String>,
+    pub files: Option<Vec<String>>,
     pub ignores: Option<Vec<String>>,
     pub linter: RawLinterConfig,
 }
@@ -148,6 +152,12 @@ pub(crate) struct RawConfigEntry {
 pub struct ConfigEntryIgnore {
     pub base_path: Option<String>,
     pub pattern: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConfigEntryFiles {
+    pub base_path: Option<String>,
+    pub files: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -187,6 +197,8 @@ impl RawVizeConfig {
     pub(crate) fn into_config_and_features(self) -> (VizeConfig, ConfigFeatureFlags) {
         let RawVizeConfig {
             schema,
+            base_path: _,
+            files: _,
             dialect,
             formatter,
             compiler,
