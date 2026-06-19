@@ -11,6 +11,8 @@ mod batch_cache;
 mod corsa;
 
 #[cfg(test)]
+mod config_tests;
+#[cfg(test)]
 mod tests;
 
 use std::path::PathBuf;
