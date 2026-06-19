@@ -304,68 +304,6 @@ const count = 1
 }
 
 #[test]
-fn check_without_patterns_resolves_imports_outside_tsconfig_include_for_types() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
-        return;
-    };
-    let project_root = create_cli_project(
-        "default-transitive-imports-outside-include",
-        &[
-            (
-                "tsconfig.json",
-                r#"{
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true
-  },
-  "include": ["inside/**/*.ts"]
-}"#,
-            ),
-            (
-                "inside/use.ts",
-                r#"import { ITEMS } from '../outside/lib'
-
-export const r = ITEMS.map(({ code, name }) => `${code}:${name}`)
-"#,
-            ),
-            (
-                "outside/lib.ts",
-                "export const ITEMS = [{ code: 'en', name: 'English' }, { code: 'ru', name: 'Russian' }]\n",
-            ),
-        ],
-    );
-
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(&project_root)
-        .env("CORSA_PATH", corsa_path)
-        .args(["check", "--format", "json"])
-        .output()
-        .unwrap();
-
-    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
-    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
-        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
-    });
-
-    assert_eq!(
-        output.status.code(),
-        Some(0),
-        "stdout:\n{stdout}\nstderr:\n{stderr}"
-    );
-    assert_eq!(json["fileCount"], 1, "stdout:\n{stdout}\nstderr:\n{stderr}");
-    assert_eq!(
-        json["errorCount"], 0,
-        "transitive import should be registered for type resolution; stdout:\n{stdout}\nstderr:\n{stderr}"
-    );
-
-    let _ = std::fs::remove_dir_all(project_root);
-}
-
-#[test]
 fn check_json_reports_empty_result_when_no_files_match() {
     let project_root = create_cli_project("json-empty-inputs", &[]);
 

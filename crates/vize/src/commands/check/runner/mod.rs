@@ -46,7 +46,7 @@ use global_components::{
     build_virtual_ts_options, collect_project_global_component_stubs, dialect_from_features,
     template_syntax_mode,
 };
-use ignores::{CheckIgnoreSet, load_check_ignore_set, retain_unignored};
+use ignores::{load_check_ignore_set, retain_unignored};
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
 #[cfg(test)]
 use nuxt_tsconfig::write_nuxt_fallback_tsconfig;
@@ -62,73 +62,6 @@ pub(crate) use socket::run_with_socket;
 
 #[allow(clippy::disallowed_types)]
 type JsonObject = Map<std::string::String, Value>;
-
-fn collect_default_run_files(
-    project_root: &Path,
-    cwd: &Path,
-    tsconfig_path: Option<&Path>,
-    include_jsx: bool,
-    tsconfig_input_cache: &mut TsconfigInputCache,
-    canonical_paths: &mut CanonicalPathCache,
-    check_ignore_set: Option<&CheckIgnoreSet>,
-) -> (Vec<PathBuf>, FxHashSet<PathBuf>) {
-    let mut files = collect_default_check_files(
-        project_root,
-        tsconfig_path,
-        include_jsx,
-        tsconfig_input_cache,
-    );
-    retain_unignored(&mut files, check_ignore_set);
-    let reported_files = canonical_file_set(&files, canonical_paths);
-    register_transitive_local_imports(
-        &mut files,
-        cwd,
-        tsconfig_path,
-        include_jsx,
-        canonical_paths,
-        None,
-        false,
-    );
-
-    (files, reported_files)
-}
-
-fn canonical_file_set(
-    files: &[PathBuf],
-    canonical_paths: &mut CanonicalPathCache,
-) -> FxHashSet<PathBuf> {
-    files
-        .iter()
-        .map(|path| canonical_paths.canonicalize(path))
-        .collect()
-}
-
-fn register_transitive_local_imports(
-    files: &mut Vec<PathBuf>,
-    cwd: &Path,
-    tsconfig_path: Option<&Path>,
-    include_jsx: bool,
-    canonical_paths: &mut CanonicalPathCache,
-    explicit_input_root: Option<&Path>,
-    validate_inputs: bool,
-) {
-    let aliases = super::imports_aliases::PathAliasResolver::from_tsconfig(tsconfig_path);
-    for path in super::imports::collect_transitive_local_imports(
-        files,
-        cwd,
-        canonical_paths,
-        include_jsx,
-        Some(&aliases),
-    ) {
-        let inside_allowed = !validate_inputs
-            || explicit_input_root.is_none_or(|root| path_is_inside_root(root, &path));
-        if inside_allowed && !files.contains(&path) {
-            files.push(path);
-        }
-    }
-    files.sort();
-    files.dedup();
-}
 
 /// Run type checking directly with a materialized Corsa project.
 pub(crate) fn run_direct(args: &CheckArgs) {
@@ -221,21 +154,15 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut canonical_paths = CanonicalPathCache::default();
     let check_ignore_set = load_check_ignore_set(args, config_dir);
     let collect_start = Instant::now();
-    let (mut files, explicit_files, reported_files): (
-        Vec<PathBuf>,
-        Vec<PathBuf>,
-        FxHashSet<PathBuf>,
-    ) = if args.patterns.is_empty() {
-        let (files, reported_files) = collect_default_run_files(
+    let (mut files, explicit_files) = if args.patterns.is_empty() {
+        let mut files = collect_default_check_files(
             &project_root,
-            &cwd,
             tsconfig_path.as_deref(),
             jsx_typecheck,
             &mut tsconfig_input_cache,
-            &mut canonical_paths,
-            check_ignore_set.as_ref(),
         );
-        (files, Vec::new(), reported_files)
+        retain_unignored(&mut files, check_ignore_set.as_ref());
+        (files, Vec::new())
     } else {
         let files = collect_check_files_with_ignores(
             &args.patterns,
@@ -243,9 +170,12 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             check_ignore_set.as_ref(),
         );
         let explicit_files = files.clone();
-        let reported_files = canonical_file_set(&files, &mut canonical_paths);
-        (files, explicit_files, reported_files)
+        (files, explicit_files)
     };
+    let reported_files = files
+        .iter()
+        .map(|p| canonical_paths.canonicalize(p))
+        .collect();
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
@@ -267,17 +197,24 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     }
 
     let validate_inputs = !args.patterns.is_empty() && tsconfig_path.is_some();
-    if !args.patterns.is_empty() {
-        register_transitive_local_imports(
-            &mut files,
-            &cwd,
-            tsconfig_path.as_deref(),
-            jsx_typecheck,
-            &mut canonical_paths,
-            Some(&explicit_input_root),
-            validate_inputs,
-        );
+    let aliases =
+        super::imports_aliases::PathAliasResolver::from_tsconfig(tsconfig_path.as_deref());
+    for path in super::imports::collect_transitive_local_imports(
+        &files,
+        &cwd,
+        &mut canonical_paths,
+        jsx_typecheck,
+        Some(&aliases),
+    ) {
+        let allowed = args.patterns.is_empty()
+            || !validate_inputs
+            || path_is_inside_root(&explicit_input_root, &path);
+        if allowed && !files.contains(&path) {
+            files.push(path);
+        }
     }
+    files.sort();
+    files.dedup();
     exit_if_inputs_outside_root(&explicit_input_root, &files, validate_inputs);
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
     let tsconfig_path =
