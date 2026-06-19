@@ -62,6 +62,37 @@ fn test_rewrite_absolute_export_from_for_virtual_project() {
     assert_eq!(result.code, r#"export * from '/p/v/src/App.vue.ts';"#);
 }
 
+#[cfg(unix)]
+#[test]
+fn rewrite_absolute_vue_specifier_through_symlinked_project_path() {
+    let real = tempfile::tempdir().unwrap();
+    let link_parent = tempfile::tempdir().unwrap();
+    let link = link_parent.path().join("project-link");
+    std::os::unix::fs::symlink(real.path(), &link).unwrap();
+    std::fs::create_dir_all(real.path().join("src")).unwrap();
+    std::fs::write(real.path().join("src/App.vue"), "<template />").unwrap();
+
+    let source = format!(r#"export * from "{}";"#, link.join("src/App.vue").display());
+    let virtual_root = real.path().join("node_modules/.vize/canon");
+    let roots = (
+        vize_carton::path::canonicalize_non_verbatim(&link),
+        virtual_root.clone(),
+    );
+    let result = ImportRewriter::new().rewrite_for_virtual_project(
+        &source,
+        SourceType::ts(),
+        (roots.0.as_path(), roots.1.as_path()),
+    );
+
+    assert_eq!(
+        result.code.as_str(),
+        format!(
+            r#"export * from "{}";"#,
+            virtual_root.join("src/App.vue.ts").display()
+        )
+    );
+}
+
 #[test]
 fn test_rewrite_absolute_ts_import_for_virtual_project() {
     let rewriter = ImportRewriter::new();

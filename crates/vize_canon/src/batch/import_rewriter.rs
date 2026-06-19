@@ -255,7 +255,8 @@ impl ImportRewriter {
     ) -> Option<String> {
         let candidate = std::path::Path::new(path);
         if candidate.is_absolute()
-            && let Ok(relative) = candidate.strip_prefix(roots.0)
+            && let Ok(relative) =
+                vize_carton::path::canonicalize_non_verbatim(candidate).strip_prefix(roots.0)
             && is_rewritable_project_specifier(relative)
         {
             let mut rewritten = cstr!("{}", roots.1.join(relative).display());
