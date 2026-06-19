@@ -15,6 +15,7 @@ import {
 } from "@vizejs/native";
 
 import type { VizePluginState } from "./state.ts";
+import { isInsidePath, isProjectSourceImporter, normalizeImporterFilePath } from "./importer.ts";
 import {
   LEGACY_VIZE_PREFIX,
   VIRTUAL_CSS_MODULE,
@@ -385,47 +386,6 @@ function isVuePackageEntry(id: string): boolean {
   );
 }
 
-function isInsidePath(parent: string, child: string): boolean {
-  const relative = path.relative(parent, child);
-  return (
-    relative === "" || (!!relative && !relative.startsWith("..") && !path.isAbsolute(relative))
-  );
-}
-
-function normalizeNuxtVirtualImporterPath(importer: string): string | null {
-  const { request } = splitViteIdQuery(importer);
-  for (const prefix of ["/@id/virtual:nuxt:", "virtual:nuxt:"]) {
-    if (!request.startsWith(prefix)) {
-      continue;
-    }
-
-    const encodedPath = request.slice(prefix.length);
-    try {
-      return decodeURIComponent(encodedPath);
-    } catch {
-      return encodedPath;
-    }
-  }
-
-  return null;
-}
-
-function normalizeImporterFilePath(importer: string): string {
-  const nuxtVirtualPath = normalizeNuxtVirtualImporterPath(importer);
-  if (nuxtVirtualPath) {
-    return nuxtVirtualPath;
-  }
-
-  const request = classifyVitePluginRequest(importer);
-  return (
-    request.normalizedFsId ??
-    request.strippedVirtualPath ??
-    request.vizeVirtualPath ??
-    request.normalizedVuePath ??
-    splitViteIdQuery(importer).request
-  );
-}
-
 function isProjectLocalImporter(state: Pick<VizePluginState, "root">, importer?: string): boolean {
   if (!importer) {
     return false;
@@ -640,12 +600,18 @@ async function resolveProjectVueRuntime(
     return null;
   }
 
+  const isBuild = state.server === null;
   const viteImporter = normalizeViteRequireBase(importer) ?? importer;
   if (isVuePeerRuntimeRequest(id)) {
     const nuxtPeerEntry = resolveProjectNuxtVuePeerRuntimeEntryWithNode(state, id);
     if (nuxtPeerEntry) {
       state.logger.log(`resolveId: resolved Nuxt Vue peer runtime ${id} to ${nuxtPeerEntry}`);
       return nuxtPeerEntry;
+    }
+
+    if (!isBuild && isProjectSourceImporter(state.root, importer)) {
+      state.logger.log(`resolveId: deferring source Vue peer runtime ${id} to Vite optimizer`);
+      return null;
     }
 
     const projectLocalEntry = resolveVuePeerRuntimeEntryWithNode(state, id, viteImporter);
@@ -1016,6 +982,12 @@ export async function resolveIdHook(
       // packages in the correct node_modules directory.
       if (!id.startsWith("./") && !id.startsWith("../") && !id.startsWith("/")) {
         const isVueRuntime = isVueRuntimeRequest(id);
+        const isVuePeerRuntime = isVuePeerRuntimeRequest(id);
+        if (!isBuild && isVuePeerRuntime && isProjectSourceImporter(state.root, importer)) {
+          state.logger.log(`resolveId: deferring source Vue peer runtime ${id} to Vite optimizer`);
+          return null;
+        }
+
         if (isVueRuntime && isBuild) {
           const vueBundlerEntry = resolveVueBundlerEntryWithNode(state, id, cleanImporter);
           if (vueBundlerEntry) {

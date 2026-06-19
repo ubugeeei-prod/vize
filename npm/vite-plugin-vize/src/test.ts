@@ -8,6 +8,7 @@ import "./plugin/index.test.ts";
 import "./plugin/load.test.ts";
 import "./plugin/native.test.ts";
 import "./plugin/quasar.test.ts";
+import "./plugin/resolve-peer-runtime.test.ts";
 import "./plugin/resolve-vue-runtime.test.ts";
 import "./plugin/resolve.test.ts";
 import "./plugin/state.test.ts";
