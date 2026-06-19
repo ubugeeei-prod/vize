@@ -142,14 +142,22 @@ void rootOnly;
         output.status.success(),
         "package-local check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
     );
-    assert!(
-        !stderr.contains("outside project root"),
-        "{stdout}\n{stderr}"
-    );
-    assert!(!stdout.contains("rootOnly"), "{stdout}\n{stderr}");
 
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
-    assert_eq!(json["errorCount"], 0, "{stdout}\n{stderr}");
+    assert_eq!(
+        json["errorCount"], 0,
+        "unexpected diagnostics:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(json["warningCount"], 0, "{stdout}\n{stderr}");
+    assert_eq!(json["fileCount"], 1, "{stdout}\n{stderr}");
+    let files = json["files"].as_array().unwrap();
+    assert_eq!(files.len(), 1, "{stdout}\n{stderr}");
+    assert_eq!(files[0]["file"], "src/App.vue", "{stdout}\n{stderr}");
+    assert_eq!(
+        files[0]["diagnostics"],
+        serde_json::json!([]),
+        "{stdout}\n{stderr}"
+    );
 
     let _ = std::fs::remove_dir_all(&workspace);
 }
