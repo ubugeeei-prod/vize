@@ -182,12 +182,36 @@ fn assert_json_files(json: &serde_json::Value, expected: &[(&str, usize)]) {
     assert_eq!(json["fileCount"], expected.len());
 }
 
+fn workspace_root() -> &'static Path {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("workspace root should exist")
+}
+
+fn link_workspace_node_modules(project_root: &Path) {
+    let source = workspace_root().join("node_modules");
+    if !source.exists() {
+        return;
+    }
+    let target = project_root.join("node_modules");
+    if target.exists() {
+        return;
+    }
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(source, target).unwrap();
+    #[cfg(windows)]
+    std::os::windows::fs::symlink_dir(source, target).unwrap();
+}
+
 fn create_cli_project(name: &str, files: &[(&str, &str)]) -> std::path::PathBuf {
     let project_root = std::env::temp_dir()
         .join("vize-tests")
         .join("tests")
         .join(cstr!("{name}-{}", std::process::id()).as_str());
     let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(&project_root).unwrap();
+    link_workspace_node_modules(&project_root);
     for (path, content) in files {
         let file_path = project_root.join(path);
         if let Some(parent) = file_path.parent() {
