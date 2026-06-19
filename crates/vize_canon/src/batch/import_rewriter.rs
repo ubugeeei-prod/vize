@@ -10,6 +10,10 @@ use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_carton::cstr;
 
+#[path = "import_rewriter_virtual.rs"]
+mod virtual_rewrite;
+use virtual_rewrite::absolute_import_needs_virtual_rewrite;
+
 #[derive(Debug, Clone)]
 pub struct OffsetAdjustment {
     pub original_offset: u32,
@@ -259,6 +263,9 @@ impl ImportRewriter {
                 vize_carton::path::canonicalize_non_verbatim(candidate).strip_prefix(roots.0)
             && is_rewritable_project_specifier(relative)
         {
+            if !path.ends_with(".vue") && !absolute_import_needs_virtual_rewrite(candidate) {
+                return None;
+            }
             let mut rewritten = cstr!("{}", roots.1.join(relative).display());
             if path.ends_with(".vue") {
                 rewritten.push_str(".ts");

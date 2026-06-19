@@ -7,6 +7,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::cstr;
+mod graphql_generated;
 mod ref_arity;
 mod tsconfig_native_options;
 mod windows_paths;
@@ -75,7 +76,6 @@ fn snapshot_text(source: &str) -> std::string::String {
     }
     output
 }
-
 #[test]
 fn test_virtual_project_new() {
     let case_dir = unique_case_dir("new");

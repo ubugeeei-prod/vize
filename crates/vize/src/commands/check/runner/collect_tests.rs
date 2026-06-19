@@ -1,7 +1,6 @@
 use super::super::ignores::CheckIgnoreSet;
 use super::{
-    base_dir_from_pattern, collect_check_files, collect_check_files_with_ignores,
-    collect_vue_files, path_is_inside_root,
+    base_dir_from_pattern, collect_check_files, collect_check_files_with_ignores, collect_vue_files,
 };
 use crate::commands::check::{
     imports::collect_transitive_local_imports, imports_aliases::PathAliasResolver,
@@ -226,7 +225,7 @@ fn path_root_filter_drops_alias_imports_outside_package_cwd() {
 }"#,
     )
     .unwrap();
-    let root_only = write_file(
+    let _root_only = write_file(
         &workspace,
         "src/generated/tecack/custom.ts",
         "export const rootOnly = 'root';\n",
@@ -261,10 +260,9 @@ void rootOnly;
         Some(&aliases),
     );
 
-    assert_eq!(discovered, vec![root_only.canonicalize().unwrap()]);
     assert!(
-        !path_is_inside_root(&package_root, &discovered[0]),
-        "root app import leaked into package inputs"
+        discovered.is_empty(),
+        "root app import leaked into package inputs: {discovered:#?}"
     );
 
     let _ = fs::remove_dir_all(&workspace);

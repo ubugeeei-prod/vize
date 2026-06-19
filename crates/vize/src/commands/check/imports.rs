@@ -7,10 +7,14 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::{FxHashSet, String, ToCompactString, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, cstr};
 
 use super::imports_aliases::PathAliasResolver;
 use super::path_cache::CanonicalPathCache;
+
+#[path = "imports_registration.rs"]
+mod registration;
+use registration::non_relative_import_needs_virtual_registration;
 
 /// Source extensions whose imports carry TypeScript types worth pulling into the
 /// virtual project, in module-resolution precedence order.
@@ -33,6 +37,7 @@ pub(super) fn collect_transitive_local_imports(
     aliases: Option<&PathAliasResolver>,
 ) -> Vec<PathBuf> {
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
+    let mut registration_cache: FxHashMap<PathBuf, bool> = FxHashMap::default();
     let mut queue: Vec<PathBuf> = Vec::new();
 
     // Seed the visited set with the roots so they are never re-registered.
@@ -57,9 +62,11 @@ pub(super) fn collect_transitive_local_imports(
         // `import`/`from` string operands, so an SFC's `<template>`/`<style>`
         // are inert and no `.vue` parse is needed on this hot path.
         for specifier in extract_import_specifiers(&source) {
-            let resolved = if is_relative_specifier(&specifier) {
+            let relative_specifier = is_relative_specifier(&specifier);
+            let absolute_specifier = Path::new(specifier.as_str()).is_absolute();
+            let resolved = if relative_specifier {
                 resolve_relative_import(dir, &specifier, canonical_paths, include_jsx)
-            } else if Path::new(specifier.as_str()).is_absolute() {
+            } else if absolute_specifier {
                 resolve_import_base(Path::new(specifier.as_str()), canonical_paths, include_jsx)
             } else {
                 aliases.and_then(|aliases| {
@@ -77,6 +84,17 @@ pub(super) fn collect_transitive_local_imports(
             // Never register an ambient declaration file — its `declare module`
             // statements would shadow real modules as a program root.
             if is_declaration_file(&resolved) || is_node_modules_path(&resolved) {
+                continue;
+            }
+            if !relative_specifier
+                && !non_relative_import_needs_virtual_registration(
+                    &resolved,
+                    canonical_paths,
+                    include_jsx,
+                    aliases,
+                    &mut registration_cache,
+                )
+            {
                 continue;
             }
             if visited.insert(resolved.clone()) {
@@ -279,6 +297,9 @@ fn append_extension(base: &Path, ext: &str) -> PathBuf {
     }
 }
 
+#[cfg(test)]
+#[path = "imports_generated_tests.rs"]
+mod generated_tests;
 #[cfg(test)]
 #[path = "imports_tests.rs"]
 mod tests;

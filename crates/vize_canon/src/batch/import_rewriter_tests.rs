@@ -1,6 +1,29 @@
 use super::ImportRewriter;
 use oxc_span::SourceType;
-use std::path::Path;
+use std::fs;
+use std::path::{Path, PathBuf};
+use vize_carton::cstr;
+
+fn unique_case_dir(name: &str) -> PathBuf {
+    static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    std::env::temp_dir().join(
+        cstr!(
+            "vize-import-rewriter-{name}-{}-{case_id}",
+            std::process::id()
+        )
+        .as_str(),
+    )
+}
+
+fn write(dir: &Path, rel: &str, contents: &str) -> PathBuf {
+    let path = dir.join(rel);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).unwrap();
+    }
+    fs::write(&path, contents).unwrap();
+    path
+}
 
 #[test]
 fn test_rewrite_default_import() {
@@ -72,37 +95,94 @@ fn rewrite_absolute_vue_specifier_through_symlinked_project_path() {
     std::fs::create_dir_all(real.path().join("src")).unwrap();
     std::fs::write(real.path().join("src/App.vue"), "<template />").unwrap();
 
-    let source = format!(r#"export * from "{}";"#, link.join("src/App.vue").display());
+    let source = cstr!(r#"export * from "{}";"#, link.join("src/App.vue").display());
     let virtual_root = real.path().join("node_modules/.vize/canon");
     let roots = (
         vize_carton::path::canonicalize_non_verbatim(&link),
         virtual_root.clone(),
     );
     let result = ImportRewriter::new().rewrite_for_virtual_project(
-        &source,
+        source.as_str(),
         SourceType::ts(),
         (roots.0.as_path(), roots.1.as_path()),
     );
 
     assert_eq!(
         result.code.as_str(),
-        format!(
+        cstr!(
             r#"export * from "{}";"#,
             virtual_root.join("src/App.vue.ts").display()
         )
+        .as_str()
     );
 }
 
 #[test]
-fn test_rewrite_absolute_ts_import_for_virtual_project() {
-    let rewriter = ImportRewriter::new();
-    let source = r#"import type { Kind } from '/p/types/codegen/schema';"#;
-    let roots = (Path::new("/p"), Path::new("/p/v"));
-    let result = rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots);
-    assert_eq!(
-        result.code,
-        r#"import type { Kind } from '/p/v/types/codegen/schema';"#
+fn test_keeps_plain_absolute_generated_graphql_import_for_virtual_project() {
+    let root = unique_case_dir("plain-generated-graphql");
+    let _ = fs::remove_dir_all(&root);
+    let schema = write(
+        &root,
+        "types/codegen/schema.ts",
+        "// Generated GraphQL schema types.\nexport enum Kind { List = 'LIST' }\n",
     );
+    let rewriter = ImportRewriter::new();
+    let source = cstr!(
+        "import type {{ Kind }} from '{}';",
+        schema.with_extension("").display()
+    );
+    let virtual_root = root.join("node_modules/.vize/canon");
+    let roots = (root.as_path(), virtual_root.as_path());
+    let result = rewriter.rewrite_for_virtual_project(source.as_str(), SourceType::ts(), roots);
+    assert_eq!(
+        result.code.as_str(),
+        cstr!(
+            "import type {{ Kind }} from '{}';",
+            schema.with_extension("").display()
+        )
+        .as_str()
+    );
+
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
+fn test_rewrite_absolute_ts_import_that_needs_vue_rewrite_for_virtual_project() {
+    let root = unique_case_dir("ts-with-vue-import");
+    let _ = fs::remove_dir_all(&root);
+    let feature = write(
+        &root,
+        "src/feature.ts",
+        "import { Widget } from './nested'\nexport { Widget }\n",
+    );
+    write(
+        &root,
+        "src/nested.ts",
+        "import Widget from './Widget.vue'\nexport { Widget }\n",
+    );
+    write(
+        &root,
+        "src/Widget.vue",
+        "<script setup lang=\"ts\">const label = 'ok'</script>",
+    );
+    let rewriter = ImportRewriter::new();
+    let source = cstr!(
+        "import {{ Widget }} from '{}';",
+        feature.with_extension("").display()
+    );
+    let virtual_root = root.join("node_modules/.vize/canon");
+    let roots = (root.as_path(), virtual_root.as_path());
+    let result = rewriter.rewrite_for_virtual_project(source.as_str(), SourceType::ts(), roots);
+    assert_eq!(
+        result.code.as_str(),
+        cstr!(
+            "import {{ Widget }} from '{}';",
+            virtual_root.join("src/feature").display()
+        )
+        .as_str()
+    );
+
+    let _ = fs::remove_dir_all(&root);
 }
 
 #[test]
