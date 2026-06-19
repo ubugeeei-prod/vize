@@ -12,6 +12,7 @@ use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
 pub(crate) struct ScopeGenContext<'a> {
     pub(crate) summary: &'a Croquis,
     pub(crate) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
+    pub(crate) skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,

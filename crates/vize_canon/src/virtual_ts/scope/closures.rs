@@ -15,6 +15,7 @@ use crate::virtual_ts::helpers::{get_dom_event_type, to_safe_identifier_fragment
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_events::generate_component_event_types;
+use super::component_prop_expressions::collect_component_prop_expression_ranges;
 use super::component_props::generate_component_props;
 use super::context::{
     ComponentPropsContext, EventHandlerExprContext, ScopeGenContext, ScopeGenerationOptions,
@@ -24,6 +25,7 @@ use super::emit::{
 };
 use super::event_handler::generate_event_handler_expressions;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
+use super::vif_guard::common_vif_guard_prefix;
 
 /// Generate scope closures from Croquis scope chain.
 /// Uses recursive tree-based generation so nested v-for/v-slot scopes
@@ -50,6 +52,10 @@ pub(crate) fn generate_scope_closures(
                     .push(expr);
             }
             expressions_by_scope
+        });
+    let skipped_expression_ranges =
+        profile!("canon.virtual_ts.component_prop_expression_ranges", {
+            collect_component_prop_expression_ranges(summary, virtual_ts_options, &options)
         });
 
     // Build scope tree: parent_scope_id -> Vec<child ScopeId>
@@ -146,6 +152,7 @@ pub(crate) fn generate_scope_closures(
                     mappings,
                     exprs,
                     template_prop_names,
+                    &skipped_expression_ranges,
                     template_offset,
                     "  ",
                 );
@@ -156,6 +163,7 @@ pub(crate) fn generate_scope_closures(
         let ctx = ScopeGenContext {
             summary,
             expressions_by_scope: &expressions_by_scope,
+            skipped_expression_ranges: &skipped_expression_ranges,
             children_map: &children_map,
             template_prop_names,
             template_offset,
@@ -276,6 +284,7 @@ fn generate_scope_node(
                     mappings,
                     exprs,
                     ctx.template_prop_names,
+                    ctx.skipped_expression_ranges,
                     ctx.template_offset,
                     &vfor_inner_indent,
                 );
@@ -330,6 +339,7 @@ fn generate_scope_node(
                     mappings,
                     exprs,
                     ctx.template_prop_names,
+                    ctx.skipped_expression_ranges,
                     ctx.template_offset,
                     &inner_indent,
                 );
@@ -439,6 +449,7 @@ fn generate_scope_node(
                     mappings,
                     exprs,
                     ctx.template_prop_names,
+                    ctx.skipped_expression_ranges,
                     ctx.template_offset,
                     indent,
                 );
@@ -470,77 +481,4 @@ fn generate_child_scopes(
             }
         }
     }
-}
-
-/// Compute the v-if guard active for a v-for *element* from the template
-/// expressions recorded in its scope.
-///
-/// Every expression carries the joined `v-if` guard (`(a) && (b) && ...`)
-/// active where it appears. For a v-for element, its own bindings/interpolations
-/// share the element's enclosing guard, while expressions under a `v-if` nested
-/// *inside* the loop body extend that guard with further `&& (...)` terms. The
-/// enclosing guard is therefore the longest `&&`-separated prefix common to
-/// every expression in the scope: it can never include a nested branch's
-/// condition, and is `None` when any expression is unguarded (i.e. the v-for is
-/// not inside a `v-if`). Returns the re-joined guard string when non-empty.
-fn common_vif_guard_prefix(exprs: &[&vize_croquis::TemplateExpression]) -> Option<String> {
-    let mut iter = exprs.iter();
-    // Seed the common prefix with the first expression's guard terms; an
-    // unguarded expression immediately rules out any common guard.
-    let first = iter.next()?.vif_guard.as_ref()?;
-    let mut common: Vec<&str> = split_guard_terms(first.as_str());
-
-    for expr in iter {
-        let guard = expr.vif_guard.as_ref()?;
-        let terms = split_guard_terms(guard.as_str());
-        let shared = common
-            .iter()
-            .zip(terms.iter())
-            .take_while(|(a, b)| a == b)
-            .count();
-        common.truncate(shared);
-        if common.is_empty() {
-            return None;
-        }
-    }
-
-    (!common.is_empty()).then(|| String::from(common.join(" && ").as_str()))
-}
-
-/// Split a joined v-if guard into its top-level ` && `-separated terms.
-///
-/// The drawer joins each branch condition — already wrapped as `(cond)` or
-/// `!(cond)` — with ` && `, so a single condition may itself contain ` && `
-/// inside its parentheses (`v-if="a && b"` becomes the term `(a && b)`). The
-/// split must therefore only break on the ` && ` joiner at paren depth zero so
-/// such conditions stay intact.
-fn split_guard_terms(guard: &str) -> Vec<&str> {
-    let bytes = guard.as_bytes();
-    let mut terms = Vec::new();
-    let mut depth = 0i32;
-    let mut start = 0usize;
-    let mut index = 0usize;
-
-    while index < bytes.len() {
-        match bytes[index] {
-            b'(' | b'[' | b'{' => depth += 1,
-            b')' | b']' | b'}' => depth -= 1,
-            b'&' if depth == 0
-                && bytes.get(index + 1) == Some(&b'&')
-                && index >= 1
-                && bytes[index - 1] == b' '
-                && bytes.get(index + 2) == Some(&b' ') =>
-            {
-                terms.push(guard[start..index - 1].trim());
-                index += 3;
-                start = index;
-                continue;
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-
-    terms.push(guard[start..].trim());
-    terms
 }

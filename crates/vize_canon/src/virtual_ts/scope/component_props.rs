@@ -14,6 +14,7 @@ use crate::virtual_ts::expressions::generate_component_prop_checks;
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
+use super::component_prop_checker::append_prop_checker_alias;
 use super::context::{ComponentPropsContext, VForPropsContext};
 use super::emit::{
     append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
@@ -68,14 +69,8 @@ pub(super) fn generate_component_props(
     // (TypeScript type aliases cannot be inside function bodies)
     ts.push_str("\n  // Component props type declarations\n");
 
-    // Helper types for the generic functional prop-check path (#775). A
-    // `<script setup generic="T">` child exposes `__vizeCheck<T>(props)` on its
-    // default export; `__VizePropChecker<C>` extracts that generic signature so
-    // the parent can call it and let TS infer `T` from the passed props. When
-    // the child is non-generic (plain construct signature), a built-in / library
-    // component, or `any`, it falls back to `(props: any) => void`, a no-op that
-    // never reports, so only generic components take the new path and the
-    // well-tested `typeof Comp extends { $props }` extraction below is preserved.
+    // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
+    // typing is limited to inline function props to avoid duplicate errors.
     let any_dynamic_props = checkable_usages.iter().any(|(_, usage)| {
         usage.props.iter().any(|p| {
             p.name.as_str() != "key"
@@ -87,7 +82,7 @@ pub(super) fn generate_component_props(
     if any_dynamic_props {
         ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
         ts.push_str(
-            "  type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;\n",
+            "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
         );
         ts.push_str(
             "  type __VizePropValue<P, K extends PropertyKey> = K extends keyof P ? P[K] : unknown;\n",
@@ -132,11 +127,13 @@ pub(super) fn generate_component_props(
             }
         }
 
-        // Generic functional prop-checker for this component (#775). Resolves to
-        // the child's `__vizeCheck` when generic, else a `(props: any)` no-op.
-        append!(
-            *ts,
-            "  type __{component_type_name}_Check_{idx} = __VizePropChecker<typeof {component_ref}>;\n",
+        // Generic functional prop-checker for this component (#775).
+        append_prop_checker_alias(
+            ts,
+            usage,
+            component_type_name.as_str(),
+            component_ref.as_str(),
+            idx,
         );
     }
 

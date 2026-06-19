@@ -1,8 +1,4 @@
 //! Recognition and emission of v-if / v-else-if / v-else control-flow chains.
-//!
-//! Collapses a run of template expressions that share guard structure into a
-//! single TypeScript `if / else if / else` chain so the type checker narrows
-//! each branch the way Vue's renderer would.
 
 use super::super::types::VizeMapping;
 use super::statements::generate_expression_statement;
@@ -252,13 +248,8 @@ pub(super) fn emit_vif_control_flow_chain(
     exprs: &[&TemplateExpression],
     chain: &VifControlFlowChain<'_>,
     template_prop_names: &FxHashSet<String>,
-    template_offset: u32,
-    indent: &str,
+    context: &VifControlFlowEmitContext<'_>,
 ) {
-    let context = VifBranchEmitContext {
-        template_offset,
-        indent,
-    };
     for (branch_index, branch) in chain.branches.iter().enumerate() {
         emit_vif_branch_open(
             ts,
@@ -267,12 +258,18 @@ pub(super) fn emit_vif_control_flow_chain(
             chain,
             branch,
             branch_index == 0,
-            &context,
+            context,
         );
 
-        let body_indent = cstr!("{indent}  ");
+        let body_indent = cstr!("{}  ", context.indent);
         for (expr_index, expr) in exprs.iter().enumerate().take(branch.end).skip(branch.start) {
             if branch.condition_expr_index == Some(expr_index) {
+                continue;
+            }
+            if context
+                .skipped_expression_ranges
+                .contains(&(expr.start, expr.end))
+            {
                 continue;
             }
             generate_expression_statement(
@@ -280,12 +277,12 @@ pub(super) fn emit_vif_control_flow_chain(
                 mappings,
                 expr,
                 template_prop_names,
-                template_offset,
+                context.template_offset,
                 &body_indent,
             );
         }
     }
-    append!(*ts, "{indent}}}\n");
+    append!(*ts, "{}}}\n", context.indent);
 }
 
 fn emit_vif_branch_open(
@@ -295,7 +292,7 @@ fn emit_vif_branch_open(
     chain: &VifControlFlowChain<'_>,
     branch: &VifBranch<'_>,
     first: bool,
-    context: &VifBranchEmitContext<'_>,
+    context: &VifControlFlowEmitContext<'_>,
 ) {
     let prefix_is_empty = chain.prefix.is_empty();
     match (first, branch.condition) {
@@ -348,9 +345,10 @@ fn emit_vif_branch_open(
     }
 }
 
-struct VifBranchEmitContext<'a> {
-    template_offset: u32,
-    indent: &'a str,
+pub(super) struct VifControlFlowEmitContext<'a> {
+    pub(super) skipped_expression_ranges: &'a FxHashSet<(u32, u32)>,
+    pub(super) template_offset: u32,
+    pub(super) indent: &'a str,
 }
 
 fn append_guard_condition(

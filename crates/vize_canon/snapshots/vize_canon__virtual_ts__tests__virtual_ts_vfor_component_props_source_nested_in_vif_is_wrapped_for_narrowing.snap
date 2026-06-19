@@ -114,12 +114,14 @@ function __setup() {
 
   // Component props type declarations
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
-  type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;
+  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;
   type __VizePropValue<P, K extends PropertyKey> = K extends keyof P ? P[K] : unknown;
   // @vize-map: component -> 81:105
   type __Test_Props_0 = typeof Test extends { new (): { $props: infer __P } } ? __P : (typeof Test extends (props: infer __P) => any ? __P : {});
   type __Test_0_prop_value1 = __VizePropValue<__Test_Props_0, 'value1'>;
-  type __Test_Check_0 = __VizePropChecker<typeof Test>;
+  type __Test_CheckProps_0 = {
+  };
+  type __Test_Check_0 = __VizePropChecker<typeof Test, __Test_CheckProps_0>;
 
   // Component props value checks (template scope)
   if ((key === 'b')) {

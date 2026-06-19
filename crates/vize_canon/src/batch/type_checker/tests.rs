@@ -2517,9 +2517,8 @@ export declare function inject<T>(key: InjectionKey<T> | string | symbol): T | u
 export declare function inject<T>(key: InjectionKey<T> | string | symbol, defaultValue: T): T;
 export declare function markRaw<T extends object>(value: T): T;
 export declare function createApp(root: any): {
-  config: {
-    globalProperties: { [key: string]: any };
-  };
+  config: { globalProperties: { [key: string]: any }; };
+  mount(container: string | Element): ComponentPublicInstance; unmount(): void; use(plugin: any, ...options: any[]): any;
 };
 "#,
     )?;
