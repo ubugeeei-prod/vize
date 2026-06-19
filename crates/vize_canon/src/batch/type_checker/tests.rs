@@ -13,8 +13,8 @@ mod generic_component_listener_payload;
 mod no_check_props;
 mod no_unused;
 mod options_api_required_props;
+mod package_exports_types;
 mod scan;
-
 #[test]
 fn batch_type_checker_snapshots_vue_diagnostics() {
     if resolve_test_tsgo_binary().is_none() {

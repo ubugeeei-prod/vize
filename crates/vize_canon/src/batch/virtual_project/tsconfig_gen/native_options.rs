@@ -17,7 +17,14 @@ pub(super) fn normalize_native_removed_options(options: &mut Map<std::string::St
     );
     if legacy_node_resolution {
         if module_supports_bundler_resolution(options) {
+            // Native TypeScript no longer accepts legacy `node10`, but plain
+            // `bundler` would start respecting package `exports`. Keep the
+            // Node-era package lookup behavior by disabling export/import-map
+            // package resolution only for configs that explicitly asked for
+            // legacy Node resolution.
             options.insert("moduleResolution".into(), Value::String("bundler".into()));
+            options.insert("resolvePackageJsonExports".into(), Value::Bool(false));
+            options.insert("resolvePackageJsonImports".into(), Value::Bool(false));
         } else {
             options.remove("moduleResolution");
         }

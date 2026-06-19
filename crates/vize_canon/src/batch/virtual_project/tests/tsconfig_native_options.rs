@@ -41,6 +41,14 @@ fn materialized_tsconfig_normalizes_native_removed_options() {
         compiler_options["moduleResolution"],
         serde_json::json!("bundler")
     );
+    assert_eq!(
+        compiler_options["resolvePackageJsonExports"],
+        serde_json::json!(false)
+    );
+    assert_eq!(
+        compiler_options["resolvePackageJsonImports"],
+        serde_json::json!(false)
+    );
     assert!(!compiler_options.contains_key("downlevelIteration"));
 
     let _ = fs::remove_dir_all(&case_dir);
