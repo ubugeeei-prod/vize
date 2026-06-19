@@ -18,25 +18,21 @@ pub(super) fn emit_json_output(json_output: JsonOutput) {
     }
 }
 
-/// Whether a registered file's diagnostics should be reported. For an explicit
-/// subset (`reported` is `Some`), only the requested files are reported; ambient
-/// and transitively-registered files exist only to resolve cross-file types.
-/// Project-level diagnostics (anchored to a tsconfig or the project root, not
-/// a source file) describe the whole check and are always reported.
+/// Whether a registered file's diagnostics should be reported. Only listed
+/// source files are reported; ambient and transitively-registered files exist
+/// only to resolve cross-file types. Project-level diagnostics (anchored to a
+/// tsconfig or the project root, not a source file) describe the whole check and
+/// are always reported.
 pub(super) fn is_reported(
-    reported: &Option<FxHashSet<PathBuf>>,
+    reported: &FxHashSet<PathBuf>,
     path: &Path,
     canonical_paths: &mut CanonicalPathCache,
 ) -> bool {
-    match reported {
-        None => true,
-        Some(set) => {
-            if !is_source_path(path) {
-                return true;
-            }
-            set.contains(&canonical_paths.canonicalize(path))
-        }
+    if !is_source_path(path) {
+        return true;
     }
+
+    reported.contains(&canonical_paths.canonicalize(path))
 }
 
 fn is_source_path(path: &Path) -> bool {
