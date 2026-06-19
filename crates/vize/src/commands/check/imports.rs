@@ -1,9 +1,9 @@
-//! Transitive resolution of source imports for explicit `vize check` subsets.
+//! Transitive resolution of source imports for `vize check` virtual projects.
 //!
-//! `vize check src/App.vue` registers only the requested files in the virtual
-//! project, so a sibling import like `./types` or `~/components/Foo.vue` cannot
-//! see the real types and can surface false `TS2307`. This module walks the
-//! reachable graph and returns on-disk source files to register.
+//! A check run may intentionally report diagnostics for only a subset of
+//! sources, but imported local sources still need to be registered so
+//! cross-file types resolve like tsc/vue-tsc. This module walks the reachable
+//! graph and returns on-disk source files to register.
 
 use std::path::{Path, PathBuf};
 
