@@ -236,3 +236,43 @@ export default defineComponent({
         output.code
     );
 }
+
+#[test]
+fn test_options_api_spread_only_helpers_do_not_emit_unused_this_bridge() {
+    let script = r#"import { defineComponent } from 'vue'
+import { mapState } from 'pinia'
+
+function useFakeStore() {
+    return {
+        items: [] as string[],
+        ready: true,
+    }
+}
+
+export default defineComponent({
+    computed: {
+        ...mapState(useFakeStore, ['items', 'ready']),
+    },
+})
+"#;
+    let summary = analyze_options_api_script(script);
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        !output.code.contains("Options API typed instance bridge"),
+        "spread-only helpers should not emit an unused __VizeThis bridge:\n{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("__VizeThis"),
+        "spread-only helpers should not surface generated unused type aliases:\n{}",
+        output.code
+    );
+}

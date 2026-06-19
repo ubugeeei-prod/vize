@@ -101,6 +101,9 @@ pub(super) fn generate_options_api_bridge(mut ts: &mut String, summary: &Croquis
     let Some(bridge) = collect_options_api_bridge(script) else {
         return;
     };
+    if bridge.computed.is_empty() && bridge.methods.is_empty() {
+        return;
+    }
 
     let mut names: Vec<&str> = summary
         .bindings
@@ -119,14 +122,6 @@ pub(super) fn generate_options_api_bridge(mut ts: &mut String, summary: &Croquis
     extend_options_api_descriptor_names(&mut names, summary);
     names.sort_unstable();
     names.dedup();
-
-    if names.is_empty()
-        && bridge.computed.is_empty()
-        && bridge.methods.is_empty()
-        && bridge.mapped_types.is_empty()
-    {
-        return;
-    }
 
     ts.push_str("  // Options API typed instance bridge\n");
     for (index, mapped_type) in bridge.mapped_types.iter().enumerate() {
