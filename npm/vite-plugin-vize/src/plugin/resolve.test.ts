@@ -168,6 +168,58 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("dev-source-vue-peer-runtime");
+  const mainImporter = path.join(projectRoot, "src", "main.ts");
+  const sfcImporter = path.join(projectRoot, "src", "PageOne.vue");
+  const routerPackage = path.join(projectRoot, "node_modules", "vue-router");
+  const routerEntry = path.join(routerPackage, "dist", "vue-router.js");
+
+  writeFixtureFile(mainImporter, "import { createRouter } from 'vue-router';");
+  writeFixtureFile(
+    sfcImporter,
+    "<script setup>import { useRouteQuery } from '@vueuse/router'</script>",
+  );
+  writeFixtureFile(
+    path.join(routerPackage, "package.json"),
+    JSON.stringify(
+      {
+        name: "vue-router",
+        exports: {
+          ".": {
+            import: "./dist/vue-router.js",
+            require: "./dist/vue-router.js",
+          },
+          "./package.json": "./package.json",
+        },
+        main: "dist/vue-router.js",
+      },
+      null,
+      2,
+    ),
+  );
+  writeFixtureFile(routerEntry, "export const createRouter = () => null;");
+
+  const state = createState(projectRoot);
+
+  assert.equal(
+    await resolveIdHook(nullResolveContext, state, "vue-router", mainImporter, undefined),
+    null,
+    "Dev source imports of Vue peer runtimes should stay bare so Vite optimizes vue-router consistently with dependent packages",
+  );
+  assert.equal(
+    await resolveIdHook(
+      nullResolveContext,
+      state,
+      "vue-router",
+      toVirtualId(sfcImporter),
+      undefined,
+    ),
+    null,
+    "Dev source SFC imports of Vue peer runtimes should not bypass Vite's dependency optimizer",
+  );
+}
+
+{
   const parentRoot = createTempRoot("regular-vue-project-pnpm-hoist");
   const projectRoot = path.join(parentRoot, "fixture-app");
   writeFixtureFile(path.join(projectRoot, "package.json"), "{}");

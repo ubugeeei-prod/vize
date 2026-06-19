@@ -447,6 +447,32 @@ function isProjectLocalImporter(state: Pick<VizePluginState, "root">, importer?:
   }
 }
 
+function isProjectSourceImporter(state: Pick<VizePluginState, "root">, importer?: string): boolean {
+  if (!importer) {
+    return false;
+  }
+
+  const importerPath = normalizeImporterFilePath(importer);
+  if (!path.isAbsolute(importerPath)) {
+    return false;
+  }
+
+  const normalizedImporterPath = importerPath.split(path.sep).join("/");
+  if (normalizedImporterPath.includes("/node_modules/")) {
+    return false;
+  }
+
+  if (isInsidePath(state.root, importerPath)) {
+    return true;
+  }
+
+  try {
+    return isInsidePath(fs.realpathSync(state.root), fs.realpathSync(importerPath));
+  } catch {
+    return false;
+  }
+}
+
 function resolveProjectLocalPnpmVueRuntime(
   state: Pick<VizePluginState, "root">,
   resolvedId: string,
@@ -640,12 +666,18 @@ async function resolveProjectVueRuntime(
     return null;
   }
 
+  const isBuild = state.server === null;
   const viteImporter = normalizeViteRequireBase(importer) ?? importer;
   if (isVuePeerRuntimeRequest(id)) {
     const nuxtPeerEntry = resolveProjectNuxtVuePeerRuntimeEntryWithNode(state, id);
     if (nuxtPeerEntry) {
       state.logger.log(`resolveId: resolved Nuxt Vue peer runtime ${id} to ${nuxtPeerEntry}`);
       return nuxtPeerEntry;
+    }
+
+    if (!isBuild && isProjectSourceImporter(state, importer)) {
+      state.logger.log(`resolveId: deferring source Vue peer runtime ${id} to Vite optimizer`);
+      return null;
     }
 
     const projectLocalEntry = resolveVuePeerRuntimeEntryWithNode(state, id, viteImporter);
@@ -1016,6 +1048,12 @@ export async function resolveIdHook(
       // packages in the correct node_modules directory.
       if (!id.startsWith("./") && !id.startsWith("../") && !id.startsWith("/")) {
         const isVueRuntime = isVueRuntimeRequest(id);
+        const isVuePeerRuntime = isVuePeerRuntimeRequest(id);
+        if (!isBuild && isVuePeerRuntime && isProjectSourceImporter(state, importer)) {
+          state.logger.log(`resolveId: deferring source Vue peer runtime ${id} to Vite optimizer`);
+          return null;
+        }
+
         if (isVueRuntime && isBuild) {
           const vueBundlerEntry = resolveVueBundlerEntryWithNode(state, id, cleanImporter);
           if (vueBundlerEntry) {
