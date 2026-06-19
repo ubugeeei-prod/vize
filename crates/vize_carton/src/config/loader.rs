@@ -18,7 +18,8 @@ use discovery::{resolve_dir_path, resolve_file_path};
 use parse::{parse_raw_config_file, try_parse_raw_candidate};
 
 use super::model::{
-    ConfigEntryIgnore, ConfigFeatureFlags, LinterConfig, RawVizeConfig, VizeConfig,
+    ConfigEntryFiles, ConfigEntryIgnore, ConfigFeatureFlags, LinterConfig, RawVizeConfig,
+    VizeConfig,
 };
 
 const CONFIG_FILE_NAMES: [&str; 5] = [
@@ -52,6 +53,12 @@ pub struct LoadedConfigWithFeatures {
 #[derive(Debug, Clone)]
 pub struct LoadedConfigEntryIgnores {
     pub ignores: Vec<ConfigEntryIgnore>,
+    pub source_path: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone)]
+pub struct LoadedConfigEntryFiles {
+    pub entries: Vec<ConfigEntryFiles>,
     pub source_path: Option<PathBuf>,
 }
 
@@ -238,6 +245,37 @@ pub fn load_config_entry_ignores_with_source(path: Option<&Path>) -> LoadedConfi
     let ignores = top_level_ignores.chain(entry_ignores).collect();
     LoadedConfigEntryIgnores {
         ignores,
+        source_path: loaded.source_path,
+    }
+}
+
+pub fn load_config_entry_files_with_source(path: Option<&Path>) -> LoadedConfigEntryFiles {
+    let loaded = load_raw_config_with_source(path);
+    let mut entries = Vec::new();
+    if let Some(files) = loaded.config.files.filter(|files| !files.is_empty()) {
+        entries.push(ConfigEntryFiles {
+            base_path: loaded.config.base_path,
+            files,
+        });
+    }
+    entries.extend(
+        loaded
+            .config
+            .entries
+            .unwrap_or_default()
+            .into_iter()
+            .filter_map(|entry| {
+                entry
+                    .files
+                    .filter(|files| !files.is_empty())
+                    .map(|files| ConfigEntryFiles {
+                        base_path: entry.base_path,
+                        files,
+                    })
+            }),
+    );
+    LoadedConfigEntryFiles {
+        entries,
         source_path: loaded.source_path,
     }
 }

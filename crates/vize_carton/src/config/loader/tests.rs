@@ -1,7 +1,8 @@
 use super::{
     load_compiler_jsx_mode, load_compiler_template_syntax, load_compiler_vue_version,
-    load_config_and_linter_with_source, load_config_entry_ignores_with_source,
-    load_config_with_source, load_linter_config, validate_explicit_config_path,
+    load_config_and_linter_with_source, load_config_entry_files_with_source,
+    load_config_entry_ignores_with_source, load_config_with_source, load_linter_config,
+    validate_explicit_config_path,
 };
 use crate::config::{JsxMode, VueVersion};
 
@@ -280,6 +281,35 @@ fn load_config_entry_ignores_preserves_base_paths() {
         Some("design-system")
     );
     assert_eq!(loaded.ignores[2].pattern.as_str(), "src/Fixture.vue");
+}
+
+#[test]
+fn load_config_entry_files_preserves_base_paths() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+  "basePath": "app",
+  "files": ["src/**/*.vue"],
+  "entries": [
+    { "name": "design", "basePath": "design-system", "files": ["src/**/*.art.vue"] }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let loaded = load_config_entry_files_with_source(Some(&config_path));
+
+    assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
+    assert_eq!(loaded.entries.len(), 2);
+    assert_eq!(loaded.entries[0].base_path.as_deref(), Some("app"));
+    assert_eq!(loaded.entries[0].files, vec!["src/**/*.vue"]);
+    assert_eq!(
+        loaded.entries[1].base_path.as_deref(),
+        Some("design-system")
+    );
+    assert_eq!(loaded.entries[1].files, vec!["src/**/*.art.vue"]);
 }
 
 #[test]

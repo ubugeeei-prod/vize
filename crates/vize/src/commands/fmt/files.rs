@@ -9,14 +9,14 @@ const VIZE_CACHE_DIR: &str = ".vize";
 
 #[allow(clippy::disallowed_types)]
 pub(super) fn collect_files(
-    patterns: &[std::string::String],
+    patterns: &[impl AsRef<str>],
     ignore_set: Option<&FmtIgnoreSet>,
 ) -> Vec<PathBuf> {
     let mut files = Vec::new();
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
 
     for pattern in patterns {
-        let normalized = normalize_fmt_pattern(pattern);
+        let normalized = normalize_fmt_pattern(pattern.as_ref());
         if should_walk_with_gitignore(&normalized) {
             if let Some(pattern) = FmtPattern::new(&normalized, &cwd) {
                 collect_walked_files(&pattern, ignore_set, &mut files);

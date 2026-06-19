@@ -36,6 +36,23 @@ fn write_entry_config(root: &Path) {
     );
 }
 
+fn write_entry_ts_config(root: &Path) {
+    write_project_file(
+        root,
+        "vize.config.ts",
+        r#"export default {
+  entries: [
+    {
+      name: "design-system",
+      basePath: "design-system",
+      files: ["src/**/*.vue", "src/**/*.art.vue"],
+    },
+  ],
+}
+"#,
+    );
+}
+
 #[test]
 fn fmt_check_supports_root_relative_paths_for_config_entries() {
     let project = tempfile::tempdir().unwrap();
@@ -63,6 +80,70 @@ fn fmt_check_supports_root_relative_paths_for_config_entries() {
     assert!(stderr.contains("Found 1 file(s)"));
     assert!(stderr.contains("Would reformat: design-system/src/AfsButton.vue"));
     assert!(!stderr.contains("No .vue"));
+}
+
+#[test]
+fn fmt_check_supports_root_relative_art_vue_paths_for_config_entries() {
+    let project = tempfile::tempdir().unwrap();
+    write_entry_ts_config(project.path());
+    write_project_file(
+        project.path(),
+        "design-system/src/AfsButton.art.vue",
+        "<template><div>{{msg}}</div></template>\n<script setup lang=\"ts\">const msg=1</script>\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args([
+            "fmt",
+            "--config",
+            "vize.config.ts",
+            "--check",
+            "design-system/src/AfsButton.art.vue",
+        ])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("Found 1 file(s)"), "{stderr}");
+    assert!(
+        stderr.contains("Would reformat: design-system/src/AfsButton.art.vue"),
+        "{stderr}"
+    );
+    assert!(!stderr.contains("No .vue"), "{stderr}");
+}
+
+#[test]
+fn fmt_check_resolves_entry_relative_art_vue_paths_from_monorepo_root() {
+    let project = tempfile::tempdir().unwrap();
+    write_entry_ts_config(project.path());
+    write_project_file(
+        project.path(),
+        "design-system/src/AfsButton.art.vue",
+        "<template><div>{{msg}}</div></template>\n<script setup lang=\"ts\">const msg=1</script>\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args([
+            "fmt",
+            "--config",
+            "vize.config.ts",
+            "--check",
+            "src/AfsButton.art.vue",
+        ])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("Found 1 file(s)"), "{stderr}");
+    assert!(
+        stderr.contains("Would reformat: design-system/src/AfsButton.art.vue"),
+        "{stderr}"
+    );
+    assert!(!stderr.contains("No .vue"), "{stderr}");
 }
 
 #[test]

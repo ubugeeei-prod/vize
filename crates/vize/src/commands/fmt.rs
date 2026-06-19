@@ -21,13 +21,14 @@ use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
 
+mod entries;
 mod files;
 mod ignores;
 mod patterns;
 
 use files::collect_files;
 use ignores::load_fmt_ignore_set;
-use patterns::{default_fmt_patterns, has_explicit_patterns};
+use patterns::default_fmt_patterns;
 
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
@@ -107,16 +108,15 @@ pub fn run(args: FmtArgs) {
         std::process::exit(2);
     }
     let options = build_format_options(&args);
-    let ignore_set = load_fmt_ignore_set(&args);
+    let (ignore_set, patterns) = (load_fmt_ignore_set(&args), entries::resolve_patterns(&args));
 
-    // Collect files to format
     let collect_start = Instant::now();
-    let files: Vec<PathBuf> = collect_files(&args.patterns, ignore_set.as_ref());
+    let files: Vec<PathBuf> = collect_files(&patterns.values, ignore_set.as_ref());
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
         eprintln!("No .vue, .js, .ts, .jsx, or .tsx files found matching the patterns");
-        if has_explicit_patterns(&args.patterns) {
+        if patterns.explicit {
             std::process::exit(1);
         }
         return;
