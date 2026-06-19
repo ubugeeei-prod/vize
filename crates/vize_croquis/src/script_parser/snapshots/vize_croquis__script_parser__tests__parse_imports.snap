@@ -1,6 +1,5 @@
 ---
 source: crates/vize_croquis/src/script_parser/tests.rs
-assertion_line: 342
 expression: result
 ---
 ScriptParseResult {
@@ -1327,6 +1326,7 @@ ScriptParseResult {
         "ref": "vue",
         "MyComponent": "./MyComponent.vue",
     },
+    module_value_bindings: {},
     type_export_typeof_refs: [],
     runtime_object_literals: {},
     options_descriptor: None,

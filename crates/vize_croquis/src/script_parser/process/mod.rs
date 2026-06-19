@@ -16,6 +16,7 @@
 mod bindings;
 mod class_component;
 mod macros;
+mod module_exports;
 mod options_api;
 mod statements;
 

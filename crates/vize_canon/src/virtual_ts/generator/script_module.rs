@@ -26,8 +26,7 @@ pub(super) fn collect_line_module_import_spans(script: &str) -> Vec<(u32, u32)> 
         let trimmed = line.trim_start();
         if trimmed.starts_with("import ")
             || trimmed.starts_with("import\t")
-            || (trimmed.starts_with("export ")
-                && (trimmed.contains(" from ") || trimmed.starts_with("export type ")))
+            || (trimmed.starts_with("export ") && trimmed.contains(" from "))
         {
             let start = offset + (line.len() - line.trim_start().len());
             let end = offset + line.len();

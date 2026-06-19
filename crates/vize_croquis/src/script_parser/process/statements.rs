@@ -314,12 +314,12 @@ fn process_class_declaration(result: &mut ScriptParseResult, class: &Class<'_>) 
             .insert(CompactString::new(name), (id.span.start, id.span.end));
     }
 }
-
 fn process_exported_value_declaration(
     result: &mut ScriptParseResult,
     decl: &Declaration<'_>,
     source: &str,
 ) {
+    super::module_exports::record_module_value_exports(result, decl);
     match decl {
         Declaration::VariableDeclaration(variable) => {
             process_variable_declaration(result, variable, source)

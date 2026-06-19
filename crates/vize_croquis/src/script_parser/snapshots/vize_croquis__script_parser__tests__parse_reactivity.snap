@@ -1,6 +1,5 @@
 ---
 source: crates/vize_croquis/src/script_parser/tests.rs
-assertion_line: 330
 expression: result
 ---
 ScriptParseResult {
@@ -1311,6 +1310,7 @@ ScriptParseResult {
         ),
     },
     import_sources: {},
+    module_value_bindings: {},
     type_export_typeof_refs: [],
     runtime_object_literals: {},
     options_descriptor: None,

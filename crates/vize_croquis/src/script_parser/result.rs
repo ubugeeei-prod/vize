@@ -104,6 +104,10 @@ pub struct ScriptParseResult {
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
     /// Value import source by local binding name.
     pub import_sources: FxHashMap<CompactString, CompactString>,
+    /// Normal `<script>` value exports that canon re-emits at module scope.
+    /// Type exports may reference these through `typeof` without being
+    /// demoted into `__setup()`.
+    pub(crate) module_value_bindings: FxHashSet<CompactString>,
     /// Names referenced via `typeof X` in the body of each `type_exports`
     /// entry, indexed in parallel with `type_exports`. Used by
     /// `resolve_type_export_hoisting` to keep types adjacent to the
@@ -174,23 +178,24 @@ impl ScriptParseResult {
     /// stay inside the synthetic `__setup` function alongside the values
     /// they depend on — which is the only place TS can resolve them.
     ///
-    /// Imports add value bindings at module scope, so a `typeof importedName`
-    /// reference is left as hoisted: the import is visible from the module
-    /// scope where the type lands.
+    /// Imports and normal `<script>` named exports add value bindings at
+    /// module scope, so `typeof moduleValue` references are left hoisted: those
+    /// values are visible from the module scope where the type lands.
     pub(crate) fn resolve_type_export_hoisting(&mut self) {
         if self.type_export_typeof_refs.is_empty() {
             return;
         }
 
-        // A `typeof name` ref keeps a type hoisted only when `name` is a
-        // module-scoped import. Rather than materialize the full set of
-        // imported binding names up front (O(imports × bindings)), test each
-        // referenced name's declaration span against the import ranges on
-        // demand — `refs` is tiny, so this is O(refs × imports).
+        // A `typeof name` ref keeps a type hoisted only when `name` is visible
+        // at module scope. Rather than materialize all imported binding names
+        // up front (O(imports × bindings)), test each referenced name's
+        // declaration span against the import ranges on demand — `refs` is
+        // tiny, so this is O(refs × imports).
         for idx in 0..self.type_export_typeof_refs.len() {
             let touches_setup_value = self.type_export_typeof_refs[idx].iter().any(|name| {
                 let key = name.as_str();
                 self.bindings.bindings.contains_key(key)
+                    && !self.module_value_bindings.contains(key)
                     && !self.binding_spans.get(key).is_some_and(|(start, end)| {
                         // Bindings whose declaration site falls inside an import
                         // statement are module-scoped imports, not setup values.
