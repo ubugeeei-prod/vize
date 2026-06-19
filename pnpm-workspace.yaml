@@ -82,6 +82,11 @@ catalogs:
     "@nuxt/kit": "4.4.8"
     "@ox-content/vite-plugin": "2.68.0"
 
+  # Runtime kit loaded by @vizejs/nuxt. Keep this aligned with Nuxt 2 Bridge's
+  # kit line so Nuxt 2's module loader does not pull in Nuxt 4-only syntax.
+  nuxt-module:
+    "@nuxt/kit": "3.11.2"
+
   # Rendering / content tooling used by docs, playgrounds, and galleries.
   content:
     "@mdi/js": "7.4.47"

@@ -579,7 +579,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
       });
     }
   },
-});
+}) as ReturnType<typeof defineNuxtModule<VizeNuxtOptions>>;
 
 // Re-export types for convenience
 export type { MuseaOptions } from "@vizejs/vite-plugin-musea";

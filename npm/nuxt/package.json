@@ -49,7 +49,7 @@
     "fmt": "vp fmt --write src vite.config.ts"
   },
   "dependencies": {
-    "@nuxt/kit": "catalog:integrations",
+    "@nuxt/kit": "catalog:nuxt-module",
     "@vizejs/vite-plugin": "workspace:*",
     "@vizejs/vite-plugin-musea": "workspace:*",
     "vize": "workspace:*"
