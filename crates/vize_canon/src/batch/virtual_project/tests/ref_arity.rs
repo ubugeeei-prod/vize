@@ -67,6 +67,8 @@ const count = ref(0)
     assert!(!v2_content.contains("Ref<infer"));
     assert!(v2_content.contains("$listeners"));
     assert!(!default_content.contains("$listeners"));
+    assert!(v2_content.contains("type __VizeVue2ComponentInstance = {\n  $el: Element;"));
+    assert!(!default_content.contains("__VizeVue2ComponentInstance"));
     assert!(!v2_content.contains("Ref<infer V, any>"));
     assert!(!v2_content.contains("import('vue').Ref"));
     assert!(!v2_content.contains("import('vue').ComponentPublicInstance"));
@@ -167,6 +169,9 @@ export default {
         .clone();
     assert!(setup_content.contains(LEGACY_REF_UNWRAP_HELPER));
     for content in [setup_content.as_str(), options_content.as_str()] {
+        assert!(content.contains("type __VizeVue2ComponentInstance = {\n  $el: Element;"));
+        assert!(content.contains("  $refs: Record<string, any>;"));
+        assert!(content.contains("} & __VizeVue2ComponentInstance;"));
         assert!(!content.contains("import('vue').Ref"));
         assert!(!content.contains("import('vue').ShallowRef"));
         assert!(!content.contains("import('vue').ComponentPublicInstance"));

@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/batch/virtual_project/tests/ref_arity.rs
+assertion_line: 63
 expression: snapshot_text(v2_content.as_str())
 ---
 /// <reference lib="es2022" />
@@ -135,11 +136,34 @@ export type Emits = {};
 export type Slots = {};
 
 // ========== Default Export ==========
+type __VizeVue2ComponentInstance = {
+  $el: Element;
+  $refs: Record<string, any>;
+  $attrs: Record<string, unknown>;
+  $listeners: Record<string, unknown>;
+  $children: any[];
+  $scopedSlots: Record<string, unknown>;
+  $parent: any;
+  $root: any;
+  $options: Record<string, any>;
+  $data: Record<string, any>;
+  $on: (...args: any[]) => any;
+  $off: (...args: any[]) => any;
+  $once: (...args: any[]) => any;
+  $set: (...args: any[]) => any;
+  $delete: (...args: any[]) => any;
+  $watch: (...args: any[]) => any;
+  $nextTick: (...args: any[]) => any;
+  $forceUpdate: () => void;
+  $destroy: () => void;
+  $createElement: (...args: any[]) => any;
+  _c: (...args: any[]) => any;
+};
 type __VizeComponentInstance = {
   $props: Props;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
-};
+} & __VizeVue2ComponentInstance;
 type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
 type __VizeVueComponentOptions = {
   name?: string;

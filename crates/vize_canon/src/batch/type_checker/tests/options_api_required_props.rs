@@ -175,3 +175,102 @@ export default defineComponent({
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn legacy_vue2_component_refs_include_instance_surface() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "legacy-vue2-component-ref-instance",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineProps<{
+  label: string
+}>()
+
+defineEmits<{
+  select: [id: number]
+}>()
+</script>
+
+<template>
+  <button ref="inner">{{ label }}</button>
+</template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+
+const childRef = ref<InstanceType<typeof Child> | null>(null)
+const selected = ref(0)
+
+async function focusChild() {
+  if (childRef.value) {
+    const label: string = childRef.value.$props.label
+    childRef.value.$emit('select', 1)
+    ;(childRef.value.$el as HTMLButtonElement).focus()
+    childRef.value.$refs.inner
+    void label
+  }
+}
+
+function onSelect(id: number) {
+  selected.value = id
+}
+</script>
+
+<template>
+  <Child ref="childRef" label="Save" @select="onSelect" />
+  <button @click="focusChild">{{ selected }}</button>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let mut checker = match BatchTypeChecker::new(&project_root) {
+        Ok(checker) => checker,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+    checker.enable_legacy_vue2();
+    checker.scan_project().unwrap();
+
+    let result = match checker.check_project() {
+        Ok(result) => result,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+
+    let relevant: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            (
+                relative_path(&project_root, &diagnostic.file),
+                diagnostic.code,
+                diagnostic.line,
+                diagnostic.column,
+                diagnostic.message.clone(),
+            )
+        })
+        .collect();
+
+    assert!(
+        relevant.is_empty(),
+        "legacy Vue 2 component refs should expose generated props/emits plus instance members: {relevant:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

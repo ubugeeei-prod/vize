@@ -31,6 +31,30 @@ const MODERN_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends import('vue').Ref ? T['value'] : T;\n";
 const LEGACY_DEFINE_COMPONENT_HELPER: &str =
     "declare function __vizeDefineComponent<T>(options: T): T;\n";
+pub(super) const LEGACY_COMPONENT_INSTANCE_HELPER: &str = r#"type __VizeVue2ComponentInstance = {
+  $el: Element;
+  $refs: Record<string, any>;
+  $attrs: Record<string, unknown>;
+  $listeners: Record<string, unknown>;
+  $children: any[];
+  $scopedSlots: Record<string, unknown>;
+  $parent: any;
+  $root: any;
+  $options: Record<string, any>;
+  $data: Record<string, any>;
+  $on: (...args: any[]) => any;
+  $off: (...args: any[]) => any;
+  $once: (...args: any[]) => any;
+  $set: (...args: any[]) => any;
+  $delete: (...args: any[]) => any;
+  $watch: (...args: any[]) => any;
+  $nextTick: (...args: any[]) => any;
+  $forceUpdate: () => void;
+  $destroy: () => void;
+  $createElement: (...args: any[]) => any;
+  _c: (...args: any[]) => any;
+};
+"#;
 
 pub(super) fn needs_legacy_vue2_helpers(legacy_vue2: bool, dialect: VueVersion) -> bool {
     legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7)
@@ -57,6 +81,30 @@ pub(super) fn define_component_helper(legacy_vue2: bool, dialect: VueVersion) ->
         LEGACY_DEFINE_COMPONENT_HELPER
     } else {
         DEFINE_COMPONENT_HELPER
+    }
+}
+
+pub(super) fn instance_helper(legacy_vue2: bool, dialect: VueVersion) -> &'static str {
+    if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
+        LEGACY_COMPONENT_INSTANCE_HELPER
+    } else {
+        ""
+    }
+}
+
+pub(super) fn instance_suffix(
+    legacy_vue2: bool,
+    dialect: VueVersion,
+    has_exposed_type: bool,
+) -> &'static str {
+    match (
+        needs_legacy_vue2_helpers(legacy_vue2, dialect),
+        has_exposed_type,
+    ) {
+        (true, true) => "} & __VizeVue2ComponentInstance & Exposed;\n",
+        (true, false) => "} & __VizeVue2ComponentInstance;\n",
+        (false, true) => "} & Exposed;\n",
+        (false, false) => "};\n",
     }
 }
 
