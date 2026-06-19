@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { generateGalleryBody, generateGalleryScript } from "./gallery/template.js";
 import { serializeScriptValue } from "./security.js";
 import {
   createStaticGalleryPayload,
@@ -124,12 +125,7 @@ async function emitGalleryShell(
 ): Promise<void> {
   const galleryDir = resolveGalleryDistDir();
   if (!galleryDir) {
-    const { generateGalleryHtml } = await import("./gallery/index.js");
-    const html = injectStaticGlobals(
-      generateGalleryHtml(ctx.basePath, "", ctx.themeConfig),
-      ctx,
-      payload,
-    );
+    const html = injectStaticGlobals(generateStaticFallbackGalleryHtml(ctx.basePath), ctx, payload);
     emitFile({ type: "asset", fileName: joinFileName(staticRoot, "index.html"), source: html });
     return;
   }
@@ -149,6 +145,23 @@ async function emitGalleryShell(
   if (payload.arts.length === 0) {
     return;
   }
+}
+
+function generateStaticFallbackGalleryHtml(basePath: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musea - Component Gallery</title>
+  <style>html,body{min-height:100%;margin:0}body{font-family:system-ui,sans-serif}</style>
+</head>
+<body>${generateGalleryBody(basePath)}
+
+  <script type="module">${generateGalleryScript(basePath)}
+  </script>
+</body>
+</html>`;
 }
 
 function emitPreviewHtml(
