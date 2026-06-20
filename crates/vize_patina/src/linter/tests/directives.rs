@@ -108,6 +108,67 @@ fn test_vize_expected_suppresses_run_on_template_diagnostic() {
 }
 
 #[test]
+fn test_eslint_disable_next_line_suppresses_template_rule() {
+    let linter = Linter::new();
+    let result = linter.lint_template(
+        r#"<!-- eslint-disable-next-line vue/require-v-for-key -->
+<ul><li v-for="item in items">{{ item }}</li></ul>"#,
+        "test.vue",
+    );
+
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/require-v-for-key")
+            .count(),
+        0,
+        "eslint-disable-next-line should suppress the mapped Vue rule"
+    );
+}
+
+#[test]
+fn test_eslint_disable_line_suppresses_template_rule() {
+    let linter = Linter::new();
+    let result = linter.lint_template(
+        r#"<ul><li v-for="item in items">{{ item }}</li></ul> <!-- eslint-disable-line vue/require-v-for-key -->"#,
+        "test.vue",
+    );
+
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/require-v-for-key")
+            .count(),
+        0,
+        "eslint-disable-line should suppress the mapped Vue rule"
+    );
+}
+
+#[test]
+fn test_eslint_disable_enable_region_suppresses_only_region() {
+    let linter = Linter::new();
+    let result = linter.lint_template(
+        r#"<!-- eslint-disable vue/require-v-for-key -->
+<ul><li v-for="item in items">{{ item }}</li></ul>
+<!-- eslint-enable vue/require-v-for-key -->
+<ul><li v-for="item in items">{{ item }}</li></ul>"#,
+        "test.vue",
+    );
+
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/require-v-for-key")
+            .count(),
+        1,
+        "eslint-enable should restore the mapped Vue rule after the disabled region"
+    );
+}
+
+#[test]
 fn test_vize_level_off_suppresses_next_line_template_diagnostic() {
     let linter = Linter::new();
     let result = linter.lint_template(

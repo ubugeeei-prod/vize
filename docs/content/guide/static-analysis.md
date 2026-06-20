@@ -53,6 +53,7 @@ Use `essential` for correctness-only CI, `happy-path` for the default recommende
   "scripts": {
     "vize:lint:ci": "vize lint --preset essential --max-warnings 0 src",
     "vize:lint:opinionated": "vize lint --preset opinionated --help-level short src",
+    "vize:lint:fix": "vize lint --fix src",
     "vize:lint:json": "vize lint --format json src"
   }
 }
@@ -61,6 +62,7 @@ Use `essential` for correctness-only CI, `happy-path` for the default recommende
 ```bash
 vp run vize:lint:ci
 vp run vize:lint:opinionated
+vp run vize:lint:fix
 vp run vize:lint:json
 ```
 
@@ -116,6 +118,18 @@ The built-in presets are meant to support adoption in stages:
 | `opinionated` | `happy-path` plus stronger conventions, script rules, and type rules |
 | `nuxt`        | Opinionated rules adjusted for Nuxt auto-import assumptions          |
 | `incremental` | Empty starting point for host-driven, rule-by-rule adoption          |
+
+## Migration Pragmas and Custom Rules
+
+Patina accepts existing ESLint disable pragmas for matching rule names, including
+`eslint-disable`, `eslint-enable`, `eslint-disable-next-line`, and `eslint-disable-line`. This lets
+projects migrate rules such as `vue/require-v-for-key` without rewriting every suppression comment
+up front.
+
+Project-local JavaScript rule modules are not a stable Vize runtime API yet. During migration, keep
+those rules in ESLint or Oxlint and run them beside `vize lint`, or use the `incremental` preset to
+enable only built-in Vize rules that already match your policy. The `rules` config object controls
+built-in Vize rule severities by name.
 
 ## Cross-File Rules
 

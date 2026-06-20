@@ -8,7 +8,7 @@ export interface LintOptionsNapi {
   maxWarnings?: number;
   /** Quiet mode - only show summary */
   quiet?: boolean;
-  /** Automatically fix problems (not yet implemented) */
+  /** Automatically fix problems when diagnostics provide safe text edits */
   fix?: boolean;
   /** Help display level: "full", "short", "none" */
   helpLevel?: string;

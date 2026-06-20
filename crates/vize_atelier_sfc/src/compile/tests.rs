@@ -194,6 +194,36 @@ const emit = defineEmits<{
 }
 
 #[test]
+fn test_type_based_define_props_partial_destructure_keeps_template_props() {
+    let source = r#"<script setup lang="ts">
+const { a, b } = defineProps<{ label: string, a: string, b: string }>()
+</script>
+
+<template>
+  {{ label }} - {{ a }} - {{ b }}
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile");
+
+    assert!(
+        result.code.contains("__props.label"),
+        "non-destructured props should remain prop accesses:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("__props.a") && result.code.contains("__props.b"),
+        "destructured props should remain reactive prop accesses:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("_ctx.label"),
+        "type-only props must not fall back to instance context:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_script_setup_inject_component_props_are_unwrapped() {
     let source = r#"<template>
   <SubComponent

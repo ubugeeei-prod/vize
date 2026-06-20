@@ -26,15 +26,12 @@ use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profi
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
-use vize_patina::{HelpLevel, JsxLang, LintPreset, Linter, OutputFormat, format_results};
+use vize_patina::{
+    HelpLevel, JsxLang, LintPreset, LintResult, Linter, OutputFormat, TextEdit, format_results,
+};
 
 pub fn run(args: LintArgs) {
     let start = Instant::now();
-    if args.fix {
-        eprintln!("\x1b[31mError:\x1b[0m `vize lint --fix` is not supported yet.");
-        eprintln!("Remove `--fix` or run Vize lint without automatic fixes.");
-        std::process::exit(2);
-    }
     if let Some(path) = args.config.as_deref()
         && !args.no_config
         && let Err(error) = crate::config::validate_explicit_config_path(path)
@@ -154,15 +151,26 @@ pub fn run(args: LintArgs) {
 
             let filename = path.to_string_lossy().to_compact_string();
             let lint_file_start = args.profile.then(Instant::now);
+            let mut fixed = false;
+            let mut source = source;
             let result = profile!("cli.lint.file.lint", {
-                if is_standalone_html_path(path) {
-                    linter.lint_standalone_html(&source, &filename)
-                } else if is_plain_script_path(path) {
-                    linter.lint_script(&source, &filename)
-                } else if let Some(lang) = jsx_lang_for_path(path) {
-                    linter.lint_jsx(&source, &filename, lang)
+                let initial_result = lint_source(&linter, path, &source, &filename);
+                if args.fix
+                    && let Some(fixed_source) = apply_lint_fixes(&source, &initial_result)
+                    && fixed_source != source
+                {
+                    if let Err(error) = fs::write(path, fixed_source.as_bytes()) {
+                        global_profiler().record_fs_write_failure(fixed_source.len());
+                        eprintln!("Failed to write {}: {}", path.display(), error);
+                        initial_result
+                    } else {
+                        global_profiler().record_fs_write(fixed_source.len());
+                        fixed = true;
+                        source = fixed_source;
+                        lint_source(&linter, path, &source, &filename)
+                    }
                 } else {
-                    linter.lint_sfc(&source, &filename)
+                    initial_result
                 }
             });
             let lint_time = lint_file_start
@@ -173,11 +181,19 @@ pub fn run(args: LintArgs) {
             warning_count.fetch_add(result.warning_count, Ordering::Relaxed);
 
             if let (Some(file_start), Some(profile_rows)) = (file_start, profile_rows.as_ref()) {
-                let note = cstr!(
-                    "{} error(s), {} warning(s)",
-                    result.error_count,
-                    result.warning_count
-                );
+                let note = if fixed {
+                    cstr!(
+                        "{} error(s), {} warning(s), fixed",
+                        result.error_count,
+                        result.warning_count
+                    )
+                } else {
+                    cstr!(
+                        "{} error(s), {} warning(s)",
+                        result.error_count,
+                        result.warning_count
+                    )
+                };
                 if let Ok(mut rows) = profile_rows.lock() {
                     rows.push(ProfileFileRow {
                         path: path.clone(),
@@ -386,6 +402,60 @@ pub fn run(args: LintArgs) {
         eprintln!("\nToo many warnings ({} > max {})", total_warnings, max);
         std::process::exit(1);
     }
+}
+
+fn lint_source(linter: &Linter, path: &Path, source: &str, filename: &str) -> LintResult {
+    if is_standalone_html_path(path) {
+        linter.lint_standalone_html(source, filename)
+    } else if is_plain_script_path(path) {
+        linter.lint_script(source, filename)
+    } else if let Some(lang) = jsx_lang_for_path(path) {
+        linter.lint_jsx(source, filename, lang)
+    } else {
+        linter.lint_sfc(source, filename)
+    }
+}
+
+fn apply_lint_fixes(source: &str, result: &LintResult) -> Option<String> {
+    let mut edits: Vec<&TextEdit> = result
+        .diagnostics
+        .iter()
+        .filter_map(|diagnostic| diagnostic.fix.as_ref())
+        .flat_map(|fix| fix.edits.iter())
+        .filter(|edit| {
+            let start = edit.start as usize;
+            let end = edit.end as usize;
+            start <= end
+                && end <= source.len()
+                && source.is_char_boundary(start)
+                && source.is_char_boundary(end)
+        })
+        .collect();
+
+    if edits.is_empty() {
+        return None;
+    }
+
+    edits.sort_by_key(|edit| (edit.start, edit.end));
+    let mut selected = Vec::with_capacity(edits.len());
+    let mut last_end = 0u32;
+    for edit in edits {
+        if edit.start < last_end {
+            continue;
+        }
+        last_end = edit.end;
+        selected.push(edit);
+    }
+
+    if selected.is_empty() {
+        return None;
+    }
+
+    let mut fixed = source.to_compact_string();
+    for edit in selected.into_iter().rev() {
+        fixed.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
+    }
+    Some(fixed)
 }
 
 fn jsx_lang_for_path(path: &Path) -> Option<JsxLang> {

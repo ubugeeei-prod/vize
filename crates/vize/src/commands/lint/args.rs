@@ -23,7 +23,7 @@ pub struct LintArgs {
     ])]
     pub patterns: Vec<String>,
 
-    /// Automatically fix problems (not yet implemented)
+    /// Automatically fix problems when diagnostics provide safe text edits
     #[arg(long)]
     pub fix: bool,
 

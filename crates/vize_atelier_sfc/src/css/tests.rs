@@ -100,6 +100,21 @@ fn test_compile_scoped_css_keeps_functional_pseudo_whitespace_intact() {
     assert_eq!(code, ".card[data-v-123]:has(.icon+.label){color:red;}");
 }
 
+#[test]
+fn test_compile_scoped_css_scopes_parent_before_trailing_universal() {
+    let code = compile_scoped_css_without_whitespace(".dialog__action-buttons > * { flex: 1; }");
+
+    assert_eq!(code, ".dialog__action-buttons[data-v-123]>*{flex:1;}");
+}
+
+#[test]
+fn test_compile_scoped_css_scopes_parent_before_universal_pseudo() {
+    let code =
+        compile_scoped_css_without_whitespace(".dialog__action-buttons>*:hover { flex: 1; }");
+
+    assert_eq!(code, ".dialog__action-buttons[data-v-123]>:hover{flex:1;}");
+}
+
 #[cfg(feature = "native")]
 fn rewrite_url_nodes(value: &mut serde_json::Value, from: &str, to: &str) {
     match value {

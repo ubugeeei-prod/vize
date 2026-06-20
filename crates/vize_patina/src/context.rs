@@ -94,7 +94,7 @@ impl<'a> LintContext<'a> {
         filename: &'a str,
         locale: Locale,
     ) -> Self {
-        Self {
+        let mut ctx = Self {
             allocator,
             source,
             filename,
@@ -118,7 +118,9 @@ impl<'a> LintContext<'a> {
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
             severity_overrides: FxHashMap::default(),
-        }
+        };
+        ctx.prescan_eslint_disable_comments();
+        ctx
     }
 
     /// Create a new lint context with semantic analysis.
@@ -129,7 +131,7 @@ impl<'a> LintContext<'a> {
         filename: &'a str,
         analysis: &'a Croquis,
     ) -> Self {
-        Self {
+        let mut ctx = Self {
             allocator,
             source,
             filename,
@@ -153,7 +155,9 @@ impl<'a> LintContext<'a> {
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
             severity_overrides: FxHashMap::default(),
-        }
+        };
+        ctx.prescan_eslint_disable_comments();
+        ctx
     }
 
     /// Set semantic analysis.
@@ -420,6 +424,94 @@ impl<'a> LintContext<'a> {
         }
     }
 
+    fn disable_rule_names<'r, I>(&mut self, rules: I, start_line: u32, end_line: Option<u32>)
+    where
+        I: IntoIterator<Item = &'r str>,
+    {
+        for rule in rules {
+            let range = DisabledRange {
+                start_line,
+                end_line,
+            };
+            self.disabled_rules
+                .entry(CompactString::from(rule))
+                .or_default()
+                .push(range);
+        }
+    }
+
+    fn enable_all_rules(&mut self, line: u32) {
+        for range in &mut self.disabled_all {
+            if range.end_line.is_none() {
+                range.end_line = Some(line);
+            }
+        }
+        for ranges in self.disabled_rules.values_mut() {
+            for range in ranges {
+                if range.end_line.is_none() {
+                    range.end_line = Some(line);
+                }
+            }
+        }
+    }
+
+    fn enable_rule_names<'r, I>(&mut self, rules: I, line: u32)
+    where
+        I: IntoIterator<Item = &'r str>,
+    {
+        for rule in rules {
+            if let Some(ranges) = self.disabled_rules.get_mut(rule) {
+                for range in ranges {
+                    if range.end_line.is_none() {
+                        range.end_line = Some(line);
+                    }
+                }
+            }
+        }
+    }
+
+    fn prescan_eslint_disable_comments(&mut self) {
+        let mut line_number = 1u32;
+        for line in self.source.lines() {
+            if let Some(directive) = parse_eslint_disable_comment(line) {
+                match directive.kind {
+                    EslintDisableKind::DisableNextLine => {
+                        self.apply_eslint_disable(
+                            line_number + 1,
+                            Some(line_number + 1),
+                            directive.rules,
+                        );
+                    }
+                    EslintDisableKind::DisableLine => {
+                        self.apply_eslint_disable(line_number, Some(line_number), directive.rules);
+                    }
+                    EslintDisableKind::Disable => {
+                        self.apply_eslint_disable(line_number, None, directive.rules);
+                    }
+                    EslintDisableKind::Enable => {
+                        if directive.rules.is_empty() {
+                            self.enable_all_rules(line_number);
+                        } else {
+                            self.enable_rule_names(
+                                directive.rules.iter().map(String::as_str),
+                                line_number,
+                            );
+                        }
+                    }
+                }
+            }
+            line_number += 1;
+        }
+    }
+
+    fn apply_eslint_disable(&mut self, start_line: u32, end_line: Option<u32>, rules: Vec<String>) {
+        if rules.is_empty() {
+            self.disable_all(start_line, end_line);
+        } else {
+            self.disable_rule_names(rules.iter().map(String::as_str), start_line, end_line);
+        }
+    }
+
     /// Begin a `@vize:ignore-start` region (disables all rules from this line).
     pub fn push_ignore_region(&mut self, line: u32) {
         self.disable_all(line, None);
@@ -449,4 +541,58 @@ impl<'a> LintContext<'a> {
     ) {
         self.severity_overrides.insert(current_line + 1, severity);
     }
+}
+
+#[derive(Clone, Copy)]
+enum EslintDisableKind {
+    DisableNextLine,
+    DisableLine,
+    Disable,
+    Enable,
+}
+
+struct EslintDisableDirective {
+    kind: EslintDisableKind,
+    rules: Vec<String>,
+}
+
+fn parse_eslint_disable_comment(line: &str) -> Option<EslintDisableDirective> {
+    const MARKERS: [(&str, EslintDisableKind); 4] = [
+        (
+            "eslint-disable-next-line",
+            EslintDisableKind::DisableNextLine,
+        ),
+        ("eslint-disable-line", EslintDisableKind::DisableLine),
+        ("eslint-disable", EslintDisableKind::Disable),
+        ("eslint-enable", EslintDisableKind::Enable),
+    ];
+
+    for (marker, kind) in MARKERS {
+        if let Some(index) = line.find(marker) {
+            let rules = parse_eslint_rule_list(&line[index + marker.len()..]);
+            return Some(EslintDisableDirective { kind, rules });
+        }
+    }
+
+    None
+}
+
+fn parse_eslint_rule_list(raw: &str) -> Vec<String> {
+    let raw = raw
+        .split_once("--")
+        .map_or(raw, |(before_reason, _)| before_reason)
+        .replace("*/", " ")
+        .replace("-->", " ");
+
+    raw.split(|char: char| char == ',' || char.is_ascii_whitespace())
+        .map(str::trim)
+        .filter(|rule| !rule.is_empty())
+        .map(|rule| {
+            rule.trim_matches(|char: char| {
+                matches!(char, '"' | '\'' | '[' | ']' | '{' | '}' | '(' | ')' | ';')
+            })
+        })
+        .filter(|rule| !rule.is_empty())
+        .map(String::from)
+        .collect()
 }

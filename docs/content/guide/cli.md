@@ -152,7 +152,7 @@ Key options:
 
 | Option                | Description                                                                               |
 | --------------------- | ----------------------------------------------------------------------------------------- |
-| `--fix`               | Reserved for future autofix support                                                       |
+| `--fix`               | Apply safe autofixes from rules that provide text edits, then report remaining diagnostics |
 | `-f, --format`        | Output format: `text`, `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`, or `agent` |
 | `--max-warnings`      | Fail when warnings exceed the limit                                                       |
 | `-q, --quiet`         | Show summary only                                                                         |
@@ -179,6 +179,7 @@ Examples:
 ```bash
 vize lint --preset essential --max-warnings 0 src
 vize lint --preset opinionated --help-level short src
+vize lint --fix src
 vize lint --cross-file --cross-file-tree src
 vize lint --strict-reactivity src
 vize lint --format ansi src
@@ -186,6 +187,15 @@ vize lint --format plain src
 vize lint --format agent src
 vize lint --format markdown src
 ```
+
+`--fix` is intentionally conservative: it applies only non-overlapping edits from diagnostics that
+already carry a fix, writes changed files, and then lints the changed source again for the final
+report. Diagnostics without fixes remain reported.
+
+Patina also understands existing ESLint suppression pragmas for matching rule names during
+migration: `eslint-disable`, `eslint-enable`, `eslint-disable-next-line`, and
+`eslint-disable-line`. For example, `<!-- eslint-disable-next-line vue/require-v-for-key -->`
+suppresses the next-line Vize diagnostic for that Vue rule.
 
 ## Check
 
@@ -369,6 +379,11 @@ vize ide zed
 `vize lsp` starts the language server directly.
 `vize ide` adds editor-specific install and management commands for the VS Code and Zed
 integrations.
+
+Do not point editor `serverPath` settings at `node_modules/.bin/vize` from the npm package. The npm
+package is for project scripts and NAPI-backed commands; editor integrations should use the Rust
+`vize` binary from a GitHub release, Nix, a local Cargo build, or the binary auto-detected/downloaded
+by the VS Code extension.
 
 ## Global Options
 

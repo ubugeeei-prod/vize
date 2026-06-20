@@ -204,6 +204,12 @@ impl Linter {
                 label.start += byte_offset;
                 label.end += byte_offset;
             }
+            if let Some(fix) = diag.fix.as_mut() {
+                for edit in &mut fix.edits {
+                    edit.start += byte_offset;
+                    edit.end += byte_offset;
+                }
+            }
         }
     }
 

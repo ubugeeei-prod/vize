@@ -47,6 +47,11 @@ vp exec vsce package --no-dependencies --out dist/vize.vsix
   GitHub release, cargo, and `PATH` binaries, and downloads the matching GitHub release binary when
   no local binary matches the extension version. `vize.serverPath` is only needed for custom builds.
 
+Do not set `vize.serverPath` to `node_modules/.bin/vize` from the npm package. That package is for
+project scripts and NAPI-backed commands; the language server is the Rust `vize` executable started
+with the `lsp` subcommand. Use a GitHub release binary, Nix, a local Cargo build, or the binary that
+the extension auto-detects/downloads.
+
 ## Configuration
 
 Opening a Vue file now prompts you to apply a recommended workspace setup if the extension is still disabled or if no Vize capabilities are enabled yet.
