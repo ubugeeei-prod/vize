@@ -133,7 +133,7 @@ When a failure is unclear:
 - rerun with `--format json` to inspect stable diagnostic fields;
 - use `--profile` on `check`, `lint`, or `build` to find slow phases;
 - create an inspector payload with `vize inspector` for compiler mismatches;
-- include the smallest `.vue` file or project slice when reporting an issue.
+- include the smallest `.vue` file or project slice when requesting a fix.
 
 The [Testing & Feedback](./testing.md) and [Troubleshooting](./troubleshooting.md) pages cover
 reporting, real-world fixtures, and common environment problems.

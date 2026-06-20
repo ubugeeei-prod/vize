@@ -11,25 +11,25 @@ test("repository governance docs cover contribution and security paths", () => {
   const contributing = readRepoFile("CONTRIBUTING.md");
 
   assert.match(security, /Supported Versions/);
-  assert.match(security, /Please do not open a public issue/);
+  assert.match(security, /Please do not open a public tracker entry/);
   assert.match(security, /private vulnerability reporting/);
   assert.match(security, /latest published prerelease/);
 
   assert.match(contributing, /Conventional Commits/);
   assert.match(contributing, /vp install --frozen-lockfile --prefer-offline/);
   assert.match(contributing, /vp check <changed-files>/);
-  assert.match(contributing, /Security issues should follow `SECURITY\.md`/);
+  assert.match(contributing, /Security reports should follow `SECURITY\.md`/);
 });
 
-test("issue templates collect reproducible production-readiness reports", () => {
-  const bugReport = readRepoFile(".github", "ISSUE_TEMPLATE", "bug_report.yml");
+test("fix templates collect reproducible production-readiness reports", () => {
+  const fixReport = readRepoFile(".github", "ISSUE_TEMPLATE", "fix_report.yml");
   const featureRequest = readRepoFile(".github", "ISSUE_TEMPLATE", "feature_request.yml");
   const config = readRepoFile(".github", "ISSUE_TEMPLATE", "config.yml");
 
   for (const field of ["area", "version", "reproduction", "actual", "expected", "environment"]) {
-    assert.match(bugReport, new RegExp(`id:\\s*${field}`));
+    assert.match(fixReport, new RegExp(`id:\\s*${field}`));
   }
-  assert.match(bugReport, /This is not a private security report/);
+  assert.match(fixReport, /This is not a private security report/);
   assert.match(featureRequest, /id:\s*problem/);
   assert.match(featureRequest, /id:\s*proposal/);
   assert.match(featureRequest, /id:\s*compatibility/);

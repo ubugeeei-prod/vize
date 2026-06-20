@@ -18,7 +18,7 @@ batches. It is the fastest way to see exactly where Vize agrees or disagrees wit
 - Open it at <https://vizejs.dev/play/?tab=inspector>.
 - See the [Compiler Inspector](./compiler-inspector.md) guide for what each surface means.
 
-A playground inspector link makes an excellent bug reproduction.
+A playground inspector link makes an excellent fix reproduction.
 
 ## Read the Test Cases
 
@@ -37,9 +37,9 @@ If a case is missing or a result looks wrong, that is exactly the kind of feedba
 
 - **Plain text is fine.** A clear description of what you did, what you expected, and what happened
   is already valuable.
-- **If you can, attach a minimal reproduction** to a GitHub Issue — the smallest `.vue` file (or
+- **If you can, attach a minimal reproduction** to the GitHub tracker - the smallest `.vue` file (or
   small project) that still shows the problem. A playground inspector link works great.
-- Bug reports, reproductions, benchmark results, and compatibility findings all help. See the
+- Fix reports, reproductions, benchmark results, and compatibility findings all help. See the
   [Contributing](../contributing.md) guide and
   [Support](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md).
 
@@ -55,10 +55,10 @@ Vize has a built-in **profiling mode**, so you can measure where time goes inste
 
 ## Offer Your Project as a Test Bed
 
-Real, sizable codebases find the bugs that synthetic examples never will. **Where the license
+Real, sizable codebases find the failures that synthetic examples never will. **Where the license
 allows it, a project can be added to Vize's fixtures and become an E2E / VRT target**, so future
 regressions are caught automatically.
 
 If you maintain (or know of) a Vue application, library, framework, or tool that may be used this
-way, please let us know — open an issue or reach out. The bigger and more real the codebase, the
+way, please let us know - open a fix request or reach out. The bigger and more real the codebase, the
 more useful the signal.

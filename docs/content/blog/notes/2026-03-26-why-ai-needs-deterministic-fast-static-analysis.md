@@ -89,7 +89,7 @@ Fast static analysis is not just about making humans happier. It is about making
 
 ## AI Needs Guardrails That Are Machine-Readable
 
-There is also a tooling-design issue here.
+There is also a tooling-design problem here.
 
 A good static analyzer does not only produce red text for humans. It produces structured, machine-readable constraints:
 

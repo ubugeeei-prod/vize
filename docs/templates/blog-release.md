@@ -40,5 +40,5 @@ Explain the release in one or two paragraphs. Start with the user-facing outcome
 ## References
 
 - Pull request:
-- Issue:
+- Fix:
 - Demo:

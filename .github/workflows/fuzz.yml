@@ -46,9 +46,9 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
     # The fuzz matrix is advisory at bootstrap. libFuzzer immediately surfaces
-    # real parser/compiler bugs (the first PR run already found one — see the
+    # real parser/compiler fixes (the first PR run already found one — see the
     # `crash-*` reproducer artifact this job uploads) and triaging those is
-    # tracked per-bug, not gated through this workflow. Promote back to a
+    # tracked per-fix, not gated through this workflow. Promote back to a
     # required gate once a regression-only mode lands and the open finds are
     # cleaned up.
     continue-on-error: true
@@ -140,12 +140,12 @@ jobs:
           path: tests/fuzz/artifacts/${{ matrix.target }}
           if-no-files-found: ignore
 
-      - name: Create or update fuzz triage issue
+      - name: Create or update fuzz triage fix
         if: github.event_name != 'pull_request' && hashFiles(format('tests/fuzz/artifacts/{0}/**', matrix.target)) != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          title="fuzz: ${{ matrix.target }} found a reproducer"
+          title="fix(fuzz): ${{ matrix.target }} found a reproducer"
           run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           body_file="$(mktemp)"
           cat > "$body_file" <<EOF
@@ -163,7 +163,7 @@ jobs:
           \`\`\`
           EOF
 
-          existing_issue="$(
+          existing_fix="$(
             gh issue list \
               --state open \
               --search "${title} in:title" \
@@ -171,8 +171,8 @@ jobs:
               --jq '.[0].number // ""'
           )"
 
-          if [ -n "$existing_issue" ]; then
-            gh issue comment "$existing_issue" --body-file "$body_file"
+          if [ -n "$existing_fix" ]; then
+            gh issue comment "$existing_fix" --body-file "$body_file"
           else
             gh issue create --title "$title" --body-file "$body_file"
           fi

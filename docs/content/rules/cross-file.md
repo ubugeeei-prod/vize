@@ -881,4 +881,4 @@ watch(query, async (value, _oldValue, onCleanup) => {
 
 The cross-file engine is intentionally documented as rules, even though it uses
 diagnostic codes today. Future work can promote more Patina rules into this layer when they need
-imports, component relationships, or project-wide symbol identity to explain a bug accurately.
+imports, component relationships, or project-wide symbol identity to explain a problem accurately.

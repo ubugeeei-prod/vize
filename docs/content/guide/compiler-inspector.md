@@ -94,6 +94,6 @@ The useful PR evidence is:
 - The inspector permalink
 - The selected target and options
 - The minimized `.vue` fixture or full snapshot
-- Relevant Virtual TS, VIR, or graph context when the issue crosses compiler surfaces
+- Relevant Virtual TS, VIR, or graph context when the fix crosses compiler surfaces
 - The reason the Vize output should match or intentionally differ from Vue
 - The local verification command that covers the touched compiler surface

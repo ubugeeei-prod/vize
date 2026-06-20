@@ -1,13 +1,13 @@
-name: Bug report
-description: Report a reproducible problem in Vize
+name: Fix
+description: Request a reproducible fix in Vize
 title: "fix: "
 labels:
-  - bug
+  - fix
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report this. Please include a minimal reproduction when possible.
+        Thanks for taking the time to request this fix. Please include a minimal reproduction when possible.
   - type: dropdown
     id: area
     attributes:
@@ -77,7 +77,7 @@ body:
     attributes:
       label: Before submitting
       options:
-        - label: I checked existing issues and pull requests.
+        - label: I checked existing fix reports and pull requests.
           required: true
         - label: This is not a private security report.
           required: true
