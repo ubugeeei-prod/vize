@@ -82,7 +82,7 @@ Local audit evidence from May 18, 2026:
 - `node bench/test-inventory.mjs --json ...` reports `4,480` tracked cases across `607` files.
 
 These results are strong alpha evidence, but they are not enough to call the whole repository
-production ready. The formerly missing release-blocking checks are tracked by these issues and now
+production ready. The formerly missing release-blocking checks are tracked by these fix requests and now
 have explicit gates in CI and release docs:
 
 - [#492](https://github.com/ubugeeei-prod/vize/issues/492): source line and branch coverage gates, with function and region budgets included.

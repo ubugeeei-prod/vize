@@ -90,7 +90,7 @@ The remaining crates follow a craftsmanship analogy:
 
 - **Canon** (type checker) — In classical sculpture, the _canon_ was a standard of ideal human proportions. Polykleitos wrote the _Kanon_ defining mathematical ratios for the perfect figure. In Vize, the type checker enforces the "ideal proportions" of your code — types must be correct, props must match, emissions must conform.
 
-- **Patina** (linter) — A _patina_ is the surface finish that develops on aged materials, indicating quality and care. A bronze sculpture with a rich patina has been well-maintained. In Vize, the linter examines the surface of your code, identifying issues that affect its quality.
+- **Patina** (linter) — A _patina_ is the surface finish that develops on aged materials, indicating quality and care. A bronze sculpture with a rich patina has been well-maintained. In Vize, the linter examines the surface of your code, identifying problems that affect its quality.
 
 - **Glyph** (formatter) — A _glyph_ is a carved symbol or letterform — think of the precise, consistent letterforms in a font. Each glyph has exact proportions and spacing. In Vize, the formatter ensures your code has consistent, precise proportions.
 

@@ -101,7 +101,7 @@ This kind of exhaustive checking is slow to build, but it is the path from exper
 
 ## Tests Are a Conversation with the Community
 
-Community feedback is not only issue comments.
+Community feedback is not only tracker comments.
 
 It is also:
 

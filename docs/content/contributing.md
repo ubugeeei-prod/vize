@@ -84,18 +84,18 @@ be packaged with `vize inspector <file-or-glob>`, and agent handoff can use
 - Include verification commands in the PR body.
 - Do not refresh large snapshot baselines unless the PR is specifically about those outputs.
 - Do not include secrets, registry tokens, private vulnerability details, or machine-local paths in
-  issues, commits, or PRs.
+  reports, commits, or PRs.
 
-## Issues
+## Fix Requests
 
-Use the bug report template for regressions, crashes, incorrect diagnostics, package installation
+Use the fix report template for regressions, crashes, incorrect diagnostics, package installation
 problems, and release failures. Use the feature request template for new integrations, API changes,
 or workflow improvements. A minimal reproduction — ideally a playground inspector link — makes a
 report much faster to act on.
 
-Security issues should follow
+Security reports should follow
 [`SECURITY.md`](https://github.com/ubugeeei-prod/vize/blob/main/SECURITY.md) instead of the public
-issue templates.
+fix templates.
 
 ## Code of Conduct and Governance
 

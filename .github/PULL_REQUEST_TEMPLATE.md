@@ -16,7 +16,7 @@
 
 ## Behavior Reference
 
-<!-- Link the issue, upstream behavior, Vue/TypeScript parity note, or design note used as the source of truth. -->
+<!-- Link the fix request, upstream behavior, Vue/TypeScript parity note, or design note used as the source of truth. -->
 
 ## Verification Evidence
 

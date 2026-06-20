@@ -34,31 +34,31 @@ We are now actively looking for **real-world projects** to test Vize against.
 
 ## The Goal
 
-The goal of this phase is to discover compatibility issues, specification gaps,
+The goal of this phase is to discover compatibility gaps, specification gaps,
 performance bottlenecks, and edge cases that only appear in production codebases.
 
 If you maintain a Vue application, library, framework, or tool, we would love to hear
 about your experience running it with Vize.
 
-Every bug report, reproduction, benchmark result, and compatibility issue helps move
+Every fix report, reproduction, benchmark result, and compatibility finding helps move
 the project closer to its first stable release.
 
 ## Still Experimental — Correctness First
 
-Vize should still be considered experimental. Breaking changes may occur, bugs are
-expected, and behavior may differ from Vue in certain scenarios.
+Vize should still be considered experimental. Breaking changes may occur, fixes are
+still expected, and behavior may differ from Vue in certain scenarios.
 
 The focus of this phase is not feature development. The focus is correctness.
-Real-world applications are the test suite now. If you encounter an issue, please
+Real-world applications are the test suite now. If you encounter something that needs a fix, please
 report it — every report helps improve the compiler, the language specification, and
 the overall ecosystem.
 
 ## How to Help
 
-We are waiting for plenty of issues and PRs. We are also actively recruiting reasonably
+We are waiting for plenty of fix requests and PRs. We are also actively recruiting reasonably
 large Vue projects to use as test beds — the bigger and more real the codebase, the more
 valuable the signal. If you maintain (or know of) a substantial Vue application, library,
-framework, or tool, please open an issue or reach out so we can run Vize against it. Bug
+framework, or tool, please open a fix request or reach out so we can run Vize against it. Fix
 reports, reproductions, and benchmark results are all welcome.
 
 See the [Testing & Feedback](../../guide/testing.md) guide for how to inspect output in the

@@ -7,7 +7,7 @@ title: Troubleshooting
 ## Template Syntax Modes
 
 Vize defaults `compiler.templateSyntax` to `"standard"`. Standard mode accepts recoverable template
-syntax issues, reports warnings, and rewrites them to valid output.
+syntax problems, reports warnings, and rewrites them to valid output.
 
 A common migration case is self-closing syntax on non-void HTML elements:
 

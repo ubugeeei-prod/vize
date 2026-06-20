@@ -99,7 +99,7 @@ The right response is to turn them into fixtures, tests, snapshots, and benchmar
 
 It is a behavior over time:
 
-- issues become regression tests
+- fix requests become regression tests
 - benchmarks cover real workflows
 - release notes explain risk
 - breaking changes are intentional
@@ -107,7 +107,7 @@ It is a behavior over time:
 - diagnostics stay stable enough for automation
 - users can predict what the tool will do
 
-That is especially important for Vize because it touches many layers. A compiler bug, linter false positive, type-check mismatch, or incorrect source map can all damage trust in different ways.
+That is especially important for Vize because it touches many layers. A compiler mismatch, linter false positive, type-check mismatch, or incorrect source map can all damage trust in different ways.
 
 The bar is high because the surface area is high.
 

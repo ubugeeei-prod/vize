@@ -51,7 +51,7 @@ specialized CLI workflows), `@vizejs/vite-plugin-musea` (Musea), and `oxlint-plu
 **Everything lives in the [documentation](https://vizejs.dev)** — start with
 [Getting Started](https://vizejs.dev/getting-started).
 
-Vize is in its Real World Testing phase: issues and PRs are very welcome, and we are looking for
+Vize is in its Real World Testing phase: fix requests and PRs are very welcome, and we are looking for
 reasonably large Vue projects to use as test beds.
 
 ## Benchmarks
@@ -93,12 +93,12 @@ Special thanks to:
   Vite Plugin on [Misskey](https://github.com/misskey-dev/misskey) (~103k lines of Vue across 586
   SFCs), with timely reports as the implementation changed
   ([report](https://github.com/ubugeeei-prod/vize/discussions/71)).
-- [ushironoko](https://github.com/ushironoko) for compiler, linter, and CLI bug reports,
+- [ushironoko](https://github.com/ushironoko) for compiler, linter, and CLI fix reports,
   reference implementations, and reproduction repositories.
 - [dannote](https://github.com/dannote) for bringing Vize into the Elixir community through
   [Volt](https://hexdocs.pm/volt/readme.html), an Elixir-native frontend toolchain built on Vize,
   and for reporting missing pieces and sending PRs as Volt adopted Vize as a foundation.
-- [n13u](https://x.com/%5Fn13u%5F) and `#frontend_phpcon_do` for persistently reporting bugs while
+- [n13u](https://x.com/%5Fn13u%5F) and `#frontend_phpcon_do` for persistently reporting fix cases while
   building a Nuxt-based conference website with Vize, then carrying that validation all the way to
   production adoption
   ([report](https://x.com/%5Fn13u%5F/status/2061408599788892230?s=20),

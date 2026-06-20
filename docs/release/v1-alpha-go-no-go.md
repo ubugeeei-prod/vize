@@ -24,7 +24,7 @@ they operate.
   - [Deploy Docs](../../.github/workflows/deploy-docs.yml) on the target commit or a matching dry run
 - [ ] [Fuzz](../../.github/workflows/fuzz.yml) status, seeded corpus health, and uploaded
       reproducers are reviewed when parser/compiler surfaces changed.
-- [ ] No release-blocking draft PR, open P0/P1 issue, or failing required workflow remains.
+- [ ] No release-blocking draft PR, open P0/P1 fix request, or failing required workflow remains.
 - [ ] Version is agreed and matches the intended channel, for example `1.0.0-alpha.N`.
 - [ ] Changelog or release post draft exists under `docs/content/blog/releases/`.
 - [ ] Local smoke commands pass from a clean checkout:

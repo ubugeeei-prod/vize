@@ -11,7 +11,7 @@ Older prereleases are not supported unless a maintainer explicitly marks them as
 
 ## Reporting a Vulnerability
 
-Please do not open a public issue for a suspected vulnerability.
+Please do not open a public tracker entry for a suspected vulnerability.
 
 Use GitHub's private vulnerability reporting flow for this repository. If that is unavailable, contact the maintainer through their GitHub profile and ask for a private channel.
 
@@ -22,7 +22,7 @@ Include as much of the following as you can:
 - operating system, architecture, Node.js version, and package manager
 - minimal reproduction steps
 - impact, such as code execution, filesystem access, data exposure, denial of service, or supply-chain risk
-- whether the issue is already public
+- whether the report is already public
 
 ## Response Expectations
 

@@ -444,7 +444,7 @@ attributes directly. Rules that need the Vue template shape, such as `.map(...)`
 over the lowered Relief tree. Semantic rules are backed by Croquis, the same analysis layer used for
 SFCs.
 
-This means JSX/TSX linting catches the same classes of issues without relying on partial string
+This means JSX/TSX linting catches the same classes of problems without relying on partial string
 matching:
 
 ```tsx

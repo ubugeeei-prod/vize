@@ -7,7 +7,7 @@ for the v1 alpha phase and will be revisited before v1 GA.
 
 ### Maintainer
 
-A maintainer can merge pull requests, cut releases, and triage issues across
+A maintainer can merge pull requests, cut releases, and triage fix requests across
 the workspace. The current maintainer is listed in `package.json` and
 `Cargo.toml`. Today the project is led by [@ubugeeei](https://github.com/ubugeeei).
 
@@ -19,7 +19,7 @@ that affect that surface during a release. The owners are listed in
 
 ### Contributor
 
-Anyone who opens an issue, discussion, or pull request. Contributions of any
+Anyone who opens a tracker entry, discussion, or pull request. Contributions of any
 size are welcome; see [`CONTRIBUTING.md`](./CONTRIBUTING.md) for how to set up
 the workspace.
 
@@ -27,18 +27,18 @@ the workspace.
 
 The project uses a lazy-consensus model:
 
-1. Routine changes — bug fixes, dependency bumps, documentation edits — land
+1. Routine changes — fixes, dependency bumps, documentation edits — land
    once a maintainer approves the pull request and CI is green.
 2. Behavioral changes to public surfaces (CLI flags, `vize.config.*` schema,
    Patina rule semantics, type-checker diagnostics, npm package exports,
    public Rust crate APIs) require:
-   - an issue or RFC-style discussion before the PR,
+   - a fix request or RFC-style discussion before the PR,
    - sign-off from the surface owner listed in the release checklist,
    - a release note that mentions the change under the appropriate SemVer
      level (see [`docs/content/stability.md`](./docs/content/stability.md)).
 3. Releases follow [`docs/release/v1-alpha-go-no-go.md`](./docs/release/v1-alpha-go-no-go.md).
    The release captain has final go/no-go authority.
-4. Security issues follow [`SECURITY.md`](./SECURITY.md) and are handled
+4. Security reports follow [`SECURITY.md`](./SECURITY.md) and are handled
    privately until a fix is available.
 
 When a decision is contested, the maintainer makes the final call. A future
@@ -49,7 +49,7 @@ base grows.
 
 There is no fixed timeline. Sustained, high-quality contributions over
 multiple releases, paired with willingness to take on release or surface
-ownership, are the practical signals. Open an issue or reach the maintainer
+ownership, are the practical signals. Open a fix request or reach the maintainer
 through the channel listed in [`SUPPORT.md`](./SUPPORT.md) if you would like
 to discuss it.
 
