@@ -471,11 +471,16 @@ impl<'a> LintContext<'a> {
     }
 
     fn prescan_eslint_disable_comments(&mut self) {
+        // Fast path: skip the entire scan for files that contain no ESLint pragma markers.
+        // This is the common case and avoids a full line-by-line scan for every linted file.
         if !self.source.contains("eslint-") {
             return;
         }
-
         for (line_number, line) in (1u32..).zip(self.source.lines()) {
+            // Per-line fast path: skip lines that cannot contain a pragma marker.
+            if !line.contains("eslint-") {
+                continue;
+            }
             if let Some(directive) = parse_eslint_disable_comment(line) {
                 match directive.kind {
                     EslintDisableKind::DisableNextLine => {
