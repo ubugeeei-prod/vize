@@ -582,7 +582,7 @@ fn apply_lint_fixes(source: &str, result: &vize_patina::LintResult) -> Option<St
     for edit in selected.into_iter().rev() {
         fixed.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
     }
-    Some(fixed)
+    Some(fixed.to_string())
 }
 
 fn is_standalone_html_filename(filename: &str) -> bool {
