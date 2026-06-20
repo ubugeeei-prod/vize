@@ -3,7 +3,6 @@
 //! Provides high-performance CSS parsing, transformation, and minification.
 //! When the `native` feature is disabled (e.g., for wasm builds), a simple
 //! passthrough implementation is used.
-//!
 //! This module is organized into:
 //! - Types and public API (this file)
 //! - `parser`: internal CSS compilation with LightningCSS
