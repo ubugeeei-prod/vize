@@ -45,4 +45,58 @@ assert.equal(
   "Callers must short-circuit no-op updates before generating HMR output",
 );
 
+const generatedCodeChangedModule: CompiledModule = {
+  ...baseModule,
+  code: "export default { name: 'Changed' }",
+};
+assert.equal(
+  hasHmrChanges(baseModule, generatedCodeChangedModule),
+  true,
+  "HMR must react when generated code changes even if native section hashes stay stable",
+);
+assert.equal(
+  detectHmrUpdateType(baseModule, generatedCodeChangedModule),
+  "full-reload",
+  "Generated code changes outside section hashes should conservatively reload the component",
+);
+
+const cssChangedWithoutStyleHashModule: CompiledModule = {
+  ...baseModule,
+  css: ".root { color: blue; }",
+};
+assert.equal(
+  hasHmrChanges(baseModule, cssChangedWithoutStyleHashModule),
+  true,
+  "HMR must react when compiled CSS changes even if the style hash is missing or unchanged",
+);
+assert.equal(
+  detectHmrUpdateType(baseModule, cssChangedWithoutStyleHashModule),
+  "style-only",
+  "CSS-only fallback changes should keep the style-only HMR path",
+);
+
+const styleMetadataChangedModule: CompiledModule = {
+  ...baseModule,
+  styles: [
+    {
+      content: ".root { color: red; }",
+      src: null,
+      lang: null,
+      scoped: false,
+      module: true,
+      index: 0,
+    },
+  ],
+};
+assert.equal(
+  hasHmrChanges(baseModule, styleMetadataChangedModule),
+  true,
+  "HMR must react when style metadata changes the generated module shape",
+);
+assert.equal(
+  detectHmrUpdateType(baseModule, styleMetadataChangedModule),
+  "full-reload",
+  "Style pipeline metadata changes can affect imports or CSS modules and should reload",
+);
+
 console.log("✅ vite-plugin-vize hmr tests passed!");

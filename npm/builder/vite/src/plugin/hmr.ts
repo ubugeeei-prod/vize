@@ -1,4 +1,4 @@
-import type { HmrContext } from "vite";
+import type { HmrContext, ModuleNode, ViteDevServer } from "vite";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -7,7 +7,7 @@ import { getCompileOptionsForRequest } from "./state.ts";
 import { compileFile } from "../compiler.ts";
 import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
-import { toVirtualId } from "../virtual.ts";
+import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
 import { resolveCssImports } from "../utils/css.ts";
 
 export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
@@ -47,6 +47,40 @@ function getVueFilesDependingOn(state: VizePluginState, dependencyFile: string):
   return [...owners];
 }
 
+function unique(values: string[]): string[] {
+  return [...new Set(values)];
+}
+
+function getVueModuleFileCandidates(vueFile: string): string[] {
+  return unique([
+    toVirtualId(vueFile),
+    toPluginVisibleVirtualId(vueFile),
+    toVirtualId(vueFile, true),
+    toPluginVisibleVirtualId(vueFile, true),
+    vueFile,
+  ]);
+}
+
+function getStyleModuleFileCandidates(styleId: string): string[] {
+  return unique([styleId, `${styleId}.css`]);
+}
+
+function collectModulesByFile(server: ViteDevServer, fileIds: readonly string[]): Set<ModuleNode> {
+  const modules = new Set<ModuleNode>();
+
+  for (const fileId of fileIds) {
+    const matched = server.moduleGraph.getModulesByFile(fileId);
+    if (!matched) {
+      continue;
+    }
+    for (const mod of matched) {
+      modules.add(mod);
+    }
+  }
+
+  return modules;
+}
+
 export async function handleHotUpdateHook(
   state: VizePluginState,
   ctx: HmrContext,
@@ -64,16 +98,11 @@ export async function handleHotUpdateHook(
       state.precompileMetadata.delete(vueFile);
       state.pendingHmrUpdateTypes.set(vueFile, "full-reload");
 
-      const virtualId = toVirtualId(vueFile);
-      const modules =
-        server.moduleGraph.getModulesByFile(virtualId) ??
-        server.moduleGraph.getModulesByFile(vueFile);
+      const modules = collectModulesByFile(server, getVueModuleFileCandidates(vueFile));
 
-      if (modules) {
-        for (const module of modules) {
-          server.moduleGraph.invalidateModule(module);
-          affectedModules.add(module);
-        }
+      for (const module of modules) {
+        server.moduleGraph.invalidateModule(module);
+        affectedModules.add(module);
       }
 
       state.logger.log(
@@ -117,9 +146,7 @@ export async function handleHotUpdateHook(
 
       state.logger.log(`Re-compiled: ${path.relative(state.root, file)} (${updateType})`);
 
-      const virtualId = toVirtualId(file);
-      const modules =
-        server.moduleGraph.getModulesByFile(virtualId) ?? server.moduleGraph.getModulesByFile(file);
+      const modules = collectModulesByFile(server, getVueModuleFileCandidates(file));
 
       const hasDelegated = hasDelegatedStyles(newCompiled);
 
@@ -136,17 +163,15 @@ export async function handleHotUpdateHook(
             params.set("module", typeof block.module === "string" ? block.module : "");
           }
           const styleId = `${file}?${params.toString()}`;
-          const styleMods = server.moduleGraph.getModulesByFile(styleId);
-          if (styleMods) {
-            for (const mod of styleMods) {
-              affectedModules.add(mod);
-            }
+          const styleMods = collectModulesByFile(server, getStyleModuleFileCandidates(styleId));
+          for (const mod of styleMods) {
+            affectedModules.add(mod);
           }
         }
         if (affectedModules.size > 0) {
           return [...affectedModules];
         }
-        if (modules) {
+        if (modules.size > 0) {
           return [...modules];
         }
         return [];
@@ -172,7 +197,7 @@ export async function handleHotUpdateHook(
         return [];
       }
 
-      if (modules) {
+      if (modules.size > 0) {
         state.pendingHmrUpdateTypes.set(file, updateType);
         return [...modules];
       }

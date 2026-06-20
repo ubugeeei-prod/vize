@@ -9,7 +9,8 @@ import {
   VIZE_COMPONENTS_CSS_BASENAME,
   VIZE_COMPONENTS_CSS_FILE,
 } from "./hmr.ts";
-import { toVirtualId } from "../virtual.ts";
+import { compileFile } from "../compiler.ts";
+import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
 
 function createState(): VizePluginState {
   return {
@@ -103,6 +104,129 @@ assert.equal(
     "Dependency updates should force full reload HMR for the owner SFC",
   );
   assert.equal(invalidatedModule, module, "Dependency updates should invalidate the owner module");
+}
+
+{
+  const vueFile = "/src/App.vue";
+  const dependencyFile = "/src/imported.css";
+  const nullVirtualModule = { url: toVirtualId(vueFile) };
+  const visibleVirtualModule = { url: toPluginVisibleVirtualId(vueFile) };
+  const rawVueModule = { url: vueFile };
+  const invalidatedModules: unknown[] = [];
+  const state = {
+    cache: new Map([
+      [
+        vueFile,
+        {
+          code: "export default {}",
+          scopeId: "app12345",
+          hasScoped: false,
+          dependencies: [dependencyFile],
+        },
+      ],
+    ]),
+    ssrCache: new Map(),
+    collectedCss: new Map(),
+    precompileMetadata: new Map(),
+    pendingHmrUpdateTypes: new Map(),
+    root: "/src",
+    logger: {
+      log() {},
+    },
+  } as unknown as VizePluginState;
+  const modulesByFile = new Map<string, Set<unknown>>([
+    [toVirtualId(vueFile), new Set([nullVirtualModule])],
+    [toPluginVisibleVirtualId(vueFile), new Set([visibleVirtualModule])],
+    [vueFile, new Set([rawVueModule])],
+  ]);
+  const ctx = {
+    file: dependencyFile,
+    server: {
+      moduleGraph: {
+        getModulesByFile(id: string) {
+          return modulesByFile.get(id);
+        },
+        invalidateModule(receivedModule: unknown) {
+          invalidatedModules.push(receivedModule);
+        },
+      },
+    },
+    read: async () => "",
+  } as unknown as HmrContext;
+
+  const modules = await handleHotUpdateHook(state, ctx);
+
+  assert.deepEqual(
+    new Set(modules),
+    new Set([nullVirtualModule, visibleVirtualModule, rawVueModule]),
+    "Dependency updates should return every module graph representation of the owner SFC",
+  );
+  assert.deepEqual(
+    new Set(invalidatedModules),
+    new Set([nullVirtualModule, visibleVirtualModule, rawVueModule]),
+    "Dependency updates should invalidate every module graph representation of the owner SFC",
+  );
+}
+
+{
+  const vueFile = "/src/Delegated.vue";
+  const previousSource = `<template><div :class="$style.root">red</div></template><style module>.root { color: red; }</style>`;
+  const nextSource = `<template><div :class="$style.root">red</div></template><style module>.root { color: blue; }</style>`;
+  const cache = new Map();
+  const previousCompiled = compileFile(
+    vueFile,
+    cache,
+    { sourceMap: false, ssr: false, vapor: false },
+    previousSource,
+  );
+  const styleModule = { url: `${vueFile}?vue&type=style&index=0&lang=css&module=.css` };
+  const state = {
+    cache: new Map([[vueFile, previousCompiled]]),
+    ssrCache: new Map(),
+    collectedCss: new Map(),
+    precompileMetadata: new Map(),
+    pendingHmrUpdateTypes: new Map(),
+    isProduction: false,
+    mergedOptions: {},
+    cssAliasRules: [],
+    clientViteBase: "/",
+    root: "/src",
+    filter: () => true,
+    logger: {
+      log() {},
+      error() {},
+    },
+  } as unknown as VizePluginState;
+  const params = new URLSearchParams();
+  params.set("vue", "");
+  params.set("type", "style");
+  params.set("index", "0");
+  params.set("lang", "css");
+  params.set("module", "");
+  const styleId = `${vueFile}?${params.toString()}`;
+  const ctx = {
+    file: vueFile,
+    server: {
+      moduleGraph: {
+        getModulesByFile(id: string) {
+          return id === `${styleId}.css` ? new Set([styleModule]) : undefined;
+        },
+        invalidateModule() {},
+      },
+      ws: {
+        send() {},
+      },
+    },
+    read: async () => nextSource,
+  } as unknown as HmrContext;
+
+  const modules = await handleHotUpdateHook(state, ctx);
+
+  assert.deepEqual(
+    modules,
+    [styleModule],
+    "Delegated style-only updates should match Vite's resolved .css style module id",
+  );
 }
 
 {
@@ -217,5 +341,4 @@ assert.equal(
     "SSR chunks should not reference client-only extracted CSS",
   );
 }
-
 console.log("✅ vite-plugin-vize plugin hmr tests passed!");
