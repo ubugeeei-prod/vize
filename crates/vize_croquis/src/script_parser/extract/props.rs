@@ -1,30 +1,34 @@
 use oxc_ast::ast::{
     Argument, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey, TSType,
 };
-use oxc_span::{GetSpan, Span};
+use oxc_span::GetSpan;
 
 use crate::macros::PropDefinition;
 use vize_carton::{CompactString, String};
 use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
+use super::common::static_property_name;
+use super::props_type::{prop_type_from_annotation, runtime_prop_type_from_ts_type};
 
 pub fn extract_props_from_type(
     result: &mut ScriptParseResult,
     type_params: &oxc_allocator::Vec<'_, TSType<'_>>,
-    _source: &str,
+    source: &str,
 ) {
     for tp in type_params.iter() {
         if let TSType::TSTypeLiteral(lit) = tp {
             for member in lit.members.iter() {
                 if let oxc_ast::ast::TSSignature::TSPropertySignature(prop) = member
-                    && let PropertyKey::StaticIdentifier(id) = &prop.key
+                    && let Some(name) = static_property_name(&prop.key)
                 {
-                    let name = id.name.as_str();
                     result.macros.add_prop(PropDefinition {
                         name: CompactString::new(name),
                         required: !prop.optional,
-                        prop_type: None,
+                        prop_type: prop_type_from_annotation(
+                            prop.type_annotation.as_deref(),
+                            source,
+                        ),
                         default_value: None,
                     });
                     result.bindings.add(name, BindingType::Props);
@@ -34,14 +38,12 @@ pub fn extract_props_from_type(
     }
 }
 
-/// Extract props from runtime arguments (array or object)
 pub fn extract_props_from_runtime(
     result: &mut ScriptParseResult,
     arg: &Argument<'_>,
     source: &str,
 ) {
     match arg {
-        // Array syntax: ['prop1', 'prop2']
         Argument::ArrayExpression(arr) => {
             for elem in arr.elements.iter() {
                 if let oxc_ast::ast::ArrayExpressionElement::StringLiteral(s) = elem {
@@ -57,7 +59,6 @@ pub fn extract_props_from_runtime(
             }
         }
 
-        // Object syntax: { prop1: Type, prop2: { type: Type, required: true } }
         Argument::ObjectExpression(obj) => {
             extract_props_from_object(result, obj, source);
         }
@@ -203,11 +204,11 @@ pub(super) fn extract_runtime_prop_type(
                 .flatten()
         }),
         Expression::TSAsExpression(ts_as) => {
-            extract_runtime_prop_type_from_annotation(source, ts_as.type_annotation.span())
+            runtime_prop_type_from_ts_type(&ts_as.type_annotation, source)
                 .or_else(|| extract_runtime_prop_type(&ts_as.expression, source))
         }
         Expression::TSSatisfiesExpression(ts_satisfies) => {
-            extract_runtime_prop_type_from_annotation(source, ts_satisfies.type_annotation.span())
+            runtime_prop_type_from_ts_type(&ts_satisfies.type_annotation, source)
                 .or_else(|| extract_runtime_prop_type(&ts_satisfies.expression, source))
         }
         Expression::TSNonNullExpression(ts_non_null) => {
@@ -244,11 +245,11 @@ fn extract_runtime_prop_type_from_array_element(
             Some(CompactString::new("unknown[]"))
         }
         oxc_ast::ast::ArrayExpressionElement::TSAsExpression(ts_as) => {
-            extract_runtime_prop_type_from_annotation(source, ts_as.type_annotation.span())
+            runtime_prop_type_from_ts_type(&ts_as.type_annotation, source)
                 .or_else(|| extract_runtime_prop_type(&ts_as.expression, source))
         }
         oxc_ast::ast::ArrayExpressionElement::TSSatisfiesExpression(ts_satisfies) => {
-            extract_runtime_prop_type_from_annotation(source, ts_satisfies.type_annotation.span())
+            runtime_prop_type_from_ts_type(&ts_satisfies.type_annotation, source)
                 .or_else(|| extract_runtime_prop_type(&ts_satisfies.expression, source))
         }
         oxc_ast::ast::ArrayExpressionElement::TSNonNullExpression(ts_non_null) => {
@@ -259,36 +260,6 @@ fn extract_runtime_prop_type_from_array_element(
         }
         _ => None,
     }
-}
-
-fn extract_runtime_prop_type_from_annotation(source: &str, span: Span) -> Option<CompactString> {
-    let annotation = source.get(span.start as usize..span.end as usize)?.trim();
-    extract_prop_type_generic(annotation, "PropType")
-        .or_else(|| extract_prop_type_generic(annotation, "ReadonlyArray"))
-}
-
-fn extract_prop_type_generic(annotation: &str, type_name: &str) -> Option<CompactString> {
-    let mut marker = String::default();
-    marker.push_str(type_name);
-    marker.push('<');
-    let start = annotation.find(marker.as_str())? + marker.len();
-    let mut depth = 1i32;
-
-    for (idx, ch) in annotation[start..].char_indices() {
-        match ch {
-            '<' => depth += 1,
-            '>' => {
-                depth -= 1;
-                if depth == 0 {
-                    let inner = annotation[start..start + idx].trim();
-                    return (!inner.is_empty()).then(|| CompactString::new(inner));
-                }
-            }
-            _ => {}
-        }
-    }
-
-    None
 }
 
 pub(super) fn extract_runtime_prop_default(

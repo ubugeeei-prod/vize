@@ -42,6 +42,20 @@ fn test_drawer_define_props() {
         .collect();
     assert!(prop_names.contains(&"msg"));
     assert!(prop_names.contains(&"count"));
+    let msg = summary
+        .macros
+        .props()
+        .iter()
+        .find(|prop| prop.name.as_str() == "msg")
+        .unwrap();
+    let count = summary
+        .macros
+        .props()
+        .iter()
+        .find(|prop| prop.name.as_str() == "count")
+        .unwrap();
+    assert_eq!(msg.prop_type.as_deref(), Some("string"));
+    assert_eq!(count.prop_type.as_deref(), Some("number"));
 }
 
 #[test]

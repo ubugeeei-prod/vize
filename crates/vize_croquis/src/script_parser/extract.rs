@@ -6,6 +6,7 @@ mod exports;
 mod macros;
 mod plain_values;
 mod props;
+mod props_type;
 mod provide;
 mod race;
 mod reactivity;

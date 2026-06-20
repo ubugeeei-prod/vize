@@ -1,10 +1,8 @@
 //! Imported-component metadata, caching, and prop/slot completion items.
 
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    sync::Arc,
-};
+use std::{collections::BTreeSet, sync::Arc};
 
+use oxc_ast::ast::{PropertyKey, Statement, TSSignature, TSType};
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation,
     InsertTextFormat, MarkupContent, MarkupKind,
@@ -18,10 +16,6 @@ use crate::ide::{IdeContext, is_component_tag, kebab_to_pascal, pascal_to_kebab}
 use super::tag_context::{
     find_attr_value, find_tag_end, is_dynamic_prop_prefix, is_prop_completion_prefix,
     is_slot_completion_prefix, nearest_open_component_before, opening_tag_context_at_offset,
-};
-use super::ts_parse::{
-    braced_body, extract_balanced_after, parse_member_name_and_type, parse_type_literal_members,
-    skip_ws,
 };
 
 pub(crate) fn component_surface_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
@@ -93,12 +87,6 @@ struct ComponentProp {
     /// `default` config. Renders into the completion documentation so the
     /// user knows what the prop falls back to.
     default_value: Option<String>,
-}
-
-#[derive(Debug, Clone)]
-struct InferredProp {
-    type_detail: String,
-    required: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -256,19 +244,13 @@ fn extract_component_metadata(
             analyzer.analyze_script_plain(script_content);
         }
         let summary = analyzer.finish();
-        let inferred_prop_types = infer_define_props_type_map(script_content);
 
         for prop in summary.macros.props() {
             if seen_props.insert(prop.name.to_string()) {
-                let inferred = inferred_prop_types.get(prop.name.as_str());
                 props.push(ComponentProp {
                     name: prop.name.to_string(),
-                    type_detail: prop
-                        .prop_type
-                        .as_ref()
-                        .map(|ty| ty.to_string())
-                        .or_else(|| inferred.map(|prop| prop.type_detail.clone())),
-                    required: inferred.map_or(prop.required, |prop| prop.required),
+                    type_detail: prop.prop_type.as_ref().map(|ty| ty.to_string()),
+                    required: prop.required,
                     default_value: prop.default_value.as_ref().map(|d| d.to_string()),
                 });
             }
@@ -299,17 +281,6 @@ fn extract_component_metadata(
                         default_value: None,
                     });
                 }
-            }
-        }
-
-        for (name, prop) in inferred_prop_types {
-            if seen_props.insert(name.clone()) {
-                props.push(ComponentProp {
-                    name,
-                    type_detail: Some(prop.type_detail),
-                    required: prop.required,
-                    default_value: None,
-                });
             }
         }
 
@@ -439,92 +410,102 @@ fn slot_completion_item(slot: &ComponentSlot, prefix: &str) -> CompletionItem {
     }
 }
 
-/// Extract slot prop names from a TS function-shape type like
-/// `(props: { foo: T; bar: U }): any` or `{ foo: T; bar: U }`. Returns the
-/// names in source order. The extractor is approximate — it stops at the
-/// first `{` and reads property names up to `:` — but it's enough to
-/// pre-populate a slot destructure for editor convenience.
+const SLOT_PROPS_TYPE_PREFIX: &str = "type __VizeSlotProps = ";
+
+/// Extract slot prop names from the already-resolved first slot parameter type
+/// and return names that are safe to put into a destructuring snippet.
 fn extract_slot_prop_names(ts_type: &str) -> Option<Vec<String>> {
-    let brace_start = ts_type.find('{')?;
-    let body = &ts_type[brace_start + 1..];
-    let mut depth: i32 = 0;
-    let mut name = String::new();
-    let mut waiting_for_colon = false;
-    let mut names = Vec::new();
-    for ch in body.chars() {
-        match ch {
-            '{' | '<' | '(' | '[' => depth += 1,
-            '}' if depth == 0 => break,
-            '}' | '>' | ')' | ']' => depth -= 1,
-            _ => {}
-        }
-        if depth != 0 {
-            continue;
-        }
-        if !waiting_for_colon {
-            if ch == ':' {
-                let trimmed = name.trim();
-                if !trimmed.is_empty()
-                    && trimmed
-                        .chars()
-                        .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
-                {
-                    names.push(trimmed.to_string());
-                }
-                name.clear();
-                waiting_for_colon = true;
-                continue;
-            }
-            if ch == ';' || ch == ',' || ch == '\n' {
-                name.clear();
-                continue;
-            }
-            name.push(ch);
-        } else if ch == ';' || ch == ',' || ch == '\n' {
-            waiting_for_colon = false;
-        }
+    let source = slot_props_type_source(ts_type);
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = oxc_parser::Parser::new(&allocator, &source, oxc_span::SourceType::ts()).parse();
+    if parsed.panicked || !parsed.errors.is_empty() {
+        return None;
     }
+
+    let Some(Statement::TSTypeAliasDeclaration(alias)) = parsed.program.body.first() else {
+        return None;
+    };
+
+    let mut names = Vec::new();
+    collect_slot_prop_names_from_ts_type(&alias.type_annotation, &mut names);
     if names.is_empty() { None } else { Some(names) }
 }
 
-fn infer_define_props_type_map(script: &str) -> BTreeMap<String, InferredProp> {
-    let mut props = BTreeMap::new();
-    let mut search_start = 0usize;
+fn slot_props_type_source(ts_type: &str) -> String {
+    let trimmed = ts_type.trim();
+    let mut source = String::with_capacity(SLOT_PROPS_TYPE_PREFIX.len() + trimmed.len() + 1);
+    source.push_str(SLOT_PROPS_TYPE_PREFIX);
+    source.push_str(trimmed);
+    source.push(';');
+    source
+}
 
-    while let Some(relative) = script[search_start..].find("defineProps") {
-        let name_start = search_start + relative;
-        let after_name = name_start + "defineProps".len();
-        let mut pos = skip_ws(script, after_name);
-        if script.as_bytes().get(pos) != Some(&b'<') {
-            search_start = after_name;
-            continue;
-        }
-
-        let Some((type_arg, end)) = extract_balanced_after(script, pos, '<', '>') else {
-            search_start = after_name;
-            continue;
-        };
-        pos = end;
-
-        let type_arg = type_arg.trim();
-        if let Some(body) = braced_body(type_arg) {
-            for member in parse_type_literal_members(body) {
-                if let Some((name, optional, type_detail)) = parse_member_name_and_type(member) {
-                    props.insert(
-                        name,
-                        InferredProp {
-                            type_detail,
-                            required: !optional,
-                        },
-                    );
+fn collect_slot_prop_names_from_ts_type(ts_type: &TSType<'_>, names: &mut Vec<String>) {
+    match ts_type {
+        TSType::TSTypeLiteral(literal) => {
+            for member in &literal.members {
+                if let TSSignature::TSPropertySignature(property) = member
+                    && let Some(name) = slot_prop_key_name(&property.key)
+                {
+                    names.push(name);
                 }
             }
         }
+        TSType::TSIntersectionType(intersection) => {
+            for ty in &intersection.types {
+                collect_slot_prop_names_from_ts_type(ty, names);
+            }
+        }
+        TSType::TSParenthesizedType(parenthesized) => {
+            collect_slot_prop_names_from_ts_type(&parenthesized.type_annotation, names);
+        }
+        TSType::TSTypeReference(reference) => {
+            if let Some(type_arguments) = &reference.type_arguments {
+                for ty in &type_arguments.params {
+                    collect_slot_prop_names_from_ts_type(ty, names);
+                }
+            }
+        }
+        _ => {}
+    }
+}
 
-        search_start = pos;
+fn slot_prop_key_name(key: &PropertyKey<'_>) -> Option<String> {
+    let name = match key {
+        PropertyKey::StaticIdentifier(identifier) => identifier.name.as_str(),
+        PropertyKey::StringLiteral(literal) => literal.value.as_str(),
+        _ => return None,
+    };
+    is_valid_destructure_key(name).then(|| name.to_string())
+}
+
+fn is_valid_destructure_key(name: &str) -> bool {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !(first.is_ascii_alphabetic() || first == '_' || first == '$') {
+        return false;
+    }
+    chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
+}
+
+#[cfg(test)]
+mod slot_prop_name_tests {
+    use super::extract_slot_prop_names;
+
+    #[test]
+    fn extracts_slot_prop_names_with_ts_ast() {
+        assert_eq!(
+            extract_slot_prop_names("Readonly<{ foo: string; $bar?: number; 'not-valid': Date }>"),
+            Some(vec!["foo".to_string(), "$bar".to_string()])
+        );
     }
 
-    props
+    #[test]
+    fn returns_none_for_non_object_slot_props() {
+        assert_eq!(extract_slot_prop_names("Props"), None);
+    }
 }
 
 fn extract_template_slot_outlets(template: &str) -> Vec<ComponentSlot> {
@@ -590,6 +571,13 @@ mod cache_tests {
 
         let first = cached_component_metadata(&ctx, &component).unwrap();
         let second = cached_component_metadata(&ctx, &component).unwrap();
+        let prop = first
+            .props
+            .iter()
+            .find(|prop| prop.name == "a")
+            .expect("defineProps type member should be extracted");
+        assert_eq!(prop.type_detail.as_deref(), Some("string"));
+        assert!(prop.required);
         assert!(
             std::sync::Arc::ptr_eq(&first, &second),
             "an unchanged component file should hit the cache (same Arc, no re-parse)",

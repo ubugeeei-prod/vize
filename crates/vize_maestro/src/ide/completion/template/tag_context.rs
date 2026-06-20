@@ -3,8 +3,6 @@
 
 use crate::ide::is_component_tag;
 
-use super::ts_parse::skip_ws;
-
 #[derive(Debug)]
 pub(super) struct OpenTagContext {
     pub tag_name: String,
@@ -224,4 +222,16 @@ pub(super) fn find_attr_value(tag: &str, attr: &str) -> Option<String> {
     }
 
     None
+}
+
+fn skip_ws(source: &str, mut pos: usize) -> usize {
+    while pos < source.len() {
+        let byte = source.as_bytes()[pos];
+        if byte.is_ascii_whitespace() {
+            pos += 1;
+        } else {
+            break;
+        }
+    }
+    pos
 }

@@ -15,7 +15,6 @@ mod components;
 mod directives;
 mod self_component;
 mod tag_context;
-mod ts_parse;
 
 use tower_lsp::lsp_types::CompletionItem;
 
