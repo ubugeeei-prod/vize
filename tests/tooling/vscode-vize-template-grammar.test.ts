@@ -66,8 +66,8 @@ async function loadVueTextMateGrammar(scopeName = "source.vue") {
   ]);
   const engine = await createOnigurumaEngine(fs.readFileSync(onigurumaWasmPath));
   const grammars = new Map<string, unknown>([
-    ["source.vue", readJson("npm/vscode-vize/syntaxes/vue.tmLanguage.json")],
-    ["source.art-vue", readJson("npm/vscode-vize/syntaxes/art-vue.tmLanguage.json")],
+    ["source.vue", readJson("npm/editor/vscode/syntaxes/vue.tmLanguage.json")],
+    ["source.art-vue", readJson("npm/editor/vscode/syntaxes/art-vue.tmLanguage.json")],
     ["source.ts", sourceTs],
     ["source.json", sourceJson],
   ]);
@@ -154,7 +154,7 @@ function assertTextDoesNotHaveScope(
 test("vscode-vize template grammar recurses through template content", () => {
   const grammar = readJson<{
     repository?: Record<string, { patterns?: Array<{ include?: string }> }>;
-  }>("npm/vscode-vize/syntaxes/vue.tmLanguage.json");
+  }>("npm/editor/vscode/syntaxes/vue.tmLanguage.json");
   const repository = grammar.repository ?? {};
 
   assert.deepEqual(

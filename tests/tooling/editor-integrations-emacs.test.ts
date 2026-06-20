@@ -11,7 +11,7 @@ function readRepoFile(relativePath: string): string {
 }
 
 test("emacs vize.el defines the eglot command default and customizable profile", () => {
-  const el = readRepoFile("npm/emacs-vize/vize.el");
+  const el = readRepoFile("npm/editor/emacs/vize.el");
 
   // The LSP launch command defaults to running the `vize lsp` subcommand.
   assert.match(el, /\(defcustom\s+vize-eglot-command\s+'\("vize"\s+"lsp"\)/);
@@ -30,7 +30,7 @@ test("emacs vize.el defines the eglot command default and customizable profile",
 });
 
 test("emacs vize.el maps each profile to its initialization options", () => {
-  const el = readRepoFile("npm/emacs-vize/vize.el");
+  const el = readRepoFile("npm/editor/emacs/vize.el");
 
   // The profiles are defined in a single alist constant.
   assert.match(el, /\(defconst\s+vize--profiles\b/);
@@ -49,7 +49,7 @@ test("emacs vize.el maps each profile to its initialization options", () => {
 });
 
 test("emacs vize.el associates the .vue and .art.vue file patterns with derived modes", () => {
-  const el = readRepoFile("npm/emacs-vize/vize.el");
+  const el = readRepoFile("npm/editor/emacs/vize.el");
 
   // auto-mode-alist: "\.vue\'" => vize-vue-mode
   assert.match(el, /add-to-list\s+'auto-mode-alist\s+'\("\\\\\.vue\\\\'"\s*\.\s*vize-vue-mode\)/);
@@ -62,14 +62,14 @@ test("emacs vize.el associates the .vue and .art.vue file patterns with derived 
 });
 
 test("emacs vize.el defines vue / art-vue fallback modes deriving from prog-mode", () => {
-  const el = readRepoFile("npm/emacs-vize/vize.el");
+  const el = readRepoFile("npm/editor/emacs/vize.el");
 
   assert.match(el, /\(define-derived-mode\s+vize-vue-mode\s+prog-mode\b/);
   assert.match(el, /\(define-derived-mode\s+vize-art-vue-mode\s+prog-mode\b/);
 });
 
 test("emacs vize.el setup registers the server with eglot-server-programs", () => {
-  const el = readRepoFile("npm/emacs-vize/vize.el");
+  const el = readRepoFile("npm/editor/emacs/vize.el");
 
   assert.match(el, /\(defun\s+vize-setup-eglot\b/);
   assert.match(el, /add-to-list\s+'eglot-server-programs/);

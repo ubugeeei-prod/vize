@@ -210,7 +210,7 @@ fn loads_legacy_json_lsp_alias() {
 }
 
 fn install_pkl_modules(root: &std::path::Path) {
-    let source = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../npm/vize/pkl");
+    let source = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../npm/cli/pkl");
     let target = root.join("node_modules/vize/pkl");
     copy_dir_recursive(&source, &target);
 }

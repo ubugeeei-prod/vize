@@ -101,18 +101,18 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
   );
 
   for (const packageDir of [
-    "npm/vize-native",
+    "npm/native",
     "npm/fresco-native",
-    "npm/vize",
-    "npm/vite-plugin-vize",
-    "npm/oxlint-plugin-vize",
-    "npm/unplugin-vize",
+    "npm/cli",
+    "npm/builder/vite",
+    "npm/oxint",
+    "npm/builder/unplugin",
     "npm/fresco",
-    "npm/musea-mcp-server",
-    "npm/vite-plugin-musea",
-    "npm/rspack-vize-plugin",
-    "npm/musea-nuxt",
-    "npm/nuxt",
+    "npm/mcp-musea",
+    "npm/builder/vite-musea",
+    "npm/builder/rspack",
+    "npm/framework/musea-nuxt",
+    "npm/framework/nuxt",
   ]) {
     assert.match(smokeJob, new RegExp(packageDir.replaceAll("/", "\\/")));
   }
@@ -252,5 +252,5 @@ test("release workflow runs GitHub helper scripts with the native target on ever
     workflow,
     /Create archive \(Windows\)[\s\S]*moon run --target native - -- \$\{\{ matrix\.settings\.target \}\} \$\{\{ matrix\.settings\.archive \}\} vize\.exe < tools\/moon\/scripts\/github\/create_cli_archive\.mbtx/,
   );
-  assert.match(workflow, /Build vize-native[\s\S]*moon run --target native - -- npm\/vize-native/);
+  assert.match(workflow, /Build vize-native[\s\S]*moon run --target native - -- npm\/native/);
 });

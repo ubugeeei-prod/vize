@@ -11,7 +11,7 @@ function readRepoFile(relativePath: string): string {
 }
 
 test("nvim ftdetect maps .vue -> vue and .art.vue -> art-vue", () => {
-  const ftdetect = readRepoFile("npm/nvim-vize/ftdetect/vize.lua");
+  const ftdetect = readRepoFile("npm/editor/nvim/ftdetect/vize.lua");
 
   // *.vue files are detected as the "vue" filetype.
   assert.match(ftdetect, /pattern\s*=\s*["']\*\.vue["']/);
@@ -29,7 +29,7 @@ test("nvim ftdetect maps .vue -> vue and .art.vue -> art-vue", () => {
 });
 
 test("nvim config default cmd, filetypes and root_markers declare the canonical LSP wiring", () => {
-  const config = readRepoFile("npm/nvim-vize/lua/vize/config.lua");
+  const config = readRepoFile("npm/editor/nvim/lua/vize/config.lua");
 
   // Default launch command is `vize lsp`.
   assert.match(config, /cmd\s*=\s*\{\s*["']vize["']\s*,\s*["']lsp["']\s*\}/);
@@ -45,7 +45,7 @@ test("nvim config default cmd, filetypes and root_markers declare the canonical 
 });
 
 test("nvim config defines the lint, recommended and off profiles, defaulting init_options to lint", () => {
-  const config = readRepoFile("npm/nvim-vize/lua/vize/config.lua");
+  const config = readRepoFile("npm/editor/nvim/lua/vize/config.lua");
 
   // All three named profiles are defined inside the profiles table.
   assert.match(config, /\blint\s*=\s*\{/);
@@ -57,7 +57,7 @@ test("nvim config defines the lint, recommended and off profiles, defaulting ini
 });
 
 test("nvim plugin entrypoint wires the plugin via guard + setup command", () => {
-  const plugin = readRepoFile("npm/nvim-vize/plugin/vize.lua");
+  const plugin = readRepoFile("npm/editor/nvim/plugin/vize.lua");
 
   // Load-guard prevents double sourcing.
   assert.match(plugin, /vim\.g\.loaded_vize/);

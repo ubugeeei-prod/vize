@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { defineConfig, loadConfig, resolveConfigExport } from "../../npm/vize/src/config.ts";
+import { defineConfig, loadConfig, resolveConfigExport } from "../../npm/cli/src/config.ts";
 
 function withTempDir<T>(prefix: string, run: (dir: string) => Promise<T>): Promise<T> {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));

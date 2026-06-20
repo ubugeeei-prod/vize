@@ -29,7 +29,7 @@ export const buildTasks = defineTasks({
   "build:rust": task("cargo build --workspace", { input: cacheInputs.rust }),
   "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),
   "build:packages": noCacheTask(runInPackages("build", packedPackages)),
-  "build:native": noCacheTask(runPackageScriptDirectly("build", ["./npm/vize-native"])),
+  "build:native": noCacheTask(runPackageScriptDirectly("build", ["./npm/native"])),
   // Fast variant for test pipelines: dev cargo profile via the local
   // `build:debug` script. We deliberately route through `build:debug`
   // (which wraps `build-local.mjs --no-js`) rather than `build:ci`
@@ -38,14 +38,18 @@ export const buildTasks = defineTasks({
   // The dev profile shaves ~2 minutes off the release-profile build and
   // matches the profile that vite-plugin-vize already uses at test time,
   // so cargo's incremental cache makes the second invocation a no-op.
-  "build:native:test": noCacheTask(runPackageScriptDirectly("build:debug", ["./npm/vize-native"])),
-  "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/vite-plugin-vize/wasm")),
+  "build:native:test": noCacheTask(runPackageScriptDirectly("build:debug", ["./npm/native"])),
+  "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/builder/vite/wasm")),
   "build:wasm-web": task(moonScript("build_vitrine_wasm", "web", "playground/src/wasm")),
   "build:vite-plugin": noCacheTask(
-    `${runInPackages("build", ["./npm/vize"])} && ${runInPackages("build", ["./npm/vite-plugin-vize"])}`,
+    `${runInPackages("build", ["./npm/cli"])} && ${runInPackages("build", ["./npm/builder/vite"])}`,
   ),
   "build:nuxt-stack": noCacheTask(
-    runInPackages("build", ["./npm/vite-plugin-musea", "./npm/musea-nuxt", "./npm/nuxt"]),
+    runInPackages("build", [
+      "./npm/builder/vite-musea",
+      "./npm/framework/musea-nuxt",
+      "./npm/framework/nuxt",
+    ]),
   ),
   "build:plugin": noCacheTask(runTask("build:vite-plugin")),
   "build:cli": task("cargo build --release -p vize"),
@@ -54,33 +58,33 @@ export const buildTasks = defineTasks({
   "package:vscode-extension": noCacheTask(
     runInVscodeExtension(
       "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
-      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
+      "node ../../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     ),
   ),
-  "check:zed-extension": task("cargo check --manifest-path npm/zed-vize/Cargo.toml", {
-    input: ["npm/zed-vize/**"],
+  "check:zed-extension": task("cargo check --manifest-path npm/editor/zed/Cargo.toml", {
+    input: ["npm/editor/zed/**"],
   }),
   "package:zed-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed-vize/target' -czf zed-vize-extension.tar.gz -C npm zed-vize && node tools/zed-vize/assert-zed-package.mjs zed-vize-extension.tar.gz",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed/target' -czf zed-vize-extension.tar.gz -C npm/editor zed && node tools/zed-vize/assert-zed-package.mjs zed-vize-extension.tar.gz",
   ),
   "package:nvim-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf nvim-vize-extension.tar.gz -C npm nvim-vize && node tools/nvim-vize/assert-nvim-package.mjs nvim-vize-extension.tar.gz",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf nvim-vize-extension.tar.gz -C npm/editor nvim && node tools/nvim-vize/assert-nvim-package.mjs nvim-vize-extension.tar.gz",
   ),
   "package:vim-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf vim-vize-extension.tar.gz -C npm vim-vize && node tools/vim-vize/assert-vim-package.mjs vim-vize-extension.tar.gz",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf vim-vize-extension.tar.gz -C npm/editor vim && node tools/vim-vize/assert-vim-package.mjs vim-vize-extension.tar.gz",
   ),
   "package:helix-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf helix-vize-extension.tar.gz -C npm helix-vize && node tools/helix-vize/assert-helix-package.mjs helix-vize-extension.tar.gz",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf helix-vize-extension.tar.gz -C npm/editor helix && node tools/helix-vize/assert-helix-package.mjs helix-vize-extension.tar.gz",
   ),
   "package:emacs-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf emacs-vize-extension.tar.gz -C npm emacs-vize && node tools/emacs-vize/assert-emacs-package.mjs emacs-vize-extension.tar.gz",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf emacs-vize-extension.tar.gz -C npm/editor emacs && node tools/emacs-vize/assert-emacs-package.mjs emacs-vize-extension.tar.gz",
   ),
   "package:editor-extensions": noCacheTask(
     `${runInVscodeExtension(
       "pnpm exec tsgo --noEmit",
       "pnpm exec vp check src vite.config.ts",
       "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
-      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
+      "node ../../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     )} && ${runTask("check:zed-extension")} && ${runTask(
       "test:zed-extension:unit",
     )} && ${runTask("package:zed-extension")} && ${runTask(
@@ -89,5 +93,5 @@ export const buildTasks = defineTasks({
       "package:helix-extension",
     )} && ${runTask("package:emacs-extension")}`,
   ),
-  "install:plugin": noCacheTask("vp install --filter './npm/vite-plugin-vize'"),
+  "install:plugin": noCacheTask("vp install --filter './npm/builder/vite'"),
 });

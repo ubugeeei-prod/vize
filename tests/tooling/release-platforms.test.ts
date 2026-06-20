@@ -32,7 +32,7 @@ test("release platform cadence skips slow targets outside fifth minors", () => {
 
 test("release platform cadence removes skipped native manifest entries", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-platforms-"));
-  const packageDir = path.join(tempDir, "npm", "vize-native");
+  const packageDir = path.join(tempDir, "npm", "native");
   const packageJsonPath = path.join(packageDir, "package.json");
   const skippedDir = path.join(packageDir, "npm", "darwin-x64");
   const keptDir = path.join(packageDir, "npm", "darwin-arm64");

@@ -300,7 +300,7 @@ importers:
         version: 2.68.0(@babel/core@7.29.0)(@babel/template@7.28.6)(@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(@vue/compiler-sfc@3.5.35)(playwright-core@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tsx@4.22.4)(vue@3.5.35(typescript@6.0.3))(yaml@2.9.0)
       '@vizejs/vite-plugin':
         specifier: workspace:*
-        version: link:../npm/vite-plugin-vize
+        version: link:../npm/builder/vite
       playwright:
         specifier: catalog:testing
         version: 1.60.0
@@ -328,7 +328,7 @@ importers:
         version: 6.0.3
       vize:
         specifier: workspace:*
-        version: link:../../npm/vize
+        version: link:../../npm/cli
 
   examples/oxlint-vize:
     devDependencies:
@@ -347,10 +347,10 @@ importers:
         version: 1.60.0
       '@vizejs/vite-plugin':
         specifier: workspace:*
-        version: link:../../npm/vite-plugin-vize
+        version: link:../../npm/builder/vite
       '@vizejs/vite-plugin-musea':
         specifier: workspace:*
-        version: link:../../npm/vite-plugin-musea
+        version: link:../../npm/builder/vite-musea
       typescript:
         specifier: catalog:typescript
         version: 6.0.3
@@ -362,7 +362,7 @@ importers:
         version: 0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
       vize:
         specifier: workspace:*
-        version: link:../../npm/vize
+        version: link:../../npm/cli
 
   npm/fresco:
     dependencies:
@@ -400,7 +400,7 @@ importers:
     devDependencies:
       '@vizejs/vite-plugin':
         specifier: workspace:*
-        version: link:../../../vite-plugin-vize
+        version: link:../../../builder/vite
       vite:
         specifier: catalog:vite-stack
         version: '@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)'
@@ -414,14 +414,14 @@ importers:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
 
-  npm/musea-mcp-server:
+  npm/mcp-musea:
     dependencies:
       '@modelcontextprotocol/sdk':
         specifier: catalog:integrations
         version: 1.29.0(zod@3.25.76)
       '@vizejs/native':
         specifier: workspace:*
-        version: link:../vize-native
+        version: link:../native
     devDependencies:
       '@tsdown/css':
         specifier: catalog:content
@@ -445,7 +445,7 @@ importers:
         specifier: catalog:vite-stack
         version: 0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
 
-  npm/musea-nuxt:
+  npm/framework/musea-nuxt:
     devDependencies:
       typescript:
         specifier: catalog:typescript
@@ -463,23 +463,23 @@ importers:
         specifier: catalog:vue-stable
         version: 4.5.1(vue@3.5.35(typescript@6.0.3))
 
-  npm/nuxt:
+  npm/framework/nuxt:
     dependencies:
       '@nuxt/kit':
         specifier: catalog:nuxt-module
         version: 3.11.2(magicast@0.5.2)(rollup@4.60.3)
       '@vizejs/vite-plugin':
         specifier: workspace:*
-        version: link:../vite-plugin-vize
+        version: link:../../builder/vite
       '@vizejs/vite-plugin-musea':
         specifier: workspace:*
-        version: link:../vite-plugin-musea
+        version: link:../../builder/vite-musea
       nuxt:
         specifier: 4.4.8
         version: 4.4.8(@azure/identity@4.13.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@babel/plugin-syntax-typescript@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(@vue/compiler-sfc@3.5.35)(cac@6.7.14)(commander@13.1.0)(db0@0.3.4)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(optionator@0.9.4)(oxlint@1.64.0(oxlint-tsgolint@0.22.1))(rolldown@1.0.1)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.1)(rollup@4.60.3))(rollup@4.60.3)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(vue-tsc@3.3.4(typescript@6.0.3))(yaml@2.9.0)
       vize:
         specifier: workspace:*
-        version: link:../vize
+        version: link:../../cli
     devDependencies:
       typescript:
         specifier: catalog:typescript
@@ -497,7 +497,7 @@ importers:
         specifier: catalog:vue-stable
         version: 4.5.1(vue@3.5.35(typescript@6.0.3))
 
-  npm/oxlint-plugin-vize:
+  npm/oxint:
     dependencies:
       '@oxlint/plugins':
         specifier: catalog:linting
@@ -511,7 +511,7 @@ importers:
         version: 25.9.2
       '@vizejs/native':
         specifier: workspace:*
-        version: link:../vize-native
+        version: link:../native
       tsdown:
         specifier: catalog:vite-stack
         version: 0.22.0(@tsdown/css@0.22.0)(@typescript/native-preview@7.0.0-dev.20260602.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(vue-tsc@3.2.9(typescript@6.0.3))
@@ -550,11 +550,11 @@ importers:
         specifier: catalog:native-binaries
         version: 0.108.0
 
-  npm/rspack-vize-plugin:
+  npm/builder/rspack:
     dependencies:
       '@vizejs/native':
         specifier: workspace:*
-        version: link:../vize-native
+        version: link:../../native
     devDependencies:
       '@rspack/core':
         specifier: catalog:bundlers
@@ -578,7 +578,7 @@ importers:
         specifier: catalog:vite-stack
         version: 0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
 
-  npm/rspack-vize-plugin/example:
+  npm/builder/rspack/example:
     dependencies:
       vue:
         specifier: catalog:vue-stable
@@ -598,13 +598,13 @@ importers:
         version: 6.0.3
       vize:
         specifier: workspace:*
-        version: link:../../vize
+        version: link:../../../cli
 
-  npm/unplugin-vize:
+  npm/builder/unplugin:
     dependencies:
       '@vizejs/native':
         specifier: workspace:*
-        version: link:../vize-native
+        version: link:../../native
       oxc-transform:
         specifier: catalog:oxc
         version: 0.130.0
@@ -634,11 +634,11 @@ importers:
         specifier: catalog:bundlers
         version: 5.107.2(esbuild@0.28.1)(postcss@8.5.15)
 
-  npm/vite-plugin-musea:
+  npm/builder/vite-musea:
     dependencies:
       '@vizejs/native':
         specifier: workspace:*
-        version: link:../vize-native
+        version: link:../../native
       axe-core:
         specifier: ^4.7.0
         version: 4.11.1
@@ -666,7 +666,7 @@ importers:
         version: 6.0.7(@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(vue@3.5.35(typescript@6.0.3))
       '@vizejs/vite-plugin':
         specifier: workspace:*
-        version: link:../vite-plugin-vize
+        version: link:../vite
       highlight.js:
         specifier: catalog:content
         version: 11.11.1
@@ -698,17 +698,17 @@ importers:
         specifier: catalog:vue-stable
         version: 4.5.1(vue@3.5.35(typescript@6.0.3))
 
-  npm/vite-plugin-vize:
+  npm/builder/vite:
     dependencies:
       '@vizejs/native':
         specifier: workspace:*
-        version: link:../vize-native
+        version: link:../../native
       tinyglobby:
         specifier: catalog:repo-tooling
         version: 0.2.16
       vize:
         specifier: workspace:*
-        version: link:../vize
+        version: link:../../cli
     devDependencies:
       '@types/node':
         specifier: catalog:typescript
@@ -723,7 +723,7 @@ importers:
         specifier: catalog:vite-stack
         version: 0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
 
-  npm/vite-plugin-vize/example:
+  npm/builder/vite/example:
     dependencies:
       vue:
         specifier: catalog:vue-stable
@@ -746,13 +746,13 @@ importers:
         version: 0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.4)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
       vize:
         specifier: workspace:*
-        version: link:../../vize
+        version: link:../../../cli
 
-  npm/vize:
+  npm/cli:
     dependencies:
       '@vizejs/native':
         specifier: workspace:*
-        version: link:../vize-native
+        version: link:../native
       oxc-transform:
         specifier: catalog:oxc
         version: 0.130.0
@@ -786,7 +786,7 @@ importers:
         specifier: catalog:typescript
         version: 7.0.0-dev.20260602.1
 
-  npm/vize-native:
+  npm/native:
     devDependencies:
       '@napi-rs/cli':
         specifier: catalog:integrations
@@ -817,7 +817,7 @@ importers:
         specifier: catalog:native-binaries
         version: 0.108.0
 
-  npm/vize-wasm: {}
+  npm/wasm: {}
 
   playground:
     dependencies:
@@ -845,7 +845,7 @@ importers:
         version: 1.60.0
       '@vizejs/vite-plugin':
         specifier: workspace:*
-        version: link:../npm/vite-plugin-vize
+        version: link:../npm/builder/vite
       '@vue/test-utils':
         specifier: catalog:vue-stable
         version: 2.4.10(@vue/compiler-dom@3.6.0-beta.10)(@vue/server-renderer@3.5.35(vue@3.6.0-beta.10(typescript@6.0.3)))(vue@3.6.0-beta.10(typescript@6.0.3))

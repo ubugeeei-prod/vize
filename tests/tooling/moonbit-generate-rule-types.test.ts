@@ -13,7 +13,7 @@ const lintRuleSnapshotPath = path.join(
   "snapshots",
   "vize_patina__preset__tests__lint_preset_rule_membership.snap",
 );
-const lintRuleTypesPath = path.join(repoRoot, "npm", "vize", "src", "types", "rules.ts");
+const lintRuleTypesPath = path.join(repoRoot, "npm", "cli", "src", "types", "rules.ts");
 
 function collectLintRuleNames(snapshotContent: string): string[] {
   const frontmatterEnd = snapshotContent.indexOf("\n---\n", 4);

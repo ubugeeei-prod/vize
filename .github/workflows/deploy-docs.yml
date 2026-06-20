@@ -44,10 +44,10 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
 
       - name: Install JS dependencies
-        run: moon run --target native - -- --filter './docs...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
+        run: moon run --target native - -- --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build @vizejs/vite-plugin
-        run: moon run --target native - -- vp run --filter './npm/vize-native' build:ci -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build < tools/moon/scripts/github/run_many.mbtx
+        run: moon run --target native - -- vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build < tools/moon/scripts/github/run_many.mbtx
 
       - name: Build docs
         run: vp run --filter './docs' build
@@ -85,9 +85,9 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: |
-            npm/vize-wasm
+            npm/wasm
             playground/src/wasm
-          key: ${{ runner.os }}-docs-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/vize-wasm/package.json') }}
+          key: ${{ runner.os }}-docs-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json') }}
 
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'
@@ -97,7 +97,7 @@ jobs:
 
       - name: Build WASM
         if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: moon run --target native - -- npm/vize-wasm playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx
+        run: moon run --target native - -- npm/wasm playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -107,10 +107,10 @@ jobs:
           run-install: false
 
       - name: Install JS dependencies
-        run: moon run --target native - -- --filter './playground...' --filter './examples/vite-musea...' --filter './npm/vite-plugin-musea...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
+        run: moon run --target native - -- --filter './playground...' --filter './examples/vite-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build npm packages
-        run: moon run --target native - -- vp run --filter './npm/vize-native' build:ci -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build -- vp run --filter './npm/vite-plugin-musea' build < tools/moon/scripts/github/run_many.mbtx
+        run: moon run --target native - -- vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/builder/vite-musea' build < tools/moon/scripts/github/run_many.mbtx
 
       - name: Build playground
         run: vp run --filter './playground' build

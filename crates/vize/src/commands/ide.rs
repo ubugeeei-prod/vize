@@ -179,11 +179,11 @@ fn find_vscode_vsix() -> Option<PathBuf> {
     // Look for VSIX in common locations
     let locations = [
         // Current working directory
-        PathBuf::from("npm/vscode-vize"),
+        PathBuf::from("npm/editor/vscode"),
         // Relative to executable
         std::env::current_exe()
             .ok()
-            .and_then(|p| p.parent().map(|p| p.join("../../npm/vscode-vize")))
+            .and_then(|p| p.parent().map(|p| p.join("../../npm/editor/vscode")))
             .unwrap_or_default(),
     ];
 
@@ -204,7 +204,7 @@ fn find_vscode_vsix() -> Option<PathBuf> {
 
 fn build_vscode_extension() -> bool {
     // Try to find the extension source
-    let source_dir = PathBuf::from("npm/vscode-vize");
+    let source_dir = PathBuf::from("npm/editor/vscode");
     if !source_dir.exists() {
         return false;
     }
@@ -267,7 +267,7 @@ fn zed_install() {
         Some(dir) => {
             let vize_dir = dir.join("vize");
             let Some(source_dir) = find_zed_extension_source() else {
-                eprintln!("Could not find npm/zed-vize extension source");
+                eprintln!("Could not find npm/editor/zed extension source");
                 eprintln!(
                     "Please run from the vize repository or install from Zed's extension gallery"
                 );
@@ -309,10 +309,10 @@ fn zed_install() {
 
 fn find_zed_extension_source() -> Option<PathBuf> {
     let locations = [
-        PathBuf::from("npm/zed-vize"),
+        PathBuf::from("npm/editor/zed"),
         std::env::current_exe()
             .ok()
-            .and_then(|p| p.parent().map(|p| p.join("../../npm/zed-vize")))
+            .and_then(|p| p.parent().map(|p| p.join("../../npm/editor/zed")))
             .unwrap_or_default(),
     ];
 

@@ -143,13 +143,13 @@ test("esm packed npm manifests point at mjs and d.mts outputs", () => {
 });
 
 test("vite plugin publishes TypeScript client types for Vue imports", () => {
-  const packageJson = JSON.parse(readRepoFile("npm/vite-plugin-vize/package.json")) as {
+  const packageJson = JSON.parse(readRepoFile("npm/builder/vite/package.json")) as {
     exports?: Record<string, { import?: string; types?: string }>;
     files?: string[];
     types?: string;
   };
-  const typeEntry = readRepoFile("npm/vite-plugin-vize/index.d.mts");
-  const clientTypes = readRepoFile("npm/vite-plugin-vize/client.d.ts");
+  const typeEntry = readRepoFile("npm/builder/vite/index.d.mts");
+  const clientTypes = readRepoFile("npm/builder/vite/client.d.ts");
   const files = packageJson.files ?? [];
   assert.equal(packageJson.types, "./index.d.mts");
   assert.deepEqual(packageJson.exports?.["."], {
@@ -174,7 +174,7 @@ test("vite plugin type entry resolves direct Vue imports", () => {
     fs.mkdirSync(srcDir, { recursive: true });
 
     for (const file of ["package.json", "index.d.mts", "client.d.ts"]) {
-      fs.copyFileSync(path.join(root, "npm", "vite-plugin-vize", file), path.join(pluginDir, file));
+      fs.copyFileSync(path.join(root, "npm", "builder/vite", file), path.join(pluginDir, file));
     }
 
     fs.writeFileSync(path.join(pluginDir, "dist", "index.mjs"), "\n");
@@ -227,7 +227,7 @@ test("vite plugin type entry resolves direct Vue imports", () => {
 
 test("native package catalog pins and generated loader version checks stay aligned", () => {
   const nativePackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/vize-native/package.json"), "utf-8"),
+    fs.readFileSync(path.join(root, "npm/native/package.json"), "utf-8"),
   ) as {
     optionalDependencies?: Record<string, string>;
     version?: string;
@@ -268,7 +268,7 @@ test("native package catalog pins and generated loader version checks stay align
   }
 
   const nativeTargetsLoader = fs.readFileSync(
-    path.join(root, "npm/vize-native/native-targets.js"),
+    path.join(root, "npm/native/native-targets.js"),
     "utf-8",
   );
   assert.match(
@@ -281,16 +281,13 @@ test("native package catalog pins and generated loader version checks stay align
   assert.match(nativeTargetsLoader, /execFileSync\("ldd", \["--version"\]/);
   assert.doesNotMatch(nativeTargetsLoader, /execSync\(/);
 
-  const oxlintNativeLoader = fs.readFileSync(
-    path.join(root, "npm/oxlint-plugin-vize/src/native.ts"),
-    "utf-8",
-  );
+  const oxlintNativeLoader = fs.readFileSync(path.join(root, "npm/oxint/src/native.ts"), "utf-8");
   assert.match(oxlintNativeLoader, /spawnSync\("ldd", \["--version"\]/);
   assert.doesNotMatch(oxlintNativeLoader, /execSync\(/);
 });
 
 test("pkl runtime stays optional for consumers of the vize package", () => {
-  const packageJson = JSON.parse(readRepoFile("npm/vize/package.json")) as {
+  const packageJson = JSON.parse(readRepoFile("npm/cli/package.json")) as {
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
     optionalDependencies?: Record<string, string>;
@@ -308,7 +305,7 @@ test("pkl runtime stays optional for consumers of the vize package", () => {
 });
 
 test("native preview runtime is declared for vize check users", () => {
-  const packageJson = JSON.parse(readRepoFile("npm/vize/package.json")) as {
+  const packageJson = JSON.parse(readRepoFile("npm/cli/package.json")) as {
     dependencies?: Record<string, string>;
     optionalDependencies?: Record<string, string>;
     peerDependencies?: Record<string, string>;
@@ -325,14 +322,14 @@ test("native preview runtime is declared for vize check users", () => {
 });
 
 test("vize package leaves Vue type versions to the consuming project", () => {
-  const packageJson = JSON.parse(readRepoFile("npm/vize/package.json")) as {
+  const packageJson = JSON.parse(readRepoFile("npm/cli/package.json")) as {
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
     optionalDependencies?: Record<string, string>;
     peerDependencies?: Record<string, string>;
     peerDependenciesMeta?: Record<string, { optional?: boolean }>;
   };
-  const cliEntry = readRepoFile("npm/vize/src/cli.ts");
+  const cliEntry = readRepoFile("npm/cli/src/cli.ts");
 
   assert.equal(packageJson.dependencies?.vue, undefined);
   assert.equal(packageJson.optionalDependencies?.vue, undefined);
@@ -350,7 +347,7 @@ test("musea Nuxt tests the same vue-router major that it declares as a peer", ()
   const catalogVersion = workspaceYaml.match(/^\s+vue-router: "([^"]+)"$/m)?.[1];
   assert.ok(catalogVersion, "vue-router catalog pin");
 
-  const packageJson = JSON.parse(readRepoFile("npm/musea-nuxt/package.json")) as {
+  const packageJson = JSON.parse(readRepoFile("npm/framework/musea-nuxt/package.json")) as {
     peerDependencies?: Record<string, string>;
   };
   const peerRange = packageJson.peerDependencies?.["vue-router"];
@@ -390,7 +387,7 @@ test("published package manifests declare support metadata", () => {
 });
 
 test("documented install commands point at supported release artifacts", () => {
-  const vizeNpmPackage = JSON.parse(readRepoFile("npm/vize/package.json")) as {
+  const vizeNpmPackage = JSON.parse(readRepoFile("npm/cli/package.json")) as {
     bin?: Record<string, string>;
     publishConfig?: Record<string, string>;
   };
@@ -402,7 +399,7 @@ test("documented install commands point at supported release artifacts", () => {
     "docs/content/getting-started.md",
     "docs/content/guide/cli.md",
     "docs/content/guide/static-analysis.md",
-    "npm/vize/README.md",
+    "npm/cli/README.md",
     "crates/vize/README.md",
   ];
   const unsupportedCargoInstallDocs = publicDocs.filter((filePath) =>
@@ -438,7 +435,7 @@ test("editor extension manifests keep expected defaults and version alignment", 
   assert.ok(workspaceVersion);
 
   const vscodePackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/vscode-vize/package.json"), "utf-8"),
+    fs.readFileSync(path.join(root, "npm/editor/vscode/package.json"), "utf-8"),
   ) as {
     contributes?: {
       configuration?: {
@@ -484,7 +481,7 @@ test("editor extension manifests keep expected defaults and version alignment", 
     "7.0.0-dev.20260421.1",
   );
 
-  const zedManifest = fs.readFileSync(path.join(root, "npm/zed-vize/extension.toml"), "utf-8");
+  const zedManifest = fs.readFileSync(path.join(root, "npm/editor/zed/extension.toml"), "utf-8");
   const zedVersion = zedManifest.match(/^version = "(.+)"$/m)?.[1];
 
   assert.equal(zedVersion, workspaceVersion);
@@ -494,7 +491,7 @@ test("editor extension manifests keep expected defaults and version alignment", 
 
 test("workspace package builds do not nest pnpm run commands", () => {
   const museaPackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/vite-plugin-musea/package.json"), "utf-8"),
+    fs.readFileSync(path.join(root, "npm/builder/vite-musea/package.json"), "utf-8"),
   ) as {
     scripts?: Record<string, string>;
   };
@@ -506,7 +503,7 @@ test("workspace package builds do not nest pnpm run commands", () => {
 
 test("vize package delegates rule type generation to the workspace MoonBit task", () => {
   const vizePackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/vize/package.json"), "utf-8"),
+    fs.readFileSync(path.join(root, "npm/cli/package.json"), "utf-8"),
   ) as {
     engines?: Record<string, string>;
     scripts?: Record<string, string>;
@@ -525,7 +522,7 @@ test("vize package delegates rule type generation to the workspace MoonBit task"
 
 test("wasm package publishes the wrapper entrypoint and raw wasm assets", () => {
   const wasmPackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/vize-wasm/package.json"), "utf-8"),
+    fs.readFileSync(path.join(root, "npm/wasm/package.json"), "utf-8"),
   ) as {
     exports?: Record<string, string | Record<string, string>>;
     files?: string[];
@@ -563,13 +560,13 @@ test("wasm package publishes the wrapper entrypoint and raw wasm assets", () => 
 test("workspace TypeScript package builds use vp pack", () => {
   const packages = [
     ["npm/fresco", "vp pack", "vp pack --watch"],
-    ["npm/musea-mcp-server", "vp pack", "vp pack --watch"],
-    ["npm/musea-nuxt", "vp pack", "vp pack --watch"],
-    ["npm/nuxt", "vp pack", "vp pack --watch"],
-    ["npm/oxlint-plugin-vize", "vp pack", undefined],
-    ["npm/rspack-vize-plugin", "vp pack", "vp pack --watch"],
-    ["npm/unplugin-vize", "vp pack", "vp pack --watch"],
-    ["npm/vite-plugin-vize", "vp pack", "vp pack --watch"],
+    ["npm/mcp-musea", "vp pack", "vp pack --watch"],
+    ["npm/framework/musea-nuxt", "vp pack", "vp pack --watch"],
+    ["npm/framework/nuxt", "vp pack", "vp pack --watch"],
+    ["npm/oxint", "vp pack", undefined],
+    ["npm/builder/rspack", "vp pack", "vp pack --watch"],
+    ["npm/builder/unplugin", "vp pack", "vp pack --watch"],
+    ["npm/builder/vite", "vp pack", "vp pack --watch"],
   ] as const;
 
   for (const [packageDir, buildScript, devScript] of packages) {
@@ -587,7 +584,7 @@ test("workspace TypeScript package builds use vp pack", () => {
   }
 
   const oxlintPackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/oxlint-plugin-vize/package.json"), "utf-8"),
+    fs.readFileSync(path.join(root, "npm/oxint/package.json"), "utf-8"),
   ) as {
     engines?: Record<string, string>;
     scripts?: Record<string, string>;
@@ -607,7 +604,7 @@ test("fresco-native publishes bundled binaries directly from the root package", 
     scripts?: Record<string, string>;
   };
   const vizeNativePackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/vize-native/package.json"), "utf-8"),
+    fs.readFileSync(path.join(root, "npm/native/package.json"), "utf-8"),
   ) as {
     scripts?: Record<string, string>;
   };

@@ -325,18 +325,18 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build native package
-        run: vp run --filter './npm/vize-native' build:ci
+        run: vp run --filter './npm/native' build:ci
       - name: Build JS packages
         run: vp run --workspace-root build:packages
       - name: Stage shared JS build artifacts
         run: |
-          mkdir -p .artifacts/shared-js-build/npm/vize-native
-          mkdir -p .artifacts/shared-js-build/npm/vize
-          mkdir -p .artifacts/shared-js-build/npm/vite-plugin-vize
-          cp npm/vize-native/*.node .artifacts/shared-js-build/npm/vize-native/
-          cp npm/vize-native/index.js npm/vize-native/index.d.ts .artifacts/shared-js-build/npm/vize-native/
-          cp -R npm/vize/dist .artifacts/shared-js-build/npm/vize/
-          cp -R npm/vite-plugin-vize/dist .artifacts/shared-js-build/npm/vite-plugin-vize/
+          mkdir -p .artifacts/shared-js-build/npm/native
+          mkdir -p .artifacts/shared-js-build/npm/cli
+          mkdir -p .artifacts/shared-js-build/npm/builder/vite
+          cp npm/native/*.node .artifacts/shared-js-build/npm/native/
+          cp npm/native/index.js npm/native/index.d.ts .artifacts/shared-js-build/npm/native/
+          cp -R npm/cli/dist .artifacts/shared-js-build/npm/cli/
+          cp -R npm/builder/vite/dist .artifacts/shared-js-build/npm/builder/vite/
       - name: Upload shared JS build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -585,7 +585,7 @@ jobs:
           run-install: false
 
       - name: Install JS dependencies
-        run: moon run --target native - -- --filter './playground...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
+        run: moon run --target native - -- --filter './playground...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Download shared JS build artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1

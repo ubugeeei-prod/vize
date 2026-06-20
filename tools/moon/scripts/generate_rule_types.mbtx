@@ -42,7 +42,7 @@ fn find_repo_root(start : String) -> String? {
   let current : @path.Path = start
   let current_path = current.resolve().to_string()
   if safe_path_exists(join_path(current_path, "Cargo.toml")) &&
-    safe_path_exists(join_path(current_path, "npm/vize/package.json")) {
+    safe_path_exists(join_path(current_path, "npm/cli/package.json")) {
     return Some(current_path)
   }
   let parent = current.dirname().to_string()
@@ -126,7 +126,7 @@ fn run_app() -> Int {
     repo_root,
     "crates/vize_patina/src/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
   )
-  let output_path = join_path(repo_root, "npm/vize/src/types/rules.ts")
+  let output_path = join_path(repo_root, "npm/cli/src/types/rules.ts")
   let snapshot = match read_file_to_string(snapshot_path) {
     Some(content) => content
     None => {

@@ -50,7 +50,7 @@ test("WASM build jobs install MoonBit before invoking moon run", () => {
       workflowName: "deploy-docs.yml",
       jobName: "build-playground",
       moonRun:
-        "run: moon run --target native - -- npm/vize-wasm playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx",
+        "run: moon run --target native - -- npm/wasm playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx",
     },
     {
       workflowName: "release.yml",
@@ -142,9 +142,9 @@ test("native smoke workflow covers host platforms before release tags", () => {
     assert.match(job, new RegExp(`runner:\\s*${runner}[\\s\\S]*target:\\s*${target}`));
   }
   assert.match(job, /cargo build --profile ci -p vize/);
-  assert.match(job, /vp run --filter '\.\/npm\/vize-native' build:ci/);
-  assert.match(job, /require\('\.\/npm\/vize-native'\)/);
-  assert.match(job, /smoke-release-install\.mjs --prepare-manifests npm\/vize-native/);
+  assert.match(job, /vp run --filter '\.\/npm\/native' build:ci/);
+  assert.match(job, /require\('\.\/npm\/native'\)/);
+  assert.match(job, /smoke-release-install\.mjs --prepare-manifests npm\/native/);
 });
 
 test("native smoke workflow fresh-installs runtime tarballs across supported targets", () => {
@@ -168,7 +168,7 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   assert.match(job, /vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish/);
   assert.match(
     job,
-    /smoke-release-install\.mjs --prepare-manifests --runtime-checks[\s\S]*npm\/vize-native npm\/vize-native\/npm\/\*[\s\S]*npm\/vize npm\/vite-plugin-vize/,
+    /smoke-release-install\.mjs --prepare-manifests --runtime-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli npm\/builder\/vite/,
   );
 });
 
@@ -183,16 +183,16 @@ test("pkg.pr.new workflow publishes built npm packages from the lockfile", () =>
   assert.equal([...job.matchAll(/pkg-pr-new publish/g)].length, 1);
 
   for (const packagePath of [
-    "./npm/vize",
-    "./npm/vite-plugin-vize",
-    "./npm/oxlint-plugin-vize",
-    "./npm/unplugin-vize",
+    "./npm/cli",
+    "./npm/builder/vite",
+    "./npm/oxint",
+    "./npm/builder/unplugin",
     "./npm/fresco",
-    "./npm/musea-mcp-server",
-    "./npm/vite-plugin-musea",
-    "./npm/rspack-vize-plugin",
-    "./npm/musea-nuxt",
-    "./npm/nuxt",
+    "./npm/mcp-musea",
+    "./npm/builder/vite-musea",
+    "./npm/builder/rspack",
+    "./npm/framework/musea-nuxt",
+    "./npm/framework/nuxt",
   ]) {
     assert.match(job, new RegExp(packagePath.replaceAll("/", "\\/").replace(".", "\\.")));
   }

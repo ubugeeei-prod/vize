@@ -52,7 +52,7 @@ function leadingMajor(pin: string): number {
 }
 
 test("@vizejs/unplugin exposes per-bundler subpath entries wired at mjs/d.mts", () => {
-  const manifest = readManifest("unplugin-vize");
+  const manifest = readManifest("builder/unplugin");
   assert.equal(manifest.name, "@vizejs/unplugin");
 
   for (const subpath of ["./esbuild", "./rollup", "./rolldown", "./webpack", "./babel"]) {
@@ -73,7 +73,7 @@ test("@vizejs/unplugin exposes per-bundler subpath entries wired at mjs/d.mts", 
 });
 
 test("@vizejs/unplugin declares the webpack peer range and the workspace pins webpack 5.x", () => {
-  const manifest = readManifest("unplugin-vize");
+  const manifest = readManifest("builder/unplugin");
   assert.equal(manifest.peerDependencies?.webpack, "^4.46.0 || ^5.0.0");
 
   const webpackPin = catalogPin(readWorkspaceYaml(), "bundlers", "webpack");
@@ -82,7 +82,7 @@ test("@vizejs/unplugin declares the webpack peer range and the workspace pins we
 });
 
 test("@vizejs/rspack-plugin peer range matches the catalog @rspack/core major", () => {
-  const manifest = readManifest("rspack-vize-plugin");
+  const manifest = readManifest("builder/rspack");
   assert.equal(manifest.name, "@vizejs/rspack-plugin");
   assert.equal(manifest.peerDependencies?.["@rspack/core"], "^1.0.0 || ^2.0.0");
 
@@ -96,7 +96,7 @@ test("@vizejs/rspack-plugin peer range matches the catalog @rspack/core major", 
 });
 
 test("@vizejs/vite-plugin peers vite ^8 while the workspace resolves vite via the VoidZero proxy", () => {
-  const manifest = readManifest("vite-plugin-vize");
+  const manifest = readManifest("builder/vite");
   assert.equal(manifest.name, "@vizejs/vite-plugin");
   assert.equal(manifest.peerDependencies?.vite, "^8.0.0");
 
@@ -109,7 +109,7 @@ test("@vizejs/vite-plugin peers vite ^8 while the workspace resolves vite via th
 });
 
 test("all three bundler-plugin packages require Node >= 22", () => {
-  for (const packageDir of ["unplugin-vize", "rspack-vize-plugin", "vite-plugin-vize"]) {
+  for (const packageDir of ["builder/unplugin", "builder/rspack", "builder/vite"]) {
     const manifest = readManifest(packageDir);
     const nodeEngine = manifest.engines?.node;
     assert.ok(nodeEngine, `${packageDir} engines.node`);

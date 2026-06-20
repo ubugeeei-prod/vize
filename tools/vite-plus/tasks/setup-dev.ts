@@ -17,5 +17,5 @@ export const setupAndDevTasks = defineTasks({
   "dev:npmx": noCacheTask(devApp("npmx")),
   "dev:elk": noCacheTask(devApp("elk")),
   "dev:vuefes": noCacheTask(devApp("vuefes")),
-  example: noCacheTask(runInPackages("dev", ["./npm/vite-plugin-vize/example"])),
+  example: noCacheTask(runInPackages("dev", ["./npm/builder/vite/example"])),
 });

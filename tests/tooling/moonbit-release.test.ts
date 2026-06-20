@@ -119,7 +119,7 @@ test("release script rewrites only the native-binaries catalog block in pnpm-loc
     "      specifier: 0.130.0",
     "      version: 0.130.0",
     "importers:",
-    "  npm/vize-native:",
+    "  npm/native:",
     "    optionalDependencies:",
     "      '@vizejs/native-darwin-arm64':",
     "        specifier: catalog:native-binaries",

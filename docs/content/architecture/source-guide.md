@@ -68,13 +68,13 @@ re-export the internal modules a contributor is expected to touch.
 
 ## JavaScript Package Entry Points
 
-| Package                     | Source entry                                           | Rust boundary                                 |
-| --------------------------- | ------------------------------------------------------ | --------------------------------------------- |
-| `@vizejs/vite-plugin`       | `npm/vite-plugin-vize/src/index.ts`                    | `@vizejs/native` through `vize_vitrine`       |
-| `@vizejs/nuxt`              | `npm/nuxt/src/index.ts`                                | Vite plugin options and component integration |
-| `@vizejs/wasm`              | generated package around `vize_vitrine` WASM exports   | `crates/vize_vitrine/src/wasm`                |
-| `@vizejs/vite-plugin-musea` | `npm/musea-nuxt/src/index.ts` and related package code | `vize_musea` APIs exposed through bindings    |
-| `oxlint-plugin-vize`        | `npm/oxlint-plugin-vize/src/index.ts`                  | `vize_patina` diagnostics through bindings    |
+| Package                     | Source entry                                                   | Rust boundary                                 |
+| --------------------------- | -------------------------------------------------------------- | --------------------------------------------- |
+| `@vizejs/vite-plugin`       | `npm/builder/vite/src/index.ts`                                | `@vizejs/native` through `vize_vitrine`       |
+| `@vizejs/nuxt`              | `npm/framework/nuxt/src/index.ts`                              | Vite plugin options and component integration |
+| `@vizejs/wasm`              | generated package around `vize_vitrine` WASM exports           | `crates/vize_vitrine/src/wasm`                |
+| `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` and related package code | `vize_musea` APIs exposed through bindings    |
+| `oxlint-plugin-vize`        | `npm/oxint/src/index.ts`                                       | `vize_patina` diagnostics through bindings    |
 
 Use package tests for integration wiring, but keep language semantics in Rust tests. The package
 layer should mostly prove that options, virtual modules, HMR, and native calls are connected.

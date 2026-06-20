@@ -1,0 +1,73 @@
+{
+  "name": "oxlint-plugin-vize",
+  "version": "0.242.0",
+  "description": "Oxlint JS plugin bridge for Vize Patina",
+  "keywords": [
+    "lint",
+    "oxlint",
+    "plugin",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/oxint"
+  },
+  "bin": {
+    "oxlint-vize": "bin/oxlint-vize"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp pack && node src/test.ts",
+    "check": "vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "catalog:linting"
+  },
+  "devDependencies": {
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "@vizejs/native": "workspace:*",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "optionalDependencies": {
+    "@vizejs/native-darwin-arm64": "catalog:native-binaries",
+    "@vizejs/native-darwin-x64": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-musl": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-musl": "catalog:native-binaries",
+    "@vizejs/native-win32-arm64-msvc": "catalog:native-binaries",
+    "@vizejs/native-win32-x64-msvc": "catalog:native-binaries"
+  },
+  "engines": {
+    "node": "^22 || >= 24"
+  }
+}

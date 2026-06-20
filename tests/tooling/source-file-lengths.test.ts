@@ -77,3 +77,33 @@ test("source length script rejects grown over-limit files", () => {
   assert.match(result.stdout, /over-limit file grew/);
   assert.match(result.stdout, /large\.ts/);
 });
+
+test("source length script compares renamed over-limit files to their base path", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-lengths-rename-"));
+  const filePath = path.join(cwd, "large.ts");
+  const renamedPath = path.join(cwd, "renamed.ts");
+  runGit(cwd, ["init", "-q"]);
+  writeLines(filePath, 351);
+  runGit(cwd, ["add", "large.ts"]);
+  runGit(cwd, [
+    "-c",
+    "user.name=Vize",
+    "-c",
+    "user.email=vize@example.com",
+    "commit",
+    "-qm",
+    "base",
+  ]);
+  const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
+
+  fs.renameSync(filePath, renamedPath);
+  runGit(cwd, ["add", "-A"]);
+  const result = runMoonScript(
+    "source_file_lengths",
+    ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
+    { cwd },
+  );
+
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+  assert.doesNotMatch(result.stdout, /new file exceeds limit/);
+});

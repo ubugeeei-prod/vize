@@ -11,10 +11,10 @@ import { defineTasks, moonScript, noCacheTask, runTask, shellCommand } from "../
  */
 export const generationAndCliTasks = defineTasks({
   "gen:schema": noCacheTask(
-    "pnpm exec pkl eval -f json npm/vize/pkl/jsonschema/generate.pkl -o npm/vize/schemas/vize.config.schema.json",
+    "pnpm exec pkl eval -f json npm/cli/pkl/jsonschema/generate.pkl -o npm/cli/schemas/vize.config.schema.json",
   ),
   "gen:types": noCacheTask(
-    `${runTask("gen:schema")} && pnpm exec json2ts -i npm/vize/schemas/vize.config.schema.json -o npm/vize/src/types/generated.ts && ${moonScript("postprocess_types")}`,
+    `${runTask("gen:schema")} && pnpm exec json2ts -i npm/cli/schemas/vize.config.schema.json -o npm/cli/src/types/generated.ts && ${moonScript("postprocess_types")}`,
   ),
   gen: noCacheTask(runTask("gen:types")),
   cli: noCacheTask(

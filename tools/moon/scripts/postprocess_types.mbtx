@@ -73,7 +73,7 @@ fn find_repo_root(start : String) -> String? {
   let current : @path.Path = start
   let current_path = current.resolve().to_string()
   if safe_path_exists(join_path(current_path, "Cargo.toml")) &&
-    safe_path_exists(join_path(current_path, "npm/vize/package.json")) {
+    safe_path_exists(join_path(current_path, "npm/cli/package.json")) {
     return Some(current_path)
   }
   let parent = current.dirname().to_string()
@@ -88,7 +88,7 @@ fn find_repo_root(start : String) -> String? {
 /// Returns the generated TypeScript declaration path relative to the repository
 /// root.
 fn generated_types_path(root : String) -> String {
-  join_path(root, "npm/vize/src/types/generated.ts")
+  join_path(root, "npm/cli/src/types/generated.ts")
 }
 
 ///|

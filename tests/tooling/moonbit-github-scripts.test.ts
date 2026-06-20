@@ -302,7 +302,7 @@ test("github/write_coverage_summary preserves failing coverage output before ret
 test("github/build_napi_package builds Apple targets with cargo and writes the expected .node artifact", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-build-napi-apple-"));
   const binDir = path.join(tempDir, "bin");
-  const packageDir = path.join(tempDir, "npm", "vize-native");
+  const packageDir = path.join(tempDir, "npm", "native");
   const artifactPath = path.join(
     tempDir,
     "target",

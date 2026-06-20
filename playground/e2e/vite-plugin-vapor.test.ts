@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
-import native from "../../npm/vize-native/index.js";
+import native from "../../npm/native/index.js";
 
 import {
   buildCompileBatchOptions,
   buildCompileFileOptions,
-} from "../../npm/vite-plugin-vize/src/compile-options.ts";
+} from "../../npm/builder/vite/src/compile-options.ts";
 
 const { compileSfc } = native;
 

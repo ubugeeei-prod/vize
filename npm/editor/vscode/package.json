@@ -1,0 +1,409 @@
+{
+  "name": "vize",
+  "displayName": "Vize",
+  "version": "0.242.0",
+  "description": "Vue Language Support powered by Vize - A high-performance language server for Vue SFC",
+  "categories": [
+    "Formatters",
+    "Linters",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "language-server",
+    "lsp",
+    "sfc",
+    "vue",
+    "vue3",
+    "vuejs"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/editor/vscode"
+  },
+  "publisher": "ubugeeei",
+  "main": "./dist/extension.cjs",
+  "scripts": {
+    "vscode:prepublish": "vp pack",
+    "build": "vp pack",
+    "watch": "vp pack --watch",
+    "check": "tsgo --noEmit && vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts && tsgo --noEmit",
+    "fmt": "vp fmt --write src vite.config.ts",
+    "package": "vsce package --no-dependencies --out dist/vize.vsix",
+    "test:host": "node test/run-extension-host.mjs",
+    "publish": "vsce publish --no-dependencies",
+    "publish:pre": "vsce publish --no-dependencies --pre-release"
+  },
+  "dependencies": {
+    "vscode-languageclient": "9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "25.6.0",
+    "@types/vscode": "1.75.0",
+    "@typescript/native-preview": "7.0.0-dev.20260421.1",
+    "@vscode/test-electron": "2.5.2",
+    "@vscode/vsce": "3.9.1",
+    "typescript": "6.0.3",
+    "vite-plus": "0.1.19"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "art-vue",
+        "aliases": [
+          "Art Vue",
+          "art-vue"
+        ],
+        "extensions": [
+          ".art.vue"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/vue.svg",
+          "dark": "./icons/vue.svg"
+        }
+      },
+      {
+        "id": "vue",
+        "aliases": [
+          "Vue",
+          "vue"
+        ],
+        "extensions": [
+          ".vue"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/vue.svg",
+          "dark": "./icons/vue.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "art-vue",
+        "scopeName": "source.art-vue",
+        "path": "./syntaxes/art-vue.tmLanguage.json",
+        "embeddedLanguages": {
+          "text.html.basic": "html",
+          "text.pug": "pug",
+          "source.js": "javascript",
+          "source.js.jsx": "javascriptreact",
+          "source.ts": "typescript",
+          "source.tsx": "typescriptreact",
+          "source.css": "css",
+          "source.css.scss": "scss",
+          "source.css.less": "less",
+          "source.sass": "sass",
+          "source.stylus": "stylus",
+          "source.postcss": "postcss",
+          "source.json": "json",
+          "source.yaml": "yaml",
+          "source.toml": "toml",
+          "source.graphql": "graphql"
+        }
+      },
+      {
+        "language": "vue",
+        "scopeName": "source.vue",
+        "path": "./syntaxes/vue.tmLanguage.json",
+        "embeddedLanguages": {
+          "text.html.basic": "html",
+          "text.pug": "pug",
+          "source.js": "javascript",
+          "source.js.jsx": "javascriptreact",
+          "source.ts": "typescript",
+          "source.tsx": "typescriptreact",
+          "source.css": "css",
+          "source.css.scss": "scss",
+          "source.css.less": "less",
+          "source.sass": "sass",
+          "source.stylus": "stylus",
+          "source.postcss": "postcss",
+          "source.json": "json",
+          "source.yaml": "yaml",
+          "source.toml": "toml",
+          "source.graphql": "graphql"
+        }
+      }
+    ],
+    "configuration": {
+      "title": "Vize",
+      "properties": {
+        "vize.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the Vize language server."
+        },
+        "vize.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the vize language server executable. Leave empty to auto-detect an installed or bundled vize binary."
+        },
+        "vize.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the Vize language server"
+        },
+        "vize.lint.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize linter diagnostics."
+        },
+        "vize.typecheck.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize type checking diagnostics and type-aware backend features."
+        },
+        "vize.editor.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the editor assistance bundle: completion, hover, navigation, symbols, rename, code lens, semantic tokens, links, folding, inlay hints, and file rename handling."
+        },
+        "vize.ecosystem.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vue ecosystem diagnostics and editor helpers for Vue Router route names and file-route params, Vue I18n catalogs, Nuxt, and Void Vue."
+        },
+        "vize.optionsApi.enable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Resolve Vue 3 Options API template bindings (data, computed, methods, props, inject) in typecheck and hover. Opt-in; officially supported on Vue 3 and zero cost when off."
+        },
+        "vize.legacyVue2.enable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable opt-in Vue 2.7 / Nuxt 2 template, typecheck, completion, hover, navigation, and reference helpers."
+        },
+        "vize.diagnostics.enable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Deprecated alias for vize.lint.enable.",
+          "deprecationMessage": "Use vize.lint.enable instead."
+        },
+        "vize.completion.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize completions. This may overlap with vuejs/language-tools."
+        },
+        "vize.hover.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize hover information. This may overlap with vuejs/language-tools."
+        },
+        "vize.definition.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize go-to-definition. This may overlap with vuejs/language-tools."
+        },
+        "vize.references.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize find references. This may overlap with vuejs/language-tools."
+        },
+        "vize.documentSymbols.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize document symbols."
+        },
+        "vize.workspaceSymbols.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize workspace symbols."
+        },
+        "vize.codeActions.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize lint quick fixes and suppressions. Requires vize.lint.enable."
+        },
+        "vize.rename.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize rename support. This may overlap with vuejs/language-tools."
+        },
+        "vize.codeLens.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize code lens."
+        },
+        "vize.formatting.enable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Vize document formatting. Keep off when Prettier, Volar, or another formatter owns Vue formatting."
+        },
+        "vize.semanticTokens.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize semantic tokens."
+        },
+        "vize.documentLinks.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize document links."
+        },
+        "vize.foldingRanges.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize folding ranges."
+        },
+        "vize.inlayHints.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize inlay hints."
+        },
+        "vize.fileRename.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize edits for file rename operations."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "vize.showStatus",
+        "title": "Show Status",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.enableRecommendedProfile",
+        "title": "Enable Recommended Profile",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.enableLintOnlyProfile",
+        "title": "Enable Lint-Only Profile",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.selectServerPath",
+        "title": "Select Language Server Executable",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.disable",
+        "title": "Disable Language Server",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.restartServer",
+        "title": "Restart Language Server",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.showOutput",
+        "title": "Show Output Channel",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.findReferences",
+        "title": "Find All References",
+        "category": "Vize"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "vize.showStatus"
+        },
+        {
+          "command": "vize.enableRecommendedProfile"
+        },
+        {
+          "command": "vize.enableLintOnlyProfile"
+        },
+        {
+          "command": "vize.selectServerPath"
+        },
+        {
+          "command": "vize.disable"
+        },
+        {
+          "command": "vize.restartServer",
+          "when": "editorLangId == vue || editorLangId == art-vue || editorLangId == html"
+        },
+        {
+          "command": "vize.showOutput",
+          "when": "editorLangId == vue || editorLangId == art-vue || editorLangId == html"
+        }
+      ]
+    },
+    "colors": [
+      {
+        "id": "vize.inlayHint.propsForeground",
+        "description": "Foreground color for props destructure inlay hints",
+        "defaults": {
+          "dark": "#6b6b6b",
+          "light": "#a0a0a0",
+          "highContrast": "#888888"
+        }
+      },
+      {
+        "id": "vize.inlayHint.propsBackground",
+        "description": "Background color for props destructure inlay hints",
+        "defaults": {
+          "dark": "#2a2a2a40",
+          "light": "#e8e8e840",
+          "highContrast": "#00000000"
+        }
+      }
+    ],
+    "configurationDefaults": {
+      "workbench.colorCustomizations": {
+        "editorInlayHint.typeForeground": "#6b6b6b",
+        "editorInlayHint.typeBackground": "#2a2a2a40"
+      }
+    },
+    "semanticTokenTypes": [
+      {
+        "id": "vueDirective",
+        "superType": "keyword",
+        "description": "Vue directive (v-if, v-for, etc.)"
+      },
+      {
+        "id": "vueComponent",
+        "superType": "class",
+        "description": "Vue component"
+      }
+    ],
+    "semanticTokenModifiers": [
+      {
+        "id": "vue",
+        "description": "Vue-specific"
+      }
+    ]
+  },
+  "activationEvents": [
+    "onCommand:vize.disable",
+    "onCommand:vize.enableLintOnlyProfile",
+    "onCommand:vize.enableRecommendedProfile",
+    "onCommand:vize.findReferences",
+    "onCommand:vize.restartServer",
+    "onCommand:vize.selectServerPath",
+    "onCommand:vize.showOutput",
+    "onCommand:vize.showStatus",
+    "onLanguage:art-vue",
+    "onLanguage:html",
+    "onLanguage:vue"
+  ],
+  "icon": "icons/logo.png",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Vize runs a native language-server binary. In untrusted workspaces it ignores workspace-controlled server paths and skips workspace-local server binaries to prevent code execution from cloned repositories. Enable Workspace Trust to use the full feature set."
+    }
+  }
+}

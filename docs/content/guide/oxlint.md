@@ -121,6 +121,6 @@ Settings are passed through `settings.vize`:
 ```bash
 nix develop
 vp install --frozen-lockfile
-vp run --filter './npm/vize-native' build
-vp run --filter './npm/oxlint-plugin-vize' build
+vp run --filter './npm/native' build
+vp run --filter './npm/oxint' build
 ```

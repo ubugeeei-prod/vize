@@ -3,7 +3,7 @@ import { defineConfig } from "vite-plus";
 import { vize } from "@vizejs/vite-plugin";
 
 const require = createRequire(import.meta.url);
-const vizePackage = require("../npm/vize/package.json") as { version: string };
+const vizePackage = require("../npm/cli/package.json") as { version: string };
 
 export default defineConfig({
   base: process.env.CI ? "/play/" : "/",

@@ -29,7 +29,7 @@ function readWorkspaceYaml(): string {
 function workspaceIgnoredNpmDirs(workspaceYaml: string): Set<string> {
   const ignored = new Set<string>();
   for (const line of workspaceYaml.split("\n")) {
-    const match = line.match(/^\s*-\s*"!npm\/([^"/]+)"\s*$/);
+    const match = line.match(/^\s*-\s*"!npm\/([^"]+)"\s*$/);
     if (match) {
       ignored.add(match[1]);
     }
@@ -38,16 +38,29 @@ function workspaceIgnoredNpmDirs(workspaceYaml: string): Set<string> {
 }
 
 function readNpmPackages(): NpmPackage[] {
-  return fs
-    .readdirSync(npmDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .filter((entry) => fs.existsSync(path.join(npmDir, entry.name, "package.json")))
-    .map((entry) => {
-      const json = JSON.parse(
-        fs.readFileSync(path.join(npmDir, entry.name, "package.json"), "utf-8"),
-      ) as PackageJson;
-      return { dir: entry.name, json, name: json.name ?? entry.name };
-    });
+  const packages: NpmPackage[] = [];
+  const visit = (relativeDir: string) => {
+    const absoluteDir = path.join(npmDir, relativeDir);
+    const packagePath = path.join(absoluteDir, "package.json");
+    if (fs.existsSync(packagePath)) {
+      const json = JSON.parse(fs.readFileSync(packagePath, "utf-8")) as PackageJson;
+      packages.push({ dir: relativeDir, json, name: json.name ?? relativeDir });
+    }
+
+    for (const entry of fs.readdirSync(absoluteDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (entry.name === "node_modules" || entry.name === "dist") continue;
+      visit(path.join(relativeDir, entry.name));
+    }
+  };
+
+  for (const entry of fs.readdirSync(npmDir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      visit(entry.name);
+    }
+  }
+
+  return packages;
 }
 
 // The set of packages whose runtime portability invariants we lock down:
@@ -143,8 +156,8 @@ test("workspace-ignored editor extensions are correctly excluded from the portab
 
 test("CLI bin entry files use the portable env-node shebang", () => {
   const binPackages = [
-    { dir: "vize", binName: "vize" },
-    { dir: "oxlint-plugin-vize", binName: "oxlint-vize" },
+    { dir: "cli", binName: "vize" },
+    { dir: "oxint", binName: "oxlint-vize" },
   ] as const;
 
   const checked: string[] = [];
@@ -178,7 +191,7 @@ test("CLI bin entry files use the portable env-node shebang", () => {
 
   // At least the flagship CLI bin must have been verified.
   assert.ok(
-    checked.some((entry) => entry.startsWith("vize/")),
+    checked.some((entry) => entry.startsWith("cli/")),
     "the vize CLI bin must exist and be verified",
   );
 });

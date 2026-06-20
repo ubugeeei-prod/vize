@@ -270,7 +270,7 @@ test("check workflow keeps JS checks separate from native and packaging work", (
   assert.match(checkJsJob, /setup-moonbit/);
   assert.doesNotMatch(checkJsJob, /build:packages/);
 
-  assert.match(buildJob, /vp run --filter '\.\/npm\/vize-native' build:ci/);
+  assert.match(buildJob, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(buildJob, /vp run --workspace-root build:packages/);
   assert.match(buildJob, /name:\s*shared-js-build/);
 

@@ -28,17 +28,17 @@ for (const name of entryNames) {
   assert.ok(!name.includes("\0"), `Neovim archive entry contains a NUL byte: ${name}`);
   assert.ok(!name.startsWith("/"), `Neovim archive entry must be relative: ${name}`);
   assert.ok(!name.split("/").includes(".."), `Neovim archive entry must not traverse: ${name}`);
-  assert.ok(name === "nvim-vize/" || name.startsWith("nvim-vize/"), `unexpected root: ${name}`);
+  assert.ok(name === "nvim/" || name.startsWith("nvim/"), `unexpected root: ${name}`);
 }
 
 const requiredFiles = [
-  "nvim-vize/LICENSE",
-  "nvim-vize/README.md",
-  "nvim-vize/ftdetect/vize.lua",
-  "nvim-vize/lua/vize/config.lua",
-  "nvim-vize/lua/vize/init.lua",
-  "nvim-vize/plugin/vize.lua",
-  "nvim-vize/test/vize_spec.lua",
+  "nvim/LICENSE",
+  "nvim/README.md",
+  "nvim/ftdetect/vize.lua",
+  "nvim/lua/vize/config.lua",
+  "nvim/lua/vize/init.lua",
+  "nvim/plugin/vize.lua",
+  "nvim/test/vize_spec.lua",
 ];
 
 for (const name of requiredFiles) {
@@ -47,18 +47,18 @@ for (const name of requiredFiles) {
 }
 
 const allowedEntries = [
-  /^nvim-vize\/$/,
-  /^nvim-vize\/LICENSE$/,
-  /^nvim-vize\/README\.md$/,
-  /^nvim-vize\/ftdetect\/$/,
-  /^nvim-vize\/ftdetect\/vize\.lua$/,
-  /^nvim-vize\/lua\/$/,
-  /^nvim-vize\/lua\/vize\/$/,
-  /^nvim-vize\/lua\/vize\/(?:config|init)\.lua$/,
-  /^nvim-vize\/plugin\/$/,
-  /^nvim-vize\/plugin\/vize\.lua$/,
-  /^nvim-vize\/test\/$/,
-  /^nvim-vize\/test\/vize_spec\.lua$/,
+  /^nvim\/$/,
+  /^nvim\/LICENSE$/,
+  /^nvim\/README\.md$/,
+  /^nvim\/ftdetect\/$/,
+  /^nvim\/ftdetect\/vize\.lua$/,
+  /^nvim\/lua\/$/,
+  /^nvim\/lua\/vize\/$/,
+  /^nvim\/lua\/vize\/(?:config|init)\.lua$/,
+  /^nvim\/plugin\/$/,
+  /^nvim\/plugin\/vize\.lua$/,
+  /^nvim\/test\/$/,
+  /^nvim\/test\/vize_spec\.lua$/,
 ];
 
 for (const name of entryNames) {
@@ -69,10 +69,10 @@ for (const name of entryNames) {
 }
 
 const forbiddenEntries = [
-  /^nvim-vize\/\.git/,
-  /^nvim-vize\/\.github\//,
-  /^nvim-vize\/node_modules\//,
-  /^nvim-vize\/target\//,
+  /^nvim\/\.git/,
+  /^nvim\/\.github\//,
+  /^nvim\/node_modules\//,
+  /^nvim\/target\//,
   /\/\.DS_Store$/,
   /\.tar\.gz$/,
   /~$/,
@@ -84,10 +84,10 @@ for (const name of entryNames) {
   }
 }
 
-const configLua = readTextEntry(entryMap, "nvim-vize/lua/vize/config.lua");
-const initLua = readTextEntry(entryMap, "nvim-vize/lua/vize/init.lua");
-const ftdetectLua = readTextEntry(entryMap, "nvim-vize/ftdetect/vize.lua");
-const specLua = readTextEntry(entryMap, "nvim-vize/test/vize_spec.lua");
+const configLua = readTextEntry(entryMap, "nvim/lua/vize/config.lua");
+const initLua = readTextEntry(entryMap, "nvim/lua/vize/init.lua");
+const ftdetectLua = readTextEntry(entryMap, "nvim/ftdetect/vize.lua");
+const specLua = readTextEntry(entryMap, "nvim/test/vize_spec.lua");
 
 assert.match(configLua, /cmd = \{ "vize", "lsp" \}/);
 assert.match(configLua, /filetypes = \{ "vue", "art-vue" \}/);

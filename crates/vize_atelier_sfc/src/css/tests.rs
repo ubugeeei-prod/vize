@@ -218,11 +218,11 @@ fn test_v_bind_extraction_with_scope_id() {
 
 #[test]
 fn test_prod_scoped_v_bind_name_matches_vue_hash_sum() {
-    let id = "npm/rspack-vize-plugin/src/test/fixtures/scoped-v-bind/App.vue";
+    let id = "npm/builder/rspack/src/test/fixtures/scoped-v-bind/App.vue";
 
-    assert_eq!(prod_scoped_v_bind_name(id, "textColor"), "v9531ad58");
-    assert_eq!(prod_scoped_v_bind_name(id, "bgColor"), "v02f640bc");
-    assert_eq!(prod_scoped_v_bind_name(id, "fontSize"), "v27b86bdc");
+    assert_eq!(prod_scoped_v_bind_name(id, "textColor"), "v88a7da96");
+    assert_eq!(prod_scoped_v_bind_name(id, "bgColor"), "v3b0fe346");
+    assert_eq!(prod_scoped_v_bind_name(id, "fontSize"), "v06489ede");
 }
 
 #[test]

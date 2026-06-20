@@ -16,9 +16,9 @@ function copyRepoFile(targetDir: string, relativePath: string): void {
 test("wasm package smoke validates manifest, files, exports, and init guard", async () => {
   const packageDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-wasm-smoke-"));
 
-  copyRepoFile(packageDir, "npm/vize-wasm/package.json");
-  copyRepoFile(packageDir, "npm/vize-wasm/index.js");
-  copyRepoFile(packageDir, "npm/vize-wasm/index.d.ts");
+  copyRepoFile(packageDir, "npm/wasm/package.json");
+  copyRepoFile(packageDir, "npm/wasm/index.js");
+  copyRepoFile(packageDir, "npm/wasm/index.d.ts");
   fs.writeFileSync(path.join(packageDir, "vize_vitrine.d.ts"), "export {};\n");
   fs.writeFileSync(path.join(packageDir, "vize_vitrine_bg.wasm"), "");
   fs.writeFileSync(
@@ -49,7 +49,7 @@ export function compileCss() {}
 test("wasm package smoke fails when wrapper entrypoint is missing", async () => {
   const packageDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-wasm-smoke-missing-"));
 
-  copyRepoFile(packageDir, "npm/vize-wasm/package.json");
+  copyRepoFile(packageDir, "npm/wasm/package.json");
   fs.writeFileSync(path.join(packageDir, "index.d.ts"), "export {};\n");
   fs.writeFileSync(
     path.join(packageDir, "vize_vitrine.js"),

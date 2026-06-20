@@ -11,7 +11,7 @@ function readRepoFile(relativePath: string): string {
 }
 
 test("vim ftdetect maps *.vue -> vue and *.art.vue -> art-vue inside an augroup", () => {
-  const ftdetect = readRepoFile("npm/vim-vize/ftdetect/vize.vim");
+  const ftdetect = readRepoFile("npm/editor/vim/ftdetect/vize.vim");
 
   // Detection lives inside a named augroup that clears itself first so re-sourcing
   // does not stack duplicate autocommands.
@@ -31,7 +31,7 @@ test("vim ftdetect maps *.vue -> vue and *.art.vue -> art-vue inside an augroup"
 });
 
 test("vim ftdetect autocommands are scoped only to *.vue / *.art.vue (no clobbering)", () => {
-  const ftdetect = readRepoFile("npm/vim-vize/ftdetect/vize.vim");
+  const ftdetect = readRepoFile("npm/editor/vim/ftdetect/vize.vim");
 
   // Collect every real autocommand definition (excluding the bare `autocmd!` clear).
   const autocmds = ftdetect
@@ -53,7 +53,7 @@ test("vim ftdetect autocommands are scoped only to *.vue / *.art.vue (no clobber
 });
 
 test("vim autoload wires the vize LSP server registration (vize + lsp tokens)", () => {
-  const autoload = readRepoFile("npm/vim-vize/autoload/vize.vim");
+  const autoload = readRepoFile("npm/editor/vim/autoload/vize.vim");
 
   // The default launch command is `vize lsp`.
   assert.match(autoload, /'cmd':\s*\['vize',\s*'lsp'\]/);
@@ -68,7 +68,7 @@ test("vim autoload wires the vize LSP server registration (vize + lsp tokens)", 
 });
 
 test("vim plugin entrypoint guards double-sourcing and exposes the VizeSetup command", () => {
-  const plugin = readRepoFile("npm/vim-vize/plugin/vize.vim");
+  const plugin = readRepoFile("npm/editor/vim/plugin/vize.vim");
 
   // Load-guard prevents the plugin from being sourced twice.
   assert.match(plugin, /exists\('g:loaded_vize'\)/);

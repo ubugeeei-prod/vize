@@ -35,11 +35,11 @@ function runNativeLoaderProbe(options: {
 
   try {
     fs.copyFileSync(
-      path.join(root, "npm/vize-native/native-targets.js"),
+      path.join(root, "npm/native/native-targets.js"),
       path.join(tempDir, "native-targets.js"),
     );
     fs.copyFileSync(
-      path.join(root, "npm/vize-native/native-binding.js"),
+      path.join(root, "npm/native/native-binding.js"),
       path.join(tempDir, "native-binding.js"),
     );
     fs.writeFileSync(

@@ -1,0 +1,71 @@
+{
+  "name": "@vizejs/nuxt",
+  "version": "0.242.0",
+  "description": "Nuxt module for Vize - compiler, musea gallery, linter, and type checker",
+  "keywords": [
+    "compiler",
+    "gallery",
+    "linter",
+    "musea",
+    "nuxt",
+    "nuxt-module",
+    "type-checker",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "author": "ubugeeei",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
+    "directory": "npm/framework/nuxt"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "pnpm build && node --test src/*.test.ts src/**/*.test.ts",
+    "check": "vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts"
+  },
+  "dependencies": {
+    "@nuxt/kit": "catalog:nuxt-module",
+    "@vizejs/vite-plugin": "workspace:*",
+    "@vizejs/vite-plugin-musea": "workspace:*",
+    "vize": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable",
+    "vue-router": "catalog:vue-stable"
+  },
+  "peerDependencies": {
+    "nuxt": "^2.16.0 || ^3.0.0 || ^4.0.0",
+    "vite": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

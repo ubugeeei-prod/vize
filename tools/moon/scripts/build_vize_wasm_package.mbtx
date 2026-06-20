@@ -1,7 +1,7 @@
 ///|
 /// Builds the WebAssembly package used for npm publication.
 ///
-/// The release workflow treats `npm/vize-wasm` as a generated artifact. This
+/// The release workflow treats `npm/wasm` as a generated artifact. This
 /// script encapsulates the exact build steps needed to produce that artifact:
 /// build the Rust crate for `wasm32-unknown-unknown`, run `wasm-bindgen`, and
 /// then restore the checked-in `package.json` from `HEAD` so build tools do not
@@ -50,7 +50,7 @@ async fn run_app() -> Int {
     [
       "target/wasm32-unknown-unknown/release/vize_vitrine.wasm",
       "--out-dir",
-      "npm/vize-wasm",
+      "npm/wasm",
       "--target",
       "web",
     ],
@@ -62,13 +62,13 @@ async fn run_app() -> Int {
 
   let (restore_exit, restore_output) = @process.collect_stdout(
     "git",
-    ["show", "HEAD:npm/vize-wasm/package.json"],
+    ["show", "HEAD:npm/wasm/package.json"],
   )
   if restore_exit != 0 {
-    println("Failed to restore npm/vize-wasm/package.json from HEAD")
+    println("Failed to restore npm/wasm/package.json from HEAD")
     return 1
   }
-  @fs.write_string_to_file("npm/vize-wasm/package.json", restore_output.text())
+  @fs.write_string_to_file("npm/wasm/package.json", restore_output.text())
   0
 }
 

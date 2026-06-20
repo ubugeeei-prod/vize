@@ -735,9 +735,9 @@ async fn run_app() -> Int {
     files_to_stage.push(lockfile_path)
   }
 
-  let zed_cargo_toml = "npm/zed-vize/Cargo.toml"
-  let zed_extension_toml = "npm/zed-vize/extension.toml"
-  let zed_cargo_lock = "npm/zed-vize/Cargo.lock"
+  let zed_cargo_toml = "npm/editor/zed/Cargo.toml"
+  let zed_extension_toml = "npm/editor/zed/extension.toml"
+  let zed_cargo_lock = "npm/editor/zed/Cargo.lock"
   if safe_path_exists(zed_cargo_toml) {
     let content = match read_file_to_string(zed_cargo_toml) {
       Some(content) => content
@@ -777,9 +777,9 @@ async fn run_app() -> Int {
   if safe_path_exists(zed_cargo_lock) {
     if @process.run(
       "cargo",
-      ["update", "--manifest-path", "npm/zed-vize/Cargo.toml", "-p", "vize-zed-extension"],
+      ["update", "--manifest-path", "npm/editor/zed/Cargo.toml", "-p", "vize-zed-extension"],
     ) != 0 {
-      @stdio.stderr.write("Failed to update npm/zed-vize/Cargo.lock\n")
+      @stdio.stderr.write("Failed to update npm/editor/zed/Cargo.lock\n")
       return 1
     }
     println("  Updated \{zed_cargo_lock}")

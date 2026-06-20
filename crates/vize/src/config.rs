@@ -5,7 +5,7 @@ use std::{fs, path::Path};
 pub use vize_carton::config::*;
 
 pub const VIZE_CONFIG_SCHEMA: &str =
-    include_str!("../../../npm/vize/schemas/vize.config.schema.json");
+    include_str!("../../../npm/cli/schemas/vize.config.schema.json");
 
 /// Write the JSON Schema to `node_modules/.vize/vize.config.schema.json`.
 pub fn write_schema(dir: Option<&Path>) {

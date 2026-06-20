@@ -82,7 +82,7 @@ jobs:
           shared-key: native-smoke-${{ matrix.target }}
           cache-workspace-crates: "true"
       - name: Install native package dependencies
-        run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...'
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
       - name: Build CLI
         run: cargo build --profile ci -p vize
       - name: Smoke CLI
@@ -94,12 +94,12 @@ jobs:
             target/ci/vize --version
           fi
       - name: Build @vizejs/native
-        run: vp run --filter './npm/vize-native' build:ci
+        run: vp run --filter './npm/native' build:ci
       - name: Smoke @vizejs/native
-        run: node -e "const native = require('./npm/vize-native'); if (typeof native.compileSfc !== 'function') throw new Error('compileSfc missing')"
+        run: node -e "const native = require('./npm/native'); if (typeof native.compileSfc !== 'function') throw new Error('compileSfc missing')"
       - name: Package-install smoke for host native package
         if: runner.os == 'Linux'
-        run: node tools/npm/smoke-release-install.mjs --prepare-manifests npm/vize-native
+        run: node tools/npm/smoke-release-install.mjs --prepare-manifests npm/native
 
   fresh-install-smoke:
     name: Fresh install smoke (${{ matrix.platform.target }}, Node ${{ matrix.node-version }})
@@ -149,14 +149,14 @@ jobs:
       # the job invokes moonbit's `cc` integration through `generate:rule-types`
       # (vize's build script), and that subprocess needs the MSVC C headers to
       # be visible. host-native-smoke gets away without this because it never
-      # builds the npm/vize package; fresh-install-smoke does.
+      # builds the npm/cli package; fresh-install-smoke does.
       - name: Setup MSVC toolchain (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
         with:
           arch: ${{ matrix.platform.msvc_arch }}
       # MoonBit's native installer does not support Darwin x64. This matrix
-      # target does not invoke moon because npm/vize is packed directly below.
+      # target does not invoke moon because npm/cli is packed directly below.
       - uses: ./.github/actions/setup-moonbit
         if: matrix.platform.target != 'darwin-x64'
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -178,14 +178,14 @@ jobs:
         shell: bash
         run: |
           vp install --frozen-lockfile --prefer-offline \
-            --filter './npm/vize-native...' \
-            --filter './npm/vize...' \
-            --filter './npm/vite-plugin-vize...'
+            --filter './npm/native...' \
+            --filter './npm/cli...' \
+            --filter './npm/builder/vite...'
       - name: Build @vizejs/native
-        run: vp run --filter './npm/vize-native' build:ci
+        run: vp run --filter './npm/native' build:ci
       - name: Prepare native platform packages
         shell: bash
-        working-directory: npm/vize-native
+        working-directory: npm/native
         run: |
           vp exec napi create-npm-dirs
           vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
@@ -206,7 +206,7 @@ jobs:
       - name: Build npm runtime packages
         shell: bash
         run: |
-          # Pack npm/vize directly instead of running its full `build` script,
+          # Pack npm/cli directly instead of running its full `build` script,
           # which would also re-invoke `generate:rule-types` (a moonbit script
           # that shells out to `cl.exe`). The checked-in src/types/rules.ts is
           # the source of truth and is regenerated/verified on the test-scripts
@@ -214,11 +214,11 @@ jobs:
           # moonbit's `cc` integration does not currently honor the inherited
           # INCLUDE env on Windows even when ilammy/msvc-dev-cmd has set it,
           # which would otherwise block this matrix on every Windows runner.
-          (cd npm/vize && vp pack)
-          vp run --filter './npm/vite-plugin-vize' build
+          (cd npm/cli && vp pack)
+          vp run --filter './npm/builder/vite' build
       - name: Fresh install and runtime smoke published tarballs
         shell: bash
         run: |
           node tools/npm/smoke-release-install.mjs --prepare-manifests --runtime-checks \
-            npm/vize-native npm/vize-native/npm/* \
-            npm/vize npm/vite-plugin-vize
+            npm/native npm/native/npm/* \
+            npm/cli npm/builder/vite

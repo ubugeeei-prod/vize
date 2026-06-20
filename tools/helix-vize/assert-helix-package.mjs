@@ -29,10 +29,10 @@ for (const name of entryNames) {
   assert.ok(!name.includes("\0"), `Helix archive entry contains a NUL byte: ${name}`);
   assert.ok(!name.startsWith("/"), `Helix archive entry must be relative: ${name}`);
   assert.ok(!name.split("/").includes(".."), `Helix archive entry must not traverse: ${name}`);
-  assert.ok(name === "helix-vize/" || name.startsWith("helix-vize/"), `unexpected root: ${name}`);
+  assert.ok(name === "helix/" || name.startsWith("helix/"), `unexpected root: ${name}`);
 }
 
-const requiredFiles = ["helix-vize/LICENSE", "helix-vize/README.md", "helix-vize/languages.toml"];
+const requiredFiles = ["helix/LICENSE", "helix/README.md", "helix/languages.toml"];
 
 for (const name of requiredFiles) {
   assert.ok(entryMap.has(name), `Helix archive is missing required file: ${name}`);
@@ -40,10 +40,10 @@ for (const name of requiredFiles) {
 }
 
 const allowedEntries = [
-  /^helix-vize\/$/,
-  /^helix-vize\/LICENSE$/,
-  /^helix-vize\/README\.md$/,
-  /^helix-vize\/languages\.toml$/,
+  /^helix\/$/,
+  /^helix\/LICENSE$/,
+  /^helix\/README\.md$/,
+  /^helix\/languages\.toml$/,
 ];
 
 for (const name of entryNames) {
@@ -54,10 +54,10 @@ for (const name of entryNames) {
 }
 
 const forbiddenEntries = [
-  /^helix-vize\/\.git/,
-  /^helix-vize\/\.github\//,
-  /^helix-vize\/node_modules\//,
-  /^helix-vize\/target\//,
+  /^helix\/\.git/,
+  /^helix\/\.github\//,
+  /^helix\/node_modules\//,
+  /^helix\/target\//,
   /\/\.DS_Store$/,
   /\.tar\.gz$/,
   /~$/,
@@ -69,7 +69,7 @@ for (const name of entryNames) {
   }
 }
 
-const languagesToml = readTextEntry(entryMap, "helix-vize/languages.toml");
+const languagesToml = readTextEntry(entryMap, "helix/languages.toml");
 const parsed = toml.parse(languagesToml);
 
 assert.equal(parsed["language-server"].vize.command, "vize");

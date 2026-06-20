@@ -1,0 +1,88 @@
+{
+  "name": "@vizejs/rspack-plugin",
+  "version": "0.242.0",
+  "description": "High-performance Rspack plugin for Vue SFC compilation powered by Vize",
+  "keywords": [
+    "compiler",
+    "fast",
+    "loader",
+    "native",
+    "plugin",
+    "rspack",
+    "sfc",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/builder/rspack"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./loader": {
+      "types": "./dist/loader/index.d.mts",
+      "import": "./dist/loader/index.mjs",
+      "default": "./dist/loader/index.mjs"
+    },
+    "./jsx-loader": {
+      "types": "./dist/loader/jsx-loader.d.mts",
+      "import": "./dist/loader/jsx-loader.mjs",
+      "default": "./dist/loader/jsx-loader.mjs"
+    },
+    "./style-loader": {
+      "types": "./dist/loader/style-loader.d.mts",
+      "import": "./dist/loader/style-loader.mjs",
+      "default": "./dist/loader/style-loader.mjs"
+    },
+    "./scope-loader": {
+      "types": "./dist/loader/scope-loader.d.mts",
+      "import": "./dist/loader/scope-loader.mjs",
+      "default": "./dist/loader/scope-loader.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "check": "vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts",
+    "test": "pnpm build && node --test src/*.test.ts src/**/*.test.ts",
+    "test:update": "pnpm build && node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@vizejs/native": "workspace:*"
+  },
+  "devDependencies": {
+    "@rspack/core": "catalog:bundlers",
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "peerDependencies": {
+    "@rspack/core": "^1.0.0 || ^2.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

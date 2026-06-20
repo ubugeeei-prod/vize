@@ -36,7 +36,7 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
 
       - name: Install package build dependencies
-        run: moon run --target native - -- --filter './npm/vize...' --filter './npm/vite-plugin-vize...' --filter './npm/oxlint-plugin-vize...' --filter './npm/unplugin-vize...' --filter './npm/fresco...' --filter './npm/musea-mcp-server...' --filter './npm/vite-plugin-musea...' --filter './npm/rspack-vize-plugin...' --filter './npm/musea-nuxt...' --filter './npm/nuxt...' < tools/moon/scripts/github/vp_install.mbtx
+        run: moon run --target native - -- --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build preview packages
         run: vp run --workspace-root build:packages
@@ -51,16 +51,16 @@ jobs:
           set -e
           OUTPUT_FILE=$(mktemp)
           if vp exec pkg-pr-new publish --pnpm --packageManager=pnpm --comment=update \
-            './npm/vize' \
-            './npm/vite-plugin-vize' \
-            './npm/oxlint-plugin-vize' \
-            './npm/unplugin-vize' \
+            './npm/cli' \
+            './npm/builder/vite' \
+            './npm/oxint' \
+            './npm/builder/unplugin' \
             './npm/fresco' \
-            './npm/musea-mcp-server' \
-            './npm/vite-plugin-musea' \
-            './npm/rspack-vize-plugin' \
-            './npm/musea-nuxt' \
-            './npm/nuxt' 2>&1 | tee "$OUTPUT_FILE"; then
+            './npm/mcp-musea' \
+            './npm/builder/vite-musea' \
+            './npm/builder/rspack' \
+            './npm/framework/musea-nuxt' \
+            './npm/framework/nuxt' 2>&1 | tee "$OUTPUT_FILE"; then
             exit 0
           fi
           if grep -q "The app https://github.com/apps/pkg-pr-new is not installed" "$OUTPUT_FILE"; then

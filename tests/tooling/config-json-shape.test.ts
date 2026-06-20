@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { loadConfig } from "../../npm/vize/src/config.ts";
+import { loadConfig } from "../../npm/cli/src/config.ts";
 
 type JsonConfigResult = Awaited<ReturnType<typeof loadConfig>>;
 
@@ -85,7 +85,7 @@ test("nested null values are stripped from object config", async () => {
 
 test("type-aware lint opt-in is exposed across config artifacts", () => {
   const schema = JSON.parse(
-    fs.readFileSync(path.join("npm", "vize", "schemas", "vize.config.schema.json"), "utf8"),
+    fs.readFileSync(path.join("npm", "cli", "schemas", "vize.config.schema.json"), "utf8"),
   ) as {
     definitions: {
       LinterConfig: {
@@ -94,16 +94,16 @@ test("type-aware lint opt-in is exposed across config artifacts", () => {
     };
   };
   const generatedTypes = fs.readFileSync(
-    path.join("npm", "vize", "src", "types", "generated.ts"),
+    path.join("npm", "cli", "src", "types", "generated.ts"),
     "utf8",
   );
   const pklLinterConfig = fs.readFileSync(
-    path.join("npm", "vize", "pkl", "LinterConfig.pkl"),
+    path.join("npm", "cli", "pkl", "LinterConfig.pkl"),
     "utf8",
   );
-  const pklCompatConfig = fs.readFileSync(path.join("npm", "vize", "pkl", "vize.pkl"), "utf8");
+  const pklCompatConfig = fs.readFileSync(path.join("npm", "cli", "pkl", "vize.pkl"), "utf8");
   const pklSchemaGenerator = fs.readFileSync(
-    path.join("npm", "vize", "pkl", "jsonschema", "generate.pkl"),
+    path.join("npm", "cli", "pkl", "jsonschema", "generate.pkl"),
     "utf8",
   );
 

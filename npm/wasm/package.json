@@ -1,0 +1,48 @@
+{
+  "name": "@vizejs/wasm",
+  "version": "0.242.0",
+  "description": "Vize WASM bindings for browser environments",
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ubugeeei-prod/vize.git",
+    "directory": "npm/wasm"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "vize_vitrine_bg.wasm",
+    "vize_vitrine.js",
+    "vize_vitrine.d.ts",
+    "snippets/**"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./snippets/*"
+  ],
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    },
+    "./vize_vitrine.js": {
+      "types": "./vize_vitrine.d.ts",
+      "import": "./vize_vitrine.js",
+      "default": "./vize_vitrine.js"
+    },
+    "./vize_vitrine_bg.wasm": "./vize_vitrine_bg.wasm"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

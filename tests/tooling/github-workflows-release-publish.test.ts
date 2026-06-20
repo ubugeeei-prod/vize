@@ -75,17 +75,21 @@ test("release workflow publishes npm packages from package-specific artifacts", 
   }
 
   const downloadTargets = [
-    ["release-npm-wasm", "release-package-vize-wasm", "npm/vize-wasm"],
-    ["release-npm-vite-plugin", "release-package-vite-plugin-vize", "npm/vite-plugin-vize"],
-    ["release-npm-oxlint-plugin", "release-package-oxlint-plugin-vize", "npm/oxlint-plugin-vize"],
-    ["release-npm-unplugin", "release-package-unplugin-vize", "npm/unplugin-vize"],
+    ["release-npm-wasm", "release-package-vize-wasm", "npm/wasm"],
+    ["release-npm-vite-plugin", "release-package-vite-plugin-vize", "npm/builder/vite"],
+    ["release-npm-oxlint-plugin", "release-package-oxlint-plugin-vize", "npm/oxint"],
+    ["release-npm-unplugin", "release-package-unplugin-vize", "npm/builder/unplugin"],
     ["release-npm-fresco", "release-package-fresco", "npm/fresco"],
-    ["release-npm-musea-mcp-server", "release-package-musea-mcp-server", "npm/musea-mcp-server"],
-    ["release-npm-vite-plugin-musea", "release-package-vite-plugin-musea", "npm/vite-plugin-musea"],
-    ["release-npm-rspack-plugin", "release-package-rspack-vize-plugin", "npm/rspack-vize-plugin"],
-    ["release-npm-musea-nuxt", "release-package-musea-nuxt", "npm/musea-nuxt"],
-    ["release-npm-nuxt", "release-package-nuxt", "npm/nuxt"],
-    ["release-npm-cli", "release-package-vize", "npm/vize"],
+    ["release-npm-musea-mcp-server", "release-package-musea-mcp-server", "npm/mcp-musea"],
+    [
+      "release-npm-vite-plugin-musea",
+      "release-package-vite-plugin-musea",
+      "npm/builder/vite-musea",
+    ],
+    ["release-npm-rspack-plugin", "release-package-rspack-vize-plugin", "npm/builder/rspack"],
+    ["release-npm-musea-nuxt", "release-package-musea-nuxt", "npm/framework/musea-nuxt"],
+    ["release-npm-nuxt", "release-package-nuxt", "npm/framework/nuxt"],
+    ["release-npm-cli", "release-package-vize", "npm/cli"],
   ] as const;
 
   for (const [jobName, artifactName, downloadPath] of downloadTargets) {
@@ -106,13 +110,13 @@ test("release workflow smokes the wasm package wrapper before publishing", () =>
   const publishJob = workflowJobBody(workflow, "release-npm-wasm");
 
   assert.match(buildJob, /runs-on:\s*blacksmith-\d+vcpu-ubuntu-2404/);
-  assert.match(buildJob, /npm\/vize-wasm\/index\.js/);
-  assert.match(buildJob, /npm\/vize-wasm\/index\.d\.ts/);
+  assert.match(buildJob, /npm\/wasm\/index\.js/);
+  assert.match(buildJob, /npm\/wasm\/index\.d\.ts/);
   assert.match(buildJob, /tools\/moon\/scripts\/build_vize_wasm_package\.mbtx/);
   assert.match(buildJob, /name:\s*release-package-vize-wasm/);
   assert.match(publishJob, /needs:\s*build-wasm-package/);
   assert.match(publishJob, /name:\s*release-package-vize-wasm/);
-  assert.match(publishJob, /path:\s*npm\/vize-wasm/);
+  assert.match(publishJob, /path:\s*npm\/wasm/);
 
   const setupNode = publishJob.indexOf("name: Setup Vite+ and Node.js");
   const download = publishJob.indexOf("name: Download prebuilt WASM package");
@@ -124,7 +128,7 @@ test("release workflow smokes the wasm package wrapper before publishing", () =>
   assert.notEqual(smoke, -1);
   assert.notEqual(publish, -1);
   assert.ok(setupNode < download && download < smoke && smoke < publish);
-  assert.match(publishJob, /node tools\/npm\/smoke-wasm-package\.mjs npm\/vize-wasm/);
+  assert.match(publishJob, /node tools\/npm\/smoke-wasm-package\.mjs npm\/wasm/);
 });
 
 test("release workflow creates GitHub Releases only after registry publishing succeeds", () => {

@@ -11,7 +11,7 @@ function readRepoFile(relativePath: string): string {
 }
 
 test("helix languages.toml registers the vize language server with the lsp command", () => {
-  const config = readRepoFile("npm/helix-vize/languages.toml");
+  const config = readRepoFile("npm/editor/helix/languages.toml");
 
   // Language server registration: command `vize` invoked with the `lsp` subcommand.
   assert.match(config, /^\[language-server\.vize\]$/m);
@@ -24,7 +24,7 @@ test("helix languages.toml registers the vize language server with the lsp comma
 });
 
 test("helix languages.toml declares the vue language wired to the vize server", () => {
-  const config = readRepoFile("npm/helix-vize/languages.toml");
+  const config = readRepoFile("npm/editor/helix/languages.toml");
 
   // The plain `vue` language entry: scope, file-types and language-servers.
   const vueEntry = config.match(
@@ -37,7 +37,7 @@ test("helix languages.toml declares the vue language wired to the vize server", 
 });
 
 test("helix languages.toml declares the art-vue language with a glob file-type", () => {
-  const config = readRepoFile("npm/helix-vize/languages.toml");
+  const config = readRepoFile("npm/editor/helix/languages.toml");
 
   // The `art-vue` language entry: language-id, scope, glob file-type and server.
   const artEntry = config.match(
@@ -51,7 +51,7 @@ test("helix languages.toml declares the art-vue language with a glob file-type",
 });
 
 test("helix languages.toml root markers cover vize config, package.json and .git", () => {
-  const config = readRepoFile("npm/helix-vize/languages.toml");
+  const config = readRepoFile("npm/editor/helix/languages.toml");
 
   // Both language entries declare the same set of project root markers via `roots`.
   const rootsLines = config.match(/^roots = \[[^\]]*\]$/gm) ?? [];

@@ -1,0 +1,103 @@
+{
+  "name": "@vizejs/unplugin",
+  "version": "0.242.0",
+  "description": "Experimental Vue SFC integrations for Rollup, Rolldown, Webpack, esbuild, and Babel powered by Vize",
+  "keywords": [
+    "babel",
+    "compiler",
+    "esbuild",
+    "fast",
+    "native",
+    "plugin",
+    "rolldown",
+    "rollup",
+    "unplugin",
+    "vue",
+    "webpack"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/builder/unplugin"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./esbuild": {
+      "types": "./dist/esbuild.d.mts",
+      "import": "./dist/esbuild.mjs",
+      "default": "./dist/esbuild.mjs"
+    },
+    "./rollup": {
+      "types": "./dist/rollup.d.mts",
+      "import": "./dist/rollup.mjs",
+      "default": "./dist/rollup.mjs"
+    },
+    "./rolldown": {
+      "types": "./dist/rolldown.d.mts",
+      "import": "./dist/rolldown.mjs",
+      "default": "./dist/rolldown.mjs"
+    },
+    "./webpack": {
+      "types": "./dist/webpack.d.mts",
+      "import": "./dist/webpack.mjs",
+      "default": "./dist/webpack.mjs"
+    },
+    "./babel": {
+      "types": "./dist/babel.d.mts",
+      "import": "./dist/babel.mjs",
+      "default": "./dist/babel.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "check": "vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts",
+    "test": "node --test src/*.test.ts src/**/*.test.ts",
+    "test:update": "node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@vizejs/native": "workspace:*",
+    "oxc-transform": "catalog:oxc",
+    "unplugin": "catalog:vite-stack"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "esbuild": "catalog:bundlers",
+    "rollup": "catalog:bundlers",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-beta",
+    "webpack": "catalog:bundlers"
+  },
+  "peerDependencies": {
+    "webpack": "^4.46.0 || ^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "webpack": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

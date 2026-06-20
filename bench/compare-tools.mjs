@@ -197,7 +197,7 @@ function resolveWorkspaceBin(name) {
   const candidates = [
     join(rootDir, "node_modules", ".bin", name),
     join(benchDir, "node_modules", ".bin", name),
-    join(rootDir, "npm", "nuxt", "node_modules", ".bin", name),
+    join(rootDir, "npm", "framework/nuxt", "node_modules", ".bin", name),
   ];
   for (const candidate of candidates) {
     for (const suffix of suffixes) {
@@ -454,7 +454,7 @@ function prepareNuxtDir(inputDir, files, label, invocation, useVize) {
   for (const file of files) {
     copyFileSync(join(inputDir, file), join(outputDir, "components", file));
   }
-  const nuxtNodeModules = join(rootDir, "npm", "nuxt", "node_modules");
+  const nuxtNodeModules = join(rootDir, "npm", "framework/nuxt", "node_modules");
   symlinkSync(
     existsSync(nuxtNodeModules) ? nuxtNodeModules : join(benchDir, "node_modules"),
     join(outputDir, "node_modules"),
@@ -489,7 +489,7 @@ const benchComponents = [${componentNames.join(", ")}]
 `,
   );
 
-  const vizeModuleUrl = pathToFileURL(join(rootDir, "npm", "nuxt", "dist", "index.mjs")).href;
+  const vizeModuleUrl = pathToFileURL(join(rootDir, "npm/framework/nuxt/dist/index.mjs")).href;
   const moduleImport = useVize ? `import vizeNuxt from '${vizeModuleUrl}'\n` : "";
   const modules = useVize ? "modules: [vizeNuxt]," : "modules: [],";
   const vizeOptions = useVize
@@ -722,7 +722,7 @@ async function timedAsync(fn) {
 }
 
 function loadNativeBindings() {
-  const nativePath = join(rootDir, "npm", "vize-native");
+  const nativePath = join(rootDir, "npm", "native");
   try {
     return require(nativePath);
   } catch (error) {
@@ -1052,7 +1052,7 @@ async function measureCheck(inputDir, files, options) {
 async function measureVite(inputDir, files, options) {
   const { build } = await import("vite");
   const officialVuePlugin = (await import("@vitejs/plugin-vue")).default;
-  const vizePluginPath = join(rootDir, "npm", "vite-plugin-vize", "dist", "index.mjs");
+  const vizePluginPath = join(rootDir, "npm", "builder/vite", "dist", "index.mjs");
   if (!existsSync(vizePluginPath)) {
     throw new Error(
       `Vite plugin build not found: ${vizePluginPath}. Run vp run --workspace-root build:vite-plugin first.`,
@@ -1117,7 +1117,7 @@ async function measureVite(inputDir, files, options) {
 
 async function measureNuxt(inputDir, files, options) {
   const nuxtBin = resolveWorkspaceBin("nuxt");
-  const vizeNuxtPath = join(rootDir, "npm", "nuxt", "dist", "index.mjs");
+  const vizeNuxtPath = join(rootDir, "npm", "framework/nuxt", "dist", "index.mjs");
   if (!existsSync(vizeNuxtPath)) {
     throw new Error(
       `Nuxt module build not found: ${vizeNuxtPath}. Run vp run --workspace-root build:nuxt-stack first.`,

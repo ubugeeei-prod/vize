@@ -9,8 +9,8 @@ This example uses the locally built Vize Oxlint plugin bundle and `@vizejs/nativ
 
 ```bash
 vp install
-vp run --filter './npm/vize-native' build
-vp run --filter './npm/oxlint-plugin-vize' build
+vp run --filter './npm/native' build
+vp run --filter './npm/oxint' build
 ```
 
 ## Run
@@ -64,7 +64,7 @@ vp run --filter './examples/oxlint-vize' lint:with-help
 If you want the raw direct CLI path, use the wrapper entry once the plugin has been built:
 
 ```bash
-vp exec node ../../npm/oxlint-plugin-vize/dist/cli.mjs -c .oxlintrc.json -f stylish src
+vp exec node ../../npm/oxint/dist/cli.mjs -c .oxlintrc.json -f stylish src
 ```
 
 ## Notes
@@ -76,7 +76,7 @@ vp exec node ../../npm/oxlint-plugin-vize/dist/cli.mjs -c .oxlintrc.json -f styl
 - `settings.vize.helpLevel` controls remediation density. `lint` keeps it at `"none"`, `lint:short-help` is the recommended terminal compromise, and `lint:with-help` shows the full verbose help block.
 - `helpLevel: "full"` only changes how much remediation text Patina prints. It does not fix Oxlint's current original-SFC reporting limitation.
 - A dedicated `lint:unused-vars-probe` command is included because `no-unused-vars` currently does not emit on the example `.vue` SFC, even without the Patina plugin.
-- The Vize Oxlint plugin is loaded from `../../npm/oxlint-plugin-vize/dist/index.mjs`.
+- The Vize Oxlint plugin is loaded from `../../npm/oxint/dist/index.mjs`.
 - The plugin starts with a single-rule native Patina run and only upgrades to a shared full-file pass when multiple Patina rules are enabled for the same file.
 - Patina help text is normalized to plain text so terminal output stays readable even without Markdown rendering.
 - The wrapper removes the need for `<script setup>` in pure template/style files, but the workaround is temporary and should disappear once upstream support is fixed.

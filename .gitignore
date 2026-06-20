@@ -8,9 +8,9 @@ _build/
 
 # npm package build outputs
 npm/*/dist/
-npm/vite-plugin-vize/wasm/
-npm/vscode-vize/.vscode-test/
-npm/zed-vize/target/
+npm/builder-vite/wasm/
+npm/editor-vscode/.vscode-test/
+npm/editor-zed/target/
 
 # Native (NAPI) build output
 *.node
@@ -20,8 +20,8 @@ npm/cli-*/vize
 npm/cli-*/vize.exe
 
 # Legacy downloaded CLI binary
-npm/vize/bin/vize-cli
-npm/vize/bin/vize-cli.exe
+npm/cli/bin/vize-cli
+npm/cli/bin/vize-cli.exe
 
 # Examples build output
 examples/*/dist/

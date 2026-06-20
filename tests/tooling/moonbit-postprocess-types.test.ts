@@ -10,12 +10,12 @@ const scratchRoot = path.join(repoRoot, "target", "vize-tests", "tooling-tests")
 function createFixtureRoot(): string {
   fs.mkdirSync(scratchRoot, { recursive: true });
   const root = fs.mkdtempSync(path.join(scratchRoot, "postprocess-types-"));
-  fs.mkdirSync(path.join(root, "npm", "vize", "src", "types"), { recursive: true });
+  fs.mkdirSync(path.join(root, "npm", "cli", "src", "types"), { recursive: true });
   return root;
 }
 
 function generatedTypesPath(root: string): string {
-  return path.join(root, "npm", "vize", "src", "types", "generated.ts");
+  return path.join(root, "npm", "cli", "src", "types", "generated.ts");
 }
 
 test("postprocess_types script applies generated config type patches", () => {

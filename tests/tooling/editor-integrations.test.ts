@@ -62,8 +62,8 @@ async function loadVueTextMateGrammar() {
   ]);
   const engine = await createOnigurumaEngine(fs.readFileSync(onigurumaWasmPath));
   const grammars = new Map<string, unknown>([
-    ["source.vue", readJson("npm/vscode-vize/syntaxes/vue.tmLanguage.json")],
-    ["source.art-vue", readJson("npm/vscode-vize/syntaxes/art-vue.tmLanguage.json")],
+    ["source.vue", readJson("npm/editor/vscode/syntaxes/vue.tmLanguage.json")],
+    ["source.art-vue", readJson("npm/editor/vscode/syntaxes/art-vue.tmLanguage.json")],
   ]);
   const registry = new Registry({
     onigLib: {
@@ -168,7 +168,7 @@ test("vscode-vize wires art-vue documents into editor features", () => {
         commandPalette?: Array<{ command?: string; when?: string }>;
       };
     };
-  }>("npm/vscode-vize/package.json");
+  }>("npm/editor/vscode/package.json");
 
   assert.equal(manifest.activationEvents?.includes("onLanguage:art-vue"), true);
   assert.equal(
@@ -202,7 +202,7 @@ test("vscode-vize wires art-vue documents into editor features", () => {
   }
 
   const extensionSource = fs.readFileSync(
-    path.join(root, "npm/vscode-vize/src/extension.ts"),
+    path.join(root, "npm/editor/vscode/src/extension.ts"),
     "utf-8",
   );
 
@@ -236,7 +236,7 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
       string,
       { begin?: string; contentName?: string; patterns?: GrammarPattern[] }
     >;
-  }>("npm/vscode-vize/syntaxes/vue.tmLanguage.json");
+  }>("npm/editor/vscode/syntaxes/vue.tmLanguage.json");
 
   const repository = grammar.repository ?? {};
 
@@ -340,7 +340,7 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   const artGrammar = readJson<{
     patterns?: Array<{ include?: string }>;
     scopeName?: string;
-  }>("npm/vscode-vize/syntaxes/art-vue.tmLanguage.json");
+  }>("npm/editor/vscode/syntaxes/art-vue.tmLanguage.json");
   assert.equal(artGrammar.scopeName, "source.art-vue");
   assert.deepEqual(artGrammar.patterns, [
     { include: "#art-comments" },
@@ -389,7 +389,7 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
     license?: string;
     scripts?: Record<string, string>;
     version?: string;
-  }>("npm/vscode-art/package.json");
+  }>("npm/editor/vscode-art/package.json");
 
   assert.equal(manifest.version, workspaceVersion());
   assert.equal(manifest.license, "MIT");
@@ -404,7 +404,7 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
   const grammar = readJson<{
     patterns?: Array<{ include?: string }>;
     repository?: Record<string, { begin?: string; patterns?: Array<{ include?: string }> }>;
-  }>("npm/vscode-art/syntaxes/art.tmLanguage.json");
+  }>("npm/editor/vscode-art/syntaxes/art.tmLanguage.json");
 
   assert.deepEqual(
     (grammar.patterns ?? []).map((pattern) => pattern.include),
@@ -436,14 +436,14 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
 });
 
 test("zed-vize registers art-vue as a first-party language", () => {
-  const manifest = fs.readFileSync(path.join(root, "npm/zed-vize/extension.toml"), "utf-8");
+  const manifest = fs.readFileSync(path.join(root, "npm/editor/zed/extension.toml"), "utf-8");
   assert.match(manifest, /^languages = \["Vue", "Art Vue"\]$/m);
   assert.match(manifest, /^"Vue" = "vue"$/m);
   assert.match(manifest, /^"Art Vue" = "art-vue"$/m);
   assert.match(manifest, /^\[grammars\.art-vue\]$/m);
 
   const artConfig = fs.readFileSync(
-    path.join(root, "npm/zed-vize/languages/art-vue/config.toml"),
+    path.join(root, "npm/editor/zed/languages/art-vue/config.toml"),
     "utf-8",
   );
   assert.match(artConfig, /^name = "Art Vue"$/m);
@@ -460,14 +460,14 @@ test("zed-vize registers art-vue as a first-party language", () => {
     "overrides.scm",
   ]) {
     assert.equal(
-      fs.existsSync(path.join(root, "npm/zed-vize/languages/art-vue", filename)),
+      fs.existsSync(path.join(root, "npm/editor/zed/languages/art-vue", filename)),
       true,
       `missing zed art-vue language file: ${filename}`,
     );
   }
 
   const injections = fs.readFileSync(
-    path.join(root, "npm/zed-vize/languages/art-vue/injections.scm"),
+    path.join(root, "npm/editor/zed/languages/art-vue/injections.scm"),
     "utf-8",
   );
   assert.match(injections, /directive_attribute/);

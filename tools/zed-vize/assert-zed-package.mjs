@@ -35,23 +35,23 @@ for (const name of entryNames) {
   assert.ok(!name.includes("\0"), `Zed archive entry contains a NUL byte: ${name}`);
   assert.ok(!name.startsWith("/"), `Zed archive entry must be relative: ${name}`);
   assert.ok(!name.split("/").includes(".."), `Zed archive entry must not traverse: ${name}`);
-  assert.ok(name === "zed-vize/" || name.startsWith("zed-vize/"), `unexpected root: ${name}`);
+  assert.ok(name === "zed/" || name.startsWith("zed/"), `unexpected root: ${name}`);
 }
 
 const requiredFiles = [
-  "zed-vize/Cargo.lock",
-  "zed-vize/Cargo.toml",
-  "zed-vize/LICENSE",
-  "zed-vize/README.md",
-  "zed-vize/extension.toml",
-  "zed-vize/languages/art-vue/brackets.scm",
-  "zed-vize/languages/art-vue/config.toml",
-  "zed-vize/languages/art-vue/highlights.scm",
-  "zed-vize/languages/art-vue/indents.scm",
-  "zed-vize/languages/art-vue/injections.scm",
-  "zed-vize/languages/art-vue/outline.scm",
-  "zed-vize/languages/art-vue/overrides.scm",
-  "zed-vize/src/lib.rs",
+  "zed/Cargo.lock",
+  "zed/Cargo.toml",
+  "zed/LICENSE",
+  "zed/README.md",
+  "zed/extension.toml",
+  "zed/languages/art-vue/brackets.scm",
+  "zed/languages/art-vue/config.toml",
+  "zed/languages/art-vue/highlights.scm",
+  "zed/languages/art-vue/indents.scm",
+  "zed/languages/art-vue/injections.scm",
+  "zed/languages/art-vue/outline.scm",
+  "zed/languages/art-vue/overrides.scm",
+  "zed/src/lib.rs",
 ];
 
 for (const name of requiredFiles) {
@@ -60,18 +60,18 @@ for (const name of requiredFiles) {
 }
 
 const allowedEntries = [
-  /^zed-vize\/$/,
-  /^zed-vize\/Cargo\.lock$/,
-  /^zed-vize\/Cargo\.toml$/,
-  /^zed-vize\/LICENSE$/,
-  /^zed-vize\/README\.md$/,
-  /^zed-vize\/extension\.toml$/,
-  /^zed-vize\/languages\/$/,
-  /^zed-vize\/languages\/art-vue\/$/,
-  /^zed-vize\/languages\/art-vue\/(?:brackets|config|highlights|indents|injections|outline|overrides)\.scm$/,
-  /^zed-vize\/languages\/art-vue\/config\.toml$/,
-  /^zed-vize\/src\/$/,
-  /^zed-vize\/src\/lib\.rs$/,
+  /^zed\/$/,
+  /^zed\/Cargo\.lock$/,
+  /^zed\/Cargo\.toml$/,
+  /^zed\/LICENSE$/,
+  /^zed\/README\.md$/,
+  /^zed\/extension\.toml$/,
+  /^zed\/languages\/$/,
+  /^zed\/languages\/art-vue\/$/,
+  /^zed\/languages\/art-vue\/(?:brackets|config|highlights|indents|injections|outline|overrides)\.scm$/,
+  /^zed\/languages\/art-vue\/config\.toml$/,
+  /^zed\/src\/$/,
+  /^zed\/src\/lib\.rs$/,
 ];
 
 for (const name of entryNames) {
@@ -82,11 +82,11 @@ for (const name of entryNames) {
 }
 
 const forbiddenEntries = [
-  /^zed-vize\/\.git/,
-  /^zed-vize\/\.github\//,
-  /^zed-vize\/\.zed\//,
-  /^zed-vize\/node_modules\//,
-  /^zed-vize\/target\//,
+  /^zed\/\.git/,
+  /^zed\/\.github\//,
+  /^zed\/\.zed\//,
+  /^zed\/node_modules\//,
+  /^zed\/target\//,
   /\/\.DS_Store$/,
   /~$/,
 ];
@@ -98,12 +98,12 @@ for (const name of entryNames) {
 }
 
 const workspaceVersion = readWorkspaceVersion();
-const extensionToml = readTextEntry(entryMap, "zed-vize/extension.toml");
-const cargoToml = readTextEntry(entryMap, "zed-vize/Cargo.toml");
-const libRs = readTextEntry(entryMap, "zed-vize/src/lib.rs");
-const artVueConfig = readTextEntry(entryMap, "zed-vize/languages/art-vue/config.toml");
-const injections = readTextEntry(entryMap, "zed-vize/languages/art-vue/injections.scm");
-const highlights = readTextEntry(entryMap, "zed-vize/languages/art-vue/highlights.scm");
+const extensionToml = readTextEntry(entryMap, "zed/extension.toml");
+const cargoToml = readTextEntry(entryMap, "zed/Cargo.toml");
+const libRs = readTextEntry(entryMap, "zed/src/lib.rs");
+const artVueConfig = readTextEntry(entryMap, "zed/languages/art-vue/config.toml");
+const injections = readTextEntry(entryMap, "zed/languages/art-vue/injections.scm");
+const highlights = readTextEntry(entryMap, "zed/languages/art-vue/highlights.scm");
 
 assertTomlString(extensionToml, "id", "vize");
 assertTomlString(extensionToml, "name", "Vize");
@@ -146,7 +146,7 @@ for (const queryFile of [
   "outline",
   "overrides",
 ]) {
-  const contents = readTextEntry(entryMap, `zed-vize/languages/art-vue/${queryFile}.scm`);
+  const contents = readTextEntry(entryMap, `zed/languages/art-vue/${queryFile}.scm`);
   assert.ok(contents.trim().length > 0, `${queryFile}.scm must not be empty`);
 }
 

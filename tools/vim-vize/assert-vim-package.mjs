@@ -28,16 +28,16 @@ for (const name of entryNames) {
   assert.ok(!name.includes("\0"), `Vim archive entry contains a NUL byte: ${name}`);
   assert.ok(!name.startsWith("/"), `Vim archive entry must be relative: ${name}`);
   assert.ok(!name.split("/").includes(".."), `Vim archive entry must not traverse: ${name}`);
-  assert.ok(name === "vim-vize/" || name.startsWith("vim-vize/"), `unexpected root: ${name}`);
+  assert.ok(name === "vim/" || name.startsWith("vim/"), `unexpected root: ${name}`);
 }
 
 const requiredFiles = [
-  "vim-vize/LICENSE",
-  "vim-vize/README.md",
-  "vim-vize/autoload/vize.vim",
-  "vim-vize/ftdetect/vize.vim",
-  "vim-vize/plugin/vize.vim",
-  "vim-vize/test/vize_spec.vim",
+  "vim/LICENSE",
+  "vim/README.md",
+  "vim/autoload/vize.vim",
+  "vim/ftdetect/vize.vim",
+  "vim/plugin/vize.vim",
+  "vim/test/vize_spec.vim",
 ];
 
 for (const name of requiredFiles) {
@@ -46,17 +46,17 @@ for (const name of requiredFiles) {
 }
 
 const allowedEntries = [
-  /^vim-vize\/$/,
-  /^vim-vize\/LICENSE$/,
-  /^vim-vize\/README\.md$/,
-  /^vim-vize\/autoload\/$/,
-  /^vim-vize\/autoload\/vize\.vim$/,
-  /^vim-vize\/ftdetect\/$/,
-  /^vim-vize\/ftdetect\/vize\.vim$/,
-  /^vim-vize\/plugin\/$/,
-  /^vim-vize\/plugin\/vize\.vim$/,
-  /^vim-vize\/test\/$/,
-  /^vim-vize\/test\/vize_spec\.vim$/,
+  /^vim\/$/,
+  /^vim\/LICENSE$/,
+  /^vim\/README\.md$/,
+  /^vim\/autoload\/$/,
+  /^vim\/autoload\/vize\.vim$/,
+  /^vim\/ftdetect\/$/,
+  /^vim\/ftdetect\/vize\.vim$/,
+  /^vim\/plugin\/$/,
+  /^vim\/plugin\/vize\.vim$/,
+  /^vim\/test\/$/,
+  /^vim\/test\/vize_spec\.vim$/,
 ];
 
 for (const name of entryNames) {
@@ -67,10 +67,10 @@ for (const name of entryNames) {
 }
 
 const forbiddenEntries = [
-  /^vim-vize\/\.git/,
-  /^vim-vize\/\.github\//,
-  /^vim-vize\/node_modules\//,
-  /^vim-vize\/target\//,
+  /^vim\/\.git/,
+  /^vim\/\.github\//,
+  /^vim\/node_modules\//,
+  /^vim\/target\//,
   /\/\.DS_Store$/,
   /\.tar\.gz$/,
   /~$/,
@@ -82,9 +82,9 @@ for (const name of entryNames) {
   }
 }
 
-const autoload = readTextEntry(entryMap, "vim-vize/autoload/vize.vim");
-const ftdetect = readTextEntry(entryMap, "vim-vize/ftdetect/vize.vim");
-const spec = readTextEntry(entryMap, "vim-vize/test/vize_spec.vim");
+const autoload = readTextEntry(entryMap, "vim/autoload/vize.vim");
+const ftdetect = readTextEntry(entryMap, "vim/ftdetect/vize.vim");
+const spec = readTextEntry(entryMap, "vim/test/vize_spec.vim");
 
 assert.match(autoload, /'cmd': \['vize', 'lsp'\]/);
 assert.match(autoload, /'allowlist': \['vue', 'art-vue'\]/);

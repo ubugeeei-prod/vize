@@ -11,7 +11,7 @@ nix develop
 vp env install
 vp install
 vp run --workspace-root build:native
-vp run --filter './npm/vize' build
+vp run --filter './npm/cli' build
 ```
 
 Or build directly with Cargo:
@@ -252,8 +252,8 @@ Run this from the repository root:
 
 ```bash
 vp install
-vp run --filter './npm/vize-native' build
-vp run --filter './npm/oxlint-plugin-vize' build
+vp run --filter './npm/native' build
+vp run --filter './npm/oxint' build
 ```
 
 ### Run
@@ -308,7 +308,7 @@ Current observed behavior in this repository: that probe reports `0` findings on
 ```bash
 # Build the local native binding and npm package
 vp run --workspace-root build:native
-vp run --filter './npm/vize' build
+vp run --filter './npm/cli' build
 
 # Or use the Rust CLI directly for CLI-only debugging
 cargo run --release -- fmt examples/cli/src/*.vue

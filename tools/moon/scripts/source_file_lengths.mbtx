@@ -1,4 +1,3 @@
-///|
 import {
   "moonbitlang/core/env",
   "moonbitlang/core/string",
@@ -7,30 +6,22 @@ import {
   "moonbitlang/x@0.4.43/fs" @xfs,
   "moonbitlang/x@0.4.43/sys",
 }
-
-///|
 struct SourceFile {
   path : String
   lines : Int
 }
-
-///|
 struct CheckFailure {
   path : String
   lines : Int
   base_lines : Int?
   reason : String
 }
-
-///|
 fn cli_args() -> Array[String] {
   let raw = @env.args()
   let args = []
   for i in 1..<raw.length() { args.push(raw[i]) }
   args
 }
-
-///|
 fn parse_int(value : String) -> Int? {
   try {
     Some(@string.parse_int(value))
@@ -38,8 +29,6 @@ fn parse_int(value : String) -> Int? {
     _ => None
   }
 }
-
-///|
 fn read_file_to_string(path : String) -> String? {
   try {
     Some(@xfs.read_file_to_string(path))
@@ -47,8 +36,6 @@ fn read_file_to_string(path : String) -> String? {
     _ => None
   }
 }
-
-///|
 fn line_count(content : String) -> Int {
   if content == "" {
     return 0
@@ -60,8 +47,6 @@ fn line_count(content : String) -> Int {
     lines.length()
   }
 }
-
-///|
 fn has_any_suffix(path : String, suffixes : Array[String]) -> Bool {
   for suffix in suffixes {
     if path.has_suffix(suffix) {
@@ -70,13 +55,9 @@ fn has_any_suffix(path : String, suffixes : Array[String]) -> Bool {
   }
   false
 }
-
-///|
 fn has_path_segment(path : String, segment : String) -> Bool {
   path.has_prefix(segment + "/") || path.contains("/" + segment + "/")
 }
-
-///|
 fn is_source_path(path : String) -> Bool {
   has_any_suffix(
     path,
@@ -87,8 +68,6 @@ fn is_source_path(path : String) -> Bool {
     ],
   )
 }
-
-///|
 fn is_excluded_path(path : String) -> Bool {
   path.has_suffix("Cargo.lock") ||
   path.has_suffix("pnpm-lock.yaml") ||
@@ -102,8 +81,6 @@ fn is_excluded_path(path : String) -> Bool {
   has_path_segment(path, "__generated__") || has_path_segment(path, "i18n") ||
   has_path_segment(path, "playwright-report") || has_path_segment(path, "coverage")
 }
-
-///|
 fn compare_source_files(a : SourceFile, b : SourceFile) -> Int {
   if a.lines == b.lines {
     a.path.lexical_compare(b.path)
@@ -113,8 +90,6 @@ fn compare_source_files(a : SourceFile, b : SourceFile) -> Int {
     1
   }
 }
-
-///|
 fn compare_failures(a : CheckFailure, b : CheckFailure) -> Int {
   if a.lines == b.lines {
     a.path.lexical_compare(b.path)
@@ -124,8 +99,6 @@ fn compare_failures(a : CheckFailure, b : CheckFailure) -> Int {
     1
   }
 }
-
-///|
 fn collect_current_files(paths : Array[String]) -> Array[SourceFile] {
   let files = []
   for path in paths {
@@ -141,8 +114,6 @@ fn collect_current_files(paths : Array[String]) -> Array[SourceFile] {
   files.sort_by(compare_source_files)
   files
 }
-
-///|
 async fn tracked_paths() -> Array[String]? {
   let (exit_code, output) = @process.collect_stdout("git", ["ls-files"])
   if exit_code != 0 {
@@ -151,7 +122,6 @@ async fn tracked_paths() -> Array[String]? {
   Some(output.text().split("\n").map(view => view.to_owned()).collect())
 }
 
-///|
 async fn git_ref_exists(ref_name : String) -> Bool {
   if ref_name == "" {
     return false
@@ -163,27 +133,60 @@ async fn git_ref_exists(ref_name : String) -> Bool {
   exit_code == 0
 }
 
-///|
-async fn base_file_lines(base_ref : String, path : String) -> Int? {
-  let (exit_code, output) = @process.collect_stdout("git", ["show", "\{base_ref}:\{path}"])
+async fn base_rename_paths(base_ref : String) -> Map[String, String] {
+  let renames : Map[String, String] = {}
+  let (exit_code, output) = @process.collect_stdout(
+    "git",
+    ["diff", "--name-status", "--find-renames", base_ref, "--"],
+  )
+  if exit_code != 0 {
+    return renames
+  }
+  let lines : Array[String] = output.text().split("\n").map(view => view.to_owned()).collect()
+  for line in lines {
+    if line == "" {
+      continue
+    }
+    let parts : Array[String] = line.split("\t").map(view => view.to_owned()).collect()
+    guard parts.length() >= 3 else { continue }
+    if parts[0].has_prefix("R") {
+      renames[parts[2]] = parts[1]
+    }
+  }
+  renames
+}
+
+async fn base_file_lines(
+  base_ref : String,
+  path : String,
+  base_paths : Map[String, String],
+) -> Int? {
+  let base_path = match base_paths.get(path) {
+    Some(previous_path) => previous_path
+    None => path
+  }
+  let (exit_code, output) = @process.collect_stdout(
+    "git",
+    ["show", "\{base_ref}:\{base_path}"],
+  )
   if exit_code != 0 {
     return None
   }
   Some(line_count(output.text()))
 }
 
-///|
 async fn collect_failures(
   files : Array[SourceFile],
   max_lines : Int,
   base_ref : String,
+  base_paths : Map[String, String],
 ) -> Array[CheckFailure] {
   let failures = []
   for file in files {
     if file.lines <= max_lines {
       continue
     }
-    let base_lines = base_file_lines(base_ref, file.path)
+    let base_lines = base_file_lines(base_ref, file.path, base_paths)
     match base_lines {
       None =>
         failures.push(
@@ -220,7 +223,6 @@ async fn collect_failures(
   failures
 }
 
-///|
 fn print_inventory(files : Array[SourceFile], max_lines : Int, limit : Int) -> Unit {
   let over_limit = files.filter(file => file.lines > max_lines)
   println("Source files scanned: \{files.length()}")
@@ -238,7 +240,6 @@ fn print_inventory(files : Array[SourceFile], max_lines : Int, limit : Int) -> U
   }
 }
 
-///|
 fn print_failures(failures : Array[CheckFailure]) -> Unit {
   println("| Lines | Base | Reason | Path |")
   println("| ---: | ---: | --- | --- |")
@@ -251,7 +252,6 @@ fn print_failures(failures : Array[CheckFailure]) -> Unit {
   }
 }
 
-///|
 async fn run_app() -> Int {
   let args = cli_args()
   let mut max_lines = 350
@@ -331,7 +331,8 @@ async fn run_app() -> Int {
     return 0
   }
 
-  let failures = collect_failures(files, max_lines, base_ref)
+  let base_paths = base_rename_paths(base_ref)
+  let failures = collect_failures(files, max_lines, base_ref, base_paths)
   println("")
   println("Compared with \{base_ref}.")
   if failures.is_empty() {
@@ -343,7 +344,6 @@ async fn run_app() -> Int {
   1
 }
 
-///|
 async fn main {
   @sys.exit(run_app())
 }

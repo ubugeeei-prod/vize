@@ -41,9 +41,9 @@ vp run --workspace-root build:packages
 - [ ] Package-specific smoke checks pass when relevant:
 
 ```bash
-vp run --filter './npm/vite-plugin-musea' test
-vp run --filter './npm/vite-plugin-musea' build
-vp run --filter './npm/vize-native' build:debug
+vp run --filter './npm/builder/vite-musea' test
+vp run --filter './npm/builder/vite-musea' build
+vp run --filter './npm/native' build:debug
 ```
 
 ## Tag Gate

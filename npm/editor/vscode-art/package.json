@@ -1,0 +1,63 @@
+{
+  "name": "vize-art",
+  "displayName": "Vize Art",
+  "version": "0.242.0",
+  "description": "Syntax highlighting for Vize Art files (*.art.vue)",
+  "categories": [
+    "Programming Languages"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/editor/vscode-art"
+  },
+  "publisher": "vize",
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsgo -p ./",
+    "watch": "tsgo -watch -p ./"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "art-vue",
+        "aliases": [
+          "Art Vue",
+          "art"
+        ],
+        "extensions": [
+          ".art.vue"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "art-vue",
+        "scopeName": "source.art.vue",
+        "path": "./syntaxes/art.tmLanguage.json",
+        "embeddedLanguages": {
+          "text.html.basic": "html",
+          "source.js": "javascript",
+          "source.ts": "typescript",
+          "source.css": "css",
+          "source.css.scss": "scss",
+          "source.css.less": "less",
+          "source.json": "json"
+        }
+      }
+    ]
+  },
+  "activationEvents": [
+    "onLanguage:art-vue"
+  ],
+  "engines": {
+    "vscode": "^1.75.0"
+  }
+}
