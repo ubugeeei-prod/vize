@@ -3,6 +3,7 @@
 mod args;
 mod collect;
 mod cross_file;
+mod fix;
 mod stdout;
 
 #[cfg(test)]
@@ -11,10 +12,9 @@ mod tests;
 pub use args::LintArgs;
 
 use crate::profile_support;
-use collect::{
-    collect_lint_files, is_plain_script_path, is_standalone_html_path, resolve_lint_config_path,
-};
+use collect::{collect_lint_files, resolve_lint_config_path};
 use cross_file::apply_sfc_cross_file_lint;
+use fix::lint_source_with_optional_fix;
 use rayon::prelude::*;
 use std::fs;
 use std::io::Write;
@@ -26,9 +26,7 @@ use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profi
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
-use vize_patina::{
-    HelpLevel, JsxLang, LintPreset, LintResult, Linter, OutputFormat, TextEdit, format_results,
-};
+use vize_patina::{HelpLevel, LintPreset, Linter, OutputFormat, format_results};
 
 pub fn run(args: LintArgs) {
     let start = Instant::now();
@@ -151,28 +149,10 @@ pub fn run(args: LintArgs) {
 
             let filename = path.to_string_lossy().to_compact_string();
             let lint_file_start = args.profile.then(Instant::now);
-            let mut fixed = false;
-            let mut source = source;
             let result = profile!("cli.lint.file.lint", {
-                let initial_result = lint_source(&linter, path, &source, &filename);
-                if args.fix
-                    && let Some(fixed_source) = apply_lint_fixes(&source, &initial_result)
-                    && fixed_source != source
-                {
-                    if let Err(error) = fs::write(path, fixed_source.as_bytes()) {
-                        global_profiler().record_fs_write_failure(fixed_source.len());
-                        eprintln!("Failed to write {}: {}", path.display(), error);
-                        initial_result
-                    } else {
-                        global_profiler().record_fs_write(fixed_source.len());
-                        fixed = true;
-                        source = fixed_source;
-                        lint_source(&linter, path, &source, &filename)
-                    }
-                } else {
-                    initial_result
-                }
+                lint_source_with_optional_fix(&linter, path, source, &filename, args.fix)
             });
+            let (source, result, fixed) = result;
             let lint_time = lint_file_start
                 .map(|start| start.elapsed())
                 .unwrap_or(Duration::ZERO);
@@ -401,68 +381,6 @@ pub fn run(args: LintArgs) {
     {
         eprintln!("\nToo many warnings ({} > max {})", total_warnings, max);
         std::process::exit(1);
-    }
-}
-
-fn lint_source(linter: &Linter, path: &Path, source: &str, filename: &str) -> LintResult {
-    if is_standalone_html_path(path) {
-        linter.lint_standalone_html(source, filename)
-    } else if is_plain_script_path(path) {
-        linter.lint_script(source, filename)
-    } else if let Some(lang) = jsx_lang_for_path(path) {
-        linter.lint_jsx(source, filename, lang)
-    } else {
-        linter.lint_sfc(source, filename)
-    }
-}
-
-fn apply_lint_fixes(source: &str, result: &LintResult) -> Option<String> {
-    let mut edits: Vec<&TextEdit> = result
-        .diagnostics
-        .iter()
-        .filter_map(|diagnostic| diagnostic.fix.as_ref())
-        .flat_map(|fix| fix.edits.iter())
-        .filter(|edit| {
-            let start = edit.start as usize;
-            let end = edit.end as usize;
-            start <= end
-                && end <= source.len()
-                && source.is_char_boundary(start)
-                && source.is_char_boundary(end)
-        })
-        .collect();
-
-    if edits.is_empty() {
-        return None;
-    }
-
-    edits.sort_by_key(|edit| (edit.start, edit.end));
-    let mut selected = Vec::with_capacity(edits.len());
-    let mut last_end = 0u32;
-    for edit in edits {
-        if edit.start < last_end {
-            continue;
-        }
-        last_end = edit.end;
-        selected.push(edit);
-    }
-
-    if selected.is_empty() {
-        return None;
-    }
-
-    let mut fixed = source.to_compact_string();
-    for edit in selected.into_iter().rev() {
-        fixed.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
-    }
-    Some(fixed)
-}
-
-fn jsx_lang_for_path(path: &Path) -> Option<JsxLang> {
-    match path.extension().and_then(|extension| extension.to_str()) {
-        Some("jsx") => Some(JsxLang::Jsx),
-        Some("tsx") => Some(JsxLang::Tsx),
-        _ => None,
     }
 }
 

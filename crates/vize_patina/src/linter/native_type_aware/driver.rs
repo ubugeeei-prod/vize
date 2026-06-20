@@ -75,7 +75,7 @@ pub(super) fn lint_with_descriptor<'a>(
         );
         let mut parse_result =
             Linter::template_parse_lint_result(filename, template.content.len(), parse_errors);
-        Linter::offset_result(&mut parse_result, template.loc.start as u32);
+        super::super::engine::offset_result(&mut parse_result, template.loc.start as u32);
         Linter::merge_lint_results(parse_result, lint_result)
     } else {
         LintResult {

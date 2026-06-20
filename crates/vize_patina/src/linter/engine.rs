@@ -9,6 +9,7 @@
 //! - [`tag_scan`]: shared byte-oriented tag scanning primitives
 
 mod ecosystem_hint;
+mod offset;
 mod parse_diagnostics;
 mod script;
 mod tag_scan;
@@ -33,6 +34,7 @@ use vize_relief::RootNode;
 use super::config::{LintResult, Linter};
 
 use ecosystem_hint::source_may_contain_ecosystem_template_rule;
+pub(crate) use offset::offset_result;
 
 pub(crate) enum TemplateAnalysis<'a> {
     Disabled,
@@ -190,27 +192,6 @@ impl Linter {
             .diagnostics
             .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
         template_result
-    }
-
-    pub(crate) fn offset_result(result: &mut LintResult, byte_offset: u32) {
-        if byte_offset == 0 {
-            return;
-        }
-
-        for diag in &mut result.diagnostics {
-            diag.start += byte_offset;
-            diag.end += byte_offset;
-            for label in &mut diag.labels {
-                label.start += byte_offset;
-                label.end += byte_offset;
-            }
-            if let Some(fix) = diag.fix.as_mut() {
-                for edit in &mut fix.edits {
-                    edit.start += byte_offset;
-                    edit.end += byte_offset;
-                }
-            }
-        }
     }
 
     fn has_active_semantic_template_rules(&self) -> bool {
@@ -778,7 +759,7 @@ impl Linter {
                 dialect: VueDialect::Vue,
             },
         );
-        Self::offset_result(&mut result, input.template.loc.start as u32);
+        offset_result(&mut result, input.template.loc.start as u32);
         result
     }
 
@@ -813,7 +794,7 @@ impl Linter {
 
         let mut parse_result =
             Self::template_parse_lint_result(filename, template.content.len(), &parse_errors);
-        Self::offset_result(&mut parse_result, template.loc.start as u32);
+        offset_result(&mut parse_result, template.loc.start as u32);
         let lint_result = self.lint_sfc_template_root(SfcTemplateLintInput {
             filename,
             template,
@@ -909,7 +890,7 @@ impl Linter {
                         extract_template_fast(source)
                     ) {
                         let mut fallback = self.lint_template(&content, filename);
-                        Self::offset_result(&mut fallback, byte_offset);
+                        offset_result(&mut fallback, byte_offset);
                         fallback
                     } else {
                         LintResult {
@@ -946,7 +927,7 @@ impl Linter {
         let mut result = self.lint_template(&content, filename);
 
         // Adjust byte offsets in diagnostics to match original file positions
-        Self::offset_result(&mut result, byte_offset);
+        offset_result(&mut result, byte_offset);
 
         Self::merge_lint_results(result, sfc_result)
     }

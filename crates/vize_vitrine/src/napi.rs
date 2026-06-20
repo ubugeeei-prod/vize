@@ -14,6 +14,7 @@ mod config;
 mod format;
 mod jsx;
 mod lint;
+mod lint_fix;
 mod plugin;
 mod sfc;
 mod template;
