@@ -471,8 +471,7 @@ impl<'a> LintContext<'a> {
     }
 
     fn prescan_eslint_disable_comments(&mut self) {
-        let mut line_number = 1u32;
-        for line in self.source.lines() {
+        for (line_number, line) in (1u32..).zip(self.source.lines()) {
             if let Some(directive) = parse_eslint_disable_comment(line) {
                 match directive.kind {
                     EslintDisableKind::DisableNextLine => {
@@ -500,7 +499,6 @@ impl<'a> LintContext<'a> {
                     }
                 }
             }
-            line_number += 1;
         }
     }
 
