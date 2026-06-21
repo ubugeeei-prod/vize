@@ -9,6 +9,7 @@ use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::cstr;
 mod graphql_generated;
 mod ref_arity;
+mod setup_props;
 mod tsconfig_native_options;
 mod windows_paths;
 fn unique_case_dir(name: &str) -> PathBuf {
@@ -30,7 +31,6 @@ fn assert_ts_parses(source: &str) {
         parsed.errors
     );
 }
-
 fn assert_tsx_parses(source: &str) {
     let allocator = oxc_allocator::Allocator::default();
     let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::tsx()).parse();

@@ -1,5 +1,6 @@
 mod setup_scoped;
 mod template_bindings;
+mod template_names;
 use super::helpers::{is_reserved_identifier, to_safe_identifier};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey};
@@ -7,7 +8,8 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use setup_scoped::props_type_ref;
 pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
-use template_bindings::should_skip_template_prop_binding;
+use template_bindings::{emit_macro_template_prop_bindings, should_skip_template_prop_binding};
+pub(crate) use template_names::collect_template_prop_names;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
@@ -60,6 +62,7 @@ fn emit_unchecked_template_prop_binding(ts: &mut String, prop_name: &str) {
     );
     append!(*ts, "  void {binding_name};\n");
 }
+
 fn can_emit_keyed_template_prop_binding(prop_name: &str) -> bool {
     let mut chars = prop_name.chars();
     let Some(first) = chars.next() else {
@@ -418,21 +421,7 @@ pub(crate) fn generate_props_variables(
         ts.push_str("  void props; // Mark as used to avoid TS6133\n");
 
         let mut emitted_names = FxHashSet::default();
-        if has_props {
-            // Runtime-declared props: generate individual variables
-            for prop in props {
-                if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-                    continue;
-                }
-                emit_template_prop_binding(
-                    ts,
-                    template_props_type_ref.as_str(),
-                    prop.name.as_str(),
-                    prop.default_value.is_some() || defaulted_prop_names.contains(&prop.name),
-                );
-                emitted_names.insert(prop.name.as_str().into());
-            }
-        } else if let Some(type_args) = define_props_type_args {
+        if let Some(type_args) = define_props_type_args {
             // Type-only defineProps<TypeName>(): extract fields
             // type_args may include angle brackets (e.g., "<Props>", "<Foo<T>>"), strip outer pair
             let type_name = strip_outer_angle_brackets(type_args.trim());
@@ -445,17 +434,28 @@ pub(crate) fn generate_props_variables(
             let type_properties = summary
                 .types
                 .extract_properties(type_reference_lookup_key(type_name));
-            for prop in &type_properties {
-                if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-                    continue;
-                }
-                emit_template_prop_binding(
+            if type_properties.is_empty() && has_props {
+                emit_macro_template_prop_bindings(
                     ts,
+                    summary,
                     template_props_type_ref.as_str(),
-                    prop.name.as_str(),
-                    defaulted_prop_names.contains(&prop.name),
+                    props,
+                    &defaulted_prop_names,
+                    &mut emitted_names,
                 );
-                emitted_names.insert(prop.name.as_str().into());
+            } else {
+                for prop in &type_properties {
+                    if should_skip_template_prop_binding(summary, prop.name.as_str()) {
+                        continue;
+                    }
+                    emit_template_prop_binding(
+                        ts,
+                        template_props_type_ref.as_str(),
+                        prop.name.as_str(),
+                        defaulted_prop_names.contains(&prop.name),
+                    );
+                    emitted_names.insert(prop.name.as_str().into());
+                }
             }
 
             if should_emit_keyed_template_prop_bindings(summary, type_name, &emitted_names) {
@@ -472,6 +472,16 @@ pub(crate) fn generate_props_variables(
                     }
                 }
             }
+        } else if has_props {
+            // Runtime-declared props: generate individual variables
+            emit_macro_template_prop_bindings(
+                ts,
+                summary,
+                template_props_type_ref.as_str(),
+                props,
+                &defaulted_prop_names,
+                &mut emitted_names,
+            );
         }
         for model in models {
             if emitted_names.contains(model.name.as_str())
@@ -489,55 +499,6 @@ pub(crate) fn generate_props_variables(
         }
         ts.push('\n');
     }
-}
-
-pub(crate) fn collect_template_prop_names(summary: &Croquis) -> FxHashSet<String> {
-    let mut names = FxHashSet::default();
-    let props = summary.macros.props();
-    if !props.is_empty() {
-        for prop in props {
-            if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-                continue;
-            }
-            if !is_reserved_identifier(prop.name.as_str()) {
-                continue;
-            }
-            names.insert(prop.name.as_str().into());
-        }
-        return names;
-    }
-
-    for model in summary.macros.models() {
-        if should_skip_template_prop_binding(summary, model.name.as_str()) {
-            continue;
-        }
-        if !is_reserved_identifier(model.name.as_str()) {
-            continue;
-        }
-        names.insert(model.name.as_str().into());
-    }
-
-    let Some(type_args) = summary
-        .macros
-        .define_props()
-        .and_then(|m| m.type_args.as_ref())
-    else {
-        return names;
-    };
-    let type_name = strip_outer_angle_brackets(type_args.trim());
-    let type_properties = summary
-        .types
-        .extract_properties(type_reference_lookup_key(type_name));
-    for prop in &type_properties {
-        if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-            continue;
-        }
-        if !is_reserved_identifier(prop.name.as_str()) {
-            continue;
-        }
-        names.insert(prop.name.as_str().into());
-    }
-    names
 }
 
 /// Lookup key for a `defineProps<...>` type argument when resolving its fields
