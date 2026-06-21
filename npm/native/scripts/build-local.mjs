@@ -69,7 +69,7 @@ const buildArgs = [
   "-p",
   "vize_vitrine",
   "--features",
-  "napi",
+  "napi,legacy",
   "--output-dir",
   outputDir,
   "--no-js",

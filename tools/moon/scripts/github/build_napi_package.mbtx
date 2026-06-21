@@ -31,6 +31,15 @@ fn binary_name(crate_name : String) -> String {
 }
 
 ///|
+fn napi_features(crate_name : String) -> String {
+  if crate_name == "vize_vitrine" {
+    "napi,legacy"
+  } else {
+    "napi"
+  }
+}
+
+///|
 fn is_apple_target(target : String) -> Bool {
   target.has_suffix("-apple-darwin")
 }
@@ -81,7 +90,7 @@ async fn build_apple_package(
       "-p",
       crate_name,
       "--features",
-      "napi",
+      napi_features(crate_name),
       "--target",
       target,
     ],
@@ -144,7 +153,7 @@ async fn run_app() -> Int {
     "-p",
     args[2],
     "--features",
-    "napi",
+    napi_features(args[2]),
     "--output-dir",
     ".",
     "--target",

@@ -351,7 +351,7 @@ test("github/build_napi_package builds Apple targets with cargo and writes the e
         "-p",
         "vize_vitrine",
         "--features",
-        "napi",
+        "napi,legacy",
         "--target",
         "aarch64-apple-darwin",
       ].join("\n"),
