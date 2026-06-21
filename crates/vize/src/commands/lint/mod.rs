@@ -22,11 +22,13 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
-use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profiler};
+use vize_carton::{
+    String, ToCompactString, config::LintRuleSeverity, cstr, profile, profiler::global_profiler,
+};
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
-use vize_patina::{HelpLevel, LintPreset, Linter, OutputFormat, format_results};
+use vize_patina::{HelpLevel, LintPreset, Linter, OutputFormat, Severity, format_results};
 
 pub fn run(args: LintArgs) {
     let start = Instant::now();
@@ -99,6 +101,21 @@ pub fn run(args: LintArgs) {
     let mut linter = Linter::with_preset(preset)
         .with_additional_rules(linter_config.enabled_rules())
         .with_disabled_rules(linter_config.disabled_rules())
+        .with_disabled_categories(linter_config.disabled_categories())
+        .with_category_severity_overrides(
+            linter_config
+                .category_severity_overrides()
+                .into_iter()
+                .filter_map(lint_severity_override)
+                .collect(),
+        )
+        .with_rule_severity_overrides(
+            linter_config
+                .rule_severity_overrides()
+                .into_iter()
+                .filter_map(lint_severity_override)
+                .collect(),
+        )
         .with_help_level(help_level)
         .with_type_aware_lint(type_aware_enabled)
         .with_vue_version(linter_features.vue_version)
@@ -378,6 +395,16 @@ pub fn run(args: LintArgs) {
     {
         eprintln!("\nToo many warnings ({} > max {})", total_warnings, max);
         std::process::exit(1);
+    }
+}
+
+fn lint_severity_override(
+    (name, severity): (String, LintRuleSeverity),
+) -> Option<(String, Severity)> {
+    match severity {
+        LintRuleSeverity::Off => None,
+        LintRuleSeverity::Warn => Some((name, Severity::Warning)),
+        LintRuleSeverity::Error => Some((name, Severity::Error)),
     }
 }
 

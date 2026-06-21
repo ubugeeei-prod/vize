@@ -7,11 +7,13 @@ import { build, type Plugin, type ResolvedConfig } from "vite";
 
 import { staticPreviewId } from "./static-data.js";
 import {
+  MUSEA_STATIC_BUILD_ENV,
   emitStaticGallery,
   museaStaticBuildConfig,
   museaStaticBuildInput,
   loadStaticRuntimeModule,
   resolveStaticRuntimeId,
+  shouldEnableMuseaStaticBuild,
   VIRTUAL_STATIC_RUNTIME,
   type StaticBuildInput,
 } from "./static-export.js";
@@ -66,6 +68,25 @@ void test("static build config injects a runtime input when no index html exists
     assert.equal(await fileExists(path.join(outDir, "index.html")), true);
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+void test("static build mode is enabled for direct vite builds without env flag", () => {
+  const previousEnv = process.env[MUSEA_STATIC_BUILD_ENV];
+  try {
+    Reflect.deleteProperty(process.env, MUSEA_STATIC_BUILD_ENV);
+
+    assert.equal(shouldEnableMuseaStaticBuild("build"), true);
+    assert.equal(shouldEnableMuseaStaticBuild("serve"), false);
+
+    process.env[MUSEA_STATIC_BUILD_ENV] = "1";
+    assert.equal(shouldEnableMuseaStaticBuild("serve"), true);
+  } finally {
+    if (previousEnv === undefined) {
+      Reflect.deleteProperty(process.env, MUSEA_STATIC_BUILD_ENV);
+    } else {
+      process.env[MUSEA_STATIC_BUILD_ENV] = previousEnv;
+    }
   }
 });
 

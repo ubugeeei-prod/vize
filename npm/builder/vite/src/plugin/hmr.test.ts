@@ -181,6 +181,7 @@ assert.equal(
     previousSource,
   );
   const visibleVirtualFileModule = { url: `${vueFile}.ts?vue&vize` };
+  const invalidatedModules: unknown[] = [];
   const state = {
     cache: new Map([[vueFile, previousCompiled]]),
     ssrCache: new Map(),
@@ -205,6 +206,9 @@ assert.equal(
         getModulesByFile(id: string) {
           return id === `${vueFile}.ts` ? new Set([visibleVirtualFileModule]) : undefined;
         },
+        invalidateModule(receivedModule: unknown) {
+          invalidatedModules.push(receivedModule);
+        },
       },
       ws: {
         send() {},
@@ -224,6 +228,11 @@ assert.equal(
     state.pendingHmrUpdateTypes.get(vueFile),
     "template-only",
     "Template edits should keep granular HMR when the virtual module is found",
+  );
+  assert.deepEqual(
+    invalidatedModules,
+    [visibleVirtualFileModule],
+    "Vue SFC edits should invalidate Vite's stale transformed module",
   );
 }
 

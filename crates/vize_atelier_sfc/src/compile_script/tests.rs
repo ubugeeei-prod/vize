@@ -379,6 +379,34 @@ const msg = 'ready'
     }
 
     #[test]
+    fn test_compile_script_setup_strips_typed_router_define_page_meta_import() {
+        let content = r#"
+import { definePageMeta } from '@typed-router'
+
+definePageMeta({
+  layout: 'no-header',
+})
+
+const msg = 'ready'
+"#;
+        let result =
+            compile_script_setup(content, "Test", false, false, Some("<div>{{ msg }}</div>"))
+                .unwrap();
+
+        assert!(
+            !result.code.contains("definePageMeta"),
+            "definePageMeta should be removed from runtime output:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("@typed-router"),
+            "macro-only typed-router import should be removed from runtime output:\n{}",
+            result.code
+        );
+        assert!(result.code.contains("ready"));
+    }
+
+    #[test]
     fn test_compile_script_setup_strips_define_route_rules() {
         let content = r#"
 defineRouteRules({

@@ -20,7 +20,7 @@ export type RuleCategory = "correctness" | "suspicious" | "style" | "perf" | "a1
 /**
  * Host Vue runtime version for opt-in compatibility modes
  */
-export type VueVersion = 0.11 | 1 | 2 | 3 | "legacy";
+export type VueVersion = "3" | "2.7" | "2" | "1" | "0.11" | "0.10";
 
 /**
  * Configuration file for vize - High-performance Vue.js toolchain

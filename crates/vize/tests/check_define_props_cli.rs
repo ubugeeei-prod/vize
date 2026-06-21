@@ -104,7 +104,7 @@ void props;
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
-        .args(["check", ".", "--format", "json"])
+        .args(["check", ".", "--format", "json", "--show-virtual-ts"])
         .output()
         .unwrap();
 

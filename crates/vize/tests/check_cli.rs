@@ -2548,7 +2548,10 @@ const count: string = 0;
     assert_eq!(json["warningCount"], 1);
     assert_eq!(json["fileCount"], 1);
     assert_eq!(json["files"][0]["file"], "src/App.vue");
-    assert_eq!(json["files"][0]["virtualTs"], "const count: string = 0;");
+    assert!(
+        json["files"][0].get("virtualTs").is_none(),
+        "virtualTs should be hidden without --show-virtual-ts: {json:#}"
+    );
     assert_eq!(
         json["files"][0]["diagnostics"],
         serde_json::json!([
@@ -3490,6 +3493,115 @@ const shouldNotBeChecked: string = 0
                 && !diagnostic.contains("generated/Bad.vue")
         }),
         "monorepo tsconfig paths/excludes should be respected: {diagnostics:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_explicit_nuxt_app_tsconfig_in_monorepo_keeps_app_root_detection() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "monorepo-nuxt-app-tsconfig",
+        &[
+            (
+                "tsconfig.base.json",
+                r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  }
+}"#,
+            ),
+            (
+                "apps/volt/nuxt.config.ts",
+                "export default defineNuxtConfig({})\n",
+            ),
+            (
+                "apps/volt/tsconfig.json",
+                r#"{
+  "extends": "../../tsconfig.base.json",
+  "include": [
+    "app.vue",
+    "../../types/**/*.d.ts"
+  ]
+}"#,
+            ),
+            (
+                "apps/volt/app.vue",
+                r#"<script setup lang="ts">
+const message: GlobalMessage = { text: 'hello' }
+</script>
+
+<template>
+  <NuxtLink to="/">{{ message.text }}</NuxtLink>
+</template>
+"#,
+            ),
+            (
+                "types/global.d.ts",
+                r#"export {};
+
+declare global {
+  interface GlobalMessage {
+    text: string;
+  }
+}
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "apps/volt/tsconfig.json",
+            "apps/volt",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+    let diagnostics = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(|diagnostic| diagnostic.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .all(|diagnostic| !diagnostic.contains("NuxtLink")),
+        "Nuxt app root should be detected from explicit app tsconfig: {diagnostics:#?}"
+    );
+    assert!(
+        !stderr.contains("Failed to strip prefix from path"),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

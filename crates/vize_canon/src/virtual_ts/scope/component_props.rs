@@ -328,7 +328,7 @@ fn generate_closure_component_props_recursive(
             emit_slot_function_open(
                 ts,
                 indent,
-                cstr!("_slot_props_{safe_slot_name}").as_str(),
+                cstr!("_slot_props_{safe_slot_name}_{}", scope.id.as_u32()).as_str(),
                 props_pattern,
                 &props_type,
             );

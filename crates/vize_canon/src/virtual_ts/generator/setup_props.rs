@@ -174,9 +174,12 @@ impl SetupPropsPlan {
     ) {
         let props_type_ref = self.component_props_type_ref();
         if has_emits_for_props {
-            append!(ts, "  $props: {props_type_ref} & __EmitProps<Emits>;\n");
+            append!(
+                ts,
+                "  $props: __VizeComponentProps<{props_type_ref}> & __EmitProps<Emits>;\n"
+            );
         } else {
-            append!(ts, "  $props: {props_type_ref};\n");
+            append!(ts, "  $props: __VizeComponentProps<{props_type_ref}>;\n");
         }
     }
 

@@ -119,11 +119,11 @@ test(
       for (const entry of parsed.files) {
         assert.deepEqual(
           Object.keys(entry).sort(),
-          ["diagnostics", "file", "virtualTs"],
-          "each file entry should expose exactly file/virtualTs/diagnostics",
+          ["diagnostics", "file"],
+          "each file entry should expose file/diagnostics without virtualTs by default",
         );
         assert.equal(typeof entry.file, "string");
-        assert.equal(typeof entry.virtualTs, "string");
+        assert.equal("virtualTs" in entry, false);
         assert.ok(Array.isArray(entry.diagnostics));
       }
 

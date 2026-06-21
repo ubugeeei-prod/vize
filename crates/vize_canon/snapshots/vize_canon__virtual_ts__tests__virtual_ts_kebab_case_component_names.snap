@@ -38,6 +38,9 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
+type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
+type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
+type __VizeComponentProps<T> = T | __VizeKebabProps<T>;
 declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
 declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
 declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
@@ -75,7 +78,7 @@ function __setup() {
     void value
   }
   
-  // @vize-map: 5061:5148 -> 0:76
+  // @vize-map: 5401:5488 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -101,7 +104,7 @@ function __setup() {
     ? __EP extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[]
     : unknown[];
   type __my_widget_7_update_model_value_args = unknown[] extends __my_widget_7_update_model_value_prop_args ? __my_widget_7_update_model_value_emit_args : __my_widget_7_update_model_value_prop_args;
-  type __my_widget_7_update_model_value_event = __my_widget_7_update_model_value_args extends [] ? any : __my_widget_7_update_model_value_args[0];
+  type __my_widget_7_update_model_value_event = __my_widget_7_update_model_value_args extends [] ? any : unknown[] extends __my_widget_7_update_model_value_args ? Event : __my_widget_7_update_model_value_args[0];
   type __my_widget_7_update_model_value_listener = unknown[] extends __my_widget_7_update_model_value_args ? (($event: __my_widget_7_update_model_value_event) => unknown) : ((...args: __my_widget_7_update_model_value_args) => unknown);
   ((...__vize_args: Parameters<__my_widget_7_update_model_value_listener>) => {
     const $event = __vize_args[0] as __my_widget_7_update_model_value_event; void $event;
@@ -129,7 +132,7 @@ export type Slots = {};
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
-  $props: Props;
+  $props: __VizeComponentProps<Props>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };

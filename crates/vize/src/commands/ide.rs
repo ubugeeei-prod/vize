@@ -8,6 +8,9 @@ use clap::{Args, Subcommand};
 use std::path::PathBuf;
 use std::process::Command;
 
+const VSCODE_EXTENSION_ID: &str = "ubugeeei.vize";
+const LEGACY_VSCODE_EXTENSION_ID: &str = "vize.vize";
+
 #[derive(Args)]
 pub struct IdeArgs {
     #[command(subcommand)]
@@ -125,9 +128,8 @@ fn vscode_install() {
                     std::process::exit(1);
                 }
             } else {
-                eprintln!("Failed to build VSCode extension");
-                eprintln!("Please ensure pnpm is installed and run from the vize repository");
-                std::process::exit(1);
+                println!("Source build unavailable; installing published extension...");
+                install_published_vscode_extension();
             }
         }
     }
@@ -137,7 +139,7 @@ fn vscode_uninstall() {
     println!("Uninstalling Vize VSCode extension...");
 
     let status = Command::new("code")
-        .args(["--uninstall-extension", "vize.vize"])
+        .args(["--uninstall-extension", VSCODE_EXTENSION_ID])
         .status();
 
     match status {
@@ -162,7 +164,7 @@ fn vscode_status() {
         Ok(out) => {
             #[allow(clippy::disallowed_types)]
             let extensions = std::string::String::from_utf8_lossy(&out.stdout);
-            if extensions.contains("vize.vize") {
+            if vscode_extension_is_installed(&extensions) {
                 println!("✓ Vize extension is installed in VSCode");
             } else {
                 println!("✗ Vize extension is not installed in VSCode");
@@ -173,6 +175,14 @@ fn vscode_status() {
             eprintln!("Make sure VSCode is installed and 'code' is in your PATH");
         }
     }
+}
+
+fn vscode_extension_is_installed(extensions: &str) -> bool {
+    extensions.lines().any(|line| {
+        let extension = line.trim();
+        extension.eq_ignore_ascii_case(VSCODE_EXTENSION_ID)
+            || extension.eq_ignore_ascii_case(LEGACY_VSCODE_EXTENSION_ID)
+    })
 }
 
 fn find_vscode_vsix() -> Option<PathBuf> {
@@ -244,6 +254,31 @@ fn install_vsix(path: &std::path::Path) {
         }
         Ok(_) => {
             eprintln!("Failed to install extension");
+            std::process::exit(1);
+        }
+        Err(e) => {
+            eprintln!("Failed to run 'code' command: {}", e);
+            eprintln!("Make sure VSCode is installed and 'code' is in your PATH");
+            std::process::exit(1);
+        }
+    }
+}
+
+fn install_published_vscode_extension() {
+    let status = Command::new("code")
+        .args(["--install-extension", VSCODE_EXTENSION_ID])
+        .status();
+
+    match status {
+        Ok(s) if s.success() => {
+            println!("✓ Vize extension installed successfully!");
+            println!("  Restart VSCode to activate the extension.");
+        }
+        Ok(_) => {
+            eprintln!(
+                "Failed to install published extension: {}",
+                VSCODE_EXTENSION_ID
+            );
             std::process::exit(1);
         }
         Err(e) => {
@@ -400,5 +435,27 @@ fn get_zed_extensions_dir() -> Option<PathBuf> {
     #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
     {
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::vscode_extension_is_installed;
+
+    #[test]
+    fn vscode_status_accepts_published_extension_id() {
+        assert!(vscode_extension_is_installed(
+            "ms-vscode.cpptools\nubugeeei.vize\n"
+        ));
+    }
+
+    #[test]
+    fn vscode_status_accepts_legacy_extension_id() {
+        assert!(vscode_extension_is_installed("vize.vize\n"));
+    }
+
+    #[test]
+    fn vscode_status_requires_exact_extension_id() {
+        assert!(!vscode_extension_is_installed("some.ubugeeei.vize-plus\n"));
     }
 }

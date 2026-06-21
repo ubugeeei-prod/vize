@@ -40,6 +40,10 @@ export function isMuseaStaticBuild(): boolean {
   return process.env[MUSEA_STATIC_BUILD_ENV] === "1";
 }
 
+export function shouldEnableMuseaStaticBuild(command: string): boolean {
+  return isMuseaStaticBuild() || command === "build";
+}
+
 export function museaStaticBuildInput(input: StaticBuildInput): Record<string, string> {
   const entries: Record<string, string> = {};
 

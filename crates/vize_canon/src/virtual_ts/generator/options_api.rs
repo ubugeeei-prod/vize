@@ -66,8 +66,9 @@ pub(super) fn generate_options_api_variables(
         .collect();
     names.sort_unstable();
     names.dedup();
+    let inherited_unknown_names = unresolved_extends_template_names(summary, &configured_globals);
 
-    if names.is_empty() {
+    if names.is_empty() && inherited_unknown_names.is_empty() {
         return;
     }
 
@@ -84,11 +85,105 @@ pub(super) fn generate_options_api_variables(
             "  const {name}: __VizeOptionsBinding<typeof __default__, \"{name}\"> = undefined as any;\n"
         );
     }
+    if !inherited_unknown_names.is_empty() {
+        ts.push_str("  // Unresolved imported Options API extends bindings\n");
+        for name in &inherited_unknown_names {
+            append!(ts, "  const {name}: any = undefined as any;\n");
+        }
+    }
     ts.push_str("  ");
     for name in &names {
         append!(ts, "void {name};");
     }
+    for name in &inherited_unknown_names {
+        append!(ts, "void {name};");
+    }
     ts.push('\n');
+}
+
+fn unresolved_extends_template_names(
+    summary: &Croquis,
+    configured_globals: &FxHashSet<&str>,
+) -> Vec<String> {
+    if !summary
+        .options_descriptor
+        .as_ref()
+        .is_some_and(|descriptor| descriptor.has_unresolved_extends)
+    {
+        return Vec::new();
+    }
+
+    let type_export_names: FxHashSet<&str> = summary
+        .type_exports
+        .iter()
+        .map(|export| export.name.as_str())
+        .collect();
+    let used_components: FxHashSet<&str> = summary
+        .used_components
+        .iter()
+        .map(|component| component.as_str())
+        .collect();
+    let mut names = summary
+        .undefined_refs
+        .iter()
+        .filter_map(|reference| {
+            let name = reference.name.as_str();
+            if summary.bindings.bindings.contains_key(name)
+                || configured_globals.contains(name)
+                || type_export_names.contains(name)
+                || used_components.contains(name)
+                || !is_safe_value_identifier(name)
+            {
+                return None;
+            }
+            Some(String::from(name))
+        })
+        .collect::<Vec<_>>();
+    for expression in &summary.template_expressions {
+        collect_unresolved_extends_expression_names(
+            &mut names,
+            expression.content.as_str(),
+            summary,
+            configured_globals,
+            &type_export_names,
+            &used_components,
+        );
+        if let Some(guard) = expression.vif_guard.as_ref() {
+            collect_unresolved_extends_expression_names(
+                &mut names,
+                guard.as_str(),
+                summary,
+                configured_globals,
+                &type_export_names,
+                &used_components,
+            );
+        }
+    }
+    names.sort();
+    names.dedup();
+    names
+}
+
+fn collect_unresolved_extends_expression_names(
+    names: &mut Vec<String>,
+    expression: &str,
+    summary: &Croquis,
+    configured_globals: &FxHashSet<&str>,
+    type_export_names: &FxHashSet<&str>,
+    used_components: &FxHashSet<&str>,
+) {
+    for identifier in vize_croquis::analyzer::extract_identifiers_oxc(expression) {
+        let name = identifier.as_str();
+        if summary.bindings.bindings.contains_key(name)
+            || configured_globals.contains(name)
+            || type_export_names.contains(name)
+            || used_components.contains(name)
+            || !is_safe_value_identifier(name)
+        {
+            continue;
+        }
+        names.push(String::from(name));
+    }
 }
 
 pub(super) fn generate_options_api_bridge(mut ts: &mut String, summary: &Croquis, script: &str) {

@@ -391,7 +391,7 @@ const emit = defineEmits({
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("$props: Props & __EmitProps<Emits>;"),
+        virtual_ts.contains("$props: __VizeComponentProps<Props> & __EmitProps<Emits>;"),
         "{virtual_ts}"
     );
 }

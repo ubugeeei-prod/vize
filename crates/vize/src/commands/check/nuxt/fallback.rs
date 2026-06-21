@@ -35,6 +35,11 @@ pub(super) fn collect_fallback_stubs(
         seen_names,
         &mut fallback_names,
     );
+    push_stub(
+        stubs,
+        seen_names,
+        "declare function defineNuxtConfig<T extends Record<string, any>>(config: T): T;".into(),
+    );
     // The hardcoded `any` ladder silently weakens checking, so only inject it
     // when the project has no generated Nuxt import manifest to rely on.
     if !has_generated_imports {

@@ -61,7 +61,8 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
             continue;
         };
         if result.options_descriptor.is_none() {
-            result.options_descriptor = Some(build_options_descriptor(options.object));
+            result.options_descriptor =
+                Some(build_options_descriptor(options.object, &object_bindings));
         }
         collect_emits(result, options.object, &object_bindings, source);
         collect_component_registrations_from_options(result, options.object, &object_bindings);
@@ -923,7 +924,14 @@ pub fn collect_options_descriptor(program: &Program<'_>) -> Option<OptionsDescri
         else {
             continue;
         };
-        return Some(build_options_descriptor(options.object));
+        let descriptor_bindings: FxHashMap<&str, &ObjectExpression<'_>> = component_option_bindings
+            .iter()
+            .map(|(name, options)| (*name, options.object))
+            .collect();
+        return Some(build_options_descriptor(
+            options.object,
+            &descriptor_bindings,
+        ));
     }
 
     None
@@ -934,7 +942,10 @@ pub fn collect_options_descriptor(program: &Program<'_>) -> Option<OptionsDescri
 /// Member names and spans are recorded verbatim (no kebab→camel normalization);
 /// array-form `props`/`inject` entries record the full string-literal span
 /// including quotes, matching how lint diagnostics point at the declaration.
-fn build_options_descriptor(object: &ObjectExpression<'_>) -> OptionsDescriptor {
+fn build_options_descriptor<'a>(
+    object: &'a ObjectExpression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) -> OptionsDescriptor {
     let mut option_keys = Vec::new();
     let mut members = Vec::new();
 
@@ -965,6 +976,42 @@ fn build_options_descriptor(object: &ObjectExpression<'_>) -> OptionsDescriptor 
         options_end: object.span.end,
         option_keys,
         members,
+        has_unresolved_extends: has_unresolved_extends(object, object_bindings),
+    }
+}
+
+fn has_unresolved_extends<'a>(
+    object: &'a ObjectExpression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) -> bool {
+    let Some(expression) = option_expression_property(object, "extends") else {
+        return false;
+    };
+    !is_resolved_mixin_target(expression, object_bindings)
+}
+
+fn is_resolved_mixin_target<'a>(
+    expression: &'a Expression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) -> bool {
+    match expression {
+        Expression::ObjectExpression(_) => true,
+        Expression::Identifier(identifier) => {
+            object_bindings.contains_key(identifier.name.as_str())
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            is_resolved_mixin_target(&parenthesized.expression, object_bindings)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            is_resolved_mixin_target(&ts_as.expression, object_bindings)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            is_resolved_mixin_target(&ts_satisfies.expression, object_bindings)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            is_resolved_mixin_target(&ts_non_null.expression, object_bindings)
+        }
+        _ => false,
     }
 }
 

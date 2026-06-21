@@ -114,7 +114,7 @@ fn check_tsx_story_allows_sfc_class_and_style_attrs() {
     std::fs::write(
         project_root.join("src/AfButton.vue"),
         r#"<script setup lang="ts">
-defineProps<{ color: 'primary' | 'secondary' }>()
+defineProps<{ color: 'primary' | 'secondary'; isOpened: boolean }>()
 defineEmits<{ click: [event: MouseEvent] }>()
 </script>
 <template><button /></template>
@@ -130,6 +130,7 @@ export const Example = () => (
     class="af-mb-2"
     style="width: 200px"
     color="primary"
+    is-opened={true}
     onClick={(event: MouseEvent) => event.preventDefault()}
   />
 );
@@ -165,6 +166,7 @@ export const Example = () => (
             .unwrap();
     assert!(helpers.contains("interface IntrinsicAttributes"));
     assert!(helpers.contains("class?: unknown; style?: unknown"));
+    assert!(helpers.contains("__VizeKebabProps"));
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

@@ -308,6 +308,7 @@ fn writes_nuxt_fallback_tsconfig_without_overwriting_existing_paths() {
     let wrapper = write_nuxt_fallback_tsconfig(
         Some(&tsconfig),
         &project_root,
+        &project_root,
         &[
             NuxtPathAlias {
                 pattern: "~/*".into(),

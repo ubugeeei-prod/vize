@@ -1,10 +1,3 @@
-import {
-  addServerPlugin,
-  addVitePlugin,
-  defineNuxtModule,
-  getNuxtVersion,
-  isNuxt2,
-} from "@nuxt/kit";
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
 import { injectNuxtI18nHelpers } from "./i18n";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
@@ -44,7 +37,11 @@ type VitePluginWithTransform = {
   transform?: unknown;
   [VIZE_NUXT_AUTO_IMPORT_PATCHED]?: boolean;
 };
+type NuxtKit = typeof import("@nuxt/kit");
 type NuxtWithBuilderOptions = {
+  _version?: string;
+  version?: string;
+  hook(name: string, callback: (...args: unknown[]) => unknown): void;
   options: {
     app?: {
       baseURL?: string;
@@ -54,22 +51,113 @@ type NuxtWithBuilderOptions = {
     build?: {
       publicPath?: string;
     };
+    buildDir: string;
+    dev?: boolean;
+    modules: unknown[];
+    rootDir: string;
     router?: {
       base?: string;
     };
     vite?: { plugins?: unknown[]; resolve?: { dedupe?: string[] } };
     nitro?: { virtual?: Record<string, string> };
+    vize?: Partial<VizeNuxtOptions>;
+    _requiredModules?: Record<string, boolean>;
+    _nuxtVersion?: string;
+    [key: string]: unknown;
   };
 };
+type VizeNuxtModuleContext = {
+  nuxt?: NuxtWithBuilderOptions;
+};
+
+const moduleMeta = {
+  name: "@vizejs/nuxt",
+  configKey: "vize",
+} as const;
+
+const moduleDefaults = {
+  musea: false,
+  nuxtMusea: {
+    route: { path: "/" },
+  },
+} satisfies Partial<VizeNuxtOptions>;
+
+let nuxtKitPromise: Promise<NuxtKit> | null = null;
+
+function loadNuxtKit(): Promise<NuxtKit> {
+  nuxtKitPromise ||= import("@nuxt/kit");
+  return nuxtKitPromise;
+}
+
+async function addNuxtServerPlugin(plugin: string): Promise<void> {
+  const { addServerPlugin } = await loadNuxtKit();
+  addServerPlugin(plugin);
+}
+
+async function addNuxtVitePlugin(plugin: unknown): Promise<void> {
+  const { addVitePlugin } = await loadNuxtKit();
+  addVitePlugin(plugin as never);
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+function mergePlainRecords(...values: Array<Record<string, unknown> | undefined>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+
+  for (const value of values) {
+    if (!value) {
+      continue;
+    }
+    for (const [key, nextValue] of Object.entries(value)) {
+      const currentValue = result[key];
+      result[key] =
+        isPlainRecord(currentValue) && isPlainRecord(nextValue)
+          ? mergePlainRecords(currentValue, nextValue)
+          : nextValue;
+    }
+  }
+
+  return result;
+}
+
+function resolveModuleOptions(
+  inlineOptions: Partial<VizeNuxtOptions> | undefined,
+  nuxt: NuxtWithBuilderOptions | undefined,
+): VizeNuxtOptions {
+  return mergePlainRecords(
+    moduleDefaults as Record<string, unknown>,
+    nuxt?.options.vize as Record<string, unknown> | undefined,
+    inlineOptions as Record<string, unknown> | undefined,
+  ) as VizeNuxtOptions;
+}
+
+function markNuxtRequiredModule(nuxt: NuxtWithBuilderOptions): void {
+  nuxt.options._requiredModules ||= {};
+  nuxt.options._requiredModules[moduleMeta.name] = true;
+}
+
+function registerNuxt2CompatibilityHooks(nuxt: NuxtWithBuilderOptions): void {
+  if (getDetectedNuxtMajor(nuxt) !== 2) {
+    return;
+  }
+  nuxt.hook("close", () => {});
+  nuxt.hook("builder:prepared", () => {});
+  nuxt.hook("build:templates", () => {});
+}
 
 function getDetectedNuxtMajor(nuxt: unknown): 2 | 3 | 4 | null {
-  try {
-    const version = getNuxtVersion(nuxt as never);
-    const major = Number.parseInt(version.split(".")[0] ?? "", 10);
-    return major === 2 || major === 3 || major === 4 ? major : null;
-  } catch {
+  const nuxtLike = nuxt as Partial<NuxtWithBuilderOptions> | undefined;
+  const version =
+    nuxtLike?._version ??
+    nuxtLike?.version ??
+    (typeof nuxtLike?.options?._nuxtVersion === "string" ? nuxtLike.options._nuxtVersion : null);
+  if (!version) {
     return null;
   }
+  const major = Number.parseInt(version.split(".")[0] ?? "", 10);
+  return major === 2 || major === 3 || major === 4 ? major : null;
 }
 
 function hasNuxtViteCompilerSupport(nuxt: NuxtWithBuilderOptions): boolean {
@@ -82,11 +170,7 @@ function hasNuxtViteCompilerSupport(nuxt: NuxtWithBuilderOptions): boolean {
     return true;
   }
 
-  try {
-    return !isNuxt2(nuxt as never);
-  } catch {
-    return true;
-  }
+  return getDetectedNuxtMajor(nuxt) !== 2;
 }
 
 function getNuxtAppBaseURL(nuxt: NuxtWithBuilderOptions): string | undefined {
@@ -256,18 +340,7 @@ function patchNuxtAutoImportTransformPlugin(
   plugin[VIZE_NUXT_AUTO_IMPORT_PATCHED] = true;
 }
 
-export default defineNuxtModule<VizeNuxtOptions>({
-  meta: {
-    name: "@vizejs/nuxt",
-    configKey: "vize",
-  },
-  defaults: {
-    musea: false,
-    nuxtMusea: {
-      route: { path: "/" },
-    },
-  },
-  async setup(options, nuxt) {
+async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuilderOptions) {
     const resolver = createNuxtModuleResolver();
     const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
     const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
@@ -323,7 +396,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
         if (nuxt.options.nitro.virtual) {
           nuxt.options.nitro.virtual["#vizejs/nuxt/dev-stylesheet-links-config"] =
             `export const devAssetBase = ${JSON.stringify(devAssetBase)};`;
-          addServerPlugin(resolver.resolve("./runtime/server/dev-stylesheet-links"));
+          await addNuxtServerPlugin(resolver.resolve("./runtime/server/dev-stylesheet-links"));
         }
       }
 
@@ -415,7 +488,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
         bridgeOptions.stableInjectedKeys);
 
     if (shouldAddNuxtTransformBridge) {
-      addVitePlugin({
+      await addNuxtVitePlugin({
         name: "vizejs:nuxt-transform-bridge",
         enforce: "post" as const,
         async transform(code: string, id: string, ...args: unknown[]) {
@@ -516,7 +589,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
     // `{ flex: "~ col gap1" }`). To support attributify, we also feed the
     // original .vue source to UnoCSS's extractor alongside the compiled JS.
     if (usesVizeCompiler && unocssOptions !== false) {
-      addVitePlugin({
+      await addNuxtVitePlugin({
         name: "vizejs:unocss-bridge",
         configResolved(config: { plugins: Array<{ name: string; transform?: Function }> }) {
           for (const plugin of config.plugins) {
@@ -578,8 +651,35 @@ export default defineNuxtModule<VizeNuxtOptions>({
         );
       });
     }
+}
+
+const vizeNuxtModule = Object.assign(
+  async function vizeNuxtModule(
+    this: VizeNuxtModuleContext | void,
+    inlineOptions: Partial<VizeNuxtOptions> = {},
+    nuxtArg?: NuxtWithBuilderOptions,
+  ): Promise<void> {
+    const nuxt = nuxtArg ?? (this as VizeNuxtModuleContext | undefined)?.nuxt;
+    if (!nuxt) {
+      throw new Error("@vizejs/nuxt requires a Nuxt instance");
+    }
+
+    markNuxtRequiredModule(nuxt);
+    registerNuxt2CompatibilityHooks(nuxt);
+    await setupVizeNuxtModule(resolveModuleOptions(inlineOptions, nuxt), nuxt);
   },
-}) as ReturnType<typeof defineNuxtModule<VizeNuxtOptions>>;
+  {
+    getMeta: () => moduleMeta,
+    getOptions: (
+      inlineOptions: Partial<VizeNuxtOptions> = {},
+      nuxt?: NuxtWithBuilderOptions,
+    ) => resolveModuleOptions(inlineOptions, nuxt),
+    meta: moduleMeta,
+    defaults: moduleDefaults,
+  },
+);
+
+export default vizeNuxtModule;
 
 // Re-export types for convenience
 export type { MuseaOptions } from "@vizejs/vite-plugin-musea";

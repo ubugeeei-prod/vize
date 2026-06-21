@@ -19,13 +19,12 @@ Vue Language Support powered by Vize - A high-performance language server for Vu
 
 ## Installation
 
-The extension is not published to the VS Code Marketplace yet. Use a locally built VSIX while the
-editor package stabilizes.
+Install the extension from the VS Code Marketplace as `ubugeeei.vize`.
 
-### From VSIX
+### From Marketplace
 
 ```bash
-code --install-extension dist/vize.vsix
+code --install-extension ubugeeei.vize
 ```
 
 ### Development
@@ -101,8 +100,8 @@ officially supported on Vue 3 and stays zero cost when left off for `<script set
 Vue 2.7 / Nuxt 2 support is opt-in. Set `vize.legacyVue2.enable: true` to include Options API
 template bindings and Nuxt 2 globals in type checking, completion, hover, definition, and references.
 
-When paired with the `Vize Art` extension, the same editor capabilities also apply to `*.art.vue`
-documents.
+When paired with the `Vize Art` extension (`vize.vize-art`), the same editor capabilities also
+apply to `*.art.vue` documents.
 
 ## Commands
 

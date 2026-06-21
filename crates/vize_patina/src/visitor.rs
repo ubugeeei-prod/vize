@@ -378,12 +378,13 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             .iter()
             .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == "if" || d.name.as_str() == "else-if"));
 
-        // Extract v-for variables (only allocates if v-for exists)
-        let v_for_vars = if has_v_for {
+        // Extract scope variables (only allocates if directives exist).
+        let mut v_for_vars = if has_v_for {
             self.extract_v_for_vars(el)
         } else {
             Vec::new()
         };
+        v_for_vars.extend(self.extract_slot_scope_vars(el));
 
         // Build element context with CompactString tag (efficient for small strings)
         let elem_ctx = ElementContext {
@@ -525,6 +526,19 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         }
         Vec::new()
     }
+
+    #[inline]
+    fn extract_slot_scope_vars(&self, el: &ElementNode<'a>) -> Vec<CompactString> {
+        for prop in el.props.iter() {
+            if let PropNode::Directive(dir) = prop
+                && dir.name.as_str() == "slot"
+                && let Some(exp) = &dir.exp
+            {
+                return parse_slot_scope_variables(exp);
+            }
+        }
+        Vec::new()
+    }
 }
 
 fn element_has_directive(el: &ElementNode, name: &str) -> bool {
@@ -560,6 +574,25 @@ pub fn parse_v_for_variables(exp: &ExpressionNode) -> Vec<CompactString> {
 
     let alias_str = alias_part.trim();
 
+    parse_binding_variables(alias_str)
+}
+
+/// Parse a scoped slot expression to extract variable names.
+#[inline]
+pub fn parse_slot_scope_variables(exp: &ExpressionNode) -> Vec<CompactString> {
+    let content = match exp {
+        ExpressionNode::Simple(s) => s.content.as_str(),
+        ExpressionNode::Compound(_) => return Vec::new(),
+    };
+
+    parse_binding_variables(content.trim())
+}
+
+fn parse_binding_variables(alias_str: &str) -> Vec<CompactString> {
+    if alias_str.is_empty() {
+        return Vec::new();
+    }
+
     // Handle destructuring: (item, index), { id, name }, or [first, second]
     let is_tuple = alias_str.starts_with('(') && alias_str.ends_with(')');
     let is_object = alias_str.starts_with('{') && alias_str.ends_with('}');
@@ -579,22 +612,38 @@ pub fn parse_v_for_variables(exp: &ExpressionNode) -> Vec<CompactString> {
                 if let Some(colon_idx) = trimmed.find(':') {
                     // { id: itemId } -> itemId
                     let value_part = trimmed[colon_idx + 1..].trim();
-                    if !value_part.is_empty() {
-                        vars.push(CompactString::from(value_part));
+                    if let Some(name) = normalize_binding_name(value_part) {
+                        vars.push(CompactString::from(name));
                     }
                 } else {
                     // { id } -> id (shorthand)
-                    vars.push(CompactString::from(trimmed));
+                    if let Some(name) = normalize_binding_name(trimmed) {
+                        vars.push(CompactString::from(name));
+                    }
                 }
             } else {
-                vars.push(CompactString::from(trimmed));
+                if let Some(name) = normalize_binding_name(trimmed) {
+                    vars.push(CompactString::from(name));
+                }
             }
         }
         vars
     } else {
         // Single variable - avoid allocation if possible
-        vec![CompactString::from(alias_str)]
+        normalize_binding_name(alias_str)
+            .map(|name| vec![CompactString::from(name)])
+            .unwrap_or_default()
     }
+}
+
+fn normalize_binding_name(binding: &str) -> Option<&str> {
+    let binding = binding.trim().trim_start_matches("...").trim();
+    let binding = binding
+        .split_once('=')
+        .map(|(name, _)| name.trim())
+        .unwrap_or(binding);
+
+    (!binding.is_empty()).then_some(binding)
 }
 
 /// Fast byte pattern search
@@ -611,7 +660,7 @@ fn find_pattern(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
-    use super::{CompactString, ExpressionNode, parse_v_for_variables};
+    use super::{CompactString, ExpressionNode, parse_slot_scope_variables, parse_v_for_variables};
     use vize_carton::Bump;
     use vize_relief::SimpleExpressionNode;
 
@@ -701,6 +750,28 @@ mod tests {
         assert_eq!(
             vars,
             vec![CompactString::from("first"), CompactString::from("second")]
+        );
+    }
+
+    #[test]
+    fn test_parse_slot_scope_object_destructuring() {
+        let allocator = Bump::new();
+        let exp = make_simple_exp(&allocator, "{ open, item: slotItem }");
+        let vars = parse_slot_scope_variables(&exp);
+        assert_eq!(
+            vars,
+            vec![CompactString::from("open"), CompactString::from("slotItem")]
+        );
+    }
+
+    #[test]
+    fn test_parse_slot_scope_default_and_rest_bindings() {
+        let allocator = Bump::new();
+        let exp = make_simple_exp(&allocator, "{ open = false, ...rest }");
+        let vars = parse_slot_scope_variables(&exp);
+        assert_eq!(
+            vars,
+            vec![CompactString::from("open"), CompactString::from("rest")]
         );
     }
 }

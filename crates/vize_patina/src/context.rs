@@ -58,6 +58,8 @@ pub struct LintContext<'a> {
     enabled_rules: Option<FxHashSet<String>>,
     /// Rule names disabled by host configuration.
     config_disabled_rules: FxHashSet<String>,
+    /// Rule severities overridden by host configuration.
+    config_rule_severities: FxHashMap<String, Severity>,
     /// Optional semantic analysis from croquis.
     pub(crate) analysis: Option<&'a Croquis>,
     /// Optional parsed SFC descriptor shared by SFC-level rules.
@@ -112,6 +114,7 @@ impl<'a> LintContext<'a> {
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
             config_disabled_rules: FxHashSet::default(),
+            config_rule_severities: FxHashMap::default(),
             analysis: None,
             sfc_descriptor: None,
             analysis_excluded_rules: None,
@@ -149,6 +152,7 @@ impl<'a> LintContext<'a> {
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
             config_disabled_rules: FxHashSet::default(),
+            config_rule_severities: FxHashMap::default(),
             analysis: Some(analysis),
             sfc_descriptor: None,
             analysis_excluded_rules: None,
@@ -267,6 +271,12 @@ impl<'a> LintContext<'a> {
         self.config_disabled_rules = disabled;
     }
 
+    /// Set globally configured rule severities from host configuration.
+    #[inline]
+    pub fn set_config_rule_severities(&mut self, severities: FxHashMap<String, Severity>) {
+        self.config_rule_severities = severities;
+    }
+
     /// Check if a rule is enabled.
     #[inline]
     pub fn is_rule_enabled(&self, rule_name: &str) -> bool {
@@ -350,6 +360,10 @@ impl<'a> LintContext<'a> {
         // multiple diagnostics has them all suppressed (#968).
         if self.expected_error_lines.contains(&line) {
             return;
+        }
+
+        if let Some(severity) = self.config_rule_severities.get(diagnostic.rule_name) {
+            diagnostic.severity = *severity;
         }
 
         // Apply @vize:level severity override. Same reasoning: the directive

@@ -117,6 +117,8 @@ impl Linter {
         let allocator = Allocator::with_capacity(capacity);
         let mut ctx = LintContext::with_locale(&allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
+        ctx.set_config_disabled_rules(self.disabled_rules.clone());
+        ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
 
         // SFC-level rules are uncommon but expensive when each one reparses the
@@ -241,6 +243,7 @@ impl Linter {
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_config_disabled_rules(self.disabled_rules.clone());
+        ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
         ctx.set_dialect(env.dialect);
         if let Some(descriptor) = env.sfc_descriptor {
@@ -458,6 +461,7 @@ impl Linter {
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_config_disabled_rules(self.disabled_rules.clone());
+        ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
 
         let document = MarkupDocument::new(root, TemplateSyntax::Vue);
@@ -499,6 +503,7 @@ impl Linter {
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_config_disabled_rules(self.disabled_rules.clone());
+        ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
 
         // Croquis is only worth computing when a semantic rule is active *and*
@@ -566,6 +571,7 @@ impl Linter {
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_config_disabled_rules(self.disabled_rules.clone());
+        ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
         ctx.set_dialect(VueDialect::Vue);
 

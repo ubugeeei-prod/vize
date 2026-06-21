@@ -5,10 +5,10 @@
 //! returning a loadable artifact for tools such as file-based routers.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, CallExpression, Expression, Statement};
+use oxc_ast::ast::{Argument, CallExpression, Expression, ImportDeclarationSpecifier, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::{String, ToCompactString};
+use vize_carton::{FxHashSet, String, ToCompactString};
 use vize_croquis::macros::{artifact_macro_names, macro_artifact_kind};
 
 use crate::types::SfcMacroArtifact;
@@ -32,7 +32,10 @@ pub(crate) fn extract_macro_artifacts(
     }
 
     let static_imports = collect_static_imports(ret.program.body.iter(), content);
-    let runtime_bindings = collect_runtime_bindings(ret.program.body.iter());
+    let mut runtime_bindings = collect_runtime_bindings(ret.program.body.iter());
+    for name in collect_artifact_macro_import_bindings(ret.program.body.iter()) {
+        runtime_bindings.remove(&name);
+    }
     let mut artifacts = Vec::new();
 
     for stmt in ret.program.body.iter() {
@@ -91,9 +94,22 @@ pub(crate) fn erase_artifact_macro_statements(content: &str) -> Option<String> {
         return None;
     }
 
-    let runtime_bindings = collect_runtime_bindings(ret.program.body.iter());
+    let mut runtime_bindings = collect_runtime_bindings(ret.program.body.iter());
+    for name in collect_artifact_macro_import_bindings(ret.program.body.iter()) {
+        runtime_bindings.remove(&name);
+    }
     let mut ranges = Vec::new();
     for stmt in ret.program.body.iter() {
+        if is_artifact_macro_only_import(stmt) {
+            let span = stmt.span();
+            let start = span.start as usize;
+            let end = span.end as usize;
+            if start <= end && end <= content.len() {
+                ranges.push((start, end));
+            }
+            continue;
+        }
+
         let Some(call) = artifact_call_from_statement(stmt) else {
             continue;
         };
@@ -185,6 +201,9 @@ fn collect_static_imports<'a>(
         if !matches!(stmt, Statement::ImportDeclaration(_)) {
             continue;
         }
+        if is_artifact_macro_only_import(stmt) {
+            continue;
+        }
 
         let span = stmt.span();
         let start = span.start as usize;
@@ -198,6 +217,72 @@ fn collect_static_imports<'a>(
     }
 
     imports
+}
+
+fn collect_artifact_macro_import_bindings<'a>(
+    statements: impl Iterator<Item = &'a Statement<'a>>,
+) -> FxHashSet<String> {
+    let mut bindings = FxHashSet::default();
+
+    for stmt in statements {
+        let Statement::ImportDeclaration(import_decl) = stmt else {
+            continue;
+        };
+        if import_decl.import_kind.is_type()
+            || !is_known_artifact_macro_import_source(import_decl.source.value.as_str())
+        {
+            continue;
+        }
+        let Some(specifiers) = import_decl.specifiers.as_ref() else {
+            continue;
+        };
+        for specifier in specifiers {
+            if let Some(local) = artifact_macro_import_local_name(specifier) {
+                bindings.insert(local.into());
+            }
+        }
+    }
+
+    bindings
+}
+
+fn is_artifact_macro_only_import(stmt: &Statement<'_>) -> bool {
+    let Statement::ImportDeclaration(import_decl) = stmt else {
+        return false;
+    };
+    if import_decl.import_kind.is_type()
+        || !is_known_artifact_macro_import_source(import_decl.source.value.as_str())
+    {
+        return false;
+    }
+    let Some(specifiers) = import_decl.specifiers.as_ref() else {
+        return false;
+    };
+    !specifiers.is_empty()
+        && specifiers
+            .iter()
+            .all(|specifier| artifact_macro_import_local_name(specifier).is_some())
+}
+
+fn artifact_macro_import_local_name<'a>(
+    specifier: &'a ImportDeclarationSpecifier<'a>,
+) -> Option<&'a str> {
+    let ImportDeclarationSpecifier::ImportSpecifier(spec) = specifier else {
+        return None;
+    };
+    if spec.import_kind.is_type() {
+        return None;
+    }
+    let imported = spec.imported.name().as_str();
+    let local = spec.local.name.as_str();
+    if imported != local || macro_artifact_kind(imported).is_none() {
+        return None;
+    }
+    Some(local)
+}
+
+fn is_known_artifact_macro_import_source(source: &str) -> bool {
+    matches!(source, "@typed-router")
 }
 
 fn build_artifact_module(kind: &str, payload: &str, static_imports: &str) -> String {
@@ -293,6 +378,40 @@ const msg = 'ready'
     }
 
     #[test]
+    fn extracts_define_page_meta_imported_from_typed_router() {
+        let content = r#"import { definePageMeta } from '@typed-router'
+import { pageAlias } from './route'
+
+definePageMeta({
+  name: 'docs',
+  alias: pageAlias,
+})
+
+const msg = 'ready'
+"#;
+
+        let artifacts = extract_macro_artifacts(content, 0);
+
+        assert_eq!(artifacts.len(), 1);
+        assert_eq!(artifacts[0].kind.as_str(), "nuxt.definePageMeta");
+        assert_eq!(artifacts[0].name.as_str(), "definePageMeta");
+        assert!(
+            artifacts[0]
+                .module_code
+                .as_ref()
+                .unwrap()
+                .contains("import { pageAlias } from './route'\nconst __nuxt_page_meta = {")
+        );
+        assert!(
+            !artifacts[0]
+                .module_code
+                .as_ref()
+                .unwrap()
+                .contains("@typed-router")
+        );
+    }
+
+    #[test]
     fn extracts_define_route_rules_artifact_module() {
         let content = r#"defineRouteRules({
   prerender: true,
@@ -373,6 +492,21 @@ const msg = 'ready'
         let erased = erase_artifact_macro_statements(content).expect("macro should be erased");
 
         assert!(!erased.contains("definePageMeta"));
+        assert!(erased.contains("const msg = 'ready'"));
+    }
+
+    #[test]
+    fn erases_typed_router_macro_import_and_call() {
+        let content = r#"import { definePageMeta } from '@typed-router'
+
+definePageMeta({ name: 'docs' })
+const msg = 'ready'
+"#;
+
+        let erased = erase_artifact_macro_statements(content).expect("macro should be erased");
+
+        assert!(!erased.contains("definePageMeta"));
+        assert!(!erased.contains("@typed-router"));
         assert!(erased.contains("const msg = 'ready'"));
     }
 

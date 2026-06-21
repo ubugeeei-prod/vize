@@ -27,7 +27,12 @@ test("legacy vscode-art language and grammar declarations stay self-consistent",
         id?: string;
       }>;
     };
+    name?: string;
+    publisher?: string;
   }>("npm/editor/vscode-art/package.json");
+
+  assert.equal(manifest.publisher, "vize");
+  assert.equal(manifest.name, "vize-art");
 
   const language = manifest.contributes?.languages?.find((entry) => entry.id === "art-vue");
   assert.ok(language, "vize-art should declare an art-vue language");

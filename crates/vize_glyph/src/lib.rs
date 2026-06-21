@@ -257,6 +257,34 @@ const message = 'hello';
     }
 
     #[test]
+    fn test_format_sfc_musea_art_block_uses_template_indentation() {
+        let source = r#"<art category="Accordion" title="Accordion/Single">
+  <variant name="Uncontrolled" default>
+    <AccordionRoot type="single" class="w-[300px] rounded-md bg-[--line-color] shadow-lg"><AccordionItem class="accordion-item" value="item-1"><AccordionHeader class="flex"><AccordionTrigger class="accordion-trigger">Is it accessible?</AccordionTrigger></AccordionHeader></AccordionItem></AccordionRoot>
+  </variant>
+</art>
+"#;
+        let mut options = FormatOptions::default();
+        options.single_attribute_per_line = true;
+        let result = format_sfc(source, &options).unwrap();
+
+        assert!(
+            result.code.contains(
+                r#"<AccordionRoot
+      class="w-[300px] rounded-md bg-[--line-color] shadow-lg"
+      type="single"
+    >"#
+            ),
+            "{}",
+            result.code
+        );
+        assert!(result.code.contains("  </variant>\n</art>"));
+
+        let second = format_sfc(&result.code, &options).unwrap();
+        assert_eq!(result.code, second.code, "fmt; fmt must be a no-op");
+    }
+
+    #[test]
     fn test_format_sfc_multiline_comment_is_idempotent() {
         // Regression: inner lines of a multi-line HTML comment are emitted
         // verbatim by the template formatter, but the SFC layer stacked one

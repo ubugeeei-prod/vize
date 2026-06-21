@@ -65,6 +65,18 @@ fn test_lint_template_reports_recoverable_parser_errors_without_gating_rules() {
 }
 
 #[test]
+fn test_configured_warn_severity_keeps_rule_out_of_error_budget() {
+    let linter = Linter::new()
+        .with_rule_severity_overrides(vec![("html/id-duplication".into(), Severity::Warning)]);
+    let result = linter.lint_template(r#"<div id="app"></div><span id="app"></span>"#, "test.vue");
+
+    assert_eq!(result.error_count, 0);
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "html/id-duplication");
+    assert_eq!(result.diagnostics[0].severity, Severity::Warning);
+}
+
+#[test]
 fn test_lint_template_ignores_compat_self_closing_rewrite_warning() {
     let linter = Linter::new();
     let result = linter.lint_template(r#"<div />"#, "test.vue");

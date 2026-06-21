@@ -71,7 +71,11 @@ impl Rule for ComponentNameInTemplateCasing {
         // when the tag actually has an uppercase byte, sparing an allocation for
         // every native element (the overwhelmingly common case).
         if tag.bytes().all(|b| !b.is_ascii_uppercase()) {
-            if is_html_tag(tag) || is_svg_tag(tag) || is_builtin_component(tag) {
+            if is_html_tag(tag)
+                || is_svg_tag(tag)
+                || is_builtin_component(tag)
+                || is_nuxt_builtin_component(tag)
+            {
                 return;
             }
         } else {
@@ -80,6 +84,7 @@ impl Rule for ComponentNameInTemplateCasing {
                 || is_svg_tag(tag)
                 || is_builtin_component(tag)
                 || is_builtin_component(&tag_lower)
+                || is_nuxt_builtin_component(tag)
             {
                 return;
             }
@@ -106,6 +111,30 @@ impl Rule for ComponentNameInTemplateCasing {
             }
         }
     }
+}
+
+fn is_nuxt_builtin_component(tag: &str) -> bool {
+    matches!(
+        tag,
+        "nuxt"
+            | "nuxt-child"
+            | "nuxt-page"
+            | "nuxt-layout"
+            | "nuxt-link"
+            | "nuxt-loading-indicator"
+            | "nuxt-error-boundary"
+            | "client-only"
+            | "no-ssr"
+            | "Nuxt"
+            | "NuxtChild"
+            | "NuxtPage"
+            | "NuxtLayout"
+            | "NuxtLink"
+            | "NuxtLoadingIndicator"
+            | "NuxtErrorBoundary"
+            | "ClientOnly"
+            | "NoSsr"
+    )
 }
 
 #[cfg(test)]
@@ -145,6 +174,13 @@ mod tests {
     fn test_valid_vue_built_in() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<slot />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_nuxt_child_builtin() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<nuxt-child id="index" />"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
 }

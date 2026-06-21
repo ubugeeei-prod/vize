@@ -92,6 +92,9 @@ pub struct OptionsDescriptor {
     /// Members of the tracked groups
     /// (`props`/`inject`/`computed`/`methods`/`data`/`setup`), in source order.
     pub members: Vec<OptionMember>,
+    /// Whether the component declares an `extends` target that could not be
+    /// resolved to a same-file options object.
+    pub has_unresolved_extends: bool,
 }
 
 impl OptionsDescriptor {

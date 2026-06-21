@@ -316,7 +316,7 @@ fn generate_scope_node(
             emit_slot_function_open(
                 ts,
                 indent,
-                cstr!("_slot_{safe_slot_name}").as_str(),
+                cstr!("_slot_{safe_slot_name}_{scope_id}").as_str(),
                 props_pattern,
                 &props_type,
             );

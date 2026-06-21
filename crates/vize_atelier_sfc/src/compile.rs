@@ -680,10 +680,12 @@ fn compile_sfc_inner(
     };
 
     let lazy_hydration_transform = transform_lazy_hydration_macros(&script_setup.content);
-    let script_setup_content = lazy_hydration_transform
+    let script_setup_source = lazy_hydration_transform
         .as_ref()
         .map(|result| result.code.clone())
         .unwrap_or_else(|| script_setup.content.to_compact_string());
+    let script_setup_content = erase_artifact_macro_statements(&script_setup_source)
+        .unwrap_or_else(|| script_setup_source);
 
     // Parse the script setup once. Croquis binding analysis, the macro
     // context analysis, and (unless v-model demotion rewrites the content

@@ -150,6 +150,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
+    let nuxt_project_root =
+        resolve_nuxt_project_root(effective_tsconfig.as_deref(), &cwd, &project_root);
     let explicit_input_root = explicit_input_root(&project_root, &cwd);
     let mut tsconfig_input_cache = TsconfigInputCache::default();
     let mut canonical_paths = CanonicalPathCache::default();
@@ -244,9 +246,17 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         files.sort();
         files.dedup();
     }
+    let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
+    let tsconfig_path =
+        resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);
+    let program_tsconfig_path = if args.patterns.is_empty() {
+        tsconfig_path.clone()
+    } else {
+        program_tsconfig_path
+    };
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
     let tsconfig = program_tsconfig_path.as_deref();
-    let nuxt_path_aliases = nuxt::detect(&mut virtual_ts_options, &project_root, tsconfig);
+    let nuxt_path_aliases = nuxt::detect(&mut virtual_ts_options, &nuxt_project_root, tsconfig);
     collect_project_global_component_stubs(
         &mut virtual_ts_options,
         &files,
@@ -256,6 +266,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let checker_tsconfig_path = match resolve_checker_tsconfig_path(
         program_tsconfig_path.as_deref(),
         &project_root,
+        &nuxt_project_root,
         &nuxt_path_aliases,
     ) {
         Ok(path) => path,
@@ -527,7 +538,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
                 let key = file.original_path.to_string_lossy().into_owned();
                 JsonFileResult {
                     file: display_path(&cwd, &file.original_path).into(),
-                    virtual_ts: file.content.clone().into(),
+                    virtual_ts: args.show_virtual_ts.then(|| file.content.clone().into()),
                     diagnostics: diagnostics.get(key.as_str()).cloned().unwrap_or_default(),
                 }
             })
@@ -550,7 +561,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             })
             .map(|(key, file_diagnostics)| JsonFileResult {
                 file: display_path(&cwd, Path::new(key)).into(),
-                virtual_ts: "".into(),
+                virtual_ts: None,
                 diagnostics: file_diagnostics.clone(),
             })
             .collect();
@@ -673,4 +684,41 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         eprintln!("\nToo many warnings ({total_warnings} > max {max_warnings})");
         std::process::exit(1);
     }
+}
+
+fn resolve_nuxt_project_root(
+    explicit_tsconfig: Option<&Path>,
+    cwd: &Path,
+    fallback: &Path,
+) -> PathBuf {
+    let Some(tsconfig) = explicit_tsconfig else {
+        return fallback.to_path_buf();
+    };
+
+    let tsconfig_path = if tsconfig.is_absolute() {
+        tsconfig.to_path_buf()
+    } else {
+        cwd.join(tsconfig)
+    };
+    let tsconfig_dir = vize_carton::path::canonicalize_non_verbatim(&tsconfig_path)
+        .parent()
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| fallback.to_path_buf());
+
+    if is_nuxt_project_root(&tsconfig_dir) {
+        return tsconfig_dir;
+    }
+    if let Some(parent) = tsconfig_dir.parent()
+        && is_nuxt_project_root(parent)
+    {
+        return parent.to_path_buf();
+    }
+
+    tsconfig_dir
+}
+
+fn is_nuxt_project_root(path: &Path) -> bool {
+    path.join("nuxt.config.ts").exists()
+        || path.join("nuxt.config.js").exists()
+        || path.join("nuxt.config.mts").exists()
 }

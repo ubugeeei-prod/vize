@@ -13,7 +13,7 @@ fn linter_features_read_compiler_compatibility_vue_version() {
     let (loaded, _, linter_features) =
         load_config_and_linter_with_lint_features_and_source(Some(&config_path));
 
-    assert_eq!(loaded.features.vue_version, None);
+    assert_eq!(loaded.features.vue_version, Some(VueVersion::V2));
     assert_eq!(linter_features.vue_version, Some(VueVersion::V2));
 }
 

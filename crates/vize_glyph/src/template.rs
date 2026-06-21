@@ -489,6 +489,24 @@ mod tests {
     }
 
     #[test]
+    fn test_single_attribute_per_line_overrides_max_attributes_per_line() {
+        let source = r#"<div class="c" id="main" title="t"></div>"#;
+        let mut options = FormatOptions::default();
+        options.single_attribute_per_line = true;
+        options.max_attributes_per_line = Some(4);
+        let result = format_template_content(source, &options).unwrap();
+
+        assert_eq!(
+            result.as_str(),
+            r#"<div
+  id="main"
+  class="c"
+  title="t"
+></div>"#
+        );
+    }
+
+    #[test]
     fn test_custom_attribute_groups() {
         // Custom groups: [["id"], ["class", ":class"], ["@*"], ["*"]]
         let source = r#"<div @click="h" class="c" id="main" title="t"></div>"#;
