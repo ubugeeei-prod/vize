@@ -87,9 +87,6 @@ pub struct ConfigFeatureFlags {
     /// legacy Vue support (#1392): consumers thread this into parser and
     /// transform options in follow-ups.
     pub vue_version: Option<VueVersion>,
-    /// Explicit `compiler.compatibility.hostCompiler` setting. `None` means the
-    /// key is absent.
-    pub compiler_host_compiler: Option<bool>,
     /// Default JSX/TSX output backend selected by `compiler.jsxMode` (#1496);
     /// `None` when the key is absent (treated as VDOM). The JS plugins and the
     /// native `compileJsx` binding thread this into the per-component
@@ -107,7 +104,6 @@ impl Default for ConfigFeatureFlags {
             type_checker_jsx_typecheck: false,
             language_server_legacy_vue2: None,
             vue_version: None,
-            compiler_host_compiler: None,
             jsx_mode: None,
         }
     }
@@ -278,7 +274,6 @@ impl RawVizeConfig {
             type_checker_jsx_typecheck,
             language_server_legacy_vue2: language_server_raw.legacy_vue2,
             vue_version: vue.version.or(compiler.compatibility.vue_version),
-            compiler_host_compiler: compiler.compatibility.host_compiler,
             jsx_mode: compiler.jsx_mode,
         };
 

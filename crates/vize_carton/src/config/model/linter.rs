@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{FxHashMap, String};
 
+const CATEGORY_LINT_MARKER_PREFIX: &str = "__vize_internal/category/";
 const TYPE_AWARE_LINT_MARKER: &str = "__vize_internal/type-aware-lint";
 
 /// Per-rule lint severity.
@@ -22,7 +23,6 @@ pub struct LinterConfig {
     pub enabled: bool,
     pub preset: Option<String>,
     pub rules: FxHashMap<String, LintRuleSeverity>,
-    pub categories: FxHashMap<String, LintRuleSeverity>,
 }
 
 /// Raw linter config with unstable config-only switches.
@@ -32,6 +32,7 @@ pub(crate) struct RawLinterConfig {
     #[serde(flatten)]
     config: LinterConfig,
     type_aware: bool,
+    categories: FxHashMap<String, LintRuleSeverity>,
 }
 
 impl LinterConfig {
@@ -114,10 +115,12 @@ impl LinterConfig {
     /// Rule categories explicitly disabled by config.
     pub fn disabled_categories(&self) -> Vec<String> {
         let mut categories = self
-            .categories
+            .rules
             .iter()
-            .filter(|(_, severity)| matches!(severity, LintRuleSeverity::Off))
-            .map(|(category, _)| category.clone())
+            .filter_map(|(rule, severity)| {
+                let category = category_marker_name(rule)?;
+                matches!(severity, LintRuleSeverity::Off).then(|| String::from(category))
+            })
             .collect::<Vec<_>>();
         categories.sort();
         categories
@@ -126,10 +129,13 @@ impl LinterConfig {
     /// Category-level severities explicitly configured as `warn` or `error`.
     pub fn category_severity_overrides(&self) -> Vec<(String, LintRuleSeverity)> {
         let mut categories = self
-            .categories
+            .rules
             .iter()
-            .filter(|(_, severity)| !matches!(severity, LintRuleSeverity::Off))
-            .map(|(category, severity)| (category.clone(), *severity))
+            .filter_map(|(rule, severity)| {
+                let category = category_marker_name(rule)?;
+                (!matches!(severity, LintRuleSeverity::Off))
+                    .then(|| (String::from(category), *severity))
+            })
             .collect::<Vec<_>>();
         categories.sort_by(|(left, _), (right, _)| left.cmp(right));
         categories
@@ -142,7 +148,6 @@ impl Default for LinterConfig {
             enabled: true,
             preset: None,
             rules: FxHashMap::default(),
-            categories: FxHashMap::default(),
         }
     }
 }
@@ -153,12 +158,22 @@ impl From<RawLinterConfig> for LinterConfig {
         if raw.type_aware {
             config.enable_type_aware_lint();
         }
+        for (category, severity) in raw.categories {
+            config.rules.insert(
+                format!("{CATEGORY_LINT_MARKER_PREFIX}{category}").into(),
+                severity,
+            );
+        }
         config
     }
 }
 
 fn is_public_rule(rule: &str) -> bool {
-    rule != TYPE_AWARE_LINT_MARKER
+    rule != TYPE_AWARE_LINT_MARKER && category_marker_name(rule).is_none()
+}
+
+fn category_marker_name(rule: &str) -> Option<&str> {
+    rule.strip_prefix(CATEGORY_LINT_MARKER_PREFIX)
 }
 
 #[cfg(test)]
@@ -234,13 +249,11 @@ mod tests {
 
     #[test]
     fn category_overrides_split_disabled_from_severity_overrides() {
-        let mut config = LinterConfig::default();
-        config
-            .categories
-            .insert("style".into(), LintRuleSeverity::Off);
-        config
-            .categories
-            .insert("a11y".into(), LintRuleSeverity::Warn);
+        let raw = serde_json::from_str::<RawLinterConfig>(
+            r#"{ "categories": { "style": "off", "a11y": "warn" } }"#,
+        )
+        .unwrap();
+        let config = LinterConfig::from(raw);
 
         assert_eq!(config.disabled_categories(), ["style"]);
         assert_eq!(

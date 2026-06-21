@@ -34,7 +34,8 @@ void test("rewriteStorybookComponentImport rebases component path from story out
   const root = "/workspace";
   const artPath = path.join(root, "src", "AfsButton.art.vue");
   const outputPath = path.join(root, ".storybook", "stories", "AfsButton.stories.ts");
-  const code = "import type { Meta } from '@storybook/vue3';\nimport __museaComponent from './AfsButton.vue';\n";
+  const code =
+    "import type { Meta } from '@storybook/vue3';\nimport __museaComponent from './AfsButton.vue';\n";
 
   const result = rewriteStorybookComponentImport(
     code,

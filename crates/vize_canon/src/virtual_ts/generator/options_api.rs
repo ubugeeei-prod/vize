@@ -25,6 +25,7 @@ pub(super) fn generate_options_api_variables(
     mut ts: &mut String,
     summary: &Croquis,
     options: &VirtualTsOptions,
+    script: Option<&str>,
 ) {
     // The Options API bridge only runs for non-`<script setup>` components.
     // `<script setup>` already exposes its bindings (refs, props, setup
@@ -66,7 +67,8 @@ pub(super) fn generate_options_api_variables(
         .collect();
     names.sort_unstable();
     names.dedup();
-    let inherited_unknown_names = unresolved_extends_template_names(summary, &configured_globals);
+    let inherited_unknown_names =
+        unresolved_extends_template_names(summary, &configured_globals, script);
 
     if names.is_empty() && inherited_unknown_names.is_empty() {
         return;
@@ -104,12 +106,9 @@ pub(super) fn generate_options_api_variables(
 fn unresolved_extends_template_names(
     summary: &Croquis,
     configured_globals: &FxHashSet<&str>,
+    script: Option<&str>,
 ) -> Vec<String> {
-    if !summary
-        .options_descriptor
-        .as_ref()
-        .is_some_and(|descriptor| descriptor.has_unresolved_extends)
-    {
+    if !script.is_some_and(has_unresolved_extends) {
         return Vec::new();
     }
 
@@ -162,6 +161,72 @@ fn unresolved_extends_template_names(
     names.sort();
     names.dedup();
     names
+}
+
+fn has_unresolved_extends(script: &str) -> bool {
+    if !script.contains("extends") || !script.contains("export default") {
+        return false;
+    }
+
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+    if parsed.panicked {
+        return false;
+    }
+
+    let Some(options) = component_options_from_program(&parsed.program) else {
+        return false;
+    };
+    let Some(extends) = option_expression_property(options, "extends") else {
+        return false;
+    };
+
+    let object_bindings = collect_object_expression_bindings(&parsed.program);
+    !is_resolved_options_target(extends, &object_bindings)
+}
+
+fn collect_object_expression_bindings<'a>(program: &'a Program<'a>) -> FxHashSet<&'a str> {
+    let mut bindings = FxHashSet::default();
+    for statement in program.body.iter() {
+        let Statement::VariableDeclaration(declaration) = statement else {
+            continue;
+        };
+        for declarator in declaration.declarations.iter() {
+            let oxc_ast::ast::BindingPattern::BindingIdentifier(id) = &declarator.id else {
+                continue;
+            };
+            let Some(init) = declarator.init.as_ref() else {
+                continue;
+            };
+            if object_expression_from_expression(init).is_some() {
+                bindings.insert(id.name.as_str());
+            }
+        }
+    }
+    bindings
+}
+
+fn is_resolved_options_target<'a>(
+    expression: &'a Expression<'a>,
+    object_bindings: &FxHashSet<&'a str>,
+) -> bool {
+    match expression {
+        Expression::ObjectExpression(_) => true,
+        Expression::Identifier(identifier) => object_bindings.contains(identifier.name.as_str()),
+        Expression::ParenthesizedExpression(parenthesized) => {
+            is_resolved_options_target(&parenthesized.expression, object_bindings)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            is_resolved_options_target(&ts_as.expression, object_bindings)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            is_resolved_options_target(&ts_satisfies.expression, object_bindings)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            is_resolved_options_target(&ts_non_null.expression, object_bindings)
+        }
+        _ => false,
+    }
 }
 
 fn collect_unresolved_extends_expression_names(
