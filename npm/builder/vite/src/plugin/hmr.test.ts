@@ -111,6 +111,7 @@ assert.equal(
   const dependencyFile = "/src/imported.css";
   const nullVirtualModule = { url: toVirtualId(vueFile) };
   const visibleVirtualModule = { url: toPluginVisibleVirtualId(vueFile) };
+  const visibleVirtualFileModule = { url: `${vueFile}.ts?vue&vize` };
   const rawVueModule = { url: vueFile };
   const invalidatedModules: unknown[] = [];
   const state = {
@@ -137,6 +138,7 @@ assert.equal(
   const modulesByFile = new Map<string, Set<unknown>>([
     [toVirtualId(vueFile), new Set([nullVirtualModule])],
     [toPluginVisibleVirtualId(vueFile), new Set([visibleVirtualModule])],
+    [`${vueFile}.ts`, new Set([visibleVirtualFileModule])],
     [vueFile, new Set([rawVueModule])],
   ]);
   const ctx = {
@@ -158,13 +160,70 @@ assert.equal(
 
   assert.deepEqual(
     new Set(modules),
-    new Set([nullVirtualModule, visibleVirtualModule, rawVueModule]),
+    new Set([nullVirtualModule, visibleVirtualModule, visibleVirtualFileModule, rawVueModule]),
     "Dependency updates should return every module graph representation of the owner SFC",
   );
   assert.deepEqual(
     new Set(invalidatedModules),
-    new Set([nullVirtualModule, visibleVirtualModule, rawVueModule]),
+    new Set([nullVirtualModule, visibleVirtualModule, visibleVirtualFileModule, rawVueModule]),
     "Dependency updates should invalidate every module graph representation of the owner SFC",
+  );
+}
+
+{
+  const vueFile = "/src/App.vue";
+  const previousSource = `<template><h1>You did it!</h1></template>`;
+  const nextSource = `<template><h1>You did not do it!</h1></template>`;
+  const previousCompiled = compileFile(
+    vueFile,
+    new Map(),
+    { sourceMap: false, ssr: false, vapor: false },
+    previousSource,
+  );
+  const visibleVirtualFileModule = { url: `${vueFile}.ts?vue&vize` };
+  const state = {
+    cache: new Map([[vueFile, previousCompiled]]),
+    ssrCache: new Map(),
+    collectedCss: new Map(),
+    precompileMetadata: new Map(),
+    pendingHmrUpdateTypes: new Map(),
+    isProduction: false,
+    mergedOptions: {},
+    cssAliasRules: [],
+    clientViteBase: "/",
+    root: "/src",
+    filter: () => true,
+    logger: {
+      log() {},
+      error() {},
+    },
+  } as unknown as VizePluginState;
+  const ctx = {
+    file: vueFile,
+    server: {
+      moduleGraph: {
+        getModulesByFile(id: string) {
+          return id === `${vueFile}.ts` ? new Set([visibleVirtualFileModule]) : undefined;
+        },
+      },
+      ws: {
+        send() {},
+      },
+    },
+    read: async () => nextSource,
+  } as unknown as HmrContext;
+
+  const modules = await handleHotUpdateHook(state, ctx);
+
+  assert.deepEqual(
+    modules,
+    [visibleVirtualFileModule],
+    "Vue SFC edits should return Vite's query-stripped plugin-visible virtual module file",
+  );
+  assert.equal(
+    state.pendingHmrUpdateTypes.get(vueFile),
+    "template-only",
+    "Template edits should keep granular HMR when the virtual module is found",
   );
 }
 

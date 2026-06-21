@@ -57,6 +57,7 @@ function getVueModuleFileCandidates(vueFile: string): string[] {
     toPluginVisibleVirtualId(vueFile),
     toVirtualId(vueFile, true),
     toPluginVisibleVirtualId(vueFile, true),
+    toPluginVisibleVirtualId(vueFile).split("?")[0],
     vueFile,
   ]);
 }
