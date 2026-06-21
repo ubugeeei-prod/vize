@@ -33,21 +33,40 @@ fn resolve_test_corsa_path() -> Option<PathBuf> {
 }
 
 fn link_workspace_vue(project_root: &Path) -> std::io::Result<()> {
-    let workspace_node_modules = workspace_root().join("node_modules");
-    if !workspace_node_modules.exists() {
+    let Some(vue_package) = workspace_vue_package() else {
         return Err(std::io::Error::new(
             std::io::ErrorKind::NotFound,
-            "workspace node_modules missing",
+            "workspace Vue package missing",
         ));
-    }
+    };
+    let workspace_node_modules = vue_package.parent().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "workspace Vue package has no node_modules parent",
+        )
+    })?;
     let target = project_root.join("node_modules");
     std::fs::create_dir_all(&target)?;
-    symlink_path(&workspace_node_modules.join("vue"), &target.join("vue"))?;
+    symlink_path(&vue_package, &target.join("vue"))?;
     let vue_namespace = workspace_node_modules.join("@vue");
     if vue_namespace.exists() {
         symlink_path(&vue_namespace, &target.join("@vue"))?;
     }
     Ok(())
+}
+
+fn workspace_vue_package() -> Option<PathBuf> {
+    let root = workspace_root();
+    [
+        root.join("node_modules/vue"),
+        root.join("tests/node_modules/vue"),
+        root.join("playground/node_modules/vue"),
+        root.join("examples/vite-musea/node_modules/vue"),
+        root.join("examples/jsx-tsx/node_modules/vue"),
+        root.join("npm/framework/nuxt/node_modules/vue"),
+    ]
+    .into_iter()
+    .find(|candidate| candidate.exists())
 }
 
 fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
