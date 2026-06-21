@@ -15,7 +15,6 @@ local stringListDef: JsonSchema = new JsonSchema {
   type = "array"
   items = new JsonSchema { type = "string" }
 }
-
 local configExtendsDef: JsonSchema = new JsonSchema {
   description = "Base config files or presets to compose"
   oneOf = new Listing {
@@ -23,7 +22,6 @@ local configExtendsDef: JsonSchema = new JsonSchema {
     stringListDef
   }
 }
-
 local compilerConfigDef: JsonSchema = new JsonSchema {
   type = "object"
   description = "Vue compiler options"
@@ -99,7 +97,6 @@ local compilerConfigDef: JsonSchema = new JsonSchema {
   }
   additionalProperties = false
 }
-
 local vitePluginConfigDef: JsonSchema = new JsonSchema {
   type = "object"
   description = "Vite plugin options"
@@ -137,7 +134,6 @@ local vitePluginConfigDef: JsonSchema = new JsonSchema {
   }
   additionalProperties = false
 }
-
 local linterConfigDef: JsonSchema = new JsonSchema {
   type = "object"
   description = "Linter options"
@@ -232,6 +228,11 @@ local typeCheckerConfigDef: JsonSchema = new JsonSchema {
       description = "Enable Vue 2.7 / Nuxt 2 Options API template binding support"
       default = false
     }
+    ["jsxTypecheck"] = new JsonSchema {
+      type = "boolean"
+      description = "Opt-in type-checking of .jsx/.tsx Vue components (#1497). Default-off so mixed Vue/React repositories do not accidentally route React .tsx through the Vue JSX checker. Set to true to route .jsx/.tsx through the Vize JSX virtual-TS path."
+      default = false
+    }
     ["tsconfig"] = new JsonSchema {
       type = "string"
       description = "Path to tsconfig.json"
@@ -255,7 +256,6 @@ local typeCheckerConfigDef: JsonSchema = new JsonSchema {
   }
   additionalProperties = false
 }
-
 local formatterConfigDef: JsonSchema = new JsonSchema {
   type = "object"
   description = "Formatter options"
