@@ -1,7 +1,6 @@
 import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
 import { transformWithEsbuild } from "vite";
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
 import { vizeConfigStore } from "@vizejs/vite-plugin";
 
@@ -27,6 +26,7 @@ import {
 } from "./virtual.js";
 import { shouldApplyMuseaPlugin } from "./apply.js";
 import { watchMuseaArtFiles } from "./watch.js";
+import { createVueRuntimeCompilerAlias } from "./vue-alias.js";
 import {
   applyMuseaStaticBuildInput,
   emitStaticGallery,
@@ -36,16 +36,6 @@ import {
   resolveStaticRuntimeId,
   type StaticBuildInput,
 } from "../static-export.js";
-
-const require = createRequire(import.meta.url);
-
-function resolveVueRuntimeCompiler(): string {
-  try {
-    return require.resolve("vue/dist/vue.esm-bundler.js");
-  } catch {
-    return "vue/dist/vue.esm-bundler.js";
-  }
-}
 
 function extractArtTagAttributes(source: string): Record<string, string | true> {
   const artTagMatch = source.match(/<art\b([\s\S]*?)>/i);
@@ -159,7 +149,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       const staticBuildConfig = isMuseaStaticBuild()
         ? museaStaticBuildConfig(userConfig.build?.rollupOptions?.input as StaticBuildInput)
         : {};
-      return { resolve: { alias: { vue: resolveVueRuntimeCompiler() } }, ...staticBuildConfig };
+      return { resolve: { alias: [createVueRuntimeCompilerAlias()] }, ...staticBuildConfig };
     },
 
     options: applyMuseaStaticBuildInput,
