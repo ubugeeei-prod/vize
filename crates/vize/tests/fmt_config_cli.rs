@@ -145,7 +145,10 @@ fn fmt_check_supports_root_relative_ts_paths_for_config_entries() {
     assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("Found 1 file(s)"), "{stderr}");
-    assert!(stderr.contains("Would reformat: scripts/lint.ts"), "{stderr}");
+    assert!(
+        stderr.contains("Would reformat: scripts/lint.ts"),
+        "{stderr}"
+    );
     assert!(!stderr.contains("No .vue"), "{stderr}");
 }
 
