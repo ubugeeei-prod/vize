@@ -190,7 +190,7 @@ pub const SHARED_PREAMBLE_DTS: &str = concat!(
     "  dev: boolean;\n",
     "  prod: boolean;\n",
     "  ssr: boolean;\n",
-    "}\n",
+    "}\n\ndeclare namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } }\ndeclare module 'vue/jsx-runtime' { export namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } } }\n",
     "\n",
     "// Shared type helpers used by generated virtual modules\n",
     vue_type_helpers_text!(),

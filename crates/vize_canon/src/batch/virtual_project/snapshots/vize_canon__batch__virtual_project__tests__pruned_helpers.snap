@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/batch/virtual_project/tests.rs
+assertion_line: 827
 expression: helpers_content.as_str()
 ---
 // ============================================
@@ -19,6 +20,9 @@ interface ImportMeta {
   prod: boolean;
   ssr: boolean;
 }
+
+declare namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } }
+declare module 'vue/jsx-runtime' { export namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } } }
 
 // Shared type helpers used by generated virtual modules
 type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
