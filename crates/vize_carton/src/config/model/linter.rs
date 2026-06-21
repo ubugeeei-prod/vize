@@ -160,7 +160,7 @@ impl From<RawLinterConfig> for LinterConfig {
         }
         for (category, severity) in raw.categories {
             config.rules.insert(
-                format!("{CATEGORY_LINT_MARKER_PREFIX}{category}").into(),
+                crate::cstr!("{CATEGORY_LINT_MARKER_PREFIX}{category}"),
                 severity,
             );
         }
