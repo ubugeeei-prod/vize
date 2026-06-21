@@ -8,6 +8,7 @@ import { build, type Plugin, type ResolvedConfig } from "vite";
 import { staticPreviewId } from "./static-data.js";
 import {
   emitStaticGallery,
+  museaStaticBuildConfig,
   museaStaticBuildInput,
   loadStaticRuntimeModule,
   resolveStaticRuntimeId,
@@ -30,6 +31,42 @@ void test("static build input keeps user entries and names the preview runtime",
     app: "/repo/index.html",
     "musea-static-runtime": VIRTUAL_STATIC_RUNTIME,
   });
+});
+
+void test("static build config injects a runtime input when no index html exists", async () => {
+  const tempDir = await fs.promises.mkdtemp(
+    path.join(process.cwd(), ".tmp-musea-empty-static-build-"),
+  );
+  try {
+    const artFiles = new Map<string, ArtFileInfo>();
+    let resolvedConfig: ResolvedConfig | undefined;
+    const outDir = path.join(tempDir, "dist");
+
+    await build({
+      configFile: false,
+      root: tempDir,
+      logLevel: "silent",
+      build: {
+        outDir,
+        emptyOutDir: true,
+      },
+      plugins: [
+        createStaticBuildTestPlugin(
+          artFiles,
+          () => resolvedConfig,
+          (config) => {
+            resolvedConfig = config;
+          },
+        ),
+      ],
+    });
+
+    assert.equal(await fileExists(path.join(outDir, "__musea__", "index.html")), true);
+    assert.equal(await fileExists(path.join(outDir, "__musea__", "api", "static.json")), true);
+    assert.equal(await fileExists(path.join(outDir, "index.html")), true);
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
 });
 
 void test("static build emits previews with a callable side-effect runtime", async () => {
@@ -149,9 +186,8 @@ function createStaticBuildTestPlugin(
 ): Plugin {
   return {
     name: "musea-static-build-test",
-    options(options) {
-      options.input = museaStaticBuildInput(options.input as StaticBuildInput);
-      return null;
+    config(userConfig) {
+      return museaStaticBuildConfig(userConfig.build?.rollupOptions?.input as StaticBuildInput);
     },
     configResolved(config) {
       setConfig(config);
