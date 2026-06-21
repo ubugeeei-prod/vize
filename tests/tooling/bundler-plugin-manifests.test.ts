@@ -95,10 +95,20 @@ test("@vizejs/rspack-plugin peer range matches the catalog @rspack/core major", 
   );
 });
 
-test("@vizejs/vite-plugin peers vite ^8 while the workspace resolves vite via the VoidZero proxy", () => {
-  const manifest = readManifest("builder/vite");
-  assert.equal(manifest.name, "@vizejs/vite-plugin");
-  assert.equal(manifest.peerDependencies?.vite, "^8.0.0");
+test("Vite integrations accept Nuxt 3.19's Vite 7.3 range and Vite 8", () => {
+  for (const packageDir of [
+    "builder/vite",
+    "builder/vite-musea",
+    "framework/musea-nuxt",
+    "framework/nuxt",
+  ]) {
+    const manifest = readManifest(packageDir);
+    assert.equal(
+      manifest.peerDependencies?.vite,
+      "^7.3.0 || ^8.0.0",
+      `${manifest.name ?? packageDir} vite peer range`,
+    );
+  }
 
   const vitePin = catalogPin(readWorkspaceYaml(), "vite-stack", "vite");
   assert.ok(vitePin, "vite catalog pin (vite-stack)");

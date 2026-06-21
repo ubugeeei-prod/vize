@@ -103,9 +103,9 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(script, /vizeBin, "--version"/);
   assert.match(script, /"check"[\s\S]*"src\/App\.vue"/);
   assert.match(script, /"lint"[\s\S]*"src\/App\.vue"/);
-  // vite is installed as upstream vite (^8.0.0), matching the
-  // `@vizejs/vite-plugin` peer dep declaration. Real vite exposes a `vite`
-  // bin entry, so the smoke can use the same resolver as vize.
+  // vite is installed as upstream vite 8, one supported
+  // `@vizejs/vite-plugin` peer range. Real vite exposes a `vite` bin entry, so
+  // the smoke can use the same resolver as vize.
   assert.match(script, /resolveInstalledBin\(installDir, "vite", "vite"\)/);
   assert.match(script, /viteBin, "build"/);
   assert.match(script, /vite:\s*"\^8\.0\.0"/);

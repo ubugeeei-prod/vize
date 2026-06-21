@@ -59,7 +59,7 @@
     "vite-plus": "catalog:vite-stack"
   },
   "peerDependencies": {
-    "vite": "^8.0.0"
+    "vite": "^7.3.0 || ^8.0.0"
   },
   "engines": {
     "node": ">=22"
