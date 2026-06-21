@@ -248,6 +248,10 @@ export interface TypeCheckerConfig {
    */
   legacyVue2?: boolean;
   /**
+   * Opt-in type-checking of .jsx/.tsx Vue components (#1497). Default-off so mixed Vue/React repositories do not accidentally route React .tsx through the Vue JSX checker. Set to true to route .jsx/.tsx through the Vize JSX virtual-TS path.
+   */
+  jsxTypecheck?: boolean;
+  /**
    * Path to tsconfig.json
    */
   tsconfig?: string;
