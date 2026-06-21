@@ -34,6 +34,10 @@ export interface PrecompileChunkOptions {
   metadata?: ReadonlyMap<string, PrecompileFileMetadata>;
 }
 
+export function isPrecompileSfcPath(path: string): boolean {
+  return path.endsWith(".vue");
+}
+
 export function hasFileMetadataChanged(
   previous: PrecompileFileMetadata | undefined,
   next: PrecompileFileMetadata,

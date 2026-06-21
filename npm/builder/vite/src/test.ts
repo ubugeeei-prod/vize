@@ -12,6 +12,7 @@ import "./plugin/resolve-peer-runtime.test.ts";
 import "./plugin/resolve-vue-runtime.test.ts";
 import "./plugin/resolve-dependency-style.test.ts";
 import "./plugin/resolve.test.ts";
+import "./plugin/precompile.test.ts";
 import "./plugin/state.test.ts";
 import "./plugin/unocss.test.ts";
 import "./plugin/vite-transform.test.ts";

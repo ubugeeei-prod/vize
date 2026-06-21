@@ -17,6 +17,7 @@ import {
   chunkPrecompileFiles,
   diffPrecompileFiles,
   type PrecompileFileMetadata,
+  isPrecompileSfcPath,
 } from "./precompile.ts";
 
 export {
@@ -26,6 +27,7 @@ export {
   chunkPrecompileFiles,
   diffPrecompileFiles,
   hasFileMetadataChanged,
+  isPrecompileSfcPath,
   normalizePrecompileBatchSize,
   type PrecompileChunkOptions,
   type PrecompileDiff,
@@ -167,9 +169,10 @@ export async function compileAll(state: VizePluginState): Promise<void> {
     ignore: state.ignorePatterns,
     absolute: true,
   });
+  const sfcFiles = files.filter(isPrecompileSfcPath);
 
   const currentMetadata = new Map<string, PrecompileFileMetadata>();
-  for (const file of files) {
+  for (const file of sfcFiles) {
     try {
       const stat = fs.statSync(file);
       currentMetadata.set(file, {
@@ -182,11 +185,11 @@ export async function compileAll(state: VizePluginState): Promise<void> {
   }
 
   const { changedFiles, deletedFiles } = diffPrecompileFiles(
-    files,
+    sfcFiles,
     currentMetadata,
     state.precompileMetadata,
   );
-  const cachedFileCount = files.length - changedFiles.length;
+  const cachedFileCount = sfcFiles.length - changedFiles.length;
 
   for (const file of deletedFiles) {
     state.cache.delete(file);
@@ -199,7 +202,7 @@ export async function compileAll(state: VizePluginState): Promise<void> {
   }
 
   state.logger.info(
-    `Pre-compiling ${files.length} Vue files... (${changedFiles.length} changed, ${cachedFileCount} cached, ${deletedFiles.length} removed)`,
+    `Pre-compiling ${sfcFiles.length} Vue files... (${changedFiles.length} changed, ${cachedFileCount} cached, ${deletedFiles.length} removed)`,
   );
 
   if (changedFiles.length === 0) {
