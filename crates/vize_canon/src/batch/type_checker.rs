@@ -261,6 +261,13 @@ impl BatchTypeChecker {
         self.project.virtual_files_sorted()
     }
 
+    /// Access the shared helpers preamble when this checker generated one.
+    pub fn shared_helpers_preamble(&self) -> Option<&'static str> {
+        self.project
+            .uses_shared_helpers()
+            .then_some(crate::virtual_ts::SHARED_PREAMBLE_DTS)
+    }
+
     /// Emit declaration files for the scanned project.
     pub fn emit_declarations(
         &self,

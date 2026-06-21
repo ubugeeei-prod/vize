@@ -101,9 +101,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         .source_path
         .as_deref()
         .and_then(|path| crate::config::load_compiler_template_syntax(Some(path)));
-    // Configured Vue dialect (`vue.version`). Defaults to Vue 3 when unset.
-    // Threaded into canon's virtual-TS generation for dialect-aware instance
-    // typing.
+    // Configured Vue dialect (`vue.version`) threads into dialect-aware virtual TS.
     let dialect = dialect_from_features(loaded_config.features.vue_version);
     // Vue 3 Options API binding resolution is officially supported and is a
     // standard-build opt-in (not the `legacy` feature).
@@ -335,11 +333,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     }
 
     if args.show_virtual_ts {
-        eprintln!(
-            "\n=== {} ===",
-            vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME
-        );
-        eprintln!("{}", vize_canon::virtual_ts::SHARED_PREAMBLE_DTS);
+        if let Some(shared_helpers) = checker.shared_helpers_preamble() {
+            eprintln!(
+                "\n=== {} ===",
+                vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME
+            );
+            eprintln!("{shared_helpers}");
+        }
         for file in &virtual_files {
             eprintln!("\n=== {} ===", file.original_path.display());
             eprintln!("{}", file.content);

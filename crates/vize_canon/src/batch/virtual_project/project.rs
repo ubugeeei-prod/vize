@@ -89,7 +89,7 @@ impl VirtualProject {
         self.dialect = dialect;
     }
 
-    pub(super) fn uses_shared_helpers(&self) -> bool {
+    pub(crate) fn uses_shared_helpers(&self) -> bool {
         !self.legacy_vue2
             && !matches!(
                 self.dialect,
