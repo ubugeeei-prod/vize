@@ -21,7 +21,7 @@ describe(`${app.name} check (type checker)`, () => {
   it("vize check passes with no errors for style preprocessors", () => {
     const checkConfig = app.check!;
     const patterns = checkConfig.patterns.map((p) => `'${p}'`).join(" ");
-    const cmd = `${VIZE_BIN} check ${patterns} --format json --quiet --corsa-path '${CORSA_BIN}'`;
+    const cmd = `${VIZE_BIN} check ${patterns} --format json --quiet --show-virtual-ts --corsa-path '${CORSA_BIN}'`;
     console.log(`Running: ${cmd}`);
 
     let stdout: string;
