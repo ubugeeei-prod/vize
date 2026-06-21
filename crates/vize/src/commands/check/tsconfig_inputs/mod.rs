@@ -17,6 +17,7 @@ mod jsonc;
 mod loader;
 mod matching;
 mod spec;
+mod type_references;
 
 #[cfg(test)]
 mod tests;
@@ -27,6 +28,7 @@ pub(super) use jsonc::parse_jsonc_value;
 pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};
 pub(super) use loader::{read_extends_entries, resolve_extended_tsconfig};
 pub(crate) use spec::TsconfigDeclarationOptions;
+pub(crate) use type_references::{reference_type_packages, resolve_type_package_declaration_files};
 
 use collect::{
     collect_supported_files_for_include_roots, collect_supported_files_with_options,

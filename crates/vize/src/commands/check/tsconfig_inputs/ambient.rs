@@ -12,6 +12,7 @@ use super::collect_default_check_files_inner;
 use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
 use super::matching::{is_nuxt_import_manifest_path, path_has_component};
+use super::type_references::{reference_type_packages, resolve_type_reference_declaration_files};
 
 mod top_level;
 
@@ -52,6 +53,11 @@ pub(crate) fn collect_ambient_declaration_files(
             continue;
         };
         for referenced in reference_path_declaration_files(&path, &content, &project_root) {
+            if seen.insert(referenced.clone()) {
+                files.push(referenced);
+            }
+        }
+        for referenced in reference_type_declaration_files(&path, &content) {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
@@ -164,6 +170,18 @@ fn reference_path_declaration_files(
                 && is_declaration_file(&resolved)
                 && resolved.is_file())
             .then_some(resolved)
+        })
+        .collect()
+}
+
+fn reference_type_declaration_files(path: &Path, content: &str) -> Vec<PathBuf> {
+    let Some(base_dir) = path.parent() else {
+        return Vec::new();
+    };
+    reference_type_packages(content)
+        .into_iter()
+        .flat_map(|reference| {
+            resolve_type_reference_declaration_files(base_dir, reference.as_str())
         })
         .collect()
 }
