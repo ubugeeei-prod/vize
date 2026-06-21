@@ -88,16 +88,16 @@ fn check_explicit_vue_keeps_generated_graphql_schema_out_of_canon() {
     },
     "noEmit": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "types/**/*.d.ts"]
 }"#,
     )
     .unwrap();
 
-    let schema_path = project_root.join("types/codegen/schema.ts");
-    let schema_specifier = schema_path
-        .with_extension("")
-        .to_string_lossy()
-        .replace('\\', "/");
+    let schema_path = project_root.join("types/codegen/schema.d.ts");
+    let schema_path_text = schema_path.to_string_lossy().replace('\\', "/");
+    let schema_specifier = schema_path_text
+        .strip_suffix(".d.ts")
+        .expect("schema path should end with .d.ts");
     std::fs::create_dir_all(schema_path.parent().unwrap()).unwrap();
     std::fs::write(
         &schema_path,
@@ -168,7 +168,7 @@ expectQuestion(question)
     );
     assert!(
         !project_root
-            .join("node_modules/.vize/canon/types/codegen/schema.ts")
+            .join("node_modules/.vize/canon/types/codegen/schema.d.ts")
             .exists()
     );
 
