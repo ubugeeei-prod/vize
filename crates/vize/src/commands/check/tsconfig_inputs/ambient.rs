@@ -13,6 +13,10 @@ use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
 use super::matching::{is_nuxt_import_manifest_path, path_has_component};
 
+mod top_level;
+
+use top_level::has_top_level_import_or_export;
+
 /// Collect ambient declaration (`.d.ts`) files that belong to the tsconfig
 /// "program" so their global types stay in scope when only a subset of files is
 /// checked explicitly (e.g. `vize check src/App.vue`).
@@ -61,6 +65,7 @@ pub(crate) fn collect_ambient_declaration_files(
             Ok(content) => {
                 !is_nuxt_import_manifest_path(path)
                     && !is_reference_manifest_declaration(&content)
+                    && contributes_ambient_declarations(&content)
                     && !declares_shadowing_ambient_module(&content)
             }
             Err(_) => false,
@@ -87,6 +92,21 @@ fn declares_shadowing_ambient_module(content: &str) -> bool {
     ambient_module_specifiers(content)
         .iter()
         .any(|specifier| is_shadowed_vue_package_specifier(specifier))
+}
+
+fn contributes_ambient_declarations(content: &str) -> bool {
+    !has_top_level_import_or_export(content)
+        || contains_declare_scope(content, "declare global")
+        || contains_declare_scope(content, "declare module")
+}
+
+fn contains_declare_scope(content: &str, needle: &str) -> bool {
+    content.match_indices(&needle).any(|(index, _)| {
+        content[..index]
+            .chars()
+            .next_back()
+            .is_none_or(|ch| !ch.is_alphanumeric() && ch != '_' && ch != '$')
+    })
 }
 
 fn ambient_module_specifiers(content: &str) -> Vec<std::string::String> {
@@ -187,19 +207,86 @@ fn is_reference_manifest_declaration(content: &str) -> bool {
     has_reference
 }
 
-fn has_top_level_import_or_export(content: &str) -> bool {
-    content.lines().any(|line| {
-        line.starts_with("import ")
-            || line.starts_with("import{")
-            || line.starts_with("export ")
-            || line.starts_with("export{")
-            || line.starts_with("export {}")
-    })
-}
-
 fn is_shadowed_vue_package_specifier(specifier: &str) -> bool {
     matches!(
         specifier,
         "vue" | "@vue/runtime-core" | "@vue/runtime-dom" | "vue-router"
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::collect_ambient_declaration_files;
+    use crate::commands::check::tsconfig_inputs::TsconfigInputCache;
+    use std::path::{Path, PathBuf};
+
+    fn write(root: &Path, rel: &str, content: &str) {
+        let path = root.join(rel);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, content).unwrap();
+    }
+
+    fn unique_case_dir(name: &str) -> PathBuf {
+        static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
+            std::sync::atomic::AtomicUsize::new(0);
+        let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        std::env::temp_dir().join(format!(
+            "vize-ambient-{name}-{}-{case_id}",
+            std::process::id()
+        ))
+    }
+
+    fn relative_paths(root: &Path, files: &[PathBuf]) -> Vec<String> {
+        files
+            .iter()
+            .map(|path| {
+                path.strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect()
+    }
+
+    #[test]
+    fn ambient_collection_skips_export_only_generated_declaration_modules() {
+        let root = unique_case_dir("generated-dts");
+        let _ = std::fs::remove_dir_all(&root);
+        write(
+            &root,
+            "types/codegen/schema.d.ts",
+            "export enum AimQuestionDisplayKind { Text = 'TEXT' }\nexport type AimQuestion = { kind: AimQuestionDisplayKind };\n",
+        );
+        write(
+            &root,
+            "src/globals.d.ts",
+            "export {};\ndeclare global { type GlobalTabType = 'a' | 'b'; }\n",
+        );
+        write(
+            &root,
+            "src/env.d.ts",
+            "declare const APP_VERSION: string;\n",
+        );
+        write(&root, "src/shims.d.ts", "declare module '*.css';\n");
+        write(
+            &root,
+            "tsconfig.json",
+            r#"{
+  "include": ["src/**/*.d.ts", "types/codegen/schema.d.ts"]
+}"#,
+        );
+
+        let project_root = root.canonicalize().unwrap();
+        let files = collect_ambient_declaration_files(
+            &project_root,
+            Some(&project_root.join("tsconfig.json")),
+            &mut TsconfigInputCache::default(),
+        );
+
+        assert_eq!(
+            relative_paths(&project_root, &files),
+            vec!["src/env.d.ts", "src/globals.d.ts", "src/shims.d.ts"]
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
 }
