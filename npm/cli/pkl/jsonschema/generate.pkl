@@ -466,26 +466,14 @@ local languageServerConfigDef: JsonSchema = new JsonSchema {
       type = "boolean"
       description = "Enable document links"
     }
-    ["foldingRanges"] = new JsonSchema {
-      type = "boolean"
-      description = "Enable folding ranges"
-    }
-    ["inlayHints"] = new JsonSchema {
-      type = "boolean"
-      description = "Enable inlay hints"
-    }
-    ["fileRename"] = new JsonSchema {
-      type = "boolean"
-      description = "Enable file rename edits"
-    }
+    ["foldingRanges"] = new JsonSchema { type = "boolean"; description = "Enable folding ranges" }
+    ["inlayHints"] = new JsonSchema { type = "boolean"; description = "Enable inlay hints" }
+    ["fileRename"] = new JsonSchema { type = "boolean"; description = "Enable file rename edits" }
     ["corsa"] = new JsonSchema {
       type = "boolean"
       description = "Enable Corsa-backed IDE features"
     }
-    ["tsgo"] = new JsonSchema {
-      type = "boolean"
-      description = "Deprecated alias for corsa"
-    }
+    ["tsgo"] = new JsonSchema { type = "boolean"; description = "Deprecated alias for corsa" }
   }
   additionalProperties = false
 }

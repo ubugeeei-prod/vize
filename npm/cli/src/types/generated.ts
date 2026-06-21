@@ -239,17 +239,13 @@ export interface TypeCheckerConfig {
    * Check fallthrough attrs on multi-root templates
    */
   checkFallthroughAttrs?: boolean;
-  /**
-   * Resolve Vue 3 Options API template bindings (data/computed/methods/inject/setup/props) during type checking. Opt-in; available in the standard build (not a legacy feature).
-   */
+  /** Resolve Vue 3 Options API template bindings during type checking. Available in the standard build. */
   optionsApi?: boolean;
   /**
    * Enable Vue 2.7 / Nuxt 2 Options API template binding support
    */
   legacyVue2?: boolean;
-  /**
-   * Opt-in type-checking of .jsx/.tsx Vue components (#1497). Default-off so mixed Vue/React repositories do not accidentally route React .tsx through the Vue JSX checker. Set to true to route .jsx/.tsx through the Vize JSX virtual-TS path.
-   */
+  /** Opt-in type-checking of .jsx/.tsx Vue components. Set to true to route .jsx/.tsx through the Vize JSX virtual-TS path. */
   jsxTypecheck?: boolean;
   /**
    * Path to tsconfig.json
