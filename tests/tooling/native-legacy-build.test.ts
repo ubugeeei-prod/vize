@@ -65,12 +65,7 @@ test("github/build_napi_package keeps legacy features scoped to vize_vitrine", (
     const runForCrate = (crateName: string): string => {
       const result = runMoonScript(
         "github/build_napi_package",
-        [
-          packageDir,
-          `../../crates/${crateName}/Cargo.toml`,
-          crateName,
-          "x86_64-unknown-linux-gnu",
-        ],
+        [packageDir, `../../crates/${crateName}/Cargo.toml`, crateName, "x86_64-unknown-linux-gnu"],
         {
           cwd: tempDir,
           env: {
