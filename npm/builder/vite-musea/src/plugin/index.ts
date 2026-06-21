@@ -156,16 +156,10 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     },
 
     config(userConfig) {
-      return {
-        resolve: {
-          alias: {
-            vue: resolveVueRuntimeCompiler(),
-          },
-        },
-        ...(isMuseaStaticBuild()
-          ? museaStaticBuildConfig(userConfig.build?.rollupOptions?.input as StaticBuildInput)
-          : {}),
-      };
+      const staticBuildConfig = isMuseaStaticBuild()
+        ? museaStaticBuildConfig(userConfig.build?.rollupOptions?.input as StaticBuildInput)
+        : {};
+      return { resolve: { alias: { vue: resolveVueRuntimeCompiler() } }, ...staticBuildConfig };
     },
 
     options: applyMuseaStaticBuildInput,
