@@ -7,6 +7,7 @@
 
 mod discovery;
 mod js;
+mod lint_features;
 mod parse;
 mod pkl;
 #[cfg(test)]
@@ -21,6 +22,8 @@ use super::model::{
     ConfigEntryFiles, ConfigEntryIgnore, ConfigFeatureFlags, LinterConfig, RawVizeConfig,
     VizeConfig,
 };
+
+pub use lint_features::load_config_and_linter_with_lint_features_and_source;
 
 const CONFIG_FILE_NAMES: [&str; 5] = [
     "vize.config.pkl",
@@ -40,7 +43,7 @@ pub struct LoadedConfig {
 }
 
 /// Loaded config with auxiliary feature flags.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct LoadedConfigWithFeatures {
     /// Effective configuration with defaults applied.
     pub config: VizeConfig,

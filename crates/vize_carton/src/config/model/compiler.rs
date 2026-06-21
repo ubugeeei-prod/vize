@@ -2,6 +2,8 @@
 
 use serde::Deserialize;
 
+use super::vue::VueVersion;
+
 /// Template syntax compatibility mode from `compiler.templateSyntax`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -49,9 +51,18 @@ impl JsxMode {
 
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
+pub(crate) struct RawCompilerCompatibilityConfig {
+    pub(crate) vue_version: Option<VueVersion>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
 pub(crate) struct RawCompilerConfig {
+    /// Explicit SFC Vapor mode switch from `compiler.vapor`.
+    pub(crate) vapor: Option<bool>,
     pub(crate) template_syntax: Option<RawTemplateSyntaxConfig>,
     /// Default JSX output mode (`compiler.jsxMode`); `None` when absent, which
     /// the JSX entry points treat as VDOM.
     pub(crate) jsx_mode: Option<JsxMode>,
+    pub(crate) compatibility: RawCompilerCompatibilityConfig,
 }

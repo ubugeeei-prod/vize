@@ -47,24 +47,20 @@ pub fn run(args: LintArgs) {
     let render_details = should_render_lint_details(format, args.quiet);
     crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let (loaded_config, linter_config) = if args.no_config {
+    let (loaded_config, linter_config, linter_features) = if args.no_config {
         (
-            crate::config::LoadedConfigWithFeatures {
-                config: crate::config::VizeConfig::default(),
-                source_path: None,
-                features: crate::config::ConfigFeatureFlags::default(),
-            },
+            crate::config::LoadedConfigWithFeatures::default(),
             crate::config::LinterConfig::default(),
+            crate::config::LinterFeatureFlags::default(),
         )
     } else {
-        crate::config::load_config_and_linter_with_features_and_source(args.config.as_deref())
+        crate::config::load_config_and_linter_with_lint_features_and_source(args.config.as_deref())
     };
     let config_dir = loaded_config
         .source_path
         .as_deref()
         .and_then(Path::parent)
         .unwrap_or(cwd.as_path());
-    let vue_version = loaded_config.features.vue_version;
     let config = loaded_config.config;
     if !linter_config.enabled {
         eprintln!("[vize] Skipping lint because linter.enabled is false in vize.config.");
@@ -105,7 +101,8 @@ pub fn run(args: LintArgs) {
         .with_disabled_rules(linter_config.disabled_rules())
         .with_help_level(help_level)
         .with_type_aware_lint(type_aware_enabled)
-        .with_vue_version(vue_version);
+        .with_vue_version(linter_features.vue_version)
+        .with_vapor_mode(linter_features.vapor);
     #[cfg(not(target_arch = "wasm32"))]
     {
         linter = linter.with_corsa_path(configured_corsa_path);

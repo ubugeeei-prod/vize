@@ -5,6 +5,7 @@
 //! - [`config`]: `Linter` struct, builder methods, and `LintResult`
 //! - [`engine`]: Core linting methods and template extraction
 
+mod compatibility;
 mod config;
 #[cfg(not(target_arch = "wasm32"))]
 mod corsa_session;

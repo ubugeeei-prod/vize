@@ -137,3 +137,103 @@ const items = [{ id: 1, name: 'One' }]
 
     let _ = fs::remove_dir_all(project_root);
 }
+
+#[test]
+fn lint_compiler_compatibility_vue2_allows_template_v_for_key_on_child() {
+    let project_root = temp_project_dir("compat-vue2-v-for-child-key");
+    let sfc = r#"<script setup>
+const items = [{ id: 1, name: 'One' }]
+</script>
+
+<template>
+  <template v-for="item in items">
+    <div :key="item.id">{{ item.name }}</div>
+  </template>
+</template>
+"#;
+    write_project_file(&project_root, "src/App.vue", sfc);
+    write_project_file(
+        &project_root,
+        "vize.config.json",
+        r#"{ "compiler": { "compatibility": { "vueVersion": "2" } } }"#,
+    );
+
+    let compat_vue2 = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--config", "vize.config.json", "src/App.vue"])
+        .output()
+        .unwrap();
+    assert!(
+        compat_vue2.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&compat_vue2.stdout),
+        String::from_utf8_lossy(&compat_vue2.stderr)
+    );
+
+    write_project_file(
+        &project_root,
+        "vize.config.json",
+        r#"{ "typeChecker": { "legacyVue2": true } }"#,
+    );
+    let legacy_vue2 = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--config", "vize.config.json", "src/App.vue"])
+        .output()
+        .unwrap();
+    assert!(
+        legacy_vue2.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&legacy_vue2.stdout),
+        String::from_utf8_lossy(&legacy_vue2.stderr)
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
+fn lint_nuxt_preset_allows_next_tick_when_compiler_vapor_is_false() {
+    let project_root = temp_project_dir("nuxt-non-vapor-next-tick");
+    let sfc = r#"<script setup lang="ts">
+import { nextTick } from 'vue'
+
+await nextTick()
+</script>
+"#;
+    write_project_file(&project_root, "src/Dialog.vue", sfc);
+    write_project_file(
+        &project_root,
+        "vize.config.json",
+        r#"{
+  "compiler": { "vapor": false },
+  "linter": { "preset": "nuxt" }
+}"#,
+    );
+
+    let nuxt_default = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--preset", "nuxt", "--no-config", "src/Dialog.vue"])
+        .output()
+        .unwrap();
+    assert!(
+        !nuxt_default.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&nuxt_default.stdout),
+        String::from_utf8_lossy(&nuxt_default.stderr)
+    );
+    let default_stdout = String::from_utf8_lossy(&nuxt_default.stdout);
+    assert!(default_stdout.contains("script/no-next-tick"));
+
+    let non_vapor = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--config", "vize.config.json", "src/Dialog.vue"])
+        .output()
+        .unwrap();
+    assert!(
+        non_vapor.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&non_vapor.stdout),
+        String::from_utf8_lossy(&non_vapor.stderr)
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}
