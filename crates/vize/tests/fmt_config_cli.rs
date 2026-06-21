@@ -115,6 +115,41 @@ fn fmt_check_supports_root_relative_art_vue_paths_for_config_entries() {
 }
 
 #[test]
+fn fmt_check_supports_root_relative_ts_paths_for_config_entries() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "vize.config.ts",
+        r#"export default {
+  entries: [
+    { name: "app", basePath: ".", files: ["*.ts", "components/**/*.vue"] },
+    { name: "scripts", basePath: "scripts", files: ["**/*.ts"] },
+  ],
+}
+"#,
+    );
+    write_project_file(project.path(), "scripts/lint.ts", "export   const ok=1\n");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args([
+            "fmt",
+            "--config",
+            "vize.config.ts",
+            "--check",
+            "scripts/lint.ts",
+        ])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("Found 1 file(s)"), "{stderr}");
+    assert!(stderr.contains("Would reformat: scripts/lint.ts"), "{stderr}");
+    assert!(!stderr.contains("No .vue"), "{stderr}");
+}
+
+#[test]
 fn fmt_check_resolves_entry_relative_art_vue_paths_from_monorepo_root() {
     let project = tempfile::tempdir().unwrap();
     write_entry_ts_config(project.path());
