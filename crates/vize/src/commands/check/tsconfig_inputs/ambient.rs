@@ -205,7 +205,6 @@ fn is_reference_manifest_declaration(content: &str) -> bool {
 
 fn has_top_level_import_or_export(content: &str) -> bool {
     content.lines().any(|line| {
-        let line = line.trim_start();
         line.starts_with("import ")
             || line.starts_with("import{")
             || line.starts_with("export ")
