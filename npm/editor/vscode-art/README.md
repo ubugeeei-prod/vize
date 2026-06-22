@@ -43,13 +43,12 @@ all variants.
 
 ## Installation
 
-This extension is not published to the VS Code Marketplace yet. Use a locally built VSIX while the
-editor package stabilizes.
+Install the extension from the VS Code Marketplace as `vize.vize-art`.
 
-### From VSIX
+### From Marketplace
 
 ```bash
-code --install-extension vize-art-0.26.0.vsix
+code --install-extension vize.vize-art
 ```
 
 ### Development

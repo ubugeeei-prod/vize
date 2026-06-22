@@ -14,8 +14,12 @@ The repository contains two experimental VS Code extensions:
 - **Vize** — Vue language support backed by `vize lsp`
 - **Vize Art** — syntax highlighting for Musea `*.art.vue` files
 
-They are not published to the VS Code Marketplace yet. Install from a locally built VSIX or run the
-extension development host while the editor packages stabilize.
+Install them from the VS Code Marketplace:
+
+```bash
+code --install-extension ubugeeei.vize
+code --install-extension vize.vize-art
+```
 
 Install both if you want `*.art.vue` to receive Vize hover, completion, go-to-definition, and
 reference support in addition to syntax highlighting.
@@ -105,6 +109,7 @@ code --install-extension dist/vize.vsix
 ## Vize Art Extension
 
 `Vize Art` provides syntax highlighting for Musea `*.art.vue` files.
+Its Marketplace extension ID is `vize.vize-art`.
 
 It recognizes:
 
