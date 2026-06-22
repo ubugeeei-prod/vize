@@ -229,7 +229,7 @@ impl VirtualProject {
         Ok(Value::Object(config))
     }
 
-    fn needs_vue_jsx_compiler_options(&self) -> bool {
+    pub(super) fn needs_vue_jsx_compiler_options(&self) -> bool {
         self.virtual_files.values().any(|file| {
             file.virtual_path
                 .file_name()
@@ -263,7 +263,7 @@ impl VirtualProject {
         includes
     }
     #[allow(clippy::disallowed_types)]
-    fn load_compiler_options(
+    pub(super) fn load_compiler_options(
         &self,
         tsconfig_path: Option<&Path>,
     ) -> CorsaResult<Map<std::string::String, Value>> {

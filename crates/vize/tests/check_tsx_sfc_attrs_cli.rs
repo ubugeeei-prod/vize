@@ -126,13 +126,16 @@ defineEmits<{ click: [event: MouseEvent] }>()
         r#"import AfButton from './AfButton.vue';
 
 export const Example = () => (
-  <AfButton
-    class="af-mb-2"
-    style="width: 200px"
-    color="primary"
-    is-opened={true}
-    onClick={(event: MouseEvent) => event.preventDefault()}
-  />
+  <div class="story-shell">
+    <span data-testid="label">Preview</span>
+    <AfButton
+      class="af-mb-2"
+      style="width: 200px"
+      color="primary"
+      is-opened={true}
+      onClick={(event: MouseEvent) => event.preventDefault()}
+    />
+  </div>
 );
 "#,
     )
@@ -164,6 +167,8 @@ export const Example = () => (
     let helpers =
         std::fs::read_to_string(project_root.join("node_modules/.vize/canon/__vize_helpers.d.ts"))
             .unwrap();
+    assert!(helpers.contains("/// <reference types=\"vue/jsx\" />"));
+    assert!(helpers.contains("interface IntrinsicElements"));
     assert!(helpers.contains("interface IntrinsicAttributes"));
     assert!(helpers.contains("class?: unknown; style?: unknown"));
     assert!(helpers.contains("__VizeKebabProps"));

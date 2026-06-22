@@ -5,6 +5,7 @@
 use std::path::{Path, PathBuf};
 
 use rayon::prelude::*;
+use serde_json::Value;
 use vize_carton::{FxHashSet, String as CompactString, profile};
 
 use crate::batch::error::CorsaResult;
@@ -14,6 +15,12 @@ use crate::batch::materialize_fs::{
 use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
 use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
+
+const VUE_JSX_INTRINSIC_ELEMENTS_DTS: &str = concat!(
+    "declare namespace JSX { interface IntrinsicElements { [name: string]: any; } }\n",
+    "declare module 'vue/jsx-runtime' { export namespace JSX { interface IntrinsicElements { [name: string]: any; } } }\n",
+    "declare module 'vue/jsx-dev-runtime' { export namespace JSX { interface IntrinsicElements { [name: string]: any; } } }\n",
+);
 
 impl VirtualProject {
     /// Materialize the virtual project to disk for diagnostics collection.
@@ -165,11 +172,39 @@ impl VirtualProject {
     /// hoist their common preamble (ImportMeta augmentation, type helpers,
     /// compiler-macro signatures) into this single program-wide declaration.
     fn write_shared_helpers(&self) -> CorsaResult<()> {
+        let mut content = CompactString::default();
+        if self.needs_vue_jsx_reference() {
+            content.push_str("/// <reference types=\"vue/jsx\" />\n");
+            content.push_str(VUE_JSX_INTRINSIC_ELEMENTS_DTS);
+        }
+        content.push_str(crate::virtual_ts::SHARED_PREAMBLE_DTS);
         write_if_changed(
             &self.virtual_root.join(SHARED_HELPERS_FILE),
-            crate::virtual_ts::SHARED_PREAMBLE_DTS.as_bytes(),
+            content.as_bytes(),
         )?;
         Ok(())
+    }
+
+    fn needs_vue_jsx_reference(&self) -> bool {
+        if self.needs_vue_jsx_compiler_options() {
+            return true;
+        }
+        let Ok(options) = self.load_compiler_options(self.resolved_tsconfig_path().as_deref())
+        else {
+            return false;
+        };
+        options
+            .get("jsxImportSource")
+            .and_then(Value::as_str)
+            .is_some_and(|source| source == "vue")
+            || options
+                .get("types")
+                .and_then(Value::as_array)
+                .is_some_and(|types| {
+                    types
+                        .iter()
+                        .any(|entry| entry.as_str().is_some_and(|entry| entry == "vue/jsx"))
+                })
     }
 
     fn expected_materialized_files(&self) -> FxHashSet<PathBuf> {
