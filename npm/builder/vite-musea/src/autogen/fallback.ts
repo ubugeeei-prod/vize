@@ -80,7 +80,7 @@ export function generateArtFileJs(
     variants.push({
       name: "Default",
       isDefault: true,
-      props: defaultProps,
+      props: withRequiredPlaceholders(defaultProps, props),
       description: `${componentName} with default props`,
     });
   }
@@ -96,7 +96,7 @@ export function generateArtFileJs(
         variants.push({
           name,
           isDefault: false,
-          props: { [prop.name]: val },
+          props: withRequiredPlaceholders({ [prop.name]: val }, props),
           description: `${prop.name} = ${JSON.stringify(val)}`,
         });
       }
@@ -112,38 +112,109 @@ export function generateArtFileJs(
         variants.push({
           name: nonDefault ? toPascalCase(prop.name) : `No${toPascalCase(prop.name)}`,
           isDefault: false,
-          props: { [prop.name]: nonDefault },
+          props: withRequiredPlaceholders({ [prop.name]: nonDefault }, props),
           description: `${prop.name} = ${nonDefault}`,
         });
       }
     }
   }
 
-  // Generate art file content
-  let content = `<script setup lang="ts">\ndefineArt(${JSON.stringify(relPath)}, {\n  title: ${JSON.stringify(componentName)},\n});\n</script>\n\n<art>\n`;
-  for (const variant of variants) {
-    const attrs = variant.isDefault ? `name="${variant.name}" default` : `name="${variant.name}"`;
-    content += `  <variant ${attrs}>\n`;
-
-    const propsStr = Object.entries(variant.props)
-      .map(([k, v]) => {
-        if (typeof v === "string") return `${k}="${v}"`;
-        if (typeof v === "boolean" && v) return k;
-        if (typeof v === "boolean" && !v) return `:${k}="false"`;
-        return `:${k}="${JSON.stringify(v)}"`;
-      })
-      .join(" ");
-
-    content += `    <${componentName}${propsStr ? " " + propsStr : ""} />\n`;
-    content += `  </variant>\n\n`;
-  }
-  content += `</art>\n`;
-
   return {
     variants,
-    artFileContent: content,
+    artFileContent: generateArtFileContent(componentName, relPath, variants, props),
     componentName,
   };
+}
+
+export function finalizeArtOutput(
+  output: AutogenOutput,
+  componentPath: string,
+  props: PropDefinition[],
+): AutogenOutput {
+  const variants = output.variants.map((variant) => ({
+    ...variant,
+    props: withRequiredPlaceholders(variant.props, props),
+  }));
+  return {
+    ...output,
+    variants,
+    artFileContent: generateArtFileContent(output.componentName, componentPath, variants, props),
+  };
+}
+
+function generateArtFileContent(
+  componentName: string,
+  componentPath: string,
+  variants: GeneratedVariant[],
+  props: PropDefinition[],
+): string {
+  const fixtures = new Map<string, string>();
+  let variantsContent = "";
+
+  for (const variant of variants) {
+    const attrs = variant.isDefault ? `name="${variant.name}" default` : `name="${variant.name}"`;
+    variantsContent += `  <variant ${attrs}>\n`;
+
+    const propsStr = Object.entries(variant.props)
+      .map(([k, v]) => renderPropAttribute(k, v, props, fixtures))
+      .join(" ");
+
+    variantsContent += `    <${componentName}${propsStr ? " " + propsStr : ""} />\n`;
+    variantsContent += `  </variant>\n\n`;
+  }
+
+  const fixtureLines = [...fixtures.entries()].map(
+    ([propName, fixture]) =>
+      `const ${fixture} = {} as never; // TODO: replace generated fixture for required prop ${JSON.stringify(propName)}`,
+  );
+  const fixtureBlock = fixtureLines.length > 0 ? `${fixtureLines.join("\n")}\n\n` : "";
+
+  return `<script setup lang="ts">
+${fixtureBlock}defineArt(${JSON.stringify(componentPath)}, {
+  title: ${JSON.stringify(componentName)},
+});
+</script>
+
+<art>
+${variantsContent}</art>
+`;
+}
+
+function withRequiredPlaceholders(
+  values: Record<string, unknown>,
+  props: PropDefinition[],
+): Record<string, unknown> {
+  const next = { ...values };
+  for (const prop of props) {
+    if (prop.required && prop.defaultValue === undefined && !(prop.name in next)) {
+      next[prop.name] = null;
+    }
+  }
+  return next;
+}
+
+function renderPropAttribute(
+  name: string,
+  value: unknown,
+  props: PropDefinition[],
+  fixtures: Map<string, string>,
+): string {
+  const attrName = toKebabCase(name);
+  const prop = props.find((candidate) => candidate.name === name);
+  if (prop?.required && prop.defaultValue === undefined && value == null) {
+    const fixture = fixtureIdentifier(name);
+    fixtures.set(name, fixture);
+    return `:${attrName}="${fixture}"`;
+  }
+  if (typeof value === "string") return `${attrName}="${value}"`;
+  if (typeof value === "boolean" && value) return attrName;
+  if (typeof value === "boolean" && !value) return `:${attrName}="false"`;
+  return `:${attrName}="${JSON.stringify(value)}"`;
+}
+
+function fixtureIdentifier(propName: string): string {
+  const base = propName.replace(/[^\w$]/g, "_");
+  return /^[A-Za-z_$]/.test(base) ? `${base}Fixture` : `prop${toPascalCase(base)}Fixture`;
 }
 
 export function parseUnionType(typeStr: string): unknown[] {
@@ -171,4 +242,8 @@ export function toPascalCase(str: string): string {
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join("");
+}
+
+function toKebabCase(str: string): string {
+  return str.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`);
 }

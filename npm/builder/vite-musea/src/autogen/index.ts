@@ -10,7 +10,12 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 
-import { extractPropsSimple, generateMinimalArt, generateArtFileJs } from "./fallback.js";
+import {
+  extractPropsSimple,
+  finalizeArtOutput,
+  generateMinimalArt,
+  generateArtFileJs,
+} from "./fallback.js";
 import {
   fromNativeOutput,
   toNativeAutogenConfig,
@@ -154,7 +159,7 @@ export async function generateArtFile(
       toNativeAutogenConfig(options),
     );
 
-    return fromNativeOutput(result);
+    return finalizeArtOutput(fromNativeOutput(result), relPath, props);
   }
 
   // Fallback: JS-based generation
