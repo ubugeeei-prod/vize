@@ -229,17 +229,16 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         )
     };
 
-    // An explicit file subset (`vize check src/App.vue`) omits ambient
-    // declaration files, since nothing imports them; `declare global` types
-    // would then be missing and surface as false `TS2304` errors. Pull the
-    // tsconfig program's `.d.ts` files back in so global types stay in scope.
+    // Explicit subsets omit ambient roots; pull package-local `.d.ts` files
+    // back in so global types stay in scope without widening package checks.
     if !args.patterns.is_empty() && program_tsconfig_path.is_some() {
+        let keep_package_local = resolve::project_root_has_package_boundary(&project_root);
         for path in collect_ambient_declaration_files(
             &project_root,
             program_tsconfig_path.as_deref(),
             &mut tsconfig_input_cache,
         ) {
-            if !files.contains(&path) {
+            if (!keep_package_local || path.starts_with(&project_root)) && !files.contains(&path) {
                 files.push(path);
             }
         }

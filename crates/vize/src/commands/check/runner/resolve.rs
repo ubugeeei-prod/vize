@@ -56,7 +56,7 @@ pub(super) fn resolve_project_root(
             .parent()
             .map(|parent| parent.to_path_buf())
             .unwrap_or_else(|| cwd.to_path_buf());
-        if files.is_empty() {
+        if files.is_empty() || project_root_has_package_boundary(&tsconfig_dir) {
             return tsconfig_dir;
         }
 
@@ -114,6 +114,10 @@ pub(super) fn explicit_input_root(project_root: &Path, cwd: &Path) -> PathBuf {
     } else {
         project_root.to_path_buf()
     }
+}
+
+pub(super) fn project_root_has_package_boundary(project_root: &Path) -> bool {
+    project_root.join("package.json").is_file()
 }
 
 pub(super) fn exit_if_inputs_outside_root(root: &Path, files: &[PathBuf], enabled: bool) {
@@ -231,4 +235,50 @@ pub(super) fn validate_corsa_server_count(servers: Option<usize>) -> Result<(), 
         .into());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resolve_project_root;
+    use std::path::{Path, PathBuf};
+
+    fn unique_case_dir(name: &str) -> PathBuf {
+        static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
+            std::sync::atomic::AtomicUsize::new(0);
+        let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .and_then(Path::parent)
+            .expect("workspace root should exist")
+            .join("target")
+            .join("vize-tests")
+            .join("resolve")
+            .join(name)
+            .join(std::process::id().to_string())
+            .join(case_id.to_string())
+    }
+
+    #[test]
+    fn explicit_tsconfig_with_package_boundary_does_not_widen_to_workspace_root() {
+        let workspace = unique_case_dir("package-boundary");
+        let _ = std::fs::remove_dir_all(&workspace);
+        let package_root = workspace.join("test/e2e/onepass/sign-in");
+        std::fs::create_dir_all(package_root.join("src")).unwrap();
+        std::fs::create_dir_all(workspace.join("types")).unwrap();
+        std::fs::write(package_root.join("package.json"), "{}").unwrap();
+        std::fs::write(package_root.join("tsconfig.json"), "{}").unwrap();
+        let app = package_root.join("src/main.ts");
+        let ambient = workspace.join("types/root.d.ts");
+        std::fs::write(&app, "").unwrap();
+        std::fs::write(&ambient, "declare const rootOnly: string;\n").unwrap();
+
+        let resolved = resolve_project_root(
+            Some(Path::new("tsconfig.json")),
+            &package_root,
+            &[app, ambient],
+        );
+
+        assert_eq!(resolved, package_root);
+        let _ = std::fs::remove_dir_all(&workspace);
+    }
 }
