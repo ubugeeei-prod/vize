@@ -27,7 +27,7 @@ use std::path::{Path, PathBuf};
 #[allow(clippy::disallowed_types)]
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use vize_carton::{FxHashMap, FxHashSet, String, cstr};
+use vize_carton::{FxHashMap, String, cstr};
 
 /// JSON-RPC Request
 #[derive(Debug, Deserialize)]
@@ -106,8 +106,6 @@ pub struct CorsaServer {
     cache: FxHashMap<String, String>,
     /// Project-session client for Corsa (lazy initialized).
     corsa_client: Option<crate::corsa_client::CorsaProjectClient>,
-    /// Virtual documents currently synced into the persistent Corsa session.
-    open_virtual_documents: FxHashSet<String>,
 }
 
 impl CorsaServer {
@@ -124,7 +122,6 @@ impl CorsaServer {
             running: Arc::new(AtomicBool::new(false)),
             cache: FxHashMap::default(),
             corsa_client: None,
-            open_virtual_documents: FxHashSet::default(),
         }
     }
 
@@ -314,27 +311,15 @@ impl CorsaServer {
     fn check_vue_sfc(&mut self, uri: &str, content: &str) -> Result<CheckResult, String> {
         use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
-        // Reuse the canon batch virtual-TS pipeline (issue #1389) so the
-        // socket-mode single-document path and `vize check` generate identical
-        // virtual TS for the same input. The shared generator keeps the shared
-        // preamble inline (`hoist_shared_preamble = false`) because this session
-        // overlays standalone documents and has no program-wide helpers file.
-        let rewriter = crate::batch::ImportRewriter::new();
-        let generated = crate::batch::generate_vue_document_virtual_ts(
-            Path::new(uri),
+        let source_path =
+            uri_to_path(uri, &self.working_dir()).unwrap_or_else(|| PathBuf::from(uri));
+        let project = crate::corsa_bridge::build_vue_virtual_project(
+            &source_path,
             content,
-            &crate::virtual_ts::VirtualTsOptions::default(),
-            &rewriter,
-            false,
+            Default::default(),
         )
         .map_err(|e| cstr!("Failed to generate virtual TS: {e}"))?;
-
-        // Issue #752: the rewritten form resolves `.vue` siblings via the same
-        // `.vue.ts` virtual mirrors used by the batch path. The cached
-        // `virtual_ts` intentionally reflects what we ship to Corsa (rewritten
-        // form), so consumers that introspect the cache see the same
-        // coordinates.
-        let virtual_ts: String = generated.code;
+        let virtual_ts = project.host.code.clone();
         self.cache.insert(uri.into(), virtual_ts.clone());
 
         // The SFC compile diagnostic still needs the descriptor; parse it once
@@ -348,17 +333,8 @@ impl CorsaServer {
         )
         .map_err(|e| cstr!("Failed to parse SFC: {}", e.message))?;
 
-        // Overlay sibling .vue.ts mirrors discovered from the host's imports.
-        let relative_specifiers = rewriter.collect_relative_vue_specifiers(
-            generated.pre_rewrite_code.as_str(),
-            generated.source_type,
-        );
-        if !relative_specifiers.is_empty() {
-            self.overlay_sibling_vue_mirrors(uri, &relative_specifiers);
-        }
-
         // Run Corsa on the virtual TypeScript through the project-session API.
-        let mut diagnostics = self.run_corsa(uri, &virtual_ts, generated.virtual_suffix)?;
+        let mut diagnostics = self.run_corsa(&project)?;
 
         // Merge in Vue-specific compile errors (e.g. props destructure default type
         // mismatch) so the socket-mode check matches the direct `vize check` runner.
@@ -378,9 +354,7 @@ impl CorsaServer {
     /// Run Corsa on TypeScript content and parse diagnostics via project sessions.
     fn run_corsa(
         &mut self,
-        uri: &str,
-        content: &str,
-        virtual_suffix: &str,
+        project: &crate::corsa_bridge::CorsaVueVirtualProject,
     ) -> Result<Vec<Diagnostic>, String> {
         if self.corsa_client.is_none() {
             let client = crate::corsa_client::CorsaProjectClient::new(
@@ -390,19 +364,18 @@ impl CorsaServer {
             self.corsa_client = Some(client);
         }
 
-        let virtual_uri = self.virtual_uri_for(uri, virtual_suffix);
         let client = self
             .corsa_client
             .as_mut()
             .expect("corsa_client must be initialized above");
 
-        if self.open_virtual_documents.contains(virtual_uri.as_str()) {
-            client.did_change(&virtual_uri, content)?;
-        } else {
-            client.did_open(&virtual_uri, content)?;
-            self.open_virtual_documents.insert(virtual_uri.clone());
-        }
-        let corsa_diagnostics = client.request_diagnostics(&virtual_uri)?;
+        let documents: Vec<(&str, &str)> = project
+            .documents
+            .iter()
+            .map(|(uri, content)| (uri.as_str(), content.as_str()))
+            .collect();
+        client.did_open_batch_fast(&documents)?;
+        let corsa_diagnostics = client.request_diagnostics(&project.host.request_uri)?;
 
         // Convert Corsa's editor-style diagnostics to the server payload.
         let diagnostics = corsa_diagnostics
@@ -433,124 +406,6 @@ impl CorsaServer {
         Ok(diagnostics)
     }
 
-    /// Overlay sibling `.vue.ts` mirrors for every relative `.vue` import,
-    /// recursively, so socket-mode Corsa can resolve `import App from
-    /// './app.vue'` (issue #752). Errors are logged and skipped so a missing
-    /// sibling still surfaces as TS2307 from the host check.
-    fn overlay_sibling_vue_mirrors(&mut self, host_uri: &str, initial_specifiers: &[String]) {
-        let Some(host_path) = uri_to_path(host_uri, &self.working_dir()) else {
-            tracing::debug!("overlay_sibling_vue_mirrors: cannot resolve host path: {host_uri}");
-            return;
-        };
-        let host_dir = match host_path.parent() {
-            Some(dir) => dir.to_path_buf(),
-            None => return,
-        };
-
-        let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
-        visited.insert(host_path.clone());
-
-        let mut queue: Vec<(PathBuf, Vec<String>)> = vec![(
-            host_dir,
-            initial_specifiers
-                .iter()
-                .map(|s| s.as_str().into())
-                .collect(),
-        )];
-        let rewriter = crate::batch::ImportRewriter::new();
-
-        while let Some((dir, specifiers)) = queue.pop() {
-            for specifier in specifiers {
-                let resolved = dir.join(&specifier);
-                let canonical = std::fs::canonicalize(&resolved).unwrap_or(resolved);
-                if !visited.insert(canonical.clone()) {
-                    continue;
-                }
-
-                let sibling_content = match std::fs::read_to_string(&canonical) {
-                    Ok(text) => text,
-                    Err(err) => {
-                        tracing::debug!(
-                            "socket overlay sibling skipped — read failed for {}: {err}",
-                            canonical.display(),
-                        );
-                        continue;
-                    }
-                };
-
-                // Reuse the shared canon batch generator (issue #1389) so
-                // overlaid siblings are byte-identical to the host document and
-                // to `vize check`.
-                let Ok(sibling_generated) = crate::batch::generate_vue_document_virtual_ts(
-                    canonical.as_path(),
-                    &sibling_content,
-                    &crate::virtual_ts::VirtualTsOptions::default(),
-                    &rewriter,
-                    false,
-                ) else {
-                    continue;
-                };
-                let sibling_uri = crate::file_uri::path_to_file_uri(&canonical);
-                let sibling_virtual_uri =
-                    self.virtual_uri_for(&sibling_uri, sibling_generated.virtual_suffix);
-                let sibling_virtual_ts: String = sibling_generated.code;
-
-                let client = match self.corsa_client.as_mut() {
-                    Some(client) => client,
-                    None => return,
-                };
-
-                let result = if self
-                    .open_virtual_documents
-                    .contains(sibling_virtual_uri.as_str())
-                {
-                    client.did_change(&sibling_virtual_uri, &sibling_virtual_ts)
-                } else {
-                    let r = client.did_open(&sibling_virtual_uri, &sibling_virtual_ts);
-                    if r.is_ok() {
-                        self.open_virtual_documents
-                            .insert(sibling_virtual_uri.clone());
-                    }
-                    r
-                };
-                if let Err(err) = result {
-                    tracing::debug!(
-                        "socket overlay sibling failed for {}: {err}",
-                        canonical.display(),
-                    );
-                    continue;
-                }
-
-                let next_specifiers = rewriter.collect_relative_vue_specifiers(
-                    sibling_generated.pre_rewrite_code.as_str(),
-                    sibling_generated.source_type,
-                );
-                if !next_specifiers.is_empty() {
-                    let next_dir = canonical
-                        .parent()
-                        .map(|p| p.to_path_buf())
-                        .unwrap_or_else(|| canonical.clone());
-                    queue.push((next_dir, next_specifiers));
-                }
-            }
-        }
-    }
-
-    fn virtual_uri_for(&self, uri: &str, virtual_suffix: &str) -> String {
-        if uri.starts_with("file://") || uri.contains("://") {
-            return cstr!("{uri}{virtual_suffix}");
-        }
-
-        let virtual_path = cstr!("{uri}{virtual_suffix}");
-        let path = Path::new(virtual_path.as_str());
-        let path = if path.is_absolute() {
-            path.to_path_buf()
-        } else {
-            self.working_dir().join(path)
-        };
-        crate::file_uri::path_to_file_uri(&path)
-    }
-
     fn working_dir(&self) -> PathBuf {
         self.config
             .working_dir
@@ -577,10 +432,9 @@ impl Default for CorsaServer {
 /// entry point so the socket-mode check stays as fast as the Virtual TS path.
 /// Resolve a URI (file:// or plain path) to an absolute filesystem path.
 /// Returns None when the URI is a non-`file` scheme, the path cannot be
-/// extracted, or percent-decoding yields invalid UTF-8. Used by socket-mode
-/// sibling overlay to read siblings from disk. `file://` URIs go through the
-/// shared converter in `crate::file_uri` so percent-escapes are decoded as
-/// UTF-8 byte sequences (not per-byte chars, which garbles non-ASCII paths).
+/// extracted, or percent-decoding yields invalid UTF-8. `file://` URIs go
+/// through the shared converter in `crate::file_uri` so percent-escapes are
+/// decoded as UTF-8 byte sequences.
 fn uri_to_path(uri: &str, working_dir: &Path) -> Option<PathBuf> {
     if uri.starts_with("file://") {
         return crate::file_uri::file_uri_to_path(uri);
@@ -659,8 +513,7 @@ fn offset_to_line_column(source: &str, offset: usize) -> (u32, u32) {
 mod tests {
     use std::path::{Path, PathBuf};
 
-    use super::{CorsaServer, JsonRpcRequest, ServerConfig, uri_to_path};
-    use vize_carton::String;
+    use super::{JsonRpcRequest, uri_to_path};
 
     #[test]
     fn test_json_rpc_request_parse() {
@@ -668,39 +521,6 @@ mod tests {
         let request: JsonRpcRequest = serde_json::from_str(json).unwrap();
         assert_eq!(request.method, "check");
         assert_eq!(request.id, Some(1));
-    }
-
-    #[test]
-    fn relative_virtual_uris_are_rooted_in_working_dir() {
-        let server = CorsaServer::with_config(ServerConfig {
-            corsa_path: None,
-            working_dir: Some("/workspace/project".into()),
-        });
-
-        assert_eq!(
-            server.virtual_uri_for("src/App.vue", ".ts"),
-            String::from("file:///workspace/project/src/App.vue.ts")
-        );
-    }
-
-    #[test]
-    fn absolute_virtual_uris_are_file_uris() {
-        let server = CorsaServer::new();
-
-        assert_eq!(
-            server.virtual_uri_for("/workspace/pages/[name] #1.vue", ".ts"),
-            String::from("file:///workspace/pages/%5Bname%5D%20%231.vue.ts")
-        );
-    }
-
-    #[test]
-    fn existing_file_uris_keep_their_scheme() {
-        let server = CorsaServer::new();
-
-        assert_eq!(
-            server.virtual_uri_for("file:///workspace/src/App.vue", ".tsx"),
-            String::from("file:///workspace/src/App.vue.tsx")
-        );
     }
 
     #[test]

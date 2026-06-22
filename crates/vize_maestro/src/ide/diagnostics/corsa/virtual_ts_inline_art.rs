@@ -7,9 +7,7 @@ use vize_canon::virtual_ts::{
 };
 
 use super::super::{DiagnosticService, VirtualTsResult};
-use super::virtual_ts::{
-    collect_relative_ts_specifiers, collect_relative_vue_specifiers, rewrite_vue_imports,
-};
+use super::virtual_ts::rewrite_vue_imports;
 
 fn add_inline_self_component_binding(
     options: &mut VirtualTsOptions,
@@ -115,9 +113,6 @@ impl DiagnosticService {
                 );
                 let code = output.code;
                 let line_mappings = Self::parse_vize_map_comments(&code);
-                let relative_vue_imports = collect_relative_vue_specifiers(&code);
-                let relative_ts_imports =
-                    collect_relative_ts_specifiers(&code, oxc_span::SourceType::ts());
                 let (rewritten_code, import_source_map) = rewrite_vue_imports(&code);
 
                 results.push((
@@ -126,8 +121,6 @@ impl DiagnosticService {
                         code: rewritten_code,
                         source_mappings: output.mappings,
                         import_source_map,
-                        relative_vue_imports,
-                        relative_ts_imports,
                         user_code_start_line: code
                             .lines()
                             .enumerate()

@@ -74,29 +74,6 @@ fn editor_virtual_ts_rewrites_dot_vue_imports() {
         "expected rewritten alias specifier, got:\n{}",
         result.code,
     );
-    // Only relative specifiers feed the sibling overlay; alias and bare
-    // imports are excluded since they resolve via tsconfig paths and the
-    // ambient stub respectively.
-    assert!(
-        result.relative_vue_imports.iter().any(|s| s == "./app.vue"),
-        "expected ./app.vue in relative_vue_imports, got {:?}",
-        result.relative_vue_imports,
-    );
-    assert!(
-        result
-            .relative_vue_imports
-            .iter()
-            .any(|s| s == "../shared/Sib.vue"),
-        "expected ../shared/Sib.vue in relative_vue_imports, got {:?}",
-        result.relative_vue_imports,
-    );
-    assert!(
-        !result
-            .relative_vue_imports
-            .iter()
-            .any(|s| s == "@/Alias.vue"),
-        "alias specifier must not appear in relative_vue_imports",
-    );
 }
 
 #[test]
@@ -161,14 +138,6 @@ defineArt("./Button.vue", { title: "Button" });
             .contains("import __VizeArtTarget_Button from \"./Button.vue.ts\";"),
         "expected defineArt component import, got:\n{}",
         result.code,
-    );
-    assert!(
-        result
-            .relative_vue_imports
-            .iter()
-            .any(|s| s == "./Button.vue"),
-        "expected ./Button.vue to be overlaid, got {:?}",
-        result.relative_vue_imports,
     );
     assert!(
         result

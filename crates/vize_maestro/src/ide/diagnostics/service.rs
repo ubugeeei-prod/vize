@@ -30,11 +30,6 @@ pub(in crate::ide) struct VirtualTsResult {
     /// Byte-offset mapping from post-rewrite to pre-rewrite virtual TS.
     /// Empty when no `.vue` import specifiers were rewritten.
     pub(in crate::ide) import_source_map: vize_canon::ImportSourceMap,
-    /// Relative `.vue` import specifiers found in the SFC's script. The
-    /// editor session overlays each sibling's virtual TS so relative
-    /// imports resolve under the temp-dir Corsa session (issue #752).
-    pub(in crate::ide) relative_vue_imports: Vec<std::string::String>,
-    pub(in crate::ide) relative_ts_imports: Vec<std::string::String>,
     /// Line number where user code starts in virtual TS (0-indexed)
     pub(in crate::ide) user_code_start_line: u32,
     /// Line number where script starts in original SFC (1-indexed)

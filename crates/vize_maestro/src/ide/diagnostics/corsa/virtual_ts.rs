@@ -3,7 +3,15 @@
 use tower_lsp::lsp_types::Url;
 
 use super::super::{DiagnosticService, SourceMapping, VirtualTsResult};
-use vize_canon::{ImportRewriter, ImportSourceMap};
+use vize_canon::{CorsaVueVirtualDocument, ImportRewriter, ImportSourceMap};
+
+struct VirtualTsMetadata {
+    user_code_start_line: u32,
+    sfc_script_start_line: u32,
+    template_scope_start_line: u32,
+    line_mappings: Vec<Option<SourceMapping>>,
+    skipped_import_lines: u32,
+}
 
 /// Apply `ImportRewriter` to the generated virtual TS so `.vue` imports
 /// resolve to the generated `.vue.ts` mirrors in the editor Corsa session.
@@ -21,76 +29,30 @@ pub(super) fn rewrite_vue_imports(code: &str) -> (std::string::String, ImportSou
     (result.code.to_string(), result.source_map)
 }
 
-pub(super) fn collect_relative_vue_specifiers(code: &str) -> Vec<std::string::String> {
-    use oxc_span::SourceType;
-    #[allow(clippy::disallowed_methods)]
-    ImportRewriter::new()
-        .collect_relative_vue_specifiers(code, SourceType::ts())
-        .into_iter()
-        .map(|s| s.to_string())
-        .collect()
-}
-
-pub(super) fn collect_relative_ts_specifiers(
-    code: &str,
-    source_type: oxc_span::SourceType,
-) -> Vec<std::string::String> {
-    use oxc_allocator::Allocator;
-    use oxc_ast::ast::{Expression, Statement};
-    use oxc_ast_visit::Visit;
-    use oxc_parser::Parser;
-
-    let allocator = Allocator::default();
-    let result = Parser::new(&allocator, code, source_type).parse();
-    let mut specifiers = Vec::new();
-    let mut push = |path: &str| {
-        if (path.starts_with("./") || path.starts_with("../"))
-            && !path.ends_with(".vue")
-            && !path.ends_with(".vue.ts")
-            && !specifiers.iter().any(|s: &std::string::String| s == path)
-        {
-            specifiers.push(path.to_string());
-        }
-    };
-
-    for stmt in &result.program.body {
-        match stmt {
-            Statement::ImportDeclaration(decl) => push(&decl.source.value),
-            Statement::ExportNamedDeclaration(decl) => {
-                if let Some(source) = &decl.source {
-                    push(&source.value);
-                }
-            }
-            Statement::ExportAllDeclaration(decl) => push(&decl.source.value),
-            _ => {}
-        }
-    }
-
-    struct DynamicImportCollector {
-        imports: Vec<std::string::String>,
-    }
-    impl<'a> Visit<'a> for DynamicImportCollector {
-        fn visit_import_expression(&mut self, expr: &oxc_ast::ast::ImportExpression<'a>) {
-            if let Expression::StringLiteral(lit) = &expr.source {
-                self.imports.push(lit.value.as_str().to_string());
-            }
-            oxc_ast_visit::walk::walk_import_expression(self, expr);
-        }
-    }
-
-    let mut collector = DynamicImportCollector {
-        imports: Vec::new(),
-    };
-    collector.visit_program(&result.program);
-    for path in collector.imports {
-        push(&path);
-    }
-
-    specifiers
-}
-
 impl DiagnosticService {
+    pub(in crate::ide) fn virtual_ts_result_from_corsa_vue_document(
+        uri: &Url,
+        content: &str,
+        opened: CorsaVueVirtualDocument,
+    ) -> Option<(std::string::String, VirtualTsResult)> {
+        let metadata = Self::virtual_ts_metadata(uri, content, &opened.pre_rewrite_code)?;
+        Some((
+            opened.request_uri.to_string(),
+            VirtualTsResult {
+                code: opened.code.to_string(),
+                source_mappings: opened.mappings,
+                import_source_map: opened.import_source_map,
+                user_code_start_line: metadata.user_code_start_line,
+                sfc_script_start_line: metadata.sfc_script_start_line,
+                template_scope_start_line: metadata.template_scope_start_line,
+                line_mappings: metadata.line_mappings,
+                skipped_import_lines: metadata.skipped_import_lines,
+            },
+        ))
+    }
+
     /// Generate virtual TypeScript for a Vue SFC.
+    #[cfg(test)]
     pub(in crate::ide) fn generate_virtual_ts(
         uri: &Url,
         content: &str,
@@ -98,29 +60,9 @@ impl DiagnosticService {
         legacy_vue2: bool,
     ) -> Option<VirtualTsResult> {
         use std::path::Path;
-        use vize_atelier_sfc::{
-            SfcParseOptions,
-            croquis::{SfcCroquisOptions, script_content_for_descriptor},
-            parse_sfc,
-        };
         use vize_canon::{
             batch::{VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts_with_options},
             virtual_ts::VirtualTsOptions,
-        };
-
-        let options = SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let descriptor = parse_sfc(content, options).ok()?;
-
-        let (script_content, script_offset) =
-            script_content_for_descriptor(&descriptor, SfcCroquisOptions::full());
-        let sfc_script_start_line = if script_content.as_ref().is_some_and(|s| s.is_empty()) {
-            1
-        } else {
-            crate::ide::offset_to_position(content, script_offset as usize).0 + 1
         };
 
         let virtual_ts_options = VirtualTsOptions::default();
@@ -138,61 +80,67 @@ impl DiagnosticService {
         )
         .ok()?;
         let code = generated.pre_rewrite_code;
+        let metadata = Self::virtual_ts_metadata(uri, content, &code)?;
 
-        // Count import lines in script content (these are moved to module scope)
-        // Import lines are skipped from user setup code section
-        let skipped_import_lines =
-            Self::count_import_lines(script_content.as_deref().unwrap_or_default());
+        // The generated code is the same rewritten `.vue.ts` document that
+        // CorsaBridge syncs for editor sessions; this helper keeps the mapping
+        // metadata available to tests without owning dependency synchronization.
+        Some(VirtualTsResult {
+            code: generated.code.to_string(),
+            source_mappings: generated.mappings,
+            import_source_map: generated.import_source_map,
+            user_code_start_line: metadata.user_code_start_line,
+            sfc_script_start_line: metadata.sfc_script_start_line,
+            template_scope_start_line: metadata.template_scope_start_line,
+            line_mappings: metadata.line_mappings,
+            skipped_import_lines: metadata.skipped_import_lines,
+        })
+    }
 
-        // Find where user code starts in generated virtual TS
-        // Look for "// User setup code" comment
-        let user_code_start_line = code
+    fn virtual_ts_metadata(
+        uri: &Url,
+        content: &str,
+        pre_rewrite_code: &str,
+    ) -> Option<VirtualTsMetadata> {
+        use vize_atelier_sfc::{
+            SfcParseOptions,
+            croquis::{SfcCroquisOptions, script_content_for_descriptor},
+            parse_sfc,
+        };
+
+        let options = SfcParseOptions {
+            filename: uri.path().to_string().into(),
+            ..Default::default()
+        };
+        let descriptor = parse_sfc(content, options).ok()?;
+        let (script_content, script_offset) =
+            script_content_for_descriptor(&descriptor, SfcCroquisOptions::full());
+        let sfc_script_start_line = if script_content.as_ref().is_some_and(|s| s.is_empty()) {
+            1
+        } else {
+            crate::ide::offset_to_position(content, script_offset as usize).0 + 1
+        };
+        let user_code_start_line = pre_rewrite_code
             .lines()
             .enumerate()
             .find(|(_, line)| line.contains("// User setup code"))
-            .map(|(i, _)| i as u32 + 1) // +1 because user code is on next line
+            .map(|(i, _)| i as u32 + 1)
             .unwrap_or(0);
-
-        // Find where template scope starts in generated virtual TS
-        // Look for "// Template Scope" or "// ========== Template Scope" comment
-        let template_scope_start_line = code
+        let template_scope_start_line = pre_rewrite_code
             .lines()
             .enumerate()
             .find(|(_, line)| line.contains("Template Scope"))
             .map(|(i, _)| i as u32)
             .unwrap_or(u32::MAX);
 
-        // Parse @vize-map comments to build line mappings
-        // Format: // @vize-map: TYPE -> START:END
-        // Where START:END are byte offsets in the SFC
-        // @vize-map comments are inserted by the generator on dedicated lines,
-        // so line indices survive the `.vue` → `.vue.ts` import rewrite below
-        // (which only edits bytes inside string literals on import lines).
-        let line_mappings = Self::parse_vize_map_comments(&code);
-
-        // Issue #752: rewrite `.vue` import specifiers to `.vue.ts` so the
-        // editor's Corsa session resolves sibling SFCs via the same virtual
-        // mirrors used by the batch path. Collect the relative specifiers
-        // from the pre-rewrite code so the caller can overlay siblings.
-        let relative_vue_imports = rewriter
-            .collect_relative_vue_specifiers(code.as_str(), generated.source_type)
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect();
-        let relative_ts_imports =
-            collect_relative_ts_specifiers(code.as_str(), generated.source_type);
-
-        Some(VirtualTsResult {
-            code: generated.code.to_string(),
-            source_mappings: generated.mappings,
-            import_source_map: generated.import_source_map,
-            relative_vue_imports,
-            relative_ts_imports,
+        Some(VirtualTsMetadata {
             user_code_start_line,
             sfc_script_start_line,
             template_scope_start_line,
-            line_mappings,
-            skipped_import_lines,
+            line_mappings: Self::parse_vize_map_comments(pre_rewrite_code),
+            skipped_import_lines: Self::count_import_lines(
+                script_content.as_deref().unwrap_or_default(),
+            ),
         })
     }
 

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use tower_lsp::lsp_types::{Location, Range, Url};
-use vize_canon::{CorsaBridge, LspLocation};
+use vize_canon::{CorsaBridge, CorsaVueVirtualDocumentOptions, LspLocation};
 use vize_carton::{String, cstr};
 
 use crate::ide::IdeContext;
@@ -24,38 +24,31 @@ pub(crate) async fn open_canonical_virtual_document(
         return None;
     }
 
-    let options_api = ctx.state.options_api_enabled();
-    let legacy_vue2 = ctx.state.legacy_vue2_enabled();
-    let virtual_result = crate::ide::DiagnosticService::generate_virtual_ts(
-        ctx.uri,
-        &ctx.content,
-        options_api,
-        legacy_vue2,
-    )?;
-
-    crate::ide::diagnostics::corsa::collect::overlay_sibling_vue_mirrors(
-        bridge,
-        ctx.uri,
-        &virtual_result.relative_vue_imports,
-        options_api,
-        legacy_vue2,
-    )
-    .await;
-    crate::ide::diagnostics::corsa::collect::overlay_relative_ts_imports(
-        bridge,
-        ctx.uri,
-        &virtual_result.relative_ts_imports,
-    )
-    .await;
-
-    let request_uri = bridge
-        .open_or_update_virtual_document(&canonical_request_path(ctx.uri), &virtual_result.code)
+    let source_path = ctx.uri.to_file_path().ok()?;
+    let opened = bridge
+        .open_vue_virtual_document(
+            &source_path,
+            &ctx.content,
+            CorsaVueVirtualDocumentOptions {
+                options_api: ctx.state.options_api_enabled(),
+                legacy_vue2: ctx.state.legacy_vue2_enabled(),
+            },
+        )
         .await
         .ok()?;
 
     Some(CanonicalVirtualDocument {
-        request_uri,
-        virtual_result,
+        request_uri: opened.request_uri,
+        virtual_result: VirtualTsResult {
+            code: opened.code.to_string(),
+            source_mappings: opened.mappings,
+            import_source_map: opened.import_source_map,
+            user_code_start_line: 0,
+            sfc_script_start_line: 0,
+            template_scope_start_line: 0,
+            line_mappings: Vec::new(),
+            skipped_import_lines: 0,
+        },
     })
 }
 

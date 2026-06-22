@@ -109,10 +109,11 @@ pub use vize_carton::i18n::Locale;
 
 #[cfg(feature = "native")]
 pub use corsa_bridge::{
-    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionList,
-    LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
-    LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition,
-    LspRange, VIRTUAL_URI_SCHEME,
+    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaVueVirtualDocument,
+    CorsaVueVirtualDocumentOptions, LspCompletionItem, LspCompletionList, LspCompletionResponse,
+    LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover, LspHoverContents,
+    LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition, LspRange,
+    VIRTUAL_URI_SCHEME,
 };
 
 // Re-export batch type checker

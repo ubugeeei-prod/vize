@@ -3,7 +3,6 @@
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Position, Range, Url};
 
 use super::super::{VirtualTsResult, sources};
-use super::collect::{overlay_relative_ts_imports, overlay_sibling_vue_mirrors};
 use super::mapping::{map_diagnostic_with_source_mappings, source_offset_to_position};
 use super::message::rewrite_corsa_message;
 
@@ -13,8 +12,34 @@ pub(super) async fn collect_virtual_result_diagnostics(
     content: &str,
     virtual_name: String,
     virtual_result: VirtualTsResult,
-    options_api: bool,
-    legacy_vue2: bool,
+) -> Vec<Diagnostic> {
+    let virtual_uri = match bridge
+        .open_or_update_virtual_document(&virtual_name, &virtual_result.code)
+        .await
+    {
+        Ok(uri) => uri,
+        Err(e) => {
+            tracing::warn!("failed to open/update virtual document: {}", e);
+            return vec![];
+        }
+    };
+
+    collect_synced_virtual_result_diagnostics(
+        bridge,
+        host_uri,
+        content,
+        virtual_uri.to_string(),
+        virtual_result,
+    )
+    .await
+}
+
+pub(super) async fn collect_synced_virtual_result_diagnostics(
+    bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
+    _host_uri: &Url,
+    content: &str,
+    virtual_uri: String,
+    virtual_result: VirtualTsResult,
 ) -> Vec<Diagnostic> {
     let virtual_ts = &virtual_result.code;
     let user_code_start_line = virtual_result.user_code_start_line;
@@ -30,31 +55,6 @@ pub(super) async fn collect_virtual_result_diagnostics(
         template_scope_start_line,
         line_mappings.iter().filter(|m| m.is_some()).count()
     );
-
-    overlay_sibling_vue_mirrors(
-        bridge,
-        host_uri,
-        &virtual_result.relative_vue_imports,
-        options_api,
-        legacy_vue2,
-    )
-    .await;
-    overlay_relative_ts_imports(bridge, host_uri, &virtual_result.relative_ts_imports).await;
-
-    tracing::info!("opening/updating virtual document: {}", virtual_name);
-    let virtual_uri = match bridge
-        .open_or_update_virtual_document(&virtual_name, virtual_ts)
-        .await
-    {
-        Ok(uri) => {
-            tracing::info!("virtual document opened/updated successfully: {}", uri);
-            uri
-        }
-        Err(e) => {
-            tracing::warn!("failed to open/update virtual document: {}", e);
-            return vec![];
-        }
-    };
 
     tracing::info!(
         "waiting for diagnostics from corsa bridge for {}",

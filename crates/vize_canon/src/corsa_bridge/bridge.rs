@@ -439,7 +439,7 @@ impl CorsaBridge {
         Ok(Vec::new())
     }
 
-    async fn with_client<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
+    pub(super) async fn with_client<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
     where
         F: FnOnce(&mut CorsaProjectClient) -> Result<R, CorsaBridgeError>,
     {
