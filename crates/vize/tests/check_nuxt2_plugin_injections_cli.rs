@@ -30,8 +30,14 @@ fn check_nuxt2_use_context_sees_plugin_injections() {
         &project_root,
         "types/nuxt.d.ts",
         r##"declare module "@nuxt/types" {
-  export interface Context {}
-  export interface NuxtAppOptions {}
+  export interface Context {
+    app: NuxtAppOptions;
+  }
+  export interface NuxtAppOptions {
+    i18n: {
+      t(key: string): string;
+    };
+  }
 }
 
 declare module "@nuxtjs/composition-api" {
@@ -67,6 +73,7 @@ import { useContext } from "@nuxtjs/composition-api";
 
 const context = useContext();
 context.$logger.info("ready");
+context.app.$logger.info(context.app.i18n.t("ready"));
 </script>
 "#,
     );
