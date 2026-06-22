@@ -191,3 +191,81 @@ if (import.meta.vitest) {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn check_provides_define_art_for_standalone_musea_art_files() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("standalone-art");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    write(
+        &project_root,
+        "tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    );
+    write(
+        &project_root,
+        "src/MyButton.vue",
+        r#"<script setup lang="ts">
+defineProps<{ label?: string }>()
+</script>
+
+<template><button>{{ label }}</button></template>
+"#,
+    );
+    write(
+        &project_root,
+        "src/MyButton.art.vue",
+        r#"<art>
+defineArt("./MyButton.vue", {
+  title: "MyButton"
+});
+</art>
+
+<variant name="Default">
+  <MyButton label="Hello" />
+</variant>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "src/MyButton.art.vue",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    assert!(
+        !stdout.contains("TS2304") && !stdout.contains("defineArt"),
+        "standalone art file should receive defineArt ambient type:\n{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

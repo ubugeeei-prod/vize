@@ -20,6 +20,15 @@ use super::build::{
     build_vue_registered_file, source_type_for_path,
 };
 
+const MUSEA_DEFINE_ART_STUB: &str =
+    "declare function defineArt(source: string, options?: Record<string, any>): void;";
+
+fn is_musea_art_vue_path(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".art.vue"))
+}
+
 impl VirtualProject {
     /// Create a new virtual project.
     pub fn new(project_root: &Path) -> CorsaResult<Self> {
@@ -255,6 +264,17 @@ impl VirtualProject {
     }
 
     fn absorb_registered_file(&mut self, registered: RegisteredFile) {
+        if is_musea_art_vue_path(&registered.file.original_path)
+            && !self
+                .virtual_ts_options
+                .auto_import_stubs
+                .iter()
+                .any(|stub| stub.contains("defineArt"))
+        {
+            self.virtual_ts_options
+                .auto_import_stubs
+                .push(MUSEA_DEFINE_ART_STUB.into());
+        }
         self.diagnostics.extend(registered.diagnostics);
         self.original_index.insert(
             registered.file.original_path.clone(),
