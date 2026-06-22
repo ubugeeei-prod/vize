@@ -751,6 +751,64 @@ assert.equal(
   "CSS-visible delegated styles should keep Vite pipeline semantics",
 );
 
+const ssrStylePath = "/src/DeferredDemo.vue";
+const ssrStyleState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      ssrStylePath,
+      {
+        code: `export default { __name: "DeferredDemoClient" }`,
+        scopeId: "clientstyle",
+        hasScoped: false,
+        styles: [
+          {
+            content: "export default { props: { options: { type: Object } } }",
+            lang: "css",
+            scoped: false,
+            module: false,
+            index: 0,
+          },
+        ],
+      },
+    ],
+  ]),
+  ssrCache: new Map([
+    [
+      ssrStylePath,
+      {
+        code: `export default { __name: "DeferredDemoSsr" }`,
+        scopeId: "ssrstyle",
+        hasScoped: false,
+        styles: [
+          {
+            content: ".deferred-demo-loading { height: 350px; }",
+            lang: "css",
+            scoped: false,
+            module: false,
+            index: 0,
+          },
+        ],
+      },
+    ],
+  ]),
+};
+
+const ssrStyleLoad = loadHook(
+  ssrStyleState,
+  "/src/DeferredDemo.vue?vue=&type=style&index=0&lang=css.css?inline&used.css.css?inline",
+  { ssr: true },
+);
+assert.ok(
+  ssrStyleLoad && typeof ssrStyleLoad === "object",
+  "SSR style requests with CSS suffixes should load as code objects",
+);
+assert.equal(
+  ssrStyleLoad.code,
+  ".deferred-demo-loading { height: 350px; }",
+  "SSR style requests should read style blocks from the SSR cache before the client cache",
+);
+
 const nestedCssPath = "/src/NestedStyles.vue";
 const nestedCssState: VizePluginState = {
   ...hmrState,
