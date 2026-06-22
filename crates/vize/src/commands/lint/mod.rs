@@ -73,7 +73,6 @@ pub fn run(args: LintArgs) {
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
     let ignore_set = load_lint_ignore_set(&args, config_dir);
-    // Collect lintable files using glob patterns or directory walking.
     let collect_start = Instant::now();
     let files = collect_lint_files(&args.patterns, ignore_set.as_ref());
     let collect_time = collect_start.elapsed();
