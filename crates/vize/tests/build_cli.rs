@@ -293,3 +293,47 @@ fn build_respects_configured_template_syntax_quirks() {
 
     let _ = fs::remove_dir_all(project_root);
 }
+
+#[test]
+fn build_rejects_legacy_vue_without_host_compiler() {
+    let project_root = temp_project_dir("legacy-vue-without-host-compiler");
+    write_project_file(
+        &project_root,
+        "vize.config.json",
+        r#"{
+  "compiler": {
+    "compatibility": {
+      "vueVersion": "2.7",
+      "hostCompiler": false
+    }
+  }
+}
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "src/App.vue",
+        r#"<template><div /></template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["build", "--format", "js", "src/App.vue", "--output", "dist"])
+        .output()
+        .unwrap();
+
+    assert!(
+        !output.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("compiler.compatibility.hostCompiler=false is unsupported"),
+        "{stderr}"
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}

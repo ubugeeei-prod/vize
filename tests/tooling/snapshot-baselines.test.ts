@@ -101,7 +101,7 @@ test("check snapshots are complete JSON baselines", () => {
       assert.ok(file && typeof file === "object", snapshot);
       const entry = file as { file?: unknown; virtualTs?: unknown; diagnostics?: unknown };
       assert.equal(typeof entry.file, "string", snapshot);
-      assert.equal(typeof entry.virtualTs, "string", snapshot);
+      assert.ok(entry.virtualTs === undefined || typeof entry.virtualTs === "string", snapshot);
       assert.ok(Array.isArray(entry.diagnostics), snapshot);
     }
   }

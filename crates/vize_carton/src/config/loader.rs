@@ -157,6 +157,15 @@ pub fn load_compiler_vue_version(path: Option<&Path>) -> Option<crate::config::V
     features.vue_version
 }
 
+/// Load `compiler.compatibility.hostCompiler` when explicitly configured.
+pub fn load_compiler_host_compiler(path: Option<&Path>) -> Option<bool> {
+    load_raw_config_with_source(path)
+        .config
+        .compiler
+        .compatibility
+        .host_compiler
+}
+
 /// Load the configured `compiler.jsxMode` default output mode (#1496).
 ///
 /// Returns `None` when the key is absent (treated as VDOM by the JSX entry

@@ -53,6 +53,7 @@ impl JsxMode {
 #[serde(default, rename_all = "camelCase")]
 pub(crate) struct RawCompilerCompatibilityConfig {
     pub(crate) vue_version: Option<VueVersion>,
+    pub(crate) host_compiler: Option<bool>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]

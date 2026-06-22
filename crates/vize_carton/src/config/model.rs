@@ -273,7 +273,7 @@ impl RawVizeConfig {
             type_checker_legacy_vue2,
             type_checker_jsx_typecheck,
             language_server_legacy_vue2: language_server_raw.legacy_vue2,
-            vue_version: vue.version,
+            vue_version: vue.version.or(compiler.compatibility.vue_version),
             jsx_mode: compiler.jsx_mode,
         };
 

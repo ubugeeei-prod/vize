@@ -57,6 +57,19 @@ pub(crate) fn run(args: BuildArgs) {
     } else {
         crate::config::load_compiler_vue_version(args.config.as_deref())
     };
+    let configured_host_compiler = if args.no_config {
+        None
+    } else {
+        crate::config::load_compiler_host_compiler(args.config.as_deref())
+    };
+    if configured_dialect.is_some_and(|dialect| dialect.is_legacy())
+        && configured_host_compiler == Some(false)
+    {
+        eprintln!(
+            "\x1b[31mError:\x1b[0m compiler.compatibility.hostCompiler=false is unsupported for Vue 2 compatibility mode"
+        );
+        std::process::exit(1);
+    }
 
     if let Some(threads) = args.threads
         && let Err(error) = rayon::ThreadPoolBuilder::new()

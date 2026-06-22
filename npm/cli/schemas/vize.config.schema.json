@@ -86,16 +86,8 @@
     },
     "VueVersion": {
       "description": "Host Vue runtime version for opt-in compatibility modes",
-      "oneOf": [
-        {
-          "type": "number",
-          "enum": [0.11, 1, 2, 3]
-        },
-        {
-          "type": "string",
-          "enum": ["legacy"]
-        }
-      ]
+      "type": "string",
+      "enum": ["3", "2.7", "2", "1", "0.11", "0.10"]
     },
     "CompilerCompatibilityConfig": {
       "description": "Opt-in compatibility features for unsupported host/runtime combinations",

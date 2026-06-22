@@ -1,8 +1,8 @@
 use super::{
-    load_compiler_jsx_mode, load_compiler_template_syntax, load_compiler_vue_version,
-    load_config_and_linter_with_source, load_config_entry_files_with_source,
-    load_config_entry_ignores_with_source, load_config_with_source, load_linter_config,
-    validate_explicit_config_path,
+    load_compiler_host_compiler, load_compiler_jsx_mode, load_compiler_template_syntax,
+    load_compiler_vue_version, load_config_and_linter_with_source,
+    load_config_entry_files_with_source, load_config_entry_ignores_with_source,
+    load_config_with_source, load_linter_config, validate_explicit_config_path,
 };
 use crate::config::{JsxMode, VueVersion};
 
@@ -128,6 +128,35 @@ fn load_compiler_vue_version_reads_vue_version_key() {
 }
 
 #[test]
+fn load_compiler_vue_version_reads_compiler_compatibility_key() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{ "compiler": { "compatibility": { "vueVersion": "2.7" } } }"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        load_compiler_vue_version(Some(&config_path)),
+        Some(VueVersion::V2_7)
+    );
+}
+
+#[test]
+fn load_compiler_host_compiler_reads_compiler_compatibility_key() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{ "compiler": { "compatibility": { "hostCompiler": false } } }"#,
+    )
+    .unwrap();
+
+    assert_eq!(load_compiler_host_compiler(Some(&config_path)), Some(false));
+}
+
+#[test]
 fn load_compiler_vue_version_defaults_to_unset_for_vue3() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("vize.config.json");
@@ -188,6 +217,10 @@ export default {
       "vue/prop-name-casing": "off",
       "script/no-options-api": "error",
     },
+    categories: {
+      "style": "off",
+      "a11y": "warn",
+    },
   },
 }
 "#,
@@ -208,6 +241,11 @@ export default {
     );
     assert_eq!(linter.disabled_rules(), ["vue/prop-name-casing"]);
     assert_eq!(linter.enabled_rules(), ["script/no-options-api"]);
+    assert_eq!(linter.disabled_categories(), ["style"]);
+    assert_eq!(
+        linter.category_severity_overrides(),
+        [("a11y".into(), crate::config::LintRuleSeverity::Warn)]
+    );
 }
 
 #[test]
