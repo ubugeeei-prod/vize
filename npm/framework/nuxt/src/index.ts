@@ -369,7 +369,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
     },
   );
   const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
-  if (compilerOptions !== false) {
+  if (compilerOptions !== false && compilerOptions.compatibility?.hostCompiler !== true) {
     const { default: vize } = await import("@vizejs/vite-plugin");
     nuxt.options.vite ||= {};
     nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
