@@ -22,7 +22,9 @@ mod type_references;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use ambient::collect_ambient_declaration_files;
+pub(crate) use ambient::{
+    collect_ambient_declaration_files, collect_hidden_ambient_declaration_files,
+};
 pub(crate) use collect::resolve_tsconfig_for_files;
 pub(super) use jsonc::parse_jsonc_value;
 pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};

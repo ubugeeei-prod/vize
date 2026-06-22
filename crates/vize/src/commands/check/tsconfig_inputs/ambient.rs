@@ -39,8 +39,32 @@ pub(crate) fn collect_ambient_declaration_files(
     cache: &mut TsconfigInputCache,
 ) -> Vec<PathBuf> {
     let project_root = normalize_input_path(project_root);
-    let mut files =
-        collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
+    let files = collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
+    collect_ambient_declaration_files_from(project_root, files)
+}
+
+pub(crate) fn collect_hidden_ambient_declaration_files(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+    cache: &mut TsconfigInputCache,
+) -> Vec<PathBuf> {
+    let project_root = normalize_input_path(project_root);
+    let visible =
+        collect_default_check_files_inner(&project_root, tsconfig_path, false, false, cache)
+            .into_iter()
+            .collect::<FxHashSet<_>>();
+    let hidden =
+        collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache)
+            .into_iter()
+            .filter(|path| !visible.contains(path))
+            .collect();
+    collect_ambient_declaration_files_from(project_root, hidden)
+}
+
+fn collect_ambient_declaration_files_from(
+    project_root: PathBuf,
+    mut files: Vec<PathBuf>,
+) -> Vec<PathBuf> {
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut index = 0;
     while index < files.len() {
