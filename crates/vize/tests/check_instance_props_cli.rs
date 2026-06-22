@@ -180,3 +180,88 @@ void key;
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn check_template_prop_checks_preserve_camel_case_sfc_props() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("camel-template-prop-mismatch");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    write(
+        &project_root,
+        "tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    );
+    write(
+        &project_root,
+        "src/Child.vue",
+        r#"<script setup lang="ts">
+defineProps<{
+  countTotal: number;
+}>();
+</script>
+
+<template>
+  <span>{{ countTotal }}</span>
+</template>
+"#,
+    );
+    write(
+        &project_root,
+        "src/Parent.vue",
+        r#"<script setup lang="ts">
+import Child from "./Child.vue";
+
+const wrong: string = "not a number";
+</script>
+
+<template>
+  <Child :countTotal="wrong" />
+</template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--no-config",
+            "--tsconfig",
+            "tsconfig.json",
+            "src/Parent.vue",
+            "src/Child.vue",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        !output.status.success(),
+        "camelCase prop mismatch should fail check:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["errorCount"], serde_json::json!(1), "{stdout}");
+    assert!(
+        stdout.contains("[TS2322]")
+            && stdout.contains("Type 'string' is not assignable to type 'number'"),
+        "camelCase child prop mismatch should report TS2322:\n{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

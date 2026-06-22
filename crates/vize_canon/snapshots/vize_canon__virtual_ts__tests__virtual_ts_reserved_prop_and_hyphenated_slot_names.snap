@@ -113,7 +113,7 @@ function __setup() {
   // Component props type declarations
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
   type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;
-  type __VizePropValue<P, K extends PropertyKey> = K extends keyof P ? P[K] : unknown;
+  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
   // @vize-map: component -> 0:27
   type __TrendChart_Props_0 = typeof TrendChart extends { new (): { $props: infer __P } } ? __P : (typeof TrendChart extends (props: infer __P) => any ? __P : {});
   type __TrendChart_0_prop_class = __VizePropValue<__TrendChart_Props_0, 'class'>;

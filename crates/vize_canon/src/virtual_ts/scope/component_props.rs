@@ -85,7 +85,7 @@ pub(super) fn generate_component_props(
             "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
         );
         ts.push_str(
-            "  type __VizePropValue<P, K extends PropertyKey> = K extends keyof P ? P[K] : unknown;\n",
+            "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",
         );
     }
 

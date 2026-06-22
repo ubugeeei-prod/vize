@@ -53,7 +53,7 @@ function __setup() {
   // Component props type declarations
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
   type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;
-  type __VizePropValue<P, K extends PropertyKey> = K extends keyof P ? P[K] : unknown;
+  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
   // @vize-map: component -> 97:121
   type __Child_Props_0 = typeof Child extends { new (): { $props: infer __P } } ? __P : (typeof Child extends (props: infer __P) => any ? __P : {});
   type __Child_0_prop_count = __VizePropValue<__Child_Props_0, 'count'>;
