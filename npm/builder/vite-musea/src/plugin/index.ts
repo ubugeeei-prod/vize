@@ -2,7 +2,6 @@ import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
 import { transformWithEsbuild } from "vite";
 import fs from "node:fs";
 import path from "node:path";
-import { VIZE_CONFIG_FILE_ENV, loadConfig, vizeConfigStore } from "@vizejs/vite-plugin";
 
 import type { MuseaOptions, ArtFileInfo, ArtMetadata } from "../types/index.js";
 
@@ -37,6 +36,7 @@ import {
   shouldEnableMuseaStaticBuild,
   type StaticBuildInput,
 } from "../static-export.js";
+import { resolveMuseaSharedConfig } from "./config.js";
 
 function extractArtTagAttributes(source: string): Record<string, string | true> {
   const artTagMatch = source.match(/<art\b([\s\S]*?)>/i);
@@ -390,34 +390,4 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   }
 
   return [mainPlugin];
-}
-
-async function resolveMuseaSharedConfig(resolvedConfig: ResolvedConfig) {
-  const sharedConfig = vizeConfigStore.get(resolvedConfig.root);
-  if (sharedConfig) {
-    return sharedConfig;
-  }
-
-  const configFile = process.env[VIZE_CONFIG_FILE_ENV];
-  if (!configFile) {
-    return null;
-  }
-
-  try {
-    return await loadConfig(resolvedConfig.root, {
-      configFile,
-      env: {
-        mode: resolvedConfig.mode,
-        command: resolvedConfig.command === "build" ? "build" : "serve",
-        isSsrBuild: !!resolvedConfig.build?.ssr,
-      },
-    });
-  } catch (error) {
-    throw new Error(
-      `[musea] Failed to load Vize config from ${configFile}: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-      { cause: error },
-    );
-  }
 }

@@ -1,4 +1,5 @@
-use super::{ServeArgs, VITE_BIN_NAMES, create_serve_plan, resolve_vite_binary};
+use super::ServeArgs;
+use super::serve_plan::{VITE_BIN_NAMES, create_serve_plan, resolve_vite_binary};
 use std::fs;
 use std::path::{Path, PathBuf};
 

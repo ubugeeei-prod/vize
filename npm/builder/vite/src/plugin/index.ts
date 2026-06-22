@@ -41,57 +41,12 @@ import {
   isLegacyVueCompatibilityMode,
   isLegacyVueVersion,
 } from "./vue-version.ts";
+import { mergeSharedConfig } from "./shared-config.ts";
 
 export type { VizePluginState } from "./state.ts";
 
 function aliasSortKey(find: string | RegExp): number {
   return typeof find === "string" ? find.length : find.source.length;
-}
-
-function mergeSharedConfig(
-  baseConfig: ResolvedVizeConfig | null,
-  overrideConfig: ResolvedVizeConfig | null,
-): ResolvedVizeConfig | null {
-  if (!baseConfig) return overrideConfig;
-  if (!overrideConfig) return baseConfig;
-
-  return {
-    ...baseConfig,
-    ...overrideConfig,
-    compiler: {
-      ...baseConfig.compiler,
-      ...overrideConfig.compiler,
-    },
-    vite: {
-      ...baseConfig.vite,
-      ...overrideConfig.vite,
-    },
-    linter: {
-      ...baseConfig.linter,
-      ...overrideConfig.linter,
-    },
-    typeChecker: {
-      ...baseConfig.typeChecker,
-      ...overrideConfig.typeChecker,
-    },
-    formatter: {
-      ...baseConfig.formatter,
-      ...overrideConfig.formatter,
-    },
-    languageServer: {
-      ...baseConfig.languageServer,
-      ...overrideConfig.languageServer,
-    },
-    musea: {
-      ...baseConfig.musea,
-      ...overrideConfig.musea,
-    },
-    globalTypes: {
-      ...baseConfig.globalTypes,
-      ...overrideConfig.globalTypes,
-    },
-    entries: [...baseConfig.entries, ...overrideConfig.entries],
-  };
 }
 
 function shouldExtractCssForBuild(

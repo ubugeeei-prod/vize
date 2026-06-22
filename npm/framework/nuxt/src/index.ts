@@ -1,6 +1,7 @@
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
 import { injectNuxtI18nHelpers } from "./i18n";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
+import "./schema";
 import type { VizeNuxtCompilerOptions, VizeNuxtOptions } from "./options";
 import {
   resolveNuxtBridgeOptions,
@@ -674,26 +675,6 @@ const vizeNuxtModule = Object.assign(
 );
 
 export default vizeNuxtModule;
-
-declare module "nuxt/schema" {
-  interface NuxtConfig {
-    vize?: Partial<VizeNuxtOptions>;
-  }
-
-  interface NuxtOptions {
-    vize?: Partial<VizeNuxtOptions>;
-  }
-}
-
-declare module "@nuxt/schema" {
-  interface NuxtConfig {
-    vize?: Partial<VizeNuxtOptions>;
-  }
-
-  interface NuxtOptions {
-    vize?: Partial<VizeNuxtOptions>;
-  }
-}
 
 // Re-export types for convenience
 export type { MuseaOptions } from "@vizejs/vite-plugin-musea";
