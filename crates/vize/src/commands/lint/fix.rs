@@ -36,6 +36,8 @@ fn lint_source(linter: &Linter, path: &Path, source: &str, filename: &str) -> Li
         linter.lint_standalone_html(source, filename)
     } else if is_plain_script_path(path) {
         linter.lint_script(source, filename)
+    } else if is_storybook_csf_path(path) {
+        empty_lint_result(filename)
     } else if let Some(lang) = jsx_lang_for_path(path) {
         linter.lint_jsx(source, filename, lang)
     } else {
@@ -90,5 +92,24 @@ fn jsx_lang_for_path(path: &Path) -> Option<JsxLang> {
         Some("jsx") => Some(JsxLang::Jsx),
         Some("tsx") => Some(JsxLang::Tsx),
         _ => None,
+    }
+}
+
+fn is_storybook_csf_path(path: &Path) -> bool {
+    let Some(file_name) = path.file_name().and_then(|file_name| file_name.to_str()) else {
+        return false;
+    };
+    file_name.ends_with(".stories.jsx")
+        || file_name.ends_with(".stories.tsx")
+        || file_name.ends_with(".story.jsx")
+        || file_name.ends_with(".story.tsx")
+}
+
+fn empty_lint_result(filename: &str) -> LintResult {
+    LintResult {
+        filename: filename.to_compact_string(),
+        diagnostics: Vec::new(),
+        error_count: 0,
+        warning_count: 0,
     }
 }
