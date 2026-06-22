@@ -2,10 +2,8 @@ import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
 import { transformWithEsbuild } from "vite";
 import fs from "node:fs";
 import path from "node:path";
-import type { MuseaOptions, ArtFileInfo, ArtMetadata } from "../types/index.js";
+import type { MuseaOptions, ArtFileInfo } from "../types/index.js";
 
-import { loadNative } from "../native-loader.js";
-import { extractScriptSetupContent, extractScriptSetupIsolated } from "../art-module.js";
 import {
   shouldProcess,
   scanArtFiles,
@@ -36,69 +34,7 @@ import {
   type StaticBuildInput,
 } from "../static-export.js";
 import { resolveMuseaSharedConfig } from "./config.js";
-
-function extractArtTagAttributes(source: string): Record<string, string | true> {
-  const artTagMatch = source.match(/<art\b([\s\S]*?)>/i);
-  if (!artTagMatch) return {};
-
-  const attributes: Record<string, string | true> = {};
-  const attrPattern = /([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g;
-
-  for (const match of artTagMatch[1].matchAll(attrPattern)) {
-    const name = match[1];
-    if (!name || name === "/") continue;
-    attributes[name] = match[2] ?? match[3] ?? true;
-  }
-
-  return attributes;
-}
-
-function parseActionEvents(value: string | true | undefined): string[] | undefined {
-  if (typeof value !== "string") return undefined;
-
-  const events = value
-    .split(",")
-    .map((eventName) => eventName.trim().toLowerCase())
-    .filter(Boolean);
-
-  return events.length > 0 ? [...new Set(events)] : undefined;
-}
-
-function extractCustomArtMetadata(source: string): Pick<ArtMetadata, "actionEvents"> {
-  const attrs = extractArtTagAttributes(source);
-  const actionEvents = new Set(parseActionEvents(attrs["action-events"]) ?? []);
-  const captureMousemove = attrs["capture-mousemove"];
-
-  if (captureMousemove === true || captureMousemove === "true") {
-    actionEvents.add("mousemove");
-  }
-
-  return {
-    actionEvents: actionEvents.size > 0 ? [...actionEvents] : undefined,
-  };
-}
-
-function extractStyleBlocks(source: string): string[] {
-  const styles: string[] = [];
-
-  for (const match of source.matchAll(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi)) {
-    const attrs = match[1] ?? "";
-    const content = match[2]?.trim();
-    const lang = attrs.match(/\blang\s*=\s*["']([^"']+)["']/i)?.[1]?.toLowerCase();
-
-    if (!content) {
-      continue;
-    }
-
-    if (lang && lang !== "css") {
-      continue;
-    }
-
-    styles.push(content);
-  }
-
-  return styles;
-}
+import { processMuseaArtFile } from "./art-processing.js";
 
 export function musea(options: MuseaOptions = {}): Plugin[] {
   let include = options.include ?? ["**/*.art.vue"];
@@ -260,13 +196,9 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           if (address && typeof address === "object") {
             const protocol = devServer.config.server.https ? "https" : "http";
             const rawHost = address.address;
-            const host =
-              rawHost === "::" ||
-              rawHost === "::1" ||
-              rawHost === "0.0.0.0" ||
-              rawHost === "127.0.0.1"
-                ? "localhost"
-                : rawHost;
+            const host = ["::", "::1", "0.0.0.0", "127.0.0.1"].includes(rawHost)
+              ? "localhost"
+              : rawHost;
             const port = address.port;
             const url = `${protocol}://${host}:${port}${basePath}`;
 
@@ -342,50 +274,11 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   };
 
   async function processArtFile(filePath: string): Promise<void> {
-    try {
-      const source = await fs.promises.readFile(filePath, "utf-8");
-      const binding = loadNative();
-      const parsed = binding.parseArt(source, { filename: filePath });
-      const customMetadata = extractCustomArtMetadata(source);
-
-      if (!parsed.variants || parsed.variants.length === 0) return;
-
-      const isInline = !filePath.endsWith(".art.vue");
-
-      const info: ArtFileInfo = {
-        path: filePath,
-        metadata: {
-          title: parsed.metadata.title || (isInline ? path.basename(filePath, ".vue") : ""),
-          description: parsed.metadata.description,
-          component: isInline ? undefined : parsed.metadata.component,
-          category: parsed.metadata.category,
-          tags: parsed.metadata.tags,
-          status: parsed.metadata.status as "draft" | "ready" | "deprecated",
-          order: parsed.metadata.order,
-          actionEvents: customMetadata.actionEvents ?? parsed.metadata.actionEvents,
-        },
-        variants: parsed.variants.map((v) => ({
-          name: v.name,
-          template: v.template,
-          isDefault: v.isDefault,
-          skipVrt: v.skipVrt,
-        })),
-        hasScriptSetup: isInline ? false : parsed.hasScriptSetup,
-        scriptSetupContent:
-          !isInline && parsed.hasScriptSetup ? extractScriptSetupContent(source) : undefined,
-        scriptSetupIsolated:
-          !isInline && parsed.hasScriptSetup ? extractScriptSetupIsolated(source) : true,
-        hasScript: parsed.hasScript,
-        styleCount: parsed.styleCount,
-        styleBlocks: isInline ? [] : extractStyleBlocks(source),
-        isInline,
-        componentPath: isInline ? filePath : undefined,
-      };
-
-      artFiles.set(filePath, info);
-    } catch (e) {
-      console.error(`[musea] Failed to process ${filePath}:`, e);
-    }
+    const info = await processMuseaArtFile(filePath, {
+      root: config.root,
+      command: config.command,
+    });
+    if (info) artFiles.set(filePath, info);
   }
 
   return [mainPlugin];
