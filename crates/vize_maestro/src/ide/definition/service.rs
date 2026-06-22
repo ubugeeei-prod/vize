@@ -133,6 +133,12 @@ impl super::DefinitionService {
             return Some(def);
         }
 
+        if let Some(definition) =
+            Self::definition_for_html_tag_with_corsa(ctx, corsa_bridge.as_ref()).await
+        {
+            return Some(definition);
+        }
+
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
         if word.is_empty() {
@@ -161,29 +167,18 @@ impl super::DefinitionService {
             }
         }
 
-        // Try Corsa definition lookup first.
-        if let Some(bridge) = corsa_bridge
-            && let Some(ref virtual_docs) = ctx.virtual_docs
-            && let Some(ref tmpl) = virtual_docs.template
-            && let Some(vts_offset) =
-                crate::ide::hover::HoverService::sfc_to_virtual_ts_offset(ctx, ctx.offset)
+        // Try Corsa definition lookup first via the canonical Vue virtual TS.
+        if let Some(bridge) = corsa_bridge.as_ref()
+            && bridge.is_initialized()
+            && let Some(doc) = corsa_support::open_canonical_virtual_document(ctx, bridge).await
+            && let Some((line, character)) =
+                corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
+            && let Ok(locations) = bridge.definition(&doc.request_uri, line, character).await
+            && !locations.is_empty()
         {
-            let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
-
-            if bridge.is_initialized() {
-                let vdoc_uri = corsa_support::template_request_path(ctx.uri);
-                let Ok(uri) = bridge
-                    .open_or_update_virtual_document(&vdoc_uri, &tmpl.content)
-                    .await
-                else {
-                    return template::definition_in_template(ctx);
-                };
-
-                if let Ok(locations) = bridge.definition(&uri, line, character).await
-                    && !locations.is_empty()
-                {
-                    return Self::convert_lsp_locations(locations, ctx);
-                }
+            let locations = corsa_support::map_canonical_corsa_locations(ctx, &doc, locations);
+            if let Some(response) = Self::convert_locations(locations) {
+                return Some(response);
             }
         }
 
@@ -212,41 +207,18 @@ impl super::DefinitionService {
             return None;
         }
 
-        let is_setup = matches!(ctx.block_type, Some(BlockType::ScriptSetup));
-
-        // Try Corsa definition lookup first.
-        if let Some(bridge) = corsa_bridge
-            && let Some(ref virtual_docs) = ctx.virtual_docs
+        // Try Corsa definition lookup first via the canonical Vue virtual TS.
+        if let Some(bridge) = corsa_bridge.as_ref()
+            && bridge.is_initialized()
+            && let Some(doc) = corsa_support::open_canonical_virtual_document(ctx, bridge).await
+            && let Some((line, character)) =
+                corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
+            && let Ok(locations) = bridge.definition(&doc.request_uri, line, character).await
+            && !locations.is_empty()
         {
-            let script_doc = if is_setup {
-                virtual_docs.script_setup.as_ref()
-            } else {
-                virtual_docs.script.as_ref()
-            };
-
-            if let Some(s) = script_doc
-                && let Some(vts_offset) =
-                    crate::ide::hover::HoverService::sfc_to_virtual_ts_script_offset(
-                        ctx, ctx.offset,
-                    )
-            {
-                let (line, character) = crate::ide::offset_to_position(&s.content, vts_offset);
-
-                if bridge.is_initialized() {
-                    let vdoc_uri = corsa_support::script_request_path(ctx.uri, is_setup);
-                    let Ok(uri) = bridge
-                        .open_or_update_virtual_document(&vdoc_uri, &s.content)
-                        .await
-                    else {
-                        return script::definition_in_script(ctx);
-                    };
-
-                    if let Ok(locations) = bridge.definition(&uri, line, character).await
-                        && !locations.is_empty()
-                    {
-                        return Self::convert_lsp_locations(locations, ctx);
-                    }
-                }
+            let locations = corsa_support::map_canonical_corsa_locations(ctx, &doc, locations);
+            if let Some(response) = Self::convert_locations(locations) {
+                return Some(response);
             }
         }
 
@@ -260,16 +232,48 @@ impl super::DefinitionService {
         locations: Vec<vize_canon::LspLocation>,
         ctx: &IdeContext<'_>,
     ) -> Option<GotoDefinitionResponse> {
-        if locations.len() == 1 {
-            corsa_support::map_corsa_location(ctx, &locations[0])
-                .map(GotoDefinitionResponse::Scalar)
-        } else {
-            let locs = corsa_support::map_corsa_locations(ctx, locations);
-            if locs.is_empty() {
-                None
-            } else {
-                Some(GotoDefinitionResponse::Array(locs))
-            }
+        let locations = corsa_support::map_corsa_locations(ctx, locations);
+        Self::convert_locations(locations)
+    }
+
+    #[cfg(feature = "native")]
+    fn convert_locations(
+        locations: Vec<tower_lsp::lsp_types::Location>,
+    ) -> Option<GotoDefinitionResponse> {
+        match locations.as_slice() {
+            [] => None,
+            [location] => Some(GotoDefinitionResponse::Scalar(location.clone())),
+            _ => Some(GotoDefinitionResponse::Array(locations)),
         }
+    }
+
+    #[cfg(feature = "native")]
+    async fn definition_for_html_tag_with_corsa(
+        ctx: &IdeContext<'_>,
+        corsa_bridge: Option<&Arc<CorsaBridge>>,
+    ) -> Option<GotoDefinitionResponse> {
+        let tag_name = helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
+        if is_component_tag(&tag_name) {
+            return None;
+        }
+
+        let bridge = corsa_bridge?;
+        if !bridge.is_initialized() {
+            return None;
+        }
+
+        let doc = corsa_support::html_tag_virtual_document(&tag_name)?;
+        let request_path = corsa_support::html_tag_request_path(ctx.uri);
+        let request_uri = bridge
+            .open_or_update_virtual_document(&request_path, &doc.content)
+            .await
+            .ok()?;
+        let (line, character) = crate::ide::offset_to_position(&doc.content, doc.definition_offset);
+        let locations = bridge
+            .definition(&request_uri, line, character)
+            .await
+            .ok()?;
+
+        Self::convert_lsp_locations(locations, ctx)
     }
 }

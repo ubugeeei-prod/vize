@@ -120,6 +120,9 @@ impl HoverService {
         }
 
         if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
+            if let Some(hover) = Self::hover_html_tag_with_corsa(ctx, corsa_bridge.as_ref()).await {
+                return Some(hover);
+            }
             return None;
         }
 
@@ -129,33 +132,23 @@ impl HoverService {
             return Some(hover);
         }
 
-        // Try to get type information from Corsa via virtual TypeScript.
-        if let Some(bridge) = corsa_bridge
-            && let Some(ref virtual_docs) = ctx.virtual_docs
-            && let Some(ref template) = virtual_docs.template
+        // Try to get type information from Corsa via canonical virtual TypeScript.
+        if let Some(bridge) = corsa_bridge.as_ref()
+            && bridge.is_initialized()
+            && let Some(doc) =
+                crate::ide::corsa_support::open_canonical_virtual_document(ctx, bridge).await
+            && let Some((line, character)) =
+                crate::ide::corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
+            && let Ok(Some(hover)) = bridge.hover(&doc.request_uri, line, character).await
         {
-            // Calculate position in virtual TS
-            if let Some(vts_offset) = Self::sfc_to_virtual_ts_offset(ctx, ctx.offset) {
-                let (line, character) =
-                    crate::ide::offset_to_position(&template.content, vts_offset);
-
-                // Open/update virtual document
-                if bridge.is_initialized() {
-                    #[allow(clippy::disallowed_macros)]
-                    let vdoc_uri = format!("{}.template.ts", ctx.uri.path());
-                    let Ok(uri) = bridge
-                        .open_or_update_virtual_document(&vdoc_uri, &template.content)
-                        .await
-                    else {
-                        return Self::hover_template(ctx);
-                    };
-
-                    // Request hover from Corsa.
-                    if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
-                        return Some(Self::convert_lsp_hover(hover));
-                    }
-                }
+            let mapped_range = hover.range.as_ref().and_then(|range| {
+                crate::ide::corsa_support::map_canonical_lsp_range(ctx, &doc, range)
+            });
+            let mut converted = Self::convert_lsp_hover(hover);
+            if mapped_range.is_some() {
+                converted.range = mapped_range;
             }
+            return Some(converted);
         }
 
         // Fall back to croquis analysis

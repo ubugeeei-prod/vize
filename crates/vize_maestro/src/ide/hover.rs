@@ -15,6 +15,8 @@
 
 #[cfg(feature = "native")]
 mod corsa;
+#[cfg(feature = "native")]
+mod html;
 mod script;
 mod template;
 
@@ -66,10 +68,6 @@ impl HoverService {
             BlockType::Art(_) => None,
         }
     }
-
-    // =========================================================================
-    // Style hover
-    // =========================================================================
 
     /// Get hover for style context.
     fn hover_style(ctx: &IdeContext, _index: usize) -> Option<Hover> {

@@ -4,7 +4,7 @@
 //! LSP bridge to collect type-checking diagnostics.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
-mod collect;
+pub(in crate::ide) mod collect;
 mod collect_virtual;
 mod mapping;
 mod message;

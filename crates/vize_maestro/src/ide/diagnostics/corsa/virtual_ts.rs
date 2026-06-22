@@ -91,7 +91,7 @@ pub(super) fn collect_relative_ts_specifiers(
 
 impl DiagnosticService {
     /// Generate virtual TypeScript for a Vue SFC.
-    pub(in crate::ide::diagnostics) fn generate_virtual_ts(
+    pub(in crate::ide) fn generate_virtual_ts(
         uri: &Url,
         content: &str,
         options_api: bool,

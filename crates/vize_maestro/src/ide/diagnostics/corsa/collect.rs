@@ -18,7 +18,7 @@ use vize_carton::cstr;
 /// logged and skipped — a missing sibling falls through to the existing
 /// TS2307 surface, which is the desired behavior for genuinely missing
 /// modules.
-pub(super) async fn overlay_sibling_vue_mirrors(
+pub(in crate::ide) async fn overlay_sibling_vue_mirrors(
     bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
     host_uri: &Url,
     initial_specifiers: &[std::string::String],
@@ -107,7 +107,7 @@ pub(super) async fn overlay_sibling_vue_mirrors(
     }
 }
 
-pub(super) async fn overlay_relative_ts_imports(
+pub(in crate::ide) async fn overlay_relative_ts_imports(
     bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
     host_uri: &Url,
     initial_specifiers: &[std::string::String],

@@ -10,7 +10,7 @@
 mod builder;
 mod collectors;
 #[cfg(feature = "native")]
-mod corsa;
+pub(in crate::ide) mod corsa;
 #[cfg(all(test, feature = "native"))]
 mod editor_typecheck_tests;
 mod line_index;
