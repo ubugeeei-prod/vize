@@ -368,7 +368,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     }
 
     fn visit_element(&mut self, el: &ElementNode<'a>) {
-        // Check for v-for and v-if directives using iterators (no allocation)
+        // Check for v-for, v-if, and v-slot directives using iterators (no allocation)
         let has_v_for = el
             .props
             .iter()
@@ -377,6 +377,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             .props
             .iter()
             .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == "if" || d.name.as_str() == "else-if"));
+        let has_v_slot = el
+            .props
+            .iter()
+            .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == "slot"));
 
         // Extract scope variables (only allocates if directives exist).
         let mut v_for_vars = if has_v_for {
@@ -384,7 +388,9 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         } else {
             Vec::new()
         };
-        v_for_vars.extend(self.extract_slot_scope_vars(el));
+        if has_v_slot {
+            v_for_vars.extend(self.extract_slot_scope_vars(el));
+        }
 
         // Build element context with CompactString tag (efficient for small strings)
         let elem_ctx = ElementContext {
