@@ -7,6 +7,7 @@ import "./plugin/hmr.test.ts";
 import "./plugin/index.test.ts";
 import "./plugin/load-storybook.test.ts";
 import "./plugin/load.test.ts";
+import "./plugin/load-ssr-styles.test.ts";
 import "./plugin/load-dependency-sfc.test.ts";
 import "./plugin/native.test.ts";
 import "./plugin/quasar.test.ts";

@@ -240,9 +240,8 @@ export function loadHook(
     const lang = styleRequest.styleLang ?? null;
     const scoped = styleRequest.styleScoped ?? null;
 
-    const primaryCache = loadOptions?.ssr ? state.ssrCache : state.cache;
-    const fallbackCache = loadOptions?.ssr ? state.cache : state.ssrCache;
-    const fallbackCompiled = primaryCache.get(realPath) ?? fallbackCache.get(realPath);
+    const [primary, fallback] = loadOptions?.ssr ? [state.ssrCache, state.cache] : [state.cache, state.ssrCache];
+    const fallbackCompiled = primary.get(realPath) ?? fallback.get(realPath);
     const blockIndex = styleRequest.styleIndex ?? -1;
 
     if (
