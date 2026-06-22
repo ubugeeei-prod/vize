@@ -6,7 +6,7 @@ use super::{TsconfigInputCache, load_tsconfig_declaration_options, resolve_exten
 use std::fs;
 use std::path::{Path, PathBuf};
 use vize_carton::{cstr, path::canonicalize_non_verbatim};
-
+mod codegen;
 // Each call uses a fresh run-scoped cache, mirroring how an actual `vize
 // check` run constructs one `TsconfigInputCache` per invocation.
 fn collect_default_check_files(project_root: &Path, tsconfig_path: Option<&Path>) -> Vec<PathBuf> {
