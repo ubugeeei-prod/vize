@@ -2,6 +2,7 @@ use vize_carton::FxHashSet;
 use vize_croquis::{Croquis, TemplateExpressionKind};
 
 use super::component_prop_checker::is_inline_function_prop_value;
+use super::component_props::component_usage_has_checkable_binding;
 use super::context::ScopeGenerationOptions;
 use crate::virtual_ts::types::VirtualTsOptions;
 
@@ -21,11 +22,13 @@ pub(super) fn collect_component_prop_expression_ranges(
         .collect();
     let mut ranges = FxHashSet::default();
     for usage in &summary.component_usages {
-        let name = usage.name.as_str();
-        let checkable = summary.bindings.bindings.contains_key(name)
-            || external_template_bindings.contains(name)
-            || (options.check_unresolved_global_components && !name.is_empty());
-        if !checkable {
+        if !component_usage_has_checkable_binding(
+            summary,
+            usage,
+            &external_template_bindings,
+            options.check_unresolved_global_components,
+            options.legacy_vue2,
+        ) {
             continue;
         }
         for prop in &usage.props {

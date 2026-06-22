@@ -125,6 +125,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // `$children`, `$on`, ... that Vue 3's `ComponentPublicInstance` lacks).
     let dialect = generation_options.dialect;
     let legacy_vue2 = generation_options.legacy_vue2;
+    let _ = generation_options.template_syntax_quirks;
     let options_api = generation_options.options_api || legacy_vue2;
     let hoist_shared_preamble = generation_options.hoist_shared_preamble;
     let mut ts = String::default();
@@ -744,13 +745,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             ts.push_str(&template_context);
             ts.push('\n');
 
-            // Props are available in template as variables
             profile!("canon.virtual_ts.generate_props_variables", {
                 setup_props_plan.generate_props_variables(
                     &mut ts,
                     summary,
                     generic_param,
-                    check_props,
+                    check_props && !legacy_vue2,
                 )
             });
             if options_api {
@@ -778,7 +778,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             check_options,
                             virtual_ts_options: options,
                             check_unresolved_global_components: has_script_reference_types,
-                            template_syntax_quirks: generation_options.template_syntax_quirks,
+                            legacy_vue2,
                         },
                     )
                 );

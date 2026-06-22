@@ -23,7 +23,7 @@ pub(super) fn generate_component_event_types(
     data: &EventHandlerScopeData,
     scope: &Scope,
     template_prop_names: &FxHashSet<String>,
-    _template_syntax_quirks: bool,
+    legacy_vue2: bool,
     indent: &str,
 ) -> Option<ComponentEventTypes> {
     let component_name = data.target_component.as_ref()?;
@@ -113,7 +113,11 @@ pub(super) fn generate_component_event_types(
         );
     }
 
-    let fallback_event = get_dom_event_type(data.event_name.as_str());
+    let fallback_event = if legacy_vue2 {
+        "any"
+    } else {
+        get_dom_event_type(data.event_name.as_str())
+    };
     append!(
         *ts,
         "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? {fallback_event} : {args_type}[0];\n",

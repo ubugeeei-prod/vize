@@ -48,6 +48,7 @@ pub(super) fn generate_component_props(
                 usage,
                 &external_template_bindings,
                 ctx.check_unresolved_global_components,
+                ctx.legacy_vue2,
             )
         })
         .collect();
@@ -55,7 +56,6 @@ pub(super) fn generate_component_props(
         return;
     }
 
-    // Group component usages by scope_id
     let mut components_by_scope: FxHashMap<u32, Vec<(usize, &ComponentUsage)>> =
         FxHashMap::default();
     for &(idx, usage) in &checkable_usages {
@@ -65,8 +65,6 @@ pub(super) fn generate_component_props(
             .push((idx, usage));
     }
 
-    // Emit type declarations only for components with dynamic props
-    // (TypeScript type aliases cannot be inside function bodies)
     ts.push_str("\n  // Component props type declarations\n");
 
     // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
@@ -206,19 +204,20 @@ pub(super) fn generate_component_props(
     }
 }
 
-fn component_usage_has_checkable_binding(
+pub(super) fn component_usage_has_checkable_binding(
     summary: &Croquis,
     usage: &ComponentUsage,
     external_template_bindings: &FxHashSet<&str>,
     check_unresolved_global_components: bool,
+    legacy_vue2: bool,
 ) -> bool {
     let name = usage.name.as_str();
     summary.bindings.bindings.contains_key(name)
-        || external_template_bindings.contains(name)
-        || (check_unresolved_global_components && !name.is_empty())
+        || (!legacy_vue2
+            && (external_template_bindings.contains(name)
+                || (check_unresolved_global_components && !name.is_empty())))
 }
 
-/// Recursively generate component prop checks inside nested closure scopes (v-for and v-slot).
 fn generate_closure_component_props_recursive(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,

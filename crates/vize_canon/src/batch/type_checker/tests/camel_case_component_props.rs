@@ -1,4 +1,6 @@
 use super::*;
+use crate::batch::BatchTypeCheckerOptions;
+use crate::virtual_ts::VirtualTsOptions;
 
 #[test]
 fn batch_type_checker_reports_camel_case_child_component_prop_error() {
@@ -109,6 +111,77 @@ defineProps<{
     assert!(
         snapshot.is_empty(),
         "forwarded optional component prop should type-check, got: {snapshot:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_legacy_vue2_accepts_vuetify_global_events_and_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "legacy-vue2-vuetify-global-events-props",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const width = 320;
+const hideDetails = true;
+function updateDate(newDate: string) {
+  void newDate;
+}
+</script>
+
+<template>
+  <v-date-picker
+    :width="width"
+    :hide-details="hideDetails"
+    chips
+    @input="updateDate"
+  />
+</template>
+"#,
+        )],
+    );
+
+    let options = BatchTypeCheckerOptions {
+        virtual_ts_options: VirtualTsOptions {
+            auto_import_stubs: vec![
+                "declare const VDatePicker: { new (): { $props: { mini?: boolean } } };".into(),
+            ],
+            external_template_bindings: vec!["VDatePicker".into()],
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let mut checker = match BatchTypeChecker::with_options(&project_root, options) {
+        Ok(checker) => checker,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+    checker.enable_legacy_vue2();
+    checker.scan_project().unwrap();
+    let result = checker.check_project().unwrap();
+    let relevant = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| relative_path(&project_root, &diagnostic.file) == "src/App.vue")
+        .filter(|diagnostic| {
+            diagnostic.code == Some(2345)
+                || diagnostic.message.contains("InputEvent")
+                || diagnostic.message.contains("keyof Props")
+                || diagnostic.message.contains("hideDetails")
+                || diagnostic.message.contains("width")
+                || diagnostic.message.contains("chips")
+        })
+        .collect::<Vec<_>>();
+
+    assert!(
+        relevant.is_empty(),
+        "legacy Vue 2 Vuetify globals should not report event/prop false positives: {relevant:#?}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

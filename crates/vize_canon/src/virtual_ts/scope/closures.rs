@@ -168,7 +168,7 @@ pub(crate) fn generate_scope_closures(
             template_prop_names,
             template_offset,
             check_options,
-            template_syntax_quirks: options.template_syntax_quirks,
+            legacy_vue2: options.legacy_vue2,
         };
         profile!(
             "canon.virtual_ts.scope_node",
@@ -184,7 +184,6 @@ pub(crate) fn generate_scope_closures(
         );
     }
 
-    // Generate component props type checks (scope-aware)
     if check_options.check_props {
         profile!(
             "canon.virtual_ts.component_props",
@@ -199,6 +198,7 @@ pub(crate) fn generate_scope_closures(
                     template_offset,
                     options: virtual_ts_options,
                     check_unresolved_global_components: options.check_unresolved_global_components,
+                    legacy_vue2: options.legacy_vue2,
                 },
             )
         );
@@ -364,7 +364,7 @@ fn generate_scope_node(
                     data,
                     scope,
                     ctx.template_prop_names,
-                    ctx.template_syntax_quirks,
+                    ctx.legacy_vue2,
                     indent,
                 )
                 .expect("component event handler should have a target component");
