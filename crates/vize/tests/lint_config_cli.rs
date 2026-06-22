@@ -191,7 +191,7 @@ const items = [{ id: 1, name: 'One' }]
 }
 
 #[test]
-fn lint_nuxt_preset_allows_next_tick_when_compiler_vapor_is_false() {
+fn lint_nuxt_preset_allows_next_tick_by_default_and_when_compiler_vapor_is_false() {
     let project_root = temp_project_dir("nuxt-non-vapor-next-tick");
     let sfc = r#"<script setup lang="ts">
 import { nextTick } from 'vue'
@@ -215,13 +215,11 @@ await nextTick()
         .output()
         .unwrap();
     assert!(
-        !nuxt_default.status.success(),
+        nuxt_default.status.success(),
         "stdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&nuxt_default.stdout),
         String::from_utf8_lossy(&nuxt_default.stderr)
     );
-    let default_stdout = String::from_utf8_lossy(&nuxt_default.stdout);
-    assert!(default_stdout.contains("script/no-next-tick"));
 
     let non_vapor = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
