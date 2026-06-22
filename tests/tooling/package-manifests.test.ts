@@ -334,7 +334,7 @@ test("vize package leaves Vue type versions to the consuming project", () => {
   assert.equal(packageJson.dependencies?.vue, undefined);
   assert.equal(packageJson.optionalDependencies?.vue, undefined);
   assert.equal(packageJson.devDependencies?.vue, "catalog:vue-stable");
-  assert.equal(packageJson.peerDependencies?.vue, ">=2.7.0");
+  assert.equal(packageJson.peerDependencies?.vue, ">=2.6.0");
   assert.deepEqual(packageJson.peerDependenciesMeta?.vue, {
     optional: true,
   });
