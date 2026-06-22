@@ -365,8 +365,6 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "type/no-floating-promises",
     "type/no-reactivity-loss",
     "type/no-unsafe-template-binding",
-    "script/no-get-current-instance",
-    "script/no-next-tick",
     "css/no-important",
     "css/no-id-selectors",
     "css/prefer-logical-properties",

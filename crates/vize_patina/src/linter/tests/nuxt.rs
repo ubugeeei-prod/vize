@@ -21,11 +21,12 @@ export default defineComponent({
 }
 
 #[test]
-fn nuxt_preset_allows_next_tick_when_vapor_is_explicitly_disabled() {
-    let linter = Linter::with_preset(LintPreset::Nuxt).with_vapor_mode(Some(false));
+fn nuxt_preset_allows_vapor_only_script_patterns_by_default() {
+    let linter = Linter::with_preset(LintPreset::Nuxt);
     let sfc = r#"<script setup lang="ts">
-import { nextTick } from 'vue'
+import { getCurrentInstance, nextTick } from 'vue'
 
+const instance = getCurrentInstance()
 await nextTick()
 </script>
 "#;
@@ -36,14 +37,43 @@ await nextTick()
             .diagnostics
             .iter()
             .any(|diagnostic| diagnostic.rule_name == "script/no-next-tick"),
-        "non-Vapor Nuxt projects should not report script/no-next-tick, got {:?}",
+        "Nuxt projects should not report script/no-next-tick unless the rule is enabled, got {:?}",
+        result.diagnostics
+    );
+    assert!(
+        !result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "script/no-get-current-instance"),
+        "Nuxt projects should not report script/no-get-current-instance unless the rule is enabled, got {:?}",
         result.diagnostics
     );
 }
 
 #[test]
-fn nuxt_preset_keeps_next_tick_diagnostic_when_vapor_is_unspecified() {
-    let linter = Linter::with_preset(LintPreset::Nuxt);
+fn nuxt_preset_allows_next_tick_in_standalone_scripts_by_default() {
+    let result = Linter::with_preset(LintPreset::Nuxt).lint_script(
+        r#"import { nextTick } from "@nuxtjs/composition-api";
+
+await nextTick();
+"#,
+        "composables/useDialog.ts",
+    );
+
+    assert!(
+        !result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "script/no-next-tick"),
+        "Nuxt composables should not report script/no-next-tick unless the rule is enabled, got {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn nuxt_preset_reports_next_tick_when_rule_is_enabled() {
+    let linter = Linter::with_preset(LintPreset::Nuxt)
+        .with_additional_rules(vec!["script/no-next-tick".into()]);
     let sfc = r#"<script setup lang="ts">
 import { nextTick } from 'vue'
 
@@ -57,7 +87,7 @@ await nextTick()
             .diagnostics
             .iter()
             .any(|diagnostic| diagnostic.rule_name == "script/no-next-tick"),
-        "default Nuxt preset should remain unchanged, got {:?}",
+        "explicit script/no-next-tick should still report, got {:?}",
         result.diagnostics
     );
 }

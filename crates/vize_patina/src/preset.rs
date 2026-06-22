@@ -65,7 +65,7 @@ const OPINIONATED_SCRIPT_RULE_NAMES: &[&str] = &[
     "script/no-get-current-instance",
     "script/no-next-tick",
 ];
-const NUXT_SCRIPT_RULE_NAMES: &[&str] = &["script/no-get-current-instance", "script/no-next-tick"];
+const NUXT_SCRIPT_RULE_NAMES: &[&str] = &[];
 
 pub(crate) const fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {
     match preset {
@@ -97,10 +97,9 @@ const OPINIONATED_CSS_RULE_NAMES: &[&str] = &[
 /// Built-in `css/*` rules enabled by a preset.
 ///
 /// The `css/*` rules are opt-in: only the strict `opinionated`/`nuxt` presets
-/// enable them (mirroring how those presets enable the opinionated script
-/// rules). The default `ecosystem` preset and the lighter presets enable none,
-/// so existing users are unaffected. Hosts can still enable any `css/*` rule by
-/// name via `with_enabled_rules`/`with_additional_rules`.
+/// enable them. The default `ecosystem` preset and the lighter presets enable
+/// none, so existing users are unaffected. Hosts can still enable any `css/*`
+/// rule by name via `with_enabled_rules`/`with_additional_rules`.
 pub(crate) const fn builtin_css_rule_names(preset: LintPreset) -> &'static [&'static str] {
     match preset {
         LintPreset::Opinionated | LintPreset::Nuxt => OPINIONATED_CSS_RULE_NAMES,
@@ -218,6 +217,13 @@ mod tests {
         );
         assert!(
             !super::builtin_script_rule_names(LintPreset::Nuxt).contains(&"script/no-options-api")
+        );
+        assert!(
+            !super::builtin_script_rule_names(LintPreset::Nuxt)
+                .contains(&"script/no-get-current-instance")
+        );
+        assert!(
+            !super::builtin_script_rule_names(LintPreset::Nuxt).contains(&"script/no-next-tick")
         );
         assert!(
             super::builtin_script_rule_names(LintPreset::Opinionated)
