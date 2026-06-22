@@ -1,0 +1,42 @@
+name: Title Policy
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+  pull_request_target:
+    branches: [main]
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: title-policy-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  issue-pr-title-policy:
+    name: Normalize titles and assignees
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: |
+            .github/actions/setup-moonbit
+            tools/moon/scripts/github/issue_pr_title_policy.mbtx
+          sparse-checkout-cone-mode: false
+
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Apply issue and PR title policy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/issue_pr_title_policy.mbtx
