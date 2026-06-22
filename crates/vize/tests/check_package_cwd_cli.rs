@@ -161,3 +161,93 @@ void rootOnly;
 
     let _ = std::fs::remove_dir_all(&workspace);
 }
+
+#[test]
+fn check_from_package_cwd_resolves_package_local_dependencies() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+
+    let workspace = unique_case_dir("package-cwd-local-deps");
+    let _ = std::fs::remove_dir_all(&workspace);
+    std::fs::create_dir_all(&workspace).unwrap();
+    write_file(
+        &workspace,
+        "tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": []
+}"#,
+    );
+
+    let package_root = workspace.join("test/e2e/onepass/sign-in");
+    write_file(
+        &package_root,
+        "tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    );
+    write_file(
+        &package_root,
+        "node_modules/child-only/package.json",
+        r#"{ "name": "child-only", "version": "1.0.0", "types": "index.d.ts" }"#,
+    );
+    write_file(
+        &package_root,
+        "node_modules/child-only/index.d.ts",
+        "export declare const childOnly: string;\n",
+    );
+    write_file(
+        &package_root,
+        "src/main.ts",
+        r#"import { childOnly } from "child-only";
+
+const value: string = childOnly;
+void value;
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&package_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src",
+            "--no-config",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "package-local dependency check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["errorCount"], 0, "{stdout}\n{stderr}");
+    assert!(
+        !stdout.contains("Cannot find module 'child-only'"),
+        "child package dependency should resolve from the package cwd:\n{stdout}\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&workspace);
+}

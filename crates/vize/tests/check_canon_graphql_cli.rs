@@ -163,11 +163,30 @@ expectQuestion(question)
         ),
     )
     .unwrap();
+    std::fs::write(
+        src_dir.join("Other.vue"),
+        cstr!(
+            r#"<script setup lang="ts">
+import {{ expectQuestion }} from './question'
+import {{ AimQuestionDisplayKind, type AimQuestion }} from '{schema_specifier}'
+
+const question = {{
+  kind: AimQuestionDisplayKind.Text,
+}} satisfies AimQuestion
+
+expectQuestion(question)
+</script>
+
+<template><section /></template>
+"#
+        ),
+    )
+    .unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", &corsa_path)
-        .args(["check", "src/App.vue", "--format", "json"])
+        .args(["check", "src/App.vue", "src/Other.vue", "--format", "json"])
         .output()
         .unwrap();
 
