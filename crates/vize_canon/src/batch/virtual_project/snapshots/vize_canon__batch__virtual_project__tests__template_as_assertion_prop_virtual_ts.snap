@@ -88,7 +88,7 @@ export type Slots = {};
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
-  $props: Props;
+  $props: __VizeComponentProps<Props>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };

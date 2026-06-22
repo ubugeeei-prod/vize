@@ -23,7 +23,7 @@ pub(super) fn generate_component_event_types(
     data: &EventHandlerScopeData,
     scope: &Scope,
     template_prop_names: &FxHashSet<String>,
-    template_syntax_quirks: bool,
+    _template_syntax_quirks: bool,
     indent: &str,
 ) -> Option<ComponentEventTypes> {
     let component_name = data.target_component.as_ref()?;
@@ -113,18 +113,11 @@ pub(super) fn generate_component_event_types(
         );
     }
 
-    if template_syntax_quirks {
-        let fallback_event = get_dom_event_type(data.event_name.as_str());
-        append!(
-            *ts,
-            "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? {fallback_event} : {args_type}[0];\n",
-        );
-    } else {
-        append!(
-            *ts,
-            "{indent}type {event_type} = {args_type} extends [] ? any : {args_type}[0];\n",
-        );
-    }
+    let fallback_event = get_dom_event_type(data.event_name.as_str());
+    append!(
+        *ts,
+        "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? {fallback_event} : {args_type}[0];\n",
+    );
     Some(ComponentEventTypes {
         event_type,
         args_type,

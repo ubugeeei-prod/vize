@@ -21,6 +21,7 @@ use vize_carton::{String, ToCompactString, profile};
 use crate::script::ScriptCompileContext;
 use crate::types::{CssModuleMapping, SfcError};
 
+use super::super::artifacts::erase_artifact_macro_statements;
 use super::super::function_mode::contains_top_level_await;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
 use super::super::props::validate_props_destructure_default_types;
@@ -48,6 +49,11 @@ pub fn compile_script_setup_inline(
     let content = transformed
         .as_ref()
         .map(|result| result.code.as_str())
+        .unwrap_or(content);
+    let erased_content = erase_artifact_macro_statements(content);
+    let content = erased_content
+        .as_ref()
+        .map(|content| content.as_str())
         .unwrap_or(content);
     let ctx = build_script_setup_context(content, normal_script_content, filename, source_is_ts);
     let mut result = compile_script_setup_inline_with_context(

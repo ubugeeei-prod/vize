@@ -67,7 +67,7 @@ function runCheck(args: string[], cwd: string): CheckResult {
 }
 
 type ParsedCheck = {
-  files: Array<{ file: string; virtualTs: string; diagnostics: string[] }>;
+  files: Array<{ file: string; virtualTs?: string; diagnostics: string[] }>;
   errorCount: number;
   warningCount: number;
   fileCount: number;
@@ -166,7 +166,7 @@ test("diagnostic line/col stays 1-based and stable under CRLF", corsaSkip, () =>
   });
 });
 
-test("empty .ts type-checks cleanly with verbatim virtualTs (exit 0)", corsaSkip, () => {
+test("empty .ts type-checks cleanly without virtualTs by default (exit 0)", corsaSkip, () => {
   withWorkspace((dir) => {
     fs.writeFileSync(path.join(dir, "empty.ts"), "", "utf8");
     const { result, parsed } = runJsonCheck(["empty.ts"], dir);
@@ -175,6 +175,18 @@ test("empty .ts type-checks cleanly with verbatim virtualTs (exit 0)", corsaSkip
     assert.equal(parsed.errorCount, 0);
     assert.equal(parsed.files.length, 1);
     assert.equal(parsed.files[0]?.diagnostics.length, 0);
+    assert.ok(!("virtualTs" in (parsed.files[0] ?? {})));
+  });
+});
+
+test("json output includes virtualTs when --show-virtual-ts is set", corsaSkip, () => {
+  withWorkspace((dir) => {
+    fs.writeFileSync(path.join(dir, "empty.ts"), "", "utf8");
+    const { result, parsed } = runJsonCheck(["empty.ts", "--show-virtual-ts"], dir);
+
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    assert.equal(parsed.errorCount, 0);
+    assert.equal(parsed.files.length, 1);
     assert.equal(parsed.files[0]?.virtualTs, "");
   });
 });
@@ -193,7 +205,7 @@ test("empty .vue type-checks cleanly with no diagnostics (exit 0)", corsaSkip, (
   });
 });
 
-test("TS2322 in plain .ts: exit 1 with verbatim virtualTs passthrough", corsaSkip, () => {
+test("TS2322 in plain .ts: exit 1 without virtualTs by default", corsaSkip, () => {
   withWorkspace((dir) => {
     fs.writeFileSync(path.join(dir, "bad.ts"), "export const x: string = 123;\n", "utf8");
     const { result, parsed } = runJsonCheck(["bad.ts"], dir);
@@ -204,8 +216,7 @@ test("TS2322 in plain .ts: exit 1 with verbatim virtualTs passthrough", corsaSki
       parsed.files[0]?.diagnostics[0],
       "error:1:14 [TS2322] Type 'number' is not assignable to type 'string'.",
     );
-    // Plain .ts inputs are passed through to the checker verbatim.
-    assert.equal(parsed.files[0]?.virtualTs, "export const x: string = 123;\n");
+    assert.ok(!("virtualTs" in (parsed.files[0] ?? {})));
   });
 });
 

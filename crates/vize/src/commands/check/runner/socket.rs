@@ -203,7 +203,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
                 let path = std::path::Path::new(filename);
                 JsonFileResult {
                     file: display_path(&cwd, path).into(),
-                    virtual_ts: result.virtual_ts.clone(),
+                    virtual_ts: args.show_virtual_ts.then(|| result.virtual_ts.clone()),
                     diagnostics: render_socket_diagnostics(result),
                 }
             })

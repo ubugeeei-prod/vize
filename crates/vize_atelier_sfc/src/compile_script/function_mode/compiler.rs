@@ -15,6 +15,7 @@ use crate::script::{
 use crate::types::{BindingType, SfcError};
 
 use super::super::ScriptCompileResult;
+use super::super::artifacts::erase_artifact_macro_statements;
 use super::super::import_utils::extract_import_identifiers;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
 use super::super::props::{
@@ -40,6 +41,11 @@ pub fn compile_script_setup(
     let content = lazy_hydration_transform
         .as_ref()
         .map(|result| result.code.as_str())
+        .unwrap_or(content);
+    let erased_content = erase_artifact_macro_statements(content);
+    let content = erased_content
+        .as_ref()
+        .map(|content| content.as_str())
         .unwrap_or(content);
 
     let mut ctx = ScriptCompileContext::new(content);

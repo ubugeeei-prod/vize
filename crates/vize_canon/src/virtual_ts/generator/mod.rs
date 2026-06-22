@@ -756,7 +756,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             if options_api {
                 profile!(
                     "canon.virtual_ts.generate_options_api_variables",
-                    generate_options_api_variables(&mut ts, summary, options)
+                    generate_options_api_variables(&mut ts, summary, options, script_content)
                 );
             }
             let template_prop_names = profile!(

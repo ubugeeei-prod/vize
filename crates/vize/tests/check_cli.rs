@@ -2548,7 +2548,7 @@ const count: string = 0;
     assert_eq!(json["warningCount"], 1);
     assert_eq!(json["fileCount"], 1);
     assert_eq!(json["files"][0]["file"], "src/App.vue");
-    assert_eq!(json["files"][0]["virtualTs"], "const count: string = 0;");
+    assert!(json["files"][0].get("virtualTs").is_none(), "{json:#}");
     assert_eq!(
         json["files"][0]["diagnostics"],
         serde_json::json!([

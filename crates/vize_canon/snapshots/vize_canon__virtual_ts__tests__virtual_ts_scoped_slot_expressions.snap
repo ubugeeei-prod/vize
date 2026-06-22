@@ -38,6 +38,9 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
+type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
+type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
+type __VizeComponentProps<T> = T | __VizeKebabProps<T>;
 declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
 declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
 declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
@@ -73,7 +76,7 @@ function __setup() {
   // User setup code
   const items = ['a', 'b']
   
-  // @vize-map: 5095:5125 -> 0:59
+  // @vize-map: 5435:5465 -> 0:59
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -90,7 +93,7 @@ function __setup() {
   // @vize-map: expr -> 16:21
 
   // v-slot scope: #default
-  void function _slot_default({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
+  void function _slot_default_7({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
     void item;
     void (item); // Interpolation
     // @vize-map: expr -> 64:68
@@ -116,7 +119,7 @@ function __setup() {
   });
 
   // Component props in v-slot scope: #default
-  void function _slot_props_default({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
+  void function _slot_props_default_7({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P, ...args: any[]) => any } ? __P : any) : any) {
     void item;
   };
 
@@ -136,7 +139,7 @@ export type Slots = {};
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
-  $props: Props;
+  $props: __VizeComponentProps<Props>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };

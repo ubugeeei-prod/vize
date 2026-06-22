@@ -47,7 +47,10 @@ type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
 type __Ref<T> = import('vue').Ref<T>;
-type __ShallowRef<T> = import('vue').ShallowRef<T>;"#
+type __ShallowRef<T> = import('vue').ShallowRef<T>;
+type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
+type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
+type __VizeComponentProps<T> = T | __VizeKebabProps<T>;"#
     };
 }
 

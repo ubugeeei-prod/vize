@@ -223,6 +223,48 @@ export default defineComponent({
 }
 
 #[test]
+fn test_options_api_unresolved_extends_exposes_template_refs_as_inherited_any() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import BaseButton from './BaseButton.vue'
+
+export default {
+    name: 'Button',
+    extends: BaseButton
+}
+"#;
+    let template = r#"<component v-if="!asChild" :is="as" :class="cx('root')">
+  <span v-if="label">{{ label }}</span>
+</component>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &Default::default(),
+    );
+
+    for name in ["asChild", "as", "cx", "label"] {
+        assert!(
+            output
+                .code
+                .contains(&format!("const {name}: any = undefined as any;")),
+            "unresolved imported extends should expose inherited `{name}`:\n{}",
+            output.code
+        );
+    }
+}
+
+#[test]
 fn test_options_api_template_bindings_use_default_instance_type() {
     let script = r#"export default {
     props: {
@@ -916,10 +958,10 @@ fn test_define_expose_is_part_of_component_instance() {
         output.code
     );
     assert!(
-            output.code.contains("type __VizeComponentInstance = {\n  $props: Props;\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n} & Exposed;"),
-            "component instance should include exposed bindings:\n{}",
-            output.code
-        );
+        output.code.contains("type __VizeComponentInstance = {\n  $props: __VizeComponentProps<Props>;\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n} & Exposed;"),
+        "component instance should include exposed bindings:\n{}",
+        output.code
+    );
 }
 
 #[test]
@@ -1242,6 +1284,66 @@ const items = ['a', 'b']
 }
 
 #[test]
+fn test_repeated_default_slots_use_unique_helper_names() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import Child from './Child.vue'
+"#;
+    let template = r#"<div>
+  <Child>
+    <template #default="{ item }">
+      {{ item }}
+    </template>
+  </Child>
+  <Child>
+    <template #default="{ other }">
+      {{ other }}
+    </template>
+  </Child>
+</div>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    let slot_helpers: Vec<_> = output
+        .code
+        .lines()
+        .filter_map(|line| {
+            line.trim_start()
+                .strip_prefix("void function _slot_default_")
+                .and_then(|rest| rest.split_once('(').map(|(id, _)| id.to_string()))
+        })
+        .collect();
+    assert_eq!(
+        slot_helpers.len(),
+        2,
+        "expected both default slot scopes to emit helpers:\n{}",
+        output.code
+    );
+    assert_ne!(
+        slot_helpers[0], slot_helpers[1],
+        "default slot helpers must include the scope id:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .matches("void function _slot_props_default_")
+            .count()
+            >= 2,
+        "slot prop helper names should also include the scope id:\n{}",
+        output.code
+    );
+}
+
+#[test]
 fn test_v_if_narrows_nullable_binding() {
     // `<div v-if="user">{{ user.name }}</div>` must produce a virtual TS
     // closure that opens an `if (user) { … }` block so TypeScript narrows
@@ -1444,7 +1546,7 @@ const arr = [(event: PointerEvent) => event.preventDefault()]
 }
 
 #[test]
-fn test_component_event_fallback_uses_dom_event_type_only_in_quirks() {
+fn test_component_event_fallback_uses_dom_event_type_when_args_stay_unknown() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
     let script = r#"import Child from './Child.vue'
@@ -1471,13 +1573,9 @@ function eventHandler(event: Event) {
         &VirtualTsOptions::default(),
     );
     assert!(
-        standard_output.code.contains("? __A : unknown[]"),
-        "standard component event fallback should stay unknown:\n{}",
-        standard_output.code
-    );
-    assert!(
-        !standard_output.code.contains("[KeyboardEvent]"),
-        "standard component event fallback must not use DOM event types:\n{}",
+        standard_output.code.contains("unknown[] extends __Child_")
+            && standard_output.code.contains("? KeyboardEvent : __Child_"),
+        "standard component event fallback should use the DOM event type when args stay unknown:\n{}",
         standard_output.code
     );
 

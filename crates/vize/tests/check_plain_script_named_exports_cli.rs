@@ -91,20 +91,26 @@ export default defineComponent({
 });
 
 export const setupParseMdFileDialogCtx = () => ({ ready: true });
+
+export enum DiffDisplayMode {
+  Unified = 'unified',
+  Split = 'split',
+}
 </script>
 "#,
             ),
             (
                 "src/pages/Consumer.vue",
                 r#"<script setup lang="ts">
-import { setupParseMdFileDialogCtx } from "../components/ParseMdFileDialog.vue";
+import { DiffDisplayMode, setupParseMdFileDialogCtx } from "../components/ParseMdFileDialog.vue";
 
 const ctx = setupParseMdFileDialogCtx();
 const ready: boolean = ctx.ready;
+const mode: DiffDisplayMode = DiffDisplayMode.Unified;
 </script>
 
 <template>
-  <div>{{ ready }}</div>
+  <div>{{ ready }} {{ mode }}</div>
 </template>
 "#,
             ),

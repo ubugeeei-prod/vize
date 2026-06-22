@@ -207,7 +207,8 @@ fn resolve_positions(code: &str, source: &str, segments: &[Segment]) -> Vec<Reso
 
     for seg in segments {
         // Generated side: advance the forward scan to this segment's offset.
-        let target = (seg.generated_offset as usize).min(code_bytes.len());
+        let target =
+            floor_char_boundary(code, (seg.generated_offset as usize).min(code_bytes.len()));
         while cursor < target {
             if code_bytes[cursor] == b'\n' {
                 gen_line += 1;
@@ -249,7 +250,7 @@ fn line_start_table(text: &str) -> Vec<usize> {
 /// Resolve a byte `offset` into `text` to a 0-indexed (line, column) using a
 /// precomputed `line_starts` table. Column is in UTF-16 code units.
 fn resolve_in_table(text: &str, line_starts: &[usize], offset: usize) -> (u32, u32) {
-    let offset = offset.min(text.len());
+    let offset = floor_char_boundary(text, offset.min(text.len()));
     // The line is the index of the greatest line-start <= offset.
     let line = match line_starts.binary_search(&offset) {
         Ok(i) => i,
@@ -258,6 +259,13 @@ fn resolve_in_table(text: &str, line_starts: &[usize], offset: usize) -> (u32, u
     let line_start = line_starts[line];
     let column = utf16_len(&text[line_start..offset]);
     (line as u32, column)
+}
+
+fn floor_char_boundary(text: &str, mut offset: usize) -> usize {
+    while offset > 0 && !text.is_char_boundary(offset) {
+        offset -= 1;
+    }
+    offset
 }
 
 /// UTF-16 code-unit length of `s` (chars above U+FFFF count as 2).
@@ -467,6 +475,26 @@ mod tests {
         assert_eq!(resolve_in_table(source, &starts, 0), (0, 0));
         // The `<` of `</div>` is at offset 18, line 2, column 0.
         assert_eq!(resolve_in_table(source, &starts, 18), (2, 0));
+    }
+
+    #[test]
+    fn resolve_positions_clamps_non_char_boundary_offsets() {
+        let generated = "const value = \"最大\";\n";
+        let source = "<template>\n  {{ 最大値 }}\n</template>";
+        let generated_inside_char = generated.find("最").unwrap() + 1;
+        let source_inside_char = source.find("最").unwrap() + 1;
+        let segs = [Segment {
+            generated_offset: generated_inside_char as u32,
+            source_offset: source_inside_char as u32,
+            name: None,
+        }];
+
+        let resolved = resolve_positions(generated, source, &segs);
+
+        assert_eq!(resolved.len(), 1);
+        assert_eq!(resolved[0].generated_column, 15);
+        assert_eq!(resolved[0].source_line, 1);
+        assert_eq!(resolved[0].source_column, 5);
     }
 
     #[test]

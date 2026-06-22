@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/batch/virtual_project/tests/ref_arity.rs
-assertion_line: 63
 expression: snapshot_text(v2_content.as_str())
 ---
 /// <reference lib="es2022" />
@@ -160,7 +159,7 @@ type __VizeVue2ComponentInstance = {
   _c: (...args: any[]) => any;
 };
 type __VizeComponentInstance = {
-  $props: Props;
+  $props: __VizeComponentProps<Props>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 } & __VizeVue2ComponentInstance;

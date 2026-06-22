@@ -22,7 +22,7 @@ pub(crate) struct JsonOutput {
 #[allow(clippy::disallowed_types)]
 pub(crate) struct JsonFileResult {
     pub file: std::string::String,
-    #[serde(rename = "virtualTs")]
-    pub virtual_ts: std::string::String,
+    #[serde(rename = "virtualTs", skip_serializing_if = "Option::is_none")]
+    pub virtual_ts: Option<std::string::String>,
     pub diagnostics: Vec<std::string::String>,
 }

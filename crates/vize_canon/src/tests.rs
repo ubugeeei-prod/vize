@@ -260,13 +260,14 @@ const items = ref(['a', 'b', 'c'])
 
         let virtual_ts = generate_virtual_ts_from_sfc(source);
         assert!(
-            virtual_ts.contains(
-                r#"void function _slot_default({ item, index }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P"#
-            ),
+            virtual_ts.contains(r#"void function _slot_default_"#)
+                && virtual_ts.contains(
+                    r#"({ item, index }: typeof MyList extends { new (): { $slots: infer __S } } ? (__S extends { "default"?: (props: infer __P"#
+                ),
             "<template #default> slot props should be typed from the owning component:\n{virtual_ts}"
         );
         assert!(
-            !virtual_ts.contains(r#"void function _slot_default({ item, index }: any)"#),
+            !virtual_ts.contains(r#"({ item, index }: any)"#),
             "<template #default> slot props must not fall back to any:\n{virtual_ts}"
         );
         insta::assert_snapshot!("virtual_ts_scoped_slots", virtual_ts);

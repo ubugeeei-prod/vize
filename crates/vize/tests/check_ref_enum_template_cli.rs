@@ -102,6 +102,7 @@ fn check_template_ref_enum_comparisons_keep_declared_ref_value_type() {
             "src",
             "--format",
             "json",
+            "--show-virtual-ts",
         ])
         .output()
         .unwrap();
