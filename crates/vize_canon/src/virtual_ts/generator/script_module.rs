@@ -20,20 +20,25 @@ pub(super) fn collect_normal_script_named_value_exports(
 
 pub(super) fn collect_line_module_import_spans(script: &str) -> Vec<(u32, u32)> {
     let mut spans = Vec::new();
-    let mut offset = 0usize;
-    for raw_line in script.split_inclusive('\n') {
-        let line = raw_line.strip_suffix('\n').unwrap_or(raw_line);
-        let line = line.strip_suffix('\r').unwrap_or(line);
-        let trimmed = line.trim_start();
-        if trimmed.starts_with("import ")
-            || trimmed.starts_with("import\t")
-            || (trimmed.starts_with("export ") && trimmed.contains(" from "))
-        {
-            let start = offset + (line.len() - line.trim_start().len());
-            let end = offset + line.len();
-            spans.push((start as u32, end as u32));
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script, SourceType::tsx().with_module(true)).parse();
+    if parsed.panicked {
+        return spans;
+    }
+
+    for statement in &parsed.program.body {
+        match statement {
+            Statement::ImportDeclaration(decl) => {
+                spans.push((decl.span.start, decl.span.end));
+            }
+            Statement::ExportNamedDeclaration(decl) if decl.source.is_some() => {
+                spans.push((decl.span.start, decl.span.end));
+            }
+            Statement::ExportAllDeclaration(decl) => {
+                spans.push((decl.span.start, decl.span.end));
+            }
+            _ => {}
         }
-        offset += raw_line.len();
     }
     spans
 }
