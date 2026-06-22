@@ -14,7 +14,7 @@ use crate::config::model::RawVizeConfig;
 #[derive(Debug)]
 enum PklError {
     Process(std::io::Error),
-    Eval(String),
+    Eval(crate::String),
     Json(serde_json::Error),
 }
 
@@ -86,15 +86,15 @@ fn is_process_error(error: &PklError) -> bool {
     matches!(error, PklError::Process(_))
 }
 
-fn format_pkl_failure(output: &std::process::Output) -> String {
-    let stderr = String::from_utf8_lossy(&output.stderr).trim().to_owned();
+fn format_pkl_failure(output: &std::process::Output) -> crate::String {
+    let stderr = crate::cstr!("{}", String::from_utf8_lossy(&output.stderr).trim());
     if stderr.is_empty() {
-        let stdout = String::from_utf8_lossy(&output.stdout).trim().to_owned();
+        let stdout = crate::cstr!("{}", String::from_utf8_lossy(&output.stdout).trim());
         if stdout.is_empty() {
             output
                 .status
                 .code()
-                .map(|code| format!("exit code {code}"))
+                .map(|code| crate::cstr!("exit code {code}"))
                 .unwrap_or_else(|| "terminated by signal".into())
         } else {
             stdout
