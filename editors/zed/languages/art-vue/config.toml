@@ -1,6 +1,6 @@
 name = "Art Vue"
 code_fence_block_name = "vue"
-grammar = "art-vue"
+grammar = "vue"
 path_suffixes = ["art.vue"]
 block_comment = ["<!-- ", " -->"]
 autoclose_before = ";:.,=}])>"
