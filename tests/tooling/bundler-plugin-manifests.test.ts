@@ -52,7 +52,7 @@ function leadingMajor(pin: string): number {
   return Number(match[1]);
 }
 
-test("@vizejs/unplugin exposes per-bundler subpath entries wired at mjs/d.mts", () => {
+test("@vizejs/unplugin exposes per-bundler subpath entries with jiti-safe webpack", () => {
   const manifest = readManifest("builder/unplugin");
   assert.equal(manifest.name, "@vizejs/unplugin");
 
@@ -62,10 +62,21 @@ test("@vizejs/unplugin exposes per-bundler subpath entries wired at mjs/d.mts", 
     assert.equal(typeof entry, "object", `export subpath ${subpath} must be a conditions object`);
 
     const conditions = entry as ExportEntry;
-    assert.ok(
-      conditions.import?.endsWith(".mjs"),
-      `${subpath} import should point at a .mjs file, got ${conditions.import}`,
-    );
+    if (subpath === "./webpack") {
+      assert.ok(
+        conditions.import?.endsWith(".cjs"),
+        `${subpath} import should point at a .cjs file for Nuxt 2 jiti, got ${conditions.import}`,
+      );
+      assert.ok(
+        conditions.default?.endsWith(".cjs"),
+        `${subpath} default should point at a .cjs file for Nuxt 2 jiti, got ${conditions.default}`,
+      );
+    } else {
+      assert.ok(
+        conditions.import?.endsWith(".mjs"),
+        `${subpath} import should point at a .mjs file, got ${conditions.import}`,
+      );
+    }
     assert.ok(
       conditions.types?.endsWith(".d.mts"),
       `${subpath} types should point at a .d.mts file, got ${conditions.types}`,

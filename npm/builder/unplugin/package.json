@@ -54,9 +54,9 @@
     },
     "./webpack": {
       "types": "./dist/webpack.d.mts",
-      "import": "./dist/webpack.mjs",
-      "require": "./dist/webpack-cjs.cjs",
-      "default": "./dist/webpack.mjs"
+      "import": "./dist/webpack.cjs",
+      "require": "./dist/webpack.cjs",
+      "default": "./dist/webpack.cjs"
     },
     "./babel": {
       "types": "./dist/babel.d.mts",
