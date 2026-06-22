@@ -52,6 +52,7 @@ void test("buildNuxtDevAssetBase does NOT collapse internal double slashes", () 
 void test("buildNuxtCompilerOptions sets defaults and prepends the Takumi exclude", () => {
   assert.deepEqual(buildNuxtCompilerOptions("/root"), {
     devUrlBase: "/_nuxt/",
+    handleNodeModulesVue: false,
     root: "/root",
     scanPatterns: [],
     exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
@@ -71,6 +72,7 @@ void test("buildNuxtCompilerOptions with customRenderer:true and no exclude omit
   assert.equal("exclude" in result, false);
   assert.deepEqual(result, {
     devUrlBase: "/_nuxt/",
+    handleNodeModulesVue: false,
     root: "/root",
     scanPatterns: [],
     customRenderer: true,

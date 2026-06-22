@@ -11,6 +11,7 @@ import {
   syncCollectedCssForFile,
   type VizePluginState,
 } from "./state.ts";
+import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
 import { compileFile, compileJsxModule } from "../compiler.ts";
 import { generateOutput, hasDelegatedStyles } from "../utils/index.ts";
 import {
@@ -94,42 +95,6 @@ function findMacroArtifactModule(
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 
   return compiled?.macroArtifacts?.find((artifact) => artifact.kind === kind)?.moduleCode ?? null;
-}
-
-function shouldLoadVueSfcRequest(request: ReturnType<typeof classifyVitePluginRequest>): boolean {
-  if (
-    !request.isVueSfcPath ||
-    request.isVueStyleQuery ||
-    request.hasMacroQuery ||
-    request.hasDefinePageQuery
-  ) {
-    return false;
-  }
-
-  if (!request.querySuffix) {
-    return true;
-  }
-
-  const params = new URLSearchParams(request.querySuffix.slice(1));
-  if (
-    params.has("raw") ||
-    params.has("url") ||
-    params.has("worker") ||
-    params.has("sharedworker")
-  ) {
-    return false;
-  }
-
-  return params.has("nuxt_component");
-}
-
-function getLoadableVueSfcPath(
-  request: ReturnType<typeof classifyVitePluginRequest>,
-): string | null {
-  if (!shouldLoadVueSfcRequest(request)) {
-    return null;
-  }
-  return classifyVitePluginRequest(request.normalizedFsId ?? request.path).normalizedVuePath;
 }
 
 function normalizeStyleVirtualId(id: string): string {
@@ -349,10 +314,16 @@ export function loadHook(
       state.logger.log(`load: skipping non-vue virtual module ${realPath}`);
       return null;
     }
+    if (!shouldLoadCompiledVueSfcPath(state, realPath)) {
+      return null;
+    }
     return loadCompiledSfcModule(state, realPath, isSsr, currentBase, loadOptions);
   }
 
   if (loadableVueSfcPath) {
+    if (!shouldLoadCompiledVueSfcPath(state, loadableVueSfcPath)) {
+      return null;
+    }
     const isSsr = !!loadOptions?.ssr;
     return loadCompiledSfcModule(state, loadableVueSfcPath, isSsr, currentBase, loadOptions);
   }

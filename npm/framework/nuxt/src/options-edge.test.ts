@@ -19,6 +19,7 @@ void test("resolveNuxtCompilerOptions merges an internal baseURL with buildAsset
     {
       devUrlBase: "/2025/docs/_nuxt/",
       exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+      handleNodeModulesVue: false,
       root: "/repo/app",
       scanPatterns: [],
     },
@@ -32,6 +33,7 @@ void test("resolveNuxtCompilerOptions defaults buildAssetsDir only when undefine
     {
       devUrlBase: "/_nuxt/",
       exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+      handleNodeModulesVue: false,
       root: "/repo/app",
       scanPatterns: [],
     },
@@ -43,6 +45,7 @@ void test("resolveNuxtCompilerOptions defaults buildAssetsDir only when undefine
     {
       devUrlBase: "/",
       exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+      handleNodeModulesVue: false,
       root: "/repo/app",
       scanPatterns: [],
     },
@@ -63,6 +66,7 @@ void test("resolveNuxtCompilerOptions treats Vue 0.11 as host-compiler legacy", 
       },
       devUrlBase: "/_nuxt/",
       exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+      handleNodeModulesVue: false,
       root: "/repo/app",
       scanPatterns: [],
       vueVersion: 0.11,
@@ -84,6 +88,7 @@ void test("resolveNuxtCompilerOptions treats the legacy string Vue version as ho
       },
       devUrlBase: "/_nuxt/",
       exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+      handleNodeModulesVue: false,
       root: "/repo/app",
       scanPatterns: [],
       vueVersion: "legacy",
@@ -109,6 +114,7 @@ void test("resolveNuxtCompilerOptions keeps the Takumi exclude when overrides.ex
     {
       devUrlBase: "/_nuxt/",
       exclude: [NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE],
+      handleNodeModulesVue: false,
       root: "/repo/app",
       scanPatterns: [],
     },
@@ -125,6 +131,7 @@ void test("resolveNuxtCompilerOptions drops the Takumi exclude when customRender
     {
       customRenderer: true,
       devUrlBase: "/_nuxt/",
+      handleNodeModulesVue: false,
       root: "/repo/app",
       scanPatterns: [],
     },
@@ -143,6 +150,7 @@ void test("resolveNuxtCompilerOptions with empty overrides preserves the bare Ta
     {
       devUrlBase: "/_nuxt/",
       exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+      handleNodeModulesVue: false,
       root: "/repo/app",
       scanPatterns: [],
     },

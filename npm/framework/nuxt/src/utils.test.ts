@@ -39,6 +39,7 @@ assert.deepStrictEqual(
   {
     devUrlBase: "/2026/_nuxt/",
     exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+    handleNodeModulesVue: false,
     root: "/repo/app",
     scanPatterns: [],
   },
@@ -59,6 +60,7 @@ assert.deepStrictEqual(
     debug: true,
     devUrlBase: "/2026/_nuxt/",
     exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+    handleNodeModulesVue: false,
     ignorePatterns: ["node_modules/**", ".nuxt/**", "fixtures/**"],
     root: "/repo/app",
     scanPatterns: ["app/**/*.vue", "layers/**/*.vue"],
@@ -77,6 +79,7 @@ assert.deepStrictEqual(
     customRenderer: true,
     devUrlBase: "/2026/_nuxt/",
     exclude: /\.custom-renderer-only\.vue$/,
+    handleNodeModulesVue: false,
     root: "/repo/app",
     scanPatterns: [],
   },

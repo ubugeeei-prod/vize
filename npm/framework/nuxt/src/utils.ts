@@ -3,7 +3,6 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 
 export const NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE = /\.takumi\.vue(?:\?|$)/;
-
 function normalizeUrlPrefix(value: string): string {
   const withLeadingSlash = value.startsWith("/") ? value : `/${value}`;
   return withLeadingSlash.endsWith("/") ? withLeadingSlash : `${withLeadingSlash}/`;
@@ -25,6 +24,7 @@ export function buildNuxtCompilerOptions(
 ): VizeNuxtCompilerOptions {
   const defaults: VizeNuxtCompilerOptions = {
     devUrlBase: buildNuxtDevAssetBase(baseURL, buildAssetsDir),
+    handleNodeModulesVue: false,
     root: rootDir,
     scanPatterns: [],
   };
