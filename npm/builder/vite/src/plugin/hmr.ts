@@ -82,6 +82,12 @@ function collectModulesByFile(server: ViteDevServer, fileIds: readonly string[])
   return modules;
 }
 
+function invalidateModules(server: ViteDevServer, modules: Iterable<ModuleNode>): void {
+  for (const module of modules) {
+    server.moduleGraph.invalidateModule(module);
+  }
+}
+
 export async function handleHotUpdateHook(
   state: VizePluginState,
   ctx: HmrContext,
@@ -200,6 +206,7 @@ export async function handleHotUpdateHook(
 
       if (modules.size > 0) {
         state.pendingHmrUpdateTypes.set(file, updateType);
+        invalidateModules(server, modules);
         return [...modules];
       }
 

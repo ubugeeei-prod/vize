@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { resolveScanRoots, scanArtFiles } from "./utils.ts";
+import { resolveScanRoots, rewriteStorybookComponentImport, scanArtFiles } from "./utils.ts";
 
 void test("resolveScanRoots preserves include bases outside the Vite root", () => {
   const root = "/workspace/apps/website";
@@ -28,4 +28,33 @@ void test("scanArtFiles discovers art files outside the Vite root when include p
   assert.deepEqual(files, [artFile]);
 
   await fs.promises.rm(tempDir, { recursive: true, force: true });
+});
+
+void test("rewriteStorybookComponentImport rebases component path from story output", () => {
+  const root = "/workspace";
+  const artPath = path.join(root, "src", "AfsButton.art.vue");
+  const outputPath = path.join(root, ".storybook", "stories", "AfsButton.stories.ts");
+  const code =
+    "import type { Meta } from '@storybook/vue3';\nimport __museaComponent from './AfsButton.vue';\n";
+
+  const result = rewriteStorybookComponentImport(
+    code,
+    {
+      path: artPath,
+      metadata: {
+        title: "AfsButton",
+        component: "./AfsButton.vue",
+        tags: [],
+        status: "ready",
+      },
+      variants: [],
+      hasScriptSetup: false,
+      hasScript: false,
+      styleCount: 0,
+    },
+    artPath,
+    outputPath,
+  );
+
+  assert.match(result, /from '\.\.\/\.\.\/src\/AfsButton\.vue';/);
 });

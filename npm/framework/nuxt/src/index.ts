@@ -1,10 +1,3 @@
-import {
-  addServerPlugin,
-  addVitePlugin,
-  defineNuxtModule,
-  getNuxtVersion,
-  isNuxt2,
-} from "@nuxt/kit";
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
 import { injectNuxtI18nHelpers } from "./i18n";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
@@ -44,7 +37,11 @@ type VitePluginWithTransform = {
   transform?: unknown;
   [VIZE_NUXT_AUTO_IMPORT_PATCHED]?: boolean;
 };
+type NuxtKit = typeof import("@nuxt/kit");
 type NuxtWithBuilderOptions = {
+  _version?: string;
+  version?: string;
+  hook(name: string, callback: (...args: unknown[]) => unknown): void;
   options: {
     app?: {
       baseURL?: string;
@@ -54,22 +51,115 @@ type NuxtWithBuilderOptions = {
     build?: {
       publicPath?: string;
     };
+    buildDir: string;
+    dev?: boolean;
+    modules: unknown[];
+    rootDir: string;
     router?: {
       base?: string;
     };
     vite?: { plugins?: unknown[]; resolve?: { dedupe?: string[] } };
     nitro?: { virtual?: Record<string, string> };
+    vize?: Partial<VizeNuxtOptions>;
+    _requiredModules?: Record<string, boolean>;
+    _nuxtVersion?: string;
+    [key: string]: unknown;
   };
 };
+type VizeNuxtModuleContext = {
+  nuxt?: NuxtWithBuilderOptions;
+};
+
+const moduleMeta = {
+  name: "@vizejs/nuxt",
+  configKey: "vize",
+} as const;
+
+const moduleDefaults = {
+  musea: false,
+  nuxtMusea: {
+    route: { path: "/" },
+  },
+} satisfies Partial<VizeNuxtOptions>;
+
+let nuxtKitPromise: Promise<NuxtKit> | null = null;
+
+function loadNuxtKit(): Promise<NuxtKit> {
+  nuxtKitPromise ||= import("@nuxt/kit");
+  return nuxtKitPromise;
+}
+
+async function addNuxtServerPlugin(plugin: string): Promise<void> {
+  const { addServerPlugin } = await loadNuxtKit();
+  addServerPlugin(plugin);
+}
+
+async function addNuxtVitePlugin(plugin: unknown): Promise<void> {
+  const { addVitePlugin } = await loadNuxtKit();
+  addVitePlugin(plugin as never);
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+function mergePlainRecords(
+  ...values: Array<Record<string, unknown> | undefined>
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+
+  for (const value of values) {
+    if (!value) {
+      continue;
+    }
+    for (const [key, nextValue] of Object.entries(value)) {
+      const currentValue = result[key];
+      result[key] =
+        isPlainRecord(currentValue) && isPlainRecord(nextValue)
+          ? mergePlainRecords(currentValue, nextValue)
+          : nextValue;
+    }
+  }
+
+  return result;
+}
+
+function resolveModuleOptions(
+  inlineOptions: Partial<VizeNuxtOptions> | undefined,
+  nuxt: NuxtWithBuilderOptions | undefined,
+): VizeNuxtOptions {
+  return mergePlainRecords(
+    moduleDefaults as Record<string, unknown>,
+    nuxt?.options.vize as Record<string, unknown> | undefined,
+    inlineOptions as Record<string, unknown> | undefined,
+  ) as VizeNuxtOptions;
+}
+
+function markNuxtRequiredModule(nuxt: NuxtWithBuilderOptions): void {
+  nuxt.options._requiredModules ||= {};
+  nuxt.options._requiredModules[moduleMeta.name] = true;
+}
+
+function registerNuxt2CompatibilityHooks(nuxt: NuxtWithBuilderOptions): void {
+  if (getDetectedNuxtMajor(nuxt) !== 2) {
+    return;
+  }
+  nuxt.hook("close", () => {});
+  nuxt.hook("builder:prepared", () => {});
+  nuxt.hook("build:templates", () => {});
+}
 
 function getDetectedNuxtMajor(nuxt: unknown): 2 | 3 | 4 | null {
-  try {
-    const version = getNuxtVersion(nuxt as never);
-    const major = Number.parseInt(version.split(".")[0] ?? "", 10);
-    return major === 2 || major === 3 || major === 4 ? major : null;
-  } catch {
+  const nuxtLike = nuxt as Partial<NuxtWithBuilderOptions> | undefined;
+  const version =
+    nuxtLike?._version ??
+    nuxtLike?.version ??
+    (typeof nuxtLike?.options?._nuxtVersion === "string" ? nuxtLike.options._nuxtVersion : null);
+  if (!version) {
     return null;
   }
+  const major = Number.parseInt(version.split(".")[0] ?? "", 10);
+  return major === 2 || major === 3 || major === 4 ? major : null;
 }
 
 function hasNuxtViteCompilerSupport(nuxt: NuxtWithBuilderOptions): boolean {
@@ -82,11 +172,7 @@ function hasNuxtViteCompilerSupport(nuxt: NuxtWithBuilderOptions): boolean {
     return true;
   }
 
-  try {
-    return !isNuxt2(nuxt as never);
-  } catch {
-    return true;
-  }
+  return getDetectedNuxtMajor(nuxt) !== 2;
 }
 
 function getNuxtAppBaseURL(nuxt: NuxtWithBuilderOptions): string | undefined {
@@ -256,330 +342,338 @@ function patchNuxtAutoImportTransformPlugin(
   plugin[VIZE_NUXT_AUTO_IMPORT_PATCHED] = true;
 }
 
-export default defineNuxtModule<VizeNuxtOptions>({
-  meta: {
-    name: "@vizejs/nuxt",
-    configKey: "vize",
-  },
-  defaults: {
-    musea: false,
-    nuxtMusea: {
-      route: { path: "/" },
+async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuilderOptions) {
+  const resolver = createNuxtModuleResolver();
+  const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
+  const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
+  const nuxtWithBuilderOptions = nuxt as NuxtWithBuilderOptions;
+  const supportsViteCompiler = hasNuxtViteCompilerSupport(nuxtWithBuilderOptions);
+  const appBaseURL = getNuxtAppBaseURL(nuxtWithBuilderOptions);
+  const buildAssetsDir = getNuxtBuildAssetsDir(nuxtWithBuilderOptions);
+  const bridgeOptions = resolveNuxtBridgeOptions(options.bridge);
+  const devOptions = resolveNuxtDevOptions(options.dev);
+  const museaOptions = resolveNuxtMuseaOptions(options.musea);
+  const unocssOptions = resolveNuxtUnoCssOptions(options.unocss);
+
+  if (museaOptions !== false) nuxt.hook("components:dirs", appendMuseaArtComponentIgnore);
+
+  // Compiler
+  const compilerOptions = resolveNuxtCompilerOptions(
+    nuxt.options.rootDir,
+    appBaseURL,
+    buildAssetsDir,
+    options.compiler,
+    {
+      supportsViteCompiler,
+      vueVersion,
     },
-  },
-  async setup(options, nuxt) {
-    const resolver = createNuxtModuleResolver();
-    const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
-    const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
-    const nuxtWithBuilderOptions = nuxt as NuxtWithBuilderOptions;
-    const supportsViteCompiler = hasNuxtViteCompilerSupport(nuxtWithBuilderOptions);
-    const appBaseURL = getNuxtAppBaseURL(nuxtWithBuilderOptions);
-    const buildAssetsDir = getNuxtBuildAssetsDir(nuxtWithBuilderOptions);
-    const bridgeOptions = resolveNuxtBridgeOptions(options.bridge);
-    const devOptions = resolveNuxtDevOptions(options.dev);
-    const museaOptions = resolveNuxtMuseaOptions(options.musea);
-    const unocssOptions = resolveNuxtUnoCssOptions(options.unocss);
+  );
+  const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
+  if (compilerOptions !== false) {
+    const { default: vize } = await import("@vizejs/vite-plugin");
+    nuxt.options.vite ||= {};
+    nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
+    nuxt.options.vite.plugins.push(vize(compilerOptions));
+  }
 
-    if (museaOptions !== false) nuxt.hook("components:dirs", appendMuseaArtComponentIgnore);
+  let isNuxtBuild = false;
+  let isViteBuild = false;
+  if (usesVizeCompiler) {
+    nuxt.hook("build:before", () => {
+      if (nuxt.options.dev !== false) {
+        return;
+      }
+      isNuxtBuild = true;
+      nuxt.options.vite ||= {};
+      dedupeVueRuntimePackages(nuxt.options.vite);
+    });
+  }
 
-    // Compiler
-    const compilerOptions = resolveNuxtCompilerOptions(
-      nuxt.options.rootDir,
-      appBaseURL,
-      buildAssetsDir,
-      options.compiler,
-      {
-        supportsViteCompiler,
-        vueVersion,
+  if (usesVizeCompiler) {
+    if (nuxt.options.dev && devOptions.stylesheetLinks) {
+      const devAssetBase =
+        compilerOptions.devUrlBase ?? buildNuxtDevAssetBase(appBaseURL, buildAssetsDir);
+      nuxt.options.nitro ||= {};
+      nuxt.options.nitro.virtual ||= {};
+      if (nuxt.options.nitro.virtual) {
+        nuxt.options.nitro.virtual["#vizejs/nuxt/dev-stylesheet-links-config"] =
+          `export const devAssetBase = ${JSON.stringify(devAssetBase)};`;
+        await addNuxtServerPlugin(resolver.resolve("./runtime/server/dev-stylesheet-links"));
+      }
+    }
+
+    // Remove Nuxt's built-in @vitejs/plugin-vue when vize is active.
+    // Both plugins handle .vue files; if both are active, @vitejs/plugin-vue
+    // may try to read vize's \0-prefixed virtual module IDs via fs.readFileSync,
+    // causing "path must not contain null bytes" / ENOENT errors.
+    //
+    // Nuxt adds @vitejs/plugin-vue AFTER vite:extendConfig but BEFORE
+    // vite:configResolved. For the environment API path, the hook receives
+    // a shallow copy of the config, so we must MUTATE the plugins array
+    // in-place (splice) rather than replacing it (filter), so the change
+    // propagates to the original config used by createServer().
+    nuxt.hook(
+      "vite:configResolved",
+      (config: { command?: string; plugins: VitePluginWithTransform[] }) => {
+        isViteBuild = config.command === "build" || isNuxtBuild || nuxt.options.dev === false;
+        for (let i = config.plugins.length - 1; i >= 0; i--) {
+          const p = config.plugins[i];
+          const name = p && typeof p === "object" && "name" in p ? p.name : "";
+          if (name === "vite:vue") {
+            config.plugins.splice(i, 1);
+          } else if (bridgeOptions.stableInjectedKeys && name === "nuxt:compiler:keyed-functions") {
+            patchNuxtKeyedFunctionsPlugin(p);
+          }
+          if (bridgeOptions.autoImports) {
+            patchNuxtAutoImportTransformPlugin(p, isViteBuild);
+          }
+        }
       },
     );
-    const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
-    if (compilerOptions !== false) {
-      const { default: vize } = await import("@vizejs/vite-plugin");
-      nuxt.options.vite ||= {};
-      nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
-      nuxt.options.vite.plugins.push(vize(compilerOptions));
-    }
+  }
 
-    let isNuxtBuild = false;
-    let isViteBuild = false;
-    if (usesVizeCompiler) {
-      nuxt.hook("build:before", () => {
-        if (nuxt.options.dev !== false) {
-          return;
-        }
-        isNuxtBuild = true;
-        nuxt.options.vite ||= {};
-        dedupeVueRuntimePackages(nuxt.options.vite);
-      });
-    }
+  // ─── Bridge: Apply Nuxt transforms to vize virtual modules ────────────
+  // Nuxt's auto-import (unimport) and component loader (LoaderPlugin) use
+  // unplugin-utils/createFilter which hard-excludes \0-prefixed module IDs.
+  // Since vize uses \0-prefixed virtual IDs (Rollup convention), those
+  // transforms never run on vize-compiled modules. This bridge plugin
+  // fills the gap by applying the same transforms in a post-processing step.
 
-    if (usesVizeCompiler) {
-      if (nuxt.options.dev && devOptions.stylesheetLinks) {
-        const devAssetBase =
-          compilerOptions.devUrlBase ?? buildNuxtDevAssetBase(appBaseURL, buildAssetsDir);
-        nuxt.options.nitro ||= {};
-        nuxt.options.nitro.virtual ||= {};
-        if (nuxt.options.nitro.virtual) {
-          nuxt.options.nitro.virtual["#vizejs/nuxt/dev-stylesheet-links-config"] =
-            `export const devAssetBase = ${JSON.stringify(devAssetBase)};`;
-          addServerPlugin(resolver.resolve("./runtime/server/dev-stylesheet-links"));
-        }
-      }
+  // Capture unimport context for composable auto-imports (useRoute, ref, computed, etc.)
+  let unimportCtx: {
+    injectImports: (
+      code: string,
+      id?: string,
+    ) => Promise<{ code: string; s: unknown; imports: unknown[] }>;
+  } | null = null;
+  if (usesVizeCompiler && bridgeOptions.autoImports) {
+    nuxt.hook("imports:context", (ctx: unknown) => {
+      unimportCtx = ctx as typeof unimportCtx;
+    });
+  }
 
-      // Remove Nuxt's built-in @vitejs/plugin-vue when vize is active.
-      // Both plugins handle .vue files; if both are active, @vitejs/plugin-vue
-      // may try to read vize's \0-prefixed virtual module IDs via fs.readFileSync,
-      // causing "path must not contain null bytes" / ENOENT errors.
-      //
-      // Nuxt adds @vitejs/plugin-vue AFTER vite:extendConfig but BEFORE
-      // vite:configResolved. For the environment API path, the hook receives
-      // a shallow copy of the config, so we must MUTATE the plugins array
-      // in-place (splice) rather than replacing it (filter), so the change
-      // propagates to the original config used by createServer().
-      nuxt.hook(
-        "vite:configResolved",
-        (config: { command?: string; plugins: VitePluginWithTransform[] }) => {
-          isViteBuild = config.command === "build" || isNuxtBuild || nuxt.options.dev === false;
-          for (let i = config.plugins.length - 1; i >= 0; i--) {
-            const p = config.plugins[i];
-            const name = p && typeof p === "object" && "name" in p ? p.name : "";
-            if (name === "vite:vue") {
-              config.plugins.splice(i, 1);
-            } else if (
-              bridgeOptions.stableInjectedKeys &&
-              name === "nuxt:compiler:keyed-functions"
-            ) {
-              patchNuxtKeyedFunctionsPlugin(p);
-            }
-            if (bridgeOptions.autoImports) {
-              patchNuxtAutoImportTransformPlugin(p, isViteBuild);
-            }
-          }
-        },
+  const nuxtComponentResolver =
+    usesVizeCompiler && bridgeOptions.components
+      ? createNuxtComponentResolver({
+          buildDir: nuxt.options.buildDir,
+          moduleNames: nuxt.options.modules.filter(
+            (moduleName): moduleName is string => typeof moduleName === "string",
+          ),
+          rootDir: nuxt.options.rootDir,
+        })
+      : null;
+
+  // Capture component registry for component auto-imports (NuxtPage, NuxtLayout, etc.)
+  if (nuxtComponentResolver) {
+    nuxt.hook("components:extend", (comps: unknown) => {
+      nuxtComponentResolver.register(
+        comps as Array<{
+          pascalName: string;
+          kebabName: string;
+          name: string;
+          filePath: string;
+          export: string;
+          mode?: "client" | "server";
+        }>,
       );
-    }
+    });
+  }
 
-    // ─── Bridge: Apply Nuxt transforms to vize virtual modules ────────────
-    // Nuxt's auto-import (unimport) and component loader (LoaderPlugin) use
-    // unplugin-utils/createFilter which hard-excludes \0-prefixed module IDs.
-    // Since vize uses \0-prefixed virtual IDs (Rollup convention), those
-    // transforms never run on vize-compiled modules. This bridge plugin
-    // fills the gap by applying the same transforms in a post-processing step.
+  const shouldAddNuxtTransformBridge =
+    usesVizeCompiler &&
+    (bridgeOptions.autoImports ||
+      bridgeOptions.components ||
+      bridgeOptions.i18n ||
+      bridgeOptions.stableInjectedKeys);
 
-    // Capture unimport context for composable auto-imports (useRoute, ref, computed, etc.)
-    let unimportCtx: {
-      injectImports: (
-        code: string,
-        id?: string,
-      ) => Promise<{ code: string; s: unknown; imports: unknown[] }>;
-    } | null = null;
-    if (usesVizeCompiler && bridgeOptions.autoImports) {
-      nuxt.hook("imports:context", (ctx: unknown) => {
-        unimportCtx = ctx as typeof unimportCtx;
-      });
-    }
+  if (shouldAddNuxtTransformBridge) {
+    await addNuxtVitePlugin({
+      name: "vizejs:nuxt-transform-bridge",
+      enforce: "post" as const,
+      async transform(code: string, id: string, ...args: unknown[]) {
+        // Only process Vize-compiled component modules. In dev, Vite can call
+        // transform hooks with the plugin-visible `.vue.ts?vue&vize` ID
+        // rather than Rollup's internal `\0` virtual ID. Raw `.jsx`/`.tsx`
+        // Vue components are compiled in place (no `.vue.ts` virtual id), so
+        // they are matched separately and still receive Nuxt's auto-import,
+        // component, and i18n bridging.
+        if (!isVizeGeneratedVueModuleId(id) && !isVizeJsxModuleId(id)) return;
 
-    const nuxtComponentResolver =
-      usesVizeCompiler && bridgeOptions.components
-        ? createNuxtComponentResolver({
-            buildDir: nuxt.options.buildDir,
-            moduleNames: nuxt.options.modules.filter(
-              (moduleName): moduleName is string => typeof moduleName === "string",
-            ),
-            rootDir: nuxt.options.rootDir,
-          })
-        : null;
+        let result = code;
+        let changed = false;
 
-    // Capture component registry for component auto-imports (NuxtPage, NuxtLayout, etc.)
-    if (nuxtComponentResolver) {
-      nuxt.hook("components:extend", (comps: unknown) => {
-        nuxtComponentResolver.register(
-          comps as Array<{
-            pascalName: string;
-            kebabName: string;
-            name: string;
-            filePath: string;
-            export: string;
-            mode?: "client" | "server";
-          }>,
-        );
-      });
-    }
+        // 1. Component auto-imports: replace _resolveComponent("Name") with direct imports
+        // Nuxt's LoaderPlugin normally does this, but skips \0-prefixed IDs.
+        if (nuxtComponentResolver) {
+          const nextComponentResult = injectNuxtComponentImports(result, (name) => {
+            return nuxtComponentResolver.resolve(name);
+          });
+          if (nextComponentResult !== result) {
+            result = nextComponentResult;
+            changed = true;
+          }
+        }
 
-    const shouldAddNuxtTransformBridge =
-      usesVizeCompiler &&
-      (bridgeOptions.autoImports ||
-        bridgeOptions.components ||
-        bridgeOptions.i18n ||
-        bridgeOptions.stableInjectedKeys);
+        // 2. i18n function injection: inject useI18n() for $t, $rt, $d, $n, $tm, $te
+        // @nuxtjs/i18n's TransformI18nFunctionPlugin skips \0-prefixed IDs.
+        // Must inject inside the setup() function body, not at module top level.
+        // Use negative lookbehind to exclude `_ctx.$t(` and `this.$t(` (property access),
+        // which are Vue template globals and don't need useI18n injection.
+        if (bridgeOptions.i18n) {
+          const nextResult = injectNuxtI18nHelpers(result);
+          if (nextResult !== result) {
+            result = nextResult;
+            changed = true;
+          }
+        }
 
-    if (shouldAddNuxtTransformBridge) {
-      addVitePlugin({
-        name: "vizejs:nuxt-transform-bridge",
-        enforce: "post" as const,
-        async transform(code: string, id: string, ...args: unknown[]) {
-          // Only process Vize-compiled component modules. In dev, Vite can call
-          // transform hooks with the plugin-visible `.vue.ts?vue&vize` ID
-          // rather than Rollup's internal `\0` virtual ID. Raw `.jsx`/`.tsx`
-          // Vue components are compiled in place (no `.vue.ts` virtual id), so
-          // they are matched separately and still receive Nuxt's auto-import,
-          // component, and i18n bridging.
-          if (!isVizeGeneratedVueModuleId(id) && !isVizeJsxModuleId(id)) return;
-
-          let result = code;
-          let changed = false;
-
-          // 1. Component auto-imports: replace _resolveComponent("Name") with direct imports
-          // Nuxt's LoaderPlugin normally does this, but skips \0-prefixed IDs.
-          if (nuxtComponentResolver) {
-            const nextComponentResult = injectNuxtComponentImports(result, (name) => {
-              return nuxtComponentResolver.resolve(name);
-            });
-            if (nextComponentResult !== result) {
-              result = nextComponentResult;
+        // 3. Composable auto-imports: inject useRoute, ref, computed, useI18n, etc.
+        // Nuxt's unimport TransformPlugin normally does this, but skips \0-prefixed IDs.
+        // Runs after i18n injection so unimport picks up the `useI18n` reference.
+        if (unimportCtx) {
+          try {
+            const beforeUnimport = result;
+            const injected = await unimportCtx.injectImports(result, id);
+            if (injected.imports && injected.imports.length > 0) {
+              result = preserveExplicitVueImportsFromNuxtAutoImports(beforeUnimport, injected.code);
               changed = true;
             }
+          } catch {
+            // Ignore errors — auto-imports might not be needed for all modules
           }
+        }
 
-          // 2. i18n function injection: inject useI18n() for $t, $rt, $d, $n, $tm, $te
-          // @nuxtjs/i18n's TransformI18nFunctionPlugin skips \0-prefixed IDs.
-          // Must inject inside the setup() function body, not at module top level.
-          // Use negative lookbehind to exclude `_ctx.$t(` and `this.$t(` (property access),
-          // which are Vue template globals and don't need useI18n injection.
-          if (bridgeOptions.i18n) {
-            const nextResult = injectNuxtI18nHelpers(result);
-            if (nextResult !== result) {
-              result = nextResult;
-              changed = true;
-            }
+        if (bridgeOptions.autoImports) {
+          const nextResult = preserveExplicitVueImportsFromVizeModuleSource(id, result);
+          if (nextResult !== result) {
+            result = nextResult;
+            changed = true;
           }
+        }
 
-          // 3. Composable auto-imports: inject useRoute, ref, computed, useI18n, etc.
-          // Nuxt's unimport TransformPlugin normally does this, but skips \0-prefixed IDs.
-          // Runs after i18n injection so unimport picks up the `useI18n` reference.
-          if (unimportCtx) {
-            try {
-              const beforeUnimport = result;
-              const injected = await unimportCtx.injectImports(result, id);
-              if (injected.imports && injected.imports.length > 0) {
-                result = preserveExplicitVueImportsFromNuxtAutoImports(
-                  beforeUnimport,
-                  injected.code,
-                );
-                changed = true;
-              }
-            } catch {
-              // Ignore errors — auto-imports might not be needed for all modules
-            }
+        if (bridgeOptions.stableInjectedKeys) {
+          const stableKeyResult = stabilizeNuxtInjectedKeysForVizeVirtualModule(result, id);
+          if (stableKeyResult !== result) {
+            result = stableKeyResult;
+            changed = true;
           }
+        }
 
-          if (bridgeOptions.autoImports) {
-            const nextResult = preserveExplicitVueImportsFromVizeModuleSource(id, result);
-            if (nextResult !== result) {
-              result = nextResult;
-              changed = true;
-            }
+        if (isViteBuild && !isViteSsrTransform(args)) {
+          const clientRuntimeResult = rewriteBareVueImportsToClientRuntime(result);
+          if (clientRuntimeResult !== result) {
+            result = clientRuntimeResult;
+            changed = true;
           }
+        }
 
-          if (bridgeOptions.stableInjectedKeys) {
-            const stableKeyResult = stabilizeNuxtInjectedKeysForVizeVirtualModule(result, id);
-            if (stableKeyResult !== result) {
-              result = stableKeyResult;
-              changed = true;
-            }
-          }
+        if (changed) {
+          return { code: result, map: null };
+        }
+      },
+    });
+  }
 
-          if (isViteBuild && !isViteSsrTransform(args)) {
-            const clientRuntimeResult = rewriteBareVueImportsToClientRuntime(result);
-            if (clientRuntimeResult !== result) {
-              result = clientRuntimeResult;
-              changed = true;
-            }
-          }
+  // ─── UnoCSS bridge: patch filter to accept vize virtual modules ────────
+  // UnoCSS's Vite plugin uses createFilter from unplugin-utils which
+  // hard-excludes \0-prefixed module IDs. Additionally, UnoCSS's pipeline
+  // filter uses /\.(vue|...)($|\?)/ which rejects `.vue.ts` suffixes.
+  //
+  // Attributify support: UnoCSS's attributify extractor expects HTML-style
+  // attributes (e.g. `flex="~ col gap1"`) but Vize compiles templates to
+  // JS render functions where these become object properties (e.g.
+  // `{ flex: "~ col gap1" }`). To support attributify, we also feed the
+  // original .vue source to UnoCSS's extractor alongside the compiled JS.
+  if (usesVizeCompiler && unocssOptions !== false) {
+    await addNuxtVitePlugin({
+      name: "vizejs:unocss-bridge",
+      configResolved(config: { plugins: Array<{ name: string; transform?: Function }> }) {
+        for (const plugin of config.plugins) {
+          if (plugin.name?.startsWith("unocss:") && typeof plugin.transform === "function") {
+            const origTransform = plugin.transform;
+            // Only enrich with original .vue source for the global mode plugin
+            // (unocss:global:*) which does extraction only (returns null).
+            // Other plugins like unocss:transformers modify the code and would
+            // propagate the appended .vue source into the transform pipeline,
+            // causing parse errors in downstream transforms (e.g. transformWithOxc).
+            const isExtractionOnly = plugin.name.startsWith("unocss:global");
+            plugin.transform = function (code: string, id: string, ...args: unknown[]) {
+              if (isVizeVirtualVueModuleId(id)) {
+                // Strip \0 prefix AND .ts suffix so UnoCSS's filter accepts it.
+                // UnoCSS's defaultPipelineInclude is /\.(vue|...)($|\?)/ which
+                // requires .vue at end-of-string or before ?, not .vue.ts.
+                const normalizedId = normalizeVizeVirtualVueModuleId(id);
 
-          if (changed) {
-            return { code: result, map: null };
-          }
-        },
-      });
-    }
-
-    // ─── UnoCSS bridge: patch filter to accept vize virtual modules ────────
-    // UnoCSS's Vite plugin uses createFilter from unplugin-utils which
-    // hard-excludes \0-prefixed module IDs. Additionally, UnoCSS's pipeline
-    // filter uses /\.(vue|...)($|\?)/ which rejects `.vue.ts` suffixes.
-    //
-    // Attributify support: UnoCSS's attributify extractor expects HTML-style
-    // attributes (e.g. `flex="~ col gap1"`) but Vize compiles templates to
-    // JS render functions where these become object properties (e.g.
-    // `{ flex: "~ col gap1" }`). To support attributify, we also feed the
-    // original .vue source to UnoCSS's extractor alongside the compiled JS.
-    if (usesVizeCompiler && unocssOptions !== false) {
-      addVitePlugin({
-        name: "vizejs:unocss-bridge",
-        configResolved(config: { plugins: Array<{ name: string; transform?: Function }> }) {
-          for (const plugin of config.plugins) {
-            if (plugin.name?.startsWith("unocss:") && typeof plugin.transform === "function") {
-              const origTransform = plugin.transform;
-              // Only enrich with original .vue source for the global mode plugin
-              // (unocss:global:*) which does extraction only (returns null).
-              // Other plugins like unocss:transformers modify the code and would
-              // propagate the appended .vue source into the transform pipeline,
-              // causing parse errors in downstream transforms (e.g. transformWithOxc).
-              const isExtractionOnly = plugin.name.startsWith("unocss:global");
-              plugin.transform = function (code: string, id: string, ...args: unknown[]) {
-                if (isVizeVirtualVueModuleId(id)) {
-                  // Strip \0 prefix AND .ts suffix so UnoCSS's filter accepts it.
-                  // UnoCSS's defaultPipelineInclude is /\.(vue|...)($|\?)/ which
-                  // requires .vue at end-of-string or before ?, not .vue.ts.
-                  const normalizedId = normalizeVizeVirtualVueModuleId(id);
-
-                  // For extraction-only plugins, append original .vue source so
-                  // UnoCSS's attributify extractor can find HTML-style attribute
-                  // patterns (flex="~ col gap1" etc.) that don't survive
-                  // template-to-render-function compilation.
-                  let effectiveCode = code;
-                  if (isExtractionOnly && unocssOptions.originalSource !== false) {
-                    effectiveCode = appendOriginalVueSourceForUnoCss(code, normalizedId, {
-                      maxBytes: unocssOptions.originalSource.maxBytes,
-                    });
-                  }
-
-                  return origTransform.call(this, effectiveCode, normalizedId, ...args);
+                // For extraction-only plugins, append original .vue source so
+                // UnoCSS's attributify extractor can find HTML-style attribute
+                // patterns (flex="~ col gap1" etc.) that don't survive
+                // template-to-render-function compilation.
+                let effectiveCode = code;
+                if (isExtractionOnly && unocssOptions.originalSource !== false) {
+                  effectiveCode = appendOriginalVueSourceForUnoCss(code, normalizedId, {
+                    maxBytes: unocssOptions.originalSource.maxBytes,
+                  });
                 }
-                return origTransform.call(this, code, id, ...args);
-              };
-            }
+
+                return origTransform.call(this, effectiveCode, normalizedId, ...args);
+              }
+              return origTransform.call(this, code, id, ...args);
+            };
           }
-        },
-      });
+        }
+      },
+    });
+  }
+
+  // Musea gallery (without nuxtMusea mock layer)
+  // In Nuxt context, real composables/components are already available
+  // via Nuxt's own Vite plugins. Adding nuxtMusea globally would shadow
+  // Nuxt's #imports resolution and break the app.
+  if (museaOptions !== false && supportsViteCompiler) {
+    const { musea } = await import("@vizejs/vite-plugin-musea");
+    const museaBasePath =
+      "basePath" in museaOptions
+        ? ((museaOptions as Record<string, unknown>).basePath as string)
+        : "/__musea__";
+    nuxt.options.vite ||= {};
+    nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
+    nuxt.options.vite.plugins.push(...musea(museaOptions));
+
+    // Print Musea Gallery URL after dev server starts
+    nuxt.hook("listen", (_server: unknown, listener: { url: string }) => {
+      const url = listener.url?.replace(/\/$/, "") || "http://localhost:3000";
+      console.log(
+        `  \x1b[36m➜\x1b[0m  \x1b[1mMusea Gallery:\x1b[0m \x1b[36m${url}${museaBasePath}\x1b[0m`,
+      );
+    });
+  }
+}
+
+const vizeNuxtModule = Object.assign(
+  async function vizeNuxtModule(
+    this: VizeNuxtModuleContext | void,
+    inlineOptions: Partial<VizeNuxtOptions> = {},
+    nuxtArg?: NuxtWithBuilderOptions,
+  ): Promise<void> {
+    const nuxt = nuxtArg ?? (this as VizeNuxtModuleContext | undefined)?.nuxt;
+    if (!nuxt) {
+      throw new Error("@vizejs/nuxt requires a Nuxt instance");
     }
 
-    // Musea gallery (without nuxtMusea mock layer)
-    // In Nuxt context, real composables/components are already available
-    // via Nuxt's own Vite plugins. Adding nuxtMusea globally would shadow
-    // Nuxt's #imports resolution and break the app.
-    if (museaOptions !== false && supportsViteCompiler) {
-      const { musea } = await import("@vizejs/vite-plugin-musea");
-      const museaBasePath =
-        "basePath" in museaOptions
-          ? ((museaOptions as Record<string, unknown>).basePath as string)
-          : "/__musea__";
-      nuxt.options.vite ||= {};
-      nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
-      nuxt.options.vite.plugins.push(...musea(museaOptions));
-
-      // Print Musea Gallery URL after dev server starts
-      nuxt.hook("listen", (_server: unknown, listener: { url: string }) => {
-        const url = listener.url?.replace(/\/$/, "") || "http://localhost:3000";
-        console.log(
-          `  \x1b[36m➜\x1b[0m  \x1b[1mMusea Gallery:\x1b[0m \x1b[36m${url}${museaBasePath}\x1b[0m`,
-        );
-      });
-    }
+    markNuxtRequiredModule(nuxt);
+    registerNuxt2CompatibilityHooks(nuxt);
+    await setupVizeNuxtModule(resolveModuleOptions(inlineOptions, nuxt), nuxt);
   },
-}) as ReturnType<typeof defineNuxtModule<VizeNuxtOptions>>;
+  {
+    getMeta: () => moduleMeta,
+    getOptions: (inlineOptions: Partial<VizeNuxtOptions> = {}, nuxt?: NuxtWithBuilderOptions) =>
+      resolveModuleOptions(inlineOptions, nuxt),
+    meta: moduleMeta,
+    defaults: moduleDefaults,
+  },
+);
+
+export default vizeNuxtModule;
 
 // Re-export types for convenience
 export type { MuseaOptions } from "@vizejs/vite-plugin-musea";

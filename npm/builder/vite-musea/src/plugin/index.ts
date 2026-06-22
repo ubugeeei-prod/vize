@@ -34,6 +34,7 @@ import {
   loadStaticRuntimeModule,
   museaStaticBuildConfig,
   resolveStaticRuntimeId,
+  shouldEnableMuseaStaticBuild,
   type StaticBuildInput,
 } from "../static-export.js";
 
@@ -119,6 +120,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   let resolvedPreviewCss: string[] = [];
   let resolvedPreviewSetup: string | null = null;
   let scanRoots: string[] = [];
+  let staticBuildEnabled = isMuseaStaticBuild();
 
   const virtualState: VirtualModuleState = {
     basePath,
@@ -145,8 +147,9 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       return shouldApplyMuseaPlugin(env);
     },
 
-    config(userConfig) {
-      const staticBuildConfig = isMuseaStaticBuild()
+    config(userConfig, env) {
+      staticBuildEnabled = shouldEnableMuseaStaticBuild(env.command);
+      const staticBuildConfig = staticBuildEnabled
         ? museaStaticBuildConfig(userConfig.build?.rollupOptions?.input as StaticBuildInput)
         : {};
       return { resolve: { alias: [createVueRuntimeCompilerAlias()] }, ...staticBuildConfig };
@@ -301,7 +304,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       return loadStaticRuntimeModule(id, artFiles) ?? virtualLoad(id);
     },
     async generateBundle(_options, bundle) {
-      if (!isMuseaStaticBuild()) return;
+      if (!staticBuildEnabled) return;
       await emitStaticGallery((asset) => void this.emitFile(asset), bundle, {
         config,
         artFiles,

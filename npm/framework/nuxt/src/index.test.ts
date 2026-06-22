@@ -7,20 +7,23 @@ import test from "node:test";
 
 const NUXT2_SAFE_KIT_VERSION = "3.11.2";
 
-void test("Nuxt module entry avoids import.meta syntax in loader-facing sources", () => {
+void test("Nuxt module entry avoids loader-unsafe syntax and static kit imports", () => {
   const fixtures = [
     ["src/index.ts", new URL("./index.ts", import.meta.url)],
     ["dist/index.mjs", new URL("../dist/index.mjs", import.meta.url)],
+    ["src/resolver.ts", new URL("./resolver.ts", import.meta.url)],
   ] as const;
 
-  const offsetsByFile = fixtures.map(([name, url]) => [
-    name,
-    importMetaOffsets(fs.readFileSync(url, "utf8")),
-  ]);
+  const offsetsByFile = fixtures.map(([name, url]) => {
+    const source = fs.readFileSync(url, "utf8");
+    assert.doesNotMatch(source, /from\s+["']@nuxt\/kit["']/);
+    return [name, importMetaOffsets(source)];
+  });
 
   assert.deepEqual(offsetsByFile, [
     ["src/index.ts", []],
     ["dist/index.mjs", []],
+    ["src/resolver.ts", []],
   ]);
 });
 

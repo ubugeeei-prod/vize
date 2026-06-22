@@ -172,19 +172,51 @@ export async function generateStorybookFiles(
   // Ensure output directory exists
   await fs.promises.mkdir(outputDir, { recursive: true });
 
-  for (const [filePath, _art] of artFiles) {
+  for (const [filePath, art] of artFiles) {
     try {
       const source = await fs.promises.readFile(filePath, "utf-8");
       const csf = binding.artToCsf(source, { filename: filePath });
 
       const outputPath = path.join(outputDir, csf.filename);
-      await fs.promises.writeFile(outputPath, csf.code, "utf-8");
+      const code = rewriteStorybookComponentImport(csf.code, art, filePath, outputPath);
+      await fs.promises.writeFile(outputPath, code, "utf-8");
 
       console.log(`[musea] Generated: ${path.relative(root, outputPath)}`);
     } catch (e) {
       console.error(`[musea] Failed to generate CSF for ${filePath}:`, e);
     }
   }
+}
+
+export function rewriteStorybookComponentImport(
+  code: string,
+  art: ArtFileInfo,
+  artPath: string,
+  outputPath: string,
+): string {
+  const component = art.isInline && art.componentPath ? art.componentPath : art.metadata.component;
+  if (!component || isBareImport(component)) {
+    return code;
+  }
+
+  const resolvedComponent = path.isAbsolute(component)
+    ? component
+    : path.resolve(path.dirname(artPath), component);
+  let relativeComponent = normalizeGlobPath(
+    path.relative(path.dirname(outputPath), resolvedComponent),
+  );
+  if (!relativeComponent.startsWith(".")) {
+    relativeComponent = `./${relativeComponent}`;
+  }
+
+  return code.replace(
+    /import\s+(__museaComponent)\s+from\s+(['"])([^'"]+)\2;/,
+    `import $1 from $2${relativeComponent}$2;`,
+  );
+}
+
+function isBareImport(source: string): boolean {
+  return !source.startsWith(".") && !path.isAbsolute(source);
 }
 
 export function toPascalCase(str: string): string {
