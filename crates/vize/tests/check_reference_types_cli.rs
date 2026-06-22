@@ -269,3 +269,76 @@ defineArt("./MyButton.vue", {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn check_no_template_bindings_keeps_component_props_helper_in_project() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("no-template-helper");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    write(
+        &project_root,
+        "tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    );
+    write(
+        &project_root,
+        "src/MyCard.vue",
+        r#"<script setup lang="ts">
+defineProps<{ itemTitle?: string }>()
+</script>
+
+<template><article>{{ itemTitle }}</article></template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--no-config",
+            "--tsconfig",
+            "tsconfig.json",
+            "--no-check-template-bindings",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    assert!(
+        !stdout.contains("TS2304") && !stdout.contains("__VizeComponentProps"),
+        "project check should keep __VizeComponentProps visible:\n{stdout}"
+    );
+
+    let helpers =
+        std::fs::read_to_string(project_root.join("node_modules/.vize/canon/__vize_helpers.d.ts"))
+            .unwrap();
+    assert!(
+        helpers.contains("type __VizeComponentProps<T>"),
+        "shared helpers should define __VizeComponentProps:\n{helpers}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
