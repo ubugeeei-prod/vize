@@ -47,13 +47,12 @@ pub(super) fn collect_fallback_path_aliases(
     // into the generated `tsconfig.json`. When present, consume those aliases
     // verbatim instead of guessing, so user-configured aliases (e.g. custom
     // `srcDir`, extra `alias` entries) are honoured.
-    if let Some(aliases) = collect_generated_path_aliases(cwd, generated_dir)
-        && !aliases.is_empty()
-    {
-        return aliases;
-    }
-
-    collect_guessed_path_aliases(cwd)
+    let mut aliases = match collect_generated_path_aliases(cwd, generated_dir) {
+        Some(aliases) if !aliases.is_empty() => aliases,
+        _ => collect_guessed_path_aliases(cwd),
+    };
+    push_nuxt_composition_api_alias(cwd, &mut aliases);
+    aliases
 }
 
 /// Parse generated `tsconfig.json` (JSON-with-comments) and lift its
@@ -141,6 +140,14 @@ fn collect_guessed_path_aliases(cwd: &Path) -> Vec<NuxtPathAlias> {
         push_path_alias(&mut aliases, "#shared/*", vec!["shared/*"]);
     }
     aliases
+}
+
+fn push_nuxt_composition_api_alias(cwd: &Path, aliases: &mut Vec<NuxtPathAlias>) {
+    let runtime_types = "node_modules/@nuxtjs/composition-api/dist/runtime/index.d.ts";
+    if !cwd.join(runtime_types).is_file() {
+        return;
+    }
+    push_path_alias(aliases, "@nuxtjs/composition-api", vec![runtime_types]);
 }
 
 fn push_path_alias(aliases: &mut Vec<NuxtPathAlias>, pattern: &str, targets: Vec<&str>) {
