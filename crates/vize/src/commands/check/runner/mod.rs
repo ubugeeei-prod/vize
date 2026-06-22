@@ -112,8 +112,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // Legacy Vue 2.7 / Nuxt 2 Options-API type checking is opt-in and compiled out
     // of the default Vue 3 binary. Without the `legacy` feature, honor the config
     // flag by warning instead of silently ignoring it.
-    #[cfg(feature = "legacy")]
-    let legacy_vue2 = loaded_config.features.type_checker_legacy_vue2;
+    let legacy_vue2 = cfg!(feature = "legacy") && loaded_config.features.type_checker_legacy_vue2;
     #[cfg(not(feature = "legacy"))]
     if loaded_config.features.type_checker_legacy_vue2 {
         eprintln!(
@@ -255,7 +254,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
     let tsconfig = program_tsconfig_path.as_deref();
-    let nuxt_path_aliases = nuxt::detect(&mut virtual_ts_options, &nuxt_project_root, tsconfig);
+    let nuxt_root = &nuxt_project_root;
+    let nuxt_path_aliases = nuxt::detect(&mut virtual_ts_options, nuxt_root, tsconfig, legacy_vue2);
     collect_project_global_component_stubs(
         &mut virtual_ts_options,
         &files,
