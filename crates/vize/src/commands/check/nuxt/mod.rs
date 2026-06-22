@@ -10,6 +10,7 @@ use vize_carton::{FxHashSet, String, ToCompactString};
 mod fallback;
 mod generated;
 mod generated_dir;
+mod legacy_template_globals;
 mod parsing;
 mod plugins;
 mod source_scan;
@@ -17,6 +18,8 @@ mod stubs;
 mod tsconfig_aliases;
 mod virtual_modules;
 
+#[cfg(test)]
+mod legacy_template_globals_tests;
 #[cfg(test)]
 mod tests;
 
@@ -40,13 +43,22 @@ pub(in crate::commands::check) fn detect_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
-    detect(options, cwd, None)
+    detect(options, cwd, None, false)
+}
+
+#[cfg(test)]
+pub(in crate::commands::check) fn detect_legacy_nuxt_auto_imports(
+    options: &mut VirtualTsOptions,
+    cwd: &Path,
+) -> Vec<NuxtPathAlias> {
+    detect(options, cwd, None, true)
 }
 
 pub(in crate::commands::check) fn detect(
     options: &mut VirtualTsOptions,
     cwd: &Path,
     tsconfig_path: Option<&Path>,
+    legacy_vue2: bool,
 ) -> Vec<NuxtPathAlias> {
     if !is_nuxt_project(cwd) {
         return Vec::new();
@@ -92,6 +104,9 @@ pub(in crate::commands::check) fn detect(
     let explicit_aliases = collect_explicit_virtual_module_aliases(tsconfig_path);
     collect_fallback_module_stubs(cwd, &mut collected, &explicit_aliases);
     let path_aliases = collect_fallback_path_aliases(cwd, &generated_dir);
+    if legacy_vue2 {
+        legacy_template_globals::collect(options);
+    }
     collect_generated_template_globals(&generated_dir, options, &seen_names);
 
     for stub in &collected {
