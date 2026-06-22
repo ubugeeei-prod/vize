@@ -22,7 +22,7 @@ export const runPackageScriptDirectly = (taskName: string, packages: readonly Pa
  * package-local tasks.
  */
 export const installVscodeExtensionDependencies = runInDirectory(
-  "npm/editor/vscode",
+  "editors/vscode",
   "if [ -x node_modules/.bin/vp ]; then exit 0; fi && mkdir -p node_modules/.bin && pnpm install --ignore-workspace --no-lockfile --prefer-offline",
 );
 
@@ -35,7 +35,7 @@ export const installVscodeExtensionDependencies = runInDirectory(
  * install pay for VS Code extension dependencies.
  */
 export const runInVscodeExtension = (...commands: string[]) =>
-  `${installVscodeExtensionDependencies} && ${runInDirectory("npm/editor/vscode", commands.join(" && "))}`;
+  `${installVscodeExtensionDependencies} && ${runInDirectory("editors/vscode", commands.join(" && "))}`;
 
 /**
  * Builds a filtered `vp run` command for package groups.

@@ -103,4 +103,4 @@ configure only `Art Vue`.
 
 ## Publishing
 
-Zed extensions are published by adding this repository as a submodule to `zed-industries/extensions` and pointing the entry at `npm/editor/zed`.
+Zed extensions are published by adding this repository as a submodule to `zed-industries/extensions` and pointing the entry at `editors/zed`.

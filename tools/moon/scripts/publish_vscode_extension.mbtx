@@ -161,7 +161,7 @@ async fn run_app() -> Int {
   let package_json_path = if args.length() == 2 {
     resolve_path(args[1])
   } else {
-    resolve_path("npm/editor/vscode/package.json")
+    resolve_path("editors/vscode/package.json")
   }
   let extension_info = match read_package_json(package_json_path) {
     Some(value) =>

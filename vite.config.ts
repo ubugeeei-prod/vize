@@ -7,7 +7,7 @@ import { rootBuildTaskPlugin } from "./tools/vite-plus/task-helpers.ts";
 const localGeneratedIgnorePatterns = [
   ".cache/**",
   ".direnv/**",
-  "npm/editor/vscode/.vscode-test/**",
+  "editors/vscode/.vscode-test/**",
   "target/**",
 ];
 const testOutputIgnorePattern = ["**", "target", "vize-tests", "**"].join("/");
@@ -49,7 +49,7 @@ const config = {
       "**/__snapshot__/**",
       testOutputIgnorePattern,
       "**/__ubugeeei__/**",
-      "npm/editor/vscode/**",
+      "editors/vscode/**",
       "tests/_fixtures/**",
     ],
     options: {

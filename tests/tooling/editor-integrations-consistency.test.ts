@@ -33,9 +33,9 @@ type VscodeManifest = {
 // each Vue language, instead of re-checking either side's literal fields (those
 // are already covered in editor-integrations.test.ts).
 test("VS Code and Zed agree on language ids, display names, and extensions", () => {
-  const vscode = readJson<VscodeManifest>("npm/editor/vscode/package.json");
-  const zedExtension = readText("npm/editor/zed/extension.toml");
-  const zedArtConfig = readText("npm/editor/zed/languages/art-vue/config.toml");
+  const vscode = readJson<VscodeManifest>("editors/vscode/package.json");
+  const zedExtension = readText("editors/zed/extension.toml");
+  const zedArtConfig = readText("editors/zed/languages/art-vue/config.toml");
 
   const vscodeLanguages = new Map(
     (vscode.contributes?.languages ?? []).map((language) => [language.id, language]),
@@ -78,14 +78,14 @@ test("VS Code and Zed agree on language ids, display names, and extensions", () 
 // BOTH. editor-integrations.test.ts checks individual embeddedLanguages values
 // but never reconciles them against the grammar's include graph.
 test("scopeName / TextMate embed scopes align with declared embeddedLanguages", () => {
-  const vscode = readJson<VscodeManifest>("npm/editor/vscode/package.json");
+  const vscode = readJson<VscodeManifest>("editors/vscode/package.json");
   const vueGrammarContribution = (vscode.contributes?.grammars ?? []).find(
     (grammar) => grammar.language === "vue",
   );
   assert.ok(vueGrammarContribution, "vscode should contribute a vue grammar");
   assert.equal(vueGrammarContribution.scopeName, "source.vue");
 
-  const grammar = readJson<unknown>("npm/editor/vscode/syntaxes/vue.tmLanguage.json");
+  const grammar = readJson<unknown>("editors/vscode/syntaxes/vue.tmLanguage.json");
   const grammarIncludes = new Set<string>();
   const walk = (node: unknown): void => {
     if (Array.isArray(node)) {

@@ -29,7 +29,7 @@ test("legacy vscode-art language and grammar declarations stay self-consistent",
     };
     name?: string;
     publisher?: string;
-  }>("npm/editor/vscode-art/package.json");
+  }>("editors/vscode-art/package.json");
 
   assert.equal(manifest.publisher, "vize");
   assert.equal(manifest.name, "vize-art");
@@ -49,7 +49,7 @@ test("legacy vscode-art language and grammar declarations stay self-consistent",
 
   // The referenced grammar file must exist and declare the same scopeName the
   // manifest promises, or VS Code silently fails to tokenize art-vue documents.
-  const grammarRelativePath = path.join("npm/editor/vscode-art", grammar.path);
+  const grammarRelativePath = path.join("editors/vscode-art", grammar.path);
   assert.equal(
     fs.existsSync(path.join(root, grammarRelativePath)),
     true,
@@ -74,7 +74,7 @@ test("legacy vscode-art language-configuration comments, brackets, and folding a
     folding?: { markers?: { end?: string; start?: string } };
     surroundingPairs?: string[][];
     wordPattern?: string;
-  }>("npm/editor/vscode-art/language-configuration.json");
+  }>("editors/vscode-art/language-configuration.json");
 
   assert.deepEqual(config.comments?.blockComment, ["<!--", "-->"]);
   assert.deepEqual(config.brackets, [

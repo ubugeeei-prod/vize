@@ -56,7 +56,7 @@ code --install-extension vize.vize-art
 Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then:
 
 ```bash
-cd npm/editor/vscode-art
+cd editors/vscode-art
 vp install --ignore-workspace
 vp exec tsgo -p ./
 ```

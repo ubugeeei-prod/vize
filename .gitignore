@@ -8,9 +8,10 @@ _build/
 
 # npm package build outputs
 npm/*/dist/
+editors/*/dist/
 npm/builder-vite/wasm/
-npm/editor-vscode/.vscode-test/
-npm/editor-zed/target/
+editors/vscode/.vscode-test/
+editors/zed/target/
 
 # Native (NAPI) build output
 *.node

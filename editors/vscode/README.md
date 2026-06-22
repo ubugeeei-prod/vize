@@ -32,7 +32,7 @@ code --install-extension ubugeeei.vize
 Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then:
 
 ```bash
-cd npm/editor/vscode
+cd editors/vscode
 vp install --ignore-workspace
 vp build
 vp exec vsce package --no-dependencies --out dist/vize.vsix

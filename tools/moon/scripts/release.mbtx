@@ -353,7 +353,7 @@ fn replace_package_json_version(
 /// globs but still ship release artifacts and must stay aligned with the
 /// workspace version.
 fn extra_release_package_json_paths() -> Array[String] {
-  ["npm/editor/vscode/package.json"]
+  ["editors/vscode/package.json"]
 }
 
 ///|
@@ -770,9 +770,9 @@ async fn run_app() -> Int {
     files_to_stage.push(lockfile_path)
   }
 
-  let zed_cargo_toml = "npm/editor/zed/Cargo.toml"
-  let zed_extension_toml = "npm/editor/zed/extension.toml"
-  let zed_cargo_lock = "npm/editor/zed/Cargo.lock"
+  let zed_cargo_toml = "editors/zed/Cargo.toml"
+  let zed_extension_toml = "editors/zed/extension.toml"
+  let zed_cargo_lock = "editors/zed/Cargo.lock"
   if safe_path_exists(zed_cargo_toml) {
     let content = match read_file_to_string(zed_cargo_toml) {
       Some(content) => content
@@ -812,9 +812,9 @@ async fn run_app() -> Int {
   if safe_path_exists(zed_cargo_lock) {
     if @process.run(
       "cargo",
-      ["update", "--manifest-path", "npm/editor/zed/Cargo.toml", "-p", "vize-zed-extension"],
+      ["update", "--manifest-path", "editors/zed/Cargo.toml", "-p", "vize-zed-extension"],
     ) != 0 {
-      @stdio.stderr.write("Failed to update npm/editor/zed/Cargo.lock\n")
+      @stdio.stderr.write("Failed to update editors/zed/Cargo.lock\n")
       return 1
     }
     println("  Updated \{zed_cargo_lock}")

@@ -595,7 +595,7 @@ async function showServerNotFoundMessage(context: ExtensionContext): Promise<voi
 
   if (selection === OPEN_SETUP_DOCS_ACTION) {
     await env.openExternal(
-      Uri.parse("https://github.com/ubugeeei-prod/vize/tree/main/npm/editor/vscode#readme"),
+      Uri.parse("https://github.com/ubugeeei-prod/vize/tree/main/editors/vscode#readme"),
     );
     return;
   }

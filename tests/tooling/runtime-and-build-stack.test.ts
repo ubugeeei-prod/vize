@@ -24,17 +24,26 @@ function readWorkspaceYaml(): string {
   return fs.readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf-8");
 }
 
-// Directory names that pnpm-workspace.yaml explicitly excludes via "!npm/<name>"
+// Package paths that pnpm-workspace.yaml explicitly excludes via "!<dir>"
 // (e.g. the VS Code extensions which carry an engines.vscode field instead of node).
-function workspaceIgnoredNpmDirs(workspaceYaml: string): Set<string> {
+function workspaceIgnoredPackageDirs(workspaceYaml: string): Set<string> {
   const ignored = new Set<string>();
   for (const line of workspaceYaml.split("\n")) {
-    const match = line.match(/^\s*-\s*"!npm\/([^"]+)"\s*$/);
+    const match = line.match(/^\s*-\s*"!(npm|editors)\/([^"]+)"\s*$/);
     if (match) {
-      ignored.add(match[1]);
+      ignored.add(`${match[1]}/${match[2]}`);
     }
   }
   return ignored;
+}
+
+// Directory names under npm/ that pnpm-workspace.yaml explicitly excludes.
+function workspaceIgnoredNpmDirs(workspaceYaml: string): Set<string> {
+  return new Set(
+    [...workspaceIgnoredPackageDirs(workspaceYaml)]
+      .filter((dir) => dir.startsWith("npm/"))
+      .map((dir) => dir.slice("npm/".length)),
+  );
 }
 
 function readNpmPackages(): NpmPackage[] {
@@ -139,15 +148,15 @@ test("no published npm package declares a bun or deno engine key", () => {
 });
 
 test("workspace-ignored editor extensions are correctly excluded from the portable set", () => {
-  const ignoredDirs = workspaceIgnoredNpmDirs(readWorkspaceYaml());
+  const ignoredDirs = workspaceIgnoredPackageDirs(readWorkspaceYaml());
   // pnpm-workspace.yaml ignores the VS Code extension dirs; confirm they exist on disk,
   // carry an engines.vscode field, and are therefore not in the portable published set.
-  assert.ok(ignoredDirs.size >= 1, "expected at least one workspace-ignored npm dir");
+  assert.ok(ignoredDirs.size >= 1, "expected at least one workspace-ignored package dir");
 
-  const portableDirs = new Set(publishedPortablePackages().map((pkg) => pkg.dir));
+  const portableDirs = new Set(publishedPortablePackages().map((pkg) => `npm/${pkg.dir}`));
   for (const dir of ignoredDirs) {
-    const pkgPath = path.join(npmDir, dir, "package.json");
-    if (!fs.existsSync(pkgPath)) continue;
+    const pkgPath = path.join(root, dir, "package.json");
+    assert.ok(fs.existsSync(pkgPath), `${dir}: ignored extension package should exist`);
     const json = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as PackageJson;
     assert.ok(json.engines?.vscode != null, `${dir}: ignored extension should be vscode-keyed`);
     assert.ok(!portableDirs.has(dir), `${dir}: must not be in the portable published set`);

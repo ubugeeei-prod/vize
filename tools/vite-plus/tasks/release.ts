@@ -35,7 +35,7 @@ export const releaseTasks = defineTasks({
   ),
   "publish:crates": noCacheTask(moonScript("publish_crates")),
   "publish:vscode-extension": noCacheTask(
-    `${installVscodeExtensionDependencies} && ${moonScript("publish_vscode_extension", "npm/editor/vscode/dist/vize.vsix")}`,
+    `${installVscodeExtensionDependencies} && ${moonScript("publish_vscode_extension", "editors/vscode/dist/vize.vsix")}`,
   ),
   publish: noCacheTask(runTasks("publish:npm", "publish:crates")),
 });

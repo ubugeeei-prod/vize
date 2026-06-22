@@ -1,4 +1,4 @@
-set runtimepath^=npm/editor/vim
+set runtimepath^=editors/vim
 runtime autoload/vize.vim
 
 let s:defaults = vize#normalize({})

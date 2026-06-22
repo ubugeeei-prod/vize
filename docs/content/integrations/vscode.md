@@ -99,7 +99,7 @@ Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/inst
 ```bash
 git clone https://github.com/ubugeeei-prod/vize.git
 cd vize
-cd npm/editor/vscode
+cd editors/vscode
 vp install -- --ignore-workspace
 vp pack
 vp exec vsce package --no-dependencies --out dist/vize.vsix

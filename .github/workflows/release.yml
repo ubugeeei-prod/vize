@@ -162,7 +162,7 @@ jobs:
           path: |
             emacs-vize-extension.tar.gz
             helix-vize-extension.tar.gz
-            npm/editor/vscode/dist/vize.vsix
+            editors/vscode/dist/vize.vsix
             nvim-vize-extension.tar.gz
             vim-vize-extension.tar.gz
             zed-vize-extension.tar.gz
@@ -210,7 +210,7 @@ jobs:
 
       - name: Publish VS Code extension
         if: env.VSCE_PAT != ''
-        run: moon run --target native - -- editor-extension-artifacts/npm/editor/vscode/dist/vize.vsix < tools/moon/scripts/publish_vscode_extension.mbtx
+        run: moon run --target native - -- editor-extension-artifacts/editors/vscode/dist/vize.vsix < tools/moon/scripts/publish_vscode_extension.mbtx
 
   # Build release npm packages once and reuse them across publish jobs
   build-release-packages:
@@ -1127,7 +1127,7 @@ jobs:
           for artifact in \
             cli-artifacts/*.tar.gz \
             cli-artifacts/*.zip \
-            editor-extension-artifacts/npm/editor/vscode/dist/*.vsix \
+            editor-extension-artifacts/editors/vscode/dist/*.vsix \
             editor-extension-artifacts/*.tar.gz; do
             if [ -f "$artifact" ]; then
               echo "Hashing $artifact"
@@ -1142,7 +1142,7 @@ jobs:
           for artifact in \
             cli-artifacts/*.tar.gz \
             cli-artifacts/*.zip \
-            editor-extension-artifacts/npm/editor/vscode/dist/*.vsix \
+            editor-extension-artifacts/editors/vscode/dist/*.vsix \
             editor-extension-artifacts/*.tar.gz \
             vize-${{ github.ref_name }}-cyclonedx.sbom.json \
             vize-${{ github.ref_name }}-spdx.sbom.json; do
@@ -1166,7 +1166,7 @@ jobs:
           files: |
             cli-artifacts/*.tar.gz
             cli-artifacts/*.zip
-            editor-extension-artifacts/npm/editor/vscode/dist/*.vsix
+            editor-extension-artifacts/editors/vscode/dist/*.vsix
             editor-extension-artifacts/*.tar.gz
             vize-${{ github.ref_name }}-cyclonedx.sbom.json
             vize-${{ github.ref_name }}-spdx.sbom.json

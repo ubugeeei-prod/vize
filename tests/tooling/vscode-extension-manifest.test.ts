@@ -36,7 +36,7 @@ type Manifest = {
 
 function readManifest(): Manifest {
   return JSON.parse(
-    fs.readFileSync(path.join(root, "npm/editor/vscode/package.json"), "utf-8"),
+    fs.readFileSync(path.join(root, "editors/vscode/package.json"), "utf-8"),
   ) as Manifest;
 }
 

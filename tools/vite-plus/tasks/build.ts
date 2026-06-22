@@ -58,33 +58,33 @@ export const buildTasks = defineTasks({
   "package:vscode-extension": noCacheTask(
     runInVscodeExtension(
       "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
-      "node ../../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
+      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     ),
   ),
-  "check:zed-extension": task("cargo check --manifest-path npm/editor/zed/Cargo.toml", {
-    input: ["npm/editor/zed/**"],
+  "check:zed-extension": task("cargo check --manifest-path editors/zed/Cargo.toml", {
+    input: ["editors/zed/**"],
   }),
   "package:zed-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed/target' -czf zed-vize-extension.tar.gz -C npm/editor zed && node tools/zed-vize/assert-zed-package.mjs zed-vize-extension.tar.gz",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed/target' -czf zed-vize-extension.tar.gz -C editors zed && node tools/zed-vize/assert-zed-package.mjs zed-vize-extension.tar.gz",
   ),
   "package:nvim-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf nvim-vize-extension.tar.gz -C npm/editor nvim && node tools/nvim-vize/assert-nvim-package.mjs nvim-vize-extension.tar.gz",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf nvim-vize-extension.tar.gz -C editors nvim && node tools/nvim-vize/assert-nvim-package.mjs nvim-vize-extension.tar.gz",
   ),
   "package:vim-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf vim-vize-extension.tar.gz -C npm/editor vim && node tools/vim-vize/assert-vim-package.mjs vim-vize-extension.tar.gz",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf vim-vize-extension.tar.gz -C editors vim && node tools/vim-vize/assert-vim-package.mjs vim-vize-extension.tar.gz",
   ),
   "package:helix-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf helix-vize-extension.tar.gz -C npm/editor helix && node tools/helix-vize/assert-helix-package.mjs helix-vize-extension.tar.gz",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf helix-vize-extension.tar.gz -C editors helix && node tools/helix-vize/assert-helix-package.mjs helix-vize-extension.tar.gz",
   ),
   "package:emacs-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf emacs-vize-extension.tar.gz -C npm/editor emacs && node tools/emacs-vize/assert-emacs-package.mjs emacs-vize-extension.tar.gz",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf emacs-vize-extension.tar.gz -C editors emacs && node tools/emacs-vize/assert-emacs-package.mjs emacs-vize-extension.tar.gz",
   ),
   "package:editor-extensions": noCacheTask(
     `${runInVscodeExtension(
       "pnpm exec tsgo --noEmit",
       "pnpm exec vp check src vite.config.ts",
       "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
-      "node ../../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
+      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     )} && ${runTask("check:zed-extension")} && ${runTask(
       "test:zed-extension:unit",
     )} && ${runTask("package:zed-extension")} && ${runTask(

@@ -9,7 +9,7 @@ import zlib from "node:zlib";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const vsixPath = path.resolve(
   process.cwd(),
-  process.argv[2] ?? path.join(root, "npm/editor/vscode/dist/vize.vsix"),
+  process.argv[2] ?? path.join(root, "editors/vscode/dist/vize.vsix"),
 );
 const builtins = new Set([
   ...builtinModules,

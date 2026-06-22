@@ -7,7 +7,7 @@ Vim does not include a built-in LSP client. This package provides filetype detec
 
 ```vim
 Plug 'prabirshrestha/vim-lsp'
-Plug 'ubugeeei-prod/vize', { 'rtp': 'npm/editor/vim' }
+Plug 'ubugeeei-prod/vize', { 'rtp': 'editors/vim' }
 
 call vize#setup({'profile': 'lint'})
 ```

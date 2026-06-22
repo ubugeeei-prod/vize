@@ -435,7 +435,7 @@ test("editor extension manifests keep expected defaults and version alignment", 
   assert.ok(workspaceVersion);
 
   const vscodePackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/editor/vscode/package.json"), "utf-8"),
+    fs.readFileSync(path.join(root, "editors/vscode/package.json"), "utf-8"),
   ) as {
     contributes?: {
       configuration?: {
@@ -481,7 +481,7 @@ test("editor extension manifests keep expected defaults and version alignment", 
     "7.0.0-dev.20260421.1",
   );
 
-  const zedManifest = fs.readFileSync(path.join(root, "npm/editor/zed/extension.toml"), "utf-8");
+  const zedManifest = fs.readFileSync(path.join(root, "editors/zed/extension.toml"), "utf-8");
   const zedVersion = zedManifest.match(/^version = "(.+)"$/m)?.[1];
 
   assert.equal(zedVersion, workspaceVersion);

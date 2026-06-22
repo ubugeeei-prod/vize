@@ -75,22 +75,22 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(
       "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
-      "node ../../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
+      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     ),
   ),
   "test:vscode-extension:host": noCacheTask(
     runInVscodeExtension("pnpm exec vp pack", "pnpm run test:host"),
   ),
   "test:zed-extension:package": noCacheTask("vp run --workspace-root package:zed-extension"),
-  "test:zed-extension:unit": task("cargo test --manifest-path npm/editor/zed/Cargo.toml", {
-    input: ["npm/editor/zed/**"],
+  "test:zed-extension:unit": task("cargo test --manifest-path editors/zed/Cargo.toml", {
+    input: ["editors/zed/**"],
   }),
   "test:nvim-extension:headless": noCacheTask(
-    "nvim --headless -u NONE --noplugin '+set runtimepath^=npm/editor/nvim' '+luafile npm/editor/nvim/test/vize_spec.lua' '+qa'",
+    "nvim --headless -u NONE --noplugin '+set runtimepath^=editors/nvim' '+luafile editors/nvim/test/vize_spec.lua' '+qa'",
   ),
   "test:nvim-extension:package": noCacheTask("vp run --workspace-root package:nvim-extension"),
   "test:vim-extension:headless": noCacheTask(
-    "vim -Nu NONE -n -es -S npm/editor/vim/test/vize_spec.vim",
+    "vim -Nu NONE -n -es -S editors/vim/test/vize_spec.vim",
   ),
   "test:vim-extension:package": noCacheTask("vp run --workspace-root package:vim-extension"),
   "test:helix-extension:package": noCacheTask("vp run --workspace-root package:helix-extension"),
