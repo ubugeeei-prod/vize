@@ -10,7 +10,7 @@
  */
 
 import type { ApiRoutesContext, SendJson, SendError, ReadBody } from "./api-routes/index.js";
-import { HttpError, parseJsonBody, resolveInside } from "./security.js";
+import { HttpError, parseJsonBody, resolveInsideAny } from "./security.js";
 import {
   parseTokens,
   buildTokenMap,
@@ -27,7 +27,7 @@ import {
 } from "./style-dictionary.js";
 
 function resolveTokensPath(ctx: ApiRoutesContext): string {
-  return resolveInside(ctx.config.root, ctx.tokensPath!, "tokensPath");
+  return resolveInsideAny([ctx.config.root, ...ctx.scanRoots], ctx.tokensPath!, "tokensPath");
 }
 
 function sendTokenMutationError(e: unknown, sendError: SendError): void {

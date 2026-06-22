@@ -204,6 +204,48 @@ void test("createApiMiddleware returns 400 for malformed art source JSON", async
   }
 });
 
+void test("createApiMiddleware resolves tokensPath inside external scan roots", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-tokens-root-"));
+  const appRoot = path.join(tempDir, "app");
+  const designRoot = path.join(tempDir, "design");
+  const tokensDir = path.join(designRoot, "tokens");
+
+  try {
+    await fs.promises.mkdir(appRoot, { recursive: true });
+    await fs.promises.mkdir(tokensDir, { recursive: true });
+    await fs.promises.writeFile(
+      path.join(tokensDir, "colors.tokens.json"),
+      JSON.stringify({
+        color: {
+          primitive: {
+            gray: {
+              50: { value: "#f7f7f7" },
+            },
+          },
+        },
+      }),
+      "utf-8",
+    );
+
+    const ctx = createContext(appRoot);
+    ctx.scanRoots = [appRoot, designRoot];
+    ctx.tokensPath = "../design/tokens";
+
+    const response = await invokeApi(ctx, {
+      method: "GET",
+      url: "/tokens",
+    });
+
+    assert.equal(response.statusCode, 200, response.body);
+    const body = JSON.parse(response.body);
+    assert.equal(body.error, undefined);
+    assert.equal(body.meta.filePath, tokensDir);
+    assert.equal(body.tokenMap["color.primitive.gray.50"].value, "#f7f7f7");
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
 void test("createApiMiddleware populates inline art palette controls from host component props", async () => {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-inline-palette-"));
   const componentPath = path.join(tempDir, "src", "InlineButton.vue");
