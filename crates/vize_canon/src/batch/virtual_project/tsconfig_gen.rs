@@ -31,12 +31,10 @@ impl VirtualProject {
         self.preserve_unused_diagnostics
     }
 
-    /// Alias prefixes declared in the effective tsconfig `paths` map, with
-    /// wildcard suffixes stripped: `@/*` → `@/`, `@scope/*` → `@scope/`,
-    /// `#imports` → `#imports`. Used as a cost model for shard planning:
-    /// files importing through the same project alias are coupled. Aliases
-    /// whose every target lives under `node_modules` (e.g. a pinned `vue`
-    /// mapping) are dependency cost every program pays anyway and are skipped.
+    /// Alias prefixes declared in the effective tsconfig `paths` map, with wildcard suffixes
+    /// stripped (`@/*` → `@/`, `@scope/*` → `@scope/`). Used as a cost model for shard planning:
+    /// files sharing a project alias are coupled. Aliases whose every target lives under
+    /// `node_modules` are dependency cost every program pays and are skipped.
     pub(crate) fn path_alias_prefixes(&self) -> Vec<CompactString> {
         let Ok(compiler_options) =
             self.load_compiler_options(self.resolved_tsconfig_path().as_deref())
