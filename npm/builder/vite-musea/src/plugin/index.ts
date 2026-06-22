@@ -2,7 +2,6 @@ import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
 import { transformWithEsbuild } from "vite";
 import fs from "node:fs";
 import path from "node:path";
-
 import type { MuseaOptions, ArtFileInfo, ArtMetadata } from "../types/index.js";
 
 import { loadNative } from "../native-loader.js";
