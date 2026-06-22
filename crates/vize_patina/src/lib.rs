@@ -95,6 +95,7 @@ pub mod rules;
 pub mod style;
 pub mod telegraph;
 mod visitor;
+mod visitor_scope;
 
 pub use context::LintContext;
 pub use diagnostic::{
