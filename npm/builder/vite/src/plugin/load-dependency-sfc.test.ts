@@ -16,7 +16,12 @@ function writeFixtureFile(filePath: string, content: string): void {
   fs.writeFileSync(filePath, content);
 }
 
-function createState(root: string): VizePluginState {
+type StateOptions = {
+  filter?: VizePluginState["filter"];
+  handleNodeModulesVue?: boolean;
+};
+
+function createState(root: string, options: StateOptions = {}): VizePluginState {
   return {
     cache: new Map(),
     ssrCache: new Map(),
@@ -28,12 +33,12 @@ function createState(root: string): VizePluginState {
     clientViteBase: "/",
     serverViteBase: "/",
     server: {} as never,
-    filter: (id) => !id.includes("node_modules") && id.endsWith(".vue"),
+    filter: options.filter ?? ((id) => !id.includes("node_modules") && id.endsWith(".vue")),
     scanPatterns: [],
     precompileBatchSize: 128,
     ignorePatterns: [],
     mergedOptions: {
-      handleNodeModulesVue: false,
+      handleNodeModulesVue: options.handleNodeModulesVue ?? false,
       exclude: ["node_modules/**", "**/node_modules/**"],
     },
     initialized: true,
@@ -52,6 +57,18 @@ function createState(root: string): VizePluginState {
   };
 }
 
+function captureWarnings(callback: () => void): string[] {
+  const warnings: string[] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(" "));
+  try {
+    callback();
+  } finally {
+    console.warn = originalWarn;
+  }
+  return warnings;
+}
+
 const projectRoot = fs.mkdtempSync(path.join(testRoot, "nuxt-runtime-"));
 const nuxtRootSfc = path.join(
   projectRoot,
@@ -66,18 +83,13 @@ writeFixtureFile(nuxtRootSfc, "<template><div /></template>");
 
 const state = createState(projectRoot);
 
-const warnings: string[] = [];
-const originalWarn = console.warn;
-console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(" "));
-try {
+const warnings = captureWarnings(() => {
   const componentLoad = loadHook(state, nuxtRootSfc, { ssr: false });
   assert.ok(
     componentLoad && typeof componentLoad === "object",
     "Plain dependency Vue SFC loads should compile before raw SFCs reach Vite define transforms",
   );
-} finally {
-  console.warn = originalWarn;
-}
+});
 
 assert.equal(
   state.cache.has(nuxtRootSfc),
@@ -88,6 +100,57 @@ assert.deepEqual(
   warnings,
   [],
   "Dependency SFC rewrite warnings should be suppressed when node_modules handling is disabled",
+);
+
+const pnpmNuxtRootSfc = path.join(
+  projectRoot,
+  "node_modules",
+  ".pnpm",
+  "nuxt@3.19.3_vue@3.5.13",
+  "node_modules",
+  "nuxt",
+  "dist",
+  "app",
+  "components",
+  "nuxt-root.vue",
+);
+writeFixtureFile(pnpmNuxtRootSfc, "<template><span /></template>");
+
+const filteredDependencyState = createState(projectRoot, { handleNodeModulesVue: true });
+const filteredDependencyWarnings = captureWarnings(() => {
+  const componentLoad = loadHook(filteredDependencyState, pnpmNuxtRootSfc, { ssr: false });
+  assert.ok(
+    componentLoad && typeof componentLoad === "object",
+    "Filtered dependency Vue SFC loads should still compile for the Vite transform pipeline",
+  );
+});
+
+assert.equal(
+  filteredDependencyState.cache.has(pnpmNuxtRootSfc),
+  true,
+  "Filtered dependency Vue SFC loads should still populate the Vize cache",
+);
+assert.deepEqual(
+  filteredDependencyWarnings,
+  [],
+  "Dependency SFC rewrite warnings should be suppressed when node_modules is excluded by filter",
+);
+
+const includedDependencyState = createState(projectRoot, {
+  filter: (id) => id.endsWith(".vue"),
+  handleNodeModulesVue: true,
+});
+const includedDependencyWarnings = captureWarnings(() => {
+  const componentLoad = loadHook(includedDependencyState, pnpmNuxtRootSfc, { ssr: false });
+  assert.ok(
+    componentLoad && typeof componentLoad === "object",
+    "Included dependency Vue SFC loads should compile normally",
+  );
+});
+
+assert.ok(
+  includedDependencyWarnings.length > 0,
+  "Dependency SFC rewrite warnings should still log when node_modules SFCs are explicitly included",
 );
 
 const componentState = createState(projectRoot);

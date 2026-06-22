@@ -360,10 +360,13 @@ export function loadHook(
 }
 
 function shouldLogSfcWarnings(state: VizePluginState, realPath: string): boolean {
-  if (
-    (state.mergedOptions.handleNodeModulesVue ?? true) === false &&
-    realPath.includes("node_modules")
-  ) {
+  if (!realPath.includes("node_modules")) {
+    return true;
+  }
+  if ((state.mergedOptions.handleNodeModulesVue ?? true) === false) {
+    return false;
+  }
+  if (!state.filter(realPath)) {
     return false;
   }
   return true;
