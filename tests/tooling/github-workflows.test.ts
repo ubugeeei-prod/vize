@@ -22,6 +22,7 @@ test("GitHub workflows opt JavaScript actions into Node 24", () => {
     "native-smoke.yml",
     "pkg-pr-new.yml",
     "release.yml",
+    "title-policy.yml",
     "tool-benchmark.yml",
   ]) {
     const workflow = readRepoFile(".github", "workflows", workflowName);
@@ -126,6 +127,27 @@ test("GitHub workflow actions are pinned by full commit SHA", () => {
   }
 
   assert.deepEqual(violations, []);
+});
+
+test("title policy workflow mutates only issue and PR metadata", () => {
+  const workflow = readRepoFile(".github", "workflows", "title-policy.yml");
+  const job = workflowJobBody(workflow, "issue-pr-title-policy");
+
+  assert.match(workflow, /\n  issues:\n\s+types:\s+\[opened, edited, reopened\]/);
+  assert.match(workflow, /\n  pull_request_target:\n/);
+  assert.match(workflow, /issues:\s*write/);
+  assert.match(workflow, /pull-requests:\s*write/);
+  assert.match(job, /timeout-minutes:\s*5/);
+  assert.match(job, /ref:\s*\$\{\{\s*github\.event\.repository\.default_branch\s*\}\}/);
+  assert.match(job, /\.github\/actions\/setup-moonbit/);
+  assert.match(job, /tools\/moon\/scripts\/github\/issue_pr_title_policy\.mbtx/);
+  assert.match(job, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
+  assert.match(
+    job,
+    /moon run --target native - -- < tools\/moon\/scripts\/github\/issue_pr_title_policy\.mbtx/,
+  );
+  assert.doesNotMatch(job, /\.github\/scripts\/issue-pr-title-policy\.mjs/);
+  assert.doesNotMatch(job, /github\.event\.pull_request\.head/);
 });
 
 test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", () => {

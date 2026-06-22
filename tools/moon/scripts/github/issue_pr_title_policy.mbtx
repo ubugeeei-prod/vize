@@ -1,0 +1,308 @@
+///|
+/// Enforces repository issue and pull request title metadata policy.
+///
+/// The workflow runs this from trusted base-branch code. It reads the GitHub
+/// event payload, normalizes repository area names in issue / PR titles,
+/// assigns opened and reopened issues / PRs to the maintainer, and exits
+/// non-zero when a normalized PR title is not Conventional Commits-shaped.
+import {
+  "moonbitlang/core/json",
+  "moonbitlang/async@0.19.0",
+  "moonbitlang/async@0.19.0/process",
+  "moonbitlang/x@0.4.43/fs" @xfs,
+  "moonbitlang/x@0.4.43/sys",
+}
+
+let default_assignee = "ubugeeei"
+
+struct PolicySubject {
+  kind : String
+  number : String
+  title : String
+  assignees : Json?
+}
+
+fn is_word_char(code : UInt16) -> Bool {
+  (code >= 65 && code <= 90) || (code >= 97 && code <= 122) ||
+  (code >= 48 && code <= 57) || code == 95
+}
+
+fn is_lower_ascii(code : UInt16) -> Bool {
+  code >= 97 && code <= 122
+}
+
+fn is_digit(code : UInt16) -> Bool {
+  code >= 48 && code <= 57
+}
+
+fn is_type_char(code : UInt16) -> Bool {
+  is_lower_ascii(code) || is_digit(code) || code == 45
+}
+
+fn is_scope_char(code : UInt16) -> Bool {
+  is_lower_ascii(code) || is_digit(code) || code == 45 || code == 46 ||
+  code == 47 || code == 95
+}
+
+fn title_replacement(word : String) -> String? {
+  match word.to_lower() {
+    "check" => Some("canon")
+    "compiler" => Some("atelier")
+    "lint" => Some("patina")
+    "linter" => Some("patina")
+    "story" => Some("musea")
+    "format" => Some("glyph")
+    "fmt" => Some("glyph")
+    _ => None
+  }
+}
+
+fn normalize_title(title : String) -> String {
+  let parts : Array[String] = []
+  let mut i = 0
+  while i < title.length() {
+    let start = i
+    let word = is_word_char(title[i])
+    while i < title.length() && is_word_char(title[i]) == word {
+      i = i + 1
+    }
+    let part = title[start:i].to_owned()
+    if word {
+      match title_replacement(part) {
+        Some(replacement) => parts.push(replacement)
+        None => parts.push(part)
+      }
+    } else {
+      parts.push(part)
+    }
+  }
+  parts.join("")
+}
+
+fn has_newline(value : String) -> Bool {
+  for i in 0..<value.length() {
+    if value[i] == 10 || value[i] == 13 {
+      return true
+    }
+  }
+  false
+}
+
+fn colon_space_index(value : String) -> Int? {
+  let mut i = 0
+  while i + 1 < value.length() {
+    if value[i] == 58 && value[i + 1] == 32 {
+      return Some(i)
+    }
+    i = i + 1
+  }
+  None
+}
+
+fn is_conventional_prefix(prefix : String) -> Bool {
+  if prefix.length() == 0 || !is_lower_ascii(prefix[0]) {
+    return false
+  }
+
+  let mut i = 1
+  while i < prefix.length() && is_type_char(prefix[i]) {
+    i = i + 1
+  }
+
+  if i < prefix.length() && prefix[i] == 40 {
+    i = i + 1
+    let scope_start = i
+    while i < prefix.length() && is_scope_char(prefix[i]) {
+      i = i + 1
+    }
+    if i == scope_start || i >= prefix.length() || prefix[i] != 41 {
+      return false
+    }
+    i = i + 1
+  }
+
+  if i < prefix.length() && prefix[i] == 33 {
+    i = i + 1
+  }
+
+  i == prefix.length()
+}
+
+fn is_conventional_title(title : String) -> Bool {
+  if title == "" || has_newline(title) {
+    return false
+  }
+  let separator = match colon_space_index(title) {
+    Some(index) => index
+    None => return false
+  }
+  if separator + 2 >= title.length() || title[separator + 2] == 32 {
+    return false
+  }
+  is_conventional_prefix(title[0:separator].to_owned())
+}
+
+fn has_assignee(assignees : Json?) -> Bool {
+  guard assignees is Some(Array(items)) else { return false }
+  for item in items {
+    guard item is Object(obj) else { continue }
+    guard obj.get("login") is Some(String(login)) else { continue }
+    if login.to_lower() == default_assignee {
+      return true
+    }
+  }
+  false
+}
+
+fn policy_subject(event_name : String, payload : Json) -> PolicySubject? {
+  guard payload is Object(root) else { return None }
+  if event_name == "issues" {
+    guard root.get("issue") is Some(Object(issue)) else { return None }
+    if issue.get("pull_request") is Some(_) {
+      return None
+    }
+    guard issue.get("number") is Some(Number(number, ..)) else { return None }
+    guard issue.get("title") is Some(String(title)) else { return None }
+    return Some(PolicySubject::{
+      kind: "issue",
+      number: "\{number}",
+      title,
+      assignees: issue.get("assignees"),
+    })
+  }
+  if event_name == "pull_request" || event_name == "pull_request_target" {
+    guard root.get("pull_request") is Some(Object(pr)) else { return None }
+    guard pr.get("number") is Some(Number(number, ..)) else { return None }
+    guard pr.get("title") is Some(String(title)) else { return None }
+    return Some(PolicySubject::{
+      kind: "pull_request",
+      number: "\{number}",
+      title,
+      assignees: pr.get("assignees"),
+    })
+  }
+  None
+}
+
+fn should_assign(payload : Json) -> Bool {
+  guard payload is Object(root) else { return false }
+  match root.get("action") {
+    Some(String("opened")) | Some(String("reopened")) => true
+    _ => false
+  }
+}
+
+fn safe_log_value(value : String) -> String {
+  let parts : Array[String] = []
+  for i in 0..<value.length() {
+    if value[i] == 10 || value[i] == 13 {
+      parts.push(" ")
+    } else {
+      parts.push(value[i:i + 1].to_owned())
+    }
+  }
+  parts.join("")
+}
+
+async fn gh_api(http_method : String, path : String, field_args : Array[String]) -> Int {
+  let args = [
+    "api",
+    "--method",
+    http_method,
+    "-H",
+    "X-GitHub-Api-Version: 2022-11-28",
+    "--silent",
+    path,
+  ]
+  for arg in field_args {
+    args.push(arg)
+  }
+  @process.run("gh", args)
+}
+
+async fn apply_policy(event_name : String, repository : String, payload : Json) -> Int {
+  let subject = match policy_subject(event_name, payload) {
+    Some(value) => value
+    None => {
+      println("Skipping unsupported \{event_name} event")
+      return 0
+    }
+  }
+  let issue_path = "/repos/\{repository}/issues/\{subject.number}"
+  let normalized_title = normalize_title(subject.title)
+
+  if normalized_title != subject.title {
+    let exit_code = gh_api("PATCH", issue_path, ["-f", "title=\{normalized_title}"])
+    if exit_code != 0 {
+      return exit_code
+    }
+    println(
+      "Normalized \{subject.kind} #\{subject.number}: \"\{safe_log_value(subject.title)}\" -> \"\{safe_log_value(normalized_title)}\"",
+    )
+  }
+
+  if should_assign(payload) && !has_assignee(subject.assignees) {
+    let exit_code = gh_api(
+      "POST",
+      issue_path + "/assignees",
+      ["-F", "assignees[]=\{default_assignee}"],
+    )
+    if exit_code != 0 {
+      return exit_code
+    }
+    println("Assigned \{subject.kind} #\{subject.number} to \{default_assignee}")
+  }
+
+  if subject.kind == "pull_request" && !is_conventional_title(normalized_title) {
+    println(
+      "::error title=Invalid PR title::Use Conventional Commits format: type(scope): summary",
+    )
+    return 1
+  }
+  0
+}
+
+fn read_payload(path : String) -> Json? {
+  try {
+    Some(@json.parse(@xfs.read_file_to_string(path)))
+  } catch {
+    _ => None
+  }
+}
+
+async fn run_app() -> Int {
+  let event_path = match @sys.get_env_var("GITHUB_EVENT_PATH") {
+    Some(value) if value != "" => value
+    _ => {
+      println("GITHUB_EVENT_PATH is required")
+      return 1
+    }
+  }
+  let event_name = match @sys.get_env_var("GITHUB_EVENT_NAME") {
+    Some(value) if value != "" => value
+    _ => {
+      println("GITHUB_EVENT_NAME is required")
+      return 1
+    }
+  }
+  let repository = match @sys.get_env_var("GITHUB_REPOSITORY") {
+    Some(value) if value.contains("/") => value
+    _ => {
+      println("GITHUB_REPOSITORY must be owner/name")
+      return 1
+    }
+  }
+  let payload = match read_payload(event_path) {
+    Some(value) => value
+    None => {
+      println("Failed to read or parse \{event_path}")
+      return 1
+    }
+  }
+  apply_policy(event_name, repository, payload)
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}
