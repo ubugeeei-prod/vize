@@ -9,6 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 interface ExportEntry {
   default?: string;
   import?: string;
+  require?: string;
   types?: string;
 }
 
@@ -69,6 +70,12 @@ test("@vizejs/unplugin exposes per-bundler subpath entries wired at mjs/d.mts", 
       conditions.types?.endsWith(".d.mts"),
       `${subpath} types should point at a .d.mts file, got ${conditions.types}`,
     );
+    if (subpath === "./webpack") {
+      assert.ok(
+        conditions.require?.endsWith(".cjs"),
+        `${subpath} require should point at a .cjs file, got ${conditions.require}`,
+      );
+    }
   }
 });
 

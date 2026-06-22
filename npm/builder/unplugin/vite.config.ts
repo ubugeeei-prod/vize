@@ -18,8 +18,9 @@ export default defineConfig({
       "src/rollup.ts",
       "src/rolldown.ts",
       "src/webpack.ts",
+      "src/webpack-cjs.ts",
     ],
-    format: "esm",
+    format: ["esm", "cjs"],
     dts: {
       resolver: "tsc",
     },
