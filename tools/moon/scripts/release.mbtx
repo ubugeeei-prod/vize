@@ -353,7 +353,7 @@ fn replace_package_json_version(
 /// globs but still ship release artifacts and must stay aligned with the
 /// workspace version.
 fn extra_release_package_json_paths() -> Array[String] {
-  ["editors/vscode/package.json"]
+  ["editors/vscode/package.json", "editors/vscode-art/package.json"]
 }
 
 ///|
