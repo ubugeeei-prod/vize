@@ -149,8 +149,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
-    let nuxt_project_root =
-        resolve_nuxt_project_root(effective_tsconfig.as_deref(), &cwd, &project_root);
+    let nuxt_root = resolve_nuxt_project_root(effective_tsconfig.as_deref(), &cwd, &project_root);
     let explicit_input_root = explicit_input_root(&project_root, &cwd);
     let mut tsconfig_input_cache = TsconfigInputCache::default();
     let mut canonical_paths = CanonicalPathCache::default();
@@ -254,12 +253,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
     let tsconfig = program_tsconfig_path.as_deref();
-    let nuxt_path_aliases = nuxt::detect(
-        &mut virtual_ts_options,
-        &nuxt_project_root,
-        tsconfig,
-        legacy_vue2,
-    );
+    let nuxt_paths = nuxt::detect(&mut virtual_ts_options, &nuxt_root, tsconfig, legacy_vue2);
     collect_project_global_component_stubs(
         &mut virtual_ts_options,
         &files,
@@ -269,8 +263,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let checker_tsconfig_path = match resolve_checker_tsconfig_path(
         program_tsconfig_path.as_deref(),
         &project_root,
-        &nuxt_project_root,
-        &nuxt_path_aliases,
+        &nuxt_root,
+        &nuxt_paths,
     ) {
         Ok(path) => path,
         Err(error) => {
