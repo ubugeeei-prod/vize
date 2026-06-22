@@ -2,7 +2,7 @@
 
 mod common;
 
-use common::{as_attribute, as_directive, lower_one, root_element, simple_content};
+use common::{as_attribute, as_directive, lower_one, lower_one_tsx, root_element, simple_content};
 use vize_carton::Bump;
 
 #[test]
@@ -90,4 +90,39 @@ fn jsx_element_as_attribute_value_is_dynamic_bind() {
     assert_eq!(directive.name, "bind");
     assert_eq!(simple_content(directive.arg.as_ref().unwrap()), "icon");
     assert_eq!(simple_content(directive.exp.as_ref().unwrap()), "<Icon/>");
+}
+
+#[test]
+fn tsx_kebab_update_handler_preserves_authored_argument() {
+    let bump = Bump::new();
+    let root = lower_one_tsx(
+        &bump,
+        "const a = <Stepper onUpdate:current-step-index={updateStepIndex}/>;",
+    );
+    let directive = as_directive(&root_element(&root).props[0]);
+    assert_eq!(directive.name, "bind");
+    assert_eq!(
+        simple_content(directive.arg.as_ref().unwrap()),
+        "onUpdate:current-step-index"
+    );
+    assert_eq!(
+        simple_content(directive.exp.as_ref().unwrap()),
+        "updateStepIndex"
+    );
+}
+
+#[test]
+fn tsx_kebab_v_model_arg_preserves_authored_argument() {
+    let bump = Bump::new();
+    let root = lower_one_tsx(
+        &bump,
+        "const a = <Stepper v-model:current-step-index={value}/>;",
+    );
+    let directive = as_directive(&root_element(&root).props[0]);
+    assert_eq!(directive.name, "model");
+    assert_eq!(
+        simple_content(directive.arg.as_ref().unwrap()),
+        "current-step-index"
+    );
+    assert_eq!(simple_content(directive.exp.as_ref().unwrap()), "value");
 }

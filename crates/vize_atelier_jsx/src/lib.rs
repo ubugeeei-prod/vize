@@ -140,7 +140,8 @@ impl<'a> LowerOutput<'a> {
 /// borrows `bump`.
 pub fn lower_source<'a>(bump: &'a Bump, source: &str, lang: JsxLang) -> LowerOutput<'a> {
     let allocator = oxc_allocator::Allocator::default();
-    let parsed = parse::parse_module(&allocator, source, lang);
+    let parse_source = parse::prepare_source_for_parse(source, lang);
+    let parsed = parse::parse_module(&allocator, parse_source.as_ref(), lang);
     let mapper = SpanMapper::new(source);
     let mut lowerer = Lowerer::new(bump, &mapper);
     for diagnostic in parsed.diagnostics {

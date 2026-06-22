@@ -134,3 +134,73 @@ fn scoped_slot_directive_carries_raw_param_pattern() {
         ExpressionNode::Compound(_) => panic!("expected simple param expression"),
     }
 }
+
+#[test]
+fn tsx_story_slot_object_with_kebab_update_handler_lowers() {
+    let bump = Bump::new();
+    let out = lower_source(
+        &bump,
+        r#"export const Example = () => (
+  <AfsStepperDialog
+    value={isOpen.value}
+    items={items.value}
+    currentStepIndex={currentStepIndex.value}
+    onUpdate:current-step-index={updateStepIndex}
+  >
+    {{
+      content1: () => (
+        <div>
+          {Array.from({ length: 10 }, (_, i) => (
+            <p key={i}>sample {i + 1}</p>
+          ))}
+        </div>
+      ),
+      actions: () => <AfsButton onClick={next}>Next</AfsButton>,
+    }}
+  </AfsStepperDialog>
+);"#,
+        JsxLang::Tsx,
+    );
+    assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
+    let root = &out.roots[0].root;
+    let TemplateChildNode::Element(stepper) = &root.children[0] else {
+        panic!("expected component element root");
+    };
+
+    let update = stepper
+        .props
+        .iter()
+        .find_map(|prop| match prop {
+            PropNode::Directive(dir)
+                if dir.name.as_str() == "bind"
+                    && dir.arg.as_ref().is_some_and(|arg| {
+                        common::simple_content(arg) == "onUpdate:current-step-index"
+                    }) =>
+            {
+                Some(&**dir)
+            }
+            _ => None,
+        })
+        .expect("update handler is lowered as a dynamic bind");
+    assert_eq!(
+        common::simple_content(update.exp.as_ref().unwrap()),
+        "updateStepIndex"
+    );
+
+    let slot_names: std::vec::Vec<&str> = stepper
+        .children
+        .iter()
+        .filter_map(|child| {
+            let TemplateChildNode::Element(template) = child else {
+                return None;
+            };
+            template.props.iter().find_map(|prop| match prop {
+                PropNode::Directive(dir) if dir.name.as_str() == "slot" => {
+                    dir.arg.as_ref().map(common::simple_content)
+                }
+                _ => None,
+            })
+        })
+        .collect();
+    assert_eq!(slot_names, ["content1", "actions"]);
+}

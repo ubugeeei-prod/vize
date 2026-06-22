@@ -175,3 +175,110 @@ export const Example = () => (
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn check_tsx_story_allows_slot_object_with_kebab_update_handler() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("slot-object-events");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "types": ["vue/jsx"],
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("src/AfsStepperDialog.stories.tsx"),
+        r#"type TabItem = { label: string; value: string };
+
+const AfsStepperDialog = (_props: any) => <div />;
+const AfsButton = (_props: any) => <button />;
+const AfsTabs = (_props: any) => <div />;
+
+const isOpen = { value: true };
+const items = { value: [{ label: 'One', value: 'one' }] satisfies TabItem[] };
+const currentStepIndex = { value: 0 };
+const updateStepIndex = (value: number) => {
+  currentStepIndex.value = value;
+};
+const next = () => updateStepIndex(currentStepIndex.value + 1);
+const activeTab = { value: 'one' };
+const args = { items: items.value };
+
+export const Stepper = () => (
+  <AfsStepperDialog
+    value={isOpen.value}
+    items={items.value}
+    currentStepIndex={currentStepIndex.value}
+    onUpdate:current-step-index={updateStepIndex}
+  >
+    {{
+      content1: () => (
+        <div>
+          {Array.from({ length: 3 }, (_, i) => (
+            <p key={i}>sample {i + 1}</p>
+          ))}
+        </div>
+      ),
+      actions: () => <AfsButton onClick={next}>Next</AfsButton>,
+    }}
+  </AfsStepperDialog>
+);
+
+export const Tabs = () => (
+  <AfsTabs value={activeTab.value} items={args.items}>
+    {{
+      label: ({ item }: { item: TabItem }) => (
+        <span>
+          {item.label}
+          {<span class="mdi mdi-help-circle-outline" />}
+        </span>
+      ),
+    }}
+  </AfsTabs>
+);
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "src/AfsStepperDialog.stories.tsx",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    assert!(
+        output.status.success(),
+        "check failed\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>")
+    );
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
