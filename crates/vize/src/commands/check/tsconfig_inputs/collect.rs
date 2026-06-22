@@ -8,9 +8,9 @@ use vize_carton::FxHashSet;
 use super::glob::{default_exclude_specs, normalize_input_path, normalize_walked_path};
 use super::loader::{TsconfigInputCache, collect_tsconfig_project_paths};
 use super::matching::{
-    SupportedFileOptions, is_generated_path, is_hidden_path_segment, is_nuxt_import_manifest_path,
-    is_supported_check_file_with_options, matches_tsconfig_patterns,
-    should_skip_generated_for_root,
+    SupportedFileOptions, is_generated_codegen_declaration_path, is_generated_path,
+    is_hidden_path_segment, is_nuxt_import_manifest_path, is_supported_check_file_with_options,
+    matches_tsconfig_patterns, should_skip_generated_for_root,
 };
 use super::spec::{FileCollectionOptions, GlobSpec};
 
@@ -46,6 +46,7 @@ pub(super) fn collect_supported_files_with_options(
                     )
                     && (!skip_generated || !is_generated_path(path))
                     && !is_nuxt_import_manifest_path(path)
+                    && !is_generated_codegen_declaration_path(path)
                     && matches_tsconfig_patterns(path, includes, excludes)
                     && let Ok(mut collected) = collected.lock()
                 {

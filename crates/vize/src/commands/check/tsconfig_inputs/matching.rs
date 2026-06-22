@@ -90,6 +90,27 @@ pub(super) fn is_nuxt_import_manifest_path(path: &Path) -> bool {
             .any(|window| window == [".nuxt", "types", "imports.d.ts"])
 }
 
+pub(super) fn is_generated_codegen_declaration_path(path: &Path) -> bool {
+    if !path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".d.ts"))
+    {
+        return false;
+    }
+
+    let mut previous = None;
+    path.components().any(|component| {
+        let Some(name) = component.as_os_str().to_str() else {
+            previous = None;
+            return false;
+        };
+        let is_codegen = previous == Some("types") && name == "codegen";
+        previous = Some(name);
+        is_codegen
+    })
+}
+
 pub(super) fn is_supported_check_file_with_options(
     path: &Path,
     options: SupportedFileOptions,

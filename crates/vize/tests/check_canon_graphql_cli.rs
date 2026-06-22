@@ -92,6 +92,8 @@ fn check_explicit_vue_keeps_generated_graphql_schema_out_of_canon() {
     let project_root = unique_case_dir("dedupe");
     let _ = std::fs::remove_dir_all(&project_root);
     std::fs::create_dir_all(&project_root).unwrap();
+    std::fs::create_dir_all(project_root.join("fragments")).unwrap();
+    std::fs::create_dir_all(project_root.join("pages")).unwrap();
     link_workspace_vue(&project_root).unwrap();
     std::fs::write(
         project_root.join("tsconfig.json"),
@@ -107,7 +109,7 @@ fn check_explicit_vue_keeps_generated_graphql_schema_out_of_canon() {
     },
     "noEmit": true
   },
-  "include": ["src/**/*", "types/**/*.d.ts"]
+  "include": ["fragments/**/*.vue", "pages/**/*.vue", "types/**/*.d.ts"]
 }"#,
     )
     .unwrap();
@@ -132,49 +134,34 @@ export type AimQuestion = {
     )
     .unwrap();
 
-    let src_dir = project_root.join("src");
-    std::fs::create_dir_all(&src_dir).unwrap();
     std::fs::write(
-        src_dir.join("question.ts"),
-        r#"import type { AimQuestion } from '~/types/codegen/schema'
+        project_root.join("pages/_studyInfoId.vue"),
+        r#"<script setup lang="ts">
+import type { AimQuestion } from '~/types/codegen/schema'
 
-export function expectQuestion(question: AimQuestion): AimQuestion {
-  return question
+export type AimContentsMoshi = {
+  components: AimQuestion[]
 }
+</script>
+
+<template><main /></template>
 "#,
     )
     .unwrap();
     std::fs::write(
-        src_dir.join("App.vue"),
+        project_root.join("fragments/MoshiContentsSection.vue"),
         cstr!(
             r#"<script setup lang="ts">
-import {{ expectQuestion }} from './question'
-import {{ AimQuestionDisplayKind, type AimQuestion }} from '{schema_specifier}'
+import type {{ AimContentsMoshi }} from '~/pages/_studyInfoId.vue'
+import {{ type AimQuestion }} from '{schema_specifier}'
 
-const question = {{
-  kind: AimQuestionDisplayKind.Text,
-}} satisfies AimQuestion
+type AimComponent = AimContentsMoshi['components'][number]
 
-expectQuestion(question)
-</script>
-
-<template><div /></template>
-"#
-        ),
-    )
-    .unwrap();
-    std::fs::write(
-        src_dir.join("Other.vue"),
-        cstr!(
-            r#"<script setup lang="ts">
-import {{ expectQuestion }} from './question'
-import {{ AimQuestionDisplayKind, type AimQuestion }} from '{schema_specifier}'
-
-const question = {{
-  kind: AimQuestionDisplayKind.Text,
-}} satisfies AimQuestion
-
-expectQuestion(question)
+const props = defineProps<{{
+  component: {{ childMoshiContentsComponents: AimQuestion[] }}
+}}>()
+const childComponents = props.component.childMoshiContentsComponents satisfies AimComponent[]
+void childComponents
 </script>
 
 <template><section /></template>
@@ -186,7 +173,16 @@ expectQuestion(question)
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", &corsa_path)
-        .args(["check", "src/App.vue", "src/Other.vue", "--format", "json"])
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "--no-check-props",
+            "--no-check-emits",
+            "--no-check-template-bindings",
+            "--format",
+            "json",
+        ])
         .output()
         .unwrap();
 
@@ -201,7 +197,7 @@ expectQuestion(question)
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
     assert!(
         project_root
-            .join("node_modules/.vize/canon/src/question.ts")
+            .join("node_modules/.vize/canon/pages/_studyInfoId.vue.ts")
             .exists()
     );
     assert!(

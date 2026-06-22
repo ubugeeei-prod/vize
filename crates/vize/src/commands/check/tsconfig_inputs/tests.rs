@@ -737,6 +737,35 @@ fn declaration_files_are_always_supported() {
 }
 
 #[test]
+fn default_collection_skips_generated_codegen_declaration_modules() {
+    let case_dir = unique_case_dir("tsconfig-generated-codegen-dts");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::create_dir_all(case_dir.join("types/codegen")).unwrap();
+    fs::write(case_dir.join("src/env.d.ts"), "declare const X: string;").unwrap();
+    fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+    fs::write(
+        case_dir.join("types/codegen/schema.d.ts"),
+        "export enum AimQuestionDisplayKind { Text = 'TEXT' }\n",
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{ "include": ["src/**/*.vue", "src/**/*.d.ts", "types/codegen/schema.d.ts"] }"#,
+    )
+    .unwrap();
+
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+    assert_eq!(
+        relative_paths(&case_dir, &files),
+        vec!["src/App.vue", "src/env.d.ts"]
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn supported_extensions_cover_ts_family_and_reject_js_family() {
     let case_dir = unique_case_dir("tsconfig-ext-family");
     let _ = fs::remove_dir_all(&case_dir);
