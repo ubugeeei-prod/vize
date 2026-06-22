@@ -37,11 +37,19 @@ export function getLoadableVueSfcPath(
   return classifyVitePluginRequest(request.normalizedFsId ?? request.path).normalizedVuePath;
 }
 
-export function shouldLoadCompiledVueSfcPath(state: VizePluginState, realPath: string): boolean {
+export function shouldLoadCompiledVueSfcPath(
+  state: VizePluginState,
+  realPath: string,
+  hasNuxtComponentQuery = false,
+): boolean {
   const isNodeModulesPath = realPath.includes("node_modules");
   const handleNodeModules = state.mergedOptions.handleNodeModulesVue ?? true;
 
-  if (!handleNodeModules && isNodeModulesPath) {
+  // Only skip node_modules Vue SFCs for runtime ?nuxt_component loads.
+  // During production builds, node_modules .vue files must still be compiled
+  // by Vize because the Vite/Rollup transform pipeline (e.g. vite:define) may
+  // run before plugin-vue and cannot parse raw Vue SFC syntax.
+  if (!handleNodeModules && isNodeModulesPath && hasNuxtComponentQuery) {
     state.logger.log(`load: skipping node_modules Vue SFC ${realPath}`);
     return false;
   }

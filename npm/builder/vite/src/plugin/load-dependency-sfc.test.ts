@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { loadHook } from "./load.ts";
+import { shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
 import type { VizePluginState } from "./state.ts";
 
 const testRoot = fs.mkdtempSync(
@@ -76,6 +77,22 @@ assert.equal(
   state.cache.has(nuxtRootSfc),
   false,
   "Skipped dependency SFC loads must not on-demand compile into the Vize cache",
+);
+
+// With no ?nuxt_component query (plain build-time import), the file must NOT
+// be skipped even when handleNodeModulesVue is false. Without this, Vite
+// transform plugins (e.g. vite:define) receive raw .vue source and fail.
+assert.equal(
+  shouldLoadCompiledVueSfcPath(state, nuxtRootSfc, false),
+  true,
+  "Plain .vue build-time imports from node_modules must not be skipped when handleNodeModulesVue is false",
+);
+
+// Sanity-check: the ?nuxt_component runtime case is still skipped.
+assert.equal(
+  shouldLoadCompiledVueSfcPath(state, nuxtRootSfc, true),
+  false,
+  "?nuxt_component runtime loads from node_modules must be skipped when handleNodeModulesVue is false",
 );
 
 console.log("vite-plugin-vize dependency SFC load tests passed!");

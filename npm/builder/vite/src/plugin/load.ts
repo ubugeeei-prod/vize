@@ -321,7 +321,10 @@ export function loadHook(
   }
 
   if (loadableVueSfcPath) {
-    if (!shouldLoadCompiledVueSfcPath(state, loadableVueSfcPath)) {
+    const hasNuxtComponentQuery =
+      !!request.querySuffix &&
+      new URLSearchParams(request.querySuffix.slice(1)).has("nuxt_component");
+    if (!shouldLoadCompiledVueSfcPath(state, loadableVueSfcPath, hasNuxtComponentQuery)) {
       return null;
     }
     const isSsr = !!loadOptions?.ssr;
