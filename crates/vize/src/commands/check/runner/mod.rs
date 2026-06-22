@@ -694,7 +694,6 @@ fn resolve_nuxt_project_root(
     let Some(tsconfig) = explicit_tsconfig else {
         return fallback.to_path_buf();
     };
-
     let tsconfig_path = if tsconfig.is_absolute() {
         tsconfig.to_path_buf()
     } else {
@@ -704,8 +703,10 @@ fn resolve_nuxt_project_root(
         .parent()
         .map(Path::to_path_buf)
         .unwrap_or_else(|| fallback.to_path_buf());
-
     if is_nuxt_project_root(&tsconfig_dir) {
+        return tsconfig_dir;
+    }
+    if tsconfig_dir.join("package.json").exists() {
         return tsconfig_dir;
     }
     if let Some(parent) = tsconfig_dir.parent()
@@ -713,7 +714,6 @@ fn resolve_nuxt_project_root(
     {
         return parent.to_path_buf();
     }
-
     tsconfig_dir
 }
 

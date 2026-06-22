@@ -114,6 +114,72 @@ declare global {
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[test]
+fn check_non_nuxt_child_package_does_not_warn_about_root_nuxt_generated_types() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_project("monorepo-non-nuxt-child");
+    write_file(
+        &project_root,
+        "nuxt.config.ts",
+        "export default defineNuxtConfig({})\n",
+    );
+    write_file(&project_root, "design-system/package.json", "{}\n");
+    write_file(
+        &project_root,
+        "design-system/tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    );
+    write_file(
+        &project_root,
+        "design-system/src/App.vue",
+        r#"<script setup lang="ts">
+const message: string = "ok";
+</script>
+
+<template>{{ message }}</template>
+"#,
+    );
+
+    let package_root = project_root.join("design-system");
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&package_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "src",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert!(
+        !stderr.contains("no generated `.nuxt` types found"),
+        "non-Nuxt child package should not warn about root Nuxt artifacts:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 fn create_project(name: &str) -> PathBuf {
     let project_root = workspace_root()
         .join("target")
