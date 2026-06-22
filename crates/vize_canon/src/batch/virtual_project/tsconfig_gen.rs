@@ -31,12 +31,9 @@ impl VirtualProject {
         self.preserve_unused_diagnostics
     }
 
-    /// Alias prefixes declared in the effective tsconfig `paths` map, with
-    /// wildcard suffixes stripped: `@/*` → `@/`, `@scope/*` → `@scope/`,
-    /// `#imports` → `#imports`. Used as a cost model for shard planning:
-    /// files importing through the same project alias are coupled. Aliases
-    /// whose every target lives under `node_modules` (e.g. a pinned `vue`
-    /// mapping) are dependency cost every program pays anyway and are skipped.
+    /// Alias prefixes declared in the effective tsconfig `paths` map, with wildcard
+    /// suffixes stripped. Used as a shard-planning cost model; aliases whose every
+    /// target lives under `node_modules` are dependency cost and are skipped.
     pub(crate) fn path_alias_prefixes(&self) -> Vec<CompactString> {
         let Ok(compiler_options) =
             self.load_compiler_options(self.resolved_tsconfig_path().as_deref())
@@ -194,14 +191,11 @@ impl VirtualProject {
             compiler_options.insert("declaration".into(), Value::Bool(true));
             compiler_options.insert("emitDeclarationOnly".into(), Value::Bool(true));
             compiler_options.insert("declarationMap".into(), Value::Bool(declaration_map));
-            compiler_options.insert(
-                "rootDir".into(),
-                Value::String(
-                    self.common_virtual_source_dir()
-                        .to_string_lossy()
-                        .into_owned(),
-                ),
-            );
+            let root_dir = self
+                .common_virtual_source_dir()
+                .to_string_lossy()
+                .into_owned();
+            compiler_options.insert("rootDir".into(), Value::String(root_dir));
             compiler_options.insert(
                 "outDir".into(),
                 Value::String(out_dir.to_string_lossy().into_owned()),
@@ -214,11 +208,12 @@ impl VirtualProject {
             compiler_options.insert("noEmit".into(), Value::Bool(true));
         }
 
+        let include_js = compiler_option_enabled(&compiler_options, "allowJs");
         config.insert("compilerOptions".into(), Value::Object(compiler_options));
         config.insert(
             "include".into(),
             Value::Array(
-                self.include_paths(include_virtual_paths)
+                self.include_paths(include_virtual_paths, include_js)
                     .into_iter()
                     .map(|path| Value::String(path.into()))
                     .collect(),
@@ -238,13 +233,13 @@ impl VirtualProject {
         })
     }
 
-    fn include_paths(&self, include_virtual_paths: Option<&[&Path]>) -> Vec<CompactString> {
+    fn include_paths(&self, paths: Option<&[&Path]>, include_js: bool) -> Vec<CompactString> {
         let relative = |path: &Path| {
             path.strip_prefix(&self.virtual_root)
                 .ok()
                 .map(|path| path.to_string_lossy().to_compact_string())
         };
-        let mut includes: Vec<_> = match include_virtual_paths {
+        let mut includes: Vec<_> = match paths {
             Some(paths) => paths.iter().filter_map(|path| relative(path)).collect(),
             None => self
                 .virtual_files
@@ -252,6 +247,9 @@ impl VirtualProject {
                 .filter_map(|path| relative(path))
                 .collect(),
         };
+        if include_js {
+            includes.extend(self.javascript_passthrough_files().filter_map(relative));
+        }
         if !self.virtual_ts_options.auto_import_stubs.is_empty() {
             includes.push(AUTO_IMPORT_STUBS_FILE.into());
         }

@@ -19,7 +19,7 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
-use super::passthrough::collect_passthrough_json_modules;
+use super::passthrough::collect_passthrough_modules;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
 /// Result of building a virtual file for a registered path, owned and
@@ -169,7 +169,7 @@ pub(super) fn build_vue_registered_file(
             virtual_path,
         },
         original_content: content.to_compact_string(),
-        passthrough_files: collect_passthrough_json_modules(
+        passthrough_files: collect_passthrough_modules(
             path,
             content,
             context.project_root,
@@ -224,7 +224,7 @@ pub(super) fn build_jsx_registered_file(
             virtual_path,
         },
         original_content: content.to_compact_string(),
-        passthrough_files: collect_passthrough_json_modules(
+        passthrough_files: collect_passthrough_modules(
             path,
             content,
             context.project_root,
@@ -281,12 +281,7 @@ pub(super) fn build_script_registered_file(
             virtual_path,
         },
         original_content: content.to_compact_string(),
-        passthrough_files: collect_passthrough_json_modules(
-            path,
-            content,
-            project_root,
-            virtual_root,
-        ),
+        passthrough_files: collect_passthrough_modules(path, content, project_root, virtual_root),
         diagnostics: Vec::new(),
     })
 }
