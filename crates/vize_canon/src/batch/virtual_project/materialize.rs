@@ -13,6 +13,8 @@ use crate::batch::materialize_fs::{
 };
 use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
+use serde_json::Value;
+
 use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
 
 const VUE_JSX_INTRINSIC_ELEMENTS_DTS: &str = concat!(
@@ -165,6 +167,33 @@ impl VirtualProject {
             content.as_bytes(),
         )?;
         Ok(())
+    }
+
+    /// Returns `true` when the virtual project requires a Vue JSX ambient
+    /// reference: either because there are materialized `.vue.tsx` files, or
+    /// because the effective tsconfig already opts into Vue JSX via
+    /// `jsxImportSource: "vue"` or `types: ["vue/jsx"]`.
+    pub(super) fn needs_vue_jsx_reference(&self) -> bool {
+        if self.needs_vue_jsx_compiler_options() {
+            return true;
+        }
+        let Ok(compiler_options) =
+            self.load_compiler_options(self.resolved_tsconfig_path().as_deref())
+        else {
+            return false;
+        };
+        compiler_options
+            .get("jsxImportSource")
+            .and_then(Value::as_str)
+            .is_some_and(|source| source == "vue")
+            || compiler_options
+                .get("types")
+                .and_then(Value::as_array)
+                .is_some_and(|types| {
+                    types
+                        .iter()
+                        .any(|entry| entry.as_str().is_some_and(|entry| entry == "vue/jsx"))
+                })
     }
 
     /// Write the shared ambient helpers file. The generated `.vue.ts` modules
