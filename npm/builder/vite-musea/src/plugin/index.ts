@@ -23,6 +23,7 @@ import {
 import { shouldApplyMuseaPlugin } from "./apply.js";
 import { watchMuseaArtFiles } from "./watch.js";
 import { createVueRuntimeCompilerAlias } from "./vue-alias.js";
+import { assertNoUnsupportedStorybookTsxInputs } from "./storybook-inputs.js";
 import {
   applyMuseaStaticBuildInput,
   emitStaticGallery,
@@ -211,6 +212,10 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
 
     async buildStart() {
       console.log(`[musea] config.root: ${config.root}, include: ${JSON.stringify(include)}`);
+      if (storybookCompat && staticBuildEnabled) {
+        await assertNoUnsupportedStorybookTsxInputs(config.root, include, exclude);
+      }
+
       const files = await scanArtFiles(config.root, include, exclude, inlineArt);
 
       console.log(`[musea] Found ${files.length} art files`);
