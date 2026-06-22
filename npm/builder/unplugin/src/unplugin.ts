@@ -40,7 +40,9 @@ function normalizeVueVersion(version: VizeUnpluginOptions["vueVersion"]): VizeVu
 }
 
 function isLegacyVueVersion(version: VizeVueVersion): boolean {
-  return version === "legacy" || version === 0.11 || version === 1 || version === 2;
+  return (
+    version === "legacy" || version === 0.11 || version === 1 || version === 2 || version === "2.7"
+  );
 }
 
 function normalizeTemplateSyntax(

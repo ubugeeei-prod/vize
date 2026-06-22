@@ -31,6 +31,7 @@ void test("legacy vue versions activate the host compiler", (t) => {
   t.assert.equal(normalizeOptions({ vueVersion: 0.11, isProduction: true }).hostCompiler, true);
   t.assert.equal(normalizeOptions({ vueVersion: 1, isProduction: true }).hostCompiler, true);
   t.assert.equal(normalizeOptions({ vueVersion: 2, isProduction: true }).hostCompiler, true);
+  t.assert.equal(normalizeOptions({ vueVersion: "2.7", isProduction: true }).hostCompiler, true);
   t.assert.equal(normalizeOptions({ vueVersion: "legacy", isProduction: true }).hostCompiler, true);
 });
 

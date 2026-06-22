@@ -675,6 +675,26 @@ const vizeNuxtModule = Object.assign(
 
 export default vizeNuxtModule;
 
+declare module "nuxt/schema" {
+  interface NuxtConfig {
+    vize?: Partial<VizeNuxtOptions>;
+  }
+
+  interface NuxtOptions {
+    vize?: Partial<VizeNuxtOptions>;
+  }
+}
+
+declare module "@nuxt/schema" {
+  interface NuxtConfig {
+    vize?: Partial<VizeNuxtOptions>;
+  }
+
+  interface NuxtOptions {
+    vize?: Partial<VizeNuxtOptions>;
+  }
+}
+
 // Re-export types for convenience
 export type { MuseaOptions } from "@vizejs/vite-plugin-musea";
 export type {

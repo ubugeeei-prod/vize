@@ -6,7 +6,12 @@ import type { VizeOptions, ConfigEnv, ResolvedVizeConfig } from "../types.ts";
 import { createFilter } from "../utils/index.ts";
 import { toBrowserImportPrefix } from "../virtual.ts";
 import { shouldApplyDefineInVirtualModule, createLogger } from "../transform.ts";
-import { loadConfig, resolveConfigExport, vizeConfigStore } from "../config.ts";
+import {
+  VIZE_CONFIG_FILE_ENV,
+  loadConfig,
+  resolveConfigExport,
+  vizeConfigStore,
+} from "../config.ts";
 import {
   DEFAULT_PRECOMPILE_BATCH_SIZE,
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
@@ -229,20 +234,18 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
       let fileConfig: ResolvedVizeConfig | null = null;
       if (options.configMode !== false) {
+        const configFile = options.configFile ?? process.env[VIZE_CONFIG_FILE_ENV];
         try {
           fileConfig = await loadConfig(state.root, {
             mode: options.configMode ?? "root",
-            configFile: options.configFile,
+            configFile,
             env: configEnv,
           });
           if (fileConfig) {
             state.logger.log("Loaded config from vize.config file");
           }
         } catch (error) {
-          state.logger.warn(
-            `Failed to load vize config from ${options.configFile ?? state.root}:`,
-            error,
-          );
+          state.logger.warn(`Failed to load vize config from ${configFile ?? state.root}:`, error);
         }
       }
 

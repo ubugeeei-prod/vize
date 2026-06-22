@@ -21,6 +21,11 @@ import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from
     "vueVersion: 2 should enable legacy Vue compatibility mode",
   );
   assert.equal(
+    isLegacyVueCompatibilityMode({ vueVersion: "2.7" }),
+    true,
+    "vueVersion: 2.7 should enable legacy Vue compatibility mode",
+  );
+  assert.equal(
     isLegacyVueCompatibilityMode({ vueVersion: "legacy" }),
     true,
     "vueVersion: legacy should enable legacy Vue compatibility mode",

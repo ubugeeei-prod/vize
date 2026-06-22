@@ -214,7 +214,9 @@ export const DEFAULT_NUXT_DEV_OPTIONS: Required<VizeNuxtDevOptions> = {
 };
 
 function isLegacyVueVersion(version: VizeNuxtVueVersion | undefined): boolean {
-  return version === 0.11 || version === 1 || version === 2 || version === "legacy";
+  return (
+    version === 0.11 || version === 1 || version === 2 || version === "2.7" || version === "legacy"
+  );
 }
 
 function normalizeNuxtCompilerCompatibilityOptions(

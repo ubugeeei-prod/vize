@@ -28,6 +28,10 @@ pub enum MuseaCommand {
 #[derive(Args, Clone, Debug, PartialEq, Eq)]
 #[allow(clippy::disallowed_types)]
 pub struct ServeArgs {
+    /// Shared Vize config file path
+    #[arg(short, long, value_name = "FILE")]
+    pub config: Option<PathBuf>,
+
     /// Port to run the server on
     #[arg(short, long, default_value = "6006")]
     pub port: u16,
@@ -56,6 +60,7 @@ impl Default for ServeArgs {
     fn default() -> Self {
         Self {
             port: 6006,
+            config: None,
             host: cstr!("localhost"),
             stories: None,
             open: false,
@@ -168,11 +173,20 @@ fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> 
         None => PathBuf::from("vite"),
     };
     validate_direct_vite_musea_setup(cwd)?;
+    let mut env = Vec::new();
+    if let Some(config_path) = &args.config {
+        env.push((
+            cstr!("VIZE_CONFIG_FILE"),
+            config_path.to_string_lossy().as_ref().to_compact_string(),
+        ));
+    }
+
     if args.build {
+        env.push((cstr!("VIZE_MUSEA_STATIC_BUILD"), cstr!("1")));
         return Ok(ServePlan {
             program,
             args: vec![cstr!("build")],
-            env: vec![(cstr!("VIZE_MUSEA_STATIC_BUILD"), cstr!("1"))],
+            env,
         });
     }
 
@@ -193,7 +207,7 @@ fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> 
     Ok(ServePlan {
         program,
         args: vite_args,
-        env: Vec::new(),
+        env,
     })
 }
 

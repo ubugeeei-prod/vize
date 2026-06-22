@@ -1,5 +1,5 @@
 export type VizeNuxtPattern = string | RegExp;
-export type VizeNuxtVueVersion = 0.11 | 1 | 2 | 3 | "legacy";
+export type VizeNuxtVueVersion = 0.11 | 1 | 2 | "2.7" | 3 | "legacy";
 
 export interface VizeNuxtCompilerCompatibilityOptions {
   vueVersion?: VizeNuxtVueVersion;
@@ -22,7 +22,7 @@ export interface VizeNuxtCompilerOptions {
    * Vue major version for the host project.
    *
    * Legacy Vue projects keep the host Vue compiler in charge. When set to
-   * `0.11`, `1`, `2`, or `"legacy"`, the underlying Vite plugin runs in
+   * `0.11`, `1`, `2`, `"2.7"`, or `"legacy"`, the underlying Vite plugin runs in
    * compatibility mode and does not intercept `.vue` files.
    */
   vueVersion?: VizeNuxtVueVersion;

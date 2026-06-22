@@ -37,10 +37,12 @@
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs",
       "types": "./dist/index.d.mts"
     },
     "./config": {
       "import": "./dist/config.mjs",
+      "default": "./dist/config.mjs",
       "types": "./dist/config.d.mts"
     },
     "./schemas/vize.config.schema.json": "./schemas/vize.config.schema.json",
@@ -72,7 +74,7 @@
   },
   "peerDependencies": {
     "@pkl-community/pkl": "catalog:repo-tooling",
-    "vue": ">=2.7.0"
+    "vue": ">=2.6.0"
   },
   "peerDependenciesMeta": {
     "@pkl-community/pkl": {

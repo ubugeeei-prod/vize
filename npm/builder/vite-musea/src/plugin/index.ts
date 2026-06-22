@@ -2,7 +2,7 @@ import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
 import { transformWithEsbuild } from "vite";
 import fs from "node:fs";
 import path from "node:path";
-import { vizeConfigStore } from "@vizejs/vite-plugin";
+import { VIZE_CONFIG_FILE_ENV, loadConfig, vizeConfigStore } from "@vizejs/vite-plugin";
 
 import type { MuseaOptions, ArtFileInfo, ArtMetadata } from "../types/index.js";
 
@@ -156,10 +156,10 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     },
 
     options: applyMuseaStaticBuildInput,
-    configResolved(resolvedConfig) {
+    async configResolved(resolvedConfig) {
       config = resolvedConfig;
 
-      const vizeConfig = vizeConfigStore.get(resolvedConfig.root);
+      const vizeConfig = await resolveMuseaSharedConfig(resolvedConfig);
       if (vizeConfig?.musea) {
         const mc = vizeConfig.musea;
         if (!options.include && mc.include) include = mc.include;
@@ -390,4 +390,34 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   }
 
   return [mainPlugin];
+}
+
+async function resolveMuseaSharedConfig(resolvedConfig: ResolvedConfig) {
+  const sharedConfig = vizeConfigStore.get(resolvedConfig.root);
+  if (sharedConfig) {
+    return sharedConfig;
+  }
+
+  const configFile = process.env[VIZE_CONFIG_FILE_ENV];
+  if (!configFile) {
+    return null;
+  }
+
+  try {
+    return await loadConfig(resolvedConfig.root, {
+      configFile,
+      env: {
+        mode: resolvedConfig.mode,
+        command: resolvedConfig.command === "build" ? "build" : "serve",
+        isSsrBuild: !!resolvedConfig.build?.ssr,
+      },
+    });
+  } catch (error) {
+    throw new Error(
+      `[musea] Failed to load Vize config from ${configFile}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      { cause: error },
+    );
+  }
 }

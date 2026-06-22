@@ -24,6 +24,7 @@ export {
 };
 
 export const CONFIG_FILES = [...CONFIG_FILE_NAMES];
+export const VIZE_CONFIG_FILE_ENV = "VIZE_CONFIG_FILE";
 
 /**
  * Shared config store for inter-plugin communication.

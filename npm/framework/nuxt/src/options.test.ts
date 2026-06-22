@@ -38,18 +38,18 @@ assert.equal(
 assert.deepEqual(
   resolveNuxtCompilerOptions("/repo/app", "/", "/_nuxt/", true, {
     supportsViteCompiler: true,
-    vueVersion: 1,
+    vueVersion: "2.7",
   }),
   {
     compatibility: {
-      vueVersion: 1,
+      vueVersion: "2.7",
       hostCompiler: true,
     },
     devUrlBase: "/_nuxt/",
     exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
     root: "/repo/app",
     scanPatterns: [],
-    vueVersion: 1,
+    vueVersion: "2.7",
   },
   "Vite-based legacy Vue projects should pass host-compiler compatibility mode to the Vite plugin",
 );

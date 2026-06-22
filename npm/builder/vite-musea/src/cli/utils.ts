@@ -14,7 +14,15 @@ export async function scanArtFiles(root: string): Promise<string[]> {
   const files: string[] = [];
 
   async function scan(dir: string): Promise<void> {
-    const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+    let entries: fs.Dirent[];
+    try {
+      entries = await fs.promises.readdir(dir, { withFileTypes: true });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "EACCES") {
+        return;
+      }
+      throw error;
+    }
 
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);

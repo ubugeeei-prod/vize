@@ -111,17 +111,17 @@ export interface VizeUnpluginOptions {
   debug?: boolean;
 }
 
-export type VizeVueVersion = 0.11 | 1 | 2 | 3 | "legacy";
+export type VizeVueVersion = 0.11 | 1 | 2 | "2.7" | 3 | "legacy";
 export type VizeTemplateSyntax = "standard" | "strict" | "quirks";
 
 export interface VizeCompatibilityOptions {
   /**
-   * Host Vue version. Vue 0.11/1/2 opt into host-compiler compatibility.
+   * Host Vue version. Vue 0.11/1/2/2.7 opt into host-compiler compatibility.
    */
   vueVersion?: VizeVueVersion;
   /**
    * Keep .vue files on the existing Vue compiler for legacy Vue runtimes.
-   * @default true when vueVersion is 0.11, 1, 2, or "legacy"
+   * @default true when vueVersion is 0.11, 1, 2, "2.7", or "legacy"
    */
   hostCompiler?: boolean;
   /**
