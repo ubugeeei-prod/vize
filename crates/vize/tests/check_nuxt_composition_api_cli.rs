@@ -39,13 +39,13 @@ fn write(root: &Path, rel: &str, content: &str) {
 }
 
 #[test]
-fn check_resolves_nuxt2_composition_api_named_exports() {
+fn check_resolves_nuxt2_composition_api_named_exports_in_sfc() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
     let project_root = unique_case_dir("exports");
     let _ = std::fs::remove_dir_all(&project_root);
-    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    std::fs::create_dir_all(project_root.join("components")).unwrap();
     write(&project_root, "nuxt.config.ts", "export default {};\n");
     write(
         &project_root,
@@ -58,7 +58,7 @@ fn check_resolves_nuxt2_composition_api_named_exports() {
     "moduleResolution": "bundler",
     "noEmit": true
   },
-  "include": ["src/**/*"]
+  "include": ["components/**/*.vue"]
 }"#,
     );
     write(
@@ -94,8 +94,13 @@ export declare function useRoute(): { value: { path: string } };
     );
     write(
         &project_root,
-        "src/App.ts",
-        r#"import {
+        "components/AppDialog.vue",
+        r#"<template>
+  <p>{{ doubled }}</p>
+</template>
+
+<script lang="ts">
+import {
   computed,
   defineComponent,
   PropType,
@@ -106,21 +111,25 @@ export declare function useRoute(): { value: { path: string } };
   useStore,
 } from "@nuxtjs/composition-api";
 
-const component = defineComponent({
+export default defineComponent({
   props: { label: String as PropType<string> },
-});
-const count = ref(1);
-const doubled = computed(() => count.value * 2);
-const context = useContext();
-const fetchState = useFetch(() => doubled.value);
-const store = useStore();
-const route = useRoute();
+  setup() {
+    const count = ref(1);
+    const doubled = computed(() => count.value * 2);
+    const context = useContext();
+    const fetchState = useFetch(() => doubled.value);
+    const store = useStore();
+    const route = useRoute();
 
-void component;
-void context;
-void fetchState;
-void store;
-void route;
+    void context;
+    void fetchState;
+    void store;
+    void route;
+
+    return { doubled };
+  },
+});
+</script>
 "#,
     );
 
@@ -132,7 +141,7 @@ void route;
             "--no-config",
             "--tsconfig",
             "tsconfig.json",
-            "src/App.ts",
+            "components/AppDialog.vue",
             "--format",
             "json",
         ])
