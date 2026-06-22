@@ -15,6 +15,12 @@ use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
 use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
 
+const VUE_JSX_INTRINSIC_ELEMENTS_DTS: &str = concat!(
+    "declare namespace JSX { interface IntrinsicElements { [name: string]: any; } }\n",
+    "declare module 'vue/jsx-runtime' { export namespace JSX { interface IntrinsicElements { [name: string]: any; } } }\n",
+    "declare module 'vue/jsx-dev-runtime' { export namespace JSX { interface IntrinsicElements { [name: string]: any; } } }\n",
+);
+
 impl VirtualProject {
     /// Materialize the virtual project to disk for diagnostics collection.
     ///
@@ -165,9 +171,15 @@ impl VirtualProject {
     /// hoist their common preamble (ImportMeta augmentation, type helpers,
     /// compiler-macro signatures) into this single program-wide declaration.
     fn write_shared_helpers(&self) -> CorsaResult<()> {
+        let mut content = CompactString::default();
+        if self.needs_vue_jsx_reference() {
+            content.push_str("/// <reference types=\"vue/jsx\" />\n");
+            content.push_str(VUE_JSX_INTRINSIC_ELEMENTS_DTS);
+        }
+        content.push_str(crate::virtual_ts::SHARED_PREAMBLE_DTS);
         write_if_changed(
             &self.virtual_root.join(SHARED_HELPERS_FILE),
-            crate::virtual_ts::SHARED_PREAMBLE_DTS.as_bytes(),
+            content.as_bytes(),
         )?;
         Ok(())
     }

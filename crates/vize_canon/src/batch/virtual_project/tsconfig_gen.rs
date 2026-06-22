@@ -238,6 +238,29 @@ impl VirtualProject {
         })
     }
 
+    pub(super) fn needs_vue_jsx_reference(&self) -> bool {
+        if self.needs_vue_jsx_compiler_options() {
+            return true;
+        }
+        let Ok(compiler_options) =
+            self.load_compiler_options(self.resolved_tsconfig_path().as_deref())
+        else {
+            return false;
+        };
+        compiler_options
+            .get("jsxImportSource")
+            .and_then(Value::as_str)
+            .is_some_and(|source| source == "vue")
+            || compiler_options
+                .get("types")
+                .and_then(Value::as_array)
+                .is_some_and(|types| {
+                    types
+                        .iter()
+                        .any(|entry| entry.as_str().is_some_and(|entry| entry == "vue/jsx"))
+                })
+    }
+
     fn include_paths(&self, include_virtual_paths: Option<&[&Path]>) -> Vec<CompactString> {
         let relative = |path: &Path| {
             path.strip_prefix(&self.virtual_root)
