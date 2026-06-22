@@ -129,7 +129,9 @@ function loadCompiledSfcModule(
   // On-demand compile if not cached
   if (!compiled && fs.existsSync(realPath)) {
     state.logger.log(`load: on-demand compiling ${realPath}`);
-    compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, isSsr));
+    compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, isSsr), undefined, {
+      logWarnings: shouldLogSfcWarnings(state, realPath),
+    });
   }
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 
@@ -355,6 +357,16 @@ export function loadHook(
   }
 
   return null;
+}
+
+function shouldLogSfcWarnings(state: VizePluginState, realPath: string): boolean {
+  if (
+    (state.mergedOptions.handleNodeModulesVue ?? true) === false &&
+    realPath.includes("node_modules")
+  ) {
+    return false;
+  }
+  return true;
 }
 
 function isJsxComponentPath(path: string): boolean {

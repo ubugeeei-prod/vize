@@ -62,21 +62,46 @@ const nuxtRootSfc = path.join(
   "components",
   "nuxt-root.vue",
 );
-writeFixtureFile(nuxtRootSfc, "<template><div></template>");
+writeFixtureFile(nuxtRootSfc, "<template><div /></template>");
 
 const state = createState(projectRoot);
 
+const warnings: string[] = [];
+const originalWarn = console.warn;
+console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(" "));
+try {
+  const componentLoad = loadHook(state, nuxtRootSfc, { ssr: false });
+  assert.ok(
+    componentLoad && typeof componentLoad === "object",
+    "Plain dependency Vue SFC loads should compile before raw SFCs reach Vite define transforms",
+  );
+} finally {
+  console.warn = originalWarn;
+}
+
 assert.equal(
-  loadHook(state, `${nuxtRootSfc}?nuxt_component=async&nuxt_component_name=NuxtRoot`, {
+  state.cache.has(nuxtRootSfc),
+  true,
+  "Plain dependency Vue SFC loads should on-demand compile into the Vize cache",
+);
+assert.deepEqual(
+  warnings,
+  [],
+  "Dependency SFC rewrite warnings should be suppressed when node_modules handling is disabled",
+);
+
+const componentState = createState(projectRoot);
+assert.equal(
+  loadHook(componentState, `${nuxtRootSfc}?nuxt_component=async&nuxt_component_name=NuxtRoot`, {
     ssr: false,
   }),
   null,
-  "Dependency Vue SFC component loads should stay on Nuxt's host compiler when node_modules handling is disabled",
+  "Dependency Vue SFC component queries should stay on Nuxt's runtime route when node_modules handling is disabled",
 );
 assert.equal(
-  state.cache.has(nuxtRootSfc),
+  componentState.cache.has(nuxtRootSfc),
   false,
-  "Skipped dependency SFC loads must not on-demand compile into the Vize cache",
+  "Skipped dependency component queries must not on-demand compile into the Vize cache",
 );
 
 // With no ?nuxt_component query (plain build-time import), the file must NOT

@@ -156,6 +156,7 @@ export function compileFile(
   cache: Map<string, CompiledModule>,
   options: CompileFileOptions,
   source?: string,
+  diagnostics?: { logWarnings?: boolean },
 ): CompiledModule {
   const content = source ?? fs.readFileSync(filePath, "utf-8");
   const resolved = resolveSfcSrcImports(filePath, content);
@@ -167,7 +168,7 @@ export function compileFile(
     throw new VizeSfcCompileError(filePath, result.errors);
   }
 
-  if (result.warnings.length > 0) {
+  if (result.warnings.length > 0 && (diagnostics?.logWarnings ?? true)) {
     result.warnings.forEach((warning) => {
       console.warn(`[vize] Warning in ${filePath}: ${warning}`);
     });
