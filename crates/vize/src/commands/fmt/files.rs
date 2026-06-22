@@ -279,16 +279,29 @@ mod tests {
     fn collect_files_applies_entry_ignores() {
         let root = unique_case_dir("entry-ignores");
         let src = root.join("src");
+        let nested_node_modules = root.join("scripts/node_modules/chalk/source");
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&src).unwrap();
+        fs::create_dir_all(&nested_node_modules).unwrap();
         fs::write(src.join("App.vue"), "<template><div /></template>").unwrap();
         fs::write(src.join("Ignored.vue"), "<template><div /></template>").unwrap();
+        fs::write(
+            nested_node_modules.join("index.d.ts"),
+            "export declare const chalk: string",
+        )
+        .unwrap();
 
         let ignore_set = FmtIgnoreSet::new(
-            &[crate::config::ConfigEntryIgnore {
-                base_path: None,
-                pattern: "src/Ignored.vue".into(),
-            }],
+            &[
+                crate::config::ConfigEntryIgnore {
+                    base_path: None,
+                    pattern: "src/Ignored.vue".into(),
+                },
+                crate::config::ConfigEntryIgnore {
+                    base_path: None,
+                    pattern: "node_modules/**".into(),
+                },
+            ],
             &root,
         );
         let pattern = root.to_string_lossy().into_owned();

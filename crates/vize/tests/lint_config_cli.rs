@@ -25,6 +25,64 @@ fn write_project_file(root: &Path, path: &str, content: &str) {
     fs::write(file_path, content).unwrap();
 }
 
+fn output_details(output: &std::process::Output) -> vize_carton::String {
+    vize_carton::cstr!(
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    )
+}
+
+#[test]
+fn lint_honors_config_ignores_for_directory_inputs() {
+    let project_root = temp_project_dir("directory-ignores");
+    write_project_file(
+        &project_root,
+        "vize.config.json",
+        r#"{
+  "ignores": [
+    "design-system/**",
+    "node_modules/**"
+  ]
+}"#,
+    );
+    write_project_file(
+        &project_root,
+        "src/App.vue",
+        r#"<script setup>
+const message = 'ok'
+</script>
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "design-system/src/Ignored.vue",
+        r#"<script setup>
+const ignored = true
+</script>
+"#,
+    );
+    write_project_file(
+        &project_root,
+        "scripts/node_modules/chalk/source/index.d.ts",
+        "export declare const chalk: string\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--config", "vize.config.json", "."])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success(), "{}", output_details(&output));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("Linted 1 files"), "{stdout}");
+    assert!(!stdout.contains("design-system"), "{stdout}");
+    assert!(!stdout.contains("scripts/node_modules"), "{stdout}");
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
 #[test]
 fn lint_uses_entry_preset_unless_cli_preset_overrides() {
     let project_root = temp_project_dir("entry-preset");

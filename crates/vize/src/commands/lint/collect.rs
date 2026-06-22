@@ -5,7 +5,40 @@ use ignore::WalkBuilder;
 use std::path::{Path, PathBuf};
 use vize_carton::{FxHashSet, String};
 
-pub(super) fn collect_lint_files(patterns: &[String]) -> Vec<PathBuf> {
+use super::LintArgs;
+use crate::config;
+
+pub(super) struct LintIgnoreSet {
+    patterns: Vec<LintInputGlob>,
+}
+
+impl LintIgnoreSet {
+    fn new(ignores: &[config::ConfigEntryIgnore], config_dir: &Path) -> Option<Self> {
+        let patterns = ignores
+            .iter()
+            .flat_map(|ignore| expand_entry_ignore_patterns(ignore, config_dir))
+            .filter_map(|pattern| LintInputGlob::new(pattern.to_string_lossy().as_ref()))
+            .collect::<Vec<_>>();
+        (!patterns.is_empty()).then_some(Self { patterns })
+    }
+
+    fn is_ignored(&self, path: &Path) -> bool {
+        self.patterns.iter().any(|pattern| pattern.matches(path))
+    }
+}
+
+pub(super) fn load_lint_ignore_set(args: &LintArgs, config_dir: &Path) -> Option<LintIgnoreSet> {
+    if args.no_config {
+        return None;
+    }
+    let loaded_ignores = config::load_config_entry_ignores_with_source(args.config.as_deref());
+    LintIgnoreSet::new(&loaded_ignores.ignores, config_dir)
+}
+
+pub(super) fn collect_lint_files(
+    patterns: &[String],
+    ignore_set: Option<&LintIgnoreSet>,
+) -> Vec<PathBuf> {
     let mut files = Vec::new();
     let mut seen = FxHashSet::default();
 
@@ -13,18 +46,24 @@ pub(super) fn collect_lint_files(patterns: &[String]) -> Vec<PathBuf> {
         let candidate = PathBuf::from(pattern);
         if candidate.exists() {
             if candidate.is_file() {
-                add_lint_file(&candidate, &mut files, &mut seen);
+                add_lint_file(&candidate, ignore_set, &mut files, &mut seen);
                 continue;
             }
             if candidate.is_dir() {
-                collect_lint_files_from_dir(&candidate, None, &mut files, &mut seen);
+                collect_lint_files_from_dir(&candidate, None, ignore_set, &mut files, &mut seen);
                 continue;
             }
         }
 
         let base_dir = base_dir_from_lint_pattern(pattern);
         let matcher = LintInputGlob::new(pattern);
-        collect_lint_files_from_dir(&base_dir, matcher.as_ref(), &mut files, &mut seen);
+        collect_lint_files_from_dir(
+            &base_dir,
+            matcher.as_ref(),
+            ignore_set,
+            &mut files,
+            &mut seen,
+        );
     }
 
     files.sort();
@@ -34,6 +73,7 @@ pub(super) fn collect_lint_files(patterns: &[String]) -> Vec<PathBuf> {
 fn collect_lint_files_from_dir(
     dir: &Path,
     matcher: Option<&LintInputGlob>,
+    ignore_set: Option<&LintIgnoreSet>,
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
 ) {
@@ -47,17 +87,24 @@ fn collect_lint_files_from_dir(
         };
         let path = entry.path();
         if path.is_file() && matcher.is_none_or(|matcher| matcher.matches(path)) {
-            add_lint_file(path, files, seen);
+            add_lint_file(path, ignore_set, files, seen);
         }
     }
 }
 
-fn add_lint_file(path: &Path, files: &mut Vec<PathBuf>, seen: &mut FxHashSet<PathBuf>) {
+fn add_lint_file(
+    path: &Path,
+    ignore_set: Option<&LintIgnoreSet>,
+    files: &mut Vec<PathBuf>,
+    seen: &mut FxHashSet<PathBuf>,
+) {
     if !is_lintable_path(path) {
         return;
     }
     let normalized = normalize_lint_input_path(path);
-    if seen.insert(normalized.clone()) {
+    if !ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(&normalized))
+        && seen.insert(normalized.clone())
+    {
         files.push(normalized);
     }
 }
@@ -163,6 +210,62 @@ pub(super) fn resolve_lint_config_path(config_dir: &Path, candidate: &str) -> Pa
     config_dir.join(path)
 }
 
+fn expand_entry_ignore_patterns(
+    ignore: &config::ConfigEntryIgnore,
+    config_dir: &Path,
+) -> Vec<PathBuf> {
+    let resolved = resolve_entry_ignore_pattern(ignore, config_dir);
+    let Some(deep_pattern) = nested_node_modules_ignore(&resolved) else {
+        return vec![resolved];
+    };
+    vec![resolved, deep_pattern]
+}
+
+fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: &Path) -> PathBuf {
+    let pattern = Path::new(ignore.pattern.as_str());
+    if pattern.is_absolute() {
+        return if pattern.exists() {
+            vize_carton::path::canonicalize_non_verbatim(pattern)
+        } else {
+            pattern.to_path_buf()
+        };
+    }
+
+    let config_dir = absolute_config_dir(config_dir);
+    let base = ignore
+        .base_path
+        .as_deref()
+        .map(Path::new)
+        .filter(|base_path| !base_path.as_os_str().is_empty());
+    match base {
+        Some(base_path) if base_path.is_absolute() => base_path.join(pattern),
+        Some(base_path) => config_dir.join(base_path).join(pattern),
+        None => config_dir.join(pattern),
+    }
+}
+
+fn absolute_config_dir(config_dir: &Path) -> PathBuf {
+    if config_dir.is_absolute() {
+        return config_dir.to_path_buf();
+    }
+
+    std::env::current_dir()
+        .unwrap_or_else(|_| PathBuf::from("."))
+        .join(config_dir)
+}
+
+fn nested_node_modules_ignore(pattern: &Path) -> Option<PathBuf> {
+    let pattern_text = normalize_lint_path(pattern);
+    let suffix = "node_modules/**";
+    if !pattern_text.ends_with(suffix) || pattern_text.contains("**/node_modules/**") {
+        return None;
+    }
+    let prefix = pattern_text.trim_end_matches(suffix).trim_end_matches('/');
+    Some(PathBuf::from(
+        vize_carton::cstr!("{prefix}/**/{suffix}").as_str(),
+    ))
+}
+
 fn lint_glob_match_options() -> MatchOptions {
     MatchOptions {
         case_sensitive: true,
@@ -173,7 +276,7 @@ fn lint_glob_match_options() -> MatchOptions {
 
 #[cfg(test)]
 mod tests {
-    use super::collect_lint_files;
+    use super::{LintIgnoreSet, collect_lint_files};
     use std::fs;
 
     #[test]
@@ -189,7 +292,7 @@ mod tests {
         fs::write(src.join("Widget.tsx"), "").unwrap();
         fs::write(src.join("notes.md"), "").unwrap();
 
-        let files = collect_lint_files(&[src.display().to_string().into()]);
+        let files = collect_lint_files(&[src.display().to_string().into()], None);
 
         assert_eq!(
             files,
@@ -202,5 +305,37 @@ mod tests {
                 src.join("store.ts")
             ]
         );
+    }
+
+    #[test]
+    fn collection_applies_config_ignores_and_nested_node_modules() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("src");
+        let scripts_dep = dir.path().join("scripts/node_modules/chalk/source");
+        fs::create_dir_all(&src).unwrap();
+        fs::create_dir_all(&scripts_dep).unwrap();
+        fs::write(src.join("App.vue"), "").unwrap();
+        fs::write(src.join("Generated.vue"), "").unwrap();
+        fs::write(scripts_dep.join("index.d.ts"), "").unwrap();
+
+        let ignore_set = LintIgnoreSet::new(
+            &[
+                crate::config::ConfigEntryIgnore {
+                    base_path: None,
+                    pattern: "src/Generated.vue".into(),
+                },
+                crate::config::ConfigEntryIgnore {
+                    base_path: None,
+                    pattern: "node_modules/**".into(),
+                },
+            ],
+            dir.path(),
+        );
+        let files = collect_lint_files(
+            &[dir.path().display().to_string().into()],
+            ignore_set.as_ref(),
+        );
+
+        assert_eq!(files, vec![src.join("App.vue")]);
     }
 }

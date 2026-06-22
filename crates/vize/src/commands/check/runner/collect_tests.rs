@@ -161,12 +161,18 @@ fn collect_check_files_normalizes_entry_ignore_paths_and_duplicates() {
     let _ = fs::remove_dir_all(&case_dir);
     fs::create_dir_all(case_dir.join("src/nested")).unwrap();
     fs::create_dir_all(case_dir.join("packages/admin/src")).unwrap();
+    fs::create_dir_all(case_dir.join("scripts/node_modules/chalk/source")).unwrap();
     let app = write_file(&case_dir, "src/App.vue", "");
     let nested = write_file(&case_dir, "src/nested/Panel.vue", "");
     write_file(&case_dir, "src/Ignored.vue", "");
     write_file(&case_dir, "src/nested/Ignored.vue", "");
     write_file(&case_dir, "packages/admin/src/Ignored.vue", "");
     let admin_page = write_file(&case_dir, "packages/admin/src/Page.vue", "");
+    write_file(
+        &case_dir,
+        "scripts/node_modules/chalk/source/index.d.ts",
+        "",
+    );
 
     let ignore_set = CheckIgnoreSet::new(
         &[
@@ -185,6 +191,10 @@ fn collect_check_files_normalizes_entry_ignore_paths_and_duplicates() {
             crate::config::ConfigEntryIgnore {
                 base_path: Some("packages/admin".into()),
                 pattern: "src\\Ignored.vue".into(),
+            },
+            crate::config::ConfigEntryIgnore {
+                base_path: None,
+                pattern: "node_modules/**".into(),
             },
         ],
         &case_dir,

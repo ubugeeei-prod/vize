@@ -12,10 +12,8 @@ impl FmtIgnoreSet {
         let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
         let patterns = ignores
             .iter()
-            .filter_map(|ignore| {
-                let pattern = resolve_entry_ignore_pattern(ignore, config_dir);
-                FmtPattern::new(pattern.to_string_lossy().as_ref(), &cwd)
-            })
+            .flat_map(|ignore| expand_entry_ignore_patterns(ignore, config_dir))
+            .filter_map(|pattern| FmtPattern::new(pattern.to_string_lossy().as_ref(), &cwd))
             .collect::<Vec<_>>();
         (!patterns.is_empty()).then_some(Self { patterns })
     }
@@ -42,6 +40,17 @@ pub(super) fn load_fmt_ignore_set(args: &FmtArgs) -> Option<FmtIgnoreSet> {
     FmtIgnoreSet::new(&loaded.ignores, &config_dir)
 }
 
+fn expand_entry_ignore_patterns(
+    ignore: &config::ConfigEntryIgnore,
+    config_dir: &Path,
+) -> Vec<PathBuf> {
+    let resolved = resolve_entry_ignore_pattern(ignore, config_dir);
+    let Some(deep_pattern) = nested_node_modules_ignore(&resolved) else {
+        return vec![resolved];
+    };
+    vec![resolved, deep_pattern]
+}
+
 fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: &Path) -> PathBuf {
     let pattern = Path::new(ignore.pattern.as_str());
     if pattern.is_absolute() {
@@ -58,4 +67,16 @@ fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: 
         Some(base_path) => config_dir.join(base_path).join(pattern),
         None => config_dir.join(pattern),
     }
+}
+
+fn nested_node_modules_ignore(pattern: &Path) -> Option<PathBuf> {
+    let pattern_text = pattern.to_string_lossy().replace('\\', "/");
+    let suffix = "node_modules/**";
+    if !pattern_text.ends_with(suffix) || pattern_text.contains("**/node_modules/**") {
+        return None;
+    }
+    let prefix = pattern_text.trim_end_matches(suffix).trim_end_matches('/');
+    Some(PathBuf::from(
+        vize_carton::cstr!("{prefix}/**/{suffix}").as_str(),
+    ))
 }

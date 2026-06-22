@@ -12,7 +12,7 @@ mod tests;
 pub use args::LintArgs;
 
 use crate::profile_support;
-use collect::{collect_lint_files, resolve_lint_config_path};
+use collect::{collect_lint_files, load_lint_ignore_set, resolve_lint_config_path};
 use cross_file::apply_sfc_cross_file_lint;
 use fix::lint_source_with_optional_fix;
 use rayon::prelude::*;
@@ -72,9 +72,10 @@ pub fn run(args: LintArgs) {
         .type_checker
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
+    let ignore_set = load_lint_ignore_set(&args, config_dir);
     // Collect lintable files using glob patterns or directory walking.
     let collect_start = Instant::now();
-    let files = collect_lint_files(&args.patterns);
+    let files = collect_lint_files(&args.patterns, ignore_set.as_ref());
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
