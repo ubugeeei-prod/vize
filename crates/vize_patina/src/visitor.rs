@@ -7,7 +7,7 @@ use crate::rule::Rule;
 use vize_carton::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
 use vize_carton::{CompactString, cstr, profile};
 use vize_relief::{
-    CommentNode, ElementNode, ExpressionNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
+    CommentNode, ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
 };
 
 pub use crate::visitor_scope::{parse_slot_scope_variables, parse_v_for_variables};
