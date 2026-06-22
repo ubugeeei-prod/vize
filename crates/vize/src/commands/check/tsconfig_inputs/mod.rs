@@ -20,6 +20,8 @@ mod spec;
 mod type_references;
 
 #[cfg(test)]
+mod codegen_tests;
+#[cfg(test)]
 mod tests;
 
 pub(crate) use ambient::{
