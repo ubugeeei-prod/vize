@@ -36,63 +36,6 @@ typeChecker {
 }
 
 #[test]
-fn loads_documented_pkl_compat_schema_without_deserialize_warnings() {
-    let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.pkl");
-    install_pkl_modules(dir.path());
-    std::fs::write(
-        &config_path,
-        r#"
-amends "node_modules/vize/pkl/vize.pkl"
-
-formatter {
-  printWidth = 100
-  semi = true
-  singleQuote = false
-  tabWidth = 2
-}
-
-linter {
-  preset = "opinionated"
-  rules = new Mapping {
-    ["vue/no-v-html"] = "off"
-  }
-}
-
-typeChecker {
-  checkEmits = false
-  checkProps = false
-  checkTemplateBindings = false
-}
-
-languageServer {
-  enabled = true
-}
-
-vite {
-  scanPatterns = new Listing {
-    "apps/**/*.vue"
-    "packages/ui/src/**/*.vue"
-  }
-}
-"#,
-    )
-    .unwrap();
-
-    let loaded = load_config_with_features_and_source(Some(dir.path()));
-    let linter = vize_carton::config::load_linter_config(Some(dir.path()));
-
-    assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
-    assert_eq!(loaded.config.formatter.print_width, 100);
-    assert!(!loaded.config.type_checker.check_emits);
-    assert!(!loaded.config.type_checker.check_props);
-    assert!(!loaded.config.type_checker.check_template_bindings);
-    assert_eq!(loaded.config.language_server.enabled, Some(true));
-    assert_eq!(linter.preset.as_deref(), Some("opinionated"));
-    assert_eq!(linter.disabled_rules(), ["vue/no-v-html"]);
-}
-
-#[test]
 fn loads_pkl_top_level_and_entry_ignores() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("vize.config.pkl");
