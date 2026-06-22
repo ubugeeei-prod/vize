@@ -360,16 +360,9 @@ export function loadHook(
 }
 
 function shouldLogSfcWarnings(state: VizePluginState, realPath: string): boolean {
-  if (!realPath.includes("node_modules")) {
-    return true;
-  }
-  if ((state.mergedOptions.handleNodeModulesVue ?? true) === false) {
-    return false;
-  }
-  if (!state.filter(realPath)) {
-    return false;
-  }
-  return true;
+  if (!realPath.includes("node_modules")) return true;
+  if ((state.mergedOptions.handleNodeModulesVue ?? true) === false) return false;
+  return state.filter(realPath);
 }
 
 function isJsxComponentPath(path: string): boolean {
