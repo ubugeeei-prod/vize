@@ -35,8 +35,8 @@ import { createHash } from "node:crypto";
 
 const DEFAULT_THRESHOLD_PERCENT = 2;
 const DEFAULT_MIN_REGRESSION_MS = 5;
-const DEFAULT_RUNS = 5;
-const DEFAULT_WARMUPS = 1;
+const DEFAULT_RUNS = 10;
+const DEFAULT_WARMUPS = 2;
 
 function parseArgs(argv) {
   const args = {};
