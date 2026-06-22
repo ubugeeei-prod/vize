@@ -37,8 +37,11 @@ pub struct ValidVSlot;
 
 impl ValidVSlot {
     fn is_custom_component(tag: &str) -> bool {
-        // Custom components: PascalCase or kebab-case with hyphen
-        tag.chars().next().is_some_and(|c| c.is_uppercase()) || tag.contains('-')
+        // Custom components: PascalCase, kebab-case with hyphen, or Vue's
+        // built-in dynamic component element.
+        tag == "component"
+            || tag.chars().next().is_some_and(|c| c.is_uppercase())
+            || tag.contains('-')
     }
 
     fn count_slot_directives(element: &ElementNode) -> (usize, usize) {
@@ -146,6 +149,16 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<MyComponent><template #header>Header</template></MyComponent>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_dynamic_component_slot() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<component :is="to ? NuxtLinkLocale : 'button'" #="scoped">{{ scoped }}</component>"#,
             "test.vue",
         );
         assert_eq!(result.error_count, 0);

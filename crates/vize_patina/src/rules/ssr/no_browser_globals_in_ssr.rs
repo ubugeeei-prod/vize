@@ -536,6 +536,18 @@ mod tests {
     }
 
     #[test]
+    fn test_allows_scoped_slot_binding_named_open() {
+        let result = lint_with_ssr(
+            r#"<Dropdown v-slot="{ open }"><button :class="{ active: open }">{{ open }}</button></Dropdown>"#,
+        );
+        assert!(
+            result.is_empty(),
+            "Should not flag scoped slot variables, got: {:?}",
+            result
+        );
+    }
+
+    #[test]
     fn test_detects_localstorage() {
         let result = lint_with_ssr("<div>{{ localStorage.getItem('key') }}</div>");
         insta::assert_debug_snapshot!(result);

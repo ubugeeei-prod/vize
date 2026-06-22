@@ -143,11 +143,14 @@ impl<'a> TemplateFormatter<'a> {
                         );
 
                         if use_multiline {
-                            let max_per_line = self
-                                .options
-                                .max_attributes_per_line
-                                .unwrap_or(1) // default 1 when multiline
-                                .max(1) as usize;
+                            let max_per_line = if self.options.single_attribute_per_line {
+                                1
+                            } else {
+                                self.options
+                                    .max_attributes_per_line
+                                    .unwrap_or(1) // default 1 when multiline
+                                    .max(1) as usize
+                            };
 
                             write_rendered_attributes(
                                 &mut output,

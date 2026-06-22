@@ -168,12 +168,12 @@ pub(crate) fn should_use_multiline_attrs(
         return false;
     }
 
-    if let Some(max) = options.max_attributes_per_line {
-        return attrs.len() > max as usize;
-    }
-
     if options.single_attribute_per_line {
         return true;
+    }
+
+    if let Some(max) = options.max_attributes_per_line {
+        return attrs.len() > max as usize;
     }
 
     let indent_len = indent.len() * depth;

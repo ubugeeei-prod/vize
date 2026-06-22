@@ -105,8 +105,9 @@ impl Rule for HtmlSelfClosing {
         let is_void = VOID_ELEMENTS.contains(&tag);
         let is_svg = SVG_ELEMENTS.contains(&tag);
         let is_mathml = MATHML_ELEMENTS.contains(&tag);
-        let is_component =
-            tag.contains('-') || tag.chars().next().is_some_and(|c| c.is_uppercase());
+        let is_component = (tag.contains('-')
+            || tag.chars().next().is_some_and(|c| c.is_uppercase()))
+            && !is_nuxt_builtin_component(tag);
         let has_children = !element.children.is_empty();
         let is_self_closing = element.is_self_closing;
 
@@ -142,6 +143,30 @@ impl Rule for HtmlSelfClosing {
         // Normal HTML elements without children - configurable (default: don't require self-closing)
         // This is intentionally not enforced for normal HTML elements like <div></div>
     }
+}
+
+fn is_nuxt_builtin_component(tag: &str) -> bool {
+    matches!(
+        tag,
+        "nuxt"
+            | "nuxt-child"
+            | "nuxt-page"
+            | "nuxt-layout"
+            | "nuxt-link"
+            | "nuxt-loading-indicator"
+            | "nuxt-error-boundary"
+            | "client-only"
+            | "no-ssr"
+            | "Nuxt"
+            | "NuxtChild"
+            | "NuxtPage"
+            | "NuxtLayout"
+            | "NuxtLink"
+            | "NuxtLoadingIndicator"
+            | "NuxtErrorBoundary"
+            | "ClientOnly"
+            | "NoSsr"
+    )
 }
 
 #[cfg(test)]
@@ -188,6 +213,13 @@ mod tests {
     fn test_valid_component_with_content() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<MyComponent>content</MyComponent>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_nuxt_child_builtin() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<nuxt-child id="index"></nuxt-child>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
 }

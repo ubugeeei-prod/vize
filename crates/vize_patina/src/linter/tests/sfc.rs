@@ -73,6 +73,46 @@ fn test_lint_sfc_default_preset_keeps_css_rules_opt_in() {
 }
 
 #[test]
+fn test_lint_sfc_respects_disabled_sfc_level_rule() {
+    let linter = Linter::new().with_disabled_rules(vec!["vue/require-scoped-style".into()]);
+    let sfc = r#"<template><div/></template>
+<style>
+.a { color: red; }
+</style>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/require-scoped-style"),
+        "disabled SFC-level rule should not report: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_lint_sfc_respects_disabled_style_category_for_sfc_level_rule() {
+    let linter = Linter::new().with_disabled_categories(vec!["style".into()]);
+    let sfc = r#"<template><div/></template>
+<style>
+.a { color: red; }
+</style>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/require-scoped-style"),
+        "style category should disable require-scoped-style: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn test_lint_sfc_css_diagnostic_uses_file_offsets() {
     // The css diagnostic must be reported in original-file coordinates, not
     // style-block-local coordinates.
