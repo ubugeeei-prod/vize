@@ -337,12 +337,3 @@ export function resolveNuxtMuseaOptions(musea: VizeNuxtOptions["musea"]): MuseaO
   }
   return musea;
 }
-
-declare module "nuxt/schema" {
-  interface NuxtConfig { vize?: Partial<VizeNuxtOptions> }
-  interface NuxtOptions { vize?: Partial<VizeNuxtOptions> }
-}
-declare module "@nuxt/schema" {
-  interface NuxtConfig { vize?: Partial<VizeNuxtOptions> }
-  interface NuxtOptions { vize?: Partial<VizeNuxtOptions> }
-}

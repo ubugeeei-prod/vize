@@ -6,7 +6,12 @@ import type { VizeOptions, ConfigEnv, ResolvedVizeConfig } from "../types.ts";
 import { createFilter } from "../utils/index.ts";
 import { toBrowserImportPrefix } from "../virtual.ts";
 import { shouldApplyDefineInVirtualModule, createLogger } from "../transform.ts";
-import { VIZE_CONFIG_FILE_ENV, loadConfig, resolveConfigExport, vizeConfigStore } from "../config.ts";
+import {
+  VIZE_CONFIG_FILE_ENV,
+  loadConfig,
+  resolveConfigExport,
+  vizeConfigStore,
+} from "../config.ts";
 import {
   DEFAULT_PRECOMPILE_BATCH_SIZE,
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
