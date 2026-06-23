@@ -27,21 +27,7 @@ function handleSubmit() {}
 "#,
         )],
     );
-    std::fs::write(
-        project_root.join("tsconfig.json"),
-        r#"{
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "noUnusedLocals": true
-  },
-  "include": ["src/**/*"]
-}"#,
-    )
-    .unwrap();
+    write_no_unused_tsconfig(&project_root);
 
     let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
         let _ = std::fs::remove_dir_all(&project_root);
@@ -97,21 +83,7 @@ defineEmits<{ save: [] }>()
             ),
         ],
     );
-    std::fs::write(
-        project_root.join("tsconfig.json"),
-        r#"{
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "noUnusedLocals": true
-  },
-  "include": ["src/**/*"]
-}"#,
-    )
-    .unwrap();
+    write_no_unused_tsconfig(&project_root);
 
     let Some(snapshot) = snapshot_project_diagnostics_without_template_checks(&project_root) else {
         let _ = std::fs::remove_dir_all(&project_root);
@@ -145,6 +117,127 @@ defineEmits<{ save: [] }>()
 }
 
 #[test]
+fn define_props_result_binding_is_used_when_template_reads_direct_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "define-props-result-template-props-no-unused-locals",
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+interface Props {
+  width?: number
+  label: string
+  required?: boolean
+}
+
+const props = defineProps<Props>()
+const unusedLocal = 1
+</script>
+
+<template>
+  <label>
+    {{ label }} {{ width }} {{ required }}
+  </label>
+</template>
+"#,
+            ),
+            (
+                "src/WithDefaults.vue",
+                r#"<script setup lang="ts">
+interface Props {
+  count?: number
+  label: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  count: 0,
+})
+const unusedLocal = 1
+</script>
+
+<template>
+  <button>{{ label }}: {{ count }}</button>
+</template>
+"#,
+            ),
+        ],
+    );
+    write_no_unused_tsconfig(&project_root);
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(|(file, code, message)| {
+            !((*file == "src/App.vue" || *file == "src/WithDefaults.vue")
+                && *code == Some(6133)
+                && message.contains("props"))
+        }),
+        "defineProps result should count as used when template reads direct props, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/App.vue" && *code == Some(6133) && message.contains("unusedLocal")
+        }),
+        "unrelated unused locals should still report TS6133 for plain defineProps, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/WithDefaults.vue" && *code == Some(6133) && message.contains("unusedLocal")
+        }),
+        "unrelated unused locals should still report TS6133 for withDefaults, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn define_props_result_binding_still_reports_unused_without_template_prop_reads() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "define-props-result-unused-without-template-props",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+interface Props {
+  label: string
+}
+
+const props = defineProps<Props>()
+const used = 1
+</script>
+
+<template>{{ used }}</template>
+"#,
+        )],
+    );
+    write_no_unused_tsconfig(&project_root);
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/App.vue" && *code == Some(6133) && message.contains("props")
+        }),
+        "defineProps result should still report TS6133 when template does not read props, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_does_not_report_default_export_alias_as_unused() {
     if resolve_test_tsgo_binary().is_none() {
         return;
@@ -167,21 +260,7 @@ export default {
 "#,
         )],
     );
-    std::fs::write(
-        project_root.join("tsconfig.json"),
-        r#"{
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "noUnusedLocals": true
-  },
-  "include": ["src/**/*"]
-}"#,
-    )
-    .unwrap();
+    write_no_unused_tsconfig(&project_root);
 
     let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
         let _ = std::fs::remove_dir_all(&project_root);
@@ -230,4 +309,22 @@ fn snapshot_project_diagnostics_without_template_checks(
         .collect();
     snapshot.sort();
     Some(snapshot)
+}
+
+fn write_no_unused_tsconfig(project_root: &std::path::Path) {
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noUnusedLocals": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
 }

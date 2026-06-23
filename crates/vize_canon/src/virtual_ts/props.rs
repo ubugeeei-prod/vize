@@ -508,7 +508,7 @@ pub(crate) fn generate_props_variables(
 /// resolver parses them directly. A type *reference* may carry a generic
 /// instantiation (`Foo<T>`); the resolver registers local types under their
 /// bare declaration name, so strip the arguments to recover `Foo`.
-fn type_reference_lookup_key(type_name: &str) -> &str {
+pub(crate) fn type_reference_lookup_key(type_name: &str) -> &str {
     if type_name.trim_start().starts_with('{') {
         type_name
     } else {
@@ -518,7 +518,7 @@ fn type_reference_lookup_key(type_name: &str) -> &str {
 
 /// Strip the outermost `<...>` pair from a type_args string, handling nested generics.
 /// e.g., `"<Props>"` → `"Props"`, `"<Foo<T>>"` → `"Foo<T>"`, `"Props"` → `"Props"`
-fn strip_outer_angle_brackets(s: &str) -> &str {
+pub(crate) fn strip_outer_angle_brackets(s: &str) -> &str {
     let s = s.trim();
     if !s.starts_with('<') {
         return s;

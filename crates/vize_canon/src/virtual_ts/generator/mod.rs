@@ -6,6 +6,7 @@ mod legacy_vue2;
 mod options_api;
 mod options_api_props_identifiers;
 mod options_api_support;
+mod props_anchors;
 mod script_module;
 mod setup_props;
 mod spans;
@@ -24,6 +25,7 @@ use self::options_api::{
     generate_options_api_variables,
 };
 use self::options_api_props_identifiers::PropsConstAssertions;
+use self::props_anchors::emit_setup_scope_prop_anchors;
 use self::setup_props::SetupPropsPlan;
 use self::spans::{
     DEFINE_COMPONENT_REF, merge_overlapping_spans, preserved_template_usage,
@@ -850,29 +852,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         );
     }
 
-    // Reference props destructure bindings at setup scope level.
-    // These variables are declared in user script (e.g., `const { foo } = defineProps<...>()`)
-    // but shadowed inside __template() by generate_props_variables, so void them here.
-    if let Some(destructure) = summary.macros.props_destructure()
-        && !destructure.bindings.is_empty()
-    {
-        ts.push_str("\n  // Reference destructured props (prevent TS6133)\n  ");
-        let mut first = true;
-        for binding in destructure.bindings.values() {
-            if !first {
-                ts.push(' ');
-            }
-            append!(ts, "void {};", binding.local);
-            first = false;
-        }
-        if let Some(ref rest) = destructure.rest_id {
-            if !first {
-                ts.push(' ');
-            }
-            append!(ts, "void {};", rest);
-        }
-        ts.push('\n');
-    }
+    emit_setup_scope_prop_anchors(
+        &mut ts,
+        summary,
+        script_content,
+        template_referenced_names.as_ref(),
+        preserve_unused_diagnostics,
+    );
 
     let define_emits_runtime_args = summary.macros.define_emits().and_then(|call| {
         if call.type_args.is_none() {
