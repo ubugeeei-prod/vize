@@ -2,10 +2,12 @@
 //!
 //! Free functions used by the parsing and props extraction logic.
 
-use oxc_ast::ast::{CallExpression, Expression, ImportDeclaration, VariableDeclarationKind};
+use oxc_ast::ast::{
+    BindingPattern, CallExpression, Expression, ImportDeclaration, VariableDeclarationKind,
+};
 use oxc_span::GetSpan;
 
-use crate::types::BindingType;
+use crate::types::{BindingMetadata, BindingType};
 use vize_croquis::macros::is_builtin_macro;
 
 use super::super::MacroCall;
@@ -170,4 +172,57 @@ pub(super) fn is_import_type_only(import_decl: &ImportDeclaration<'_>, source: &
     }
     let raw = &source[start..end];
     raw.trim_start().starts_with("import type")
+}
+
+pub(super) fn macro_binding_name(id: &BindingPattern<'_>) -> Option<String> {
+    match id {
+        BindingPattern::BindingIdentifier(id) => Some(id.name.to_compact_string()),
+        BindingPattern::ArrayPattern(pattern) => pattern
+            .elements
+            .first()
+            .and_then(|elem| elem.as_ref())
+            .and_then(simple_binding_name),
+        _ => None,
+    }
+}
+
+pub(super) fn register_binding_pattern(
+    bindings: &mut BindingMetadata,
+    pattern: &BindingPattern<'_>,
+    binding_type: BindingType,
+) {
+    match pattern {
+        BindingPattern::BindingIdentifier(id) => {
+            bindings
+                .bindings
+                .insert(id.name.to_compact_string(), binding_type);
+        }
+        BindingPattern::ObjectPattern(object) => {
+            for property in object.properties.iter() {
+                register_binding_pattern(bindings, &property.value, binding_type);
+            }
+            if let Some(rest) = &object.rest {
+                register_binding_pattern(bindings, &rest.argument, binding_type);
+            }
+        }
+        BindingPattern::ArrayPattern(array) => {
+            for element in array.elements.iter().flatten() {
+                register_binding_pattern(bindings, element, binding_type);
+            }
+            if let Some(rest) = &array.rest {
+                register_binding_pattern(bindings, &rest.argument, binding_type);
+            }
+        }
+        BindingPattern::AssignmentPattern(assign) => {
+            register_binding_pattern(bindings, &assign.left, binding_type);
+        }
+    }
+}
+
+fn simple_binding_name(id: &BindingPattern<'_>) -> Option<String> {
+    match id {
+        BindingPattern::BindingIdentifier(id) => Some(id.name.to_compact_string()),
+        BindingPattern::AssignmentPattern(pattern) => simple_binding_name(&pattern.left),
+        _ => None,
+    }
 }

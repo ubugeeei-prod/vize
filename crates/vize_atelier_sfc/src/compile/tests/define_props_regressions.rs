@@ -1,5 +1,5 @@
 use super::super::compile_sfc;
-use crate::types::SfcCompileOptions;
+use crate::types::{BindingType, SfcCompileOptions};
 use crate::{SfcParseOptions, parse_sfc};
 
 #[test]
@@ -53,4 +53,57 @@ const { a, b } = defineProps<{ label: string, a: string, b: string }>()
         "type-only props must not fall back to instance context:\n{}",
         result.code
     );
+}
+
+#[test]
+fn test_script_setup_deep_destructure_bindings_are_available_to_template() {
+    let source = r#"<script setup lang="ts">
+const {
+  public: { contactFormUrl },
+  nested: { label: inquiryLabel = "Inquiry" },
+  urls: [firstUrl, { href: secondUrl }],
+  ...runtimeRest
+} = useRuntimeConfig()
+</script>
+
+<template>
+  <a
+    :href="contactFormUrl"
+    :aria-label="inquiryLabel"
+    :data-first="firstUrl"
+    :data-second="secondUrl"
+    :data-rest="runtimeRest"
+  >
+    {{ inquiryLabel }}
+  </a>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
+    let bindings = result
+        .bindings
+        .as_ref()
+        .expect("script setup output should include bindings");
+    for name in [
+        "contactFormUrl",
+        "inquiryLabel",
+        "firstUrl",
+        "secondUrl",
+        "runtimeRest",
+    ] {
+        assert!(
+            matches!(
+                bindings.bindings.get(name),
+                Some(BindingType::SetupMaybeRef)
+            ),
+            "{name} should be collected from the deep destructure pattern"
+        );
+        assert!(
+            !result.code.contains(&format!("_ctx.{name}")),
+            "{name} should be compiled as a setup binding, not as an instance property:\n{}",
+            result.code
+        );
+    }
 }

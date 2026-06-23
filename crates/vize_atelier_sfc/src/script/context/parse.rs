@@ -19,7 +19,8 @@ use super::super::define_props_destructure::process_props_destructure;
 use super::ScriptCompileContext;
 use super::helpers::{
     extract_args_from_call, extract_macro_from_expr, extract_type_args_from_call,
-    infer_binding_type, is_call_of, is_import_type_only,
+    infer_binding_type, is_call_of, is_import_type_only, macro_binding_name,
+    register_binding_pattern,
 };
 use crate::script::build_interface_type_source;
 
@@ -331,13 +332,11 @@ impl ScriptCompileContext {
                                         _ => BindingType::SetupLet,
                                     }
                                 };
-                                for prop in obj_pat.properties.iter() {
-                                    if let BindingPattern::BindingIdentifier(id) = &prop.value {
-                                        self.bindings
-                                            .bindings
-                                            .insert(id.name.to_compact_string(), destructure_type);
-                                    }
-                                }
+                                register_binding_pattern(
+                                    &mut self.bindings,
+                                    &decl.id,
+                                    destructure_type,
+                                );
                             }
                         }
                         BindingPattern::ArrayPattern(arr_pat) => {
@@ -358,26 +357,31 @@ impl ScriptCompileContext {
                                 let Some(elem) = elem else {
                                     continue;
                                 };
-                                if let Some(name) = simple_binding_name(elem) {
-                                    let binding_type = if is_define_model {
-                                        if index == 0 {
-                                            BindingType::SetupRef
-                                        } else {
-                                            BindingType::SetupConst
-                                        }
+                                let binding_type = if is_define_model {
+                                    if index == 0 {
+                                        BindingType::SetupRef
                                     } else {
-                                        destructure_type
-                                    };
-                                    self.bindings.bindings.insert(name, binding_type);
-                                }
+                                        BindingType::SetupConst
+                                    }
+                                } else {
+                                    destructure_type
+                                };
+                                register_binding_pattern(&mut self.bindings, elem, binding_type);
+                            }
+                            if let Some(rest) = arr_pat.rest.as_ref() {
+                                register_binding_pattern(
+                                    &mut self.bindings,
+                                    &rest.argument,
+                                    destructure_type,
+                                );
                             }
                         }
                         BindingPattern::AssignmentPattern(assign_pat) => {
-                            if let BindingPattern::BindingIdentifier(id) = &assign_pat.left {
-                                self.bindings
-                                    .bindings
-                                    .insert(id.name.to_compact_string(), BindingType::SetupConst);
-                            }
+                            register_binding_pattern(
+                                &mut self.bindings,
+                                &assign_pat.left,
+                                BindingType::SetupConst,
+                            );
                         }
                     }
                 }
@@ -458,25 +462,5 @@ impl ScriptCompileContext {
             }
             _ => {}
         }
-    }
-}
-
-fn macro_binding_name(id: &BindingPattern<'_>) -> Option<String> {
-    match id {
-        BindingPattern::BindingIdentifier(id) => Some(id.name.to_compact_string()),
-        BindingPattern::ArrayPattern(pattern) => pattern
-            .elements
-            .first()
-            .and_then(|elem| elem.as_ref())
-            .and_then(simple_binding_name),
-        _ => None,
-    }
-}
-
-fn simple_binding_name(id: &BindingPattern<'_>) -> Option<String> {
-    match id {
-        BindingPattern::BindingIdentifier(id) => Some(id.name.to_compact_string()),
-        BindingPattern::AssignmentPattern(pattern) => simple_binding_name(&pattern.left),
-        _ => None,
     }
 }

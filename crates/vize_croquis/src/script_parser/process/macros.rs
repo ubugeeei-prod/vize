@@ -28,8 +28,8 @@ use super::super::extract::{
 use super::super::walk::{walk_call_arguments, walk_expression};
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
 use super::bindings::{
-    get_binding_pattern_name, infer_destructure_binding_type, is_function_expression,
-    is_literal_expression,
+    add_binding_pattern_names, get_binding_pattern_name, infer_destructure_binding_type,
+    is_function_expression, is_literal_expression, push_binding_pattern_names,
 };
 
 /// Process a variable declarator
@@ -430,37 +430,38 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     _ => None,
                 };
 
-                if let Some(local_name) = get_binding_pattern_name(&prop.value) {
-                    // If destructuring from defineProps, use Props binding type
-                    let binding_type = if is_define_props {
-                        BindingType::Props
-                    } else {
-                        infer_destructure_binding_type(kind, declarator.init.as_ref())
-                    };
-                    result.bindings.add(local_name.as_str(), binding_type);
+                // If destructuring from defineProps, use Props binding type
+                let binding_type = if is_define_props {
+                    BindingType::Props
+                } else {
+                    infer_destructure_binding_type(kind, declarator.init.as_ref())
+                };
 
-                    // Track destructure binding
-                    if let Some(ref mut destructure) = props_destructure {
-                        let key = key_name
-                            .map(CompactString::new)
-                            .unwrap_or_else(|| CompactString::new(&local_name));
+                if is_define_props {
+                    if let Some(local_name) = get_binding_pattern_name(&prop.value) {
+                        result.bindings.add(local_name.as_str(), binding_type);
 
-                        // Extract default value if present (assignment pattern), including
-                        // renamed destructures such as `{ source: local = fallback }`.
-                        let default_value =
-                            if let BindingPattern::AssignmentPattern(assign) = &prop.value {
-                                Some(CompactString::new(
-                                    &source[assign.right.span().start as usize
-                                        ..assign.right.span().end as usize],
-                                ))
-                            } else {
-                                None
-                            };
+                        // Track destructure binding
+                        if let Some(ref mut destructure) = props_destructure {
+                            let key = key_name
+                                .map(CompactString::new)
+                                .unwrap_or_else(|| CompactString::new(&local_name));
 
-                        destructure.insert(key, CompactString::new(&local_name), default_value);
-                    }
+                            // Extract default value if present (assignment pattern), including
+                            // renamed destructures such as `{ source: local = fallback }`.
+                            let default_value =
+                                if let BindingPattern::AssignmentPattern(assign) = &prop.value {
+                                    Some(CompactString::new(
+                                        &source[assign.right.span().start as usize
+                                            ..assign.right.span().end as usize],
+                                    ))
+                                } else {
+                                    None
+                                };
 
-                    if is_define_props {
+                            destructure.insert(key, CompactString::new(&local_name), default_value);
+                        }
+
                         let key = key_name
                             .map(CompactString::new)
                             .unwrap_or_else(|| CompactString::new(&local_name));
@@ -471,32 +472,37 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             },
                         );
                     }
+                } else {
+                    add_binding_pattern_names(&mut result.bindings, &prop.value, binding_type);
                 }
             }
 
             // Handle rest element
-            if let Some(rest) = &obj.rest
-                && let Some(name) = get_binding_pattern_name(&rest.argument)
-            {
+            if let Some(rest) = &obj.rest {
                 let binding_type = if is_define_props {
                     BindingType::Props
                 } else {
                     infer_destructure_binding_type(kind, declarator.init.as_ref())
                 };
-                result.bindings.add(name.as_str(), binding_type);
-
-                // Track rest binding
-                if let Some(ref mut destructure) = props_destructure {
-                    destructure.rest_id = Some(CompactString::new(&name));
-                }
 
                 if is_define_props {
-                    result.reactive_value_origins.insert(
-                        CompactString::new(&name),
-                        ReactiveValueOrigin::PropsDestructure {
-                            prop_name: CompactString::new("(rest)"),
-                        },
-                    );
+                    if let Some(name) = get_binding_pattern_name(&rest.argument) {
+                        result.bindings.add(name.as_str(), binding_type);
+
+                        // Track rest binding
+                        if let Some(ref mut destructure) = props_destructure {
+                            destructure.rest_id = Some(CompactString::new(&name));
+                        }
+
+                        result.reactive_value_origins.insert(
+                            CompactString::new(&name),
+                            ReactiveValueOrigin::PropsDestructure {
+                                prop_name: CompactString::new("(rest)"),
+                            },
+                        );
+                    }
+                } else {
+                    add_binding_pattern_names(&mut result.bindings, &rest.argument, binding_type);
                 }
             }
 
@@ -542,14 +548,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
             if let Some(call) = inject_call {
                 let mut destructured_items: Vec<CompactString> = Vec::new();
                 for elem in arr.elements.iter().flatten() {
-                    if let Some(name) = get_binding_pattern_name(elem) {
-                        destructured_items.push(CompactString::new(&name));
-                    }
+                    push_binding_pattern_names(elem, &mut destructured_items);
                 }
-                if let Some(rest) = &arr.rest
-                    && let Some(name) = get_binding_pattern_name(&rest.argument)
-                {
-                    destructured_items.push(CompactString::new(&name));
+                if let Some(rest) = &arr.rest {
+                    push_binding_pattern_names(&rest.argument, &mut destructured_items);
                 }
 
                 if let Some(key) = call
@@ -592,14 +594,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
             } else if let Some((inject_var, offset)) = indirect_inject_var {
                 let mut destructured_items: Vec<CompactString> = Vec::new();
                 for elem in arr.elements.iter().flatten() {
-                    if let Some(name) = get_binding_pattern_name(elem) {
-                        destructured_items.push(CompactString::new(&name));
-                    }
+                    push_binding_pattern_names(elem, &mut destructured_items);
                 }
-                if let Some(rest) = &arr.rest
-                    && let Some(name) = get_binding_pattern_name(&rest.argument)
-                {
-                    destructured_items.push(CompactString::new(&name));
+                if let Some(rest) = &arr.rest {
+                    push_binding_pattern_names(&rest.argument, &mut destructured_items);
                 }
 
                 result.provide_inject.add_indirect_destructure(
@@ -612,22 +610,16 @@ pub(in crate::script_parser) fn process_variable_declarator(
             // Handle array destructuring
             let arr_binding_type = infer_destructure_binding_type(kind, declarator.init.as_ref());
             for elem in arr.elements.iter().flatten() {
-                if let Some(name) = get_binding_pattern_name(elem) {
-                    result.bindings.add(name.as_str(), arr_binding_type);
-                }
+                add_binding_pattern_names(&mut result.bindings, elem, arr_binding_type);
             }
-            if let Some(rest) = &arr.rest
-                && let Some(name) = get_binding_pattern_name(&rest.argument)
-            {
-                result.bindings.add(name.as_str(), arr_binding_type);
+            if let Some(rest) = &arr.rest {
+                add_binding_pattern_names(&mut result.bindings, &rest.argument, arr_binding_type);
             }
         }
 
         BindingPattern::AssignmentPattern(assign) => {
-            if let Some(name) = get_binding_pattern_name(&assign.left) {
-                let binding_type = get_binding_type_from_kind(kind);
-                result.bindings.add(name.as_str(), binding_type);
-            }
+            let binding_type = get_binding_type_from_kind(kind);
+            add_binding_pattern_names(&mut result.bindings, &assign.left, binding_type);
         }
     }
 }

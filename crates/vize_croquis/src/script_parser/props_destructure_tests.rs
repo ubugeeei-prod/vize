@@ -38,3 +38,31 @@ fn test_parse_define_props_destructure_tracks_aliased_defaults() {
     assert_eq!(result.bindings.get("label"), Some(BindingType::Props));
     assert_eq!(result.bindings.get("rest"), Some(BindingType::Props));
 }
+
+#[test]
+fn test_parse_script_setup_tracks_deep_non_props_destructure_bindings() {
+    let result = parse_script_setup(
+        r#"
+            const {
+                public: { contactFormUrl },
+                nested: { label: inquiryLabel = "Inquiry" },
+                urls: [firstUrl, { href: secondUrl }],
+                ...runtimeRest
+            } = useRuntimeConfig()
+        "#,
+    );
+
+    for name in [
+        "contactFormUrl",
+        "inquiryLabel",
+        "firstUrl",
+        "secondUrl",
+        "runtimeRest",
+    ] {
+        assert_eq!(
+            result.bindings.get(name),
+            Some(BindingType::SetupMaybeRef),
+            "{name} should be exposed as a top-level script setup binding"
+        );
+    }
+}
