@@ -87,8 +87,8 @@ impl NuxtGeneratedDir {
 }
 
 pub(super) fn resolve_nuxt_generated_dir(cwd: &Path) -> NuxtGeneratedDir {
-    let path = generated_dir_from_tsconfig_imports(cwd)
-        .or_else(|| generated_dir_from_nuxt_config(cwd))
+    let path = generated_dir_from_nuxt_config(cwd)
+        .or_else(|| generated_dir_from_tsconfig_imports(cwd))
         .unwrap_or_else(|| cwd.join(".nuxt"));
     let path = normalize_path_lexically(&path);
     let display = display_path(cwd, &path);

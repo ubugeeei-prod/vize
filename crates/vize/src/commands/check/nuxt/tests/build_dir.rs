@@ -54,6 +54,53 @@ export {}
 }
 
 #[test]
+fn nuxt_config_build_dir_overrides_stale_default_imports_path() {
+    let project_root = unique_case_dir("nuxt-config-build-dir-stale-imports-path");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join(".out/.nuxt/types")).unwrap();
+    std::fs::write(
+        project_root.join("nuxt.config.ts"),
+        r#"export default defineNuxtConfig({ buildDir: ".out/.nuxt" })"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r##"{
+  "compilerOptions": {
+    "paths": {
+      "#imports": [".nuxt/imports"]
+    }
+  }
+}
+"##,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".out/.nuxt/types/imports.d.ts"),
+        r#"declare global {
+  const useBuildDirWins: () => boolean
+}
+export {}
+"#,
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+
+    assert!(
+        options
+            .auto_import_stubs
+            .iter()
+            .any(|stub| stub.as_str() == "declare const useBuildDirWins: () => boolean;"),
+        "expected generated import from nuxt.config buildDir despite stale #imports path, got: {:#?}",
+        options.auto_import_stubs
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn detects_generated_imports_from_tsconfig_imports_path() {
     let project_root = unique_case_dir("nuxt-tsconfig-imports-path");
     let _ = std::fs::remove_dir_all(&project_root);

@@ -112,3 +112,132 @@ fn check_tsconfig_default_run_loads_nuxt_ambient_declarations() {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn check_explicit_nuxt_build_dir_loads_generated_context_types() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("custom-build-dir-context");
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    write(
+        &project_root,
+        "nuxt.config.ts",
+        r#"export default defineNuxtConfig({ buildDir: ".out/.nuxt" })
+"#,
+    );
+    write(
+        &project_root,
+        "tsconfig.json",
+        r##"{
+  "extends": "./.out/.nuxt/tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "#imports": [".nuxt/imports"]
+    }
+  }
+}
+"##,
+    );
+    write(
+        &project_root,
+        ".out/.nuxt/tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["../../src/**/*.ts", "./nuxt.d.ts"]
+}
+"#,
+    );
+    write(
+        &project_root,
+        ".out/.nuxt/nuxt.d.ts",
+        r#"/// <reference path="types/context.d.ts" />
+/// <reference path="types/imports.d.ts" />
+export {};
+"#,
+    );
+    write(
+        &project_root,
+        ".out/.nuxt/types/context.d.ts",
+        r#"declare module "@nuxtjs/composition-api" {
+  export interface UseContextReturn {
+    $gtm: {
+      track(event: string): void;
+    };
+  }
+
+  export function useContext(): UseContextReturn;
+}
+"#,
+    );
+    write(
+        &project_root,
+        ".out/.nuxt/types/imports.d.ts",
+        r#"declare global {
+  const useRuntimeConfig: () => {
+    public: {
+      stage: string;
+    };
+  }
+}
+export {}
+"#,
+    );
+    write(
+        &project_root,
+        "src/useReAuth.ts",
+        r#"import { useContext } from "@nuxtjs/composition-api";
+
+const context = useContext();
+context.$gtm.track("login");
+
+const stage: string = useRuntimeConfig().public.stage;
+void stage;
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--no-config",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+            "src",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "custom Nuxt buildDir generated context should type-check\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    assert!(
+        !stderr.contains("no generated `.nuxt` types found"),
+        "custom buildDir should not fall back to default .nuxt warning:\n{stderr}"
+    );
+    assert!(
+        !stdout.contains("TS2339") && !stdout.contains("TS2304"),
+        "generated context and auto-import types should be in scope:\n{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
