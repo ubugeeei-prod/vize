@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::cstr;
 mod graphql_generated;
+mod module_augmentations;
 mod ref_arity;
 mod setup_props;
 mod tsconfig_native_options;
@@ -51,7 +52,6 @@ struct DiagnosticSnapshot<'a> {
     severity: u8,
     block_type: Option<SfcBlockType>,
 }
-
 fn diagnostic_snapshot(diagnostics: &[Diagnostic]) -> Vec<DiagnosticSnapshot<'_>> {
     diagnostics
         .iter()

@@ -1,4 +1,8 @@
-use super::{collect_plugin_injection_stubs, render_nuxt_injection_context_stub};
+use super::{
+    collect_plugin_injection_stubs, render_module_augmentation_stub,
+    render_nuxt_composition_api_augmentation_stub, render_nuxt_injected_properties_stub,
+    render_nuxt_types_augmentation_stub,
+};
 use vize_carton::FxHashSet;
 
 #[test]
@@ -45,9 +49,15 @@ fn scans_src_app_plugins_for_nuxt2_injections() {
 
 #[test]
 fn renders_use_context_injection_augmentations() {
-    let stub = render_nuxt_injection_context_stub(&["logger".into()]);
+    let globals = render_nuxt_injected_properties_stub(&["logger".into()]);
+    let types = render_nuxt_types_augmentation_stub();
+    let composition =
+        render_module_augmentation_stub(&render_nuxt_composition_api_augmentation_stub());
 
-    assert!(stub.contains("$logger: __VizeNuxtInjection<'$logger'>;"));
-    assert!(stub.contains("interface Context extends __VizeNuxtInjectedProperties"));
-    assert!(stub.contains("interface UseContextReturn extends __VizeNuxtInjectedProperties"));
+    assert!(globals.contains("$logger: __VizeNuxtInjection<'$logger'>;"));
+    assert!(types.contains("interface Context extends __VizeNuxtInjectedProperties"));
+    assert!(composition.starts_with("// @vize-module-augmentation\n"));
+    assert!(
+        composition.contains("interface UseContextReturn extends __VizeNuxtInjectedProperties")
+    );
 }

@@ -12,7 +12,7 @@ use super::tsconfig_paths::{
     normalize_path_lexically, normalize_tsconfig_path_target, parse_jsonc_value,
     resolve_extended_tsconfig_path,
 };
-use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
+use super::{SHARED_HELPERS_FILE, VirtualProject};
 use native_options::normalize_native_removed_options;
 
 const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
@@ -250,10 +250,7 @@ impl VirtualProject {
         if include_js {
             includes.extend(self.javascript_passthrough_files().filter_map(relative));
         }
-        if !self.virtual_ts_options.auto_import_stubs.is_empty() {
-            includes.push(AUTO_IMPORT_STUBS_FILE.into());
-        }
-        includes.push(VUE_MODULE_STUBS_FILE.into());
+        self.push_stub_include_paths(&mut includes);
         if self.uses_shared_helpers() {
             includes.push(SHARED_HELPERS_FILE.into());
         }

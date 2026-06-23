@@ -13,6 +13,8 @@ mod tests;
 
 pub(super) use extract::extract_plugin_provide_keys_from_source;
 
+const MODULE_AUGMENTATION_STUB_PREFIX: &str = "// @vize-module-augmentation\n";
+
 pub(super) fn collect_plugin_injection_stubs(
     cwd: &Path,
     stubs: &mut Vec<String>,
@@ -66,7 +68,19 @@ pub(super) fn collect_plugin_injection_stubs(
             .into(),
     );
 
-    stubs.push(render_nuxt_injection_context_stub(&plugin_keys));
+    stubs.push(render_nuxt_injected_properties_stub(&plugin_keys));
+    if has_nuxt_types_package(cwd) {
+        stubs.push(render_module_augmentation_stub(
+            &render_nuxt_types_augmentation_stub(),
+        ));
+    } else {
+        stubs.push(render_nuxt_types_augmentation_stub());
+    }
+    if has_nuxt_composition_api_package(cwd) {
+        stubs.push(render_module_augmentation_stub(
+            &render_nuxt_composition_api_augmentation_stub(),
+        ));
+    }
 
     for key in plugin_keys {
         let injected_name = if key.starts_with('$') {
@@ -82,7 +96,7 @@ pub(super) fn collect_plugin_injection_stubs(
     }
 }
 
-fn render_nuxt_injection_context_stub(plugin_keys: &[String]) -> String {
+fn render_nuxt_injected_properties_stub(plugin_keys: &[String]) -> String {
     let mut stub = String::from("interface __VizeNuxtInjectedProperties {\n");
     for key in plugin_keys {
         let injected_name = if key.starts_with('$') {
@@ -97,12 +111,32 @@ fn render_nuxt_injection_context_stub(plugin_keys: &[String]) -> String {
         stub.push_str("'>;\n");
     }
     stub.push_str("}\n");
-    stub.push_str("declare module \"@nuxt/types\" {\n");
-    stub.push_str("  interface Context extends __VizeNuxtInjectedProperties {}\n");
-    stub.push_str("  interface NuxtAppOptions extends __VizeNuxtInjectedProperties {}\n");
-    stub.push_str("}\n");
-    stub.push_str("declare module \"@nuxtjs/composition-api\" {\n");
-    stub.push_str("  interface UseContextReturn extends __VizeNuxtInjectedProperties {}\n");
-    stub.push_str("}\n");
     stub
+}
+
+fn render_nuxt_types_augmentation_stub() -> String {
+    String::from(
+        "declare module \"@nuxt/types\" {\n  interface Context extends __VizeNuxtInjectedProperties {}\n  interface NuxtAppOptions extends __VizeNuxtInjectedProperties {}\n}\n",
+    )
+}
+
+fn render_nuxt_composition_api_augmentation_stub() -> String {
+    String::from(
+        "declare module \"@nuxtjs/composition-api\" {\n  interface UseContextReturn extends __VizeNuxtInjectedProperties {}\n}\n",
+    )
+}
+
+fn render_module_augmentation_stub(stub: &str) -> String {
+    let mut rendered = String::from(MODULE_AUGMENTATION_STUB_PREFIX);
+    rendered.push_str(stub);
+    rendered
+}
+
+fn has_nuxt_types_package(cwd: &Path) -> bool {
+    cwd.join("node_modules/@nuxt/types").exists()
+}
+
+fn has_nuxt_composition_api_package(cwd: &Path) -> bool {
+    cwd.join("node_modules/@nuxtjs/composition-api/dist/runtime/index.d.ts")
+        .is_file()
 }
