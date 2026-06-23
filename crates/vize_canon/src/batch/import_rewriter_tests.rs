@@ -65,6 +65,15 @@ fn test_no_rewrite_npm_import() {
 }
 
 #[test]
+fn test_no_rewrite_bare_vue_package_import() {
+    let rewriter = ImportRewriter::new();
+    let source = r#"import Emoji from 'emoji-mart-vue-fast/src/components/Emoji.vue';"#;
+    let result = rewriter.rewrite(source, SourceType::ts());
+
+    assert_eq!(result.code, source);
+}
+
+#[test]
 fn test_rewrite_alias_import() {
     let rewriter = ImportRewriter::new();
     let source = r#"import App, { type Props } from '@/App.vue';"#;
