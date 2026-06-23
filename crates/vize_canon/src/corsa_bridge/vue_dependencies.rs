@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 use super::bridge::normalize_document_uri;
 use super::vue_document::{
@@ -12,6 +12,9 @@ use super::vue_document::{
 };
 use crate::batch::ImportRewriter;
 use crate::file_uri::path_to_file_uri;
+
+const VUE_DEPENDENCY_FALLBACK: &str =
+    "const component: any = undefined;\nexport default component;\n";
 
 pub(super) fn collect_dependency_documents(
     documents: &mut Vec<(String, String)>,
@@ -118,8 +121,15 @@ fn queue_vue_imports(
         let Ok(content) = std::fs::read_to_string(&path) else {
             continue;
         };
-        let Ok(generated) = generate_vue_document(&path, &content, options, rewriter) else {
-            continue;
+        let generated = match generate_vue_document(&path, &content, options, rewriter) {
+            Ok(generated) => generated,
+            Err(_) => {
+                imports.documents.push((
+                    fallback_vue_virtual_uri(&path),
+                    VUE_DEPENDENCY_FALLBACK.into(),
+                ));
+                continue;
+            }
         };
         imports.documents.push((
             generated.virtual_uri.clone(),
@@ -131,6 +141,16 @@ fn queue_vue_imports(
             pre_rewrite_code: generated.generated.pre_rewrite_code,
         });
     }
+}
+
+fn fallback_vue_virtual_uri(path: &Path) -> String {
+    let virtual_path = path.with_file_name(cstr!(
+        "{}.ts",
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or_default()
+    ));
+    path_to_file_uri(&virtual_path)
 }
 
 fn queue_ts_imports(

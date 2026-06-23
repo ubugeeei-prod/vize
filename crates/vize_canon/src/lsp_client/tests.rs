@@ -209,6 +209,16 @@ fn keeps_encoded_vue_virtual_overlay_uri_at_real_path_inside_project() {
         materialize_session_document(&uri, &mapped, "export {};").is_none(),
         "stable overlay URIs must not materialize sibling files"
     );
+
+    let mapped_without_overlay = build_session_document_uri(&uri, &project, false);
+    assert_ne!(
+        mapped_without_overlay, uri,
+        "without overlay support, virtual mirrors must move into the session overlay root"
+    );
+    assert!(
+        mapped_without_overlay.contains("/node_modules/.vize/corsa-overlay/"),
+        "unexpected materialized overlay URI: {mapped_without_overlay}"
+    );
     assert!(!virtual_path.exists());
 
     let _ = std::fs::remove_dir_all(project);

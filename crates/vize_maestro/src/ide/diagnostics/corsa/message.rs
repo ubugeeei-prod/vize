@@ -9,6 +9,16 @@ use vize_carton::cstr;
 /// what TypeScript reported. The added hint points at the most common Vue
 /// cause for that error shape.
 pub(super) fn rewrite_corsa_message(message: &str) -> String {
+    let normalized_message;
+    let message = if message.contains(".vue.ts") {
+        normalized_message = message
+            .replace(".vue.tsx", ".vue")
+            .replace(".vue.ts", ".vue");
+        normalized_message.as_str()
+    } else {
+        message
+    };
+
     if let Some(prop) = property_does_not_exist_property(message)
         && prop != "value"
     {
@@ -68,6 +78,55 @@ mod hint_tests {
         let rewritten = rewrite_corsa_message(original);
         assert!(rewritten.contains(original));
         assert!(rewritten.contains("Did you forget `.value`"));
+    }
+
+    #[test]
+    fn rewrites_internal_vue_ts_imports_back_to_vue() {
+        let original = "Cannot find module '../logo/MfMatesLogo.vue.ts' or its corresponding type declarations.";
+        let rewritten = rewrite_corsa_message(original);
+
+        assert_eq!(
+            rewritten,
+            "Cannot find module '../logo/MfMatesLogo.vue' or its corresponding type declarations."
+        );
+        assert!(!rewritten.contains(".vue.ts"));
+    }
+
+    #[test]
+    fn rewrites_internal_vue_tsx_imports_back_to_vue() {
+        let original =
+            "Cannot find module './Panel.vue.tsx' or its corresponding type declarations.";
+        let rewritten = rewrite_corsa_message(original);
+
+        assert_eq!(
+            rewritten,
+            "Cannot find module './Panel.vue' or its corresponding type declarations."
+        );
+        assert!(!rewritten.contains(".vue.tsx"));
+    }
+
+    #[test]
+    fn rewrites_every_internal_vue_virtual_suffix_in_message() {
+        let original = "Cannot find module '../logo/MfMatesLogo.vue.ts'. Related import './Panel.vue.tsx' also failed.";
+        let rewritten = rewrite_corsa_message(original);
+
+        assert_eq!(
+            rewritten,
+            "Cannot find module '../logo/MfMatesLogo.vue'. Related import './Panel.vue' also failed."
+        );
+        assert!(!rewritten.contains(".vue.ts"));
+        assert!(!rewritten.contains(".vue.tsx"));
+    }
+
+    #[test]
+    fn rewrites_internal_vue_suffix_before_adding_value_hint() {
+        let original =
+            "Property 'toFixed' does not exist on type 'typeof import(\"./Panel.vue.ts\")'.";
+        let rewritten = rewrite_corsa_message(original);
+
+        assert!(rewritten.contains("./Panel.vue"));
+        assert!(!rewritten.contains(".vue.ts"));
+        assert!(rewritten.contains(".value"));
     }
 
     #[test]

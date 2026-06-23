@@ -181,11 +181,7 @@ impl CorsaProjectClient {
         }
 
         if document_uri == uri && !self.supports_overlay_api() {
-            return if virtual_overlay::uri_inside_project(uri, &self.project_root) {
-                Ok(())
-            } else {
-                self.sync_materialized_overlay_document(uri, content)
-            };
+            return self.sync_materialized_overlay_document(uri, content);
         }
 
         let file_changes = materialize_session_document(uri, document_uri.as_str(), content)
@@ -220,11 +216,7 @@ impl CorsaProjectClient {
             Ok(()) => Ok(()),
             Err(error) if overlay_changes_error_is_unsupported(&error) => {
                 self.overlay_api_disabled = true;
-                if virtual_overlay::uri_inside_project(uri, &self.project_root) {
-                    Ok(())
-                } else {
-                    self.sync_materialized_overlay_document(uri, content)
-                }
+                self.sync_materialized_overlay_document(uri, content)
             }
             Err(error) => Err(cstr!("Failed to sync Corsa overlay: {error}")),
         }
@@ -335,15 +327,19 @@ fn load_file_text(uri: &str) -> Option<String> {
 pub(super) fn build_session_document_uri(
     uri: &str,
     project_root: &Path,
-    _overlay_confirmed: bool,
+    overlay_confirmed: bool,
 ) -> String {
     let Some(external_path) = external_document_path(uri) else {
         return uri.into();
     };
 
-    // Keep in-project real files and virtual mirrors at real paths.
+    // Keep real in-project files at real paths. Virtual mirrors (`*.vue.ts`,
+    // `*.html.ts`) can also stay there when Corsa overlay support is confirmed;
+    // otherwise materialize them under the session overlay root so imports
+    // never point at non-existent workspace files.
     if external_path.starts_with(project_root)
-        && (external_path.exists() || virtual_overlay::target_exists(&external_path))
+        && (external_path.exists()
+            || (overlay_confirmed && virtual_overlay::target_exists(&external_path)))
     {
         return path_to_file_uri(&external_path);
     }
@@ -523,7 +519,11 @@ mod tests {
         assert_eq!(mapped, uri, "in-project .vue.ts overlay must keep its path");
 
         let mapped_no_overlay = build_session_document_uri(&uri, &project, false);
-        assert_eq!(mapped_no_overlay, uri);
+        assert_ne!(mapped_no_overlay, uri);
+        assert!(
+            mapped_no_overlay.contains("/node_modules/.vize/corsa-overlay/"),
+            "in-project .vue.ts overlay must materialize under the session overlay root without overlay support: {mapped_no_overlay}"
+        );
 
         // A path outside the project is still remapped into the overlay tree.
         let outside = std::env::temp_dir().join(format!("vize-outside-{nonce}/Other.vue.ts"));

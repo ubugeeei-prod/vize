@@ -13,4 +13,6 @@ mod virtual_ts_art;
 mod virtual_ts_inline_art;
 
 #[cfg(test)]
+mod relative_import_tests;
+#[cfg(test)]
 mod tests;

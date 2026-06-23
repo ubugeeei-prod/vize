@@ -4,11 +4,6 @@ use corsa::api::{FileChangeSummary, FileChanges};
 
 use super::session::{external_document_path, uri_document_identifier};
 
-pub(super) fn uri_inside_project(uri: &str, project_root: &Path) -> bool {
-    external_document_path(uri)
-        .is_some_and(|path| path.starts_with(project_root) && target_exists(&path))
-}
-
 pub(super) fn target_exists(external_path: &Path) -> bool {
     let Some(name) = external_path.file_name().and_then(|name| name.to_str()) else {
         return false;
