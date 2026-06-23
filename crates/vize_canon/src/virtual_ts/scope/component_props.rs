@@ -8,7 +8,10 @@ use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
 
-use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind, analysis::ComponentUsage};
+use vize_croquis::{
+    Croquis, Scope, ScopeData, ScopeKind,
+    analysis::{ComponentUsage, PassedProp},
+};
 
 use crate::virtual_ts::expressions::generate_component_prop_checks;
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment};
@@ -98,7 +101,9 @@ pub(super) fn generate_component_props(
                 && p.is_dynamic
         });
         let has_navigable_props = usage.props.iter().any(|p| {
-            p.name.as_str() != "key" && p.name.as_str() != "ref" && p.name_start < p.name_end
+            p.name.as_str() != "key"
+                && p.name.as_str() != "ref"
+                && prop_navigation_source_range(ctx.template_source, p).is_some()
         });
         if !has_dynamic_props && !has_navigable_props {
             continue;
@@ -239,9 +244,9 @@ fn emit_component_navigation_references(
             if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
                 continue;
             }
-            if prop.name_start >= prop.name_end {
+            let Some(source_range) = prop_navigation_source_range(ctx.template_source, prop) else {
                 continue;
-            }
+            };
 
             if !emitted_props_ref {
                 append!(
@@ -267,12 +272,38 @@ fn emit_component_navigation_references(
             ts.push_str(";\n");
             mappings.push(VizeMapping {
                 gen_range: prop_gen_range,
-                src_range: (ctx.template_offset + prop.name_start) as usize
-                    ..(ctx.template_offset + prop.name_end) as usize,
+                src_range: (ctx.template_offset as usize + source_range.start)
+                    ..(ctx.template_offset as usize + source_range.end),
                 sub_spans: Vec::new(),
             });
         }
     }
+}
+
+fn prop_navigation_source_range(
+    template_source: Option<&str>,
+    prop: &PassedProp,
+) -> Option<std::ops::Range<usize>> {
+    let name = prop.name.as_str();
+    if name.is_empty() {
+        return None;
+    }
+
+    let start = prop.start as usize;
+    let end = prop.end as usize;
+    let source = template_source?;
+    let raw = source.get(start..end)?;
+    if let Some(relative_start) = raw.find(name) {
+        return Some(start + relative_start..start + relative_start + name.len());
+    }
+
+    if name == "modelValue"
+        && let Some(relative_start) = raw.find("v-model")
+    {
+        return Some(start + relative_start..start + relative_start + "v-model".len());
+    }
+
+    None
 }
 
 fn push_ts_single_quoted_literal(ts: &mut String, value: &str) -> std::ops::Range<usize> {

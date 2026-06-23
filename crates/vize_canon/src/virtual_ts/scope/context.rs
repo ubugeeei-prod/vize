@@ -54,6 +54,7 @@ pub(super) struct EventHandlerExprContext<'a> {
 
 pub(super) struct ComponentPropsContext<'a> {
     pub(super) summary: &'a Croquis,
+    pub(super) template_source: Option<&'a str>,
     pub(super) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(super) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(super) template_prop_names: &'a FxHashSet<String>,

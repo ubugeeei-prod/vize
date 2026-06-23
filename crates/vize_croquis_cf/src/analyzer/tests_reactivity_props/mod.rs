@@ -34,8 +34,6 @@ fn component_usage(component: &str, props: &[(&str, &str)]) -> ComponentUsage {
             .map(|(index, (name, value))| PassedProp {
                 name: CompactString::new(*name),
                 value: Some(CompactString::new(*value)),
-                name_start: index as u32,
-                name_end: index as u32 + name.len() as u32,
                 start: index as u32,
                 end: index as u32 + name.len() as u32,
                 is_dynamic: true,

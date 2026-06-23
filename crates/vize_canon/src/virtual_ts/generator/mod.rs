@@ -772,6 +772,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         &mut ts,
                         &mut mappings,
                         summary,
+                        template_ast.map(|root| root.source.as_str()),
                         &template_prop_names,
                         template_offset,
                         ScopeGenerationOptions {

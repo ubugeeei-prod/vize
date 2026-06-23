@@ -448,8 +448,6 @@ fn passed_prop_at(
     PassedProp {
         name: CompactString::new(name),
         value: value.map(CompactString::new),
-        name_start: start,
-        name_end: start + name.len() as u32,
         start,
         end,
         is_dynamic,

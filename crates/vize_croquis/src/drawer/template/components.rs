@@ -22,8 +22,6 @@ impl Drawer {
                     usage.props.push(PassedProp {
                         name: attr.name.clone(),
                         value: attr.value.as_ref().map(|v| v.content.clone()),
-                        name_start: attr.name_loc.start.offset,
-                        name_end: attr.name_loc.end.offset,
                         start: attr.loc.start.offset,
                         end: attr.loc.end.offset,
                         is_dynamic: false,
@@ -44,12 +42,9 @@ impl Drawer {
                                     CompactString::new(c.loc.source.as_str())
                                 }
                             });
-                            let name_loc = arg.loc();
                             usage.props.push(PassedProp {
                                 name: prop_name,
                                 value,
-                                name_start: name_loc.start.offset,
-                                name_end: name_loc.end.offset,
                                 start: dir.loc.start.offset,
                                 end: dir.loc.end.offset,
                                 is_dynamic: true,
@@ -105,16 +100,6 @@ impl Drawer {
                         usage.props.push(PassedProp {
                             name: model_name.clone(),
                             value: value.clone(),
-                            name_start: dir
-                                .arg
-                                .as_ref()
-                                .map(|arg| arg.loc().start.offset)
-                                .unwrap_or(dir.loc.start.offset),
-                            name_end: dir
-                                .arg
-                                .as_ref()
-                                .map(|arg| arg.loc().end.offset)
-                                .unwrap_or(dir.loc.start.offset + "v-model".len() as u32),
                             start: dir.loc.start.offset,
                             end: dir.loc.end.offset,
                             is_dynamic: true,
