@@ -1,5 +1,5 @@
 mod define_props_regressions;
-
+mod options_api_events;
 use super::{compile_sfc, helpers, normal_script};
 use crate::types::{
     BindingType, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, TemplateCompileOptions,
