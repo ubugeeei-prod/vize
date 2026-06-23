@@ -1,5 +1,15 @@
 use super::super::helpers::is_valid_js_identifier;
 use super::params::prefix_slot_defaults;
+use crate::compile;
+
+fn result_output(result: &super::super::CodegenResult) -> vize_carton::String {
+    let mut output =
+        vize_carton::String::with_capacity(result.preamble.len() + result.code.len() + 1);
+    output.push_str(&result.preamble);
+    output.push('\n');
+    output.push_str(&result.code);
+    output
+}
 
 #[test]
 fn test_is_valid_js_identifier_valid() {
@@ -56,5 +66,22 @@ fn test_prefix_slot_defaults() {
     assert_eq!(
         prefix_slot_defaults("{ x = undefined }"),
         "{ x = undefined }"
+    );
+}
+
+#[test]
+fn slot_outlet_vbind_object_preserves_optional_chaining() {
+    let result = compile!(
+        r#"<slot v-bind="external ? { isActive: undefined } : { isActive: scope?.isActive }" />"#
+    );
+    let output = result_output(&result);
+
+    assert!(
+        output.contains(r#"external ? { isActive: undefined } : { isActive: scope?.isActive }"#),
+        "slot outlet ternary v-bind object must preserve optional chaining:\n{output}"
+    );
+    assert!(
+        !output.contains(r#"{ isActive: scope.isActive }"#),
+        "slot outlet ternary v-bind object must not emit an unguarded member access:\n{output}"
     );
 }

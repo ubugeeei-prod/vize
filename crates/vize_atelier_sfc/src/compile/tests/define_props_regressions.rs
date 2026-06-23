@@ -107,3 +107,34 @@ const {
         );
     }
 }
+
+#[test]
+fn test_template_ternary_vbind_preserves_optional_chaining() {
+    let source = r#"<script setup lang="ts">
+const external = false
+const to = "/login"
+</script>
+
+<template>
+  <NuxtLinkLocale v-slot="scope" :to="to">
+    <slot v-bind="external ? { isActive: undefined } : { isActive: scope?.isActive }" />
+  </NuxtLinkLocale>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains("external ? { isActive: undefined } : { isActive: scope?.isActive }"),
+        "template ternary v-bind must preserve optional chaining:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("{ isActive: scope.isActive }"),
+        "template ternary v-bind must not emit an unguarded member access:\n{}",
+        result.code
+    );
+}

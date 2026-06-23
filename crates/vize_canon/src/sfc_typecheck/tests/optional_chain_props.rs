@@ -61,3 +61,27 @@ void props
         result.diagnostics
     );
 }
+
+#[test]
+fn optional_chain_inside_slot_vbind_object_stays_guarded() {
+    let source = r#"<script setup lang="ts">
+const external = false
+const scope: { isActive: boolean } | undefined = undefined
+</script>
+
+<template>
+  <slot v-bind="external ? { isActive: undefined } : { isActive: scope?.isActive }" />
+</template>"#;
+    let options = SfcTypeCheckOptions::new("SlotForwarder.vue").with_virtual_ts();
+    let result = type_check_sfc(source, &options);
+    let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+
+    assert!(
+        virtual_ts.contains("external ? { isActive: undefined } : { isActive: scope?.isActive }"),
+        "slot v-bind ternary object must preserve optional chaining:\n{virtual_ts}"
+    );
+    assert!(
+        !virtual_ts.contains("{ isActive: scope.isActive }"),
+        "slot v-bind ternary object must not emit an unguarded member access:\n{virtual_ts}"
+    );
+}
