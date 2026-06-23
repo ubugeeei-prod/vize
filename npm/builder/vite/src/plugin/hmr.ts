@@ -51,15 +51,30 @@ function unique(values: string[]): string[] {
   return [...new Set(values)];
 }
 
+function toViteFsFileId(fileId: string): string | null {
+  if (!path.isAbsolute(fileId)) {
+    return null;
+  }
+
+  const normalized = fileId.replace(/\\/g, "/");
+  return normalized.startsWith("/") ? `/@fs${normalized}` : `/@fs/${normalized}`;
+}
+
 function getVueModuleFileCandidates(vueFile: string): string[] {
-  return unique([
+  const candidates = [
     toVirtualId(vueFile),
     toPluginVisibleVirtualId(vueFile),
     toVirtualId(vueFile, true),
     toPluginVisibleVirtualId(vueFile, true),
     toPluginVisibleVirtualId(vueFile).split("?")[0],
     vueFile,
-  ]);
+  ];
+  const viteFsCandidates = candidates.flatMap((candidate) => {
+    const viteFsId = toViteFsFileId(candidate);
+    return viteFsId ? [viteFsId] : [];
+  });
+
+  return unique([...candidates, ...viteFsCandidates]);
 }
 
 function getStyleModuleFileCandidates(styleId: string): string[] {

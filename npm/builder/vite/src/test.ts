@@ -3,6 +3,7 @@ import "./compiler.test.ts";
 import "./utils.test.ts";
 import "./plugin/compat.test.ts";
 import "./plugin/css-modules.test.ts";
+import "./plugin/external-sfc-hmr.test.ts";
 import "./plugin/hmr.test.ts";
 import "./plugin/index.test.ts";
 import "./plugin/load-storybook.test.ts";

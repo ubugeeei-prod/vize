@@ -402,8 +402,8 @@ const watchedLoad = loadHook(watchedState, toVirtualId(watchedPath), {
 assert.ok(watchedLoad && typeof watchedLoad === "object", "Watched SFC should load");
 assert.deepEqual(
   watchedFiles,
-  [watchedDependency],
-  "SFC src dependencies should be registered with Vite's watcher",
+  [watchedPath, watchedDependency],
+  "Virtual SFC loads should register the real source file and src dependencies with Vite's watcher",
 );
 
 const inlinePath = "/src/InlineHmr.vue";

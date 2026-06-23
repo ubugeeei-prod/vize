@@ -139,8 +139,8 @@ function loadCompiledSfcModule(
     return null;
   }
 
-  for (const dependency of compiled.dependencies ?? []) {
-    loadOptions?.addWatchFile?.(dependency);
+  for (const watchFile of new Set([realPath, ...(compiled.dependencies ?? [])])) {
+    loadOptions?.addWatchFile?.(watchFile);
   }
 
   const hasDelegated = hasDelegatedStyles(compiled);
