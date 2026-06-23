@@ -219,6 +219,12 @@ fn write_vue_import_fixture(root: &Path) {
         src.join("vue.d.ts"),
         r#"declare module "vue" {
   export type DefineComponent<P = any, _B = any, _D = any> = { new(): { $props: P } };
+  export interface ComponentPublicInstance {
+    $attrs: Record<string, unknown>;
+    $slots: Record<string, unknown>;
+    $refs: Record<string, unknown>;
+    $emit: (...args: unknown[]) => void;
+  }
   export interface Ref<T = unknown> { value: T }
   export interface ShallowRef<T = unknown> extends Ref<T> {}
 }

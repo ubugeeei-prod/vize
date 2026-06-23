@@ -2,10 +2,12 @@ use super::{
     CorsaProjectClient,
     bootstrap::resolve_corsa_executable,
     paths::{find_node_modules_with_vue, resolve_temp_dir_base},
-    session::materialize_session_document,
+    session::{materialize_session_document, uri_document_identifier},
+    virtual_overlay,
 };
 use corsa::{
-    api::{FileChangeSummary, FileChanges},
+    CorsaError,
+    api::{FileChangeSummary, FileChanges, OverlayChanges, OverlayUpdate},
     runtime::block_on,
 };
 use serde_json::json;
@@ -106,10 +108,7 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
-        if documents
-            .iter()
-            .any(|(uri, _)| self.session_document_uri(uri) == *uri)
-        {
+        if !self.supports_overlay_api() {
             for (uri, content) in documents {
                 self.clear_document_state(uri);
                 self.sync_overlay_document(uri, content)?;
@@ -118,23 +117,85 @@ impl CorsaProjectClient {
         }
 
         let mut summary = FileChangeSummary::default();
+        let mut overlay_upserts = Vec::new();
+        let mut changed = false;
         for (uri, content) in documents {
             self.clear_document_state(uri);
-            self.document_texts.insert((*uri).into(), (*content).into());
+            let previous = self.document_texts.insert((*uri).into(), (*content).into());
 
             let document_uri = self.session_document_uri(uri);
+            if previous.as_deref() == Some(*content) {
+                continue;
+            }
+            changed = true;
             merge_materialized_file_changes(
                 &mut summary,
-                materialize_session_document(uri, document_uri.as_str(), content),
+                materialize_session_document(uri, document_uri.as_str(), content).or_else(|| {
+                    virtual_overlay::upsert_file_changes(
+                        uri,
+                        document_uri.as_str(),
+                        &self.project_root,
+                        previous.is_some(),
+                    )
+                }),
             );
+            if document_uri == *uri {
+                let version = self
+                    .overlay_versions
+                    .get(*uri)
+                    .copied()
+                    .unwrap_or(0)
+                    .saturating_add(1);
+                self.overlay_versions.insert((*uri).into(), version);
+                overlay_upserts.push(OverlayUpdate {
+                    document: uri_document_identifier(document_uri.as_str()),
+                    text: (*content).into(),
+                    version: Some(version),
+                    language_id: Some("typescript".into()),
+                });
+            }
         }
 
-        if summary.changed.is_empty() && summary.created.is_empty() {
+        if !changed {
             return Ok(());
         }
 
-        block_on(self.session.refresh(Some(FileChanges::Summary(summary))))
-            .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"))
+        let file_changes = if summary.changed.is_empty()
+            && summary.created.is_empty()
+            && summary.deleted.is_empty()
+        {
+            None
+        } else {
+            Some(FileChanges::Summary(summary))
+        };
+
+        if overlay_upserts.is_empty() {
+            return block_on(self.session.refresh(file_changes))
+                .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
+        }
+
+        match block_on(self.session.refresh_with_overlay_changes(
+            file_changes,
+            Some(OverlayChanges {
+                upsert: overlay_upserts,
+                delete: Vec::new(),
+            }),
+        )) {
+            Ok(()) => Ok(()),
+            Err(CorsaError::Unsupported(_)) => {
+                self.overlay_api_disabled = true;
+                for (uri, _) in documents {
+                    self.document_texts.remove(*uri);
+                    self.overlay_versions.remove(*uri);
+                }
+                for (uri, content) in documents {
+                    self.clear_document_state(uri);
+                    self.sync_overlay_document(uri, content)?;
+                }
+                Ok(())
+            }
+            Err(error) => Err(cstr!("Failed to refresh Corsa snapshot: {error}")),
+        }
     }
 
     /// Update an already-open virtual document overlay.
