@@ -93,6 +93,64 @@ fn check_legacy_vue2_targeted_json_keeps_component_props_helper_available() {
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[test]
+fn legacy_vue2_full_tsconfig_no_template_bindings_keeps_props_helper() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_project("legacy-vue2-full-tsconfig-component-props-helper");
+    std::fs::write(
+        project_root.join("src/Dialog.vue"),
+        r#"<script lang="ts">
+export default {
+  props: {
+    title: String,
+  },
+}
+</script>
+
+<template>
+  <section>{{ title }}</section>
+</template>
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "--no-check-template-bindings",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(json["fileCount"], 2, "stdout:\n{stdout}\nstderr:\n{stderr}");
+    assert!(
+        !stdout.contains("__VizeComponentProps"),
+        "full tsconfig check should not report missing component props helper:\n{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 fn create_project(name: &str) -> std::path::PathBuf {
     let project_root = unique_case_dir(name);
     let _ = std::fs::remove_dir_all(&project_root);
