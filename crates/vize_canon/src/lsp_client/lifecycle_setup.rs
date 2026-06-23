@@ -1,4 +1,4 @@
-use super::super::paths::find_node_modules_with_vue;
+use super::paths::find_node_modules_with_vue;
 use serde_json::json;
 use std::{
     path::Path,

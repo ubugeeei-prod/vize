@@ -120,6 +120,7 @@ fn write_speaker_fixture(root: &Path) -> SpeakerFixture {
     std::fs::create_dir_all(&components).expect("components dir");
     std::fs::create_dir_all(&utils).expect("utils dir");
     std::fs::create_dir_all(&types).expect("types dir");
+    write_vue_test_package(root);
     std::fs::write(
         root.join("tsconfig.json"),
         r#"{
@@ -134,16 +135,6 @@ fn write_speaker_fixture(root: &Path) -> SpeakerFixture {
 }"#,
     )
     .expect("tsconfig");
-    std::fs::write(
-        src.join("vue.d.ts"),
-        r#"declare module "vue" {
-  export interface Ref<T = unknown, _Raw = T> { value: T }
-  export interface ComputedRef<T = unknown> extends Ref<T> {}
-  export function computed<T>(getter: () => T): ComputedRef<T>;
-}
-"#,
-    )
-    .expect("vue shim");
     std::fs::write(
         types.join("index.ts"),
         "export interface SpeakerWithYear { name: string; year: number; title: string }\n",
@@ -200,6 +191,7 @@ const speakerOptions = computed(() =>
 fn write_vue_import_fixture(root: &Path) {
     let src = root.join("src");
     std::fs::create_dir_all(&src).expect("src dir");
+    write_vue_test_package(root);
     std::fs::write(
         root.join("tsconfig.json"),
         r#"{
@@ -215,22 +207,6 @@ fn write_vue_import_fixture(root: &Path) {
 }"#,
     )
     .expect("tsconfig");
-    std::fs::write(
-        src.join("vue.d.ts"),
-        r#"declare module "vue" {
-  export type DefineComponent<P = any, _B = any, _D = any> = { new(): { $props: P } };
-  export interface ComponentPublicInstance {
-    $attrs: Record<string, unknown>;
-    $slots: Record<string, unknown>;
-    $refs: Record<string, unknown>;
-    $emit: (...args: unknown[]) => void;
-  }
-  export interface Ref<T = unknown> { value: T }
-  export interface ShallowRef<T = unknown> extends Ref<T> {}
-}
-"#,
-    )
-    .expect("vue shim");
     std::fs::write(
         src.join("Child.vue"),
         r#"<script setup lang="ts">
@@ -257,6 +233,32 @@ const selected = Child;
 "#,
     )
     .expect("parent vue");
+}
+
+fn write_vue_test_package(root: &Path) {
+    let vue_dir = root.join("node_modules/vue");
+    std::fs::create_dir_all(&vue_dir).expect("vue package dir");
+    std::fs::write(
+        vue_dir.join("package.json"),
+        r#"{"name":"vue","version":"3.0.0","types":"index.d.ts"}"#,
+    )
+    .expect("vue package json");
+    std::fs::write(
+        vue_dir.join("index.d.ts"),
+        r#"export type DefineComponent<P = any, _B = any, _D = any> = { new(): { $props: P } };
+export interface ComponentPublicInstance {
+  $attrs: Record<string, unknown>;
+  $slots: Record<string, unknown>;
+  $refs: Record<string, unknown>;
+  $emit: (...args: unknown[]) => void;
+}
+export interface Ref<T = unknown, _Raw = T> { value: T }
+export interface ComputedRef<T = unknown> extends Ref<T> {}
+export interface ShallowRef<T = unknown> extends Ref<T> {}
+export function computed<T>(getter: () => T): ComputedRef<T>;
+"#,
+    )
+    .expect("vue types");
 }
 
 fn write_corsa_config(root: &Path, corsa_path: &Path) {

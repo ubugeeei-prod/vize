@@ -16,6 +16,7 @@ mod bootstrap;
 mod diagnostics;
 mod diagnostics_api;
 mod lifecycle;
+mod lifecycle_setup;
 pub(crate) mod paths;
 mod queries;
 mod session;

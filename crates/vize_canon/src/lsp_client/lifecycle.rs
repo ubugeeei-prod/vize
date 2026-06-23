@@ -1,12 +1,10 @@
-mod setup;
-use setup::{
-    cleanup_stale_sessions, install_node_modules_link, write_session_meta,
-    write_shared_helper_decls, write_temp_tsconfig, write_vue_module_stubs,
-};
-
 use super::{
     CorsaProjectClient,
     bootstrap::resolve_corsa_executable,
+    lifecycle_setup::{
+        cleanup_stale_sessions, install_node_modules_link, write_session_meta,
+        write_shared_helper_decls, write_temp_tsconfig, write_vue_module_stubs,
+    },
     paths::resolve_temp_dir_base,
     session::{materialize_session_document, uri_document_identifier},
     virtual_overlay,
