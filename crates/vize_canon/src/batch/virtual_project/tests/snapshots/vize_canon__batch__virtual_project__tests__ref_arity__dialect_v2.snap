@@ -38,6 +38,9 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & Required<Pick<T, keyof D & keyof T>>;
 type __Ref<T> = { value: T };
 type __ShallowRef<T> = __Ref<T> & { readonly __v_isShallow?: true };
+type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
+type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
+type __VizeComponentProps<T> = T extends unknown ? T & Partial<__VizeKebabProps<T>> : never;
 declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
 declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
 declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
@@ -81,7 +84,7 @@ function __setup() {
 
   const count = ref(0)
 
-  // @vize-map: 5112:5187 -> 0:84
+  // @vize-map: 5489:5564 -> 0:84
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

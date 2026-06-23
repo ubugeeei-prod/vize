@@ -9,7 +9,7 @@ fn check_legacy_vue2_show_virtual_ts_omits_shared_helpers() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
-    let project_root = create_project();
+    let project_root = create_project("legacy-vue2-show-virtual-ts-no-shared-helpers");
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
@@ -33,6 +33,10 @@ fn check_legacy_vue2_show_virtual_ts_omits_shared_helpers() {
         stderr.contains("declare function __vizeDefineComponent<T>(options: T): T;"),
         "expected per-file legacy defineComponent helper:\n{stderr}"
     );
+    assert!(
+        stderr.contains("type __VizeComponentProps<T>"),
+        "legacy Vue 2 virtual TS must define component props helpers inline:\n{stderr}"
+    );
     for vue3_only_helper in [
         "import('vue').Ref",
         "import('vue').ShallowRef",
@@ -48,8 +52,49 @@ fn check_legacy_vue2_show_virtual_ts_omits_shared_helpers() {
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
-fn create_project() -> std::path::PathBuf {
-    let project_root = unique_case_dir("legacy-vue2-show-virtual-ts-no-shared-helpers");
+#[test]
+fn check_legacy_vue2_targeted_json_keeps_component_props_helper_available() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_project("legacy-vue2-targeted-json-component-props-helper");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+            "src/App.vue",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert!(
+        !stdout.contains("__VizeComponentProps"),
+        "targeted JSON check should not report missing component props helper:\n{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+fn create_project(name: &str) -> std::path::PathBuf {
+    let project_root = unique_case_dir(name);
     let _ = std::fs::remove_dir_all(&project_root);
     std::fs::create_dir_all(project_root.join("src")).unwrap();
     write_test_vue2_6_stub(&project_root.join("node_modules")).unwrap();
