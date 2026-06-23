@@ -122,7 +122,7 @@ impl Drawer {
                 let has_implicit_event = content.contains("$event") || !content.contains('(');
                 let is_statement_list = is_inline_statement_list(content);
 
-                if (has_implicit_event || is_statement_list) && !content.contains("=>") {
+                if has_implicit_event || (is_statement_list && !content.contains("=>")) {
                     self.croquis.scopes.enter_event_handler_scope(
                         EventHandlerScopeData {
                             event_name: dir
