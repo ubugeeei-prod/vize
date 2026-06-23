@@ -20,6 +20,7 @@ pub(crate) mod paths;
 mod queries;
 mod session;
 mod utils;
+mod virtual_overlay;
 
 #[cfg(test)]
 mod tests;

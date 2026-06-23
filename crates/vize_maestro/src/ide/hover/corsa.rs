@@ -116,6 +116,59 @@ impl HoverService {
         None
     }
 
+    /// Get hover for template context with Corsa support.
+    pub(super) async fn hover_template_with_corsa(
+        ctx: &IdeContext<'_>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
+    ) -> Option<Hover> {
+        let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
+
+        // Check for Vue directives first; these do not need Corsa.
+        if !word.is_empty()
+            && let Some(hover) = Self::hover_directive(&word)
+        {
+            return Some(hover);
+        }
+
+        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
+            && let Some(hover) = Self::hover_html_tag_with_corsa(ctx, corsa_bridge.as_ref()).await
+        {
+            return Some(hover);
+        }
+
+        // petite-vue standalone HTML `v-scope` bindings have no virtual TS
+        // declaration for Corsa to resolve; surface them from the scope chain.
+        if !word.is_empty()
+            && let Some(hover) = Self::hover_petite_vue_scope_binding(ctx, &word)
+        {
+            return Some(hover);
+        }
+
+        if let Some(bridge) = corsa_bridge.as_ref()
+            && bridge.is_initialized()
+            && let Some(doc) =
+                crate::ide::corsa_support::open_canonical_virtual_document(ctx, bridge).await
+            && let Some((line, character)) =
+                crate::ide::corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
+            && let Ok(Some(hover)) = bridge.hover(&doc.request_uri, line, character).await
+        {
+            let mapped_range = hover.range.as_ref().and_then(|range| {
+                crate::ide::corsa_support::map_canonical_lsp_range(ctx, &doc, range)
+            });
+            let mut converted = Self::convert_lsp_hover(hover);
+            if mapped_range.is_some() {
+                converted.range = mapped_range;
+            }
+            return Some(converted);
+        }
+
+        if word.is_empty() {
+            return None;
+        }
+
+        Self::hover_template(ctx)
+    }
+
     /// Get hover for an art variant template with Corsa.
     ///
     /// Maps the art variant offset to the virtual TS offset and requests hover from Corsa.

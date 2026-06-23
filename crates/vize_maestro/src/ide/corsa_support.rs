@@ -8,6 +8,8 @@ mod canonical;
 mod canonical_tests;
 #[cfg(feature = "native")]
 mod html_tag;
+#[cfg(feature = "native")]
+mod virtual_mirror;
 mod workspace_edit;
 
 #[cfg(feature = "native")]

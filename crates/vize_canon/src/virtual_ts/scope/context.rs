@@ -23,6 +23,7 @@ pub(crate) struct ScopeGenContext<'a> {
 pub(crate) struct ScopeGenerationOptions<'a> {
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) virtual_ts_options: &'a VirtualTsOptions,
+    pub(crate) template_source: Option<&'a str>,
     pub(crate) check_unresolved_global_components: bool,
     pub(crate) legacy_vue2: bool,
 }

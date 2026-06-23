@@ -34,7 +34,6 @@ pub(crate) fn generate_scope_closures(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
-    template_source: Option<&str>,
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
     options: ScopeGenerationOptions<'_>,
@@ -184,7 +183,6 @@ pub(crate) fn generate_scope_closures(
             generate_undefined_refs(ts, mappings, summary, template_offset)
         );
     }
-
     if check_options.check_props {
         profile!(
             "canon.virtual_ts.component_props",
@@ -193,7 +191,7 @@ pub(crate) fn generate_scope_closures(
                 mappings,
                 &ComponentPropsContext {
                     summary,
-                    template_source,
+                    template_source: options.template_source,
                     children_map: &children_map,
                     vfor_enclosing_guards: &vfor_enclosing_guards,
                     template_prop_names,
