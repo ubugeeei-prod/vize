@@ -117,6 +117,84 @@ defineProps<{
 }
 
 #[test]
+fn batch_type_checker_keeps_v_for_items_separate_from_kebab_component_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "v-for-item-component-props",
+        &[
+            (
+                "src/AfKeyboardButton.vue",
+                r#"<script setup lang="ts">
+export type KeyboardButtonType = "function" | "input" | "submit" | "system";
+
+defineProps<{
+  keyType?: KeyboardButtonType;
+  innerHtml?: string;
+  width?: string;
+  longPress?: boolean;
+}>();
+</script>
+
+<template>
+  <button><slot /></button>
+</template>
+"#,
+            ),
+            (
+                "src/AfHiraganaKeyboard.vue",
+                r#"<script setup lang="ts">
+import AfKeyboardButton from "./AfKeyboardButton.vue";
+
+type KeyboardKey = InstanceType<typeof AfKeyboardButton>["$props"] & {
+  onClick?: () => void;
+};
+type KeyboardLayout = KeyboardKey[][];
+
+const keyboardLayout: KeyboardLayout = [
+  [
+    {
+      keyType: "input",
+      innerHtml: "あ",
+      width: "1fr",
+      longPress: true,
+    },
+  ],
+];
+</script>
+
+<template>
+  <div v-for="(row, rowIndex) in keyboardLayout" :key="rowIndex">
+    <AfKeyboardButton
+      v-for="(key, i) in row"
+      :key="`hiragana-key-${i}`"
+      :key-type="key.keyType"
+      :inner-html="key.innerHtml"
+      :width="key.width"
+      :long-press="key.longPress"
+    />
+  </div>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "v-for item model should stay readable through camelCase props, got: {snapshot:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_legacy_vue2_accepts_vuetify_global_events_and_props() {
     if resolve_test_tsgo_binary().is_none() {
         return;

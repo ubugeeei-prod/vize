@@ -40,7 +40,7 @@ type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
 type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
-type __VizeComponentProps<T> = T | __VizeKebabProps<T>;
+type __VizeComponentProps<T> = T extends unknown ? T & Partial<__VizeKebabProps<T>> : never;
 declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
 declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
 declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
@@ -76,7 +76,7 @@ function __setup() {
   // User setup code
   const elems = { a: [1], b: ["a"] } as const;
   const key = "a" as "a" | "b";
-  // @vize-map: 5432:5511 -> 0:105
+  // @vize-map: 5469:5548 -> 0:105
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

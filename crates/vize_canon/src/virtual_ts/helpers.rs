@@ -50,7 +50,7 @@ type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
 type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
-type __VizeComponentProps<T> = T | __VizeKebabProps<T>;"#
+type __VizeComponentProps<T> = T extends unknown ? T & Partial<__VizeKebabProps<T>> : never;"#
     };
 }
 
