@@ -70,6 +70,13 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
     items_vec
 }
 
+pub(crate) fn corsa_template_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
+    let mut items = contextual_directive_completions(ctx);
+    items.extend(component_meta::component_surface_completions(ctx));
+    items.extend(legacy_vue2_template_completions(ctx));
+    items
+}
+
 /// Corsa-path supplement for Vue 2.7 / Nuxt 2 constructs that the TypeScript
 /// virtual document cannot express: Nuxt 2 built-in components (`<nuxt-link>`,
 /// `<client-only>`, …) and the legacy-filtered Options API bindings. This stays

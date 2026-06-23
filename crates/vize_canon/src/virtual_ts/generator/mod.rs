@@ -763,7 +763,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 "canon.virtual_ts.collect_template_prop_names",
                 collect_template_prop_names(summary)
             );
-
             // Generate scope closures
             if check_options.any_enabled() {
                 profile!(
@@ -772,12 +771,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         &mut ts,
                         &mut mappings,
                         summary,
-                        template_ast.map(|root| root.source.as_str()),
                         &template_prop_names,
                         template_offset,
                         ScopeGenerationOptions {
                             check_options,
                             virtual_ts_options: options,
+                            template_source: template_ast.map(|root| root.source.as_str()),
                             check_unresolved_global_components: has_script_reference_types,
                             legacy_vue2,
                         },

@@ -1,6 +1,6 @@
 #![allow(clippy::disallowed_types)]
 
-use super::{CorsaProjectClient, utils::remap_serialized_uris};
+use super::{CorsaProjectClient, utils::remap_serialized_uris, virtual_overlay};
 use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 use corsa::{
     CorsaError,
@@ -181,7 +181,7 @@ impl CorsaProjectClient {
         }
 
         if document_uri == uri && !self.supports_overlay_api() {
-            return if virtual_overlay_uri_inside_project(uri, &self.project_root) {
+            return if virtual_overlay::uri_inside_project(uri, &self.project_root) {
                 Ok(())
             } else {
                 self.sync_materialized_overlay_document(uri, content)
@@ -190,7 +190,7 @@ impl CorsaProjectClient {
 
         let file_changes = materialize_session_document(uri, document_uri.as_str(), content)
             .or_else(|| {
-                virtual_overlay_upsert_file_changes(
+                virtual_overlay::upsert_file_changes(
                     uri,
                     document_uri.as_str(),
                     &self.project_root,
@@ -220,7 +220,7 @@ impl CorsaProjectClient {
             Ok(()) => Ok(()),
             Err(error) if overlay_changes_error_is_unsupported(&error) => {
                 self.overlay_api_disabled = true;
-                if virtual_overlay_uri_inside_project(uri, &self.project_root) {
+                if virtual_overlay::uri_inside_project(uri, &self.project_root) {
                     Ok(())
                 } else {
                     self.sync_materialized_overlay_document(uri, content)
@@ -252,7 +252,7 @@ impl CorsaProjectClient {
             .unwrap_or_else(|| self.session_document_uri(uri));
         self.external_document_uris.remove(document_uri.as_str());
         let file_changes = remove_session_document(uri, document_uri.as_str()).or_else(|| {
-            virtual_overlay_delete_file_changes(uri, document_uri.as_str(), &self.project_root)
+            virtual_overlay::delete_file_changes(uri, document_uri.as_str(), &self.project_root)
         });
         if document_uri != uri {
             return block_on(self.session.refresh(file_changes))
@@ -343,7 +343,7 @@ pub(super) fn build_session_document_uri(
 
     // Keep in-project real files and virtual mirrors at real paths.
     if external_path.starts_with(project_root)
-        && (external_path.exists() || virtual_overlay_target_exists(&external_path))
+        && (external_path.exists() || virtual_overlay::target_exists(&external_path))
     {
         return path_to_file_uri(&external_path);
     }
@@ -373,24 +373,6 @@ fn materialized_session_path(external_path: &Path, project_root: &Path) -> PathB
     session_path
 }
 
-fn virtual_overlay_uri_inside_project(uri: &str, project_root: &Path) -> bool {
-    external_document_path(uri)
-        .is_some_and(|path| path.starts_with(project_root) && virtual_overlay_target_exists(&path))
-}
-
-fn virtual_overlay_target_exists(external_path: &Path) -> bool {
-    let Some(name) = external_path.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    let Some(real_name) = name.strip_suffix(".ts") else {
-        return false;
-    };
-    if !real_name.ends_with(".vue") && !real_name.ends_with(".html") {
-        return false;
-    }
-    external_path.with_file_name(real_name).is_file()
-}
-
 fn overlay_root_for_project(project_root: &Path) -> PathBuf {
     if is_under_node_modules_vize(project_root) {
         return project_root.join("overlays");
@@ -417,7 +399,7 @@ fn is_under_node_modules_vize(path: &Path) -> bool {
     false
 }
 
-fn external_document_path(uri: &str) -> Option<PathBuf> {
+pub(super) fn external_document_path(uri: &str) -> Option<PathBuf> {
     if let Some(path) = file_uri_to_path(uri) {
         return Some(path);
     }
@@ -470,54 +452,6 @@ pub(super) fn materialize_session_document(
     }))
 }
 
-fn virtual_overlay_upsert_file_changes(
-    external_uri: &str,
-    document_uri: &str,
-    project_root: &Path,
-    was_open: bool,
-) -> Option<FileChanges> {
-    if document_uri != external_uri
-        || !virtual_overlay_missing_from_disk(external_uri, project_root)
-    {
-        return None;
-    }
-
-    let document = uri_document_identifier(document_uri);
-    Some(FileChanges::Summary(FileChangeSummary {
-        changed: if was_open {
-            vec![document.clone()]
-        } else {
-            Vec::new()
-        },
-        created: if was_open { Vec::new() } else { vec![document] },
-        deleted: Vec::new(),
-    }))
-}
-
-fn virtual_overlay_delete_file_changes(
-    external_uri: &str,
-    document_uri: &str,
-    project_root: &Path,
-) -> Option<FileChanges> {
-    if document_uri != external_uri
-        || !virtual_overlay_missing_from_disk(external_uri, project_root)
-    {
-        return None;
-    }
-
-    Some(FileChanges::Summary(FileChangeSummary {
-        changed: Vec::new(),
-        created: Vec::new(),
-        deleted: vec![uri_document_identifier(document_uri)],
-    }))
-}
-
-fn virtual_overlay_missing_from_disk(uri: &str, project_root: &Path) -> bool {
-    external_document_path(uri).is_some_and(|path| {
-        path.starts_with(project_root) && !path.exists() && virtual_overlay_target_exists(&path)
-    })
-}
-
 fn remove_session_document(external_uri: &str, document_uri: &str) -> Option<FileChanges> {
     if document_uri == external_uri {
         return None;
@@ -561,11 +495,10 @@ mod tests {
     use super::{
         api_mode_for_executable, build_session_document_uri, line_character_to_utf16_offset,
         overlay_changes_error_is_unsupported, path_to_file_uri, should_retry_json_rpc,
-        uri_document_identifier, virtual_overlay_delete_file_changes,
-        virtual_overlay_upsert_file_changes,
+        uri_document_identifier,
     };
     use corsa::CorsaError;
-    use corsa::api::{ApiMode, DocumentIdentifier, FileChanges};
+    use corsa::api::{ApiMode, DocumentIdentifier};
 
     // Keep in-project virtual `.vue.ts` overlays at real paths so relative
     // script imports resolve against the source tree.
@@ -597,55 +530,6 @@ mod tests {
         let outside_uri = path_to_file_uri(&outside);
         let mapped_outside = build_session_document_uri(&outside_uri, &project, true);
         assert_ne!(mapped_outside, outside_uri);
-
-        let _ = std::fs::remove_dir_all(project);
-    }
-
-    #[test]
-    fn virtual_vue_overlay_file_changes_do_not_materialize_sibling_files() {
-        let nonce = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let project = std::env::temp_dir().join(format!(
-            "vize-canon-virtual-overlay-changes-{}-{nonce}",
-            std::process::id()
-        ));
-        let src = project.join("src");
-        std::fs::create_dir_all(&src).unwrap();
-        std::fs::write(src.join("Panel.vue"), "<template><div /></template>").unwrap();
-
-        let virtual_path = src.join("Panel.vue.ts");
-        let uri = path_to_file_uri(&virtual_path);
-
-        let created = virtual_overlay_upsert_file_changes(&uri, &uri, &project, false)
-            .expect("created file change");
-        let created = match created {
-            FileChanges::Summary(summary) => summary,
-            FileChanges::InvalidateAll { .. } => panic!("expected summary file changes"),
-        };
-        assert_eq!(created.created.len(), 1);
-        assert!(created.changed.is_empty());
-        assert!(!virtual_path.exists());
-
-        let changed = virtual_overlay_upsert_file_changes(&uri, &uri, &project, true)
-            .expect("changed file change");
-        let changed = match changed {
-            FileChanges::Summary(summary) => summary,
-            FileChanges::InvalidateAll { .. } => panic!("expected summary file changes"),
-        };
-        assert_eq!(changed.changed.len(), 1);
-        assert!(changed.created.is_empty());
-        assert!(!virtual_path.exists());
-
-        let deleted =
-            virtual_overlay_delete_file_changes(&uri, &uri, &project).expect("deleted file change");
-        let deleted = match deleted {
-            FileChanges::Summary(summary) => summary,
-            FileChanges::InvalidateAll { .. } => panic!("expected summary file changes"),
-        };
-        assert_eq!(deleted.deleted.len(), 1);
-        assert!(!virtual_path.exists());
 
         let _ = std::fs::remove_dir_all(project);
     }

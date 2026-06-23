@@ -8,6 +8,15 @@ pub(super) fn is_inline_function_prop_value(value: &str) -> bool {
     value.contains("=>") || value.starts_with("function") || value.starts_with("async function")
 }
 
+pub(super) fn has_dynamic_props(usage: &ComponentUsage) -> bool {
+    usage.props.iter().any(|prop| {
+        prop.name.as_str() != "key"
+            && prop.name.as_str() != "ref"
+            && prop.value.is_some()
+            && prop.is_dynamic
+    })
+}
+
 pub(super) fn append_prop_checker_alias(
     ts: &mut String,
     usage: &ComponentUsage,

@@ -12,12 +12,6 @@ use tower_lsp::lsp_types::Hover;
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
-#[cfg(feature = "native")]
-use std::sync::Arc;
-
-#[cfg(feature = "native")]
-use vize_canon::CorsaBridge;
-
 use super::{HoverBuilder, HoverService};
 use crate::ide::IdeContext;
 
@@ -36,7 +30,7 @@ impl HoverService {
             return Some(hover);
         }
 
-        if let Some(hover) = Self::hover_component_prop_attribute(ctx) {
+        if let Some(hover) = super::component_prop::hover_attribute(ctx) {
             return Some(hover);
         }
 
@@ -104,121 +98,6 @@ impl HoverService {
                 .description("Expression evaluated against the component template scope.")
                 .build(),
         )
-    }
-
-    fn hover_component_prop_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
-        let (attr_name, component_name) =
-            crate::ide::definition::helpers::get_attribute_and_component_at_offset(ctx)?;
-        if !crate::ide::is_component_tag(&component_name) {
-            return None;
-        }
-
-        let import_path = crate::ide::definition::helpers::find_import_path(ctx, &component_name)?;
-        let resolved_path =
-            crate::ide::definition::helpers::resolve_import_path(ctx.uri, &import_path)?;
-        let component_content = std::fs::read_to_string(&resolved_path).ok()?;
-        let descriptor = vize_atelier_sfc::parse_sfc(
-            &component_content,
-            vize_atelier_sfc::SfcParseOptions {
-                filename: resolved_path.to_string_lossy().to_string().into(),
-                ..Default::default()
-            },
-        )
-        .ok()?;
-        let script_setup = descriptor.script_setup.as_ref()?;
-        let script = script_setup.content.as_ref();
-        let prop_name = crate::ide::definition::helpers::kebab_to_camel(&attr_name);
-        let define_props_pos = script.find("defineProps")?;
-        let after_define_props = &script[define_props_pos..];
-        let prop_pos = crate::ide::definition::helpers::find_prop_in_define_props(
-            after_define_props,
-            &prop_name,
-        )?;
-        let signature = Self::prop_signature_at(script, define_props_pos + prop_pos, &prop_name);
-
-        Some(
-            HoverBuilder::new()
-                .title(&prop_name)
-                .meta("Component prop")
-                .code("typescript", &signature)
-                .build(),
-        )
-    }
-
-    fn prop_signature_at(script: &str, offset: usize, prop_name: &str) -> String {
-        let line_start = script[..offset]
-            .rfind('\n')
-            .map(|index| index + 1)
-            .unwrap_or(0);
-        let line_end = script[offset..]
-            .find('\n')
-            .map(|index| offset + index)
-            .unwrap_or(script.len());
-        let line = script[line_start..line_end]
-            .trim()
-            .trim_end_matches(',')
-            .trim();
-        if line.is_empty() {
-            prop_name.to_string()
-        } else {
-            line.to_string()
-        }
-    }
-
-    /// Get hover for template context with Corsa support.
-    #[cfg(feature = "native")]
-    pub(super) async fn hover_template_with_corsa(
-        ctx: &IdeContext<'_>,
-        corsa_bridge: Option<Arc<CorsaBridge>>,
-    ) -> Option<Hover> {
-        let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
-
-        // Check for Vue directives first; these do not need Corsa.
-        if !word.is_empty()
-            && let Some(hover) = Self::hover_directive(&word)
-        {
-            return Some(hover);
-        }
-
-        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
-            && let Some(hover) = Self::hover_html_tag_with_corsa(ctx, corsa_bridge.as_ref()).await
-        {
-            return Some(hover);
-        }
-
-        // petite-vue standalone HTML `v-scope` bindings have no virtual TS
-        // declaration for Corsa to resolve; surface them from the scope chain.
-        if !word.is_empty()
-            && let Some(hover) = Self::hover_petite_vue_scope_binding(ctx, &word)
-        {
-            return Some(hover);
-        }
-
-        // Try to get type information from Corsa via canonical virtual TypeScript.
-        if let Some(bridge) = corsa_bridge.as_ref()
-            && bridge.is_initialized()
-            && let Some(doc) =
-                crate::ide::corsa_support::open_canonical_virtual_document(ctx, bridge).await
-            && let Some((line, character)) =
-                crate::ide::corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
-            && let Ok(Some(hover)) = bridge.hover(&doc.request_uri, line, character).await
-        {
-            let mapped_range = hover.range.as_ref().and_then(|range| {
-                crate::ide::corsa_support::map_canonical_lsp_range(ctx, &doc, range)
-            });
-            let mut converted = Self::convert_lsp_hover(hover);
-            if mapped_range.is_some() {
-                converted.range = mapped_range;
-            }
-            return Some(converted);
-        }
-
-        if word.is_empty() {
-            return None;
-        }
-
-        // Fall back to croquis analysis
-        Self::hover_template(ctx)
     }
 
     /// Get hover for TypeScript binding using croquis analysis.

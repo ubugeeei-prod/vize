@@ -145,7 +145,7 @@ pub(crate) fn map_canonical_corsa_location(
         });
     }
 
-    if let Some(location) = map_vue_virtual_mirror_location(ctx, location) {
+    if let Some(location) = super::virtual_mirror::map_location(ctx, location) {
         return Some(location);
     }
 
@@ -173,7 +173,7 @@ pub(crate) fn map_canonical_lsp_range(
     map_lsp_range_to_source(&ctx.content, doc, range)
 }
 
-fn map_lsp_range_to_source(
+pub(super) fn map_lsp_range_to_source(
     source: &str,
     doc: &CanonicalVirtualDocument,
     range: &vize_canon::LspRange,
@@ -277,80 +277,4 @@ fn location_matches_uri(actual: &str, expected: &str) -> bool {
     actual == expected
         || super::virtual_document_path(actual).as_deref()
             == super::virtual_document_path(expected).as_deref()
-}
-
-fn map_vue_virtual_mirror_location(
-    ctx: &IdeContext<'_>,
-    location: &LspLocation,
-) -> Option<Location> {
-    let parsed = Url::parse(&location.uri).ok()?;
-    let path = parsed.to_file_path().ok()?;
-    let file_name = path.file_name()?.to_str()?;
-    let vue_file_name = file_name
-        .strip_suffix(".tsx")
-        .or_else(|| file_name.strip_suffix(".ts"))?;
-    if !vue_file_name.ends_with(".vue") {
-        return None;
-    }
-
-    let source_path = path.with_file_name(vue_file_name);
-    if !source_path.is_file() {
-        return None;
-    }
-
-    let uri = Url::from_file_path(source_path).ok()?;
-    if let Some(range) = map_vue_virtual_mirror_range(ctx, &uri, &location.range) {
-        return Some(Location { uri, range });
-    }
-
-    Some(Location {
-        uri,
-        range: Range {
-            start: tower_lsp::lsp_types::Position {
-                line: 0,
-                character: 0,
-            },
-            end: tower_lsp::lsp_types::Position {
-                line: 0,
-                character: 0,
-            },
-        },
-    })
-}
-
-fn map_vue_virtual_mirror_range(
-    ctx: &IdeContext<'_>,
-    source_uri: &Url,
-    range: &vize_canon::LspRange,
-) -> Option<Range> {
-    let source_path = source_uri.to_file_path().ok()?;
-    let source = std::fs::read_to_string(&source_path).ok()?;
-    let rewriter = vize_canon::ImportRewriter::new();
-    let generated = vize_canon::batch::generate_vue_document_virtual_ts_with_options(
-        &source_path,
-        &source,
-        &vize_canon::virtual_ts::VirtualTsOptions::default(),
-        &rewriter,
-        false,
-        vize_canon::batch::VueDocumentVirtualTsOptions {
-            options_api: ctx.state.options_api_enabled(),
-            legacy_vue2: ctx.state.legacy_vue2_enabled(),
-        },
-    )
-    .ok()?;
-
-    let mirror_doc = CanonicalVirtualDocument {
-        request_uri: cstr!("{}{}", source_uri.path(), generated.virtual_suffix),
-        virtual_result: VirtualTsResult {
-            code: generated.code.to_string(),
-            source_mappings: generated.mappings,
-            import_source_map: generated.import_source_map,
-            user_code_start_line: 0,
-            sfc_script_start_line: 0,
-            template_scope_start_line: 0,
-            line_mappings: Vec::new(),
-            skipped_import_lines: 0,
-        },
-    };
-    map_lsp_range_to_source(&source, &mirror_doc, range)
 }
