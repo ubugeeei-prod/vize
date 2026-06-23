@@ -26,7 +26,14 @@ fn detects_legacy_nuxt2_fetch_state_and_route_template_globals() {
 
     let mut legacy_options = VirtualTsOptions::default();
     let _ = detect_legacy_nuxt_auto_imports(&mut legacy_options, &project_root);
-    for expected in ["$fetchState", "$route"] {
+    for expected in [
+        "$config",
+        "$fetchState",
+        "$nuxt",
+        "$route",
+        "$router",
+        "$store",
+    ] {
         assert!(
             legacy_options
                 .template_globals

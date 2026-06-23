@@ -3,11 +3,15 @@ use vize_carton::ToCompactString;
 
 pub(super) fn collect(options: &mut VirtualTsOptions) {
     for (name, type_annotation) in [
+        ("$config", "any"),
         (
             "$fetchState",
             "{ pending: boolean; error: any; timestamp: number; [key: string]: any }",
         ),
+        ("$nuxt", "any"),
         ("$route", "any"),
+        ("$router", "any"),
+        ("$store", "any"),
     ] {
         if options
             .template_globals

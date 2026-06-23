@@ -5,6 +5,8 @@ use std::{
     process::Command,
 };
 
+use vize_carton::cstr;
+
 #[test]
 fn check_legacy_nuxt2_template_fetch_state_and_route_globals() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
@@ -39,7 +41,10 @@ fn check_legacy_nuxt2_template_fetch_state_and_route_globals() {
 export default {}
 </script>
 <template>
-  <section v-if="$fetchState.pending">{{ $route.path }}</section>
+  <section v-if="$fetchState.pending && $store && $nuxt && $config">
+    {{ $route.path }}
+    {{ $router.push($route.path) }}
+  </section>
 </template>
 "#,
     )
@@ -58,9 +63,9 @@ export default {}
         .output()
         .unwrap();
 
-    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
-    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap_or_else(|error| {
         panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
     });
     assert_eq!(
@@ -77,6 +82,12 @@ export default {}
         stderr.contains("const $route:"),
         "expected $route declaration in virtual TS:\n{stderr}"
     );
+    for expected in ["$config", "$nuxt", "$router", "$store"] {
+        assert!(
+            stderr.contains(cstr!("const {expected}:").as_str()),
+            "expected {expected} declaration in virtual TS:\n{stderr}"
+        );
+    }
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
@@ -94,14 +105,14 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .join("target")
         .join("vize-tests")
         .join("tests")
-        .join(format!("{name}-{}", std::process::id()))
+        .join(cstr!("{name}-{}", std::process::id()).as_str())
 }
 
-fn resolve_test_corsa_path() -> Option<String> {
+fn resolve_test_corsa_path() -> Option<PathBuf> {
     if let Ok(path) = std::env::var("CORSA_PATH")
         && Path::new(&path).exists()
     {
-        return Some(path);
+        return Some(PathBuf::from(path));
     }
 
     let workspace_root = workspace_root();
@@ -111,5 +122,4 @@ fn resolve_test_corsa_path() -> Option<String> {
     ]
     .into_iter()
     .find(|candidate| candidate.exists())
-    .map(|candidate| candidate.to_string_lossy().into_owned())
 }
