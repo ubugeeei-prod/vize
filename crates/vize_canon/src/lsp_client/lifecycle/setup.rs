@@ -1,7 +1,7 @@
 use super::super::paths::find_node_modules_with_vue;
 use serde_json::json;
 use std::{
-    path::{Path, PathBuf},
+    path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
 use vize_carton::{String, ToCompactString, cstr};
