@@ -264,3 +264,51 @@ function updateDate(newDate: string) {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn batch_type_checker_legacy_vue2_suppresses_vuetify_inline_function_prop_implicit_any() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "legacy-vue2-vuetify-inline-function-props",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const message = "Required";
+</script>
+
+<template>
+  <v-text-field :rules="[(v) => !!v || message]" />
+</template>
+"#,
+        )],
+    );
+
+    let mut checker = match BatchTypeChecker::new(&project_root) {
+        Ok(checker) => checker,
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&project_root);
+            return;
+        }
+    };
+    checker.enable_legacy_vue2();
+    checker.scan_project().unwrap();
+    let result = checker.check_project().unwrap();
+    let unexpected = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            relative_path(&project_root, &diagnostic.file) == "src/App.vue"
+                && (diagnostic.code == Some(7006)
+                    || diagnostic.message.contains("implicitly has an 'any' type"))
+        })
+        .collect::<Vec<_>>();
+
+    assert!(
+        unexpected.is_empty(),
+        "legacy Vue 2 Vuetify inline function props should not report implicit any: {unexpected:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
