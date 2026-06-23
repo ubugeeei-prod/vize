@@ -128,6 +128,11 @@ function __setup() {
   };
   type __Test_Check_0 = __VizePropChecker<typeof Test, __Test_CheckProps_0>;
 
+  // Component template navigation references
+  void Test;
+  const __vize_props_nav_0 = undefined as unknown as __Test_Props_0 & Record<string, unknown>;
+  void __vize_props_nav_0.value1;
+
   // Component props value checks (template scope)
   if ((key === 'b')) {
 

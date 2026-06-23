@@ -89,6 +89,8 @@ fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     let root = workspace_root();
     for candidate in [
         root.parent()?.join("corsa-bind/.cache/tsgo"),
+        root.parent()?
+            .join("corsa-bind/ref/corsa-upstream/.cache/tsgo"),
         root.join("node_modules/.bin/tsgo"),
     ] {
         if candidate.exists() {

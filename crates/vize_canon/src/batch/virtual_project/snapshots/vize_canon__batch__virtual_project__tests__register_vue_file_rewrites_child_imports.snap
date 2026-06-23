@@ -61,6 +61,11 @@ function __setup() {
   };
   type __Child_Check_0 = __VizePropChecker<typeof Child, __Child_CheckProps_0>;
 
+  // Component template navigation references
+  void Child;
+  const __vize_props_nav_0 = undefined as unknown as __Child_Props_0 & Record<string, unknown>;
+  void __vize_props_nav_0.count;
+
   // Component props value checks (template scope)
   // @vize-map: prop -> 104:118
   const __vize_prop_check_0_count: __Child_0_prop_count = count;

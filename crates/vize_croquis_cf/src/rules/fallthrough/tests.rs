@@ -9,6 +9,8 @@ fn passed_prop(name: &str) -> PassedProp {
     PassedProp {
         name: CompactString::new(name),
         value: None,
+        name_start: 0,
+        name_end: name.len() as u32,
         start: 0,
         end: 0,
         is_dynamic: false,

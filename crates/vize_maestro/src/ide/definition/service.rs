@@ -120,7 +120,25 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
-        // Check if this is a component tag
+        if let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset)
+            && tag_name == "Self"
+            && let Some(def) = template::find_component_definition(ctx, &tag_name)
+        {
+            return Some(def);
+        }
+
+        if let Some(definition) =
+            Self::definition_via_canonical_corsa(ctx, corsa_bridge.as_ref()).await
+        {
+            return Some(definition);
+        }
+
+        if let Some(definition) =
+            Self::definition_for_html_tag_with_corsa(ctx, corsa_bridge.as_ref()).await
+        {
+            return Some(definition);
+        }
+
         if let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset)
             && is_component_tag(&tag_name)
             && let Some(def) = template::find_component_definition(ctx, &tag_name)
@@ -128,15 +146,8 @@ impl super::DefinitionService {
             return Some(def);
         }
 
-        // Check if this is a component attribute
         if let Some(def) = template::find_component_prop_definition(ctx) {
             return Some(def);
-        }
-
-        if let Some(definition) =
-            Self::definition_for_html_tag_with_corsa(ctx, corsa_bridge.as_ref()).await
-        {
-            return Some(definition);
         }
 
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
@@ -164,21 +175,6 @@ impl super::DefinitionService {
                 && let Some(def) = template::find_prop_definition_by_name(ctx, &descriptor, &word)
             {
                 return Some(def);
-            }
-        }
-
-        // Try Corsa definition lookup first via the canonical Vue virtual TS.
-        if let Some(bridge) = corsa_bridge.as_ref()
-            && bridge.is_initialized()
-            && let Some(doc) = corsa_support::open_canonical_virtual_document(ctx, bridge).await
-            && let Some((line, character)) =
-                corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
-            && let Ok(locations) = bridge.definition(&doc.request_uri, line, character).await
-            && !locations.is_empty()
-        {
-            let locations = corsa_support::map_canonical_corsa_locations(ctx, &doc, locations);
-            if let Some(response) = Self::convert_locations(locations) {
-                return Some(response);
             }
         }
 
@@ -224,6 +220,31 @@ impl super::DefinitionService {
 
         // Fall back to synchronous definition
         script::definition_in_script(ctx)
+    }
+
+    #[cfg(feature = "native")]
+    async fn definition_via_canonical_corsa(
+        ctx: &IdeContext<'_>,
+        corsa_bridge: Option<&Arc<CorsaBridge>>,
+    ) -> Option<GotoDefinitionResponse> {
+        let bridge = corsa_bridge?;
+        if !bridge.is_initialized() {
+            return None;
+        }
+
+        let doc = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
+        let (line, character) =
+            corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)?;
+        let locations = bridge
+            .definition(&doc.request_uri, line, character)
+            .await
+            .ok()?;
+        if locations.is_empty() {
+            return None;
+        }
+
+        let locations = corsa_support::map_canonical_corsa_locations(ctx, &doc, locations);
+        Self::convert_locations(locations)
     }
 
     /// Convert a Corsa location to tower-lsp Location.

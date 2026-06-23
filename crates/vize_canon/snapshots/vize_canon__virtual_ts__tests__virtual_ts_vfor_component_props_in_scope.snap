@@ -119,6 +119,11 @@ function __setup() {
   };
   type __TodoItem_Check_0 = __VizePropChecker<typeof TodoItem, __TodoItem_CheckProps_0>;
 
+  // Component template navigation references
+  void TodoItem;
+  const __vize_props_nav_0 = undefined as unknown as __TodoItem_Props_0 & Record<string, unknown>;
+  void __vize_props_nav_0.item;
+
   // Component props value checks (template scope)
 
   // Component props in v-for scope: todo in todos

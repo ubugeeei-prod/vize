@@ -110,6 +110,11 @@ function __setup() {
   };
   type __MyList_Check_0 = __VizePropChecker<typeof MyList, __MyList_CheckProps_0>;
 
+  // Component template navigation references
+  void MyList;
+  const __vize_props_nav_0 = undefined as unknown as __MyList_Props_0 & Record<string, unknown>;
+  void __vize_props_nav_0.items;
+
   // Component props value checks (template scope)
   // @vize-map: prop -> 8:22
   const __vize_prop_check_0_items: __MyList_0_prop_items = items;

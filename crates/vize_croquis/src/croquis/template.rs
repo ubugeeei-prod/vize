@@ -185,6 +185,10 @@ pub struct PassedProp {
     pub name: CompactString,
     /// The expression if dynamic, or literal value if static
     pub value: Option<CompactString>,
+    /// Start offset of the prop name token.
+    pub name_start: u32,
+    /// End offset of the prop name token.
+    pub name_end: u32,
     /// Start offset
     pub start: u32,
     /// End offset

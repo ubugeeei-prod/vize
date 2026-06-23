@@ -117,6 +117,11 @@ function __setup() {
   };
   type __LinkComp_Check_0 = __VizePropChecker<typeof LinkComp, __LinkComp_CheckProps_0>;
 
+  // Component template navigation references
+  void LinkComp;
+  const __vize_props_nav_0 = undefined as unknown as __LinkComp_Props_0 & Record<string, unknown>;
+  void __vize_props_nav_0.to;
+
   // Component props value checks (template scope)
   // @vize-map: prop -> 22:37
   if ((item)) {

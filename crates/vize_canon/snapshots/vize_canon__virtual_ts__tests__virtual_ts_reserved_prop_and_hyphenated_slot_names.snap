@@ -121,6 +121,11 @@ function __setup() {
   };
   type __TrendChart_Check_0 = __VizePropChecker<typeof TrendChart, __TrendChart_CheckProps_0>;
 
+  // Component template navigation references
+  void TrendChart;
+  const __vize_props_nav_0 = undefined as unknown as __TrendChart_Props_0 & Record<string, unknown>;
+  void __vize_props_nav_0.class;
+
   // Component props value checks (template scope)
   // @vize-map: prop -> 12:26
   const __vize_prop_check_0_class: __TrendChart_0_prop_class = props["class"];

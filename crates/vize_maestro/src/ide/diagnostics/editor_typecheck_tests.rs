@@ -279,6 +279,12 @@ fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     if sibling_cache.exists() {
         return Some(sibling_cache);
     }
+    let upstream_cache = workspace_root
+        .parent()?
+        .join("corsa-bind/ref/corsa-upstream/.cache/tsgo");
+    if upstream_cache.exists() {
+        return Some(upstream_cache);
+    }
 
     vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
 }
