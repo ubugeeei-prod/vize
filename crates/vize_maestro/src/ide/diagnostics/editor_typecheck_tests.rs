@@ -208,12 +208,23 @@ fn write_vue_import_fixture(root: &Path) {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "noEmit": true
   },
   "include": ["src/**/*"]
 }"#,
     )
     .expect("tsconfig");
+    std::fs::write(
+        src.join("vue.d.ts"),
+        r#"declare module "vue" {
+  export type DefineComponent<P = any, _B = any, _D = any> = { new(): { $props: P } };
+  export interface Ref<T = unknown> { value: T }
+  export interface ShallowRef<T = unknown> extends Ref<T> {}
+}
+"#,
+    )
+    .expect("vue shim");
     std::fs::write(
         src.join("Child.vue"),
         r#"<script setup lang="ts">
@@ -270,6 +281,9 @@ fn assert_no_import_or_unknown_record_diagnostics(
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
         return None;
+    }
+    if let Some(path) = std::env::var_os("VIZE_TEST_TSGO_PATH") {
+        return Some(PathBuf::from(path));
     }
 
     let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
