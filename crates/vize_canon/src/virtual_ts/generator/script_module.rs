@@ -40,7 +40,7 @@ pub(super) fn collect_line_module_import_spans(script: &str) -> Vec<(u32, u32)> 
             _ => {}
         }
     }
-    spans
+    include_leading_ts_directive_comments(script, spans)
 }
 
 pub(super) fn push_setup_return_fields(names: &[CompactString], fields: &mut Vec<CompactString>) {
@@ -178,5 +178,79 @@ fn push_name(name: &str, seen: &mut FxHashSet<CompactString>, names: &mut Vec<Co
     let name = CompactString::new(name);
     if seen.insert(name.clone()) {
         names.push(name);
+    }
+}
+
+fn include_leading_ts_directive_comments(script: &str, spans: Vec<(u32, u32)>) -> Vec<(u32, u32)> {
+    spans
+        .into_iter()
+        .map(|(start, end)| {
+            let start = leading_ts_directive_comment_start(script, start as usize)
+                .unwrap_or(start as usize);
+            (start as u32, end)
+        })
+        .collect()
+}
+
+fn leading_ts_directive_comment_start(script: &str, statement_start: usize) -> Option<usize> {
+    let mut cursor = line_start_at(script, statement_start);
+    let mut comment_group_start = None;
+    let mut has_ts_directive = false;
+    while cursor > 0 {
+        let previous_line_end = cursor.saturating_sub(1);
+        let previous_line_start = script[..previous_line_end]
+            .rfind('\n')
+            .map_or(0, |index| index + 1);
+        let line = &script[previous_line_start..previous_line_end];
+        let line = line.strip_suffix('\r').unwrap_or(line);
+        let trimmed = line.trim_start();
+        if !trimmed.starts_with("//") {
+            break;
+        }
+        comment_group_start = Some(previous_line_start);
+        if contains_ts_suppression_directive(trimmed) {
+            has_ts_directive = true;
+        }
+        cursor = previous_line_start;
+    }
+    has_ts_directive.then_some(comment_group_start).flatten()
+}
+
+fn line_start_at(script: &str, offset: usize) -> usize {
+    script[..offset.min(script.len())]
+        .rfind('\n')
+        .map_or(0, |index| index + 1)
+}
+
+fn contains_ts_suppression_directive(comment: &str) -> bool {
+    comment.contains("@ts-ignore") || comment.contains("@ts-expect-error")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::collect_line_module_import_spans;
+
+    #[test]
+    fn collect_import_span_includes_adjacent_ts_ignore_comment_group() {
+        let script = "const before = 1;\n// FIXME: types\n// @ts-ignore\nimport Chart from \"chart.js/auto/auto\";\nconst after = 2;\n";
+        let spans = collect_line_module_import_spans(script);
+
+        assert_eq!(spans.len(), 1);
+        assert_eq!(
+            &script[spans[0].0 as usize..spans[0].1 as usize],
+            "// FIXME: types\n// @ts-ignore\nimport Chart from \"chart.js/auto/auto\";"
+        );
+    }
+
+    #[test]
+    fn collect_import_span_leaves_regular_comments_in_script_body() {
+        let script = "// import note\nimport Chart from \"chart.js/auto/auto\";\n";
+        let spans = collect_line_module_import_spans(script);
+
+        assert_eq!(spans.len(), 1);
+        assert_eq!(
+            &script[spans[0].0 as usize..spans[0].1 as usize],
+            "import Chart from \"chart.js/auto/auto\";"
+        );
     }
 }

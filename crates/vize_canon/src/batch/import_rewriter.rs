@@ -245,7 +245,7 @@ impl ImportRewriter {
     }
 
     fn rewrite_module_specifier(&self, path: &str) -> Option<String> {
-        if path.ends_with(".vue") {
+        if is_rewritable_vue_specifier(path) {
             Some(cstr!("{path}.ts"))
         } else {
             None
@@ -272,7 +272,7 @@ impl ImportRewriter {
             }
             return Some(rewritten);
         }
-        if path.ends_with(".vue") {
+        if is_rewritable_vue_specifier(path) {
             Some(cstr!("{path}.ts"))
         } else {
             None
@@ -305,6 +305,15 @@ fn is_rewritable_project_specifier(path: &std::path::Path) -> bool {
                 "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
             )
         })
+}
+
+fn is_rewritable_vue_specifier(path: &str) -> bool {
+    path.ends_with(".vue")
+        && (path.starts_with("./")
+            || path.starts_with("../")
+            || path.starts_with("@/")
+            || path.starts_with("~/")
+            || std::path::Path::new(path).is_absolute())
 }
 
 impl Default for ImportRewriter {
