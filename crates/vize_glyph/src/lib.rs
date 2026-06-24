@@ -48,7 +48,7 @@ mod template;
 
 pub use error::*;
 pub use formatter::*;
-pub use json::format_json_source as format_json;
+pub use json::{format_json_source as format_json, format_jsonc_source as format_jsonc};
 pub use options::*;
 pub use vize_carton::Allocator;
 use vize_carton::String;

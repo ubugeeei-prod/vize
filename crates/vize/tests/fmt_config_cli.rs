@@ -294,3 +294,49 @@ fn fmt_check_reports_already_formatted_json_as_unchanged() {
         "expected already-formatted summary, got: {stderr}",
     );
 }
+
+#[test]
+fn fmt_write_preserves_comments_in_jsonc_inputs() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "biome.jsonc",
+        "{\n// compiler\n\"compilerOptions\":{\"strict\":true, // be strict\n\"target\":\"ES2022\",},\n}",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args(["fmt", "--write", "biome.jsonc"])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0), "{}", output_details(&output));
+    let contents = fs::read_to_string(project.path().join("biome.jsonc")).unwrap();
+    assert_eq!(
+        contents,
+        "{\n  // compiler\n  \"compilerOptions\": {\n    \"strict\": true, // be strict\n    \"target\": \"ES2022\"\n  }\n}\n",
+    );
+}
+
+#[test]
+fn fmt_check_reports_already_formatted_jsonc_as_unchanged() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "settings.jsonc",
+        "{\n  // editor settings\n  \"tabSize\": 2\n}\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args(["fmt", "--check", "settings.jsonc"])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0), "{}", output_details(&output));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("1 file(s) already formatted"),
+        "expected already-formatted summary, got: {stderr}",
+    );
+}

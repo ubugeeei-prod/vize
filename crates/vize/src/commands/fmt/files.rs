@@ -94,6 +94,9 @@ fn should_walk_with_gitignore(pattern: &str) -> bool {
             | "**/*.cts"
             | "./**/*.cts"
             | "**/*.json"
+            | "./**/*.json"
+            | "**/*.jsonc"
+            | "./**/*.jsonc"
     )
 }
 
@@ -159,7 +162,17 @@ fn is_format_target(path: &Path) -> bool {
         .is_some_and(|extension| {
             matches!(
                 extension,
-                "vue" | "jsx" | "tsx" | "js" | "mjs" | "cjs" | "ts" | "mts" | "cts" | "json"
+                "vue"
+                    | "jsx"
+                    | "tsx"
+                    | "js"
+                    | "mjs"
+                    | "cjs"
+                    | "ts"
+                    | "mts"
+                    | "cts"
+                    | "json"
+                    | "jsonc"
             )
         })
 }
