@@ -59,7 +59,7 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) inline: bool,
     pub(crate) component_name: Option<&'a str>,
     pub(crate) bindings: Option<&'a BindingMetadata>,
-    pub(crate) croquis: Option<vize_croquis::analysis::Croquis>,
+    pub(crate) croquis: Option<vize_croquis::croquis::Croquis>,
 }
 
 /// Compile template block

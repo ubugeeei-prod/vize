@@ -52,7 +52,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
     script_content: &str,
     ctx: &mut ScriptCompileContext,
     script_bindings: &mut BindingMetadata,
-    croquis: &mut vize_croquis::analysis::Croquis,
+    croquis: &mut vize_croquis::croquis::Croquis,
 ) -> Option<(String, Vec<String>)> {
     if !template_content.contains("v-model") {
         return None;
@@ -180,7 +180,7 @@ fn update_binding_to_setup_let(
     binding_name: &str,
     ctx: &mut ScriptCompileContext,
     script_bindings: &mut BindingMetadata,
-    croquis: &mut vize_croquis::analysis::Croquis,
+    croquis: &mut vize_croquis::croquis::Croquis,
 ) {
     script_bindings
         .bindings

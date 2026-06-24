@@ -237,7 +237,7 @@ fn collect_unresolved_extends_expression_names(
     type_export_names: &FxHashSet<&str>,
     used_components: &FxHashSet<&str>,
 ) {
-    for identifier in vize_croquis::analyzer::extract_identifiers_oxc(expression) {
+    for identifier in vize_croquis::drawer::extract_identifiers_oxc(expression) {
         let name = identifier.as_str();
         if summary.bindings.bindings.contains_key(name)
             || configured_globals.contains(name)

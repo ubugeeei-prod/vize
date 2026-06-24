@@ -9,7 +9,7 @@
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashMap, cstr};
-use vize_croquis::analysis::ElementIdKind;
+use vize_croquis::croquis::ElementIdKind;
 
 /// Information about a unique ID issue.
 #[derive(Debug, Clone)]

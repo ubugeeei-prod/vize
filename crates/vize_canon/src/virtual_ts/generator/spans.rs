@@ -87,7 +87,7 @@ fn collect_template_referenced_names(
 }
 
 fn collect_expression_identifiers(names: &mut FxHashSet<String>, expression: &str) {
-    for identifier in vize_croquis::analyzer::extract_identifiers_oxc(expression) {
+    for identifier in vize_croquis::drawer::extract_identifiers_oxc(expression) {
         names.insert(identifier.as_str().into());
     }
 }

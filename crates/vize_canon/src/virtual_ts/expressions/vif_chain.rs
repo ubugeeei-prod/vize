@@ -6,8 +6,8 @@ use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_croquis::analysis::{TemplateExpression, TemplateExpressionKind};
-use vize_croquis::analyzer::strip_js_comments;
+use vize_croquis::croquis::{TemplateExpression, TemplateExpressionKind};
+use vize_croquis::drawer::strip_js_comments;
 
 #[derive(Clone, Copy)]
 struct GuardTerm<'a> {

@@ -13,7 +13,7 @@ use crate::types::{BindingMetadata, BindingType};
 
 /// Convert Croquis BindingMetadata (CompactString keys) to legacy BindingMetadata (String keys)
 pub(super) fn croquis_to_legacy_bindings(
-    src: &vize_croquis::analysis::BindingMetadata,
+    src: &vize_croquis::croquis::BindingMetadata,
 ) -> BindingMetadata {
     let mut dst = BindingMetadata::default();
     dst.is_script_setup = src.is_script_setup;

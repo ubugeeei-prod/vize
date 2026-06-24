@@ -12,7 +12,7 @@ pub use external_types::begin_type_resolution_batch;
 
 use crate::types::{BindingMetadata, BindingType};
 use vize_carton::{CompactString, String, ToCompactString};
-use vize_croquis::analysis::Croquis;
+use vize_croquis::croquis::Croquis;
 use vize_croquis::macros::{EmitDefinition, ModelDefinition, PropDefinition};
 
 use super::ScriptSetupMacros;

@@ -15,8 +15,8 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_croquis::analysis::{TemplateExpression, TemplateExpressionKind};
-use vize_croquis::analyzer::strip_js_comments;
+use vize_croquis::croquis::{TemplateExpression, TemplateExpressionKind};
+use vize_croquis::drawer::strip_js_comments;
 
 /// Generate template expressions, compacting recognized v-if chains into
 /// TypeScript control-flow blocks.

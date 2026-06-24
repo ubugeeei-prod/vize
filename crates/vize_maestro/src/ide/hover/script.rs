@@ -115,22 +115,22 @@ impl HoverService {
             .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
 
         // Create a drawer and analyze script.
-        let analyzer_options = DrawerOptions::full();
-        let mut analyzer = Drawer::with_options(analyzer_options);
+        let drawer_options = DrawerOptions::full();
+        let mut drawer = Drawer::with_options(drawer_options);
         if ctx.state.lsp_features().legacy_vue2 {
-            analyzer = analyzer.with_legacy_vue2();
+            drawer = drawer.with_legacy_vue2();
         } else if ctx.state.options_api_enabled() {
-            analyzer = analyzer.with_options_api();
+            drawer = drawer.with_options_api();
         }
 
         if let Some(ref script) = descriptor.script {
-            analyzer.analyze_script_plain(&script.content);
+            drawer.analyze_script_plain(&script.content);
         }
         if let Some(ref script_setup) = descriptor.script_setup {
-            analyzer.analyze_script_setup(&script_setup.content);
+            drawer.analyze_script_setup(&script_setup.content);
         }
 
-        let summary = analyzer.finish();
+        let summary = drawer.finish();
 
         // Look up the binding in the analysis summary
         let binding_type = summary.get_binding_type(word)?;

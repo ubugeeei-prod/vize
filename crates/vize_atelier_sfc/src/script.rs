@@ -51,7 +51,7 @@ pub use define_props::{DEFINE_PROPS, WITH_DEFAULTS};
 pub use define_slots::DEFINE_SLOTS;
 
 use crate::types::BindingMetadata;
-use vize_croquis::analysis::Croquis as CroquisSummary;
+use vize_croquis::croquis::Croquis as CroquisSummary;
 use vize_croquis::script_parser::ScriptParseResult;
 
 /// Analyze script setup and extract bindings

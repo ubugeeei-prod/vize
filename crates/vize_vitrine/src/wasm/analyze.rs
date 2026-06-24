@@ -328,8 +328,8 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
                 serde_json::json!({
                 "name": te.name.as_str(),
                 "kind": match te.kind {
-                    vize_croquis::analysis::TypeExportKind::Type => "type",
-                    vize_croquis::analysis::TypeExportKind::Interface => "interface",
+                    vize_croquis::croquis::TypeExportKind::Type => "type",
+                    vize_croquis::croquis::TypeExportKind::Interface => "interface",
                 },
                 "start": start,
                 "end": end,
@@ -341,12 +341,12 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
                 serde_json::json!({
                 "name": ie.name.as_str(),
                 "kind": match ie.kind {
-                    vize_croquis::analysis::InvalidExportKind::Const => "const",
-                    vize_croquis::analysis::InvalidExportKind::Let => "let",
-                    vize_croquis::analysis::InvalidExportKind::Var => "var",
-                    vize_croquis::analysis::InvalidExportKind::Function => "function",
-                    vize_croquis::analysis::InvalidExportKind::Class => "class",
-                    vize_croquis::analysis::InvalidExportKind::Default => "default",
+                    vize_croquis::croquis::InvalidExportKind::Const => "const",
+                    vize_croquis::croquis::InvalidExportKind::Let => "let",
+                    vize_croquis::croquis::InvalidExportKind::Var => "var",
+                    vize_croquis::croquis::InvalidExportKind::Function => "function",
+                    vize_croquis::croquis::InvalidExportKind::Class => "class",
+                    vize_croquis::croquis::InvalidExportKind::Default => "default",
                 },
                 "start": start,
                 "end": end,

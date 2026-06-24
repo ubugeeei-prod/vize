@@ -228,22 +228,22 @@ fn extract_component_metadata(
                 .map(|script| script.content.as_ref())
         })
     {
-        let analyzer_options = DrawerOptions {
+        let drawer_options = DrawerOptions {
             analyze_script: true,
             ..Default::default()
         };
-        let mut analyzer = Drawer::with_options(analyzer_options);
+        let mut drawer = Drawer::with_options(drawer_options);
         if legacy_vue2 {
-            analyzer = analyzer.with_legacy_vue2();
+            drawer = drawer.with_legacy_vue2();
         } else if options_api {
-            analyzer = analyzer.with_options_api();
+            drawer = drawer.with_options_api();
         }
         if descriptor.script_setup.is_some() {
-            analyzer.analyze_script_setup(script_content);
+            drawer.analyze_script_setup(script_content);
         } else {
-            analyzer.analyze_script_plain(script_content);
+            drawer.analyze_script_plain(script_content);
         }
-        let summary = analyzer.finish();
+        let summary = drawer.finish();
 
         for prop in summary.macros.props() {
             if seen_props.insert(prop.name.to_string()) {

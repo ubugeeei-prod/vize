@@ -1,7 +1,7 @@
 use std::ops::Range;
 
 use vize_carton::{String, append, cstr};
-use vize_croquis::analysis::{ComponentUsage, PassedProp};
+use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;

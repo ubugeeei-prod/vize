@@ -13,8 +13,8 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_croquis::analysis::ComponentUsage;
-use vize_croquis::analyzer::strip_js_comments;
+use vize_croquis::croquis::ComponentUsage;
+use vize_croquis::drawer::strip_js_comments;
 
 /// Generate component prop value checks at the given indentation level.
 pub(crate) fn generate_component_prop_checks(

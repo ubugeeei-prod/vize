@@ -1,5 +1,5 @@
 use vize_carton::{String, append};
-use vize_croquis::analysis::ComponentUsage;
+use vize_croquis::croquis::ComponentUsage;
 
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
 
