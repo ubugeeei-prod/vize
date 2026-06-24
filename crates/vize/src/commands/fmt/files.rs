@@ -94,7 +94,6 @@ fn should_walk_with_gitignore(pattern: &str) -> bool {
             | "**/*.cts"
             | "./**/*.cts"
             | "**/*.json"
-            | "./**/*.json"
     )
 }
 
