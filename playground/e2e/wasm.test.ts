@@ -147,7 +147,6 @@ export default {
   });
 
   it("should not report no-next-tick for opinionated preset by default", () => {
-    // Regression for #2239: opinionated must not flag nextTick() without explicit opt-in.
     const wasm = getWasm();
     expect(wasm).not.toBeNull();
     if (!wasm) {
