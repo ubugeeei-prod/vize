@@ -27,6 +27,7 @@ pub use super::no_reactive_destructure::NoReactiveDestructure;
 pub use super::no_ref_as_operand::NoRefAsOperand;
 pub use super::no_reserved_identifiers::NoReservedIdentifiers;
 pub use super::no_reserved_keys::NoReservedKeys;
+pub use super::no_restricted_globals::NoRestrictedGlobals;
 pub use super::no_side_effects_in_computed::NoSideEffectsInComputed;
 pub use super::no_top_level_ref_in_script::NoTopLevelRefInScript;
 pub use super::no_unstable_nested_components::NoUnstableNestedComponents;

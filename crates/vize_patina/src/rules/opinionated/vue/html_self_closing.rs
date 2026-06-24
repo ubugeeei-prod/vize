@@ -213,7 +213,7 @@ mod tests {
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
-        registry.register(Box::new(HtmlSelfClosing));
+        registry.register(Box::new(HtmlSelfClosing::default()));
         Linter::with_registry(registry)
     }
 

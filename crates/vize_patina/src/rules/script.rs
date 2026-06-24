@@ -32,6 +32,7 @@ mod no_reactive_destructure;
 mod no_ref_as_operand;
 mod no_reserved_identifiers;
 mod no_reserved_keys;
+mod no_restricted_globals;
 mod no_side_effects_in_computed;
 mod no_top_level_ref_in_script;
 mod no_unstable_nested_components;

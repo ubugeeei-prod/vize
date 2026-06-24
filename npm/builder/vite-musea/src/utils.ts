@@ -178,7 +178,8 @@ export async function generateStorybookFiles(
       const csf = binding.artToCsf(source, { filename: filePath });
 
       const outputPath = path.join(outputDir, csf.filename);
-      const code = rewriteStorybookComponentImport(csf.code, art, filePath, outputPath);
+      const rewritten = rewriteStorybookComponentImport(csf.code, art, filePath, outputPath);
+      const code = rewriteStorybookScriptImports(rewritten, filePath, outputPath);
       await fs.promises.writeFile(outputPath, code, "utf-8");
 
       console.log(`[musea] Generated: ${path.relative(root, outputPath)}`);
@@ -217,6 +218,48 @@ export function rewriteStorybookComponentImport(
 
 function isBareImport(source: string): boolean {
   return !source.startsWith(".") && !path.isAbsolute(source);
+}
+
+/**
+ * Rewrite relative import specifiers in the generated Storybook CSF file so that
+ * imports lifted verbatim from the art file's `<script setup>` resolve against
+ * the generated file's location instead of the original art file's directory.
+ *
+ * The `__museaComponent` import is already rebased by
+ * `rewriteStorybookComponentImport` and is skipped here.
+ */
+export function rewriteStorybookScriptImports(
+  code: string,
+  artPath: string,
+  outputPath: string,
+): string {
+  const artDir = path.dirname(artPath);
+  const outDir = path.dirname(outputPath);
+
+  // Matches: import <clause> from '<specifier>';  (single or double quotes)
+  // `<clause>` is a non-greedy capture so we keep the original binding text intact.
+  const importRe = /(import\s+(?:[\s\S]*?)\s+from\s+)(['"])([^'"]+)\2(\s*;?)/g;
+
+  return code.replace(importRe, (match, head, quote, specifier, tail) => {
+    // Skip bare specifiers (npm packages, virtual modules, etc.).
+    if (!specifier.startsWith(".")) {
+      return match;
+    }
+
+    // Skip the `__museaComponent` import — it is rebased separately by
+    // `rewriteStorybookComponentImport` against the metadata component path.
+    if (/\b__museaComponent\b/.test(head)) {
+      return match;
+    }
+
+    const resolved = path.resolve(artDir, specifier);
+    let rebased = normalizeGlobPath(path.relative(outDir, resolved));
+    if (!rebased.startsWith(".")) {
+      rebased = `./${rebased}`;
+    }
+
+    return `${head}${quote}${rebased}${quote}${tail}`;
+  });
 }
 
 export function toPascalCase(str: string): string {

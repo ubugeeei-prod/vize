@@ -131,6 +131,25 @@ those rules in ESLint or Oxlint and run them beside `vize lint`, or use the `inc
 enable only built-in Vize rules that already match your policy. The `rules` config object controls
 built-in Vize rule severities by name.
 
+For the common case of forbidding a runtime-environment global (typical sidecar ESLint rules such as
+`no-access-process`, `no-access-local-storage`, or `no-restricted-globals` against `localStorage` /
+`sessionStorage`), enable the opt-in built-in `script/no-restricted-globals` rule instead of keeping
+ESLint installed for those alone:
+
+```json
+{
+  "linter": {
+    "rules": {
+      "script/no-restricted-globals": "error"
+    }
+  }
+}
+```
+
+The deny list is fixed today (`process`, `localStorage`, `sessionStorage`) and the rule reports a
+diagnostic on each bare reference to one of those names. A project-configurable deny list is tracked
+in issue #1891.
+
 ## Cross-File Rules
 
 Cross-file analysis lives in Croquis and is exposed to linting through Patina diagnostics. It is

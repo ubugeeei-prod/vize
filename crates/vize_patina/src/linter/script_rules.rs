@@ -11,8 +11,8 @@ mod registry;
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
-    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_NO_RESTRICTED_GLOBALS, RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 
 #[cfg(test)]
@@ -65,7 +65,13 @@ pub(crate) fn parse_sfc_for_lint<'a>(
 ) -> Result<SfcDescriptor<'a>, vize_atelier_sfc::SfcError> {
     profile!(
         "patina.sfc.parse_for_lint",
-        parse_sfc(source, sfc_parse_options(filename))
+        parse_sfc(
+            source,
+            SfcParseOptions {
+                filename: filename.into(),
+                ..Default::default()
+            }
+        )
     )
 }
 
@@ -98,8 +104,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     }
 
     // Parse each block at most once and only when an active AST rule could
-    // match it. Byte rules run directly against the source. Diagnostics are
-    // emitted rule-major / block-minor to preserve the previous ordering.
+    // match it. Byte rules run directly against the source.
     let script = descriptor
         .script
         .as_ref()
@@ -259,9 +264,12 @@ fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
             memmem::find(bytes, b"toMatchSnapshot").is_some()
                 && memmem::find(bytes, b".html").is_some()
         }
-        // `watch` also appears in any aliased import (`watch as observe`), so
-        // this never skips a block the AST check could flag.
         RULE_PREFER_COMPUTED => memmem::find(bytes, b"watch").is_some(),
+        RULE_NO_RESTRICTED_GLOBALS => {
+            memmem::find(bytes, b"process").is_some()
+                || memmem::find(bytes, b"localStorage").is_some()
+                || memmem::find(bytes, b"sessionStorage").is_some()
+        }
         _ => true,
     }
 }
@@ -300,14 +308,6 @@ fn source_may_match_ecosystem_rule(source: &str) -> bool {
                 || memmem::find(bytes, b"Router").is_some()))
         || (memmem::find(bytes, b"toMatchSnapshot").is_some()
             && memmem::find(bytes, b".html").is_some())
-}
-
-#[inline]
-fn sfc_parse_options(filename: &str) -> SfcParseOptions {
-    SfcParseOptions {
-        filename: filename.into(),
-        ..Default::default()
-    }
 }
 
 fn extract_inline_scripts(source: &str) -> Vec<(&str, usize)> {

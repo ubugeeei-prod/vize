@@ -4,7 +4,13 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { resolveScanRoots, rewriteStorybookComponentImport, scanArtFiles } from "./utils.ts";
+import {
+  resolveScanRoots,
+  rewriteStorybookComponentImport,
+  rewriteStorybookScriptImports,
+  scanArtFiles,
+} from "./utils.ts";
+import { loadNative } from "./native-loader.ts";
 
 void test("resolveScanRoots preserves include bases outside the Vite root", () => {
   const root = "/workspace/apps/website";
@@ -57,4 +63,72 @@ void test("rewriteStorybookComponentImport rebases component path from story out
   );
 
   assert.match(result, /from '\.\.\/\.\.\/src\/AfsButton\.vue';/);
+});
+
+void test("rewriteStorybookScriptImports rebases relative imports lifted from script setup", () => {
+  const root = "/workspace";
+  const artPath = path.join(root, "src", "AfsButton.art.vue");
+  const outputPath = path.join(root, ".storybook", "generated", "AfsButton.stories.ts");
+  const code = [
+    "import type { Meta, StoryObj } from '@storybook/vue3';",
+    "import __museaComponent from '../../src/AfsButton.vue';",
+    "import AfsButton from './AfsButton.vue';",
+    'import { fixture } from "./fixtures";',
+    "",
+  ].join("\n");
+
+  const result = rewriteStorybookScriptImports(code, artPath, outputPath);
+
+  // `__museaComponent` is already correct — must be preserved.
+  assert.match(result, /import __museaComponent from '\.\.\/\.\.\/src\/AfsButton\.vue';/);
+  // Lifted script-setup imports must be rebased relative to the generated file.
+  assert.match(result, /import AfsButton from '\.\.\/\.\.\/src\/AfsButton\.vue';/);
+  assert.match(result, /import \{ fixture \} from "\.\.\/\.\.\/src\/fixtures";/);
+  // Bare specifiers (npm packages) must be left untouched.
+  assert.match(result, /import type \{ Meta, StoryObj \} from '@storybook\/vue3';/);
+  // The stale, broken specifier must no longer appear.
+  assert.doesNotMatch(result, /from '\.\/AfsButton\.vue';/);
+});
+
+void test("CSF output for an art file rewrites script-setup imports relative to the generated file (issue #2228)", () => {
+  const binding = loadNative();
+  const root = "/workspace";
+  const artPath = path.join(root, "src", "AfsButton.art.vue");
+  const outputPath = path.join(root, ".storybook", "generated", "AfsButton.stories.ts");
+
+  const source = `
+<script setup lang="ts">
+import AfsButton from './AfsButton.vue'
+</script>
+
+<art title="AfsButton" category="Components" component="./AfsButton.vue">
+  <variant name="Primary" default>
+    <AfsButton color="primary">Primary</AfsButton>
+  </variant>
+</art>
+`;
+
+  const csf = binding.artToCsf(source, { filename: artPath });
+
+  const art = {
+    path: artPath,
+    metadata: {
+      title: "AfsButton",
+      component: "./AfsButton.vue",
+      tags: ["button", "action"],
+      status: "ready" as const,
+    },
+    variants: [],
+    hasScriptSetup: true,
+    hasScript: false,
+    styleCount: 0,
+  };
+
+  const rewritten = rewriteStorybookComponentImport(csf.code, art, artPath, outputPath);
+  const code = rewriteStorybookScriptImports(rewritten, artPath, outputPath);
+
+  // The stale `./AfsButton.vue` lifted from script-setup must be gone.
+  assert.doesNotMatch(code, /from ['"]\.\/AfsButton\.vue['"]/);
+  // The lifted import must be rebased relative to the generated file's location.
+  assert.match(code, /import AfsButton from ['"]\.\.\/\.\.\/src\/AfsButton\.vue['"]/);
 });

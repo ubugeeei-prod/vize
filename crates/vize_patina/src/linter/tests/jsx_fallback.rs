@@ -46,7 +46,7 @@ fn fallback_no_duplicate_attributes_fires_on_jsx() {
 
 #[test]
 fn fallback_html_self_closing_fires_on_jsx() {
-    let linter = linter_with(Box::new(HtmlSelfClosing));
+    let linter = linter_with(Box::new(HtmlSelfClosing::default()));
     let result = linter.lint_jsx(
         "const A = () => <MyWidget></MyWidget>;",
         "test.jsx",
