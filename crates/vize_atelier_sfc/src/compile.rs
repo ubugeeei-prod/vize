@@ -5,6 +5,7 @@
 //! is delegated to specialized modules.
 
 mod bindings;
+mod empty_component;
 mod helpers;
 mod normal_script;
 pub(crate) mod output_module;
@@ -647,18 +648,16 @@ fn compile_sfc_inner(
     }
 
     // Case 3: Script setup with inline template
-    // If we reach here without script_setup, it means the SFC has no content
-    let script_setup = match descriptor.script_setup.as_ref() {
-        Some(s) => s,
-        None => {
-            return Err(SfcError {
-                message:
-                    "At least one <template> or <script> is required in a single file component."
-                        .to_compact_string(),
-                code: None,
-                loc: None,
-            });
-        }
+    let Some(script_setup) = descriptor.script_setup.as_ref() else {
+        return Ok(empty_component::compile_empty_component(
+            is_vapor,
+            &compiled_styles,
+            css,
+            errors,
+            warnings,
+            macro_artifacts,
+            &options,
+        ));
     };
 
     // Extract normal script content if present (for type definitions, imports, etc.)
