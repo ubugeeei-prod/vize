@@ -2,6 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::linter_rule_options::LintRuleOptions;
 use crate::{FxHashMap, String};
 
 const CATEGORY_LINT_MARKER_PREFIX: &str = "__vize_internal/category/";
@@ -26,6 +27,10 @@ pub struct LinterConfig {
 }
 
 /// Raw linter config with unstable config-only switches.
+///
+/// New typed config (here `rule_options`) lives on this internal struct rather
+/// than the public [`LinterConfig`], so the public surface stays additively
+/// stable for `cargo-semver-checks` (mirroring `type_aware`/`categories`).
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub(crate) struct RawLinterConfig {
@@ -33,6 +38,14 @@ pub(crate) struct RawLinterConfig {
     config: LinterConfig,
     type_aware: bool,
     categories: FxHashMap<String, LintRuleSeverity>,
+    rule_options: LintRuleOptions,
+}
+
+impl RawLinterConfig {
+    /// Borrow the typed per-rule options parsed from this raw config.
+    pub(crate) fn rule_options(&self) -> &LintRuleOptions {
+        &self.rule_options
+    }
 }
 
 impl LinterConfig {
@@ -260,5 +273,43 @@ mod tests {
             config.category_severity_overrides(),
             [("a11y".into(), LintRuleSeverity::Warn)]
         );
+    }
+
+    #[test]
+    fn rule_options_deserialize_through_raw_linter_config() {
+        let raw = serde_json::from_str::<RawLinterConfig>(
+            r#"{ "ruleOptions": {
+                "script/no-restricted-globals": { "globals": [
+                    { "name": "process", "message": "Use a typed helper." },
+                    { "name": "alert" }
+                ] },
+                "script/no-restricted-members": { "members": [
+                    { "object": "window", "property": "localStorage" }
+                ] }
+            } }"#,
+        )
+        .unwrap();
+        let options = raw.rule_options();
+
+        assert_eq!(
+            options.restricted_globals(),
+            [
+                ("process".into(), Some("Use a typed helper.".into())),
+                ("alert".into(), None),
+            ]
+        );
+        assert_eq!(
+            options.restricted_members(),
+            [("window".into(), "localStorage".into(), None)]
+        );
+    }
+
+    #[test]
+    fn rule_options_default_to_empty() {
+        let raw = serde_json::from_str::<RawLinterConfig>("{}").unwrap();
+        let options = raw.rule_options();
+        assert!(options.is_empty());
+        assert!(options.restricted_globals().is_empty());
+        assert!(options.restricted_members().is_empty());
     }
 }

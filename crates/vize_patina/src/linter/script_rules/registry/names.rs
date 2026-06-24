@@ -29,6 +29,7 @@ pub(crate) const RULE_NO_INTERNAL_IMPORTS: &str = "script/no-internal-imports";
 pub(crate) const RULE_NO_IMPORT_COMPILER_MACROS: &str = "script/no-import-compiler-macros";
 pub(crate) const RULE_NO_RESERVED_IDENTIFIERS: &str = "script/no-reserved-identifiers";
 pub(crate) const RULE_NO_RESTRICTED_GLOBALS: &str = "script/no-restricted-globals";
+pub(crate) const RULE_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
 pub(crate) const RULE_NO_RESERVED_KEYS: &str = "script/no-reserved-keys";
 pub(crate) const RULE_REQUIRE_SYMBOL_PROVIDE: &str = "script/require-symbol-provide";
 pub(crate) const RULE_REQUIRE_FUNCTION_RETURN_TYPE: &str = "script/require-function-return-type";
@@ -103,6 +104,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_IMPORT_COMPILER_MACROS,
     RULE_NO_RESERVED_IDENTIFIERS,
     RULE_NO_RESTRICTED_GLOBALS,
+    RULE_NO_RESTRICTED_MEMBERS,
     RULE_NO_RESERVED_KEYS,
     RULE_REQUIRE_SYMBOL_PROVIDE,
     RULE_REQUIRE_FUNCTION_RETURN_TYPE,
@@ -169,6 +171,7 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_IMPORT_COMPILER_MACROS,
     RULE_NO_RESERVED_IDENTIFIERS,
     RULE_NO_RESTRICTED_GLOBALS,
+    RULE_NO_RESTRICTED_MEMBERS,
     RULE_NO_RESERVED_KEYS,
     RULE_REQUIRE_SYMBOL_PROVIDE,
     RULE_REQUIRE_FUNCTION_RETURN_TYPE,

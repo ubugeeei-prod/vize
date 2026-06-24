@@ -3,6 +3,7 @@
 //! Defines the `LintResult` output type and the `Linter` struct with its
 //! builder-pattern configuration methods.
 
+use super::category_rules::rule_matches_config_category;
 #[cfg(not(target_arch = "wasm32"))]
 use super::corsa_session::CorsaTypeAwareSession;
 use crate::{
@@ -11,7 +12,7 @@ use crate::{
         LintPreset, builtin_css_rule_names, builtin_script_rule_names,
         ecosystem_builtin_script_rule_names,
     },
-    rule::{RuleCategory, RuleRegistry},
+    rule::RuleRegistry,
 };
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::PathBuf;
@@ -70,6 +71,12 @@ pub struct Linter {
     pub(crate) help_level: HelpLevel,
     /// Built-in script rules enabled for this linter.
     pub(crate) script_rules: &'static [&'static str],
+    /// Project-configured replacements for configurable built-in script rules,
+    /// keyed by rule name. When present, the configured instance runs in place
+    /// of the static registry singleton (see `script/no-restricted-globals` and
+    /// `script/no-restricted-members`, #1891).
+    pub(crate) script_rule_overrides:
+        FxHashMap<&'static str, Box<dyn crate::rules::script::ScriptRule>>,
     /// Built-in `css/*` rules enabled for this linter.
     pub(crate) css_rules: &'static [&'static str],
     /// Whether native type-aware lint rules may run.
@@ -101,6 +108,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             css_rules: builtin_css_rule_names(preset),
+            script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
@@ -123,6 +131,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             css_rules: builtin_css_rule_names(preset),
+            script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
@@ -145,6 +154,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: ecosystem_builtin_script_rule_names(),
             css_rules: builtin_css_rule_names(LintPreset::Ecosystem),
+            script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
@@ -167,6 +177,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: &[],
             css_rules: &[],
+            script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
@@ -388,84 +399,4 @@ fn has_type_rule(rules: &[String]) -> bool {
 
 fn is_type_rule(rule_name: &str) -> bool {
     rule_name.starts_with("type/")
-}
-
-fn rule_matches_config_category(
-    rule_name: &str,
-    rule_category: RuleCategory,
-    config_category: &str,
-) -> bool {
-    match config_category {
-        "correctness" => matches!(rule_category, RuleCategory::Essential),
-        "style" => {
-            is_style_rule_name(rule_name)
-                || matches!(rule_category, RuleCategory::StronglyRecommended)
-        }
-        "a11y" => matches!(rule_category, RuleCategory::Accessibility),
-        "security" => is_security_rule_name(rule_name),
-        "perf" => is_perf_rule_name(rule_name),
-        "suspicious" => {
-            matches!(
-                rule_category,
-                RuleCategory::Recommended | RuleCategory::HtmlConformance | RuleCategory::Ecosystem
-            ) && !is_style_rule_name(rule_name)
-                && !is_perf_rule_name(rule_name)
-                && !is_security_rule_name(rule_name)
-        }
-        _ => false,
-    }
-}
-
-fn is_style_rule_name(rule_name: &str) -> bool {
-    matches!(
-        rule_name,
-        "vue/attribute-hyphenation"
-            | "vue/attribute-order"
-            | "vue/component-definition-name-casing"
-            | "vue/component-name-in-template-casing"
-            | "vue/html-quotes"
-            | "vue/html-self-closing"
-            | "vue/multi-word-component-names"
-            | "vue/mustache-interpolation-spacing"
-            | "vue/no-inline-style"
-            | "vue/no-multi-spaces"
-            | "vue/prefer-props-shorthand"
-            | "vue/prefer-true-attribute-shorthand"
-            | "vue/prop-name-casing"
-            | "vue/require-scoped-style"
-            | "vue/sfc-element-order"
-            | "vue/single-style-block"
-            | "vue/v-bind-style"
-            | "vue/v-on-style"
-            | "vue/v-slot-style"
-            | "css/no-id-selectors"
-            | "css/no-important"
-            | "css/no-utility-classes"
-            | "css/prefer-logical-properties"
-            | "css/prefer-nested-selectors"
-            | "css/prefer-slotted"
-    )
-}
-
-fn is_security_rule_name(rule_name: &str) -> bool {
-    matches!(
-        rule_name,
-        "vue/no-v-html"
-            | "vue/no-unsafe-url"
-            | "vue/no-unsandboxed-iframe"
-            | "ssr/no-browser-globals-in-ssr"
-            | "ssr/no-hydration-mismatch"
-    )
-}
-
-fn is_perf_rule_name(rule_name: &str) -> bool {
-    matches!(
-        rule_name,
-        "css/no-v-bind-performance"
-            | "script/no-async-in-computed"
-            | "script/no-next-tick"
-            | "script/no-top-level-ref-in-script"
-            | "type/no-floating-promises"
-            | "type/no-reactivity-loss"
-    )
 }

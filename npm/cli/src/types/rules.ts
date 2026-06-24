@@ -96,6 +96,7 @@ export const LINT_RULE_NAMES = [
   "script/no-reserved-keys",
   "script/no-reserved-props",
   "script/no-restricted-globals",
+  "script/no-restricted-members",
   "script/no-side-effects-in-computed-properties",
   "script/no-top-level-ref-in-script",
   "script/no-unstable-nested-components",

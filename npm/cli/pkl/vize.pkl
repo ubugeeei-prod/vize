@@ -44,11 +44,36 @@ class VitePluginConfig {
   ignorePatterns: Listing<String>? = null
 }
 
+class RestrictedGlobal {
+  name: String
+  message: String? = null
+}
+
+class RestrictedMember {
+  object: String
+  property: String
+  message: String? = null
+}
+
+class NoRestrictedGlobalsOptions {
+  globals: Listing<RestrictedGlobal>? = null
+}
+
+class NoRestrictedMembersOptions {
+  members: Listing<RestrictedMember>? = null
+}
+
+class LintRuleOptions {
+  `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
+  `script/no-restricted-members`: NoRestrictedMembersOptions? = null
+}
+
 class LinterConfig {
   enabled: Boolean? = null
   preset: LintPreset? = null
   typeAware: Boolean? = null
   rules: Mapping<String, RuleSeverity>? = null
+  ruleOptions: LintRuleOptions? = null
   categories: Mapping<String, RuleSeverity>? = null
 }
 

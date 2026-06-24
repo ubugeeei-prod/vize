@@ -58,6 +58,11 @@ pub fn run(args: LintArgs) {
     } else {
         crate::config::load_config_and_linter_with_lint_features_and_source(args.config.as_deref())
     };
+    let rule_options = if args.no_config {
+        crate::config::LintRuleOptions::default()
+    } else {
+        crate::config::load_linter_rule_options(args.config.as_deref())
+    };
     let config_dir = loaded_config
         .source_path
         .as_deref()
@@ -102,24 +107,16 @@ pub fn run(args: LintArgs) {
         .with_additional_rules(linter_config.enabled_rules())
         .with_disabled_rules(linter_config.disabled_rules())
         .with_disabled_categories(linter_config.disabled_categories())
-        .with_category_severity_overrides(
-            linter_config
-                .category_severity_overrides()
-                .into_iter()
-                .filter_map(lint_severity_override)
-                .collect(),
-        )
-        .with_rule_severity_overrides(
-            linter_config
-                .rule_severity_overrides()
-                .into_iter()
-                .filter_map(lint_severity_override)
-                .collect(),
-        )
+        .with_category_severity_overrides(severity_overrides(
+            linter_config.category_severity_overrides(),
+        ))
+        .with_rule_severity_overrides(severity_overrides(linter_config.rule_severity_overrides()))
         .with_help_level(help_level)
         .with_type_aware_lint(type_aware_enabled)
         .with_vue_version(linter_features.vue_version)
-        .with_vapor_mode(linter_features.vapor);
+        .with_vapor_mode(linter_features.vapor)
+        .with_restricted_globals(rule_options.restricted_globals())
+        .with_restricted_members(rule_options.restricted_members());
     #[cfg(not(target_arch = "wasm32"))]
     {
         linter = linter.with_corsa_path(configured_corsa_path);
@@ -398,14 +395,17 @@ pub fn run(args: LintArgs) {
     }
 }
 
-fn lint_severity_override(
-    (name, severity): (String, LintRuleSeverity),
-) -> Option<(String, Severity)> {
-    match severity {
-        LintRuleSeverity::Off => None,
-        LintRuleSeverity::Warn => Some((name, Severity::Warning)),
-        LintRuleSeverity::Error => Some((name, Severity::Error)),
-    }
+/// Map configured `(name, severity)` entries to linter severity overrides,
+/// dropping any explicitly turned off.
+fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, Severity)> {
+    entries
+        .into_iter()
+        .filter_map(|(name, severity)| match severity {
+            LintRuleSeverity::Off => None,
+            LintRuleSeverity::Warn => Some((name, Severity::Warning)),
+            LintRuleSeverity::Error => Some((name, Severity::Error)),
+        })
+        .collect()
 }
 
 #[inline]

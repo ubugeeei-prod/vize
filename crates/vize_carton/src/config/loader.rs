@@ -178,11 +178,8 @@ pub fn load_compiler_jsx_mode(path: Option<&Path>) -> Option<crate::config::JsxM
     features.jsx_mode
 }
 
-/// Load configuration and linter settings from a directory or file path in one pass.
-///
-/// The lint/check CLIs call this on every invocation. Keeping the raw config
-/// around long enough to derive both `VizeConfig` and `LinterConfig` avoids
-/// parsing and normalizing the same config file twice.
+/// Load configuration and linter settings in one pass (one raw parse derives
+/// both `VizeConfig` and `LinterConfig`, avoiding a double parse on every CLI run).
 pub fn load_config_and_linter_with_source(path: Option<&Path>) -> (LoadedConfig, LinterConfig) {
     let loaded = load_raw_config_with_source(path);
     let linter = load_linter_from_raw_config(&loaded.config);
@@ -196,10 +193,7 @@ pub fn load_config_and_linter_with_source(path: Option<&Path>) -> (LoadedConfig,
     )
 }
 
-/// Load configuration, auxiliary feature flags, and linter settings in one pass.
-///
-/// This is the LSP/native variant of the same optimization: a single raw parse
-/// feeds stable config, feature flags, and lint settings.
+/// Load config, feature flags, and linter settings in one raw parse (LSP/native variant).
 pub fn load_config_and_linter_with_features_and_source(
     path: Option<&Path>,
 ) -> (LoadedConfigWithFeatures, LinterConfig) {
@@ -220,6 +214,12 @@ pub fn load_config_and_linter_with_features_and_source(
 pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
     let loaded = load_raw_config_with_source(path);
     load_linter_from_raw_config(&loaded.config)
+}
+
+/// Load the typed per-rule lint options (`linter.ruleOptions`); defaults when unset.
+pub fn load_linter_rule_options(path: Option<&Path>) -> crate::config::LintRuleOptions {
+    let loaded = load_raw_config_with_source(path);
+    loaded.config.linter.rule_options().clone()
 }
 
 pub fn load_config_entry_ignores_with_source(path: Option<&Path>) -> LoadedConfigEntryIgnores {
