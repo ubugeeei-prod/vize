@@ -71,6 +71,47 @@ await nextTick();
 }
 
 #[test]
+fn nuxt_preset_allows_vuetify_kebab_components() {
+    let linter = Linter::with_preset(LintPreset::Nuxt);
+    let sfc = r#"<template>
+  <v-dialog>
+    <v-btn />
+    <v-icon />
+    <v-spacer />
+  </v-dialog>
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "components/Dialog.vue");
+
+    for diagnostic in &result.diagnostics {
+        assert!(
+            diagnostic.rule_name != "vue/component-name-in-template-casing"
+                && diagnostic.rule_name != "vue/html-self-closing",
+            "Nuxt preset should not flag Vuetify v-* tags, got {diagnostic:?}",
+        );
+    }
+}
+
+#[test]
+fn opinionated_preset_still_flags_vuetify_kebab_components() {
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let sfc = r#"<template>
+  <v-btn />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "components/Dialog.vue");
+
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|d| d.rule_name == "vue/component-name-in-template-casing"),
+        "Opinionated preset should still flag Vuetify v-* tags as kebab-case, got {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn nuxt_preset_reports_next_tick_when_rule_is_enabled() {
     let linter = Linter::with_preset(LintPreset::Nuxt)
         .with_additional_rules(vec!["script/no-next-tick".into()]);

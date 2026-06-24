@@ -46,12 +46,31 @@ pub enum ComponentCasing {
 /// Component name in template casing rule
 pub struct ComponentNameInTemplateCasing {
     pub casing: ComponentCasing,
+    /// Whether to exempt framework-registered Vuetify components (`v-*` tags).
+    ///
+    /// Vuetify auto-registers a large set of kebab-case components (`v-btn`,
+    /// `v-dialog`, ...) that the linter cannot see in source. Enabling this in
+    /// the Nuxt preset keeps real projects out of a `vue/component-name-in-template-casing`
+    /// warning storm without loosening the rule for non-Nuxt presets.
+    pub allow_vuetify_tags: bool,
 }
 
 impl Default for ComponentNameInTemplateCasing {
     fn default() -> Self {
         Self {
             casing: ComponentCasing::PascalCase,
+            allow_vuetify_tags: false,
+        }
+    }
+}
+
+impl ComponentNameInTemplateCasing {
+    /// Variant tuned for the Nuxt preset: exempts `v-*` tags so framework-registered
+    /// Vuetify 2 components stop tripping casing diagnostics.
+    pub fn nuxt() -> Self {
+        Self {
+            casing: ComponentCasing::PascalCase,
+            allow_vuetify_tags: true,
         }
     }
 }
@@ -75,6 +94,7 @@ impl Rule for ComponentNameInTemplateCasing {
                 || is_svg_tag(tag)
                 || is_builtin_component(tag)
                 || is_nuxt_builtin_component(tag)
+                || (self.allow_vuetify_tags && is_vuetify_tag(tag))
             {
                 return;
             }
@@ -137,6 +157,18 @@ fn is_nuxt_builtin_component(tag: &str) -> bool {
     )
 }
 
+/// Matches the Vuetify `v-*` tag convention (e.g. `v-btn`, `v-dialog`).
+///
+/// Vuetify components are framework-registered globally, so they appear in
+/// templates without an explicit local import. The linter cannot infer this
+/// from source, so the Nuxt preset opts in to treating any tag starting with
+/// `v-` followed by a lowercase ASCII letter as a known component name and
+/// skips casing/self-closing diagnostics for it.
+fn is_vuetify_tag(tag: &str) -> bool {
+    let bytes = tag.as_bytes();
+    bytes.len() >= 3 && bytes[0] == b'v' && bytes[1] == b'-' && bytes[2].is_ascii_lowercase()
+}
+
 #[cfg(test)]
 mod tests {
     use super::ComponentNameInTemplateCasing;
@@ -182,5 +214,35 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<nuxt-child id="index" />"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    fn create_nuxt_linter() -> Linter {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(ComponentNameInTemplateCasing::nuxt()));
+        Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn test_nuxt_preset_allows_vuetify_tags() {
+        let linter = create_nuxt_linter();
+        let result = linter.lint_template(
+            r#"<v-dialog><v-btn /><v-icon /><v-spacer /></v-dialog>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_default_still_flags_vuetify_tags() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<v-btn />"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_nuxt_preset_still_flags_other_kebab() {
+        let linter = create_nuxt_linter();
+        let result = linter.lint_template(r#"<my-component />"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
     }
 }
