@@ -12,7 +12,14 @@ use vize_carton::cstr;
 
 #[path = "import_rewriter_virtual.rs"]
 mod virtual_rewrite;
-use virtual_rewrite::absolute_import_needs_virtual_rewrite;
+use virtual_rewrite::{
+    absolute_import_needs_virtual_rewrite, is_rewritable_project_specifier,
+    is_rewritable_vue_specifier,
+};
+
+#[path = "import_rewriter_dts.rs"]
+mod dts_rewrite;
+use dts_rewrite::{rewrite_relative_dts_specifier, source_contains_relative_specifier};
 
 #[derive(Debug, Clone)]
 pub struct OffsetAdjustment {
@@ -84,14 +91,18 @@ impl ImportRewriter {
         })
     }
 
+    /// Rewrite a script's module specifiers for the canon virtual project.
+    /// `source_dir` (when known) enables the generated-`.d.ts` redirect (#2227).
     pub fn rewrite_for_virtual_project(
         &self,
         source: &str,
         source_type: SourceType,
         roots: (&std::path::Path, &std::path::Path),
+        source_dir: Option<&std::path::Path>,
     ) -> RewriteResult {
         let project_root = roots.0.to_string_lossy();
-        if !source.contains(".vue") && !source.contains(project_root.as_ref()) {
+        let dts_candidate = source_dir.is_some() && source_contains_relative_specifier(source);
+        if !source.contains(".vue") && !source.contains(project_root.as_ref()) && !dts_candidate {
             return RewriteResult {
                 code: source.to_compact_string(),
                 source_map: ImportSourceMap::empty(),
@@ -99,7 +110,7 @@ impl ImportRewriter {
         }
 
         self.rewrite_with(source, source_type, |path| {
-            self.rewrite_virtual_project_specifier(path, roots)
+            self.rewrite_virtual_project_specifier(path, roots, source_dir)
         })
     }
 
@@ -256,7 +267,13 @@ impl ImportRewriter {
         &self,
         path: &str,
         roots: (&std::path::Path, &std::path::Path),
+        source_dir: Option<&std::path::Path>,
     ) -> Option<String> {
+        if let Some(source_dir) = source_dir
+            && let Some(rewritten) = rewrite_relative_dts_specifier(path, source_dir, roots.0)
+        {
+            return Some(rewritten);
+        }
         let candidate = std::path::Path::new(path);
         if candidate.is_absolute()
             && let Ok(relative) =
@@ -287,33 +304,6 @@ impl ImportRewriter {
         }
         None
     }
-}
-
-fn is_rewritable_project_specifier(path: &std::path::Path) -> bool {
-    if path
-        .components()
-        .next()
-        .is_some_and(|component| component.as_os_str() == "node_modules")
-    {
-        return false;
-    }
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_none_or(|extension| {
-            matches!(
-                extension,
-                "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
-            )
-        })
-}
-
-fn is_rewritable_vue_specifier(path: &str) -> bool {
-    path.ends_with(".vue")
-        && (path.starts_with("./")
-            || path.starts_with("../")
-            || path.starts_with("@/")
-            || path.starts_with("~/")
-            || std::path::Path::new(path).is_absolute())
 }
 
 impl Default for ImportRewriter {

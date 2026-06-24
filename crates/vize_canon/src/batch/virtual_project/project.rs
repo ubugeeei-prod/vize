@@ -255,8 +255,7 @@ impl VirtualProject {
             path,
             content,
             source_type,
-            &self.project_root,
-            &self.virtual_root,
+            (&self.project_root, &self.virtual_root),
             &self.rewriter,
         )?;
         self.absorb_registered_file(registered);

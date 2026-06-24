@@ -90,7 +90,7 @@ fn test_rewrite_absolute_export_from_for_virtual_project() {
     let rewriter = ImportRewriter::new();
     let source = r#"export * from '/p/src/App.vue';"#;
     let roots = (Path::new("/p"), Path::new("/p/v"));
-    let result = rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots);
+    let result = rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots, None);
     assert_eq!(result.code, r#"export * from '/p/v/src/App.vue.ts';"#);
 }
 
@@ -114,6 +114,7 @@ fn rewrite_absolute_vue_specifier_through_symlinked_project_path() {
         source.as_str(),
         SourceType::ts(),
         (roots.0.as_path(), roots.1.as_path()),
+        None,
     );
 
     assert_eq!(
@@ -142,7 +143,8 @@ fn test_keeps_plain_absolute_generated_graphql_import_for_virtual_project() {
     );
     let virtual_root = root.join("node_modules/.vize/canon");
     let roots = (root.as_path(), virtual_root.as_path());
-    let result = rewriter.rewrite_for_virtual_project(source.as_str(), SourceType::ts(), roots);
+    let result =
+        rewriter.rewrite_for_virtual_project(source.as_str(), SourceType::ts(), roots, None);
     assert_eq!(
         result.code.as_str(),
         cstr!(
@@ -151,6 +153,65 @@ fn test_keeps_plain_absolute_generated_graphql_import_for_virtual_project() {
         )
         .as_str()
     );
+
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
+fn test_rewrite_relative_generated_dts_reexport_to_real_path_for_virtual_project() {
+    // #2227: a `types/index.ts` barrel materialized into canon keeps a relative
+    // `export * from './codegen/schema'`, but the generated `.d.ts` is never
+    // mirrored. The relative specifier must be redirected to the real
+    // (extensionless) schema path so the re-exported identity is not dropped.
+    let raw_root = unique_case_dir("relative-generated-dts");
+    let _ = fs::remove_dir_all(&raw_root);
+    let schema = write(
+        &raw_root,
+        "types/codegen/schema.d.ts",
+        "export type AimContentsComponent = { __typename: 'A' }\n",
+    );
+    let barrel = write(
+        &raw_root,
+        "types/index.ts",
+        "export * from './codegen/schema'\n",
+    );
+    // `VirtualProject::new` canonicalizes the project root before building, so
+    // mirror that here for the `starts_with(project_root)` redirect check.
+    let root = vize_carton::path::canonicalize_non_verbatim(&raw_root);
+    let schema = vize_carton::path::canonicalize_non_verbatim(&schema);
+    let rewriter = ImportRewriter::new();
+    let source = "export * from './codegen/schema'";
+    let virtual_root = root.join("node_modules/.vize/canon");
+    let roots = (root.as_path(), virtual_root.as_path());
+    let result =
+        rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots, barrel.parent());
+    assert_eq!(
+        result.code.as_str(),
+        cstr!(
+            "export * from '{}'",
+            schema.with_file_name("schema").display()
+        )
+        .as_str()
+    );
+
+    let _ = fs::remove_dir_all(&raw_root);
+}
+
+#[test]
+fn test_keeps_relative_source_reexport_for_virtual_project() {
+    // A relative re-export to a real source file (not a generated `.d.ts`) keeps
+    // its relative spelling: the mirror preserves that file's directory layout.
+    let root = unique_case_dir("relative-source-reexport");
+    let _ = fs::remove_dir_all(&root);
+    write(&root, "types/helpers.ts", "export type Helper = number\n");
+    let barrel = write(&root, "types/index.ts", "export * from './helpers'\n");
+    let rewriter = ImportRewriter::new();
+    let source = "export * from './helpers'";
+    let virtual_root = root.join("node_modules/.vize/canon");
+    let roots = (root.as_path(), virtual_root.as_path());
+    let result =
+        rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots, barrel.parent());
+    assert_eq!(result.code.as_str(), "export * from './helpers'");
 
     let _ = fs::remove_dir_all(&root);
 }
@@ -181,7 +242,8 @@ fn test_rewrite_absolute_ts_import_that_needs_vue_rewrite_for_virtual_project() 
     );
     let virtual_root = root.join("node_modules/.vize/canon");
     let roots = (root.as_path(), virtual_root.as_path());
-    let result = rewriter.rewrite_for_virtual_project(source.as_str(), SourceType::ts(), roots);
+    let result =
+        rewriter.rewrite_for_virtual_project(source.as_str(), SourceType::ts(), roots, None);
     assert_eq!(
         result.code.as_str(),
         cstr!(
@@ -199,7 +261,7 @@ fn test_keeps_absolute_assets_for_virtual_project() {
     let rewriter = ImportRewriter::new();
     let source = r#"import '/p/assets/theme.css';"#;
     let roots = (Path::new("/p"), Path::new("/p/v"));
-    let result = rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots);
+    let result = rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots, None);
     assert_eq!(result.code, source);
 }
 
@@ -208,7 +270,7 @@ fn test_keeps_absolute_node_modules_for_virtual_project() {
     let rewriter = ImportRewriter::new();
     let source = r#"import '/p/node_modules/pkg/index.js';"#;
     let roots = (Path::new("/p"), Path::new("/p/v"));
-    let result = rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots);
+    let result = rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots, None);
     assert_eq!(result.code, source);
 }
 

@@ -208,3 +208,141 @@ void childComponents
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+/// Regression for #2227: a `types/index.ts` barrel that re-exports a generated
+/// GraphQL `.d.ts` via a relative `export *` is materialized into canon, but the
+/// `.d.ts` is intentionally kept on its real path (#2047). Previously the
+/// barrel's relative `./codegen/schema` dangled inside the mirror, dropping the
+/// generated module's type identity so members re-exported through `~/types`
+/// were reported as missing/unrelated — a false positive vue-tsc does not raise.
+#[test]
+fn check_barrel_reexport_preserves_generated_graphql_identity() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("barrel");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("fragments")).unwrap();
+    std::fs::create_dir_all(project_root.join("pages")).unwrap();
+    std::fs::create_dir_all(project_root.join("types/codegen")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["*"],
+      "@/*": ["*"]
+    },
+    "noEmit": true,
+    "types": []
+  },
+  "include": ["fragments/**/*.vue", "pages/**/*.vue", "types/**/*.ts", "types/**/*.d.ts"]
+}"#,
+    )
+    .unwrap();
+
+    std::fs::write(
+        project_root.join("types/codegen/schema.d.ts"),
+        r#"// Generated GraphQL schema types.
+export type AimTextComponent = {
+  __typename: 'AimTextComponent'
+  text: string
+  children: AimContentsComponent[]
+}
+
+export type AimImageComponent = {
+  __typename: 'AimImageComponent'
+  url: string
+  children: AimContentsComponent[]
+}
+
+export type AimContentsComponent = AimTextComponent | AimImageComponent
+
+export type AimContentsMoshiQuery = {
+  components: AimContentsComponent[]
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("types/index.ts"),
+        r#"export * from './codegen/schema'
+
+export type UnwrapArray<T> = T extends Array<infer U> ? U : never
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("pages/_studyInfoId.vue"),
+        r#"<script setup lang="ts">
+import type { AimContentsMoshiQuery } from '~/types/codegen/schema'
+
+export type AimContentsMoshi = AimContentsMoshiQuery
+</script>
+
+<template><main /></template>
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("fragments/MoshiContentsSection.vue"),
+        r#"<script setup lang="ts">
+import { computed } from 'vue'
+import { type AimContentsMoshi } from '~/pages/_studyInfoId.vue'
+import { type UnwrapArray, type AimContentsComponent } from '~/types'
+
+type AimComponent = UnwrapArray<AimContentsMoshi['components']>
+
+const props = defineProps<{
+  component: { childMoshiContentsComponents: AimContentsComponent[] }
+}>()
+const childComponents = computed(
+  () => props.component.childMoshiContentsComponents satisfies AimComponent[],
+)
+void childComponents
+</script>
+
+<template><section /></template>
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "--no-check-props",
+            "--no-check-emits",
+            "--no-check-template-bindings",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    assert!(
+        output.status.success(),
+        "check failed\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>")
+    );
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    assert!(
+        !project_root
+            .join("node_modules/.vize/canon/types/codegen/schema.d.ts")
+            .exists()
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

@@ -69,8 +69,7 @@ pub(super) fn build_registered_file(
             path,
             content,
             SourceType::ts(),
-            context.project_root,
-            context.virtual_root,
+            (context.project_root, context.virtual_root),
             context.rewriter,
         );
     }
@@ -92,8 +91,7 @@ pub(super) fn build_registered_file(
         path,
         content,
         source_type,
-        context.project_root,
-        context.virtual_root,
+        (context.project_root, context.virtual_root),
         context.rewriter,
     )
 }
@@ -263,15 +261,14 @@ pub(super) fn build_script_registered_file(
     path: &Path,
     content: &str,
     source_type: SourceType,
-    project_root: &Path,
-    virtual_root: &Path,
+    roots: (&Path, &Path),
     rewriter: &ImportRewriter,
 ) -> CorsaResult<RegisteredFile> {
     let rewritten = profile!(
         "canon.import.rewrite.script",
-        rewriter.rewrite_for_virtual_project(content, source_type, (project_root, virtual_root))
+        rewriter.rewrite_for_virtual_project(content, source_type, roots, path.parent())
     );
-    let virtual_path = mirrored_virtual_path(project_root, virtual_root, path)?;
+    let virtual_path = mirrored_virtual_path(roots.0, roots.1, path)?;
 
     Ok(RegisteredFile {
         file: VirtualFile {
@@ -281,7 +278,7 @@ pub(super) fn build_script_registered_file(
             virtual_path,
         },
         original_content: content.to_compact_string(),
-        passthrough_files: collect_passthrough_modules(path, content, project_root, virtual_root),
+        passthrough_files: collect_passthrough_modules(path, content, roots.0, roots.1),
         diagnostics: Vec::new(),
     })
 }

@@ -92,11 +92,38 @@ fn resolve_source_path(path: &Path) -> Option<PathBuf> {
     None
 }
 
-fn append_extension(path: &Path, extension: &str) -> PathBuf {
+pub(super) fn append_extension(path: &Path, extension: &str) -> PathBuf {
     match path.file_name().and_then(|name| name.to_str()) {
         Some(name) => path.with_file_name(cstr!("{name}{extension}")),
         None => path.to_path_buf(),
     }
+}
+
+pub(super) fn is_rewritable_project_specifier(path: &Path) -> bool {
+    if path
+        .components()
+        .next()
+        .is_some_and(|component| component.as_os_str() == "node_modules")
+    {
+        return false;
+    }
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_none_or(|extension| {
+            matches!(
+                extension,
+                "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
+            )
+        })
+}
+
+pub(super) fn is_rewritable_vue_specifier(path: &str) -> bool {
+    path.ends_with(".vue")
+        && (path.starts_with("./")
+            || path.starts_with("../")
+            || path.starts_with("@/")
+            || path.starts_with("~/")
+            || Path::new(path).is_absolute())
 }
 
 fn is_relative_specifier(specifier: &str) -> bool {
