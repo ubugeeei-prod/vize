@@ -478,22 +478,15 @@ fn format_file_source(
         });
     }
 
-    if path.extension().is_some_and(|e| e == "json") {
-        let code = profile!(
-            "cli.fmt.file.format_json",
-            vize_glyph::format_json(source, options)
-        )?;
-        return Ok(FormatResult {
-            changed: code.as_str() != source,
-            code,
-        });
-    }
-
-    if path.extension().is_some_and(|e| e == "jsonc") {
-        let code = profile!(
-            "cli.fmt.file.format_jsonc",
-            vize_glyph::format_jsonc(source, options)
-        )?;
+    if let Some(ext) = path.extension().and_then(|e| e.to_str())
+        && matches!(ext, "json" | "jsonc")
+    {
+        let format = if ext == "jsonc" {
+            vize_glyph::format_jsonc
+        } else {
+            vize_glyph::format_json
+        };
+        let code = profile!("cli.fmt.file.format_json", format(source, options))?;
         return Ok(FormatResult {
             changed: code.as_str() != source,
             code,

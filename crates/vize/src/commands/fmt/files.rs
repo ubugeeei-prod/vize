@@ -94,9 +94,7 @@ fn should_walk_with_gitignore(pattern: &str) -> bool {
             | "**/*.cts"
             | "./**/*.cts"
             | "**/*.json"
-            | "./**/*.json"
             | "**/*.jsonc"
-            | "./**/*.jsonc"
     )
 }
 
@@ -157,24 +155,12 @@ fn normalize_fmt_pattern(pattern: &str) -> vize_carton::String {
 
 #[inline]
 fn is_format_target(path: &Path) -> bool {
+    const EXTENSIONS: [&str; 11] = [
+        "vue", "jsx", "tsx", "js", "mjs", "cjs", "ts", "mts", "cts", "json", "jsonc",
+    ];
     path.extension()
         .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| {
-            matches!(
-                extension,
-                "vue"
-                    | "jsx"
-                    | "tsx"
-                    | "js"
-                    | "mjs"
-                    | "cjs"
-                    | "ts"
-                    | "mts"
-                    | "cts"
-                    | "json"
-                    | "jsonc"
-            )
-        })
+        .is_some_and(|extension| EXTENSIONS.contains(&extension))
 }
 
 #[inline]
