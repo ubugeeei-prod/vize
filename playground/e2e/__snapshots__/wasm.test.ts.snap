@@ -10,10 +10,7 @@ exports[`WASM Module > should expose lint rules with preset membership 1`] = `
     "nuxt",
     "opinionated",
   ],
-  "noNextTick": [
-    "opinionated",
-    "nuxt",
-  ],
+  "noNextTick": [],
   "noOptionsApi": [
     "opinionated",
   ],

@@ -46,31 +46,12 @@ pub enum ComponentCasing {
 /// Component name in template casing rule
 pub struct ComponentNameInTemplateCasing {
     pub casing: ComponentCasing,
-    /// Whether to exempt framework-registered Vuetify components (`v-*` tags).
-    ///
-    /// Vuetify auto-registers a large set of kebab-case components (`v-btn`,
-    /// `v-dialog`, ...) that the linter cannot see in source. Enabling this in
-    /// the Nuxt preset keeps real projects out of a `vue/component-name-in-template-casing`
-    /// warning storm without loosening the rule for non-Nuxt presets.
-    pub allow_vuetify_tags: bool,
 }
 
 impl Default for ComponentNameInTemplateCasing {
     fn default() -> Self {
         Self {
             casing: ComponentCasing::PascalCase,
-            allow_vuetify_tags: false,
-        }
-    }
-}
-
-impl ComponentNameInTemplateCasing {
-    /// Variant tuned for the Nuxt preset: exempts `v-*` tags so framework-registered
-    /// Vuetify 2 components stop tripping casing diagnostics.
-    pub fn nuxt() -> Self {
-        Self {
-            casing: ComponentCasing::PascalCase,
-            allow_vuetify_tags: true,
         }
     }
 }
@@ -81,53 +62,93 @@ impl Rule for ComponentNameInTemplateCasing {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let tag = element.tag.as_str();
+        check_element(ctx, element, self.casing, false);
+    }
+}
 
-        // Skip HTML elements, SVG elements, and Vue built-ins.
-        //
-        // Fast path: native tags (div/span/...) contain no uppercase bytes, so
-        // their lowercased form is identical. Only allocate via `to_lowercase()`
-        // when the tag actually has an uppercase byte, sparing an allocation for
-        // every native element (the overwhelmingly common case).
-        if tag.bytes().all(|b| !b.is_ascii_uppercase()) {
-            if is_html_tag(tag)
-                || is_svg_tag(tag)
-                || is_builtin_component(tag)
-                || is_nuxt_builtin_component(tag)
-                || (self.allow_vuetify_tags && is_vuetify_tag(tag))
-            {
-                return;
-            }
-        } else {
-            let tag_lower = tag.to_lowercase();
-            if is_html_tag(&tag_lower)
-                || is_svg_tag(tag)
-                || is_builtin_component(tag)
-                || is_builtin_component(&tag_lower)
-                || is_nuxt_builtin_component(tag)
-            {
-                return;
+/// Nuxt-preset variant of [`ComponentNameInTemplateCasing`] that also exempts
+/// framework-registered Vuetify 2 components (`v-*` tags) from casing
+/// diagnostics.
+///
+/// Vuetify auto-registers a large set of kebab-case components (`v-btn`,
+/// `v-dialog`, ...) that the linter cannot see in source. Enabling this
+/// exemption in the Nuxt preset keeps real projects out of a
+/// `vue/component-name-in-template-casing` warning storm without loosening
+/// the rule for non-Nuxt presets.
+pub(crate) struct ComponentNameInTemplateCasingNuxt {
+    casing: ComponentCasing,
+}
+
+impl Default for ComponentNameInTemplateCasingNuxt {
+    fn default() -> Self {
+        Self {
+            casing: ComponentCasing::PascalCase,
+        }
+    }
+}
+
+impl Rule for ComponentNameInTemplateCasingNuxt {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        check_element(ctx, element, self.casing, true);
+    }
+}
+
+fn check_element<'a>(
+    ctx: &mut LintContext<'a>,
+    element: &ElementNode<'a>,
+    casing: ComponentCasing,
+    allow_vuetify_tags: bool,
+) {
+    let tag = element.tag.as_str();
+
+    // Skip HTML elements, SVG elements, and Vue built-ins.
+    //
+    // Fast path: native tags (div/span/...) contain no uppercase bytes, so
+    // their lowercased form is identical. Only allocate via `to_lowercase()`
+    // when the tag actually has an uppercase byte, sparing an allocation for
+    // every native element (the overwhelmingly common case).
+    if tag.bytes().all(|b| !b.is_ascii_uppercase()) {
+        if is_html_tag(tag)
+            || is_svg_tag(tag)
+            || is_builtin_component(tag)
+            || is_nuxt_builtin_component(tag)
+            || (allow_vuetify_tags && is_vuetify_tag(tag))
+        {
+            return;
+        }
+    } else {
+        let tag_lower = tag.to_lowercase();
+        if is_html_tag(&tag_lower)
+            || is_svg_tag(tag)
+            || is_builtin_component(tag)
+            || is_builtin_component(&tag_lower)
+            || is_nuxt_builtin_component(tag)
+        {
+            return;
+        }
+    }
+
+    match casing {
+        ComponentCasing::PascalCase => {
+            if !is_pascal_case(tag) {
+                ctx.warn_with_help(
+                    ctx.t("vue/component-name-in-template-casing.pascal"),
+                    &element.loc,
+                    ctx.t("vue/component-name-in-template-casing.help_pascal"),
+                );
             }
         }
-
-        match self.casing {
-            ComponentCasing::PascalCase => {
-                if !is_pascal_case(tag) {
-                    ctx.warn_with_help(
-                        ctx.t("vue/component-name-in-template-casing.pascal"),
-                        &element.loc,
-                        ctx.t("vue/component-name-in-template-casing.help_pascal"),
-                    );
-                }
-            }
-            ComponentCasing::KebabCase => {
-                if !is_kebab_case_loose(tag) {
-                    ctx.warn_with_help(
-                        ctx.t("vue/component-name-in-template-casing.kebab"),
-                        &element.loc,
-                        ctx.t("vue/component-name-in-template-casing.help_kebab"),
-                    );
-                }
+        ComponentCasing::KebabCase => {
+            if !is_kebab_case_loose(tag) {
+                ctx.warn_with_help(
+                    ctx.t("vue/component-name-in-template-casing.kebab"),
+                    &element.loc,
+                    ctx.t("vue/component-name-in-template-casing.help_kebab"),
+                );
             }
         }
     }
@@ -171,7 +192,7 @@ fn is_vuetify_tag(tag: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::ComponentNameInTemplateCasing;
+    use super::{ComponentNameInTemplateCasing, ComponentNameInTemplateCasingNuxt};
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -218,7 +239,7 @@ mod tests {
 
     fn create_nuxt_linter() -> Linter {
         let mut registry = RuleRegistry::new();
-        registry.register(Box::new(ComponentNameInTemplateCasing::nuxt()));
+        registry.register(Box::new(ComponentNameInTemplateCasingNuxt::default()));
         Linter::with_registry(registry)
     }
 
