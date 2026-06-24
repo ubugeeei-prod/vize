@@ -1,22 +1,31 @@
-//! Formatting for non-SFC data files (currently JSON and JSONC).
+//! Formatting for non-SFC files: JSON, JSONC, YAML, and Markdown.
 
 use std::path::Path;
 use vize_carton::profile;
 use vize_glyph::{FormatOptions, FormatResult};
 
-/// Format `source` as JSON or JSONC based on `path`.
+mod plain;
+
+/// Format `source` based on `path`'s extension.
 ///
-/// `.jsonc` files and comment-bearing config files (`tsconfig*.json`,
-/// `jsconfig*.json`, `.vscode/*.json`, `*.code-workspace`) are formatted as
-/// JSONC so their comments and trailing commas survive; every other `.json`
-/// file uses strict JSON. Returns `None` when `path` is neither `.json` nor
-/// `.jsonc`, letting the caller fall through to the SFC formatter.
+/// `.yaml`/`.yml` and `.md`/`.markdown` get conservative, lossless
+/// normalization (see [`plain`]). `.jsonc` and comment-bearing config files
+/// (`tsconfig*.json`, `jsconfig*.json`, `.vscode/*.json`, `*.code-workspace`)
+/// are formatted as JSONC so their comments and trailing commas survive; every
+/// other `.json` file uses strict JSON. Returns `None` for any other extension,
+/// letting the caller fall through to the SFC formatter.
 pub(super) fn format_data_file(
     path: &Path,
     source: &str,
     options: &FormatOptions,
 ) -> Option<Result<FormatResult, vize_glyph::FormatError>> {
-    let jsonc = match path.extension().and_then(|extension| extension.to_str())? {
+    let extension = path.extension().and_then(|extension| extension.to_str())?;
+    match extension {
+        "yaml" | "yml" => return Some(Ok(plain::format_yaml(source))),
+        "md" | "markdown" => return Some(Ok(plain::format_markdown(source))),
+        _ => {}
+    }
+    let jsonc = match extension {
         "jsonc" => true,
         "json" => is_jsonc_config_file(path),
         _ => return None,

@@ -34,7 +34,7 @@ use patterns::default_fmt_patterns;
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct FmtArgs {
-    /// Glob pattern(s) to match .vue, .js, .ts, .jsx, .tsx, .json, and .jsonc files
+    /// Glob pattern(s) to match .vue, .js, .ts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, and .markdown files
     #[arg(default_values_t = default_fmt_patterns())]
     pub patterns: Vec<String>,
 

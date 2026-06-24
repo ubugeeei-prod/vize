@@ -71,31 +71,9 @@ fn should_include_format_file(path: &Path, ignore_set: Option<&FmtIgnoreSet>) ->
 
 #[inline]
 fn should_walk_with_gitignore(pattern: &str) -> bool {
-    matches!(
-        pattern,
-        "**/*"
-            | "./**/*"
-            | "**/*.vue"
-            | "./**/*.vue"
-            | "**/*.jsx"
-            | "./**/*.jsx"
-            | "**/*.tsx"
-            | "./**/*.tsx"
-            | "**/*.js"
-            | "./**/*.js"
-            | "**/*.mjs"
-            | "./**/*.mjs"
-            | "**/*.cjs"
-            | "./**/*.cjs"
-            | "**/*.ts"
-            | "./**/*.ts"
-            | "**/*.mts"
-            | "./**/*.mts"
-            | "**/*.cts"
-            | "./**/*.cts"
-            | "**/*.json"
-            | "**/*.jsonc"
-    )
+    // `normalize_fmt_pattern` strips leading `./`, but accept it defensively.
+    let bare = pattern.strip_prefix("./").unwrap_or(pattern);
+    bare == "**/*" || bare.strip_prefix("**/*.").is_some_and(is_format_extension)
 }
 
 pub(super) struct FmtPattern {
@@ -155,12 +133,31 @@ fn normalize_fmt_pattern(pattern: &str) -> vize_carton::String {
 
 #[inline]
 fn is_format_target(path: &Path) -> bool {
-    const EXTENSIONS: [&str; 11] = [
-        "vue", "jsx", "tsx", "js", "mjs", "cjs", "ts", "mts", "cts", "json", "jsonc",
-    ];
     path.extension()
         .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| EXTENSIONS.contains(&extension))
+        .is_some_and(is_format_extension)
+}
+
+/// File extensions `vize fmt` knows how to format.
+fn is_format_extension(extension: &str) -> bool {
+    matches!(
+        extension,
+        "vue"
+            | "jsx"
+            | "tsx"
+            | "js"
+            | "mjs"
+            | "cjs"
+            | "ts"
+            | "mts"
+            | "cts"
+            | "json"
+            | "jsonc"
+            | "yaml"
+            | "yml"
+            | "md"
+            | "markdown"
+    )
 }
 
 #[inline]
@@ -257,6 +254,7 @@ mod tests {
         fs::write(src.join("Widget.tsx"), "const Widget=()=> <div />").unwrap();
         fs::write(src.join("types.d.ts"), "export type Widget = {}").unwrap();
         fs::write(src.join("package.json"), r#"{"name":"acme"}"#).unwrap();
+        fs::write(src.join("config.yaml"), "a: 1\n").unwrap();
         fs::write(src.join("notes.md"), "# notes").unwrap();
 
         let pattern = root.to_string_lossy().into_owned();
@@ -270,6 +268,8 @@ mod tests {
                 src.join("Panel.jsx"),
                 src.join("Widget.tsx"),
                 src.join("config.js"),
+                src.join("config.yaml"),
+                src.join("notes.md"),
                 src.join("package.json"),
                 src.join("store.ts"),
                 src.join("types.d.ts"),
