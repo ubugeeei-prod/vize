@@ -275,8 +275,7 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint(".rendered-content { & h1, & h2 { font-weight: 600; } }", 0);
         assert_eq!(
-            result.warning_count,
-            0,
+            result.warning_count, 0,
             "& h1, & h2 should not warn; diagnostics: {:?}",
             result.diagnostics
         );
@@ -287,8 +286,7 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint(".parent { & .child { color: red; } }", 0);
         assert_eq!(
-            result.warning_count,
-            0,
+            result.warning_count, 0,
             "& .child should not warn; diagnostics: {:?}",
             result.diagnostics
         );
@@ -300,8 +298,7 @@ mod tests {
         let source = "@keyframes loading { 0% { opacity: 0; } 100% { opacity: 1; } }";
         let result = linter.lint(source, 0);
         assert_eq!(
-            result.warning_count,
-            0,
+            result.warning_count, 0,
             "@keyframes body should not warn; diagnostics: {:?}",
             result.diagnostics
         );
@@ -313,8 +310,7 @@ mod tests {
         let source = "@import \"x.css\";\n.foo { color: red; }";
         let result = linter.lint(source, 0);
         assert_eq!(
-            result.warning_count,
-            0,
+            result.warning_count, 0,
             "@import should not warn; diagnostics: {:?}",
             result.diagnostics
         );
