@@ -1,16 +1,15 @@
 //! JSON formatting for non-SFC sources (e.g. `package.json`, `tsconfig.json`).
 //!
 //! Adds the smallest first step toward replacing Prettier on project config
-//! files: parse the source through `serde_json::Value` with preserved object
-//! key order, then re-emit it with the indent/newline configured in
-//! `FormatOptions`. JSONC (JSON-with-comments) is **not** supported in this
-//! pass — comments are dropped and the file would fail to parse — see #1891
-//! and #2249 for the configurable follow-up.
+//! files: tokenize the source character-by-character and re-emit it with the
+//! indent/newline configured in `FormatOptions`. Because the tokenizer reads
+//! keys sequentially and never inserts them into a sorted collection, object
+//! key order is preserved exactly. JSONC (JSON-with-comments) is **not**
+//! supported in this pass — see #2249 for the follow-up.
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
-use serde_json::Value;
-use vize_carton::{String, ToCompactString, cstr};
+use vize_carton::{String, ToCompactString};
 
 /// Format a JSON source string.
 ///
@@ -23,64 +22,256 @@ pub fn format_json_source(source: &str, options: &FormatOptions) -> Result<Strin
         return Ok(String::default());
     }
 
-    let value: Value = serde_json::from_str(trimmed)
-        .map_err(|error| FormatError::JsonFormatError(error.to_compact_string()))?;
-
     let newline = options.newline_string();
     let indent = options.indent_string();
 
-    let mut output: String = String::with_capacity(source.len() + 32);
-    write_value(&mut output, &value, 0, indent.as_str(), newline);
+    let mut output = String::with_capacity(source.len() + 32);
+    let mut scanner = Scanner::new(trimmed);
+
+    scanner.format_value(&mut output, 0, indent.as_str(), newline)?;
+    scanner.skip_whitespace();
+
+    if scanner.peek().is_some() {
+        return Err(FormatError::JsonFormatError(
+            "trailing content after JSON value".to_compact_string(),
+        ));
+    }
+
     output.push_str(newline);
     Ok(output)
 }
 
-fn write_value(output: &mut String, value: &Value, depth: usize, indent: &str, newline: &str) {
-    match value {
-        Value::Null => output.push_str("null"),
-        Value::Bool(true) => output.push_str("true"),
-        Value::Bool(false) => output.push_str("false"),
-        Value::Number(number) => output.push_str(cstr!("{number}").as_str()),
-        Value::String(string) => write_string(output, string),
-        Value::Array(items) => {
-            if items.is_empty() {
-                output.push_str("[]");
-                return;
+// ---------------------------------------------------------------------------
+// Streaming tokenizer / reformatter
+// ---------------------------------------------------------------------------
+
+struct Scanner<'a> {
+    iter: std::iter::Peekable<std::str::Chars<'a>>,
+}
+
+impl<'a> Scanner<'a> {
+    fn new(source: &'a str) -> Self {
+        Self {
+            iter: source.chars().peekable(),
+        }
+    }
+
+    fn peek(&mut self) -> Option<char> {
+        self.iter.peek().copied()
+    }
+
+    fn advance(&mut self) -> Option<char> {
+        self.iter.next()
+    }
+
+    fn skip_whitespace(&mut self) {
+        while matches!(self.peek(), Some(' ' | '\t' | '\n' | '\r')) {
+            self.advance();
+        }
+    }
+
+    fn format_value(
+        &mut self,
+        output: &mut String,
+        depth: usize,
+        indent: &str,
+        newline: &str,
+    ) -> Result<(), FormatError> {
+        self.skip_whitespace();
+        match self.peek() {
+            Some('{') => self.format_object(output, depth, indent, newline),
+            Some('[') => self.format_array(output, depth, indent, newline),
+            Some('"') => self.scan_string(output),
+            Some('t') => self.expect_keyword(output, "true"),
+            Some('f') => self.expect_keyword(output, "false"),
+            Some('n') => self.expect_keyword(output, "null"),
+            Some('-') | Some('0'..='9') => self.scan_number(output),
+            Some(c) => Err(json_error(format!("unexpected character '{c}'"))),
+            None => Err(json_error("unexpected end of input")),
+        }
+    }
+
+    fn format_object(
+        &mut self,
+        output: &mut String,
+        depth: usize,
+        indent: &str,
+        newline: &str,
+    ) -> Result<(), FormatError> {
+        self.advance(); // consume '{'
+        self.skip_whitespace();
+
+        if self.peek() == Some('}') {
+            self.advance();
+            output.push_str("{}");
+            return Ok(());
+        }
+
+        output.push('{');
+
+        loop {
+            output.push_str(newline);
+            write_indent(output, depth + 1, indent);
+
+            // key
+            self.skip_whitespace();
+            if self.peek() != Some('"') {
+                return Err(json_error("expected string key in object"));
             }
-            output.push('[');
-            for (index, item) in items.iter().enumerate() {
-                output.push_str(newline);
-                write_indent(output, depth + 1, indent);
-                write_value(output, item, depth + 1, indent, newline);
-                if index + 1 < items.len() {
+            self.scan_string(output)?;
+
+            // colon
+            self.skip_whitespace();
+            match self.advance() {
+                Some(':') => output.push_str(": "),
+                got => return Err(json_error(format!("expected ':', got {got:?}"))),
+            }
+
+            // value
+            self.format_value(output, depth + 1, indent, newline)?;
+
+            // ',' or '}'
+            self.skip_whitespace();
+            match self.peek() {
+                Some(',') => {
+                    self.advance();
                     output.push(',');
+                    // continue to next key-value pair
+                }
+                Some('}') => {
+                    self.advance();
+                    output.push_str(newline);
+                    write_indent(output, depth, indent);
+                    output.push('}');
+                    return Ok(());
+                }
+                got => return Err(json_error(format!("expected ',' or '}}', got {got:?}"))),
+            }
+        }
+    }
+
+    fn format_array(
+        &mut self,
+        output: &mut String,
+        depth: usize,
+        indent: &str,
+        newline: &str,
+    ) -> Result<(), FormatError> {
+        self.advance(); // consume '['
+        self.skip_whitespace();
+
+        if self.peek() == Some(']') {
+            self.advance();
+            output.push_str("[]");
+            return Ok(());
+        }
+
+        output.push('[');
+
+        loop {
+            output.push_str(newline);
+            write_indent(output, depth + 1, indent);
+
+            self.format_value(output, depth + 1, indent, newline)?;
+
+            // ',' or ']'
+            self.skip_whitespace();
+            match self.peek() {
+                Some(',') => {
+                    self.advance();
+                    output.push(',');
+                    // continue to next element
+                }
+                Some(']') => {
+                    self.advance();
+                    output.push_str(newline);
+                    write_indent(output, depth, indent);
+                    output.push(']');
+                    return Ok(());
+                }
+                got => return Err(json_error(format!("expected ',' or ']', got {got:?}"))),
+            }
+        }
+    }
+
+    /// Copy a JSON string from the source to `output`, verbatim (including
+    /// escape sequences). The opening `"` has not yet been consumed.
+    fn scan_string(&mut self, output: &mut String) -> Result<(), FormatError> {
+        self.advance(); // consume '"'
+        output.push('"');
+
+        loop {
+            match self.advance() {
+                None => return Err(json_error("unterminated string")),
+                Some('"') => {
+                    output.push('"');
+                    return Ok(());
+                }
+                Some('\\') => {
+                    output.push('\\');
+                    match self.advance() {
+                        None => return Err(json_error("unterminated escape in string")),
+                        Some('u') => {
+                            output.push('u');
+                            for _ in 0..4 {
+                                match self.advance() {
+                                    Some(c) if c.is_ascii_hexdigit() => output.push(c),
+                                    Some(c) => {
+                                        return Err(json_error(format!(
+                                            "invalid hex digit '{c}' in \\u escape"
+                                        )));
+                                    }
+                                    None => return Err(json_error("truncated \\u escape")),
+                                }
+                            }
+                        }
+                        Some(c) => output.push(c),
+                    }
+                }
+                Some(c) if (c as u32) < 0x20 => {
+                    return Err(json_error("unescaped control character in string"));
+                }
+                Some(c) => output.push(c),
+            }
+        }
+    }
+
+    /// Scan a JSON number and copy it verbatim to `output`.
+    ///
+    /// JSON numbers are: `-? (0 | [1-9][0-9]*) (. [0-9]+)? ([eE] [+-]? [0-9]+)?`
+    /// Since we only reach this after the leading `-` or digit is confirmed,
+    /// we consume greedily until the next non-number character.
+    fn scan_number(&mut self, output: &mut String) -> Result<(), FormatError> {
+        loop {
+            match self.peek() {
+                Some(c @ ('0'..='9' | '-' | '+' | '.' | 'e' | 'E')) => {
+                    output.push(c);
+                    self.advance();
+                }
+                _ => break,
+            }
+        }
+        Ok(())
+    }
+
+    /// Consume and emit an exact keyword (`true`, `false`, `null`).
+    fn expect_keyword(&mut self, output: &mut String, kw: &str) -> Result<(), FormatError> {
+        for expected in kw.chars() {
+            match self.advance() {
+                Some(c) if c == expected => output.push(c),
+                Some(c) => {
+                    return Err(json_error(format!(
+                        "expected keyword '{kw}', got unexpected char '{c}'"
+                    )));
+                }
+                None => {
+                    return Err(json_error(format!(
+                        "expected keyword '{kw}', got end of input"
+                    )));
                 }
             }
-            output.push_str(newline);
-            write_indent(output, depth, indent);
-            output.push(']');
         }
-        Value::Object(entries) => {
-            if entries.is_empty() {
-                output.push_str("{}");
-                return;
-            }
-            output.push('{');
-            let len = entries.len();
-            for (index, (key, item)) in entries.iter().enumerate() {
-                output.push_str(newline);
-                write_indent(output, depth + 1, indent);
-                write_string(output, key);
-                output.push_str(": ");
-                write_value(output, item, depth + 1, indent, newline);
-                if index + 1 < len {
-                    output.push(',');
-                }
-            }
-            output.push_str(newline);
-            write_indent(output, depth, indent);
-            output.push('}');
-        }
+        Ok(())
     }
 }
 
@@ -90,25 +281,8 @@ fn write_indent(output: &mut String, depth: usize, indent: &str) {
     }
 }
 
-fn write_string(output: &mut String, value: &str) {
-    output.push('"');
-    for ch in value.chars() {
-        match ch {
-            '"' => output.push_str("\\\""),
-            '\\' => output.push_str("\\\\"),
-            '\n' => output.push_str("\\n"),
-            '\r' => output.push_str("\\r"),
-            '\t' => output.push_str("\\t"),
-            '\x08' => output.push_str("\\b"),
-            '\x0c' => output.push_str("\\f"),
-            ch if (ch as u32) < 0x20 => {
-                let code = ch as u32;
-                output.push_str(cstr!("\\u{code:04x}").as_str());
-            }
-            ch => output.push(ch),
-        }
-    }
-    output.push('"');
+fn json_error(msg: impl AsRef<str>) -> FormatError {
+    FormatError::JsonFormatError(msg.as_ref().to_compact_string())
 }
 
 #[cfg(test)]

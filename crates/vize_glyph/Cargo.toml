@@ -25,7 +25,6 @@ lightningcss.workspace = true
 
 # Serialization
 serde = { workspace = true }
-serde_json = { workspace = true, features = ["preserve_order"] }
 
 # Utilities
 thiserror.workspace = true
