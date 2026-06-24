@@ -429,12 +429,10 @@ jobs:
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
-    # cargo llvm-cov against the whole workspace consistently runs in the
-    # 4–6 minute range. Coverage is a trend metric, not a per-PR signal —
-    # a single PR rarely meaningfully changes workspace-wide percentages.
-    # Run on push-to-main (so regressions surface within minutes of merge)
-    # and on the daily schedule. The fixture-coverage job (`coverage`) and
-    # the compiler/lint suites still run on every PR.
+    # cargo llvm-cov against the whole workspace runs ~4–6 minutes. Coverage is
+    # a trend metric, not a per-PR signal: one PR rarely moves workspace-wide
+    # percentages. Run on push-to-main and on the daily schedule; the
+    # fixture-coverage job (`coverage`) and compiler/lint suites still run per-PR.
     if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -454,6 +452,8 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-moonbit
 
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
@@ -485,10 +485,8 @@ jobs:
   branch-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
-    # Nightly Rust branch coverage on the core compiler crates. Same
-    # rationale as source-coverage: a single PR does not move branch
-    # coverage in a way that needs gating per-PR. Push-to-main + schedule
-    # keeps the trend honest without paying ~2 minutes on every PR.
+    # Nightly Rust branch coverage on the core compiler crates. Same trend
+    # rationale as source-coverage, so push-to-main + schedule, never per-PR.
     if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -509,6 +507,8 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-moonbit
 
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:

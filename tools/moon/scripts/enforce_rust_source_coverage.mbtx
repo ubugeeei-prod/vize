@@ -1,0 +1,293 @@
+///|
+/// Enforces minimum Rust source-coverage thresholds from a cargo llvm-cov report.
+///
+/// The Rust test workflow produces a `cargo llvm-cov --json --summary-only`
+/// report and then asks this script to confirm the covered percentage for each
+/// requested metric clears its minimum. Keeping the gate as a small MoonBit
+/// script lets coverage enforcement stay inside the repository toolchain and
+/// renders the same Markdown table for the CI job summary as the previous Node
+/// implementation.
+///
+/// Usage: moon run --target native - -- --json <path> [--markdown <path>]
+///   [--min-lines N] [--min-functions N] [--min-regions N] [--min-branches N]
+///   < tools/moon/scripts/enforce_rust_source_coverage.mbtx
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/core/string",
+  "moonbitlang/async@0.19.0",
+  "moonbitlang/async@0.19.0/stdio",
+  "moonbitlang/x@0.4.43/fs" @xfs,
+  "moonbitlang/x@0.4.43/path",
+  "moonbitlang/x@0.4.43/sys",
+}
+
+///|
+/// A single metric row in the rendered coverage table.
+struct Row {
+  label : String
+  covered : Int
+  total : Int
+  percent : Double
+  minimum : Double
+  passed : Bool
+}
+
+///|
+/// A parsed `--min-<metric>` threshold request, preserving input order.
+struct Threshold {
+  metric : String
+  minimum : Double
+}
+
+///|
+/// Returns command-line arguments passed after the script name.
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+/// Resolves a path to an absolute normalized path string.
+fn resolve_path(value : String) -> String {
+  let path : @path.Path = value
+  path.resolve().to_string()
+}
+
+///|
+/// Reads and parses the cargo llvm-cov JSON report, returning `None` on failure.
+fn read_json(path : String) -> Json? {
+  try {
+    Some(@json.parse(@xfs.read_file_to_string(path)))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+/// Parses a floating point threshold value, collapsing failures into `None`.
+fn parse_double(value : String) -> Double? {
+  try {
+    Some(@string.parse_double(value))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+/// Maps a metric key to the human-facing label used in the rendered table.
+fn metric_label(metric : String) -> String {
+  match metric {
+    "branches" => "Branches"
+    "functions" => "Functions"
+    "lines" => "Lines"
+    "regions" => "Regions"
+    _ => metric
+  }
+}
+
+///|
+/// Reads `data[0].totals` from the parsed report, the cargo llvm-cov summary.
+fn report_totals(report : Json) -> Map[String, Json]? {
+  guard report is Object(root) else { return None }
+  guard root.get("data") is Some(Array(entries)) else { return None }
+  guard entries.length() >= 1 else { return None }
+  guard entries[0] is Object(first) else { return None }
+  guard first.get("totals") is Some(Object(totals)) else { return None }
+  Some(totals)
+}
+
+///|
+/// Extracts the covered percentage for a metric, returning `None` when the
+/// report omits the field. The report stores it as `totals.<metric>.percent`.
+fn metric_percent(totals : Map[String, Json], metric : String) -> Double? {
+  guard totals.get(metric) is Some(Object(entry)) else { return None }
+  guard entry.get("percent") is Some(Number(value, ..)) else { return None }
+  Some(value)
+}
+
+///|
+/// Extracts an integer count field from a metric entry, defaulting to zero when
+/// the field is missing so the table still renders.
+fn metric_count(totals : Map[String, Json], metric : String, field : String) -> Int {
+  guard totals.get(metric) is Some(Object(entry)) else { return 0 }
+  guard entry.get(field) is Some(Number(value, ..)) else { return 0 }
+  value.to_int()
+}
+
+///|
+/// Formats a non-negative double with two fractional digits, matching the
+/// JavaScript `Number.prototype.toFixed(2)` output the table previously used.
+fn format_percent(value : Double) -> String {
+  let scaled = (value * 100.0 + 0.5).to_int()
+  let whole = scaled / 100
+  let fraction = scaled % 100
+  let tens = fraction / 10
+  let ones = fraction % 10
+  "\{whole}.\{tens}\{ones}%"
+}
+
+///|
+/// Renders the coverage table as Markdown, mirroring the previous output.
+fn render_markdown(rows : Array[Row]) -> String {
+  let lines = [
+    "## Rust Source Coverage",
+    "",
+    "| Metric | Covered | Total | Percent | Minimum | Status |",
+    "| --- | ---: | ---: | ---: | ---: | --- |",
+  ]
+  for row in rows {
+    let status = if row.passed { "pass" } else { "fail" }
+    lines.push(
+      "| \{row.label} | \{row.covered} | \{row.total} | \{format_percent(row.percent)} | \{format_percent(row.minimum)} | \{status} |",
+    )
+  }
+  lines.push("")
+  lines.join("\n")
+}
+
+///|
+/// Parses CLI arguments into the report path, the optional summary path, and the
+/// ordered metric thresholds. Returns `None` with a printed diagnostic on error.
+fn parse_args(
+  args : Array[String],
+) -> (String, String, Array[Threshold])? {
+  let mut json_path = ""
+  let mut markdown_path = match @sys.get_env_var("GITHUB_STEP_SUMMARY") {
+    Some(value) => value
+    None => ""
+  }
+  let thresholds : Array[Threshold] = []
+  let mut i = 0
+  while i < args.length() {
+    let arg = args[i]
+    if arg == "--json" {
+      guard i + 1 < args.length() else {
+        println("--json requires a value")
+        return None
+      }
+      json_path = args[i + 1]
+      i = i + 2
+    } else if arg == "--markdown" {
+      guard i + 1 < args.length() else {
+        println("--markdown requires a value")
+        return None
+      }
+      markdown_path = args[i + 1]
+      i = i + 2
+    } else if arg.has_prefix("--min-") {
+      guard i + 1 < args.length() else {
+        println("\{arg} requires a value")
+        return None
+      }
+      let metric = arg[6:].to_owned()
+      let minimum = match parse_double(args[i + 1]) {
+        Some(value) => value
+        None => {
+          println("Invalid minimum for \{metric}: \{args[i + 1]}")
+          return None
+        }
+      }
+      thresholds.push(Threshold::{ metric, minimum })
+      i = i + 2
+    } else {
+      println("Unknown argument: \{arg}")
+      return None
+    }
+  }
+  if json_path == "" {
+    println(
+      "Usage: moon run --target native - -- --json <path> [--markdown <path>] [--min-<metric> N] < tools/moon/scripts/enforce_rust_source_coverage.mbtx",
+    )
+    return None
+  }
+  Some((json_path, markdown_path, thresholds))
+}
+
+///|
+/// Main command implementation for source coverage enforcement.
+///
+/// The function resolves and parses the report, evaluates each requested
+/// threshold, prints the Markdown table to stdout, appends it to the job summary
+/// when configured, and exits non-zero when any metric is below its minimum.
+async fn run_app() -> Int {
+  let args = cli_args()
+  let (json_path, markdown_path, thresholds) = match parse_args(args) {
+    Some(value) => value
+    None => return 1
+  }
+  let resolved = resolve_path(json_path)
+  let report = match read_json(resolved) {
+    Some(value) => value
+    None => {
+      println("Failed to read or parse \{resolved}")
+      return 1
+    }
+  }
+  let totals = match report_totals(report) {
+    Some(value) => value
+    None => {
+      println("\{resolved} is not a cargo llvm-cov summary JSON report")
+      return 1
+    }
+  }
+  let rows : Array[Row] = []
+  let failures : Array[String] = []
+  for threshold in thresholds {
+    let percent = match metric_percent(totals, threshold.metric) {
+      Some(value) => value
+      None => {
+        println("cargo llvm-cov report is missing \{threshold.metric}.percent")
+        return 1
+      }
+    }
+    let total = metric_count(totals, threshold.metric, "count")
+    let covered = metric_count(totals, threshold.metric, "covered")
+    let passed = total > 0 && percent >= threshold.minimum
+    let label = metric_label(threshold.metric)
+    rows.push(
+      Row::{ label, covered, total, percent, minimum: threshold.minimum, passed },
+    )
+    if !passed {
+      failures.push(
+        "\{label} coverage \{format_percent(percent)} < \{format_percent(threshold.minimum)}",
+      )
+    }
+  }
+  let markdown = render_markdown(rows)
+  @stdio.stdout.write(markdown)
+  if markdown_path != "" {
+    try {
+      let previous = try {
+        @xfs.read_file_to_string(markdown_path)
+      } catch {
+        _ => ""
+      }
+      @xfs.write_string_to_file(markdown_path, previous + markdown)
+    } catch {
+      _ => {
+        println("Failed to append summary to \{markdown_path}")
+        return 1
+      }
+    }
+  }
+  if !failures.is_empty() {
+    println("")
+    println("Rust source coverage budget failed:")
+    for failure in failures {
+      println(failure)
+    }
+    return 1
+  }
+  0
+}
+
+///|
+/// Script entry point.
+async fn main {
+  @sys.exit(run_app())
+}

@@ -109,6 +109,27 @@ and build directories are excluded from the source inventory. When an existing e
 prefer splitting by ownership boundary first: helpers, fixtures, snapshots, and command handlers
 usually make better extraction targets than shared data structures.
 
+## Tooling Scripts
+
+Repository automation prefers MoonBit (`.mbtx`) scripts under `tools/moon/scripts/`. They run
+through native script mode (`moon run --target native - -- <args> < tools/moon/scripts/<name>.mbtx`),
+share the toolchain that already builds the compiler, and are covered by `tests/tooling/*.test.ts`
+suites that exercise them via `moon run` and assert full expected output. Root tasks invoke them with
+the `moonScript` helper in `tools/vite-plus/task-commands.ts`, so each consumer stays a stable task
+name rather than an inline command.
+
+Good MoonBit candidates are small, pure, and dependency-light: argument parsing, JSON or text
+transforms, inventories, and pass/fail checks whose correctness can be proved with a `moon run` test.
+
+Keep a script in Node (`.mjs`) when MoonBit would add friction rather than remove it:
+
+- It is imported as a module by other JavaScript or by a `node --test` suite (for example
+  `tools/github/release-platforms.mjs`), so rewriting it would split one source across two languages.
+- It depends on the npm ecosystem (globbing libraries, package tooling, GitHub Action SDKs) or on
+  Node-only APIs that have no MoonBit equivalent.
+- It is large or exploratory enough that its behavior is not yet pinned by a full-output test; do not
+  migrate anything that could break CI without such a test.
+
 ## Reading Generated Output
 
 Compiler and tool changes are reviewed through generated artifacts. Treat these outputs as the

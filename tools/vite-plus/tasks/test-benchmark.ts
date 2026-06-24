@@ -17,9 +17,24 @@ const jsPackageTestCommand = runInPackages("test", testedPackages, {
 
 const rustSourceCoverageJson = "target/llvm-cov/source-summary.json";
 const rustBranchCoverageJson = "target/llvm-cov/source-branch-summary.json";
-const rustSourceCoverageMinimums = "--min-lines 70 --min-functions 70 --min-regions 70";
-const rustBranchCoverageMinimums =
-  "--min-lines 55 --min-functions 70 --min-regions 55 --min-branches 40";
+const rustSourceCoverageMinimums = [
+  "--min-lines",
+  "70",
+  "--min-functions",
+  "70",
+  "--min-regions",
+  "70",
+];
+const rustBranchCoverageMinimums = [
+  "--min-lines",
+  "55",
+  "--min-functions",
+  "70",
+  "--min-regions",
+  "55",
+  "--min-branches",
+  "40",
+];
 const rustSourceCoverageCommand = [
   "mkdir -p target/llvm-cov",
   [
@@ -27,11 +42,12 @@ const rustSourceCoverageCommand = [
     `--output-path ${rustSourceCoverageJson}`,
     "--fail-under-lines 70 --fail-under-functions 70 --fail-under-regions 70",
   ].join(" "),
-  [
-    "node tools/coverage/enforce-rust-source-coverage.mjs",
-    `--json ${rustSourceCoverageJson}`,
-    rustSourceCoverageMinimums,
-  ].join(" "),
+  moonScript(
+    "enforce_rust_source_coverage",
+    "--json",
+    rustSourceCoverageJson,
+    ...rustSourceCoverageMinimums,
+  ),
 ].join(" && ");
 const rustBranchCoverageCommand = [
   "mkdir -p target/llvm-cov",
@@ -41,11 +57,12 @@ const rustBranchCoverageCommand = [
     `--output-path ${rustBranchCoverageJson}`,
     "--fail-under-lines 55 --fail-under-functions 70 --fail-under-regions 55",
   ].join(" "),
-  [
-    "node tools/coverage/enforce-rust-source-coverage.mjs",
-    `--json ${rustBranchCoverageJson}`,
-    rustBranchCoverageMinimums,
-  ].join(" "),
+  moonScript(
+    "enforce_rust_source_coverage",
+    "--json",
+    rustBranchCoverageJson,
+    ...rustBranchCoverageMinimums,
+  ),
 ].join(" && ");
 
 /**
