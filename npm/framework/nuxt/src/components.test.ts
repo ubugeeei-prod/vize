@@ -467,3 +467,83 @@ export default {
     fs.rmSync(fixture.rootDir, { recursive: true, force: true });
   }
 });
+
+void test("Nuxt component resolver preserves bare package specifiers from generated d.ts", () => {
+  const fixture = createFixture();
+  try {
+    writeFile(
+      path.join(fixture.buildDir, "components.d.ts"),
+      [
+        `export const Button: typeof import("primevue/button")['default']`,
+        `export const Tag: typeof import("@primevue/core/tag").default`,
+        `export const LazyButton: LazyComponent<typeof import("primevue/button").default>`,
+        "",
+      ].join("\n"),
+    );
+    writeFile(
+      path.join(fixture.buildDir, "types/components.d.ts"),
+      [
+        `declare module "vue" {`,
+        `  export interface GlobalComponents {`,
+        `    GlobalToast: typeof import("primevue/toast")["default"]`,
+        `  }`,
+        `}`,
+        `export {}`,
+        "",
+      ].join("\n"),
+    );
+
+    const resolver = createNuxtComponentResolver({
+      buildDir: fixture.buildDir,
+      rootDir: fixture.rootDir,
+    });
+
+    assert.deepEqual(
+      resolver.resolve("Button"),
+      { exportName: "default", filePath: "primevue/button" },
+      "bare package specifiers in d.ts should be preserved verbatim, not joined to .nuxt/",
+    );
+    assert.deepEqual(
+      resolver.resolve("Tag"),
+      { exportName: "default", filePath: "@primevue/core/tag" },
+      "scoped package specifiers in d.ts should be preserved verbatim",
+    );
+    assert.deepEqual(
+      resolver.resolve("LazyButton"),
+      { exportName: "default", filePath: "primevue/button", lazy: true },
+      "lazy variants should also preserve the package specifier",
+    );
+    assert.deepEqual(
+      resolver.resolve("GlobalToast"),
+      { exportName: "default", filePath: "primevue/toast" },
+      "GlobalComponents package specifiers should be preserved verbatim",
+    );
+
+    const transformed = injectNuxtComponentImports(
+      `
+export default {
+  setup(__props) {
+    return (_ctx, _cache) => {
+      const _component_Button = resolveComponent("Button");
+      return _component_Button;
+    };
+  }
+}
+`,
+      (name) => resolver.resolve(name),
+    );
+
+    assert.match(
+      transformed,
+      /import __nuxt_component_0 from "primevue\/button";/,
+      "package-specifier components must emit imports against the original specifier",
+    );
+    assert.equal(
+      transformed.includes(fixture.buildDir),
+      false,
+      "package specifiers must never be rewritten to a build-dir absolute path",
+    );
+  } finally {
+    fs.rmSync(fixture.rootDir, { recursive: true, force: true });
+  }
+});

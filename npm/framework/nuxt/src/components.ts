@@ -121,6 +121,31 @@ function resolveImportPath(importPath: string): string {
   return importPath;
 }
 
+function isBarePackageSpecifier(importPath: string): boolean {
+  if (!importPath) {
+    return false;
+  }
+  if (importPath.startsWith(".")) {
+    return false;
+  }
+  if (importPath.startsWith("/")) {
+    return false;
+  }
+  return !path.isAbsolute(importPath);
+}
+
+function resolveDtsImportPath(baseDir: string, importPath: string): string {
+  // Nuxt component d.ts entries can name a bare package specifier (e.g. PrimeVue's
+  // `Button: typeof import("primevue/button")['default']`). Resolving against the
+  // d.ts directory would mint a non-existent `<buildDir>/primevue/button` path that
+  // Rollup later fails to resolve. Preserve package specifiers verbatim so the
+  // downstream import keeps the original bare specifier.
+  if (isBarePackageSpecifier(importPath)) {
+    return importPath;
+  }
+  return resolveImportPath(path.resolve(baseDir, importPath));
+}
+
 function detectComponentMode(filePath: string): NuxtComponentImport["mode"] {
   if (CLIENT_COMPONENT_RE.test(filePath)) {
     return "client";
@@ -311,11 +336,9 @@ function loadDtsComponents(rootDir: string, buildDir: string): Map<string, NuxtC
           const name = doubleQuotedName || singleQuotedName || bareName;
           const exportName = exportNameDot || exportNameBracket;
           if (name && exportName) {
-            const absoluteImportPath = resolveImportPath(
-              path.resolve(path.dirname(filePath), importPath),
-            );
+            const resolvedImportPath = resolveDtsImportPath(path.dirname(filePath), importPath);
             const componentImport = createComponentImport(
-              absoluteImportPath,
+              resolvedImportPath,
               exportName,
               name.startsWith("Lazy"),
             );
@@ -336,11 +359,9 @@ function loadDtsComponents(rootDir: string, buildDir: string): Map<string, NuxtC
         return;
       }
 
-      const absoluteImportPath = resolveImportPath(
-        path.resolve(path.dirname(filePath), importPath),
-      );
+      const resolvedImportPath = resolveDtsImportPath(path.dirname(filePath), importPath);
       const componentImport = createComponentImport(
-        absoluteImportPath,
+        resolvedImportPath,
         exportName,
         name.startsWith("Lazy"),
       );
