@@ -11,8 +11,8 @@ mod registry;
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
-    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_NO_RESTRICTED_GLOBALS, RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 
 #[cfg(test)]
@@ -262,6 +262,13 @@ fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
         // `watch` also appears in any aliased import (`watch as observe`), so
         // this never skips a block the AST check could flag.
         RULE_PREFER_COMPUTED => memmem::find(bytes, b"watch").is_some(),
+        // Bail out unless the source actually mentions one of the restricted
+        // globals, so the AST walk only fires on blocks that could possibly hit.
+        RULE_NO_RESTRICTED_GLOBALS => {
+            memmem::find(bytes, b"process").is_some()
+                || memmem::find(bytes, b"localStorage").is_some()
+                || memmem::find(bytes, b"sessionStorage").is_some()
+        }
         _ => true,
     }
 }
