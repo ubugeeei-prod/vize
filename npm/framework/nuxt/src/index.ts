@@ -635,11 +635,9 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
       "basePath" in museaOptions
         ? ((museaOptions as Record<string, unknown>).basePath as string)
         : "/__musea__";
-    nuxt.options.vite ||= {};
-    nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
-    nuxt.options.vite.plugins.push(
-      ...musea({ projectRoot: nuxt.options.rootDir, ...museaOptions }),
-    );
+    (nuxt.options.vite ||= {}).plugins ||= [];
+    const museaConfig = { projectRoot: nuxt.options.rootDir, ...museaOptions };
+    nuxt.options.vite.plugins.push(...musea(museaConfig));
 
     // Print Musea Gallery URL after dev server starts
     nuxt.hook("listen", (_server: unknown, listener: { url: string }) => {
