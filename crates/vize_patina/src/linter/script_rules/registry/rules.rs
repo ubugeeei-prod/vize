@@ -61,7 +61,7 @@ static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
 pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScriptRuleEntry] = &[
     BuiltinScriptRuleEntry { rule_name: RULE_NO_OPTIONS_API, profile_name: "patina.script_rule.no_options_api", category: "Vapor", fixable: false, presets: OPINIONATED_ONLY_SCRIPT_PRESETS, rule: &NoOptionsApi },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_GET_CURRENT_INSTANCE, profile_name: "patina.script_rule.no_get_current_instance", category: "Vapor", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoGetCurrentInstance },
-    BuiltinScriptRuleEntry { rule_name: RULE_NO_NEXT_TICK, profile_name: "patina.script_rule.no_next_tick", category: "Vapor", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoNextTick },
+    BuiltinScriptRuleEntry { rule_name: RULE_NO_NEXT_TICK, profile_name: "patina.script_rule.no_next_tick", category: "Vapor", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoNextTick },
     BuiltinScriptRuleEntry { rule_name: RULE_PINIA_PREFER_STORE_TO_REFS, profile_name: "patina.script_rule.pinia_prefer_store_to_refs", category: "Ecosystem", fixable: false, presets: ECOSYSTEM_SCRIPT_PRESETS, rule: &PiniaPreferStoreToRefs },
     BuiltinScriptRuleEntry { rule_name: RULE_VUE_ROUTER_PREFER_NAMED_PUSH, profile_name: "patina.script_rule.vue_router_prefer_named_push", category: "Ecosystem", fixable: false, presets: ECOSYSTEM_SCRIPT_PRESETS, rule: &VueRouterPreferNamedPush },
     BuiltinScriptRuleEntry { rule_name: RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT, profile_name: "patina.script_rule.vue_test_utils_no_html_snapshot", category: "Ecosystem", fixable: false, presets: ECOSYSTEM_SCRIPT_PRESETS, rule: &VueTestUtilsNoHtmlSnapshot },

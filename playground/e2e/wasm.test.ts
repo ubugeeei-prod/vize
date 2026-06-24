@@ -146,7 +146,8 @@ export default {
     ).toBe(true);
   });
 
-  it("should report no-next-tick for opinionated preset", () => {
+  it("should not report no-next-tick for opinionated preset by default", () => {
+    // Regression for #2239: opinionated must not flag nextTick() without explicit opt-in.
     const wasm = getWasm();
     expect(wasm).not.toBeNull();
     if (!wasm) {
@@ -177,7 +178,7 @@ await nextTick()
     ).toBe(false);
     expect(
       opinionated.diagnostics.some((diagnostic) => diagnostic.rule === "script/no-next-tick"),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("should report no-get-current-instance for opinionated preset", () => {

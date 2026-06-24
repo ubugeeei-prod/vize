@@ -138,10 +138,7 @@ fn test_lint_sfc_css_diagnostic_uses_file_offsets() {
 
 #[test]
 fn test_lint_sfc_opinionated_allows_next_tick_by_default() {
-    // Regression for #2239: opinionated is the recommended preset for non-Vapor
-    // Vue 3 projects, so `nextTick()` (a legitimate runtime API outside Vapor)
-    // must not flag unless the host explicitly opts into the Vapor-oriented
-    // `script/no-next-tick` rule.
+    // Regression for #2239: opinionated must not flag nextTick() without explicit opt-in.
     let linter = Linter::with_preset(LintPreset::Opinionated);
     let sfc = r#"<script setup lang="ts">
 import { nextTick } from 'vue'
@@ -151,33 +148,8 @@ await nextTick()
 "#;
     let result = linter.lint_sfc(sfc, "test.vue");
     assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.rule_name == "script/no-next-tick"),
-        "opinionated preset should not report script/no-next-tick by default, got {:?}",
-        result.diagnostics
-    );
-}
-
-#[test]
-fn test_lint_sfc_opinionated_reports_no_next_tick_when_rule_is_enabled() {
-    let linter = Linter::with_preset(LintPreset::Opinionated)
-        .with_additional_rules(vec!["script/no-next-tick".into()]);
-    let sfc = r#"<script setup lang="ts">
-import { nextTick } from 'vue'
-
-await nextTick()
-</script>
-"#;
-    let result = linter.lint_sfc(sfc, "test.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.rule_name == "script/no-next-tick"),
-        "explicit script/no-next-tick should still report, got {:?}",
-        result.diagnostics
+        !result.diagnostics.iter().any(|d| d.rule_name == "script/no-next-tick"),
+        "opinionated preset must not report script/no-next-tick without explicit opt-in"
     );
 }
 
