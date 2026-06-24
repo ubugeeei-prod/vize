@@ -125,7 +125,11 @@ impl Rule for HtmlSelfClosingNuxt {
     }
 }
 
-fn check_element<'a>(ctx: &mut LintContext<'a>, element: &ElementNode<'a>, allow_vuetify_tags: bool) {
+fn check_element<'a>(
+    ctx: &mut LintContext<'a>,
+    element: &ElementNode<'a>,
+    allow_vuetify_tags: bool,
+) {
     let tag = element.tag.as_str();
     if allow_vuetify_tags && is_vuetify_tag(tag) {
         return;
@@ -133,8 +137,7 @@ fn check_element<'a>(ctx: &mut LintContext<'a>, element: &ElementNode<'a>, allow
     let is_void = VOID_ELEMENTS.contains(&tag);
     let is_svg = SVG_ELEMENTS.contains(&tag);
     let is_mathml = MATHML_ELEMENTS.contains(&tag);
-    let is_component = (tag.contains('-')
-        || tag.chars().next().is_some_and(|c| c.is_uppercase()))
+    let is_component = (tag.contains('-') || tag.chars().next().is_some_and(|c| c.is_uppercase()))
         && !is_nuxt_builtin_component(tag);
     let has_children = !element.children.is_empty();
     let is_self_closing = element.is_self_closing;
