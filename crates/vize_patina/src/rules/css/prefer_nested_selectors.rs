@@ -181,7 +181,7 @@ fn is_already_nested(selector: &str) -> bool {
 fn find_selector_start(bytes: &[u8], start: usize) -> Option<usize> {
     bytes[start..]
         .iter()
-        .position(|&b| matches!(b, b'.' | b'#' | b'a'..=b'z' | b'A'..=b'Z'))
+        .position(|&b| matches!(b, b'.' | b'#' | b'[' | b':' | b'*' | b'a'..=b'z' | b'A'..=b'Z'))
         .map(|pos| start + pos)
 }
 
