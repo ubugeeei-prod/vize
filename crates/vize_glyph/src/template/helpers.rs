@@ -54,11 +54,20 @@ pub(crate) fn is_whitespace(b: u8) -> bool {
 ///
 /// Alloc-free: void element names are 2..=6 ASCII bytes, so a length guard
 /// plus case-insensitive comparison avoids the lowercasing allocation.
+///
+/// Vue treats tags that start with an uppercase ASCII letter as components
+/// (e.g. `<Link>`, `<Input>`), never as their HTML void-element namesakes.
+/// Without that guard, `<Link>` would collapse to a void element here, so
+/// the formatter would skip the child-depth increment and emit the
+/// component's children flush with their parent. (#2244)
 pub(crate) fn is_void_element_str(tag: &str) -> bool {
     const VOID_ELEMENTS: [&str; 14] = [
         "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param",
         "source", "track", "wbr",
     ];
+    if tag.as_bytes().first().is_some_and(u8::is_ascii_uppercase) {
+        return false;
+    }
     matches!(tag.len(), 2..=6) && VOID_ELEMENTS.iter().any(|v| tag.eq_ignore_ascii_case(v))
 }
 

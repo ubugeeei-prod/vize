@@ -302,6 +302,12 @@ mod tests {
         assert!(is_void_element_str("input"));
         assert!(!is_void_element_str("div"));
         assert!(!is_void_element_str("span"));
+        // Vue components (PascalCase) must never be treated as HTML void
+        // elements, even when they share a name with one (e.g. `<Link>` vs
+        // `<link>`). See #2244.
+        assert!(!is_void_element_str("Link"));
+        assert!(!is_void_element_str("Input"));
+        assert!(!is_void_element_str("Img"));
     }
 
     #[test]
