@@ -9,7 +9,7 @@
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
-use vize_carton::{String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 /// Format a JSON source string.
 ///
@@ -86,7 +86,7 @@ impl<'a> Scanner<'a> {
             Some('f') => self.expect_keyword(output, "false"),
             Some('n') => self.expect_keyword(output, "null"),
             Some('-') | Some('0'..='9') => self.scan_number(output),
-            Some(c) => Err(json_error(format!("unexpected character '{c}'"))),
+            Some(c) => Err(json_error(cstr!("unexpected character '{c}'"))),
             None => Err(json_error("unexpected end of input")),
         }
     }
@@ -124,7 +124,7 @@ impl<'a> Scanner<'a> {
             self.skip_whitespace();
             match self.advance() {
                 Some(':') => output.push_str(": "),
-                got => return Err(json_error(format!("expected ':', got {got:?}"))),
+                got => return Err(json_error(cstr!("expected ':', got {got:?}"))),
             }
 
             // value
@@ -145,7 +145,7 @@ impl<'a> Scanner<'a> {
                     output.push('}');
                     return Ok(());
                 }
-                got => return Err(json_error(format!("expected ',' or '}}', got {got:?}"))),
+                got => return Err(json_error(cstr!("expected ',' or '}}', got {got:?}"))),
             }
         }
     }
@@ -189,7 +189,7 @@ impl<'a> Scanner<'a> {
                     output.push(']');
                     return Ok(());
                 }
-                got => return Err(json_error(format!("expected ',' or ']', got {got:?}"))),
+                got => return Err(json_error(cstr!("expected ',' or ']', got {got:?}"))),
             }
         }
     }
@@ -217,7 +217,7 @@ impl<'a> Scanner<'a> {
                                 match self.advance() {
                                     Some(c) if c.is_ascii_hexdigit() => output.push(c),
                                     Some(c) => {
-                                        return Err(json_error(format!(
+                                        return Err(json_error(cstr!(
                                             "invalid hex digit '{c}' in \\u escape"
                                         )));
                                     }
@@ -242,14 +242,9 @@ impl<'a> Scanner<'a> {
     /// Since we only reach this after the leading `-` or digit is confirmed,
     /// we consume greedily until the next non-number character.
     fn scan_number(&mut self, output: &mut String) -> Result<(), FormatError> {
-        loop {
-            match self.peek() {
-                Some(c @ ('0'..='9' | '-' | '+' | '.' | 'e' | 'E')) => {
-                    output.push(c);
-                    self.advance();
-                }
-                _ => break,
-            }
+        while let Some(c @ ('0'..='9' | '-' | '+' | '.' | 'e' | 'E')) = self.peek() {
+            output.push(c);
+            self.advance();
         }
         Ok(())
     }
@@ -260,12 +255,12 @@ impl<'a> Scanner<'a> {
             match self.advance() {
                 Some(c) if c == expected => output.push(c),
                 Some(c) => {
-                    return Err(json_error(format!(
+                    return Err(json_error(cstr!(
                         "expected keyword '{kw}', got unexpected char '{c}'"
                     )));
                 }
                 None => {
-                    return Err(json_error(format!(
+                    return Err(json_error(cstr!(
                         "expected keyword '{kw}', got end of input"
                     )));
                 }
@@ -281,8 +276,8 @@ fn write_indent(output: &mut String, depth: usize, indent: &str) {
     }
 }
 
-fn json_error(msg: impl AsRef<str>) -> FormatError {
-    FormatError::JsonFormatError(msg.as_ref().to_compact_string())
+fn json_error(msg: impl Into<String>) -> FormatError {
+    FormatError::JsonFormatError(msg.into())
 }
 
 #[cfg(test)]
