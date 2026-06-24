@@ -27,7 +27,7 @@ mod files;
 mod ignores;
 mod patterns;
 
-use files::collect_files;
+pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
 use patterns::default_fmt_patterns;
 

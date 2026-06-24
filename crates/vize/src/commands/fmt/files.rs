@@ -8,7 +8,7 @@ const NODE_MODULES_DIR: &str = "node_modules";
 const VIZE_CACHE_DIR: &str = ".vize";
 
 #[allow(clippy::disallowed_types)]
-pub(super) fn collect_files(
+pub(crate) fn collect_files(
     patterns: &[impl AsRef<str>],
     ignore_set: Option<&FmtIgnoreSet>,
 ) -> Vec<PathBuf> {

@@ -1,8 +1,10 @@
+mod migrate;
 mod new;
 mod serve_plan;
 mod setup;
 
 use clap::{Args, Subcommand};
+use migrate::MigrateArgs;
 use new::NewArgs;
 use serve_plan::create_serve_plan;
 use std::path::PathBuf;
@@ -25,6 +27,9 @@ pub enum MuseaCommand {
 
     /// Create a new Musea art project
     New(NewArgs),
+
+    /// Migrate Storybook CSF stories into Musea `.art.vue` files
+    Migrate(MigrateArgs),
 }
 
 #[derive(Args, Clone, Debug, PartialEq, Eq)]
@@ -76,6 +81,7 @@ pub fn run(args: MuseaArgs) {
     match args.command {
         Some(MuseaCommand::Serve(serve_args)) => run_serve(serve_args),
         Some(MuseaCommand::New(new_args)) => new::run(new_args),
+        Some(MuseaCommand::Migrate(migrate_args)) => migrate::run(migrate_args),
         None => run_serve(args.serve),
     }
 }

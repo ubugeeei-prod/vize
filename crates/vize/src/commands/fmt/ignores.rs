@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use super::{FmtArgs, files::FmtPattern};
 use crate::config;
 
-pub(super) struct FmtIgnoreSet {
+pub(crate) struct FmtIgnoreSet {
     patterns: Vec<FmtPattern>,
 }
 

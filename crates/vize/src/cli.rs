@@ -169,7 +169,9 @@ mod tests {
             let serve_args = match args.command {
                 Some(MuseaCommand::Serve(serve_args)) => serve_args,
                 None => args.serve,
-                Some(MuseaCommand::New(_)) => panic!("expected musea serve args"),
+                Some(MuseaCommand::New(_)) | Some(MuseaCommand::Migrate(_)) => {
+                    panic!("expected musea serve args")
+                }
             };
             assert!(serve_args.strict_port);
         }
