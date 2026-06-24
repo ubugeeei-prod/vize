@@ -434,6 +434,7 @@ fn process_file(
         .unwrap_or(Duration::ZERO);
 
     let profile = file_start.map(|start| {
+        #[rustfmt::skip]
         let state = if result.changed { "changed" } else { "unchanged" };
         FormatFileProfile {
             row: ProfileFileRow {
