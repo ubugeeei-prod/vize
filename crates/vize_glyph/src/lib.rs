@@ -40,6 +40,7 @@
 
 mod error;
 mod formatter;
+mod json;
 mod options;
 mod script;
 mod style;
@@ -104,6 +105,15 @@ pub fn format_template(source: &str, options: &FormatOptions) -> Result<String, 
 #[inline]
 pub fn format_style(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
     style::format_style_content(source, options)
+}
+
+/// Format a standalone JSON document.
+///
+/// Used for non-SFC inputs such as `package.json` so projects migrating off
+/// Prettier can place those files under `vize fmt` coverage. See #2249.
+#[inline]
+pub fn format_json(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
+    json::format_json_source(source, options)
 }
 
 #[cfg(test)]

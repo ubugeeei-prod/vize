@@ -30,6 +30,10 @@ pub enum FormatError {
     #[error("Failed to format style: {0}")]
     StyleFormatError(String),
 
+    /// Error parsing or formatting JSON
+    #[error("Failed to format JSON: {0}")]
+    JsonFormatError(String),
+
     /// IO error
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),

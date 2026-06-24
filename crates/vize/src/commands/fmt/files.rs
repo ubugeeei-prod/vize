@@ -93,6 +93,8 @@ fn should_walk_with_gitignore(pattern: &str) -> bool {
             | "./**/*.mts"
             | "**/*.cts"
             | "./**/*.cts"
+            | "**/*.json"
+            | "./**/*.json"
     )
 }
 
@@ -158,7 +160,7 @@ fn is_format_target(path: &Path) -> bool {
         .is_some_and(|extension| {
             matches!(
                 extension,
-                "vue" | "jsx" | "tsx" | "js" | "mjs" | "cjs" | "ts" | "mts" | "cts"
+                "vue" | "jsx" | "tsx" | "js" | "mjs" | "cjs" | "ts" | "mts" | "cts" | "json"
             )
         })
 }
@@ -256,6 +258,7 @@ mod tests {
         fs::write(src.join("store.ts"), "export const count=0").unwrap();
         fs::write(src.join("Widget.tsx"), "const Widget=()=> <div />").unwrap();
         fs::write(src.join("types.d.ts"), "export type Widget = {}").unwrap();
+        fs::write(src.join("package.json"), r#"{"name":"acme"}"#).unwrap();
         fs::write(src.join("notes.md"), "# notes").unwrap();
 
         let pattern = root.to_string_lossy().into_owned();
@@ -269,8 +272,9 @@ mod tests {
                 src.join("Panel.jsx"),
                 src.join("Widget.tsx"),
                 src.join("config.js"),
+                src.join("package.json"),
                 src.join("store.ts"),
-                src.join("types.d.ts")
+                src.join("types.d.ts"),
             ]
         );
     }

@@ -33,7 +33,7 @@ use patterns::default_fmt_patterns;
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct FmtArgs {
-    /// Glob pattern(s) to match .vue, .js, .ts, .jsx, and .tsx files
+    /// Glob pattern(s) to match .vue, .js, .ts, .jsx, .tsx, and .json files
     #[arg(default_values_t = default_fmt_patterns())]
     pub patterns: Vec<String>,
 
@@ -115,7 +115,7 @@ pub fn run(args: FmtArgs) {
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
-        eprintln!("No .vue, .js, .ts, .jsx, or .tsx files found matching the patterns");
+        eprintln!("No .vue, .js, .ts, .jsx, .tsx, or .json files found matching the patterns");
         if patterns.explicit {
             std::process::exit(1);
         }
@@ -484,6 +484,17 @@ fn format_file_source(
         });
     }
 
+    if is_json_path(path) {
+        let code = profile!(
+            "cli.fmt.file.format_json",
+            vize_glyph::format_json(source, options)
+        )?;
+        return Ok(FormatResult {
+            changed: code.as_str() != source,
+            code,
+        });
+    }
+
     profile!(
         "cli.fmt.file.format_sfc",
         format_sfc_with_allocator(source, options, allocator)
@@ -499,6 +510,13 @@ fn script_source_type_for_path(path: &Path) -> Option<SourceType> {
         "tsx" => Some(SourceType::tsx().with_module(true)),
         _ => None,
     }
+}
+
+fn is_json_path(path: &Path) -> bool {
+    matches!(
+        path.extension().and_then(|extension| extension.to_str()),
+        Some("json")
+    )
 }
 
 struct FormatFileResult {

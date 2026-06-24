@@ -203,7 +203,7 @@ fn fmt_check_fails_when_explicit_patterns_match_no_files() {
 
     assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("No .vue, .js, .ts, .jsx, or .tsx files found"));
+    assert!(stderr.contains("No .vue, .js, .ts, .jsx, .tsx, or .json files found"));
 }
 
 #[test]
@@ -247,4 +247,50 @@ fn fmt_check_honors_top_level_ignores_during_directory_discovery() {
     assert!(stderr.contains("Would reformat: src/App.vue"), "{stderr}");
     assert!(!stderr.contains("src/generated/schema.ts"), "{stderr}");
     assert!(!stderr.contains("src/framework/static/sw.js"), "{stderr}");
+}
+
+#[test]
+fn fmt_write_pretty_prints_json_inputs() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "package.json",
+        r#"{"name":"acme","version":"0.0.1","keywords":["vue","cli"]}"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args(["fmt", "--write", "package.json"])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0), "{}", output_details(&output));
+    let contents = fs::read_to_string(project.path().join("package.json")).unwrap();
+    assert_eq!(
+        contents,
+        "{\n  \"name\": \"acme\",\n  \"version\": \"0.0.1\",\n  \"keywords\": [\n    \"vue\",\n    \"cli\"\n  ]\n}\n",
+    );
+}
+
+#[test]
+fn fmt_check_reports_already_formatted_json_as_unchanged() {
+    let project = tempfile::tempdir().unwrap();
+    write_project_file(
+        project.path(),
+        "package.json",
+        "{\n  \"name\": \"acme\",\n  \"version\": \"0.0.1\"\n}\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args(["fmt", "--check", "package.json"])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0), "{}", output_details(&output));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("1 file(s) already formatted"),
+        "expected already-formatted summary, got: {stderr}",
+    );
 }

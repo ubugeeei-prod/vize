@@ -10,6 +10,7 @@ pub(super) fn default_fmt_patterns() -> Vec<std::string::String> {
         "./**/*.cts".into(),
         "./**/*.jsx".into(),
         "./**/*.tsx".into(),
+        "./**/*.json".into(),
     ]
 }
 
