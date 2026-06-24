@@ -93,7 +93,7 @@ fn register_shared(registry: &mut RuleRegistry, flavor: PresetFlavor) {
     registry.register(Box::new(VBindStyle::default()));
     registry.register(Box::new(VOnHandlerStyle));
     match flavor {
-        PresetFlavor::Default => registry.register(Box::new(HtmlSelfClosing::default())),
+        PresetFlavor::Default => registry.register(Box::new(HtmlSelfClosing)),
         PresetFlavor::Nuxt => registry.register(Box::new(HtmlSelfClosingNuxt)),
     }
     registry.register(Box::new(HtmlButtonHasType));
