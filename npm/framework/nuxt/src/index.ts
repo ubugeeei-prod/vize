@@ -635,17 +635,9 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
       "basePath" in museaOptions
         ? ((museaOptions as Record<string, unknown>).basePath as string)
         : "/__musea__";
-    // Default Musea's `projectRoot` to Nuxt's project root so that token paths
-    // pointing at sibling directories of the Vite app root (e.g.
-    // `tokensPath: "../design/tokens"` when Vite runs in `app/`) resolve under
-    // an allowed boundary. User-supplied `projectRoot` wins.
-    const museaWithProjectRoot =
-      "projectRoot" in museaOptions
-        ? museaOptions
-        : { ...museaOptions, projectRoot: nuxt.options.rootDir };
     nuxt.options.vite ||= {};
     nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
-    nuxt.options.vite.plugins.push(...musea(museaWithProjectRoot));
+    nuxt.options.vite.plugins.push(...musea("projectRoot" in museaOptions ? museaOptions : { ...museaOptions, projectRoot: nuxt.options.rootDir }));
 
     // Print Musea Gallery URL after dev server starts
     nuxt.hook("listen", (_server: unknown, listener: { url: string }) => {
