@@ -21,6 +21,7 @@ use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
 
+mod data;
 mod entries;
 mod files;
 mod ignores;
@@ -478,19 +479,8 @@ fn format_file_source(
         });
     }
 
-    if let Some(ext) = path.extension().and_then(|e| e.to_str())
-        && matches!(ext, "json" | "jsonc")
-    {
-        let format = if ext == "jsonc" {
-            vize_glyph::format_jsonc
-        } else {
-            vize_glyph::format_json
-        };
-        let code = profile!("cli.fmt.file.format_json", format(source, options))?;
-        return Ok(FormatResult {
-            changed: code.as_str() != source,
-            code,
-        });
+    if let Some(result) = data::format_data_file(path, source, options) {
+        return result;
     }
     profile!(
         "cli.fmt.file.format_sfc",
