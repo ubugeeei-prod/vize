@@ -138,17 +138,18 @@ fn test_lint_sfc_css_diagnostic_uses_file_offsets() {
 
 #[test]
 fn test_lint_sfc_opinionated_allows_next_tick_by_default() {
-    // Regression for #2239: opinionated must not flag nextTick() without explicit opt-in.
-    let linter = Linter::with_preset(LintPreset::Opinionated);
     let sfc = r#"<script setup lang="ts">
 import { nextTick } from 'vue'
 
 await nextTick()
 </script>
 "#;
-    let result = linter.lint_sfc(sfc, "test.vue");
+    let result = Linter::with_preset(LintPreset::Opinionated).lint_sfc(sfc, "test.vue");
     assert!(
-        !result.diagnostics.iter().any(|d| d.rule_name == "script/no-next-tick"),
+        !result
+            .diagnostics
+            .iter()
+            .any(|d| d.rule_name == "script/no-next-tick"),
         "opinionated preset must not report script/no-next-tick without explicit opt-in"
     );
 }

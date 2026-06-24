@@ -14,7 +14,10 @@ await nextTick()
             "test.vue",
         );
     assert!(
-        result.diagnostics.iter().any(|d| d.rule_name == "script/no-next-tick"),
+        result
+            .diagnostics
+            .iter()
+            .any(|d| d.rule_name == "script/no-next-tick"),
         "explicit script/no-next-tick should still report, got {:?}",
         result.diagnostics
     );
