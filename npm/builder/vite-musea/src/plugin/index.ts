@@ -45,6 +45,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   const storybookOutDir = options.storybookOutDir ?? ".storybook/stories";
   let inlineArt = options.inlineArt ?? false;
   const tokensPath = options.tokensPath;
+  const projectRootOption = options.projectRoot;
   const themeConfig = buildThemeConfig(options.theme);
   const previewCss = options.previewCss ?? [];
   const previewSetup = options.previewSetup;
@@ -143,6 +144,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           artFiles,
           scanRoots,
           tokensPath,
+          projectRoot: resolveProjectRoot(projectRootOption, config.root),
           basePath,
           resolvedPreviewCss,
           resolvedPreviewSetup,
@@ -246,6 +248,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         artFiles,
         scanRoots,
         tokensPath,
+        projectRoot: resolveProjectRoot(projectRootOption, config.root),
         basePath,
         resolvedPreviewCss,
         resolvedPreviewSetup,
@@ -287,4 +290,11 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   }
 
   return [mainPlugin];
+}
+
+function resolveProjectRoot(projectRoot: string | undefined, viteRoot: string): string | undefined {
+  if (!projectRoot) return undefined;
+  const absolute = path.isAbsolute(projectRoot) ? projectRoot : path.resolve(viteRoot, projectRoot);
+  // Only forward when it actually widens the allowed boundary.
+  return absolute === path.resolve(viteRoot) ? undefined : absolute;
 }

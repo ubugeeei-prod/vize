@@ -34,6 +34,11 @@ export interface StaticGalleryDataContext {
   artFiles: Map<string, ArtFileInfo>;
   scanRoots: string[];
   tokensPath: string | undefined;
+  /**
+   * Optional outer project root used as an additional allowed boundary for
+   * `tokensPath` resolution during static builds.
+   */
+  projectRoot?: string;
   basePath: string;
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
@@ -117,6 +122,7 @@ function createApiContext(ctx: StaticGalleryDataContext): ApiRoutesContext {
     artFiles: ctx.artFiles,
     scanRoots: ctx.scanRoots,
     tokensPath: ctx.tokensPath,
+    projectRoot: ctx.projectRoot,
     basePath: ctx.basePath,
     resolvedPreviewCss: ctx.resolvedPreviewCss,
     resolvedPreviewSetup: ctx.resolvedPreviewSetup,

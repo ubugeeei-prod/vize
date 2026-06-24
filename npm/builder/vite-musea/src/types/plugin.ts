@@ -92,6 +92,18 @@ export interface MuseaOptions {
   tokensPath?: string;
 
   /**
+   * Project root that should be treated as the outer boundary for path resolution
+   * (notably `tokensPath`). When set, sibling directories of the Vite root that
+   * live under this project root are allowed.
+   *
+   * Frameworks like Nuxt set this to their project root so a Vite app rooted at
+   * `app/` can still load tokens from `<project>/design/tokens`.
+   *
+   * Defaults to the Vite root when unset.
+   */
+  projectRoot?: string;
+
+  /**
    * Gallery theme configuration.
    *
    * - `'dark'` / `'light'` — use a built-in theme (default: `'dark'`)

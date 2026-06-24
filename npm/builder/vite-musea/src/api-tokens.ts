@@ -27,7 +27,9 @@ import {
 } from "./style-dictionary.js";
 
 function resolveTokensPath(ctx: ApiRoutesContext): string {
-  return resolveInsideAny([ctx.config.root, ...ctx.scanRoots], ctx.tokensPath!, "tokensPath");
+  const allowedRoots = [ctx.config.root, ...ctx.scanRoots];
+  if (ctx.projectRoot) allowedRoots.push(ctx.projectRoot);
+  return resolveInsideAny(allowedRoots, ctx.tokensPath!, "tokensPath");
 }
 
 function sendTokenMutationError(e: unknown, sendError: SendError): void {

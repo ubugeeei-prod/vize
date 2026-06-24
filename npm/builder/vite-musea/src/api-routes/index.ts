@@ -46,6 +46,12 @@ export interface ApiRoutesContext {
   artFiles: Map<string, ArtFileInfo>;
   scanRoots: string[];
   tokensPath: string | undefined;
+  /**
+   * Optional outer project root used as an additional allowed boundary for
+   * `tokensPath` resolution. Set by framework integrations (e.g. Nuxt) so that
+   * tokens living beside the Vite root remain accessible.
+   */
+  projectRoot?: string;
   basePath: string;
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
