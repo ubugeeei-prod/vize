@@ -153,10 +153,19 @@ off until configured and flags `<object>.<property>` accesses from a `members` l
     },
     "ruleOptions": {
       "script/no-restricted-globals": {
-        "globals": [{ "name": "process", "message": "Read env via a typed helper." }, { "name": "alert" }]
+        "globals": [
+          { "name": "process", "message": "Read env via a typed helper." },
+          { "name": "alert" }
+        ]
       },
       "script/no-restricted-members": {
-        "members": [{ "object": "window", "property": "localStorage", "message": "Use authStorage." }]
+        "members": [
+          {
+            "object": "window",
+            "property": "localStorage",
+            "message": "Use authStorage."
+          }
+        ]
       }
     }
   }
