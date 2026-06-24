@@ -60,11 +60,8 @@ const ECOSYSTEM_SCRIPT_RULE_NAMES: &[&str] = &[
     "ecosystem/vue-router-prefer-named-push",
     "ecosystem/vue-test-utils-no-html-snapshot",
 ];
-const OPINIONATED_SCRIPT_RULE_NAMES: &[&str] = &[
-    "script/no-options-api",
-    "script/no-get-current-instance",
-    "script/no-next-tick",
-];
+const OPINIONATED_SCRIPT_RULE_NAMES: &[&str] =
+    &["script/no-options-api", "script/no-get-current-instance"];
 const NUXT_SCRIPT_RULE_NAMES: &[&str] = &[];
 
 pub(crate) const fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {
@@ -230,7 +227,7 @@ mod tests {
                 .contains(&"script/no-get-current-instance")
         );
         assert!(
-            super::builtin_script_rule_names(LintPreset::Opinionated)
+            !super::builtin_script_rule_names(LintPreset::Opinionated)
                 .contains(&"script/no-next-tick")
         );
         assert!(

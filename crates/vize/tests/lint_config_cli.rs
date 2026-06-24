@@ -249,6 +249,41 @@ const items = [{ id: 1, name: 'One' }]
 }
 
 #[test]
+fn lint_opinionated_preset_allows_next_tick_for_non_vapor_projects() {
+    // Regression for #2239: opinionated is the recommended preset for non-Vapor
+    // Vue 3 design systems, where `nextTick()` is a legitimate runtime API. The
+    // Vapor-oriented `script/no-next-tick` rule must remain opt-in.
+    let project_root = temp_project_dir("opinionated-non-vapor-next-tick");
+    let sfc = r#"<script setup lang="ts">
+import { nextTick } from 'vue'
+
+await nextTick()
+</script>
+"#;
+    write_project_file(&project_root, "src/Dialog.vue", sfc);
+
+    let opinionated_default = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "lint",
+            "--preset",
+            "opinionated",
+            "--no-config",
+            "src/Dialog.vue",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        opinionated_default.status.success(),
+        "stdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&opinionated_default.stdout),
+        String::from_utf8_lossy(&opinionated_default.stderr)
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
 fn lint_nuxt_preset_allows_next_tick_by_default_and_when_compiler_vapor_is_false() {
     let project_root = temp_project_dir("nuxt-non-vapor-next-tick");
     let sfc = r#"<script setup lang="ts">
