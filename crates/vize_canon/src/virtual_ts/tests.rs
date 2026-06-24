@@ -1503,6 +1503,41 @@ fn test_inline_arrow_event_handler_is_called_with_event() {
 }
 
 #[test]
+fn test_inline_arrow_event_handler_body_can_reference_dollar_event() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    // Repro for #2224: when a user writes an inline arrow handler whose body
+    // references `$event` (e.g. mixing the explicit callback parameter with the
+    // implicit Vue event alias), the generated TS must declare `$event` in the
+    // scope that wraps the inline-callback invocation. Without this inner wrap,
+    // the user's reference to `$event` inside the arrow body can be reported as
+    // `TS2552: Cannot find name '$event'` in nested-scope refactors of the
+    // virtual TS, so pin the binding immediately around the user's callback.
+    let script = r#"function handleInput(_a: Event, _b: Event) { void _a; void _b; }
+"#;
+    let template = r#"<input @input="(e) => handleInput($event, e)" />"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert!(
+        output.code.contains(
+            "(($event: InputEvent) => { ((e) => handleInput($event, e))($event); })($event);"
+        ),
+        "inline arrow handler invocation must be wrapped in a closure that \
+         re-declares `$event` (#2224):\n{}",
+        output.code
+    );
+}
+
+#[test]
 fn test_computed_member_event_handler_reference_is_called_with_event() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
