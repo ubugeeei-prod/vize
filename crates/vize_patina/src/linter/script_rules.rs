@@ -65,7 +65,13 @@ pub(crate) fn parse_sfc_for_lint<'a>(
 ) -> Result<SfcDescriptor<'a>, vize_atelier_sfc::SfcError> {
     profile!(
         "patina.sfc.parse_for_lint",
-        parse_sfc(source, sfc_parse_options(filename))
+        parse_sfc(
+            source,
+            SfcParseOptions {
+                filename: filename.into(),
+                ..Default::default()
+            }
+        )
     )
 }
 
@@ -98,8 +104,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     }
 
     // Parse each block at most once and only when an active AST rule could
-    // match it. Byte rules run directly against the source. Diagnostics are
-    // emitted rule-major / block-minor to preserve the previous ordering.
+    // match it. Byte rules run directly against the source.
     let script = descriptor
         .script
         .as_ref()
@@ -259,11 +264,7 @@ fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
             memmem::find(bytes, b"toMatchSnapshot").is_some()
                 && memmem::find(bytes, b".html").is_some()
         }
-        // `watch` also appears in any aliased import (`watch as observe`), so
-        // this never skips a block the AST check could flag.
         RULE_PREFER_COMPUTED => memmem::find(bytes, b"watch").is_some(),
-        // Bail out unless the source actually mentions one of the restricted
-        // globals, so the AST walk only fires on blocks that could possibly hit.
         RULE_NO_RESTRICTED_GLOBALS => {
             memmem::find(bytes, b"process").is_some()
                 || memmem::find(bytes, b"localStorage").is_some()
@@ -307,14 +308,6 @@ fn source_may_match_ecosystem_rule(source: &str) -> bool {
                 || memmem::find(bytes, b"Router").is_some()))
         || (memmem::find(bytes, b"toMatchSnapshot").is_some()
             && memmem::find(bytes, b".html").is_some())
-}
-
-#[inline]
-fn sfc_parse_options(filename: &str) -> SfcParseOptions {
-    SfcParseOptions {
-        filename: filename.into(),
-        ..Default::default()
-    }
 }
 
 fn extract_inline_scripts(source: &str) -> Vec<(&str, usize)> {
