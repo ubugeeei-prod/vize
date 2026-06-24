@@ -69,22 +69,31 @@ pub use warn_custom_block::WarnCustomBlock;
 pub use warn_custom_directive::WarnCustomDirective;
 
 pub(crate) fn register(registry: &mut RuleRegistry) {
-    register_shared(registry);
+    register_shared(registry, PresetFlavor::Default);
     registry.register(Box::new(RequireComponentRegistration::default()));
 }
 
 pub(crate) fn register_nuxt(registry: &mut RuleRegistry) {
-    register_shared(registry);
+    register_shared(registry, PresetFlavor::Nuxt);
 }
 
-fn register_shared(registry: &mut RuleRegistry) {
+#[derive(Clone, Copy)]
+enum PresetFlavor {
+    Default,
+    Nuxt,
+}
+
+fn register_shared(registry: &mut RuleRegistry, flavor: PresetFlavor) {
     registry.register(Box::new(MultiWordComponentNames::default()));
     registry.register(Box::new(UseVOnExact));
 
     registry.register(Box::new(NoTemplateShadow));
     registry.register(Box::new(VBindStyle::default()));
     registry.register(Box::new(VOnHandlerStyle));
-    registry.register(Box::new(HtmlSelfClosing));
+    match flavor {
+        PresetFlavor::Default => registry.register(Box::new(HtmlSelfClosing::default())),
+        PresetFlavor::Nuxt => registry.register(Box::new(HtmlSelfClosing::nuxt())),
+    }
     registry.register(Box::new(HtmlButtonHasType));
     registry.register(Box::new(ScopedEventNames));
     registry.register(Box::new(PreferPropsShorthand));
@@ -92,7 +101,12 @@ fn register_shared(registry: &mut RuleRegistry) {
 
     registry.register(Box::new(UseUniqueElementIds::default()));
 
-    registry.register(Box::new(ComponentNameInTemplateCasing::default()));
+    match flavor {
+        PresetFlavor::Default => {
+            registry.register(Box::new(ComponentNameInTemplateCasing::default()))
+        }
+        PresetFlavor::Nuxt => registry.register(Box::new(ComponentNameInTemplateCasing::nuxt())),
+    }
     registry.register(Box::new(NoPreprocessorLang));
     registry.register(Box::new(NoScriptNonStandardLang));
     registry.register(Box::new(NoTemplateLang));

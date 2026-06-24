@@ -93,7 +93,25 @@ const MATHML_ELEMENTS: &[&str] = &[
 
 /// HTML self-closing style rule
 #[derive(Default)]
-pub struct HtmlSelfClosing;
+pub struct HtmlSelfClosing {
+    /// Whether to exempt framework-registered Vuetify components (`v-*` tags).
+    ///
+    /// Vuetify components are framework-registered globally so the linter has
+    /// no way to know their preferred closing style. The Nuxt preset opts in
+    /// to skipping `v-*` tags here to match `vue/component-name-in-template-casing`
+    /// and keep real Nuxt+Vuetify projects out of a self-closing warning storm.
+    pub allow_vuetify_tags: bool,
+}
+
+impl HtmlSelfClosing {
+    /// Variant tuned for the Nuxt preset: exempts `v-*` tags so framework-registered
+    /// Vuetify 2 components stop tripping self-closing diagnostics.
+    pub fn nuxt() -> Self {
+        Self {
+            allow_vuetify_tags: true,
+        }
+    }
+}
 
 impl Rule for HtmlSelfClosing {
     fn meta(&self) -> &'static RuleMeta {
@@ -102,6 +120,9 @@ impl Rule for HtmlSelfClosing {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         let tag = element.tag.as_str();
+        if self.allow_vuetify_tags && is_vuetify_tag(tag) {
+            return;
+        }
         let is_void = VOID_ELEMENTS.contains(&tag);
         let is_svg = SVG_ELEMENTS.contains(&tag);
         let is_mathml = MATHML_ELEMENTS.contains(&tag);
@@ -169,6 +190,12 @@ fn is_nuxt_builtin_component(tag: &str) -> bool {
     )
 }
 
+/// Matches the Vuetify `v-*` tag convention (e.g. `v-btn`, `v-dialog`).
+fn is_vuetify_tag(tag: &str) -> bool {
+    let bytes = tag.as_bytes();
+    bytes.len() >= 3 && bytes[0] == b'v' && bytes[1] == b'-' && bytes[2].is_ascii_lowercase()
+}
+
 #[cfg(test)]
 mod tests {
     use super::HtmlSelfClosing;
@@ -177,7 +204,7 @@ mod tests {
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
-        registry.register(Box::new(HtmlSelfClosing));
+        registry.register(Box::new(HtmlSelfClosing::default()));
         Linter::with_registry(registry)
     }
 
@@ -221,5 +248,35 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<nuxt-child id="index"></nuxt-child>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    fn create_nuxt_linter() -> Linter {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(HtmlSelfClosing::nuxt()));
+        Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn test_nuxt_preset_allows_vuetify_tags() {
+        let linter = create_nuxt_linter();
+        let result = linter.lint_template(
+            r#"<v-dialog><v-btn></v-btn><v-icon></v-icon><v-spacer /></v-dialog>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_default_still_flags_empty_vuetify_tags() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<v-btn></v-btn>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_nuxt_preset_still_flags_other_components() {
+        let linter = create_nuxt_linter();
+        let result = linter.lint_template(r#"<MyComponent></MyComponent>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
     }
 }
