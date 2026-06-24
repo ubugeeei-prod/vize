@@ -36,7 +36,9 @@ impl CssRule for PreferNestedSelectors {
                 i = next;
                 continue;
             }
-            let Some(selector_start) = find_selector_start(bytes, i) else { break; };
+            let Some(selector_start) = find_selector_start(bytes, i) else {
+                break;
+            };
             let Some(brace_pos) = find_next_brace(bytes, selector_start) else {
                 i += 1;
                 continue;
@@ -77,12 +79,6 @@ const NON_NESTED_BLOCK_AT_RULES: &[&str] = &[
 /// At-rules that end with `;` rather than a block.
 const STATEMENT_AT_RULES: &[&str] = &["import", "charset", "namespace", "use", "forward"];
 
-/// Skip an at-rule at `bytes[start..]`; return the index past its end, or `None` if not found.
-///
-/// Statement at-rules (e.g. `@import`) are consumed to the `;`.
-/// Non-style block at-rules (e.g. `@keyframes`, `@font-face`) are consumed including the block.
-/// Conditional group rules (e.g. `@media`, `@supports`) advance past the opening `{` so the
-/// scanner descends into the body and keeps flagging descendant selectors inside them.
 fn skip_at_rule(bytes: &[u8], start: usize) -> Option<usize> {
     let mut p = start;
     while p < bytes.len() && matches!(bytes[p], b' ' | b'\t' | b'\n' | b'\r' | b'}') {
@@ -103,7 +99,11 @@ fn skip_at_rule(bytes: &[u8], start: usize) -> Option<usize> {
     }
     let kw = &bytes[kw_start..kw_end];
     let eq_kw = |s: &str| -> bool {
-        kw.len() == s.len() && kw.iter().zip(s.bytes()).all(|(a, b)| a.eq_ignore_ascii_case(&b))
+        kw.len() == s.len()
+            && kw
+                .iter()
+                .zip(s.bytes())
+                .all(|(a, b)| a.eq_ignore_ascii_case(&b))
     };
 
     if STATEMENT_AT_RULES.iter().any(|&s| eq_kw(s)) {
@@ -131,7 +131,6 @@ fn skip_at_rule(bytes: &[u8], start: usize) -> Option<usize> {
     Some(q + 1)
 }
 
-/// Given `open_pos` pointing at `{`, return the index just past the matching `}`.
 fn skip_balanced_block(bytes: &[u8], open_pos: usize) -> usize {
     let mut depth: i32 = 0;
     let mut i = open_pos;
@@ -151,8 +150,6 @@ fn skip_balanced_block(bytes: &[u8], open_pos: usize) -> usize {
     bytes.len()
 }
 
-/// Return `true` if the selector already uses the `&` parent selector (outside brackets,
-/// parens, or strings), meaning the rule is already inside a nesting context.
 fn is_already_nested(selector: &str) -> bool {
     let bytes = selector.as_bytes();
     let (mut bracket, mut paren) = (0usize, 0usize);
@@ -277,14 +274,24 @@ mod tests {
         // See https://github.com/ubugeeei-prod/vize/issues/2246.
         let linter = create_linter();
         let result = linter.lint(".rendered-content { & h1, & h2 { font-weight: 600; } }", 0);
-        assert_eq!(result.warning_count, 0, "& h1, & h2 should not warn; diagnostics: {:?}", result.diagnostics);
+        assert_eq!(
+            result.warning_count,
+            0,
+            "& h1, & h2 should not warn; diagnostics: {:?}",
+            result.diagnostics
+        );
     }
 
     #[test]
     fn test_nested_selector_single_does_not_warn() {
         let linter = create_linter();
         let result = linter.lint(".parent { & .child { color: red; } }", 0);
-        assert_eq!(result.warning_count, 0, "& .child should not warn; diagnostics: {:?}", result.diagnostics);
+        assert_eq!(
+            result.warning_count,
+            0,
+            "& .child should not warn; diagnostics: {:?}",
+            result.diagnostics
+        );
     }
 
     #[test]
@@ -292,7 +299,12 @@ mod tests {
         let linter = create_linter();
         let source = "@keyframes loading { 0% { opacity: 0; } 100% { opacity: 1; } }";
         let result = linter.lint(source, 0);
-        assert_eq!(result.warning_count, 0, "@keyframes body should not warn; diagnostics: {:?}", result.diagnostics);
+        assert_eq!(
+            result.warning_count,
+            0,
+            "@keyframes body should not warn; diagnostics: {:?}",
+            result.diagnostics
+        );
     }
 
     #[test]
@@ -300,7 +312,12 @@ mod tests {
         let linter = create_linter();
         let source = "@import \"x.css\";\n.foo { color: red; }";
         let result = linter.lint(source, 0);
-        assert_eq!(result.warning_count, 0, "@import should not warn; diagnostics: {:?}", result.diagnostics);
+        assert_eq!(
+            result.warning_count,
+            0,
+            "@import should not warn; diagnostics: {:?}",
+            result.diagnostics
+        );
     }
 
     #[test]
@@ -314,7 +331,10 @@ mod tests {
     fn test_media_query_still_warns_on_descendants() {
         // Conditional group rules should still descend into their bodies.
         let linter = create_linter();
-        let result = linter.lint("@media (min-width: 600px) { .parent .child { color: red; } }", 0);
+        let result = linter.lint(
+            "@media (min-width: 600px) { .parent .child { color: red; } }",
+            0,
+        );
         assert_eq!(result.warning_count, 1);
     }
 
