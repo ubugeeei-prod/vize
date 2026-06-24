@@ -1,6 +1,32 @@
 use super::{LintPreset, Linter};
 
 #[test]
+fn test_lint_standalone_html_does_not_warn_custom_block() {
+    // Regression for https://github.com/ubugeeei-prod/vize/issues/2245:
+    // running `vize lint --preset nuxt` on a standalone `.html` file (e.g.
+    // `.storybook/preview-head.html`) reported `vue/warn-custom-block` for
+    // top-level HTML elements like `<link>`. Standalone HTML files are not
+    // Vue SFCs, so the SFC custom-block rule must not fire on them.
+    let linter = Linter::with_preset(LintPreset::Nuxt);
+    let source = r#"<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto" />
+"#;
+
+    let result = linter.lint_standalone_html(source, ".storybook/preview-head.html");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/warn-custom-block"),
+        "vue/warn-custom-block must not fire on standalone HTML files, got: {:?}",
+        result
+            .diagnostics
+            .iter()
+            .map(|d| d.rule_name)
+            .collect::<Vec<_>>()
+    );
+}
+
+#[test]
 fn nuxt_preset_allows_options_api_components() {
     let linter = Linter::with_preset(LintPreset::Nuxt);
     let sfc = r#"<script lang="ts">
