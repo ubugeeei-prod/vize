@@ -73,6 +73,9 @@ pub struct ServerState {
     type_checker_jsx_typecheck: RwLock<bool>,
     /// Linter options shared by LSP diagnostics.
     linter_config: RwLock<LinterConfig>,
+    /// Typed per-rule lint options (`linter.ruleOptions`) for configurable
+    /// script rules; loaded alongside `linter_config` (#1891).
+    linter_rule_options: RwLock<vize_carton::config::LintRuleOptions>,
     /// Explicit Vue dialect from config (`dialect` key). `None` means the
     /// dialect is detected structurally per document.
     dialect_config: RwLock<Option<VueDialect>>,
@@ -135,6 +138,7 @@ impl ServerState {
             // untouched until explicitly opted in (#1498).
             type_checker_jsx_typecheck: RwLock::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
+            linter_rule_options: RwLock::new(vize_carton::config::LintRuleOptions::default()),
             dialect_config: RwLock::new(None),
             #[cfg(feature = "glyph")]
             format_options: RwLock::new(vize_glyph::FormatOptions::default()),

@@ -80,12 +80,11 @@ impl DiagnosticService {
 
         if is_standalone_html_path(path) {
             if features.lint {
-                let linter_config = state.get_linter_config();
                 let lint_diags = Self::collect_lint_diagnostics(
+                    state,
                     uri,
                     &content,
                     features.ecosystem,
-                    &linter_config,
                     &line_index,
                 );
                 tracing::info!(
@@ -154,12 +153,11 @@ impl DiagnosticService {
 
         if features.lint {
             // Collect linter diagnostics (vize_patina)
-            let linter_config = state.get_linter_config();
             let lint_diags = Self::collect_lint_diagnostics(
+                state,
                 uri,
                 &content,
                 features.ecosystem,
-                &linter_config,
                 &line_index,
             );
             tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
@@ -248,12 +246,11 @@ impl DiagnosticService {
 
         // Standalone HTML: patina lint only.
         if is_standalone_html_path(path) {
-            let linter_config = state.get_linter_config();
             diagnostics.extend(Self::collect_lint_diagnostics(
+                state,
                 uri,
                 &content,
                 features.ecosystem,
-                &linter_config,
                 &line_index,
             ));
             return diagnostics;
@@ -275,12 +272,11 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        let linter_config = state.get_linter_config();
         diagnostics.extend(Self::collect_lint_diagnostics(
+            state,
             uri,
             &content,
             features.ecosystem,
-            &linter_config,
             &line_index,
         ));
         diagnostics.extend(Self::collect_inline_art_diagnostics(

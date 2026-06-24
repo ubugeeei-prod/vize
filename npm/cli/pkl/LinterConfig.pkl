@@ -7,6 +7,45 @@ typealias RuleCategory = "correctness"|"suspicious"|"style"|"perf"|"a11y"|"secur
 
 typealias LintPreset = "happy-path"|"opinionated"|"essential"|"incremental"|"ecosystem"|"nuxt"
 
+/// A restricted global identifier for `script/no-restricted-globals`.
+class RestrictedGlobal {
+  /// Identifier name to forbid (e.g. `process`).
+  name: String
+
+  /// Optional advisory message shown in the diagnostic.
+  message: String? = null
+}
+
+/// A restricted `object.property` member access for `script/no-restricted-members`.
+class RestrictedMember {
+  /// Object identifier (e.g. `window`).
+  object: String
+
+  /// Property name accessed on the object (e.g. `localStorage`).
+  property: String
+
+  /// Optional advisory message shown in the diagnostic.
+  message: String? = null
+}
+
+/// Options for `script/no-restricted-globals`. A non-empty `globals` list
+/// replaces the built-in default deny list.
+class NoRestrictedGlobalsOptions {
+  globals: Listing<RestrictedGlobal>? = null
+}
+
+/// Options for `script/no-restricted-members`. The rule is off unless `members`
+/// is configured.
+class NoRestrictedMembersOptions {
+  members: Listing<RestrictedMember>? = null
+}
+
+/// Typed per-rule options for rules that accept project-local configuration.
+class LintRuleOptions {
+  `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
+  `script/no-restricted-members`: NoRestrictedMembersOptions? = null
+}
+
 class LinterConfig {
   /// Enable linting.
   enabled: Boolean = true
@@ -19,6 +58,9 @@ class LinterConfig {
 
   /// Rules to enable/disable.
   rules: Mapping<String, RuleSeverity> = new Mapping {}
+
+  /// Typed per-rule options for rules that accept project-local configuration.
+  ruleOptions: LintRuleOptions? = null
 
   /// Category-level severity overrides.
   categories: Mapping<RuleCategory, RuleSeverity> = new Mapping {}

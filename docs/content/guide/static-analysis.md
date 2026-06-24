@@ -134,21 +134,39 @@ built-in Vize rule severities by name.
 For the common case of forbidding a runtime-environment global (typical sidecar ESLint rules such as
 `no-access-process`, `no-access-local-storage`, or `no-restricted-globals` against `localStorage` /
 `sessionStorage`), enable the opt-in built-in `script/no-restricted-globals` rule instead of keeping
-ESLint installed for those alone:
+ESLint installed for those alone. Its default deny list is `process`, `localStorage`, and
+`sessionStorage`, reported on each bare reference.
+
+Two script rules also accept project-local configuration under `linter.ruleOptions` (#1891), so teams
+can enforce their own architecture conventions through `vize lint`. `script/no-restricted-globals`
+takes a `globals` list that **replaces** the built-in default list; `script/no-restricted-members` is
+off until configured and flags `<object>.<property>` accesses from a `members` list. Options are typed
+(`name` / `object` / `property` plus an optional `message`, with unknown keys rejected); a missing
+`message` falls back to a generic advisory.
 
 ```json
 {
   "linter": {
     "rules": {
-      "script/no-restricted-globals": "error"
+      "script/no-restricted-globals": "error",
+      "script/no-restricted-members": "error"
+    },
+    "ruleOptions": {
+      "script/no-restricted-globals": {
+        "globals": [
+          { "name": "process", "message": "Read env via a typed helper." },
+          { "name": "alert" }
+        ]
+      },
+      "script/no-restricted-members": {
+        "members": [
+          { "object": "window", "property": "localStorage", "message": "Use authStorage." }
+        ]
+      }
     }
   }
 }
 ```
-
-The deny list is fixed today (`process`, `localStorage`, `sessionStorage`) and the rule reports a
-diagnostic on each bare reference to one of those names. A project-configurable deny list is tracked
-in issue #1891.
 
 ## Cross-File Rules
 

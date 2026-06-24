@@ -13,7 +13,6 @@ use oxc_allocator::Allocator as OxcAllocator;
 use oxc_parser::Parser as OxcParser;
 use oxc_span::SourceType;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::config::LinterConfig;
 use vize_patina::{HelpRenderTarget, LintPreset, render_help};
 
 use super::{DiagnosticService, LineIndex, sources};
@@ -468,14 +467,16 @@ impl DiagnosticService {
         diagnostics
     }
 
-    /// Collect linter diagnostics from vize_patina.
+    /// Collect linter diagnostics from vize_patina (config + per-rule options #1891 from `state`).
     pub(super) fn collect_lint_diagnostics(
+        state: &crate::server::ServerState,
         uri: &Url,
         content: &str,
         ecosystem_enabled: bool,
-        linter_config: &LinterConfig,
         line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
+        let linter_config = state.get_linter_config();
+        let rule_options = state.get_linter_rule_options();
         if !linter_config.enabled {
             return vec![];
         }
@@ -483,24 +484,21 @@ impl DiagnosticService {
         let is_standalone_html = crate::utils::is_standalone_html_path(uri.path());
 
         // Create linter and lint the full SFC so editor diagnostics match the CLI.
-        let preset = linter_config
-            .preset
-            .as_deref()
-            .and_then(LintPreset::parse)
-            .unwrap_or_default();
+        let preset = linter_config.preset.as_deref();
+        let preset = preset.and_then(LintPreset::parse).unwrap_or_default();
         let linter = if ecosystem_enabled && linter_config.preset.is_none() {
             vize_patina::Linter::with_ecosystem()
         } else {
             vize_patina::Linter::with_preset(preset)
         }
         .with_additional_rules(linter_config.enabled_rules())
-        .with_disabled_rules(linter_config.disabled_rules());
+        .with_disabled_rules(linter_config.disabled_rules())
+        .with_restricted_globals(rule_options.restricted_globals())
+        .with_restricted_members(rule_options.restricted_members());
 
         // Opt-in strict-reactivity rule, mirroring `vize lint --strict-reactivity`.
         // The CLI registers this via a flag; in the LSP it follows the
-        // `languageServer.crossFile` knob (#685) for now, on the principle
-        // that the rule needs broader analysis. A dedicated `strictReactivity`
-        // knob can split off later if usage warrants it.
+        // `languageServer.crossFile` knob (#685) until a dedicated knob warrants splitting off.
         #[cfg(not(target_arch = "wasm32"))]
         let linter = if linter_config.strict_reactivity_enabled() {
             linter.with_rule(Box::new(

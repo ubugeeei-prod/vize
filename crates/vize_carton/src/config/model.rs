@@ -5,6 +5,7 @@ mod formatter;
 mod global_types;
 mod language_server;
 mod linter;
+mod linter_rule_options;
 mod type_checker;
 mod vue;
 
@@ -25,6 +26,10 @@ pub use language_server::{LanguageServerConfig, LspConfig};
 #[allow(unused_imports)]
 pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
+pub use linter_rule_options::{
+    LintRuleOptions, NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, RestrictedGlobal,
+    RestrictedMember,
+};
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};
 

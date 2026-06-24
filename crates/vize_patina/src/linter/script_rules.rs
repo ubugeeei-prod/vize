@@ -6,13 +6,15 @@ use oxc_parser::Parser;
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 use vize_carton::profile;
 
+mod html_scripts;
 mod registry;
 
+use html_scripts::extract_inline_scripts;
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
     ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
-    RULE_NO_RESTRICTED_GLOBALS, RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED,
-    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS, RULE_PINIA_PREFER_STORE_TO_REFS,
+    RULE_PREFER_COMPUTED, RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 
 #[cfg(test)]
@@ -138,13 +140,52 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         });
 
     for entry in active_builtin_script_rule_entries(linter) {
+        let rule = resolved_rule(linter, entry);
         if let Some((source, offset)) = script {
-            run_builtin_script_rule(entry, source, offset, script_parsed.as_ref(), result);
+            run_builtin_script_rule(
+                linter,
+                entry,
+                rule,
+                source,
+                offset,
+                script_parsed.as_ref(),
+                result,
+            );
         }
-        if let Some((source, offset)) = script_setup.filter(|_| entry.rule.runs_on_script_setup()) {
-            run_builtin_script_rule(entry, source, offset, script_setup_parsed.as_ref(), result);
+        if let Some((source, offset)) = script_setup.filter(|_| rule.runs_on_script_setup()) {
+            run_builtin_script_rule(
+                linter,
+                entry,
+                rule,
+                source,
+                offset,
+                script_setup_parsed.as_ref(),
+                result,
+            );
         }
     }
+}
+
+/// Resolve the rule instance to run for `entry`: a project-configured override
+/// when present, otherwise the static registry singleton.
+#[inline]
+fn resolved_rule<'a>(
+    linter: &'a Linter,
+    entry: &'a BuiltinScriptRuleEntry,
+) -> &'a dyn crate::rules::script::ScriptRule {
+    match linter.script_rule_overrides.get(entry.rule_name) {
+        Some(rule) => rule.as_ref(),
+        None => entry.rule,
+    }
+}
+
+/// Whether `entry` could match `source`. A configured override bypasses the
+/// byte prefilter (its deny list may reference identifiers the default prefilter
+/// does not know about), so the block is always parsed for overridden rules.
+#[inline]
+fn entry_may_match(linter: &Linter, entry: &BuiltinScriptRuleEntry, source: &str) -> bool {
+    linter.script_rule_overrides.contains_key(entry.rule_name)
+        || script_rule_may_match(entry.rule_name, source)
 }
 
 /// Whether any enabled built-in script rule could match `source`.
@@ -152,32 +193,35 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
 /// Mirrors the per-rule `is_rule_enabled` + `script_rules.contains` +
 /// `script_rule_may_match` gate so a block matching no rule is never parsed.
 fn block_has_active_rule(linter: &Linter, source: &str) -> bool {
-    active_builtin_script_rule_entries(linter)
-        .any(|entry| script_rule_may_match(entry.rule_name, source))
+    active_builtin_script_rule_entries(linter).any(|entry| entry_may_match(linter, entry, source))
 }
 
 /// Whether any enabled AST-based built-in script rule could match `source`.
 fn block_has_active_ast_rule(linter: &Linter, source: &str) -> bool {
-    active_builtin_script_rule_entries(linter)
-        .any(|entry| entry.rule.uses_ast() && script_rule_may_match(entry.rule_name, source))
+    active_builtin_script_rule_entries(linter).any(|entry| {
+        resolved_rule(linter, entry).uses_ast() && entry_may_match(linter, entry, source)
+    })
 }
 
 /// Run a single built-in script rule against a script block.
 ///
 /// AST rules consume the shared parse when available. Byte rules run their
 /// source-level `check`, preserving the same rule-major ordering.
+#[allow(clippy::too_many_arguments)]
 fn run_builtin_script_rule(
+    linter: &Linter,
     entry: &BuiltinScriptRuleEntry,
+    rule: &dyn crate::rules::script::ScriptRule,
     source: &str,
     offset: usize,
     parsed: Option<&oxc_parser::ParserReturn<'_>>,
     result: &mut LintResult,
 ) {
-    if !script_rule_may_match(entry.rule_name, source) {
+    if !entry_may_match(linter, entry, source) {
         return;
     }
     let mut lint = ScriptLintResult::default();
-    if entry.rule.uses_ast() {
+    if rule.uses_ast() {
         let Some(parsed) = parsed else {
             return;
         };
@@ -186,15 +230,10 @@ fn run_builtin_script_rule(
         }
         profile!(
             entry.profile_name,
-            entry
-                .rule
-                .check_program(&parsed.program, source, offset, &mut lint)
+            rule.check_program(&parsed.program, source, offset, &mut lint)
         );
     } else {
-        profile!(
-            entry.profile_name,
-            entry.rule.check(source, offset, &mut lint)
-        );
+        profile!(entry.profile_name, rule.check(source, offset, &mut lint));
     }
     merge_script_result(result, lint);
 }
@@ -246,7 +285,8 @@ pub(crate) fn append_builtin_script_rules_for_source(
     });
 
     for entry in active_builtin_script_rule_entries(linter) {
-        run_builtin_script_rule(entry, source, offset, parsed.as_ref(), result);
+        let rule = resolved_rule(linter, entry);
+        run_builtin_script_rule(linter, entry, rule, source, offset, parsed.as_ref(), result);
     }
 }
 
@@ -270,6 +310,9 @@ fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
                 || memmem::find(bytes, b"localStorage").is_some()
                 || memmem::find(bytes, b"sessionStorage").is_some()
         }
+        // The static singleton has an empty deny list and never fires; configured
+        // instances bypass this prefilter via `entry_may_match`.
+        RULE_NO_RESTRICTED_MEMBERS => false,
         _ => true,
     }
 }
@@ -308,96 +351,4 @@ fn source_may_match_ecosystem_rule(source: &str) -> bool {
                 || memmem::find(bytes, b"Router").is_some()))
         || (memmem::find(bytes, b"toMatchSnapshot").is_some()
             && memmem::find(bytes, b".html").is_some())
-}
-
-fn extract_inline_scripts(source: &str) -> Vec<(&str, usize)> {
-    let mut scripts = Vec::new();
-    let mut cursor = 0;
-
-    while let Some(open_start) = find_script_open(source, cursor) {
-        let Some(open_end) = find_tag_end(source, open_start) else {
-            break;
-        };
-
-        let content_start = open_end + 1;
-        let Some(close_start) = find_ascii_case_insensitive(source, "</script", content_start)
-        else {
-            break;
-        };
-
-        let content = &source[content_start..close_start];
-        if !content.trim().is_empty() {
-            scripts.push((content, content_start));
-        }
-
-        cursor = find_tag_end(source, close_start).map_or(close_start + 9, |end| end + 1);
-    }
-
-    scripts
-}
-
-fn find_script_open(source: &str, from: usize) -> Option<usize> {
-    let mut cursor = from;
-    while let Some(index) = find_ascii_case_insensitive(source, "<script", cursor) {
-        let boundary = source.as_bytes().get(index + 7).copied();
-        if matches!(
-            boundary,
-            None | Some(b'>' | b'/' | b' ' | b'\n' | b'\r' | b'\t' | b'\x0c')
-        ) {
-            return Some(index);
-        }
-        cursor = index + 7;
-    }
-    None
-}
-
-fn find_tag_end(source: &str, from: usize) -> Option<usize> {
-    let mut quote = None;
-    for (relative, byte) in source.as_bytes()[from..].iter().copied().enumerate() {
-        match (quote, byte) {
-            (Some(current), value) if value == current => quote = None,
-            (None, b'"' | b'\'') => quote = Some(byte),
-            (None, b'>') => return Some(from + relative),
-            _ => {}
-        }
-    }
-    None
-}
-
-fn find_ascii_case_insensitive(source: &str, needle: &str, from: usize) -> Option<usize> {
-    let haystack = source.as_bytes();
-    let needle = needle.as_bytes();
-    if needle.is_empty() || from >= haystack.len() {
-        return None;
-    }
-
-    haystack[from..]
-        .windows(needle.len())
-        .position(|window| window.eq_ignore_ascii_case(needle))
-        .map(|index| from + index)
-}
-
-#[cfg(test)]
-mod standalone_html_tests {
-    use super::extract_inline_scripts;
-
-    #[test]
-    fn extracts_inline_scripts_from_standalone_html() {
-        let source = r##"<!doctype html>
-<html>
-<head>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-</head>
-<body>
-  <script>
-Vue.createApp({ data() { return { count: 0 } } }).mount("#app")
-  </script>
-</body>
-</html>"##;
-
-        let scripts = extract_inline_scripts(source);
-        assert_eq!(scripts.len(), 1);
-        assert!(scripts[0].0.contains("Vue.createApp"));
-        assert_eq!(&source[scripts[0].1..scripts[0].1 + 3], "\nVu");
-    }
 }
