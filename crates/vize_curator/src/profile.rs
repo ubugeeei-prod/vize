@@ -99,6 +99,10 @@ pub fn render_profile_report(report: &ProfileReport<'_>) -> String {
         "Stats compile cache",
         "cache.stats_compile.",
     );
+    render_counter_table(&mut out, report, "Source facts", "source.");
+    render_counter_table(&mut out, report, "Product lanes", "lane.");
+    render_counter_table(&mut out, report, "Vue dialects", "dialect.");
+    render_counter_table(&mut out, report, "Template syntax", "template_syntax.");
     render_counter_table(&mut out, report, "I/O counters", "io.");
     render_counter_table(&mut out, report, "System calls", "syscall.");
     render_phase_table(&mut out, report);

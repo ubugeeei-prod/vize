@@ -6,6 +6,8 @@
 mod cache;
 mod collect;
 mod compile;
+mod compile_stats;
+mod profile_facts;
 mod settings;
 
 use std::{
@@ -33,7 +35,8 @@ use super::{
 
 use cache::StatsCompileCache;
 use collect::collect_files;
-use compile::{compile_file_stats_with_cache, compile_file_with_profile};
+use compile::compile_file_with_profile;
+use compile_stats::compile_file_stats_with_cache;
 use settings::{CompileFileSettings, template_syntax_mode};
 
 /// Main entry point for the build command.
@@ -418,12 +421,7 @@ pub(crate) fn run(args: BuildArgs) {
                 primary: file.parse_time,
                 secondary_label: "compile",
                 secondary: file.compile_time,
-                note: Some(cstr!(
-                    "template {} B, script {} B, styles {}",
-                    file.template_size,
-                    file.script_size,
-                    file.style_count
-                )),
+                note: Some(file.profile_note.clone()),
             })
             .collect();
 

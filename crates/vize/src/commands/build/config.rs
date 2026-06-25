@@ -87,6 +87,7 @@ pub(crate) struct FileProfile {
     pub template_size: usize,
     pub script_size: usize,
     pub style_count: usize,
+    pub profile_note: String,
 }
 
 impl FileProfile {

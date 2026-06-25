@@ -69,13 +69,21 @@ pub(super) struct StatsCompileCache {
 /// component name, changing the filename can change whether that tag is treated
 /// as a component, which can alter helper usage and generated code shape. Those
 /// cases are compiled normally.
-pub(super) fn should_cache_stats_compile(source: &str, component_name: &str) -> bool {
+pub(super) fn stats_compile_cache_bypass_reason(
+    source: &str,
+    component_name: &str,
+) -> Option<&'static str> {
     if component_name.is_empty() {
-        return true;
+        return None;
     }
 
-    !source.contains(component_name)
-        && !source.contains(component_name_to_kebab_case(component_name).as_str())
+    if source.contains(component_name)
+        || source.contains(component_name_to_kebab_case(component_name).as_str())
+    {
+        Some("self-component")
+    } else {
+        None
+    }
 }
 
 /// Converts a PascalCase filename stem to the kebab-case spelling Vue templates use.
