@@ -31,7 +31,7 @@ mod sfc_types;
 mod tests;
 
 // Re-export type checking bindings from separate module
-#[path = "../wasm_typecheck.rs"]
+#[path = "wasm_typecheck.rs"]
 mod wasm_typecheck;
 
 // Re-export all WASM bindings

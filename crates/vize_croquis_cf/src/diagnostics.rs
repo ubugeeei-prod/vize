@@ -455,5 +455,5 @@ impl CrossFileDiagnostic {
 }
 
 #[cfg(test)]
-#[path = "diagnostics/diagnostics_tests/mod.rs"]
+#[path = "diagnostics/diagnostics_tests.rs"]
 mod tests;

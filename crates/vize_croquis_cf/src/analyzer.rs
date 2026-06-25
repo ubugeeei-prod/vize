@@ -18,15 +18,12 @@ mod tests_basic;
 mod tests_element_id;
 
 #[cfg(test)]
-#[path = "analyzer/tests_provide_inject/mod.rs"]
 mod tests_provide_inject;
 
 #[cfg(test)]
-#[path = "analyzer/tests_reactivity_props/mod.rs"]
 mod tests_reactivity_props;
 
 #[cfg(test)]
-#[path = "analyzer/tests_race_conditions/mod.rs"]
 mod tests_race_conditions;
 
 #[cfg(test)]
@@ -34,5 +31,4 @@ mod tests_race_conditions;
 mod tests_single_file;
 
 #[cfg(test)]
-#[path = "analyzer/tests_snapshots/mod.rs"]
 mod tests_snapshots;
