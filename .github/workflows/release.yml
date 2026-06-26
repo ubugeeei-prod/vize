@@ -169,7 +169,6 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
-  # Publish VS Code extension when VSCE_PAT is configured
   release-vscode-extension:
     name: Release VS Code extension
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -210,6 +209,7 @@ jobs:
 
       - name: Publish VS Code extension
         if: env.VSCE_PAT != ''
+        continue-on-error: true
         run: moon run --target native - -- editor-extension-artifacts/editors/vscode/dist/vize.vsix < tools/moon/scripts/publish_vscode_extension.mbtx
 
   # Build release npm packages once and reuse them across publish jobs

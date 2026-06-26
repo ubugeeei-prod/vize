@@ -160,3 +160,14 @@ test("release workflow creates GitHub Releases only after registry publishing su
   const createRelease = releaseJob.indexOf("name: Create Release");
   assert.notEqual(createRelease, -1);
 });
+
+test("release workflow does not block GitHub releases on VS Code Marketplace token expiry", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const publishJob = workflowJobBody(workflow, "release-vscode-extension");
+
+  assert.match(publishJob, /name:\s*Skip publish when VSCE_PAT is absent/);
+  assert.match(
+    publishJob,
+    /name:\s*Publish VS Code extension[\s\S]*if:\s*env\.VSCE_PAT != ''[\s\S]*continue-on-error:\s*true[\s\S]*publish_vscode_extension\.mbtx/,
+  );
+});

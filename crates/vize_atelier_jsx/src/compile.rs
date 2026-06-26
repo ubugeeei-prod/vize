@@ -10,6 +10,7 @@
 //! VDOM and Vapor components.
 
 mod component;
+mod render_exports;
 
 use vize_carton::{Bump, FxHashSet, String};
 use vize_croquis::Croquis;
@@ -67,19 +68,7 @@ impl JsxCompileOutput {
     /// and report an empty preamble, so they pass through untouched.
     pub fn module_code(&self) -> String {
         let preamble = merge_preambles(self.components.iter().map(JsxComponent::preamble));
-
-        let mut module = preamble;
-        for component in &self.components {
-            let code = component.code();
-            if code.is_empty() {
-                continue;
-            }
-            if !module.is_empty() && !module.ends_with('\n') {
-                module.push('\n');
-            }
-            module.push_str(code);
-        }
-        module
+        render_exports::module_code(&self.components, preamble)
     }
 
     /// The v3 source map (JSON) for the module's render code, when source-map

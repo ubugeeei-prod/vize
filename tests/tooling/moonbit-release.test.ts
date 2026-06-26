@@ -163,13 +163,22 @@ test("release script rewrites only the native-binaries catalog block in pnpm-loc
   assert.ok(out.includes("resolution: {integrity: sha512-AAA==}"), "integrity hash preserved");
 });
 
-test("release script includes editor extension packages in extra synced manifests", () => {
+test("release script includes nested release packages in extra synced manifests", () => {
   const result = runMoonScript("release", ["--print-extra-package-json-paths"]);
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
   const paths = result.stdout.split("\n");
 
-  for (const manifestPath of ["editors/vscode/package.json", "editors/vscode-art/package.json"]) {
+  for (const manifestPath of [
+    "editors/vscode/package.json",
+    "editors/vscode-art/package.json",
+    "npm/builder/rspack/package.json",
+    "npm/builder/unplugin/package.json",
+    "npm/builder/vite/package.json",
+    "npm/builder/vite-musea/package.json",
+    "npm/framework/musea-nuxt/package.json",
+    "npm/framework/nuxt/package.json",
+  ]) {
     assert.ok(
       paths.includes(manifestPath),
       `${manifestPath} version must be bumped with release commits`,

@@ -108,6 +108,27 @@ fn one_module_can_mix_vdom_and_vapor_components() {
 }
 
 #[test]
+fn module_code_renames_multiple_render_exports_to_component_names() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        export const InspectTable = () => <table>{rows}</table>;
+        const LabelContent = () => <span>{label}</span>;
+        export const InspectTableRow = () => <tr>{row}</tr>;
+        "#,
+        JsxLang::Tsx,
+        &JsxCompileConfig::default(),
+    );
+    let module = out.module_code();
+
+    assert!(module.contains("export function InspectTable("));
+    assert!(module.contains("export function LabelContent("));
+    assert!(module.contains("export function InspectTableRow("));
+    assert!(!module.contains("export function render("));
+}
+
+#[test]
 fn ssr_config_routes_components_to_ssr_and_preserves_client_mode_metadata() {
     let config = JsxCompileConfig {
         ssr: true,

@@ -105,15 +105,14 @@ export function parseReleaseVersion(refName) {
 
 export function releasePlatformPlan(refName) {
   const version = parseReleaseVersion(refName);
-  const includeSlowPlatforms = version.minor % 5 === 0;
-  const isEnabled = (platform) => includeSlowPlatforms || !slowReleaseTargets.has(platform.target);
+  const includeSlowPlatforms = true;
 
   return {
     version,
     includeSlowPlatforms,
-    skippedTargets: includeSlowPlatforms ? [] : [...slowReleaseTargets],
-    cliMatrix: cliReleasePlatforms.filter(isEnabled),
-    nativeMatrix: nativeReleasePlatforms.filter(isEnabled),
+    skippedTargets: [],
+    cliMatrix: cliReleasePlatforms,
+    nativeMatrix: nativeReleasePlatforms,
   };
 }
 
