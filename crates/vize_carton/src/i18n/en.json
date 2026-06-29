@@ -38,6 +38,7 @@
   "vue/valid-v-model.description": "Enforce valid v-model directives",
   "vue/valid-v-model.missing_expression": "v-model requires an expression",
   "vue/valid-v-model.invalid_element": "v-model cannot be used on <{tag}> element",
+  "vue/valid-v-model.unsupported_file_input": "v-model cannot be used on file inputs",
   "vue/valid-v-model.unexpected_argument": "v-model arguments are not supported on native elements",
   "vue/valid-v-model.help": "**Supported elements:**\n- `<input>` (text, checkbox, radio, etc.)\n- `<textarea>`\n- `<select>`\n- Custom components with `modelValue` prop\n\n**Examples:**\n```vue\n<input v-model=\"message\">\n<input v-model.number=\"age\" type=\"number\">\n<input v-model.trim=\"name\">\n<MyComponent v-model=\"value\">\n```",
   "vue/valid-v-show.description": "Enforce valid v-show directives",

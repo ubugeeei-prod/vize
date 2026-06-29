@@ -27,7 +27,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::is_html_tag;
-use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode};
+use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-model",
@@ -90,7 +90,16 @@ impl Rule for ValidVModel {
             return;
         }
 
-        // Check 3: Native v-model does not support arguments
+        // Check 3: v-model cannot read file inputs
+        if !is_component && is_static_file_input(element) {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-model.unsupported_file_input"),
+                &directive.loc,
+                ctx.t("vue/valid-v-model.help"),
+            );
+        }
+
+        // Check 4: Native v-model does not support arguments
         if !is_component && let Some(arg) = &directive.arg {
             let loc = match arg {
                 ExpressionNode::Simple(simple) => &simple.loc,
@@ -103,7 +112,7 @@ impl Rule for ValidVModel {
             );
         }
 
-        // Check 4: Validate modifiers (only for native elements)
+        // Check 5: Validate modifiers (only for native elements)
         if !is_component {
             for modifier in directive.modifiers.iter() {
                 let mod_name = modifier.content.as_str();
@@ -126,6 +135,23 @@ fn is_component_like_tag(element: &ElementNode<'_>) -> bool {
 
     let tag = element.tag.as_str();
     tag == "component" || (tag.contains('-') && !is_html_tag(tag))
+}
+
+fn is_static_file_input(element: &ElementNode<'_>) -> bool {
+    if !element.tag.as_str().eq_ignore_ascii_case("input") {
+        return false;
+    }
+
+    element.props.iter().any(|prop| {
+        let PropNode::Attribute(attr) = prop else {
+            return false;
+        };
+        attr.name.as_str().eq_ignore_ascii_case("type")
+            && attr
+                .value
+                .as_ref()
+                .is_some_and(|value| value.content.trim().eq_ignore_ascii_case("file"))
+    })
 }
 
 /// Check if expression is empty
@@ -211,6 +237,13 @@ mod tests {
     fn test_invalid_v_model_argument_on_native_element() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input v-model:foo="value">"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_model_on_file_input() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<input type="file" v-model="file">"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 }

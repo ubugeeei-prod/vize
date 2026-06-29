@@ -38,6 +38,7 @@
   "vue/valid-v-model.description": "强制有效的v-model指令",
   "vue/valid-v-model.missing_expression": "v-model需要一个表达式",
   "vue/valid-v-model.invalid_element": "v-model不能用于<{tag}>元素",
+  "vue/valid-v-model.unsupported_file_input": "v-model不能用于文件输入",
   "vue/valid-v-model.unexpected_argument": "原生元素上的v-model不支持参数",
   "vue/valid-v-model.help": "**支持的元素:**\n- `<input>` (text, checkbox, radio等)\n- `<textarea>`\n- `<select>`\n- 带有`modelValue` prop的自定义组件\n\n**示例:**\n```vue\n<input v-model=\"message\">\n<input v-model.number=\"age\" type=\"number\">\n<input v-model.trim=\"name\">\n<MyComponent v-model=\"value\">\n```",
   "vue/valid-v-show.description": "强制有效的v-show指令",
