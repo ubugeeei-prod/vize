@@ -307,6 +307,7 @@
   "vue/valid-v-memo.description": "强制有效的v-memo指令",
   "vue/valid-v-memo.missing_expression": "v-memo需要依赖数组表达式",
   "vue/valid-v-memo.expected_array": "v-memo需要类似数组的依赖表达式",
+  "vue/valid-v-memo.inside_v_for": "v-memo必须放在与v-for相同的元素上",
   "vue/valid-v-memo.unexpected_argument": "v-memo不接受参数",
   "vue/valid-v-memo.unexpected_modifier": "v-memo不接受修饰符",
   "vue/valid-v-memo.help": "请使用v-memo=\"[valueA, valueB]\"的形式指定依赖数组",

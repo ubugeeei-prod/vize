@@ -307,6 +307,7 @@
   "vue/valid-v-memo.description": "Enforce valid v-memo directives",
   "vue/valid-v-memo.missing_expression": "v-memo requires a dependency array expression",
   "vue/valid-v-memo.expected_array": "v-memo requires an array-like dependency expression",
+  "vue/valid-v-memo.inside_v_for": "v-memo must be placed on the same element as v-for",
   "vue/valid-v-memo.unexpected_argument": "v-memo does not accept an argument",
   "vue/valid-v-memo.unexpected_modifier": "v-memo does not accept modifiers",
   "vue/valid-v-memo.help": "**Usage:**\n```vue\n<div v-memo=\"[valueA, valueB]\">\n  <!-- Only re-renders when valueA or valueB changes -->\n</div>\n```\n\n**Note:** `v-memo` accepts an array of dependencies, similar to React's `useMemo`.",

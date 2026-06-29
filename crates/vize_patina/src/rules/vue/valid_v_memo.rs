@@ -5,7 +5,7 @@
 //! `v-memo` (Vue 3.2+) memoizes a sub-tree of the template. It requires:
 //! - An expression (the dependency array)
 //! - The expression should be an array
-//! - Cannot be used on `v-for` elements (should use on parent)
+//! - When used with `v-for`, it must be placed on the same element
 //!
 //! ## Examples
 //!
@@ -66,6 +66,14 @@ impl Rule for ValidVMemo {
                 ctx.t("vue/valid-v-memo.help"),
             );
             return;
+        }
+
+        if ctx.has_ancestor(|ancestor| ancestor.has_v_for) {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-memo.inside_v_for"),
+                &directive.loc,
+                ctx.t("vue/valid-v-memo.help"),
+            );
         }
 
         if let Some(exp) = &directive.exp
@@ -164,6 +172,26 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-memo="count++">content</div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_v_memo_inside_v_for() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div v-for="item in items" :key="item.id"><span v-memo="[item]"></span></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_v_memo_on_same_element_as_v_for() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div v-for="item in items" :key="item.id" v-memo="[item]"></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]

@@ -307,6 +307,7 @@
   "vue/valid-v-memo.description": "有効なv-memoディレクティブを強制する",
   "vue/valid-v-memo.missing_expression": "v-memoには依存配列の式が必要です",
   "vue/valid-v-memo.expected_array": "v-memoには配列形式の依存式が必要です",
+  "vue/valid-v-memo.inside_v_for": "v-memoはv-forと同じ要素に配置する必要があります",
   "vue/valid-v-memo.unexpected_argument": "v-memoは引数を受け付けません",
   "vue/valid-v-memo.unexpected_modifier": "v-memoは修飾子を受け付けません",
   "vue/valid-v-memo.help": "v-memo=\"[valueA, valueB]\"のように依存配列を指定してください",
