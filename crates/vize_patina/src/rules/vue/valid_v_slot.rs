@@ -146,6 +146,8 @@ impl Rule for ValidVSlot {
 }
 
 fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
+    let owner_default_slot = owner_default_slot_directive(owner);
+    let mut has_child_slot_template = false;
     let mut seen_slots: FxHashSet<String> = FxHashSet::default();
     let mut current_group_slots: FxHashSet<String> = FxHashSet::default();
     let mut in_if_chain = false;
@@ -160,6 +162,7 @@ fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
             in_if_chain = false;
             continue;
         };
+        has_child_slot_template = true;
 
         let starts_chain = has_directive(child, "if");
         let continues_chain =
@@ -188,10 +191,31 @@ fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
     }
 
     finish_slot_group(&mut seen_slots, &mut current_group_slots);
+
+    if let Some(default_slot) = owner_default_slot
+        && has_child_slot_template
+    {
+        ctx.error_with_help(
+            ctx.t("vue/valid-v-slot.mixed_default_and_child_slots"),
+            &default_slot.loc,
+            ctx.t("vue/valid-v-slot.help"),
+        );
+    }
 }
 
 fn finish_slot_group(seen_slots: &mut FxHashSet<String>, group_slots: &mut FxHashSet<String>) {
     seen_slots.extend(group_slots.drain());
+}
+
+fn owner_default_slot_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveNode<'a>> {
+    element.props.iter().find_map(|prop| match prop {
+        PropNode::Directive(dir)
+            if dir.name.as_str() == "slot" && !ValidVSlot::is_named_slot(dir) =>
+        {
+            Some(dir.as_ref())
+        }
+        _ => None,
+    })
 }
 
 fn child_slot_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveNode<'a>> {
@@ -219,6 +243,9 @@ fn static_slot_name(directive: &DirectiveNode) -> Option<String> {
         Some(ExpressionNode::Compound(_)) => None,
     }
 }
+
+#[cfg(test)]
+mod mixed_default_tests;
 
 #[cfg(test)]
 mod tests {
@@ -300,31 +327,5 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_duplicate_named_slot_in_if_else_chain() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<MyComponent>
-                <template v-if="ok" #header>Header A</template>
-                <template v-else #header>Header B</template>
-            </MyComponent>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_duplicate_named_slot_templates() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<MyComponent>
-                <template #header>Header A</template>
-                <template #header>Header B</template>
-            </MyComponent>"#,
-            "test.vue",
-        );
-        assert_eq!(result.error_count, 1);
     }
 }

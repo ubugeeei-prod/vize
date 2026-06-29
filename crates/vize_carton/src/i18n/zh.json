@@ -51,6 +51,7 @@
   "vue/valid-v-show.help": "**修复:** 添加布尔表达式:\n```vue\n<div v-show=\"isVisible\">内容</div>\n```\n\n**v-show vs v-if:**\n- `v-show`: 总是渲染，通过CSS切换显示（频繁切换时更好）\n- `v-if`: 条件渲染，完全添加/移除DOM",
   "vue/valid-v-slot.description": "强制有效的v-slot指令",
   "vue/valid-v-slot.invalid_location": "v-slot只能用于组件或template元素",
+  "vue/valid-v-slot.mixed_default_and_child_slots": "存在子插槽template时，默认插槽必须使用template元素",
   "vue/valid-v-slot.help": "**正确用法:**\n```vue\n<!-- 默认插槽 -->\n<MyComponent v-slot=\"{ item }\">\n  {{ item }}\n</MyComponent>\n\n<!-- 具名插槽 -->\n<MyComponent>\n  <template #header>标题</template>\n  <template #footer>页脚</template>\n</MyComponent>\n```",
   "vue/no-use-v-if-with-v-for.description": "禁止在同一元素上使用v-if和v-for",
   "vue/no-use-v-if-with-v-for.message_access": "避免在同一元素上使用v-if和v-for。v-if条件无法访问v-for作用域变量",

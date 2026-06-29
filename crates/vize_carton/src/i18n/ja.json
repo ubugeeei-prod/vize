@@ -51,6 +51,7 @@
   "vue/valid-v-show.help": "v-showディレクティブに式を追加してください",
   "vue/valid-v-slot.description": "有効なv-slotディレクティブを強制する",
   "vue/valid-v-slot.invalid_location": "v-slotはコンポーネントまたはtemplate要素でのみ使用できます",
+  "vue/valid-v-slot.mixed_default_and_child_slots": "子のスロットtemplateがある場合、デフォルトスロットはtemplate要素で指定する必要があります",
   "vue/valid-v-slot.help": "コンポーネント内のコンポーネントまたはtemplate要素でv-slotを使用してください",
   "vue/no-use-v-if-with-v-for.description": "v-forと同じ要素でのv-ifの使用を禁止する",
   "vue/no-use-v-if-with-v-for.message_access": "同じ要素でv-ifとv-forを使用しないでください。v-if条件からv-forスコープ変数にアクセスできません",

@@ -51,6 +51,7 @@
   "vue/valid-v-show.help": "Add an expression to the v-show directive",
   "vue/valid-v-slot.description": "Enforce valid v-slot directives",
   "vue/valid-v-slot.invalid_location": "v-slot can only be used on components or template elements",
+  "vue/valid-v-slot.mixed_default_and_child_slots": "Default slot must use a template element when child slot templates are present",
   "vue/valid-v-slot.help": "Use v-slot on a component or a template element inside a component",
   "vue/no-use-v-if-with-v-for.description": "Disallow using v-if on the same element as v-for",
   "vue/no-use-v-if-with-v-for.message_access": "Avoid using v-if with v-for on the same element. The v-if condition does not have access to v-for scope variables",
