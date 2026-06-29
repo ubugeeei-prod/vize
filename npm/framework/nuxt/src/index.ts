@@ -626,10 +626,8 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
     });
   }
 
-  // Musea gallery (without nuxtMusea mock layer)
-  // In Nuxt context, real composables/components are already available
-  // via Nuxt's own Vite plugins. Adding nuxtMusea globally would shadow
-  // Nuxt's #imports resolution and break the app.
+  // Musea gallery runs without the nuxtMusea mock layer because Nuxt's own
+  // Vite plugins already provide real composables/components and #imports.
   if (museaOptions !== false && supportsViteCompiler) {
     const { musea } = await import("@vizejs/vite-plugin-musea");
     const museaBasePath =
