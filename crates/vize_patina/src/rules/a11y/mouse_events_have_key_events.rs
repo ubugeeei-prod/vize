@@ -128,6 +128,23 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_mouseenter_with_dynamic_focus_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div @mouseenter="show" @[focus]="show">Content</div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_mouseenter_argument() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div @[mouseenter]="show">Content</div>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
     fn test_valid_component_skipped() {
         let linter = create_linter();
         let result = linter.lint_template(

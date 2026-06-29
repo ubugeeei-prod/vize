@@ -211,6 +211,7 @@ pub fn has_event_handler(element: &ElementNode, event_name: &str) -> bool {
         if let PropNode::Directive(dir) = prop
             && dir.name == "on"
             && let Some(ExpressionNode::Simple(arg)) = &dir.arg
+            && arg.is_static
             && arg.content == event_name
         {
             return true;
