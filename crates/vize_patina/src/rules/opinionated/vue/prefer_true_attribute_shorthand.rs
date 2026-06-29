@@ -55,6 +55,9 @@ impl Rule for PreferTrueAttributeShorthand {
         let Some(ExpressionNode::Simple(arg)) = &directive.arg else {
             return;
         };
+        if !arg.is_static {
+            return;
+        }
         let name = arg.content.as_str();
         if is_native_tag(element.tag.as_str()) && !BOOLEAN_ATTRIBUTES.contains(&name) {
             return;
@@ -102,6 +105,16 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input :disabled="true" />"#, "App.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn allows_dynamic_arguments() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<MyComponent :[prop]="true" v-bind:[other]="true" />"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
