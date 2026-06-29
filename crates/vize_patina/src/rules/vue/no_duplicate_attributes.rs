@@ -93,7 +93,10 @@ impl Rule for NoDuplicateAttributes {
                     // Handle v-bind directives
                     if dir.name.as_str() == "bind" {
                         if let Some(ref arg) = dir.arg {
-                            let arg_name = get_expression_content(arg).to_lowercase();
+                            let Some(arg_name) = get_static_expression_content(arg) else {
+                                continue;
+                            };
+                            let arg_name = arg_name.to_lowercase();
                             let arg_name_str = arg_name.as_str();
 
                             // Check for duplicate directives
@@ -127,7 +130,9 @@ impl Rule for NoDuplicateAttributes {
                     // Handle v-on directives
                     else if dir.name.as_str() == "on" {
                         if let Some(ref arg) = dir.arg {
-                            let event_name = get_expression_content(arg);
+                            let Some(event_name) = get_static_expression_content(arg) else {
+                                continue;
+                            };
                             // Include modifiers in the key to allow @keydown.left and @keydown.right
                             let modifiers: Vec<&str> =
                                 dir.modifiers.iter().map(|m| m.content.as_str()).collect();
@@ -158,7 +163,10 @@ impl Rule for NoDuplicateAttributes {
                     // Handle v-model
                     else if dir.name.as_str() == "model" {
                         let model_key = if let Some(ref arg) = dir.arg {
-                            format!("model:{}", get_expression_content(arg))
+                            let Some(arg_name) = get_static_expression_content(arg) else {
+                                continue;
+                            };
+                            format!("model:{arg_name}")
                         } else {
                             "model:modelValue".to_owned()
                         };
@@ -188,11 +196,13 @@ impl NoDuplicateAttributes {
     }
 }
 
-/// Get content from ExpressionNode
-fn get_expression_content(expr: &vize_relief::ExpressionNode) -> String {
+/// Get content from a static directive argument.
+fn get_static_expression_content(expr: &vize_relief::ExpressionNode) -> Option<String> {
     match expr {
-        vize_relief::ExpressionNode::Simple(s) => s.content.to_compact_string(),
-        vize_relief::ExpressionNode::Compound(_) => "<dynamic>".to_compact_string(),
+        vize_relief::ExpressionNode::Simple(s) if s.is_static => {
+            Some(s.content.to_compact_string())
+        }
+        _ => None,
     }
 }
 
@@ -240,6 +250,14 @@ mod tests {
         let result =
             linter.lint_template_rules_only(r#"<div :id="foo" :id="bar"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dynamic_v_bind_argument() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template_rules_only(r#"<div :[id]="foo" :id="bar"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
