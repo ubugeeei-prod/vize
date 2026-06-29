@@ -61,6 +61,27 @@ function updateDate(newDate: string) {
 }
 
 #[test]
+fn legacy_vue2_component_event_dollar_event_alias_stays_scoped() {
+    let script = r#"import VDatePicker from './VDatePicker.vue'
+function updateDate(newDate: string) {
+  void newDate
+}
+"#;
+    let template = r#"<VDatePicker @input="updateDate($event)" />"#;
+
+    let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
+    assert!(
+        legacy.contains("const $event = __vize_args[0] as __VDatePicker_")
+            && legacy.contains("updateDate($event);  // handler expression"),
+        "legacy Vue 2 component events should scope explicit `$event` aliases:\n{legacy}"
+    );
+    assert!(
+        legacy.contains("? any :") && !legacy.contains("? InputEvent :"),
+        "legacy Vue 2 explicit `$event` should keep the permissive event fallback:\n{legacy}"
+    );
+}
+
+#[test]
 fn legacy_vue2_skips_external_component_prop_checks() {
     let script = "const width = 320\n";
     let template = r#"<VDatePicker :width="width" />"#;

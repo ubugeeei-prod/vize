@@ -216,7 +216,7 @@ function updateDate(newDate: string) {
     :width="width"
     :hide-details="hideDetails"
     chips
-    @input="updateDate"
+    @input="updateDate($event)"
   />
 </template>
 "#,
@@ -249,7 +249,9 @@ function updateDate(newDate: string) {
         .filter(|diagnostic| relative_path(&project_root, &diagnostic.file) == "src/App.vue")
         .filter(|diagnostic| {
             diagnostic.code == Some(2345)
+                || diagnostic.code == Some(2552)
                 || diagnostic.message.contains("InputEvent")
+                || diagnostic.message.contains("$event")
                 || diagnostic.message.contains("keyof Props")
                 || diagnostic.message.contains("hideDetails")
                 || diagnostic.message.contains("width")
