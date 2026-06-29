@@ -1,5 +1,7 @@
 import type { VrtOptions } from "./vrt.js";
 
+export type MuseaVueVersion = 0.11 | 1 | 2 | "2.7" | 3 | "legacy";
+
 /**
  * Theme color definitions for Musea gallery UI.
  * All properties are optional — unspecified colors inherit from the `base` built-in theme.
@@ -134,4 +136,11 @@ export interface MuseaOptions {
    * @example 'musea.preview.ts'
    */
   previewSetup?: string;
+
+  /**
+   * Host Vue version for preview runtime compatibility checks.
+   * Legacy Vue static builds currently fail fast with an actionable diagnostic.
+   * @default 3
+   */
+  vueVersion?: MuseaVueVersion;
 }

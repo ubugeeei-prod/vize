@@ -5,6 +5,7 @@ use super::{
     generate_virtual_ts_with_offsets_and_checks, generate_virtual_ts_with_offsets_options_api,
 };
 use vize_carton::config::VueVersion;
+mod auto_import_shadowing;
 mod component_navigation;
 mod define_props_scope;
 mod no_check_template_bindings;

@@ -220,6 +220,42 @@ fn serve_plan_rejects_nuxt_project_without_direct_vite() {
 }
 
 #[test]
+fn serve_plan_prefers_nuxt_guidance_when_vite_exists_but_config_is_nuxt_only() {
+    let temp = tempfile::tempdir().unwrap();
+    write_vite_bin(temp.path());
+    fs::write(
+        temp.path().join("nuxt.config.ts"),
+        r#"export default defineNuxtConfig({ modules: ["@vizejs/nuxt"], vize: { musea: true } })"#,
+    )
+    .unwrap();
+    fs::write(
+        temp.path().join("package.json"),
+        r#"{
+  "dependencies": {
+    "@vizejs/nuxt": "0.263.0",
+    "@vizejs/vite-plugin-musea": "0.263.0",
+    "nuxt": "3.19.3",
+    "vite": "7.0.0"
+  }
+}"#,
+    )
+    .unwrap();
+
+    let error = create_serve_plan(
+        &ServeArgs {
+            build: true,
+            ..ServeArgs::default()
+        },
+        temp.path(),
+    )
+    .unwrap_err();
+
+    assert!(error.contains("detected a Nuxt project using `@vizejs/nuxt`"));
+    assert!(error.contains("nuxi build"));
+    assert!(!error.contains("no vite.config"));
+}
+
+#[test]
 fn serve_plan_rejects_silent_stories_option() {
     let temp = tempfile::tempdir().unwrap();
     write_vite_bin(temp.path());

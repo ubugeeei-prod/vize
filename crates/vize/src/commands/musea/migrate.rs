@@ -90,7 +90,7 @@ pub fn run(args: MigrateArgs) {
 fn collect_story_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
     collect_files(patterns, None)
         .into_iter()
-        .filter(|path| is_story_file(path))
+        .filter(|path| is_story_file(path) && !is_default_ignored_story_path(path))
         .collect()
 }
 
@@ -103,6 +103,17 @@ fn is_story_file(path: &Path) -> bool {
         name.rsplit_once('.'),
         Some((stem, "tsx" | "ts" | "jsx" | "js")) if stem.ends_with(".stories")
     )
+}
+
+fn is_default_ignored_story_path(path: &Path) -> bool {
+    path.components().any(|component| {
+        component.as_os_str().to_str().is_some_and(|name| {
+            matches!(
+                name,
+                "node_modules" | ".nuxt" | ".output" | "dist" | "storybook-static"
+            )
+        })
+    })
 }
 
 struct FileOutcome {

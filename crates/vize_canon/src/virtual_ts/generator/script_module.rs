@@ -146,6 +146,9 @@ fn collect_declaration_exports(
                 push_name(id.name.as_str(), seen, names);
             }
         }
+        Declaration::TSEnumDeclaration(enumeration) => {
+            push_name(enumeration.id.name.as_str(), seen, names);
+        }
         _ => {}
     }
 }
@@ -233,7 +236,7 @@ fn contains_ts_suppression_directive(comment: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::collect_line_module_import_spans;
+    use super::{CompactString, collect_line_module_import_spans, collect_named_value_exports};
 
     #[test]
     fn collect_import_span_includes_adjacent_ts_ignore_comment_group() {
@@ -257,5 +260,14 @@ mod tests {
             &script[spans[0].0 as usize..spans[0].1 as usize],
             "import Chart from \"chart.js/auto/auto\";"
         );
+    }
+
+    #[test]
+    fn collect_named_value_exports_includes_ts_enums() {
+        let names = collect_named_value_exports(
+            "export enum DiffDisplayMode { Hidden = 'hidden' }\nexport type Props = {}\n",
+        );
+
+        assert_eq!(names, vec![CompactString::new("DiffDisplayMode")]);
     }
 }

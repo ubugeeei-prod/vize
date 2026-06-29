@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 
-import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from "./vue-version.ts";
+import {
+  createLegacyVueCompatibilityPlugin,
+  hasHostVueSfcCompilerPlugin,
+  isLegacyVueCompatibilityMode,
+} from "./vue-version.ts";
 
 {
   const plugin = createLegacyVueCompatibilityPlugin({ vueVersion: 2 });
@@ -60,6 +64,19 @@ import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from
     "transform" in plugin,
     false,
     "Legacy Vue compatibility mode must not transform .vue code",
+  );
+  assert.equal(hasHostVueSfcCompilerPlugin([{ name: "vite:vue2" }]), true);
+  assert.equal(
+    hasHostVueSfcCompilerPlugin([{ name: "vite-plugin-vize:legacy-vue-compat" }]),
+    false,
+  );
+  assert.throws(
+    () =>
+      plugin.configResolved?.({
+        root: "/repo",
+        plugins: [{ name: "vite-plugin-vize:legacy-vue-compat" }],
+      } as never),
+    /host Vue SFC compiler plugin/,
   );
 }
 

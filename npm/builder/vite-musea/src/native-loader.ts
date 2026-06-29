@@ -7,6 +7,8 @@
 
 import { createRequire } from "node:module";
 
+import { extractWithDefaults } from "./with-defaults.js";
+
 // Native binding types
 export interface NativeBinding {
   parseArt: (
@@ -157,6 +159,7 @@ export function analyzeSfcFallback(
     const propsMatch = scriptContent.match(/defineProps\s*<\s*\{([\s\S]*?)\}>\s*\(/);
     const propsMatch2 = scriptContent.match(/defineProps\s*<\s*\{([\s\S]*?)\}>/);
     const propsBody = propsMatch?.[1] || propsMatch2?.[1];
+    const withDefaults = extractWithDefaults(scriptContent);
 
     if (propsBody) {
       // Parse each prop line: name?: Type;  or  name: Type;
@@ -178,10 +181,7 @@ export function analyzeSfcFallback(
           const optional = !!propMatch[2];
           let type = propMatch[3].replace(/;$/, "").trim();
 
-          // Check for default value in destructured defineProps
-          const defaultPattern = new RegExp(`\\b${name}\\s*=\\s*([^,}\\n]+)`);
-          const defaultMatch = scriptContent.match(defaultPattern);
-          const defaultValue = defaultMatch ? defaultMatch[1].trim() : undefined;
+          const defaultValue = withDefaults.get(name);
 
           props.push({
             name,

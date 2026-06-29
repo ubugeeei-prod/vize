@@ -10,8 +10,8 @@ use super::unique_case_dir;
 #[test]
 fn warns_only_when_generated_nuxt_types_are_missing() {
     let generated_dir = resolve_nuxt_generated_dir(Path::new("/workspace"));
-    assert!(missing_generated_types_warning(true, &generated_dir).is_none());
-    let message = missing_generated_types_warning(false, &generated_dir)
+    assert!(missing_generated_types_warning(true, &generated_dir, false).is_none());
+    let message = missing_generated_types_warning(false, &generated_dir, false)
         .expect("missing generated types must warn");
     assert!(message.contains("nuxi prepare"));
     assert!(message.contains("`.nuxt`"));
@@ -155,13 +155,23 @@ fn warning_mentions_resolved_generated_dir() {
     .unwrap();
 
     let generated_dir = resolve_nuxt_generated_dir(&project_root);
-    let message = missing_generated_types_warning(false, &generated_dir)
+    let message = missing_generated_types_warning(false, &generated_dir, false)
         .expect("missing generated types must warn");
 
     assert!(message.contains("`.out/.nuxt`"), "{message}");
     assert!(!message.contains("`.nuxt` types"), "{message}");
 
     let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn legacy_nuxt_warning_avoids_nuxt3_prepare_guidance() {
+    let generated_dir = resolve_nuxt_generated_dir(Path::new("/workspace"));
+    let message = missing_generated_types_warning(false, &generated_dir, true)
+        .expect("missing generated types must warn");
+
+    assert!(!message.contains("nuxi prepare"), "{message}");
+    assert!(message.contains("Nuxt 2/Bridge"), "{message}");
 }
 
 #[test]
