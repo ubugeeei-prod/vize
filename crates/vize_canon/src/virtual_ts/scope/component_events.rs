@@ -14,6 +14,7 @@ use crate::virtual_ts::{
 pub(super) struct ComponentEventTypes {
     pub(super) event_type: String,
     pub(super) args_type: String,
+    pub(super) listener_args_type: String,
     pub(super) listener_type: String,
 }
 
@@ -113,18 +114,27 @@ pub(super) fn generate_component_event_types(
         );
     }
 
-    let fallback_event = if legacy_vue2 {
-        "any"
+    // In legacy Vue 2 mode the listener rest args go through the loose emit
+    // wrapper so object payload callbacks stay permissive; otherwise they use
+    // the resolved emit argument tuple directly.
+    let listener_args_type = if legacy_vue2 {
+        append!(
+            *ts,
+            "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? any : __VizeVue2LooseEventArg<{args_type}[0]>;\n",
+        );
+        cstr!("__VizeVue2LooseEmitArgs<{args_type}>")
     } else {
-        get_dom_event_type(data.event_name.as_str())
+        let fallback_event = get_dom_event_type(data.event_name.as_str());
+        append!(
+            *ts,
+            "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? {fallback_event} : {args_type}[0];\n",
+        );
+        args_type.clone()
     };
-    append!(
-        *ts,
-        "{indent}type {event_type} = {args_type} extends [] ? any : unknown[] extends {args_type} ? {fallback_event} : {args_type}[0];\n",
-    );
     Some(ComponentEventTypes {
         event_type,
         args_type,
+        listener_args_type,
         listener_type,
     })
 }

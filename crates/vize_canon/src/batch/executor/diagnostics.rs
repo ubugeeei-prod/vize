@@ -5,7 +5,11 @@ use serde_json::Value;
 use super::super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 use crate::corsa_client::LspDiagnostic;
 use crate::file_uri::file_uri_to_path;
-use vize_carton::{FxHashMap, FxHashSet, String, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String};
+
+mod module_resolution;
+
+pub(super) use module_resolution::relative_module_resolves_on_disk;
 
 pub(super) fn map_batch_diagnostics(
     results: Vec<(String, Vec<LspDiagnostic>)>,
@@ -299,16 +303,28 @@ fn parse_severity(severity: Option<i32>) -> u8 {
     }
 }
 
-pub(super) fn should_skip_diagnostic(code: Option<u32>, _message: &str) -> bool {
+pub(super) fn should_skip_diagnostic(code: Option<u32>, message: &str) -> bool {
     match code {
         // TS2666: virtual-TS generation injects helper bindings that can trip
         // this code outside the user's source — suppress to match vue-tsc.
         Some(2666) => true,
+        // Native TypeScript currently exposes Node Buffer backing stores as
+        // `ArrayBuffer | SharedArrayBuffer`, while projects pinned to older
+        // TypeScript/@types/node combinations accepted `buffer.slice(...)` as
+        // `ArrayBuffer`. Keep vize aligned with that project baseline until the
+        // native checker can select the project's exact lib surface.
+        Some(2322) if is_array_buffer_backing_store_lib_mismatch(message) => true,
         // TS7006/TS7043/TS7044 (noImplicitAny family) are user-facing errors
         // and must surface so `vize check` matches vue-tsc under
         // `noImplicitAny`/`strict`. They were previously suppressed (#966).
         _ => false,
     }
+}
+
+fn is_array_buffer_backing_store_lib_mismatch(message: &str) -> bool {
+    message
+        .contains("Type 'ArrayBuffer | SharedArrayBuffer' is not assignable to type 'ArrayBuffer'")
+        && message.contains("SharedArrayBuffer")
 }
 
 pub(super) fn should_skip_original_diagnostic(
@@ -320,87 +336,6 @@ pub(super) fn should_skip_original_diagnostic(
 
 fn is_vue_source(path: &Path) -> bool {
     path.extension().is_some_and(|extension| extension == "vue")
-}
-
-/// Extract the specifier from the first `Cannot find module "<spec>"` in
-/// `message`, handling straight and smart quotes.
-fn module_not_found_specifier(message: &str) -> Option<&str> {
-    let rest = message.split_once("Cannot find module ")?.1;
-    let open = rest.chars().next()?;
-    let close = match open {
-        '\'' => '\'',
-        '"' => '"',
-        '\u{2018}' => '\u{2019}',
-        _ => return None,
-    };
-    let after_open = &rest[open.len_utf8()..];
-    let end = after_open.find(close)?;
-    Some(&after_open[..end])
-}
-
-/// Whether the unresolved module in a `TS2307` `message` is a relative
-/// specifier that resolves to a real source file next to `importer`. Such a
-/// diagnostic is a false positive from checking a partial file subset, since
-/// the sibling exists but was not registered in the virtual project.
-pub(super) fn relative_module_resolves_on_disk(message: &str, importer: &Path) -> bool {
-    let Some(specifier) = module_not_found_specifier(message) else {
-        return false;
-    };
-    if !(specifier.starts_with("./") || specifier.starts_with("../")) {
-        return false;
-    }
-    let Some(dir) = importer.parent() else {
-        return false;
-    };
-    relative_specifier_resolves(dir, specifier)
-}
-
-/// Source extensions a relative specifier may resolve to.
-const SOURCE_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "mts", "cts", "vue"];
-
-/// Resolve `specifier` against `dir` the way TypeScript would for a Vue/TS
-/// project: an explicit supported extension, an extension appended to the
-/// stem, a `.js`->`.ts` rewrite, or an `index` directory module.
-fn relative_specifier_resolves(dir: &Path, specifier: &str) -> bool {
-    if specifier_has_source_extension(specifier) && dir.join(specifier).is_file() {
-        return true;
-    }
-    if let Some(stem) = specifier.strip_suffix(".vue.ts")
-        && dir.join(cstr!("{stem}.vue").as_str()).is_file()
-    {
-        return true;
-    }
-    for (js, ts) in [(".js", ".ts"), (".mjs", ".mts"), (".cjs", ".cts")] {
-        if let Some(stem) = specifier.strip_suffix(js)
-            && dir.join(cstr!("{stem}{ts}").as_str()).is_file()
-        {
-            return true;
-        }
-    }
-    for extension in SOURCE_EXTENSIONS {
-        if dir
-            .join(cstr!("{specifier}.{extension}").as_str())
-            .is_file()
-        {
-            return true;
-        }
-    }
-    let base = dir.join(specifier);
-    for extension in SOURCE_EXTENSIONS {
-        if base.join(cstr!("index.{extension}").as_str()).is_file() {
-            return true;
-        }
-    }
-    false
-}
-
-fn specifier_has_source_extension(specifier: &str) -> bool {
-    specifier.ends_with(".vue")
-        || specifier.ends_with(".d.ts")
-        || specifier.ends_with(".ts")
-        || specifier.ends_with(".tsx")
-        || specifier.ends_with(".mts")
-        || specifier.ends_with(".cts")
 }
 
 #[cfg(test)]
@@ -619,6 +554,10 @@ mod tests {
         assert!(!should_skip_diagnostic(Some(7043), "any message"));
         assert!(!should_skip_diagnostic(Some(7044), "any message"));
         assert!(!should_skip_diagnostic(Some(2322), "any message"));
+        assert!(should_skip_diagnostic(
+            Some(2322),
+            "Type 'ArrayBuffer | SharedArrayBuffer' is not assignable to type 'ArrayBuffer'."
+        ));
         assert!(!should_skip_diagnostic(None, "any message"));
     }
 
@@ -647,49 +586,6 @@ mod tests {
         assert!(!should_skip_original_diagnostic(Some(6133), &mapped_vue));
         assert!(!should_skip_original_diagnostic(Some(6133), &plain_ts));
         assert!(!should_skip_original_diagnostic(Some(2322), &unmapped_vue));
-    }
-
-    #[test]
-    fn ts2307_for_resolvable_relative_siblings_is_suppressed() {
-        use super::relative_module_resolves_on_disk;
-
-        let dir = TempDir::new().unwrap();
-        let importer = dir.path().join("App.vue");
-        std::fs::write(&importer, "").unwrap();
-        std::fs::write(dir.path().join("types.ts"), "").unwrap();
-        std::fs::write(dir.path().join("Panel.vue"), "<template />").unwrap();
-        std::fs::create_dir_all(dir.path().join("util")).unwrap();
-        std::fs::write(dir.path().join("util").join("index.ts"), "").unwrap();
-
-        let resolvable_ts = "Cannot find module './types' or its corresponding type declarations.";
-        let resolvable_vue_ts =
-            "Cannot find module './Panel.vue.ts' or its corresponding type declarations.";
-        let resolvable_index =
-            "Cannot find module './util' or its corresponding type declarations.";
-        let resolvable_js_to_ts =
-            "Cannot find module './types.js' or its corresponding type declarations.";
-        let missing_relative =
-            "Cannot find module './nope' or its corresponding type declarations.";
-        let bare_package = "Cannot find module 'lodash-es' or its corresponding type declarations.";
-
-        assert!(relative_module_resolves_on_disk(resolvable_ts, &importer));
-        assert!(relative_module_resolves_on_disk(
-            resolvable_vue_ts,
-            &importer
-        ));
-        assert!(relative_module_resolves_on_disk(
-            resolvable_index,
-            &importer
-        ));
-        assert!(relative_module_resolves_on_disk(
-            resolvable_js_to_ts,
-            &importer
-        ));
-        assert!(!relative_module_resolves_on_disk(
-            missing_relative,
-            &importer
-        ));
-        assert!(!relative_module_resolves_on_disk(bare_package, &importer));
     }
 
     #[test]

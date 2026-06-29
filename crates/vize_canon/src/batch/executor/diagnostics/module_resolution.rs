@@ -1,0 +1,139 @@
+//! Resolution of relative module specifiers for `TS2307` false positives.
+//!
+//! Type-checking a partial file subset can surface a spurious `Cannot find
+//! module` diagnostic for a sibling that exists on disk but was not registered
+//! in the virtual project. These helpers detect that case so the diagnostic can
+//! be suppressed.
+
+use std::path::Path;
+
+use vize_carton::cstr;
+
+/// Extract the specifier from the first `Cannot find module "<spec>"` in
+/// `message`, handling straight and smart quotes.
+fn module_not_found_specifier(message: &str) -> Option<&str> {
+    let rest = message.split_once("Cannot find module ")?.1;
+    let open = rest.chars().next()?;
+    let close = match open {
+        '\'' => '\'',
+        '"' => '"',
+        '\u{2018}' => '\u{2019}',
+        _ => return None,
+    };
+    let after_open = &rest[open.len_utf8()..];
+    let end = after_open.find(close)?;
+    Some(&after_open[..end])
+}
+
+/// Whether the unresolved module in a `TS2307` `message` is a relative
+/// specifier that resolves to a real source file next to `importer`. Such a
+/// diagnostic is a false positive from checking a partial file subset, since
+/// the sibling exists but was not registered in the virtual project.
+pub(crate) fn relative_module_resolves_on_disk(message: &str, importer: &Path) -> bool {
+    let Some(specifier) = module_not_found_specifier(message) else {
+        return false;
+    };
+    if !(specifier.starts_with("./") || specifier.starts_with("../")) {
+        return false;
+    }
+    let Some(dir) = importer.parent() else {
+        return false;
+    };
+    relative_specifier_resolves(dir, specifier)
+}
+
+/// Source extensions a relative specifier may resolve to.
+const SOURCE_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "mts", "cts", "vue"];
+
+/// Resolve `specifier` against `dir` the way TypeScript would for a Vue/TS
+/// project: an explicit supported extension, an extension appended to the
+/// stem, a `.js`->`.ts` rewrite, or an `index` directory module.
+fn relative_specifier_resolves(dir: &Path, specifier: &str) -> bool {
+    if specifier_has_source_extension(specifier) && dir.join(specifier).is_file() {
+        return true;
+    }
+    if let Some(stem) = specifier.strip_suffix(".vue.ts")
+        && dir.join(cstr!("{stem}.vue").as_str()).is_file()
+    {
+        return true;
+    }
+    for (js, ts) in [(".js", ".ts"), (".mjs", ".mts"), (".cjs", ".cts")] {
+        if let Some(stem) = specifier.strip_suffix(js)
+            && dir.join(cstr!("{stem}{ts}").as_str()).is_file()
+        {
+            return true;
+        }
+    }
+    for extension in SOURCE_EXTENSIONS {
+        if dir
+            .join(cstr!("{specifier}.{extension}").as_str())
+            .is_file()
+        {
+            return true;
+        }
+    }
+    let base = dir.join(specifier);
+    for extension in SOURCE_EXTENSIONS {
+        if base.join(cstr!("index.{extension}").as_str()).is_file() {
+            return true;
+        }
+    }
+    false
+}
+
+fn specifier_has_source_extension(specifier: &str) -> bool {
+    specifier.ends_with(".vue")
+        || specifier.ends_with(".d.ts")
+        || specifier.ends_with(".ts")
+        || specifier.ends_with(".tsx")
+        || specifier.ends_with(".mts")
+        || specifier.ends_with(".cts")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::relative_module_resolves_on_disk;
+
+    use tempfile::TempDir;
+
+    #[test]
+    fn ts2307_for_resolvable_relative_siblings_is_suppressed() {
+        let dir = TempDir::new().unwrap();
+        let importer = dir.path().join("App.vue");
+        std::fs::write(&importer, "").unwrap();
+        std::fs::write(dir.path().join("types.ts"), "").unwrap();
+        std::fs::write(dir.path().join("Panel.vue"), "<template />").unwrap();
+        std::fs::create_dir_all(dir.path().join("util")).unwrap();
+        std::fs::write(dir.path().join("util").join("index.ts"), "").unwrap();
+
+        let resolvable_ts = "Cannot find module './types' or its corresponding type declarations.";
+        let resolvable_vue_ts =
+            "Cannot find module './Panel.vue.ts' or its corresponding type declarations.";
+        let resolvable_index =
+            "Cannot find module './util' or its corresponding type declarations.";
+        let resolvable_js_to_ts =
+            "Cannot find module './types.js' or its corresponding type declarations.";
+        let missing_relative =
+            "Cannot find module './nope' or its corresponding type declarations.";
+        let bare_package = "Cannot find module 'lodash-es' or its corresponding type declarations.";
+
+        assert!(relative_module_resolves_on_disk(resolvable_ts, &importer));
+        assert!(relative_module_resolves_on_disk(
+            resolvable_vue_ts,
+            &importer
+        ));
+        assert!(relative_module_resolves_on_disk(
+            resolvable_index,
+            &importer
+        ));
+        assert!(relative_module_resolves_on_disk(
+            resolvable_js_to_ts,
+            &importer
+        ));
+        assert!(!relative_module_resolves_on_disk(
+            missing_relative,
+            &importer
+        ));
+        assert!(!relative_module_resolves_on_disk(bare_package, &importer));
+    }
+}

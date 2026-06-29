@@ -8,6 +8,7 @@ use vize_carton::config::VueVersion;
 mod auto_import_shadowing;
 mod component_navigation;
 mod define_props_scope;
+mod legacy_nuxt2_page_context;
 mod no_check_template_bindings;
 mod options_api_props_spread;
 mod options_api_setup_spread;
