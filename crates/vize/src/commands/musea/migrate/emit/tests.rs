@@ -85,3 +85,33 @@ defineArt("./AfButton.vue", {
     assert_eq!(variants, 1);
     assert_eq!(todos, 0);
 }
+
+#[test]
+fn emits_todo_for_args_referencing_local_fixture_identifiers() {
+    let source = r#"import AfButton from "./AfButton.vue";
+const fixture = { label: "Hi" };
+export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;
+export const Big = { args: { data: fixture } };
+"#;
+    let (content, variants, todos) = emit(source);
+
+    assert!(content.contains("<AfButton />"));
+    assert!(content.contains("TODO(vize musea migrate)"));
+    assert!(!content.contains(":data=\"fixture\""));
+    assert_eq!(variants, 1);
+    assert_eq!(todos, 1);
+}
+
+#[test]
+fn emits_directive_expressions_without_quot_entities() {
+    let source = r#"import AfButton from "./AfButton.vue";
+export default { component: AfButton, title: "AfButton" } satisfies Meta<typeof AfButton>;
+export const Big = { args: { to: { name: "students" } as NuxtRoute<"students", string>, field: { label: "Name" } } };
+"#;
+    let (content, _variants, todos) = emit(source);
+
+    assert!(content.contains(r#":to='{ name: "students" } as NuxtRoute<"students", string>'"#));
+    assert!(content.contains(r#":field='{ label: "Name" }'"#));
+    assert!(!content.contains("&quot;"));
+    assert_eq!(todos, 0);
+}
