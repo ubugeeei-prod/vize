@@ -22,6 +22,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::html::helpers::BOOLEAN_ATTRIBUTES;
+use vize_carton::is_native_tag;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
@@ -43,7 +45,7 @@ impl Rule for PreferTrueAttributeShorthand {
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,
-        _element: &ElementNode<'a>,
+        element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
         if directive.name.as_str() != "bind" {
@@ -53,6 +55,10 @@ impl Rule for PreferTrueAttributeShorthand {
         let Some(ExpressionNode::Simple(arg)) = &directive.arg else {
             return;
         };
+        let name = arg.content.as_str();
+        if is_native_tag(element.tag.as_str()) && !BOOLEAN_ATTRIBUTES.contains(&name) {
+            return;
+        }
         // Modifiers such as `.prop` change semantics; leave them alone.
         if !directive.modifiers.is_empty() {
             return;
@@ -63,7 +69,7 @@ impl Rule for PreferTrueAttributeShorthand {
             ctx.warn_with_help(
                 ctx.t_fmt(
                     "vue/prefer-true-attribute-shorthand.message",
-                    &[("name", arg.content.as_str())],
+                    &[("name", name)],
                 ),
                 &directive.loc,
                 ctx.t("vue/prefer-true-attribute-shorthand.help"),
@@ -89,6 +95,23 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<MyComponent :visible="true" />"#, "App.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn reports_native_boolean_true_binding() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<input :disabled="true" />"#, "App.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn allows_native_non_boolean_true_bindings() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div :aria-hidden="true" :data-active="true" />"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
